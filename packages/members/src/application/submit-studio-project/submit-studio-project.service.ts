@@ -2,8 +2,16 @@ import { createHash } from 'node:crypto'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
-import { LessonNotFoundError, StudioBlockNotFoundError } from '../../domain/course/course.errors'
-import { hasComingSoonBlock, MAX_STUDIO_PROJECT_CHARS } from '../../domain/course/lesson-block'
+import {
+  LessonNotFoundError,
+  PintaBlockNotFoundError,
+  StudioBlockNotFoundError,
+} from '../../domain/course/course.errors'
+import {
+  hasComingSoonBlock,
+  MAX_PINTA_ASSET_CHARS,
+  MAX_STUDIO_PROJECT_CHARS,
+} from '../../domain/course/lesson-block'
 import {
   type ClientCheckResult,
   gradeStudioActivity,
@@ -36,7 +44,23 @@ export interface StudioSubmissionResultView {
 }
 
 /**
- * Recebe a ENTREGA do projeto do Estúdio. Upsert por aluno+bloco (último vence).
+ * Qual bloco esta entrega atende. ⭐ O Pinta REUSA esta rota, este service e a tabela
+ * `studio_submissions` inteira: o que muda é o kind exigido, o teto de tamanho e o nome na copy
+ * do erro. Duplicar tudo obrigaria a duplicar também a fila do professor, o status
+ * pendente/respondida/conferida, a conversa de Recados e a ficha 360 — nada disso olha o formato
+ * do payload. Dívida assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
+ */
+export type SubmissionBlockKind = 'studio' | 'pinta'
+
+const SUBMISSION_LIMITS: Record<SubmissionBlockKind, { maxChars: number; notFound: () => Error }> =
+  {
+    studio: { maxChars: MAX_STUDIO_PROJECT_CHARS, notFound: () => new StudioBlockNotFoundError() },
+    pinta: { maxChars: MAX_PINTA_ASSET_CHARS, notFound: () => new PintaBlockNotFoundError() },
+  }
+
+/**
+ * Recebe a ENTREGA do projeto do Estúdio (ou do desenho do Pinta). Upsert por aluno+bloco
+ * (último vence).
  * Quando o bloco tem ATIVIDADE (fase 2), GRADEIA na entrega: recalcula `structure`
  * no servidor + registra o reportado pelo cliente (`results`), grava nota/`passed_at`
  * STICKY e dá award de XP quando passa (espelha o quiz). A existência da entrega (ou
@@ -67,7 +91,10 @@ export class SubmitStudioProjectService {
     accountId?: string,
     /** Nome de EXIBIÇÃO do aluno (header confiável do gateway) p/ o turno na conversa. */
     authorName: string | null = null,
+    /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
+    kind: SubmissionBlockKind = 'studio',
   ): Promise<StudioSubmissionResultView> {
+    const limits = SUBMISSION_LIMITS[kind]
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
     const note = message?.trim() ? message.trim() : null
     const lesson = await this.courses.findLessonWithContent(lessonId)
@@ -86,18 +113,20 @@ export class SubmitStudioProjectService {
     // "Enviar para o professor" passaria e o upsert último-vence SOBRESCREVERIA a
     // entrega boa anterior, além de gravar marco, creditar XP e abrir conversa numa
     // aula que o servidor declara não-servida.
-    if (!privileged && hasComingSoonBlock(lesson.blocks)) throw new StudioBlockNotFoundError()
+    if (!privileged && hasComingSoonBlock(lesson.blocks)) throw limits.notFound()
 
     const block = lesson.blocks.find((b) => b.id === blockId)
-    if (block?.content.kind !== 'studio') throw new StudioBlockNotFoundError()
+    if (block?.content.kind !== kind) throw limits.notFound()
 
     // Teto de tamanho do jsonb (anti-DoS) — o front sanitiza o shape; aqui só o peso.
-    if (JSON.stringify(project).length > MAX_STUDIO_PROJECT_CHARS) {
+    if (JSON.stringify(project).length > limits.maxChars) {
       throw new PayloadTooLargeError('Projeto excede o tamanho máximo permitido')
     }
 
     const submittedAt = this.clock()
-    const activity = block.content.activity
+    // Auto-correção é do Estúdio: o bloco de Pinta é só entrega (a régua de "desenho certo" não
+    // existe e ficou explicitamente fora de escopo).
+    const activity = block.content.kind === 'studio' ? block.content.activity : undefined
 
     // Bloco sem atividade: comportamento clássico (só entrega).
     if (!activity) {

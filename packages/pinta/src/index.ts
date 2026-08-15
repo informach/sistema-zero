@@ -8,6 +8,11 @@
  */
 export { PintaApp } from './components/PintaApp'
 export type { PintaProjectRef } from './core/project'
+/**
+ * Os presets moram AQUI, e não no admin, para a autoria e a tela da criança não drifarem: quem
+ * escolhe "Só o essencial" no bloco e quem monta a caixa leem a mesma lista.
+ */
+export { PINTA_TOOL_PRESETS, type PintaToolPreset } from './core/toolCuration'
 export type {
   PintaExportedAsset,
   PintaHostAdapter,

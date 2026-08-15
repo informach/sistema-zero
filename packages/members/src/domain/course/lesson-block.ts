@@ -15,6 +15,7 @@ export const LESSON_BLOCK_KINDS = [
   'embed',
   'ebook',
   'studio',
+  'pinta',
   'certificate',
   'coming_soon',
 ] as const
@@ -197,6 +198,115 @@ export interface StudioBlock {
   }
 }
 
+/**
+ * Tipos de desenho do Pinta (ESTILO × PAPEL). Espelha o `PintaAssetKind` de
+ * `@sistemazero/pinta` — o members não importa a lib (é backend, e o subpath com React não
+ * resolveria aqui), então o union é copiado e travado por teste de conformidade.
+ */
+export type PintaAssetKindName =
+  | 'pixel-sprite'
+  | 'pixel-background'
+  | 'tileset'
+  | 'tilemap'
+  | 'vector-sprite'
+  | 'vector-background'
+  | 'vector-tileset'
+
+/**
+ * Teto do JSON do desenho (autoria e entrega). MEDIDO contra o codec real do Pinta (15/08),
+ * não estimado:
+ *
+ * | caso                                                | chars |
+ * |-----------------------------------------------------|-------|
+ * | personagem 128x128 com ruído                          |  42 k |
+ * | mapa 128x128 com TODAS as células preenchidas         | 246 k |
+ * | cenário 512x512, 4 camadas, manchas (desenho denso)   | 1,5 M |
+ * | cenário 512x512, 4 camadas, ruído por PIXEL           | 2,6 M |
+ *
+ * ⚠️⚠️ **Quem manda no número é o GATEWAY, não esta linha.** O teto global de corpo da borda é
+ * 2 MB e rota nenhuma pode subir acima dele (o boot falha se tentar), então de nada adiantaria
+ * aceitar aqui um desenho que morre com 413 antes de chegar. 1,8 M deixa folga para o envelope
+ * (`{"asset":…,"message":…}`) dentro dos 2 MB.
+ *
+ * ⚠️ **O que NÃO cabe, medido:** um cenário 512x512 com as 4 camadas cheias — 1,5 M num desenho
+ * denso passa, mas o ruído por pixel (2,6 M) não. Não é hipótese remota: é o teto físico de uma
+ * tela que a professora consegue configurar. Duas saídas, as duas fora deste arquivo — subir o
+ * teto global do gateway, ou limitar o tamanho de tela oferecido na autoria do bloco.
+ *
+ * ⚠️ O VETOR não tem máximo físico comparável: uma FIGURA inserida carrega um data URL de até
+ * 300 k chars e cabem centenas de formas. Ali o teto é POLÍTICA, não física — um desenho de aula
+ * não é um álbum de fotos —, e a recusa é explícita.
+ */
+export const MAX_PINTA_ASSET_CHARS = 1_800_000
+
+/**
+ * Bloco PINTA: o ateliê de desenho embarcado na aula, com o desenho JÁ CRIADO pelo professor
+ * (tipo e tamanho decididos por ele). A criança desenha dentro da aula e ENVIA ao professor;
+ * como no Estúdio, isso BLOQUEIA a conclusão da aula até o envio.
+ *
+ * `initialAsset` é o snapshot do desenho (shape `PintaAsset` da lib) — JSON defensivo aqui. Quem
+ * sanea é o Pinta, nas duas pontas (autoria e aluno).
+ *
+ * ⭐ **O TIPO do desenho não é um campo à parte, de propósito.** O plano previa um `assetKind`
+ * espelhando o snapshot, mas dois lugares dizendo a mesma coisa drifam: bastaria o professor
+ * trocar o desenho sem o admin reescrever o campo. Ele é LIDO do snapshot por
+ * `pintaAssetKindOf` — uma leitura de string, que não obriga o members a conhecer o formato.
+ */
+export interface PintaBlock {
+  kind: 'pinta'
+  /** Snapshot `PintaAsset` autorado pelo admin (JSON opaco aqui). */
+  initialAsset: unknown
+  /**
+   * Curadoria da CAIXA DE FERRAMENTAS, RESTRITIVA como o `allowBlocks` do Estúdio: lista
+   * não-vazia = a criança vê só essas; ausente/vazia = a caixa inteira. Os ids e os presets
+   * vivem em `@sistemazero/pinta/assets` (`PINTA_TOOL_PRESETS`); aqui é lista de string, porque
+   * ferramenta nova no editor não pode exigir deploy do backend.
+   */
+  allowTools?: string[]
+  /**
+   * Nome do PROJETO CONTÍNUO (cadeia). Aulas com o MESMO `chain` no mesmo curso constroem um
+   * único desenho. ⚠️ Diferente do Estúdio, aqui o TIPO é load-bearing: dois blocos da mesma
+   * cadeia com desenhos de tipos diferentes não encaixam (ver a validação da autoria).
+   */
+  chain?: string
+}
+
+/**
+ * O tipo do desenho inicial, lido do snapshot. `null` = snapshot ausente/ilegível ou tipo
+ * desconhecido — quem chama decide (a autoria recusa; a leitura degrada).
+ */
+export function pintaAssetKindOf(block: PintaBlock): PintaAssetKindName | null {
+  const kind = (block.initialAsset as { kind?: unknown } | null | undefined)?.kind
+  return typeof kind === 'string' && (PINTA_ASSET_KINDS as readonly string[]).includes(kind)
+    ? (kind as PintaAssetKindName)
+    : null
+}
+
+export const PINTA_ASSET_KINDS = [
+  'pixel-sprite',
+  'pixel-background',
+  'tileset',
+  'tilemap',
+  'vector-sprite',
+  'vector-background',
+  'vector-tileset',
+] as const
+
+/**
+ * Rótulo em português de cada tipo, só para a MENSAGEM de erro da autoria — "a aula X já usa
+ * esta cadeia com Personagem (pixel art)" é acionável; `pixel-sprite` não é. A UI tem os rótulos
+ * dela (o admin monta o select); estes não são contrato.
+ */
+export const PINTA_ASSET_KIND_LABELS: Record<PintaAssetKindName, string> = {
+  'pixel-sprite': 'Personagem (pixel art)',
+  'pixel-background': 'Cenário (pixel art)',
+  tileset: 'Peças de mapa (pixel art)',
+  tilemap: 'Mapa (pixel art)',
+  'vector-sprite': 'Personagem (formas)',
+  'vector-background': 'Cenário (formas)',
+  'vector-tileset': 'Peças de mapa (formas)',
+}
+
 /** Uma assinatura no certificado: imagem (URL http(s)) + nome de quem assina. */
 export interface CertificateSignature {
   imageUrl?: string
@@ -264,12 +374,14 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
 
 /**
- * O bloco TRAVA a conclusão da aula? Estúdio SEMPRE trava (exige envio —
- * `STUDIO_GATE_NOT_SUBMITTED`, ver mark-lesson-complete); "em breve" SEMPRE trava (a
+ * O bloco TRAVA a conclusão da aula? Estúdio e Pinta SEMPRE travam (exigem envio —
+ * `STUDIO_GATE_NOT_SUBMITTED` / `PINTA_GATE_NOT_SUBMITTED`, ver mark-lesson-complete);
+ * "em breve" SEMPRE trava (a
  * aula ainda está sendo montada); quiz só trava COM nota de corte (`passingScore`). Os
  * demais (texto/vídeo/imagem/áudio/embed/ebook/quiz de fixação) são conteúdo livre.
  * Usado pela autoria para manter a aula do certificado SEM gates: a emissão conclui
@@ -278,6 +390,7 @@ export type LessonBlockContent =
  */
 export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
   if (content.kind === 'studio') return true
+  if (content.kind === 'pinta') return true
   if (content.kind === 'coming_soon') return true
   if (content.kind === 'quiz') return content.passingScore !== undefined
   return false

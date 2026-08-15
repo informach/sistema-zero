@@ -56,7 +56,7 @@ export default async function EstudioPage({
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
-    // Paleta pelo CURRÍCULO: os blocos dos cursos que esta criança concluiu E publicou.
+    // Paleta pelo CURRÍCULO: bônus concluídos + cursos da carreira concluídos e publicados.
     // Best-effort — falhar aqui NÃO pode esvaziar a caixa de ferramentas: o
     // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
     getStudioUnlocksReadonly().catch(() => null),

@@ -11,7 +11,7 @@ A paleta permanece extensa por decisão de produto: são 288 definições de blo
 sendo responsabilidade do perfil de aprendizagem e de cada aula.
 
 A correção técnica desta auditoria foi publicada como **Jogo 2D 0.34.0**. O
-  manifesto vigente está em **0.79.0** após os fechamentos subsequentes: grupos
+  manifesto vigente está em **0.79.1** após os fechamentos subsequentes: grupos
 seguros também no modo Código, ciclo de vida gerenciado e HUD acessível em todos
 os caminhos públicos e legados, o full review de 23/07 (inimigo "patrulha" que
 respeita jogos sem gravidade, cartão de porta de entrada "Pegue a moeda" e redes
@@ -557,6 +557,15 @@ no boot do Vite com `process is not defined` antes de abrir a galeria.
   jogador cuja condição aparecia por último nos blocos;
 - o playthrough cobre recarga sem apertos repetidos, contato tardio, dano único,
   nocaute, duplo nocaute e reinício, além do drift e round-trip já existentes.
+
+### Endurecimento da recarga por quadros — 0.79.1
+
+- intervalos positivos menores que meio quadro são normalizados para um quadro,
+  sem permitir duas ações no mesmo quadro;
+- o scheduler real prova a fronteira exata: falso até `N - 1` e verdadeiro em
+  `N`; a mesma rede cobre pausa longa e reinício com um sprite novo;
+- o comentário do relógio distingue consumidores de segundos (`now()`) das
+  cadências por quadro (`_frameStamp`).
 
 ## Conclusão
 

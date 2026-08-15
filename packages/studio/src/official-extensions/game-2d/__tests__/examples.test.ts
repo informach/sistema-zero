@@ -278,8 +278,8 @@ describe('pongExample (game-2d) — partida completa', () => {
     expect(code).toContain('SZGame2D.touches(jogador, bola)')
     expect(code).toContain('SZGame2D.touches(computador, bola)')
     // O rebote virou bloco: eram ~110 linhas de IR com `Math.abs` e o ângulo no braço.
-    expect(code).toContain('SZGame2D.paddleBounce(bola, jogador, 8)')
-    expect(code).toContain('SZGame2D.paddleBounce(bola, computador, 8)')
+    expect(code).toContain('SZGame2D.paddleBounce(bola, jogador, 4)')
+    expect(code).toContain('SZGame2D.paddleBounce(bola, computador, 4)')
     expect(code).toContain('SZGame2D.bounceOnEdgePair(bola, ctx, "top-bottom")')
     expect(code).toContain('SZGame2D.arrowsY(jogador, 5)')
     expect(code).toContain('pontosComputador = pontosComputador + 1')

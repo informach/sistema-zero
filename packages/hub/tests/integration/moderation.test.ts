@@ -63,7 +63,6 @@ describe('moderação', () => {
         id: string
       }
     ).id
-
     const pending = (await (
       await ctx.app.handle(
         jsonRequest('GET', `/hub/admin/pending?spaceId=${spaceId}`, { headers: adminHeaders() }),
@@ -85,6 +84,107 @@ describe('moderação', () => {
       )
     ).json()) as { items: unknown[] }
     expect(others.items).toHaveLength(1)
+  })
+
+  test('fila traz servidor, canal, autores, tópico pai, resposta e anexos', async () => {
+    const ctx = buildApp()
+    const { spaceId, channelId } = await seed(ctx, {
+      space: { name: 'Clube Kids', audience: 'kids', requiresApproval: true },
+      channel: { name: 'Projetos' },
+    })
+    const parentAuthor = randomUUID()
+    const threadId = (
+      (await (
+        await postThread(
+          ctx,
+          channelId,
+          studentHeaders(parentAuthor, {
+            'x-auth-account-id': parentAuthor,
+            'x-auth-user-name': 'Lia',
+          }),
+        )
+      ).json()) as { id: string }
+    ).id
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/approve`, { headers: adminHeaders() }),
+    )
+
+    const replyAuthor = randomUUID()
+    const replyId = (
+      (await (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${threadId}/comments`, {
+            headers: studentHeaders(replyAuthor, { 'x-auth-user-name': 'Bia' }),
+            body: { body: 'x'.repeat(300) },
+          }),
+        )
+      ).json()) as { id: string }
+    ).id
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/comments/${replyId}/approve`, { headers: adminHeaders() }),
+    )
+
+    const targetAuthor = randomUUID()
+    const accountId = randomUUID()
+    const targetId = (
+      (await (
+        await ctx.app.handle(
+          jsonRequest('POST', `/hub/threads/${threadId}/comments`, {
+            headers: studentHeaders(targetAuthor, {
+              'x-auth-account-id': accountId,
+              'x-auth-user-name': 'Nina',
+            }),
+            body: { body: 'Minha resposta completa', replyToId: replyId },
+          }),
+        )
+      ).json()) as { id: string }
+    ).id
+    const attachmentId = randomUUID()
+    await ctx.attachmentRepo.create({
+      id: attachmentId,
+      ownerId: targetAuthor,
+      kind: 'image',
+      storageRef: `r2ugc:${attachmentId}`,
+      mime: 'image/png',
+      sizeBytes: 1234,
+      originalName: 'desenho.png',
+      now: new Date(),
+    })
+    ctx.attachmentRepo.linkMany([attachmentId], { commentId: targetId })
+
+    const pending = (await (
+      await ctx.app.handle(
+        jsonRequest('GET', `/hub/admin/pending?spaceId=${spaceId}`, { headers: adminHeaders() }),
+      )
+    ).json()) as {
+      items: Array<{
+        id: string
+        authorAccountId: string | null
+        authorDisplayName: string | null
+        attachments: Array<{ id: string; originalName: string }>
+        context: {
+          spaceName: string
+          spaceAudience: string
+          channelName: string
+          thread: { id: string; body: string } | null
+          replyTo: { id: string; body: string } | null
+        }
+      }>
+    }
+    expect(pending.items).toHaveLength(1)
+    expect(pending.items[0]).toMatchObject({
+      id: targetId,
+      authorAccountId: accountId,
+      authorDisplayName: 'Nina',
+      attachments: [{ id: attachmentId, originalName: 'desenho.png' }],
+      context: {
+        spaceName: 'Clube Kids',
+        spaceAudience: 'kids',
+        channelName: 'Projetos',
+        thread: { id: threadId, body: 'corpo' },
+        replyTo: { id: replyId, body: `${'x'.repeat(240)}…` },
+      },
+    })
   })
 
   test('falha de auditoria não transforma aprovação aplicada em 500', async () => {
@@ -111,15 +211,35 @@ describe('moderação', () => {
   test('denúncia + resolver', async () => {
     const ctx = buildApp()
     const { spaceId, channelId } = await seed(ctx)
+    const authorId = randomUUID()
     const threadId = (
-      (await (await postThread(ctx, channelId, studentHeaders(randomUUID()))).json()) as {
+      (await (
+        await postThread(ctx, channelId, studentHeaders(authorId, { 'x-auth-user-name': 'Caio' }))
+      ).json()) as {
         id: string
       }
     ).id
+    const reportAttachmentId = randomUUID()
+    await ctx.attachmentRepo.create({
+      id: reportAttachmentId,
+      ownerId: authorId,
+      kind: 'document',
+      storageRef: `r2ugc:${reportAttachmentId}`,
+      mime: 'text/plain',
+      sizeBytes: 42,
+      originalName: 'evidencia.txt',
+      now: new Date(),
+    })
+    ctx.attachmentRepo.linkMany([reportAttachmentId], { threadId })
 
+    const reporterId = randomUUID()
+    const reporterAccountId = randomUUID()
     const report = await ctx.app.handle(
       jsonRequest('POST', `/hub/threads/${threadId}/report`, {
-        headers: studentHeaders(randomUUID()),
+        headers: studentHeaders(reporterId, {
+          'x-auth-account-id': reporterAccountId,
+          'x-auth-user-name': 'Luna',
+        }),
         body: { reason: 'spam' },
       }),
     )
@@ -131,8 +251,31 @@ describe('moderação', () => {
           headers: adminHeaders(),
         }),
       )
-    ).json()) as { items: Array<{ id: string }>; total: number }
+    ).json()) as {
+      items: Array<{
+        id: string
+        reporterAccountId: string | null
+        reporterDisplayName: string | null
+        content: {
+          id: string
+          authorDisplayName: string | null
+          body: string
+          attachments: Array<{ id: string }>
+        } | null
+      }>
+      total: number
+    }
     expect(list.total).toBe(1)
+    expect(list.items[0]).toMatchObject({
+      reporterAccountId,
+      reporterDisplayName: 'Luna',
+      content: {
+        id: threadId,
+        authorDisplayName: 'Caio',
+        body: 'corpo',
+        attachments: [{ id: reportAttachmentId }],
+      },
+    })
 
     const resolved = await ctx.app.handle(
       jsonRequest('POST', `/hub/admin/reports/${list.items[0]?.id}/resolve`, {
@@ -141,6 +284,33 @@ describe('moderação', () => {
       }),
     )
     expect(resolved.status).toBe(200)
+  })
+
+  test('denúncia continua listável quando o alvo não existe mais', async () => {
+    const ctx = buildApp()
+    const { spaceId, channelId } = await seed(ctx)
+    const threadId = (
+      (await (await postThread(ctx, channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/threads/${threadId}/report`, {
+        headers: studentHeaders(randomUUID()),
+        body: { reason: 'conteúdo removido' },
+      }),
+    )
+    ctx.threadRepo.threads = ctx.threadRepo.threads.filter((thread) => thread.id !== threadId)
+
+    const list = (await (
+      await ctx.app.handle(
+        jsonRequest('GET', `/hub/admin/reports?spaceId=${spaceId}&status=open`, {
+          headers: adminHeaders(),
+        }),
+      )
+    ).json()) as { items: Array<{ content: unknown }>; total: number }
+    expect(list.total).toBe(1)
+    expect(list.items[0]?.content).toBeNull()
   })
 
   test('ocultar tópico some da listagem do aluno', async () => {
@@ -162,6 +332,49 @@ describe('moderação', () => {
       )
     ).json()) as { items: unknown[] }
     expect(list.items).toHaveLength(0)
+  })
+
+  test('transições de moderação inválidas não reabrem conteúdo terminal ou repetem ação', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seed(ctx, { space: { requiresApproval: true } })
+
+    const pendingId = (
+      (await (await postThread(ctx, channelId, studentHeaders(randomUUID()))).json()) as {
+        id: string
+      }
+    ).id
+    const rejected = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${pendingId}/reject`, { headers: adminHeaders() }),
+    )
+    expect(rejected.status).toBe(200)
+    const hideRejected = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${pendingId}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hideRejected.status).toBe(409)
+    expect(ctx.threadRepo.threads.find((thread) => thread.id === pendingId)?.status).toBe(
+      'rejected',
+    )
+
+    const visibleId = (
+      (await (await postThread(ctx, channelId, adminHeaders())).json()) as { id: string }
+    ).id
+    const hidden = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${visibleId}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hidden.status).toBe(200)
+    const hiddenAgain = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${visibleId}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hiddenAgain.status).toBe(409)
+    const deleted = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${visibleId}/delete`, { headers: adminHeaders() }),
+    )
+    expect(deleted.status).toBe(200)
+    const hideDeleted = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${visibleId}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hideDeleted.status).toBe(409)
+    expect(ctx.threadRepo.threads.find((thread) => thread.id === visibleId)?.status).toBe('deleted')
   })
 
   test('trancar tópico bloqueia comentário do aluno', async () => {

@@ -368,7 +368,7 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                       paddleVar: 'jogador',
                       boost: {
                         type: 'num',
-                        value: 8,
+                        value: 4,
                       },
                     },
                     {
@@ -391,7 +391,7 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                       paddleVar: 'computador',
                       boost: {
                         type: 'num',
-                        value: 8,
+                        value: 4,
                       },
                     },
                     {

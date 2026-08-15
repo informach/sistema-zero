@@ -24,8 +24,14 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 
 - **`setPintaStorageNamespace(viewerId)`** — o host chama ANTES de montar (isola a galeria por
   PERFIL no IndexedDB; vazio = store default `sistema-zero-pinta`; mesmo contrato do studio).
-- **`<PintaApp adapter={PintaHostAdapter} />`** — uncontrolled, navegação por ESTADO (galeria ⇄
-  editor, sem router).
+> Segunda e terceira exceções: **`@sistemazero/pinta/lesson`** (`src/lesson/index.ts`), a face
+> React do BLOCO DE AULA (`PintaLesson`, `PintaHandle`), e **`@sistemazero/pinta/assets`**
+> (`src/assets/index.ts`), o desenho como DADO — `createAsset`, `sanitizePintaAsset`,
+> `assetToJson`/`assetFromJson`, `PINTA_LIMITS`, presets — sem uma linha de React, que é o que o
+> servidor importa. Ver a seção dedicada mais abaixo.
+
+- **`<PintaApp adapter={PintaHostAdapter} persistence?={PintaPersistence} />`** — uncontrolled,
+  navegação por ESTADO (galeria ⇄ editor, sem router). `persistence` ausente = IndexedDB do perfil.
 - **`PintaHostAdapter`** (`src/core/types.ts`): `theme?` ('light' default kids | 'dark'),
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
@@ -293,6 +299,10 @@ apagar. Motivação: fazer a asa do outro lado da nave sem redesenhar.
   do `flush()` do EditorScreen) — antes um recorte levantado se perdia ao sair do editor.
 - O espelho React da seleção é só `'none' | 'rect' | 'floating'` (`selKind`): o arrasto do
   recorte continua em refs, sem re-render por movimento.
+- **Guia do espelho**: `PixelCanvas` pinta `paintMirrorGuides` DEPOIS da grade e ANTES da seleção.
+  `mirrorX` mostra a linha vertical central, `mirrorY` a horizontal e os dois juntos mostram a
+  cruz. São duas passadas tracejadas (branco + azul), só de tela: não entram no bitmap, undo,
+  miniatura nem export. A posição é `largura/altura × zoom / 2`, inclusive em grades ímpares.
 
 **Zoom pela rolagem (`useWheelZoom`, os 3 palcos)** — rolar aproxima/afasta nos degraus da
 sessão; Ctrl+rolagem também (pinça do trackpad, sem zoom do navegador); **Shift+rolagem
@@ -465,7 +475,11 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
 - **Layout espelho do pixel**: caixa à ESQUERDA (espessuras do traço fixas no topo, ferramentas em
   DUAS colunas rolando no meio, e os slots PREENCHIMENTO/CONTORNO fixos no pé — espelho do
   principal/secundária, com botão de trocar; o slot clicado = `activeChannel`, quem recebe a
-  próxima cor) · palco no meio · coluna DIREITA `w-68` (Prévia → **Camadas** → **Cores** →
+  próxima cor). Os dois slots têm símbolos diferentes: preenchimento é uma PLACA cheia; contorno é
+  uma MOLDURA vazada. Os símbolos se sobrepõem visualmente, mas os BOTÕES não: cada canal preserva
+  seu próprio alvo de toque e foco de 44 px, sem um botão cobrir metade do outro. Transparência usa
+  o quadriculado no símbolo correspondente; gradiente ocupa a placa de preenchimento · palco no
+  meio · coluna DIREITA `w-68` (Prévia → **Camadas** → **Cores** →
   Aparência) · faixa (Spritesheet/peças + zoom) em LARGURA TOTAL. A coluna dupla do
   vector-sprite MORREU (`PixelRightColumn` saiu do ramo vetor). Tela estreita: caixa horizontal +
   disclosure "Cores e camadas" (`VectorPanelsDisclosure`).
@@ -1266,6 +1280,156 @@ em 64, ou seja, o desenho pulava para o canto. Vale para o sprite E para o fundo
 O outro lado (sanitize, cano do preview, runtime e a regra de quem vence) vive no studio — ver
 `packages/studio/CLAUDE.md` §"A caixa de colisão vem do desenho".
 
+## Backup e restauro simétricos (15/08/2026)
+
+`Baixar tudo` gera `meus-desenhos-pinta.zip` com os arquivos de uso e o backup canônico
+`galeria.pinta.json` na raiz. `Trazer de volta` aceita esse ZIP DIRETO ou um `.pinta.json` solto.
+No ZIP, `export/backupFile.ts` lê por faixas o EOCD, o diretório central, o cabeçalho local e SÓ os
+bytes da entrada canônica; PNGs, SVGs e receitas nunca entram na memória. O descompactador `fflate`
+só é importado dinamicamente quando a entrada usa deflate. O nome da entrada vive em
+`export/backupFormat.ts`, compartilhado por escrita e leitura. O JSON descompactado é limitado a
+32 MiB; ZIP inválido, criptografado, ZIP64, sem a entrada, com entrada duplicada ou acima do teto é
+recusado com motivo próprio. Enquanto lê/descompacta/persiste, o botão fica desabilitado, com texto
+de andamento e `aria-busy`.
+
+O `ExportDialog` também baixa `desenho.pinta.json`. Quase todo asset viaja sozinho; TILEMAP leva o
+tileset apontado por `tilesetId`, primeiro no array, e recusa o download se as peças sumiram.
+`galleryStore.importAssets` cria ids e nomes novos e religa o par. ⚠️ Esse caminho usa
+`assetBundleToJson`; o `assetToJson` público continua serializando UM asset com identidade
+preservada, pois o bloco de aula depende desse contrato para retomar o mesmo desenho.
+O par TILEMAP + tileset é restaurado com `{atomic: true}`: quota, nome ou persistência falhou, não
+publica nenhuma metade. Mapa sem o tileset no mesmo arquivo nem já existente na galeria é recusado;
+o restauro completo continua parcial para desenhos independentes, mas nunca cria mapa órfão.
+
+## Bloco de aula: `@sistemazero/pinta/lesson` (Fase 1, 15/08/2026)
+
+Pedido dela: "hoje a aula tem o bloco de Estúdio; quero o mesmo com o Pinta — eu já configuro o
+tipo e o tamanho, abre no editor com o projeto criado, e a criança envia a atividade para o
+professor". Esta é a **Fase 1**: abrir a API do pacote. O bloco em si (members + member-shell +
+admin + kids) é a Fase 2.
+
+O Estúdio nasceu embarcável (13 subpaths, `initialProject`, persistência injetável, `onChange`,
+ref). O Pinta tinha 3 subpaths e `PintaApp({adapter})` — lia tudo do IndexedDB do perfil no mount
+e **o host nunca via o desenho**. As quatro peças que faltavam:
+
+### `assetToJson` / `assetFromJson` (`export/assetJson.ts`)
+
+Embrulham o `galleryToPintaJson`/`importPintaJson`, que já faziam round-trip fiel. ⚠️ **Preservam
+id e nome** — quem troca a identidade é o `galleryStore.importAssets`, de propósito ("import nunca
+sobrescreve"), e por isso este caminho **não passa por ele**. Sem essa preservação, reabrir o bloco
+criaria uma cópia a cada abertura em vez de retomar de onde parou. O arquivo é um `.pinta.json` de
+UM desenho, no mesmo envelope do ZIP: baixar no bloco e importar no Pinta completo funciona sem
+ponte nova.
+
+### Curadoria da CAIXA DE FERRAMENTAS (`core/toolCuration.ts` + `adapter.allowTools`)
+
+"A tela da criança não pode vir cheia." É o `allowBlocks` do Estúdio aplicado à caixa: lista
+NÃO-VAZIA mostra só aqueles ids, ausente ou vazia mostra tudo (o Pinta solto nunca cura).
+
+- ⭐ **Um id, três editores.** Pixel, vetor e mapa compartilham vários ids (`select`, `line`,
+  `rect`, `ellipse`, `picker`, `pan`), então um preset é UMA lista e cada caixa a intersecta com o
+  próprio catálogo; id desconhecido é ignorado. É o que deixa "Só o essencial" significar a coisa
+  certa nos três sem três listas para drifar.
+- ⭐ **A curadoria alcança a caixa INTEIRA**, não só o que é selecionável: alternadores (`mirror`,
+  `mirrorV`, `grid`, `filled`) e ações do quadro (`flipH`, `flipV`, `rotate`, `clear`) têm id
+  igual. Quem pede "sem tralha" está olhando a caixa toda.
+- ⚠️ **Ferramenta ativa cortada é ESTADO IMPOSSÍVEL** (selecionada e fora da tela): `toolFallback`
+  cai na 1ª permitida, nos três editores. De quebra, o atalho de teclado não alcança mais uma
+  ferramenta escondida — ela volta sozinha.
+- ⚠️ **`fit` ("Ajustar", só no vetor) está nos DOIS presets**: é o único item da caixa que mexe só
+  na VISTA, e quem aproximou demais pela rolagem precisa do caminho de volta. Já `insertAsset`
+  ("trazer um desenho da galeria") fica FORA dos presets: numa aula o desenho é isolado da galeria
+  pessoal.
+- Grupo vazio some junto com o divisor dele — senão a caixa curada fica com traços separando nada.
+- ⚠️ Curar ferramenta **não** é curar painel. Camadas/Cores/Prévia/Aparência mexem no layout das
+  colunas (calibrado) e saem por `features`, não por lista.
+
+### Persistência injetável + `onChange`
+
+- `createGalleryStore(persistence?)` e `PintaApp({persistence})`. ⚠️⚠️ **O vazamento real estava no
+  EDITOR**, não na galeria: o `EditorScreen` chamava o `persistAssets` de MÓDULO, que vai direto ao
+  IndexedDB do perfil e furaria qualquer armazenamento injetado. Hoje ele lê do contexto.
+- `state/memoryPersistence.ts` = o `'none'`. ⭐ Ela existe para que "não guardar no navegador" NÃO
+  vire "salvamento desligado": o autosave roda, `savedAsset` avança, o selo "Salvo" aparece e o
+  `onChange` dispara — é assim que o host salva no backend. Arrancar a persistência cortaria o fio
+  em silêncio e o desenho nunca chegaria ao professor.
+- ⚠️ **Abrir NÃO dispara `onChange`, só editar** — a trava é a IDENTIDADE do `savedAsset`, nunca um
+  booleano "já montei": em StrictMode o React monta → limpa → monta, e a 2ª montagem passaria. É a
+  mesma lição do reenvio ao Estúdio.
+
+### `<PintaLesson>` + `PintaHandle` (`src/lesson/`)
+
+Um desenho só, sem galeria atrás. O `initialAssetId` do `PintaApp` não servia: é só um empurrão no
+mount, com pisca de galeria, com o voltar sempre presente, e um id inexistente despeja a criança na
+galeria inteira do perfil.
+
+- **Moldura restrita por default** (`PintaLessonChrome` no appContext): sem botão voltar (não há
+  para onde), sem mudar o tamanho (é escolha do professor) e sem "Baixar" (o bloco tem o download
+  dele). `features={{resize, export}}` religa.
+- ⚠️⚠️ **A semeadura é CONDICIONAL**: se o armazenamento já conhece o id, o que está lá é o que a
+  criança desenhou. Semear incondicionalmente apagaria a aula dela a cada reabertura — o bloco
+  remonta com o mesmo `initialAsset` toda vez. Mesma ordem de seed do bloco do Estúdio.
+- **`PintaHandle`** (`getAsset`/`save`/`replaceAsset`): o editor se anuncia pelo
+  `context.onEditorReady`. ⚠️ `replaceAsset` **recusa id diferente** — o editor é montado POR ID, e
+  trocar a identidade por baixo dele deixaria a galeria apontando para um desenho que não existe.
+- ⚠️ **`persistence: 'local'` grava na galeria do PERFIL** e fura o isolamento entre o desenho da
+  aula e os pessoais. Existe para playground/uso solto; o bloco usa `'none'` ou adapter próprio.
+- **Não há `onSave`** (o plano previa, espelhando o Estúdio): lá existe uma ação explícita de
+  salvar, aqui o salvamento é automático e `onSave` seria um segundo nome do `onChange`. Quem quer
+  salvar na hora chama `handle.save()` e recebe o resultado.
+- **`core/newAsset.ts`** tirou `createAsset`/`NewAssetInput` do `galleryStore`: são PUROS e têm
+  consumidor fora do navegador (o admin pré-cria, o servidor valida na borda), e puxar a store
+  arrastaria zustand + IndexedDB para dentro de um serviço Bun.
+
+### Fase 2 — o bloco ponta a ponta (15/08/2026)
+
+O bloco existe: `members` (enum `pinta` na migration `0065`, gate `PINTA_GATE_NOT_SUBMITTED`,
+`pintaState`, rotas `pinta-submission`), `member-shell` (`PintaBlockView`), `community-kids` +
+`community` (renderizadores) e `admin` (autoria + viewer da entrega). Contratos e armadilhas de
+cada lado vivem no CLAUDE.md do pacote respectivo. O que é DAQUI:
+
+- **`PINTA_LESSON_ASSET_OPTIONS` + `createLessonAsset`** (`core/newAsset.ts`, exportados em
+  `/assets`): os tamanhos que a AUTORIA de uma aula oferece. ⚠️ Param em **256** no cenário
+  porque o desenho ATRAVESSA a borda (teto de 2 MB do gateway): 512x512 com 4 camadas chega a
+  2,6 M chars no pior caso e a criança desenharia sem conseguir enviar. Telas maiores seguem no
+  Pinta solto, onde nada trafega.
+- **`PINTA_ASSET_KINDS` + `isPintaAssetLike`** (`core/project.ts`): os 7 tipos em RUNTIME. O
+  admin distingue a entrega de desenho da de Estúdio por aqui — as duas moram na MESMA tabela e
+  a linha não carrega o kind do bloco. Sem isso, seriam três cópias da mesma lista.
+- **`createPintaPersistence({namespace})`**: banco próprio, ignorando o namespace global. É o
+  que dá ao bloco um rascunho por bloco+perfil sem tocar a galeria pessoal da criança.
+- **`assets/members-conformance.test.ts`**: o `members` copia os 7 tipos (não pode depender deste
+  pacote — é um serviço Bun e a dep arrastaria lucide-react + o peer de React). O teste mora AQUI
+  e lê o domínio dele por caminho relativo, porque só este lado consegue importar os dois.
+
+### Full review da Fase 1 (15/08/2026) — 4 achados
+
+Rodada logo depois de escrever a fase, porque código novo escrito de uma sentada é código que
+ninguém revisou. Os quatro estavam na BORDA entre o pacote e quem o consome.
+
+1. ⭐⭐ **O subpath `./lesson` era impossível de usar do servidor, e o cabeçalho dele mentia.**
+   Ele dizia "o servidor importe só o que é puro daqui" — mas importar QUALQUER coisa de um barril
+   avalia o barril inteiro, e o `PintaLesson.tsx` importa React. O `members` é um serviço Bun
+   **sem React nas dependências**: a validação na borda quebraria na resolução de módulo, num
+   deploy. Nasceu **`@sistemazero/pinta/assets`**, livre de React, e o `./lesson` reexporta dele.
+   ⭐ A fronteira virou o GRAFO DE MÓDULOS, com `assets/purity.test.ts` percorrendo os imports
+   relativos e nomeando a trilha que trouxe o problema. Provado apontando o barril puro para o
+   componente: o teste acusa `assets/index.ts → lesson/PintaLesson.tsx`.
+2. ⭐⭐ **Armazenamento que falha deixava a criança com um retângulo BRANCO para sempre.** A IIFE
+   assíncrona da semeadura não tinha `catch`: a promessa rejeitava, o `setStatus` nunca rodava e
+   nada aparecia — nem erro no console dela. Hoje há `loading` / `ready` / `error` com recado.
+3. ⭐ **O `initialAsset` não era saneado na borda.** Ele vem do backend e o `createEditorStore` não
+   sanea nada: um desenho malformado entraria, seria editado, e **sumiria no próximo load** (a
+   falha mais cara deste pacote). Hoje o `sanitizePintaAsset` roda uma vez no boot, e `null` vira
+   um recado DIFERENTE do de falha de rede — recarregar não conserta autoria.
+4. **Trocar a prop `initialAsset` refazia o `load()`.** As deps do efeito eram o objeto inteiro, e
+   um host que monta `initialAsset={...}` inline passa identidade nova a cada render. Hoje o
+   desenho é fixado no boot; para abrir outro, remonte com `key`.
+
+Testes: `core/toolCuration.test.ts`, `components/editor/toolCurationUi.test.tsx` (os três
+editores), `components/editor/injectedPersistenceUi.test.tsx`, `lesson/pintaLessonUi.test.tsx`,
+`assets/purity.test.ts`, `export/assetJson.test.ts`. **Pende QA em navegador** e as Fases 2 e 3.
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
@@ -1333,6 +1497,10 @@ por px reais.
   as duas). **Full review feito no mesmo lote: 3 achados**, sendo um de perda de desenho e um de
   altura da faixa que era PRÉ-EXISTENTE. Ver as duas seções dedicadas. **Pende o QA dela
   desenhando** e a legibilidade dos glifos no olho.
+- **Bloco de aula, Fase 1 (15/08/2026, não commitado)**: subpath `./lesson` com `PintaLesson` +
+  `PintaHandle`, curadoria da caixa nos três editores, persistência injetável + `onChange`,
+  `assetToJson`/`assetFromJson` e `core/newAsset.ts`. 813 testes verdes. Ver a seção dedicada.
+  **Pende QA em navegador e as Fases 2 e 3** (o bloco ponta a ponta e a cadeia entre aulas).
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

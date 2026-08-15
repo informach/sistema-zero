@@ -491,7 +491,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   deve copiá-lo explicitamente. (Por isso o Sentry NÃO usa SDK — fala ingestão via `fetch`, sem dep
   externa, imune a esse tracing.)
 - Envs de prod: `GATEWAY_URL` + `JWT_JWKS_URL` (+ `JWT_ISSUER`/`JWT_AUDIENCE`) + R2_*/VIMEO_*
-  (incl. `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado`, `VIMEO_FOLDER_ID=29469887`).
+  (incl. `R2_PRIVATE_BUCKET=comunidade-sistema-zero-privado`,
+  `R2_UGC_BUCKET=comunidade-sistema-zero-ugc`, `VIMEO_FOLDER_ID=29469887`).
 
 ## Setup local (e2e)
 
@@ -625,7 +626,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   ⚠️ O dialog do curso é o ÚNICO PATCH de curso (o editor `[courseId]` só toca módulos/aulas) —
   se outro PATCH de curso surgir, ele PRECISA enviar `salesPageUrl` (ausente/null limpa a chave).
   Body de curso também aceita **`audience`** (`adult`|`kids`, 06/2026 — plataforma Kids): select
-  "Audiência" no dialog, **sempre enviado** (o members PRESERVA quando ausente — ≠ salesPageUrl);
+  "Audiência" no dialog, **Kids por padrão no curso novo**, sempre enviado (o members PRESERVA
+  quando ausente — ≠ salesPageUrl; o default legado do endpoint segue Adult);
   `CourseView.audience` devolvido; badge "Kids" na listagem. Curso `kids` fica FORA da chave-mestra
   `all_courses` (copy do GrantAccessDialog = "todos os cursos ADULTOS"; option de curso kids ganha
   sufixo `[Kids]`). Body de curso também aceita **`sequentialLock`** (boolean, 06/2026 — trava
@@ -791,6 +793,30 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (não basta HMR). `features.extensions:false` no viewer só esconde o PAINEL de extensões; o runtime/blocos
   do projeto seguem carregando.
 
+- **Bloco `pinta` — o ateliê de DESENHO na aula (15/08/2026):** o irmão do `studio`. O form
+  (`lesson-editor-client.tsx`: `KIND_LABELS.pinta`, `BLOCK_DIALOG_WIDTH.pinta = 'max-w-7xl'`,
+  campos `pinta*`) tem **Tipo do desenho** + **Tamanho** (`PINTA_LESSON_ASSET_OPTIONS` do pacote —
+  personagem/cenário × pixel/formas; cenário para em **256** de propósito: acima disso o JSON não
+  cabe no teto de corpo do gateway), o **Pinta embutido** (`components/pinta/pinta-embed.tsx`,
+  `persistence="none"` + `features={{resize:true, export:true}}` — aqui quem manda no tamanho é a
+  autora) e o preset de **ferramentas liberadas** ("Só o essencial" · "Desenho livre" · "Tudo" —
+  `PINTA_TOOL_PRESETS` vive no PACOTE para admin e kids não drifarem; nasce em "essencial", porque
+  a tela da criança não pode nascer cheia). O `saveBlock` captura com
+  **`await handle.save()` ANTES de `getAsset()`** (o autosave do Pinta é debounced), igual ao
+  Estúdio. ⚠️ Os selects de tipo/tamanho **só aparecem no bloco NOVO**: na edição quem manda é o
+  desenho salvo (o botão "Tamanho" de dentro do editor resolve o resto) — trocar o select apagaria
+  o desenho que ela acabou de fazer. O **viewer da entrega** (`studio-submission-viewer.tsx`)
+  escolhe o editor pelo formato do payload (`isPintaAssetLike` de `@sistemazero/pinta/assets`) e
+  baixa `.pinta.json` em vez de `.szproject.json`.
+  ⚠️⚠️ **Desenho contínuo (cadeia):** o members **RECUSA com 409 `PINTA_CHAIN_TYPE_MISMATCH`**
+  quando dois blocos da mesma cadeia têm TIPOS diferentes, e a mensagem (que o `run()` já mostra
+  no toast) nomeia a aula culpada e o tipo dela. Diferente do Estúdio, aqui o tipo é load-bearing:
+  o carryover VENCE o desenho inicial, então tipo e tamanho passam a vir do desenho carregado — o
+  `hint` do campo diz isso.
+  Requisitos de build (mesmos do Estúdio): `transpilePackages: ['@sistemazero/pinta']` + o par
+  `@import` do `pinta.css` (junto dos outros imports, ANTES de qualquer `@source`) + `@source
+  "../../../pinta/src"` no globals.css — sem o `@import` os tokens `--color-pin-*` não existem e o
+  editor sai sem cor; `packages/pinta/**` nos watchPatterns do `railway.json` e no `ci.yml`.
 - **Bloco `certificate` (06/2026; layout por imagem base 26/06):** o "diploma" do curso — pode ficar em
   QUALQUER aula (libera quando as ANTERIORES estão concluídas; ver o members). O form (em
   `lesson-editor-client.tsx`, `KIND_LABELS.certificate` + `case 'certificate'` em
@@ -820,6 +846,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `src/lib/hub-types.ts`; a árvore de route handlers `app/api/hub/admin/*` espelha as rotas admin do
   gateway (spaces/channels + reorder, `pending`/approve/reject/hide/delete/pin/lock, reports/resolve,
   mutes/bans). Consome o **`@sistemazero/hub`** via gateway (JWT + RBAC: leitura staff+, escrita admin+).
+  **Contexto da moderação (08/2026):** fila/denúncias trazem servidor, canal, data, autor,
+  tópico pai/resposta e anexos. `server/identities.ts` hidrata responsável via
+  `POST /auth/admin/users/batch` e criança via `POST /auth/admin/profiles/batch`, ambos em
+  chunks de 100 e best-effort (Auth fora não transforma a fila em 500). O download usa
+  `GET /hub/admin/attachments/:id/resolve` — nunca a política de leitura do aluno — e o BFF
+  assina no bucket `R2_UGC_BUCKET`. A UI só oferece Ocultar quando `content.status='visible'`;
+  o Hub re-checa a transição atomicamente e responde 409 sob corrida/repetição.
 
 ## Checklist antes de finalizar
 

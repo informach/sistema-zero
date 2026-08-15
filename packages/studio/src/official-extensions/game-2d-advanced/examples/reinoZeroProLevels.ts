@@ -46,7 +46,7 @@ export interface StagePlan {
   /**
    * `[coluna, largura]` das plataformas de atravessar por baixo.
    *
-   * ⚠️ A ALTURA não é autorada: ela é sempre `ALTURA_ALCANCAVEL` acima do chão
+   * ⚠️ A ALTURA não é autorada: ela é sempre `ALTURA_DA_PLATAFORMA` acima do chão
    * DAQUELA coluna. O pátio vertical de um jogo de plataforma é curto — o pulo
    * sobe 2,5 células — e altura escrita à mão é exatamente como nasce a
    * plataforma que a criança vê e nunca alcança. Quer um andar mais alto? Ponha
@@ -76,13 +76,33 @@ export interface StagePlan {
 export const PRO_STAGE_HEIGHT = 16
 
 /**
- * As três alturas que o pulo permite, em células acima do chão da coluna.
- *
- * ⭐ Elas não são gosto: o pulo sobe 205²/(2·520) = 40 px, ou 2,5 células. Uma
- * plataforma a 4 células é decoração, e a moeda em cima dela é uma promessa que
- * o jogo não cumpre. A rede que cobra isto é a I11.
+ * Profundidade das piscinas. O chão das fases aquáticas tem a mesma espessura,
+ * então a superfície da água fica alinhada ao piso das margens.
  */
-export const ALTURA_ALCANCAVEL = 3
+export const PROFUNDIDADE_DA_AGUA = 4
+
+/**
+ * As alturas que o pulo permite, em células acima do chão da coluna.
+ *
+ * ⭐⭐ Elas não são gosto, e não são UMA só: o pulo sobe 205²/(2·520) = 40 px, ou
+ * 2,5 células, e **o PÉ e a CABEÇA têm alcances diferentes**.
+ *
+ * - Para POUSAR, o pé precisa subir a altura inteira: 2 células dá, 3 não dá.
+ *   Medido em cima do motor, com o pulo segurado até o topo: plataforma a 2
+ *   células → pousa; a 3 e a 4 → nunca pousa.
+ * - Para dar CABEÇADA basta a cabeça varrer a face de baixo do bloco, e ela
+ *   varre os 40 px inteiros — por isso o prêmio pode ficar uma célula mais alto
+ *   que a plataforma.
+ *
+ * ⚠️⚠️ A primeira versão deste arquivo usava UMA constante em 3 para as duas
+ * coisas, e o resultado foi que **a camada vertical inteira das 32 fases virou
+ * decoração**: nenhuma plataforma era alcançável, nenhuma moeda de cima era
+ * pegável, e nas três fases de poço largo o piloto automático morria com 0
+ * vidas dentro do buraco. A invariante da época aprovava, porque media o
+ * alcance do CORPO (que serve a moeda) e nunca o do PÉ (que serve a plataforma).
+ */
+export const ALTURA_DA_PLATAFORMA = 2
+export const ALTURA_DO_PREMIO = 3
 export const DEGRAU_MAXIMO = 2
 /**
  * Moeda na altura da CABEÇA de quem anda. Uma célula, e não duas: com duas ela
@@ -90,14 +110,14 @@ export const DEGRAU_MAXIMO = 2
  * defeito que a I7 pegou nas primeiras plantas.
  */
 export const MOEDA_NO_CHAO = 1
-/** Só faz sentido em coluna que TEM plataforma: é a cabeça de quem está em cima dela. */
-export const MOEDA_NO_ALTO = 4
+/** Só faz sentido em coluna que TEM plataforma: uma célula acima de quem está nela. */
+export const MOEDA_NO_ALTO = 3
 
 /** Quantas linhas de chão maciço cada tipo tem embaixo. */
 const ESPESSURA_DO_CHAO: Readonly<Record<ProStageKind, number>> = {
   superficie: 1,
   subterraneo: 2,
-  agua: 1,
+  agua: PROFUNDIDADE_DA_AGUA,
   castelo: 2,
 }
 
@@ -155,6 +175,15 @@ export function groundRowAt(alturas: readonly number[], col: number): number {
   return altura > 0 ? PRO_STAGE_HEIGHT - altura : PRO_STAGE_HEIGHT
 }
 
+/** A coluna com chão mais perto desta — é dela que o herói salta para a móvel. */
+export function beiradaMaisProxima(alturas: readonly number[], col: number): number {
+  for (let passo = 0; passo < alturas.length; passo += 1) {
+    if ((alturas[col - passo] ?? 0) > 0) return col - passo
+    if ((alturas[col + passo] ?? 0) > 0) return col + passo
+  }
+  return col
+}
+
 /** Onde um personagem daquela coluna FICA DE PÉ. Nenhum `y` de chão é autorado. */
 function linhaDePe(alturas: readonly number[], col: number): number {
   return groundRowAt(alturas, col) - 1
@@ -182,16 +211,20 @@ export function buildProStage(world: number, order: number, plan: StagePlan): Ga
   for (let col = 0; col < largura; col += 1) {
     const altura = alturas[col] ?? 0
     if (altura === 0) {
-      if (fundo !== '.') por(PRO_STAGE_HEIGHT - 1, col, fundo)
+      if (fundo === '~') {
+        for (let row = PRO_STAGE_HEIGHT - PROFUNDIDADE_DA_AGUA; row < PRO_STAGE_HEIGHT; row += 1) {
+          por(row, col, fundo)
+        }
+      } else if (fundo !== '.') por(PRO_STAGE_HEIGHT - 1, col, fundo)
       continue
     }
     for (let row = PRO_STAGE_HEIGHT - altura; row < PRO_STAGE_HEIGHT; row += 1) por(row, col, '#')
   }
 
-  // 2) plataformas de atravessar por baixo, sempre à altura do pulo.
+  // 2) plataformas de atravessar por baixo, na altura em que o PÉ chega.
   for (const [col, largura2] of plan.plataformas ?? []) {
     for (let c = col; c < col + largura2; c += 1) {
-      seVazia(groundRowAt(alturas, c) - ALTURA_ALCANCAVEL, c, '=')
+      seVazia(groundRowAt(alturas, c) - ALTURA_DA_PLATAFORMA, c, '=')
     }
   }
 
@@ -200,7 +233,7 @@ export function buildProStage(world: number, order: number, plan: StagePlan): Ga
   // tem que perder, e é melhor perder o PRÊMIO — a I6 conta prêmio e acusa.
   // Plataforma encurtada em silêncio não teria rede nenhuma.
   for (const [col, peca] of plan.premios ?? []) {
-    seVazia(groundRowAt(alturas, col) - ALTURA_ALCANCAVEL, col, peca)
+    seVazia(groundRowAt(alturas, col) - ALTURA_DO_PREMIO, col, peca)
   }
 
   // 4) a escada de mão, do chão até o alto.
@@ -260,11 +293,15 @@ export function buildProStage(world: number, order: number, plan: StagePlan): Ga
   let movel = 0
   for (const [col, alcance] of plan.moveis ?? []) {
     movel += 1
+    // ⚠️⚠️ O `y` era a linha FIXA `PRO_STAGE_HEIGHT - 4`, e era isso que punha a
+    // móvel fora do alcance: o herói pula da BEIRADA do poço, não do fundo dele.
+    // Agora ela sai do chão da beirada mais próxima, na mesma altura de pé que
+    // as plataformas fixas.
     soltar({
       kind: 'movingPlatform',
       id: `plataforma-${movel}`,
       x: col,
-      y: PRO_STAGE_HEIGHT - 4,
+      y: groundRowAt(alturas, beiradaMaisProxima(alturas, col)) - ALTURA_DA_PLATAFORMA,
       props: { range: alcance * 16, speed: 0.7 + order * 0.12 },
     })
   }

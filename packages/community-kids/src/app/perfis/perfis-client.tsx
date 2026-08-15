@@ -55,6 +55,7 @@ import {
 } from '@/lib/guide'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
+import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import {
   type ChildDashboardView,
@@ -318,7 +319,10 @@ export function PerfisClient({
             headers: JSON_HEADERS,
             body: JSON.stringify(payload),
           })
-      const body = (await res.json().catch(() => null)) as { profile?: ProfileView } | null
+      const body = (await res.json().catch(() => null)) as {
+        profile?: ProfileView
+        error?: { code?: string }
+      } | null
       if (res.ok && body?.profile) {
         const saved = body.profile
         setProfiles((prev) =>
@@ -335,7 +339,11 @@ export function PerfisClient({
       }
       if (res.status === 409) toast.error('Você atingiu o limite de perfis do seu plano.')
       else if (res.status === 403) toast.error('Abra a área dos pais para gerenciar os perfis.')
-      else toast.error('Não foi possível salvar o perfil.')
+      else if (body?.error?.code === 'PROFILE_AGE_RESTRICTED') {
+        toast.error(
+          `${PROFILE_AGE_ERROR_MESSAGE} Para conhecer a comunidade de adultos, fale com a gente no Instagram @criecomhelenaejulio.`,
+        )
+      } else toast.error('Não foi possível salvar o perfil.')
     } catch {
       toast.error('Falha de rede. O perfil não foi salvo; tente novamente.')
     } finally {

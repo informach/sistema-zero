@@ -31,6 +31,27 @@ interface R2PrivateConfig {
   bucket: string
 }
 
+/** Bucket privado de anexos UGC da comunidade. */
+function requireUgcR2Config(): R2PrivateConfig {
+  const env = getEnv()
+  if (
+    !env.R2_ACCOUNT_ID ||
+    !env.R2_ACCESS_KEY_ID ||
+    !env.R2_SECRET_ACCESS_KEY ||
+    !env.R2_UGC_BUCKET
+  ) {
+    throw new MediaNotConfiguredError(
+      'Anexos da comunidade indisponíveis: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_UGC_BUCKET.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+    bucket: env.R2_UGC_BUCKET,
+  }
+}
+
 /** Config completa ou erro amigável (as envs são opcionais no schema). */
 function requireR2Config(): R2Config {
   const env = getEnv()
@@ -224,6 +245,28 @@ export async function r2PresignPrivatePut(
     signableHeaders: new Set(pinLength ? ['content-type', 'content-length'] : ['content-type']),
   })
   return { key, uploadUrl }
+}
+
+/** URL GET de curta duração para um anexo UGC já autorizado pelo Hub. */
+export async function r2PresignGetUgc(
+  key: string,
+  opts: {
+    expiresInSeconds?: number
+    responseContentDisposition?: string
+    responseContentType?: string
+  } = {},
+): Promise<string> {
+  const cfg = requireUgcR2Config()
+  return getSignedUrl(
+    getClient(cfg),
+    new GetObjectCommand({
+      Bucket: cfg.bucket,
+      Key: normalizeKey(key),
+      ResponseContentDisposition: opts.responseContentDisposition,
+      ResponseContentType: opts.responseContentType,
+    }),
+    { expiresIn: opts.expiresInSeconds ?? 300 },
+  )
 }
 
 export function r2PublicUrl(key: string): string {

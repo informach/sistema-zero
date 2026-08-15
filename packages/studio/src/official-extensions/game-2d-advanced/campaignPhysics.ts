@@ -24,6 +24,8 @@ export const CAMPAIGN_PHYSICS = {
   andar: 82,
   correr: 118,
   fatorDaAgua: 0.6,
+  /** Velocidade vertical sustentada ao nadar com cima/baixo. */
+  nadar: 62,
   escada: 62,
   /** Ainda dá para pular por este tempo depois de sair da beirada. */
   coiote: 0.1,

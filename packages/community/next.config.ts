@@ -89,6 +89,10 @@ const nextConfig: NextConfig = {
     '@sistemazero/ui',
     '@sistemazero/member-shell',
     '@sistemazero/studio',
+    // ⚠️ O bloco de Pinta é KIDS na prática, mas o renderizador de blocos é COMPARTILHADO: o
+    // `lesson-blocks` do member-shell referencia o `PintaBlockView`, então o bundler do adulto
+    // precisa compilar o pacote mesmo que nenhuma aula daqui use o bloco.
+    '@sistemazero/pinta',
     'three',
   ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,

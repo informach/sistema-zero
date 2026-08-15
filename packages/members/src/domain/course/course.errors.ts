@@ -158,6 +158,44 @@ export class StudioGateNotSubmittedError extends DomainError {
   }
 }
 
+/**
+ * Bloco de Pinta inexistente na aula (ou o bloco não é um Pinta). → 404.
+ *
+ * Erro PRÓPRIO, e não o do Estúdio, porque a copy nomeia a ferramenta: a criança lê "atividade
+ * do Estúdio não encontrada" numa aula de desenho e não entende do que se trata.
+ */
+export class PintaBlockNotFoundError extends DomainError {
+  readonly code = 'PINTA_BLOCK_NOT_FOUND'
+  constructor(message = 'Atividade do Pinta não encontrada') {
+    super(message)
+  }
+}
+
+/** Aula tem bloco de Pinta cujo desenho ainda não foi enviado — conclusão bloqueada. → 409. */
+export class PintaGateNotSubmittedError extends DomainError {
+  readonly code = 'PINTA_GATE_NOT_SUBMITTED'
+  constructor(message = 'Envie o seu desenho para o professor para poder concluir a aula') {
+    super(message)
+  }
+}
+
+/**
+ * Dois blocos de Pinta da MESMA cadeia (`chain`), no mesmo curso, com TIPOS de desenho
+ * diferentes. → 409, na AUTORIA (nunca na criança).
+ *
+ * ⚠️⚠️ A armadilha que o Estúdio não tem: um projeto do Estúdio é um projeto, mas aqui o tipo é
+ * LOAD-BEARING. Se a aula 1 é `pixel-sprite` 32×32 e a aula 2 da mesma cadeia é
+ * `vector-background` 480×360, o desenho carregado pelo carryover não é o que o bloco 2 descreve
+ * — e como o carryover VENCE o `initialAsset`, o bloco 2 abriria calado com outra coisa. Recusar
+ * ao salvar é o único ponto em que dá para nomear a aula culpada; depois de salvo, o estado
+ * quebrado só apareceria para a criança.
+ */
+export class PintaChainTypeMismatchError extends DomainError {
+  readonly code = 'PINTA_CHAIN_TYPE_MISMATCH'
+  // Sem `message` default de propósito: a mensagem é o valor do erro (nomeia a aula e o tipo),
+  // então quem lança PRECISA montá-la. Herda o construtor do DomainError.
+}
+
 /** Aula tem atividade do Estúdio com nota de corte ainda não atingida — conclusão bloqueada. → 409. */
 export class StudioGateNotPassedError extends DomainError {
   readonly code = 'STUDIO_GATE_NOT_PASSED'

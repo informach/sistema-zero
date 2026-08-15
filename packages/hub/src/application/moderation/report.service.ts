@@ -33,6 +33,8 @@ export class ReportService {
       targetId,
       spaceId,
       reporterId: actor.userId,
+      reporterAccountId: actor.accountId,
+      reporterDisplayName: actor.displayName,
       reason,
       now: this.clock(),
     })

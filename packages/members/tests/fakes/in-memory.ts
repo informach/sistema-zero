@@ -17,7 +17,11 @@ import {
 } from '../../src/domain/course/course'
 import { CareerSlotConflictError, DuplicateSlugError } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
-import { isCompletionGatingBlock } from '../../src/domain/course/lesson-block'
+import {
+  isCompletionGatingBlock,
+  type PintaBlock,
+  pintaAssetKindOf,
+} from '../../src/domain/course/lesson-block'
 import type { QuizAttemptSummary } from '../../src/domain/course/quiz'
 import {
   EntitlementAggregate,
@@ -493,14 +497,15 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.lessons.filter((l) => l.moduleId === moduleId && l.isPublished).map((l) => l.id)
   }
 
-  async findPrecedingStudioBlockInChain(
+  async findPrecedingChainBlock(
     courseId: string,
     lessonId: string,
     chain: string,
+    kind: 'studio' | 'pinta',
   ): Promise<{ blockId: string; lessonId: string } | null> {
     // Espelha a query Drizzle: aulas publicadas do curso ordenadas por
     // (module.sortOrder, lesson.sortOrder); varre para trás a partir da atual e,
-    // dentro de cada aula, pega o bloco studio da cadeia com maior sortOrder.
+    // dentro de cada aula, pega o bloco do KIND na cadeia com maior sortOrder.
     const ordered = this.lessons
       .filter((l) => l.courseId === courseId && l.isPublished)
       .map((l) => ({ l, modSort: this.modules.find((m) => m.id === l.moduleId)?.sortOrder ?? 0 }))
@@ -510,7 +515,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     // Da aula imediatamente anterior para trás (mesma ordem do `ORDER BY ... DESC`).
     for (const { l } of ordered.slice(0, curIdx).reverse()) {
       const block = this.blocks
-        .filter((b) => b.lessonId === l.id && b.kind === 'studio')
+        .filter((b) => b.lessonId === l.id && b.kind === kind)
         .sort((a, b) => b.sortOrder - a.sortOrder)
         // `trim` no valor armazenado (o serviço já passa `chain` trimado) — mirror do SQL.
         .find((b) => (b.content as { chain?: string }).chain?.trim() === chain)
@@ -833,6 +838,36 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         b.id !== opts.excludeBlockId &&
         isCompletionGatingBlock(b.content),
     )
+  }
+
+  async listPintaChainBlocks(
+    courseId: string,
+    chain: string,
+    opts: { excludeBlockId?: string } = {},
+  ): Promise<{ blockId: string; lessonTitle: string; assetKind: string | null }[]> {
+    // Espelha a query Drizzle: blocos de Pinta do CURSO (aula rascunho inclusa) com a mesma
+    // cadeia, em ordem de curso, com o tipo LIDO do snapshot.
+    const byLesson = new Map(this.lessons.map((l) => [l.id, l]))
+    return this.blocks
+      .filter((b) => {
+        const lesson = byLesson.get(b.lessonId)
+        if (!lesson || lesson.courseId !== courseId) return false
+        if (b.content.kind !== 'pinta' || b.id === opts.excludeBlockId) return false
+        return (b.content as { chain?: string }).chain?.trim() === chain
+      })
+      .map((b) => ({ b, lesson: byLesson.get(b.lessonId) }))
+      .sort(
+        (x, y) =>
+          (this.modules.find((m) => m.id === x.lesson?.moduleId)?.sortOrder ?? 0) -
+            (this.modules.find((m) => m.id === y.lesson?.moduleId)?.sortOrder ?? 0) ||
+          (x.lesson?.sortOrder ?? 0) - (y.lesson?.sortOrder ?? 0) ||
+          x.b.sortOrder - y.b.sortOrder,
+      )
+      .map(({ b, lesson }) => ({
+        blockId: b.id,
+        lessonTitle: lesson?.title ?? '',
+        assetKind: pintaAssetKindOf(b.content as PintaBlock),
+      }))
   }
 
   async countCertificateBlocks(
@@ -2282,10 +2317,10 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Mirror do SQL: MESMA interseção `course_complete` ∩ `course_showcased`, lendo
-   * `metadata.studioUnlockBlocks` do curso VIVO (por isso curso ausente do catálogo
-   * não contribui — o snapshot é quem preserva). Bônus e `lenda` CONTAM: todo curso
-   * pode ensinar ferramenta; só a CARREIRA os ignora.
+   * Mirror do SQL: curso Kids bônus fica elegível com `course_complete`; curso com
+   * posição e qualquer curso Adult continuam exigindo também `course_showcased`.
+   * Lê `metadata.studioUnlockBlocks` do curso VIVO — o snapshot preserva o que já
+   * foi servido quando o curso some ou muda de classificação.
    */
   async listStudioUnlocksByCourse(
     userId: string,
@@ -2297,9 +2332,11 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
     const out: { courseId: string; blocks: string[] }[] = []
     for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
-      if (!showcased.has(ce.sourceId)) continue
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      const raw = (course?.metadata as Record<string, unknown> | null | undefined)
+      if (!course || course.audience !== audience) continue
+      const bonusKids = audience === 'kids' && course.careerSlot === null
+      if (!bonusKids && !showcased.has(ce.sourceId)) continue
+      const raw = (course.metadata as Record<string, unknown> | null | undefined)
         ?.studioUnlockBlocks
       if (!Array.isArray(raw)) continue
       const blocks = [
@@ -2324,15 +2361,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         .filter((event) => event.sourceType === 'course_complete')
         .flatMap((completed) => {
           const showcase = showcased.get(completed.sourceId)
-          if (!showcase) return []
-          const course = this.sources?.courses.courses.find(
+          const foundCourse = this.sources?.courses.courses.find(
             (item) => item.id === completed.sourceId,
           )
+          const course = foundCourse?.audience === audience ? foundCourse : undefined
+          const bonusKids = audience === 'kids' && course?.careerSlot === null
+          if (!bonusKids && !showcase) return []
           return [
             {
               courseId: completed.sourceId,
               completedAt: completed.createdAt,
-              showcasedAt: showcase.createdAt,
+              showcasedAt: bonusKids ? null : (showcase?.createdAt ?? null),
               courseUpdatedAt: course?.updatedAt ?? null,
             },
           ]
@@ -2801,8 +2840,8 @@ export class InMemoryAvatarRepository implements AvatarRepository {
 
 /**
  * Snapshot dos blocos já servidos ao aluno (o piso que impede a revogação).
- * `saveGrants` sobrescreve a linha porque o SERVICE já resolveu a união — o mesmo
- * contrato do `excluded.blocks` do SQL.
+ * `saveGrants` faz a união final como o UPSERT SQL, inclusive para simular um escritor
+ * atrasado que leu um snapshot anterior.
  */
 export class InMemoryStudioUnlockRepository implements StudioUnlockRepository {
   readonly grants: { userId: string; audience: CourseAudience; grant: StudioBlockGrant }[] = []
@@ -2825,8 +2864,12 @@ export class InMemoryStudioUnlockRepository implements StudioUnlockRepository {
           row.audience === audience &&
           row.grant.courseId === grant.courseId,
       )
-      if (existing) existing.grant = { courseId: grant.courseId, blocks: [...grant.blocks] }
-      else this.grants.push({ userId, audience, grant: { ...grant, blocks: [...grant.blocks] } })
+      if (existing) {
+        existing.grant = {
+          courseId: grant.courseId,
+          blocks: [...new Set([...existing.grant.blocks, ...grant.blocks])],
+        }
+      } else this.grants.push({ userId, audience, grant: { ...grant, blocks: [...grant.blocks] } })
     }
   }
 }

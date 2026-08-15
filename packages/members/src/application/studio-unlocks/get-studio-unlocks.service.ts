@@ -15,12 +15,13 @@ export interface StudioUnlocksView {
  * A paleta do Estúdio livre, montada pelo CURRÍCULO (08/2026).
  *
  * Antes o conjunto de blocos era fixo por NÍVEL da carreira. Agora cada curso declara
- * o que libera (`metadata.studioUnlockBlocks`) e o aluno tem a UNIÃO dos cursos que
- * **concluiu E publicou no Mural** — a mesma régua do posto da carreira.
+ * o que libera (`metadata.studioUnlockBlocks`) e o aluno tem a UNIÃO dos cursos
+ * elegíveis: bônus Kids exige conclusão; curso Kids com posição e curso Adult exigem
+ * também publicação no Mural.
  *
  * A união tem duas metades, e as duas são necessárias:
- * - **ao vivo** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos qualificados,
- *   então um bloco ACRESCENTADO chega sozinho em quem já concluiu o curso;
+ * - **ao vivo** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos elegíveis,
+ *   então um bloco ACRESCENTADO chega sozinho em quem já atende ao critério atual;
  * - **congelada** (`listGrants`): o que já foi servido a este aluno, para que remover um
  *   bloco do JSON, despublicar ou apagar o curso NÃO tire a ferramenta da mão de quem já
  *   a tinha (nem de projetos que já a usam).

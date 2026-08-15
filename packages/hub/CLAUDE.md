@@ -234,7 +234,10 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
    `canAccessChannel`/`listChannels` NÃO mudam (403 em `/channels` quando locked — backstop à prova
    de vazamento). Default `false` = comportamento clássico (some sem acesso) → zero regressão adulta.
 8. **Estados de conteúdo** (`content_status`): `pending` → `visible` (aprovar) / `rejected` (recusar);
-   qualquer estado → `hidden` (oculta, reversível) / `deleted` (apaga, auditado). `pin`/`unpin` e
+   `visible` → `hidden` ou `rejected` (recusa do Mural auto-publicado + recado ao aluno);
+   qualquer estado NÃO-deleted → `deleted` (apaga, auditado). As transições
+   são condicionais/atômicas no repositório; ação repetida ou incompatível →
+   `INVALID_MODERATION_STATE` (409), sem reabrir `rejected`/`deleted`. `pin`/`unpin` e
    `lock`/`unlock` são flags ortogonais (`is_pinned`/`is_locked`). Toda ação de moderação grava
    auditoria em `moderation_actions` (**best-effort** — falha de log não derruba a ação).
 
@@ -328,6 +331,7 @@ Estrutura (`admin.routes.ts`): `GET/POST /hub/admin/spaces`, `POST /hub/admin/sp
 (`moderation.routes.ts`): `GET /hub/admin/pending`, `POST /hub/admin/threads/:id/{approve,reject,
 hide,delete,pin,unpin,lock,unlock}` e `…/comments/:id/{approve,reject,hide,delete}`,
 `GET /hub/admin/reports` + `POST /hub/admin/reports/:id/resolve` `{action}`,
+`GET /hub/admin/attachments/:id/resolve` (anexo privado para investigação, inclusive alvo oculto),
 `POST /hub/admin/{mutes,bans}` + `POST /hub/admin/{mutes,bans}/remove`, `GET /hub/admin/mutes-bans`.
 > ⚠️ Mute/ban são `/mutes` e `/bans` (não `/mute`/`/unmute`); remoção é `POST …/remove`, não DELETE.
 
@@ -342,7 +346,9 @@ painel: apaga o ESTADO DE INTERAÇÃO do usuário (reações, `read_state`, `mut
 **Anexos + webhook (MONTADOS — `server.ts` usa `attachmentsRoutes` e `webhooksRoutes`):**
 `POST /hub/attachments` (registra o metadado `pending_upload`; JWT + `x-internal-token`),
 `GET /hub/attachments/:id/resolve` (autoriza pelo acesso ao conteúdo-pai e devolve o `storageRef`
-ao BFF — NUNCA ao browser) e `POST /hub/webhooks/grant` (HMAC sobre o corpo BRUTO + dedupe por
+ao BFF — NUNCA ao browser), `GET /hub/admin/attachments/:id/resolve` (staff+, política
+EXCLUSIVA da moderação: continua lendo anexos de conteúdo oculto/rejeitado sem abrir esse acesso
+ao aluno) e `POST /hub/webhooks/grant` (HMAC sobre o corpo BRUTO + dedupe por
 `x-delivery-id` → `access.invalidate(userId)`). O arquivo em si não passa pelo hub: presign/upload/
 download direto browser↔R2 são mintados pelo BFF (member-shell).
 
@@ -495,6 +501,10 @@ e `-standalone`; DTO `StudioMetaBody`, saneado no `ShowcaseService`, exposto em 
 o corpo da rota é alcançável na borda, então o metadado pode ser forjado — o gate REAL do remix é a
 checagem no CLIQUE sobre o snapshot jogável (kids) + a trava de abertura do próprio Estúdio. NUNCA
 usar `studio_meta` como fronteira de segurança.
+**`0008_moderation_reporter_snapshot` (contexto da moderação, 08/2026 — journaled):**
+`reports.reporter_account_id` + `reports.reporter_display_name` (nullable para legado). A listagem
+agora carrega o alvo denunciado e o contexto por SQL em lote; `tests/db/moderation-repository.test.ts`
+executa as migrations e os caminhos `listPending`/`listReports` num PostgreSQL real.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do

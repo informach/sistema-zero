@@ -37,6 +37,7 @@ import type {
   MissionsMeView,
   MyCourseView,
   MySubscriptionView,
+  OwnPintaSubmissionView,
   Paginated,
   ParentReportPrefsView,
   PaymentView,
@@ -55,6 +56,7 @@ import type {
   PensaTaskOutputRef,
   PensaTaskStatus,
   PensaTaskView,
+  PintaSubmissionResultView,
   ProductAccessView,
   ProfileView,
   PublicProfileGameView,
@@ -309,8 +311,8 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
   const aiCreditsReadonlyCached = cache(
     (): Promise<GatewayResponse<AiCreditsView>> => gw.gatewayFetchReadonly('/members/ai-usage/me'),
   )
-  // Paleta do Estúdio livre montada pelo CURRÍCULO (união dos cursos concluídos +
-  // publicados). Rota à parte do `/gamification/me` de propósito: a lista pode ter
+  // Paleta do Estúdio livre montada pelo CURRÍCULO (bônus Kids: conclusão; demais:
+  // conclusão + Mural). Rota à parte do `/gamification/me` de propósito: a lista pode ter
   // centenas de ids e o `me` é buscado em TODA página — aqui só o /estudio paga.
   const studioUnlocksReadonlyCached = cache(
     (): Promise<GatewayResponse<StudioUnlocksView>> =>
@@ -1035,6 +1037,44 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     ): Promise<GatewayResponse<{ project: unknown | null }>> {
       return gw.gatewayFetch(
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/studio-submission`,
+        { method: 'GET' },
+      )
+    },
+
+    /** Entrega o DESENHO do bloco de Pinta (com recado opcional ao professor). */
+    submitPintaAsset(
+      lessonId: string,
+      blockId: string,
+      asset: unknown,
+      message?: string,
+    ): Promise<GatewayResponse<PintaSubmissionResultView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-submission`,
+        { method: 'POST', body: { asset, ...(message ? { message } : {}) } },
+      )
+    },
+
+    /** Desenho que a criança ENVIOU neste bloco. `null` se nunca enviou. */
+    getOwnPintaSubmission(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<OwnPintaSubmissionView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-submission`,
+        { method: 'GET' },
+      )
+    },
+
+    /**
+     * Desenho da aula contínua ANTERIOR (mesma cadeia) p/ semear o editor. `null` quando é a 1ª
+     * da cadeia, a criança não enviou nada lá, ou o bloco é independente.
+     */
+    getPintaCarryover(
+      lessonId: string,
+      blockId: string,
+    ): Promise<GatewayResponse<OwnPintaSubmissionView>> {
+      return gw.gatewayFetch(
+        `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-carryover`,
         { method: 'GET' },
       )
     },

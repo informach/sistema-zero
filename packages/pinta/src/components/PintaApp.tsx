@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
 import { createGalleryStore } from '../state/galleryStore'
+import { createPintaPersistence, type PintaPersistence } from '../state/persistence'
 import {
   type PintaAppContextValue,
   PintaAppProvider,
@@ -51,8 +52,21 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
   return null
 }
 
-export function PintaApp({ adapter }: { adapter?: PintaHostAdapter }): JSX.Element {
-  const [gallery] = useState(createGalleryStore)
+export function PintaApp({
+  adapter,
+  persistence,
+}: {
+  adapter?: PintaHostAdapter
+  /** Ausente = IndexedDB do perfil. O bloco de aula injeta o armazenamento dele. */
+  persistence?: PintaPersistence
+}): JSX.Element {
+  // O default é resolvido UMA vez, junto com a store: `createPintaPersistence` captura o banco do
+  // namespace vigente, e recriá-lo a cada render poderia atravessar perfis.
+  const [store] = useState(() => {
+    const resolved = persistence ?? createPintaPersistence()
+    return { persistence: resolved, gallery: createGalleryStore(resolved) }
+  })
+  const { gallery } = store
   const [view, setView] = useState<PintaView>({ screen: 'gallery' })
   const [initialIntentVersion, setInitialIntentVersion] = useState(0)
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
@@ -73,6 +87,7 @@ export function PintaApp({ adapter }: { adapter?: PintaHostAdapter }): JSX.Eleme
     () => ({
       adapter: resolvedAdapter,
       gallery,
+      persistence: store.persistence,
       openAsset: (id) => setView({ screen: 'editor', assetId: id }),
       closeEditor: () => setView({ screen: 'gallery' }),
       takeInitialIntent: () => {
@@ -92,7 +107,7 @@ export function PintaApp({ adapter }: { adapter?: PintaHostAdapter }): JSX.Eleme
         return id
       },
     }),
-    [resolvedAdapter, gallery, initialIntentVersion],
+    [resolvedAdapter, gallery, store.persistence, initialIntentVersion],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
   const taskOutputMissing = !!taskOutputId && missingAssetId === taskOutputId

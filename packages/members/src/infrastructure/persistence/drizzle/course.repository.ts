@@ -263,10 +263,11 @@ export class DrizzleCourseRepository implements CourseRepository {
     return rows.map((r) => r.id)
   }
 
-  async findPrecedingStudioBlockInChain(
+  async findPrecedingChainBlock(
     courseId: string,
     lessonId: string,
     chain: string,
+    kind: 'studio' | 'pinta',
   ): Promise<{ blockId: string; lessonId: string } | null> {
     // Posição da aula atual no curso: (module.sortOrder, lesson.sortOrder).
     const [cur] = await this.db
@@ -277,7 +278,7 @@ export class DrizzleCourseRepository implements CourseRepository {
       .limit(1)
     if (!cur) return null
 
-    // Bloco studio da MESMA cadeia, em aula PUBLICADA do curso, ANTES da posição
+    // Bloco do MESMO kind e da MESMA cadeia, em aula PUBLICADA do curso, ANTES da posição
     // atual (comparação de tupla row-value do Postgres). O mais próximo "para trás".
     const [row] = await this.db
       .select({ blockId: lessonBlocks.id, lessonId: lessons.id })
@@ -288,7 +289,7 @@ export class DrizzleCourseRepository implements CourseRepository {
         and(
           eq(lessons.courseId, courseId),
           eq(lessons.isPublished, true),
-          eq(lessonBlocks.kind, 'studio'),
+          eq(lessonBlocks.kind, kind),
           // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
           // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
           // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).

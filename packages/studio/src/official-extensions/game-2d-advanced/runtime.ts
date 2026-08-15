@@ -97,7 +97,7 @@ ${gameRuntimeDomains}
    * ja custa) e lidos so pelo HOST, pela porta opt-in dos inspetores. Nao entram
    * na API da crianca e nao movem contador de bloco.
    */
-  var perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, comparacoes: 0, linhasDeMapa: 0 };
+  var perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, visitas: 0, linhasDeMapa: 0 };
   var MAX_ACTIVE_PER_MOLD = 300;         // teto por molde (irmão do MAX_PARTICLES)
   // Limites de autoria: todo valor abaixo alimenta laços síncronos no mesmo
   // thread do Studio. Mantê-los centralizados impede que um número digitado por
@@ -513,6 +513,7 @@ ${gameKitShellRuntime}
   /** As colunas do mapa, contadas UMA vez e guardadas nele. */
   function _mapCols(m) {
     if (m._colsPass !== true) {
+      perf.linhasDeMapa += m.rows.length;
       var maior = 0;
       for (var i = 0; i < m.rows.length; i++) maior = Math.max(maior, m.rows[i].length);
       m.cols = maior;
@@ -532,7 +533,6 @@ ${gameKitShellRuntime}
       // do quadro. Isto NAO e ganho de desempenho — e desperdicio, e o
       // o cameraFollowMap ja fazia a MESMA conta noutro lugar.
       var mapCols = _mapCols(m);
-      perf.linhasDeMapa += m._colsPass === true ? 0 : m.rows.length;
       if (declared.cols !== mapCols || declared.rows !== mapRows) {
         warnOnce(
           'mapsize:' + rpg.currentMap + ':' + dk,
@@ -718,6 +718,10 @@ ${gameKitShellRuntime}
   /** Fora do boxOf: era uma closure NOVA por quadro, com a lista presa nela. */
   function drawDebugBox(e) {
     if (!e || e._active === false) return;
+    // VISITAS conta quem chegou ate aqui; CAIXAS conta quem foi contornado. A
+    // diferenca entre os dois e a de-duplicacao acontecendo: um personagem pode
+    // estar em duas listas, e sem o carimbo ele sairia com contorno duplo.
+    perf.visitas += 1;
     if (e._szOverlayPass === debugOverlayPass) return; // ja contornado nesta passada
     e._szOverlayPass = debugOverlayPass;
     var w = hbW(e);
@@ -1913,13 +1917,15 @@ ${gameKitOverlapIndexRuntime}
     // ⚠️ O indice so entra quando ha par o bastante para pagar a montagem, e a
     // ORDEM que ele devolve e a mesma do laco duplo (decrescente): a parada em
     // parada em A recolhido torna a ordem observavel no placar da crianca.
+    var limitesB = _snapshotOverlapBounds(pb.active);
     var indice = pa.active.length * pb.active.length >= OVERLAP_INDEX_MIN_PARES
-      ? _buildOverlapIndex(pb.active)
+      ? _buildOverlapIndex(limitesB)
       : null;
     for (var i = pa.active.length - 1; i >= 0; i--) {
       var a = pa.active[i];
       if (!a || a._active === false) continue;
-      var vizinhos = indice ? _overlapCandidates(indice, a) : null;
+      var limiteA = _overlapBounds(a);
+      var vizinhos = indice ? _overlapCandidates(indice, limiteA) : null;
       var quantos = vizinhos ? vizinhos.length : pb.active.length;
       for (var n = 0; n < quantos; n++) {
         // Os vizinhos JA vem em ordem decrescente; sem indice, a contagem
@@ -1928,6 +1934,7 @@ ${gameKitOverlapIndexRuntime}
         var b = pb.active[j];
         paresExaminados += 1;
         if (!b || b._active === false || b === a) continue;
+        if (!_overlapBoundsTouch(limiteA, limitesB[j])) continue;
         if (!touching(a, b)) continue;
         try { fn(a, b); } catch (e) {
           if (!warned) { warned = true; warn('erro no "para cada par que se encosta": ' + e); }
@@ -5316,8 +5323,8 @@ ${gameKitAudioRuntime}
     try {
       runtimeInspectors['game-2d-advanced:campaign'] = proCampaignInspect;
       runtimeInspectors['game-2d-advanced:perf'] = function (zerar) {
-        var lido = { quadros: perf.quadros, passos: perf.passos, pares: perf.pares, caixas: perf.caixas, comparacoes: perf.comparacoes, linhasDeMapa: perf.linhasDeMapa };
-        if (zerar === true) perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, comparacoes: 0, linhasDeMapa: 0 };
+        var lido = { quadros: perf.quadros, passos: perf.passos, pares: perf.pares, caixas: perf.caixas, visitas: perf.visitas, linhasDeMapa: perf.linhasDeMapa };
+        if (zerar === true) perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, visitas: 0, linhasDeMapa: 0 };
         return lido;
       };
       runtimeInspectors['game-2d-advanced:rpg'] = function () {

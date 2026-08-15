@@ -4,11 +4,19 @@
    ficam NO-OP e os modais e menus do editor embutido saem sem fundo nem cor (washed-out).
    O JS-import do studio-embed sozinho NÃO basta (só traz os tokens). */
 @import "../../../studio/src/styles/studio.css";
+/* Tokens `--color-pin-*` do Pinta (autoria do desenho inicial + viewer da entrega). MESMA razão
+   do Estúdio: sem eles o editor embutido sai sem cor, e o JS-import sozinho não basta. */
+@import "../../../pinta/src/styles/pinta.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 /* Editor embarcável (bloco `studio`, autoria + entregas): o scanner precisa gerar as
    classes utilitárias do @sistemazero/studio; os tokens vêm do CSS importado pelo embed. */
 @source "../../../studio/src";
+/* Bloco `pinta`: as utilitárias `pin-*` (o @import dos tokens fica lá em cima — todo `@import`
+   precisa vir antes de qualquer outra regra). */
+@source "../../../pinta/src";
+/* Cards de moderação reutilizam a renderização segura de anexos UGC. */
+@source "../../../member-shell/src";
 
 @custom-variant dark (&:is(.dark *));
 

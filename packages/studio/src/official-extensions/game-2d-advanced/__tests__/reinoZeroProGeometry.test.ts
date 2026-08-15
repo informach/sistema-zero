@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { CAMPAIGN_PHYSICS } from '../campaignPhysics'
 import type { GameKitCampaignStage } from '../campaignSchema'
 import {
+  ALTURA_DA_PLATAFORMA,
   buildProStage,
   MOEDA_NO_CHAO,
   PRO_STAGE_PLANS,
@@ -22,6 +23,7 @@ import {
   i9TemasDoMundo,
   i10TemasComCor,
   i11ItensAlcancaveis,
+  i12PlataformasAlcancaveis,
   relatar,
 } from './proStageGeometry'
 
@@ -133,6 +135,18 @@ describe('Reino Zero Pro — as invariantes de geometria', () => {
     expect(relatar(reinoZeroProStages.flatMap((f) => i11ItensAlcancaveis(f)))).toBe('')
   })
 
+  it('⭐⭐ I12 — toda plataforma, fixa e móvel, está ao alcance do PÉ', () => {
+    // ⚠⚠ A rede que faltava. A I11 media o alcance do CORPO (que serve a moeda,
+    // colhida de passagem) e nunca o do PÉ (que serve a plataforma, em que se
+    // POUSA). Com uma constante só, em 3, a camada vertical inteira das 32 fases
+    // virou decoração e as três fases de poço largo ficaram INTRANSPONÍVEIS — o
+    // piloto automático morria com 0 vidas dentro do buraco, com a I4 e a I5
+    // aprovando, porque bastava uma móvel ter sido DECLARADA perto do poço.
+    expect(relatar(reinoZeroProStages.flatMap((f) => i12PlataformasAlcancaveis(f)))).toBe('')
+    // A altura das plataformas é a MEDIDA no motor, não um gosto: 2 células.
+    expect(ALTURA_DA_PLATAFORMA).toBe(alcanceDoPulo().altura)
+  })
+
   it('⭐⭐ I9 — as quatro etapas de um mundo NÃO dividem o mesmo céu', () => {
     // O tema saía do MUNDO: 1-1, 1-2, 1-3 e 1-4 tinham o mesmo azul, e o teste
     // que existia (`new Set(themes).size === 8`) passava nos dois esquemas.
@@ -149,6 +163,26 @@ describe('Reino Zero Pro — as invariantes de geometria', () => {
         TEMAS_COM_COR,
       ),
     ).toHaveLength(1)
+  })
+
+  it('⭐⭐ a água forma piscinas, não uma película de uma célula no fundo', () => {
+    const fasesDeAgua = reinoZeroProStages.filter((_, index) => planos[index]?.kind === 'agua')
+    expect(fasesDeAgua).toHaveLength(8)
+
+    for (const fase of fasesDeAgua) {
+      const profundidades = Array.from({ length: fase.width }, (_, col) =>
+        fase.tiles.reduce((total, linha) => total + (linha.charAt(col) === '~' ? 1 : 0), 0),
+      ).filter((profundidade) => profundidade > 0)
+
+      expect({ fase: fase.id, temAgua: profundidades.length > 0 }).toEqual({
+        fase: fase.id,
+        temAgua: true,
+      })
+      expect({ fase: fase.id, todasNavegaveis: profundidades.every((p) => p >= 3) }).toEqual({
+        fase: fase.id,
+        todasNavegaveis: true,
+      })
+    }
   })
 
   it('o tema sai do TIPO e da metade da jornada, e cobre os oito nomes', () => {
@@ -222,13 +256,21 @@ describe('⚠️ as invariantes MORDEM', () => {
       inimigos: [[8, 'walker']],
       checkpoint: 12,
     }
-    expect(i6NadaFoiApagado(buildProStage(1, 1, plan), pedidasDe(plan))).toEqual([])
+    const fase = buildProStage(1, 1, plan)
+    expect(i6NadaFoiApagado(fase, pedidasDe(plan))).toEqual([])
 
-    // A plataforma cai na MESMA célula do prêmio (as duas moram em
-    // `ALTURA_ALCANCAVEL`), então o prêmio some. É esta a metade que TEM que
-    // falhar: sem ela, um contador que devolvesse sempre o esperado passaria.
-    const apagado = buildProStage(1, 1, { ...plan, plataformas: [[10, 1]] })
-    expect(i6NadaFoiApagado(apagado, pedidasDe(plan))).not.toHaveLength(0)
+    // ⭐ Prêmio e plataforma na MESMA coluna deixaram de brigar: depois do
+    // review as duas alturas são diferentes de propósito (o pé alcança 2, a
+    // cabeça alcança 3), então a colisão some POR CONSTRUÇÃO — garantia mais
+    // forte que a invariante.
+    const comPlataforma = buildProStage(1, 1, { ...plan, plataformas: [[10, 1]] })
+    expect(i6NadaFoiApagado(comPlataforma, pedidasDe(plan))).toEqual([])
+    expect(comPlataforma.tiles.join('')).toContain('?')
+
+    // A metade que TEM que falhar: sem ela, um contador que devolvesse sempre o
+    // esperado passaria nas trinta e duas e pareceria estar protegendo.
+    expect(i6NadaFoiApagado(fase, { ...pedidasDe(plan), premios: 5 })).not.toHaveLength(0)
+    expect(i6NadaFoiApagado(fase, { ...pedidasDe(plan), moedas: 99 })).not.toHaveLength(0)
   })
 
   it('⭐ I11 recusa o prêmio pendurado longe demais e aceita o mesmo com plataforma', () => {
@@ -261,6 +303,28 @@ describe('⚠️ as invariantes MORDEM', () => {
       [{ kind: 'walker', id: 'b', x: 3, y: 0 }],
     )
     expect(i8InimigosApoiados(apoiado)).toEqual([])
+  })
+
+  it('⭐⭐ I12 pega a plataforma alta demais — fixa e móvel', () => {
+    const vazio = '................'
+    // 2 células acima do chão: o pé chega. 3: não chega (medido no motor).
+    const naMedida = faseCrua([vazio, vazio, '....====........', vazio, CHAO], [])
+    expect(i12PlataformasAlcancaveis(naMedida)).toEqual([])
+    const altaDemais = faseCrua([vazio, '....====........', vazio, vazio, CHAO], [])
+    expect(i12PlataformasAlcancaveis(altaDemais)).not.toHaveLength(0)
+
+    // A móvel de 3-2 na linha em que ela nascia antes do conserto: o poço de
+    // oito células virava parede, e nada acusava.
+    const movelAlta = faseCrua(
+      [vazio, vazio, vazio, '####......######'],
+      [{ kind: 'movingPlatform', id: 'p', x: 8, y: 0, props: { range: 48 } }],
+    )
+    expect(i12PlataformasAlcancaveis(movelAlta)).not.toHaveLength(0)
+    const movelNaMedida = faseCrua(
+      [vazio, '................', vazio, '####......######'],
+      [{ kind: 'movingPlatform', id: 'p', x: 8, y: 1, props: { range: 48 } }],
+    )
+    expect(i12PlataformasAlcancaveis(movelNaMedida)).toEqual([])
   })
 
   it('I9 pega o esquema antigo, em que o tema saía do MUNDO', () => {

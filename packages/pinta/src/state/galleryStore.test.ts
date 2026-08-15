@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { COPY } from '../core/copy'
-import { createPixelBackgroundAsset, createTilemapAsset, PINTA_LIMITS } from '../core/project'
+import {
+  createPixelBackgroundAsset,
+  createTilemapAsset,
+  createTilesetAsset,
+  isTilesetKind,
+  PINTA_LIMITS,
+} from '../core/project'
 import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
 
 const { createGalleryStore } = await import('./galleryStore')
@@ -284,6 +290,78 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(store.getState().assets.filter((a) => a.kind === 'tilemap')).toHaveLength(0)
     expect(res.added).toBe(0)
     expect(res.skipped).toBe(2)
+  })
+
+  it('importAssets atômico: com uma vaga, mapa + peças NÃO entram pela metade', async () => {
+    const store = createGalleryStore()
+    store
+      .getState()
+      .absorbMany(
+        Array.from({ length: PINTA_LIMITS.maxAssets - 1 }, (_, index) =>
+          createPixelBackgroundAsset({ name: `fundo-${index}`, width: 1, height: 1 }),
+        ),
+      )
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+
+    const result = await store.getState().importAssets([tileset, map], { atomic: true })
+
+    expect(result).toEqual({ added: 0, skipped: 2 })
+    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
+    expect(store.getState().assets.filter((asset) => isTilesetKind(asset))).toHaveLength(0)
+    expect(store.getState().assets.filter((asset) => asset.kind === 'tilemap')).toHaveLength(0)
+  })
+
+  it('importAssets atômico: falha de persistência não publica nenhuma metade do par', async () => {
+    const store = createGalleryStore()
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
+    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
+    setIdbWriteGuard((_key, value) => {
+      if ((value as { kind?: string })?.kind === 'tilemap') throw new Error('disco cheio')
+    })
+
+    const result = await store.getState().importAssets([tileset, map], { atomic: true })
+    setIdbWriteGuard(null)
+
+    expect(result).toEqual({ added: 0, skipped: 2 })
+    expect(store.getState().mutateError).toBe(COPY.editor.saveError)
+    expect(store.getState().assets).toHaveLength(0)
+    expect(await listAllAssets()).toHaveLength(0)
+  })
+
+  it('importAssets recusa mapa cuja biblioteca de peças não existe', async () => {
+    const store = createGalleryStore()
+    const map = createTilemapAsset({
+      name: 'fase-solta',
+      tilesetId: 'tileset-ausente',
+      cols: 2,
+      rows: 1,
+    })
+
+    const result = await store.getState().importAssets([map])
+
+    expect(result).toEqual({ added: 0, skipped: 1 })
+    expect(store.getState().mutateError).toBe(COPY.gallery.restoreMissingTileset)
+    expect(store.getState().assets).toHaveLength(0)
+  })
+
+  it('importAssets mantém mapa solto quando as peças já estão na galeria', async () => {
+    const store = createGalleryStore()
+    const tileset = createTilesetAsset({ name: 'pecas-existentes', tileSize: 16 })
+    store.getState().absorb(tileset)
+    const map = createTilemapAsset({
+      name: 'fase',
+      tilesetId: tileset.id,
+      cols: 2,
+      rows: 1,
+    })
+
+    const result = await store.getState().importAssets([map])
+
+    expect(result).toEqual({ added: 1, skipped: 0 })
+    expect(store.getState().assets.find((asset) => asset.kind === 'tilemap')?.tilesetId).toBe(
+      tileset.id,
+    )
   })
 })
 

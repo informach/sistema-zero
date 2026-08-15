@@ -63,11 +63,11 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.applyVelocity(bola);
     SZGame2D.bounceOnEdgePair(bola, ctx, "top-bottom");
     if (SZGame2D.touches(jogador, bola)) {
-      SZGame2D.paddleBounce(bola, jogador, 8);
+      SZGame2D.paddleBounce(bola, jogador, 4);
       SZGame2D.playFx("coin");
     }
     if (SZGame2D.touches(computador, bola)) {
-      SZGame2D.paddleBounce(bola, computador, 8);
+      SZGame2D.paddleBounce(bola, computador, 4);
       SZGame2D.playFx("coin");
     }
     if (bola.x < 0) {

@@ -22,7 +22,7 @@ interface SondaDeTrabalho {
   passos: number
   pares: number
   caixas: number
-  comparacoes: number
+  visitas: number
   linhasDeMapa: number
 }
 
@@ -95,31 +95,21 @@ test('Reino Zero Pro joga dentro do orçamento de trabalho por quadro', async ({
     if (typeof sonda !== 'function') throw new Error('a sonda de desempenho não registrou')
 
     const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms))
-    // CALIBRAÇÃO no MESMO run: quanto esta máquina leva para fazer um trabalho
-    // conhecido. É contra ela que o relógio do jogo é comparado.
-    const calibracaoInicio = performance.now()
-    let soma = 0
-    for (let i = 0; i < 2_000_000; i += 1) soma += Math.sqrt(i % 97)
-    const calibracaoMs = performance.now() - calibracaoInicio
-    if (soma < 0) throw new Error('impossível')
-
     sonda(true)
     const inicio = performance.now()
     await esperar(2000)
     const decorridoMs = performance.now() - inicio
-    return { sonda: sonda() as SondaDeTrabalho, decorridoMs, calibracaoMs }
+    return { sonda: sonda() as SondaDeTrabalho, decorridoMs }
   })
 
-  const { sonda, decorridoMs, calibracaoMs } = medida
+  const { sonda, decorridoMs } = medida
 
-  // ── 1) o relógio, como RAZÃO ────────────────────────────────────────────
+  // ── 1) o relógio, como smoke check ──────────────────────────────────────
   // Em dois segundos de parede, um jogo a 60 Hz roda ~120 quadros. Cobrar 60
-  // (metade) tolera um agente de CI com metade da vazão desta máquina.
+  // (metade) tolera um agente de CI congestionado. As regressões de trabalho
+  // determinístico são cobradas pelos contadores exatos logo abaixo.
   const quadrosPorSegundo = sonda.quadros / (decorridoMs / 1000)
-  expect({ quadrosPorSegundo: quadrosPorSegundo > 30, calibracaoMs }).toEqual({
-    quadrosPorSegundo: true,
-    calibracaoMs,
-  })
+  expect(quadrosPorSegundo).toBeGreaterThan(30)
 
   // ── 2) os contadores, EXATOS ────────────────────────────────────────────
   // A campanha não usa "para cada par que se encosta": o contato dela é
@@ -128,7 +118,7 @@ test('Reino Zero Pro joga dentro do orçamento de trabalho por quadro', async ({
   expect(sonda.pares).toBe(0)
   // O raio-X das caixas está desligado, então o overlay não pode custar nada.
   expect(sonda.caixas).toBe(0)
-  expect(sonda.comparacoes).toBe(0)
+  expect(sonda.visitas).toBe(0)
   // A varredura de linhas do mapa vive atrás do ramo do mapa-cenário do RPG,
   // que a campanha não usa.
   expect(sonda.linhasDeMapa).toBe(0)

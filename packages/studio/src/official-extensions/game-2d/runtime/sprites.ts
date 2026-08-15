@@ -74,30 +74,45 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
     _smoothOn = on;
     _smoothStamp = _stageSurfaceStamp;
   }
+  /** Lê o estado REAL e sincroniza a memória: Canvas livre pode mudá-lo por fora. */
+  function _readSmoothing(ctx) {
+    var on = true;
+    try { on = ctx.imageSmoothingEnabled !== false; } catch (e) {}
+    _smoothCtx = ctx;
+    _smoothOn = on;
+    _smoothStamp = _stageSurfaceStamp;
+    return on;
+  }
   /**
-   * ⚠️ Para onde o _crispDraw VOLTA depois de desenhar. Restaurar importa: os
-   * blocos de Canvas do núcleo desenham no MESMO contexto, e deixar o modo pixel
-   * ligado faria a imagem que a criança desenha por conta própria sair serrilhada.
+   * O lote lê e guarda o estado anterior UMA vez. Restaurar o valor real importa:
+   * os blocos de Canvas do núcleo desenham no MESMO contexto e podem ter escolhido
+   * pixel art antes de chamar o Jogo 2D.
    *
    * Um LOTE (um mapa de tiles inteiro) fixa este valor no que as células querem:
    * aí as escritas de dentro do laço viram no-op e o mapa paga uma escrita só,
    * em vez de duas por célula.
    */
-  var _smoothRestore = true;
+  var _smoothBatchCtx = null, _smoothBatchOn = true, _smoothBatchRestore = true;
   function _crispBatch(ctx, srcW, dw) {
-    _smoothRestore = !(_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW);
-    _applySmoothing(ctx, _smoothRestore);
+    _smoothBatchRestore = _readSmoothing(ctx);
+    _smoothBatchOn = !(_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW);
+    _smoothBatchCtx = ctx;
+    _applySmoothing(ctx, _smoothBatchOn);
   }
   function _crispBatchEnd(ctx) {
-    _smoothRestore = true;
-    _applySmoothing(ctx, true);
+    var restore = ctx === _smoothBatchCtx ? _smoothBatchRestore : _readSmoothing(ctx);
+    _smoothBatchCtx = null;
+    _smoothBatchOn = true;
+    _smoothBatchRestore = true;
+    _applySmoothing(ctx, restore);
   }
   function _crispDraw(ctx, srcW, dw, draw) {
     var ok = true;
     var ampliando = _isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW;
+    var restore = ctx === _smoothBatchCtx ? _smoothBatchOn : _readSmoothing(ctx);
     _applySmoothing(ctx, !ampliando);
     try { draw(); } catch (e) { ok = false; }
-    _applySmoothing(ctx, _smoothRestore);
+    _applySmoothing(ctx, restore);
     return ok;
   }
 

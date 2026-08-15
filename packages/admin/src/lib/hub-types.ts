@@ -10,6 +10,56 @@ export type HubPostingPolicy = 'members' | 'staff_only'
 export type HubModeratableTarget = 'thread' | 'comment'
 export type HubReportStatus = 'open' | 'resolved' | 'dismissed'
 export type HubMuteBanKind = 'mute' | 'ban'
+export type HubContentStatus = 'pending' | 'visible' | 'hidden' | 'deleted' | 'rejected'
+export type HubAttachmentKind = 'image' | 'pdf' | 'document' | 'audio' | 'video'
+
+export interface HubAttachmentView {
+  id: string
+  kind: HubAttachmentKind
+  mime: string
+  sizeBytes: number
+  width: number | null
+  height: number | null
+  durationSeconds: number | null
+  originalName: string
+}
+
+export interface HubResolvedAttachment {
+  id: string
+  storageRef: string
+  mime: string
+  kind: HubAttachmentKind
+  originalName: string
+  sizeBytes: number
+}
+
+export interface HubModerationIdentity {
+  /** Nome da conta (responsável no kids; autor no adulto). */
+  accountName: string | null
+  accountEmail: string | null
+  /** Nome atual do perfil da criança, quando houver. */
+  childName: string | null
+}
+
+export interface HubModerationExcerptView {
+  id: string
+  authorId: string
+  authorAccountId: string | null
+  authorDisplayName: string | null
+  title: string | null
+  body: string
+  createdAt: string
+  attachments: HubAttachmentView[]
+  authorIdentity?: HubModerationIdentity
+}
+
+export interface HubModerationContextView {
+  spaceName: string
+  spaceAudience: HubAudience
+  channelName: string
+  thread: HubModerationExcerptView | null
+  replyTo: HubModerationExcerptView | null
+}
 
 export interface HubAccessConfig {
   visibility: HubVisibility
@@ -66,9 +116,18 @@ export interface HubPendingItemView {
   channelId: string
   threadId: string | null
   authorId: string
+  authorAccountId: string | null
+  authorDisplayName: string | null
   title: string | null
   body: string
   createdAt: string
+  attachments: HubAttachmentView[]
+  context: HubModerationContextView
+  authorIdentity?: HubModerationIdentity
+}
+
+export interface HubReportedContentView extends HubPendingItemView {
+  status: HubContentStatus
 }
 
 export interface HubReportView {
@@ -77,11 +136,15 @@ export interface HubReportView {
   targetId: string
   spaceId: string
   reporterId: string
+  reporterAccountId: string | null
+  reporterDisplayName: string | null
   reason: string
   status: HubReportStatus
   resolvedBy: string | null
   resolvedAt: string | null
   createdAt: string
+  content: HubReportedContentView | null
+  reporterIdentity?: HubModerationIdentity
 }
 
 export interface HubMuteBanView {

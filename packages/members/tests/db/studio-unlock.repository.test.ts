@@ -99,6 +99,18 @@ describe.skipIf(!testDatabaseUrl)('DrizzleStudioUnlockRepository (SQL real)', ()
     expect(grants[0]?.blocks).toEqual(['sz_a', 'sz_b'])
   })
 
+  test('um escritor atrasado não remove bloco já persistido por outra requisição', async () => {
+    await repo.saveGrants(userId, 'kids', [{ courseId: courseA, blocks: ['sz_a', 'sz_b'] }])
+
+    // Esta requisição leu o snapshot quando ele ainda continha só `sz_a` e tenta
+    // gravar a união antiga com a sua novidade `sz_c`.
+    await repo.saveGrants(userId, 'kids', [{ courseId: courseA, blocks: ['sz_a', 'sz_c'] }])
+
+    expect(await repo.listGrants(userId, 'kids')).toEqual([
+      { courseId: courseA, blocks: ['sz_a', 'sz_b', 'sz_c'] },
+    ])
+  })
+
   test('grava vários cursos numa ida', async () => {
     await repo.saveGrants(userId, 'kids', [
       { courseId: courseA, blocks: ['sz_a'] },

@@ -216,21 +216,27 @@ async function jogarReal(id: string, fases = [faseReal(id)]): Promise<CampaignRu
 }
 
 /**
- * O PILOTO AUTOMÁTICO: segura direita + correr e martela o pulo.
+ * O PILOTO AUTOMÁTICO: segura direita + correr e dá pulos CHEIOS.
  *
  * Não é um jogador bom — é um jogador BURRO de propósito. Se até ele avança, a
  * fase está atravessável; e o gêmeo emparedado logo abaixo é o que prova que
  * "avançou" não é o piloto passando por dentro da parede.
+ *
+ * ⚠️⚠️ O pulo é SEGURADO até o topo, e isso não é detalhe. A primeira versão
+ * soltava o botão em 5 passos, e o corte de altura variável (`corteDoPulo`)
+ * deixava o pulo em ~25 px em vez dos 40 px cheios. Um piloto assim mede a si
+ * mesmo: ele reprova fase boa e, pior, ele APROVOU as três fases de poço largo
+ * que estavam intransponíveis, porque morria antes de chegar nelas.
  */
 function pilotoAutomatico(r: CampaignRun, passos: number): number {
   r.hold('direita')
   r.hold('correr')
   let maisLonge = r.snap().hero?.x ?? 0
-  for (let i = 0; i < passos; i += 8) {
+  for (let i = 0; i < passos; i += 36) {
     r.hold('pular')
-    r.run(5)
+    r.run(22)
     r.release('pular')
-    r.run(3)
+    r.run(14)
     maisLonge = Math.max(maisLonge, r.snap().hero?.x ?? 0)
   }
   r.release('direita')
@@ -343,5 +349,84 @@ describe('Reino Zero Pro — as fases de verdade', () => {
     corrida = r
     r.run(30)
     expect(r.avisos).toEqual([])
+  })
+})
+
+describe('Reino Zero Pro — o que o full review de 15/08 achou', () => {
+  it('⭐⭐⭐ dentro da água, cima sobe e baixo desce', async () => {
+    const agua = Array.from({ length: 10 }, (_, row) =>
+      row >= 5 ? '~'.repeat(20) : '.'.repeat(20),
+    )
+    corrida = await playCampaign({
+      build: (api) => {
+        api.defineCampaign({ id: 'teste-agua', version: 1, firstStage: '1-1' })
+        api.defineCampaignStage(faseDeTeste(agua, [heroi(2, 5)], { theme: 'agua' }))
+        api.startCampaign('1-1')
+      },
+    })
+    const r = corrida
+
+    r.hold('cima')
+    r.run(1)
+    r.release('cima')
+    expect(r.snap().hero?.vy).toBeLessThan(0)
+
+    r.api.placeCharacter(heroiVivo(r), 2 * 16, 5 * 16)
+    r.hold('baixo')
+    r.run(1)
+    r.release('baixo')
+    expect(r.snap().hero?.vy).toBeGreaterThan(0)
+  })
+
+  it('⭐⭐⭐ as três fases de poço largo são ATRAVESSÁVEIS', async () => {
+    // O defeito: a plataforma móvel nascia numa linha FIXA, 7,6 px acima do que
+    // o pé alcança, e os poços de 8 a 10 células viravam parede. Medido com o
+    // mesmo piloto, antes e depois: a 3-2 parava na coluna 26,8 e passou a
+    // chegar na 46,7. A I4 e a I5 aprovavam as três, porque bastava uma móvel
+    // ter sido DECLARADA perto do poço — ninguém conferia se dava para subir
+    // nela. Hoje quem cobra isso é a I12.
+    for (const [id, coluna] of [
+      ['3-2', 40],
+      ['6-2', 44],
+      ['8-3', 50],
+    ] as const) {
+      const r = await jogarReal(id)
+      const chegou = pilotoAutomatico(r, 4000) / 16
+      expect({ id, passouDoPoco: chegou > coluna }).toEqual({ id, passouDoPoco: true })
+      r.dispose()
+      corrida = null
+      document.body.innerHTML = ''
+    }
+  })
+
+  it('⭐⭐ inimigo que cai fora do mundo SOME, em vez de cair para sempre', async () => {
+    // Regressão que a gravidade dos inimigos criou: antes nada caía, então isto
+    // não podia acontecer. Medido antes do conserto: o casco chutado de uma
+    // beirada chegava a y = 8652 e vy = 2973 depois de dez segundos, seguia
+    // "ativo", pagava passo todo quadro e ainda encostava em quem caísse junto.
+    const chao = chaoCorrido(40, 10)
+    const comAbismo = chao.map((linha, r) =>
+      r === 9 ? `${linha.slice(0, 14)}${'.'.repeat(26)}` : linha,
+    )
+    corrida = await playCampaign({
+      build: (api) => {
+        api.defineCampaign({ id: 'teste', version: 1, firstStage: '1-1' })
+        api.defineCampaignStage(
+          // Sobre o ABISMO: solto ali, ele não tem beirada em que virar.
+          faseDeTeste(comAbismo, [heroi(2, 8), { kind: 'walker', id: 'bicho', x: 20, y: 5 }]),
+        )
+        api.startCampaign('1-1')
+      },
+    })
+    const r = corrida
+
+    // Ele nasce no ar sobre o abismo; sem chão embaixo, some do palco.
+    const antes = r.entity('bicho')
+    expect(antes.active).toBe(true)
+    r.until('o bicho sair do mundo', () => !r.entity('bicho').active, 300)
+
+    const fora = r.entity('bicho')
+    expect(fora.active).toBe(false)
+    expect(fora.y).toBeLessThan(10 * 16 + 64)
   })
 })

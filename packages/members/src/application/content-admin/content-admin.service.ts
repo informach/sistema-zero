@@ -8,11 +8,16 @@ import {
   LessonNotFoundError,
   NoPublishedLessonError,
   NoShowcaseBlockError,
+  PintaChainTypeMismatchError,
 } from '../../domain/course/course.errors'
 import {
   isCompletionGatingBlock,
   type LessonBlockContent,
   MAX_STUDIO_PROJECT_CHARS,
+  PINTA_ASSET_KIND_LABELS,
+  type PintaAssetKindName,
+  type PintaBlock,
+  pintaAssetKindOf,
 } from '../../domain/course/lesson-block'
 import { validateQuizAuthoring } from '../../domain/course/quiz'
 import { validateStudioActivityAuthoring } from '../../domain/course/studio-activity'
@@ -436,6 +441,37 @@ async function assertSingleCertificateBlock(
 const CERTIFICATE_LESSON_NO_GATES =
   'A aula do certificado não pode ter blocos que travam a conclusão (quiz com nota de corte, estúdio ou "em breve").'
 
+/**
+ * A cadeia do Pinta só aceita UM tipo de desenho. Recusa nomeando a aula que já a usa e o tipo
+ * dela — o autor troca o tipo (ou o nome da cadeia) e salva de novo.
+ *
+ * ⚠️ Bloco com snapshot ilegível (`assetKind: null`) NÃO conflita, dos dois lados: recusar por
+ * causa de um bloco quebrado prenderia o autor justamente quando ele está consertando.
+ */
+async function assertPintaChainTypeMatches(
+  content: ContentAdminRepository,
+  courseId: string,
+  block: PintaBlock,
+  excludeBlockId?: string,
+): Promise<void> {
+  const chain = block.chain?.trim()
+  if (!chain) return
+  const kind = pintaAssetKindOf(block)
+  if (!kind) return
+  const siblings = await content.listPintaChainBlocks(courseId, chain, { excludeBlockId })
+  const conflict = siblings.find((s) => s.assetKind !== null && s.assetKind !== kind)
+  if (!conflict) return
+  const theirs =
+    PINTA_ASSET_KIND_LABELS[conflict.assetKind as PintaAssetKindName] ?? conflict.assetKind
+  // ⚠️ A frase não manda "troque o tipo no select": na EDIÇÃO o tipo não tem select (o desenho
+  // já existe e pixel↔vetor não converte). Nomear o estado e as duas saídas serve aos dois fluxos.
+  throw new PintaChainTypeMismatchError(
+    `A aula "${conflict.lessonTitle}" já usa a cadeia "${chain}" com ${theirs}, e todos os ` +
+      'desenhos de uma cadeia precisam ser do mesmo tipo. Deixe os dois com o mesmo tipo de ' +
+      'desenho, ou dê outro nome para esta cadeia.',
+  )
+}
+
 export class BlockAdminService {
   constructor(private readonly content: ContentAdminRepository) {}
 
@@ -443,6 +479,9 @@ export class BlockAdminService {
     assertBlockCoherent(content)
     const lesson = await this.content.findLessonById(lessonId)
     if (!lesson) throw new LessonNotFoundError()
+    if (content.kind === 'pinta') {
+      await assertPintaChainTypeMatches(this.content, lesson.courseId, content)
+    }
     if (content.kind === 'certificate') {
       await assertSingleCertificateBlock(this.content, lesson.courseId)
       // Conteúdo livre convive com o certificado; bloco travante (quiz-com-nota/estúdio) não.
@@ -460,6 +499,12 @@ export class BlockAdminService {
 
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
     assertBlockCoherent(content)
+    if (content.kind === 'pinta') {
+      const courseId = await this.content.findBlockCourseId(id)
+      if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
+      // Exclui a SI MESMO: reeditar o bloco não pode conflitar com a versão anterior dele.
+      await assertPintaChainTypeMatches(this.content, courseId, content, id)
+    }
     if (content.kind === 'certificate') {
       const courseId = await this.content.findBlockCourseId(id)
       if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')

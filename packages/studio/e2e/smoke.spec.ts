@@ -35,6 +35,64 @@ async function openBridgeScript(page: Page): Promise<void> {
   await page.keyboard.press('Backspace')
 }
 
+async function expectSearchContentBelowField(page: Page, content: ReturnType<Page['locator']>) {
+  const searchInput = page.locator('input#toolbox-search-input')
+
+  await expect
+    .poll(async () => {
+      const [inputRect, contentRect, focusOutset] = await Promise.all([
+        searchInput.boundingBox(),
+        content.boundingBox(),
+        searchInput.evaluate((input) => {
+          const inputStyle = getComputedStyle(input)
+          return (
+            Number.parseFloat(inputStyle.outlineWidth) + Number.parseFloat(inputStyle.outlineOffset)
+          )
+        }),
+      ])
+      if (!inputRect || !contentRect || !Number.isFinite(focusOutset)) return false
+      const visibleGap = contentRect.y - (inputRect.y + inputRect.height + focusOutset)
+      return visibleGap >= 8
+    })
+    .toBe(true)
+}
+
+async function openSearchAndExpectClearance(page: Page): Promise<void> {
+  await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Pesquisar' }).first().click()
+  await expect(page.locator('.blocklyToolboxFlyout')).toBeVisible()
+  const searchInput = page.locator('input#toolbox-search-input')
+  const searchInstruction = page
+    .locator('.blocklyFlyoutLabelText')
+    .filter({ hasText: 'Escreva para achar' })
+    .first()
+  await expect(searchInput).toBeVisible()
+  await expect(searchInput).toBeFocused()
+  await expect(searchInstruction).toBeVisible()
+
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        const input = document.querySelector('input#toolbox-search-input')
+        const flyout = document.querySelector('.blocklyToolboxFlyout')
+        if (!input || !flyout) return false
+        const inputRect = input.getBoundingClientRect()
+        const flyoutRect = flyout.getBoundingClientRect()
+        return (
+          getComputedStyle(input).visibility === 'visible' &&
+          flyoutRect.width > 0 &&
+          flyoutRect.height > 0 &&
+          inputRect.left >= flyoutRect.left &&
+          inputRect.top >= flyoutRect.top &&
+          inputRect.right <= flyoutRect.right &&
+          inputRect.bottom <= flyoutRect.bottom
+        )
+      }),
+    )
+    .toBe(true)
+
+  await expectSearchContentBelowField(page, searchInstruction)
+}
+
 test.describe('Sistema Zero Studio — smoke', () => {
   test('layout wide sem painel inferior ocupa 100% sem normalização', async ({ page }) => {
     const layoutWarnings: string[] = []
@@ -108,33 +166,25 @@ test.describe('Sistema Zero Studio — smoke', () => {
     ).toBeVisible()
   })
 
-  test('primeiro clique em Pesquisar abre o input dentro do flyout', async ({ page }) => {
+  test('primeiro clique em Pesquisar abre e foca o input sem cobrir a instrução', async ({
+    page,
+  }) => {
     await createProject(page)
+    await openSearchAndExpectClearance(page)
+  })
 
-    await page.locator('.blocklyToolboxCategory').filter({ hasText: 'Pesquisar' }).first().click()
-    await expect(page.locator('.blocklyToolboxFlyout')).toBeVisible()
-    await expect(page.locator('input#toolbox-search-input')).toBeVisible()
+  test('Pesquisar reserva espaço para instrução e resultados no flyout horizontal', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 })
+    await createProject(page)
+    await openSearchAndExpectClearance(page)
 
-    await expect
-      .poll(async () =>
-        page.evaluate(() => {
-          const input = document.querySelector('input#toolbox-search-input')
-          const flyout = document.querySelector('.blocklyToolboxFlyout')
-          if (!input || !flyout) return false
-          const inputRect = input.getBoundingClientRect()
-          const flyoutRect = flyout.getBoundingClientRect()
-          return (
-            getComputedStyle(input).visibility === 'visible' &&
-            flyoutRect.width > 0 &&
-            flyoutRect.height > 0 &&
-            inputRect.left >= flyoutRect.left &&
-            inputRect.top >= flyoutRect.top &&
-            inputRect.right <= flyoutRect.right &&
-            inputRect.bottom <= flyoutRect.bottom
-          )
-        }),
-      )
-      .toBe(true)
+    const searchInput = page.locator('input#toolbox-search-input')
+    await searchInput.fill('mover')
+    const firstResult = page.locator('.blocklyToolboxFlyout .blocklyDraggable').first()
+    await expect(firstResult).toBeVisible()
+    await expectSearchContentBelowField(page, firstResult)
   })
 
   test('Painel Extensões mostra catálogo oficial (game-2d)', async ({ page }) => {

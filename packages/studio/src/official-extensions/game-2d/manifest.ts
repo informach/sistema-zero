@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameTwoDManifest: ExtensionManifest = {
   id: 'game-2d',
   name: 'Jogo 2D',
-  version: '0.79.0',
+  version: '0.79.1',
   description:
     'Blocos para crianças criarem jogos 2D no Canvas: sprites, movimento, mapas, Mundos com câmera, Fases opcionais, colisões, HUD acessível, som, inimigos e kits prontos.',
   category: 'games',

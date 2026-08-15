@@ -8,10 +8,11 @@
  * paleta (`sessionStore.activeSlot`).
  */
 import { clsx } from 'clsx'
-import type { JSX } from 'react'
+import { Fragment, type JSX, useEffect } from 'react'
 import { activeBitmapOf, withActiveBitmap, withActiveCels } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import { resolveAssetPalette } from '../../core/project'
+import { filterTools, toolFallback } from '../../core/toolCuration'
 import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
 import type { PintaSessionTool } from '../../state/sessionStore'
 import { IconButton, ToolButton } from '../ui/Button'
@@ -36,7 +37,7 @@ import {
   Square,
   SquareDashed,
 } from '../ui/icons'
-import { useEditor, useEditorStores, useSession } from './editorContext'
+import { useEditor, useEditorStores, useSession, useToolCuration } from './editorContext'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 
 /**
@@ -81,8 +82,19 @@ export function ToolBar({
   const frameIndex = useSession((state) => state.frameIndex)
   const layerId = useSession((state) => state.layerId)
   const asset = useEditor((state) => state.asset)
+  const allowTools = useToolCuration()
 
   useToolShortcuts(TOOL_SHORTCUTS, (id) => session.getState().setTool(id))
+
+  /**
+   * ⚠️ A ferramenta ativa não pode ficar fora da caixa. Sem isto, um bloco de aula que esconda a
+   * ferramenta que estava selecionada deixa a criança pintando com algo que ela não vê nem
+   * consegue trocar. Mesma régua que o `PaletteBar` já segue ao mudar de cor.
+   */
+  useEffect(() => {
+    const next = toolFallback(tool, TOOLS, allowTools)
+    if (next) session.getState().setTool(next as PintaSessionTool)
+  }, [tool, allowTools, session])
 
   const showFilled = tool === 'rect' || tool === 'ellipse'
 
@@ -136,71 +148,137 @@ export function ToolBar({
     </IconButton>
   ))
 
+  /**
+   * A caixa em três grupos, cada um curável. Alternadores e ações do quadro ganharam id junto com
+   * as ferramentas de propósito: quem pede "a tela não pode vir cheia" está olhando a caixa
+   * INTEIRA, não só o que é selecionável.
+   */
+  const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
+    <ToolButton
+      key={entry.id}
+      icon={entry.icon}
+      label={entry.label}
+      shortcut={entry.shortcut}
+      active={tool === entry.id}
+      onClick={() => session.getState().setTool(entry.id)}
+    />
+  ))
+
+  const toggleNodes = filterTools(
+    [
+      {
+        id: 'mirror',
+        node: (
+          <ToolButton
+            icon={FlipHorizontal}
+            label={COPY.tools.mirror}
+            active={mirrorX}
+            onClick={() => session.getState().toggleMirror()}
+          />
+        ),
+      },
+      {
+        id: 'mirrorV',
+        node: (
+          <ToolButton
+            icon={FlipVertical}
+            label={COPY.tools.mirrorV}
+            active={mirrorY}
+            onClick={() => session.getState().toggleMirrorY()}
+          />
+        ),
+      },
+      {
+        id: 'grid',
+        node: (
+          <ToolButton
+            icon={Grid3x3}
+            label={COPY.tools.grid}
+            active={showGrid}
+            onClick={() => session.getState().toggleGrid()}
+          />
+        ),
+      },
+      // "Preencher" só existe com retângulo/círculo na mão, como sempre.
+      ...(showFilled
+        ? [
+            {
+              id: 'filled',
+              node: (
+                <ToolButton
+                  icon={PaintRoller}
+                  label={COPY.tools.filled}
+                  active={filled}
+                  onClick={() => session.getState().toggleFilled()}
+                />
+              ),
+            },
+          ]
+        : []),
+    ],
+    allowTools,
+  ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
+
+  const actionNodes = filterTools(
+    [
+      {
+        id: 'flipH',
+        node: (
+          <ToolButton
+            icon={FlipHorizontal2}
+            label={COPY.tools.flipH}
+            onClick={() => transformBitmap('flipH')}
+          />
+        ),
+      },
+      {
+        id: 'flipV',
+        node: (
+          <ToolButton
+            icon={FlipVertical2}
+            label={COPY.tools.flipV}
+            onClick={() => transformBitmap('flipV')}
+          />
+        ),
+      },
+      {
+        id: 'rotate',
+        node: (
+          <ToolButton
+            icon={RotateCw}
+            label={COPY.tools.rotate}
+            disabled={!canRotate}
+            onClick={() => transformBitmap('rotate')}
+          />
+        ),
+      },
+      {
+        id: 'clear',
+        node: <ToolButton icon={BrushCleaning} label={COPY.tools.clear} onClick={clearActive} />,
+      },
+    ],
+    allowTools,
+  ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
+
+  /**
+   * Grupo vazio SOME junto com o divisor dele — senão a caixa curada ficaria com traços soltos
+   * separando nada. Na barra horizontal os tamanhos do traço seguem no meio, como antes.
+   */
+  const groups: Array<{ name: string; nodes: JSX.Element[] }> = [
+    { name: 'draw', nodes: drawNodes },
+    ...(vertical ? [] : [{ name: 'brush', nodes: brushSizes }]),
+    { name: 'toggle', nodes: toggleNodes },
+    { name: 'action', nodes: actionNodes },
+  ].filter((group) => group.nodes.length > 0)
+
   const tools = (
     <>
-      {TOOLS.map((entry) => (
-        <ToolButton
-          key={entry.id}
-          icon={entry.icon}
-          label={entry.label}
-          shortcut={entry.shortcut}
-          active={tool === entry.id}
-          onClick={() => session.getState().setTool(entry.id)}
-        />
+      {groups.map((group, index) => (
+        <Fragment key={group.name}>
+          {index > 0 ? divider : null}
+          {group.nodes}
+        </Fragment>
       ))}
-
-      {divider}
-
-      {/* Na barra HORIZONTAL (tela estreita) os tamanhos seguem no meio. */}
-      {vertical ? null : brushSizes}
-      {vertical ? null : divider}
-
-      <ToolButton
-        icon={FlipHorizontal}
-        label={COPY.tools.mirror}
-        active={mirrorX}
-        onClick={() => session.getState().toggleMirror()}
-      />
-      <ToolButton
-        icon={FlipVertical}
-        label={COPY.tools.mirrorV}
-        active={mirrorY}
-        onClick={() => session.getState().toggleMirrorY()}
-      />
-      <ToolButton
-        icon={Grid3x3}
-        label={COPY.tools.grid}
-        active={showGrid}
-        onClick={() => session.getState().toggleGrid()}
-      />
-      {showFilled ? (
-        <ToolButton
-          icon={PaintRoller}
-          label={COPY.tools.filled}
-          active={filled}
-          onClick={() => session.getState().toggleFilled()}
-        />
-      ) : null}
-
-      {divider}
-
-      <ToolButton
-        icon={FlipHorizontal2}
-        label={COPY.tools.flipH}
-        onClick={() => transformBitmap('flipH')}
-      />
-      <ToolButton
-        icon={FlipVertical2}
-        label={COPY.tools.flipV}
-        onClick={() => transformBitmap('flipV')}
-      />
-      <ToolButton
-        icon={RotateCw}
-        label={COPY.tools.rotate}
-        disabled={!canRotate}
-        onClick={() => transformBitmap('rotate')}
-      />
-      <ToolButton icon={BrushCleaning} label={COPY.tools.clear} onClick={clearActive} />
     </>
   )
 

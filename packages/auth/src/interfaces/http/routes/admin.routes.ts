@@ -1,5 +1,6 @@
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import type { BatchGetProfilesService } from '../../../application/admin/batch-get-profiles/batch-get-profiles.service'
 import type { BatchGetUsersService } from '../../../application/admin/batch-get-users/batch-get-users.service'
 import type { CreateUserService } from '../../../application/admin/create-user/create-user.service'
 import type { DeleteUserService } from '../../../application/admin/delete-user/delete-user.service'
@@ -34,6 +35,7 @@ export interface AdminRoutesDeps {
   updateUser: UpdateUserService
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
+  batchGetProfiles: BatchGetProfilesService
   /** Reenvia o convite (link de 1º acesso) — cliente com link expirado. */
   resendInvite: ResendInviteService
   /** Define a senha manualmente (suporte: cliente preso sem senha). */
@@ -129,6 +131,14 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ headers, body }) => {
           requireActor(headers, READ_ROLES)
           return deps.batchGetUsers.execute(body.ids)
+        },
+        { body: BatchGetUsersBody },
+      )
+      .post(
+        '/profiles/batch',
+        async ({ headers, body }) => {
+          requireActor(headers, READ_ROLES)
+          return deps.batchGetProfiles.execute(body.ids)
         },
         { body: BatchGetUsersBody },
       )

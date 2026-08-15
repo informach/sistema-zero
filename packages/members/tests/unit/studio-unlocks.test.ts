@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
 import type { Course } from '../../src/domain/course/course'
+import { studioUnlockRevision } from '../../src/domain/gamification/studio-unlock-revision'
 import {
   InMemoryCourseRepository,
   InMemoryEntitlementRepository,
@@ -12,7 +13,8 @@ import {
 
 /**
  * A paleta do Estúdio livre passou a vir do CURRÍCULO: cada curso declara o que libera
- * e o aluno tem a união dos cursos que concluiu E publicou no Mural.
+ * e o aluno tem a união dos cursos elegíveis (bônus Kids: conclusão; demais:
+ * conclusão + Mural).
  *
  * O teste que mais importa é o da REGRA DA USUÁRIA: **bloco liberado não é revogado**.
  * A união ao vivo sozinha não garante isso — editar o JSON, despublicar ou apagar o curso
@@ -20,7 +22,10 @@ import {
  * os casos "removeu"/"apagou" abaixo cobrem.
  */
 
-function makeCourse(unlockBlocks?: string[]): Course {
+function makeCourse(
+  unlockBlocks?: string[],
+  options: { audience?: Course['audience']; careerSlot?: number | null } = {},
+): Course {
   const now = new Date('2026-08-13T12:00:00.000Z')
   return {
     id: randomUUID(),
@@ -31,10 +36,10 @@ function makeCourse(unlockBlocks?: string[]): Course {
     description: null,
     coverImageUrl: null,
     status: 'published',
-    audience: 'kids',
+    audience: options.audience ?? 'kids',
     level: 'iniciante',
     track: '2d',
-    careerSlot: 1,
+    careerSlot: options.careerSlot === undefined ? 1 : options.careerSlot,
     sequentialLock: true,
     metadata: unlockBlocks ? { studioUnlockBlocks: unlockBlocks } : null,
     createdAt: now,
@@ -50,9 +55,18 @@ function setup() {
   const service = new GetStudioUnlocksService(gamification, unlocks, silentLogger)
   const userId = randomUUID()
 
-  /** Marca o curso como CONCLUÍDO e/ou PUBLICADO no ledger (a régua da qualificação). */
-  const mark = (courseId: string, opts: { completed?: boolean; showcased?: boolean }) => {
-    const base = { userId, audience: 'kids' as const, amount: 0, createdAt: new Date() }
+  /** Marca o curso como CONCLUÍDO e/ou PUBLICADO no ledger. */
+  const mark = (
+    courseId: string,
+    opts: { audience?: Course['audience']; completed?: boolean; showcased?: boolean },
+  ) => {
+    const audience: Course['audience'] = opts.audience ?? 'kids'
+    const base = {
+      userId,
+      audience,
+      amount: 0,
+      createdAt: new Date(),
+    }
     if (opts.completed !== false)
       gamification.events.push({
         ...base,
@@ -76,12 +90,20 @@ describe('GetStudioUnlocksService', () => {
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
   })
 
-  test('concluir SEM publicar no Mural não libera nada', async () => {
+  test('curso Kids com posição: concluir SEM publicar no Mural não libera nada', async () => {
     const { courses, service, userId, mark } = setup()
     const course = makeCourse(['sz_g2d_create_ship'])
     courses.courses.push(course)
     mark(course.id, { showcased: false })
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('curso Kids bônus: concluir libera sem publicação no Mural', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
   })
 
   test('publicar SEM concluir também não libera', async () => {
@@ -90,6 +112,26 @@ describe('GetStudioUnlocksService', () => {
     courses.courses.push(course)
     mark(course.id, { completed: false })
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('curso Kids bônus: publicar SEM concluir também não libera', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { completed: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('curso Kids bônus: publicar depois da conclusão não duplica o grant', async () => {
+    const { courses, unlocks, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+    await service.execute(userId, 'kids')
+
+    mark(course.id, { completed: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+    expect(unlocks.grants).toHaveLength(1)
   })
 
   test('concluir + publicar libera os blocos do curso', async () => {
@@ -193,6 +235,64 @@ describe('GetStudioUnlocksService', () => {
       throw new Error('banco fora')
     }
     expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+  })
+
+  test('bônus reclassificado para carreira preserva ferramenta já servida', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+    await service.execute(userId, 'kids')
+
+    course.careerSlot = 2
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+  })
+
+  test('bônus reclassificado antes da primeira leitura passa a exigir o Mural', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+
+    course.careerSlot = 2
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+  })
+
+  test('curso da carreira reclassificado como bônus reconhece a conclusão anterior', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+
+    course.careerSlot = null
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: ['sz_g2d_create_ship'] })
+  })
+
+  test('curso movido de Kids para Adult não vira bônus na vitrine Kids', async () => {
+    const { courses, gamification, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'])
+    courses.courses.push(course)
+    mark(course.id, { showcased: false })
+
+    course.audience = 'adult'
+    course.careerSlot = null
+
+    expect(await service.execute(userId, 'kids')).toEqual({ blocks: [] })
+    expect(await gamification.getStudioUnlockRevision(userId, 'kids')).toBe(
+      studioUnlockRevision([]),
+    )
+  })
+
+  test('curso Adult sem posição preserva a exigência de conclusão E Mural', async () => {
+    const { courses, service, userId, mark } = setup()
+    const course = makeCourse(['sz_g2d_create_ship'], { audience: 'adult', careerSlot: null })
+    courses.courses.push(course)
+    mark(course.id, { audience: 'adult', showcased: false })
+    expect(await service.execute(userId, 'adult')).toEqual({ blocks: [] })
+
+    mark(course.id, { audience: 'adult', completed: false })
+    expect(await service.execute(userId, 'adult')).toEqual({ blocks: ['sz_g2d_create_ship'] })
   })
 
   test('a vitrine segrega: curso kids não vaza para a paleta do adulto', async () => {

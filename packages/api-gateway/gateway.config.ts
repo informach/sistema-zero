@@ -838,6 +838,18 @@ const config: GatewayConfigInput = {
       transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Identidade mínima de PERFIS kids em lote (≤100 ids). O painel combina esta
+    // chamada com users/batch para hidratar aluno + responsável sem N+1.
+    {
+      id: 'auth-admin-profiles-batch',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/profiles/batch',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // "Entrar como" (impersonação p/ suporte): emite o token de HANDOFF single-use.
     // ESCRITA → superadmin/admin (o auth re-checa a matriz: admin só impersona
     // customer/staff; superadmin qualquer um; nunca a si mesmo). 4 segmentos —
@@ -1857,6 +1869,30 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Entrega do DESENHO do Pinta (bloco de aula). Mesma forma da entrega do Estúdio — inclusive
+    // o teto: o corpo carrega o desenho inteiro e cabe no global de 2 MB (o members reforça um
+    // teto de negócio mais apertado, p/ a recusa vir com mensagem em vez de 413).
+    {
+      id: 'members-pinta-submission',
+      methods: ['POST'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/pinta-submission',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // GET do MESMO path: o desenho que a criança já enviou (retomar num navegador novo).
+    {
+      id: 'members-pinta-submission-get',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/pinta-submission',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Carrega o projeto da aula contínua anterior (mesma cadeia) p/ semear o editor —
     // GET lazy chamado SÓ na 1ª abertura sem rascunho local; a resposta pode trazer o
     // projeto inteiro (cabe na resposta em streaming, sem teto de corpo de requisição).
@@ -1864,6 +1900,17 @@ const config: GatewayConfigInput = {
       id: 'members-studio-carryover',
       methods: ['GET'],
       pathPattern: '/members/lessons/:lessonId/blocks/:blockId/studio-carryover',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    // O mesmo carryover, para o bloco de DESENHO (cadeia de Pinta é independente da do Estúdio).
+    {
+      id: 'members-pinta-carryover',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/pinta-carryover',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { statuses: ['active'] },

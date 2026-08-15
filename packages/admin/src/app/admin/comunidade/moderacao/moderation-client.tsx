@@ -1,5 +1,7 @@
 'use client'
 
+import { AttachmentList } from '@sistemazero/member-shell/components/attachment-list'
+import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -11,17 +13,154 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { formatDate } from '@/lib/format'
+import { canHideReportedContent } from '@/lib/hub-moderation'
 import type {
+  HubModerationExcerptView,
+  HubModerationIdentity,
   HubMuteBanView,
   HubPendingItemView,
+  HubReportedContentView,
   HubReportView,
   HubSpaceView,
 } from '@/lib/hub-types'
 import type { Paginated } from '@/lib/types'
 
-function preview(text: string, max = 160): string {
+function preview(text: string, max = 240): string {
   const t = text.trim().replace(/\s+/g, ' ')
   return t.length > max ? `${t.slice(0, max)}…` : t
+}
+
+function PersonDetails({
+  audience,
+  identity,
+  displayName,
+  userId,
+  label = 'Autor',
+}: {
+  audience: 'adult' | 'kids'
+  identity?: HubModerationIdentity
+  displayName: string | null
+  userId: string
+  label?: string
+}) {
+  const childName = identity?.childName ?? displayName
+  const primaryName = audience === 'kids' ? childName : (identity?.accountName ?? displayName)
+  return (
+    <div className="space-y-0.5 text-xs text-muted-foreground">
+      <p>
+        <span className="font-medium text-foreground">
+          {audience === 'kids' ? (label === 'Denunciante' ? 'Aluno denunciante' : 'Aluno') : label}:
+        </span>{' '}
+        {primaryName || 'Nome não disponível'}
+      </p>
+      {audience === 'kids' ? (
+        <p>
+          <span className="font-medium text-foreground">Responsável:</span>{' '}
+          {identity?.accountName || 'Não identificado'}
+          {identity?.accountEmail ? ` · ${identity.accountEmail}` : ''}
+        </p>
+      ) : identity?.accountEmail ? (
+        <p>{identity.accountEmail}</p>
+      ) : null}
+      {!primaryName ? <p className="font-mono">ID: {userId}</p> : null}
+    </div>
+  )
+}
+
+function Location({ content }: { content: HubPendingItemView }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span>{content.context.spaceName}</span>
+      <span aria-hidden="true">›</span>
+      <span>{content.context.channelName}</span>
+      <Badge variant="muted">{content.context.spaceAudience === 'kids' ? 'Kids' : 'Adulto'}</Badge>
+    </div>
+  )
+}
+
+function ContextExcerpt({
+  label,
+  excerpt,
+  audience,
+}: {
+  label: string
+  excerpt: HubModerationExcerptView
+  audience: 'adult' | 'kids'
+}) {
+  return (
+    <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          {label}
+        </span>
+        <time className="text-xs text-muted-foreground" dateTime={excerpt.createdAt}>
+          {formatDate(excerpt.createdAt)}
+        </time>
+      </div>
+      {excerpt.title ? <p className="text-sm font-medium">{excerpt.title}</p> : null}
+      <p className="whitespace-pre-wrap text-sm text-muted-foreground">{preview(excerpt.body)}</p>
+      <PersonDetails
+        audience={audience}
+        identity={excerpt.authorIdentity}
+        displayName={excerpt.authorDisplayName}
+        userId={excerpt.authorId}
+      />
+      <AttachmentList attachments={excerpt.attachments} />
+    </div>
+  )
+}
+
+function ContentContext({ content }: { content: HubPendingItemView }) {
+  return content.context.thread || content.context.replyTo ? (
+    <div className="grid gap-2 lg:grid-cols-2">
+      {content.context.thread ? (
+        <ContextExcerpt
+          label="Tópico relacionado"
+          excerpt={content.context.thread}
+          audience={content.context.spaceAudience}
+        />
+      ) : null}
+      {content.context.replyTo ? (
+        <ContextExcerpt
+          label="Em resposta a"
+          excerpt={content.context.replyTo}
+          audience={content.context.spaceAudience}
+        />
+      ) : null}
+    </div>
+  ) : null
+}
+
+function ModeratedContent({ content }: { content: HubPendingItemView | HubReportedContentView }) {
+  return (
+    <div className="space-y-3">
+      <Location content={content} />
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="muted">{content.type === 'thread' ? 'Tópico' : 'Comentário'}</Badge>
+            {'status' in content ? <Badge variant="outline">{content.status}</Badge> : null}
+            {content.title ? <h3 className="font-semibold">{content.title}</h3> : null}
+          </div>
+          <PersonDetails
+            audience={content.context.spaceAudience}
+            identity={content.authorIdentity}
+            displayName={content.authorDisplayName}
+            userId={content.authorId}
+          />
+        </div>
+        <time className="text-xs text-muted-foreground" dateTime={content.createdAt}>
+          {formatDate(content.createdAt)}
+        </time>
+      </div>
+      <div className="rich-text-content rounded-lg border bg-background px-4 py-3 text-sm">
+        {renderUgcMarkdown(content.body)}
+      </div>
+      <AttachmentList attachments={content.attachments} />
+      <ContentContext content={content} />
+    </div>
+  )
 }
 
 export function ModerationClient({ currentRole }: { currentRole: string }) {
@@ -148,12 +287,8 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
           <Card className="p-4 text-sm text-muted-foreground">Nada pendente. 🎉</Card>
         ) : (
           pending.map((item) => (
-            <Card key={item.id} className="space-y-2 p-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="muted">{item.type === 'thread' ? 'Tópico' : 'Comentário'}</Badge>
-                {item.title ? <span className="font-medium">{item.title}</span> : null}
-              </div>
-              <p className="text-sm text-muted-foreground">{preview(item.body)}</p>
+            <Card key={item.id} className="space-y-4 p-4">
+              <ModeratedContent content={item} />
               {canWrite ? (
                 <div className="flex gap-2">
                   <Button
@@ -196,62 +331,90 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
         {reports.length === 0 ? (
           <Card className="p-4 text-sm text-muted-foreground">Nenhuma denúncia aberta.</Card>
         ) : (
-          reports.map((r) => (
-            <Card key={r.id} className="space-y-2 p-3">
-              <div className="flex items-center gap-2">
-                <Badge variant="muted">{r.targetType === 'thread' ? 'Tópico' : 'Comentário'}</Badge>
-                <span className="text-sm">Motivo: {preview(r.reason, 120)}</span>
-              </div>
-              {canWrite ? (
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={busy}
-                    onClick={() =>
-                      run(
-                        () => apiSend(`/api/hub/admin/${target(r)}/${r.targetId}/hide`, 'POST'),
-                        'Conteúdo ocultado.',
-                      )
-                    }
-                  >
-                    Ocultar conteúdo
-                  </Button>
-                  <Button
-                    size="sm"
-                    disabled={busy}
-                    onClick={() =>
-                      run(
-                        () =>
-                          apiSend(`/api/hub/admin/reports/${r.id}/resolve`, 'POST', {
-                            action: 'resolve',
-                          }),
-                        'Denúncia resolvida.',
-                      )
-                    }
-                  >
-                    Resolver
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled={busy}
-                    onClick={() =>
-                      run(
-                        () =>
-                          apiSend(`/api/hub/admin/reports/${r.id}/resolve`, 'POST', {
-                            action: 'dismiss',
-                          }),
-                        'Denúncia descartada.',
-                      )
-                    }
-                  >
-                    Descartar
-                  </Button>
+          reports.map((r) => {
+            const reportSpace = spaces.find((space) => space.id === r.spaceId)
+            const audience = r.content?.context.spaceAudience ?? reportSpace?.audience ?? 'adult'
+            return (
+              <Card key={r.id} className="space-y-4 p-4">
+                <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-sm font-semibold">Denúncia</span>
+                    <time className="text-xs text-muted-foreground" dateTime={r.createdAt}>
+                      {formatDate(r.createdAt)}
+                    </time>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm">
+                    <span className="font-medium">Motivo:</span> {r.reason}
+                  </p>
+                  <PersonDetails
+                    audience={audience}
+                    identity={r.reporterIdentity}
+                    displayName={r.reporterDisplayName}
+                    userId={r.reporterId}
+                    label="Denunciante"
+                  />
                 </div>
-              ) : null}
-            </Card>
-          ))
+                {r.content ? (
+                  <ModeratedContent content={r.content} />
+                ) : (
+                  <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                    O conteúdo denunciado não está mais disponível. A denúncia ainda pode ser
+                    resolvida ou descartada.
+                  </div>
+                )}
+                {canWrite ? (
+                  <div className="flex flex-wrap gap-2">
+                    {canHideReportedContent(r.content) ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={busy}
+                        onClick={() =>
+                          run(
+                            () => apiSend(`/api/hub/admin/${target(r)}/${r.targetId}/hide`, 'POST'),
+                            'Conteúdo ocultado.',
+                          )
+                        }
+                      >
+                        Ocultar conteúdo
+                      </Button>
+                    ) : null}
+                    <Button
+                      size="sm"
+                      disabled={busy}
+                      onClick={() =>
+                        run(
+                          () =>
+                            apiSend(`/api/hub/admin/reports/${r.id}/resolve`, 'POST', {
+                              action: 'resolve',
+                            }),
+                          'Denúncia resolvida.',
+                        )
+                      }
+                    >
+                      Resolver
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busy}
+                      onClick={() =>
+                        run(
+                          () =>
+                            apiSend(`/api/hub/admin/reports/${r.id}/resolve`, 'POST', {
+                              action: 'dismiss',
+                            }),
+                          'Denúncia descartada.',
+                        )
+                      }
+                    >
+                      Descartar
+                    </Button>
+                  </div>
+                ) : null}
+              </Card>
+            )
+          })
         )}
       </section>
 

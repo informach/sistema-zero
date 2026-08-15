@@ -249,7 +249,10 @@ jobs:
                   # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
                   packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
-                  packages/pinta/*) add community-kids ;; # editor de assets embarcado (kids v1)
+                  # Bloco de aula do Pinta: o renderizador de blocos é COMPARTILHADO (o adulto
+                  # compila o pacote mesmo sem usar o bloco) e o admin embute o editor na autoria
+                  # e no viewer da entrega — os três servem bundle velho sem este gatilho.
+                  packages/pinta/*) add community-kids; add community; add admin ;;
                 esac
               done <<< "$CHANGED"
             fi

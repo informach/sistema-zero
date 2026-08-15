@@ -114,4 +114,74 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.submit(form)
     expect(onSave).toHaveBeenCalledWith('Sofia', null, false, undefined)
   })
+
+  it('explica a faixa etária e não envia um novo perfil adulto', () => {
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{ mode: 'create' }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText('Nome do perfil'), {
+      target: { value: 'Pessoa adulta' },
+    })
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança (opcional)'), {
+      target: { value: '2000-01-01' },
+    })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    fireEvent.submit(form)
+
+    expect(onSave).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Esta comunidade é para crianças menores de 18 anos.',
+    )
+    const instagram = screen.getByRole('link', { name: '@criecomhelenaejulio' })
+    expect((instagram as HTMLAnchorElement).href).toBe(
+      'https://www.instagram.com/criecomhelenaejulio/',
+    )
+  })
+
+  it('permite editar um perfil antigo que já completou 18 anos sem trocar o nascimento', () => {
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{
+          mode: 'edit',
+          profile: {
+            id: '11111111-1111-4111-8111-111111111111',
+            name: 'Sofia',
+            avatarUrl: null,
+            whatsapp: null,
+            birthDate: '2000-01-01',
+            publicProfileEnabled: false,
+            sortOrder: 0,
+          },
+        }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText('Nome do perfil'), {
+      target: { value: 'Sofia Silva' },
+    })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    fireEvent.submit(form)
+
+    expect(onSave).toHaveBeenCalledWith(
+      'Sofia Silva',
+      '2000-01-01',
+      false,
+      expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111' }),
+    )
+  })
 })

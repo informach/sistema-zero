@@ -188,7 +188,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // 1136 → 1145: o índice espacial do "para cada par". `_shapeLeft/_shapeTop/
   // _shapeRight/_shapeBottom` somam 4, `_buildOverlapIndex(lista)` 1,
   // `_overlapCandidates(indice, a)` 2 e o comparador `(x, y)` da ordenação 2.
-  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1145)
+  // 1145 → 1149: a equivalência dos dois lados do limiar congela a caixa
+  // inicial de B. `_overlapBounds(e)` 1, `_snapshotOverlapBounds(lista)` 1 e
+  // `_overlapBoundsTouch(a, b)` 2; sem eles, 39×40 e 40×40 dão resultados
+  // diferentes quando o callback move B.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1149)
 })
 
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {

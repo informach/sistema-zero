@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { decodeJwt } from 'jose'
+import { BatchGetProfilesService } from '../../src/application/admin/batch-get-profiles/batch-get-profiles.service'
 import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
 import { CreateUserService } from '../../src/application/admin/create-user/create-user.service'
 import { DeleteUserService } from '../../src/application/admin/delete-user/delete-user.service'
@@ -157,6 +158,7 @@ function buildApp(
   const updateUser = new UpdateUserService(users, refreshTokens, silentLogger)
   const deleteUser = new DeleteUserService(users, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
+  const batchGetProfiles = new BatchGetProfilesService(profilesRepo)
   const auditLogs = new InMemoryAuditLogRepository()
   const writeAuditLog = new WriteAuditLogService(auditLogs)
   const readAuditLog = new ReadAuditLogService(auditLogs)
@@ -226,6 +228,7 @@ function buildApp(
     updateUser,
     deleteUser,
     batchGetUsers,
+    batchGetProfiles,
     resendInvite,
     setUserPassword,
     writeAuditLog,
@@ -1283,6 +1286,55 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     expect(json.users.map((u) => u.email).sort()).toEqual(['a@example.com', 'b@example.com'])
   })
 
+  test('POST /auth/admin/profiles/batch hidrata perfis por ids sem expor dados privados', async () => {
+    const { app, profilesRepo } = buildApp()
+    const accountId = crypto.randomUUID()
+    const activeId = crypto.randomUUID()
+    const archivedId = crypto.randomUUID()
+    const now = new Date('2026-08-15T12:00:00.000Z')
+    profilesRepo.byId.set(activeId, {
+      id: activeId,
+      accountUserId: accountId,
+      name: 'Nina',
+      avatarUrl: 'https://cdn.example/nina.webp',
+      whatsapp: '+5511999999999',
+      birthDate: '2015-05-10',
+      publicProfileEnabled: true,
+      status: 'active',
+      sortOrder: 0,
+      createdAt: now,
+      updatedAt: now,
+    })
+    profilesRepo.byId.set(archivedId, {
+      id: archivedId,
+      accountUserId: accountId,
+      name: 'Perfil arquivado',
+      avatarUrl: null,
+      whatsapp: null,
+      birthDate: null,
+      publicProfileEnabled: false,
+      status: 'archived',
+      sortOrder: 1,
+      createdAt: now,
+      updatedAt: now,
+    })
+
+    expect((await app.handle(post('/auth/admin/profiles/batch', { ids: [activeId] }))).status).toBe(
+      401,
+    )
+    const res = await app.handle(
+      post(
+        '/auth/admin/profiles/batch',
+        { ids: [activeId, archivedId, crypto.randomUUID()] },
+        actorHeaders('staff'),
+      ),
+    )
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({
+      profiles: [{ id: activeId, name: 'Nina', publicProfileEnabled: true }],
+    })
+  })
+
   test(':id que não é uuid → 400 na borda (não 500 do banco)', async () => {
     const { app } = buildApp()
     expect(
@@ -1789,6 +1841,28 @@ describe('Auth — perfis (estilo Netflix)', () => {
       (await app.handle(req('PATCH', `/auth/profiles/${id}`, gw(), { birthDate: '3000-01-01' })))
         .status,
     ).toBe(400)
+  })
+
+  test('cadastro com 18 anos completos → 400 PROFILE_AGE_RESTRICTED', async () => {
+    const { app, allowance } = buildApp()
+    allowance.maxProfiles = 1
+    const today = new Date()
+    const exactlyEighteen = new Date(
+      Date.UTC(today.getUTCFullYear() - 18, today.getUTCMonth(), today.getUTCDate()),
+    )
+      .toISOString()
+      .slice(0, 10)
+
+    const response = await app.handle(
+      req('POST', '/auth/profiles', gw(), { name: 'Pessoa adulta', birthDate: exactlyEighteen }),
+    )
+    expect(response.status).toBe(400)
+    expect(await response.json()).toEqual({
+      error: {
+        code: 'PROFILE_AGE_RESTRICTED',
+        message: 'Esta comunidade é para crianças menores de 18 anos',
+      },
+    })
   })
 
   test('perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag', async () => {

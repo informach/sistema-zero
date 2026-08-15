@@ -1,9 +1,11 @@
 import {
   CommentNotFoundError,
+  InvalidModerationStateError,
   ReportNotFoundError,
   ThreadNotFoundError,
 } from '../../domain/hub-errors'
 import type { MuteBanKind } from '../../domain/moderation/mute-ban'
+import type { AttachmentRepository } from '../../domain/ports/attachment-repository.port'
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type {
@@ -15,7 +17,10 @@ import {
   noopStudioArtifactGateway,
   type StudioArtifactGateway,
 } from '../../domain/ports/studio-artifact-gateway.port'
-import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type {
+  ContentTransitionOutcome,
+  ThreadRepository,
+} from '../../domain/ports/thread-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import {
   type MuteBanView,
@@ -52,6 +57,7 @@ export class ModerationService {
   constructor(
     private readonly threads: ThreadRepository,
     private readonly mod: ModerationRepository,
+    private readonly attachments: AttachmentRepository,
     private readonly clock: () => Date,
     /**
      * Limpeza de R2 ao APAGAR um post de vitrine (best-effort). Default no-op p/
@@ -177,13 +183,19 @@ export class ModerationService {
     offset: number
   }): Promise<{ items: PendingItemView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.mod.listPending(opts)
-    return { items: items.map(toPendingItemView), total, limit: opts.limit, offset: opts.offset }
+    const { threadAttachments, commentAttachments } = await this.loadModerationAttachments(items)
+    return {
+      items: items.map((item) => toPendingItemView(item, threadAttachments, commentAttachments)),
+      total,
+      limit: opts.limit,
+      offset: opts.offset,
+    }
   }
 
   async approveThread(moderatorId: string, id: string): Promise<{ ok: true }> {
-    if (!(await this.threads.setThreadStatus(id, 'visible', this.clock(), true))) {
-      throw new ThreadNotFoundError()
-    }
+    this.assertThreadTransition(
+      await this.threads.setThreadStatus(id, 'visible', ['pending'], this.clock(), true),
+    )
     await this.log('approve', moderatorId, id)
     await this.rewardOnApprove('thread', id)
     return { ok: true }
@@ -195,27 +207,27 @@ export class ModerationService {
     reason?: string | null,
     moderatorName?: string | null,
   ): Promise<{ ok: true }> {
-    if (!(await this.threads.setThreadStatus(id, 'rejected', this.clock()))) {
-      throw new ThreadNotFoundError()
-    }
+    this.assertThreadTransition(
+      await this.threads.setThreadStatus(id, 'rejected', ['pending', 'visible'], this.clock()),
+    )
     await this.log('reject', moderatorId, id)
     await this.maybeNotifyModerationReason(id, reason, moderatorName)
     return { ok: true }
   }
 
   async approveComment(moderatorId: string, id: string): Promise<{ ok: true }> {
-    if (!(await this.threads.setCommentStatus(id, 'visible', this.clock()))) {
-      throw new CommentNotFoundError()
-    }
+    this.assertCommentTransition(
+      await this.threads.setCommentStatus(id, 'visible', ['pending'], this.clock()),
+    )
     await this.log('approve', moderatorId, id)
     await this.rewardOnApprove('comment', id)
     return { ok: true }
   }
 
   async rejectComment(moderatorId: string, id: string): Promise<{ ok: true }> {
-    if (!(await this.threads.setCommentStatus(id, 'rejected', this.clock()))) {
-      throw new CommentNotFoundError()
-    }
+    this.assertCommentTransition(
+      await this.threads.setCommentStatus(id, 'rejected', ['pending'], this.clock()),
+    )
     await this.log('reject', moderatorId, id)
     return { ok: true }
   }
@@ -227,9 +239,9 @@ export class ModerationService {
     reason?: string | null,
     moderatorName?: string | null,
   ): Promise<{ ok: true }> {
-    if (!(await this.threads.setThreadStatus(id, 'hidden', this.clock()))) {
-      throw new ThreadNotFoundError()
-    }
+    this.assertThreadTransition(
+      await this.threads.setThreadStatus(id, 'hidden', ['visible'], this.clock()),
+    )
     await this.log('hide', moderatorId, id)
     await this.maybeNotifyModerationReason(id, reason, moderatorName)
     return { ok: true }
@@ -239,9 +251,14 @@ export class ModerationService {
     // Captura os campos de vitrine ANTES de apagar (o delete é soft/status, a linha
     // permanece; mas ler antes deixa o fluxo explícito — hide, reversível, NÃO limpa).
     const thread = await this.threads.findThreadById(id)
-    if (!(await this.threads.setThreadStatus(id, 'deleted', this.clock()))) {
-      throw new ThreadNotFoundError()
-    }
+    this.assertThreadTransition(
+      await this.threads.setThreadStatus(
+        id,
+        'deleted',
+        ['pending', 'visible', 'hidden', 'rejected'],
+        this.clock(),
+      ),
+    )
     await this.log('delete', moderatorId, id)
     // Post de vitrine apagado (terminal) → some com os artefatos R2 do jogo (snapshot
     // jogável no R2 privado + a capa no R2 público, que seguiria buscável pela URL).
@@ -256,17 +273,22 @@ export class ModerationService {
   }
 
   async hideComment(moderatorId: string, id: string): Promise<{ ok: true }> {
-    if (!(await this.threads.setCommentStatus(id, 'hidden', this.clock()))) {
-      throw new CommentNotFoundError()
-    }
+    this.assertCommentTransition(
+      await this.threads.setCommentStatus(id, 'hidden', ['visible'], this.clock()),
+    )
     await this.log('hide', moderatorId, id)
     return { ok: true }
   }
 
   async deleteComment(moderatorId: string, id: string): Promise<{ ok: true }> {
-    if (!(await this.threads.setCommentStatus(id, 'deleted', this.clock()))) {
-      throw new CommentNotFoundError()
-    }
+    this.assertCommentTransition(
+      await this.threads.setCommentStatus(
+        id,
+        'deleted',
+        ['pending', 'visible', 'hidden', 'rejected'],
+        this.clock(),
+      ),
+    )
     await this.log('delete', moderatorId, id)
     return { ok: true }
   }
@@ -292,7 +314,14 @@ export class ModerationService {
     offset: number
   }): Promise<{ items: ReportView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.mod.listReports(opts)
-    return { items: items.map(toReportView), total, limit: opts.limit, offset: opts.offset }
+    const contents = items.flatMap((item) => (item.content ? [item.content] : []))
+    const { threadAttachments, commentAttachments } = await this.loadModerationAttachments(contents)
+    return {
+      items: items.map((item) => toReportView(item, threadAttachments, commentAttachments)),
+      total,
+      limit: opts.limit,
+      offset: opts.offset,
+    }
   }
 
   async resolveReport(
@@ -382,6 +411,16 @@ export class ModerationService {
     })
   }
 
+  private assertThreadTransition(outcome: ContentTransitionOutcome): void {
+    if (outcome === 'not_found') throw new ThreadNotFoundError()
+    if (outcome === 'invalid_state') throw new InvalidModerationStateError()
+  }
+
+  private assertCommentTransition(outcome: ContentTransitionOutcome): void {
+    if (outcome === 'not_found') throw new CommentNotFoundError()
+    if (outcome === 'invalid_state') throw new InvalidModerationStateError()
+  }
+
   private async logActionBestEffort(input: ModerationActionInput): Promise<void> {
     try {
       await this.mod.logAction(input)
@@ -389,5 +428,31 @@ export class ModerationService {
       // A decisão de moderação já foi aplicada. Auditoria é best-effort neste
       // serviço; não transforme sucesso operacional em 500 para o operador.
     }
+  }
+
+  /** Carrega anexos do alvo e do contexto em duas consultas, independentemente da fila. */
+  private async loadModerationAttachments(
+    items: Array<{
+      type: 'thread' | 'comment'
+      id: string
+      context: {
+        thread: { id: string } | null
+        replyTo: { id: string } | null
+      }
+    }>,
+  ) {
+    const threadIds = new Set<string>()
+    const commentIds = new Set<string>()
+    for (const item of items) {
+      const targetIds = item.type === 'thread' ? threadIds : commentIds
+      targetIds.add(item.id)
+      if (item.context.thread) threadIds.add(item.context.thread.id)
+      if (item.context.replyTo) commentIds.add(item.context.replyTo.id)
+    }
+    const [threadAttachments, commentAttachments] = await Promise.all([
+      this.attachments.listByThreadIds([...threadIds]),
+      this.attachments.listByCommentIds([...commentIds]),
+    ])
+    return { threadAttachments, commentAttachments }
   }
 }

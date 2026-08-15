@@ -508,6 +508,15 @@ ${gameKitCampaignEventsRuntime}
     entity.vy = num(entity.vy, 0) + PRO_PHYSICS.gravidade * dt;
     entity.y += entity.vy * dt;
     entity.onGround = false;
+    // ⚠️ Quem sai do mundo SOME. Antes da gravidade nada caia, entao isto nao
+    // podia acontecer; com ela, um casco chutado de uma beirada cai PARA SEMPRE
+    // (medido: y = 8652 e vy = 2973 depois de dez segundos), segue "ativo",
+    // paga passo todo quadro e ainda encosta em quem cair junto. E a mesma
+    // classe que o irmao g2d catalogou em 12/08 com o inimigo que voa.
+    if (proCampaign.stage && entity.y > proCampaign.stage.height * 16 + 32) {
+      proDefeatEnemy(entity);
+      return;
+    }
     if (entity.vy < 0) return;
     var pe = entity.y + entity.h;
     // Dois pontos bastam: o bicho tem 14px numa celula de 16, entao nenhuma peca
@@ -568,7 +577,10 @@ ${gameKitCampaignEventsRuntime}
     var direction = (proActionDown.direita ? 1 : 0) - (proActionDown.esquerda ? 1 : 0);
     var speed = (proActionDown.correr ? PRO_PHYSICS.correr : PRO_PHYSICS.andar) * (inWater ? PRO_PHYSICS.fatorDaAgua : 1);
     hero.vx = direction * speed;
-    if (onLadder && (proActionDown.cima || proActionDown.baixo)) hero.vy = ((proActionDown.baixo ? 1 : 0) - (proActionDown.cima ? 1 : 0)) * PRO_PHYSICS.escada;
+    if ((onLadder || inWater) && (proActionDown.cima || proActionDown.baixo)) {
+      var vertical = (proActionDown.baixo ? 1 : 0) - (proActionDown.cima ? 1 : 0);
+      hero.vy = vertical * (inWater ? PRO_PHYSICS.nadar : PRO_PHYSICS.escada);
+    }
     else {
       applyGravity(hero, inWater ? PRO_PHYSICS.gravidadeNaAgua : PRO_PHYSICS.gravidade, dt);
       if (hero._proBuffer > 0 && (hero.onGround || hero._proCoyote > 0 || inWater)) { hero.vy = inWater ? -PRO_PHYSICS.puloNaAgua : -PRO_PHYSICS.pulo; hero.onGround = false; hero._proBuffer = 0; hero._proCoyote = 0; }

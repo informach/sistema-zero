@@ -1151,7 +1151,7 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(me.level.slug).toBe('coder')
   })
 
-  test('kids expõe revisão curta que muda ao qualificar ou editar o curso', async () => {
+  test('kids expõe revisão curta que muda ao qualificar ou editar curso da carreira', async () => {
     const { app, courses, entitlements } = buildApp()
     // Curso de ENTRADA: é o único que uma Faísca kids consegue abrir (o Iniciante 2D é
     // degrau futuro para ela desde 14/08, e a trava responderia 423 no complete).
@@ -1181,6 +1181,9 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     expect(initial.studioUnlockRevision).toHaveLength(64)
 
     await completeCourse(app, course.lessonIds)
+    const completed = await readJson(await kidsMe())
+    expect(completed.studioUnlockRevision).toBe(initial.studioUnlockRevision)
+
     await postShowcase(app, {
       userId: USER,
       accountId: USER,
@@ -1194,6 +1197,50 @@ describe('Nível do aluno — webhook /showcase + derivação', () => {
     row.updatedAt = new Date(row.updatedAt.getTime() + 1_000)
     const edited = await readJson(await kidsMe())
     expect(edited.studioUnlockRevision).not.toBe(qualified.studioUnlockRevision)
+  })
+
+  test('kids muda a revisão ao concluir ou editar um curso bônus, sem Mural', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(
+      courses,
+      'curso-kids-bonus-revisao',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      null,
+    )
+    const row = courses.courses.find((item) => item.id === course.courseId)
+    if (!row) throw new Error('curso de teste ausente')
+    row.metadata = { studioUnlockBlocks: ['sz_g2d_create_ship'] }
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    const kidsMe = () =>
+      app.handle(
+        new Request('http://localhost/members/gamification/me?audience=kids', {
+          headers: authHeaders,
+        }),
+      )
+
+    const initial = await readJson(await kidsMe())
+    await completeCourse(app, course.lessonIds)
+    const completed = await readJson(await kidsMe())
+    expect(completed.studioUnlockRevision).toHaveLength(64)
+    expect(completed.studioUnlockRevision).not.toBe(initial.studioUnlockRevision)
+
+    await postShowcase(app, {
+      userId: USER,
+      accountId: USER,
+      courseId: course.courseId,
+      audience: 'kids',
+    })
+    const showcased = await readJson(await kidsMe())
+    expect(showcased.studioUnlockRevision).toBe(completed.studioUnlockRevision)
+
+    row.updatedAt = new Date(row.updatedAt.getTime() + 1_000)
+    const edited = await readJson(await kidsMe())
+    expect(edited.studioUnlockRevision).not.toBe(showcased.studioUnlockRevision)
   })
 
   test('rank NÃO regride quando o curso é re-nivelado depois de qualificado', async () => {

@@ -151,18 +151,13 @@ export function i3Saida(stage: GameKitCampaignStage): Achado[] {
 /** I4 — nenhum poço maior do que um pulo, a não ser que uma móvel o cruze. */
 export function i4Pocos(stage: GameKitCampaignStage, alcance = alcanceDoPulo()): Achado[] {
   const out: Achado[] = []
-  const moveis = stage.entities.filter((e) => e.kind === 'movingPlatform')
   let inicio = -1
   for (let col = 0; col <= stage.width; col += 1) {
     const vazia = col < stage.width && !temApoio(stage, col)
     if (vazia && inicio < 0) inicio = col
     if (!vazia && inicio >= 0) {
       const largura = col - inicio
-      const cruzada = moveis.some((m) => {
-        const raio = Number((m.props as { range?: number } | undefined)?.range ?? 0) / CELULA
-        return m.x + raio >= inicio - 1 && m.x - raio <= col
-      })
-      if (largura > alcance.cobrado && !cruzada) {
+      if (largura > alcance.cobrado && !movelCobre(stage, inicio, col - 1)) {
         out.push({
           onde: `${stage.id} colunas ${inicio}..${col - 1}`,
           o_que: `poço de ${largura} células sem plataforma móvel (o pulo cobre ${alcance.cobrado})`,
@@ -187,7 +182,6 @@ export function i5Alcance(stage: GameKitCampaignStage, alcance = alcanceDoPulo()
   if (!heroi || !saida) return []
   const chao = Array.from({ length: stage.width }, (_, col) => linhaDoChao(stage, col))
   const apoio = Array.from({ length: stage.width }, (_, col) => temApoio(stage, col))
-  const moveis = stage.entities.filter((e) => e.kind === 'movingPlatform')
   const alcancavel = new Set<number>([heroi.x])
   const fila = [heroi.x]
   const pode = (de: number, para: number): boolean => {
@@ -206,8 +200,11 @@ export function i5Alcance(stage: GameKitCampaignStage, alcance = alcanceDoPulo()
         alvo += passo
         vao += 1
       }
-      const cruzada = moveis.some((m) => Math.abs(m.x - col) <= vao + 4)
-      if (vao > alcance.cobrado && !cruzada) continue
+      if (
+        vao > alcance.cobrado &&
+        !movelCobre(stage, col + (passo > 0 ? 1 : alvo + 1), col + (passo > 0 ? vao : -1))
+      )
+        continue
       if (pode(col, alvo) && !alcancavel.has(alvo)) {
         alcancavel.add(alvo)
         fila.push(alvo)
@@ -364,6 +361,87 @@ export function i11ItensAlcancaveis(
     }
   })
   return out
+}
+
+/**
+ * I12 - toda PLATAFORMA esta ao alcance do PE, e toda movel CRUZA o poco dela.
+ *
+ * ⭐⭐ Esta e a rede que faltava, e a falta dela custou caro: a I11 media o
+ * alcance do CORPO (que serve a moeda, colhida de passagem) e nunca o do PE
+ * (que serve a plataforma, em que se POUSA). Com uma constante so, em 3, a
+ * camada vertical inteira das 32 fases virou decoracao e as tres fases de poco
+ * largo ficaram INTRANSPONIVEIS - o piloto automatico morria com 0 vidas dentro
+ * do buraco, e a I4 e a I5 aprovavam, porque bastava uma movel ter sido
+ * DECLARADA perto do poco.
+ *
+ * Medido no motor: plataforma a 2 celulas do chao -> pousa; a 3 e a 4 -> nunca.
+ */
+export function i12PlataformasAlcancaveis(
+  stage: GameKitCampaignStage,
+  alcance = alcanceDoPulo(),
+): Achado[] {
+  const out: Achado[] = []
+  /** Todas as linhas em que se fica de pe nesta coluna, de baixo para cima. */
+  const pisos = (col: number): number[] => {
+    const linhas: number[] = []
+    const chao = linhaDoChao(stage, col)
+    if (chao < stage.height) linhas.push(chao)
+    for (let row = 0; row < stage.height; row += 1) {
+      if (celula(stage, row, col) === '=') linhas.push(row)
+    }
+    return linhas.sort((a, b) => b - a)
+  }
+  const alcancavelDe = (col: number, row: number, vizinhanca: number): boolean => {
+    for (let c = col - vizinhanca; c <= col + vizinhanca; c += 1) {
+      if (c < 0 || c >= stage.width) continue
+      for (const piso of pisos(c)) {
+        if (piso > row && piso - row <= alcance.altura) return true
+      }
+    }
+    return false
+  }
+
+  stage.tiles.forEach((linha, row) => {
+    for (let col = 0; col < stage.width; col += 1) {
+      if (linha.charAt(col) !== '=') continue
+      if (!alcancavelDe(col, row, 1)) {
+        out.push({
+          onde: local(stage, col),
+          o_que: `a plataforma da linha ${row} esta alta demais para o pe (o pulo sobe ${alcance.altura})`,
+        })
+      }
+    }
+  })
+
+  for (const m of stage.entities) {
+    if (m.kind !== 'movingPlatform') continue
+    const raio = Math.round(Number((m.props as { range?: number } | undefined)?.range ?? 0) / 16)
+    // Ela nasce sobre o poco, entao a beirada de onde se salta pode estar longe.
+    if (!alcancavelDe(m.x, m.y, raio + 2)) {
+      out.push({
+        onde: `${stage.id} ${m.id}`,
+        o_que: `a plataforma movel da linha ${m.y} esta alta demais para o pe`,
+      })
+    }
+    if (raio <= 0)
+      out.push({ onde: `${stage.id} ${m.id}`, o_que: 'a plataforma movel nao anda (alcance zero)' })
+  }
+  return out
+}
+
+/**
+ * A movel cobre este poco? Regua UNICA, usada pela I4 e pela I5.
+ *
+ * ⚠️ As duas tinham a PROPRIA conta - a I4 comparava `x ± range` com o
+ * intervalo do poco e a I5 usava `|x - col| <= vao + 4`. Mesma pergunta, duas
+ * respostas: e assim que uma delas passa a aprovar o que a outra reprovaria.
+ */
+export function movelCobre(stage: GameKitCampaignStage, inicio: number, fim: number): boolean {
+  return stage.entities.some((m) => {
+    if (m.kind !== 'movingPlatform') return false
+    const raio = Number((m.props as { range?: number } | undefined)?.range ?? 0) / CELULA
+    return m.x + raio >= inicio - 1 && m.x - raio <= fim + 1
+  })
 }
 
 /** Formata os achados para a mensagem do teste dizer QUEM quebrou. */

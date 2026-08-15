@@ -13,15 +13,19 @@ const readJson = (res: Response): Promise<any> => res.json()
 const getUnlocks = (app: App, query = '?audience=kids') =>
   app.handle(new Request(`http://localhost/members/studio/unlocks${query}`, { headers }))
 
-async function qualify(
+async function markCourse(
   gamification: ReturnType<typeof buildApp>['gamification'],
   courseId: string,
+  opts: { completed?: boolean; showcased?: boolean },
   userId = USER,
 ) {
-  const events: XpEventInput[] = [
-    { sourceType: 'course_complete', sourceId: courseId, amount: 0 },
-    { sourceType: 'course_showcased', sourceId: courseId, amount: 0 },
-  ]
+  const events: XpEventInput[] = []
+  if (opts.completed !== false) {
+    events.push({ sourceType: 'course_complete', sourceId: courseId, amount: 0 })
+  }
+  if (opts.showcased !== false) {
+    events.push({ sourceType: 'course_showcased', sourceId: courseId, amount: 0 })
+  }
   await gamification.award({
     userId,
     accountId: ACCOUNT,
@@ -32,6 +36,12 @@ async function qualify(
     privileged: false,
   })
 }
+
+const qualify = (
+  gamification: ReturnType<typeof buildApp>['gamification'],
+  courseId: string,
+  userId = USER,
+) => markCourse(gamification, courseId, {}, userId)
 
 /** Marca o curso com o currículo que ele libera (o que o admin grava no metadata). */
 function withUnlocks(
@@ -74,15 +84,25 @@ describe('Members HTTP — GET /members/studio/unlocks', () => {
     const { app, courses, gamification } = buildApp()
     seedSampleCourse(courses, 'base-2d', 'published', 'kids', false, 'iniciante', '2d', 1)
     const course = withUnlocks(courses, 'base-2d', ['sz_g2d_create_ship'])
-    await gamification.award({
-      userId: USER,
-      accountId: ACCOUNT,
-      audience: 'kids',
-      events: [{ sourceType: 'course_complete', sourceId: course.id, amount: 0 }],
-      today: '2026-08-14',
-      now: NOW,
-      privileged: false,
-    })
+    await markCourse(gamification, course.id, { showcased: false })
+    expect((await readJson(await getUnlocks(app))).blocks).toEqual([])
+  })
+
+  test('bônus Kids concluído entrega blocos sem publicação no Mural', async () => {
+    const { app, courses, gamification } = buildApp()
+    seedSampleCourse(courses, 'bonus-2d', 'published', 'kids', false, 'iniciante', '2d', null)
+    const course = withUnlocks(courses, 'bonus-2d', ['sz_g2d_create_ship'])
+    await markCourse(gamification, course.id, { showcased: false })
+
+    expect((await readJson(await getUnlocks(app))).blocks).toEqual(['sz_g2d_create_ship'])
+  })
+
+  test('bônus Kids apenas publicado, sem conclusão, não entrega blocos', async () => {
+    const { app, courses, gamification } = buildApp()
+    seedSampleCourse(courses, 'bonus-2d', 'published', 'kids', false, 'iniciante', '2d', null)
+    const course = withUnlocks(courses, 'bonus-2d', ['sz_g2d_create_ship'])
+    await markCourse(gamification, course.id, { completed: false })
+
     expect((await readJson(await getUnlocks(app))).blocks).toEqual([])
   })
 

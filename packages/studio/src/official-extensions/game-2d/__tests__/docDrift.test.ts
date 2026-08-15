@@ -18,6 +18,7 @@ import {
 } from '../blockCatalogShared'
 import { G2D_SOCKET_SHADOW_TYPES, gameTwoDBlocks, gameTwoDToolboxCategory } from '../blocks'
 import {
+  GAME_TWO_D_EDGE_PAIRS,
   GAME_TWO_D_TILE_CONTACT_FILTERS,
   GAME_TWO_D_TILE_CONTACT_SIDES,
   GAME_TWO_D_VECTOR_TILE_ROLES,
@@ -268,6 +269,37 @@ describe('g2d — a doc/IA não podem citar categoria que não existe', () => {
     expect(tabela.length).toBeGreaterThan(200)
     const naTabela = [...tabela.matchAll(/^\s{4}'([a-z-]+)':/gm)].map((m) => m[1])
     expect(naTabela.sort()).toEqual([...G2D_ENEMY_BEHAVIORS].sort())
+  })
+
+  /**
+   * A MESMA classe, no dropdown mais novo da extensão (o par de bordas do quique).
+   * A auditoria genérica cobre "opção que não existe no enum"; a que falta é a
+   * perigosa, e aqui ela é barata de cair porque o contrato tem só dois valores.
+   */
+  it('as opções de par de bordas do dropdown são exatamente o contrato, na mesma ordem', () => {
+    const definicao = gameTwoDBlocks.find((b) => b.type === 'sz_g2d_bounce_edge_pair')
+    const dropdown = (
+      definicao?.args0 as { type: string; options?: [string, string][] }[] | undefined
+    )?.find((arg) => arg.type === 'field_dropdown')
+    expect(dropdown?.options?.map(([, valor]) => valor)).toEqual([...GAME_TWO_D_EDGE_PAIRS])
+  })
+
+  /**
+   * ⚠️ O runtime é a TERCEIRA cópia, e a dele é implícita: `bounceOnEdgePair` desvia
+   * em 'left-right' e deixa TODO o resto cair no ramo do teto e chão. Isso é correto
+   * para dois valores e vira defeito mudo no terceiro — a criança escolheria o par
+   * novo e quicaria no teto. A régua não dá para derivar do código (o ramo que falta
+   * não existe), então o que trava é a CONTAGEM: um par novo reprova aqui e manda
+   * quem o somou escrever o ramo.
+   */
+  it('o contrato de pares de bordas tem exatamente os dois ramos que o runtime escreve', () => {
+    expect([...GAME_TWO_D_EDGE_PAIRS]).toEqual(['top-bottom', 'left-right'])
+    const corpo = gameTwoDRuntime.slice(
+      gameTwoDRuntime.indexOf('function bounceOnEdgePair('),
+      gameTwoDRuntime.indexOf('function _paddleReflectAxis('),
+    )
+    expect(corpo.length).toBeGreaterThan(200)
+    expect(corpo).toContain("=== 'left-right'")
   })
 
   /**

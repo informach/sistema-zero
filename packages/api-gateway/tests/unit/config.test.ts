@@ -7,6 +7,17 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('config real expõe o batch de perfis somente com JWT staff+', () => {
+    const route = realConfig.routes.find((item) => item.id === 'auth-admin-profiles-batch')
+    expect(route).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/auth/admin/profiles/batch',
+      service: 'auth',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(route?.auth).not.toBe('public')
+  })
+
   test('valida e aplica defaults', async () => {
     const cfg = await loadGatewayConfig(env, {
       services: { p: service },

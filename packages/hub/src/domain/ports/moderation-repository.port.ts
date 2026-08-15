@@ -1,4 +1,5 @@
 import type { MuteBan, MuteBanKind } from '../moderation/mute-ban'
+import type { ContentStatus } from '../thread/thread'
 
 export type ModeratableTarget = 'thread' | 'comment'
 export type ReportStatus = 'open' | 'resolved' | 'dismissed'
@@ -16,6 +17,26 @@ export type ModerationKind =
   | 'unmute'
   | 'unban'
 
+export interface ModerationExcerpt {
+  id: string
+  authorId: string
+  authorAccountId: string | null
+  authorDisplayName: string | null
+  title: string | null
+  body: string
+  createdAt: Date
+}
+
+export interface ModerationContext {
+  spaceName: string
+  spaceAudience: 'adult' | 'kids'
+  channelName: string
+  /** Tópico pai quando o alvo é um comentário. */
+  thread: ModerationExcerpt | null
+  /** Comentário ao qual o alvo responde, quando houver. */
+  replyTo: ModerationExcerpt | null
+}
+
 /** Item da fila de aprovação (tópico ou comentário pendente), com contexto. */
 export interface PendingItem {
   type: ModeratableTarget
@@ -24,9 +45,16 @@ export interface PendingItem {
   channelId: string
   threadId: string | null
   authorId: string
+  authorAccountId: string | null
+  authorDisplayName: string | null
   title: string | null
   body: string
   createdAt: Date
+  context: ModerationContext
+}
+
+export interface ReportedContent extends PendingItem {
+  status: ContentStatus
 }
 
 export interface ReportRecord {
@@ -35,11 +63,15 @@ export interface ReportRecord {
   targetId: string
   spaceId: string
   reporterId: string
+  reporterAccountId: string | null
+  reporterDisplayName: string | null
   reason: string
   status: ReportStatus
   resolvedBy: string | null
   resolvedAt: Date | null
   createdAt: Date
+  /** O alvo pode ter sido removido depois da denúncia. */
+  content: ReportedContent | null
 }
 
 export interface CreateReportInput {
@@ -47,6 +79,8 @@ export interface CreateReportInput {
   targetId: string
   spaceId: string
   reporterId: string
+  reporterAccountId: string | null
+  reporterDisplayName: string | null
   reason: string
   now: Date
 }

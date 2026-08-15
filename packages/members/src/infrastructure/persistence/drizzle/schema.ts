@@ -71,6 +71,11 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   'studio',
   'certificate',
   'coming_soon',
+  // ⚠️ A ORDEM aqui espelha a FÍSICA do banco, não a lógica: `ALTER TYPE ADD VALUE` anexa ao FIM,
+  // e o drizzle compara o array com o que existe. Inserir no meio faria um `db:generate` futuro
+  // enxergar um enum divergente e propor recriá-lo — o que levaria junto a coluna que o usa.
+  // Bloco do PINTA (migration `0065`) — o ateliê de desenho embarcado na aula.
+  'pinta',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -650,16 +655,16 @@ export const avatarInventory = members.table(
 
 // ── Blocos do Estúdio liberados por CURSO (currículo, 08/2026) ──────────────
 // A paleta do Estúdio livre deixou de ser fixa por NÍVEL e passou a ser a UNIÃO dos
-// blocos dos cursos que o aluno concluiu E publicou no Mural (`metadata.studioUnlockBlocks`
-// de cada curso). Esta tabela é o **SNAPSHOT congelado** do que cada curso deu a cada
-// aluno no momento em que ele qualificou.
+// blocos dos cursos elegíveis do aluno (`metadata.studioUnlockBlocks`): bônus Kids concluído;
+// curso com posição e curso Adult concluído + publicado no Mural. Esta tabela é o
+// **SNAPSHOT congelado** do que cada curso deu ao aluno quando ele recebeu a ferramenta.
 //
 // ⚠️ Ela existe por UMA razão: **bloco liberado não é revogado**. A união calculada ao
 // vivo sobre o `metadata` atual tiraria a ferramenta da mão de quem já a tinha assim que
 // a professora editasse o JSON, despublicasse ou apagasse o curso — inclusive de projetos
 // que já a usam. É o mesmo remédio do `xp_events.source_level`, que existe para o rank
 // nunca regredir num re-nivelamento. A LEITURA é `ao vivo ∪ snapshot`: acréscimo no JSON
-// chega sozinho em quem já concluiu, remoção não tira de ninguém.
+// chega sozinho em quem já atende ao critério atual; remoção não tira de ninguém.
 //
 // `course_id` é SNAPSHOT sem FK (o curso pode ser apagado e a conquista permanece), e
 // `blocks` guarda a lista literal daquele momento.

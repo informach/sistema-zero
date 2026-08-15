@@ -30,7 +30,7 @@ interface Sonda {
   passos: number
   pares: number
   caixas: number
-  comparacoes: number
+  visitas: number
   linhasDeMapa: number
 }
 
@@ -41,10 +41,10 @@ interface Cena {
 }
 
 /** Guarda a cena em `atual` para o `afterEach` desmontar o espião do canvas. */
-async function cena(): Promise<Cena> {
+async function cena(windowOverrides: Record<string, unknown> = {}): Promise<Cena> {
   const spy = installCanvasSpy()
   const inspectors: Record<string, (zerar?: boolean) => unknown> = {}
-  const h = loadRuntime({ __SZSTUDIO_RUNTIME_INSPECTORS: inspectors })
+  const h = loadRuntime({ ...windowOverrides, __SZSTUDIO_RUNTIME_INSPECTORS: inspectors })
   await startPlaying(h, 400, 300)
   const porta = inspectors['game-2d-advanced:perf']
   if (typeof porta !== 'function') throw new Error('a sonda de desempenho não registrou')
@@ -93,13 +93,19 @@ describe('gk — a sonda de trabalho do quadro', () => {
     c.h.nextFrame(QUADRO_MS)
 
     const s = c.perf()
-    // 8 do pool + 3 personagens = 11 caixas.
+    // 8 do pool + 3 personagens = 11 visitas, 11 caixas: ninguém está em duas
+    // listas nesta cena, então não há o que de-duplicar.
+    expect(s.visitas).toBe(11)
     expect(s.caixas).toBe(11)
-    // ⭐ 55 → 0. A de-duplicação era `seen.indexOf(e)` numa lista que cresce
-    // (0+1+…+10 = 55 comparações para ONZE personagens); virou um carimbo de
-    // passada gravado na própria entidade. Medido no cenário grande: 3200
-    // entidades saíram de 1,40 ms por quadro para 0,146 ms — 9,6×.
-    expect(s.comparacoes).toBe(0)
+    // ⭐ A de-duplicação era `indexOf` numa lista que cresce — 0+1+…0 = 55
+    // comparações para ONZE personagens, quadrático. Virou carimbo de passada.
+    // Medido no cenário grande: 3200 entidades saíram de 1,40 ms por quadro para
+    // 0,146 ms — 9,6×.
+    //
+    // ⚠️ O contador antigo (`comparacoes`) morreu junto com o algoritmo: depois
+    // do conserto ele não tinha um só site de escrita, e `toBe(0)` passava por
+    // VÁCUO em dois testes. Era exatamente o "número decorativo" contra o qual o
+    // comentário ao lado avisava.
     // ⚠️ Anti-vácuo, e é ele que impede a sonda de virar número decorativo: o
     // contador tem que casar com o que o contexto 2D de fato recebeu.
     expect(c.spy.strokes.length + c.spy.arcs.length).toBe(s.caixas)
@@ -115,7 +121,7 @@ describe('gk — a sonda de trabalho do quadro', () => {
 
     const s = c.perf()
     expect(s.caixas).toBe(0)
-    expect(s.comparacoes).toBe(0)
+    expect(s.visitas).toBe(0)
   })
 
   it('⭐⭐ o "para cada par" CORTA o trabalho', async () => {
@@ -246,18 +252,65 @@ describe('gk — a sonda de trabalho do quadro', () => {
     expect(comIndice).toEqual(semIndice)
   })
 
+  it('⭐⭐ mover B no callback tem a MESMA semântica dos dois lados do limiar', async () => {
+    const acertosCom = (c: Cena, quantosA: number): number => {
+      c.h.api.defineMold('a', { w: 4, h: 4 })
+      c.h.api.defineMold('b', { w: 4, h: 4 })
+      for (let i = 0; i < quantosA; i += 1) c.h.api.spawnFromMold('a', i * 200, 10)
+      for (let i = 0; i < 39; i += 1) c.h.api.spawnFromMold('b', i * 200, 10_000)
+      const movido = c.h.api.spawnFromMold('b', (quantosA - 1) * 200, 10)
+      let acertos = 0
+      c.h.api.overlapGroups('a', 'b', () => {
+        acertos += 1
+        if (acertos === 1) c.h.api.placeCharacter(movido, (quantosA - 2) * 200, 10)
+      })
+      return acertos
+    }
+
+    const abaixo = acertosCom(await cena(), 39)
+    atual?.spy.restore()
+    atual = null
+    document.body.innerHTML = ''
+    const noLimiar = acertosCom(await cena(), 40)
+
+    expect({ abaixo, noLimiar }).toEqual({ abaixo: 1, noLimiar: 1 })
+  })
+
   it('o jogo comum não paga a varredura de LINHAS do mapa', async () => {
     // A varredura O(linhas) do `drawTilemap` vive atrás do ramo do mapa-cenário
     // do RPG. Travar o zero aqui é o que morde se alguém a tirar do ramo: num
     // mapa 512² ela custa 1,8 µs por desenho, todo quadro, para nada.
     //
-    // ⚠️ O CACHE dela (`_mapCols`, que conta as colunas uma vez e as guarda no
-    // mapa) fica SEM teste, e é uma escolha declarada: montar o ramo do
-    // mapa-cenário do RPG num teste custa mais do que os 1,8 µs que ele poupa.
-    // O que está travado aqui é o que importa — que o jogo comum não pague.
+    // O teste positivo logo abaixo cobre o cache; aqui fica travado que o jogo
+    // comum nem entra nesse ramo do mapa-cenário do RPG.
     const c = await cena()
     for (let i = 1; i <= 5; i += 1) c.h.nextFrame(i * QUADRO_MS)
 
     expect(c.perf().linhasDeMapa).toBe(0)
+  })
+
+  it('⭐ o cache do mapa CONTA a primeira varredura e não conta a segunda', async () => {
+    const c = await cena({
+      __SZGAME_ASSET_META: {
+        mapa: {
+          tilemap: {
+            grid: '1 1 1\n1 1 1',
+            solid: [],
+            tileSize: 16,
+            tileset: { dataUrl: 'data:image/png;base64,AA==' },
+          },
+        },
+      },
+    })
+    c.h.api.loadTilemap('chao', 'mapa')
+    c.h.api.rpgCreateMap('vila', 3, 2, () => {})
+    c.h.api.rpgGoMap('vila')
+    c.perf(true)
+
+    c.h.api.drawTilemap('chao', 'chão')
+    expect(c.perf().linhasDeMapa).toBe(2)
+
+    c.h.api.drawTilemap('chao', 'chão')
+    expect(c.perf().linhasDeMapa).toBe(2)
   })
 })

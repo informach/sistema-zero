@@ -533,6 +533,49 @@ Tipos mirror em `lib/types.ts` (`TeacherThread{,Summary}View`/`TeacherMessageVie
 PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../members/CLAUDE.md`
 §Conversas com o professor.
 
+## Bloco de aula do PINTA (`pinta`, 15/08/2026)
+
+O irmão do bloco `studio`, para DESENHO. `PintaBlockView`
+(`components/pinta/pinta-block.tsx`, wired no `lesson-blocks.tsx`) monta o
+`<PintaLesson>` de `@sistemazero/pinta/lesson` (import dinâmico no effect — IndexedDB/canvas
+não existem no SSR), com "Enviar para o professor" (recado opcional), **"Baixar o desenho"**
+(`.pinta.json` de UM asset — o mesmo envelope que a galeria do Pinta restaura, então a criança
+importa lá sem ponte nova), Expandir e o selo "o professor já viu".
+
+- ⭐ **O rascunho É o armazenamento injetado.** Diferente do Estúdio (store local próprio +
+  seed por prop), aqui o `<PintaLesson>` recebe `createPintaPersistence({namespace})` — um banco
+  PRÓPRIO por **bloco + perfil** (`aula-<blockId>-<viewerId>`) — e a regra "o que já está
+  guardado vence o desenho inicial" mora dentro do pacote. Por isso o rascunho não aparece na
+  ordem de seed daqui: só decidimos qual desenho oferecer como INICIAL quando o armazenamento
+  está vazio, e aí a ordem é **entrega → cadeia → desenho do professor**, cada passo lazy e
+  best-effort (falha de rede cai no próximo). A regra é PURA (`lib/pinta-seed.ts`
+  `resolvePintaSeed`, testada em `tests/pinta-seed.test.ts`) — o componente só liga os fios;
+  três ramos dentro de um `useEffect` é o tipo de coisa que regride sem ninguém ver.
+- **Cadeia entre aulas (`content.chain`):** com o bloco em cadeia e sem entrega NESTA aula, o
+  editor abre com o desenho que a criança entregou na aula anterior —
+  `GET …/pinta-carryover` (handler `pintaCarryover`, client
+  `members.getPintaCarryover`). ⚠️ A ENTREGA vence a cadeia: se ela já enviou aqui, retomar do
+  desenho anterior apagaria o trabalho desta aula. ⚠️ Quem garante que o desenho carregado ENCAIXA
+  no bloco é a AUTORIA (o members recusa cadeia com tipos misturados, 409
+  `PINTA_CHAIN_TYPE_MISMATCH`) — aqui não há conversão nem checagem de tipo.
+- ⚠️ **Sem o namespace próprio o desenho da aula cairia na galeria PESSOAL da criança**, e o
+  `setPintaStorageNamespace` global viraria variável compartilhada entre a página do Pinta e a
+  aula.
+- ⚠️ **`handle.save()` ANTES de `getAsset()`** no envio: o autosave do Pinta é debounced e sem
+  isso o professor receberia a versão de um segundo atrás, sem os últimos traços.
+- ⚠️ O efeito de carga roda **uma vez por bloco** (`biome-ignore` explícito): re-executar com o
+  desenho inicial/estado da entrega nas deps re-hidrataria por cima do que a criança desenha.
+- Handlers `pintaSubmit`/`pintaSubmissionGet` (`POST|GET
+  /api/members/lessons/:lessonId/blocks/:blockId/pinta-submission`); clients
+  `members.submitPintaAsset`/`getOwnPintaSubmission`. Tipos `PintaBlock`/`PintaStateView`
+  (= `StudioStateView`)/`PintaSubmissionResultView`/`OwnPintaSubmissionView`; `LessonBlockView`
+  ganhou **`pintaState`** em campo próprio (os dois blocos coexistem numa aula).
+- ⚠️ **O community ADULTO também compila o pacote**: o renderizador de blocos é compartilhado,
+  então o app dele precisa de `transpilePackages: ['@sistemazero/pinta']` + o par
+  `@import`/`@source` no globals.css (sem o `@import` os tokens `--color-pin-*` não existem e o
+  editor sai sem cor). Idem o admin. Os `railway.json` dos TRÊS e o `ci.yml` listam
+  `packages/pinta/**` como gatilho.
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa

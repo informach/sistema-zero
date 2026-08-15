@@ -14,17 +14,17 @@ import { KidsConfetti } from './kids-confetti'
 import { KidsMascot } from './mascot'
 
 /**
- * Comemoração de FERRAMENTA NOVA — a criança concluiu e publicou um curso, e os blocos que
- * ele ensinava entraram na caixa de ferramentas do Estúdio dela, para sempre.
+ * Comemoração de FERRAMENTA NOVA — a criança tornou um curso elegível (concluiu um bônus ou
+ * concluiu e publicou um curso com posição), e os blocos ensinados entraram no Estúdio para sempre.
  *
  * É o caso COMUM (7 de cada 8 cursos de um degrau); quando o curso também faz subir de
  * nível, este overlay não aparece: o ganho entra DENTRO da `LevelUpCelebration`, para a
  * criança nunca encarar três festas em fila (decisão da usuária). Quem decide é o
  * `CelebrationWatcher`.
  *
- * ⚠️ Confete SEM som, de propósito: esta festa acontece a cada curso e vem logo depois da
- * `MuralCelebration`, que já tocou o som — dois sons seguidos, 49 vezes ao longo da
- * carreira, cansam. O som fica onde é raro (a subida de nível).
+ * ⚠️ Confete SEM som, de propósito: esta festa pode acontecer a cada curso. Nos cursos com
+ * vitrine, ela vem logo depois da `MuralCelebration`, que já tocou o som; nos bônus sem projeto,
+ * ela aparece sozinha. O som fica onde é raro: a subida de nível.
  *
  * ⚠️⚠️ ALTURA É CONTRATO: o cartão precisa caber na tela SEM rolagem, em qualquer tamanho de
  * ganho. Esta modal já estourou a tela porque enumerava as gavetas DUAS vezes — o título

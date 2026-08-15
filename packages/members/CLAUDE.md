@@ -128,6 +128,15 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > migration dá `invalid input value for enum` — a mesma forma do incidente 03/08. O `preDeployCommand`
 > roda `db:migrate` primeiro, então a ordem está garantida; confirme que ela entrou antes de dar o
 > lote por no ar.
+> E **`0065`** (`0065_pinta_block`: `ALTER TYPE "members"."lesson_block_kind" ADD VALUE IF NOT
+> EXISTS 'pinta'` — bloco do ateliê de desenho, ver Conceito 6; carimbo `when` **1786790416110**,
+> acima da marca d'água da `0064`; SEM tabela/coluna nova) — **APLICADA em LOCAL e CONFERIDA por
+> `pg_enum`**, pendente em staging/prod. ⚠️ Consultas comparam a coluna ao literal `'pinta'` (o
+> espelho SQL `lessonHasGatingBlock`, entre outras): subir o código ANTES dá `invalid input value
+> for enum`. ⚠️ **O array do `schema.ts` põe `'pinta'` no FIM**, espelhando a física do banco
+> (`ADD VALUE` anexa) — inserir no meio faz um `db:generate` futuro enxergar enum divergente e
+> propor RECRIÁ-LO, levando a coluna junto. Conferido rodando `db:generate` (propôs só o ADD
+> VALUE, nada destrutivo) e descartando a migration duplicada.
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 >
@@ -196,7 +205,7 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 5. **Convenção**: `entitlement.courseRef === course.slug` (e === `fulfillment.courseRef`
    do produto no catálogo). É o elo oferta→curso.
 6. **Aula = lista ordenada de BLOCOS** (`lesson_blocks`, união discriminada por
-   `kind`: rich_text/video/image/audio/quiz/embed/ebook/**studio**/certificate/**coming_soon**).
+   `kind`: rich_text/video/image/audio/quiz/embed/ebook/**studio**/**pinta**/certificate/**coming_soon**).
    Aula composta (vídeo +
    interativo + texto) = vários blocos. Comunidade só modelada (feature é fatia
    seguinte).
@@ -312,8 +321,8 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    sequência que constrói um único projeto (ex.: um jogo). `GET /members/lessons/:lessonId/
    blocks/:blockId/studio-carryover` → `{project|null}` devolve a ÚLTIMA entrega do aluno no
    bloco studio `chain`-igual da aula PUBLICADA imediatamente anterior (ordem do curso:
-   `module.sortOrder`, depois `lesson.sortOrder` — `CourseRepository.findPreceding
-   StudioBlockInChain`, query única + `getOne`); o front semeia o editor SÓ na 1ª abertura
+   `module.sortOrder`, depois `lesson.sortOrder` — `CourseRepository.findPrecedingChainBlock`,
+   que recebe o KIND (o Pinta usa a mesma), query única + `getOne`); o front semeia o editor SÓ na 1ª abertura
    (sem rascunho local). `GetStudioCarryoverService`: acesso pela CONTA, projeto pelo PERFIL
    (`getOne(userId,…)` — nunca vaza de outro aluno); bloco sem `chain`/1ª da cadeia/sem
    entrega → `{project:null}` (cai no `initialProject`). Carrega a última entrega MESMO sem
@@ -341,6 +350,60 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    do gateway) e o members o passa ao `execute(...)` — admin/staff PUBLICA no Mural p/ testar o fluxo
    (chave-mestra virtual; a rota de aluno `showcase-payload` já honrava `isPrivilegedActor`). Antes era
    `privileged:false` fixo (equipe não ia ao Mural) — a trava impedia testar. Aluno comum é sempre `false`.
+   **`pinta` — o ateliê de desenho na aula (15/08/2026, migration `0065`):** o irmão do bloco
+   `studio`, para DESENHO. `{initialAsset (snapshot PintaAsset, JSON defensivo aqui), allowTools?,
+   chain?}`. A professora cria o desenho (tipo + tamanho) no editor embutido do admin; a criança
+   desenha na aula e ENVIA — e isso **bloqueia a conclusão** (`PINTA_GATE_NOT_SUBMITTED`→409),
+   como o Estúdio. Sem auto-correção (não existe régua de "desenho certo").
+   ⭐ **REUSA `studio_submissions` inteira**, e é isso que fez a fatia caber: a fila global do
+   professor, o status pendente/respondida/conferida, a conversa de Recados (contexto
+   `studio_submission` — a copy dos 4 pontos é neutra, "Sua entrega"/"Entrega", nada vaza
+   "Estúdio") e a ficha 360 funcionaram sem uma linha nova. `SubmitStudioProjectService` e
+   `GetOwnStudioSubmissionService` ganharam o param `kind: SubmissionBlockKind` (`'studio'` |
+   `'pinta'`, default studio) — o que muda é o kind exigido, o teto e o nome no erro. ⚠️ Dívida
+   assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
+   Rotas: `POST|GET /members/lessons/:lessonId/blocks/:blockId/pinta-submission` (o GET devolve
+   `{asset}`, não `{project}` — quem consome é o bloco de desenho) e
+   `GET …/pinta-carryover`. Projeção: **`pintaState`** em
+   campo PRÓPRIO (mesma forma do `studioState`; os dois blocos coexistem na mesma aula e o front
+   escolhe pelo `kind`, não por qual estado veio preenchido).
+   **Cadeia entre aulas (`chain`)** — mesmo mecanismo do Estúdio: `GetStudioCarryoverService`
+   ganhou o param `kind` e `CourseRepository.findPrecedingStudioBlockInChain` virou
+   **`findPrecedingChainBlock(courseId, lessonId, chain, kind)`**. O kind entra na BUSCA: cadeia de
+   desenho e cadeia de código nunca se cruzam, mesmo com o mesmo nome (semear o editor de desenho
+   com um projeto de código quebraria o bloco em silêncio).
+   ⚠️⚠️ **A armadilha que o Estúdio não tem: aqui o TIPO é load-bearing.** Um projeto do Estúdio é
+   um projeto; um desenho `pixel-sprite` 32×32 não encaixa num bloco configurado como
+   `vector-background`. E como o carryover VENCE o `initialAsset`, o bloco abriria calado com outra
+   coisa. Por isso a AUTORIA **recusa ao salvar**: `BlockAdminService.create/update` chama
+   `assertPintaChainTypeMatches` → `ContentAdminRepository.listPintaChainBlocks(courseId, chain,
+   {excludeBlockId})` → **409 `PINTA_CHAIN_TYPE_MISMATCH`** com uma mensagem que NOMEIA a aula que
+   já usa a cadeia e o tipo dela (o `PINTA_ASSET_KIND_LABELS` existe só para essa frase). Decisão
+   da usuária (15/08): recusar > avisar — depois de salvo, o estado quebrado só apareceria para a
+   criança. O `update` exclui o PRÓPRIO id (senão trocar o tipo de um bloco sozinho na cadeia seria
+   impossível: ele brigaria consigo mesmo) e snapshot ILEGÍVEL (`assetKind: null`) não conflita dos
+   dois lados — recusar por causa de um bloco quebrado prenderia o autor justamente ao consertá-lo.
+   ⚠️ O SQL de `listPintaChainBlocks` espelha `pintaAssetKindOf` (`content->'initialAsset'->>'kind'`)
+   e faz `trim` nos dois lados do `chain`, igual ao carryover — mexeu num, mexa no outro. Aulas
+   RASCUNHO entram na checagem de propósito (a cadeia é da autoria). ⚠️ Nenhum teste de
+   integração alcança esses dois SQL (o fake in-memory os reimplementa em JS, então lá não podem
+   divergir) — quem os roda de verdade é **`tests/db/pinta-chain-sql.test.ts`**, mesma régua do
+   `gating-block-sql.test.ts`.
+   ⭐ Como o invariante é POR CURSO (e não "só a aula anterior"), reordenar aulas/módulos pode
+   mudar QUAL bloco o carryover pega, mas nunca torna o desenho incompatível. E aula não muda de
+   curso (`LessonFields` não tem `moduleId`), então não há porta lateral para o estado quebrado.
+   ⚠️⚠️ **O teto `MAX_PINTA_ASSET_CHARS` (1,8 M) é ditado pelo GATEWAY, não pelo formato.** O teto
+   global de corpo da borda é 2 MB e rota nenhuma pode subir acima dele. MEDIDO contra o codec
+   real: personagem 128x128 com ruído = 42 k · mapa 128x128 cheio = 246 k · cenário 512x512 com 4
+   camadas denso = **1,5 M** · o mesmo com ruído por pixel = **2,6 M**, que NÃO passa. Por isso a
+   AUTORIA oferece no máximo **256x256** de cenário (`PINTA_LESSON_ASSET_OPTIONS`, no pacote): o
+   pior caso ali cai a ~650 k e nenhuma tela configurável produz um desenho que a criança não
+   consegue enviar. Telas maiores = Pinta solto, onde o desenho não trafega.
+   ⚠️ Os 7 tipos de desenho estão COPIADOS aqui (`PINTA_ASSET_KINDS`) porque o members não pode
+   depender do pacote (serviço Bun; a dep arrastaria lucide-react e o peer de React). A guarda é
+   `packages/pinta/src/assets/members-conformance.test.ts`, que mora no PINTA e lê este arquivo
+   por caminho relativo (precedente do `badge-conformance` do kids). Testes:
+   `tests/integration/pinta.test.ts` + `tests/unit/pinta-block.test.ts`.
 7. **Quiz é corrigido NO SERVIDOR** (`quiz_attempts` guarda o histórico; score 0–100 por
    conjunto EXATO de choices). O GET da aula **NUNCA envia o gabarito** — a projeção
    member-facing (`toMemberFacingQuizContent`) remove `correctChoiceIds`/`explanation`
@@ -1156,8 +1219,10 @@ A **avaliação de avatar+aura dos autores** do fórum é servida pela rota em l
 O Estúdio livre deixou de liberar blocos **por NÍVEL** e passou a liberar **por CURSO**: cada curso
 declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régua do `salesPageUrl`, mas
 **AUSENTE PRESERVA** como `audience`/`level`, para um PATCH de build antigo não apagar currículo) e o
-aluno recebe a UNIÃO dos cursos que **concluiu E publicou no Mural** (a mesma interseção
-`course_complete` ∩ `course_showcased` da carreira). O NÍVEL segue decidindo o MODO (livre/Ponte/Pro).
+aluno recebe a UNIÃO dos cursos ELEGÍVEIS. O critério usa o `careerSlot` VIVO: bônus Kids (`null`)
+exige só `course_complete`; curso Kids com posição e curso Adult exigem também `course_showcased`.
+O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a carreira continua usando exclusivamente a
+interseção dos dois marcos.
 
 - **A lista é dos blocos que o curso USA** (fluxo da autora), então repetir fundamentos de cursos
   anteriores é o NORMAL, não erro. Quem acumula é o ALUNO: a paleta é a união deduplicada dos cursos
@@ -1167,17 +1232,20 @@ aluno recebe a UNIÃO dos cursos que **concluiu E publicou no Mural** (a mesma i
 - **Rota** `GET /members/studio/unlocks?audience=` → `{blocks: string[]}` (`GetStudioUnlocksService`).
   À PARTE do `/gamification/me` de propósito: a lista pode ter centenas de ids e o `me` é buscado em
   toda página do kids. Gateway: `members-studio-unlocks`.
-- **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (interseção + `courses.metadata`,
-  INNER join — ≠ do `listQualifyingCareerSlots`, que usa LEFT). Bônus e `lenda` CONTAM aqui (todo
-  curso pode ensinar ferramenta; só a CARREIRA os ignora).
+- **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (`course_complete` como origem +
+  LEFT join do Mural + `courses.metadata`, com INNER join no curso vivo **da mesma audiência**).
+  Bônus e `lenda` Kids entram só pela conclusão; cursos com posição e Adult entram pela
+  interseção. Só a CARREIRA ignora bônus e `lenda`.
 - ⭐⭐ **`studio_block_grants` (migration `0062`) = o "não revoga".** Regra da usuária: bloco liberado
   nunca é retirado. A união ao vivo sozinha NÃO garante isso (editar o JSON, despublicar ou apagar o
   curso tiraria a ferramenta de quem já a tinha, inclusive de projetos que a usam). O snapshot é
   gravado **NA LEITURA, como UNIÃO** com o que já estava lá — então "não perde" significa
   exatamente "não perde o que já lhe foi servido", que é a promessa cumprível, e não há hook nos dois
   caminhos de marco. Mesmo remédio do `xp_events.source_level` (que existe p/ o rank não regredir).
-  A escrita só ocorre quando a união CRESCE (abrir o Estúdio não vira UPDATE por visita) e é
-  **best-effort**: falhar em congelar não nega a paleta de agora. Testes: `tests/unit/studio-unlocks.test.ts`.
+  A escrita só ocorre quando a união CRESCE (abrir o Estúdio não vira UPDATE por visita), e o
+  UPSERT faz a união FINAL atomicamente para um escritor atrasado nunca apagar um grant concorrente.
+  É **best-effort**: falhar em congelar não nega a paleta de agora. Testes:
+  `tests/unit/studio-unlocks.test.ts` + `tests/db/studio-unlock.repository.test.ts`.
 
 ## Perfis kids (allowance — fatia 06/2026, PR1)
 

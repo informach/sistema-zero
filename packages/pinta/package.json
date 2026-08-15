@@ -7,6 +7,8 @@
   "module": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./assets": "./src/assets/index.ts",
+    "./lesson": "./src/lesson/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
     "./styles.css": "./src/styles/pinta.css"
   },

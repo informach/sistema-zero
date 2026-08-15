@@ -1,0 +1,12 @@
+-- Bloco de aula do PINTA (o ateliê de desenho embarcado, como o bloco do Estúdio).
+--
+-- ⚠️ ADD VALUE só ADICIONA o rótulo; nada nesta migração o ESCREVE. O Postgres proíbe escrever
+-- um valor de enum adicionado na MESMA transação (medido: literal, cast e subquery do pg_enum,
+-- os três recusados; só a COMPARAÇÃO `::text` passa), e o drizzle roda todas as pendentes numa
+-- transação só.
+--
+-- ⚠️ Subir o CÓDIGO antes desta migração dá `invalid input value for enum` nas consultas que
+-- comparam a coluna ao literal 'pinta' — a mesma forma do incidente de 03/08. O preDeploy roda
+-- `db:migrate` antes do boot, então a ordem está garantida; confirme no banco antes de dar o
+-- lote por no ar.
+ALTER TYPE "members"."lesson_block_kind" ADD VALUE IF NOT EXISTS 'pinta';

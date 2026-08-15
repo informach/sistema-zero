@@ -456,6 +456,13 @@
       "when": 1786754843645,
       "tag": "0064_peaceful_malcolm_colcord",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1786790416110,
+      "tag": "0065_pinta_block",
+      "breakpoints": true
     }
   ]
 }

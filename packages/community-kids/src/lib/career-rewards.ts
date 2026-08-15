@@ -9,10 +9,11 @@ export interface CareerRewardInfo {
  * O que cada POSTO da carreira abre, do jeito que a criança lê.
  *
  * ⚠️ **Desde a reforma do currículo (08/2026), o posto NÃO libera mais blocos.** Quem põe
- * ferramenta na caixa é o CURSO (`studioUnlockBlocks`, a união do que ela concluiu e publicou);
- * o posto decide só o MODO do editor (livre → Ponte → Pro) e quais PRODUTOS abrem. Anunciar
- * kit por nível aqui ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança
- * sobe de posto e a caixa não muda.
+ * ferramenta na caixa é o CURSO (`studioUnlockBlocks`): bônus entrega ao concluir; curso com
+ * posição entrega ao concluir e publicar. O posto decide só o MODO do editor
+ * (livre → Ponte → Pro) e quais PRODUTOS abrem. Anunciar kit por nível aqui
+ * ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança sobe de posto e a
+ * caixa não muda.
  *
  * Por isso três postos do meio (Explorador(a), Mestre, Arquiteto(a)) não anunciam ferramenta
  * nenhuma — porque não abrem nenhuma. O que eles dão de verdade é o posto e a trilha nova, e é

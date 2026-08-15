@@ -377,9 +377,10 @@ export interface CourseView {
   /** Trava sequencial das aulas (estilo Duolingo) ligada para este curso. */
   sequentialLock: boolean
   /**
-   * Blocos que ESTE curso libera no Estúdio livre quando o aluno o conclui E publica
-   * no Mural (08/2026). A paleta do aluno é a UNIÃO dos cursos conquistados, no lugar
-   * do conjunto fixo por nível. Opcional p/ tolerar members antigo.
+   * Blocos que ESTE curso libera no Estúdio livre quando o aluno satisfaz o critério
+   * atual (bônus Kids: conclusão; demais: conclusão + Mural). A paleta é a UNIÃO dos
+   * cursos conquistados, no lugar do conjunto fixo por nível. Opcional p/ tolerar
+   * members antigo.
    */
   studioUnlockBlocks?: string[]
   /**
@@ -428,6 +429,7 @@ export const LESSON_BLOCK_KINDS = [
   'embed',
   'ebook',
   'studio',
+  'pinta',
   'certificate',
   'coming_soon',
 ] as const
@@ -559,6 +561,20 @@ export interface ComingSoonBlock {
   kind: 'coming_soon'
   message?: string
 }
+/**
+ * Bloco Pinta: o ateliê de desenho embarcado, com o desenho JÁ criado pela autora. O
+ * `initialAsset` é o snapshot `PintaAsset` autorado no editor embutido — opaco aqui (o formato é
+ * do pacote, que o sanea nas duas pontas).
+ */
+export interface PintaBlock {
+  kind: 'pinta'
+  initialAsset: unknown
+  /** Ferramentas liberadas (vazia/ausente = a caixa inteira). */
+  allowTools?: string[]
+  /** Nome do desenho contínuo (cadeia entre aulas). */
+  chain?: string
+}
+
 export type LessonBlockContent =
   | RichTextBlock
   | VideoBlock
@@ -568,6 +584,7 @@ export type LessonBlockContent =
   | EmbedBlock
   | EbookBlock
   | StudioBlock
+  | PintaBlock
   | CertificateBlock
   | ComingSoonBlock
 

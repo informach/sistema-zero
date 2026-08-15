@@ -1,5 +1,13 @@
 'use client'
 
+/**
+ * A entrega do Pinta e a do Estúdio moram na MESMA tabela (`studio_submissions`), e a linha não
+ * carrega o kind do bloco. O PAYLOAD discrimina: desenho tem `kind` num dos 7 tipos do Pinta;
+ * projeto do Estúdio tem `files`. A régua vem do PACOTE (`isPintaAssetLike`) — copiar a lista
+ * aqui seria a terceira cópia dos mesmos 7 nomes.
+ */
+import { isPintaAssetLike } from '@sistemazero/pinta/assets'
+import type { PintaHandle } from '@sistemazero/pinta/lesson'
 import type { Project, StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -9,10 +17,28 @@ import { ArrowRight, CheckCheck, Download, Maximize2, MessageSquare, Minimize2 }
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { StudioSubmissionDetailView } from '@/lib/types'
 import { TeacherThreadPanel } from './teacher-thread-panel'
+
+/** Baixa o desenho como `.pinta.json` — o mesmo envelope que a galeria do Pinta restaura. */
+function downloadPintaJson(asset: unknown): void {
+  const name = (asset as { name?: string })?.name ?? 'desenho'
+  const safe = name.replace(/[^\w.-]+/g, '-').slice(0, 60) || 'desenho'
+  void import('@sistemazero/pinta/assets').then(({ assetToJson }) => {
+    const blob = new Blob([assetToJson(asset as never)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${safe}.pinta.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  })
+}
 
 function downloadProjectJson(project: Project): void {
   const name = (project as { name?: string }).name ?? 'projeto'
@@ -80,6 +106,8 @@ export function StudioSubmissionViewer({
   const [reviewing, setReviewing] = useState(false)
   // Handle exigido pelo StudioEmbed; na inspeção é só leitura (não usamos getProject).
   const viewerRef = useRef<StudioHandle | null>(null)
+  // Idem para a entrega de DESENHO (o embed exige o ref; aqui ninguém lê).
+  const pintaViewerRef = useRef<PintaHandle | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -168,13 +196,23 @@ export function StudioSubmissionViewer({
                 {maximized ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
                 {maximized ? 'Restaurar' : 'Tela cheia'}
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => downloadProjectJson(detail.project)}
-              >
-                <Download className="size-4" /> Baixar .szproject.json
-              </Button>
+              {isPintaAssetLike(detail.project) ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadPintaJson(detail.project)}
+                >
+                  <Download className="size-4" /> Baixar .pinta.json
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadProjectJson(detail.project)}
+                >
+                  <Download className="size-4" /> Baixar .szproject.json
+                </Button>
+              )}
             </div>
           </div>
 
@@ -230,20 +268,31 @@ export function StudioSubmissionViewer({
           ) : null}
 
           {/* key por aluno+bloco: remonta o editor (re-semeia) ao trocar de entrega —
-              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente). */}
-          <StudioEmbed
-            key={`${userId}:${blockId}`}
-            initialProject={detail.project}
-            handleRef={viewerRef}
-            className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
-            features={{
-              terminal: false,
-              ai: false,
-              professional: false,
-              export: false,
-              extensions: false,
-            }}
-          />
+              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente).
+              ⚠️ O professor PODE mexer no desenho/projeto aberto aqui, e isso é inócuo de
+              propósito: `persistence:'none'` e ninguém captura o handle na inspeção. */}
+          {isPintaAssetLike(detail.project) ? (
+            <PintaEmbed
+              key={`${userId}:${blockId}`}
+              initialAsset={detail.project as never}
+              handleRef={pintaViewerRef}
+              className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
+            />
+          ) : (
+            <StudioEmbed
+              key={`${userId}:${blockId}`}
+              initialProject={detail.project}
+              handleRef={viewerRef}
+              className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
+              features={{
+                terminal: false,
+                ai: false,
+                professional: false,
+                export: false,
+                extensions: false,
+              }}
+            />
+          )}
         </div>
       )}
     </Dialog>

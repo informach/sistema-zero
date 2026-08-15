@@ -1,6 +1,8 @@
 import type { JSX } from 'react'
+import { Fragment, useEffect } from 'react'
 import { COPY } from '../../core/copy'
 import type { AnyTilesetAsset, TilemapAsset } from '../../core/project'
+import { filterTools, toolFallback } from '../../core/toolCuration'
 import type { TileStamp } from '../../tiles/stamp'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import {
@@ -22,6 +24,7 @@ import {
   Trash2,
 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
+import { useToolCuration } from './editorContext'
 import { TilePicker } from './TilePicker'
 
 export type MapTool = 'pencil' | 'fill' | 'eraser' | 'line' | 'rect' | 'select' | 'picker' | 'pan'
@@ -59,6 +62,55 @@ export function TilemapToolbar({
   onToggleAutoExpand,
   onToggleCollision,
 }: TilemapToolbarProps): JSX.Element {
+  const allowTools = useToolCuration()
+
+  // A ativa cortada viraria estado impossível: selecionada e fora da tela. Mesma régua do pixel.
+  useEffect(() => {
+    const next = toolFallback(tool, MAP_TOOLS, allowTools)
+    if (next) onSelectTool(next as MapTool)
+  }, [tool, allowTools, onSelectTool])
+
+  const drawNodes = filterTools(MAP_TOOLS, allowTools).map((entry) => (
+    <ToolButton
+      key={entry.id}
+      icon={entry.icon}
+      label={entry.label}
+      shortcut={entry.shortcut}
+      active={tool === entry.id}
+      onClick={() => onSelectTool(entry.id)}
+    />
+  ))
+
+  // Nenhum dos dois está nos presets: crescer o mapa muda o tamanho da entrega, e ver as colisões
+  // é assunto de quem monta jogo, não de quem está desenhando a aula.
+  const extraNodes = filterTools(
+    [
+      {
+        id: 'autoExpand',
+        node: (
+          <ToolButton
+            icon={Maximize}
+            label={COPY.tiles.autoExpand}
+            active={autoExpand}
+            onClick={onToggleAutoExpand}
+          />
+        ),
+      },
+      {
+        id: 'showCollision',
+        node: (
+          <ToolButton
+            icon={BrickWall}
+            label={COPY.tiles.showCollision}
+            active={showCollision}
+            onClick={onToggleCollision}
+          />
+        ),
+      },
+    ],
+    allowTools,
+  ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
+
   return (
     <div
       role="toolbar"
@@ -66,29 +118,12 @@ export function TilemapToolbar({
       aria-orientation="vertical"
       className="pin-panel flex shrink-0 flex-col items-center gap-1 overflow-y-auto p-2"
     >
-      {MAP_TOOLS.map((entry) => (
-        <ToolButton
-          key={entry.id}
-          icon={entry.icon}
-          label={entry.label}
-          shortcut={entry.shortcut}
-          active={tool === entry.id}
-          onClick={() => onSelectTool(entry.id)}
-        />
-      ))}
-      <div className="my-1 h-px w-6 bg-pin-border" />
-      <ToolButton
-        icon={Maximize}
-        label={COPY.tiles.autoExpand}
-        active={autoExpand}
-        onClick={onToggleAutoExpand}
-      />
-      <ToolButton
-        icon={BrickWall}
-        label={COPY.tiles.showCollision}
-        active={showCollision}
-        onClick={onToggleCollision}
-      />
+      {drawNodes}
+      {/* Divisor só existe entre dois grupos que existem. */}
+      {drawNodes.length > 0 && extraNodes.length > 0 ? (
+        <div className="my-1 h-px w-6 bg-pin-border" />
+      ) : null}
+      {extraNodes}
     </div>
   )
 }

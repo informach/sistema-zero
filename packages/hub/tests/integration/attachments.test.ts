@@ -5,7 +5,7 @@ import type {
   ChannelFields,
   SpaceFields,
 } from '../../src/domain/ports/community-admin-repository.port'
-import { buildApp, jsonRequest, studentHeaders } from '../helpers'
+import { adminHeaders, buildApp, jsonRequest, studentHeaders } from '../helpers'
 
 const PUBLIC: AccessConfig = { visibility: 'public', courses: [], roles: [] }
 
@@ -196,6 +196,47 @@ describe('anexos', () => {
       }),
     )
     expect(denied.status).toBe(403)
+  })
+
+  test('moderação resolve anexo de conteúdo oculto sem abrir acesso para o aluno', async () => {
+    const ctx = buildApp()
+    const { channelId } = await seedChannel(ctx)
+    const owner = randomUUID()
+    const ownerHeaders = studentHeaders(owner)
+    const reg = await registerAttachment(ctx, ownerHeaders)
+    const { id: attachmentId } = (await reg.json()) as { id: string }
+    const created = await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: ownerHeaders,
+        body: { title: 'Prova', body: 'conteúdo denunciado', attachmentIds: [attachmentId] },
+      }),
+    )
+    const { id: threadId } = (await created.json()) as { id: string }
+    await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/hide`, { headers: adminHeaders() }),
+    )
+
+    const studentResolve = await ctx.app.handle(
+      jsonRequest('GET', `/hub/attachments/${attachmentId}/resolve`, { headers: ownerHeaders }),
+    )
+    expect(studentResolve.status).toBe(404)
+
+    const moderationResolve = await ctx.app.handle(
+      jsonRequest('GET', `/hub/admin/attachments/${attachmentId}/resolve`, {
+        headers: adminHeaders(),
+      }),
+    )
+    expect(moderationResolve.status).toBe(200)
+    expect(((await moderationResolve.json()) as { storageRef: string }).storageRef).toStartWith(
+      'r2ugc:',
+    )
+
+    const forgedStudent = await ctx.app.handle(
+      jsonRequest('GET', `/hub/admin/attachments/${attachmentId}/resolve`, {
+        headers: studentHeaders(randomUUID()),
+      }),
+    )
+    expect(forgedStudent.status).toBe(403)
   })
 
   test('comentário com anexo: aparece na view e resolve pelo comentário', async () => {

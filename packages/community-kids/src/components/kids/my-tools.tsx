@@ -12,13 +12,14 @@ import { familyLabel } from '@/lib/studio-family'
  * "Minhas ferramentas" (/perfil): as GAVETAS da caixa de ferramentas do Estúdio que a
  * criança já conquistou nos cursos.
  *
- * É a cara visível do currículo (08/2026): cada curso concluído E publicado no Mural
- * entrega os blocos que ele ensinou, para sempre. Mostrar GAVETA em vez de lista de
+ * É a cara visível do currículo (08/2026): bônus entrega ao concluir; curso com posição
+ * entrega ao concluir e publicar no Mural. Os blocos ensinados ficam para sempre. Mostrar
+ * GAVETA em vez de lista de
  * blocos é o que torna a recompensa legível — "ganhei 💥 Colisões" é uma conquista;
  * "ganhei 6 blocos" não é.
  *
- * Sem nenhuma ferramenta a seção some: quem ainda não concluiu curso nenhum usa o
- * Estúdio pelo perfil do nível, e prometer uma lista vazia só desanimaria.
+ * Sem nenhuma ferramenta a seção some: quem ainda não conquistou nenhuma usa o Estúdio
+ * pelo perfil do nível, e prometer uma lista vazia só desanimaria.
  *
  * ⚠️⚠️ AGRUPADO POR FAMÍLIA, e não por acaso. A lista era uma fileira só de pílulas, e isso
  * quebrava de dois jeitos ao mesmo tempo:

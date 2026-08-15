@@ -27,6 +27,7 @@
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
+    "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "@tiptap/pm": "^3.22.2",

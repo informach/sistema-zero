@@ -57,6 +57,13 @@
       "when": 1786000040000,
       "tag": "0007_studio_meta",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786000050000,
+      "tag": "0008_moderation_reporter_snapshot",
+      "breakpoints": true
     }
   ]
 }

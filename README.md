@@ -153,7 +153,9 @@ Segredos que precisam **bater entre serviços** (ver os `.env.example`):
 Config que precisa **bater entre admin e community**: as envs `R2_*` (mesmo R2),
 incluindo `R2_PRIVATE_BUCKET` (bucket **privado** dos materiais didáticos — o admin
 escreve, o community lê e serve com marca d'água do aluno; dev `testes-privado` ·
-prod `comunidade-sistema-zero-privado`).
+prod `comunidade-sistema-zero-privado`) e `R2_UGC_BUCKET` (anexos privados da
+comunidade — o community escreve e o admin/community leem após autorização do Hub;
+dev/staging `testes-ugc` · prod `comunidade-sistema-zero-ugc`).
 
 ## Subir tudo (dev)
 

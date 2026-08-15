@@ -3,7 +3,7 @@
  * conhece o Estúdio nem faz rede: capabilities entram por callbacks opcionais
  * — ausentes, a UI degrada escondendo o recurso (mesmo padrão do Pensa).
  */
-import type { PintaProjectRef } from './project'
+import type { PintaAsset, PintaProjectRef } from './project'
 
 /** Uma animação nomeada da folha (from/to = índices row-major na folha inteira). */
 export interface PintaSpriteAnimMeta {
@@ -215,4 +215,20 @@ export interface PintaHostAdapter {
   initialAssetId?: string
   /** Sessão desacoplada do Pensa, restaurada pelo host a partir de `?tarefa=`. */
   taskSession?: PintaTaskSession
+  /**
+   * Avisa a cada revisão CONFIRMADA do desenho aberto (o autosave já gravou).
+   *
+   * ⭐ É por aqui que o host persiste no backend, e por isso ele dispara TAMBÉM quando a
+   * persistência local é a de memória (`persistence: 'none'`) — sem isso o bloco de aula não
+   * teria o que enviar ao professor. Mesmo contrato do `onChange` do Estúdio.
+   *
+   * ⚠️ Abrir um desenho NÃO dispara: só edição dispara.
+   */
+  onChange?: (asset: PintaAsset) => void
+  /**
+   * Curadoria da CAIXA DE FERRAMENTAS: lista NÃO-VAZIA mostra só esses ids, ausente ou vazia
+   * mostra tudo (o Pinta solto nunca cura). É o `allowBlocks` do Estúdio aplicado à caixa —
+   * ver `core/toolCuration.ts`, que também traz os presets e a regra da ferramenta ativa.
+   */
+  allowTools?: readonly string[]
 }

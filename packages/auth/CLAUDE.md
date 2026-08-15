@@ -248,8 +248,10 @@ hub/kids: nome clicável + página pública; migration `0009`), `status`
   agregado (`setBirthDate`, fora do `updateDetails`) e a rota `PATCH /:id` RECUSA (403)
   qualquer `birthDate` numa **sessão de perfil** (a criança) — detectada pelo
   `x-auth-account-id`. O `CreateProfileBody`/`UpdateProfileBody` ganham `birthDate?`
-  (`AAAA-MM-DD`); sanidade (data real, não-futura, faixa ≤18 anos) é do agregado
-  (`assertBirthDate`). `ProfileView.birthDate` flui ao painel/apps.
+  (`AAAA-MM-DD`); sanidade (data real, não-futura, **menos de 18 anos no cadastro**)
+  é do agregado (`assertBirthDate`). Data inalterada é no-op: um perfil já válido não
+  perde acesso nem fica impossível de editar ao completar 18 anos. Fora da faixa →
+  `PROFILE_AGE_RESTRICTED` (400). `ProfileView.birthDate` flui ao painel/apps.
 - **Perfil público é OPT-IN dos pais e EDITÁVEL SÓ PELOS PAIS** (gamificação,
   06/2026): a flag `public_profile_enabled` nasce **OFF** (default `false`) e tem
   caminho próprio no agregado (`setPublicProfileEnabled`, fora do `updateDetails`) — a
@@ -376,7 +378,7 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   `X-Auth-User-*` confiável ao upstream (e remove os de entrada — anti-spoof). As
   rotas `/auth/*` no gateway são **públicas + `passthrough`** (o IdP cuida da própria
   auth; o `/me` precisa do Bearer passando direto).
-- **Rotas admin `/auth/admin/users*`** (gestão de usuários pelo painel) são a
+- **Rotas admin `/auth/admin/users*` e `/auth/admin/profiles/batch`** (gestão de usuários pelo painel) são a
   EXCEÇÃO: o gateway as protege com **JWT + RBAC** (`GET` listar/detalhe + `POST
   .../batch` hidratação em lote por ids → superadmin/admin/staff; `POST /auth/admin/users`
   criar + `PATCH` editar → superadmin/admin) e injeta `X-Auth-User-*` (NÃO `passthrough`)
@@ -389,7 +391,10 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   match exato) + **`createdFrom`/`createdTo`** (ISO-8601, janela de cadastro — a rota parseia p/
   Date, `buildListWhere` aplica `gte`/`lte`). Os filtros são compostos (AND).
   O `batch` (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
-  p/ a área de membros (que lista `userId`s) — evita N+1. O serviço lê o ator desses
+  p/ a área de membros (que lista `userId`s) — evita N+1. O batch irmão de perfis
+  (`BatchGetProfilesService` + `ProfileRepository.listActiveByIds`, ≤100 ids) devolve SOMENTE
+  `{id,name,publicProfileEnabled}` de perfis ativos; a moderação combina os dois lotes para
+  mostrar criança + responsável sem buscar todos os perfis de cada conta. O serviço lê o ator desses
   headers (`resolveGatewayActor`),
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;

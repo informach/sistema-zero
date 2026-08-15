@@ -367,21 +367,28 @@ export const gameTwoDWorldTilesRuntime = `  // ---- Tiles / tilemaps (v0.5.0) --
     // contexto célula a célula. Num mapa de 375 células eram 1.125 travessias de
     // contexto para 375 desenhos úteis; agora são duas para o mapa inteiro.
     var comFolha = !(map.tileset && map.tileset._kind === 'g2d-vector-tileset');
+    // ⚠️ try/finally é OBRIGATÓRIO, não zelo: o lote deixa o modo pixel LIGADO
+    // enquanto dura. Se algo aqui dentro lançar sem fechar o lote, o modo fica
+    // ligado para sempre — e aí toda imagem que a criança desenhar com os blocos
+    // de Canvas do núcleo sai serrilhada, em silêncio, pelo resto da partida.
     if (comFolha) _crispBatch(ctx, map.tileset ? map.tileset.frameW : 0, cell);
-    for (var r = firstRow; r <= lastRow; r++) {
-      var row = map.rows[r];
-      var rowLastCol = Math.min(lastCol, row.length - 1);
-      for (var c = firstCol; c <= rowLastCol; c++) {
-        var idx = row[c];
-        if (idx < 0) continue;
-        if (comFolha) {
-          drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
-        } else {
-          _drawVectorTile(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+    try {
+      for (var r = firstRow; r <= lastRow; r++) {
+        var row = map.rows[r];
+        var rowLastCol = Math.min(lastCol, row.length - 1);
+        for (var c = firstCol; c <= rowLastCol; c++) {
+          var idx = row[c];
+          if (idx < 0) continue;
+          if (comFolha) {
+            drawFrame(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+          } else {
+            _drawVectorTile(ctx, map.tileset, idx, ox + c * cell, oy + r * cell, cell, cell);
+          }
         }
       }
+    } finally {
+      if (comFolha) _crispBatchEnd(ctx);
     }
-    if (comFolha) _crispBatchEnd(ctx);
   }
   /**
    * Impede o sprite de atravessar os tiles sólidos do mapa: empurra o sprite para

@@ -34,6 +34,7 @@ import type {
   ModerationActionInput,
   ModerationRepository,
   PendingItem,
+  ReportedContent,
   ReportRecord,
   ReportStatus,
 } from '../../src/domain/ports/moderation-repository.port'
@@ -445,14 +446,16 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async setThreadStatus(
     id: string,
     status: Thread['status'],
+    fromStatuses: readonly Thread['status'][],
     now: Date,
     bumpActivity = false,
-  ): Promise<boolean> {
+  ): Promise<'updated' | 'not_found' | 'invalid_state'> {
     const t = this.threads.find((x) => x.id === id)
-    if (!t) return false
+    if (!t) return 'not_found'
+    if (!fromStatuses.includes(t.status)) return 'invalid_state'
     t.status = status
     if (bumpActivity) t.lastActivityAt = now
-    return true
+    return 'updated'
   }
 
   async setThreadPinned(id: string, pinned: boolean): Promise<boolean> {
@@ -469,9 +472,15 @@ export class InMemoryThreadRepository implements ThreadRepository {
     return true
   }
 
-  async setCommentStatus(id: string, status: Comment['status'], now: Date): Promise<boolean> {
+  async setCommentStatus(
+    id: string,
+    status: Comment['status'],
+    fromStatuses: readonly Comment['status'][],
+    now: Date,
+  ): Promise<'updated' | 'not_found' | 'invalid_state'> {
     const c = this.comments.find((x) => x.id === id)
-    if (!c) return false
+    if (!c) return 'not_found'
+    if (!fromStatuses.includes(c.status)) return 'invalid_state'
     const prev = c.status
     c.status = status
     const thread = this.threads.find((t) => t.id === c.threadId)
@@ -483,7 +492,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
         thread.commentCount = Math.max(0, thread.commentCount - 1)
       }
     }
-    return true
+    return 'updated'
   }
 
   async createComment(input: CreateCommentInput): Promise<Comment> {
@@ -735,9 +744,12 @@ export class InMemoryModerationRepository implements ModerationRepository {
         channelId: t.channelId,
         threadId: null,
         authorId: t.authorId,
+        authorAccountId: t.authorAccountId,
+        authorDisplayName: t.authorDisplayName,
         title: t.title,
         body: t.body,
         createdAt: t.createdAt,
+        context: this.contextFor(t.channelId, null, null),
       })
     }
     for (const c of this.threads.comments) {
@@ -753,9 +765,12 @@ export class InMemoryModerationRepository implements ModerationRepository {
         channelId: thread.channelId,
         threadId: c.threadId,
         authorId: c.authorId,
+        authorAccountId: c.authorAccountId,
+        authorDisplayName: c.authorDisplayName,
         title: null,
         body: c.body,
         createdAt: c.createdAt,
+        context: this.contextFor(thread.channelId, thread, c.replyToId),
       })
     }
     items.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
@@ -769,11 +784,14 @@ export class InMemoryModerationRepository implements ModerationRepository {
       targetId: input.targetId,
       spaceId: input.spaceId,
       reporterId: input.reporterId,
+      reporterAccountId: input.reporterAccountId,
+      reporterDisplayName: input.reporterDisplayName,
       reason: input.reason,
       status: 'open',
       resolvedBy: null,
       resolvedAt: null,
       createdAt: input.now,
+      content: null,
     })
   }
 
@@ -787,7 +805,94 @@ export class InMemoryModerationRepository implements ModerationRepository {
     if (opts.spaceId) rows = rows.filter((r) => r.spaceId === opts.spaceId)
     if (opts.status) rows = rows.filter((r) => r.status === opts.status)
     rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
-    return { items: rows.slice(opts.offset, opts.offset + opts.limit), total: rows.length }
+    return {
+      items: rows.slice(opts.offset, opts.offset + opts.limit).map((report) => ({
+        ...report,
+        content: this.reportedContentFor(report.targetType, report.targetId),
+      })),
+      total: rows.length,
+    }
+  }
+
+  private contextFor(channelId: string, thread: Thread | null, replyToId: string | null) {
+    const channel = this.structure.channels.find((item) => item.id === channelId)
+    const space = this.structure.spaces.find((item) => item.id === channel?.spaceId)
+    if (!channel || !space) throw new Error('Estrutura inconsistente no fake de moderação')
+    const replyTo = replyToId
+      ? (this.threads.comments.find((item) => item.id === replyToId) ?? null)
+      : null
+    return {
+      spaceName: space.name,
+      spaceAudience: space.audience,
+      channelName: channel.name,
+      thread: thread
+        ? {
+            id: thread.id,
+            authorId: thread.authorId,
+            authorAccountId: thread.authorAccountId,
+            authorDisplayName: thread.authorDisplayName,
+            title: thread.title,
+            body: thread.body,
+            createdAt: thread.createdAt,
+          }
+        : null,
+      replyTo: replyTo
+        ? {
+            id: replyTo.id,
+            authorId: replyTo.authorId,
+            authorAccountId: replyTo.authorAccountId,
+            authorDisplayName: replyTo.authorDisplayName,
+            title: null,
+            body: replyTo.body,
+            createdAt: replyTo.createdAt,
+          }
+        : null,
+    }
+  }
+
+  private reportedContentFor(type: 'thread' | 'comment', id: string): ReportedContent | null {
+    if (type === 'thread') {
+      const thread = this.threads.threads.find((item) => item.id === id)
+      if (!thread) return null
+      const channel = this.structure.channels.find((item) => item.id === thread.channelId)
+      if (!channel) return null
+      return {
+        type,
+        id,
+        spaceId: channel.spaceId,
+        channelId: thread.channelId,
+        threadId: null,
+        authorId: thread.authorId,
+        authorAccountId: thread.authorAccountId,
+        authorDisplayName: thread.authorDisplayName,
+        title: thread.title,
+        body: thread.body,
+        createdAt: thread.createdAt,
+        status: thread.status,
+        context: this.contextFor(thread.channelId, null, null),
+      }
+    }
+    const comment = this.threads.comments.find((item) => item.id === id)
+    if (!comment) return null
+    const thread = this.threads.threads.find((item) => item.id === comment.threadId)
+    if (!thread) return null
+    const channel = this.structure.channels.find((item) => item.id === thread.channelId)
+    if (!channel) return null
+    return {
+      type,
+      id,
+      spaceId: channel.spaceId,
+      channelId: thread.channelId,
+      threadId: thread.id,
+      authorId: comment.authorId,
+      authorAccountId: comment.authorAccountId,
+      authorDisplayName: comment.authorDisplayName,
+      title: null,
+      body: comment.body,
+      createdAt: comment.createdAt,
+      status: comment.status,
+      context: this.contextFor(thread.channelId, thread, comment.replyToId),
+    }
   }
 
   async findReportById(id: string): Promise<ReportRecord | null> {

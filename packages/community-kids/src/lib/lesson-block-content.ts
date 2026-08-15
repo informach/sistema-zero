@@ -7,6 +7,7 @@ import type {
   EmbedBlock,
   ImageBlock,
   LessonBlockView,
+  PintaBlock,
   QuizBlock,
   RichTextBlock,
   StudioBlock,
@@ -23,6 +24,7 @@ export type ParsedLessonBlock = {
     | EmbedBlock
     | ImageBlock
     | QuizBlock
+    | PintaBlock
     | RichTextBlock
     | StudioBlock
     | VideoBlock
@@ -252,6 +254,24 @@ function isStudioBlock(value: unknown): value is StudioBlock {
   )
 }
 
+/**
+ * ⚠️ O `initialAsset` é validado só na FORMA MÍNIMA (objeto com `id`/`name`/`kind` texto): o
+ * formato interno do desenho é do Pinta, que o sanea ao abrir, e reimplementá-lo aqui daria uma
+ * segunda régua para manter em dia — a primeira que drifasse faria o bloco SUMIR da aula.
+ */
+function isPintaBlock(value: unknown): value is PintaBlock {
+  if (!isRecord(value) || value.kind !== 'pinta' || !isRecord(value.initialAsset)) return false
+  const asset = value.initialAsset
+  if (
+    typeof asset.id !== 'string' ||
+    typeof asset.name !== 'string' ||
+    typeof asset.kind !== 'string'
+  ) {
+    return false
+  }
+  return optionalStringArray(value, 'allowTools') && optionalString(value, 'chain')
+}
+
 function isComingSoonBlock(value: unknown): value is ComingSoonBlock {
   return isRecord(value) && value.kind === 'coming_soon' && optionalString(value, 'message')
 }
@@ -277,6 +297,8 @@ export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | nu
       return isCertificateBlock(value) ? { block, content: value } : null
     case 'studio':
       return isStudioBlock(value) ? { block, content: value } : null
+    case 'pinta':
+      return isPintaBlock(value) ? { block, content: value } : null
     case 'coming_soon':
       return isComingSoonBlock(value) ? { block, content: value } : null
     default:

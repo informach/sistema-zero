@@ -335,17 +335,18 @@ export const gameTwoDWorldGroupsRuntime = `  // ---- Grupos de sprites: MUITOS s
     // ⚠️ A ordem tem de ficar IDÊNTICA: o sort é estável e comparar só a base
     // preserva a ordem de inserção nos empates, que é o que os jogos vistos de
     // cima já dependem (dois sprites na mesma linha do chão).
-    var itens = group.items;
-    var snapshot = new Array(itens.length);
-    for (var i = 0; i < itens.length; i++) {
-      var item = itens[i];
-      snapshot[i] = {
-        sprite: item,
-        base: item ? _finiteNumber(item.y, 0) + _finiteNumber(item.h, 0) : 0
-      };
+    // ⚠️ A base fica NO SPRITE, não num objeto novo por item: embrulhar cada um
+    // num par { sprite, base } trocaria 6.100 chamadas por 200 alocações POR
+    // QUADRO, e lixo de GC é o custo que este runtime menos pode pagar.
+    var snapshot = group.items.slice();
+    for (var i = 0; i < snapshot.length; i++) {
+      var item = snapshot[i];
+      if (item) item._depthKey = _finiteNumber(item.y, 0) + _finiteNumber(item.h, 0);
     }
-    snapshot.sort(function (a, b) { return a.base - b.base; });
-    for (var d = 0; d < snapshot.length; d++) drawSprite(ctx, snapshot[d].sprite);
+    snapshot.sort(function (a, b) {
+      return (a ? a._depthKey : 0) - (b ? b._depthKey : 0);
+    });
+    for (var d = 0; d < snapshot.length; d++) drawSprite(ctx, snapshot[d]);
     _drawEnemyBeamsIfAny(ctx, group);
   }
   /**

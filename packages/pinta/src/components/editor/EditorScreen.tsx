@@ -14,7 +14,7 @@
  * e prévia/animações colapsáveis.
  */
 import type { JSX } from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
@@ -25,7 +25,7 @@ import {
   validateStudioPayloadSize,
 } from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
-import { isPintaStorageBudgetError, persistAssets } from '../../state/persistence'
+import { isPintaStorageBudgetError } from '../../state/persistence'
 import {
   createSessionStore,
   type PintaSessionState,
@@ -276,7 +276,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
 }
 
 function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolean }): JSX.Element {
-  const { adapter, gallery } = usePintaApp()
+  const { adapter, gallery, lesson } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const savedAsset = useEditor((state) => state.savedAsset)
@@ -288,8 +288,10 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [resizeOpen, setResizeOpen] = useState(false)
-  // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor).
-  const resizeTarget = resizeTargetOf(asset)
+  // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor), OU aula em que o
+  // professor fixou o tamanho.
+  const resizeTarget = lesson && !lesson.allowResize ? null : resizeTargetOf(asset)
+  const canExport = !lesson || lesson.allowExport
   const resynced = useStudioResync({
     asset: savedAsset,
     animationId,
@@ -418,13 +420,16 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
 
   return (
     <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
-      <ToolButton
-        icon={ArrowLeft}
-        label={COPY.editor.back}
-        disabled={closing}
-        aria-busy={closing}
-        onClick={onBack}
-      />
+      {/* Numa aula não há para onde voltar: o desenho é a tela inteira do bloco. */}
+      {lesson ? null : (
+        <ToolButton
+          icon={ArrowLeft}
+          label={COPY.editor.back}
+          disabled={closing}
+          aria-busy={closing}
+          onClick={onBack}
+        />
+      )}
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
       </span>
@@ -460,10 +465,12 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         </span>
       ) : null}
       <div className="ml-auto flex items-center gap-2">
-        <Button onClick={() => setExportOpen(true)}>
-          <Download aria-hidden="true" className="size-4" />
-          {COPY.editor.download}
-        </Button>
+        {canExport ? (
+          <Button onClick={() => setExportOpen(true)}>
+            <Download aria-hidden="true" className="size-4" />
+            {COPY.editor.download}
+          </Button>
+        ) : null}
         {asset.kind === 'tilemap' && adapter.sendGameToStudio ? (
           <Button disabled={sending} onClick={() => void handlePlayMap()}>
             <Gamepad2 aria-hidden="true" className="size-4" />
@@ -493,12 +500,14 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           }}
         />
       ) : null}
-      <ExportDialog
-        open={exportOpen}
-        asset={asset}
-        frameRef={{ animationId, frameIndex }}
-        onClose={() => setExportOpen(false)}
-      />
+      {canExport ? (
+        <ExportDialog
+          open={exportOpen}
+          asset={asset}
+          frameRef={{ animationId, frameIndex }}
+          onClose={() => setExportOpen(false)}
+        />
+      ) : null}
     </header>
   )
 }
@@ -525,8 +534,31 @@ function sessionDefaultsFor(asset: PintaAsset): Partial<PintaSessionState> {
   return { zoom, zoomLevels: VECTOR_ZOOM_LEVELS, showGrid: false }
 }
 
+/**
+ * Avisa o host a cada revisão CONFIRMADA (é assim que o bloco de aula salva no backend).
+ *
+ * Componente próprio, e não um efeito no `EditorScreen`, para que salvar não re-renderize o
+ * editor inteiro — mesmo motivo do `InitialAssetOpener`.
+ *
+ * ⚠️ A trava é a IDENTIDADE do `savedAsset`, nunca um booleano "já montei": em StrictMode o React
+ * monta → limpa → monta, e a 2ª montagem passaria pelo booleano — foi assim que o reenvio ao
+ * Estúdio disparava só por abrir o desenho.
+ */
+function AssetChangeReporter({ onChange }: { onChange: (asset: PintaAsset) => void }): null {
+  const savedAsset = useEditor((state) => state.savedAsset)
+  const lastRef = useRef(savedAsset)
+
+  useEffect(() => {
+    if (savedAsset === lastRef.current) return
+    lastRef.current = savedAsset
+    onChange(savedAsset)
+  }, [savedAsset, onChange])
+
+  return null
+}
+
 export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | null {
-  const { adapter, gallery, closeEditor } = usePintaApp()
+  const { adapter, gallery, persistence, closeEditor, onEditorReady } = usePintaApp()
   const { showToast } = useToast()
   const [stores] = useState<{ editor: PintaEditorStore; session: PintaSessionStore } | null>(() => {
     const asset = gallery.getState().assets.find((a) => a.id === assetId)
@@ -534,7 +566,9 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     return {
       editor: createEditorStore({
         asset,
-        persist: (saved, linked) => persistAssets([saved, ...linked]),
+        // O armazenamento vem do contexto, e não do módulo: o `persistAssets` solto vai direto
+        // ao IndexedDB do perfil e furaria o armazenamento injetado pelo host.
+        persist: (saved, linked) => persistence.persistAssets([saved, ...linked]),
         persistErrorMessage: (error) =>
           isPintaStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError,
         onSaved: (saved, linked) => gallery.getState().absorbMany([saved, ...linked]),
@@ -548,6 +582,13 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
   useEffect(() => {
     if (!stores) closeEditor()
   }, [stores, closeEditor])
+
+  // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`.
+  useEffect(() => {
+    if (!stores || !onEditorReady) return
+    onEditorReady(stores.editor)
+    return () => onEditorReady(null)
+  }, [stores, onEditorReady])
 
   // O primeiro desenho aberto nesta sessão passa a ser o output vinculado do
   // Cartão de Criação. Recarregar é idempotente; trocar de desenho religa.
@@ -609,10 +650,18 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [stores])
 
-  if (!stores) return null
+  // A curadoria da caixa vem do HOST e desce por contexto, e não por prop em cada caixa: pixel,
+  // vetor e mapa montam em ramos diferentes deste mesmo componente.
+  const editorContext = useMemo(
+    () => (stores ? { ...stores, allowTools: adapter.allowTools } : null),
+    [stores, adapter.allowTools],
+  )
+
+  if (!stores || !editorContext) return null
 
   return (
-    <PintaEditorProvider value={stores}>
+    <PintaEditorProvider value={editorContext}>
+      {adapter.onChange ? <AssetChangeReporter onChange={adapter.onChange} /> : null}
       <div className="flex min-h-0 flex-1 flex-col">
         <EditorTopbar
           closing={closing}
