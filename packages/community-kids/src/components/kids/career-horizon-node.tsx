@@ -10,7 +10,7 @@ import type { StudentLevelSlug } from '@/lib/types'
 import { useWiggle } from './use-wiggle'
 
 /**
- * O nó que FECHA o mapa da carreira enquanto o catálogo não tem os 48 cursos.
+ * O nó que FECHA o mapa da carreira enquanto o catálogo não tem os 49 cursos.
  *
  * No lugar da fileira de medalhões cinzas com cadeado (que para a criança lê como "você não
  * fez o suficiente"), um nó só, com a arte da Lenda e um martelinho: os postos daqui para

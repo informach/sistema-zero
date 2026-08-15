@@ -345,4 +345,78 @@ export const gameTwoDClassicBlocks: BlockDefinition[] = [
     colour: C,
     tooltip: 'Desenha uma cobertura de 0 a 100% para transições de cena.',
   },
+  {
+    // ⭐ O gênero inteiro do Pong/Breakout num bloco. Antes disto o rebote eram
+    // ~220 linhas de IR no exemplo Pong, e as três coisas que o faziam funcionar
+    // (não grudar, não afundar, não atravessar) dependiam do acaso do ajuste.
+    type: 'sz_g2d_paddle_bounce',
+    placement: 'command',
+    message0: 'Rebater a bola %1 na raquete %2 acelerando %3 por cento',
+    args0: [
+      { type: 'field_sprite_picker', name: 'BALL', text: 'bola' },
+      { type: 'field_sprite_picker', name: 'PADDLE', text: 'raquete' },
+      { type: 'input_value', name: 'BOOST', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'A bola volta pelo lado COMPRIDO da raquete: raquete em pé devolve para os lados (Pong), raquete deitada devolve para cima (Breakout). Bater na beirada manda a bola mais de lado, e é assim que se controla a jogada. A cada rebatida ela fica um tiquinho mais rápida; 0 desliga isso. O bloco já cuida de não deixar a bola grudar nem atravessar a raquete.',
+  },
+  {
+    type: 'sz_g2d_bounce_edge_pair',
+    placement: 'command',
+    message0: 'Quicar o sprite %1 só %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'bola' },
+      {
+        type: 'field_dropdown',
+        name: 'EDGES',
+        options: [
+          ['no teto e no chão', 'top-bottom'],
+          ['nas laterais', 'left-right'],
+        ],
+      },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'Quica só num par de bordas e deixa o outro par ABERTO, e é por ele que a bola sai e vira ponto. É o que o Pong precisa e o "Quicar nas bordas da tela" não faz, porque lá a bola nunca sai. O sprite nunca aparece meio quadro fora da tela.',
+  },
+  {
+    type: 'sz_g2d_arrows_y',
+    placement: 'command',
+    message0: 'Mover o sprite %1 com as setas ↑ ↓, velocidade %2',
+    args0: [
+      { type: 'field_sprite_picker', name: 'SPRITE', text: 'raquete' },
+      { type: 'input_value', name: 'SPEED', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    colour: C,
+    tooltip:
+      'O par vertical do "Mover o sprite com as setas": sobe e desce. Vale também para as teclas W e S e para os botões de toque no celular. Combine com "Manter o sprite dentro da tela" para a raquete não sumir.',
+  },
+  {
+    type: 'sz_g2d_stage_width',
+    message0: 'a largura da tela',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A largura da área do jogo, em pontos. Use no lugar de digitar o número: assim o jogo continua certo se você mudar o tamanho da tela. O meio da tela é "a largura da tela ÷ 2".',
+  },
+  {
+    type: 'sz_g2d_stage_height',
+    message0: 'a altura da tela',
+    args0: [],
+    output: 'JSValue',
+    colour: C,
+    tooltip:
+      'A altura da área do jogo, em pontos. Use no lugar de digitar o número: assim o jogo continua certo se você mudar o tamanho da tela.',
+  },
 ]

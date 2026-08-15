@@ -20,16 +20,18 @@ A carreira possui sete etapas:
 | Etapa | Posições obrigatórias | Quem estuda |
 |---|---:|---|
 | **Primeiros Passos** | 1 | Faísca |
-| Iniciante 2D | 1 a 7 | Construtor(a) |
+| Iniciante 2D | 1 a 8 | Construtor(a) |
 | Iniciante 3D | 1 a 8 | Inventor(a) |
 | Intermediário 2D | 1 a 8 | Explorador(a) |
 | Intermediário 3D | 1 a 8 | Mestre dos Jogos |
 | Avançado 2D | 1 a 8 | Arquiteto(a) |
 | Avançado 3D | 1 a 8 | Gênio da Criação |
 
-São **48 posições obrigatórias**, o mesmo total de antes. `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
+São **49 posições obrigatórias** (1 na entrada + 8 em cada uma das outras seis etapas). `careerSlot = null` identifica um curso bônus, que não conta para subir de nível.
 
-**Primeiros Passos (14/08/2026) é a trilha da Faísca.** Até então o curso base morava no Iniciante 2D e a divisão entre Faísca e Construtor(a) existia só na tela do mapa — por isso a Faísca **não podia ter curso bônus**: todo bônus do Iniciante 2D caía na trilha do Construtor(a). Agora ela tem etapa própria, com uma posição obrigatória (o curso de entrada) mais os bônus dela, que abrem quando esse curso é concluído e publicado. O Iniciante 2D ficou com 7 posições, então continuam sendo 8 cursos para virar Inventor(a) — nada mudou de tamanho para a criança.
+**Primeiros Passos (14/08/2026) é a trilha da Faísca.** Até então o curso base morava no Iniciante 2D e a divisão entre Faísca e Construtor(a) existia só na tela do mapa — por isso a Faísca **não podia ter curso bônus**: todo bônus do Iniciante 2D caía na trilha do Construtor(a). Agora ela tem etapa própria, com uma posição obrigatória (o curso de entrada) mais os bônus dela, que abrem quando esse curso é concluído e publicado.
+
+**O Iniciante 2D voltou a ter 8 posições (15/08/2026).** Quando o curso base saiu para a etapa nova, ele havia sido encolhido para 7, de modo que o total continuasse 48. A decisão foi desfeita: **toda etapa que não é a de entrada tem 8 posições**, sem exceção. O total passou de 48 para 49 e são **9 cursos da Faísca até Inventor(a)** (1 + 8). A regra uniforme vale mais que o total redondo.
 
 A posição 1 é o curso base de cada etapa. Ao entrar em uma etapa, a criança abre primeiro esse curso. Os demais cursos da mesma etapa só abrem depois que o curso base for concluído e publicado. Cursos de etapas futuras mostram uma mensagem de continuação da carreira e não criam um link para um curso que ainda está bloqueado.
 
@@ -55,11 +57,11 @@ No Community Kids, a página **/cursos** é o **Mapa da Carreira**: uma fita cur
 
 ### O mapa acompanha o catálogo (horizonte, 08/2026)
 
-A carreira exige **48 cursos** (1 nos Primeiros Passos + 7 no Iniciante 2D + 8 em cada um dos outros cinco degraus). Enquanto eles não existem, o mapa **não
+A carreira exige **49 cursos** (1 nos Primeiros Passos + 8 em cada um dos outros seis degraus). Enquanto eles não existem, o mapa **não
 mostra a escada inteira**: ele desenha até o **horizonte do catálogo**, que é o nível mais alto que
 os cursos publicados hoje conseguem entregar de fato, e fecha com um nó **"E tem muito mais pela
 frente"** (toque balança o nó e mostra um recado de que essa parte está em construção). Sem isso a criança lê
-"faltam 7 cursos" de cursos que ninguém gravou e encara uma fileira de cadeados, que ela entende
+"faltam 8 cursos" de cursos que ninguém gravou e encara uma fileira de cadeados, que ela entende
 como culpa dela.
 
 Duas consequências para quem opera:
@@ -67,8 +69,8 @@ Duas consequências para quem opera:
 - **Publicar um curso move o mapa na hora.** O contador do nível atual conta só os cursos que
   existem ("1 de 3"), então cada curso novo aparece como um passo a mais no nó. Quando a criança faz
   tudo que existe, a tela diz **"Você está em dia!"** e oferece o Estúdio, em vez de prometer curso.
-- **Completar um degrau inteiro (1, 7 ou 8 posições, conforme a etapa) abre o próximo posto no mapa.** É o horizonte
-  avançando. Quando os 48 estiverem publicados, o horizonte chega na Lenda e a tela volta sozinha à
+- **Completar um degrau inteiro (1 na entrada, 8 nos demais) abre o próximo posto no mapa.** É o horizonte
+  avançando. Quando os 49 estiverem publicados, o horizonte chega na Lenda e a tela volta sozinha à
   escada completa de 8 medalhões — não há nada para desligar.
 
 A régua da carreira **não muda nada disso**: nível, travas e o que o Estúdio libera continuam sendo
@@ -150,7 +152,7 @@ do editor e quais **produtos** abrem. Os perfis de bloco por nível continuam ex
 |---|---|---|---|
 | Faísca (`noob`) | Nenhum | Primeiros Passos | Usa o Estúdio apenas dentro das aulas |
 | Construtor(a) (`coder`) | Posição 1 de Primeiros Passos | Iniciante 2D | **Estúdio livre** (modo Blocos) e **Pinta** |
-| Inventor(a) (`hacker`) | Primeiros Passos + 7 posições do Iniciante 2D | Iniciante 3D | **Pensa** e **Zappy** (os que chamam IA) |
+| Inventor(a) (`hacker`) | Primeiros Passos + 8 posições do Iniciante 2D | Iniciante 3D | **Pensa** e **Zappy** (os que chamam IA) |
 | Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
@@ -210,7 +212,7 @@ No painel **Cursos** (`/admin/membros/cursos`), o formulário de curso (tanto ao
 * **1 — Curso-base da etapa:** o curso que destrava as demais posições.
 * **2 em diante:** os demais cursos da etapa, liberados após o curso base.
 
-O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). O número de posições é **por etapa**: Primeiros Passos aceita só a posição 1, o Iniciante 2D aceita de 1 a 7 e as demais, de 1 a 8.
+O select mostra qual curso já ocupa cada posição da etapa selecionada e desabilita posições ocupadas por outro curso (o banco recusa duplicata na mesma etapa). O número de posições é **por etapa**: Primeiros Passos aceita só a posição 1 e todas as demais aceitam de 1 a 8.
 
 O painel **Carreira do Criador** no topo da página é clicável: uma posição vazia abre o cadastro já mirando a etapa e a posição corretas; uma posição ocupada abre a edição daquele curso. Use-o para preencher a etapa Iniciante 2D primeiro, começando pela posição 1. A posição 1 publicada sem aula publicada com bloco de Estúdio de vitrine aparece como ⚠️ **"Sem vitrine"** (ver a Armadilha do Mural) — resolva antes do lançamento da etapa.
 
@@ -229,23 +231,29 @@ O token nunca é enviado ao navegador. Os BFFs validam sessão, tamanho real do 
 
 ## Operação e prontidão
 
-O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A carreira está completa para lançamento quando as 48 posições existem e os cursos necessários estão publicados e autorados.
+O painel de cursos carrega todas as páginas de cursos Kids antes de calcular a prontidão. A carreira está completa para lançamento quando as 49 posições existem e os cursos necessários estão publicados e autorados.
 
 O banco aplica a mesma regra do domínio:
 
 * somente cursos Kids podem ter `career_slot`;
 * Primeiros Passos existe somente no eixo 2D e Lenda nunca ocupa posição;
-* o número de posições é por etapa: 1 nos Primeiros Passos, 1 a 7 no Iniciante 2D e 1 a 8 nas demais;
+* o número de posições é por etapa: 1 nos Primeiros Passos e 1 a 8 em todas as demais;
 * uma posição não pode se repetir na mesma etapa.
 
 As migrações `0048_normalize_creator_career_slots` e `0049_needy_iron_man` precisam ser aplicadas nessa ordem. A primeira remove posições legadas inválidas colocando `career_slot = null`. A segunda reforça a restrição (versão 6/5). A migração `0053_career_slot_max_8` alargou a restrição para 1 a 8 em toda etapa (reforma de 07/2026).
-A migração **`0063_deep_psylocke`** (14/08/2026) cria o degrau Primeiros Passos e volta a APERTAR a
+A migração **`0063_deep_psylocke`** (14/08/2026) cria o degrau Primeiros Passos e APERTA a
 restrição no Iniciante 2D (8 → 7). ⚠️ Como `ADD CONSTRAINT ... CHECK` **valida as linhas que já
 existem**, ela normaliza antes: todo curso Kids fora da faixa nova (na prática, o que estivesse na
 posição 8 do Iniciante 2D ou uma posição em Lenda) recebe `career_slot = null` e vira bônus — sem isso a migração abortaria e
-derrubaria o deploy inteiro. Se algum curso seu estava nessa posição, ele aparece como bônus no admin
-e basta escolher a posição nova. A finalização do curso-base e dos snapshots segue obrigatoriamente o
-runbook acima. Antes do deploy, confira o backup e a quantidade de linhas que a normalização atingirá.
+derrubaria o deploy inteiro. A finalização do curso-base e dos snapshots segue obrigatoriamente o
+runbook acima.
+
+A migração **`0064_peaceful_malcolm_colcord`** (15/08/2026) desfaz esse aperto: o Iniciante 2D volta
+a aceitar de 1 a 8. ⭐ **Alargar não precisa de normalização** — a regra nova é um superconjunto da
+antiga, então nenhuma linha que passava pode falhar. É exatamente o inverso do cuidado exigido pela
+`0063`: apertar valida o passado, alargar não. Nenhum curso foi atingido pela normalização da `0063`
+em staging ou produção (conferido nos dois bancos antes da mudança), então não há posição a resgatar.
+
 Em caso de necessidade, prefira uma nova migração de correção em vez de editar o histórico aplicado.
 
 ## Pontos principais no código

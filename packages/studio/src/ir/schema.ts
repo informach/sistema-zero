@@ -13,6 +13,7 @@ import type {
   GameTwoDVectorTileRole,
 } from '../official-extensions/game-2d/classicContracts'
 import {
+  type ClassicGameTwoDStageValue,
   type ClassicGameTwoDStatement,
   classicGameTwoDExpressionSchemas,
   classicGameTwoDStatementSchemas,
@@ -215,6 +216,8 @@ export type JSExpr =
       index: JSExpr
     })
   | (JSExprCommon & { type: 'g2d:campaignValue'; key: string; fallback: JSExpr })
+  // A largura e a altura LÓGICAS da tela; os tipos moram na extensão.
+  | ClassicGameTwoDStageValue
   | (JSExprCommon & { type: 'g2d:touches'; aVar: string; bVar: string })
   // Game 2D — quantidade de sprites num grupo (valor numérico).
   | (JSExprCommon & { type: 'g2d:countGroup'; groupVar: string })
@@ -12100,6 +12103,9 @@ export const G2D_STATEMENT_TYPES = new Set([
   'g2d:stageBorder',
   'g2d:useFont',
   'g2d:showImageScreen',
+  'g2d:paddleBounce',
+  'g2d:bounceOnEdgePair',
+  'g2d:arrowsY',
   'g2d:setBackdrop',
   'g2d:drawBackdrop',
   'g2d:setupStage',

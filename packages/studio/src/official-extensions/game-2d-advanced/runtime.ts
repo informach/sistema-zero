@@ -5,6 +5,7 @@ import { gameKitAudioRuntime } from './runtime/audio'
 import { gameKitCampaignRuntime } from './runtime/campaign'
 import { gameKitCardsRuntime } from './runtime/cards'
 import { gameKitMonsterBattleRuntime } from './runtime/monsterBattle'
+import { gameKitOverlapIndexRuntime } from './runtime/overlapIndex'
 import { gameKitPlatformerRuntime } from './runtime/platformer'
 import { gameKitRpgBattleRuntime } from './runtime/rpgBattle'
 import { gameKitRpgNavigationRuntime } from './runtime/rpgNavigation'
@@ -85,6 +86,18 @@ ${gameRuntimeDomains}
   var lastTime = 0;
   var currentDt = 0;
   var frameCount = 0;                    // carimbo do quadro (mede "anda?" 1× por quadro)
+  /**
+   * SONDA DE TRABALHO. Contadores DETERMINISTICOS do que o quadro fez: pares
+   * examinados, caixas contornadas, comparacoes desperdicadas, linhas de mapa
+   * varridas. Nao sao milissegundos DE PROPOSITO -- relogio em CI e ruido, e o
+   * que um lote de desempenho precisa provar e que o TRABALHO caiu (ou, nos
+   * lotes que nao sao de desempenho, que ele nao subiu).
+   *
+   * Sempre mantidos (um incremento inteiro por par, contra os ~225 ns que o par
+   * ja custa) e lidos so pelo HOST, pela porta opt-in dos inspetores. Nao entram
+   * na API da crianca e nao movem contador de bloco.
+   */
+  var perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, comparacoes: 0, linhasDeMapa: 0 };
   var MAX_ACTIVE_PER_MOLD = 300;         // teto por molde (irmão do MAX_PARTICLES)
   // Limites de autoria: todo valor abaixo alimenta laços síncronos no mesmo
   // thread do Studio. Mantê-los centralizados impede que um número digitado por
@@ -497,6 +510,16 @@ ${gameKitShellRuntime}
   }
   /** Desenha o mapa alinhado à grade. layer: 'chão' = tudo; 'topos' = só sólidos
    * (árvores/telhados desenhados POR CIMA do herói — o front-render do Ninja). */
+  /** As colunas do mapa, contadas UMA vez e guardadas nele. */
+  function _mapCols(m) {
+    if (m._colsPass !== true) {
+      var maior = 0;
+      for (var i = 0; i < m.rows.length; i++) maior = Math.max(maior, m.rows[i].length);
+      m.cols = maior;
+      m._colsPass = true;
+    }
+    return m.cols;
+  }
   function drawTilemap(name, layer) {
     if (!ctx2d) return;
     var dk = text(name, '');
@@ -505,8 +528,11 @@ ${gameKitShellRuntime}
     if (rpg.currentMap && rpg.maps[rpg.currentMap]) {
       var declared = rpg.maps[rpg.currentMap];
       var mapRows = m.rows.length;
-      var mapCols = 0;
-      for (var ri = 0; ri < m.rows.length; ri++) mapCols = Math.max(mapCols, m.rows[ri].length);
+      // ⚠️ Numero honesto: a varredura custava 1,8 us num mapa 512x512, ou 0,01%
+      // do quadro. Isto NAO e ganho de desempenho — e desperdicio, e o
+      // o cameraFollowMap ja fazia a MESMA conta noutro lugar.
+      var mapCols = _mapCols(m);
+      perf.linhasDeMapa += m._colsPass === true ? 0 : m.rows.length;
       if (declared.cols !== mapCols || declared.rows !== mapRows) {
         warnOnce(
           'mapsize:' + rpg.currentMap + ':' + dk,
@@ -678,29 +704,45 @@ ${gameKitShellRuntime}
    * Varre moldes, combatentes E personagens criados: a lista de combatentes só
    * recebe quem toma dano, então num jogo sem combate o herói ficaria de fora.
    */
+  /**
+   * CARIMBO da passada do overlay. Um personagem pode estar em duas listas, e a
+   * de-duplicacao era um indexOf numa lista que cresce: QUADRATICA no
+   * numero de personagens. Medido, 3200 entidades custavam 1,40 ms por quadro
+   * so nisso.
+   *
+   * ⚠️ O carimbo NAO pode ser o contador de quadros: com simulacao fixa um quadro
+   * pode rodar ZERO passos, o carimbo nao andaria, e o overlay do quadro
+   * seguinte acharia que ja desenhou tudo — piscando.
+   */
+  var debugOverlayPass = 0;
+  /** Fora do boxOf: era uma closure NOVA por quadro, com a lista presa nela. */
+  function drawDebugBox(e) {
+    if (!e || e._active === false) return;
+    if (e._szOverlayPass === debugOverlayPass) return; // ja contornado nesta passada
+    e._szOverlayPass = debugOverlayPass;
+    var w = hbW(e);
+    var h = hbH(e);
+    if (!(w > 0) || !(h > 0)) return;
+    // Depois da guarda: o contador tem que casar com o que o ctx recebeu, e e
+    // essa igualdade que impede a sonda de virar um numero decorativo.
+    perf.caixas += 1;
+    if (isCircle(e)) {
+      var r = hbRadius(e);
+      if (!(r > 0)) return;
+      ctx2d.beginPath();
+      ctx2d.arc(hbCenterX(e), hbCenterY(e), r, 0, Math.PI * 2);
+      ctx2d.stroke();
+      return;
+    }
+    ctx2d.strokeRect(hbLeft(e), hbTop(e), w, h);
+  }
   function drawDebugOverlay() {
     if (!ctx2d) return;
     ctx2d.save();
     ctx2d.lineWidth = 2;
     ctx2d.strokeStyle = '#22c55e';
-    var seen = [];
-    function boxOf(e) {
-      if (!e || e._active === false) return;
-      if (seen.indexOf(e) !== -1) return; // um personagem pode estar em 2 listas
-      seen.push(e);
-      var w = hbW(e);
-      var h = hbH(e);
-      if (!(w > 0) || !(h > 0)) return;
-      if (isCircle(e)) {
-        var r = hbRadius(e);
-        if (!(r > 0)) return;
-        ctx2d.beginPath();
-        ctx2d.arc(hbCenterX(e), hbCenterY(e), r, 0, Math.PI * 2);
-        ctx2d.stroke();
-        return;
-      }
-      ctx2d.strokeRect(hbLeft(e), hbTop(e), w, h);
-    }
+    debugOverlayPass += 1;
+    var boxOf = drawDebugBox;
     for (var pk in pools) {
       var act = pools[pk].active;
       for (var i = 0; i < act.length; i++) boxOf(act[i]);
@@ -724,6 +766,7 @@ ${gameKitShellRuntime}
 
   function gameLoop(timestamp) {
     var frameDt = (timestamp - lastTime) / 1000;
+    perf.quadros += 1;
     if (!(frameDt >= 0)) frameDt = 0;
     lastTime = timestamp;
     try {
@@ -737,7 +780,7 @@ ${gameKitShellRuntime}
         var steps = 0;
         while (proSim.accumulator + 0.000000001 >= proSim.step && steps < proSim.maxCatchUpSteps) {
           currentDt = proSim.step;
-          frameCount += 1;
+          frameCount += 1; perf.passos += 1;
           professionalBeforeSimulationStep();
           stepGameState(proSim.step);
           professionalAfterSimulationStep();
@@ -750,7 +793,7 @@ ${gameKitShellRuntime}
       } else {
         var dt = frameDt > 0.1 ? 0.1 : frameDt;
         currentDt = dt;
-        frameCount += 1;
+        frameCount += 1; perf.passos += 1;
         stepGameState(dt);
         justPressed = {};
       }
@@ -1853,6 +1896,7 @@ ${gameKitAnimationRuntime}
     sweepWho = null;
     sweepPool = null;
   }
+${gameKitOverlapIndexRuntime}
   /** Cada PAR (a, b) que se encosta — o tiro×inimigo sem dois laços na mão. */
   function overlapGroups(moldA, moldB, fn) {
     var ka = text(moldA, '');
@@ -1865,11 +1909,24 @@ ${gameKitAnimationRuntime}
     pa._sweeping = true;
     pb._sweeping = true;
     var warned = false;
+    var paresExaminados = 0;
+    // ⚠️ O indice so entra quando ha par o bastante para pagar a montagem, e a
+    // ORDEM que ele devolve e a mesma do laco duplo (decrescente): a parada em
+    // parada em A recolhido torna a ordem observavel no placar da crianca.
+    var indice = pa.active.length * pb.active.length >= OVERLAP_INDEX_MIN_PARES
+      ? _buildOverlapIndex(pb.active)
+      : null;
     for (var i = pa.active.length - 1; i >= 0; i--) {
       var a = pa.active[i];
       if (!a || a._active === false) continue;
-      for (var j = pb.active.length - 1; j >= 0; j--) {
+      var vizinhos = indice ? _overlapCandidates(indice, a) : null;
+      var quantos = vizinhos ? vizinhos.length : pb.active.length;
+      for (var n = 0; n < quantos; n++) {
+        // Os vizinhos JA vem em ordem decrescente; sem indice, a contagem
+        // regressiva e feita aqui. Os dois caminhos visitam B na MESMA ordem.
+        var j = vizinhos ? vizinhos[n] : quantos - 1 - n;
         var b = pb.active[j];
+        paresExaminados += 1;
         if (!b || b._active === false || b === a) continue;
         if (!touching(a, b)) continue;
         try { fn(a, b); } catch (e) {
@@ -1883,6 +1940,7 @@ ${gameKitAnimationRuntime}
         if (a._active === false) break;
       }
     }
+    perf.pares += paresExaminados;
     pa._sweeping = false;
     pb._sweeping = false;
     compact(pa);
@@ -5256,6 +5314,12 @@ ${gameKitAudioRuntime}
   var runtimeInspectors = window.__SZSTUDIO_RUNTIME_INSPECTORS;
   if (runtimeInspectors && typeof runtimeInspectors === 'object') {
     try {
+      runtimeInspectors['game-2d-advanced:campaign'] = proCampaignInspect;
+      runtimeInspectors['game-2d-advanced:perf'] = function (zerar) {
+        var lido = { quadros: perf.quadros, passos: perf.passos, pares: perf.pares, caixas: perf.caixas, comparacoes: perf.comparacoes, linhasDeMapa: perf.linhasDeMapa };
+        if (zerar === true) perf = { quadros: 0, passos: 0, pares: 0, caixas: 0, comparacoes: 0, linhasDeMapa: 0 };
+        return lido;
+      };
       runtimeInspectors['game-2d-advanced:rpg'] = function () {
         var hero = rpg.hero;
         var s = tilePx || 1;

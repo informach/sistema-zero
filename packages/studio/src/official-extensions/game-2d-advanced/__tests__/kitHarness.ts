@@ -41,6 +41,7 @@ type KitApiKey = keyof Pick<
   | 'spawnFromMold'
   | 'recycle'
   | 'forEachActive'
+  | 'overlapGroups'
   | 'setProperty'
   | 'enableFixedSimulation'
   | 'onFixedUpdate'
@@ -78,6 +79,8 @@ export type KitApi = Pick<GameKitRuntimeApi, KitApiKey>
 
 export interface Harness {
   api: KitApi
+  /** O `window` de mentira — o codigo GERADO do exemplo precisa dele. */
+  window: Record<string, unknown>
   fire: (name: string, ev?: unknown) => void
   nextFrame: (ts: number) => void
 }
@@ -88,6 +91,10 @@ export interface CanvasSpy {
   arcs: number[][]
   /** Argumentos geométricos de drawImage (x, y, w, h) — a imagem em si sai fora. */
   images: number[][]
+  /** Retângulos PREENCHIDOS: é por eles que se lê o desenho da campanha. */
+  rects: number[][]
+  /** O que o HUD escreveu, com onde. */
+  texts: Array<{ text: string; x: number; y: number }>
   clear: () => void
 }
 
@@ -104,6 +111,8 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
   const strokes: number[][] = []
   const arcs: number[][] = []
   const images: number[][] = []
+  const rects: number[][] = []
+  const texts: Array<{ text: string; x: number; y: number }> = []
   const original = canvasProto?.getContext
   const fakeCtx = {
     fillStyle: '',
@@ -112,7 +121,9 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
     imageSmoothingEnabled: true,
     font: '',
     globalAlpha: 1,
-    fillRect() {},
+    fillRect(...a: number[]) {
+      rects.push(a)
+    },
     strokeRect(...a: number[]) {
       strokes.push(a)
     },
@@ -128,7 +139,9 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
       arcs.push(a)
     },
     fill() {},
-    fillText() {},
+    fillText(text: string, x: number, y: number) {
+      texts.push({ text: String(text), x, y })
+    },
     save() {},
     restore() {},
     translate() {},
@@ -148,10 +161,14 @@ export function installCanvasSpy(): CanvasSpy & { restore: () => void } {
     strokes,
     arcs,
     images,
+    rects,
+    texts,
     clear: () => {
       strokes.length = 0
       arcs.length = 0
       images.length = 0
+      rects.length = 0
+      texts.length = 0
     },
     restore: () => {
       if (canvasProto) canvasProto.getContext = original
@@ -185,6 +202,7 @@ export function loadRuntime(windowOverrides: Record<string, unknown> = {}): Harn
   if (!api) throw new Error('runtime não montou window.SZGameKit')
   return {
     api,
+    window: win,
     fire: (name, ev = {}) => {
       for (const fn of listeners[name] ?? []) fn(ev)
     },

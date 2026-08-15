@@ -43,7 +43,7 @@ As camadas do Estúdio e o papel pedagógico de cada uma:
 **Uma camada por nível de curso, exclusiva.** O aluno sobe de nível quando troca de camada,
 não quando o jogo fica maior: Iniciante 2D = Jogo 2D · Intermediário 2D = Jogo 2D Avançado ·
 Avançado 2D = sem extensão · Iniciante 3D = Jogo 3D · Intermediário 3D = Jogo 3D Avançado +
-Mundo 3D · Avançado 3D = sem extensão. **2D antes de 3D, sempre.** A grade dos 48 cursos que
+Mundo 3D · Avançado 3D = sem extensão. **2D antes de 3D, sempre.** A grade dos 49 cursos que
 sai dessa regra está em `comunidade-dos-criadores/entregas/cursos/trilha-cursos-jogos.md`.
 
 ---

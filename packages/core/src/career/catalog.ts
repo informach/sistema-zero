@@ -91,20 +91,23 @@ export interface CreatorCareerLevelDefinition {
 const SLOTS_1 = [1] as const
 // 8 posições OBRIGATÓRIAS por degrau (decisão da usuária 07/2026: 5/6 era pouco p/
 // fixar a habilidade; assinatura mensal quer jornada mais longa, conteúdo pré-carregado
-// no lançamento). ⚠️ Duas EXCEÇÕES desde 14/08: `primeiros-passos-2d` tem 1 (o curso de
-// entrada) e `iniciante-2d` tem 7 (o curso-base saiu dele p/ o degrau novo). A soma
-// Faísca→Inventor(a) continua 8 e o total da carreira continua 48 — a usuária escolheu
-// exatamente isso para nada mudar de tamanho para a criança.
+// no lançamento). ⚠️ UMA exceção: `primeiros-passos-2d`, o degrau de ENTRADA, tem 1 (o
+// curso que a Faísca faz).
+//
+// ⚠️ O Iniciante 2D chegou a ter 7 entre 14/08 e 15/08: quando o curso-base saiu dele p/ o
+// degrau novo, tirou-se uma posição de lá p/ o total da carreira continuar 48. A usuária
+// REJEITOU essa compensação — todo degrau que não é a entrada tem 8, ponto. O total passou
+// a ser 49 (1 + 8 + 8×5) e são 9 cursos de Faísca até Inventor(a). Não "restaurar" o 7
+// achando que é drift: foi decisão explícita.
 /**
  * Teto CANÔNICO de posições, o MAIOR de qualquer degrau. Sobrevive como limite externo
  * (DTO, CHECK do banco); a faixa fina POR DEGRAU vem de `careerSlotsForTier`.
  */
 export const CAREER_SLOT_MAX = 8
-const SLOTS_1_TO_7 = [1, 2, 3, 4, 5, 6, 7] as const
 const SLOTS_1_TO_8 = [1, 2, 3, 4, 5, 6, 7, 8] as const
 
 const passos = { 'primeiros-passos-2d': SLOTS_1 } as const
-const ini2d = { ...passos, 'iniciante-2d': SLOTS_1_TO_7 } as const
+const ini2d = { ...passos, 'iniciante-2d': SLOTS_1_TO_8 } as const
 const ini3d = { ...ini2d, 'iniciante-3d': SLOTS_1_TO_8 } as const
 const inter2d = { ...ini3d, 'intermediario-2d': SLOTS_1_TO_8 } as const
 const inter3d = { ...inter2d, 'intermediario-3d': SLOTS_1_TO_8 } as const
@@ -251,8 +254,8 @@ const SLOTS_BY_TIER = new Map<CareerCourseTier, number>(
 
 /**
  * Quantas posições OBRIGATÓRIAS um degrau tem. Derivado do último nível da escada (que
- * acumula tudo), então não existe número solto para drifar: 1 em Primeiros Passos, 7 no
- * Iniciante 2D, 8 nos demais. Degrau desconhecido → 0, e quem valida recusa.
+ * acumula tudo), então não existe número solto para drifar: 1 nos Primeiros Passos (o degrau
+ * de entrada) e 8 em todos os demais. Degrau desconhecido → 0, e quem valida recusa.
  */
 export function careerSlotsForTier(tier: string): number {
   return SLOTS_BY_TIER.get(tier as CareerCourseTier) ?? 0

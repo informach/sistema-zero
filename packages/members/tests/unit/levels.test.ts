@@ -36,7 +36,7 @@ describe('courseTier', () => {
 
 describe('computeStudentLevel por slots obrigatórios', () => {
   test('sem o curso de ENTRADA permanece Faísca, mesmo com outros cursos', () => {
-    const result = computeStudentLevel(q({ 'iniciante-2d': slots(7) }))
+    const result = computeStudentLevel(q({ 'iniciante-2d': slots(8) }))
     expect(result.slug).toBe('noob')
     expect(result.next).toBe('coder')
     expect(result.remaining?.['primeiros-passos-2d']).toBe(1)
@@ -45,9 +45,9 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   test('o curso de ENTRADA libera Construtor', () => {
     const result = computeStudentLevel(q(ENTRADA))
     expect(result.slug).toBe('coder')
-    // Faltam as 7 posições do Iniciante 2D p/ virar Inventor(a) — o mesmo total de antes,
-    // que agora vive num degrau próprio.
-    expect(result.remaining?.['iniciante-2d']).toBe(7)
+    // Faltam as 8 posições do Iniciante 2D p/ virar Inventor(a): são 9 cursos de Faísca até
+    // lá (1 + 8), desde que a usuária desfez o encolhimento do degrau em 15/08.
+    expect(result.remaining?.['iniciante-2d']).toBe(8)
     expect(result.remaining?.['primeiros-passos-2d']).toBe(0)
   })
 
@@ -56,16 +56,16 @@ describe('computeStudentLevel por slots obrigatórios', () => {
   })
 
   test('cada etapa completa libera o nível seguinte', () => {
-    expect(computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(7) })).slug).toBe('hacker')
+    expect(computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(8) })).slug).toBe('hacker')
     expect(
-      computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(7), 'iniciante-3d': slots(8) }))
+      computeStudentLevel(q({ ...ENTRADA, 'iniciante-2d': slots(8), 'iniciante-3d': slots(8) }))
         .slug,
     ).toBe('explorer')
     expect(
       computeStudentLevel(
         q({
           ...ENTRADA,
-          'iniciante-2d': slots(7),
+          'iniciante-2d': slots(8),
           'iniciante-3d': slots(8),
           'intermediario-2d': slots(8),
         }),
@@ -77,7 +77,7 @@ describe('computeStudentLevel por slots obrigatórios', () => {
     const result = computeStudentLevel(
       q({
         ...ENTRADA,
-        'iniciante-2d': slots(7),
+        'iniciante-2d': slots(8),
         'iniciante-3d': slots(8),
         'intermediario-2d': slots(8),
         'intermediario-3d': slots(8),

@@ -32,7 +32,7 @@ import { useWiggle } from './use-wiggle'
  * alinham em qualquer largura.
  *
  * ⭐ **HORIZONTE DO CATÁLOGO:** o mapa desenha só até onde o catálogo de hoje consegue levar
- * (`careerHorizon`) e fecha com o nó "E tem muito mais pela frente". Enquanto os 48 cursos não
+ * (`careerHorizon`) e fecha com o nó "E tem muito mais pela frente". Enquanto os 49 cursos não
  * existem, a alternativa seria uma fileira de cadeados prometendo cursos que ninguém gravou. Quando
  * o catálogo enche, o horizonte vira a Lenda, o nó de fechamento some e este componente volta a
  * desenhar os 8 medalhões de sempre, sem ninguém desligar nada.

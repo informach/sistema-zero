@@ -251,8 +251,6 @@ describe('game-2d — gerador dos novos statements', () => {
     expect(api.isPaused()).toBe(false)
     expect(api.cooldownReady(a, 3)).toBe(true) // 1ª vez: pronto
     expect(api.cooldownReady(a, 3)).toBe(false) // recarregando
-    expect(api.cooldownReady(a, 3)).toBe(false) // recarregando
-    expect(api.cooldownReady(a, 3)).toBe(true) // exatamente 3 chamadas depois
     api.flipSprite(a, 'left')
     expect(a.facing).toBe(-1)
     expect(a.direction).toBe('left')

@@ -13,6 +13,17 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  * Raquete do jogador à esquerda (setas ↑↓), computador à direita seguindo a
  * bola; a bola quica nas paredes de cima/baixo e nas raquetes (acelerando um
  * tico), e quem deixa a bola passar entrega o ponto. Primeiro a 5 vence.
+ *
+ * ⭐ Reescrito em 14/08 sobre os facilitadores novos. O que era feito à mão e
+ * agora é bloco: o rebote nas raquetes (eram ~110 linhas de IR, com o `Math.abs`
+ * e o ângulo calculado no braço), o quique no teto e no chão, e as setas. E o
+ * palco saiu das contas: `440`/`300` viraram "a largura/altura da tela", então
+ * mudar o tamanho do jogo não quebra mais o ponto nem o quique.
+ *
+ * ⚠️ Duas fidelidades ao que existia: `214 = 440/2 − 6` e `144 = 300/2 − 6` são
+ * exatamente "o meio da tela menos meia bola", e os `createSprite` mantêm x/y
+ * literais de propósito — ler a tela ali criaria uma dependência de ordem
+ * invisível, que a criança quebra ao reordenar os blocos.
  */
 export const PONG_SOURCE = `
 const jogador = SZGame2D.createSprite({ x: 20, y: 128, w: 12, h: 44, color: "#22d3ee" });
@@ -40,12 +51,7 @@ SZGame2D.gameLoop(function update() {
     SZGame2D.showScreen(ctx, "Pong", "Mova a raquete azul com as setas para cima e para baixo. O primeiro a 5 pontos vence!", "Aperte Enter para começar", "#11172a");
   }
   if (SZGame2D.sceneIs("jogando")) {
-    if (SZGame2D.keyDown("ArrowUp")) {
-      jogador.y = jogador.y - 5;
-    }
-    if (SZGame2D.keyDown("ArrowDown")) {
-      jogador.y = jogador.y + 5;
-    }
+    SZGame2D.arrowsY(jogador, 5);
     SZGame2D.clampToScreen(jogador, ctx);
     if (bola.y > computador.y + 26) {
       computador.y = computador.y + 3.4;
@@ -55,34 +61,25 @@ SZGame2D.gameLoop(function update() {
     }
     SZGame2D.clampToScreen(computador, ctx);
     SZGame2D.applyVelocity(bola);
-    if (bola.y <= 0) {
-      bola.vy = Math.abs(bola.vy);
-    }
-    if (bola.y + bola.h >= 300) {
-      bola.vy = 0 - Math.abs(bola.vy);
-    }
-    if (SZGame2D.touches(jogador, bola) && bola.vx < 0) {
-      bola.vx = Math.abs(bola.vx) + 0.3;
-      bola.vy = bola.vy + (bola.y - jogador.y - 16) * 0.08;
+    SZGame2D.bounceOnEdgePair(bola, ctx, "top-bottom");
+    if (SZGame2D.touches(jogador, bola)) {
+      SZGame2D.paddleBounce(bola, jogador, 8);
       SZGame2D.playFx("coin");
     }
-    if (SZGame2D.touches(computador, bola) && bola.vx > 0) {
-      bola.vx = 0 - Math.abs(bola.vx) - 0.3;
-      bola.vy = bola.vy + (bola.y - computador.y - 16) * 0.08;
+    if (SZGame2D.touches(computador, bola)) {
+      SZGame2D.paddleBounce(bola, computador, 8);
       SZGame2D.playFx("coin");
     }
     if (bola.x < 0) {
       pontosComputador = pontosComputador + 1;
-      bola.x = 214;
-      bola.y = 144;
+      SZGame2D.setPosition(bola, SZGame2D.stageWidth() / 2 - 6, SZGame2D.stageHeight() / 2 - 6);
       bola.vx = 3;
       bola.vy = SZGame2D.randomBetween(-2, 2);
       SZGame2D.playFx("gameover");
     }
-    if (bola.x > 440) {
+    if (bola.x > SZGame2D.stageWidth()) {
       pontos = pontos + 1;
-      bola.x = 214;
-      bola.y = 144;
+      SZGame2D.setPosition(bola, SZGame2D.stageWidth() / 2 - 6, SZGame2D.stageHeight() / 2 - 6);
       bola.vx = -3;
       bola.vy = SZGame2D.randomBetween(-2, 2);
       SZGame2D.playFx("jump");

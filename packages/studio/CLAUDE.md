@@ -1028,7 +1028,7 @@ nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLI
 grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
 (de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
-extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.78.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
+extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.79.0`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
 **Mostrar a borda da tela (v0.54.0, 01/08):** bloco `sz_g2d_stage_border` em ✨ Aparência
 ("Mostrar a borda da tela, cor ⟨⟩ espessura ⟨4⟩", `start-only-command`), na família de tornar
@@ -2224,6 +2224,106 @@ Dois blocos `start-only`, ambos sobre ENXERGAR o que o motor faz:
   chama. A v0.55.0 (abaixo) fechou a lacuna que sobrava: o overlay desenhava retângulo mesmo em quem
   perguntava pelo círculo.
 
+## Full review do Pong + 5 facilitadores + desempenho (g2d 0.79.0, 14/08)
+
+Ela pediu um full review do **exemplo Pong** e da extensão, com duas perguntas: *precisa
+ajustar bloco para o jogo funcionar perfeitamente?* e *como está o desempenho?* Sim para a
+primeira; e a segunda tinha um problema que não era do Pong, era de todo jogo.
+
+### ⭐⭐ O teste que "jogava" o Pong nunca jogou o Pong
+
+`examplePlaythrough.test.ts` marcava ponto **teleportando a bola** para fora (450 / −20).
+Consequência: o rebote na raquete, o quique no teto e no chão, a IA do computador e as setas
+**nunca rodavam com condição verdadeira** — e o `pongExample.test.ts` compensava com
+`JSON.stringify(ir).toContain('"fn":"abs"')`, que prova que o TEXTO existe, não que a bola
+quica. É a classe que este arquivo já catalogou cinco vezes.
+
+⭐ **A rede pagou na primeira execução**: o caso novo do quique achou a bola **saindo 4 px do
+palco**. O quique era feito à mão (`se bola.y <= 0 → vy = |vy|`) e, ao contrário do
+`bounceOnEdges` do runtime, **não corrigia a posição** — vazava `|vy| − 1` px, e piorava
+conforme a bola acelerava. Foi travado como `expect(vazamento).toBe(4)` com o comentário
+dizendo que a linha existia para QUEBRAR quando a dívida fosse paga; ela quebrou na Etapa 3 e
+virou `toBe(0)`.
+
+### Os 5 facilitadores (283 → 288 blocos)
+
+- **Rebater a bola na raquete** (`sz_g2d_paddle_bounce`) — eram ~110 linhas de IR no exemplo.
+  ⭐ **O eixo sai da GEOMETRIA da raquete**: a bola volta pelo lado COMPRIDO (em pé = Pong,
+  deitada = Breakout). É a regra que a criança lê na tela, sem campo novo e sem bloco irmão;
+  um campo de eixo faria uma pergunta que ela não sabe responder antes de ver o erro.
+  ⚠️ **Três coisas que o `paddleBounce` da gk NÃO tem e este precisou ter**, senão apagaríamos
+  220 linhas para entregar algo pior: **guarda de aproximação** (só rebate indo na direção da
+  raquete — sem ela a bola gruda vibrando dentro dela), **correção de posição** e **teto de
+  velocidade** (`max(4, espessura + lado da bola)`), que é onde o túnel morre.
+- **Quicar só num par de bordas** (`sz_g2d_bounce_edge_pair`, dropdown teto-e-chão /
+  laterais). O par ABERTO é a passagem: é por ele que a bola sai e vira ponto, e é por isso
+  que o "quicar nas bordas" (que fecha os quatro lados) nunca serviu ao Pong.
+- **a largura da tela / a altura da tela** (valores). ⚠️ Não era pedido novo: `ai.ts:29` e
+  `docs.ts` **já mandavam** "centralize por 'a largura da tela'". O bloco era uma promessa não
+  cumprida. Devolvem o tamanho LÓGICO, nunca `canvas.width` (com DPR ou tela cheia o buffer é
+  2–3× maior e a criança receberia um número que não bate com o que ela vê).
+- **Mover com as setas ↑ ↓** (`sz_g2d_arrows_y`). ⭐ Lê `_dirHeld`, a camada semântica, e não a
+  tecla crua: o Pong passou a funcionar com **W/S e com o pad de toque**, que antes não andavam.
+
+⚠️ **Todos são `placement: 'command'`, não `loop-command'`**: os irmãos (`bounce_edges`,
+`apply_velocity`, `arrows_x`) são `command`, e `loop-command` PROÍBE `event-body`. Gêmeos com
+encaixes diferentes é armadilha — a criança troca um pelo outro e o programa recusa sem dizer
+por quê. E **`blockLevels.ts` não muda**: o piso de `sz_g2d_*` é derivado de
+`ESSENTIAL_2D_BLOCK_TYPES`, então os cinco caem no Inventor sozinhos.
+
+### O Pong reescrito: 1036 → 733 linhas de IR
+
+O rebote virou um bloco, o quique virou um bloco, as setas viraram um bloco, e o **440/300
+cravado saiu das contas** (`214 = 440/2 − 6` era exatamente "o meio da tela menos meia bola").
+Os `createSprite` mantêm x/y literais de propósito: ler a tela ali criaria uma dependência de
+ordem invisível que a criança quebra ao reordenar blocos.
+
+### Desempenho: o Pong não era o problema, o runtime era
+
+Com 3 sprites o Pong não custa nada. O que **todo** jogo paga é o runtime injetado em cada
+preview e cada jogo exportado. Ele estava em **459 KB** e o design doc de 02/08 registrava
+~309 KB: cresceu 150 KB sem nada acusar, porque **não havia teto** — só um piso
+(`templateGuard`, > 1000 chars).
+
+- ⭐ **Catraca de payload** em `bundle.test.ts`, com **teto E PISO**. O piso é o que impede a
+  catraca de só subir: encolheu mais de 10%? Baixe o teto. Sem ele, um lote de desempenho
+  bem-sucedido vira folga grátis para o próximo bloco — que é exatamente como 309 viraram 459.
+  A mensagem de falha imprime os maiores fragmentos de `runtime/`, então quem sobe o número vê
+  QUAL arquivo cresceu.
+- ⭐ **O contador de operações de contexto** (`examplePlaythroughHarness`, o `ctx` já era Proxy)
+  é a métrica de desempenho que roda no CI: determinística, sem cronômetro e sem layout.
+  `runtimePerf.test.ts` tem os cenários, com **anti-vácuo** (um trap removido deixaria todos em
+  zero e o arquivo passaria para sempre).
+- **O que melhorou, medido pelo mesmo teste**: o ajuste de nitidez de um mapa de 375 células
+  saiu de **1.125 travessias de contexto para 2** (as células têm todas o mesmo tamanho, então
+  a decisão é uma só para o mapa); as 400 partículas saíram de **800 `save`/`restore` para 2**;
+  `tileMapCols` era O(linhas) rodando 5× por sprite por quadro e virou memoizado com a
+  referência de `map.rows` como selo; e o `drawGroupByY` calcula a base uma vez por sprite em
+  vez de 4 `_finiteNumber` por comparação (~6.100 chamadas por quadro com 200 sprites).
+- ⚠️ **Fato honesto: o lote de desempenho SUBIU o payload em ~4,5 KB.** Ele troca bytes (uma
+  vez, no download) por trabalho por quadro (60× por segundo, para sempre). A catraca foi
+  reancorada no medido do fim, não no do começo.
+
+⚠️⚠️ **Duas armadilhas que este lote pagou de novo:**
+1. **Crase crua pela 8ª vez**, escrevendo o comentário sobre `canvas.width` dentro do runtime.
+   O sintoma foi `Expected ";" but found "canvas"`; `templateGuard` sozinho apontou em meio
+   segundo. **É sempre o primeiro comando quando a suíte quebrar ou pendurar.**
+2. **`Image` de mentira vazando entre arquivos**: o registro de módulos do `bun test` não é
+   isolado, e uma `Image` trocada num teste novo fez o `playAnimOnce` do Jogo 2D AVANÇADO
+   falhar — um teste distante, por motivo nenhum. `afterAll` restaurando é obrigatório.
+
+### O que foi medido e NÃO feito, de propósito
+
+- ⚠️ **Trocar `save`/`restore` por translate/untranslate no desenho de peça vetorial** era o
+  maior número do levantamento (245 peças × 3 travessias = 19% do quadro do Reino Zero). **A
+  premissa estava errada**: a peça usa uma figura autorada pela CRIANÇA (`defineShape`), e os
+  blocos de Canvas do núcleo funcionam lá dentro — ou seja, ela pode chamar `rotate`, e
+  desfazer só a translação vazaria a rotação. Está comentado no código para ninguém tentar.
+- **`_motionPreviousPosition` alocando objeto** (400 por quadro num grupo de 200) e o Set +
+  `Array.from().sort()` do terreno espacial: ficam para um lote próprio, porque mexem em
+  FÍSICA e o retorno é menor que o dos itens acima.
+- **Memoizar a fonte do HUD**: medido, **1 escrita de `ctx.font` por quadro**. Não paga o diff.
+
 ## Escolher a fonte do jogo + tela feita de imagem (g2d 0.75.0 / gk 0.59.0, 12/08)
 
 Dois pedidos dela, os dois sobre a cara do jogo que a criança monta: **poder mostrar uma tela
@@ -2345,6 +2445,191 @@ era vizinho: `{ type: 'somPlay' | 'somStop' | 'somPlayMusic'; name: string }`.
    de propósito: ali a variável resolve, e o Mundo 3D usa esse caminho.
 
 Contadores: gk 363 → **364** blocos, manifests g2d `0.75.0` e gk `0.59.0`.
+
+## Full review do Reino Zero Pro + Jogo 2D Avançado (gk v0.60.0, 14/08)
+
+A régua veio dela com todas as letras: *"a ideia do Reino Zero era ser uma réplica
+autoral do Super Mario"*, mais desempenho. Escopo escolhido por ela: **defeitos +
+lacunas baratas**, e em desempenho **medir, consertar e travar**.
+
+### ⭐⭐ A raiz: o carro-chefe da extensão não tinha UM teste que jogasse
+
+O Pro é o maior exemplo da gk (32 fases), e **nenhum teste jogava**: o
+`reinoZeroProExample.test.ts` é estático, o `proCampaign.test.ts` roda quadros num
+quarto sintético 16×8 que só empresta o id `'reino-zero-pro'`, e o e2e atravessa as
+fases por **teleporte** (`api.placeCharacter`). É a mesma raiz que o irmão g2d pagou
+em 12/08 — *os testes asseriam que a bala NASCEU, nunca que ACERTOU* — e aqui ela
+era mais larga: **nenhum inimigo da campanha jamais foi exercido**.
+
+- **Inspetor de campanha** pela porta que já existia (`__SZSTUDIO_RUNTIME_INSPECTORS`,
+  opt-in do host, ausente no jogo exportado da criança): sem ele, `proCampaign.entities`
+  era inobservável e "o espinho não fez nada" era inverificável.
+- **`__tests__/campaignHarness.ts`** joga quadro a quadro pelo caminho REAL da
+  entrada (tecla → `keys` → `sampleProfessionalActions` → `proActionDown`).
+  ⚠️ Escrever em `proActionDown` direto deixaria o teste cego para regressão de
+  binding, que foi o que o g2d pagou com o pad de toque em 13/08.
+- **Os oito testes que jogam nasceram VERMELHOS** contra o motor de então. Essa é a
+  prova fail-first, e é o que separa uma rede de um enfeite.
+
+### Os consertos do motor (`runtime/campaign.ts`)
+
+1. ⭐⭐ **Inimigo de chão não tinha gravidade.** As entidades da fase nascem alinhadas
+   ao TILE e o bicho tem 14 px numa célula de 16: ele **nunca** nasce apoiado. Sem
+   queda, a sonda de beirada (`y + h + 2`) lia vazio a cada quadro e **todo walker,
+   espinho e casco invertia a direção sessenta vezes por segundo e tremia parado**.
+   Em jogo: o inimigo que nunca vem para cima de você. `proGroundEntity` faz os três
+   caírem com a MESMA gravidade do herói. ⚠️ Chefe e voador ficam de fora de
+   propósito — os dois escrevem o próprio `y` por seno, e o `proCampaign.test.ts`
+   (que estaciona um chefe no ar) segue verde **sem uma edição**, que era a condição
+   de guarda do lote.
+2. ⭐⭐ **`spiky` estava fora do bloco de contato: encostar num espinho não fazia
+   NADA.** A guarda de baixo (`stomp && kind !== 'spiky'`) era código morto, e um
+   teste travava a EXISTÊNCIA do inimigo no-op. Agora ele cobra vida inclusive na
+   pisada — o que quatro evidências independentes já diziam ser a intenção (rótulo do
+   catálogo, a guarda morta, a cor da peça de perigo e o irmão clássico).
+3. ⭐⭐ **O casco estava invertido**, exatamente como o g2d antes de 13/08: pisar
+   DISPARAVA, a segunda pisada MATAVA, e um casco andando cobrava vida de quem o
+   chutou. Agora são três fases (anda / recolhido / chutado): pisar sempre PARA,
+   encostar num casco parado CHUTA, e quem chutou tem `gracaDoChute` para sair de
+   perto. ⚠️ A graça também cobre a sobreposição do PRÓPRIO pisão — o herói sobe a
+   −180 e leva ~2 quadros para desencostar; sem ela, toda pisada saía chutada no
+   quadro seguinte. ⚠️ `kickGrace = 0` no `proEntityFromSpec`: o pool recicla.
+4. ⭐ **A sonda de parede conferia só `'#'`** enquanto o tilemap declarava `#`, `B` e
+   `?` sólidos: o bicho **atravessava tijolo e bloco de prêmio**, e só o herói era
+   barrado. Hoje as duas pontas leem a mesma tabela (`proTileBlocks`/`proTileSupports`)
+   e o mapa que o motor monta é DERIVADO dela.
+5. **Duas mortes de chefe e um aviso só**: derrubar o guardião com a estrela pulava o
+   `guardiao` que a criança ligou. `proDefeatEnemy` é o dono único da morte.
+6. **`PRO_PHYSICS` saiu para `campaignPhysics.ts`** e é interpolado no runtime (molde
+   do `campaignEntityCatalog.ts`). Sem isso um teste de geometria COPIA a altura do
+   pulo, e teste que copia a premissa mede a si mesmo.
+
+### As 32 fases: de resto de divisão para planta escrita à mão
+
+- ⭐⭐ As grades saíam de `col += 14 + order`, com poço quando `world === 3` e prêmio
+  quando `col % 2 === 0`. Ninguém tinha escolhido um poço, um cano ou uma fileira de
+  moeda em fase nenhuma, e a única checagem de geometria era "a gema não está dentro
+  de sólido", **numa célula só**. Agora são `PRO_STAGE_PLANS`, 32 plantas
+  (`examples/reinoZeroProLevels.ts`).
+- ⭐⭐ **O TEMA saiu do MUNDO e passou para o TIPO da fase** (superfície /
+  subterrâneo / água / castelo). Era isso que fazia 1-1, 1-2, 1-3 e 1-4 dividirem o
+  mesmo céu. São os MESMOS oito nomes (4 tipos × duas metades da jornada), então a IR
+  não cresce um byte.
+- ⚠️ **O `y` de toda entidade de chão é DERIVADO** (`groundRowAt`), nunca autorado. É
+  o maior anteparo contra a classe inteira: bicho na rocha, moeda no cano, prêmio no
+  poço.
+- ⚠️ **A ALTURA das plataformas e dos prêmios também não é autorada.** O pulo sobe
+  205²/(2·520) = 40 px, ou **2,5 células**: plataforma a 4 é decoração, e a moeda em
+  cima dela é promessa que o jogo não cumpre. A primeira leva das plantas usava 4 a 9
+  e **as 32 reprovaram**.
+- ⚠️ **Colisão de célula LANÇA na construção** (menos moeda, que é descartada em
+  silêncio). O silêncio para todo mundo custou caro: o checkpoint da 1-2 caía na
+  mesma célula de um espinho e sumia — a fase inteira ficava sem ponto de retorno,
+  sem erro nenhum.
+
+### As invariantes I1–I11, e o que elas acharam
+
+`__tests__/proStageGeometry.ts` + `reinoZeroProGeometry.test.ts`, escritas ANTES de
+eu confiar nas plantas — e elas acharam **81 defeitos nas minhas próprias 32 fases**
+na primeira rodada. Cada uma tem o par que MORDE.
+
+- **I4/I5** derivam o alcance do pulo da FÍSICA, nunca de um número copiado. O par
+  obrigatório: um poço de 9 células que a rede RECUSA e a mesma fase com plataforma
+  móvel que ela ACEITA.
+- ⚠️ **`linhaDoChao` sobe a partir do piso, e não desce do topo.** A primeira versão
+  descia, e um bloco de prêmio flutuando quatro linhas acima passava a ser "o chão
+  daquela coluna": todo degrau virava paredão e a checagem reprovou as 32 de uma vez.
+  Prêmio empurra, mas **não é piso**.
+- **I6** (`pedidas × ocupadas`) é a rede de "a plataforma apagou o prêmio" — no irmão
+  clássico 6 de 9 sumiam. ⚠️ Prêmio e plataforma moram na MESMA altura, então alguém
+  tem que perder; perde o prêmio DE PROPÓSITO, porque é ele que a I6 conta.
+  Plataforma encurtada em silêncio não teria rede nenhuma.
+- **I11** é a mais barata e a mais frustrante de faltar: a coisa boa que a criança VÊ
+  e nunca pega. ⚠️ Coluna sem superfície fica de fora, e não por descuido — moeda
+  sobre poço se pega em pleno voo.
+- **Os dois testes que TRANCAVAM defeito foram reescritos**: o do tema (`new
+  Set(themes).size === 8` passa igual nos dois esquemas) virou tabela fase a fase com
+  asserções que falham no esquema antigo **nas duas direções**; e o do elenco trocou
+  presença por quantidade e distribuição — presença é satisfeita por um inimigo
+  no-op, que foi exatamente o que trancou o espinho.
+
+### Desempenho: medido, consertado e travado
+
+A rede é uma **sonda de trabalho** no runtime (`perf`, lida pela porta
+`game-2d-advanced:perf`) com contadores DETERMINÍSTICOS, e não milissegundos:
+relógio em CI é ruído, e o que um lote de desempenho precisa provar é que o
+TRABALHO caiu. `__tests__/framePerf.test.ts` trava os números; lote que não é de
+desempenho tem que deixá-los iguais.
+
+| | antes | depois | ganho |
+|---|---|---|---|
+| `overlapGroups`, 300×300 espalhados | **20,3 ms** | **0,295 ms** | **80×** |
+| idem, com hitbox redonda | 33,6 ms | ~0,3 ms | ~100× |
+| `drawDebugOverlay`, 3200 entidades | **1,40 ms** | **0,146 ms** | **9,6×** |
+| a sonda, na cena travada | 1600 pares | **150** | — |
+| idem, comparações do overlay | 55 para 11 caixas | **0** | — |
+| `drawTilemap`, varredura de linhas | 1,8 µs | ~0 | **não é gargalo** |
+
+- ⚠️ **O broad-phase do g2d é o ERRADO para portar**: `_overlapBroadPhase` ordena por
+  borda e ainda varre m/2 por item — medido aqui rende **1,2×**, porque o `touching`
+  da gk já é inline-otimizado. O certo é o índice por CÉLULAS, que vive em
+  `runtime/overlapIndex.ts`.
+- ⚠️⚠️ **O círculo NÃO é a caixa.** O bloco "forma redonda, raio 40" num sprite 32×32
+  põe o círculo 24 px para FORA dela: um índice que recortasse pela caixa
+  **rejeitaria acerto de verdade**, e o modo de falha é MUDO (o jogo só deixa de
+  contar ponto). Por isso o recorte usa `_shapeLeft/_shapeTop/_shapeRight/_shapeBottom`,
+  e há anti-vácuo próprio — nenhum outro caso exercita essa geometria.
+- ⚠️ **A equivalência assere ORDEM, não só conjunto**: a parada quando o A é recolhido
+  torna a ordem observável no placar da criança.
+- ⚠️ **NÃO copiar o corte `sameGroup && index >= i` do g2d**: o mesmo molde nos dois
+  lados dispara cada par DUAS vezes, e metade dos jogos de molde único sentiria como
+  "parou de contar". A dobra é o comportamento de hoje e está travada.
+- ⚠️ **O limiar (1600 = 40×40) tem teste exato**, senão um contador travado em zero
+  passaria no teste de "cortou trabalho".
+- ⚠️ **O carimbo de passada do overlay não pode ser o contador de quadros**: com
+  simulação fixa um quadro pode rodar ZERO passos, e o overlay piscaria.
+- **Onde o custo de quadro realmente mora, para a próxima rodada:** `stepSystems`
+  roda 13 subsistemas incondicionalmente por quadro e `drawByDepth` ordena toda
+  entidade viva. Maiores que tudo acima.
+
+### As guardas que faltavam (e que este lote descobriu que faltavam)
+
+- **`templateGuard` DERIVADO** de `readdirSync`, com allowlist de interpolação por
+  DECLARAÇÃO (o `campaignInput.ts` exporta duas consts) e o anti-vácuo `it('a regra
+  MORDE')`, que a gk não tinha — no arquivo cujo próprio cabeçalho registra sete
+  quedas na crase crua. ⚠️⚠️ **Este lote caiu nela mais três vezes**, sempre
+  escrevendo comentário sobre o conserto anterior. O sintoma é a suíte PENDURAR
+  (600 s, sem erro); `bun test .../templateGuard.test.ts` aponta arquivo e linha em
+  meio segundo, e é o **primeiro comando** quando a suíte pendurar.
+- **`runtimeArchitecture.test.ts`** pela AST: 9 domínios derivados, sem duplicata, e
+  **nenhum hook órfão** — a gk só dispara `resetGame`, `resetProject` e
+  `projectReady`, e um hook com nome que ninguém chama não limpa nada e ainda parece
+  que limpa.
+- **Catraca de parâmetros** (hoje 1145), com a conta de CADA subida escrita no
+  comentário. Ela existe porque o `GameKitKnownApi` declara 110 dos 383 métodos
+  enumeráveis: o teste de assinatura cobre 29% da API, e ler o verde dele como "a API
+  está guardada" é o erro que a catraca dificulta.
+- **`bundle.test.ts`** e a doc como provider PREGUIÇOSO (−21% no bundle, −31% gzip).
+
+### O que fica de fora, declarado
+
+- **Mecânicas do jogo de referência**: mastro que paga por altura, estrela de
+  invencibilidade solta por bloco `?`, planta do cano, som, partículas, segunda
+  jornada, elenco nomeado por fase, casco chutado matando outros inimigos.
+- **Impulso do pulo escalar com a velocidade** — é *feel*, e invalidaria os limiares
+  de I4/I5. As invariantes deste lote são o que torna esse ajuste barato depois.
+- **O cache do `_mapCols`** fica SEM teste, e é escolha declarada: montar o ramo do
+  mapa-cenário do RPG num teste custa mais do que os 1,8 µs que ele poupa.
+- ⚠️ **Orçamento de celular fraco não é verificável em CI** (CI é desktop). O teto de
+  90 mil pares foi escolhido pensando em aparelho fraco, e nada aqui prova isso.
+- ⚠️ **Tempo de quadro em navegador visível não saiu desta sessão**: o painel fica
+  oculto (`visibilityState: 'hidden'`), o rAF é estrangulado e print não sai. O
+  contrato do Playwright (`e2e/reino-zero-pro-performance.spec.ts`) está escrito e os
+  contadores determinísticos travam sem harvest, mas **quem vai ver o número num
+  browser visível é ela**.
+- ⚠️ **`onGround` do herói PISCA em quem está parado** (ele afunda 0,15 px por quadro
+  e só colide de dois em dois). É inofensivo — o tempo de coiote cobre o pulo —, mas
+  teste que o leia direto fica intermitente; a régua certa é "está apoiado no piso".
 
 ## Jogo 2D Avançado — a caixa pode ser REDONDA (v0.55.0, 01/08)
 

@@ -248,6 +248,108 @@ export const gameTwoDPhysicsRuntime = `  // ---- Física ----
     else if (sprite.y + sprite.h > visible.bottom) { sprite.y = visible.bottom - sprite.h; sprite.vy = -Math.abs(sprite.vy || 0); }
   }
 
+  /**
+   * Quica só num PAR de bordas, deixando o outro par aberto.
+   *
+   * É o que o Pong precisa e o "quicar nas bordas" não dá: ali a bola quica nos
+   * quatro lados e nunca sai, então NUNCA há ponto. Aqui o par aberto é a passagem.
+   * Mesmo corpo do irmão, inclusive a CORREÇÃO DE POSIÇÃO — que é o que impede a
+   * bola de aparecer meio quadro fora do palco.
+   */
+  function bounceOnEdgePair(sprite, ctx, edges) {
+    if (!sprite || !ctx || !ctx.canvas) return;
+    var visible = _visibleWorldRect(ctx);
+    if (String(edges) === 'left-right') {
+      if (sprite.x < visible.left) { sprite.x = visible.left; sprite.vx = Math.abs(sprite.vx || 0); }
+      else if (sprite.x + sprite.w > visible.right) { sprite.x = visible.right - sprite.w; sprite.vx = -Math.abs(sprite.vx || 0); }
+      return;
+    }
+    if (sprite.y < visible.top) { sprite.y = visible.top; sprite.vy = Math.abs(sprite.vy || 0); }
+    else if (sprite.y + sprite.h > visible.bottom) { sprite.y = visible.bottom - sprite.h; sprite.vy = -Math.abs(sprite.vy || 0); }
+  }
+
+  /**
+   * O eixo por onde a bola volta: o lado COMPRIDO da raquete.
+   *
+   * Raquete em pé (12x44, Pong) devolve 'x'; deitada (60x12, Breakout) devolve 'y'.
+   * É a regra que a criança lê na TELA, sem campo novo e sem bloco irmão: ela vê a
+   * raquete e sabe para onde a bola volta. Empate (raquete quadrada): manda o eixo
+   * em que a bola vinha mais rápido — "ela volta por onde veio".
+   */
+  function _paddleReflectAxis(ball, paddle) {
+    var pw = _finiteNumber(paddle.w, 0), ph = _finiteNumber(paddle.h, 0);
+    if (ph > pw) return 'x';
+    if (pw > ph) return 'y';
+    return Math.abs(_finiteNumber(ball.vx, 0)) >= Math.abs(_finiteNumber(ball.vy, 0)) ? 'x' : 'y';
+  }
+
+  /**
+   * Rebater a bola na raquete — o coração do Pong, do Breakout e do Arkanoid.
+   *
+   * Três coisas que parecem detalhe e são o jogo inteiro:
+   *
+   * 1. ⭐ **Guarda de aproximação**: só rebate se a bola estiver INDO na direção da
+   *    raquete. Sem ela, dois quadros seguidos em contato invertem duas vezes e a
+   *    bola gruda vibrando dentro da raquete.
+   * 2. ⭐ **Correção de posição**: empurra a bola para fora antes de devolvê-la.
+   *    Sem isso a bola some meio quadro dentro da raquete e o rebote fica no acaso.
+   * 3. ⭐⭐ **Teto de velocidade**: a bola não pode andar mais que a espessura da
+   *    raquete num quadro, senão ela ATRAVESSA e o jogo "perde a bola". Como o
+   *    acelerar é o ajuste que toda criança mexe, sem o teto o próprio soquete
+   *    quebraria o jogo.
+   *
+   * O ângulo sai do PONTO do impacto: bater na beirada manda a bola mais de lado.
+   */
+  function paddleBounce(ball, paddle, boostPercent) {
+    if (!ball || !paddle || !isColliding(ball, paddle)) return;
+    var eixo = _paddleReflectAxis(ball, paddle);
+    var bola = _hitboxOf(ball), raquete = _hitboxOf(paddle);
+    var centroBola = eixo === 'x'
+      ? bola.x + bola.w / 2
+      : bola.y + bola.h / 2;
+    var centroRaquete = eixo === 'x'
+      ? raquete.x + raquete.w / 2
+      : raquete.y + raquete.h / 2;
+    var vindo = eixo === 'x' ? _finiteNumber(ball.vx, 0) : _finiteNumber(ball.vy, 0);
+    // Para onde ela volta: o lado da raquete em que a bola está.
+    var paraTras = centroBola < centroRaquete ? -1 : 1;
+    // Guarda de aproximação: já indo embora, não faz nada (senão gruda).
+    if (vindo !== 0 && (vindo > 0) === (paraTras > 0)) return;
+
+    var vx = _finiteNumber(ball.vx, 0), vy = _finiteNumber(ball.vy, 0);
+    var velocidade = Math.sqrt(vx * vx + vy * vy);
+    if (!(velocidade > 0)) velocidade = 1;
+    velocidade *= 1 + Math.max(0, Math.min(100, _finiteNumber(boostPercent, 0))) / 100;
+
+    // Teto: nunca mais que a espessura da raquete + o lado da bola por quadro.
+    var espessura = eixo === 'x' ? _finiteNumber(paddle.w, 0) : _finiteNumber(paddle.h, 0);
+    var lado = eixo === 'x' ? _finiteNumber(ball.w, 0) : _finiteNumber(ball.h, 0);
+    velocidade = Math.min(velocidade, Math.max(4, espessura + lado));
+
+    // Ângulo pelo ponto do impacto: -1 numa beirada, +1 na outra.
+    var meiaRaquete = Math.max(1, (eixo === 'x' ? raquete.h : raquete.w) / 2);
+    var outroBola = eixo === 'x' ? bola.y + bola.h / 2 : bola.x + bola.w / 2;
+    var outroRaquete = eixo === 'x' ? raquete.y + raquete.h / 2 : raquete.x + raquete.w / 2;
+    var desvio = Math.max(-1, Math.min(1, (outroBola - outroRaquete) / meiaRaquete));
+    // 0.6 deixa a componente de volta sempre maior que a lateral: a bola nunca sai
+    // rente à raquete, que é o jeito de o rebote virar um passeio de lado.
+    var deVolta = Math.sqrt(Math.max(0.04, 1 - desvio * desvio * 0.6 * 0.6));
+
+    if (eixo === 'x') {
+      ball.vx = paraTras * velocidade * deVolta;
+      ball.vy = desvio * velocidade * 0.6;
+      ball.x = paraTras < 0
+        ? _finiteNumber(paddle.x, 0) - _finiteNumber(ball.w, 0)
+        : _finiteNumber(paddle.x, 0) + _finiteNumber(paddle.w, 0);
+    } else {
+      ball.vy = paraTras * velocidade * deVolta;
+      ball.vx = desvio * velocidade * 0.6;
+      ball.y = paraTras < 0
+        ? _finiteNumber(paddle.y, 0) - _finiteNumber(ball.h, 0)
+        : _finiteNumber(paddle.y, 0) + _finiteNumber(paddle.h, 0);
+    }
+  }
+
   /** Colisão por círculo: distância dos centros < soma dos raios (≈ metade do lado). */
   function circleCollides(a, b) {
     if (!a || !b) return false;

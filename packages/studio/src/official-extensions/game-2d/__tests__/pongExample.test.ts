@@ -37,10 +37,14 @@ describe('Exemplo Pong — drift contra o parser real', () => {
     for (const t of [
       'g2d:createSprite', // raquetes + bola como retângulos
       'g2d:setVelocity', // a bola ganha velocidade (fusão de vx/vy)
-      'g2d:keyDown', // raquete do jogador pelas setas
+      'g2d:arrowsY', // raquete do jogador pelas setas (vale W/S e toque)
       'g2d:clampToScreen', // as raquetes não saem do campo
       'g2d:applyVelocity', // a bola anda pela própria velocidade
+      'g2d:bounceOnEdgePair', // quica no teto e no chão; os lados ficam abertos
       'g2d:touches', // rebate ao encostar na raquete
+      'g2d:paddleBounce', // o rebote com ângulo pelo ponto do impacto
+      'g2d:stageWidth', // o campo sai da TELA, não de um 440 cravado
+      'g2d:stageHeight',
       'g2d:setPosition', // reset da bola ao centro após o ponto (fusão x/y)
       'g2d:randomBetween', // o saque com ângulo levemente sorteado
       'g2d:drawSprite',
@@ -63,7 +67,15 @@ describe('Exemplo Pong — drift contra o parser real', () => {
     // própria posição: é a "IA" do Pong. Prova que há um oponente autônomo.
     const raw = JSON.stringify(behaviorStatements(pongExample.ir))
     expect(raw).toContain('"computador"')
-    // A bola quica na parede invertendo vy (abs para cima/baixo).
-    expect(raw).toContain('"fn":"abs"')
+  })
+
+  it('⭐ o tamanho do campo NÃO está cravado nas contas', () => {
+    // Antes o exemplo comparava com 440 e 300 na mão, então mudar o tamanho do
+    // palco quebrava o ponto e o quique em silêncio. Agora o campo sai da tela.
+    const raw = JSON.stringify(behaviorStatements(pongExample.ir))
+    expect(raw).toContain('"g2d:stageWidth"')
+    expect(raw).not.toContain('"value":440')
+    // 300 sumiu junto: o quique virou bloco e lê a borda visível.
+    expect(raw).not.toContain('"value":300')
   })
 })

@@ -144,6 +144,53 @@ test('o inventário canônico não tem chaves repetidas', () => {
   expect(new Set(GAME_KIT_ENUMERABLE_API_KEYS).size).toBe(GAME_KIT_ENUMERABLE_API_KEYS.length)
 })
 
+/** Conta parâmetros de TODA função do runtime composto (o molde é o do irmão g2d). */
+function runtimeFunctionParameterCount(source: string): number {
+  const file = ts.createSourceFile(
+    'gk-runtime.js',
+    source,
+    ts.ScriptTarget.ES2022,
+    true,
+    ts.ScriptKind.JS,
+  )
+  let count = 0
+  const visit = (node: ts.Node) => {
+    if (ts.isFunctionLike(node)) count += node.parameters.length
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  return count
+}
+
+test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
+  // Catraca NOVA na gk (o irmão g2d tem a dele desde 07/2026, hoje em 1141).
+  // Valor inicial = a medição de hoje, SEM folga: folga é catraca que não cobra.
+  //
+  // ⚠️ Ela é a única rede ESTRUTURAL da gk sobre a superfície que a checagem de
+  // assinatura não alcança: o GameKitKnownApi declara 110 dos 383 métodos
+  // enumeráveis, e os outros 273 caem no GameKitFallbackMethod pelo tipo mapeado.
+  // Ou seja, o teste logo acima cobre 29% da API — ler o verde dele como "a API
+  // está guardada" é o erro que esta catraca existe para dificultar.
+  //
+  // 1126 → 1127: o `zerar` da porta de diagnóstico de desempenho
+  // (`game-2d-advanced:perf`), que só o HOST enxerga. Único parâmetro somado
+  // pela sonda de trabalho — o inspetor da campanha não tem nenhum.
+  //
+  // 1127 → 1135: os consertos do motor da campanha, contados um a um —
+  // `proTileBlocks(ch)` 1, `proTileSupports(ch)` 1, `proDefeatEnemy(entity)` 1,
+  // `proGroundEntity(entity, dt)` 2 e `proShellContact(entity, pisada, hero)` 3.
+  //
+  // 1135 → 1136: o lote de desempenho. `drawDebugBox(e)` e `_mapCols(m)` somam
+  // dois, e o `boxOf(e)` que era closure DENTRO do overlay (uma nova por quadro)
+  // sumiu, devolvendo um. Saldo +1 — subir a catraca num lote de desempenho é
+  // legítimo, desde que a conta esteja escrita.
+  //
+  // 1136 → 1145: o índice espacial do "para cada par". `_shapeLeft/_shapeTop/
+  // _shapeRight/_shapeBottom` somam 4, `_buildOverlapIndex(lista)` 1,
+  // `_overlapCandidates(indice, a)` 2 e o comparador `(x, y)` da ordenação 2.
+  expect(runtimeFunctionParameterCount(gameKitRuntime)).toBeLessThanOrEqual(1145)
+})
+
 test('as assinaturas centrais mantêm nomes e ordem dos parâmetros do contrato', () => {
   expect(runtimeSignatureMismatches(gameKitRuntime)).toEqual([])
 })

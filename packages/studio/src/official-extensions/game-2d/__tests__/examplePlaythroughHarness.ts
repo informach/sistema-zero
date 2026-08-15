@@ -98,7 +98,16 @@ export interface CapturedPixelText {
   align: string
 }
 
-export function exampleHarness(example: ExtensionExample, random: () => number = Math.random) {
+export interface ExampleHarnessOptions {
+  /** Liga o contador de operações do `ctx` (ver `ctxOps`). Desligado por padrão. */
+  contarCtx?: boolean
+}
+
+export function exampleHarness(
+  example: ExtensionExample,
+  random: () => number = Math.random,
+  { contarCtx = false }: ExampleHarnessOptions = {},
+) {
   const listeners = new Map<string, Listener[]>()
   const frames = new Map<number, (timestamp: number) => void>()
   const sprites: CapturedSprite[] = []
@@ -118,6 +127,34 @@ export function exampleHarness(example: ExtensionExample, random: () => number =
   let timestamp = 0
   let canvas: Record<string, unknown> | null = null
 
+  /**
+   * ⭐ O contador de trabalho de desenho — a métrica de desempenho que é
+   * DETERMINÍSTICA (milissegundo é flaky e o `bun test` não faz layout).
+   *
+   * Conta por nome: `set:fillStyle`, `call:fillRect`, `get:imageSmoothingEnabled`.
+   * Ligado, ele responde "quantas operações de contexto este quadro custa" — que é
+   * a régua com que se prova que uma otimização de desenho funcionou, sem cronômetro.
+   *
+   * ⚠️ Custo zero quando desligado: as funções sem contagem são as mesmas de antes.
+   */
+  const ctxOps: Record<string, number> = {}
+  const contarOp = (chave: string) => {
+    if (contarCtx) ctxOps[chave] = (ctxOps[chave] ?? 0) + 1
+  }
+  // Memoizado por propriedade: devolver função nova a cada leitura mediria o
+  // harness em vez do runtime (e o `_crispDraw` lê a mesma propriedade 3×).
+  const chamadasContadas = new Map<string, () => undefined>()
+  const funcaoContada = (nome: string) => {
+    const pronta = chamadasContadas.get(nome)
+    if (pronta) return pronta
+    const nova = () => {
+      contarOp(`call:${nome}`)
+      return undefined
+    }
+    chamadasContadas.set(nome, nova)
+    return nova
+  }
+
   const contextTarget: Record<string, unknown> = {
     canvas: null,
     measureText: (text: string) => ({ width: text.length * 8 }),
@@ -126,8 +163,19 @@ export function exampleHarness(example: ExtensionExample, random: () => number =
   }
   const context = new Proxy(contextTarget, {
     get(target, property) {
-      if (property in target) return target[property as string]
-      return () => undefined
+      const nome = String(property)
+      if (property in target) {
+        contarOp(`get:${nome}`)
+        return target[nome]
+      }
+      // Propriedade que o runtime só ESCREVE (fillStyle, font…) ainda não está no
+      // alvo na primeira leitura; o contador de chamada cobre o caso do método.
+      return contarCtx ? funcaoContada(nome) : () => undefined
+    },
+    set(target, property, value) {
+      contarOp(`set:${String(property)}`)
+      target[String(property)] = value
+      return true
     },
   })
 
@@ -421,6 +469,19 @@ export function exampleHarness(example: ExtensionExample, random: () => number =
     warnings,
     calls,
     scores,
+    /** Operações de desenho por nome (`set:fillStyle`, `call:fillRect`, `get:…`). */
+    ctxOps,
+    /** Soma das operações do `ctx`, opcionalmente só as de um prefixo/nome. */
+    contarCtxOps(filtro?: string) {
+      let total = 0
+      for (const [chave, quantas] of Object.entries(ctxOps)) {
+        if (!filtro || chave === filtro || chave.endsWith(`:${filtro}`)) total += quantas
+      }
+      return total
+    },
+    zerarCtxOps() {
+      for (const chave of Object.keys(ctxOps)) delete ctxOps[chave]
+    },
     /** Textos da fonte de pixel desenhados no ÚLTIMO quadro (zerado a cada quadro). */
     pixelTexts,
     fireKey(key: string, type: 'keydown' | 'keyup' = 'keydown') {

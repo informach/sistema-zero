@@ -34,14 +34,14 @@ describe('careerLevelAtLeast', () => {
 
 describe('catálogo da Carreira do Criador', () => {
   test('cada degrau tem o seu número de posições, derivado da Lenda', () => {
-    // Não existe mais um "8" uniforme: o degrau de ENTRADA tem 1 e o Iniciante 2D tem 7
-    // (o curso-base saiu dele em 14/08). O members (validação + CHECK) e o admin
-    // (conformance) derivam daqui; divergir é quebrar o elo canônico.
+    // UMA exceção ao 8: o degrau de ENTRADA tem 1 (o curso que a Faísca faz). O Iniciante 2D
+    // chegou a ter 7 entre 14/08 e 15/08 e a usuária desfez — todo degrau que não é a entrada
+    // tem 8. O members (validação + CHECK) e o admin (conformance) derivam daqui; divergir é
+    // quebrar o elo canônico.
     const god = CREATOR_CAREER_LEVELS.at(-1)
     expect(god?.slug).toBe('god')
     expect(careerSlotsForTier('primeiros-passos-2d')).toBe(1)
-    expect(careerSlotsForTier('iniciante-2d')).toBe(7)
-    for (const tier of CAREER_COURSE_TIERS.slice(2)) {
+    for (const tier of CAREER_COURSE_TIERS.slice(1)) {
       expect(careerSlotsForTier(tier)).toBe(8)
     }
     // A Lenda é a fonte: o helper e o catálogo não podem divergir.
@@ -51,9 +51,10 @@ describe('catálogo da Carreira do Criador', () => {
       expect(Math.max(...slots)).toBe(careerSlotsForTier(tier))
       expect(careerSlotsForTier(tier)).toBeLessThanOrEqual(CAREER_SLOT_MAX)
     }
-    // O total continua 48 (decisao da usuaria: 1 + 7 + 8x5).
+    // O total e 49 (1 + 8x6). Era 48 enquanto o Iniciante 2D tinha 7; a usuaria trocou o
+    // total redondo pela regra uniforme, de proposito.
     const total = CAREER_COURSE_TIERS.reduce((sum, tier) => sum + careerSlotsForTier(tier), 0)
-    expect(total).toBe(48)
+    expect(total).toBe(49)
   })
 
   test('degrau desconhecido não tem posição e não passa por degrau de carreira', () => {
@@ -67,7 +68,7 @@ describe('catálogo da Carreira do Criador', () => {
   test('exige o curso de ENTRADA (Primeiros Passos) para virar Construtor', () => {
     // Mudou em 14/08: o curso-base saiu do Iniciante 2D e virou o degrau de entrada.
     // Fechar cursos do Iniciante 2D sem ter feito a entrada nao promove ninguem.
-    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] })).toBe('noob')
+    expect(computeCareerLevelSlug({ 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] })).toBe('noob')
     expect(computeCareerLevelSlug({ 'primeiros-passos-2d': [1] })).toBe('coder')
   })
 
@@ -76,14 +77,15 @@ describe('catálogo da Carreira do Criador', () => {
     expect(
       computeCareerLevelSlug({
         'primeiros-passos-2d': [1],
-        'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
+        'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       }),
     ).toBe('hacker')
-    // A 8a posicao nao existe mais no Iniciante 2D: conta-la nao promove.
+    // Buraco no meio nao promove, por mais que a CONTAGEM pareca suficiente: a regua e por
+    // POSICAO, nao por quantidade. Aqui faltam a 7 (e o 99 e bonus, fora da carreira).
     expect(
       computeCareerLevelSlug({
         'primeiros-passos-2d': [1],
-        'iniciante-2d': [1, 2, 3, 4, 5, 6, 8],
+        'iniciante-2d': [1, 2, 3, 4, 5, 6, 8, 99],
       }),
     ).toBe('coder')
   })
@@ -91,7 +93,7 @@ describe('catálogo da Carreira do Criador', () => {
   test('a escada completa termina na Lenda', () => {
     const all = {
       'primeiros-passos-2d': [1],
-      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],
@@ -106,7 +108,7 @@ describe('catálogo da Carreira do Criador', () => {
     expect(missingCareerSlots({ 'iniciante-2d': [1, 3, 6] }, creatorCareerLevel('hacker'))).toEqual(
       {
         'primeiros-passos-2d': [1],
-        'iniciante-2d': [2, 4, 5, 7],
+        'iniciante-2d': [2, 4, 5, 7, 8],
       },
     )
   })
@@ -159,7 +161,7 @@ describe('catálogo da Carreira do Criador', () => {
   })
 
   test('etapas futuras ficam bloqueadas e etapas anteriores são revisáveis', () => {
-    const qualified = { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] }
+    const qualified = { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] }
     expect(resolveCareerCourseLock(qualified, 'primeiros-passos-2d', 1)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'iniciante-2d', 4)).toEqual({ locked: false })
     expect(resolveCareerCourseLock(qualified, 'iniciante-3d', 1)).toEqual({ locked: false })
@@ -191,7 +193,7 @@ describe('catálogo da Carreira do Criador', () => {
     // Etapa completa (learningTier passou dela) → recompensa GANHA.
     expect(
       resolveCareerCourseLock(
-        { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7] },
+        { ...ENTRADA, 'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8] },
         'iniciante-2d',
         null,
       ),
@@ -208,7 +210,7 @@ describe('catálogo da Carreira do Criador', () => {
     // Lenda: tudo aberto.
     const all = {
       'primeiros-passos-2d': [1],
-      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7],
+      'iniciante-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'iniciante-3d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-2d': [1, 2, 3, 4, 5, 6, 7, 8],
       'intermediario-3d': [1, 2, 3, 4, 5, 6, 7, 8],

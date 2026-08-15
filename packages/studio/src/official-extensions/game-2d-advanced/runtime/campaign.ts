@@ -1,4 +1,5 @@
 import { CAMPAIGN_ENTITY_RUNTIME_CATALOG_JSON } from '../campaignEntityCatalog'
+import { CAMPAIGN_PHYSICS_JSON } from '../campaignPhysics'
 import { gameKitCampaignEventsRuntime } from './campaignEvents'
 import { gameKitCampaignInputRuntime, gameKitCampaignInputStateRuntime } from './campaignInput'
 import { gameKitCampaignPersistenceRuntime } from './campaignPersistence'
@@ -40,6 +41,40 @@ ${gameKitCampaignInputRuntime}
   var proStageKindNames = Object.keys(PRO_STAGE_ENTITY_CATALOG);
   for (var proKindIndex = 0; proKindIndex < proStageKindNames.length; proKindIndex++) PRO_STAGE_KINDS[proStageKindNames[proKindIndex]] = 1;
   var PRO_TILE_INDEX = { '.': 0, '#': 1, '=': 2, 'B': 3, '?': 4, '^': 5, '~': 6, 'H': 7 };
+  var PRO_PHYSICS = ${CAMPAIGN_PHYSICS_JSON};
+  /**
+   * A regua UNICA de "esta peca empurra?" e "esta peca segura?".
+   *
+   * ⚠️ A sonda do inimigo comparava com '#' na unha enquanto o tilemap declarava
+   * TRES pecas solidas: o bicho atravessava tijolo e bloco de premio, e so o
+   * heroi era barrado. Aqui as duas pontas leem a MESMA tabela, e o mapa que o
+   * motor monta e DERIVADO dela — duplicar o par deixaria um caminho esquecido.
+   */
+  var PRO_TILE_SOLID = Object.create(null);
+  PRO_TILE_SOLID['#'] = 1; PRO_TILE_SOLID['B'] = 1; PRO_TILE_SOLID['?'] = 1;
+  var PRO_TILE_PLATFORM = Object.create(null);
+  PRO_TILE_PLATFORM['='] = 1;
+  var PRO_TILE_SOLID_INDEX = Object.create(null);
+  var PRO_TILE_PLATFORM_INDEX = Object.create(null);
+  for (var proTileChar in PRO_TILE_INDEX) {
+    if (PRO_TILE_SOLID[proTileChar] === 1) PRO_TILE_SOLID_INDEX[PRO_TILE_INDEX[proTileChar]] = true;
+    if (PRO_TILE_PLATFORM[proTileChar] === 1) PRO_TILE_PLATFORM_INDEX[PRO_TILE_INDEX[proTileChar]] = true;
+  }
+  function proTileBlocks(ch) { return PRO_TILE_SOLID[ch] === 1; }
+  function proTileSupports(ch) { return PRO_TILE_SOLID[ch] === 1 || PRO_TILE_PLATFORM[ch] === 1; }
+  /** Quem ANDA no chao: cai, apoia e vira na beirada. Voador e chefe escrevem o proprio y. */
+  var PRO_GROUND_KINDS = Object.create(null);
+  PRO_GROUND_KINDS['walker'] = true; PRO_GROUND_KINDS['spiky'] = true; PRO_GROUND_KINDS['shell'] = true;
+  /**
+   * Quem COBRA no encostao. O espinho ficava de fora — encostar num espinho nao
+   * fazia nada, e a guarda de baixo ("pisada && kind !== spiky") era codigo morto.
+   * ⚠️ Object.create(null): esta casa ja foi mordida duas vezes por 'toString'
+   * passando como chave valida num mapa literal.
+   */
+  var PRO_CONTACT_ENEMIES = Object.create(null);
+  PRO_CONTACT_ENEMIES['walker'] = true; PRO_CONTACT_ENEMIES['flyer'] = true;
+  PRO_CONTACT_ENEMIES['shell'] = true; PRO_CONTACT_ENEMIES['boss'] = true;
+  PRO_CONTACT_ENEMIES['spiky'] = true;
   function proSafeId(value) {
     var id = text(value, '').trim();
     return id.length > 0 && id.length <= 64 && /^[A-Za-z0-9_-]+$/.test(id) ? id : '';
@@ -170,6 +205,9 @@ ${gameKitCampaignInputRuntime}
     entity.h = spec.kind === 'coin' || spec.kind === 'gem' ? 10 : spec.kind === 'boss' ? 22 : 14; entity.vx = 0; entity.vy = 0;
     entity.active = true; entity.variant = spec.variant; entity.props = spec.props; entity.health = spec.kind === 'boss' ? Math.max(3, num(spec.props.health, 6)) : 1;
     entity.phase = 1; entity.timer = 0; entity.direction = num(spec.props.direction, -1) < 0 ? -1 : 1;
+    // ⚠️ O pool RECICLA: sem zerar aqui, o casco novo nasceria com a graca de
+    // chute do casco anterior e o primeiro encostao dele sairia de graca.
+    entity.kickGrace = 0; entity.onGround = false;
     return entity;
   }
   function proBuildTilemap(stage) {
@@ -180,7 +218,7 @@ ${gameKitCampaignInputRuntime}
       rows.push(row);
     }
     tilePx = 16;
-    tilemaps[proCampaign.mapKey] = { rows: rows, artTile: 16, imgKey: '', solid: { 1: true, 3: true, 4: true }, platform: { 2: true } };
+    tilemaps[proCampaign.mapKey] = { rows: rows, artTile: 16, imgKey: '', solid: PRO_TILE_SOLID_INDEX, platform: PRO_TILE_PLATFORM_INDEX };
   }
   function proStageInstance(source) {
     return { schemaVersion: 1, id: source.id, world: source.world, order: source.order, theme: source.theme, width: source.width, height: source.height, tiles: source.tiles.slice(), entities: source.entities, triggers: source.triggers, nextStage: source.nextStage, secretStage: source.secretStage, timeLimit: source.timeLimit };
@@ -292,12 +330,12 @@ ${gameKitCampaignEventsRuntime}
     var player = proCurrentPlayer(); if (!player) return;
     var next = text(form, 'pequeno');
     if (next !== 'pequeno' && next !== 'forte' && next !== 'invencivel') next = 'pequeno';
-    player.form = next; if (next === 'invencivel' && proCampaign.hero) proCampaign.hero._proInvincible = 10;
+    player.form = next; if (next === 'invencivel' && proCampaign.hero) proCampaign.hero._proInvincible = PRO_PHYSICS.duracaoDaEstrela;
   }
   function heroForm() { var player = proCurrentPlayer(); return player ? player.form : 'pequeno'; }
   function hurtHeroForm() {
     var player = proCurrentPlayer(); if (!player || !proCampaign.hero || proCampaign.hero._proInvincible > 0) return false;
-    if (player.form === 'invencivel' || player.form === 'forte') { player.form = 'pequeno'; proCampaign.hero._proInvincible = 1.5; return true; }
+    if (player.form === 'invencivel' || player.form === 'forte') { player.form = 'pequeno'; proCampaign.hero._proInvincible = PRO_PHYSICS.piscaAoLevarDano; return true; }
     player.lives -= 1;
     if (player.lives <= 0) {
       var nextIndex = proCampaign.progress.activePlayer % proCampaign.progress.players.length;
@@ -348,11 +386,26 @@ ${gameKitCampaignEventsRuntime}
     if (!entity.active) return;
     entity.prevX = entity.x; entity.prevY = entity.y;
     entity.timer += dt;
-    if (entity.kind === 'walker' || entity.kind === 'spiky' || entity.kind === 'shell') {
-      var speed = entity.kind === 'shell' && entity.phase === 2 ? 130 : Math.max(18, num(entity.props.speed, 30));
-      entity.x += entity.direction * speed * dt;
-      var aheadX = entity.direction < 0 ? entity.x - 1 : entity.x + entity.w + 1;
-      if (proTileCharAt(aheadX, entity.y + entity.h / 2) === '#' || proTileCharAt(aheadX, entity.y + entity.h + 2) === '.') entity.direction *= -1;
+    if (PRO_GROUND_KINDS[entity.kind] === true) {
+      entity.kickGrace = Math.max(0, num(entity.kickGrace, 0) - dt);
+      // Fase do casco: 1 anda, 2 recolhido, 3 chutado. Quem nao e casco fica em 1.
+      var recolhido = entity.kind === 'shell' && entity.phase === 2;
+      if (!recolhido) {
+        var speed = entity.kind === 'shell' && entity.phase === 3
+          ? PRO_PHYSICS.cascoChutado
+          : Math.max(PRO_PHYSICS.inimigoVelocidadeMinima, num(entity.props.speed, PRO_PHYSICS.inimigoVelocidade));
+        entity.x += entity.direction * speed * dt;
+        var aheadX = entity.direction < 0 ? entity.x - 1 : entity.x + entity.w + 1;
+        // ⚠️ A beirada so vira quem esta APOIADO: no ar, "nao tem chao adiante" e
+        // verdade toda hora, e era isso que fazia o bicho pendurado inverter a
+        // direcao sessenta vezes por segundo e tremer parado.
+        var semChaoAdiante = entity.onGround === true && !proTileSupports(proTileCharAt(aheadX, entity.y + entity.h + 2));
+        // O casco CHUTADO cai da beirada em vez de virar — e o que separa chutar
+        // de soltar um bicho novo, e o que o jogo de referencia faz.
+        if (entity.kind === 'shell' && entity.phase === 3) semChaoAdiante = false;
+        if (proTileBlocks(proTileCharAt(aheadX, entity.y + entity.h / 2)) || semChaoAdiante) entity.direction *= -1;
+      }
+      proGroundEntity(entity, dt);
     } else if (entity.kind === 'flyer') {
       entity.x = entity.startX + Math.sin(entity.timer * Math.max(1, num(entity.props.speed, 2))) * Math.max(16, num(entity.props.range, 48));
       entity.y = entity.startY + Math.sin(entity.timer * 3) * 8;
@@ -388,17 +441,119 @@ ${gameKitCampaignEventsRuntime}
       nextStage(); return;
     }
     if (entity.kind === 'secretExit' || entity.kind === 'portal') { if (proCampaign.stage.secretStage) warpToStage(proCampaign.stage.secretStage); return; }
-    if (entity.kind === 'walker' || entity.kind === 'flyer' || entity.kind === 'shell' || entity.kind === 'boss') {
+    if (PRO_CONTACT_ENEMIES[entity.kind] === true) {
       var hero = proCampaign.hero;
-      var stomp = hero.vy > 0 && hero.y + hero.h - entity.y < 9;
-      if (heroForm() === 'invencivel') { entity.active = false; return; }
-      if (stomp && entity.kind !== 'spiky') {
-        hero.vy = -180;
-        if (entity.kind === 'boss') { entity.health -= 1; if (entity.health <= 0) { entity.active = false; proEmitCampaign('guardiao', { id: entity.id }); } }
-        else if (entity.kind === 'shell' && entity.phase === 1) { entity.phase = 2; entity.direction = hero.x < entity.x ? 1 : -1; }
-        else entity.active = false;
-      } else hurtHeroForm();
+      var pisada = hero.vy > 0 && hero.y + hero.h - entity.y < PRO_PHYSICS.janelaDaPisada;
+      if (heroForm() === 'invencivel') { proDefeatEnemy(entity); return; }
+      // O espinho cobra ATE na pisada: e o que o rotulo do catalogo promete, o
+      // que a guarda morta insinuava e o que o irmao classico faz.
+      if (entity.kind === 'spiky') { hurtHeroForm(); return; }
+      if (entity.kind === 'shell') { proShellContact(entity, pisada, hero); return; }
+      if (!pisada) { hurtHeroForm(); return; }
+      hero.vy = -PRO_PHYSICS.quiqueDaPisada;
+      if (entity.kind !== 'boss') { proDefeatEnemy(entity); return; }
+      entity.health -= 1;
+      if (entity.health <= 0) proDefeatEnemy(entity);
     }
+  }
+  /**
+   * A UNICA porta de saida de um inimigo do palco.
+   *
+   * Antes havia duas mortes de chefe e so uma delas avisava: derrubar o guardiao
+   * com a estrela pulava o "quando vencer o guardiao" que a crianca ligou. Com o
+   * dono unico, quem morre avisa, nao importa por onde tenha morrido.
+   */
+  function proDefeatEnemy(entity) {
+    if (!entity || entity.active !== true) return false;
+    entity.active = false;
+    if (entity.kind === 'boss') proEmitCampaign('guardiao', { id: entity.id });
+    return true;
+  }
+  /**
+   * O casco em TRES fases: anda (1), recolhido (2), chutado (3).
+   *
+   * Estava invertido — pisar DISPARAVA o casco, a segunda pisada o MATAVA e um
+   * casco andando cobrava vida de quem o chutou. Aqui pisar sempre PARA, encostar
+   * num casco parado CHUTA, e quem chutou tem uma graca para sair de perto.
+   */
+  function proShellContact(entity, pisada, hero) {
+    if (pisada) {
+      hero.vy = -PRO_PHYSICS.quiqueDaPisada;
+      entity.phase = 2; entity.vx = 0;
+      // ⚠️ A propria sobreposicao que PISOU ainda dura um quadro ou dois (o
+      // heroi sobe a -180 e leva ~2 quadros para desencostar). Sem a graca, o
+      // casco sairia chutado no quadro seguinte a cada pisada.
+      entity.kickGrace = PRO_PHYSICS.gracaDoChute;
+      return;
+    }
+    if (entity.phase === 1) { hurtHeroForm(); return; }
+    if (num(entity.kickGrace, 0) > 0) return;
+    if (entity.phase === 2) {
+      entity.phase = 3;
+      entity.direction = hero.x < entity.x ? 1 : -1;
+      entity.kickGrace = PRO_PHYSICS.gracaDoChute;
+      return;
+    }
+    hurtHeroForm();
+  }
+  /**
+   * Queda e apoio de quem anda no chao. Chefe e voador ficam de fora de
+   * proposito: os dois escrevem o proprio y por seno, e somar gravidade neles
+   * derrubaria o guardiao que a fase estaciona no ar.
+   *
+   * A regua vertical e a MESMA tabela de pecas do heroi (proTileSupports); a
+   * horizontal continua sendo a sonda de direcao, que e o idioma do genero.
+   */
+  function proGroundEntity(entity, dt) {
+    entity.vy = num(entity.vy, 0) + PRO_PHYSICS.gravidade * dt;
+    entity.y += entity.vy * dt;
+    entity.onGround = false;
+    if (entity.vy < 0) return;
+    var pe = entity.y + entity.h;
+    // Dois pontos bastam: o bicho tem 14px numa celula de 16, entao nenhuma peca
+    // cabe inteira entre os pes dele.
+    if (!proTileSupports(proTileCharAt(entity.x + 1, pe)) && !proTileSupports(proTileCharAt(entity.x + entity.w - 1, pe))) return;
+    entity.y = Math.floor(pe / 16) * 16 - entity.h;
+    entity.vy = 0;
+    entity.onGround = true;
+  }
+  /**
+   * Diagnostico do HOST: o estado VIVO da campanha, entidade por entidade.
+   *
+   * Nao entra na API da crianca (vive no registro opt-in de inspetores) e nao
+   * move contador nenhum. Existe porque, sem ele, "o espinho nao fez nada" era
+   * inverificavel: campaignHero() e campaignProgress() existem, o estado das
+   * entidades nao.
+   */
+  function proCampaignInspect() {
+    var stage = proCampaign.stage;
+    var hero = proCampaign.hero;
+    var items = [];
+    for (var i = 0; i < proCampaign.entities.length; i++) {
+      var e = proCampaign.entities[i];
+      items.push({
+        kind: e.kind, id: e.id, x: e.x, y: e.y, w: e.w, h: e.h,
+        vx: num(e.vx, 0), vy: num(e.vy, 0), active: e.active === true, onGround: e.onGround === true,
+        phase: num(e.phase, 0), health: num(e.health, 0), direction: num(e.direction, 0),
+        variant: e.variant || ''
+      });
+    }
+    return {
+      stageId: proCampaign.stageId,
+      world: stage ? stage.world : 0,
+      order: stage ? stage.order : 0,
+      theme: stage ? stage.theme : '',
+      width: stage ? stage.width : 0,
+      height: stage ? stage.height : 0,
+      tiles: stage ? stage.tiles.slice() : [],
+      hero: hero ? {
+        x: hero.x, y: hero.y, vx: num(hero.vx, 0), vy: num(hero.vy, 0),
+        w: hero.w, h: hero.h, onGround: hero.onGround === true, form: heroForm()
+      } : null,
+      entities: items,
+      progress: proCampaign.progress,
+      transitioning: proCampaign.transition != null
+    };
   }
   function stepCampaign(dt) {
     if (!proCampaign.active || !proCampaign.stage || !proCampaign.hero || state !== 'jogando') return;
@@ -406,18 +561,18 @@ ${gameKitCampaignEventsRuntime}
     var hero = proCampaign.hero; proCampaign.elapsed += dt;
     hero._proPrevX = hero.x; hero._proPrevY = hero.y;
     hero._proInvincible = Math.max(0, num(hero._proInvincible, 0) - dt);
-    hero._proCoyote = hero.onGround ? 0.1 : Math.max(0, num(hero._proCoyote, 0) - dt);
-    if (proActionPressed.pular) hero._proBuffer = 0.1; else hero._proBuffer = Math.max(0, num(hero._proBuffer, 0) - dt);
+    hero._proCoyote = hero.onGround ? PRO_PHYSICS.coiote : Math.max(0, num(hero._proCoyote, 0) - dt);
+    if (proActionPressed.pular) hero._proBuffer = PRO_PHYSICS.buffer; else hero._proBuffer = Math.max(0, num(hero._proBuffer, 0) - dt);
     var inWater = proTileCharAt(centerX(hero), centerY(hero)) === '~';
     var onLadder = proTileCharAt(centerX(hero), centerY(hero)) === 'H';
     var direction = (proActionDown.direita ? 1 : 0) - (proActionDown.esquerda ? 1 : 0);
-    var speed = (proActionDown.correr ? 118 : 82) * (inWater ? 0.6 : 1);
+    var speed = (proActionDown.correr ? PRO_PHYSICS.correr : PRO_PHYSICS.andar) * (inWater ? PRO_PHYSICS.fatorDaAgua : 1);
     hero.vx = direction * speed;
-    if (onLadder && (proActionDown.cima || proActionDown.baixo)) hero.vy = ((proActionDown.baixo ? 1 : 0) - (proActionDown.cima ? 1 : 0)) * 62;
+    if (onLadder && (proActionDown.cima || proActionDown.baixo)) hero.vy = ((proActionDown.baixo ? 1 : 0) - (proActionDown.cima ? 1 : 0)) * PRO_PHYSICS.escada;
     else {
-      applyGravity(hero, inWater ? 180 : 520, dt);
-      if (hero._proBuffer > 0 && (hero.onGround || hero._proCoyote > 0 || inWater)) { hero.vy = inWater ? -120 : -205; hero.onGround = false; hero._proBuffer = 0; hero._proCoyote = 0; }
-      if (!proActionDown.pular && hero.vy < -85) hero.vy = -85;
+      applyGravity(hero, inWater ? PRO_PHYSICS.gravidadeNaAgua : PRO_PHYSICS.gravidade, dt);
+      if (hero._proBuffer > 0 && (hero.onGround || hero._proCoyote > 0 || inWater)) { hero.vy = inWater ? -PRO_PHYSICS.puloNaAgua : -PRO_PHYSICS.pulo; hero.onGround = false; hero._proBuffer = 0; hero._proCoyote = 0; }
+      if (!proActionDown.pular && hero.vy < -PRO_PHYSICS.corteDoPulo) hero.vy = -PRO_PHYSICS.corteDoPulo;
     }
     var wasMovingUp = num(hero.vy, 0) < 0;
     moveByVelocity(hero, dt); collideTilemap(hero, proCampaign.mapKey); proBumpTile(hero, wasMovingUp);

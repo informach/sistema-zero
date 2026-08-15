@@ -213,70 +213,12 @@ export const pongExample: ExtensionExample = beginnerGameExample({
               },
               then: [
                 {
-                  type: 'if',
-                  cond: {
-                    type: 'g2d:keyDown',
-                    key: 'ArrowUp',
+                  type: 'g2d:arrowsY',
+                  spriteVar: 'jogador',
+                  speed: {
+                    type: 'num',
+                    value: 5,
                   },
-                  then: [
-                    {
-                      type: 'memberSet',
-                      object: {
-                        type: 'var',
-                        name: 'jogador',
-                      },
-                      name: 'y',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'jogador',
-                          },
-                          name: 'y',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 5,
-                        },
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'g2d:keyDown',
-                    key: 'ArrowDown',
-                  },
-                  then: [
-                    {
-                      type: 'memberSet',
-                      object: {
-                        type: 'var',
-                        name: 'jogador',
-                      },
-                      name: 'y',
-                      value: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'jogador',
-                          },
-                          name: 'y',
-                        },
-                        right: {
-                          type: 'num',
-                          value: 5,
-                        },
-                      },
-                    },
-                  ],
                 },
                 {
                   type: 'g2d:clampToScreen',
@@ -407,205 +349,26 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                   spriteVar: 'bola',
                 },
                 {
-                  type: 'if',
-                  cond: {
-                    type: 'binop',
-                    op: '<=',
-                    left: {
-                      type: 'memberGet',
-                      object: {
-                        type: 'var',
-                        name: 'bola',
-                      },
-                      name: 'y',
-                    },
-                    right: {
-                      type: 'num',
-                      value: 0,
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'memberSet',
-                      object: {
-                        type: 'var',
-                        name: 'bola',
-                      },
-                      name: 'vy',
-                      value: {
-                        type: 'mathUnary',
-                        fn: 'abs',
-                        arg: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'bola',
-                          },
-                          name: 'vy',
-                        },
-                      },
-                    },
-                  ],
+                  type: 'g2d:bounceOnEdgePair',
+                  spriteVar: 'bola',
+                  ctxVar: 'ctx',
+                  edges: 'top-bottom',
                 },
                 {
                   type: 'if',
                   cond: {
-                    type: 'binop',
-                    op: '>=',
-                    left: {
-                      type: 'binop',
-                      op: '+',
-                      left: {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'bola',
-                        },
-                        name: 'y',
-                      },
-                      right: {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'bola',
-                        },
-                        name: 'h',
-                      },
-                    },
-                    right: {
-                      type: 'num',
-                      value: 300,
-                    },
+                    type: 'g2d:touches',
+                    aVar: 'jogador',
+                    bVar: 'bola',
                   },
                   then: [
                     {
-                      type: 'memberSet',
-                      object: {
-                        type: 'var',
-                        name: 'bola',
-                      },
-                      name: 'vy',
-                      value: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'num',
-                          value: 0,
-                        },
-                        right: {
-                          type: 'mathUnary',
-                          fn: 'abs',
-                          arg: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'bola',
-                            },
-                            name: 'vy',
-                          },
-                        },
-                      },
-                    },
-                  ],
-                },
-                {
-                  type: 'if',
-                  cond: {
-                    type: 'logical',
-                    op: '&&',
-                    left: {
-                      type: 'g2d:touches',
-                      aVar: 'jogador',
-                      bVar: 'bola',
-                    },
-                    right: {
-                      type: 'binop',
-                      op: '<',
-                      left: {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'bola',
-                        },
-                        name: 'vx',
-                      },
-                      right: {
+                      type: 'g2d:paddleBounce',
+                      ballVar: 'bola',
+                      paddleVar: 'jogador',
+                      boost: {
                         type: 'num',
-                        value: 0,
-                      },
-                    },
-                  },
-                  then: [
-                    {
-                      type: 'g2d:setVelocity',
-                      spriteVar: 'bola',
-                      vx: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'mathUnary',
-                          fn: 'abs',
-                          arg: {
-                            type: 'memberGet',
-                            object: {
-                              type: 'var',
-                              name: 'bola',
-                            },
-                            name: 'vx',
-                          },
-                        },
-                        right: {
-                          type: 'num',
-                          value: 0.3,
-                        },
-                      },
-                      vy: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'bola',
-                          },
-                          name: 'vy',
-                        },
-                        right: {
-                          type: 'binop',
-                          op: '*',
-                          left: {
-                            type: 'binop',
-                            op: '-',
-                            left: {
-                              type: 'binop',
-                              op: '-',
-                              left: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'bola',
-                                },
-                                name: 'y',
-                              },
-                              right: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'jogador',
-                                },
-                                name: 'y',
-                              },
-                            },
-                            right: {
-                              type: 'num',
-                              value: 16,
-                            },
-                          },
-                          right: {
-                            type: 'num',
-                            value: 0.08,
-                          },
-                        },
+                        value: 8,
                       },
                     },
                     {
@@ -617,109 +380,18 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'if',
                   cond: {
-                    type: 'logical',
-                    op: '&&',
-                    left: {
-                      type: 'g2d:touches',
-                      aVar: 'computador',
-                      bVar: 'bola',
-                    },
-                    right: {
-                      type: 'binop',
-                      op: '>',
-                      left: {
-                        type: 'memberGet',
-                        object: {
-                          type: 'var',
-                          name: 'bola',
-                        },
-                        name: 'vx',
-                      },
-                      right: {
-                        type: 'num',
-                        value: 0,
-                      },
-                    },
+                    type: 'g2d:touches',
+                    aVar: 'computador',
+                    bVar: 'bola',
                   },
                   then: [
                     {
-                      type: 'g2d:setVelocity',
-                      spriteVar: 'bola',
-                      vx: {
-                        type: 'binop',
-                        op: '-',
-                        left: {
-                          type: 'binop',
-                          op: '-',
-                          left: {
-                            type: 'num',
-                            value: 0,
-                          },
-                          right: {
-                            type: 'mathUnary',
-                            fn: 'abs',
-                            arg: {
-                              type: 'memberGet',
-                              object: {
-                                type: 'var',
-                                name: 'bola',
-                              },
-                              name: 'vx',
-                            },
-                          },
-                        },
-                        right: {
-                          type: 'num',
-                          value: 0.3,
-                        },
-                      },
-                      vy: {
-                        type: 'binop',
-                        op: '+',
-                        left: {
-                          type: 'memberGet',
-                          object: {
-                            type: 'var',
-                            name: 'bola',
-                          },
-                          name: 'vy',
-                        },
-                        right: {
-                          type: 'binop',
-                          op: '*',
-                          left: {
-                            type: 'binop',
-                            op: '-',
-                            left: {
-                              type: 'binop',
-                              op: '-',
-                              left: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'bola',
-                                },
-                                name: 'y',
-                              },
-                              right: {
-                                type: 'memberGet',
-                                object: {
-                                  type: 'var',
-                                  name: 'computador',
-                                },
-                                name: 'y',
-                              },
-                            },
-                            right: {
-                              type: 'num',
-                              value: 16,
-                            },
-                          },
-                          right: {
-                            type: 'num',
-                            value: 0.08,
-                          },
-                        },
+                      type: 'g2d:paddleBounce',
+                      ballVar: 'bola',
+                      paddleVar: 'computador',
+                      boost: {
+                        type: 'num',
+                        value: 8,
                       },
                     },
                     {
@@ -767,12 +439,42 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                       type: 'g2d:setPosition',
                       spriteVar: 'bola',
                       x: {
-                        type: 'num',
-                        value: 214,
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'binop',
+                          op: '/',
+                          left: {
+                            type: 'g2d:stageWidth',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
                       },
                       y: {
-                        type: 'num',
-                        value: 144,
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'binop',
+                          op: '/',
+                          left: {
+                            type: 'g2d:stageHeight',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
                       },
                     },
                     {
@@ -814,8 +516,7 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                       name: 'x',
                     },
                     right: {
-                      type: 'num',
-                      value: 440,
+                      type: 'g2d:stageWidth',
                     },
                   },
                   then: [
@@ -839,12 +540,42 @@ export const pongExample: ExtensionExample = beginnerGameExample({
                       type: 'g2d:setPosition',
                       spriteVar: 'bola',
                       x: {
-                        type: 'num',
-                        value: 214,
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'binop',
+                          op: '/',
+                          left: {
+                            type: 'g2d:stageWidth',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
                       },
                       y: {
-                        type: 'num',
-                        value: 144,
+                        type: 'binop',
+                        op: '-',
+                        left: {
+                          type: 'binop',
+                          op: '/',
+                          left: {
+                            type: 'g2d:stageHeight',
+                          },
+                          right: {
+                            type: 'num',
+                            value: 2,
+                          },
+                        },
+                        right: {
+                          type: 'num',
+                          value: 6,
+                        },
                       },
                     },
                     {

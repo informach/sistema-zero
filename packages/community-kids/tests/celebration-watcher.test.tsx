@@ -9,10 +9,15 @@ const toolsKey = `sz:kids:tools:${PERFIL}`
 const REV_1 = 'revision-1'
 const REV_2 = 'revision-2'
 
-const sprites: DrawerSnapshot[] = [{ name: '🎮 Sprites', blockIds: ['sprite:draw', 'sprite:move'] }]
+/** A gaveta é identificada pelo caminho INTEIRO da paleta, nunca pela folha. */
+function gaveta(label: string, blockIds: string[], family = 'Jogo 2D'): DrawerSnapshot {
+  return { key: `${family} › ${label}`, family, label, blockIds }
+}
+
+const sprites: DrawerSnapshot[] = [gaveta('🎮 Sprites', ['sprite:draw', 'sprite:move'])]
 const spritesMaisColisoes: DrawerSnapshot[] = [
   ...sprites,
-  { name: '💥 Colisões', blockIds: ['collision:touch'] },
+  gaveta('💥 Colisões', ['collision:touch']),
 ]
 
 const restores: Array<() => void> = []
@@ -89,7 +94,7 @@ describe('CelebrationWatcher', () => {
       />,
     )
     expect((await screen.findByRole('dialog')).getAttribute('aria-label')).toBe(
-      'Você ganhou a gaveta 💥 Colisões!',
+      'Você ganhou 💥 Colisões!',
     )
   })
 

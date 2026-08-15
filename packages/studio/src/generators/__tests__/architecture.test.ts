@@ -46,7 +46,11 @@ test('fachadas históricas concentradas não podem crescer', () => {
     // alcançam a extensão por codec), e um valor de extensão usável em "se"
     // precisa constar ali ou o round-trip o rebaixa a "código avançado".
     // 14_100 → 14_102 pelo `case 'g2d:campaignValue'`.
-    ['../../parsers/js.ts', 14_102],
+    // 14_102 → 14_109 pelos dois valores de tela do Jogo 2D (`g2d:stageWidth` e
+    // `g2d:stageHeight`, 2 linhas) mais 5 que já estavam no arquivo. Tentei a rota
+    // de zero linha — delegar por Set, como o `PLATFORM_SIMPLE_VALUE_TYPES` do
+    // game-3d — e ela custa MAIS linhas do que os dois `case`.
+    ['../../parsers/js.ts', 14_109],
     ['../../ir/schema.ts', 12_800],
     ['../../blockly/buildIR.ts', 9_400],
   ])

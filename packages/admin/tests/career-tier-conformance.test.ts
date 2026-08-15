@@ -33,25 +33,27 @@ describe('conformance admin×core — degraus e posições da Carreira do Criado
     }
   })
 
-  test('as posições variam POR degrau, sem nenhuma passar do teto do core', () => {
-    // ⚠️ Não é mais um 8 uniforme (14/08): a ENTRADA tem 1 e o Iniciante 2D tem 7, porque o
-    // curso-base saiu dele para o degrau novo. O `CAREER_SLOT_MAX` sobrevive como teto
-    // EXTERNO (DTO e CHECK do banco), não como o número de toda etapa.
+  test('só a ENTRADA foge do 8, e nenhuma passa do teto do core', () => {
+    // ⚠️ UMA exceção ao 8: o degrau de ENTRADA tem 1 posição (o curso que a Faísca faz). O
+    // Iniciante 2D teve 7 entre 14/08 e 15/08 e a usuária desfez. O `CAREER_SLOT_MAX`
+    // sobrevive como teto EXTERNO (DTO e CHECK do banco), não como o número de toda etapa.
     expect(slotsForTier('primeiros-passos', '2d')).toBe(1)
-    expect(slotsForTier('iniciante', '2d')).toBe(7)
+    expect(slotsForTier('iniciante', '2d')).toBe(8)
     for (const option of COURSE_TIER_OPTIONS) {
       const slots = slotsForTier(option.level, option.track)
-      expect(slots).toBeGreaterThan(0)
+      const esperado = option.level === 'primeiros-passos' ? 1 : 8
+      expect(slots, `${option.level}-${option.track}`).toBe(esperado)
       expect(slots).toBeLessThanOrEqual(CAREER_SLOT_MAX)
     }
   })
 
-  test('a carreira inteira continua somando 48 posições', () => {
-    // O total é promessa de produto: a usuária escolheu 1 + 7 para nada mudar de tamanho.
+  test('a carreira inteira soma 49 posições', () => {
+    // 1 + 8×6. Era 48 enquanto o Iniciante 2D tinha 7 — a usuária trocou o total redondo
+    // pela regra uniforme, de propósito (15/08).
     const total = COURSE_TIER_OPTIONS.reduce(
       (sum, option) => sum + slotsForTier(option.level, option.track),
       0,
     )
-    expect(total).toBe(48)
+    expect(total).toBe(49)
   })
 })

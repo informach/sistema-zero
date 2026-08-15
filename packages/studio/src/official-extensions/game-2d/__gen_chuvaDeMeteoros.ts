@@ -23,7 +23,8 @@ import { collectTypes, stripIds } from './__gen_dinoCorredor'
  *   (vy = velocidade + 0..2). O spawnAsteroid do Kit espaço já desenha a pedra
  *   GIRANDO — o rotation += 50*dt do Meteor original de graça.
  * - laser × meteoro = explosão + som + remover os dois (o culling ±300 do
- *   original vira pruneOffscreen nos dois grupos, com margens calibradas).
+ *   original vira pruneOffscreen nos dois grupos, com a margem fixa de 40
+ *   representada pelo bloco).
  * - nave × meteoro = fim (o close_window do original vira a cena "perdeu"),
  *   com colisão PERDOADORA de 75% na nave (setHitboxScale).
  * - Placar POR TEMPO (int(get_time()) do original): raiz "A cada 1 segundo"
@@ -90,7 +91,7 @@ SZGame2D.gameLoop(function update() {
       SZGame2D.setScene("perdeu");
     });
     SZGame2D.pruneOffscreen(ctx, tiros, 40, (tiro) => {});
-    SZGame2D.pruneOffscreen(ctx, meteoros, 80, (pedra) => {});
+    SZGame2D.pruneOffscreen(ctx, meteoros, 40, (pedra) => {});
     SZGame2D.drawScore(ctx, "Pontos:", pontos, 12, 28, "#f3f6ff", 22);
   }
   if (SZGame2D.sceneIs("perdeu")) {

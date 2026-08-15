@@ -988,46 +988,37 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                       },
                       then: [
                         {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '==',
-                            left: {
-                              type: 'var',
-                              name: 'atacando1',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 12,
-                            },
+                          type: 'g2d:changeHealth',
+                          spriteVar: 'heroi2',
+                          delta: {
+                            type: 'num',
+                            value: -8,
                           },
-                          then: [
-                            {
-                              type: 'g2d:changeHealth',
-                              spriteVar: 'heroi2',
-                              delta: {
-                                type: 'num',
-                                value: -8,
-                              },
-                            },
-                            {
-                              type: 'g2d:explode',
-                              spriteVar: 'heroi2',
-                              color: '#ffb347',
-                            },
-                            {
-                              type: 'g2d:shake',
-                              ctxVar: 'ctx',
-                              intensity: {
-                                type: 'num',
-                                value: 5,
-                              },
-                            },
-                            {
-                              type: 'g2d:playFx',
-                              fx: 'hurt',
-                            },
-                          ],
+                        },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'heroi2',
+                          color: '#ffb347',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: {
+                            type: 'num',
+                            value: 5,
+                          },
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'hurt',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'atacando1',
+                          value: {
+                            type: 'num',
+                            value: 1,
+                          },
                         },
                       ],
                     },
@@ -1172,46 +1163,37 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                       },
                       then: [
                         {
-                          type: 'if',
-                          cond: {
-                            type: 'binop',
-                            op: '==',
-                            left: {
-                              type: 'var',
-                              name: 'atacando2',
-                            },
-                            right: {
-                              type: 'num',
-                              value: 12,
-                            },
+                          type: 'g2d:changeHealth',
+                          spriteVar: 'heroi1',
+                          delta: {
+                            type: 'num',
+                            value: -8,
                           },
-                          then: [
-                            {
-                              type: 'g2d:changeHealth',
-                              spriteVar: 'heroi1',
-                              delta: {
-                                type: 'num',
-                                value: -8,
-                              },
-                            },
-                            {
-                              type: 'g2d:explode',
-                              spriteVar: 'heroi1',
-                              color: '#ffb347',
-                            },
-                            {
-                              type: 'g2d:shake',
-                              ctxVar: 'ctx',
-                              intensity: {
-                                type: 'num',
-                                value: 5,
-                              },
-                            },
-                            {
-                              type: 'g2d:playFx',
-                              fx: 'hurt',
-                            },
-                          ],
+                        },
+                        {
+                          type: 'g2d:explode',
+                          spriteVar: 'heroi1',
+                          color: '#ffb347',
+                        },
+                        {
+                          type: 'g2d:shake',
+                          ctxVar: 'ctx',
+                          intensity: {
+                            type: 'num',
+                            value: 5,
+                          },
+                        },
+                        {
+                          type: 'g2d:playFx',
+                          fx: 'hurt',
+                        },
+                        {
+                          type: 'assign',
+                          name: 'atacando2',
+                          value: {
+                            type: 'num',
+                            value: 1,
+                          },
                         },
                       ],
                     },
@@ -1316,15 +1298,72 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'if',
                   cond: {
-                    type: 'binop',
-                    op: '<=',
+                    type: 'logical',
+                    op: '&&',
                     left: {
-                      type: 'g2d:getHealth',
-                      spriteVar: 'heroi2',
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi1',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
                     right: {
-                      type: 'num',
-                      value: 0,
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi2',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                  },
+                  then: [
+                    {
+                      type: 'g2d:playFx',
+                      fx: 'win',
+                    },
+                    {
+                      type: 'g2d:setScene',
+                      name: 'empate',
+                    },
+                  ],
+                },
+                {
+                  type: 'if',
+                  cond: {
+                    type: 'logical',
+                    op: '&&',
+                    left: {
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi2',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
+                    },
+                    right: {
+                      type: 'binop',
+                      op: '>',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi1',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
                   },
                   then: [
@@ -1341,15 +1380,31 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                 {
                   type: 'if',
                   cond: {
-                    type: 'binop',
-                    op: '<=',
+                    type: 'logical',
+                    op: '&&',
                     left: {
-                      type: 'g2d:getHealth',
-                      spriteVar: 'heroi1',
+                      type: 'binop',
+                      op: '<=',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi1',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
                     right: {
-                      type: 'num',
-                      value: 0,
+                      type: 'binop',
+                      op: '>',
+                      left: {
+                        type: 'g2d:getHealth',
+                        spriteVar: 'heroi2',
+                      },
+                      right: {
+                        type: 'num',
+                        value: 0,
+                      },
                     },
                   },
                   then: [
@@ -1513,7 +1568,7 @@ export const dueloDeHeroisExample: ExtensionExample = beginnerGameExample({
                   },
                   subtitle: {
                     type: 'str',
-                    value: 'O tempo acabou com os dois heróis igualmente fortes. Ninguém caiu!',
+                    value: 'A luta terminou sem vencedor. Os dois heróis deram tudo de si!',
                   },
                   hint: {
                     type: 'str',

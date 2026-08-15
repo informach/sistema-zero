@@ -31,28 +31,84 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
 
 /** Uma "gaveta" da caixa de ferramentas, do jeito que a criança a vê na paleta. */
 export interface StudioDrawer {
-  /** Nome da gaveta com emoji, ex.: `💥 Colisões`, `🚀 Kit espaço`. */
-  name: string
+  /**
+   * O `palettePath` INTEIRO — identidade estável e única da gaveta.
+   *
+   * ⚠️⚠️ NUNCA volte a chavear pela FOLHA do caminho. Medido no catálogo real (1467 blocos):
+   * 182 nomes de folha distintos, dos quais **12 se repetem em famílias diferentes**, cobrindo
+   * 176 blocos (12%). `🔊 Som` existe em QUATRO famílias (Jogo 2D, Jogo 2D Avançado, Jogo 3D e
+   * Jogo 3D Avançado); `🎨 Aparência` e `🔤 Texto` em três. Chaveando pela folha as quatro
+   * viravam UMA gaveta com a contagem somada, e a criança que abrisse o Jogo 3D veria a gaveta
+   * do Jogo 2D "crescer" em vez de ganhar uma caixa nova.
+   *
+   * O caminho inteiro também cobre a colisão DENTRO de uma família: os kits do Jogo 2D/3D
+   * Avançado têm três segmentos (`Jogo 2D Avançado › 🧙 Kit RPG › 💬 NPCs`), e a folha sozinha
+   * jogava fora o segmento do meio, que é justamente o nome do kit.
+   */
+  key: string
+  /**
+   * `palettePath[0]`: a categoria de TOPO que a criança lê na paleta do Blockly
+   * ("Jogo 2D", "Jogo 3D", "Programação"). É o que desambigua as gavetas homônimas na tela.
+   *
+   * ⚠️ Não confundir com o DEGRAU do curso ("Iniciante 2D"), que é vocabulário da equipe e não
+   * pode aparecer para a criança. Este aqui é literalmente o rótulo que ela já vê no editor.
+   */
+  family: string
+  /** O resto do caminho: `💥 Colisões`, ou `🧙 Kit RPG › 💬 NPCs` nos kits de três níveis. */
+  label: string
   /** Quantos blocos conquistados moram nela. */
   count: number
 }
 
 /** Snapshot para detectar ganhos por identidade estável, sem usar o nome mutável da gaveta. */
 export interface StudioDrawerSnapshot {
-  name: string
+  key: string
+  family: string
+  label: string
   blockIds: string[]
 }
 
+/** Uma família com as gavetas que a criança conquistou dentro dela. */
+export interface StudioDrawerFamily {
+  family: string
+  drawers: StudioDrawer[]
+  drawerCount: number
+  blockCount: number
+}
+
+interface DrawerIdentity {
+  key: string
+  family: string
+  label: string
+}
+
+/** O separador que o próprio `palettePath` usa quando é mostrado como trilha. */
+const PATH_SEPARATOR = ' › '
+
 /**
- * O nome que a criança REALMENTE lê na paleta: a folha do `palettePath` (ex.:
- * `Programação › 🏷️ Variáveis` → `🏷️ Variáveis`). `subcategory`/`category` são o
- * fallback — `palettePath` fica vazio p/ bloco que não mora em paleta nenhuma.
+ * Resolve a identidade da gaveta a partir do caminho da paleta.
+ *
+ * `subcategory`/`category` seguem como fallback para bloco que não mora em paleta nenhuma
+ * (hoje são ZERO blocos, mas o fallback custa nada e evita gaveta fantasma se isso mudar).
  */
+function drawerIdentityOf(entry: (typeof SERVER_BLOCK_CATALOG)[number]): DrawerIdentity {
+  const path = entry.palettePath
+  const family = path[0]
+  if (family) {
+    const rest = path.slice(1)
+    return {
+      key: path.join(PATH_SEPARATOR),
+      family,
+      // Caminho de UM segmento só (o `🗂️ Áreas do projeto`) não tem folha: a família é o rótulo.
+      label: rest.length > 0 ? rest.join(PATH_SEPARATOR) : family,
+    }
+  }
+  const fallback = entry.subcategory || entry.category
+  return { key: fallback, family: fallback, label: fallback }
+}
+
 const DRAWER_BY_BLOCK = new Map(
-  SERVER_BLOCK_CATALOG.map((entry) => [
-    entry.type,
-    entry.palettePath.at(-1) || entry.subcategory || entry.category,
-  ]),
+  SERVER_BLOCK_CATALOG.map((entry) => [entry.type, drawerIdentityOf(entry)]),
 )
 
 /**
@@ -62,15 +118,47 @@ const DRAWER_BY_BLOCK = new Map(
  * (id velho de um currículo antigo não vira gaveta fantasma).
  */
 export function drawersForBlocks(blocks: readonly string[]): StudioDrawer[] {
-  const byDrawer = new Map<string, number>()
+  const byDrawer = new Map<string, StudioDrawer>()
   for (const type of blocks) {
     const drawer = DRAWER_BY_BLOCK.get(type)
     if (!drawer) continue
-    byDrawer.set(drawer, (byDrawer.get(drawer) ?? 0) + 1)
+    const current = byDrawer.get(drawer.key)
+    if (current) current.count += 1
+    else byDrawer.set(drawer.key, { ...drawer, count: 1 })
   }
-  return [...byDrawer]
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'pt-BR'))
+  return [...byDrawer.values()].sort(
+    // ⚠️ O 3º critério é a CHAVE, não o rótulo: gavetas homônimas de famílias diferentes empatam
+    // em `count` E em `label`, e sem ele a ordem cairia na de inserção (a ordem em que os blocos
+    // do currículo chegaram), mudando de um curso para outro sem motivo visível.
+    (a, b) =>
+      b.count - a.count ||
+      a.label.localeCompare(b.label, 'pt-BR') ||
+      a.key.localeCompare(b.key, 'pt-BR'),
+  )
+}
+
+/**
+ * Agrupa as gavetas pela FAMÍLIA, que é como o perfil as mostra.
+ *
+ * Sem isto a lista cresce para sempre numa fileira só de pílulas (16 hoje, com UMA extensão)
+ * e as gavetas homônimas de famílias diferentes ficam lado a lado sem nada as distinguindo.
+ * A ordem das gavetas DENTRO da família é a que entrou (mais cheia primeiro).
+ */
+export function groupDrawersByFamily(drawers: readonly StudioDrawer[]): StudioDrawerFamily[] {
+  const byFamily = new Map<string, StudioDrawer[]>()
+  for (const drawer of drawers) {
+    const current = byFamily.get(drawer.family)
+    if (current) current.push(drawer)
+    else byFamily.set(drawer.family, [drawer])
+  }
+  return [...byFamily]
+    .map(([family, list]) => ({
+      family,
+      drawers: list,
+      drawerCount: list.length,
+      blockCount: list.reduce((sum, drawer) => sum + drawer.count, 0),
+    }))
+    .sort((a, b) => b.blockCount - a.blockCount || a.family.localeCompare(b.family, 'pt-BR'))
 }
 
 /**
@@ -78,15 +166,20 @@ export function drawersForBlocks(blocks: readonly string[]): StudioDrawer[] {
  * `drawersForBlocks`, este payload não deve ir no perfil nem no chrome global.
  */
 export function drawerSnapshotsForBlocks(blocks: readonly string[]): StudioDrawerSnapshot[] {
-  const byDrawer = new Map<string, string[]>()
+  const byDrawer = new Map<string, StudioDrawerSnapshot>()
   for (const type of new Set(blocks)) {
     const drawer = DRAWER_BY_BLOCK.get(type)
     if (!drawer) continue
-    const current = byDrawer.get(drawer) ?? []
-    current.push(type)
-    byDrawer.set(drawer, current)
+    const current = byDrawer.get(drawer.key)
+    if (current) current.blockIds.push(type)
+    else byDrawer.set(drawer.key, { ...drawer, blockIds: [type] })
   }
-  return [...byDrawer]
-    .map(([name, blockIds]) => ({ name, blockIds: blockIds.sort() }))
-    .sort((a, b) => b.blockIds.length - a.blockIds.length || a.name.localeCompare(b.name, 'pt-BR'))
+  return [...byDrawer.values()]
+    .map((drawer) => ({ ...drawer, blockIds: drawer.blockIds.sort() }))
+    .sort(
+      (a, b) =>
+        b.blockIds.length - a.blockIds.length ||
+        a.label.localeCompare(b.label, 'pt-BR') ||
+        a.key.localeCompare(b.key, 'pt-BR'),
+    )
 }

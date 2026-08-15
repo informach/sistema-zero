@@ -150,9 +150,12 @@ export const gameTwoDUtilitiesRuntime = `  // ===== Genéricos Tier 1: mira/cont
     var n = (_isFiniteNumber(frames) && frames > 0) ? Math.round(frames) : 1;
     var id = (typeof key === 'string' && key) ? key : 'default';
     if (!sprite._cooldowns || typeof sprite._cooldowns !== 'object') sprite._cooldowns = Object.create(null);
-    if (typeof sprite._cooldowns[id] !== 'number') sprite._cooldowns[id] = 0;
-    if (sprite._cooldowns[id] > 0) { sprite._cooldowns[id] -= 1; return false; }
-    sprite._cooldowns[id] = Math.max(0, n - 1);
+    // Prazo absoluto no relógio de quadros da partida. Descontar por chamada
+    // trava receitas edge-trigger (evento de tecla + recarga): esperar não
+    // adiantava nada e só apertar repetidamente liberava o próximo golpe.
+    // _frameStamp não avança durante a pausa e volta a zero no reinício.
+    if (_finiteNumber(sprite._cooldowns[id], 0) > _frameStamp) return false;
+    sprite._cooldowns[id] = _frameStamp + n;
     return true;
   }
   // Tira do grupo quem "nasceu" há mais de N segundos (tempo de vida).

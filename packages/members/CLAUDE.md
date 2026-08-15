@@ -402,13 +402,13 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    Mundos→Gênio da Criação→Lenda) **DERIVADA na leitura** (sem coluna/backfill, como o
    ranking/missões): catálogo central em `@sistemazero/core/career`, espelhado por
    `domain/gamification/levels.ts`. A régua usa POSIÇÕES ESPECÍFICAS: slot 1 de **Primeiros Passos** →
-   + slots 1..7 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
-   +1..8 av-3d (**48 obrigatórios**, o mesmo total de sempre).
+   + slots 1..8 ini-2d → + slots 1..8 ini-3d → +1..8 int-2d → +1..8 int-3d → +1..8 av-2d →
+   +1..8 av-3d (**49 obrigatórios**; eram 48 enquanto o ini-2d teve 7, entre 14/08 e 15/08).
    ⚠️ **`primeiros-passos-2d` é o degrau de ENTRADA (14/08, migration `0063`)** — 1 posição só, o
    curso que a Faísca faz, mais os bônus dela. Antes o curso-base morava no `iniciante-2d` e a
    divisão Faísca × Construtor(a) era só APRESENTAÇÃO no kids, então a Faísca não podia ter bônus.
-   O número de posições deixou de ser uniforme: use `careerSlotsForTier(tier)` do core (1 / 7 / 8),
-   nunca um 8 solto. `courseTier(level, track)` passou a devolver `CourseTier | null` — nem todo par
+   O número de posições tem UMA exceção: use `careerSlotsForTier(tier)` do core (1 na entrada, 8 nos
+   demais), nunca um 8 solto — o degrau de entrada tem 1. `courseTier(level, track)` passou a devolver `CourseTier | null` — nem todo par
    é degrau (só existe `primeiros-passos-2d`, nunca o `-3d`), e quem chama trata `null` como fora da
    carreira, igual ao `lenda`.
    🚨 **O rollout exige MANUTENÇÃO.** Os marcos guardam um retrato congelado do degrau, e o

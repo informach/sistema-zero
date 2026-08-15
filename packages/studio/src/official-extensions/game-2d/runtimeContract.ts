@@ -153,6 +153,8 @@ export interface GameTwoDTileContact {
 
 export type GameTwoDStompMode = 'defeat' | 'damage' | 'squash' | 'shell' | 'spiky'
 
+/** O par de bordas em que o sprite quica; o outro par fica aberto. */
+export type GameTwoDEdgePair = 'top-bottom' | 'left-right'
 export type GameTwoDWorldEdges = 'none' | 'floor' | 'solid'
 export type GameTwoDCameraHorizontal = 'off' | 'free' | 'right' | 'left'
 export type GameTwoDCameraVertical = 'off' | 'free' | 'down' | 'up'
@@ -265,6 +267,10 @@ export interface GameTwoDLifecycleApi {
 
 export interface GameTwoDStageApi {
   clear(): void
+  /** A largura LÓGICA da tela (não o buffer: com DPR ou tela cheia eles diferem). */
+  stageWidth(): number
+  /** A altura LÓGICA da tela. */
+  stageHeight(): number
   fitScreen(percent: number): void
   setupStageFull(background: string): void
   /** Moldura colorida em volta da tela do jogo (para enxergar a área do palco). */
@@ -385,6 +391,10 @@ export interface GameTwoDPhysicsApi {
   /** Soma a gravidade DO MUNDO ao `vy` do sprite (padrão 0.6; pode ser negativa). */
   applyGravity(sprite: GameTwoDSprite): void
   bounceOnEdges(sprite: GameTwoDSprite, ctx: GameTwoDContext): void
+  /** Quica só num par de bordas; o outro par fica ABERTO (é por onde sai o ponto). */
+  bounceOnEdgePair(sprite: GameTwoDSprite, ctx: GameTwoDContext, edges: GameTwoDEdgePair): void
+  /** Rebate a bola na raquete: reflete, dá ângulo pelo impacto e acelera N%. */
+  paddleBounce(ball: GameTwoDSprite, paddle: GameTwoDSprite, boostPercent: number): void
   circleCollides(a: GameTwoDSprite, b: GameTwoDSprite): boolean
 }
 
@@ -493,6 +503,8 @@ export interface GameTwoDInputAndMotionApi {
     options?: { size?: number; color?: string; speed?: number },
   ): GameTwoDSprite | null
   arrowsX(sprite: GameTwoDSprite, speed: number): void
+  /** O par vertical do `arrowsX`, lendo a mesma camada semântica (vale W/S e toque). */
+  arrowsY(sprite: GameTwoDSprite, speed: number): void
   blink(sprite: GameTwoDSprite, frames: number): void
   flash(ctx: GameTwoDContext, color: string): void
   shake(ctx: GameTwoDContext, intensity: number): void
@@ -861,6 +873,7 @@ export const GAME_TWO_D_API_KEYS = [
   'drawBackdrop',
   'spawnBullet',
   'arrowsX',
+  'arrowsY',
   'blink',
   'isColliding',
   'setHitboxScale',
@@ -871,6 +884,8 @@ export const GAME_TWO_D_API_KEYS = [
   'applyVelocity',
   'applyGravity',
   'bounceOnEdges',
+  'bounceOnEdgePair',
+  'paddleBounce',
   'circleCollides',
   'playSound',
   'playFx',
@@ -910,6 +925,8 @@ export const GAME_TWO_D_API_KEYS = [
   'isMovingV',
   'randomX',
   'randomY',
+  'stageWidth',
+  'stageHeight',
   'hasHealth',
   'cooldownReady',
   'pruneOld',

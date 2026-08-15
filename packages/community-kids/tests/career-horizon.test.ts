@@ -39,12 +39,11 @@ function course(level: Level, track: Track, careerSlot: number | null): CatalogC
 }
 
 /**
- * Posições obrigatórias por degrau. Desde 14/08 não é um 8 uniforme: a ENTRADA tem 1 (o
- * curso que a Faísca faz) e o Iniciante 2D tem 7 (o curso-base saiu dele). Soma: 48.
+ * Posições obrigatórias por degrau. UMA exceção ao 8: a ENTRADA tem 1 (o curso que a Faísca
+ * faz). Soma: 49. O Iniciante 2D teve 7 entre 14/08 e 15/08 e a usuária desfez.
  */
 const SLOTS_POR_DEGRAU: Record<string, number> = {
   'primeiros-passos-2d': 1,
-  'iniciante-2d': 7,
 }
 
 /** O degrau inteiro, com o número de posições que ELE tem. */
@@ -56,7 +55,7 @@ function fullTier(level: Level, track: Track): CatalogCourseView[] {
 /** O curso de ENTRADA sozinho: a régua do Construtor(a). */
 const entrada = () => course('primeiros-passos', '2d', 1)
 
-/** O catálogo COMPLETO da carreira: 1 + 7 + 8×5 = 48 posições. */
+/** O catálogo COMPLETO da carreira: 1 + 8×6 = 49 posições. */
 function fullCatalog(): CatalogCourseView[] {
   return [
     ...fullTier('primeiros-passos', '2d'),
@@ -141,12 +140,12 @@ describe('careerHorizon', () => {
     // visão definitiva (os 8 postos e os números crus do members).
     expect(careerHorizon(null)).toBe('god')
     expect(visibleCareerLevels('noob', careerHorizon(null))).toEqual(LEVEL_ORDER)
-    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 8 })
     expect(careerProgress(level, null)).toMatchObject({
       kind: 'pending',
-      remaining: 7,
+      remaining: 8,
       done: 0,
-      ready: 7,
+      ready: 8,
     })
   })
 
@@ -221,15 +220,15 @@ describe('careerProgress', () => {
     )
   })
 
-  test('⭐ Construtor com só o curso-base no catálogo fica EM DIA, não "faltam 7"', () => {
-    // O members diz que faltam 7 posições para o Inventor; nenhuma delas foi gravada.
-    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
+  test('⭐ Construtor com só o curso-base no catálogo fica EM DIA, não "faltam 8"', () => {
+    // O members diz que faltam 8 posições para o Inventor; nenhuma delas foi gravada.
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 8 })
     expect(careerProgress(level, [entrada()])).toEqual({ kind: 'up-to-date' })
   })
 
-  test('Construtor com 3 cursos gravados e 1 feito: faltam 2, não 6', () => {
-    // O degrau tem 7 posições: o members dizendo "faltam 6" significa 1 já qualificada.
-    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 6 })
+  test('Construtor com 3 cursos gravados e 1 feito: faltam 2, não 7', () => {
+    // O degrau tem 8 posições: o members dizendo "faltam 7" significa 1 já qualificada.
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
     const courses = [1, 2, 3].map((slot) => course('iniciante', '2d', slot))
     expect(careerProgress(level, courses)).toMatchObject({
       kind: 'pending',
@@ -272,8 +271,10 @@ describe('nextLevelHintWithin', () => {
   test('⭐⭐ degrau INCOMPLETO não diz quanto falta (a régua do posto não mudou)', () => {
     // A criança precisa dos 8 para virar Inventor(a). Com 3 gravados, dizer "faltam 2" é
     // mentira: ela fecha os 2 e não sobe. Falsa esperança é pior que silêncio.
+    // ⚠️ O 7 na lista é a FRONTEIRA que mudou em 15/08: sete cursos publicados já foram o
+    // degrau cheio e hoje são um degrau incompleto, que precisa continuar em silêncio.
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
-    for (const publicados of [1, 2, 3, 6]) {
+    for (const publicados of [1, 2, 3, 6, 7]) {
       const catalogo = Array.from({ length: publicados }, (_, i) =>
         course('iniciante', '2d', i + 1),
       )

@@ -52,16 +52,52 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * (que reseta o estado do ctx), então o ajuste é POR DESENHO, nunca global.
    * Devolve false se o desenho lançou (o chamador cai no placeholder).
    */
+  // ⭐ O estado do smoothing é LEMBRADO, e só escrito quando muda de verdade.
+  //
+  // Antes, cada desenho fazia 1 leitura + 2 escritas no contexto. Num mapa de
+  // tiles isso é por CÉLULA: 375 células = 1.125 travessias de contexto para 375
+  // desenhos úteis, quatro de sobrecarga para cada um. Com a memória, um mapa
+  // homogêneo paga uma escrita no quadro inteiro.
+  //
+  // ⚠️ Reatribuir a largura do canvas RESETA o estado do contexto, e é por isso que o
+  // ajuste sempre foi por desenho. O _stageSurfaceStamp é incrementado nos três
+  // pontos que reatribuem (criar o palco, setupStage e _resizeBacking), e
+  // invalida a memória. O _stageViewportRevision NÃO serviria: ele sai cedo
+  // quando o tamanho lógico não muda, e o backing é reatribuído mesmo assim
+  // quando só o DPR muda.
+  var _stageSurfaceStamp = 0;
+  var _smoothCtx = null, _smoothOn = true, _smoothStamp = -1;
+  function _applySmoothing(ctx, on) {
+    if (ctx === _smoothCtx && _smoothOn === on && _smoothStamp === _stageSurfaceStamp) return;
+    try { ctx.imageSmoothingEnabled = on; } catch (e) {}
+    _smoothCtx = ctx;
+    _smoothOn = on;
+    _smoothStamp = _stageSurfaceStamp;
+  }
+  /**
+   * ⚠️ Para onde o _crispDraw VOLTA depois de desenhar. Restaurar importa: os
+   * blocos de Canvas do núcleo desenham no MESMO contexto, e deixar o modo pixel
+   * ligado faria a imagem que a criança desenha por conta própria sair serrilhada.
+   *
+   * Um LOTE (um mapa de tiles inteiro) fixa este valor no que as células querem:
+   * aí as escritas de dentro do laço viram no-op e o mapa paga uma escrita só,
+   * em vez de duas por célula.
+   */
+  var _smoothRestore = true;
+  function _crispBatch(ctx, srcW, dw) {
+    _smoothRestore = !(_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW);
+    _applySmoothing(ctx, _smoothRestore);
+  }
+  function _crispBatchEnd(ctx) {
+    _smoothRestore = true;
+    _applySmoothing(ctx, true);
+  }
   function _crispDraw(ctx, srcW, dw, draw) {
-    var prev = true, ok = true;
-    try { prev = ctx.imageSmoothingEnabled; } catch (e) {}
-    try {
-      if (_isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW) {
-        ctx.imageSmoothingEnabled = false;
-      }
-    } catch (e) {}
+    var ok = true;
+    var ampliando = _isFiniteNumber(srcW) && srcW > 0 && dw * _deviceScale(ctx) >= srcW;
+    _applySmoothing(ctx, !ampliando);
     try { draw(); } catch (e) { ok = false; }
-    try { ctx.imageSmoothingEnabled = prev; } catch (e) {}
+    _applySmoothing(ctx, _smoothRestore);
     return ok;
   }
 
@@ -227,6 +263,14 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
   /**
    * Desenha a figura do sprite: translada para o canto do sprite (coords locais)
    * e roda a funcao da crianca. Sem figura registrada -> retangulo da cor (fallback).
+   *
+   * ⚠️ O save/restore daqui parece caro (no Reino Zero sao ~245 peças por quadro,
+   * 735 travessias de contexto) e JA FOI medido para virar translate/untranslate.
+   * NAO faça: a figura é escrita pela CRIANÇA (o "Desenhar a figura assim"), e os
+   * blocos de Canvas do núcleo funcionam dentro dela — ou seja, ela pode chamar
+   * rotate/scale. Desfazer só a translação vazaria a rotação para o resto do
+   * quadro. Quem quiser este ganho precisa antes de uma figura que o RUNTIME
+   * autore (uma peça de tile que não passe por callback da criança).
    */
   function drawCustomShape(ctx, sprite) {
     var name = sprite.skin ? sprite.skin.shape : null;

@@ -1,5 +1,10 @@
 import type { ExtensionDefinition } from '#extensions'
-import { defineExtensionExamples, GAME_2D_ADVANCED_LIFECYCLE, validateManifest } from '#extensions'
+import {
+  defineExtensionDocumentation,
+  defineExtensionExamples,
+  GAME_2D_ADVANCED_LIFECYCLE,
+  validateManifest,
+} from '#extensions'
 import { fullscreenConflictsFor } from '../fullscreenConflicts'
 import { gameKitPromptSummary } from './aiSummary'
 import { gameKitBlocks, gameKitToolboxCategory } from './blocks'
@@ -11,6 +16,7 @@ validateManifest(gameKitManifest)
 
 export const gameKitExtension: ExtensionDefinition = {
   manifest: gameKitManifest,
+  documentation: defineExtensionDocumentation(async () => (await import('./docs')).gameKitDocs),
   examples: defineExtensionExamples(
     37,
     async () => (await import('./exampleCatalog')).gameKitExamples,

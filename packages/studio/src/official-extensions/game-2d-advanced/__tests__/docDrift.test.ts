@@ -2,7 +2,10 @@ import { describe, expect, it } from 'bun:test'
 import type { ExtensionToolboxCategory } from '#extensions'
 import { gameKitPromptContext } from '../ai'
 import { gameKitBlocks, gameKitToolboxCategory } from '../blocks'
-import { gameKitManifest } from '../manifest'
+// ⚠️ A fonte é o MÓDULO, não o `manifest.docs`: o manual saiu do manifest e
+// entra por provider preguiçoso (o manifest leva só o resumo). Ler do manifest
+// aqui passaria a medir 150 caracteres de resumo e daria verde por vácuo.
+import { gameKitDocs } from '../docs'
 
 /**
  * ⭐ MATA A CLASSE, não o caso (R17).
@@ -111,7 +114,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     })
 
   it('toda seção das docs do aluno é um chip, ou diz em qual chip está', () => {
-    const citadas = titulosComEmoji(gameKitManifest.docs ?? '')
+    const citadas = titulosComEmoji(gameKitDocs)
     // Prova que o teste está mesmo lendo: uma regex que não casasse nada passaria
     // em silêncio — é o modo de falha deste próprio teste.
     expect(citadas.length).toBeGreaterThan(10)
@@ -161,7 +164,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
   })
 
   it('a seção de estados ensina o lifecycle automático atual', () => {
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     expect(docs).not.toContain('- **Quando começar ou recomeçar uma partida**')
     expect(docs).toContain('Em **⚙️ Ao iniciar**')
@@ -171,7 +174,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
     const block = gameKitBlocks.find(
       (candidate) => candidate.type === 'sz_gk_set_stage_description',
     )
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     expect(block?.hidden).not.toBe(true)
     expect(block?.message0).toContain('Descrever o jogo para leitor de tela')
@@ -182,7 +185,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
   })
 
   it('documenta a receita completa de campanha, identidade e acontecimentos', () => {
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     expect(docs).toContain('### Campanhas com fases pintáveis')
     expect(docs).toContain('quantas gemas são obrigatórias para concluir')
@@ -204,7 +207,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
       ['sz_gk_pkm_give_ball', '999'],
       ['sz_gk_draw_hearts', '100'],
     ] as const
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     for (const [type, limite] of contratos) {
       const block = gameKitBlocks.find((candidate) => candidate.type === type)
@@ -224,7 +227,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
       ['sz_gk_rpg_add_foe_named', '5'],
       ['sz_gk_rpg_give_potion', '99'],
     ] as const
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     for (const [type, limite] of contratos) {
       const block = gameKitBlocks.find((candidate) => candidate.type === type)
@@ -239,7 +242,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
   it('ensina a persistência de vida e o custo de energia para todos os combatentes', () => {
     const battleStats = gameKitBlocks.find((block) => block.type === 'sz_gk_rpg_battle_stats')
     const teachMove = gameKitBlocks.find((block) => block.type === 'sz_gk_rpg_teach_move')
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
 
     expect(battleStats?.tooltip).not.toContain('Cada batalha começa com a vida')
     expect(battleStats?.tooltip).toContain('vida atravessa as batalhas')
@@ -250,7 +253,7 @@ describe('gk — a doc não pode citar categoria que não existe', () => {
   })
 
   it('não abre uma segunda citação no meio da mesma linha de destaque', () => {
-    const docs = gameKitManifest.docs ?? ''
+    const docs = gameKitDocs
     expect(docs).not.toMatch(/^> .+ > /m)
   })
 })

@@ -269,6 +269,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       c = document.createElement('canvas');
       c.width = 320;
       c.height = 480;
+      _stageSurfaceStamp++;
       c.style.background = '#11172a';
       c.style.display = 'block';
       if (document.body) document.body.appendChild(c);
@@ -307,6 +308,16 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
   // resolução da tela (nitidez) — os helpers usam o lógico para não dependerem disso.
   function stageW(ctx) { return _logicalW || (ctx && ctx.canvas ? ctx.canvas.width : 0); }
   function stageH(ctx) { return _logicalH || (ctx && ctx.canvas ? ctx.canvas.height : 0); }
+  /**
+   * A largura e a altura da tela, para a criança usar em conta.
+   *
+   * ⭐ Devolvem o tamanho LÓGICO, nunca \`canvas.width\`: com "preencher a janela" ou
+   * numa tela de alta densidade o buffer real é 2 ou 3 vezes maior, e a criança
+   * receberia um número que não bate com nada que ela vê. O manual e o contexto da
+   * IA já mandavam "centralize por 'a largura da tela'" — só faltavam os blocos.
+   */
+  function stageWidth() { return stageW(ensureStage()); }
+  function stageHeight() { return stageH(ensureStage()); }
   function _setLogicalStageSize(width, height) {
     var nextW = Math.max(1, Math.round(width));
     var nextH = Math.max(1, Math.round(height));
@@ -358,7 +369,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
         'reduzi a nitidez do palco para manter uma resolução segura neste dispositivo.'
       );
     }
-    if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; }
+    if (c.width !== bw || c.height !== bh) { c.width = bw; c.height = bh; _stageSurfaceStamp++; }
     _applyBaseTransform();
   }
   // Cenário de fundo: o desenho da criança cobrindo o palco inteiro.
@@ -529,6 +540,7 @@ export const gameTwoDStageRuntime = `  // ---- Palco implícito: o runtime é DO
       _fillMode = false;
       c.width = safeWidth;
       c.height = safeHeight;
+      _stageSurfaceStamp++;
       // Congela o tamanho lógico JÁ AQUI (não espera o fitScreen): qualquer
       // leitura de stageW/stageH entre este ponto e o resize do backing veria o
       // valor FÍSICO do canvas (DPR vezes o lógico) e desenharia fora do palco.
