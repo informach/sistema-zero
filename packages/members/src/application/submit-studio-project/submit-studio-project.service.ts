@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto'
+import { ValidationError } from '@sistemazero/core/errors'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
+import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
   LessonNotFoundError,
@@ -118,8 +120,18 @@ export class SubmitStudioProjectService {
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== kind) throw limits.notFound()
 
-    // Teto de tamanho do jsonb (anti-DoS) — o front sanitiza o shape; aqui só o peso.
-    if (JSON.stringify(project).length > limits.maxChars) {
+    // O desenho cruza HTTP/jsonb como arrays JSON. A borda restaura os typed arrays,
+    // valida toda a estrutura e serializa novamente no formato estável de transporte.
+    // Assim uma linha incompleta jamais conta como entrega para o gate da aula.
+    let submissionProject = project
+    if (kind === 'pinta') {
+      const asset = pintaAssetFromWire(project)
+      if (!asset) throw new ValidationError('O desenho do Pinta é inválido')
+      submissionProject = pintaAssetToWire(asset)
+    }
+
+    // Teto de tamanho do jsonb (anti-DoS), aplicado ao payload canônico persistido.
+    if (JSON.stringify(submissionProject).length > limits.maxChars) {
       throw new PayloadTooLargeError('Projeto excede o tamanho máximo permitido')
     }
 
@@ -143,7 +155,7 @@ export class SubmitStudioProjectService {
         lessonId,
         title: lesson.title,
         authorName,
-        project,
+        project: submissionProject,
       })
       await this.submissions.upsert({
         id: this.newId(),
@@ -152,7 +164,7 @@ export class SubmitStudioProjectService {
         blockId,
         lessonId,
         courseId: lesson.courseId,
-        project,
+        project: submissionProject,
         submittedAt,
         message: note,
       })
@@ -168,7 +180,7 @@ export class SubmitStudioProjectService {
     }
 
     // Com atividade: gradeia (structure recalc no servidor + reportado do cliente).
-    const grade = gradeStudioActivity(activity, project, clientResults)
+    const grade = gradeStudioActivity(activity, submissionProject, clientResults)
     // `passed_at` é STICKY: aprovou uma vez = destrava para sempre (não regride no
     // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
     const passedAt = grade.passed ? submittedAt : null
@@ -183,7 +195,7 @@ export class SubmitStudioProjectService {
       lessonId,
       title: lesson.title,
       authorName,
-      project,
+      project: submissionProject,
     })
 
     await this.submissions.upsert(
@@ -195,7 +207,7 @@ export class SubmitStudioProjectService {
         blockId,
         lessonId,
         courseId: lesson.courseId,
-        project,
+        project: submissionProject,
         submittedAt,
         score: grade.score,
         results: grade.results,

@@ -20,7 +20,34 @@ export interface HydratedIdentity {
 export async function resolveIdentities(
   refs: readonly IdentityRef[],
 ): Promise<(ref: IdentityRef) => HydratedIdentity> {
-  const accountIdOf = (ref: IdentityRef) => ref.accountId ?? ref.userId
+  const profiles = new Map<string, { accountUserId: string; name: string }>()
+  const profileIds = [
+    ...new Set(
+      refs
+        .filter((ref) => ref.accountId === null || ref.accountId !== ref.userId)
+        .map((ref) => ref.userId),
+    ),
+  ]
+  await Promise.all(
+    chunksOf(profileIds, 100).map(async (ids) => {
+      try {
+        const profilesRes = await batchGetProfiles(ids)
+        if (profilesRes.status === 200 && profilesRes.body) {
+          for (const profile of profilesRes.body.profiles) {
+            profiles.set(profile.id, {
+              accountUserId: profile.accountUserId,
+              name: profile.name,
+            })
+          }
+        }
+      } catch {
+        // Best-effort: o nome snapshot do autor é o fallback da UI.
+      }
+    }),
+  )
+
+  const accountIdOf = (ref: IdentityRef) =>
+    ref.accountId ?? profiles.get(ref.userId)?.accountUserId ?? ref.userId
   const accountMap = new Map<string, { name: string; email: string }>()
   const accountIds = [...new Set(refs.map(accountIdOf))]
   await Promise.all(
@@ -41,34 +68,14 @@ export async function resolveIdentities(
     }),
   )
 
-  const profileNames = new Map<string, string>()
-  const profileIds = [
-    ...new Set(
-      refs.filter((ref) => ref.accountId && ref.accountId !== ref.userId).map((ref) => ref.userId),
-    ),
-  ]
-  await Promise.all(
-    chunksOf(profileIds, 100).map(async (ids) => {
-      try {
-        const profilesRes = await batchGetProfiles(ids)
-        if (profilesRes.status === 200 && profilesRes.body) {
-          for (const profile of profilesRes.body.profiles) {
-            profileNames.set(profile.id, profile.name)
-          }
-        }
-      } catch {
-        // Best-effort: o nome snapshot do autor é o fallback da UI.
-      }
-    }),
-  )
-
   return (ref) => {
     const account = accountMap.get(accountIdOf(ref))
-    const isProfile = Boolean(ref.accountId && ref.accountId !== ref.userId)
+    const isProfile =
+      profiles.has(ref.userId) || Boolean(ref.accountId && ref.accountId !== ref.userId)
     return {
       accountName: account?.name || null,
       accountEmail: account?.email ?? null,
-      childName: isProfile ? (profileNames.get(ref.userId) ?? null) : null,
+      childName: isProfile ? (profiles.get(ref.userId)?.name ?? null) : null,
     }
   }
 }

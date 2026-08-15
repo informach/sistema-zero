@@ -79,11 +79,12 @@ export function batchGetUsers(ids: string[]): Promise<GatewayResponse<{ users: U
 
 export interface AdminBatchProfile {
   id: string
+  accountUserId: string
   name: string
   publicProfileEnabled: boolean
 }
 
-/** Identidade mínima de perfis kids em lote (≤100 ids por chamada). */
+/** Identidade mínima de perfis kids, inclusive arquivados, em lote (≤100 ids por chamada). */
 export function batchGetProfiles(
   ids: string[],
 ): Promise<GatewayResponse<{ profiles: AdminBatchProfile[] }>> {

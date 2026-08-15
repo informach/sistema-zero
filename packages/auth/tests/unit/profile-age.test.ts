@@ -4,19 +4,28 @@ import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 
 const NOW = new Date('2026-08-15T12:00:00.000Z')
 
-function createProfile(birthDate: string): ProfileAggregate {
+function createProfile(birthDate: string, now: Date = NOW): ProfileAggregate {
   return ProfileAggregate.create({
     id: randomUUID(),
     accountUserId: randomUUID(),
     name: 'Sofia',
     birthDate,
-    now: NOW,
+    now,
   })
 }
 
 describe('idade do perfil Kids', () => {
   test('aceita quem ainda tem 17 anos', () => {
     expect(createProfile('2008-08-16').birthDate).toBe('2008-08-16')
+  })
+
+  test('usa o dia civil de São Paulo na virada UTC', () => {
+    const afterUtcMidnight = new Date('2026-08-16T00:30:00.000Z')
+
+    expect(createProfile('2008-08-16', afterUtcMidnight).birthDate).toBe('2008-08-16')
+    expect(() => createProfile('2026-08-16', afterUtcMidnight)).toThrow(
+      'Data de nascimento não pode estar no futuro',
+    )
   })
 
   test('recusa cadastro com 18 anos completos usando código de domínio específico', () => {

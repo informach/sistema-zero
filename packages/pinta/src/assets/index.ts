@@ -9,8 +9,9 @@
  *
  * Quem usa o quê:
  * - **members (servidor)**: valida na borda com `sanitizePintaAsset` e os tetos de `PINTA_LIMITS`;
- *   lê e escreve o desenho com `assetFromJson`/`assetToJson`.
+ *   lê e escreve HTTP/jsonb com `pintaAssetFromWire`/`pintaAssetToWire`.
  * - **admin**: pré-cria o desenho do bloco com `createAsset` e oferece os presets de ferramenta.
+ * - **arquivos `.pinta.json`**: usam `assetFromJson`/`assetToJson` (envelope portátil da galeria).
  *
  * ⚠️ Nada aqui pode importar de `components/`, `lesson/` ou `state/` — há um teste que percorre o
  * grafo e reprova se React entrar. Ver `assets/purity.test.ts`.
@@ -32,3 +33,4 @@ export {
 } from '../core/project'
 export { PINTA_TOOL_PRESETS, type PintaToolPreset } from '../core/toolCuration'
 export { type AssetImportResult, assetFromJson, assetToJson } from '../export/assetJson'
+export { pintaAssetFromWire, pintaAssetToWire } from './wire'

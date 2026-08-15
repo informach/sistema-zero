@@ -15,6 +15,7 @@ import {
   PINTA_TOOL_PRESETS,
   type PintaAsset,
   type PintaLessonAssetKind,
+  pintaAssetToWire,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import type { PintaHandle } from '@sistemazero/pinta/lesson'
@@ -688,8 +689,11 @@ export function LessonEditorClient({
         toast.error('Espere o Pinta abrir antes de salvar.')
         return
       }
-      await handle.save()
-      pintaAsset = handle.getAsset()
+      if (!(await handle.save())) {
+        toast.error('Não foi possível salvar os últimos traços do Pinta. Tente novamente.')
+        return
+      }
+      pintaAsset = pintaAssetToWire(handle.getAsset())
     }
     const missing = validateBlock(blockForm)
     if (missing) {

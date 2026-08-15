@@ -20,24 +20,26 @@ import { refreshProfessorCounts } from '@/components/admin/professor-counts-stor
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { preparePintaDownload } from '@/lib/pinta-download'
 import type { StudioSubmissionDetailView } from '@/lib/types'
 import { TeacherThreadPanel } from './teacher-thread-panel'
 
 /** Baixa o desenho como `.pinta.json` — o mesmo envelope que a galeria do Pinta restaura. */
 function downloadPintaJson(asset: unknown): void {
-  const name = (asset as { name?: string })?.name ?? 'desenho'
-  const safe = name.replace(/[^\w.-]+/g, '-').slice(0, 60) || 'desenho'
-  void import('@sistemazero/pinta/assets').then(({ assetToJson }) => {
-    const blob = new Blob([assetToJson(asset as never)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${safe}.pinta.json`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
-  })
+  const download = preparePintaDownload(asset)
+  if (!download) {
+    toast.error('Esta entrega não contém um desenho Pinta válido para baixar.')
+    return
+  }
+  const blob = new Blob([download.content], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = download.filename
+  document.body.appendChild(a)
+  a.click()
+  a.remove()
+  URL.revokeObjectURL(url)
 }
 
 function downloadProjectJson(project: Project): void {

@@ -12,6 +12,7 @@
  * armazenamento ainda está vazio — e aí a ordem é entrega → cadeia → desenho do professor.
  */
 
+import { pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
@@ -22,6 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { resolvePintaSeed } from '../../lib/pinta-seed'
+import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -136,13 +138,18 @@ export function PintaBlockView({
     try {
       // ⚠️ SALVA antes de ler: o autosave é debounced, e enviar o desenho de 1s atrás mandaria
       // ao professor uma versão sem os últimos traços.
-      await handle.save()
-      const asset = handle.getAsset()
+      const prepared = await preparePintaSubmission(handle, (asset) =>
+        pintaAssetToWire(asset as Parameters<typeof pintaAssetToWire>[0]),
+      )
+      if (!prepared.ok) {
+        setError('Não consegui salvar os últimos traços. Tente de novo antes de enviar.')
+        return
+      }
       const note = message.trim()
       const res = await apiSend<PintaSubmissionResultView>(
         `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/pinta-submission`,
         'POST',
-        { asset, ...(note ? { message: note } : {}) },
+        { asset: prepared.asset, ...(note ? { message: note } : {}) },
       )
       setSubmitted(true)
       setSubmittedAt(res.submittedAt)

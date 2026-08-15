@@ -1,4 +1,5 @@
 import { ValidationError } from '@sistemazero/core/errors'
+import { saoPauloDayKey } from '@sistemazero/core/time'
 import { ProfileAgeRestrictedError } from './profile.errors'
 
 export type ProfileStatus = 'active' | 'archived'
@@ -191,12 +192,13 @@ function assertBirthDate(value: string | null, now: Date): void {
   if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
     throw new ValidationError('Data de nascimento inválida')
   }
-  if (parsed.getTime() > now.getTime()) {
+  const today = saoPauloDayKey(now)
+  if (value > today) {
     throw new ValidationError('Data de nascimento não pode estar no futuro')
   }
-  const currentYear = now.getUTCFullYear()
-  const currentMonth = now.getUTCMonth() + 1
-  const currentDay = now.getUTCDate()
+  const currentYear = Number(today.slice(0, 4))
+  const currentMonth = Number(today.slice(5, 7))
+  const currentDay = Number(today.slice(8, 10))
   const birthYear = parsed.getUTCFullYear()
   const birthMonth = parsed.getUTCMonth() + 1
   const birthDay = parsed.getUTCDate()

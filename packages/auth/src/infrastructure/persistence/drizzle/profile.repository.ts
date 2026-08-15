@@ -43,6 +43,12 @@ export class DrizzleProfileRepository implements ProfileRepository {
     return row ? fromRow(row) : null
   }
 
+  async listByIds(ids: string[]): Promise<ProfileAggregate[]> {
+    if (ids.length === 0) return []
+    const rows = await this.db.select().from(profiles).where(inArray(profiles.id, ids))
+    return rows.map(fromRow)
+  }
+
   async listActiveByIds(ids: string[]): Promise<ProfileAggregate[]> {
     if (ids.length === 0) return []
     const rows = await this.db

@@ -1,5 +1,6 @@
 'use client'
 
+import { saoPauloDayKey } from '@sistemazero/core/time'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -104,7 +105,7 @@ export function ProfileForm({
     profile?.publicProfileEnabled ?? false,
   )
   // `max` do seletor = hoje (nascimento não pode ser no futuro).
-  const today = new Date().toISOString().slice(0, 10)
+  const today = saoPauloDayKey()
   // O auth exige nome com ≥3 caracteres — validar AQUI dá a mensagem amigável em
   // vez do toast genérico ("Bê" e "Jô" caíam num "Não foi possível salvar").
   const trimmedName = name.trim()

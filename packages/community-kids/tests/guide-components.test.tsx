@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it, mock, setSystemTime } from 'bun:test'
 import { fireEvent, render, screen } from '@testing-library/react'
 import {
   GuideBalloon,
@@ -8,6 +8,8 @@ import {
 } from '../src/components/kids/parent-guide'
 import { ProfileForm } from '../src/components/kids/profile-management'
 import { childWelcomeSteps } from '../src/lib/guide'
+
+afterEach(() => setSystemTime())
 
 describe('GuideWelcomeDialog — conteúdo infantil integrado ao modal real', () => {
   it('quem já fez aulas e só não tem avatar não recebe instrução de primeira aula', () => {
@@ -95,6 +97,33 @@ describe('alvos do guia dos pais — copy, clique e layout', () => {
 })
 
 describe('formulário do primeiro perfil', () => {
+  it('usa o dia civil de São Paulo na virada UTC', () => {
+    setSystemTime(new Date('2026-08-16T00:30:00.000Z'))
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{ mode: 'create' }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+
+    const birthDate = screen.getByLabelText(
+      'Data de nascimento da criança (opcional)',
+    ) as HTMLInputElement
+    expect(birthDate.max).toBe('2026-08-15')
+
+    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(birthDate, { target: { value: '2008-08-16' } })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    fireEvent.submit(form)
+
+    expect(onSave).toHaveBeenCalledWith('Sofia', '2008-08-16', false, undefined)
+  })
+
   it('é um form semântico e salva pelo submit do teclado', () => {
     const onSave = mock(() => {})
     const { container } = render(

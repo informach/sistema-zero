@@ -342,7 +342,8 @@ publish,play/[id],cleanup}` são shims sobre `shell.routes.studio*`; o `proxy.ts
 R2 na moderação: apagar post do Mural → apaga snapshot jogável + capa) do matcher (`api/studio/describe`
 FICA no matcher — ganha o anti-CSRF same-origin). **Data de nascimento (controle de idade):** os pais informam no `ProfileForm` da Área dos
 pais (`app/perfis`) — `<input type=date>`; só a CONTA edita (o auth recusa em sessão de perfil).
-Novo perfil exige menos de 18 anos (`PROFILE_AGE_RESTRICTED`); quem completa 18 depois preserva
+O `max` e o cálculo usam o **dia civil de São Paulo** (`@sistemazero/core/time`), igual ao Auth,
+sem adiantar a data na virada UTC. Novo perfil exige menos de 18 anos (`PROFILE_AGE_RESTRICTED`); quem completa 18 depois preserva
 o perfil. O campo explica a regra e direciona adultos ao Instagram `@criecomhelenaejulio`.
 
 ## Estúdio Completo (produto vendável — 06/2026)

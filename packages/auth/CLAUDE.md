@@ -249,7 +249,8 @@ hub/kids: nome clicável + página pública; migration `0009`), `status`
   qualquer `birthDate` numa **sessão de perfil** (a criança) — detectada pelo
   `x-auth-account-id`. O `CreateProfileBody`/`UpdateProfileBody` ganham `birthDate?`
   (`AAAA-MM-DD`); sanidade (data real, não-futura, **menos de 18 anos no cadastro**)
-  é do agregado (`assertBirthDate`). Data inalterada é no-op: um perfil já válido não
+  é do agregado (`assertBirthDate`) pelo **dia civil de São Paulo** (`@sistemazero/core/time`),
+  sem adiantar a idade entre 21h e meia-noite local. Data inalterada é no-op: um perfil já válido não
   perde acesso nem fica impossível de editar ao completar 18 anos. Fora da faixa →
   `PROFILE_AGE_RESTRICTED` (400). `ProfileView.birthDate` flui ao painel/apps.
 - **Perfil público é OPT-IN dos pais e EDITÁVEL SÓ PELOS PAIS** (gamificação,
@@ -392,9 +393,11 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   Date, `buildListWhere` aplica `gte`/`lte`). Os filtros são compostos (AND).
   O `batch` (`BatchGetUsersService` + `UserRepository.listByIds`, ≤100 ids) hidrata identidade
   p/ a área de membros (que lista `userId`s) — evita N+1. O batch irmão de perfis
-  (`BatchGetProfilesService` + `ProfileRepository.listActiveByIds`, ≤100 ids) devolve SOMENTE
-  `{id,name,publicProfileEnabled}` de perfis ativos; a moderação combina os dois lotes para
-  mostrar criança + responsável sem buscar todos os perfis de cada conta. O serviço lê o ator desses
+  (`BatchGetProfilesService` + `ProfileRepository.listByIds`, ≤100 ids) devolve SOMENTE
+  `{id,accountUserId,name,publicProfileEnabled}` de perfis ativos **ou arquivados**; isso permite à
+  moderação reconstruir criança + responsável de registros legados sem snapshots e sem buscar todos
+  os perfis de cada conta. A rota interna `/auth/internal/profiles/batch` permanece ativa-only e não
+  expõe `accountUserId`. O serviço lê o ator desses
   headers (`resolveGatewayActor`),
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;

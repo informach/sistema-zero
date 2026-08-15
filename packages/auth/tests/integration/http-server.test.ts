@@ -1286,7 +1286,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     expect(json.users.map((u) => u.email).sort()).toEqual(['a@example.com', 'b@example.com'])
   })
 
-  test('POST /auth/admin/profiles/batch hidrata perfis por ids sem expor dados privados', async () => {
+  test('POST /auth/admin/profiles/batch hidrata perfis ativos e arquivados com a conta responsável', async () => {
     const { app, profilesRepo } = buildApp()
     const accountId = crypto.randomUUID()
     const activeId = crypto.randomUUID()
@@ -1331,7 +1331,20 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     )
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({
-      profiles: [{ id: activeId, name: 'Nina', publicProfileEnabled: true }],
+      profiles: [
+        {
+          id: activeId,
+          accountUserId: accountId,
+          name: 'Nina',
+          publicProfileEnabled: true,
+        },
+        {
+          id: archivedId,
+          accountUserId: accountId,
+          name: 'Perfil arquivado',
+          publicProfileEnabled: false,
+        },
+      ],
     })
   })
 

@@ -8,6 +8,7 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { createLessonAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -18,15 +19,23 @@ type App = ReturnType<typeof buildApp>['app']
 const readJson = (res: Response): Promise<any> => res.json()
 
 /** O desenho que a professora configurou: um personagem 32x32 de pixel art. */
-const INITIAL_ASSET = {
+const INITIAL_ASSET = pintaAssetToWire({
+  ...createLessonAsset('pixel-sprite', 32, 'heroi'),
   id: 'asset-aula',
-  name: 'heroi',
-  kind: 'pixel-sprite' as const,
-  frameWidth: 32,
-  frameHeight: 32,
-}
+}) as Record<string, unknown>
 
-const DESENHO_DA_CRIANCA = { ...INITIAL_ASSET, name: 'heroi', updatedAt: 123 }
+const DESENHO_DA_CRIANCA = (() => {
+  const asset = pintaAssetFromWire(INITIAL_ASSET)
+  if (asset?.kind !== 'pixel-sprite') throw new Error('fixture Pinta inválida')
+  const firstCel = asset.animations[0]?.frames[0]?.[0]
+  if (firstCel) firstCel.data[0] = 7
+  return pintaAssetToWire({ ...asset, name: 'heroi', updatedAt: 123 }) as Record<string, unknown>
+})()
+
+const VECTOR_BACKGROUND_ASSET = pintaAssetToWire({
+  ...createLessonAsset('vector-background', 240, 'cenario'),
+  id: 'asset-cenario',
+}) as Record<string, unknown>
 
 function seedPintaBlock(
   courses: InMemoryCourseRepository,
@@ -126,7 +135,12 @@ describe('bloco Pinta — entrega', () => {
     const voltou = await carregar(app, lessonId, blockId)
     expect(voltou.status).toBe(200)
     // ⚠️ O campo é `asset`, não `project`: quem consome é o bloco de desenho.
-    expect((await readJson(voltou)).asset).toMatchObject({ id: 'asset-aula', name: 'heroi' })
+    const returnedAsset = (await readJson(voltou)).asset
+    expect(returnedAsset).toMatchObject({ id: 'asset-aula', name: 'heroi' })
+    const restored = pintaAssetFromWire(returnedAsset)
+    expect(restored?.kind).toBe('pixel-sprite')
+    if (restored?.kind !== 'pixel-sprite') throw new Error('asset retornado inválido')
+    expect(restored.animations[0]?.frames[0]?.[0]?.data[0]).toBe(7)
   })
 
   test('sem nunca ter enviado, o GET devolve null em vez de erro', async () => {
@@ -158,6 +172,20 @@ describe('bloco Pinta — entrega', () => {
     })
     // 400 é a convenção do serviço para entrada inválida (o error-handler normaliza).
     expect(res.status).toBe(400)
+  })
+
+  test('kind conhecido com estrutura incompleta é recusado e não abre o gate', async () => {
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+
+    const res = await enviar(app, lessonId, blockId, {
+      asset: { id: 'x', name: 'y', kind: 'pixel-sprite' },
+    })
+    expect(res.status).toBe(400)
+
+    const completion = await concluir(app, lessonId)
+    expect(completion.status).toBe(409)
+    expect((await readJson(completion)).error.code).toBe('PINTA_GATE_NOT_SUBMITTED')
   })
 })
 
@@ -298,6 +326,16 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
       content: { kind: 'pinta', initialAsset: INITIAL_ASSET, ...content },
     })
 
+  test('autoria recusa snapshot com kind conhecido mas estrutura incompleta', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+    const res = await blocoPinta(app, aulas[0].id, {
+      initialAsset: { id: 'x', name: 'y', kind: 'pixel-sprite' },
+    })
+
+    expect(res.status).toBe(400)
+  })
+
   test('🚨 dois tipos diferentes na MESMA cadeia → 409 nomeando a aula que já a usa', async () => {
     const { app } = buildApp()
     const { aulas } = await arvore(app)
@@ -306,7 +344,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
 
     const conflito = await blocoPinta(app, aulas[1].id, {
       chain: 'heroi',
-      initialAsset: { ...INITIAL_ASSET, kind: 'vector-background' },
+      initialAsset: VECTOR_BACKGROUND_ASSET,
     })
     expect(conflito.status).toBe(409)
     const { error } = await readJson(conflito)
@@ -326,7 +364,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
       (
         await blocoPinta(app, aulas[1].id, {
           chain: 'cenario',
-          initialAsset: { ...INITIAL_ASSET, kind: 'vector-background' },
+          initialAsset: VECTOR_BACKGROUND_ASSET,
         })
       ).status,
     ).toBe(201)
@@ -342,7 +380,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     const res = await enviarAdmin(app, `/members/admin/blocks/${bloco.id}`, 'PATCH', {
       content: {
         kind: 'pinta',
-        initialAsset: { ...INITIAL_ASSET, kind: 'vector-background' },
+        initialAsset: VECTOR_BACKGROUND_ASSET,
         chain: 'heroi',
       },
     })

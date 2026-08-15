@@ -101,8 +101,12 @@ function entitlementInAudience(audience: CourseAudience) {
   return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
 }
 
-function liveCourseSourceInAudience(audience: CourseAudience) {
-  return and(eq(courses.id, xpEvents.sourceId), eq(courses.audience, audience))
+function publishedCourseSourceInAudience(audience: CourseAudience) {
+  return and(
+    eq(courses.id, xpEvents.sourceId),
+    eq(courses.audience, audience),
+    eq(courses.status, 'published'),
+  )
 }
 
 function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
@@ -849,12 +853,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const showcased = alias(xpEvents, 'sc')
     const eligible =
       audience === 'kids'
-        ? or(and(isNotNull(courses.id), isNull(courses.careerSlot)), isNotNull(showcased.id))
-        : isNotNull(showcased.id)
+        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
+        : and(isNotNull(courses.id), isNotNull(showcased.id))
     const rows = await this.db
       .select({ courseId: courses.id, metadata: courses.metadata })
       .from(xpEvents)
-      .innerJoin(courses, liveCourseSourceInAudience(audience))
+      .innerJoin(courses, publishedCourseSourceInAudience(audience))
       .leftJoin(
         showcased,
         and(
@@ -888,8 +892,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const showcased = alias(xpEvents, 'studio_revision_sc')
     const eligible =
       audience === 'kids'
-        ? or(and(isNotNull(courses.id), isNull(courses.careerSlot)), isNotNull(showcased.id))
-        : isNotNull(showcased.id)
+        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
+        : and(isNotNull(courses.id), isNotNull(showcased.id))
     const rows = await this.db
       .select({
         courseId: xpEvents.sourceId,
@@ -900,7 +904,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         careerSlot: courses.careerSlot,
       })
       .from(xpEvents)
-      .leftJoin(courses, liveCourseSourceInAudience(audience))
+      .leftJoin(courses, publishedCourseSourceInAudience(audience))
       .leftJoin(
         showcased,
         and(

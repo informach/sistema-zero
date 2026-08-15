@@ -7,6 +7,7 @@ let failProfiles = false
 let userBatchCalls: string[][] = []
 let profileBatchCalls: string[][] = []
 let accountProfileCalls: string[] = []
+let profileAccounts = new Map<string, string>()
 
 mock.module('@/server/users', () => ({
   batchGetUsers: async (ids: string[]) => {
@@ -30,7 +31,11 @@ mock.module('@/server/users', () => ({
     return {
       status: 200,
       body: {
-        profiles: ids.map((id) => ({ id, name: `Criança-${id.slice(-4)}` })),
+        profiles: ids.map((id) => ({
+          id,
+          accountUserId: profileAccounts.get(id) ?? id,
+          name: `Criança-${id.slice(-4)}`,
+        })),
       },
     }
   },
@@ -49,6 +54,7 @@ describe('resolveIdentities', () => {
     userBatchCalls = []
     profileBatchCalls = []
     accountProfileCalls = []
+    profileAccounts = new Map()
   })
 
   test('hidrata contas e perfis em lotes por id, sem N+1 por responsável', async () => {
@@ -83,6 +89,22 @@ describe('resolveIdentities', () => {
       accountName: null,
       accountEmail: null,
       childName: null,
+    })
+  })
+
+  test('reconstrói perfil e responsável de denúncia legada sem snapshots', async () => {
+    const accountId = '00000000-0000-4000-8000-0000000000a1'
+    const profileId = '00000000-0000-4000-8000-0000000000c3'
+    profileAccounts.set(profileId, accountId)
+
+    const identityOf = await resolveIdentities([{ userId: profileId, accountId: null }])
+
+    expect(profileBatchCalls).toEqual([[profileId]])
+    expect(userBatchCalls).toEqual([[accountId]])
+    expect(identityOf({ userId: profileId, accountId: null })).toEqual({
+      accountName: 'Conta-00a1 Responsável',
+      accountEmail: `${accountId}@example.com`,
+      childName: 'Criança-00c3',
     })
   })
 })

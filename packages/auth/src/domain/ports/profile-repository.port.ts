@@ -15,6 +15,8 @@ export interface ProfileRepository {
   listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]>
   /** Por id (qualquer status). `null` se não existe. */
   findById(id: string): Promise<ProfileAggregate | null>
+  /** Lote por ids, inclusive arquivados (suporte administrativo e histórico). */
+  listByIds(ids: string[]): Promise<ProfileAggregate[]>
   /** Lote por ids, SÓ ativos (report dos pais — saudação das crianças). Ausentes são omitidos. */
   listActiveByIds(ids: string[]): Promise<ProfileAggregate[]>
   /**

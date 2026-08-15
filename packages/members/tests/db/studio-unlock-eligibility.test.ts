@@ -121,6 +121,13 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
     ])
   })
 
+  test('despublicar o curso remove a fonte ao vivo e preserva apenas grants congelados', async () => {
+    await conn.sql`update members.courses set status = 'archived' where id = ${bonusCourseId}`
+
+    expect(await repo.listStudioUnlocksByCourse(userId, 'kids')).toEqual([])
+    expect(await repo.getStudioUnlockRevision(userId, 'kids')).toBe(studioUnlockRevision([]))
+  })
+
   test('curso hoje Adult não satisfaz um course_complete histórico da vitrine Kids', async () => {
     await conn.sql`
       insert into members.courses

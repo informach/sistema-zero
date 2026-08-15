@@ -849,7 +849,9 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   **Contexto da moderação (08/2026):** fila/denúncias trazem servidor, canal, data, autor,
   tópico pai/resposta e anexos. `server/identities.ts` hidrata responsável via
   `POST /auth/admin/users/batch` e criança via `POST /auth/admin/profiles/batch`, ambos em
-  chunks de 100 e best-effort (Auth fora não transforma a fila em 500). O download usa
+  chunks de 100 e best-effort (Auth fora não transforma a fila em 500). Quando snapshots legados
+  não têm `accountId`, o batch de perfis (inclusive arquivados) devolve `accountUserId`; o resolver
+  remonta primeiro perfil → conta e então hidrata o responsável, ainda sem N+1. O download usa
   `GET /hub/admin/attachments/:id/resolve` — nunca a política de leitura do aluno — e o BFF
   assina no bucket `R2_UGC_BUCKET`. A UI só oferece Ocultar quando `content.status='visible'`;
   o Hub re-checa a transição atomicamente e responde 409 sob corrida/repetição.
