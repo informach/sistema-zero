@@ -34,6 +34,21 @@ async function esperarEditor(): Promise<void> {
   })
 }
 
+/**
+ * ⚠️⚠️ O editor PINTAR não é o editor ANUNCIAR-SE ao handle: o `onEditorReady` roda num efeito,
+ * um turno depois, e no CI (Linux, mais lento que esta máquina) ele chegava DEPOIS do
+ * `esperarEditor()` — o `replaceAsset` devolvia `false` só por isso.
+ *
+ * ⚠️ O `getAsset()` NÃO serve de sonda: sem editor ele cai no `boot.seed` e devolve o desenho
+ * certo mesmo assim. Quem denuncia a diferença é o próprio `replaceAsset`, e repeti-lo é seguro
+ * porque o `replace` do editorStore não cria entrada de undo.
+ */
+async function esperarHandlePronto(handle: PintaHandle, asset: PintaAsset): Promise<void> {
+  await waitFor(() => {
+    expect(handle.replaceAsset(asset)).toBe(true)
+  })
+}
+
 describe('modo asset único', () => {
   it('abre DIRETO no desenho, sem galeria e sem caminho de volta', async () => {
     const asset = nave()
@@ -151,6 +166,7 @@ describe('PintaHandle', () => {
 
     const handle = handleRef.current
     if (!handle) throw new Error('handle esperado')
+    await esperarHandlePronto(handle, asset)
     expect(handle.getAsset().name).toBe('nave')
 
     // O bloco "sincroniza com o enviado" por aqui.
@@ -178,6 +194,9 @@ describe('PintaHandle', () => {
 
     const handle = handleRef.current
     if (!handle) throw new Error('handle esperado')
+    // ⚠️ Anti-vácuo: `replaceAsset` também devolve `false` com o editor ainda não anunciado, então
+    // sem esta espera o teste passaria pelo motivo ERRADO e nunca exercitaria a recusa por id.
+    await esperarHandlePronto(handle, asset)
     // O editor é montado POR ID; trocar a identidade por baixo dele deixaria a galeria apontando
     // para um desenho que não existe.
     let trocou = true
