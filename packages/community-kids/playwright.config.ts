@@ -38,6 +38,10 @@ export default defineConfig({
     reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
     stdout: 'ignore',
     stderr: 'pipe',
-    timeout: 180_000,
+    // ⚠️ O comando inclui um `next build` COMPLETO do kids, não só subir o servidor.
+    // 180s bastavam na máquina de desenvolvimento e estouravam no runner do GitHub
+    // (medido: `Timed out waiting 180000ms from config.webServer`, com o build ainda
+    // em andamento) — o job tem 20 minutos, então a folga aqui não esconde travamento.
+    timeout: 900_000,
   },
 })
