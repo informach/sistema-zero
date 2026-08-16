@@ -2,6 +2,7 @@ import { CareerMap } from '@/components/kids/career-map'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
+import { tierCompletionByLevel } from '@/lib/career-map'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import { checkStudioAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -27,7 +28,15 @@ export default async function CatalogPage() {
   ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const courses = body?.courses ?? []
+  /**
+   * O contador "N de M aventuras prontas" de cada medalhão.
+   *
+   * ⭐ Os marcos vêm DENTRO de cada curso do catálogo (`milestones`), então não há uma
+   * segunda busca a fazer nem um "progresso desconhecido" a tratar: se o catálogo carregou,
+   * o contador é confiável; se não carregou, a página inteira já falhou acima.
+   */
   const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
+  const completionByLevel = tierCompletionByLevel(courses)
   // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`). Uma Faísca
   // com o produto comprado e o catálogo vazio cairia em "em dia" → "Criar um jogo meu" →
   // tela de Estúdio bloqueado pela carreira. Clique morto — por isso o atalho exige as duas.
@@ -55,6 +64,7 @@ export default async function CatalogPage() {
             track: c.track,
             careerSlot: c.careerSlot,
           }))}
+          completionByLevel={completionByLevel}
           studioOwned={studioOwned}
         />
       </div>

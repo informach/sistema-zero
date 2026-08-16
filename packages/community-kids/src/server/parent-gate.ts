@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { expireCookieOptions, prefixedCookieName } from '@/lib/cookies'
 import { getEnv } from '@/lib/env'
-import { createParentGateTokenCodec } from '@/server/parent-gate-token'
+import { createParentGateTokenCodec, PARENT_GATE_TTL_SECONDS } from '@/server/parent-gate-token'
 import { getSession } from '@/server/session'
 
 /**
@@ -11,7 +11,7 @@ import { getSession } from '@/server/session'
  * (gerir perfis, trocar a senha da conta, ver compras). O risco real: a CRIANÇA
  * entra numa sessão da CONTA (ex.: login por OTP no e-mail dos pais) e, sem este
  * portão, gerenciaria tudo. A prova vive num cookie HttpOnly CURTO (`sz_kids_parent`,
- * um TOKEN ASSINADO `accountId.HMAC`) emitido SÓ após verificar a senha
+ * um TOKEN ASSINADO e com expiração embutida) emitido SÓ após verificar a senha
  * (`/api/parents/verify` na sessão da conta, ou o `/api/profile-session/exit` que já
  * valida a senha ao sair do perfil). As mutações sensíveis exigem este cookie ALÉM da
  * sessão da conta — um clique no DOM não basta, a criança precisaria saber a senha.
@@ -28,8 +28,7 @@ import { getSession } from '@/server/session'
 
 const PROD = process.env.NODE_ENV === 'production'
 const PARENT_COOKIE = prefixedCookieName('sz_kids_parent', PROD)
-/** Janela curta: re-pedir a senha após 15 min de inatividade na gestão. */
-const PARENT_TTL_SECONDS = 15 * 60
+/** Janela curta: re-pedir a senha 15 min após a verificação parental. */
 
 /**
  * A chave vem da env de produção: assim, um token emitido por uma réplica continua
@@ -47,15 +46,13 @@ function parentGateCodec() {
   return createParentGateTokenCodec(g[DEV_SECRET_KEY])
 }
 
-/** Token `accountId.HMAC-SHA256` emitido para a sessão da conta. */
+/** Token versionado, temporal e assinado emitido para a sessão da conta. */
 function sign(accountId: string): string {
   return parentGateCodec().issue(accountId)
 }
 
-/** Verifica o token `accountId.HMAC` contra o accountId esperado (timing-safe). */
+/** Verifica assinatura, conta e expiração do token no servidor (timing-safe). */
 function verifyToken(value: string, accountId: string): boolean {
-  const dot = value.lastIndexOf('.')
-  if (dot <= 0 || value.slice(0, dot) !== accountId) return false
   return parentGateCodec().verify(value, accountId)
 }
 
@@ -67,7 +64,7 @@ export async function setParentVerified(accountId: string): Promise<void> {
     sameSite: 'lax',
     secure: PROD,
     path: '/',
-    maxAge: PARENT_TTL_SECONDS,
+    maxAge: PARENT_GATE_TTL_SECONDS,
   })
 }
 

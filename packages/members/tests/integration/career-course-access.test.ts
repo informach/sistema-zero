@@ -355,3 +355,146 @@ describe('Carreira do Criador — acesso pedagógico aos cursos', () => {
     ).toBe(423)
   })
 })
+
+/**
+ * Os marcos NA VIEW (o selo do card e o contador da trilha). São os MESMOS eventos
+ * que a trava lê, mas SEM cruzar: é a diferença entre "concluiu" e "concluiu e
+ * publicou" que responde à criança por que um curso ainda não conta.
+ */
+describe('marcos do curso nas listagens', () => {
+  async function catalogo(app: ReturnType<typeof buildApp>['app'], extra?: Record<string, string>) {
+    const response = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', {
+        headers: { ...headers, ...extra },
+      }),
+    )
+    const body = (await response.json()) as { courses: Record<string, any>[] }
+    return new Map(body.courses.map((course) => [course.courseSlug, course]))
+  }
+
+  test('separa concluído de concluído+publicado no catálogo', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    await comEntradaConcluida(courses, gamification)
+    const base = seedSampleCourse(
+      courses,
+      'base-2d',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      1,
+    )
+    const segundo = seedSampleCourse(
+      courses,
+      'segundo-2d',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      2,
+    )
+    seedSampleCourse(courses, 'intocado-2d', 'published', 'kids', false, 'iniciante', '2d', 3)
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+
+    await qualify(gamification, base.courseId)
+    // Só CONCLUIU o segundo: é este o estado que o selo precisa nomear.
+    await gamification.award({
+      userId: USER,
+      accountId: ACCOUNT,
+      audience: 'kids',
+      events: [{ sourceType: 'course_complete', sourceId: segundo.courseId, amount: 0 }],
+      today: '2026-06-02',
+      now: NOW,
+      privileged: false,
+    })
+
+    const bySlug = await catalogo(app)
+    expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
+    expect(bySlug.get('segundo-2d')?.milestones).toEqual({ completed: true, showcased: false })
+    expect(bySlug.get('intocado-2d')?.milestones).toEqual({ completed: false, showcased: false })
+    expect(gamification.careerCourseStateReads).toBe(1)
+    expect(gamification.qualifyingCareerSlotReads).toBe(0)
+    expect(gamification.courseMilestoneReads).toBe(0)
+  })
+
+  test('"meus cursos" traz os mesmos marcos do catálogo', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const base = seedSampleCourse(
+      courses,
+      'base-2d',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      1,
+    )
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    await qualify(gamification, base.courseId)
+
+    const response = await app.handle(
+      new Request('http://localhost/members/courses?audience=kids', { headers }),
+    )
+    const body = (await response.json()) as { courses: Record<string, any>[] }
+    const bySlug = new Map(body.courses.map((course) => [course.courseSlug, course]))
+    expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
+  })
+
+  test('EQUIPE também recebe os próprios marcos (≠ da trava, que ela ignora)', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const base = seedSampleCourse(
+      courses,
+      'base-2d',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      1,
+    )
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    await qualify(gamification, base.courseId)
+
+    // Sem isto o selo sumia justamente para quem testa a vitrine: o `privileged`
+    // do `careerLock` é um bypass de TRAVA, não um filtro de histórico.
+    const bySlug = await catalogo(app, {
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    })
+    expect(bySlug.get('base-2d')?.milestones).toEqual({ completed: true, showcased: true })
+  })
+
+  test('vitrine ADULTA não consulta marco algum (não há Mural lá)', async () => {
+    const { app, courses, entitlements, gamification } = buildApp()
+    const adulto = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    // Mesmo com marcos gravados na vitrine adulta, a view sai zerada de propósito.
+    await gamification.award({
+      userId: USER,
+      accountId: ACCOUNT,
+      audience: 'adult',
+      events: [
+        { sourceType: 'course_complete', sourceId: adulto.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: adulto.courseId, amount: 0 },
+      ],
+      today: '2026-06-02',
+      now: NOW,
+      privileged: false,
+    })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/catalog?audience=adult', { headers }),
+    )
+    const body = (await response.json()) as { courses: Record<string, any>[] }
+    const bySlug = new Map(body.courses.map((course) => [course.courseSlug, course]))
+    expect(bySlug.get('curso-adulto')?.milestones).toEqual({
+      completed: false,
+      showcased: false,
+    })
+    expect(gamification.careerCourseStateReads).toBe(0)
+    expect(gamification.qualifyingCareerSlotReads).toBe(0)
+    expect(gamification.courseMilestoneReads).toBe(0)
+  })
+})

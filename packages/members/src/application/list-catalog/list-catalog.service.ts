@@ -10,7 +10,7 @@ import { type CatalogCourseView, toCatalogCourseView } from '../mappers/views'
  * Catálogo "Todos os cursos": todo curso `published` da AUDIÊNCIA pedida + flag
  * `hasAccess` do aluno (matrícula ativa de curso). Quem NÃO tem acesso vê o
  * card bloqueado e o front usa `salesPageUrl` para levar à página de vendas.
- * 2 queries (cursos + matrículas) — sem N+1.
+ * 3 queries (cursos + matrículas + snapshot do ledger Kids) — sem N+1.
  */
 export class ListCatalogService {
   constructor(
@@ -27,13 +27,18 @@ export class ListCatalogService {
     accountId?: string,
   ): Promise<CatalogCourseView[]> {
     // `hasAccess` resolve a matrícula pela CONTA (sessão de perfil → accountId).
-    const [published, active, qualified] = await Promise.all([
+    // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
+    // (equipe passa por cima), estes são o histórico do próprio ator — esconder
+    // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
+    const [published, active, careerState] = await Promise.all([
       this.courses.listPublishedCourses(audience),
       this.entitlements.listActiveByUser(accountId ?? userId, this.clock()),
-      audience === 'kids' && !privileged
-        ? this.gamification.listQualifyingCareerSlots(userId, audience)
-        : Promise.resolve(emptyQualifyingByTier()),
+      audience === 'kids'
+        ? this.gamification.listCareerCourseState(userId, audience)
+        : Promise.resolve(null),
     ])
+    const qualified = careerState && !privileged ? careerState.qualified : emptyQualifyingByTier()
+    const milestones = careerState?.milestones ?? new Map()
 
     // Chave-mestra POR AUDIÊNCIA destrava a vitrine inteira (atuais e futuros):
     // `all_courses` na adulta, `all_kids_courses` na kids (cada uma só na sua).
@@ -51,7 +56,12 @@ export class ListCatalogService {
       audience === 'kids' && !privileged,
     )
     return published.map((course) =>
-      toCatalogCourseView(course, hasMaster || owned.has(course.slug), careerLocks.get(course.id)),
+      toCatalogCourseView(
+        course,
+        hasMaster || owned.has(course.slug),
+        careerLocks.get(course.id),
+        milestones.get(course.id),
+      ),
     )
   }
 }

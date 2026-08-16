@@ -517,7 +517,7 @@ export function ThreadDetail({
         </div>
       ) : (
         <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
-          <RichEditor value={replyBody} onChange={setReplyBody} compact />
+          <RichEditor value={replyBody} onChange={setReplyBody} ariaLabel="Resposta" compact />
           <AttachmentUploader
             value={replyAttachments}
             onChange={setReplyAttachments}

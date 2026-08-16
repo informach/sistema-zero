@@ -723,6 +723,40 @@ mas o colar alcança o `projectStore` da instância via `WeakMap` (`registerPast
 all-or-nothing do `sanitizeImportedBlocksState`). Aviso gentil = toast efêmero no `BlocklyPanel`. Frames
 (`sz_frame_*`) não são copiáveis.
 
+### Soltar uma PILHA numa Área ≡ montá-la lá dentro (15/08)
+
+Relato dela: com dois "quando apertar uma tecla" empilhados como rascunho, arrastar os dois de
+uma vez para ⚡ Quando acontecer era RECUSADO — ela tinha que separar e encaixar um de cada vez,
+chegando ao MESMO arranjo.
+
+⭐ **A causa está em `prospectiveAncestors` (`htmlConnectionChecker.ts`), e é sutil:**
+`placementFits`/`programmingTreeFits` iteram `movedRoot.getDescendants(false)`, que INCLUI a
+cadeia `next`. Só que o `getSurroundParent()` do Blockly (corretamente) **pula a pilha** — bloco
+empilhado não está DENTRO do de cima, é irmão dele. Com a pilha ainda solta, o 2º bloco não
+alcançava o `movedRoot` por surround nenhum, saía com lista de ancestrais **vazia** e era julgado
+como se estivesse à deriva. Aí a regra "evento e laço são raiz e não podem ser embrulhados"
+(`placementFits`, o `if` final) o reprovava. Fix: `statementChainHead` — o topo alcança o
+`movedRoot` **pela pilha** também, e não só por aninhamento.
+
+⚠️⚠️ **A metade MUDA era muito maior que a relatada.** A varredura derivada (4 Áreas × todo bloco
+de comportamento do núcleo, em `blockContracts.test.ts`) mede **409 pares divergentes** antes do
+conserto: só **23 RESTRITIVO** (o que ela sentiu) contra **384 PERMISSIVO** — pilha ACEITA onde o
+encaixe um-a-um recusa, ou seja, uma pilha contrabandeando para dentro de uma Área um bloco que
+não cabe lá. Ninguém tinha relatado essa metade porque ela não incomoda: ela só produz arranjo
+inválido em silêncio.
+
+- ⭐ **O invariante certo é de EQUIVALÊNCIA**, não "aceita o caso da tecla": soltar a pilha tem que
+  dar o mesmo veredito de encaixar bloco a bloco. É o que morde nas DUAS direções.
+- ⚠️ Conectar UM bloco (o caminho do load e da edição incremental) é **byte-idêntico** antes e
+  depois: com `block === movedRoot`, o `statementChainHead` devolve o próprio bloco. O conserto só
+  alcança pilha ARRASTADA — que é justamente o caminho que divergia do resto do editor.
+- ⚠️ **Piso de custo medido**, porque o helper roda por descendente: o maior exemplo do núcleo
+  (Reino Zero Ultra) leva 10,8/9,8 s COM e 10,7/10,0 s SEM. Zero.
+- ⚠️ A varredura pula par que **não forma pilha nenhuma** (bloco sem encaixe acima/abaixo) e tem
+  DOIS anti-vácuos — `exercidos > 100` e `aceitos > 50`. O primeiro existe porque a 1ª versão do
+  teste resolvia a cabeça da pilha na COLETA, antes de os contratos estarem registrados: as quatro
+  varreduras saíam vazias e o arquivo passava com 4 testes A MENOS, sem nada acusar.
+
 ### "Deletar N blocos" mentia (02/08) — `blockly/deleteContextMenu.ts`
 
 ⭐ O item NATIVO de apagar conta `block.getDescendants(false).length` — e, para o Blockly, **cada
@@ -2863,6 +2897,19 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   DERIVADO; timeout 10s destrava a UI e resolução tardia ainda restaura).
 - **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
   chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
+- ⭐ **Canvas VAZIO não é estado rejeitado** (15/08). `Blockly.serialization.workspaces.save()` num
+  workspace sem blocos devolve **`{}`** (MEDIDO — ele OMITE a seção em vez de mandar lista vazia), e
+  o `markLifecycleBlocksState` carimba a versão por cima: o que chega ao disco é
+  `{szBehaviorAreasVersion: N}`, sem `blocks`. O sanitizer recusa, e **recusar está certo** (não há
+  layout a preservar e o modo reconstrói do IR, que também é vazio) — o `null` também é o que
+  mantém viva a rede do BlocksMode que deriva blocos do CÓDIGO. **O que estava errado era AVISAR:**
+  o `[sz] blocksState rejeitado pelo sanitizer` existe para dizer QUAL checagem da allowlist
+  tropeçou, e ali nenhuma tropeçou. Ele disparava ao abrir todo projeto salvo com o canvas limpo —
+  ou seja, todo projeto novo — e assustava quem estava certo (a mesma classe que o Jogo 2D já pagou
+  cinco vezes com aviso acusando quem está certo). Guarda: `isEmptyWorkspaceState`.
+  ⚠️ O "vazio" é ESTRITO de propósito: `variables` presente (ou podre) é conteúdo que o load
+  descartaria, e versão DESCONHECIDA é estado vindo de um Studio mais novo — nos dois casos o
+  aviso é sinal de verdade, não ruído. Só `{}`, versão CONHECIDA e `variables` vazio calam.
 - **BlocksMode tem rede de segurança**: sem IR e sem partição ('empty'/'failed'/'idle'), deriva os
   blocos do CÓDIGO via `parseProjectFiles` SEM sujar (`hydrateProjectState`) — aula só-Blocos nunca
   abre em branco com código existente. Ambos os efeitos de derivação (Blocks/Bridge) esperam o

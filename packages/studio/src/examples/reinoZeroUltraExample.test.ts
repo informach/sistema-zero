@@ -63,13 +63,18 @@ function findElementById(value: unknown, id: string): Record<string, unknown> | 
 beforeAll(() => ensureBlocklyInitialized())
 
 describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
+  // ⚠️ Timeout EXPLÍCITO: validar a IR do maior exemplo do núcleo custa ~4 s sozinho,
+  // colado no padrão de 5 s do bun — sob a carga da suíte inteira (22 pacotes em
+  // paralelo) ele estoura e reprova por TEMPO, não por defeito. Falha intermitente que
+  // some ao rodar o arquivo isolado treina a ignorar vermelho, que é o pior hábito
+  // possível num portão. Mesma família do já anotado em `reinoZeroPlaythrough.test.ts`.
   it('está no catálogo core, é asset-free e sua IR é válida', async () => {
     expect(CORE_EXAMPLES).toContain(reinoZeroUltraExample)
     expect(reinoZeroUltraExample.ir.extensions).toEqual([])
     expect(reinoZeroUltraExample.assets ?? []).toEqual([])
     expect(SZIRV2Schema.safeParse(reinoZeroUltraExample.ir).success).toBe(true)
     expect(await loadCoreExample(reinoZeroUltraExample.name)).toBe(reinoZeroUltraExample)
-  })
+  }, 30_000)
 
   it('entrega 8 mundos × 4 fases estritas, encadeadas e tematicamente distintas', () => {
     expect(REINO_ZERO_ULTRA_STAGES).toHaveLength(32)

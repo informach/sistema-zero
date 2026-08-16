@@ -122,6 +122,8 @@ describe('ListCatalogService (catálogo "Todos os cursos")', () => {
       track: '2d',
       careerSlot: null,
       careerLock: { locked: false },
+      // Vitrine adulta não tem Mural: os marcos vêm zerados sem nem consultar o ledger.
+      milestones: { completed: false, showcased: false },
       hasAccess: true,
       salesPageUrl: null,
       createdAt: '2026-06-01T00:00:00.000Z',

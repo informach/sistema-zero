@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  AttachmentUploader,
-  type UploadedAttachment,
-} from '@sistemazero/member-shell/components/attachment-uploader'
-import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
+import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
 import {
   minCareerLevelForRemix,
   remixRequirementFromSnapshot,
@@ -12,10 +8,6 @@ import {
   type StudioRemixRequirement,
   studioRemixCovered,
 } from '@sistemazero/member-shell/lib/studio-tier'
-import { Button } from '@sistemazero/ui/button'
-import { Dialog } from '@sistemazero/ui/dialog'
-import { Textarea } from '@sistemazero/ui/textarea'
-import { Lock, MessageCircle, Plus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -31,19 +23,9 @@ import type {
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
-import { channelPresentation } from './channel-presentation'
-import { ClubeActivityBell } from './clube-activity-bell'
-import { ClubeCombinados } from './clube-combinados'
 import { KidsLockedSpace } from './kids-locked-space'
-import { GamePicker, ShowcaseCard, Tag, ThreadDetail } from './kids-space-detail'
-import { KidsMascot } from './mascot'
-import {
-  AuthorBadge,
-  type AuthorItem,
-  authorText,
-  displayAuthor,
-  toggleReaction,
-} from './space-author'
+import { KidsSpaceContent } from './kids-space-content'
+import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
@@ -57,33 +39,8 @@ export type SpaceViewMode = 'forum' | 'wall'
  */
 export type RemixTier = StudioRemixCapability
 
-// Emojis rápidos (subconjunto da allowlist kids do hub — 07/2026: ampliado de 5 p/ 8
-// p/ dar mais expressão às crianças; o hub aceita estes 12: 👍❤️😂😮😢👏🎉🔥⭐🤩🙌✅).
-const _QUICK_EMOJIS = ['👍', '❤️', '😂', '🎉', '🔥', '⭐', '🤩', '👏']
-
 // Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
 const enc = encodeURIComponent
-
-/**
- * Sugestões de conversa (chips) que pré-preenchem o composer — a criança em tela branca
- * trava; um empurrãozinho gentil convida a começar. Só título (o corpo fica pra ela).
- */
-const SUGGESTION_STARTERS: { chip: string; title: string }[] = [
-  { chip: '🎮 Mostrar meu jogo', title: 'Olha o jogo que eu criei!' },
-  { chip: '🙋 Pedir uma ajuda', title: 'Preciso de uma ajuda com o meu projeto' },
-  { chip: '🕹️ Jogo favorito', title: 'Qual é o seu jogo favorito?' },
-  { chip: '💡 Uma ideia nova', title: 'Tive uma ideia e quero mostrar!' },
-]
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const m = Math.floor(diff / 60000)
-  if (m < 1) return 'agora'
-  if (m < 60) return `${m} min`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h} h`
-  return `${Math.floor(h / 24)} d`
-}
 
 function postingError(e: ApiError): string {
   if (e.code === 'POSTING_NOT_ALLOWED') return 'Aqui só a equipe pode escrever. 🙂'
@@ -620,310 +577,68 @@ export function KidsSpaceViewClient({
   if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
 
   return (
-    <>
-      <div className="w-full">
-        {!isWall ? (
-          // Cabeçalho acolhedor do Clube: o Zappy dá "oi" e convida a turma; o botão
-          // "Combinados" (e o onboarding de 1ª visita) mora aqui.
-          <div className="mb-4 flex items-center gap-3 rounded-3xl border-2 border-border bg-(--kids-cyan-tint) p-4">
-            <KidsMascot expression="happy" className="size-14 shrink-0 md:size-16" />
-            <div className="min-w-0 flex-1">
-              <h1 className="[font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
-              <p className="text-muted-foreground text-sm">
-                {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
-              </p>
-            </div>
-            <ClubeActivityBell
-              viewerId={viewerId}
-              channelIds={spaceChannelIds}
-              onOpenThread={openThreadById}
-            />
-            <ClubeCombinados viewerId={viewerId} />
-          </div>
-        ) : (
-          <>
-            <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">
-              {space.name}
-            </h1>
-            {space.description ? (
-              <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
-            ) : (
-              <div className="mb-4" />
-            )}
-          </>
-        )}
-
-        <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
-          {!isWall ? (
-            <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
-              {channels.map((c) => (
-                <button
-                  type="button"
-                  key={c.id}
-                  onClick={() => setChannel(c)}
-                  className={`flex shrink-0 items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left text-sm transition-colors ${
-                    channel?.id === c.id
-                      ? 'border-primary bg-(--kids-cyan-tint) font-bold text-primary'
-                      : 'border-transparent text-muted-foreground hover:bg-muted/60'
-                  }`}
-                >
-                  <span aria-hidden="true" className="shrink-0 text-base leading-none">
-                    {channelPresentation(c.slug).emoji}
-                  </span>
-                  <span className="truncate">{c.name}</span>
-                  {/* Canal da equipe: cadeado discreto ("aqui só a equipe escreve"). */}
-                  {c.postingPolicy === 'staff_only' ? (
-                    <Lock className="size-3 shrink-0 opacity-60" />
-                  ) : null}
-                  {c.hasUnread ? <span className="ml-auto size-2 rounded-full bg-primary" /> : null}
-                </button>
-              ))}
-            </aside>
-          ) : null}
-
-          <main className="min-w-0">
-            {thread ? (
-              <ThreadDetail
-                thread={thread}
-                comments={comments}
-                busy={busy}
-                isWall={isWall}
-                replyBody={replyBody}
-                setReplyBody={setReplyBody}
-                replyAttachments={replyAttachments}
-                setReplyAttachments={setReplyAttachments}
-                commentsHasMore={commentsHasMore}
-                loadingMoreComments={loadingMoreComments}
-                onLoadMoreComments={loadMoreComments}
-                onBack={() => setThread(null)}
-                onSend={sendReply}
-                onReact={react}
-                onReport={report}
-                authorLabel={authorLabel}
-                onRemix={canRemix ? handleRemix : null}
-                remixLock={remixLockFor(thread)}
-                canReply={
-                  isStaff ||
-                  thread.isShowcase ||
-                  channels.find((c) => c.id === thread.channelId)?.postingPolicy !== 'staff_only'
-                }
-              />
-            ) : (
-              <div className="space-y-3">
-                {/* O Mural é só leitura+reação+comentário: sem composer de tópico. */}
-                {!isWall ? (
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground text-sm">
-                      {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
-                    </p>
-                    {/* Canal "somente avisos" (ex.: Recados da equipe): só a equipe abre
-                        conversa — sem o botão, o aluno não pensa que pode escrever. */}
-                    {channel && canComposeInChannel ? (
-                      <button
-                        type="button"
-                        onClick={() => setShowNew((v) => !v)}
-                        className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
-                      >
-                        <Plus className="size-4" /> Começar conversa
-                      </button>
-                    ) : channel && channel.postingPolicy === 'staff_only' ? (
-                      <span className="text-muted-foreground text-xs">
-                        Aqui só a equipe escreve 💬
-                      </span>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                {!isWall && showNew && canComposeInChannel ? (
-                  <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
-                    {/* Sugestões: um empurrãozinho pra criança que travou na tela branca. */}
-                    <div className="flex flex-wrap gap-1.5">
-                      {SUGGESTION_STARTERS.map((s) => (
-                        <button
-                          type="button"
-                          key={s.chip}
-                          onClick={() => setNewTitle(s.title)}
-                          className="rounded-full border-2 border-border px-2.5 py-1 font-bold text-muted-foreground text-xs transition-colors hover:border-primary hover:text-primary"
-                        >
-                          {s.chip}
-                        </button>
-                      ))}
-                    </div>
-                    <input
-                      className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
-                      placeholder="Sobre o que você quer falar?"
-                      value={newTitle}
-                      onChange={(e) => setNewTitle(e.target.value)}
-                    />
-                    <RichEditor value={newBody} onChange={setNewBody} />
-                    <AttachmentUploader
-                      value={newAttachments}
-                      onChange={setNewAttachments}
-                      disabled={busy}
-                    />
-                    {/* "Mostrar meu jogo no Clube": anexa um jogo do Mural à conversa. */}
-                    <GamePicker
-                      games={myGames}
-                      selectedId={newPlayId}
-                      onOpen={loadMyGames}
-                      onSelect={setNewPlayId}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        className="rounded-2xl border-2 border-border px-4 py-2 text-sm"
-                        onClick={() => setShowNew(false)}
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
-                        onClick={createThread}
-                        disabled={busy}
-                      >
-                        Publicar
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {threads.length === 0 ? (
-                  <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-                    <KidsMascot expression="happy" className="size-16" />
-                    <p>
-                      {isWall
-                        ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
-                        : channel
-                          ? channelPresentation(channel.slug).emptyState
-                          : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
-                    </p>
-                  </div>
-                ) : isWall ? (
-                  (() => {
-                    // Prateleira do DESAFIO do mês: usa a busca DEDICADA
-                    // (`challengeThreads`, ?challenge=<key> → todas as entradas do mês);
-                    // se falhou/vazia, cai no filtro das threads já carregadas. A grade
-                    // normal (`others`) exclui os posts do desafio p/ não duplicar.
-                    const shelf =
-                      challengeThreads.length > 0
-                        ? challengeThreads
-                        : challenge
-                          ? threads.filter((t) => t.challengeKey === challenge.key)
-                          : []
-                    const others = challenge
-                      ? threads.filter((t) => t.challengeKey !== challenge.key)
-                      : threads
-                    return (
-                      <div className="space-y-5">
-                        {challenge && shelf.length > 0 ? (
-                          <section aria-label="Desafio do mês">
-                            <h3 className="mb-2 flex items-center gap-2 font-bold [font-family:var(--font-display)]">
-                              <span aria-hidden="true">{challenge.emoji}</span>🏆 Desafio do mês:{' '}
-                              {challenge.title}
-                            </h3>
-                            <div className="grid gap-4 sm:grid-cols-2">
-                              {shelf.map((t) => (
-                                <ShowcaseCard
-                                  key={t.id}
-                                  thread={t}
-                                  viewerId={viewerId}
-                                  onOpen={() => openThread(t)}
-                                  onRemix={canRemix ? handleRemix : null}
-                                  remixLock={remixLockFor(t)}
-                                />
-                              ))}
-                            </div>
-                          </section>
-                        ) : null}
-                        <div className="grid gap-4 sm:grid-cols-2">
-                          {others.map((t) => (
-                            <ShowcaseCard
-                              key={t.id}
-                              thread={t}
-                              viewerId={viewerId}
-                              onOpen={() => openThread(t)}
-                              onRemix={canRemix ? handleRemix : null}
-                              remixLock={remixLockFor(t)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  })()
-                ) : (
-                  threads.map((t) => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      onClick={() => openThread(t)}
-                      className="w-full rounded-2xl border-2 border-border bg-card p-3 text-left transition-colors hover:border-primary"
-                    >
-                      <div className="flex items-center gap-2">
-                        {t.isPinned ? <Tag>Fixado</Tag> : null}
-                        {t.pending ? <Tag>Aguardando ✅</Tag> : null}
-                        <span className="truncate font-bold">{t.title}</span>
-                      </div>
-                      <p className="flex items-center gap-3 text-muted-foreground text-xs">
-                        <AuthorBadge
-                          item={t}
-                          viewerId={viewerId}
-                          nameNode={authorText(t, viewerId)}
-                        />
-                        <span className="inline-flex items-center gap-1">
-                          <MessageCircle className="size-3" /> {t.commentCount}
-                        </span>
-                        <span>{timeAgo(t.lastActivityAt)}</span>
-                      </p>
-                    </button>
-                  ))
-                )}
-                {threadsHasMore ? (
-                  <button
-                    type="button"
-                    onClick={loadMoreThreads}
-                    disabled={loadingMoreThreads}
-                    className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
-                  >
-                    {loadingMoreThreads
-                      ? 'Carregando…'
-                      : isWall
-                        ? 'Carregar mais projetos'
-                        : 'Carregar mais conversas'}
-                  </button>
-                ) : null}
-              </div>
-            )}
-          </main>
-        </div>
-      </div>
-
-      <Dialog
-        open={reportTarget !== null}
-        onClose={() => {
-          if (!reportBusy) setReportTarget(null)
-        }}
-        title="Avisar um professor"
-        description="Conta o que aconteceu. Um professor vai dar uma olhada. 💙"
-        footer={
-          <>
-            <Button variant="outline" onClick={() => setReportTarget(null)} disabled={reportBusy}>
-              Cancelar
-            </Button>
-            <Button onClick={submitReport} disabled={reportBusy}>
-              Enviar aviso
-            </Button>
-          </>
-        }
-      >
-        <Textarea
-          value={reportReason}
-          onChange={(e) => setReportReason(e.target.value)}
-          placeholder="O que aconteceu de errado?"
-          rows={4}
-          maxLength={1000}
-        />
-      </Dialog>
-    </>
+    <KidsSpaceContent
+      isWall={isWall}
+      space={space}
+      viewerId={viewerId}
+      spaceChannelIds={spaceChannelIds}
+      channels={channels}
+      channel={channel}
+      onSelectChannel={setChannel}
+      thread={thread}
+      comments={comments}
+      busy={busy}
+      replyBody={replyBody}
+      onReplyBodyChange={setReplyBody}
+      replyAttachments={replyAttachments}
+      onReplyAttachmentsChange={setReplyAttachments}
+      commentsHasMore={commentsHasMore}
+      loadingMoreComments={loadingMoreComments}
+      onLoadMoreComments={loadMoreComments}
+      onBackFromThread={() => setThread(null)}
+      onSendReply={sendReply}
+      onReact={react}
+      onReport={report}
+      authorLabel={authorLabel}
+      onRemix={canRemix ? handleRemix : null}
+      remixLockFor={remixLockFor}
+      canReply={Boolean(
+        thread &&
+          (isStaff ||
+            thread.isShowcase ||
+            channels.find((item) => item.id === thread.channelId)?.postingPolicy !== 'staff_only'),
+      )}
+      canComposeInChannel={canComposeInChannel}
+      showNew={showNew}
+      onToggleNew={() => setShowNew((visible) => !visible)}
+      onCancelNew={() => setShowNew(false)}
+      newTitle={newTitle}
+      onNewTitleChange={setNewTitle}
+      newBody={newBody}
+      onNewBodyChange={setNewBody}
+      newAttachments={newAttachments}
+      onNewAttachmentsChange={setNewAttachments}
+      myGames={myGames}
+      newPlayId={newPlayId}
+      onLoadMyGames={loadMyGames}
+      onNewPlayIdChange={setNewPlayId}
+      onCreateThread={createThread}
+      threads={threads}
+      challengeThreads={challengeThreads}
+      challenge={challenge}
+      onOpenThread={openThread}
+      threadsHasMore={threadsHasMore}
+      loadingMoreThreads={loadingMoreThreads}
+      onLoadMoreThreads={loadMoreThreads}
+      onOpenThreadById={openThreadById}
+      reportOpen={reportTarget !== null}
+      reportReason={reportReason}
+      reportBusy={reportBusy}
+      onReportReasonChange={setReportReason}
+      onCloseReport={() => {
+        if (!reportBusy) setReportTarget(null)
+      }}
+      onSubmitReport={submitReport}
+    />
   )
 }

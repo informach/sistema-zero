@@ -76,10 +76,13 @@ export class ListMyCoursesService {
       }
     }
 
-    const qualified =
-      audience === 'kids' && !privileged
-        ? await this.gamification.listQualifyingCareerSlots(userId, audience)
-        : emptyQualifyingByTier()
+    // ⚠️ Os MARCOS não seguem o `!privileged` do `qualified`: aquele é uma TRAVA
+    // (equipe passa por cima), estes são o histórico do próprio ator — esconder
+    // deles só apagaria o selo de quem testa a vitrine. Kids porque o Mural é kids.
+    const careerState =
+      audience === 'kids' ? await this.gamification.listCareerCourseState(userId, audience) : null
+    const qualified = careerState && !privileged ? careerState.qualified : emptyQualifyingByTier()
+    const milestones = careerState?.milestones ?? new Map()
     const careerLocks = careerLocksForCourses(
       courses,
       qualified,
@@ -147,7 +150,14 @@ export class ListMyCoursesService {
         }
       }
       views.push(
-        toMyCourseView(course, entitlement, progress, continueLessonId, careerLocks.get(course.id)),
+        toMyCourseView(
+          course,
+          entitlement,
+          progress,
+          continueLessonId,
+          careerLocks.get(course.id),
+          milestones.get(course.id),
+        ),
       )
     }
     return views

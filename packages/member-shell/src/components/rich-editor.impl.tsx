@@ -34,10 +34,13 @@ function getMarkdown(editor: TiptapEditor): string {
 export default function RichEditorImpl({
   value,
   onChange,
+  ariaLabel,
   compact = false,
 }: {
   value: string
   onChange: (markdown: string) => void
+  /** Nome persistente do campo para tecnologias assistivas. */
+  ariaLabel: string
   /** Altura mínima menor (campo de comentário). */
   compact?: boolean
 }) {
@@ -56,6 +59,9 @@ export default function RichEditorImpl({
     onUpdate: ({ editor: e }) => onChange(getMarkdown(e)),
     editorProps: {
       attributes: {
+        role: 'textbox',
+        'aria-label': ariaLabel,
+        'aria-multiline': 'true',
         class: cn(
           'lesson-prose px-3 py-2 text-sm focus:outline-none',
           compact ? 'min-h-16' : 'min-h-28',

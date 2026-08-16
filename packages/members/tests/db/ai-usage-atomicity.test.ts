@@ -1,12 +1,12 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import postgres from 'postgres'
 import { ConsumeAiUsageService } from '../../src/application/ai-usage/consume-ai-usage.service'
 import { DrizzleAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/ai-usage.repository'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { prepareTestDatabase } from './test-database'
 
 /**
  * A ÚNICA invariante da quota de IA que o fake em memória não prova: sob
@@ -17,36 +17,6 @@ import {
  * (molde de `payments/tests/db/outbox-atomicity.test.ts`). Sem Postgres
  * alcançável, a suíte é PULADA. Override: `TEST_DATABASE_URL`.
  */
-const TEST_DB_NAME = 'sistemazero_test'
-const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
-
-function withDatabase(url: string, dbName: string): string {
-  const u = new URL(url)
-  u.pathname = `/${dbName}`
-  return u.toString()
-}
-
-async function prepareTestDatabase(): Promise<string | null> {
-  const override = process.env.TEST_DATABASE_URL
-  const baseUrl = override ?? process.env.DATABASE_URL ?? FALLBACK_URL
-  const admin = postgres(baseUrl, { max: 1, connect_timeout: 2, onnotice: () => {} })
-  try {
-    await admin`select 1`
-    if (override) return override
-    try {
-      await admin.unsafe(`CREATE DATABASE ${TEST_DB_NAME}`)
-    } catch (error) {
-      const code = (error as { code?: string }).code
-      if (code !== '42P04') throw error // 42P04 = já existe
-    }
-    return withDatabase(baseUrl, TEST_DB_NAME)
-  } catch {
-    return null
-  } finally {
-    await admin.end({ timeout: 1 }).catch(() => {})
-  }
-}
-
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {
   console.warn(

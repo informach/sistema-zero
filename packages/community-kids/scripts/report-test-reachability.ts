@@ -71,13 +71,23 @@ console.log(
 )
 
 const criticalFiles = [
+  'app/(app)/recados/[threadId]/recado-thread-client.tsx',
+  'app/perfis/parent-dashboard.tsx',
+  'app/perfis/purchases-view.tsx',
+  'components/kids/kids-space-view-client.tsx',
+  'components/kids/kids-space-content.tsx',
   'components/kids/mobile-gamepad.tsx',
+  'components/kids/public-player.tsx',
+  'components/kids/room/room-builder.tsx',
+  'components/kids/room/room-builder-view.tsx',
   'components/kids/use-pensa-task-handoff.ts',
+  'lib/gamepad-visibility.ts',
   'lib/guide.ts',
   'lib/lesson-block-content.ts',
   'lib/pensa-capabilities.ts',
   'components/kids/room/coords.ts',
   'components/kids/room/placement.ts',
+  'server/parent-gate-token.ts',
 ]
 const missingCritical = criticalFiles.filter(
   (file) => !reachableSources.has(resolve(sourceRoot, file)),

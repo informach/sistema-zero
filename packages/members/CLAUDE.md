@@ -501,6 +501,23 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    (nível/trilha/posição divergente) continua barrando para revisão manual. ⚠️ Regra geral: ao
    escrever SQL contra colunas de snapshot adicionadas em épocas distintas, assuma a combinação
    parcial — o `is not distinct from` sobre um trio é um filtro bem mais estreito do que parece.
+   ⭐ **Os mesmos dois marcos SEM cruzar, por curso (15/08):**
+   `GamificationRepository.listCourseMilestones(userId, audience)` → `Map<courseId, {completed,
+   showcased}>` alimenta `CatalogCourseView.milestones`/`MyCourseView.milestones` (kids-only — não
+   há Mural no adulto), e com isso o kids monta o SELO do card ("Publique no Mural" × pronta) e o
+   contador da trilha. É o irmão simples do `listQualifyingCareerSlots`: sem self-join e **sem tocar
+   `courses`** (a chave é o `sourceId`; quem sabe degrau/posição é o chamador, que já tem os cursos
+   em mãos) — um INNER join só pagaria por uma filtragem que o `Map.get(course.id)` faz de graça.
+   Quando catálogo ou “meus cursos” precisam simultaneamente dos selos e da trava, usam
+   `listCareerCourseState`: uma ÚNICA consulta ao ledger devolve os dois resultados no mesmo
+   snapshot. Chamar os dois métodos individuais em paralelo permitiria que um marco gravado entre
+   as consultas deixasse a trava e o selo discordarem na mesma resposta.
+   ⚠️ **A condição NÃO é a do `careerLock`:** os dois serviços buscam com `audience === 'kids'`,
+   **sem** `!privileged`. Aquele `privileged` é bypass de TRAVA; este é o histórico do PRÓPRIO ator,
+   e escondê-lo só apagaria o selo de quem testa a vitrine. ⚠️ Como o fake in-memory reimplementa a
+   consulta em JS, nenhum teste de integração alcança o SQL — quem o roda é
+   **`tests/db/course-milestones-sql.test.ts`** (audiência, perfil-irmão, e o estado torto
+   "publicou sem concluir").
    Um curso "qualificado" = tem AMBOS os
    marcos no ledger `xp_events` — `course_complete` ∩ `course_showcased` (gravado pelo webhook
    abaixo) — agrupado pelo DEGRAU e pela posição (`listQualifyingCareerSlots`, INTERSEÇÃO via
@@ -683,7 +700,8 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   ativa de curso do `x-auth-user-id`), `createdAt` (ISO — alimenta o seletor por data
   do catálogo) e `salesPageUrl` (de `course.metadata.salesPageUrl`,
   string não-vazia; senão `null` → o community cai no fallback `FUNNEL_URL`). Sem
-  progresso (catálogo é descoberta/venda). `ListCatalogService` (2 queries, sem N+1).
+  progresso (catálogo é descoberta/venda). `ListCatalogService` faz 2 queries na vitrine adulta e
+  3 na Kids (cursos + matrículas + snapshot único do ledger), sempre sem N+1.
   O `salesPageUrl` é editável pela autoria admin (06/2026): `CourseBody` aceita
   `salesPageUrl` (nullable) → vira a chave `metadata.salesPageUrl` — o service atualiza
   SÓ essa chave preservando as demais do jsonb (`withSalesPageUrl`: vazio remove a
@@ -1573,6 +1591,30 @@ irmãos com `railway variables --kv`.
   vendas (URL)" no form de curso do painel (ver `GET /members/catalog` acima).
 - Visualização das classificações do curso (listagem no admin e/ou média de estrelas no
   catálogo) — esta fatia SÓ coleta/guarda (`course_ratings`), decisão do usuário 04/06/2026.
+
+## `tests/db` — o banco é COMPARTILHADO entre os arquivos
+
+Os testes de `tests/db` rodam contra Postgres real e **se auto-pulam** (`describe.skipIf`) quando não
+há banco. Duas armadilhas que custaram caro em 15/08/2026:
+
+1. 🚨 **O CI rodava UM único arquivo** (`bun test tests/db/studio-unlock-eligibility.test.ts`), então
+   os outros 10 — justamente os documentados como *"o único teste que alcança este SQL"*, porque o
+   fake in-memory reimplementa a consulta em JS — **nunca rodaram lá**. Pulavam em silêncio no `bun
+   test` geral e o passo verde parecia cobri-los. Hoje o `ci.yml` roda a **pasta inteira**, como o
+   fiscal sempre fez. Arquivo novo em `tests/db` entra sozinho; não há lista a manter.
+2. ⚠️⚠️ **Cada arquivo escreve o DDL de que precisa, e com `TEST_DATABASE_URL` (o caso do CI) todos
+   compartilham UM banco.** `create table if not exists` é "quem chega primeiro vence": se outro
+   arquivo criou a tabela com menos colunas, o seu `create` vira no-op e a tabela fica capenga —
+   e **a ordem dos arquivos não é contrato**. Duas regras:
+   - toda coluna usada precisa estar no `create table` **e** num `alter table … add column if not
+     exists` (com `default` quando for `not null`, senão falha em tabela já populada);
+   - `truncate` de tabela referenciada por FK precisa de **`cascade`**, porque a tabela que
+     referencia pode ter sido criada por outro arquivo.
+
+   Foi assim que `user-data-purge` × `teacher-thread.repository` quebrava conforme a ordem, em três
+   camadas: FK no truncate, `teacher_threads` sem `audience`/`context_type`, e o bloco aditivo de
+   `teacher_messages` pela metade. **Valide num banco NOVO** (`createdb` + `TEST_DATABASE_URL`), nas
+   duas ordens — no banco de dev local as tabelas já existem completas e tudo passa por acidente.
 
 ## Checklist antes de finalizar
 

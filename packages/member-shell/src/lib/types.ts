@@ -114,6 +114,18 @@ export interface CourseProgressView extends CourseProgress {
 }
 
 /**
+ * Os marcos do aluno num curso (mirror do members) — concluir e publicar no Mural
+ * são passos DISTINTOS, e é a diferença entre eles que o selo do card mostra.
+ * ⚠️ NÃO é o `progress`: este regride quando a autora publica uma aula nova; o marco
+ * é congelado no ledger e é dele que a carreira e o contador da trilha vivem.
+ * Vitrine adulta vem sempre zerado (não há Mural lá).
+ */
+export interface CourseMilestonesView {
+  completed: boolean
+  showcased: boolean
+}
+
+/**
  * Item de `GET /members/catalog` → `{ courses: CatalogCourseView[] }` —
  * "Todos os cursos" da plataforma com a flag de acesso do aluno.
  */
@@ -131,6 +143,8 @@ export interface CatalogCourseView {
   careerSlot?: number | null
   /** Trava pedagógica da carreira, separada da posse comercial. */
   careerLock?: CareerCourseLockView
+  /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
+  milestones?: CourseMilestonesView
   /** URL da página de vendas (funil); `null` → fallback FUNNEL_URL no server. */
   salesPageUrl: string | null
   /** Criação do curso (ISO) — ordena o seletor por data; opcional p/ members antigo. */
@@ -232,6 +246,8 @@ export interface MyCourseView {
   careerSlot?: number | null
   /** Trava pedagógica da carreira, separada da posse comercial. */
   careerLock?: CareerCourseLockView
+  /** Marcos do aluno neste curso; ausente = members antigo (trate como nenhum). */
+  milestones?: CourseMilestonesView
   access: AccessView
   progress: CourseProgress
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */

@@ -355,7 +355,12 @@ chaves `iniciante-2d`…`avancado-3d` + `any`, mirror do members) — `Gamificat
 `PublicProfileGameView.level?` (OPCIONAIS). E `CourseLevelSlug` + **`CourseTrack`** (`2d`|`3d`) em
 `CatalogCourseView`/`MyCourseView`/`CourseDetailView` (`level?`/`track?`).
 `CareerCourseLockView.reason` = `future-tier` | `foundation-first` | **`tier-reward`** (24/07 —
-bônus `careerSlot=null` é RECOMPENSA da etapa; regra no core/members, apresentação no kids). **`lib/course-tier.ts`**
+bônus `careerSlot=null` é RECOMPENSA da etapa; regra no core/members, apresentação no kids).
+**`CourseMilestonesView {completed, showcased}`** (15/08) em `CatalogCourseView.milestones?` e
+`MyCourseView.milestones?` — os dois marcos do ledger SEM cruzar (opcionais, tolerando members
+antigo; vitrine adulta vem zerada). Passthrough puro: o kids monta com eles o selo do card
+("Publique no Mural" × pronta) e o contador da trilha. ⚠️ **Não é o `progress`**: aquele regride
+quando a autora publica uma aula nova, o marco não. **`lib/course-tier.ts`**
 é o helper compartilhado dos apps de aluno (`COURSE_TIERS`/`COURSE_TIER_LABELS`/`courseTierOf` —
 track ausente → `2d`; o admin NÃO importa daqui, duplicação intencional); o filtro `nivel` do
 `use-catalog-filters` usa os degraus de `COURSE_TIERS` (7 desde 14/08, com o `primeiros-passos-2d` na frente; só o KIDS usa a divisão — o filtro `nivel` do adulto não tem UI hoje). **`lib/studio-tier.ts`**: `resolveStudioTier` mapeia os 8

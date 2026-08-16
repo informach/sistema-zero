@@ -53,8 +53,10 @@ import {
   type AwardResult,
   type BuyStreakFreezeInput,
   type BuyStreakFreezeResult,
+  type CareerCourseState,
   type ClaimMissionInput,
   type ClaimMissionResult,
+  type CourseMilestones,
   type GamificationProfileRecord,
   type GamificationRanking,
   type GamificationRepository,
@@ -835,6 +837,109 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       if (!slots.includes(slot)) slots.push(slot)
     }
     return result
+  }
+
+  /**
+   * Os dois marcos de curso SEM cruzar, por curso. Irmão direto do
+   * `listQualifyingCareerSlots`, mas sem self-join e sem `courses`: aqui não há
+   * degrau a resolver — a chave é o `sourceId` (= courseId) e quem sabe o resto
+   * é o chamador, que já tem os cursos em mãos.
+   * ⚠️ De propósito NÃO filtra por curso vivo/publicado: o mapa é consultado por
+   * id, então marco órfão (curso apagado) nunca é lido. Um INNER join aqui só
+   * pagaria por uma filtragem que o chamador faz de graça.
+   * O `where` bate no índice ÚNICO do ledger (user_id, source_type, source_id).
+   */
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    const rows = await this.db
+      .select({ sourceId: xpEvents.sourceId, sourceType: xpEvents.sourceType })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
+        ),
+      )
+    const byCourse = new Map<string, CourseMilestones>()
+    for (const row of rows) {
+      const current = byCourse.get(row.sourceId) ?? { completed: false, showcased: false }
+      if (row.sourceType === 'course_complete') current.completed = true
+      else current.showcased = true
+      byCourse.set(row.sourceId, current)
+    }
+    return byCourse
+  }
+
+  /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */
+  async listCareerCourseState(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<CareerCourseState> {
+    const rows = await this.db
+      .select({
+        sourceId: xpEvents.sourceId,
+        sourceType: xpEvents.sourceType,
+        sourceLevel: xpEvents.sourceLevel,
+        sourceTrack: xpEvents.sourceTrack,
+        sourceCareerSlot: xpEvents.sourceCareerSlot,
+        courseLevel: courses.level,
+        courseTrack: courses.track,
+        courseCareerSlot: courses.careerSlot,
+      })
+      .from(xpEvents)
+      .leftJoin(courses, eq(courses.id, xpEvents.sourceId))
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
+        ),
+      )
+
+    type CareerEventRow = (typeof rows)[number]
+    const byCourse = new Map<
+      string,
+      {
+        milestones: CourseMilestones
+        complete?: CareerEventRow
+        showcased?: CareerEventRow
+      }
+    >()
+    for (const row of rows) {
+      const current = byCourse.get(row.sourceId) ?? {
+        milestones: { completed: false, showcased: false },
+      }
+      if (row.sourceType === 'course_complete') {
+        current.milestones.completed = true
+        current.complete = row
+      } else if (row.sourceType === 'course_showcased') {
+        current.milestones.showcased = true
+        current.showcased = row
+      }
+      byCourse.set(row.sourceId, current)
+    }
+
+    const qualified = emptyQualifyingByTier()
+    const milestones = new Map<string, CourseMilestones>()
+    for (const [courseId, state] of byCourse) {
+      milestones.set(courseId, state.milestones)
+      const { complete, showcased } = state
+      if (!complete || !showcased) continue
+      const level = showcased.sourceLevel ?? complete.sourceLevel ?? complete.courseLevel
+      const track = showcased.sourceTrack ?? complete.sourceTrack ?? complete.courseTrack ?? '2d'
+      const careerSlot =
+        showcased.sourceCareerSlot ?? complete.sourceCareerSlot ?? complete.courseCareerSlot
+      if (!level || level === 'lenda' || careerSlot === null) continue
+      const tier = courseTier(level, track)
+      if (!tier) continue
+      const slot = Number(careerSlot)
+      if (!qualified[tier].includes(slot)) qualified[tier].push(slot)
+    }
+
+    return { qualified, milestones }
   }
 
   /**

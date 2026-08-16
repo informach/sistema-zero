@@ -8,9 +8,11 @@
     "build": "next build",
     "start": "next start -p 3008",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
-    "test:coverage": "bun test --coverage && bun run test:reachability",
+    "test": "bun test tests",
+    "test:coverage": "bun test tests --coverage && bun run test:reachability",
     "test:reachability": "bun scripts/report-test-reachability.ts",
+    "e2e": "playwright test",
+    "e2e:smoke": "playwright test --project=chromium",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "gen:avatar-thumbs": "bun scripts/gen-avatar-thumbs.ts"
@@ -51,6 +53,7 @@
   },
   "devDependencies": {
     "@happy-dom/global-registrator": "^20.10.2",
+    "@playwright/test": "^1.48.2",
     "@tailwindcss/postcss": "^4.1.0",
     "@testing-library/react": "^16.0.1",
     "@types/bun": "^1.3.14",

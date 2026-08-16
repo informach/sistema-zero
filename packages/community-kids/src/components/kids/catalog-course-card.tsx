@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, Gift, Lock, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CatalogCourseView } from '@/lib/types'
+import { CourseBadgeChip } from './course-badge-chip'
 import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CatalogCourseCardProps {
@@ -81,6 +82,9 @@ export function CatalogCourseCard({
             </span>
           </div>
         ) : null}
+        {/* DEPOIS do véu de bloqueado, de propósito: o selo conta o que a criança já fez
+            e não pode sair borrado se o acesso vencer depois de ela ter concluído. */}
+        <CourseBadgeChip course={course} className="absolute top-2 left-2" />
       </div>
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>

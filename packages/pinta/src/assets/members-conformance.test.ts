@@ -9,7 +9,7 @@
  * autoria com 400; tipo removido = bloco salvo cujo tipo o resto do sistema não consegue ler.
  */
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { PINTA_ASSET_KINDS as MEMBERS_KINDS } from '../../../members/src/domain/course/lesson-block'
 import { PINTA_ASSET_KINDS } from '../core/project'
 
@@ -43,8 +43,17 @@ describe('conformidade pinta × members', () => {
     )
 
     expect(workflow).toContain('Testes DB members (Postgres real)')
-    expect(workflow).toMatch(
-      /packages\/members.*studio-unlock-eligibility\.test\.ts[\s\S]*TEST_DATABASE_URL/,
-    )
+    // ⚠️ A régua é a PASTA, não um arquivo: até 15/08 o CI rodava só o
+    // `studio-unlock-eligibility.test.ts` e os outros 10 de `tests/db` — os que o
+    // CLAUDE.md do members chama de "o único teste que alcança este SQL" — nunca
+    // rodavam lá (eles se auto-pulam sem Postgres, então o passo geral parecia
+    // cobri-los). Cobrar a pasta é ESTRITAMENTE mais forte do que cobrar um nome.
+    expect(workflow).toMatch(/cd packages\/members && bun test tests\/db[\s\S]*TEST_DATABASE_URL/)
+    // E o contrato específico não pode sumir da pasta em silêncio.
+    expect(
+      existsSync(
+        new URL('../../../members/tests/db/studio-unlock-eligibility.test.ts', import.meta.url),
+      ),
+    ).toBe(true)
   })
 })

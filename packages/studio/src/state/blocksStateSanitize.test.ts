@@ -278,3 +278,71 @@ describe('sanitizeImportedBlocksState — aceita estado gerado pela Ponte', () =
     expect(project?.blocksState).toBeNull()
   })
 })
+
+/**
+ * O canvas VAZIO não é um estado corrompido — e por isso não pode gritar no Console.
+ *
+ * ⚠️ `Blockly.serialization.workspaces.save()` num workspace sem blocos devolve `{}`
+ * (medido, ele OMITE a seção), e o carimbo de versão faz o que chega ao disco ser
+ * `{szBehaviorAreasVersion: N}`. O sanitizer recusa — certo, não há layout a preservar —,
+ * mas o aviso existe para dizer QUAL checagem da allowlist tropeçou, e aqui nenhuma
+ * tropeçou. Ele disparava ao abrir todo projeto salvo com o canvas limpo.
+ */
+describe('canvas vazio não é estado rejeitado', () => {
+  const projetoCom = (blocksState: unknown) => ({
+    id: 'projeto-canvas-vazio',
+    name: 'Projeto',
+    files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+    ir: { html: [], css: [], js: [], extensions: [] },
+    blocksState,
+    installedExtensions: [],
+  })
+
+  function avisosAoSanear(blocksState: unknown): string[] {
+    const avisos: string[] = []
+    const original = console.warn
+    console.warn = (...args: unknown[]) => {
+      avisos.push(String(args[0] ?? ''))
+    }
+    try {
+      sanitizeProjectForHost(projetoCom(blocksState))
+    } finally {
+      console.warn = original
+    }
+    return avisos.filter((linha) => linha.includes('blocksState rejeitado'))
+  }
+
+  it('o estado de um workspace vazio não gera aviso (mas segue virando null)', () => {
+    const salvoVazio = { [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION }
+
+    expect(avisosAoSanear(salvoVazio)).toEqual([])
+    expect(avisosAoSanear({})).toEqual([])
+    // O `null` é o comportamento de sempre: sem layout salvo, o modo reconstrói do IR.
+    expect(sanitizeProjectForHost(projetoCom(salvoVazio))?.blocksState).toBeNull()
+  })
+
+  it('🚨 estado REALMENTE quebrado continua avisando (o anti-vácuo do teste acima)', () => {
+    // Sem esta metade, remover o aviso por inteiro passaria no teste de cima.
+    const chaveEstranha = { blocks: { languageVersion: 0, blocks: [] }, lixo: 1 }
+    // A seção EXISTE e está podre: é o caso que o aviso foi escrito para revelar, e
+    // sai com a MESMA frase que assustou no Console ("ausente ou não-objeto").
+    const secaoPodre = { blocks: 'nao sou objeto' }
+
+    expect(avisosAoSanear(chaveEstranha)).toHaveLength(1)
+    expect(avisosAoSanear(chaveEstranha)[0]).toContain('lixo')
+    expect(avisosAoSanear(secaoPodre)).toHaveLength(1)
+    expect(avisosAoSanear(secaoPodre)[0]).toContain('ausente ou não-objeto')
+  })
+
+  it('não confunde variables inválidas ou não-vazias com um canvas vazio', () => {
+    const variaveisCorrompidas = { variables: 'corrompido' }
+    const variaveisPresentes = {
+      variables: [{ id: 'score-id', name: 'pontuação', type: '' }],
+    }
+    const versaoDesconhecida = { [BEHAVIOR_AREAS_STATE_KEY]: 999 }
+
+    expect(avisosAoSanear(variaveisCorrompidas)).toHaveLength(1)
+    expect(avisosAoSanear(variaveisPresentes)).toHaveLength(1)
+    expect(avisosAoSanear(versaoDesconhecida)).toHaveLength(1)
+  })
+})

@@ -103,6 +103,28 @@ const FUNCTION_BODY_TYPES = new Set([
   'sz_js_constructor',
 ])
 
+/**
+ * O primeiro bloco da PILHA a que este pertence (sobe pelas conexões `next`).
+ *
+ * ⚠️ Bloco empilhado NÃO está dentro do de cima — é irmão dele na mesma lista. O
+ * `getSurroundParent()` do Blockly já sabe disso e pula a pilha inteira, e é por isso
+ * que ele sozinho não basta aqui: quando a pilha ainda está SOLTA, o 2º bloco não
+ * alcança o `movedRoot` por surround nenhum e sairia com lista de ancestrais VAZIA.
+ */
+function statementChainHead(block: Blockly.Block): Blockly.Block {
+  let head = block
+  const visited = new Set<Blockly.Block>([head])
+  for (;;) {
+    const previous = head.previousConnection?.targetBlock()
+    // `targetBlock()` de um `previous` também devolve o dono do soquete de
+    // statement; só é PILHA quando o de cima aponta de volta pelo `next`.
+    if (!previous || previous.nextConnection?.targetBlock() !== head) return head
+    if (visited.has(previous)) return head
+    visited.add(previous)
+    head = previous
+  }
+}
+
 function prospectiveAncestors(
   block: Blockly.Block,
   movedRoot: Blockly.Block,
@@ -116,7 +138,13 @@ function prospectiveAncestors(
     parent = parent.getSurroundParent()
   }
 
-  if (block === movedRoot || ancestors.at(-1) === movedRoot) {
+  // ⭐ Alcança o `movedRoot` também pela PILHA, não só por aninhamento. Sem isto,
+  // arrastar dois "quando apertar uma tecla" empilhados para dentro de uma Área era
+  // RECUSADO — o 2º bloco vinha sem ancestral algum, então a regra "evento é raiz e
+  // não pode ser embrulhado" o reprovava —, enquanto encaixar um de cada vez
+  // funcionava. Soltar uma pilha tem que valer o mesmo que montá-la lá dentro.
+  const topo = ancestors.at(-1) ?? block
+  if (statementChainHead(topo) === movedRoot) {
     ancestors.push(destinationOwner)
     parent = destinationOwner.getSurroundParent()
     while (parent) {

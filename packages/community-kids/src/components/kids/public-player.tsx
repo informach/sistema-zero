@@ -3,6 +3,11 @@
 import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { Gamepad2 } from 'lucide-react'
 import { type ComponentType, useCallback, useEffect, useRef, useState } from 'react'
+import {
+  type GamepadVisibilityOverride,
+  resolveGamepadVisibility,
+  toggledGamepadOverride,
+} from '@/lib/gamepad-visibility'
 import { KidsMascot } from './mascot'
 import { MobileGamepad } from './mobile-gamepad'
 
@@ -31,8 +36,8 @@ export function PublicPlayer({ id }: { id: string }) {
   const [author, setAuthor] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [reloadKey, setReloadKey] = useState(0)
-  const [showGamepad, setShowGamepad] = useState(false)
-  const [forceGamepad, setForceGamepad] = useState(false)
+  const [automaticGamepad, setAutomaticGamepad] = useState(false)
+  const [gamepadOverride, setGamepadOverride] = useState<GamepadVisibilityOverride>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const handleRestart = useCallback(() => setReloadKey((k) => k + 1), [])
@@ -41,7 +46,7 @@ export function PublicPlayer({ id }: { id: string }) {
   useEffect(() => {
     const isTouch = window.matchMedia('(pointer: coarse)').matches
     const isNarrow = window.innerWidth < 768
-    setShowGamepad(isTouch || isNarrow)
+    setAutomaticGamepad(isTouch || isNarrow)
   }, [])
 
   useEffect(() => {
@@ -81,7 +86,7 @@ export function PublicPlayer({ id }: { id: string }) {
   }, [id])
 
   const title = typeof project?.name === 'string' && project.name.trim() ? project.name : 'Projeto'
-  const gamepadVisible = showGamepad || forceGamepad
+  const gamepadVisible = resolveGamepadVisibility(automaticGamepad, gamepadOverride)
 
   return (
     <main className="relative flex h-dvh w-full flex-col overflow-hidden bg-background text-foreground">
@@ -130,7 +135,7 @@ export function PublicPlayer({ id }: { id: string }) {
               type="button"
               aria-label={gamepadVisible ? 'Ocultar controles' : 'Mostrar controles'}
               aria-pressed={gamepadVisible}
-              onClick={() => setForceGamepad((v) => !v)}
+              onClick={() => setGamepadOverride(toggledGamepadOverride(gamepadVisible))}
               className="ml-1 flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Gamepad2 size={18} />

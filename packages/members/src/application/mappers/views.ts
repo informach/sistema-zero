@@ -386,6 +386,8 @@ export interface MyCourseView {
   careerLock: CareerCourseLockView
   access: AccessView
   progress: CourseProgress
+  /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
+  milestones: CourseMilestonesView
   /** Atalho seguro do card: última aula acessada, ou a próxima liberada se a última travou. */
   continueLessonId: string | null
 }
@@ -396,6 +398,7 @@ export function toMyCourseView(
   progress: CourseProgress,
   continueLessonId: string | null,
   careerLock: CareerCourseLockView = { locked: false },
+  milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
     courseSlug: course.slug,
@@ -407,6 +410,7 @@ export function toMyCourseView(
     track: course.track,
     careerSlot: course.careerSlot,
     careerLock,
+    milestones,
     access: toAccessView(entitlement),
     progress,
     continueLessonId,
@@ -433,6 +437,8 @@ export interface CatalogCourseView {
   /** Trava pedagógica da carreira; `hasAccess` continua representando só a matrícula. */
   careerLock: CareerCourseLockView
   hasAccess: boolean
+  /** Marcos do aluno neste curso (ledger) — o selo do card. Kids; adulto vem zerado. */
+  milestones: CourseMilestonesView
   /** URL da página de vendas (funil) — de `course.metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
   /** Criação do curso (ISO) — alimenta o seletor de ordem por data do catálogo. */
@@ -443,6 +449,7 @@ export function toCatalogCourseView(
   course: Course,
   hasAccess: boolean,
   careerLock: CareerCourseLockView = { locked: false },
+  milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
     courseSlug: course.slug,
@@ -454,10 +461,30 @@ export function toCatalogCourseView(
     track: course.track,
     careerSlot: course.careerSlot,
     careerLock,
+    milestones,
     hasAccess,
     salesPageUrl: resolveSalesPageUrl(course),
     createdAt: course.createdAt.toISOString(),
   }
+}
+
+/**
+ * Os marcos do aluno NESTE curso, como o card precisa deles: separados.
+ *
+ * A carreira cruza os dois (`course_complete` ∩ `course_showcased`) e devolve um
+ * veredito; a vitrine precisa da diferença, porque é ela que responde a pergunta
+ * "por que este curso ainda não conta?" — concluir e publicar no Mural são passos
+ * distintos e só o segundo costuma ficar para trás.
+ *
+ * ⚠️ NÃO é o `progress`: o progresso regride quando a autora publica uma aula nova,
+ * o marco não. Contador da trilha e selo do card leem daqui, então nunca divergem.
+ * ⚠️ Curso de vitrine ADULTA vem sempre zerado (não há Mural lá) — quem lê é o kids.
+ */
+export interface CourseMilestonesView {
+  /** Concluiu o curso inteiro (marco `course_complete`). */
+  completed: boolean
+  /** Publicou o projeto no Mural (marco `course_showcased`). */
+  showcased: boolean
 }
 
 export interface CareerCourseLockView {

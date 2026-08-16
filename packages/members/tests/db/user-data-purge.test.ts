@@ -1,40 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import postgres from 'postgres'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
-
-const TEST_DB_NAME = 'sistemazero_test'
-const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
-
-function withDatabase(url: string, dbName: string): string {
-  const parsed = new URL(url)
-  parsed.pathname = `/${dbName}`
-  return parsed.toString()
-}
-
-async function prepareTestDatabase(): Promise<string | null> {
-  const override = process.env.TEST_DATABASE_URL
-  const baseUrl = override ?? process.env.DATABASE_URL ?? FALLBACK_URL
-  const admin = postgres(baseUrl, { max: 1, connect_timeout: 2, onnotice: () => {} })
-  try {
-    await admin`select 1`
-    if (override) return override
-    try {
-      await admin.unsafe(`CREATE DATABASE ${TEST_DB_NAME}`)
-    } catch (error) {
-      if ((error as { code?: string }).code !== '42P04') throw error
-    }
-    return withDatabase(baseUrl, TEST_DB_NAME)
-  } catch {
-    return null
-  } finally {
-    await admin.end({ timeout: 1 }).catch(() => {})
-  }
-}
+import { prepareTestDatabase } from './test-database'
 
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {
@@ -66,7 +37,14 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'league_membership (user_id uuid not null, account_id uuid)',
       'room_state (user_id uuid not null, account_id uuid)',
       'certificates_issued (user_id uuid not null, account_id uuid)',
-      'teacher_threads (id uuid primary key, user_id uuid not null, account_id uuid)',
+      // ⚠️ As 4 colunas extras entram aqui E no INSERT porque outra suíte da pasta cria
+      // esta MESMA tabela com elas NOT NULL, e o `create table if not exists` do primeiro
+      // arquivo a rodar é quem vence. Sem os dois lados, o teste passa ou quebra conforme a
+      // ORDEM dos arquivos: coluna inexistente (42703) se ele vier primeiro, NOT NULL
+      // violado se vier depois. Declaradas NULLABLE e `context_type` como TEXT (lá é enum,
+      // que pode nem existir ainda) de propósito — aceita os dois mundos.
+      `teacher_threads (id uuid primary key, user_id uuid not null, account_id uuid,
+        audience text, context_type text, last_message_at timestamptz, created_at timestamptz)`,
       'teacher_messages (id uuid primary key, thread_id uuid not null)',
       'pensa_projects (id uuid primary key, user_id uuid not null, account_id uuid)',
       // O DDL aqui é escrito à mão, então tabela nova alcançada pela purga precisa
@@ -88,6 +66,11 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
   })
 
   beforeEach(async () => {
+    // ⚠️ CASCADE não é preguiça: o banco de tests/db é COMPARTILHADO entre os arquivos da
+    // pasta e cada um cria o DDL de que precisa. Basta outra suíte criar uma tabela que
+    // referencie uma daqui (foi o `teacher_thread_staff_reads` → `teacher_threads`) para o
+    // TRUNCATE nu ser RECUSADO — e, como depende de qual arquivo rodou antes, isso quebra
+    // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
     await conn.sql`
       truncate table
         members.zappy_conversations,
@@ -115,6 +98,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         members.lesson_progress,
         members.lesson_completions,
         members.entitlements
+      cascade
     `
   })
 
@@ -124,7 +108,11 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const entitlementId = randomUUID()
 
     await conn.sql`insert into members.entitlements (id, user_id) values (${entitlementId}, ${accountId})`
-    await conn.sql`insert into members.teacher_threads (id, user_id, account_id) values (${randomUUID()}, ${profileId}, ${accountId})`
+    await conn.sql`
+      insert into members.teacher_threads
+        (id, user_id, account_id, audience, context_type, last_message_at, created_at)
+      values
+        (${randomUUID()}, ${profileId}, ${accountId}, 'kids', 'general', now(), now())`
     await conn.sql`insert into members.pensa_projects (id, user_id, account_id) values (${randomUUID()}, ${profileId}, ${accountId})`
     await conn.sql`insert into members.ai_usage_daily (account_id, day, feature) values (${accountId}, '2026-07-24', 'pensa-chat')`
     await conn.sql`insert into members.parent_reports_sent (account_id, week_key) values (${accountId}, 'w:2026-07-20')`

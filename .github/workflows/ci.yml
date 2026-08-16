@@ -85,13 +85,49 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      # ⚠️ A pasta INTEIRA, como no fiscal acima. Até 15/08 esta linha apontava para UM
+      # arquivo, então os outros 10 — justamente os documentados como "o único teste que
+      # alcança este SQL", porque o fake in-memory o reimplementa em JS — nunca rodaram no
+      # CI: eles PULAM sozinhos sem Postgres (`describe.skipIf`) e o passo verde do
+      # `bun test` geral parecia cobri-los.
       - name: Testes DB members (Postgres real)
-        run: cd packages/members && bun test tests/db/studio-unlock-eligibility.test.ts
+        run: cd packages/members && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
+
+  community-kids-e2e:
+    name: community-kids-e2e
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.11'
+
+      - name: Instalar dependências (lockfile congelado)
+        run: bun install --frozen-lockfile
+
+      - name: Instalar Chromium do Playwright
+        working-directory: packages/community-kids
+        run: bunx playwright install --with-deps chromium
+
+      - name: Smoke E2E do Community Kids
+        working-directory: packages/community-kids
+        run: bun run e2e:smoke
+
+      - name: Publicar diagnóstico Playwright
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-kids-playwright
+          path: packages/community-kids/.cache/playwright-results
+          retention-days: 7
 
   studio-e2e-chromium:
     name: studio-e2e-chromium-${{ matrix.shard }}
@@ -161,7 +197,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, studio-e2e-chromium, studio-e2e-firefox]
+    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
