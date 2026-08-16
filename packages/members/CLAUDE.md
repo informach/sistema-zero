@@ -502,16 +502,13 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    escrever SQL contra colunas de snapshot adicionadas em épocas distintas, assuma a combinação
    parcial — o `is not distinct from` sobre um trio é um filtro bem mais estreito do que parece.
    ⭐ **Os mesmos dois marcos SEM cruzar, por curso (15/08):**
-   `GamificationRepository.listCourseMilestones(userId, audience)` → `Map<courseId, {completed,
-   showcased}>` alimenta `CatalogCourseView.milestones`/`MyCourseView.milestones` (kids-only — não
-   há Mural no adulto), e com isso o kids monta o SELO do card ("Publique no Mural" × pronta) e o
-   contador da trilha. É o irmão simples do `listQualifyingCareerSlots`: sem self-join e **sem tocar
-   `courses`** (a chave é o `sourceId`; quem sabe degrau/posição é o chamador, que já tem os cursos
-   em mãos) — um INNER join só pagaria por uma filtragem que o `Map.get(course.id)` faz de graça.
-   Quando catálogo ou “meus cursos” precisam simultaneamente dos selos e da trava, usam
-   `listCareerCourseState`: uma ÚNICA consulta ao ledger devolve os dois resultados no mesmo
-   snapshot. Chamar os dois métodos individuais em paralelo permitiria que um marco gravado entre
-   as consultas deixasse a trava e o selo discordarem na mesma resposta.
+   `GamificationRepository.listCareerCourseState(userId, audience)` devolve, numa ÚNICA consulta ao
+   ledger, a qualificação da carreira e um `Map<courseId, {completed, showcased}>` no mesmo
+   snapshot. O mapa alimenta `CatalogCourseView.milestones`/`MyCourseView.milestones` (kids-only —
+   não há Mural no adulto), e com isso o kids monta o SELO do card ("Publique no Mural" × pronta) e
+   o contador da trilha. Não existe uma segunda API para os marcos: duas implementações da mesma
+   derivação poderiam divergir, e duas consultas permitiriam que um evento gravado entre elas
+   deixasse a trava e o selo discordarem na mesma resposta.
    ⚠️ **A condição NÃO é a do `careerLock`:** os dois serviços buscam com `audience === 'kids'`,
    **sem** `!privileged`. Aquele `privileged` é bypass de TRAVA; este é o histórico do PRÓPRIO ator,
    e escondê-lo só apagaria o selo de quem testa a vitrine. ⚠️ Como o fake in-memory reimplementa a

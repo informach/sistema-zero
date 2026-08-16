@@ -237,27 +237,15 @@ export interface GamificationRepository {
    */
   listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
   /**
-   * Os marcos de cada curso do aluno na vitrine, SEM cruzar: `Map<courseId,
-   * {completed, showcased}>`. É a matéria-prima do selo do card ("já é sua" ×
-   * "falta publicar no Mural") e do contador da trilha.
+   * Qualificação e marcos por curso calculados sobre o MESMO snapshot do ledger.
+   * Os marcos vêm separados (`completed`/`showcased`) para o selo e o contador;
+   * a qualificação cruza ambos para a trava da carreira.
    *
-   * ⚠️ Vem do LEDGER, e não do `progress`: o progresso é recalculado ao vivo e
-   * REGRIDE quando a autora publica uma aula nova, enquanto o marco é congelado.
-   * Selo e contador precisam da MESMA fonte que a carreira usa, senão o card diz
-   * "pronta" para um curso que o contador não conta.
-   *
-   * Curso sem marco algum não aparece no mapa (o chamador trata como nenhum dos
-   * dois). Marco de curso apagado/despublicado também vem — inofensivo, o
-   * chamador consulta pelos cursos que já tem em mãos.
-   */
-  listCourseMilestones(
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<Map<string, CourseMilestones>>
-  /**
-   * Qualificação e marcos calculados sobre o MESMO snapshot do ledger. As telas
-   * que precisam dos dois usam este contrato para não misturar eventos gravados
-   * entre duas consultas independentes.
+   * ⚠️ A fonte é o LEDGER, não `progress`: progresso ao vivo pode regredir quando
+   * uma aula nova é publicada, mas o marco é congelado. Curso sem marco não entra
+   * no mapa; marco órfão é inofensivo porque o chamador consulta pelos cursos que
+   * já tem em mãos. Um único contrato impede duas implementações da mesma
+   * derivação e evita misturar eventos de snapshots diferentes.
    */
   listCareerCourseState(userId: string, audience: CourseAudience): Promise<CareerCourseState>
   /**

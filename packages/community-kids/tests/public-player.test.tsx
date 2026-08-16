@@ -9,29 +9,39 @@ mock.module('@sistemazero/studio/player', () => ({ StudioProjectPlayer: MockPlay
 
 const { PublicPlayer } = await import('../src/components/kids/public-player')
 const originalFetch = globalThis.fetch
-const originalInnerWidth = window.innerWidth
+const originalInnerWidth = Object.getOwnPropertyDescriptor(window, 'innerWidth')
+const originalMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia')
+
+function restoreWindowProperty(name: 'innerWidth' | 'matchMedia', descriptor?: PropertyDescriptor) {
+  if (descriptor) Object.defineProperty(window, name, descriptor)
+  else Reflect.deleteProperty(window, name)
+}
 
 afterEach(() => {
   globalThis.fetch = originalFetch
-  Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
+  restoreWindowProperty('innerWidth', originalInnerWidth)
+  restoreWindowProperty('matchMedia', originalMatchMedia)
 })
 
 describe('player público', () => {
   test('a escolha manual oculta controles ativados automaticamente no mobile', async () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 })
-    window.matchMedia = mock(
-      (query: string) =>
-        ({
-          matches: query === '(pointer: coarse)',
-          media: query,
-          onchange: null,
-          addListener() {},
-          removeListener() {},
-          addEventListener() {},
-          removeEventListener() {},
-          dispatchEvent: () => false,
-        }) satisfies MediaQueryList,
-    )
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: mock(
+        (query: string) =>
+          ({
+            matches: query === '(pointer: coarse)',
+            media: query,
+            onchange: null,
+            addListener() {},
+            removeListener() {},
+            addEventListener() {},
+            removeEventListener() {},
+            dispatchEvent: () => false,
+          }) satisfies MediaQueryList,
+      ),
+    })
     globalThis.fetch = Object.assign(
       mock(async () => Response.json({ name: 'Meu primeiro jogo' })),
       { preconnect: originalFetch.preconnect },

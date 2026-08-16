@@ -445,45 +445,53 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
 
   return (
     <RoomBuilderView
-      avatarPhotoUrl={avatarPhotoUrl}
-      data={data}
-      loadState={loadState}
-      draft={draft}
-      selected={selected}
-      onSelectPiece={selectPiece}
-      onMoveItem={moveItem}
-      onPaintWall={paintWall}
-      paintColor={paintColor}
-      onRetry={() => void loadRoom()}
-      stackPicker={stackPicker}
-      surfaces={surfaceOptions()}
-      onBringDown={bringDown}
-      onToggleStackPicker={() => setStackPicker((open) => !open)}
-      onRotateSelected={rotateSelected}
-      onRemoveSelected={removeSelected}
-      onPlaceOnSurface={placeOnSurface}
-      onCloseStackPicker={() => setStackPicker(false)}
-      coinsUnlimited={coinsUnlimited}
-      balance={balance}
-      saving={saving}
-      onSave={() => void save()}
-      tab={tab}
-      onSelectTab={(nextTab) => {
-        setTab(nextTab)
-        setConfirmBuyId(null)
+      scene={{
+        avatarPhotoUrl,
+        data,
+        loadState,
+        draft,
+        onMoveItem: moveItem,
+        onPaintWall: paintWall,
+        paintColor,
+        onRetry: () => void loadRoom(),
       }}
-      confirmBuyId={confirmBuyId}
-      busy={busy}
-      onCancelBuy={() => setConfirmBuyId(null)}
-      onBuy={buy}
-      isOwned={isOwned}
-      onPickItem={addItem}
-      onApplyFloor={(id) => updateDraft((current) => ({ ...current, floor: id }))}
-      onApplyLighting={(id) => updateDraft((current) => ({ ...current, lighting: id }))}
-      onApplyTheme={applyTheme}
-      brush={brush}
-      onPickBrush={setBrush}
-      onPickPet={(id) => updateDraft((current) => ({ ...current, pet: id }))}
+      selection={{
+        selected,
+        onSelectPiece: selectPiece,
+        stackPicker,
+        surfaces: surfaceOptions(),
+        onBringDown: bringDown,
+        onToggleStackPicker: () => setStackPicker((open) => !open),
+        onRotateSelected: rotateSelected,
+        onRemoveSelected: removeSelected,
+        onPlaceOnSurface: placeOnSurface,
+        onCloseStackPicker: () => setStackPicker(false),
+      }}
+      wallet={{
+        coinsUnlimited,
+        balance,
+        saving,
+        onSave: () => void save(),
+      }}
+      catalog={{
+        tab,
+        onSelectTab: (nextTab) => {
+          setTab(nextTab)
+          setConfirmBuyId(null)
+        },
+        confirmBuyId,
+        busy,
+        onCancelBuy: () => setConfirmBuyId(null),
+        onBuy: buy,
+        isOwned,
+        onPickItem: addItem,
+        onApplyFloor: (id) => updateDraft((current) => ({ ...current, floor: id })),
+        onApplyLighting: (id) => updateDraft((current) => ({ ...current, lighting: id })),
+        onApplyTheme: applyTheme,
+        brush,
+        onPickBrush: setBrush,
+        onPickPet: (id) => updateDraft((current) => ({ ...current, pet: id })),
+      }}
     />
   )
 }

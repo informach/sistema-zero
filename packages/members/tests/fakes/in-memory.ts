@@ -1886,7 +1886,6 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   failAlways = false
   careerCourseStateReads = 0
   qualifyingCareerSlotReads = 0
-  courseMilestoneReads = 0
 
   /** Fontes p/ a coorte do ranking (mirror do join entitlements×courses). */
   constructor(
@@ -2297,15 +2296,6 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   ): Promise<QualifyingByTier> {
     this.qualifyingCareerSlotReads += 1
     return this.computeCareerCourseState(userId, audience).qualified
-  }
-
-  /** Mirror do SQL: os dois marcos SEM cruzar, por curso (sem tocar em `courses`). */
-  async listCourseMilestones(
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<Map<string, CourseMilestones>> {
-    this.courseMilestoneReads += 1
-    return this.computeCareerCourseState(userId, audience).milestones
   }
 
   async listCareerCourseState(

@@ -8,7 +8,7 @@ import { DrizzleGamificationRepository } from '../../src/infrastructure/persiste
 import { prepareTestDatabase } from './test-database'
 
 /**
- * Prova o SQL de `listCourseMilestones` contra Postgres real. O fake in-memory
+ * Prova o SQL de `listCareerCourseState` contra Postgres real. O fake in-memory
  * reimplementa a consulta em JS, então NENHUM teste de serviço/integração toca
  * este `where` — se ele esquecer o filtro de audiência ou o de perfil, só aqui
  * reprova. Mesma régua do `gating-block-sql`/`studio-unlock-eligibility`.
@@ -41,6 +41,10 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
         (id, user_id, audience, source_type, source_id, amount)
       values
         (${randomUUID()}, ${profileId}, ${audience}, ${sourceType}, ${courseId}, 0)`
+  }
+
+  async function marcos(profileId: string, audience: 'kids' | 'adult' = 'kids') {
+    return (await repo.listCareerCourseState(profileId, audience)).milestones
   }
 
   beforeAll(async () => {
@@ -96,11 +100,11 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
   })
 
   test('separa concluído de concluído+publicado', async () => {
-    const marcos = await repo.listCourseMilestones(userId, 'kids')
+    const porCurso = await marcos(userId)
 
-    expect(marcos.get(soConcluido)).toEqual({ completed: true, showcased: false })
-    expect(marcos.get(concluidoEPublicado)).toEqual({ completed: true, showcased: true })
-    expect(marcos.get(soPublicado)).toEqual({ completed: false, showcased: true })
+    expect(porCurso.get(soConcluido)).toEqual({ completed: true, showcased: false })
+    expect(porCurso.get(concluidoEPublicado)).toEqual({ completed: true, showcased: true })
+    expect(porCurso.get(soPublicado)).toEqual({ completed: false, showcased: true })
   })
 
   test('lê qualificação e marcos no mesmo snapshot SQL', async () => {
@@ -115,21 +119,21 @@ describe.skipIf(!testDatabaseUrl)('marcos de curso por curso (SQL real)', () => 
   })
 
   test('curso sem marco algum simplesmente não aparece no mapa', async () => {
-    const marcos = await repo.listCourseMilestones(userId, 'kids')
+    const porCurso = await marcos(userId)
 
-    expect(marcos.has(randomUUID())).toBe(false)
+    expect(porCurso.has(randomUUID())).toBe(false)
   })
 
   test('marco da OUTRA vitrine não vaza para a kids (nem o contrário)', async () => {
-    expect((await repo.listCourseMilestones(userId, 'kids')).has(daOutraVitrine)).toBe(false)
+    expect((await marcos(userId)).has(daOutraVitrine)).toBe(false)
     // E a leitura adulta enxerga só o dele — o kids fica de fora inteiro.
-    const adulto = await repo.listCourseMilestones(userId, 'adult')
+    const adulto = await marcos(userId, 'adult')
     expect([...adulto.keys()]).toEqual([daOutraVitrine])
   })
 
   test('o marco é do PERFIL: o irmão da mesma conta não herda', async () => {
-    const meu = await repo.listCourseMilestones(userId, 'kids')
-    const dele = await repo.listCourseMilestones(irmaoId, 'kids')
+    const meu = await marcos(userId)
+    const dele = await marcos(irmaoId)
 
     expect(meu.has(doIrmao)).toBe(false)
     expect(dele.get(doIrmao)).toEqual({ completed: true, showcased: true })
