@@ -1075,13 +1075,38 @@ function formatCaughtError(err: unknown): string {
   }
 }
 
+/**
+ * O canvas estava VAZIO quando este estado foi salvo?
+ *
+ * ⚠️ `Blockly.serialization.workspaces.save()` num workspace sem blocos devolve `{}`
+ * (MEDIDO — ele OMITE a seção em vez de mandar uma lista vazia), e o
+ * `markLifecycleBlocksState` carimba a versão por cima: o que chega ao disco é
+ * `{szBehaviorAreasVersion: N}`, sem `blocks`. O sanitizer o recusa — e recusar está
+ * certo, porque não há layout nenhum a preservar e o modo reconstrói do IR, que
+ * também é vazio. **O que estava errado era AVISAR**: o aviso existe para dizer qual
+ * checagem da allowlist tropeçou, e aqui nenhuma tropeçou. Ele disparava ao abrir
+ * qualquer projeto salvo com o canvas limpo (todo projeto novo, portanto), assustando
+ * quem estava certo — a mesma classe de defeito que o Jogo 2D já pagou cinco vezes.
+ */
+function isEmptyWorkspaceState(raw: unknown): boolean {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return false
+  // Sem a seção `blocks` não há bloco nenhum; só as chaves que o Blockly/nós
+  // carimbamos por fora podem sobrar. Chave estranha volta a ser motivo de aviso.
+  if (!Object.keys(raw).every((key) => key === 'variables' || key === BEHAVIOR_AREAS_STATE_KEY)) {
+    return false
+  }
+  if (!hasValidBehaviorAreasStateVersion(raw)) return false
+  if (!isSupportedBlocklyVariables(raw.variables, STORED_BLOCKSTATE_LIMITS)) return false
+  return raw.variables == null || (Array.isArray(raw.variables) && raw.variables.length === 0)
+}
+
 function sanitizeStoredBlocksState(
   raw: unknown,
   installedExtensions: InstalledExtension[],
 ): Project['blocksState'] {
   try {
     const out = sanitizeBlocksState(raw, installedExtensions, STORED_BLOCKSTATE_LIMITS)
-    if (raw != null && out == null) {
+    if (raw != null && out == null && !isEmptyWorkspaceState(raw)) {
       // Antes era um drop silencioso: o blocksState está no disco mas alguma chave
       // ou limite não passou na allowlist, então o load cai para `null` e o modo
       // reconstrói a partir do IR — o que aplica os defaults `x = 32, 452, 872`

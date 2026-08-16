@@ -4,6 +4,7 @@ import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { MyCourseView } from '@/lib/types'
+import { CourseBadgeChip } from './course-badge-chip'
 import { UNIT_THEME_CLASS, type UnitTheme } from './unit-theme'
 
 interface CourseCardProps {
@@ -55,6 +56,9 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
               <BookOpen className="size-10 text-muted-foreground" />
             </div>
           )}
+          {/* Só o que FALTA: "pronta" aqui seria redundante com a barra em 100% e o
+              "Revisar curso" logo abaixo. O que a home precisa dizer é o pendente. */}
+          <CourseBadgeChip course={course} only="publicar" className="absolute top-2 left-2" />
         </div>
         <div className="flex flex-col gap-3 p-4">
           <div>

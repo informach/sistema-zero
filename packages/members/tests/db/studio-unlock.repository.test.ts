@@ -1,11 +1,11 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import postgres from 'postgres'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleStudioUnlockRepository } from '../../src/infrastructure/persistence/drizzle/studio-unlock.repository'
+import { prepareTestDatabase } from './test-database'
 
 /**
  * O snapshot dos blocos conquistados é o que cumpre a regra "bloco liberado NÃO é
@@ -17,35 +17,6 @@ import { DrizzleStudioUnlockRepository } from '../../src/infrastructure/persiste
  *
  * Aqui roda o SQL de verdade contra Postgres.
  */
-
-const TEST_DB_NAME = 'sistemazero_test'
-const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
-
-function withDatabase(url: string, dbName: string): string {
-  const parsed = new URL(url)
-  parsed.pathname = `/${dbName}`
-  return parsed.toString()
-}
-
-async function prepareTestDatabase(): Promise<string | null> {
-  const override = process.env.TEST_DATABASE_URL
-  const baseUrl = override ?? process.env.DATABASE_URL ?? FALLBACK_URL
-  const admin = postgres(baseUrl, { max: 1, connect_timeout: 2, onnotice: () => {} })
-  try {
-    await admin`select 1`
-    if (override) return override
-    try {
-      await admin.unsafe(`CREATE DATABASE ${TEST_DB_NAME}`)
-    } catch (error) {
-      if ((error as { code?: string }).code !== '42P04') throw error
-    }
-    return withDatabase(baseUrl, TEST_DB_NAME)
-  } catch {
-    return null
-  } finally {
-    await admin.end({ timeout: 1 }).catch(() => {})
-  }
-}
 
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {

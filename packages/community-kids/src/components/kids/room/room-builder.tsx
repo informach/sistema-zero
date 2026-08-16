@@ -1,82 +1,17 @@
 'use client'
 
-import {
-  ArrowDownToLine,
-  ArrowUpToLine,
-  Frame,
-  LayoutGrid,
-  Lightbulb,
-  Paintbrush,
-  Palette,
-  PawPrint,
-  RefreshCw,
-  RotateCw,
-  Sofa,
-  Sprout,
-  Sun,
-  Trash2,
-  Trophy,
-} from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { cn } from '@/lib/cn'
-import {
-  floorInfo,
-  lightingPreset,
-  ROOM_GRID,
-  ROOM_ITEM_INFO,
-  ROOM_THEME_INFO,
-  ROOM_WALL_PALETTE,
-  resolveRoomAppearance,
-} from '@/lib/room-catalog'
+import { ROOM_GRID, ROOM_ITEM_INFO, ROOM_WALL_PALETTE } from '@/lib/room-catalog'
 import type { RoomEditorView, RoomItemView, RoomStateView, RoomThemeView } from '@/lib/types'
-import { KidsMascot } from '../mascot'
-import { ZappyCoin } from '../zappy-coin'
 import { effectiveFootprint, type Rot, rectsOverlap, WALL_H_CELLS, wallLength } from './coords'
 import { freeFloorSpot, freeWallSpot, isFreeAt } from './placement'
-import { ChoiceGrid, PetTray, ShopGrid, TrophyTray, WallTray } from './room-builder-trays'
-import { RoomCanvas } from './room-canvas'
-
-const PLACEABLE: ReadonlySet<string> = new Set(['furniture', 'decor', 'plant', 'light'])
-
-type TabId =
-  | 'moveis'
-  | 'enfeites'
-  | 'trofeus'
-  | 'plantas'
-  | 'luzes'
-  | 'piso'
-  | 'parede'
-  | 'clima'
-  | 'bichinho'
-  | 'tema'
-type LoadState = 'loading' | 'ready' | 'error'
-
-const TABS: { id: TabId; label: string; icon: typeof Sofa }[] = [
-  { id: 'moveis', label: 'Móveis', icon: Sofa },
-  { id: 'enfeites', label: 'Enfeites', icon: Frame },
-  // 🏆 Troféus (07/2026): ganhos por conquista — a estante de troféus viva.
-  { id: 'trofeus', label: 'Troféus', icon: Trophy },
-  { id: 'plantas', label: 'Plantas', icon: Sprout },
-  { id: 'luzes', label: 'Luzes', icon: Lightbulb },
-  { id: 'piso', label: 'Piso', icon: LayoutGrid },
-  { id: 'parede', label: 'Parede', icon: Paintbrush },
-  { id: 'clima', label: 'Clima', icon: Sun },
-  { id: 'bichinho', label: 'Bichinho', icon: PawPrint },
-  { id: 'tema', label: 'Tema', icon: Palette },
-]
-
-const CAT_BY_TAB: Partial<Record<TabId, string>> = {
-  moveis: 'furniture',
-  enfeites: 'decor',
-  plantas: 'plant',
-  luzes: 'light',
-}
+import { type RoomBuilderTab, RoomBuilderView, type RoomLoadState } from './room-builder-view'
 
 /** Editor do quarto 3D: cena ao vivo + barra de categorias (móveis/piso/parede/clima/…). */
 export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null }) {
   const [data, setData] = useState<RoomEditorView | null>(null)
-  const [loadState, setLoadState] = useState<LoadState>('loading')
+  const [loadState, setLoadState] = useState<RoomLoadState>('loading')
   const [draft, setDraft] = useState<RoomStateView>({
     theme: 'aconchego',
     placedItems: [],
@@ -91,7 +26,7 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
   // (chip vira "Comprar?" + barra com preço); o 2º toque compra. Nada de modal pesado.
   const [confirmBuyId, setConfirmBuyId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [tab, setTab] = useState<TabId>('moveis')
+  const [tab, setTab] = useState<RoomBuilderTab>('moveis')
   const [brush, setBrush] = useState<string>(ROOM_WALL_PALETTE[0]?.hex ?? '#f3ede1')
   // Lista "Colocar em cima de…" aberta p/ a peça stackable selecionada (superfícies, 24/07).
   const [stackPicker, setStackPicker] = useState(false)
@@ -196,7 +131,6 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     setSelected(index)
     setStackPicker(false)
   }, [])
-  const appearance = resolveRoomAppearance(draft)
   const paintColor = tab === 'parede' ? brush : null
 
   function moveItem(index: number, x: number, y: number, wall?: 'left' | 'right') {
@@ -509,371 +443,47 @@ export function RoomBuilder({ avatarPhotoUrl }: { avatarPhotoUrl?: string | null
     }
   }
 
-  const pendingBuy = resolvePendingBuy()
-
   return (
-    <div className="flex flex-col gap-4">
-      <div className="relative">
-        {data ? (
-          <RoomCanvas
-            state={draft}
-            mode="edit"
-            avatarPhotoUrl={avatarPhotoUrl}
-            selectedIndex={selected}
-            onSelect={selectPiece}
-            onMove={moveItem}
-            onPaintWall={paintWall}
-            paintColor={paintColor}
-          />
-        ) : loadState === 'error' ? (
-          <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted p-6 text-center">
-            <div className="flex max-w-sm flex-col items-center gap-3">
-              <KidsMascot expression="thinking" className="size-20" />
-              <p className="font-semibold">Não consegui carregar seu quarto.</p>
-              <button
-                type="button"
-                onClick={() => void loadRoom()}
-                className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
-              >
-                <RefreshCw className="size-4" /> Tentar de novo
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="grid aspect-[3/2] w-full place-items-center rounded-2xl border-2 border-border bg-muted">
-            <KidsMascot expression="thinking" className="size-20" />
-          </div>
-        )}
-        {selected !== null ? (
-          <div className="absolute top-2 right-2 flex gap-2">
-            {(() => {
-              const sel = draft.placedItems[selected]
-              const selInfo = ROOM_ITEM_INFO[sel?.itemId ?? '']
-              const isChild = Boolean(sel?.on)
-              return (
-                <>
-                  {isChild ? (
-                    <button
-                      type="button"
-                      onClick={bringDown}
-                      className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
-                    >
-                      <ArrowDownToLine className="size-3.5" /> Descer
-                    </button>
-                  ) : (
-                    <>
-                      {selInfo?.stackable && surfaceOptions().length > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => setStackPicker((v) => !v)}
-                          aria-expanded={stackPicker}
-                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
-                        >
-                          <ArrowUpToLine className="size-3.5" /> Em cima…
-                        </button>
-                      ) : null}
-                      {selInfo?.mount !== 'wall' ? (
-                        <button
-                          type="button"
-                          onClick={rotateSelected}
-                          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-primary px-3 py-2.5 font-bold text-primary-foreground text-xs shadow"
-                        >
-                          <RotateCw className="size-3.5" /> Girar
-                        </button>
-                      ) : null}
-                    </>
-                  )}
-                  <button
-                    type="button"
-                    onClick={removeSelected}
-                    className="inline-flex min-h-11 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-2.5 font-bold text-(--sz-hot-fg) text-xs shadow"
-                  >
-                    <Trash2 className="size-3.5" /> Tirar
-                  </button>
-                </>
-              )
-            })()}
-          </div>
-        ) : null}
-      </div>
-
-      {/* Lista "Colocar em cima de…" — superfícies posicionadas com nicho livre (24/07). */}
-      {selected !== null && stackPicker ? (
-        <div
-          role="group"
-          aria-label="Colocar em cima de qual superfície?"
-          className="flex flex-wrap items-center gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
-        >
-          <p className="font-semibold text-sm">Colocar em cima de:</p>
-          {surfaceOptions().map((opt) => {
-            const info = ROOM_ITEM_INFO[opt.itemId]
-            return (
-              <button
-                key={opt.itemId}
-                type="button"
-                onClick={() => placeOnSurface(opt.itemId)}
-                className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
-              >
-                <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
-                {info?.labelPt ?? opt.itemId}
-                <span className="text-muted-foreground">
-                  ({opt.free} {opt.free === 1 ? 'vaga' : 'vagas'})
-                </span>
-              </button>
-            )
-          })}
-          <button
-            type="button"
-            onClick={() => setStackPicker(false)}
-            className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
-          >
-            Cancelar
-          </button>
-        </div>
-      ) : null}
-
-      {/* Lista das peças no quarto — caminho de TECLADO p/ posicionar (arrastar no 3D não é
-          alcançável por teclado): escolha uma e mova com as setas (R gira, Delete tira). */}
-      {draft.placedItems.length > 0 ? (
-        <div
-          role="group"
-          aria-label="Peças no quarto. Escolha uma e mova com as setas do teclado (R gira, Delete tira)"
-          className="flex flex-wrap gap-1.5"
-        >
-          {draft.placedItems.map((p, i) => {
-            const inf = ROOM_ITEM_INFO[p.itemId]
-            const parentInf = p.on ? ROOM_ITEM_INFO[p.on] : null
-            return (
-              <button
-                // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
-                key={i}
-                type="button"
-                onClick={() => selectPiece(selected === i ? null : i)}
-                aria-pressed={selected === i}
-                className={cn(
-                  'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
-                  selected === i ? 'border-primary bg-primary/10' : 'border-border',
-                )}
-              >
-                <span aria-hidden="true">{inf?.emoji ?? '📦'}</span>
-                {inf?.labelPt ?? p.itemId}
-                {parentInf ? (
-                  <span className="text-muted-foreground">· na {parentInf.labelPt}</span>
-                ) : null}
-              </button>
-            )
-          })}
-        </div>
-      ) : null}
-
-      <div className="flex items-center justify-between">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-(--kids-lime-tint) px-3 py-1 [font-family:var(--font-display)] font-bold text-sm">
-          <ZappyCoin className="size-4" /> {coinsUnlimited ? '∞' : balance}
-        </span>
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving || loadState !== 'ready'}
-          className={cn(
-            'sz-btn-gradient h-11 px-6 text-base',
-            (saving || loadState !== 'ready') && 'opacity-60',
-          )}
-        >
-          {saving ? 'Salvando…' : 'Salvar quarto'}
-        </button>
-      </div>
-
-      {/* Barra de categorias (estilo MyDreamRoom) */}
-      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
-        {TABS.map((t) => {
-          const Icon = t.icon
-          const active = tab === t.id
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                setTab(t.id)
-                setConfirmBuyId(null)
-              }}
-              aria-pressed={active}
-              className={cn(
-                'flex min-w-16 shrink-0 flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 font-semibold text-xs transition-colors',
-                active ? 'border-primary bg-primary/10' : 'border-border',
-              )}
-            >
-              <Icon className="size-5" />
-              {t.label}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Barra de confirmação da compra (1º toque armou; aqui confirma ou desiste). */}
-      {pendingBuy ? (
-        <div
-          role="status"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
-        >
-          <p className="font-semibold text-sm">
-            Gostou? <span className="text-muted-foreground">({pendingBuy.label})</span>
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setConfirmBuyId(null)}
-              disabled={!!busy}
-              className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
-            >
-              Deixar para depois
-            </button>
-            <button
-              type="button"
-              onClick={() => buy(pendingBuy.id)}
-              disabled={!!busy}
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
-            >
-              <ZappyCoin className="size-4" /> Comprar por {pendingBuy.price}
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Bandeja da categoria ativa */}
-      <div>{data ? renderTray() : null}</div>
-    </div>
+    <RoomBuilderView
+      avatarPhotoUrl={avatarPhotoUrl}
+      data={data}
+      loadState={loadState}
+      draft={draft}
+      selected={selected}
+      onSelectPiece={selectPiece}
+      onMoveItem={moveItem}
+      onPaintWall={paintWall}
+      paintColor={paintColor}
+      onRetry={() => void loadRoom()}
+      stackPicker={stackPicker}
+      surfaces={surfaceOptions()}
+      onBringDown={bringDown}
+      onToggleStackPicker={() => setStackPicker((open) => !open)}
+      onRotateSelected={rotateSelected}
+      onRemoveSelected={removeSelected}
+      onPlaceOnSurface={placeOnSurface}
+      onCloseStackPicker={() => setStackPicker(false)}
+      coinsUnlimited={coinsUnlimited}
+      balance={balance}
+      saving={saving}
+      onSave={() => void save()}
+      tab={tab}
+      onSelectTab={(nextTab) => {
+        setTab(nextTab)
+        setConfirmBuyId(null)
+      }}
+      confirmBuyId={confirmBuyId}
+      busy={busy}
+      onCancelBuy={() => setConfirmBuyId(null)}
+      onBuy={buy}
+      isOwned={isOwned}
+      onPickItem={addItem}
+      onApplyFloor={(id) => updateDraft((current) => ({ ...current, floor: id }))}
+      onApplyLighting={(id) => updateDraft((current) => ({ ...current, lighting: id }))}
+      onApplyTheme={applyTheme}
+      brush={brush}
+      onPickBrush={setBrush}
+      onPickPet={(id) => updateDraft((current) => ({ ...current, pet: id }))}
+    />
   )
-
-  /** Preço + rótulo do item aguardando confirmação (procura nos 4 catálogos da lojinha). */
-  function resolvePendingBuy(): { id: string; price: number; label: string } | null {
-    if (!confirmBuyId || !data) return null
-    const item = data.items.find((i) => i.id === confirmBuyId)
-    if (item)
-      return { id: item.id, price: item.price, label: ROOM_ITEM_INFO[item.id]?.labelPt ?? item.id }
-    const theme = (data.themes ?? []).find((t) => t.id === confirmBuyId)
-    if (theme)
-      return {
-        id: theme.id,
-        price: theme.price,
-        label: ROOM_THEME_INFO[theme.id]?.labelPt ?? theme.id,
-      }
-    const floor = (data.floors ?? []).find((f) => f.id === confirmBuyId)
-    if (floor) return { id: floor.id, price: floor.price, label: floorInfo(floor.id).labelPt }
-    const lighting = (data.lightings ?? []).find((l) => l.id === confirmBuyId)
-    if (lighting)
-      return {
-        id: lighting.id,
-        price: lighting.price,
-        label: lightingPreset(lighting.id).labelPt,
-      }
-    return null
-  }
-
-  function renderTray() {
-    if (!data) return null
-    const cat = CAT_BY_TAB[tab]
-    if (cat) {
-      // Troféus ficam FORA das bandejas de compra (têm bandeja própria 🏆).
-      const items = data.items.filter(
-        (i) => PLACEABLE.has(i.category) && i.category === cat && i.tier !== 'trophy',
-      )
-      return (
-        <ShopGrid
-          items={items}
-          owned={isOwned}
-          busy={busy}
-          confirmingId={confirmBuyId}
-          onPick={addItem}
-          onBuy={buy}
-        />
-      )
-    }
-    if (tab === 'trofeus') {
-      return (
-        <TrophyTray
-          trophies={data.items.filter((i) => i.tier === 'trophy')}
-          owned={isOwned}
-          onPick={addItem}
-        />
-      )
-    }
-    if (tab === 'piso') {
-      return (
-        <ChoiceGrid
-          choices={data.floors}
-          activeId={appearance.floorId}
-          busy={busy}
-          confirmingId={confirmBuyId}
-          onApply={(id) => updateDraft((d) => ({ ...d, floor: id }))}
-          onBuy={buy}
-          label={(id) => floorInfo(id).labelPt}
-          preview={(id) => {
-            const f = floorInfo(id)
-            return (
-              <span
-                className="block h-8 w-full rounded-lg border-2"
-                style={{ background: f.color, borderColor: f.color2 }}
-                aria-hidden="true"
-              />
-            )
-          }}
-        />
-      )
-    }
-    if (tab === 'clima') {
-      return (
-        <ChoiceGrid
-          choices={data.lightings}
-          activeId={appearance.lightingId}
-          busy={busy}
-          confirmingId={confirmBuyId}
-          onApply={(id) => updateDraft((d) => ({ ...d, lighting: id }))}
-          onBuy={buy}
-          label={(id) => lightingPreset(id).labelPt}
-          preview={(id) => (
-            <span
-              className="block h-8 w-full rounded-lg"
-              style={{ background: lightingPreset(id).background }}
-              aria-hidden="true"
-            />
-          )}
-        />
-      )
-    }
-    if (tab === 'tema') {
-      return (
-        <ChoiceGrid
-          choices={data.themes}
-          activeId={draft.theme}
-          busy={busy}
-          confirmingId={confirmBuyId}
-          onApply={applyTheme}
-          onBuy={buy}
-          label={(id) => ROOM_THEME_INFO[id]?.labelPt ?? id}
-          preview={(id) => (
-            <span
-              className="block h-8 w-full rounded-lg"
-              style={{ background: ROOM_THEME_INFO[id]?.bg ?? '#eee' }}
-              aria-hidden="true"
-            />
-          )}
-        />
-      )
-    }
-    if (tab === 'parede') {
-      return <WallTray brush={brush} onPick={setBrush} />
-    }
-    // bichinho
-    const pets = data.items.filter((i) => i.category === 'pet')
-    return (
-      <PetTray
-        pets={pets}
-        current={draft.pet}
-        busy={busy}
-        confirmingId={confirmBuyId}
-        onPick={(id) => updateDraft((d) => ({ ...d, pet: id }))}
-        onBuy={buy}
-      />
-    )
-  }
 }

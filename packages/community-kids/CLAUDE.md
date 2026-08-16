@@ -151,7 +151,8 @@ degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fec
 `careerProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
 `remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
 a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
-prontas"), nunca do que falta para subir.
+prontas"), nunca do que falta para subir — e desde 15/08 elas contam a TRILHA INTEIRA, bônus
+incluído (ver "O contador do medalhão" abaixo).
 
 ⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
 ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO (Estúdio+Pinta no
@@ -862,10 +863,36 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   Usados no **perfil** (`profile-client.tsx`: aura no avatar + insígnia + linha "faltam X projetos…"
   via `nextLevelHint`), no **menu** (`user-menu.tsx`: aura no avatar do header + insígnia no dropdown)
   e no **perfil público** (`public-profile-view.tsx`: aura + insígnia). O nível vem de
-  `gamification.level` / `PublicProfileDTO.level` (members deriva). O **DEGRAU do CURSO** (dificuldade × eixo 2D/3D, ≠ do
-  nível do aluno) é o `course-level-chip.tsx` (`CourseLevelChip level+track` → 6 rótulos
-  "Iniciante 2D"…"Avançado 3D" via `courseTierOf` do member-shell) sobre a capa nos cards
-  (`course-card.tsx`/`catalog-course-card.tsx`); o filtro do catálogo tem os 6 degraus.
+  `gamification.level` / `PublicProfileDTO.level` (members deriva).
+  ⚠️ O antigo `CourseLevelChip` (rótulo do DEGRAU do curso sobre a capa) e o filtro por degrau do
+  catálogo **NÃO existem mais**: nome de degrau é vocabulário de quem MONTA o curso, e hoje um
+  teste-guarda proíbe exibi-lo (`tests/copy-vocabulario.test.ts`). O `courseTierOf`/
+  `COURSE_TIER_LABELS` seguem vivos como LÓGICA (horizonte, trava, admin).
+
+  ⭐⭐ **SELO DE ESTADO no card (15/08/2026)** — `lib/course-badge.ts` (régua PURA) +
+  `components/kids/course-badge-chip.tsx` (pintura), no slot `absolute top-2 left-2` que o
+  `CourseLevelChip` deixou livre. É a **outra metade do contador do medalhão**: sem ele a criança lê
+  "8 de 9", entra na trilha e encontra nove cards idênticos, sem saber qual falta nem por quê.
+  | curso | pronta quando | selo pendente |
+  |---|---|---|
+  | de POSIÇÃO (`careerSlot`) | concluiu **e** publicou no Mural | "Publique no Mural" (chip SÓLIDO) |
+  | BÔNUS (`careerSlot` nulo) | só concluiu | nenhum |
+  - ⚠️⚠️ **Bônus NUNCA pede o Mural** — é o anti-vácuo travado em `tests/course-badge.test.tsx`.
+  - **Card da HOME** (`course-card.tsx`) mostra só o pendente (`only="publicar"`): "pronta" ali é
+    redundante com a barra em 100% e o CTA "Revisar curso". ⭐ E o `only` acabou sendo LOAD-BEARING,
+    não só cosmético: o marco é congelado e a barra é ao vivo, então um curso que ganhou aula nova
+    exibiria "Pronta!" ao lado de uma barra em 90% e de um CTA "Continuar". O card do catálogo não
+    tem barra, então lá o "Pronta!" não contradiz nada. Não uniformize os dois cards.
+  - ⚠️ **O selo EXPÕE curso de posição mal configurado** (sem bloco de Estúdio com vitrine): a
+    criança não tem como publicar, então "Publique no Mural" fica para sempre e o contador nunca
+    fecha. É a armadilha que o admin já sinaliza com ⚠️ "Sem vitrine" na listagem — o selo só a
+    torna visível para quem sofre com ela. Curso-base nessa situação é bug de autoria, não do selo.
+  - ⚠️ O chip fica **DEPOIS** do véu de bloqueado no DOM: o selo conta o que a criança já fez e não
+    pode sair borrado se o acesso vencer depois.
+  - ⚠️ **NÃO é clicável** (v1): os dois cards já são um `<Link>` inteiro e âncora não aninha em
+    âncora — virar atalho para publicar exigiria refazer a raiz do card.
+  - ⚠️ Sem `milestones` (members antigo, vitrine adulta) não há selo. Silêncio > selo errado.
+
   **Trava da carreira nos cards (24/07):** os dois cards tratam o `careerLock.reason` —
   `foundation-first` (CTA que NOMEIA o curso-base), **`tier-reward`** (🎁 "Recompensa: complete a
   etapa X" — bônus `careerSlot=null` virou recompensa, abre quando a etapa completa) e
@@ -902,9 +929,65 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   consegue levar** (`careerHorizon` = último nível cujos `requiredSlots` estão todos publicados) e
   fecha com o **nó "E tem muito mais pela frente"** (`career-horizon-node.tsx`: arte da Lenda,
   martelinho no lugar do cadeado; tocar balança o nó e mostra um toast dizendo que essa parte está
-  em construção). O contador do nó atual conta **só o que existe** (`careerProgress` → bolinhas + "1 de 3
-  cursos"); nada pronto a fazer → "Você está em dia!" + atalho p/ `/estudio` (só com posse — produto
-  à parte). ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
+  em construção). O contador do nó conta **só o que existe**; nada pronto a fazer → "Você está em
+  dia!" + atalho p/ `/estudio` (só com posse — produto à parte).
+
+  ⭐⭐ **O CONTADOR DO MEDALHÃO conta a TRILHA INTEIRA (15/08/2026)** — `tierCompletion` /
+  `tierCompletionByLevel` / `nodeShowsCheck` em `lib/career-map.ts`. O problema: quando a usuária
+  publica um curso num degrau que a criança JÁ PASSOU, ela nunca fica sabendo — subiu de posto, o
+  medalhão está com ✓, e a aventura nova morre sem público. Três mudanças, todas de APRESENTAÇÃO:
+  - **Denominador = `coursesForLevel`**, a mesma função que a página da trilha usa: TODOS os cursos
+    publicados do degrau, **bônus incluído**. Antes só as posições com `careerSlot`, e era isso que
+    escondia o bônus. Reuso, não regra nova — o contador passou a bater com o que ela vê ao clicar.
+  - ⭐⭐ **Numerador de RÉGUA MISTA** (`courseIsDone`, em `lib/course-badge.ts`): posição
+    **obrigatória** só conta pronta quando concluída **e publicada no Mural**; curso **bônus** conta
+    com a conclusão. É a régua de cada um — o bônus não vale para nível nenhum, então cobrar Mural
+    dele seria inventar exigência. Com régua única, o contador dizia "8 de 8 prontas" enquanto a
+    frase do posto pedia publicar: contradição na mesma tela.
+    ⭐ **Desde 15/08 os dois marcos vêm DENTRO de cada curso** (`CatalogCourseView.milestones`, do
+    ledger do members) e a conta é POR CURSO. A 1ª versão derivava as obrigatórias de
+    `level.remaining[tier]`, o que obrigava a tratar degrau futuro à parte (o `remaining` é medido
+    contra o PRÓXIMO posto e vinha 0 sem a criança ter feito nada), a limitar o resultado ao total,
+    e a depender de cada posto ser dono de um degrau inteiro. **Nada disso é mais necessário** —
+    e a página deixou de buscar o `listMyCourses` só para contar.
+    ⚠️ Selo do card e contador leem o MESMO campo, logo não podem divergir. Curso re-etiquetado
+    depois de qualificado conta no degrau em que está AGORA (é o que a criança vê na trilha),
+    enquanto a carreira segue o retrato congelado do marco — divergência aceita e rara.
+  - **O contador aparece nos postos JÁ VENCIDOS** (antes só no atual) e o **✓ regride** enquanto
+    faltar curso ali (`nodeShowsCheck`). Sem as duas, mudar o denominador não resolveria nada: o
+    degrau passado não tinha contador algum para virar "8 de 9".
+
+  ⚠️⚠️ **A régua da CARREIRA não mudou, e não pode mudar.** Subir de posto continua exigindo as
+  posições OBRIGATÓRIAS com os dois marcos (concluir + publicar no Mural), no members/core. São duas
+  contas separadas de propósito: `careerProgress` (career-horizon.ts) alimenta a frase "Faltam N para
+  virar X" e ficou INTOCADO; `tierCompletion` alimenta bolinhas, contador e ✓. Mexer no primeiro
+  quebraria a frase, porque ele calcula `remaining = min(missing, ready − done)`.
+
+  ⚠️ **O `/perfil` NÃO mudou** (decisão da usuária, 15/08): aquela escada é a CARREIRA — os postos
+  conquistados —, não o conteúdo do degrau. O ✓ de lá segue posicional.
+
+  ⚠️ **Dois defeitos achados no full review do próprio lote, os dois de "o que fazer quando a fonte
+  falha ou quando as duas contas discordam":**
+  1. O card **"Você está em dia!"** é regido pelo `careerProgress` (só obrigatórias). Com um bônus
+     novo por fazer, o medalhão dizia "8 de 9" e o card logo abaixo afirmava "você já fez tudo que
+     está pronto por aqui" — a mentira que este contador existe para matar. Agora ele exige TAMBÉM
+     a trilha completa (`trilhaComplete`). Regressão em `tests/career-map-counter.test.tsx`.
+  2. **Progresso DESCONHECIDO ≠ nada feito.** `listMyCourses` falhando fazia `done = 0` em todo
+     degrau: um veterano perderia TODOS os ✓ e veria "0 de 8" na carreira inteira por um soluço de
+     rede. Era a mesma régua do `catálogo null ≠ vazio`. ⭐ **O caso deixou de existir** quando os
+     marcos passaram a vir no próprio catálogo (15/08): ou ele carregou, e o contador é confiável,
+     ou a página já falhou antes. `completionByLevel` segue OPCIONAL só para o ✓ ter um caminho
+     posicional em estado torto.
+
+  3. **Bolinhas sem teto.** `ProgressDots` renderiza uma por curso, e o total deixou de ser
+     limitado a 8 quando o bônus entrou. A legenda é `w-44` (176 px) e a fileira é flex SEM wrap,
+     a 12 px por bolinha: 15 cursos estouram a caixa e vazam por cima da fita. Teto explícito
+     (`MAX_PROGRESS_DOTS = 12`); acima dele as bolinhas somem e fica o número, que é exato.
+     Antes isso era impossível por construção — o defeito nasceu ao remover essa garantia.
+
+  ⚠️ **O lado duro da régua mista, e é intencional:** quem concluiu os 8 e não publicou nenhum lê
+  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a carreira sendo fiel — e é
+  justamente o que o SELO do card tornou legível: ao entrar na trilha, os oito cards dizem o motivo. ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
   p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `career-conformance` é herdada.
   ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
   definitiva), senão um soluço de rede tiraria postos conquistados da tela; vazio é informação real
@@ -1189,10 +1272,11 @@ acionáveis corrigidos; verde no typecheck/test/check dos 4 pacotes + `build:kid
 - **`prefers-reduced-motion` (fotossensibilidade):** o bloco do `globals.css` ganhou
   `animation-iteration-count: 1 !important` (+ `scroll-behavior:auto`) — animações INFINITAS
   (pulse/twinkle/flicker/float/bob) paravam de fato em vez de cintilar a ~0ms.
-- **Portão dos pais = cookie ASSINADO:** `server/parent-gate.ts` grava `accountId.HMAC` (segredo
-  aleatório por processo em `globalThis`/`Symbol.for`, mesmo padrão de estado compartilhado do
-  member-shell) e verifica a assinatura (timing-safe) — o accountId não é segredo, então o valor
-  pelado seria forjável. TTL 15 min preservado.
+- **Portão dos pais = cookie ASSINADO e temporal:** `server/parent-gate.ts` grava um token
+  `v1.<payload-base64url>.<HMAC-SHA256>` com `accountId`, emissão e expiração, e valida assinatura,
+  conta, TTL máximo de 15 min e relógio no servidor. Em produção, `PARENT_GATE_HMAC_SECRET` é
+  obrigatório e precisa ser o mesmo em todas as réplicas; só desenvolvimento pode gerar um segredo
+  efêmero por processo. O accountId não é segredo, então nunca deve ser aceito sem assinatura.
 - **`/api/me/avatar` recusa sessão de perfil** (foto da conta é account-only): fix no
   **member-shell** (`meAvatar.POST` → 403 `ACCOUNT_SESSION_REQUIRED` ANTES da escrita no R2;
   antes a criança deixava objeto R2 órfão) — **roda nos dois apps**.

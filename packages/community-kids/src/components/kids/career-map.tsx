@@ -3,7 +3,7 @@
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { toast } from 'sonner'
 import {
   type CareerCatalogEntry,
@@ -14,7 +14,7 @@ import {
   levelsBeyondHorizon,
   visibleCareerLevels,
 } from '@/lib/career-horizon'
-import { careerNodeState, LEVEL_TIER } from '@/lib/career-map'
+import { careerNodeState, LEVEL_TIER, nodeShowsCheck, type TierCompletion } from '@/lib/career-map'
 import { buildCareerGeometry, type CareerGeometry, type CareerPoint } from '@/lib/career-path'
 import { cn } from '@/lib/cn'
 import { LEVEL_INFO, levelInfo } from '@/lib/level-info'
@@ -40,17 +40,33 @@ import { useWiggle } from './use-wiggle'
 export function CareerMap({
   level,
   courses,
+  completionByLevel,
   studioOwned = false,
 }: {
   level: StudentLevelView
   /** Recorte do catálogo publicado (3 campos) — define o horizonte e o contador honesto.
    *  ⚠️ Recorte, não a view inteira: isto atravessa a fronteira servidor→cliente. */
   courses: readonly CareerCatalogEntry[]
+  /**
+   * Quantas aventuras de CADA trilha já estão prontas, de quantas existem — bônus incluído.
+   * Calculado no servidor (`tierCompletionByLevel`) sobre os marcos que vêm no PRÓPRIO
+   * catálogo: ou ele carregou, e isto é confiável, ou a página já falhou antes.
+   * ⚠️ Segue opcional para o ✓ ter um caminho posicional em qualquer estado torto.
+   */
+  completionByLevel?: Record<StudentLevelSlug, TierCompletion>
   /** Estúdio Completo comprado? Só com posse o estado "em dia" oferece o atalho de criar. */
   studioOwned?: boolean
 }) {
   const current = levelInfo(level.slug)
   const progress = careerProgress(level, courses)
+  /**
+   * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da carreira. O `careerProgress` só
+   * conhece as posições obrigatórias: com um bônus novo por fazer ele diz `up-to-date`
+   * enquanto o contador do medalhão mostra "8 de 9". O card afirmaria "você já fez tudo
+   * que está pronto por aqui" — exatamente a mentira que este contador existe para matar.
+   */
+  const currentTrilha = completionByLevel?.[level.slug as StudentLevelSlug]
+  const trilhaComplete = !currentTrilha || currentTrilha.done >= currentTrilha.total
   const visible = visibleCareerLevels(level.slug, careerHorizon(courses))
   const showHorizon = hasHorizonNode(visible)
   const beyond = levelsBeyondHorizon(visible)
@@ -90,6 +106,7 @@ export function CareerMap({
             viewHeight={geo.viewHeight}
             state={careerNodeState(level.slug, slug)}
             progress={progress}
+            completion={completionByLevel?.[slug]}
           />
         ))}
         {showHorizon ? (
@@ -101,7 +118,9 @@ export function CareerMap({
         ) : null}
       </ol>
 
-      {progress.kind === 'up-to-date' ? <UpToDate studioOwned={studioOwned} /> : null}
+      {progress.kind === 'up-to-date' && trilhaComplete ? (
+        <UpToDate studioOwned={studioOwned} />
+      ) : null}
     </section>
   )
 }
@@ -184,8 +203,23 @@ function CareerRibbon({
   )
 }
 
-/** Bolinhas do degrau atual: uma por curso que EXISTE, cheia quando já foi concluído. */
+/**
+ * Teto da fileira de bolinhas.
+ *
+ * ⚠️ A legenda do medalhão é `w-44` (176 px) e a fileira é flex SEM wrap: cada bolinha custa
+ * 12 px (`size-2` + `gap-1`), então 15 já ocupam a largura inteira e a partir daí a fileira
+ * VAZA por cima da fita e da legenda vizinha. Antes isso era impossível por construção — o
+ * total era o número de posições obrigatórias, no máximo 8. Desde que o contador passou a
+ * incluir os bônus (15/08) o total é aberto, e o teto precisa ser explícito.
+ *
+ * Acima do teto as bolinhas SOMEM e fica só o "N de M", que é exato de qualquer forma: a
+ * fileira é ilustração, o número é a informação.
+ */
+const MAX_PROGRESS_DOTS = 12
+
+/** Bolinhas do degrau: uma por curso que EXISTE, cheia quando já foi concluído. */
 function ProgressDots({ done, total }: { done: number; total: number }) {
+  if (total > MAX_PROGRESS_DOTS) return null
   return (
     <span className="flex items-center gap-1" aria-hidden>
       {Array.from({ length: total }, (_, index) => (
@@ -211,19 +245,23 @@ function CareerNode({
   viewHeight,
   state,
   progress,
+  completion,
 }: {
   slug: StudentLevelSlug
   point: CareerPoint
   viewHeight: number
   state: ReturnType<typeof careerNodeState>
   progress: CareerProgress
+  completion?: TierCompletion
 }) {
   const info = LEVEL_INFO[slug]
   const tier = LEVEL_TIER[slug]
   const [artBroken, setArtBroken] = useState(false)
+  const progressDescriptionId = useId()
   const { wiggling, wiggle } = useWiggle()
   const locked = state === 'locked'
   const Icon = info.icon
+  const showCheck = nodeShowsCheck(state, completion)
 
   const medal = (
     // Wrapper posicionado, SEM recorte: o badge (cadeado/check) fica FORA do círculo
@@ -263,7 +301,7 @@ function CareerNode({
         <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-background text-muted-foreground shadow-md ring-1 ring-border">
           <Lock className="size-5" aria-hidden />
         </span>
-      ) : state === 'done' ? (
+      ) : showCheck ? (
         <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-card">
           <Check className="size-5" strokeWidth={3} aria-hidden />
         </span>
@@ -294,15 +332,19 @@ function CareerNode({
           <span className="text-[11px] text-muted-foreground">O topo da carreira!</span>
         ) : null}
         {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
-            em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE. */}
-        {state === 'current' && progress.kind === 'pending' ? (
+            em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE.
+            ⭐ Aparece TAMBÉM nos postos já vencidos: é assim que uma aventura publicada num
+            degrau antigo se anuncia ("8 de 9"). Sem isso ela ficaria invisível, porque a
+            criança já passou dali e o medalhão só mostrava o ✓. */}
+        {completion && completion.total > 0 && (state === 'current' || state === 'done') ? (
           <span
+            id={progressDescriptionId}
             className="mt-0.5 flex flex-col items-center gap-1 font-semibold text-[11px]"
             style={{ color: info.colorVar }}
           >
-            <ProgressDots done={progress.done} total={progress.ready} />
-            {progress.done} de {progress.ready}{' '}
-            {progress.ready === 1 ? 'aventura pronta' : 'aventuras prontas'}
+            <ProgressDots done={completion.done} total={completion.total} />
+            {completion.done} de {completion.total}{' '}
+            {completion.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
           </span>
         ) : state === 'current' && progress.kind === 'up-to-date' ? (
           <span className="font-semibold text-[11px]" style={{ color: info.colorVar }}>
@@ -349,6 +391,9 @@ function CareerNode({
           <Link
             href="/cursos/trilha/god"
             aria-label={`Abrir os cursos bônus da ${info.label}`}
+            aria-describedby={
+              completion && completion.total > 0 ? progressDescriptionId : undefined
+            }
             className="relative block"
           >
             {inner}
@@ -368,6 +413,7 @@ function CareerNode({
       <Link
         href={`/cursos/trilha/${slug}`}
         aria-label={`Abrir a trilha ${info.label}`}
+        aria-describedby={completion && completion.total > 0 ? progressDescriptionId : undefined}
         className="relative block"
       >
         {inner}

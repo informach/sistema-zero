@@ -10,6 +10,7 @@ import {
   SZIRV2Schema,
 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import type { BehaviorArea } from '../../core/behaviorAreas'
 import {
   programmingChildBodyEntries,
   programmingEmbeddedBodyEntries,
@@ -34,6 +35,7 @@ import {
 import { CORE_BLOCKS, registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace } from '../buildIR'
 import { HTMLConnectionChecker } from '../htmlConnectionChecker'
+import { BEHAVIOR_AREA_BY_FRAME, PROJECT_AREA_FRAME_TYPES } from '../projectAreas'
 import { ensureBlocklyInitialized } from '../setup'
 
 function definition(type: string) {
@@ -1172,6 +1174,166 @@ describe('contrato central de posicionamento', () => {
           expect(offered.has(block.type), block.type).toBe(false)
         }
       }
+    }
+  })
+})
+
+/**
+ * Soltar uma PILHA numa Área vale o mesmo que montá-la lá dentro.
+ *
+ * ⚠️ Relato dela (15/08): com dois "quando apertar uma tecla" empilhados como rascunho,
+ * arrastar os dois de uma vez para ⚡ Quando acontecer era RECUSADO — ela tinha que
+ * separar e encaixar um de cada vez, chegando ao MESMO arranjo. A causa era o segundo
+ * bloco sair com lista de ancestrais vazia (`getSurroundParent()` pula a pilha, e com a
+ * pilha ainda solta ele não alcançava o bloco arrastado), então a regra "evento é raiz e
+ * não pode ser embrulhado" o reprovava como se ele estivesse dentro do de cima.
+ *
+ * O invariante abaixo é mais forte que o caso relatado, e de propósito: ele compara os
+ * DOIS caminhos. Assim ele também morde se alguém tornar a pilha permissiva DEMAIS —
+ * aceitar de uma vez o que o encaixe um-a-um recusaria seria o mesmo defeito ao contrário.
+ */
+describe('pilha solta entra numa Área igual a montar lá dentro', () => {
+  function novoWorkspace() {
+    return new Blockly.Workspace(
+      new Blockly.Options({ plugins: { connectionChecker: HTMLConnectionChecker } }),
+    )
+  }
+
+  /**
+   * Aceita a PILHA [a, b] de uma vez na área? `null` = os dois nem empilham entre si
+   * (bloco sem encaixe acima/abaixo, ou par que o Blockly já recusa), então não há
+   * pilha e o invariante não se aplica àquele par.
+   */
+  function aceitaPilha(area: string, tipoA: string, tipoB: string): boolean | null {
+    const workspace = novoWorkspace()
+    try {
+      const frame = workspace.newBlock(area)
+      const a = workspace.newBlock(tipoA)
+      const b = workspace.newBlock(tipoB)
+      if (!a.nextConnection || !b.previousConnection || !a.previousConnection) return null
+      if (!workspace.connectionChecker.canConnect(a.nextConnection, b.previousConnection, false)) {
+        return null
+      }
+      a.nextConnection.connect(b.previousConnection)
+      if (a.getNextBlock()?.id !== b.id) return null
+      const alvo = frame.getInput('CHILDREN')?.connection as Blockly.Connection
+      return workspace.connectionChecker.canConnect(alvo, a.previousConnection, false)
+    } finally {
+      workspace.dispose()
+    }
+  }
+
+  /** Aceita B embaixo de A quando A JÁ está na área? */
+  function aceitaUmAUm(area: string, tipoA: string, tipoB: string): boolean {
+    const workspace = novoWorkspace()
+    try {
+      const frame = workspace.newBlock(area)
+      const a = workspace.newBlock(tipoA)
+      frame.getInput('CHILDREN')?.connection?.connect(a.previousConnection as Blockly.Connection)
+      const b = workspace.newBlock(tipoB)
+      return workspace.connectionChecker.canConnect(
+        a.nextConnection as Blockly.Connection,
+        b.previousConnection as Blockly.Connection,
+        false,
+      )
+    } finally {
+      workspace.dispose()
+    }
+  }
+
+  /** Blocos do NÚCLEO que podem encabeçar uma pilha nesta área (raiz declarada). */
+  function cabecasDe(area: BehaviorArea): string[] {
+    return CORE_BLOCKS.filter((block) => {
+      const contract = getBlockContract(block.type)
+      const placement = contract?.domain === 'behavior' ? contract.placement : undefined
+      return Boolean(
+        placement &&
+          placement.role !== 'value' &&
+          placement.root.includes(area) &&
+          !PROJECT_AREA_FRAME_TYPES.has(block.type),
+      )
+    }).map((block) => block.type)
+  }
+
+  /**
+   * ⭐ Varredura DERIVADA do catálogo, não uma lista escolhida a dedo: para cada área
+   * de comportamento, a 1ª cabeça válida × TODO bloco de comportamento do núcleo. É o
+   * que prova o invariante de verdade — 5 pares escolhidos por mim provariam só que eu
+   * escolhi os pares que passam.
+   */
+  it('as 4 Áreas de comportamento × TODO bloco do núcleo: pilha == um a um', () => {
+    const divergentes: string[] = []
+    let exercidos = 0
+    let aceitos = 0
+
+    for (const [frame, area] of BEHAVIOR_AREA_BY_FRAME) {
+      // ⚠️ A cabeça é resolvida AQUI DENTRO, não na coleta: os contratos só existem
+      // depois do `ensureBlocklyInitialized`, e a 1ª versão deste teste calculava fora
+      // — as quatro varreduras saíam vazias e o arquivo passava com 4 testes A MENOS,
+      // sem nada acusar. Guarda que não lê nada aprova tudo, e em silêncio.
+      const cabeca = cabecasDe(area)[0]
+      expect(cabeca, `nenhuma cabeça de pilha para ${area}`).toBeTruthy()
+      if (!cabeca) continue
+
+      for (const block of CORE_BLOCKS) {
+        const contract = getBlockContract(block.type)
+        const placement = contract?.domain === 'behavior' ? contract.placement : undefined
+        // Valor não empilha (não tem previous/next) e moldura não é conteúdo.
+        if (!placement || placement.role === 'value') continue
+        if (PROJECT_AREA_FRAME_TYPES.has(block.type)) continue
+
+        const pilha = aceitaPilha(frame, cabeca, block.type)
+        // `null` = os dois nem empilham entre si; não há pilha a comparar.
+        if (pilha === null) continue
+        exercidos += 1
+        // O rótulo da direção fica no relatório de propósito: as duas metades são
+        // defeitos DIFERENTES. RESTRITIVO é o que ela relatou (a pilha não entra onde
+        // o encaixe um-a-um entra, 23 casos quando isto quebrou); PERMISSIVO é a metade
+        // MUDA e maior (384 casos) — a pilha contrabandeando para dentro de uma Área
+        // um bloco que o encaixe um-a-um recusaria.
+        if (pilha !== aceitaUmAUm(frame, cabeca, block.type)) {
+          divergentes.push(`${pilha ? 'PERMISSIVO' : 'RESTRITIVO'} ${frame} + ${block.type}`)
+        }
+        if (pilha) aceitos += 1
+      }
+    }
+
+    expect(divergentes).toEqual([])
+    // ⚠️⚠️ DOIS anti-vácuos, e os dois já morderam nesta sessão: sem `exercidos` a
+    // varredura podia pular o catálogo inteiro (foi o que aconteceu quando a cabeça
+    // era resolvida na coleta, com o arquivo passando com 4 testes A MENOS); sem
+    // `aceitos`, um checker que recusasse TUDO passaria, porque os dois caminhos
+    // concordariam em "não". O piso é por TOTAL: a área de laços exercita poucos
+    // pares (pouca coisa empilha sob um laço-raiz) e um piso por área seria arbitrário.
+    expect(exercidos).toBeGreaterThan(100)
+    expect(aceitos).toBeGreaterThan(50)
+  })
+
+  it('🚨 o caso relatado é ACEITO (e o par impossível segue recusado)', () => {
+    // O invariante acima é de EQUIVALÊNCIA; estas duas linhas fixam a direção.
+    expect(aceitaPilha('sz_frame_events', 'sz_js_on_key', 'sz_js_on_key')).toBe(true)
+    expect(aceitaPilha('sz_frame_start', 'sz_js_console_log_text', 'sz_js_on_key')).toBe(false)
+  })
+
+  it('pilha de TRÊS também entra (o defeito era do 2º em diante, não do 2º)', () => {
+    const workspace = novoWorkspace()
+    try {
+      const frame = workspace.newBlock('sz_frame_events')
+      const blocos = ['sz_js_on_key', 'sz_js_on_key', 'sz_js_on_key'].map((tipo) =>
+        workspace.newBlock(tipo),
+      )
+      blocos[0]?.nextConnection?.connect(blocos[1]?.previousConnection as Blockly.Connection)
+      blocos[1]?.nextConnection?.connect(blocos[2]?.previousConnection as Blockly.Connection)
+      const alvo = frame.getInput('CHILDREN')?.connection as Blockly.Connection
+      expect(
+        workspace.connectionChecker.canConnect(
+          alvo,
+          blocos[0]?.previousConnection as Blockly.Connection,
+          false,
+        ),
+      ).toBe(true)
+    } finally {
+      workspace.dispose()
     }
   })
 })

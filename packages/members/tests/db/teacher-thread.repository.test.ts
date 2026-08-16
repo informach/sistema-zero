@@ -1,42 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import postgres from 'postgres'
 import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleTeacherThreadRepository } from '../../src/infrastructure/persistence/drizzle/teacher-thread.repository'
+import { prepareTestDatabase } from './test-database'
 
 const TEST_DB_NAME = 'sistemazero_teacher_threads_test'
-const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
 
-function withDatabase(url: string, dbName: string): string {
-  const parsed = new URL(url)
-  parsed.pathname = `/${dbName}`
-  return parsed.toString()
-}
-
-async function prepareTestDatabase(): Promise<string | null> {
-  const override = process.env.TEST_DATABASE_URL
-  const baseUrl = override ?? process.env.DATABASE_URL ?? FALLBACK_URL
-  const admin = postgres(baseUrl, { max: 1, connect_timeout: 2, onnotice: () => {} })
-  try {
-    await admin`select 1`
-    if (override) return override
-    try {
-      await admin.unsafe(`CREATE DATABASE ${TEST_DB_NAME}`)
-    } catch (error) {
-      if ((error as { code?: string }).code !== '42P04') throw error
-    }
-    return withDatabase(baseUrl, TEST_DB_NAME)
-  } catch {
-    return null
-  } finally {
-    await admin.end({ timeout: 1 }).catch(() => {})
-  }
-}
-
-const testDatabaseUrl = await prepareTestDatabase()
+const testDatabaseUrl = await prepareTestDatabase(TEST_DB_NAME)
 if (!testDatabaseUrl) {
   console.warn('[tests/db] Postgres indisponível (porta 5433?) — teste de recados PULADO.')
 }
@@ -54,6 +27,12 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
       do $$ begin
         create type members.teacher_message_role as enum ('teacher', 'student');
       exception when duplicate_object then null; end $$;
+      -- ⚠️ Os blocos \`add column if not exists\` abaixo NÃO são redundância do \`create table\`:
+      -- o banco de tests/db é COMPARTILHADO e outro arquivo da pasta pode ter criado estas
+      -- MESMAS tabelas antes, com menos colunas — aí o \`create table if not exists\` vira
+      -- no-op e a tabela fica capenga. Quem chega primeiro vence, e a ordem dos arquivos não
+      -- é contrato. Toda coluna usada aqui precisa aparecer NOS DOIS lugares (o bloco do
+      -- \`teacher_messages\` estava pela metade e quebrava conforme a ordem do runner).
       create table if not exists members.teacher_threads (
         id uuid primary key,
         user_id uuid not null,
@@ -97,8 +76,11 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         add column if not exists teacher_last_read_at timestamptz,
         add column if not exists created_at timestamptz not null default now();
       alter table members.teacher_messages
+        add column if not exists author_role members.teacher_message_role not null default 'teacher',
         add column if not exists author_id uuid,
-        add column if not exists author_name text;
+        add column if not exists author_name text,
+        add column if not exists body varchar(8000) not null default '',
+        add column if not exists created_at timestamptz not null default now();
     `)
   })
 

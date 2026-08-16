@@ -76,6 +76,59 @@ Duas consequências para quem opera:
 A régua da carreira **não muda nada disso**: nível, travas e o que o Estúdio libera continuam sendo
 calculados pelo members exatamente como antes. O horizonte é só o que a tela DESENHA.
 
+### O contador do medalhão conta a trilha inteira (15/08/2026)
+
+Um curso publicado num degrau que a criança **já passou** era invisível: ela subiu de posto, o
+medalhão ficou com ✓, e a aventura nova morria sem público. O contador agora existe para avisar.
+
+**O que mudou, só na página de cursos:**
+
+- O "N de M aventuras prontas" conta **todos os cursos publicados daquele degrau, bônus incluído** —
+  antes só as posições obrigatórias, e era isso que escondia o bônus.
+- **"Pronta" tem régua diferente para cada parte**, e é assim de propósito: posição
+  **obrigatória** só conta como pronta quando foi **concluída e publicada no Mural** (a mesma
+  exigência de subir de posto), e curso **bônus** conta com a **conclusão** — ele não vale para
+  nível nenhum, então cobrar Mural dele seria inventar exigência. Assim o contador nunca
+  contradiz a frase "faltam N para virar X". É a mesma régua do selo do card (logo abaixo).
+- O contador aparece **também nos postos já vencidos**, e o **✓ some** enquanto faltar curso ali.
+  Publicar uma aventura nova num degrau fechado tira o ✓ daquele medalhão até a criança fazer.
+
+**O que operar sabendo disso:** ao publicar um curso num degrau antigo, espere o medalhão daquelas
+crianças voltar a "8 de 9" e perder o ✓. É o comportamento pretendido — é o convite para voltarem.
+Curso publicado que a criança ainda não pode abrir **conta no total e não no feito**, então ele
+aparece como pendência mesmo antes de ela ter acesso.
+
+⚠️⚠️ **A régua da carreira continua intacta.** Subir de posto ainda exige as posições OBRIGATÓRIAS
+com os dois marcos (concluir + publicar no Mural), e o **bônus segue fora da contagem de nível**.
+São duas contas separadas: uma decide o POSTO (members/core), a outra o que o medalhão MOSTRA.
+
+⚠️ **O `/perfil` não mudou:** a escada de lá é a carreira (os postos conquistados), não o conteúdo
+dos degraus — o ✓ dela continua seguindo só o nível.
+
+⚠️ **O lado duro da régua, e é intencional:** quem concluiu os 8 cursos e não publicou nenhum lê
+**"0 de 8 aventuras prontas"**. É a carreira sendo fiel — sem o Mural aqueles cursos realmente não
+contam para subir —, e agora isso aparece também nos degraus já vencidos.
+
+### O selo no card diz qual aventura falta (15/08/2026)
+
+O contador sozinho abria uma pergunta que a tela não sabia responder: a criança lia "8 de 9", entrava
+na trilha e via nove cards idênticos, sem saber **qual** faltava nem **por quê**. O selo é a outra
+metade da mesma régua, agora visível curso a curso — e é ele que torna legível o lado duro acima:
+quem concluiu 8 sem publicar lê "0 de 8" e, ao entrar, encontra oito cards dizendo o motivo.
+
+| card do curso | o que aparece |
+|---|---|
+| nada feito | nenhum selo |
+| de POSIÇÃO, concluído mas não publicado | **"Publique no Mural"** (selo destacado) |
+| pronto (posição concluída **e** publicada, ou bônus concluído) | **"Pronta!"** |
+
+- ⚠️ **Curso bônus nunca pede o Mural.** Publicar não é exigência dele em régua nenhuma; cobrar seria
+  inventar uma dívida que não existe.
+- O card da **home** mostra só o pendente: lá "pronta" já é dito pela barra em 100% e pelo botão
+  "Revisar curso".
+- O selo **não é um atalho** para publicar (v1) — o card inteiro já é o link para o curso.
+- Selo e contador leem exatamente o mesmo dado, então não têm como se contradizer.
+
 ## A paleta do Estúdio vem do CURRÍCULO (08/2026)
 
 Até aqui o conjunto de blocos do **Estúdio livre** era fixo por NÍVEL da carreira. Agora **cada

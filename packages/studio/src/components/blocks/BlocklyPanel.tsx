@@ -335,7 +335,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const onWorkspaceReadyRef = useRef(onWorkspaceReady)
   onWorkspaceReadyRef.current = onWorkspaceReady
   const [workspace, setWorkspace] = useState<Blockly.WorkspaceSvg | null>(null)
-  const lastSerializedRef = useRef<string>('')
+  // São dois invariantes diferentes. Um snapshot pode já estar aplicado/salvo
+  // no workspace sem que a IR correspondente tenha sido reconstruída ainda.
+  // Misturar os dois estados fazia um BLOCK_MOVE só-de-layout, entregue antes
+  // do BLOCK_MOVE de conexão do mesmo gesto, envenenar o dedupe do compilador.
+  const lastAppliedBlocksStateRef = useRef<string>('')
+  const lastRegeneratedBlocksStateRef = useRef<string>('')
   const isApplyingStateRef = useRef(false)
   const isSelectingFromEditorRef = useRef(false)
   const shouldRegenerateAfterDragRef = useRef(false)
@@ -439,8 +444,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       }
       const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace))
       const serialized = JSON.stringify(state)
-      if (!options.force && serialized === lastSerializedRef.current) return
-      lastSerializedRef.current = serialized
+      if (!options.force && serialized === lastRegeneratedBlocksStateRef.current) return
+      lastAppliedBlocksStateRef.current = serialized
+      lastRegeneratedBlocksStateRef.current = serialized
 
       const built = buildIRFromWorkspace(workspace)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
@@ -533,9 +539,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const persistWorkspaceLayout = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
       // ⚠️⚠️ Uma regeneração JÁ agendada é superconjunto disto: ela grava
-      // blocksState, IR, arquivos e diagnósticos. Persistir o layout aqui
-      // carimbaria `lastSerializedRef` com o estado ATUAL, e a regeneração
-      // pendente desistiria no dedupe da linha ~438 por "nada mudou".
+      // blocksState, IR, arquivos e diagnósticos. Persistir o layout aqui seria
+      // trabalho duplicado.
       //
       // Foi exatamente assim que colar blocos parou de reconstruir a IR quando
       // o movimento só-de-layout passou a pular a regeneração: o BLOCK_CREATE
@@ -547,8 +552,12 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       if (regenerationTimerRef.current || pendingRegenerationWorkspaceRef.current) return
       const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(targetWorkspace))
       const serialized = JSON.stringify(state)
-      if (serialized === lastSerializedRef.current) return
-      lastSerializedRef.current = serialized
+      if (serialized === lastAppliedBlocksStateRef.current) return
+      // Isto evita que o efeito de restore recarregue o workspace, mas NÃO marca
+      // o snapshot como compilado. Num arrasto que conecta, o Blockly entrega
+      // antes um movimento de coordenadas e depois o movimento de conexão; a IR
+      // ainda precisa processar o estado final quando o segundo evento chegar.
+      lastAppliedBlocksStateRef.current = serialized
       applyProjectState({ blocksState: state })
     },
     [applyProjectState],
@@ -637,7 +646,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
             Blockly.Events.enable()
           }
         }
-        lastSerializedRef.current = JSON.stringify(
+        lastAppliedBlocksStateRef.current = JSON.stringify(
           markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
         )
         // Regenera o IR/sourcemap a partir dos blocos recém-carregados também
@@ -857,7 +866,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
-      lastSerializedRef.current = JSON.stringify(
+      lastAppliedBlocksStateRef.current = JSON.stringify(
         markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
       )
       scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
@@ -872,16 +881,16 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // efeito acima, então o load headless da migração enxerga os blocos delas.
     const stateToLoad = normalizeBlocksStateToFrames(blocksState)
     const serialized = JSON.stringify(stateToLoad)
-    if (serialized === lastSerializedRef.current) return
+    if (serialized === lastAppliedBlocksStateRef.current) return
     setIsLoadingWorkspace(true)
 
     // Adia o `workspaces.load` (render síncrono de TODOS os blocos) um frame,
     // para o overlay de "carregando" pintar primeiro e a aba não congelar antes
     // do feedback.
     //
-    // ⚠️ Os efeitos colaterais (snapshot `lastSerializedRef`, guard
+    // ⚠️ Os efeitos colaterais (snapshot `lastAppliedBlocksStateRef`, guard
     // `isApplyingStateRef`, captura de posições) ficam DENTRO do rAF, NÃO antes.
-    // Antes, `lastSerializedRef = serialized` era setado ANTES do load; se o efeito
+    // Antes, o snapshot era setado ANTES do load; se o efeito
     // re-rodasse e CANCELASSE este rAF (cleanup) antes do frame, o workspace nunca
     // era carregado, mas o snapshot já "mentia" que aquele estado estava aplicado —
     // então a re-execução caía no early-return (serialized === snapshot) e os blocos
@@ -894,7 +903,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Guarda onde estão as pilhas antes de recarregar; restauradas no FINISHED_LOADING.
       preservedPositionsRef.current = captureStackPositions(workspace)
       isApplyingStateRef.current = true
-      lastSerializedRef.current = serialized
+      lastAppliedBlocksStateRef.current = serialized
       try {
         // Cerca de carga: o `load` emite N BLOCK_CREATE antes do FINISHED_LOADING
         // final. A cerca faz os blocos-mutador ignorarem os eventos
@@ -921,7 +930,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
               Blockly.Events.enable()
             }
           }
-          lastSerializedRef.current = JSON.stringify(
+          lastAppliedBlocksStateRef.current = JSON.stringify(
             markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
           )
           // Idem ao listener de FINISHED_LOADING: regenerar também em modo

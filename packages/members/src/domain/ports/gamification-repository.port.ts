@@ -178,6 +178,22 @@ export interface GamificationRanking {
   totalStudents: number
 }
 
+/**
+ * Os dois marcos de curso do aluno, POR CURSO. É o mesmo par que a carreira
+ * cruza (`course_complete` ∩ `course_showcased`) — só que aqui vem separado,
+ * porque a vitrine precisa distinguir "concluiu" de "concluiu e publicou".
+ */
+export interface CourseMilestones {
+  completed: boolean
+  showcased: boolean
+}
+
+/** Estado de carreira derivado de uma única leitura consistente do ledger. */
+export interface CareerCourseState {
+  qualified: QualifyingByTier
+  milestones: Map<string, CourseMilestones>
+}
+
 export interface GamificationRepository {
   /**
    * Concede XP/streak/badges numa transação serializada POR ALUNO (advisory
@@ -220,6 +236,30 @@ export interface GamificationRepository {
    * conta; degrau ausente do resultado = 0.
    */
   listQualifyingCareerSlots(userId: string, audience: CourseAudience): Promise<QualifyingByTier>
+  /**
+   * Os marcos de cada curso do aluno na vitrine, SEM cruzar: `Map<courseId,
+   * {completed, showcased}>`. É a matéria-prima do selo do card ("já é sua" ×
+   * "falta publicar no Mural") e do contador da trilha.
+   *
+   * ⚠️ Vem do LEDGER, e não do `progress`: o progresso é recalculado ao vivo e
+   * REGRIDE quando a autora publica uma aula nova, enquanto o marco é congelado.
+   * Selo e contador precisam da MESMA fonte que a carreira usa, senão o card diz
+   * "pronta" para um curso que o contador não conta.
+   *
+   * Curso sem marco algum não aparece no mapa (o chamador trata como nenhum dos
+   * dois). Marco de curso apagado/despublicado também vem — inofensivo, o
+   * chamador consulta pelos cursos que já tem em mãos.
+   */
+  listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>>
+  /**
+   * Qualificação e marcos calculados sobre o MESMO snapshot do ledger. As telas
+   * que precisam dos dois usam este contrato para não misturar eventos gravados
+   * entre duas consultas independentes.
+   */
+  listCareerCourseState(userId: string, audience: CourseAudience): Promise<CareerCourseState>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
    * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult

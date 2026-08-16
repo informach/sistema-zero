@@ -92,8 +92,10 @@ import {
   type AwardResult,
   type BuyStreakFreezeInput,
   type BuyStreakFreezeResult,
+  type CareerCourseState,
   type ClaimMissionInput,
   type ClaimMissionResult,
+  type CourseMilestones,
   type GamificationProfileRecord,
   type GamificationRanking,
   type GamificationRepository,
@@ -1882,6 +1884,9 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   readonly privilegedUsers = new Set<string>()
   /** Simula indisponibilidade (testa o fail-open dos services). */
   failAlways = false
+  careerCourseStateReads = 0
+  qualifyingCareerSlotReads = 0
+  courseMilestoneReads = 0
 
   /** Fontes p/ a coorte do ranking (mirror do join entitlements×courses). */
   constructor(
@@ -2290,30 +2295,65 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     userId: string,
     audience: CourseAudience,
   ): Promise<QualifyingByTier> {
-    const mine = this.events.filter((e) => e.userId === userId && e.audience === audience)
-    const completed = mine.filter((e) => e.sourceType === 'course_complete')
-    const showcasedByCourse = new Map(
-      mine.filter((e) => e.sourceType === 'course_showcased').map((e) => [e.sourceId, e]),
+    this.qualifyingCareerSlotReads += 1
+    return this.computeCareerCourseState(userId, audience).qualified
+  }
+
+  /** Mirror do SQL: os dois marcos SEM cruzar, por curso (sem tocar em `courses`). */
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    this.courseMilestoneReads += 1
+    return this.computeCareerCourseState(userId, audience).milestones
+  }
+
+  async listCareerCourseState(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<CareerCourseState> {
+    this.careerCourseStateReads += 1
+    return this.computeCareerCourseState(userId, audience)
+  }
+
+  private computeCareerCourseState(userId: string, audience: CourseAudience): CareerCourseState {
+    const mine = this.events.filter(
+      (event) => event.userId === userId && event.audience === audience,
     )
-    const result = emptyQualifyingByTier()
-    for (const ce of completed) {
-      const sc = showcasedByCourse.get(ce.sourceId)
-      if (!sc) continue
-      const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      // Mirror do COALESCE(showcased.source_*, complete.source_*, courses.*):
-      // o snapshot congelado vence; o curso ao vivo é só fallback legado. O track
-      // legado sem curso cai em '2d' (literal final do coalesce do SQL).
-      const level = sc.sourceLevel ?? ce.sourceLevel ?? course?.level
-      const track = sc.sourceTrack ?? ce.sourceTrack ?? course?.track ?? '2d'
-      const careerSlot = sc.sourceCareerSlot ?? ce.sourceCareerSlot ?? course?.careerSlot
-      // `lenda` é fora da carreira → nunca conta (também teria careerSlot null).
+    const completedByCourse = new Map(
+      mine
+        .filter((event) => event.sourceType === 'course_complete')
+        .map((event) => [event.sourceId, event]),
+    )
+    const showcasedByCourse = new Map(
+      mine
+        .filter((event) => event.sourceType === 'course_showcased')
+        .map((event) => [event.sourceId, event]),
+    )
+    const qualified = emptyQualifyingByTier()
+    const byCourse = new Map<string, CourseMilestones>()
+    for (const event of mine) {
+      if (event.sourceType !== 'course_complete' && event.sourceType !== 'course_showcased')
+        continue
+      const current = byCourse.get(event.sourceId) ?? { completed: false, showcased: false }
+      if (event.sourceType === 'course_complete') current.completed = true
+      else current.showcased = true
+      byCourse.set(event.sourceId, current)
+    }
+    for (const [courseId, complete] of completedByCourse) {
+      const showcased = showcasedByCourse.get(courseId)
+      if (!showcased) continue
+      const course = this.sources?.courses.courses.find((candidate) => candidate.id === courseId)
+      const level = showcased.sourceLevel ?? complete.sourceLevel ?? course?.level
+      const track = showcased.sourceTrack ?? complete.sourceTrack ?? course?.track ?? '2d'
+      const careerSlot =
+        showcased.sourceCareerSlot ?? complete.sourceCareerSlot ?? course?.careerSlot
       const tier = level && level !== 'lenda' ? courseTier(level, track) : null
-      if (tier && careerSlot != null) {
-        const slots = result[tier]
-        if (!slots.includes(careerSlot)) slots.push(careerSlot)
+      if (tier && careerSlot != null && !qualified[tier].includes(careerSlot)) {
+        qualified[tier].push(careerSlot)
       }
     }
-    return result
+    return { qualified, milestones: byCourse }
   }
 
   /**

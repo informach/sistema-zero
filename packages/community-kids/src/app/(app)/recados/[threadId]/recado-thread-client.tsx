@@ -172,13 +172,18 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
       </div>
 
       <div className="mt-3 flex items-end gap-2">
+        <label htmlFor="teacher-reply" className="sr-only">
+          Resposta para o professor
+        </label>
         <textarea
+          id="teacher-reply"
+          name="reply"
           value={reply}
           onChange={(e) => setReply(e.target.value)}
           placeholder="Escreva uma resposta…"
           maxLength={1000}
           rows={2}
-          className="flex-1 resize-none rounded-2xl border-2 border-border bg-card p-3 text-sm outline-none focus:border-primary"
+          className="flex-1 resize-none rounded-2xl border-2 border-border bg-card p-3 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
         />
         <button
           type="button"

@@ -1,4 +1,5 @@
 import { type CourseTierSlug, courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
+import { courseIsDone } from '@/lib/course-badge'
 import { LEVEL_ORDER } from '@/lib/level-info'
 import type { CatalogCourseView, StudentLevelSlug, StudentLevelView } from '@/lib/types'
 
@@ -110,6 +111,85 @@ export function coursesForLevel(
       (typeof course.careerSlot === 'number' && slots.has(course.careerSlot)) ||
       (course.careerSlot == null && study.includeBonus),
   )
+}
+
+/** Quantos cursos da trilha a criança já concluiu, de quantos existem. */
+export interface TierCompletion {
+  done: number
+  total: number
+}
+
+/**
+ * O contador "N de M aventuras prontas" do medalhão.
+ *
+ * ⭐ Conta TODOS os cursos que a trilha MOSTRA — bônus incluído —, e não só as posições
+ * obrigatórias. É o que faz um curso novo publicado num degrau JÁ CONCLUÍDO aparecer: o
+ * medalhão passa de "8 de 8" para "8 de 9" e a criança volta lá. Com a conta antiga (só
+ * `careerSlot`), a aventura nova era invisível e morria sem público.
+ *
+ * ⭐⭐ **RÉGUA MISTA** (`courseIsDone`): posição obrigatória só conta pronta concluída **e**
+ * publicada no Mural; bônus conta com a conclusão. É a régua de cada um — subir de posto
+ * exige os dois marcos nas obrigatórias, e o bônus não conta para nível nenhum, então
+ * cobrar Mural dele seria inventar exigência. Com uma régua só, o contador dizia "8 de 8
+ * prontas" enquanto a frase do posto pedia publicar para subir.
+ *
+ * ⭐ **Os marcos vêm em cada curso** (`milestones`, do ledger do members), então a conta é
+ * POR CURSO. A versão anterior derivava as obrigatórias de `level.remaining[tier]`, o que
+ * obrigava a tratar degrau futuro à parte, a limitar o resultado ao total e a depender de
+ * cada posto ser dono de um degrau inteiro. Nada disso é mais necessário: o selo do card e
+ * este contador leem o MESMO campo, logo não têm como divergir.
+ *
+ * ⚠️ Isto NÃO é a régua da carreira, é a leitura dela: quem decide o posto é o members.
+ * Curso re-etiquetado depois de qualificado conta no degrau em que está AGORA (é o que a
+ * criança vê na trilha), enquanto a carreira segue o retrato congelado do marco.
+ *
+ * ⚠️ O denominador vem do CATÁLOGO (tudo que está publicado). Curso publicado que a
+ * criança ainda não pode abrir conta no total e não no done — de propósito: é justamente
+ * o sinal de "tem coisa nova aqui".
+ */
+export function tierCompletion(
+  levelSlug: StudentLevelSlug | string,
+  courses: readonly CatalogCourseView[],
+): TierCompletion {
+  const inTrilha = coursesForLevel(levelSlug, courses)
+  return { done: inTrilha.filter(courseIsDone).length, total: inTrilha.length }
+}
+
+/**
+ * O contador de TODOS os postos de uma vez, para o servidor calcular e mandar ao cliente
+ * só 8 pares de números.
+ *
+ * ⚠️ O mapa é um componente CLIENTE: mandar a view inteira de 49 cursos (título, capa, URL
+ * de vendas) no payload RSC só para contar é o que o recorte de campos da página evita.
+ * A conta é aqui; o cliente recebe o resultado.
+ */
+export function tierCompletionByLevel(
+  courses: readonly CatalogCourseView[],
+): Record<StudentLevelSlug, TierCompletion> {
+  const byLevel = {} as Record<StudentLevelSlug, TierCompletion>
+  for (const slug of LEVEL_ORDER) {
+    byLevel[slug] = tierCompletion(slug, courses)
+  }
+  return byLevel
+}
+
+/**
+ * O medalhão mostra o ✓ de concluído?
+ *
+ * Só quando o posto ficou para trás **e** não sobrou curso por fazer naquela trilha. Um
+ * curso novo publicado num degrau já vencido TIRA o ✓ até a criança fazer — decisão da
+ * usuária (15/08): o sinal precisa ser impossível de ignorar.
+ *
+ * ⚠️ Sem catálogo confiável (`completion` ausente) o ✓ volta a ser posicional, como
+ * sempre foi: uma falha de rede não pode apagar a conquista de todo mundo.
+ */
+export function nodeShowsCheck(
+  state: CareerNodeState,
+  completion: TierCompletion | null | undefined,
+): boolean {
+  if (state !== 'done') return false
+  if (!completion) return true
+  return completion.done >= completion.total
 }
 
 /**

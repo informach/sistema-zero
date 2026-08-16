@@ -402,7 +402,11 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                   />
-                  <RichEditor value={newBody} onChange={setNewBody} />
+                  <RichEditor
+                    value={newBody}
+                    onChange={setNewBody}
+                    ariaLabel="Mensagem da conversa"
+                  />
                   <AttachmentUploader
                     value={newAttachments}
                     onChange={setNewAttachments}
@@ -686,7 +690,12 @@ function ThreadDetail({
         </Card>
       ) : (
         <Card className="space-y-2 p-3">
-          <RichEditor value={commentBody} onChange={setCommentBody} compact />
+          <RichEditor
+            value={commentBody}
+            onChange={setCommentBody}
+            ariaLabel="Comentário"
+            compact
+          />
           <AttachmentUploader
             value={commentAttachments}
             onChange={setCommentAttachments}
