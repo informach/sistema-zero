@@ -606,7 +606,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   (`{action:'revoke'|'expire'|'extend', expiresAt?}`).
   **Ficha 360 (06/2026):** `GET /members/admin/members/:userId/gamification?audience=adult|kids`
   (→ `MemberGamificationView`), `…/activity?limit&offset` (→ `MemberActivityPage` = `{items,hasMore}`,
-  mescla acesso/conclusão/quiz/Estúdio), `…/certificates` (→ `{certificates}`), `…/ratings` (→ `{ratings}`);
+  mescla acesso/conclusão/quiz/entregas e distingue `studio_submission` de `pinta_submission`),
+  `…/certificates` (→ `{certificates}`), `…/ratings` (→ `{ratings}`);
   `POST /members/admin/certificates/:id/revoke` (revogar certificado). Todas keyadas no `:userId` do
   APRENDIZ (a conta OU um profileId) — a UI chama 1× por aprendiz (audiência `adult` p/ a conta,
   `kids` p/ os perfis). Pagamentos do aluno na ficha reusam `/api/payments/transactions?q=<email>`.
@@ -808,6 +809,8 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   o desenho que ela acabou de fazer. O **viewer da entrega** (`studio-submission-viewer.tsx`)
   escolhe o editor pelo formato do payload (`isPintaAssetLike` de `@sistemazero/pinta/assets`) e
   baixa `.pinta.json` em vez de `.szproject.json`.
+  A linha do tempo da ficha 360 também usa o kind autoritativo e mostra **"Entregou um desenho
+  no Pinta"**, em vez de rotular toda linha de `studio_submissions` como Estúdio.
   ⚠️⚠️ **Desenho contínuo (cadeia):** o members **RECUSA com 409 `PINTA_CHAIN_TYPE_MISMATCH`**
   quando dois blocos da mesma cadeia têm TIPOS diferentes, e a mensagem (que o `run()` já mostra
   no toast) nomeia a aula culpada e o tipo dela. Diferente do Estúdio, aqui o tipo é load-bearing:

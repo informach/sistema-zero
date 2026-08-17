@@ -208,6 +208,33 @@ describe('bloco Pinta — gate da conclusão', () => {
     expect(res.status).toBe(200)
   })
 
+  test('editar o bloco invalida a entrega antiga e fecha o gate novamente', async () => {
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+
+    expect((await enviar(app, lessonId, blockId, { asset: DESENHO_DA_CRIANCA })).status).toBe(200)
+
+    const edited = await app.handle(
+      new Request(`http://localhost/members/admin/blocks/${blockId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          content: {
+            kind: 'pinta',
+            initialAsset: INITIAL_ASSET,
+            allowTools: ['pencil'],
+          },
+        }),
+      }),
+    )
+    expect(edited.status).toBe(200)
+
+    expect((await readJson(await carregar(app, lessonId, blockId))).asset).toBeNull()
+    const blocked = await concluir(app, lessonId)
+    expect(blocked.status).toBe(409)
+    expect((await readJson(blocked)).error.code).toBe('PINTA_GATE_NOT_SUBMITTED')
+  })
+
   test('o gate do Pinta e o do Estúdio coexistem na MESMA aula', async () => {
     // Uma aula pode pedir as duas coisas; enviar uma não pode destravar a outra.
     const { app, courses, lessonId } = cenario()

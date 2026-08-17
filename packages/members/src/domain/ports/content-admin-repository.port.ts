@@ -168,6 +168,16 @@ export interface ContentAdminRepository {
     chain: string,
     opts?: { excludeBlockId?: string },
   ): Promise<{ blockId: string; lessonTitle: string; assetKind: string | null }[]>
+  /**
+   * Serializa a validação e a escrita de uma cadeia do Pinta. O callback recebe um
+   * repositório preso à MESMA transação do lock; consultar pelo repositório externo
+   * reabriria a janela de check-then-write.
+   */
+  withPintaChainLock<T>(
+    courseId: string,
+    chain: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T>
 
   // ── Anexos ──
   createAttachment(lessonId: string, fields: AttachmentFields): Promise<LessonAttachment>

@@ -494,9 +494,6 @@ export class BlockAdminService {
     assertBlockCoherent(canonicalContent)
     const lesson = await this.content.findLessonById(lessonId)
     if (!lesson) throw new LessonNotFoundError()
-    if (canonicalContent.kind === 'pinta') {
-      await assertPintaChainTypeMatches(this.content, lesson.courseId, canonicalContent)
-    }
     if (canonicalContent.kind === 'certificate') {
       await assertSingleCertificateBlock(this.content, lesson.courseId)
       // Conteúdo livre convive com o certificado; bloco travante (quiz-com-nota/estúdio) não.
@@ -509,6 +506,17 @@ export class BlockAdminService {
     ) {
       throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
     }
+    if (canonicalContent.kind === 'pinta') {
+      const chain = canonicalContent.chain?.trim()
+      if (chain) {
+        return this.content.withPintaChainLock(lesson.courseId, chain, async (repository) => {
+          await assertPintaChainTypeMatches(repository, lesson.courseId, canonicalContent)
+          return toBlockView(
+            await repository.createBlock(lessonId, canonicalContent.kind, canonicalContent),
+          )
+        })
+      }
+    }
     return toBlockView(
       await this.content.createBlock(lessonId, canonicalContent.kind, canonicalContent),
     )
@@ -517,11 +525,10 @@ export class BlockAdminService {
   async update(id: string, content: LessonBlockContent): Promise<BlockView> {
     const canonicalContent = canonicalizeBlockContent(content)
     assertBlockCoherent(canonicalContent)
+    let pintaCourseId: string | null = null
     if (canonicalContent.kind === 'pinta') {
-      const courseId = await this.content.findBlockCourseId(id)
-      if (!courseId) throw new ContentNotFoundError('Bloco não encontrado')
-      // Exclui a SI MESMO: reeditar o bloco não pode conflitar com a versão anterior dele.
-      await assertPintaChainTypeMatches(this.content, courseId, canonicalContent, id)
+      pintaCourseId = await this.content.findBlockCourseId(id)
+      if (!pintaCourseId) throw new ContentNotFoundError('Bloco não encontrado')
     }
     if (canonicalContent.kind === 'certificate') {
       const courseId = await this.content.findBlockCourseId(id)
@@ -538,6 +545,17 @@ export class BlockAdminService {
       if (lessonId && (await this.content.lessonHasCertificateBlock(lessonId))) {
         throw new InvalidContentCommandError(CERTIFICATE_LESSON_NO_GATES)
       }
+    }
+    const pintaChain =
+      canonicalContent.kind === 'pinta' ? canonicalContent.chain?.trim() : undefined
+    if (canonicalContent.kind === 'pinta' && pintaCourseId && pintaChain) {
+      return this.content.withPintaChainLock(pintaCourseId, pintaChain, async (repository) => {
+        // Exclui a SI MESMO: reeditar o bloco não pode conflitar com a versão anterior dele.
+        await assertPintaChainTypeMatches(repository, pintaCourseId, canonicalContent, id)
+        const updated = await repository.updateBlock(id, canonicalContent.kind, canonicalContent)
+        if (!updated) throw new ContentNotFoundError('Bloco não encontrado')
+        return toBlockView(updated)
+      })
     }
     const updated = await this.content.updateBlock(id, canonicalContent.kind, canonicalContent)
     if (!updated) throw new ContentNotFoundError('Bloco não encontrado')

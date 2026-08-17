@@ -1217,6 +1217,9 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   `ChildStatsCard`) ganhou o bloco **"Esta semana"** (`ChildWeekBlock`: destaques em uma linha
   a partir de `child.week` + jogos publicados no Mural em `child.games`, cada um com botão
   "Cartão" reusando o `GameCardDialog` QR; `games` nulo = hub fora, só os números) e o
+  total de `studio_submissions` aparece como **"entregas"** (`submissionsCount`/
+  `submissionsSubmitted`, com fallback nos aliases antigos), porque agora inclui desenhos do
+  Pinta além de projetos do Estúdio. O
   `ChildrenDashboard` ganhou o **`WeeklyReportToggle`** (checkbox "Receber o resumo da semana
   por e-mail" → `GET|PUT /api/parents/report-prefs`, shim NOVO gateado por
   `requireParentGateAccountOnly` nos DOIS métodos — mesma régua do children-stats). O e-mail em

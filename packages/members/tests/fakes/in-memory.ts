@@ -179,8 +179,10 @@ function shouldInvalidateBlockProgress(
   const touchesGate =
     previous.kind === 'quiz' ||
     previous.kind === 'studio' ||
+    previous.kind === 'pinta' ||
     next.kind === 'quiz' ||
-    next.kind === 'studio'
+    next.kind === 'studio' ||
+    next.kind === 'pinta'
   return touchesGate && stableJson(previous) !== stableJson(next)
 }
 
@@ -385,7 +387,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   lessons: Lesson[] = []
   blocks: LessonBlock[] = []
   attachments: LessonAttachment[] = []
-  onEvaluativeBlockContentChanged?: (blockId: string) => void
+  onGatingBlockContentChanged?: (blockId: string) => void
+  private readonly pintaChainLocks = new Map<string, Promise<void>>()
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     return this.courses.find((c) => c.slug === slug) ?? null
@@ -792,7 +795,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     b.kind = kind
     b.content = content
     b.contentRevision = randomUUID().replaceAll('-', '')
-    if (invalidateProgress) this.onEvaluativeBlockContentChanged?.(id)
+    if (invalidateProgress) this.onGatingBlockContentChanged?.(id)
     return b
   }
 
@@ -870,6 +873,28 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         lessonTitle: lesson?.title ?? '',
         assetKind: pintaAssetKindOf(b.content as PintaBlock),
       }))
+  }
+
+  async withPintaChainLock<T>(
+    courseId: string,
+    chain: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    const key = `${courseId}:${chain}`
+    const previous = this.pintaChainLocks.get(key) ?? Promise.resolve()
+    let release = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const current = previous.then(() => gate)
+    this.pintaChainLocks.set(key, current)
+    await previous
+    try {
+      return await operation(this)
+    } finally {
+      release()
+      if (this.pintaChainLocks.get(key) === current) this.pintaChainLocks.delete(key)
+    }
   }
 
   async countCertificateBlocks(
@@ -1561,6 +1586,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       .slice(0, limit)
       .map((s) => ({
         blockId: s.blockId,
+        blockKind:
+          this.courses?.blocks.find((block) => block.id === s.blockId)?.kind === 'pinta'
+            ? ('pinta' as const)
+            : ('studio' as const),
         lessonId: s.lessonId,
         lessonTitle: null,
         courseTitle: this.courses?.courses.find((c) => c.id === s.courseId)?.title ?? null,

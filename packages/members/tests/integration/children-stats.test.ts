@@ -12,6 +12,7 @@ type ChildStats = {
   coursesInProgress: number
   coursesCompleted: number
   projectsCount: number
+  submissionsCount: number
   rankingPosition: number | null
 }
 
@@ -101,6 +102,7 @@ describe('GET /members/internal/children-stats', () => {
     expect(a?.streak.current).toBe(1)
     expect(typeof a?.badgesCount).toBe('number') // contagem reusa listBadges (testada à parte)
     expect(a?.projectsCount).toBe(2)
+    expect(a?.submissionsCount).toBe(2)
     expect(a?.coursesCompleted).toBe(0) // sem conclusões semeadas
     expect(a?.coursesInProgress).toBe(0)
     expect(a?.rankingPosition).toBe(1) // mais XP que B
@@ -108,6 +110,7 @@ describe('GET /members/internal/children-stats', () => {
     const b = body.find((c) => c.profileId === profileB)
     expect(b?.xp).toBe(10)
     expect(b?.projectsCount).toBe(0)
+    expect(b?.submissionsCount).toBe(0)
     expect(b?.rankingPosition).toBe(2)
   })
 
@@ -187,7 +190,7 @@ describe('GET /members/internal/children-stats', () => {
     expect(body[0]?.streak.best).toBe(9) // best NUNCA regride
   })
 
-  test('projectsCount é só da audiência (entrega em curso adulto não conta no kids)', async () => {
+  test('submissionsCount é só da audiência (entrega em curso adulto não conta no kids)', async () => {
     const ctx = buildApp({ internalToken: TOKEN })
     const account = randomUUID()
     const profile = randomUUID()
@@ -225,5 +228,6 @@ describe('GET /members/internal/children-stats', () => {
     const res = await ctx.app.handle(statsRequest(account, [profile]))
     const body = ((await res.json()) as { children: ChildStats[] }).children
     expect(body[0]?.projectsCount).toBe(1) // só a entrega kids
+    expect(body[0]?.submissionsCount).toBe(1)
   })
 })

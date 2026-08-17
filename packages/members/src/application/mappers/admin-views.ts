@@ -105,10 +105,11 @@ export type MemberActivityKind =
   | 'lesson_completed'
   | 'quiz_attempt'
   | 'studio_submission'
+  | 'pinta_submission'
 
 /**
  * Um item da linha do tempo de atividade do aluno (ficha admin). União achatada das
- * 4 fontes (aula acessada/concluída, tentativa de quiz, entrega do Estúdio) ordenada
+ * 4 fontes (aula acessada/concluída, tentativa de quiz, entrega do Estúdio/Pinta) ordenada
  * por `at` desc. Campos específicos (`score`/`passed`/`message`) só vêm quando o
  * `kind` os tem.
  */

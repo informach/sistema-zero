@@ -128,9 +128,12 @@ export interface StudioSubmissionGlobalRow extends StudioSubmissionCourseRow {
   reviewed: boolean
 }
 
-/** Uma entrega recente do Estúdio (ficha admin), com a aula/curso resolvidos. */
+export type SubmissionBlockKind = 'studio' | 'pinta'
+
+/** Uma entrega recente (Estúdio ou Pinta) para a ficha admin, com aula/curso resolvidos. */
 export interface RecentStudioSubmission {
   blockId: string
+  blockKind: SubmissionBlockKind
   lessonId: string
   lessonTitle: string | null
   courseTitle: string | null
@@ -186,8 +189,8 @@ export interface StudioSubmissionRepository {
     now: Date
   }): Promise<boolean>
   /**
-   * Quantos projetos o aluno ENTREGOU NA AUDIÊNCIA (linhas de `studio_submissions`
-   * do usuário cujo curso é da vitrine pedida) — resumo do progresso na área dos pais
+   * Quantas atividades o aluno ENTREGOU NA AUDIÊNCIA (Estúdio ou Pinta; linhas de
+   * `studio_submissions` do usuário cujo curso é da vitrine pedida) — resumo dos pais
    * (kids). Escopado por audiência p/ paridade com xp/badges/cursos do dashboard.
    */
   countByUserAndAudience(userId: string, audience: CourseAudience): Promise<number>
@@ -204,8 +207,8 @@ export interface StudioSubmissionRepository {
    */
   listAccountsSubmittedInPeriod(audience: CourseAudience, from: Date, to: Date): Promise<string[]>
   /**
-   * Entregas mais recentes do aluno (ficha admin — linha do tempo), com aula/curso
-   * resolvidos por join. Limitado a `limit` (mais recentes primeiro). Sem o projeto.
+   * Entregas mais recentes do aluno (ficha admin — linha do tempo), com tipo do bloco,
+   * aula e curso resolvidos por join. Limitado a `limit`. Sem o payload da entrega.
    */
   listRecentByUser(userId: string, limit: number): Promise<RecentStudioSubmission[]>
 }

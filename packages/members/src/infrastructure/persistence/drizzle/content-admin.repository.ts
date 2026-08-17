@@ -181,13 +181,18 @@ function shouldInvalidateBlockProgress(
   const touchesGate =
     previous.kind === 'quiz' ||
     previous.kind === 'studio' ||
+    previous.kind === 'pinta' ||
     next.kind === 'quiz' ||
-    next.kind === 'studio'
+    next.kind === 'studio' ||
+    next.kind === 'pinta'
   return touchesGate && stableJson(previous) !== stableJson(next)
 }
 
+type DatabaseTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+type DatabaseExecutor = Database | DatabaseTransaction
+
 export class DrizzleContentAdminRepository implements ContentAdminRepository {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: DatabaseExecutor) {}
 
   // ── Cursos ──────────────────────────────────────────────────────────────
   async listCoursesAdmin(
@@ -684,6 +689,19 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       .innerJoin(modules, eq(lessons.moduleId, modules.id))
       .where(and(...clauses))
       .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+  }
+
+  async withPintaChainLock<T>(
+    courseId: string,
+    chain: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    return this.db.transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${`pinta-chain:${courseId}:${chain}`}, 0))`,
+      )
+      return operation(new DrizzleContentAdminRepository(tx))
+    })
   }
 
   async countCertificateBlocks(

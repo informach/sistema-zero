@@ -828,6 +828,7 @@ const ACTIVITY_LABELS: Record<MemberActivityItemView['kind'], string> = {
   lesson_completed: 'Concluiu a aula',
   quiz_attempt: 'Respondeu o quiz',
   studio_submission: 'Entregou no Estúdio',
+  pinta_submission: 'Entregou um desenho no Pinta',
 }
 
 function ActivityTab({ learnerId }: { learnerId: string }) {

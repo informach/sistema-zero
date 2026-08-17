@@ -1090,6 +1090,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           coursesInProgress: s?.coursesInProgress ?? 0,
           coursesCompleted: s?.coursesCompleted ?? 0,
           projectsCount: s?.projectsCount ?? 0,
+          submissionsCount: s?.submissionsCount ?? s?.projectsCount ?? 0,
           rankingPosition: s?.rankingPosition ?? null,
           // "Esta semana" + jogos do Mural (Fase 5) — opcionais (members antigo).
           week: s?.week,

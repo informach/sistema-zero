@@ -313,9 +313,12 @@ está instalado, então o campo deixou de influenciar a paleta.
   handoff informa o bloqueio. O Pinta exige asset vinculado e, quando configurado, envio ao
   Estúdio. O Estúdio usa somente blocos, manuais e extensões liberados pelo tier.
 - **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
-  members — `week` ("Esta semana" por filho) e `games` (jogos do Mural na semana; `null` = hub
+  members — `submissionsCount`, `week.submissionsSubmitted` (Estúdio + Pinta, apresentados como
+  **entregas**) e `games` (jogos do Mural na semana; `null` = hub
   fora, degrada) — mirrors `ChildWeekStatsView`/`ChildWeekGameView` em `lib/types.ts`
-  (`ChildStatsView.week?/games?`; `ChildDashboardView` estende). E o handler novo
+  (`ChildStatsView.week?/games?`; `ChildDashboardView` estende). Os aliases
+  `projectsCount`/`projectsSubmitted` permanecem como fallback de rollout para members antigo.
+  E o handler novo
   **`parentReportPrefs`** (GET/PUT, clients `getParentReportPrefs`/`setParentReportPrefs` →
   `/members/parents/report-prefs`) é o opt-out do e-mail semanal (`ParentReportPrefsView
   {disabled}`, Zod `ParentReportPrefsBody`) — o shim do KIDS gateia os DOIS métodos com

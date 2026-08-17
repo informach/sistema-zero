@@ -16,6 +16,8 @@ export interface ChildWeekStatsView {
   lessonsCompleted: number
   quizzesPassed: number
   badgesUnlocked: number
+  submissionsSubmitted: number
+  /** @deprecated Compatibilidade temporária com clientes anteriores ao bloco Pinta. */
   projectsSubmitted: number
 }
 
@@ -34,7 +36,9 @@ export interface ChildStatsView {
   badgesCount: number
   coursesInProgress: number
   coursesCompleted: number
-  /** Projetos do Estúdio que a criança ENTREGOU. */
+  /** Entregas de atividades (Estúdio ou Pinta) feitas pela criança. */
+  submissionsCount: number
+  /** @deprecated Compatibilidade temporária; use `submissionsCount`. */
   projectsCount: number
   /** Colocação no ranking da vitrine (null = conta sem matrícula na audiência). */
   rankingPosition: number | null
@@ -104,18 +108,18 @@ export class GetChildrenStatsService {
         : Promise.resolve(null),
     ])
 
-    // 4) Por filho (em paralelo): badges + progresso + projetos + contadores da semana.
+    // 4) Por filho (em paralelo): badges + progresso + entregas + contadores da semana.
     return Promise.all(
       authorized.map(async (rec) => {
         const profileId = rec.userId
         const [
           badges,
           completedByCourse,
-          projectsCount,
+          submissionsCount,
           weekLessons,
           weekQuizzes,
           weekBadges,
-          weekProjects,
+          weekSubmissions,
         ] = await Promise.all([
           this.gamification.listBadges(profileId, audience),
           courseIds.length
@@ -176,14 +180,18 @@ export class GetChildrenStatsService {
           badgesCount: badges.length,
           coursesInProgress,
           coursesCompleted,
-          projectsCount,
+          submissionsCount,
+          // Alias de rollout: o BFF antigo ainda lê este nome. O valor já tem semântica
+          // neutra de entrega e será removido quando todos os consumidores migrarem.
+          projectsCount: submissionsCount,
           rankingPosition: positions.get(profileId) ?? null,
           week: {
             xpEarned: weekXpByProfile.get(profileId) ?? 0,
             lessonsCompleted: weekLessons,
             quizzesPassed: weekQuizzes,
             badgesUnlocked: weekBadges,
-            projectsSubmitted: weekProjects,
+            submissionsSubmitted: weekSubmissions,
+            projectsSubmitted: weekSubmissions,
           },
           games: weekGames
             ? weekGames
