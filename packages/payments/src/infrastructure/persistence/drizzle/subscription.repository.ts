@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, isNotNull, sql } from 'drizzle-orm'
 import type { SubscriptionRepository } from '../../../domain/ports/subscription-repository.port'
 import {
   SubscriptionAggregate,
@@ -103,6 +103,21 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
       )
       .limit(1)
     return row ? SubscriptionAggregate.restore(rowToSnapshot(row)) : null
+  }
+
+  async findActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]> {
+    // Sem claim/lease de propósito (ver o port): o trabalho por item é idempotente.
+    // A mais antiga sem cobrança registrada primeiro — é a que corre mais risco de
+    // ter o acesso cortado. `nulls first` cobre a assinatura que nunca cobrou.
+    const rows = await this.db
+      .select()
+      .from(subscriptions)
+      .where(
+        and(eq(subscriptions.status, 'ACTIVE'), isNotNull(subscriptions.providerSubscriptionId)),
+      )
+      .orderBy(sql`${subscriptions.lastChargeAt} asc nulls first`)
+      .limit(limit)
+    return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
   }
 }
 

@@ -1,6 +1,6 @@
 import { eq, inArray, sql } from 'drizzle-orm'
 import type { Database } from './db'
-import { outbox, payments, webhookDeliveries } from './schema'
+import { outbox, payments, subscriptions, webhookDeliveries } from './schema'
 
 export interface MetricsSnapshot {
   /** Eventos de domínio ainda não publicados (lag do outbox). */
@@ -20,16 +20,27 @@ export interface MetricsSnapshot {
   webhookDeliveriesOldestPendingAgeSeconds: number | null
   /** PENDING com divergência de valor pago (revisão manual). Alerte em > 0. */
   amountMismatchPending: number
+  /**
+   * Assinaturas ATIVAS cujo último ciclo pago já passou do intervalo + carência.
+   * ⚠️ Alerte em > 0: ou o assinante parou de pagar e ninguém cancelou, ou (o caso
+   * do incidente de 08/2026) ele PAGOU e a notificação se perdeu — e aí o acesso
+   * cai sozinho no fim da carência.
+   */
+  subscriptionsOverdue: number
 }
 
 /** Contadores leves para monitoramento (lag/backlog). Exposto em GET /metrics. */
 export class DrizzleMetricsRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    /** Carência considerada antes de contar a assinatura como atrasada (dias). */
+    private readonly overdueGraceDays = 3,
+  ) {}
 
   async getMetrics(): Promise<MetricsSnapshot> {
     // 1 query por tabela com `count(*) FILTER` (era 5 counts sequenciais). Os
     // WHERE preservam o uso dos índices por status.
-    const [[outboxRow], [awaitingRow], [deliveriesRow]] = await Promise.all([
+    const [[outboxRow], [awaitingRow], [deliveriesRow], [subscriptionsRow]] = await Promise.all([
       this.db
         .select({
           pending: sql<number>`(count(*) filter (where ${outbox.status} = 'PENDING'))::int`,
@@ -57,6 +68,19 @@ export class DrizzleMetricsRepository {
         })
         .from(webhookDeliveries)
         .where(inArray(webhookDeliveries.status, ['PENDING', 'DEAD'])),
+      // Atrasada = ativa e sem ciclo pago dentro do intervalo + carência. A conta é
+      // no Postgres (`interval` por MÊS civil), não em JS: mês tem 28..31 dias e uma
+      // aproximação por 30 daria falso positivo/negativo perto do aniversário.
+      this.db
+        .select({
+          overdue: sql<number>`(count(*) filter (
+            where coalesce(${subscriptions.lastChargeAt}, ${subscriptions.createdAt})
+              + (${subscriptions.intervalMonths} * interval '1 month')
+              + (${this.overdueGraceDays} * interval '1 day') < now()
+          ))::int`,
+        })
+        .from(subscriptions)
+        .where(eq(subscriptions.status, 'ACTIVE')),
     ])
 
     return {
@@ -68,6 +92,7 @@ export class DrizzleMetricsRepository {
       outboxOldestPendingAgeSeconds: outboxRow?.oldestPendingAgeSeconds ?? null,
       webhookDeliveriesOldestPendingAgeSeconds: deliveriesRow?.oldestPendingAgeSeconds ?? null,
       amountMismatchPending: awaitingRow?.amountMismatch ?? 0,
+      subscriptionsOverdue: subscriptionsRow?.overdue ?? 0,
     }
   }
 }

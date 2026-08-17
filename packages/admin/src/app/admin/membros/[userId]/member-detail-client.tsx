@@ -26,6 +26,7 @@ import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
+import { entitlementBadge } from '@/lib/entitlement-status'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
 import type {
@@ -622,7 +623,9 @@ function OverviewTab({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={e.status} />
+                    {/* Não é `e.status` cru: a coluna diz 'active' mesmo com a
+                        validade vencida (ver lib/entitlement-status.ts). */}
+                    <StatusBadge status={entitlementBadge(e)} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {SOURCE_LABELS[e.sourceKind] ?? e.sourceKind}

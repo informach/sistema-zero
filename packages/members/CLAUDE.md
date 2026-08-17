@@ -362,8 +362,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    resumo dos pais chama o total compartilhado de **entregas**, nunca de projetos.
    `SubmitStudioProjectService` e
    `GetOwnStudioSubmissionService` ganharam o param `kind: SubmissionBlockKind` (`'studio'` |
-   `'pinta'`, default studio) — o que muda é o kind exigido, o teto e o nome no erro. ⚠️ Dívida
-   assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
+   `'pinta'`, default studio), definido uma única vez no domínio (`lesson-block.ts`) — o que muda
+   é o kind exigido, o teto e o nome no erro. Na ficha 360, `passed` é **`null` sem correção**
+   (`checkedAt=null`); `false` significa reprovação real, nunca apenas ausência de `passedAt`.
+   ⚠️ Dívida assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
    Rotas: `POST|GET /members/lessons/:lessonId/blocks/:blockId/pinta-submission` (o GET devolve
    `{asset}`, não `{project}` — quem consome é o bloco de desenho) e
    `GET …/pinta-carryover`. Projeção: **`pintaState`** em
@@ -391,10 +393,14 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    criança. O `update` exclui o PRÓPRIO id (senão trocar o tipo de um bloco sozinho na cadeia seria
    impossível: ele brigaria consigo mesmo) e snapshot ILEGÍVEL (`assetKind: null`) não conflita dos
    dois lados — recusar por causa de um bloco quebrado prenderia o autor justamente ao consertá-lo.
-   ⚠️ O SQL de `listPintaChainBlocks` espelha `pintaAssetKindOf` (`content->'initialAsset'->>'kind'`)
-   e faz `trim` nos dois lados do `chain`, igual ao carryover — mexeu num, mexa no outro. Aulas
-   RASCUNHO entram na checagem de propósito (a cadeia é da autoria). O lock fecha a corrida de
-   dois creates/updates concorrentes que antes podiam ler a cadeia vazia e gravar tipos distintos.
+   ⚠️ `canonicalizeBlockContent` grava `chain.trim()` (ou remove a chave vazia). Os SQL de
+   `listPintaChainBlocks` e carryover ainda aplicam `btrim` com a mesma tabela de whitespace do JS
+   para ler linhas legadas, e o primeiro também espelha `pintaAssetKindOf`
+   (`content->'initialAsset'->>'kind'`) — mexeu num, mexa no outro. Aulas RASCUNHO entram na
+   checagem de propósito (a cadeia é da autoria). O lock fecha a corrida de dois creates/updates
+   concorrentes que antes podiam ler a cadeia vazia e gravar tipos distintos. A ordem dos blocos
+   tem um segundo lock por aula; cada tentativa de INSERT roda em transação/savepoint próprio para
+   que uma colisão `23505` nunca deixe a transação externa em `25P02`.
    ⚠️ Nenhum teste de
    integração alcança esses dois SQL (o fake in-memory os reimplementa em JS, então lá não podem
    divergir) — quem os roda de verdade é **`tests/db/pinta-chain-sql.test.ts`**, mesma régua do
@@ -843,6 +849,30 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   **advisory xact-lock** (chave `30792292938117747` = 'members' ASCII int8 — o espaço
   é GLOBAL ao banco compartilhado, não colida com a do payments) → só 1 réplica
   limpa por ciclo. Fora do hot path.
+- ⭐ **A varredura de matrículas VENCIDAS pega carona nesse MESMO ciclo** (08/2026):
+  `EntitlementRepository.expireLapsed(now, EXPIRE_LAPSED_BATCH_SIZE)` marca `expired`
+  onde `status='active'` e `expires_at <= now`. Escolhi a carona porque este é o único
+  ciclo periódico do serviço que só faz trabalho de BANCO — o advisory lock (que morre
+  com a transação) serve sem risco de `idle in transaction`, e não nasce timer nem chave
+  de lock nova.
+  ⚠️⚠️ **Por que precisava existir:** o acesso é `status='active' E (vitalícia OU dentro
+  da validade)`, mas NADA marcava vencida por TEMPO — só o webhook de assinatura (por
+  `subscriptionId`) e a ação manual do admin. Então compra por período e validade manual
+  ficavam `'active'` para sempre, e o painel dizia **"Ativo"** ao lado de uma data
+  vencida. Foi o que escondeu o incidente de 17/08/2026 (assinante pagou, a notificação
+  se perdeu, o acesso caiu e a ficha seguia verde).
+  ⭐ Seguro por desenho: `extendTo` **REATIVA** uma `expired` quando a renovação chega
+  (`entitlement.aggregate.ts`) — marcar não fecha porta. Nunca toca em `revoked`
+  (cancelamento é mais forte que fim de prazo). O UPDATE é no-op na 2ª volta, então não
+  bumpa `version` à toa e não faz um grant concorrente perder a corrida.
+  Provado contra Postgres real em `tests/db/expire-lapsed.test.ts`.
+- **`AdminEntitlementView.activeNow`** (08/2026): a projeção admin passou a mandar o
+  resultado de `isActiveAt` junto do `status` cru. A regra sai de QUEM É O DONO dela em
+  vez de ser recalculada na UI (o painel usa isso para mostrar "Vencida"). ⚠️ Campo NOVO
+  e o `status` continua sendo a coluna — o teste-contrato do detalhe segue valendo.
+  ⚠️ `toAdminEntitlementView` ganhou 2º parâmetro (`now`), então **não passe a função
+  direto para `.map()`**: o `map` manda o ÍNDICE como 2º argumento (foi erro de
+  typecheck, não bug silencioso, mas custa um minuto).
 - **Liveness/readiness**: `/health` (estático) + **`/readyz`** (probe `select 1` no
   banco; 503 sem ele) — aponte o healthcheck do Railway para `/readyz`. Bind
   **dual-stack `::`** (env `HOST`) — obrigatório p/ `members.railway.internal`

@@ -3,6 +3,7 @@ import { mapCobStatus, reaisStringToCents } from '../../src/infrastructure/gatew
 import {
   centsToBigInt,
   mapCobrancasStatus,
+  parseCardDetailCharge,
   parseDetailCharge,
   parseNotification,
 } from '../../src/infrastructure/gateways/efi/efi-cobrancas.mapper'
@@ -82,6 +83,100 @@ describe('efi-cobrancas.mapper (Boleto)', () => {
       'fb',
     )
     expect(parsed.paidAt).toBeUndefined()
+  })
+
+  // Payload REAL da cobrança 1049600345 (produção, 08/2026), reduzido: é o ciclo
+  // de assinatura que ficou dias sem ser registrado no incidente do notification_url.
+  const CARTAO_PAGO_REAL = {
+    data: {
+      charge_id: 1049600345,
+      status: 'paid',
+      total: 9700,
+      paid_value: 9700,
+      items: [{ name: 'Assinatura', value: 9700, amount: 1 }],
+      created_at: '2026-08-14 03:03:16',
+      payment: { method: 'credit_card', created_at: '2026-08-14 03:03:16' },
+      history: [
+        {
+          created_at: '2026-08-14 03:03:16',
+          message: 'Pagamento via cartão aguardando confirmação',
+        },
+        {
+          created_at: '2026-08-14 03:04:05',
+          message: 'Pagamento de R$ 97,00 efetuado em 14/08/2026',
+        },
+      ],
+    },
+  }
+
+  test('⭐ parseCardDetailCharge acha a data do pagamento no payload REAL da Efí', () => {
+    // Antes deste conserto o `find` procurava `h.status` — que NÃO existe no
+    // history do detalhe — e a data saía indefinida, fazendo o markPaid carimbar
+    // a hora do processamento (no incidente, 3 dias depois do pagamento).
+    const parsed = parseCardDetailCharge(CARTAO_PAGO_REAL, 'fb')
+    expect(parsed.status).toBe('PAID')
+    expect(parsed.amountInCents).toBe(9700n)
+    // ⭐⭐ ANTI-VÁCUO DO FUSO: a Efí manda hora de SÃO PAULO sem offset. Ler como
+    // UTC (ou como hora local do container) daria 03:03Z e adiantaria o pagamento
+    // em 3 horas.
+    expect(parsed.paidAt?.toISOString()).toBe('2026-08-14T06:03:16.000Z')
+  })
+
+  test('parseCardDetailCharge cai no ÚLTIMO evento do histórico quando não há payment', () => {
+    const parsed = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 5,
+          status: 'paid',
+          items: [{ value: 100 }],
+          history: [
+            { created_at: '2026-08-14 03:03:16', message: 'aguardando' },
+            { created_at: '2026-08-14 03:04:05', message: 'efetuado' },
+          ],
+        },
+      },
+      'fb',
+    )
+    expect(parsed.paidAt?.toISOString()).toBe('2026-08-14T06:04:05.000Z')
+  })
+
+  test('parseCardDetailCharge respeita `paid_at` ISO (com Z) sem reinterpretar o fuso', () => {
+    const parsed = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 6,
+          status: 'approved',
+          items: [{ value: 100 }],
+          paid_at: '2026-01-02T10:00:00Z',
+          payment: { created_at: '2026-01-02 05:00:00' },
+        },
+      },
+      'fb',
+    )
+    expect(parsed.paidAt?.toISOString()).toBe('2026-01-02T10:00:00.000Z')
+  })
+
+  test('parseCardDetailCharge sem nenhuma data devolve undefined', () => {
+    const parsed = parseCardDetailCharge(
+      { data: { charge_id: 9, status: 'unpaid', total: 100 } },
+      'fb',
+    )
+    expect(parsed.paidAt).toBeUndefined()
+  })
+
+  test('parseDetailCharge (boleto) também trata a data ingênua como São Paulo', () => {
+    const parsed = parseDetailCharge(
+      {
+        data: {
+          charge_id: 8,
+          status: 'paid',
+          items: [{ value: 1000 }],
+          history: [{ status: 'paid', created_at: '2026-08-14 03:03:16' }],
+        },
+      },
+      'fb',
+    )
+    expect(parsed.paidAt?.toISOString()).toBe('2026-08-14T06:03:16.000Z')
   })
 
   test('parseNotification ignora subscription_id (namespace distinto de charge_id)', () => {

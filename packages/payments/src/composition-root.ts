@@ -49,6 +49,7 @@ import { InMemoryRateLimiter } from './infrastructure/security/rate-limiter'
 import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limiter'
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
+import { SubscriptionReconciliationWorker } from './infrastructure/workers/subscription-reconciliation-worker'
 import { WebhookDeliveryWorker } from './infrastructure/workers/webhook-delivery-worker'
 import { createServer } from './interfaces/http/server'
 
@@ -107,7 +108,7 @@ export function createApplication(env: Env): Application {
   const consumers = new CachingConsumerRepository(new DrizzleConsumerRepository(db), 30_000)
   const webhookInbox = new DrizzleWebhookInbox(db)
   const webhookDeliveries = new DrizzleWebhookDeliveryRepository(db)
-  const metrics = new DrizzleMetricsRepository(db)
+  const metrics = new DrizzleMetricsRepository(db, env.SUBSCRIPTION_OVERDUE_GRACE_DAYS)
   // Leitura admin (cross-consumer): SELECTs paginados + agregações p/ o painel.
   const paymentsAdminRead = new DrizzlePaymentAdminReadRepository(db)
   const subscriptionsAdminRead = new DrizzleSubscriptionAdminReadRepository(db)
@@ -236,6 +237,22 @@ export function createApplication(env: Env): Application {
     handleSubscriptionNotification,
   )
 
+  // Rede de segurança das RENOVAÇÕES: descobre na Efí o ciclo pago que nunca virou
+  // linha aqui (notificação perdida) e o registra pelo MESMO caminho da notificação.
+  // Instanciado depois do `handleSubscriptionNotification` porque depende dele.
+  const subscriptionReconciliationWorker = new SubscriptionReconciliationWorker(
+    subscriptions,
+    payments,
+    gateway,
+    handleSubscriptionNotification,
+    logger,
+    {
+      intervalMs: env.SUBSCRIPTION_RECONCILE_INTERVAL_MS,
+      batchSize: env.SUBSCRIPTION_RECONCILE_BATCH_SIZE,
+      concurrency: env.SUBSCRIPTION_RECONCILE_CONCURRENCY,
+    },
+  )
+
   // Casos de uso de leitura admin (painel @sistemazero/admin)
   const listPayments = new ListPaymentsService(paymentsAdminRead)
   const getAdminPayment = new GetAdminPaymentService(payments)
@@ -315,6 +332,7 @@ export function createApplication(env: Env): Application {
     async start() {
       outboxPoller.start()
       reconciliationWorker.start()
+      subscriptionReconciliationWorker.start()
       webhookWorker.start()
       if (env.ASYNC_CHARGE_CREATION) chargeWorker.start()
       // Assina os canais para acordar os workers na hora (fail-safe: cai no poll).
@@ -413,6 +431,7 @@ export function createApplication(env: Env): Application {
       await Promise.all([
         chargeWorker.stop(),
         reconciliationWorker.stop(),
+        subscriptionReconciliationWorker.stop(),
         webhookWorker.stop(),
         outboxPoller.stop(),
       ])

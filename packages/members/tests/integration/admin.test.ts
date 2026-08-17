@@ -33,7 +33,13 @@ const send = (
 /** Semeia uma matrícula com status explícito (controla grantedAt p/ a ordenação). */
 function seedEnt(
   entitlements: InMemoryEntitlementRepository,
-  opts: { userId: string; courseRef: string; status?: EntitlementStatus; grantedAt?: Date },
+  opts: {
+    userId: string
+    courseRef: string
+    status?: EntitlementStatus
+    grantedAt?: Date
+    expiresAt?: Date | null
+  },
 ): EntitlementAggregate {
   const now = opts.grantedAt ?? new Date('2026-06-01T00:00:00.000Z')
   const productId = randomUUID()
@@ -61,7 +67,7 @@ function seedEnt(
     sourceId: `seed-${productId}`,
     subscriptionId: null,
     grantedAt: now,
-    expiresAt: null,
+    expiresAt: opts.expiresAt ?? null,
     idempotencyKey: `seed:${productId}`,
   })
   if (opts.status === 'revoked') e.revoke(new Date(now.getTime() + 1000))
@@ -154,6 +160,28 @@ describe('Members HTTP — admin: listagem de membros', () => {
     ])
     const prog = body.progress.find((p: { courseRef: string }) => p.courseRef === course.slug)
     expect(prog).toMatchObject({ totalLessons: 2, completedLessons: 0, percent: 0 })
+  })
+
+  test('⭐ matrícula com validade VENCIDA vem `active` na coluna, mas activeNow=false', async () => {
+    // É o estado exato do incidente de 08/2026: a renovação não chegou, a validade
+    // passou, e a coluna continua 'active' porque só cancelamento/varredura a mudam.
+    // Sem o `activeNow`, o painel pintava "Ativo" de verde sobre acesso cortado.
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-x')
+    seedEnt(entitlements, {
+      userId: A,
+      courseRef: course.slug,
+      status: 'active',
+      expiresAt: new Date('2026-01-01T00:00:00.000Z'),
+    })
+    seedEnt(entitlements, { userId: A, courseRef: course.slug, status: 'active' }) // vitalícia
+
+    const body = await readJson(await get(app, `/members/admin/members/${A}`))
+    const vencida = body.entitlements.find((e: { expiresAt: string | null }) => e.expiresAt)
+    const vitalicia = body.entitlements.find((e: { expiresAt: string | null }) => !e.expiresAt)
+    expect(vencida.status).toBe('active')
+    expect(vencida.activeNow).toBe(false)
+    expect(vitalicia.activeNow).toBe(true)
   })
 })
 

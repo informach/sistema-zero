@@ -16,4 +16,11 @@ export interface SubscriptionRepository {
     provider: string,
     providerSubscriptionId: string,
   ): Promise<SubscriptionAggregate | null>
+  /**
+   * Assinaturas ATIVAS a varrer na reconciliação de ciclos. SELECT simples, sem
+   * claim/lease: o trabalho por item é idempotente (o `handleCycle` deduplica no
+   * inbox), então duas réplicas pegando a mesma assinatura não duplicam nada —
+   * mesma decisão do `findStalePendingCharges`.
+   */
+  findActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]>
 }

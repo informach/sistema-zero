@@ -128,6 +128,7 @@ function buildApp(opts: BuildOpts = {}) {
       outboxOldestPendingAgeSeconds: null,
       webhookDeliveriesOldestPendingAgeSeconds: null,
       amountMismatchPending: 0,
+      subscriptionsOverdue: 0,
     }),
   }
   const subscriptionsAdminRead: SubscriptionAdminReadRepository = {
@@ -233,6 +234,7 @@ function buildApp(opts: BuildOpts = {}) {
       outboxOldestPendingAgeSeconds: null,
       webhookDeliveriesOldestPendingAgeSeconds: null,
       amountMismatchPending: 0,
+      subscriptionsOverdue: 0,
     }),
     requireAdminEnabled: opts.requireAdmin ?? false,
     internalToken: opts.internalToken,

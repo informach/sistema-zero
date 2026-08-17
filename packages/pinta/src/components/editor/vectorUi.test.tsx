@@ -599,6 +599,47 @@ describe('UI vetorial (F5)', () => {
     })
   })
 
+  it('⭐ ordem vale para o GRUPO: os botões ficam vivos e ele vai INTEIRO para a frente', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [0, 0], [32, 32])
+    drawRect(stage, [40, 0], [72, 32])
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 30, clientX: 100, clientY: 100 })
+    fireEvent.pointerMove(stage, { pointerId: 30, clientX: 0, clientY: 0 })
+    fireEvent.pointerUp(stage, { pointerId: 30 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selGroup }))
+    // A terceira nasce por CIMA das duas e FORA do grupo.
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [200, 200], [232, 232])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(3)
+    })
+
+    // Tocar num membro seleciona o GRUPO — e era exatamente isso que apagava os
+    // quatro botões de ordem (2+ selecionadas => `disabled`), deixando a forma
+    // agrupada sem NENHUM jeito de mudar de camada.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const membro = stage.querySelector('rect[fill="#78dc52"]')
+    if (!membro) throw new Error('membro do grupo esperado')
+    fireEvent.pointerDown(membro, { isPrimary: true, pointerId: 31, clientX: 8, clientY: 8 })
+    fireEvent.pointerUp(stage, { pointerId: 31, clientX: 8, clientY: 8 })
+    const paraFrente = await waitFor(() =>
+      screen.getByRole('button', { name: COPY.vector.toFront }),
+    )
+    expect(paraFrente.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(paraFrente)
+    await waitFor(() => {
+      const xs = [...stage.querySelectorAll('rect[fill="#78dc52"]')].map((r) => r.getAttribute('x'))
+      // As duas do grupo passaram na frente da solta, na ordem em que estavam.
+      expect(xs).toEqual(['200', '0', '40'])
+    })
+  })
+
   it('alinhar: uma forma sozinha centraliza na TELA', async () => {
     await openVectorEditor()
     const stage = measureStage()

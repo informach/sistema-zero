@@ -123,6 +123,8 @@ const EnvSchema = z
       .int()
       .positive()
       .default(6 * 60 * 60 * 1000),
+    /** Teto por ciclo da varredura de matrículas vencidas (roda junto da retenção). */
+    EXPIRE_LAPSED_BATCH_SIZE: z.coerce.number().int().positive().default(500),
 
     // RBAC das rotas admin (`/members/admin/*`). O gateway aplica o RBAC real (JWT +
     // role); o serviço confere os headers X-Auth-User-* (defesa em profundidade).

@@ -375,6 +375,19 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
     return { affected, userIds: [...userIds] }
   }
 
+  async expireLapsed(now: Date, limit: number): Promise<number> {
+    // Espelha o SQL: só `active` com validade JÁ passada; vitalícia nunca entra.
+    let affected = 0
+    for (const s of this.byId.values()) {
+      if (affected >= limit) break
+      if (s.status !== 'active' || !s.expiresAt) continue
+      if (s.expiresAt.getTime() > now.getTime()) continue
+      this.byId.set(s.id, { ...s, status: 'expired', updatedAt: now, version: s.version + 1 })
+      affected += 1
+    }
+    return affected
+  }
+
   seed(e: EntitlementAggregate): void {
     const s = e.toSnapshot()
     this.byId.set(s.id, cloneState(s))

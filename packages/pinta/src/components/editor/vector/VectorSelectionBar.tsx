@@ -51,7 +51,6 @@ export function VectorSelectionBar(): JSX.Element | null {
     nodeTarget,
     nodePath,
     selected,
-    single,
     alignSelected,
     flipSelected,
     moveOrder,
@@ -147,31 +146,17 @@ export function VectorSelectionBar(): JSX.Element | null {
 
       <Divider />
 
-      {/* Ordem: só faz sentido com UMA forma (com várias, "frente" é ambíguo). */}
+      {/* Ordem: a seleção INTEIRA anda como uma peça só, então vale com várias
+          formas e com grupo (que é justamente onde ficava impossível: clicar
+          numa forma agrupada expande a seleção, e os quatro viviam apagados). */}
       <ToolButton
         icon={BringToFront}
         label={COPY.vector.toFront}
-        disabled={!single}
         onClick={() => moveOrder('front')}
       />
-      <ToolButton
-        icon={ChevronsUp}
-        label={COPY.vector.forward}
-        disabled={!single}
-        onClick={() => moveOrder(1)}
-      />
-      <ToolButton
-        icon={ChevronsDown}
-        label={COPY.vector.backward}
-        disabled={!single}
-        onClick={() => moveOrder(-1)}
-      />
-      <ToolButton
-        icon={SendToBack}
-        label={COPY.vector.toBack}
-        disabled={!single}
-        onClick={() => moveOrder('back')}
-      />
+      <ToolButton icon={ChevronsUp} label={COPY.vector.forward} onClick={() => moveOrder(1)} />
+      <ToolButton icon={ChevronsDown} label={COPY.vector.backward} onClick={() => moveOrder(-1)} />
+      <ToolButton icon={SendToBack} label={COPY.vector.toBack} onClick={() => moveOrder('back')} />
 
       {/* MISTURAR (o pathfinder). O bloco INTEIRO é gated pelo mesmo gatilho do
           Agrupar logo abaixo, e não cada botão: um gatilho só significa UMA

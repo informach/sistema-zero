@@ -53,6 +53,7 @@ import {
   type VectorStroke,
   type VectorTextAlign,
 } from '../../../vector/model'
+import { moveShapesOrder } from '../../../vector/order'
 import {
   type PathfinderOp,
   type PathfinderRefusal,
@@ -523,19 +524,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     applyStyle({ fill: { ...currentGradient(), ...partial } })
   }
 
-  /** Ordem-Z: um passo (±1) ou direto pro topo/fundo (front/back). */
+  /**
+   * Ordem-Z: um passo (±1) ou direto pro topo/fundo (front/back). A seleção
+   * INTEIRA anda como uma peça só, e um passo pula o vizinho inteiro — a régua
+   * mora em `vector/order.ts`. `null` = nada mudou, então nada é commitado.
+   */
   function moveOrder(to: 1 | -1 | 'front' | 'back'): void {
-    if (!single) return
-    const shapes = [...currentShapes()]
-    const index = shapes.findIndex((s) => s.id === single.id)
-    if (index === -1) return
-    const last = shapes.length - 1
-    const target = to === 'front' ? last : to === 'back' ? 0 : index + to
-    if (target < 0 || target > last || target === index) return
-    const [moved] = shapes.splice(index, 1)
-    if (!moved) return
-    shapes.splice(target, 0, moved)
-    commitShapes(shapes)
+    const next = moveShapesOrder(currentShapes(), selectedIds, to)
+    if (next) commitShapes(next)
   }
 
   function duplicateSelected(): void {
