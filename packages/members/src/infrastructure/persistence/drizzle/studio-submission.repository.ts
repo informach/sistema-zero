@@ -15,6 +15,7 @@ import type {
 import type { Database } from './db'
 import {
   courses,
+  lessonBlocks,
   lessons,
   modules,
   studioSubmissions,
@@ -412,6 +413,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     const rows = await this.db
       .select({
         blockId: studioSubmissions.blockId,
+        blockKind: lessonBlocks.kind,
         lessonId: studioSubmissions.lessonId,
         lessonTitle: lessons.title,
         courseTitle: courses.title,
@@ -421,20 +423,29 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         message: studioSubmissions.message,
       })
       .from(studioSubmissions)
+      .innerJoin(lessonBlocks, eq(lessonBlocks.id, studioSubmissions.blockId))
       .leftJoin(lessons, eq(lessons.id, studioSubmissions.lessonId))
       .leftJoin(courses, eq(courses.id, studioSubmissions.courseId))
-      .where(eq(studioSubmissions.userId, userId))
+      .where(
+        and(eq(studioSubmissions.userId, userId), inArray(lessonBlocks.kind, ['studio', 'pinta'])),
+      )
       .orderBy(desc(studioSubmissions.submittedAt))
       .limit(limit)
-    return rows.map((r) => ({
-      blockId: r.blockId,
-      lessonId: r.lessonId,
-      lessonTitle: r.lessonTitle ?? null,
-      courseTitle: r.courseTitle ?? null,
-      score: r.score ?? null,
-      passed: r.passedAt != null,
-      submittedAt: r.submittedAt,
-      message: r.message ?? null,
-    }))
+    return rows.flatMap((r) => {
+      if (r.blockKind !== 'studio' && r.blockKind !== 'pinta') return []
+      return [
+        {
+          blockId: r.blockId,
+          blockKind: r.blockKind,
+          lessonId: r.lessonId,
+          lessonTitle: r.lessonTitle ?? null,
+          courseTitle: r.courseTitle ?? null,
+          score: r.score ?? null,
+          passed: r.passedAt != null,
+          submittedAt: r.submittedAt,
+          message: r.message ?? null,
+        },
+      ]
+    })
   }
 }

@@ -210,8 +210,8 @@ function ChildStatsCard({
         />
         <Stat
           icon={<Sparkles className="size-4 text-primary" />}
-          label="projetos"
-          value={child.projectsCount}
+          label="entregas"
+          value={child.submissionsCount ?? child.projectsCount}
         />
         <Stat
           icon={<BookOpenCheck className="size-4 text-primary" />}
@@ -253,11 +253,12 @@ function ChildWeekBlock({
     parts.push(
       week.badgesUnlocked === 1 ? '1 medalha nova' : `${week.badgesUnlocked} medalhas novas`,
     )
-  if (week.projectsSubmitted > 0)
+  const submissionsSubmitted = week.submissionsSubmitted ?? week.projectsSubmitted
+  if (submissionsSubmitted > 0)
     parts.push(
-      week.projectsSubmitted === 1
-        ? '1 projeto enviado'
-        : `${week.projectsSubmitted} projetos enviados`,
+      submissionsSubmitted === 1
+        ? '1 entrega enviada'
+        : `${submissionsSubmitted} entregas enviadas`,
     )
 
   const weekGames = games ?? []

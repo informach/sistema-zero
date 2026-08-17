@@ -356,9 +356,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    desenha na aula e ENVIA — e isso **bloqueia a conclusão** (`PINTA_GATE_NOT_SUBMITTED`→409),
    como o Estúdio. Sem auto-correção (não existe régua de "desenho certo").
    ⭐ **REUSA `studio_submissions` inteira**, e é isso que fez a fatia caber: a fila global do
-   professor, o status pendente/respondida/conferida, a conversa de Recados (contexto
-   `studio_submission` — a copy dos 4 pontos é neutra, "Sua entrega"/"Entrega", nada vaza
-   "Estúdio") e a ficha 360 funcionaram sem uma linha nova. `SubmitStudioProjectService` e
+   professor, o status pendente/respondida/conferida e a conversa de Recados (contexto
+   `studio_submission`, com copy neutra) funcionaram sem uma linha nova. A ficha 360 agora
+   resolve `lesson_blocks.kind` e discrimina `studio_submission` de `pinta_submission`; o
+   resumo dos pais chama o total compartilhado de **entregas**, nunca de projetos.
+   `SubmitStudioProjectService` e
    `GetOwnStudioSubmissionService` ganharam o param `kind: SubmissionBlockKind` (`'studio'` |
    `'pinta'`, default studio) — o que muda é o kind exigido, o teto e o nome no erro. ⚠️ Dívida
    assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
@@ -367,6 +369,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    `GET …/pinta-carryover`. Projeção: **`pintaState`** em
    campo PRÓPRIO (mesma forma do `studioState`; os dois blocos coexistem na mesma aula e o front
    escolhe pelo `kind`, não por qual estado veio preenchido).
+   **Editar conteúdo do Pinta invalida a entrega anterior**, pela mesma régua de revisão dos
+   gates de quiz/Estúdio (`shouldInvalidateBlockProgress` apaga `studio_submissions`); sem isso
+   o desenho antigo continuava abrindo a conclusão de uma atividade que já mudou.
    **Cadeia entre aulas (`chain`)** — mesmo mecanismo do Estúdio: `GetStudioCarryoverService`
    ganhou o param `kind` e `CourseRepository.findPrecedingStudioBlockInChain` virou
    **`findPrecedingChainBlock(courseId, lessonId, chain, kind)`**. O kind entra na BUSCA: cadeia de
@@ -375,7 +380,10 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    ⚠️⚠️ **A armadilha que o Estúdio não tem: aqui o TIPO é load-bearing.** Um projeto do Estúdio é
    um projeto; um desenho `pixel-sprite` 32×32 não encaixa num bloco configurado como
    `vector-background`. E como o carryover VENCE o `initialAsset`, o bloco abriria calado com outra
-   coisa. Por isso a AUTORIA **recusa ao salvar**: `BlockAdminService.create/update` chama
+   coisa. Por isso a AUTORIA **recusa ao salvar**: `BlockAdminService.create/update` entra em
+   `ContentAdminRepository.withPintaChainLock(courseId, chain, callback)`; no Drizzle o callback
+   roda na MESMA transação de `pg_advisory_xact_lock(hashtextextended(...))`, consulta e escreve
+   pelo repositório transacional. Só então chama
    `assertPintaChainTypeMatches` → `ContentAdminRepository.listPintaChainBlocks(courseId, chain,
    {excludeBlockId})` → **409 `PINTA_CHAIN_TYPE_MISMATCH`** com uma mensagem que NOMEIA a aula que
    já usa a cadeia e o tipo dela (o `PINTA_ASSET_KIND_LABELS` existe só para essa frase). Decisão
@@ -385,7 +393,9 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    dois lados — recusar por causa de um bloco quebrado prenderia o autor justamente ao consertá-lo.
    ⚠️ O SQL de `listPintaChainBlocks` espelha `pintaAssetKindOf` (`content->'initialAsset'->>'kind'`)
    e faz `trim` nos dois lados do `chain`, igual ao carryover — mexeu num, mexa no outro. Aulas
-   RASCUNHO entram na checagem de propósito (a cadeia é da autoria). ⚠️ Nenhum teste de
+   RASCUNHO entram na checagem de propósito (a cadeia é da autoria). O lock fecha a corrida de
+   dois creates/updates concorrentes que antes podiam ler a cadeia vazia e gravar tipos distintos.
+   ⚠️ Nenhum teste de
    integração alcança esses dois SQL (o fake in-memory os reimplementa em JS, então lá não podem
    divergir) — quem os roda de verdade é **`tests/db/pinta-chain-sql.test.ts`**, mesma régua do
    `gating-block-sql.test.ts`.
@@ -1153,7 +1163,10 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
 ### Fase 5 Lote E (07/2026): report semanal dos pais (tela + e-mail)
 
 - **Tela ("Esta semana")**: o `GET /members/parents/children-stats` ganhou, por filho,
-  `week: {xpEarned, lessonsCompleted, quizzesPassed, badgesUnlocked, projectsSubmitted}`
+  `week: {xpEarned, lessonsCompleted, quizzesPassed, badgesUnlocked, submissionsSubmitted}`
+  + `submissionsCount` no resumo. Os aliases legados `projectsSubmitted`/`projectsCount`
+  seguem temporariamente no payload para rollout sem quebra, mas consumidores e copy usam
+  **entregas** porque a tabela reúne Estúdio e Pinta.
   (janela = segunda 03:00Z → agora, `weeklyPeriodKey`/`weekBoundsUtc` das missões) e
   `games: [{title, playId, publishedAt}] | null` — os jogos publicados no Mural na semana,
   buscados no HUB via a rota S2S **`POST /hub/internal/showcase-by-authors`**
@@ -1355,7 +1368,8 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   • `GET …/:userId/activity?limit&offset` → `GetMemberActivityService` mescla 4 fontes keyadas por
     `userId` (lesson_progress=acesso, lesson_completions=conclusão, quiz_attempts, studio_submissions),
     ordena por data desc e pagina (`{items, hasMore}`). Cada fonte traz `offset+limit+1` linhas
-    (join de aula/curso p/ título); a mescla/fatia é em memória.
+    (join de bloco/aula/curso p/ título); a entrega é discriminada como `studio_submission` ou
+    `pinta_submission` pelo kind autoritativo do bloco; a mescla/fatia é em memória.
   • `GET …/:userId/certificates` → `ListMemberCertificatesService` (inclui revogados).
   • `GET …/:userId/ratings` → `ListMemberRatingsService` (classificações dadas; join `courses`).
   Novos métodos de repo: `CertificateRepository.listByUser`, `CourseRatingRepository.listByUser`

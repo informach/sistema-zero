@@ -964,6 +964,8 @@ export interface ChildWeekStatsView {
   quizzesPassed: number
   badgesUnlocked: number
   projectsSubmitted: number
+  /** Entregas de atividades (Estúdio ou Pinta); ausente com members antigo. */
+  submissionsSubmitted?: number
 }
 
 /** Jogo publicado no Mural na semana (o cartão QR usa `playId`). */
@@ -981,8 +983,10 @@ export interface ChildStatsView {
   badgesCount: number
   coursesInProgress: number
   coursesCompleted: number
-  /** Projetos do Estúdio que a criança entregou. */
+  /** @deprecated Alias de compatibilidade; use `submissionsCount`. */
   projectsCount: number
+  /** Entregas de atividades (Estúdio ou Pinta); ausente com members antigo. */
+  submissionsCount?: number
   /** Colocação no ranking da vitrine (null = conta sem matrícula). */
   rankingPosition: number | null
   /** "Esta semana" (opcional p/ tolerar members antigo). */

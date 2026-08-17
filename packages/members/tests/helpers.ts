@@ -148,7 +148,7 @@ export function buildApp(
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
-  courses.onEvaluativeBlockContentChanged = (blockId) => {
+  courses.onGatingBlockContentChanged = (blockId) => {
     quizAttempts.deleteByBlockId(blockId)
     studioSubmissions.deleteByBlockId(blockId)
   }

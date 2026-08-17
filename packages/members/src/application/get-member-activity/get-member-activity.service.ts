@@ -7,7 +7,7 @@ import type { MemberActivityItemView } from '../mappers/admin-views'
 /**
  * Linha do tempo de atividade do aluno (ficha admin): unifica as 4 fontes keyadas
  * por `userId` (aula acessada = `lesson_progress`, aula concluída =
- * `lesson_completions`, tentativa de quiz, entrega do Estúdio), ordena por data desc
+ * `lesson_completions`, tentativa de quiz, entrega do Estúdio/Pinta), ordena por data desc
  * e pagina. O `userId` é o APRENDIZ — a conta no adulto, o perfil no kids (o BFF
  * chama 1× por aprendiz). Cada fonte traz no máximo `offset+limit` linhas (teto do
  * merge), o serviço mescla e fatia — paginação estável e barata sobre poucas linhas.
@@ -58,7 +58,8 @@ export class GetMemberActivityService {
         passed: q.passed,
       })),
       ...submissions.map((s) => ({
-        kind: 'studio_submission' as const,
+        kind:
+          s.blockKind === 'pinta' ? ('pinta_submission' as const) : ('studio_submission' as const),
         at: s.submittedAt.toISOString(),
         lessonId: s.lessonId,
         lessonTitle: s.lessonTitle,

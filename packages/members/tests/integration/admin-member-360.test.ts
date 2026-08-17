@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
-import { buildApp } from '../helpers'
+import { buildApp, seedSampleCourse } from '../helpers'
 
 const A = '11111111-1111-1111-1111-111111111111'
 const readJson = (res: Response): Promise<any> => res.json()
@@ -32,20 +32,38 @@ describe('Members HTTP — admin: gamificação do aluno (ficha 360)', () => {
 })
 
 describe('Members HTTP — admin: linha do tempo de atividade', () => {
-  test('mescla as 4 fontes ordenadas por data desc + paginação', async () => {
-    const { app, progress, positions, quizAttempts, studioSubmissions } = buildApp()
-    const lesson = randomUUID()
-    const block = randomUUID()
-    const course = randomUUID()
+  test('mescla as 4 fontes, distingue Pinta de Estúdio e pagina por data desc', async () => {
+    const { app, courses, progress, positions, quizAttempts, studioSubmissions } = buildApp()
+    const seeded = seedSampleCourse(courses)
+    const lesson = seeded.lessonIds[0]
+    const studioBlock = randomUUID()
+    const pintaBlock = randomUUID()
+    const course = seeded.courseId
+    courses.blocks.push(
+      {
+        id: studioBlock,
+        lessonId: lesson,
+        kind: 'studio',
+        sortOrder: 10,
+        content: { kind: 'studio', initialProject: { name: 'p', files: {} } },
+      },
+      {
+        id: pintaBlock,
+        lessonId: lesson,
+        kind: 'pinta',
+        sortOrder: 11,
+        content: { kind: 'pinta', initialAsset: { kind: 'pixel-sprite' } },
+      },
+    )
 
-    // 4 eventos em datas crescentes (o mais novo deve vir primeiro).
+    // 5 eventos em datas crescentes (o mais novo deve vir primeiro).
     await positions.upsert(A, lesson, course, 30, new Date('2026-06-01T00:00:00.000Z'))
     await progress.markComplete(A, lesson, course, new Date('2026-06-02T00:00:00.000Z'))
     await quizAttempts.save({
       id: randomUUID(),
       userId: A,
       lessonId: lesson,
-      blockId: block,
+      blockId: studioBlock,
       courseId: course,
       score: 80,
       passed: true,
@@ -56,23 +74,37 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
       id: randomUUID(),
       userId: A,
       accountId: A,
-      blockId: block,
+      blockId: studioBlock,
       lessonId: lesson,
       courseId: course,
       project: { name: 'p', files: {} },
       submittedAt: new Date('2026-06-04T00:00:00.000Z'),
       message: 'oi prof',
     })
+    await studioSubmissions.upsert({
+      id: randomUUID(),
+      userId: A,
+      accountId: A,
+      blockId: pintaBlock,
+      lessonId: lesson,
+      courseId: course,
+      project: { kind: 'pixel-sprite' },
+      submittedAt: new Date('2026-06-05T00:00:00.000Z'),
+      message: 'meu desenho',
+    })
 
     const body = await readJson(await get(app, `/members/admin/members/${A}/activity`))
     expect(body.items.map((i: { kind: string }) => i.kind)).toEqual([
+      'pinta_submission',
       'studio_submission',
       'quiz_attempt',
       'lesson_completed',
       'lesson_accessed',
     ])
     expect(body.hasMore).toBe(false)
-    const studio = body.items[0]
+    const pinta = body.items[0]
+    expect(pinta.message).toBe('meu desenho')
+    const studio = body.items[1]
     expect(studio.message).toBe('oi prof')
 
     // Paginação: limit=2 → 2 itens (os mais novos) + hasMore.
@@ -80,8 +112,8 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
     expect(page.items).toHaveLength(2)
     expect(page.hasMore).toBe(true)
     expect(page.items.map((i: { kind: string }) => i.kind)).toEqual([
+      'pinta_submission',
       'studio_submission',
-      'quiz_attempt',
     ])
   })
 })

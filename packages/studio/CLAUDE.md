@@ -2888,6 +2888,26 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
 
 ## Reabertura + round-trip: garantias (10/07/2026)
 
+- ⭐⭐ **Arrastar para dentro de uma Área não gerava código (16/08).** Relato dela: colou os blocos
+  do "Ao iniciar" de outro projeto, arrastou para dentro da Área, e a **tela ficou branca** — o bloco
+  visivelmente encaixado, o programa gerado vazio, e um **F5 sem tocar em nada** mostrando o
+  `setupStage` com a cor certa. Ou seja: o estado salvo estava correto e quem falhava era a
+  construção AO VIVO.
+  **A causa:** `lastSerializedRef` (`BlocklyPanel.tsx`) servia a **DOIS invariantes diferentes** —
+  "este snapshot já está aplicado/salvo no workspace" (que impede o efeito de restore de recarregar)
+  e "a IR deste snapshot já foi recompilada" (o dedupe da regeração). ⚠️⚠️ **Um arrasto que conecta
+  chega como DOIS `BLOCK_MOVE`**: primeiro um só de COORDENADAS, depois o de CONEXÃO. O primeiro
+  carimbava a ref; quando o segundo chegava, a regeração desistia por "nada mudou" e a IR **nunca**
+  era compilada. Hoje são duas refs: `lastAppliedBlocksStateRef` e `lastRegeneratedBlocksStateRef`.
+  ⚠️ **Por isso um "cutucão" não consertava** (mover a Área sem acrescentar conteúdo gera outro
+  movimento só de layout, envenenando o dedupe de novo) e o F5 consertava (caminho diferente). Duas
+  observações que parecem descartar "é só latência" — e descartam mesmo.
+  ⚠️ **Lição geral:** ref de dedupe que responde a duas perguntas mente para uma delas. Se o mesmo
+  carimbo serve a "já apliquei" e a "já compilei", qualquer evento que satisfaça só o primeiro
+  silencia o segundo — e o sintoma é o pior possível: a tela mostra o certo e o produto roda o velho.
+  Rede: `e2e/paste-into-area.spec.ts` monta o cenário inteiro em Chromium real (três Áreas vazias →
+  colar pelo menu → arrastar com o mouse), afere que o bloco ficou ANINHADO antes de olhar o
+  programa, e exige que o programa VIVO seja idêntico ao de depois do reload.
 - **Hidratação dos blocos com STATUS** (`blocksHydration` no projectStore: idle/pending/restored/
   empty/failed/discarded, mantido pelo `PersistenceService`). Regra de merge: a partição salva só
   restaura para dentro de canvas VIVO VAZIO (⚠️ o sinal NÃO é `isDirty` — autosave chama `markSaved`

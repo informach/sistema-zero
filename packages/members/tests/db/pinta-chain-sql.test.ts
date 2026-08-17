@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import { BlockAdminService } from '../../src/application/content-admin/content-admin.service'
+import type { ContentAdminRepository } from '../../src/domain/ports/content-admin-repository.port'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import {
@@ -55,6 +58,9 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
       sort_order integer not null default 0, content jsonb not null,
       content_revision varchar(32) not null default 'x'
     )`)
+    await conn.sql.unsafe(
+      "alter table members.lesson_blocks add column if not exists content_revision varchar(32) not null default 'x'",
+    )
     content = new DrizzleContentAdminRepository(conn.db)
     courses = new DrizzleCourseRepository(conn.db)
   })
@@ -101,6 +107,50 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
   })
 
   describe('listPintaChainBlocks (a guarda de tipo da autoria)', () => {
+    test('serializa criações concorrentes e nunca grava dois tipos na mesma cadeia', async () => {
+      let releaseBarrier = () => {}
+      const barrier = new Promise<void>((resolve) => {
+        releaseBarrier = resolve
+      })
+      let readsCompleted = 0
+      // Força as duas leituras do código antigo a enxergarem a cadeia vazia antes de qualquer
+      // INSERT. Depois da correção, o serviço entra no lock e usa o repositório transacional
+      // recebido no callback, portanto esta barreira externa nem é alcançada.
+      const concurrentContent = new Proxy(content, {
+        get(target, property) {
+          if (property === 'listPintaChainBlocks') {
+            return async (...args: Parameters<ContentAdminRepository['listPintaChainBlocks']>) => {
+              const rows = await target.listPintaChainBlocks(...args)
+              readsCompleted++
+              if (readsCompleted === 2) releaseBarrier()
+              await barrier
+              return rows
+            }
+          }
+          const value = Reflect.get(target, property)
+          return typeof value === 'function' ? value.bind(target) : value
+        },
+      }) as ContentAdminRepository
+      const service = new BlockAdminService(concurrentContent)
+      const pixel = pintaAssetToWire({
+        ...createLessonAsset('pixel-sprite', 32, 'heroi'),
+        id: 'asset-pixel',
+      })
+      const vector = pintaAssetToWire({
+        ...createLessonAsset('vector-background', 240, 'cenario'),
+        id: 'asset-vector',
+      })
+
+      const results = await Promise.allSettled([
+        service.create(aula1, { kind: 'pinta', chain: 'heroi', initialAsset: pixel }),
+        service.create(aula2, { kind: 'pinta', chain: 'heroi', initialAsset: vector }),
+      ])
+
+      expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+      expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1)
+      expect(await content.listPintaChainBlocks(courseId, 'heroi')).toHaveLength(1)
+    })
+
     test('acha os irmãos da cadeia com o tipo LIDO do snapshot, em ordem de curso', async () => {
       const b2 = await inserirBloco(aula2, 'pinta', pinta('vector-sprite', 'heroi'))
       const b1 = await inserirBloco(aula1, 'pinta', pinta('pixel-sprite', 'heroi'))

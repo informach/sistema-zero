@@ -16,6 +16,7 @@ const child: ChildDashboardView = {
   coursesInProgress: 2,
   coursesCompleted: 1,
   projectsCount: 5,
+  submissionsCount: 5,
   rankingPosition: 7,
   week: {
     xpEarned: 80,
@@ -23,6 +24,7 @@ const child: ChildDashboardView = {
     quizzesPassed: 1,
     badgesUnlocked: 1,
     projectsSubmitted: 1,
+    submissionsSubmitted: 1,
   },
   games: [],
 }
@@ -97,9 +99,10 @@ describe('superfícies extraídas da área dos pais', () => {
     expect(await screen.findByText('Lia')).toBeTruthy()
     expect(
       screen.getByText(
-        '+80 XP · 2 aulas concluídas · 1 quiz aprovado · 1 medalha nova · 1 projeto enviado',
+        '+80 XP · 2 aulas concluídas · 1 quiz aprovado · 1 medalha nova · 1 entrega enviada',
       ),
     ).toBeTruthy()
+    expect(screen.getByText('entregas')).toBeTruthy()
     expect(
       await screen.findByRole('progressbar', { name: '36 de 100 usados neste mês' }),
     ).toBeTruthy()

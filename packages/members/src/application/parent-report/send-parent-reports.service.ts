@@ -44,9 +44,9 @@ function childSummary(name: string, stats: ChildStatsView): string {
       `   • ${w.quizzesPassed} ${w.quizzesPassed === 1 ? 'quiz aprovado' : 'quizzes aprovados'}`,
     )
   }
-  if (w.projectsSubmitted > 0) {
+  if (w.submissionsSubmitted > 0) {
     lines.push(
-      `   • ${w.projectsSubmitted} ${w.projectsSubmitted === 1 ? 'projeto entregue' : 'projetos entregues'}`,
+      `   • ${w.submissionsSubmitted} ${w.submissionsSubmitted === 1 ? 'entrega enviada' : 'entregas enviadas'}`,
     )
   }
   if (w.badgesUnlocked > 0) {
@@ -109,7 +109,7 @@ export class SendParentReportsService {
     const { from: weekFrom } = weekBoundsUtc(weekKey)
     const weekLabel = `${ddmm(weekKey.replace(/^w:/, ''))} a ${ddmm(today)}`
 
-    // Enumeração: contas com XP na semana ∪ contas com ENTREGA do Estúdio na
+    // Enumeração: contas com XP na semana ∪ contas com ENTREGA de atividade na
     // semana (fecha o buraco da atividade sem XP novo). Distinct, kids-only.
     const [xpAccounts, studioAccounts] = await Promise.all([
       this.gamification.listActiveAccountsInPeriod('kids', weekFrom, now),

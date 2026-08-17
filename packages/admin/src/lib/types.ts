@@ -184,6 +184,7 @@ export const MEMBER_ACTIVITY_KINDS = [
   'lesson_completed',
   'quiz_attempt',
   'studio_submission',
+  'pinta_submission',
 ] as const
 export type MemberActivityKind = (typeof MEMBER_ACTIVITY_KINDS)[number]
 
