@@ -57,6 +57,24 @@ describe('SubscriptionAggregate', () => {
     )
   })
 
+  test('ciclo histórico não faz lastChargeAt regredir', () => {
+    const sub = build()
+    sub.activate()
+    sub.pullEvents()
+    const maisRecente = new Date('2026-08-01T12:00:00Z')
+    const historico = new Date('2026-07-01T12:00:00Z')
+
+    sub.recordCharge('charge-agosto', maisRecente)
+    sub.recordCharge('charge-julho', historico)
+
+    expect(sub.cyclesCompleted).toBe(2)
+    expect(sub.lastChargeAt?.toISOString()).toBe(maisRecente.toISOString())
+    const eventos = sub
+      .pullEvents()
+      .filter((event) => event.eventName === 'subscription.charge_paid')
+    expect(eventos.at(-1)?.toPayload().paidAt).toBe(historico.toISOString())
+  })
+
   test('expira automaticamente ao atingir o nº de repetições', () => {
     const sub = build({ repeats: 2 })
     sub.activate()

@@ -210,4 +210,70 @@ describe('SubscriptionReconciliationWorker', () => {
 
     expect(await payments.findByProviderPaymentId(gateway.provider, 'charge-agosto')).toBeNull()
   })
+
+  test('dois lotes consecutivos alcançam todas as assinaturas, sem fome das posteriores', async () => {
+    for (let i = 2; i <= 4; i += 1) {
+      await new CreateSubscriptionService(
+        subscriptions,
+        payments,
+        new InMemorySubscriptionPlanRegistry(),
+        gateway,
+        new InMemoryIdempotencyStore(),
+        { idempotencyTtlSeconds: 3600, idempotencyInFlightTtlSeconds: 120 },
+        silentLogger,
+      ).execute({
+        ...command,
+        idempotencyKey: `idem-sub-rec-000${i}`,
+        requestHash: `hash-${i}`,
+      })
+    }
+    const worker = new SubscriptionReconciliationWorker(
+      subscriptions,
+      payments,
+      gateway,
+      cycles,
+      silentLogger,
+      { intervalMs: 1000, batchSize: 2, concurrency: 2 },
+    )
+
+    await worker.tick()
+    await worker.tick()
+
+    expect(new Set(gateway.listedSubscriptionIds).size).toBe(4)
+  })
+
+  test('stop aguarda o tick ativo mesmo quando uma segunda chamada é coalescida', async () => {
+    const enteredGateway = Promise.withResolvers<void>()
+    const releaseGateway = Promise.withResolvers<void>()
+    class BlockingGateway extends FakePixGateway {
+      override async listSubscriptionCharges() {
+        enteredGateway.resolve()
+        await releaseGateway.promise
+        return []
+      }
+    }
+    const blockingGateway = new BlockingGateway()
+    const worker = new SubscriptionReconciliationWorker(
+      subscriptions,
+      payments,
+      blockingGateway,
+      cycles,
+      silentLogger,
+      { intervalMs: 1000, batchSize: 10, concurrency: 1 },
+    )
+
+    const firstTick = worker.tick()
+    await enteredGateway.promise
+    const overlappingTick = worker.tick()
+    let stopped = false
+    const stopping = worker.stop().then(() => {
+      stopped = true
+    })
+    await Promise.resolve()
+    expect(stopped).toBe(false)
+
+    releaseGateway.resolve()
+    await Promise.all([firstTick, overlappingTick, stopping])
+    expect(stopped).toBe(true)
+  })
 })

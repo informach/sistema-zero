@@ -17,10 +17,10 @@ export interface SubscriptionRepository {
     providerSubscriptionId: string,
   ): Promise<SubscriptionAggregate | null>
   /**
-   * Assinaturas ATIVAS a varrer na reconciliação de ciclos. SELECT simples, sem
-   * claim/lease: o trabalho por item é idempotente (o `handleCycle` deduplica no
-   * inbox), então duas réplicas pegando a mesma assinatura não duplicam nada —
-   * mesma decisão do `findStalePendingCharges`.
+   * Reivindica um lote de assinaturas ATIVAS para reconciliação e carimba o
+   * instante da tentativa na mesma transação curta. A ordenação pelo carimbo
+   * garante rotação durável; `SKIP LOCKED` divide o lote entre réplicas sem manter
+   * transação aberta durante a chamada externa.
    */
-  findActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]>
+  claimActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]>
 }

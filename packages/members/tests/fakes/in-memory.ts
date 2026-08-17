@@ -1607,7 +1607,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         lessonTitle: null,
         courseTitle: this.courses?.courses.find((c) => c.id === s.courseId)?.title ?? null,
         score: s.score ?? null,
-        passed: s.passedAt != null,
+        passed: s.checkedAt == null ? null : s.passedAt != null,
         submittedAt: s.submittedAt,
         message: s.message ?? null,
       }))

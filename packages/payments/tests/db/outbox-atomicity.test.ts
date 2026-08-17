@@ -1,7 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import path from 'node:path'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
-import postgres from 'postgres'
 import { PaymentAggregate } from '../../src/domain/payment/payment.aggregate'
 import { DomainEvent } from '../../src/domain/shared/domain-event'
 import { IdempotencyKey } from '../../src/domain/value-objects/idempotency-key'
@@ -13,7 +12,10 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleIdempotencyStore } from '../../src/infrastructure/persistence/drizzle/idempotency.store'
+import { DrizzleMetricsRepository } from '../../src/infrastructure/persistence/drizzle/metrics.repository'
 import { DrizzlePaymentRepository } from '../../src/infrastructure/persistence/drizzle/payment.repository'
+import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
+import { prepareTestDatabase } from './test-database'
 
 /**
  * Testes de ATOMICIDADE contra um Postgres REAL — as únicas invariantes que os
@@ -30,38 +32,6 @@ import { DrizzlePaymentRepository } from '../../src/infrastructure/persistence/d
  * Sem Postgres alcançável, a suíte é PULADA (skip) — `bun test` continua verde
  * em ambientes sem Docker/CI sem infra. Override: `TEST_DATABASE_URL`.
  */
-const TEST_DB_NAME = 'sistemazero_test'
-const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
-
-function withDatabase(url: string, dbName: string): string {
-  const u = new URL(url)
-  u.pathname = `/${dbName}`
-  return u.toString()
-}
-
-/** Sonda o servidor e garante o banco de teste. Retorna a URL pronta ou null (skip). */
-async function prepareTestDatabase(): Promise<string | null> {
-  const override = process.env.TEST_DATABASE_URL
-  const baseUrl = override ?? process.env.DATABASE_URL ?? FALLBACK_URL
-  const admin = postgres(baseUrl, { max: 1, connect_timeout: 2, onnotice: () => {} })
-  try {
-    await admin`select 1`
-    if (override) return override // URL explícita: usa como está (sem criar banco)
-    try {
-      // CREATE DATABASE não aceita IF NOT EXISTS nem bind param — nome é constante.
-      await admin.unsafe(`CREATE DATABASE ${TEST_DB_NAME}`)
-    } catch (error) {
-      const code = (error as { code?: string }).code
-      if (code !== '42P04') throw error // 42P04 = duplicate_database → já existe, ok
-    }
-    return withDatabase(baseUrl, TEST_DB_NAME)
-  } catch {
-    return null
-  } finally {
-    await admin.end({ timeout: 1 }).catch(() => {})
-  }
-}
-
 const testDatabaseUrl = await prepareTestDatabase()
 if (!testDatabaseUrl) {
   console.warn(
@@ -144,7 +114,11 @@ describe.skipIf(!testDatabaseUrl)('Atomicidade no Postgres real (outbox/version/
   })
 
   beforeEach(async () => {
-    await conn.sql`truncate table payments.payments, payments.outbox, payments.idempotency_keys restart identity cascade`
+    await conn.sql`
+      truncate table payments.subscriptions, payments.payments, payments.outbox,
+                     payments.idempotency_keys, payments.webhook_deliveries
+      restart identity cascade
+    `
   })
 
   test('save grava pagamento + evento do outbox juntos (commit conjunto)', async () => {
@@ -263,5 +237,66 @@ describe.skipIf(!testDatabaseUrl)('Atomicidade no Postgres real (outbox/version/
       where consumer_id = ${input.consumerId} and key = ${input.key}`
     expect(rows.length).toBe(1)
     expect(rows[0]?.state).toBe('IN_FLIGHT')
+  })
+
+  test('fim de mês da Efí não é contado como atraso antes do último dia', async () => {
+    await conn.sql`
+      insert into payments.subscriptions (
+        id, consumer_id, status, provider, provider_subscription_id,
+        provider_plan_id, interval_months, amount_in_cents, currency, card,
+        idempotency_key, cycles_completed, metadata, last_charge_at,
+        created_at, updated_at
+      ) values (
+        gen_random_uuid(), 'sys-test', 'ACTIVE', 'EFI', 'sub-eom',
+        'plan-1', 1, 9700, 'BRL', '{"brand":"visa","last4":"4242"}'::jsonb,
+        'idem-eom', 2, '{}'::jsonb, '2026-02-28T15:00:00Z',
+        '2026-01-31T15:00:00Z', '2026-02-28T15:00:00Z'
+      )
+    `
+    // Move o `now()` real para o ponto médio entre o cálculo antigo (28/03)
+    // e o calendário correto da Efí (31/03), sem relógio fake no código de produção.
+    const [clock] = await conn.sql<{ grace_days: number }[]>`
+      select (
+        extract(epoch from (now() - timestamptz '2026-03-30T03:00:00Z')) / 86400
+      )::float8 as grace_days
+    `
+    if (!clock) throw new Error('relógio do Postgres esperado')
+
+    const metrics = await new DrizzleMetricsRepository(conn.db, clock.grace_days).getMetrics()
+
+    expect(metrics.subscriptionsOverdue).toBe(0)
+  })
+
+  test('claim de assinatura rotaciona quando o total excede o lote', async () => {
+    for (let i = 1; i <= 4; i += 1) {
+      await conn.sql`
+        insert into payments.subscriptions (
+          id, consumer_id, status, provider, provider_subscription_id,
+          provider_plan_id, interval_months, amount_in_cents, currency, card,
+          idempotency_key, cycles_completed, metadata, last_charge_at,
+          created_at, updated_at
+        ) values (
+          gen_random_uuid(), 'sys-test', 'ACTIVE', 'EFI', ${`sub-rotation-${i}`},
+          'plan-1', 1, 9700, 'BRL', '{"brand":"visa","last4":"4242"}'::jsonb,
+          ${`idem-rotation-${i}`}, 1, '{}'::jsonb, '2026-01-01T12:00:00Z',
+          '2026-01-01T12:00:00Z', '2026-01-01T12:00:00Z'
+        )
+      `
+    }
+    const subscriptions = new DrizzleSubscriptionRepository(conn.db)
+
+    const first = await subscriptions.claimActiveForReconcile(2)
+    const second = await subscriptions.claimActiveForReconcile(2)
+    const visited = new Set([...first, ...second].map((subscription) => subscription.id))
+
+    expect(first).toHaveLength(2)
+    expect(second).toHaveLength(2)
+    expect(visited.size).toBe(4)
+    const [marked] = await conn.sql<{ count: number }[]>`
+      select count(*)::int as count
+        from payments.subscriptions
+       where last_reconciled_at is not null
+    `
+    expect(marked?.count).toBe(4)
   })
 })

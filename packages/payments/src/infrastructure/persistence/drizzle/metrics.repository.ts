@@ -2,6 +2,32 @@ import { eq, inArray, sql } from 'drizzle-orm'
 import type { Database } from './db'
 import { outbox, payments, subscriptions, webhookDeliveries } from './schema'
 
+const billingBaseInSaoPaulo = sql`(
+  coalesce(${subscriptions.lastChargeAt}, ${subscriptions.createdAt})
+  at time zone 'America/Sao_Paulo'
+)`
+const subscriptionInterval = sql`(${subscriptions.intervalMonths} * interval '1 month')`
+
+/**
+ * Próxima execução segundo o calendário documentado da Efí: se o ciclo atual
+ * caiu no último dia, os seguintes também caem no último dia. O cálculo usa a
+ * hora de parede de São Paulo e só no fim volta a `timestamptz`.
+ */
+export const subscriptionNextChargeAt = sql<Date>`(
+  case
+    when (${billingBaseInSaoPaulo})::date = (
+      date_trunc('month', ${billingBaseInSaoPaulo}) + interval '1 month - 1 day'
+    )::date
+      then (
+        date_trunc('month', ${billingBaseInSaoPaulo} + ${subscriptionInterval})
+        + interval '1 month - 1 day'
+        + (${billingBaseInSaoPaulo} - date_trunc('day', ${billingBaseInSaoPaulo}))
+      ) at time zone 'America/Sao_Paulo'
+    else (${billingBaseInSaoPaulo} + ${subscriptionInterval})
+      at time zone 'America/Sao_Paulo'
+  end
+)`
+
 export interface MetricsSnapshot {
   /** Eventos de domínio ainda não publicados (lag do outbox). */
   outboxPending: number
@@ -68,14 +94,13 @@ export class DrizzleMetricsRepository {
         })
         .from(webhookDeliveries)
         .where(inArray(webhookDeliveries.status, ['PENDING', 'DEAD'])),
-      // Atrasada = ativa e sem ciclo pago dentro do intervalo + carência. A conta é
-      // no Postgres (`interval` por MÊS civil), não em JS: mês tem 28..31 dias e uma
-      // aproximação por 30 daria falso positivo/negativo perto do aniversário.
+      // Atrasada = ativa e sem ciclo pago dentro do calendário da Efí + carência.
+      // A expressão preserva a regra de último dia; uma soma ingênua a 28/02
+      // produziria 28/03, embora o provedor cobre em 31/03.
       this.db
         .select({
           overdue: sql<number>`(count(*) filter (
-            where coalesce(${subscriptions.lastChargeAt}, ${subscriptions.createdAt})
-              + (${subscriptions.intervalMonths} * interval '1 month')
+            where ${subscriptionNextChargeAt}
               + (${this.overdueGraceDays} * interval '1 day') < now()
           ))::int`,
         })

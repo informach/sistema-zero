@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { SubscriptionRepository } from '../../../domain/ports/subscription-repository.port'
 import {
   SubscriptionAggregate,
@@ -105,19 +105,36 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
     return row ? SubscriptionAggregate.restore(rowToSnapshot(row)) : null
   }
 
-  async findActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]> {
-    // Sem claim/lease de propósito (ver o port): o trabalho por item é idempotente.
-    // A mais antiga sem cobrança registrada primeiro — é a que corre mais risco de
-    // ter o acesso cortado. `nulls first` cobre a assinatura que nunca cobrou.
-    const rows = await this.db
-      .select()
-      .from(subscriptions)
-      .where(
-        and(eq(subscriptions.status, 'ACTIVE'), isNotNull(subscriptions.providerSubscriptionId)),
-      )
-      .orderBy(sql`${subscriptions.lastChargeAt} asc nulls first`)
-      .limit(limit)
-    return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
+  async claimActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]> {
+    return this.db.transaction(async (tx) => {
+      const rows = await tx
+        .select()
+        .from(subscriptions)
+        .where(
+          and(eq(subscriptions.status, 'ACTIVE'), isNotNull(subscriptions.providerSubscriptionId)),
+        )
+        // Nunca varrida primeiro; depois, a tentativa mais antiga. Os desempates
+        // tornam o lote estável mesmo quando várias linhas recebem o mesmo carimbo.
+        .orderBy(
+          sql`${subscriptions.lastReconciledAt} asc nulls first`,
+          sql`${subscriptions.lastChargeAt} asc nulls first`,
+          subscriptions.id,
+        )
+        .limit(limit)
+        .for('update', { skipLocked: true })
+
+      if (rows.length === 0) return []
+      await tx
+        .update(subscriptions)
+        .set({ lastReconciledAt: sql`now()` })
+        .where(
+          inArray(
+            subscriptions.id,
+            rows.map((row) => row.id),
+          ),
+        )
+      return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
+    })
   }
 }
 

@@ -162,4 +162,70 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
     expect(await repo.expireLapsed(new Date(limite), 100)).toBe(1)
     expect((await statusDe(id)).status).toBe('expired')
   })
+
+  test('não sobrescreve uma renovação que vence a corrida pelo lock da linha', async () => {
+    const id = await semear({
+      status: 'active',
+      expiresAt: '1999-03-01T00:00:00Z',
+      rotulo: 'renovacao-concorrente',
+    })
+    const renewalConn = createDbConnection(testDatabaseUrl as string, { max: 1 })
+    const expiryConn = createDbConnection(testDatabaseUrl as string, { max: 1 })
+    const renewalHasLock = Promise.withResolvers<void>()
+    const allowRenewalCommit = Promise.withResolvers<void>()
+
+    try {
+      const [backend] = await expiryConn.sql<{ pid: number }[]>`
+        select pg_backend_pid() as pid
+      `
+      if (!backend) throw new Error('backend PostgreSQL esperado')
+      const expiryPid = backend.pid
+      const renewal = renewalConn.sql.begin(async (tx) => {
+        await tx`
+          update members.entitlements
+             set status = 'active',
+                 expires_at = '2099-01-01T00:00:00Z',
+                 version = version + 1
+           where id = ${id}
+        `
+        renewalHasLock.resolve()
+        await allowRenewalCommit.promise
+      })
+      await renewalHasLock.promise
+
+      const expiry = new DrizzleEntitlementRepository(expiryConn.db).expireLapsed(agora, 100)
+
+      // Espera a PROVA de que o sweep já selecionou a linha e está bloqueado no
+      // UPDATE. Não há sleep cego: o catálogo do Postgres é a condição de avanço.
+      let blocked = false
+      for (let attempt = 0; attempt < 100; attempt += 1) {
+        const [activity] = await conn.sql<{ wait_event_type: string | null }[]>`
+          select wait_event_type
+            from pg_stat_activity
+           where pid = ${expiryPid}
+        `
+        if (activity?.wait_event_type === 'Lock') {
+          blocked = true
+          break
+        }
+        await conn.sql`select pg_sleep(0.01)`
+      }
+      expect(blocked).toBe(true)
+
+      allowRenewalCommit.resolve()
+      await renewal
+      expect(await expiry).toBe(0)
+
+      const [row] = await conn.sql<{ status: string; expires_at: string }[]>`
+        select status, expires_at
+          from members.entitlements
+         where id = ${id}
+      `
+      expect(row?.status).toBe('active')
+      expect(row ? new Date(row.expires_at).toISOString() : null).toBe('2099-01-01T00:00:00.000Z')
+    } finally {
+      allowRenewalCommit.resolve()
+      await Promise.all([renewalConn.close(), expiryConn.close()])
+    }
+  })
 })

@@ -178,23 +178,82 @@ function saoPauloOffsetMs(instant: Date): number {
   return wallAsUtc - instant.getTime()
 }
 
+function matchesUtcComponents(
+  instant: Date,
+  expected: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    second: number
+  },
+): boolean {
+  return (
+    instant.getUTCFullYear() === expected.year &&
+    instant.getUTCMonth() + 1 === expected.month &&
+    instant.getUTCDate() === expected.day &&
+    instant.getUTCHours() === expected.hour &&
+    instant.getUTCMinutes() === expected.minute &&
+    instant.getUTCSeconds() === expected.second
+  )
+}
+
+function matchesSaoPauloWallClock(
+  instant: Date,
+  expected: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    second: number
+  },
+): boolean {
+  const actual: Record<string, number> = {}
+  for (const part of SAO_PAULO_PARTS.formatToParts(instant)) {
+    if (part.type !== 'literal') actual[part.type] = Number(part.value)
+  }
+  return (
+    actual.year === expected.year &&
+    actual.month === expected.month &&
+    actual.day === expected.day &&
+    actual.hour === expected.hour &&
+    actual.minute === expected.minute &&
+    actual.second === expected.second
+  )
+}
+
 /**
  * Hora de parede de São Paulo → instante UTC. Ponto fixo em duas passadas (a 1ª
  * estima o offset, a 2ª confirma): a conta continua certa se o Brasil voltar a
  * ter horário de verão, em vez de cravar -03:00 no código.
  */
-function saoPauloWallClockToUtc(m: RegExpExecArray): Date {
+function saoPauloWallClockToUtc(m: RegExpExecArray): Date | undefined {
+  const expected = {
+    year: Number(m[1]),
+    month: Number(m[2]),
+    day: Number(m[3]),
+    hour: Number(m[4]),
+    minute: Number(m[5]),
+    second: m[6] ? Number(m[6]) : 0,
+  }
   const wallAsUtc = Date.UTC(
-    Number(m[1]),
-    Number(m[2]) - 1,
-    Number(m[3]),
-    Number(m[4]),
-    Number(m[5]),
-    m[6] ? Number(m[6]) : 0,
+    expected.year,
+    expected.month - 1,
+    expected.day,
+    expected.hour,
+    expected.minute,
+    expected.second,
   )
+  // `Date.UTC` normaliza overflow (mês 99, 29/02 não bissexto, hora 25).
+  // O round-trip civil impede que garbage vire silenciosamente uma data futura.
+  if (!matchesUtcComponents(new Date(wallAsUtc), expected)) return undefined
   let utc = wallAsUtc
   for (let i = 0; i < 2; i += 1) utc = wallAsUtc - saoPauloOffsetMs(new Date(utc))
-  return new Date(utc)
+  const result = new Date(utc)
+  // Também rejeita uma eventual hora de parede inexistente numa transição de DST.
+  return matchesSaoPauloWallClock(result, expected) ? result : undefined
 }
 
 /**

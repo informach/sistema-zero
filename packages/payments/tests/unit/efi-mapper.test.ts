@@ -85,6 +85,34 @@ describe('efi-cobrancas.mapper (Boleto)', () => {
     expect(parsed.paidAt).toBeUndefined()
   })
 
+  test('parseDetailCharge rejeita data com componentes civis impossíveis', () => {
+    const parsed = parseDetailCharge(
+      {
+        data: {
+          charge_id: 2,
+          status: 'paid',
+          items: [{ value: 1000 }],
+          paid_at: '2026-99-99 25:61:00',
+        },
+      },
+      'fb',
+    )
+    expect(parsed.paidAt).toBeUndefined()
+
+    const fevereiro = parseDetailCharge(
+      {
+        data: {
+          charge_id: 3,
+          status: 'paid',
+          items: [{ value: 1000 }],
+          paid_at: '2026-02-29 10:00:00',
+        },
+      },
+      'fb',
+    )
+    expect(fevereiro.paidAt).toBeUndefined()
+  })
+
   // Payload REAL da cobrança 1049600345 (produção, 08/2026), reduzido: é o ciclo
   // de assinatura que ficou dias sem ser registrado no incidente do notification_url.
   const CARTAO_PAGO_REAL = {

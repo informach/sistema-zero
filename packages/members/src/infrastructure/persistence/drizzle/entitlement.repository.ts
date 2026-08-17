@@ -314,7 +314,18 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
     const updated = await this.db
       .update(entitlements)
       .set({ status: 'expired', updatedAt: now, version: sql`${entitlements.version} + 1` })
-      .where(inArray(entitlements.id, alvos))
+      // O SELECT interno pode ter visto a versão anterior de uma linha que estava
+      // bloqueada por uma renovação. No READ COMMITTED, o Postgres reavalia ESTE
+      // predicado após o lock: repetir a régua aqui impede o sweep de sobrescrever
+      // a validade futura que acabou de ser confirmada.
+      .where(
+        and(
+          inArray(entitlements.id, alvos),
+          eq(entitlements.status, 'active'),
+          isNotNull(entitlements.expiresAt),
+          lte(entitlements.expiresAt, now),
+        ),
+      )
       .returning({ id: entitlements.id })
     return updated.length
   }

@@ -37,7 +37,6 @@ export interface SubscriptionReconciliationWorkerOptions {
  */
 export class SubscriptionReconciliationWorker {
   private timer: ReturnType<typeof setInterval> | null = null
-  private running = false
   private inFlight: Promise<void> | null = null
 
   constructor(
@@ -52,9 +51,7 @@ export class SubscriptionReconciliationWorker {
   start(): void {
     if (this.timer) return
     this.timer = setInterval(() => {
-      this.inFlight = this.tick().finally(() => {
-        this.inFlight = null
-      })
+      void this.tick()
     }, this.options.intervalMs)
     this.logger.info('subscription.reconcile.worker.started', {
       intervalMs: this.options.intervalMs,
@@ -70,11 +67,19 @@ export class SubscriptionReconciliationWorker {
     if (this.inFlight) await this.inFlight
   }
 
-  async tick(): Promise<void> {
-    if (this.running) return
-    this.running = true
+  tick(): Promise<void> {
+    if (this.inFlight) return this.inFlight
+    const work = this.runTick()
+    this.inFlight = work
+    void work.finally(() => {
+      if (this.inFlight === work) this.inFlight = null
+    })
+    return work
+  }
+
+  private async runTick(): Promise<void> {
     try {
-      const active = await this.subscriptions.findActiveForReconcile(this.options.batchSize)
+      const active = await this.subscriptions.claimActiveForReconcile(this.options.batchSize)
       const concurrency = Math.max(1, this.options.concurrency ?? 3)
       for (let i = 0; i < active.length; i += concurrency) {
         // O handler por item NUNCA lança (ver `sweep`), senão uma assinatura
@@ -85,8 +90,6 @@ export class SubscriptionReconciliationWorker {
       this.logger.error('subscription.reconcile.tick_failed', {
         error: error instanceof Error ? error.message : String(error),
       })
-    } finally {
-      this.running = false
     }
   }
 

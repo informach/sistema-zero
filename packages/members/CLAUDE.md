@@ -864,8 +864,21 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   ⭐ Seguro por desenho: `extendTo` **REATIVA** uma `expired` quando a renovação chega
   (`entitlement.aggregate.ts`) — marcar não fecha porta. Nunca toca em `revoked`
   (cancelamento é mais forte que fim de prazo). O UPDATE é no-op na 2ª volta, então não
-  bumpa `version` à toa e não faz um grant concorrente perder a corrida.
+  bumpa `version` à toa. ⚠️ A régua `status='active' AND expires_at <= now` é repetida
+  no UPDATE EXTERNO, não só na subquery do lote: no READ COMMITTED o Postgres a reavalia
+  depois de esperar o lock e, se a renovação já gravou validade futura, o sweep vira
+  no-op em vez de sobrescrevê-la como `expired`.
   Provado contra Postgres real em `tests/db/expire-lapsed.test.ts`.
+  ⚠️ **Sem índice em `(status, expires_at)`, por medição e não por esquecimento**: em
+  produção (08/2026) a tabela tem 37 linhas e o `EXPLAIN ANALYZE` do predicado dá **seq
+  scan em 0,037 ms**. Como a varredura roda DENTRO da janela do lock de retenção, se a
+  tabela crescer para a casa dos milhares vale um índice parcial
+  (`where status='active' and expires_at is not null`) — re-medir antes.
+  ⚠️⚠️ **Gotcha do teste**: o banco de `tests/db` é COMPARTILHADO entre os arquivos e esta
+  varredura é GLOBAL. O teste ancora o cenário em **1999/2000** de propósito: com um relógio
+  em 2029, as matrículas de 2027 de OUTRO fixture também estavam vencidas e entravam na
+  conta (o CI reprovou com "esperado 1, recebido 5" enquanto local passava, porque eu havia
+  rodado só o arquivo). Rode `bun test tests/db` INTEIRO, não o arquivo.
 - **`AdminEntitlementView.activeNow`** (08/2026): a projeção admin passou a mandar o
   resultado de `isActiveAt` junto do `status` cru. A regra sai de QUEM É O DONO dela em
   vez de ser recalculada na UI (o painel usa isso para mostrar "Vencida"). ⚠️ Campo NOVO

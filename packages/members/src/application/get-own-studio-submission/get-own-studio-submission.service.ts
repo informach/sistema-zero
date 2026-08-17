@@ -3,12 +3,12 @@ import {
   PintaBlockNotFoundError,
   StudioBlockNotFoundError,
 } from '../../domain/course/course.errors'
+import type { SubmissionBlockKind } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
-import type { SubmissionBlockKind } from '../submit-studio-project/submit-studio-project.service'
 
 /** Projeto que o PRÓPRIO aluno/perfil ENVIOU neste bloco. `null` se nunca enviou. */
 export interface OwnStudioSubmissionView {

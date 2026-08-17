@@ -1,4 +1,5 @@
 import type { CourseAudience } from '../course/course'
+import type { SubmissionBlockKind } from '../course/lesson-block'
 import type { StudioCheckResult } from '../course/studio-activity'
 
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
@@ -128,8 +129,6 @@ export interface StudioSubmissionGlobalRow extends StudioSubmissionCourseRow {
   reviewed: boolean
 }
 
-export type SubmissionBlockKind = 'studio' | 'pinta'
-
 /** Uma entrega recente (Estúdio ou Pinta) para a ficha admin, com aula/curso resolvidos. */
 export interface RecentStudioSubmission {
   blockId: string
@@ -138,7 +137,8 @@ export interface RecentStudioSubmission {
   lessonTitle: string | null
   courseTitle: string | null
   score: number | null
-  passed: boolean
+  /** `null` quando a entrega não possui correção automática. */
+  passed: boolean | null
   submittedAt: Date
   message: string | null
 }
