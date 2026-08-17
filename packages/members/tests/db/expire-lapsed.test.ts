@@ -24,7 +24,18 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
   let conn: DbConnection
   let repo: DrizzleEntitlementRepository
   /** Janela exclusiva deste arquivo (o banco de tests/db é compartilhado). */
-  const marca = '2029-03-'
+  const marca = '1999-'
+  /**
+   * ⚠️⚠️ O RELÓGIO é o isolamento, e ele precisa ser ANTIGO.
+   *
+   * O `expireLapsed` varre a tabela INTEIRA (é o trabalho dele), e o banco de
+   * `tests/db` é compartilhado entre os arquivos — outros fixtures deixam
+   * matrículas com validade em 2027. Com um `now` em 2029, elas também estavam
+   * vencidas e entravam na conta: o CI reprovou com "esperado 1, recebido 5",
+   * enquanto local passava porque eu rodara só este arquivo. Ancorando o cenário
+   * em 1999/2000, nenhuma linha de outro fixture é vencida NESTE relógio.
+   */
+  const agora = new Date('2000-01-01T00:00:00Z')
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
@@ -92,7 +103,7 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
   test('marca a vencida e NÃO toca na futura, na vitalícia nem na revogada', async () => {
     const vencida = await semear({
       status: 'active',
-      expiresAt: '2029-03-01T00:00:00Z',
+      expiresAt: '1999-03-01T00:00:00Z',
       rotulo: 'vencida',
     })
     const futura = await semear({
@@ -103,11 +114,11 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
     const vitalicia = await semear({ status: 'active', expiresAt: null, rotulo: 'vitalicia' })
     const revogada = await semear({
       status: 'revoked',
-      expiresAt: '2029-03-01T00:00:00Z',
+      expiresAt: '1999-03-01T00:00:00Z',
       rotulo: 'revogada',
     })
 
-    const afetadas = await repo.expireLapsed(new Date('2029-03-10T00:00:00Z'), 100)
+    const afetadas = await repo.expireLapsed(agora, 100)
 
     expect(afetadas).toBe(1)
     expect((await statusDe(vencida)).status).toBe('expired')
@@ -120,33 +131,33 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
   test('a versão sobe (concorrência otimista) e a 2ª volta é no-op', async () => {
     const vencida = await semear({
       status: 'active',
-      expiresAt: '2029-03-01T00:00:00Z',
+      expiresAt: '1999-03-01T00:00:00Z',
       rotulo: 'idem',
     })
     const antes = await statusDe(vencida)
 
-    await repo.expireLapsed(new Date('2029-03-10T00:00:00Z'), 100)
+    await repo.expireLapsed(agora, 100)
     const depois = await statusDe(vencida)
     expect(depois.version).toBe(antes.version + 1)
 
     // Sem o no-op, cada ciclo de retenção bumparia a versão de toda vencida e
     // faria um grant concorrente perder a corrida à toa.
-    const segunda = await repo.expireLapsed(new Date('2029-03-10T00:00:00Z'), 100)
+    const segunda = await repo.expireLapsed(agora, 100)
     expect(segunda).toBe(0)
     expect((await statusDe(vencida)).version).toBe(depois.version)
   })
 
   test('respeita o teto do lote', async () => {
-    await semear({ status: 'active', expiresAt: '2029-03-01T00:00:00Z', rotulo: 'lote-a' })
-    await semear({ status: 'active', expiresAt: '2029-03-02T00:00:00Z', rotulo: 'lote-b' })
-    await semear({ status: 'active', expiresAt: '2029-03-03T00:00:00Z', rotulo: 'lote-c' })
+    await semear({ status: 'active', expiresAt: '1999-03-01T00:00:00Z', rotulo: 'lote-a' })
+    await semear({ status: 'active', expiresAt: '1999-03-02T00:00:00Z', rotulo: 'lote-b' })
+    await semear({ status: 'active', expiresAt: '1999-03-03T00:00:00Z', rotulo: 'lote-c' })
 
-    expect(await repo.expireLapsed(new Date('2029-03-10T00:00:00Z'), 2)).toBe(2)
-    expect(await repo.expireLapsed(new Date('2029-03-10T00:00:00Z'), 2)).toBe(1)
+    expect(await repo.expireLapsed(agora, 2)).toBe(2)
+    expect(await repo.expireLapsed(agora, 2)).toBe(1)
   })
 
   test('a validade EXATAMENTE agora conta como vencida (a carência já está embutida)', async () => {
-    const limite = '2029-03-05T12:00:00Z'
+    const limite = '1999-06-01T12:00:00Z'
     const id = await semear({ status: 'active', expiresAt: limite, rotulo: 'limite' })
     expect(await repo.expireLapsed(new Date(limite), 100)).toBe(1)
     expect((await statusDe(id)).status).toBe('expired')

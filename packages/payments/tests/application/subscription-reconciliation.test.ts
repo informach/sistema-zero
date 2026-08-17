@@ -178,6 +178,21 @@ describe('SubscriptionReconciliationWorker', () => {
     expect(logs.some((l) => l.msg === 'subscription.reconcile.tick_failed')).toBe(false)
   })
 
+  test('⚠️ ciclo RECUSADO (valor divergente) não pode virar alerta de recuperação', async () => {
+    // O `handleCycle` recusa por divergência de valor e NÃO cria linha. Sem
+    // conferir o resultado, a varredura gritava "recuperei" a cada 6h para
+    // sempre — alerta mentiroso e recorrente, justo no caso que pede olho humano.
+    const ciclo = 'charge-divergente'
+    gateway.setCycleChargeAmount(ciclo, 12345n) // ≠ 9700 da assinatura
+    gateway.setSubscriptionCharges(providerSubscriptionId, [{ chargeId: ciclo, status: 'PAID' }])
+
+    const { logger, logs } = spyLogger()
+    await newWorker(logger).tick()
+
+    expect(await payments.findByProviderPaymentId(gateway.provider, ciclo)).toBeNull()
+    expect(logs.some((l) => l.msg === 'subscription.reconcile.cycle_recovered')).toBe(false)
+  })
+
   test('assinatura CANCELADA fica fora da varredura', async () => {
     const stored = await subscriptions.findById([...subscriptions.byId.keys()][0] ?? '')
     if (!stored) throw new Error('assinatura esperada')

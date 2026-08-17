@@ -106,6 +106,24 @@ export class SubscriptionReconciliationWorker {
 
         await this.cycles.handleCycle({ subscriptionId: providerId, chargeId: charge.chargeId })
 
+        // ⚠️ O `handleCycle` pode RECUSAR sem lançar (divergência de valor, evento
+        // já consumido no inbox). Sem conferir se a linha nasceu, a varredura
+        // gritaria "recuperei" a cada volta, para sempre, no caso que mais pede
+        // olho humano. O alerta abaixo exige a PROVA.
+        const registrado = await this.payments.findByProviderPaymentId(
+          this.gateway.provider,
+          charge.chargeId,
+        )
+        if (!registrado) {
+          // Quieto de propósito: quem sabe o motivo é o `handleCycle`, e ele já
+          // falou (em ERROR) na primeira vez — repetir aqui vira ruído de 6 em 6h.
+          this.logger.info('subscription.reconcile.cycle_not_ingested', {
+            subscriptionId: subscription.id,
+            chargeId: charge.chargeId,
+          })
+          continue
+        }
+
         // ⚠️ ERROR de PROPÓSITO, não engano: a convenção do pacote é "log ERROR =
         // sinal alertável" (o espelho do Sentry transforma em issue). Recuperar um
         // ciclo aqui significa que a notificação do provedor se perdeu — dinheiro
