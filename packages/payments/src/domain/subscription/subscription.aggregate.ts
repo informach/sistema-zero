@@ -242,16 +242,21 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
    */
   recordCharge(chargeId: string, paidAt?: Date): void {
     if (this.state.lastChargeId === chargeId) return
+    const chargePaidAt = paidAt && !Number.isNaN(paidAt.getTime()) ? paidAt : new Date()
     this.state.lastChargeId = chargeId
     this.state.cyclesCompleted += 1
-    this.state.lastChargeAt = paidAt && !Number.isNaN(paidAt.getTime()) ? paidAt : new Date()
+    if (!this.state.lastChargeAt || chargePaidAt > this.state.lastChargeAt) {
+      this.state.lastChargeAt = chargePaidAt
+    }
     this.touch()
     this.addEvent(
       new SubscriptionChargePaidEvent(this.id, {
         consumerId: this.state.consumerId,
         chargeId,
         cyclesCompleted: this.state.cyclesCompleted,
-        paidAt: this.state.lastChargeAt.toISOString(),
+        // O evento descreve ESTE ciclo; o estado acima preserva separadamente a
+        // data máxima conhecida para métricas e ordenação da assinatura.
+        paidAt: chargePaidAt.toISOString(),
       }),
     )
     if (this.state.repeats !== null && this.state.cyclesCompleted >= this.state.repeats) {

@@ -1,4 +1,19 @@
-import { and, asc, desc, eq, gt, isNull, ne, notInArray, or, type SQL, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gt,
+  inArray,
+  isNotNull,
+  isNull,
+  lte,
+  ne,
+  notInArray,
+  or,
+  type SQL,
+  sql,
+} from 'drizzle-orm'
 import { EntitlementAggregate } from '../../../domain/entitlement/entitlement.aggregate'
 import type { AccessType } from '../../../domain/entitlement/fulfillment'
 import type {
@@ -278,5 +293,40 @@ export class DrizzleEntitlementRepository implements EntitlementRepository {
       )
       .returning({ userId: entitlements.userId })
     return { affected: updated.length, userIds: [...new Set(updated.map((r) => r.userId))] }
+  }
+
+  async expireLapsed(now: Date, limit: number): Promise<number> {
+    // A validade já EMBUTE a carência (`computeExpiry` soma os dias de graça), então
+    // vencer exatamente em `expires_at` é o certo. Vitalícia (`null`) nunca entra.
+    // ⭐ Seguro por desenho: se a renovação chegar depois, `extendTo` REATIVA a
+    // vencida (a régua do agregado já previa isso) — marcar não fecha porta.
+    const alvos = this.db
+      .select({ id: entitlements.id })
+      .from(entitlements)
+      .where(
+        and(
+          eq(entitlements.status, 'active'),
+          isNotNull(entitlements.expiresAt),
+          lte(entitlements.expiresAt, now),
+        ),
+      )
+      .limit(limit)
+    const updated = await this.db
+      .update(entitlements)
+      .set({ status: 'expired', updatedAt: now, version: sql`${entitlements.version} + 1` })
+      // O SELECT interno pode ter visto a versão anterior de uma linha que estava
+      // bloqueada por uma renovação. No READ COMMITTED, o Postgres reavalia ESTE
+      // predicado após o lock: repetir a régua aqui impede o sweep de sobrescrever
+      // a validade futura que acabou de ser confirmada.
+      .where(
+        and(
+          inArray(entitlements.id, alvos),
+          eq(entitlements.status, 'active'),
+          isNotNull(entitlements.expiresAt),
+          lte(entitlements.expiresAt, now),
+        ),
+      )
+      .returning({ id: entitlements.id })
+    return updated.length
   }
 }

@@ -500,7 +500,9 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   (`alignShapes`): 6 botões no painel; 2+ = entre si, 1 = na tela; grupos transladam INTEIROS.
 - **CAMADAS do vetor** (`VectorLayerPanel`): uma linha por FORMA (topo primeiro) com olho,
   miniatura, nome (`COPY.vector.shapeNames`; texto = "Texto: <conteúdo>") e alça (arrasto = UMA
-  entrada de undo via replace+`commitGesture`; ↑/↓ pelo teclado). Linha seleciona o GRUPO inteiro
+  entrada de undo via replace+`commitGesture`; ↑/↓ pelo teclado). ⚠️ **A alça move o GRUPO
+  inteiro** (ver "Ordem-Z do grupo"), e a faixinha à esquerda da linha avisa que ela não anda
+  sozinha. Linha seleciona o GRUPO inteiro
   (aria-label "Selecionar: <nome>" — distinto do botão de ferramenta). **`hidden?: boolean`** no
   `VectorShapeBase` (sanitize OMITE quando falso; helper `visibleShapes`): escondida some do
   palco e de TODO export/prévia num funil único (`shapesToMarkup`+`gradientDefsMarkup` no string,
@@ -524,14 +526,56 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   edição de pontos as implementa. ⚠️ **Girar multi-seleção SAIU desta lista** (08/2026): ver
   "Girar a seleção inteira" abaixo.
 - **Backlog irmão do girar em grupo (ninguém pediu ainda)**: `flipSelected` espelha cada forma no
-  PRÓPRIO centro, não no da seleção (espelhar um rosto de dois olhos deveria TROCAR os olhos), e
-  `moveOrder` continua só individual (um grupo não sobe de camada inteiro). Os dois mudam o
-  resultado visual de desenhos que já existem, por isso ficaram de fora.
+  PRÓPRIO centro, não no da seleção (espelhar um rosto de dois olhos deveria TROCAR os olhos). Muda
+  o resultado visual de desenhos que já existem, por isso ficou de fora. ⚠️ **A ordem-Z SAIU desta
+  lista** (17/08/2026): ver "Ordem-Z do grupo" abaixo.
 - Testes: `vectorUi.test.tsx` (caixa/canais/grade/snap/laço/multi-resize/alinhar/caneta/texto/
   raio/espaço), `vectorLayersUi.test.tsx` (painel Camadas), `vector/grid.test.ts`,
   `geometry.test.ts` (union/intersect/align), `model.test.ts`+`svg.test.ts` (hidden). ⚠️ Gotchas
   de teste: escopar consultas de shapes NO PALCO (`stage.querySelector(...)` — miniaturas do
   painel e ícones lucide também têm rect/text) e fixar o `getBoundingClientRect` do svg.
+
+## Ordem-Z do grupo (`vector/order.ts`, 17/08/2026)
+
+Pedido dela: mandar um GRUPO para a frente e para trás. ⚠️⚠️ **O que estava em jogo era pior que
+"não anda junto": agrupar TIRAVA o acesso à ordem.** Clicar numa forma agrupada expande a seleção
+(`expandToGroups`), então `single` ficava `null` e os quatro botões viviam `disabled` — a única
+saída era arrastar as linhas do painel uma a uma, justo o trabalho que agrupar deveria poupar.
+
+A régua agora é uma só, compartilhada pelos quatro botões e pelo painel Camadas:
+
+| gesto | o que acontece |
+|---|---|
+| uma camada para a frente/trás | o bloco pula o **cluster** vizinho inteiro (cluster = o grupo, ou a forma solta) |
+| bem para a frente/fundo | o bloco vai ao topo/fundo, na ordem relativa |
+| vizinho **escondido** | não consome o passo (senão o botão parece morto) |
+| arranjo inalterado | `null`, e quem chama NÃO commita |
+
+- ⭐ **`moveShapesOrder`/`dropShapesOrder` expandem os ids para o grupo POR DENTRO** — por isso o
+  painel manda só o id da linha e o grupo vem junto, sem importar UI dentro de `vector/`.
+- ⚠️ A chave de cluster é `g:<groupId>` **ou** `s:<id>`, em espaços SEPARADOS: com o `groupId ?? id`
+  cru do `alignShapes`, um `groupId` igual ao `id` de outra forma grudaria as duas. `newId` não
+  colide na prática, mas um `.pinta.json` importado escreve o que quiser nesses campos (medido: sem
+  o prefixo, mover `y` levava junto a forma de id `abc`). ⚠️ O `alignShapes` segue com a chave crua.
+- ⚠️ **`null` no no-op é obrigação**: `commitShapes` só desiste quando o asset sai IDÊNTICO, então
+  um array novo de conteúdo igual criaria uma entrada de desfazer que não desfaz nada.
+- ⚠️ **Mover TORNA o bloco contíguo**: agrupar nunca reordenou (é só etiqueta), então uma forma de
+  fora pode estar empilhada no meio do grupo — e ela sai do meio no primeiro movimento. É a
+  tradução de "o grupo é uma peça só", e vale dizer isso antes de alguém achar que é bug.
+- ⚠️⚠️ **Agrupar continua SEM reordenar.** Compactar no `groupSelected` mudaria o desenho no
+  instante em que ela agrupa, sem ninguém ter pedido ordem — é o risco que segurou este item no
+  backlog por meses.
+- **Toque não ganhou os quatro botões**: a barra flutuante já chega a 7 alvos em 375px (mesmo
+  motivo do "misturar formas" ter levado só um). No celular a ordem se faz pelo painel Camadas,
+  dentro do disclosure "Cores e camadas" — verificado em 375px, alças de 44px e sem rolagem lateral.
+- Testes: `vector/order.test.ts` (puro, com os anti-vácuos do grupo que se parte e do vizinho-grupo
+  pela metade), `vectorLayersUi.test.tsx` (seta e arrasto levando o grupo com UM undo) e
+  `vectorUi.test.tsx` (os quatro botões VIVOS com grupo selecionado). ⚠️ Antes deste lote os quatro
+  não tinham teste nenhum.
+- ⚠️ Gotcha de QA em navegador: dirigir o arrasto do painel por `PointerEvent` sintético estoura
+  `setPointerCapture` ("No active pointer with the given id") e o arrasto nem começa. Não é bug do
+  produto — é o ponteiro sintético; neutralize `Element.prototype.setPointerCapture` durante a
+  medição, ou dirija pelo CDP de verdade.
 
 ## Girar a seleção inteira, cursor da Mão e texto de várias linhas (08/2026)
 

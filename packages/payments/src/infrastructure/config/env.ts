@@ -143,6 +143,15 @@ const EnvSchema = z
     RECONCILE_INTERVAL_MS: z.coerce.number().int().positive().default(60_000),
     RECONCILE_BATCH_SIZE: z.coerce.number().int().positive().default(50),
 
+    // Reconciliação de ASSINATURAS (ciclo pago que nunca virou linha). Intervalo
+    // largo de propósito: cada volta chama a Efí uma vez POR assinatura, e a
+    // carência da matrícula (3 dias) dá folga de sobra para recuperar a tempo.
+    SUBSCRIPTION_RECONCILE_INTERVAL_MS: z.coerce.number().int().positive().default(21_600_000),
+    SUBSCRIPTION_RECONCILE_BATCH_SIZE: z.coerce.number().int().positive().default(50),
+    SUBSCRIPTION_RECONCILE_CONCURRENCY: z.coerce.number().int().positive().default(3),
+    /** Espelha a carência da matrícula no members — só para o contador de atrasadas. */
+    SUBSCRIPTION_OVERDUE_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
+
     // Entrega de webhook de saída (notificar consumidores)
     WEBHOOK_DELIVERY_INTERVAL_MS: z.coerce.number().int().positive().default(2000),
     WEBHOOK_DELIVERY_BATCH_SIZE: z.coerce.number().int().positive().default(50),

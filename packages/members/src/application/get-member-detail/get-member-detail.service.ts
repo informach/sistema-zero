@@ -47,7 +47,11 @@ export class GetMemberDetailService {
 
     // Sem perfis (conta nunca criou) → comportamento de sempre (só `progress`).
     if (profileIds.length === 0) {
-      return { userId, entitlements: ents.map(toAdminEntitlementView), progress: accountProgress }
+      return {
+        userId,
+        entitlements: ents.map((e) => toAdminEntitlementView(e)),
+        progress: accountProgress,
+      }
     }
 
     const profilesProgress: MemberProfileProgressView[] = await Promise.all(
@@ -55,7 +59,7 @@ export class GetMemberDetailService {
     )
     return {
       userId,
-      entitlements: ents.map(toAdminEntitlementView),
+      entitlements: ents.map((e) => toAdminEntitlementView(e)),
       progress: accountProgress,
       profilesProgress,
     }

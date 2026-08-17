@@ -13,6 +13,7 @@ import {
   hasComingSoonBlock,
   MAX_PINTA_ASSET_CHARS,
   MAX_STUDIO_PROJECT_CHARS,
+  type SubmissionBlockKind,
 } from '../../domain/course/lesson-block'
 import {
   type ClientCheckResult,
@@ -52,8 +53,6 @@ export interface StudioSubmissionResultView {
  * pendente/respondida/conferida, a conversa de Recados e a ficha 360 — nada disso olha o formato
  * do payload. Dívida assumida: o nome da tabela passa a mentir um pouco (é "entrega de aula").
  */
-export type SubmissionBlockKind = 'studio' | 'pinta'
-
 const SUBMISSION_LIMITS: Record<SubmissionBlockKind, { maxChars: number; notFound: () => Error }> =
   {
     studio: { maxChars: MAX_STUDIO_PROJECT_CHARS, notFound: () => new StudioBlockNotFoundError() },

@@ -390,6 +390,57 @@ matchers (gateway + Elysia — rota declarada ANTES do `/:id` e coberta por test
 Efí **Cobranças "Assinaturas"**: a Efí gerencia a recorrência (cria-se plano +
 assinatura 1x e ela cobra o cartão guardado a cada ciclo, notificando pelo MESMO
 token model do boleto/cartão) — **não há worker/scheduler de cobrança nosso**.
+
+> ⚠️⚠️ **INCIDENTE 17/08/2026 — um assinante PAGOU a renovação e PERDEU o acesso.**
+> A assinatura tinha `notification_url: **null**` na Efí, porque
+> `EFI_BOLETO_NOTIFICATION_URL` **não existia no host de produção**. Sem aviso: nenhum
+> ciclo virou linha, nenhum `payment.paid` saiu, o funil não estendeu a matrícula e ela
+> venceu no fim da carência. O inbox `webhook_events` tinha **3 entradas na história
+> inteira**, nenhuma de assinatura — e ninguém notou porque **a 1ª cobrança vem na
+> resposta SÍNCRONA do `one-step`**, então só a 1ª RENOVAÇÃO revela o furo.
+> Consertado com: a env nos dois ambientes, `PUT /v1/subscription/:id/metadata`
+> (`{custom_id, notification_url}` — preservar o `custom_id`, que é o NOSSO id) nas
+> assinaturas que já existiam, e as três redes abaixo. Detalhe em
+> `~/.claude/memory/incidente-assinatura-sem-notification-url.md`.
+
+- ⭐ **`SubscriptionReconciliationWorker`** (`infrastructure/workers/`, 08/2026) — a rede
+  que faltava. Reivindica assinaturas `ACTIVE`
+  (`SubscriptionRepository.claimActiveForReconcile`) em lote com transação CURTA,
+  `FOR UPDATE SKIP LOCKED` e cursor durável `subscriptions.last_reconciled_at`
+  (migration `0006`): nunca varrida primeiro, depois tentativa mais antiga. Isso
+  divide réplicas e garante que um lote menor que o total ROTACIONE, sem manter
+  transação aberta na chamada externa. Depois pede o histórico de ciclos
+  (`PaymentGateway.listSubscriptionCharges` → o MESMO `GET /subscription/:id` do
+  `getSubscription`) e, para cada cobrança `paid` sem linha em `payments`, chama
+  `HandleSubscriptionNotificationService.handleCycle`. ⭐ Ela só DESCOBRE: quem age é o
+  caminho da notificação, já idempotente (dedupe no inbox). Envs
+  `SUBSCRIPTION_RECONCILE_INTERVAL_MS` (6h), `_BATCH_SIZE`, `_CONCURRENCY`.
+  ⚠️ **Sem advisory lock de propósito**: ele exigiria manter a transação viva durante
+  a Efí. O claim acima termina ANTES da rede; uma queda depois do claim só adia aquela
+  linha até a rotação seguinte, e o caminho continua idempotente nas duas camadas.
+  ⚠️ **`subscription.reconcile.cycle_recovered` sai em ERROR de propósito** (log ERROR =
+  sinal alertável): recuperar um ciclo é sucesso, mas PROVA que a notificação se perdeu.
+- **`subscriptionsOverdue` no `/metrics`**: assinaturas `ACTIVE` cujo último ciclo pago já
+  passou do intervalo + `SUBSCRIPTION_OVERDUE_GRACE_DAYS` (3, espelha a carência do
+  members). A conta é em SQL e em `America/Sao_Paulo`, espelhando a regra da Efí:
+  se o ciclo atual caiu no último dia, o próximo também cai no último dia
+  (28/02 → 31/03, não 28/03). Não aproxima mês por 30 dias em JS.
+- ⚠️⚠️ **A cobrança de CARTÃO não tem `paid_at`** (medido na Efí real, 08/2026): o
+  `GET /charge/:id` traz `payment.created_at` e um `history[]` cujas entradas têm
+  `created_at` + `message` (texto em português) e **nenhum `status`** — diferente do
+  `history` do `GET /subscription/:id`, que TEM `status`. O `parseCardDetailCharge`
+  procurava `h.status` e nunca casava, então `paidAt` saía `undefined` e o `markPaid`
+  carimbava a hora do PROCESSAMENTO (num ciclo recuperado dias depois, 3 dias de erro).
+  Hoje lê `paid_at` → `payment.created_at` → última entrada do histórico; a `message`
+  NUNCA é parseada. ⚠️ E os timestamps da Cobranças vêm **sem fuso, em horário de São
+  Paulo**: `parseProviderDate` converte o formato ingênuo `YYYY-MM-DD HH:MM:SS` de SP
+  para UTC (offset perguntado ao ICU, não cravado em -03:00) e deixa string com `Z`
+  intocada. O parser exige round-trip dos componentes civis e de São Paulo: `Date.UTC`
+  normaliza overflow, então sem essa prova `2026-99-99 25:61:00` virava uma data válida
+  em 2034. Sem a conversão de fuso, em produção (TZ=UTC) todo pagamento de cartão ficava
+  3h adiantado.
+  ⚠️ Documentado e NÃO consertado: `markPaid` sai cedo se já está `PAID`, então uma
+  notificação posterior não corrige uma data errada já gravada.
 - Agregado `SubscriptionAggregate` (PENDING→ACTIVE→CANCELED/EXPIRED); ports
   `subscription-repository` + `subscription-plan-registry`; serviços
   `create/cancel/get-subscription`; rotas `POST/GET/DELETE /subscriptions`. O funil

@@ -213,6 +213,12 @@ export interface ProviderSubscription {
   status: ProviderSubscriptionStatus
 }
 
+/** Uma cobrança do histórico da assinatura no provedor (ciclo). */
+export interface ProviderSubscriptionCharge {
+  chargeId: string
+  status: ProviderChargeStatus
+}
+
 export interface PaymentGateway {
   readonly provider: string
 
@@ -274,6 +280,13 @@ export interface PaymentGateway {
 
   /** Re-consulta o estado da assinatura no provedor (reconciliação/cancelamento). */
   getSubscription(providerSubscriptionId: string): Promise<ProviderSubscription>
+
+  /**
+   * Histórico de cobranças (ciclos) da assinatura no provedor. É o que permite
+   * descobrir um ciclo PAGO que nunca virou linha aqui — o furo que cortou o
+   * acesso de um assinante em 08/2026, quando a notificação nunca chegou.
+   */
+  listSubscriptionCharges(providerSubscriptionId: string): Promise<ProviderSubscriptionCharge[]>
 
   /** Cancela a assinatura na Efí (interrompe as cobranças futuras). */
   cancelSubscription(providerSubscriptionId: string): Promise<void>

@@ -9,12 +9,17 @@
  * da seleção. Clicar numa linha seleciona a forma (grupo inteiro, como no
  * palco). Arrastar fecha com UMA entrada de undo (replace por cruzamento +
  * commitGesture no solto).
+ *
+ * ⚠️ Forma AGRUPADA anda junto aqui também: arrastar (ou ↑/↓) uma linha do
+ * grupo leva o grupo inteiro, coerente com o clique que seleciona o grupo todo.
+ * A faixa colorida à esquerda da linha é o aviso de que ela não anda sozinha.
  */
 import { clsx } from 'clsx'
 import type { JSX, PointerEvent as ReactPointerEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { VectorShape } from '../../../vector/model'
+import { dropShapesOrder, moveShapesOrder } from '../../../vector/order'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
 import { Eye, EyeOff, GripVertical } from '../../ui/icons'
@@ -80,6 +85,8 @@ export function VectorLayerPanel({
 
   // De cima para baixo, como a criança vê o desenho (fim do array = topo).
   const rows = [...doc.shapes].reverse()
+  /** Grupo da linha em arrasto: o bloco inteiro se acende, não só a alça tocada. */
+  const draggingGroup = dragging ? doc.shapes.find((s) => s.id === dragging)?.groupId : undefined
 
   function selectShape(shape: VectorShape): void {
     // Grupo inteiro, consistente com o clique no palco.
@@ -100,16 +107,14 @@ export function VectorLayerPanel({
     if (nowHidden) setSelectedIds((current) => current.filter((id) => id !== shape.id))
   }
 
-  /** Move a forma `delta` posições no EMPILHAMENTO (+1 = para cima/topo). */
-  function move(shape: VectorShape, delta: number): void {
-    const shapes = [...currentShapes()]
-    const from = shapes.findIndex((s) => s.id === shape.id)
-    const to = from + delta
-    if (from === -1 || to < 0 || to >= shapes.length) return
-    const [moved] = shapes.splice(from, 1)
-    if (!moved) return
-    shapes.splice(to, 0, moved)
-    commitShapes(shapes)
+  /**
+   * Um passo no EMPILHAMENTO (+1 = para cima/topo). Forma agrupada leva o grupo
+   * inteiro, igual ao clique que já seleciona o grupo todo — a régua mora em
+   * `vector/order.ts` e é a MESMA dos quatro botões da faixa.
+   */
+  function move(shape: VectorShape, delta: 1 | -1): void {
+    const next = moveShapesOrder(currentShapes(), [shape.id], delta)
+    if (next) commitShapes(next)
   }
 
   /**
@@ -134,15 +139,11 @@ export function VectorLayerPanel({
         return moveEvent.clientY >= rect.top && moveEvent.clientY <= rect.bottom
       })
       const overId = items[overIndex]?.dataset.shape
-      if (!overId || overId === shape.id) return
-      const shapes = [...currentShapes()]
-      const from = shapes.findIndex((s) => s.id === shape.id)
-      const to = shapes.findIndex((s) => s.id === overId)
-      if (from === -1 || to === -1) return
-      const [moved] = shapes.splice(from, 1)
-      if (!moved) return
-      shapes.splice(to, 0, moved)
-      commitShapes(shapes, false)
+      if (!overId) return
+      // Grupo vai junto, e passar por cima de um IRMÃO do bloco é no-op (o
+      // `dropShapesOrder` cuida dos dois, senão a lista se debate no caminho).
+      const next = dropShapesOrder(currentShapes(), [shape.id], overId)
+      if (next) commitShapes(next, false)
     }
     const onUp = (): void => {
       setDragging(null)
@@ -163,6 +164,11 @@ export function VectorLayerPanel({
           const active = selectedIds.includes(shape.id)
           const visible = shape.hidden !== true
           const label = shapeLabel(shape)
+          const grouped = shape.groupId !== undefined
+          // O grupo INTEIRO se acende no arrasto: quem se mexe é o bloco todo.
+          const moving =
+            dragging !== null &&
+            (shape.id === dragging || (grouped && shape.groupId === draggingGroup))
           return (
             <li
               key={shape.id}
@@ -170,9 +176,15 @@ export function VectorLayerPanel({
               className={clsx(
                 'flex items-center gap-1 rounded-xl border-2 pr-1 transition',
                 active ? 'border-pin-accent' : 'border-transparent',
-                dragging === shape.id && 'opacity-60',
+                moving && 'opacity-60',
               )}
             >
+              {grouped ? (
+                <span
+                  aria-hidden="true"
+                  className="my-1.5 ml-0.5 w-1 shrink-0 self-stretch rounded-full bg-pin-accent/50"
+                />
+              ) : null}
               <ToolButton
                 icon={visible ? Eye : EyeOff}
                 label={`${visible ? COPY.layers.hide : COPY.layers.show}: ${label}`}
@@ -200,8 +212,8 @@ export function VectorLayerPanel({
               </button>
               <button
                 type="button"
-                aria-label={`${COPY.layers.reorder}: ${label}`}
-                title={COPY.layers.reorder}
+                aria-label={`${grouped ? COPY.layers.reorderGroup : COPY.layers.reorder}: ${label}`}
+                title={grouped ? COPY.layers.reorderGroup : COPY.layers.reorder}
                 onPointerDown={(event) => handleDragStart(shape, event)}
                 onKeyDown={(event) => {
                   // Teclado é a via acessível do arrastar.

@@ -209,6 +209,9 @@ export const subscriptions = paymentsSchema.table(
     // Último charge_id contabilizado (torna recordCharge idempotente).
     lastChargeId: text('last_charge_id'),
     lastChargeAt: timestamp('last_charge_at', { withTimezone: true }),
+    // Cursor operacional do backstop de renovação. Não pertence ao agregado:
+    // reivindicar um scan não é uma mudança no contrato da assinatura.
+    lastReconciledAt: timestamp('last_reconciled_at', { withTimezone: true }),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     canceledAt: timestamp('canceled_at', { withTimezone: true }),
@@ -219,6 +222,9 @@ export const subscriptions = paymentsSchema.table(
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),
+    index('subscriptions_reconcile_idx')
+      .on(t.lastReconciledAt.asc().nullsFirst(), t.lastChargeAt.asc().nullsFirst(), t.id.asc())
+      .where(sql`status = 'ACTIVE' AND provider_subscription_id IS NOT NULL`),
     // Sort default da lista admin (ORDER BY created_at DESC).
     index('subscriptions_created_at_idx').on(t.createdAt),
     // Busca livre `q` do admin (ver payments_*_trgm_idx).

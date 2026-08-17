@@ -397,6 +397,17 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     ).toBe(201)
   })
 
+  test('canonicaliza o nome da cadeia antes de validar e persistir', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+
+    const res = await blocoPinta(app, aulas[0].id, { chain: '\t heroi\u00a0' })
+
+    expect(res.status).toBe(201)
+    const bloco = await readJson(res)
+    expect(bloco.content.chain).toBe('heroi')
+  })
+
   test('reeditar o PRÓPRIO bloco não conflita consigo mesmo', async () => {
     // Sem a exclusão do próprio id, trocar o tipo de um bloco que já está na cadeia (sozinho)
     // seria impossível — ele brigaria com a versão anterior de si.

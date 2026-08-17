@@ -32,6 +32,7 @@ function rowLabels(): string[] {
 // `shapeNames` é Record<string, string>: fixa os rótulos usados nas asserções.
 const RECT = COPY.vector.shapeNames.rect ?? ''
 const ELLIPSE = COPY.vector.shapeNames.ellipse ?? ''
+const LINE = COPY.vector.shapeNames.line ?? ''
 
 /** Abre um cenário vetorial e desenha retângulo + círculo (círculo por cima). */
 async function openWithTwoShapes(): Promise<HTMLElement> {
@@ -152,6 +153,56 @@ describe('painel Camadas do vetor', () => {
     fireEvent.keyDown(window, { key: 'z', ctrlKey: true })
     await waitFor(() => {
       expect(rowLabels()).toEqual([ELLIPSE, RECT])
+    })
+  })
+
+  describe('forma AGRUPADA anda com o grupo', () => {
+    /** Retângulo + círculo agrupados, e uma linha solta por cima deles. */
+    async function openWithGroupAndLoose(): Promise<void> {
+      const stage = await openWithTwoShapes()
+      fireEvent.keyDown(window, { key: 'a', ctrlKey: true })
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: COPY.vector.selGroup })).toBeTruthy()
+      })
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.selGroup }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.tools.line }))
+      fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 3, clientX: 200, clientY: 200 })
+      fireEvent.pointerMove(stage, { pointerId: 3, clientX: 260, clientY: 260 })
+      fireEvent.pointerUp(stage, { pointerId: 3 })
+      await waitFor(() => {
+        expect(rowLabels()).toEqual([LINE, ELLIPSE, RECT])
+      })
+    }
+
+    it('a seta na alça sobe o GRUPO inteiro (e a alça avisa isso)', async () => {
+      await openWithGroupAndLoose()
+      // ⭐ ANTI-VÁCUO: por forma, o retângulo passaria só o círculo e o grupo
+      // se partiria → [LINE, RECT, ELLIPSE]. O esperado abaixo reprova isso.
+      const grip = screen.getByRole('button', {
+        name: `${COPY.layers.reorderGroup}: ${RECT}`,
+      })
+      fireEvent.keyDown(grip, { key: 'ArrowUp' })
+      await waitFor(() => {
+        expect(rowLabels()).toEqual([ELLIPSE, RECT, LINE])
+      })
+    })
+
+    it('arrastar a linha de um membro leva o grupo, com UMA entrada de undo', async () => {
+      await openWithGroupAndLoose()
+      const grip = screen.getByRole('button', {
+        name: `${COPY.layers.reorderGroup}: ${RECT}`,
+      })
+      // happy-dom: todo <li> mede rect 0 → o move "cruza" a primeira linha.
+      fireEvent.pointerDown(grip, { pointerId: 9, clientY: 0 })
+      fireEvent.pointerMove(document, { pointerId: 9, clientY: 0 })
+      fireEvent.pointerUp(document, { pointerId: 9 })
+      await waitFor(() => {
+        expect(rowLabels()).toEqual([ELLIPSE, RECT, LINE])
+      })
+      fireEvent.keyDown(window, { key: 'z', ctrlKey: true })
+      await waitFor(() => {
+        expect(rowLabels()).toEqual([LINE, ELLIPSE, RECT])
+      })
     })
   })
 })

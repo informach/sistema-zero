@@ -13,6 +13,9 @@ const LABELS: Record<string, string> = {
   // Status de matrícula (@sistemazero/members).
   revoked: 'Revogada',
   expired: 'Expirada',
+  // Derivado, NÃO é status do banco: `active` com a validade já passada. Ver
+  // `lib/entitlement-status.ts` — a coluna diz 'active' para sempre nesse caso.
+  lapsed: 'Vencida',
   // Status de pagamento (@sistemazero/payments — UPPERCASE).
   PENDING: 'Pendente',
   AUTHORIZED: 'Autorizado',
@@ -37,6 +40,8 @@ const VARIANT: Record<string, 'success' | 'muted' | 'destructive' | 'default' | 
   // Matrícula (@sistemazero/members).
   revoked: 'destructive',
   expired: 'muted',
+  // Vencida NÃO é neutra: é acesso cortado que o operador precisa notar.
+  lapsed: 'destructive',
   // Pagamentos / assinaturas.
   PENDING: 'outline',
   AUTHORIZED: 'default',

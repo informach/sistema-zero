@@ -15,6 +15,7 @@ import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
 import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
+import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 function toCourse(row: typeof courses.$inferSelect): Course {
   return {
@@ -293,7 +294,7 @@ export class DrizzleCourseRepository implements CourseRepository {
           // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
           // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
           // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).
-          sql`trim(${lessonBlocks.content}->>'chain') = ${chain}`,
+          sql`btrim(${lessonBlocks.content}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
           sql`(${modules.sortOrder}, ${lessons.sortOrder}) < (${cur.modSort}, ${cur.lessonSort})`,
         ),
       )

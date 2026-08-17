@@ -14,6 +14,7 @@ import type {
   ProviderCharge,
   ProviderNotification,
   ProviderSubscription,
+  ProviderSubscriptionCharge,
   RefundPixInput,
   RefundResult,
 } from '../../../domain/ports/payment-gateway.port'
@@ -32,6 +33,7 @@ import {
   parseNotificationEntries,
   parseOneStepCardResponse,
   parseOneStepResponse,
+  parseSubscriptionCharges,
   parseSubscriptionDetail,
 } from './efi-cobrancas.mapper'
 
@@ -338,6 +340,20 @@ export class EfiPaymentGateway implements PaymentGateway {
     try {
       const raw = await client.detailSubscription(providerSubscriptionId)
       return parseSubscriptionDetail(raw, providerSubscriptionId)
+    } catch (error) {
+      throw toEfiGatewayError(error)
+    }
+  }
+
+  async listSubscriptionCharges(
+    providerSubscriptionId: string,
+  ): Promise<ProviderSubscriptionCharge[]> {
+    const client = this.requireCobrancas()
+    try {
+      // O MESMO `GET /subscription/:id` do `getSubscription` — a Efí devolve o
+      // histórico de ciclos junto do status, então a varredura custa 1 chamada.
+      const raw = await client.detailSubscription(providerSubscriptionId)
+      return parseSubscriptionCharges(raw)
     } catch (error) {
       throw toEfiGatewayError(error)
     }

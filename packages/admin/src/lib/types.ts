@@ -110,6 +110,12 @@ export interface AdminEntitlementView {
   grantedAt: string
   expiresAt: string | null
   revokedAt: string | null
+  /**
+   * O acesso está liberado AGORA (régua do members). ⚠️ Opcional porque um
+   * members mais antigo que este painel não manda o campo — e nesse caso o selo
+   * cai no comportamento anterior em vez de chamar tudo de vencido.
+   */
+  activeNow?: boolean
 }
 
 /** Progresso do membro num curso (no detalhe). */

@@ -22,6 +22,9 @@ export const LESSON_BLOCK_KINDS = [
 
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
 
+/** Kinds que compartilham o fluxo e a persistência de entrega de projeto. */
+export type SubmissionBlockKind = Extract<LessonBlockKind, 'studio' | 'pinta'>
+
 export function isLessonBlockKind(value: unknown): value is LessonBlockKind {
   return typeof value === 'string' && (LESSON_BLOCK_KINDS as readonly string[]).includes(value)
 }

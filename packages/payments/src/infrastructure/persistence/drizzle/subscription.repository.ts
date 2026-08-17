@@ -1,4 +1,4 @@
-import { and, eq, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import type { SubscriptionRepository } from '../../../domain/ports/subscription-repository.port'
 import {
   SubscriptionAggregate,
@@ -103,6 +103,38 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
       )
       .limit(1)
     return row ? SubscriptionAggregate.restore(rowToSnapshot(row)) : null
+  }
+
+  async claimActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]> {
+    return this.db.transaction(async (tx) => {
+      const rows = await tx
+        .select()
+        .from(subscriptions)
+        .where(
+          and(eq(subscriptions.status, 'ACTIVE'), isNotNull(subscriptions.providerSubscriptionId)),
+        )
+        // Nunca varrida primeiro; depois, a tentativa mais antiga. Os desempates
+        // tornam o lote estável mesmo quando várias linhas recebem o mesmo carimbo.
+        .orderBy(
+          sql`${subscriptions.lastReconciledAt} asc nulls first`,
+          sql`${subscriptions.lastChargeAt} asc nulls first`,
+          subscriptions.id,
+        )
+        .limit(limit)
+        .for('update', { skipLocked: true })
+
+      if (rows.length === 0) return []
+      await tx
+        .update(subscriptions)
+        .set({ lastReconciledAt: sql`now()` })
+        .where(
+          inArray(
+            subscriptions.id,
+            rows.map((row) => row.id),
+          ),
+        )
+      return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
+    })
   }
 }
 

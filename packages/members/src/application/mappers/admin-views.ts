@@ -26,15 +26,28 @@ export interface AdminEntitlementView {
   grantedAt: string
   expiresAt: string | null
   revokedAt: string | null
+  /**
+   * O acesso está liberado AGORA (`isActiveAt`)? ⚠️⚠️ Não é redundante com o
+   * `status`: a coluna fica `'active'` mesmo depois da validade passar (só um
+   * cancelamento do provedor, a ação manual do admin ou a varredura de vencidas a
+   * mudam), então o painel mostrava "Ativo" ao lado de uma data vencida — foi
+   * assim que um assinante cortado passou por "ativo" no incidente de 08/2026.
+   * A regra vem de QUEM É O DONO dela, em vez de ser recalculada na tela.
+   */
+  activeNow: boolean
 }
 
-export function toAdminEntitlementView(e: EntitlementAggregate): AdminEntitlementView {
+export function toAdminEntitlementView(
+  e: EntitlementAggregate,
+  now: Date = new Date(),
+): AdminEntitlementView {
   const s = e.toSnapshot()
   return {
     id: s.id,
     userId: s.userId,
     version: s.version,
     status: s.status,
+    activeNow: e.isActiveAt(now),
     accessType: s.accessType,
     productId: s.productId,
     productKind: s.productKind,

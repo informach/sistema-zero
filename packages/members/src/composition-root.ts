@@ -662,6 +662,14 @@ export async function createApplication(env: Env): Promise<Application> {
       if (pruned > 0 || zappyConversations > 0) {
         logger.info('retention.pruned', { processedWebhooks: pruned, zappyConversations })
       }
+      // ⭐ Varredura de matrículas VENCIDAS pega uma carona aqui de propósito: é o
+      // único ciclo periódico do serviço que só faz trabalho de BANCO, então o
+      // advisory lock (que morre com a transação) serve sem risco de
+      // `idle in transaction`. Sem isso a coluna `status` fica `'active'` para
+      // sempre depois da validade passar — e foi o que fez o painel dizer "Ativo"
+      // sobre um acesso cortado no incidente de 08/2026.
+      const expired = await entitlements.expireLapsed(new Date(), env.EXPIRE_LAPSED_BATCH_SIZE)
+      if (expired > 0) logger.info('entitlements.expired_lapsed', { affected: expired })
     })
   }
 

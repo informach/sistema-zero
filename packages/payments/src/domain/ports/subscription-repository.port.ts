@@ -16,4 +16,11 @@ export interface SubscriptionRepository {
     provider: string,
     providerSubscriptionId: string,
   ): Promise<SubscriptionAggregate | null>
+  /**
+   * Reivindica um lote de assinaturas ATIVAS para reconciliação e carimba o
+   * instante da tentativa na mesma transação curta. A ordenação pelo carimbo
+   * garante rotação durável; `SKIP LOCKED` divide o lote entre réplicas sem manter
+   * transação aberta durante a chamada externa.
+   */
+  claimActiveForReconcile(limit: number): Promise<SubscriptionAggregate[]>
 }

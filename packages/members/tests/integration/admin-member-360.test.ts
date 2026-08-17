@@ -104,8 +104,10 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
     expect(body.hasMore).toBe(false)
     const pinta = body.items[0]
     expect(pinta.message).toBe('meu desenho')
+    expect(pinta.passed).toBeNull()
     const studio = body.items[1]
     expect(studio.message).toBe('oi prof')
+    expect(studio.passed).toBeNull()
 
     // Paginação: limit=2 → 2 itens (os mais novos) + hasMore.
     const page = await readJson(await get(app, `/members/admin/members/${A}/activity?limit=2`))

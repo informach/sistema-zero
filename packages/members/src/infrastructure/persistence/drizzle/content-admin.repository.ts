@@ -28,6 +28,7 @@ import {
   quizAttempts,
   studioSubmissions,
 } from './schema'
+import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 type CourseRow = typeof courses.$inferSelect
 type ModuleRow = typeof modules.$inferSelect
@@ -529,19 +530,29 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
     return retrySortOrderCollision(async () => {
-      // `max+1` dentro do INSERT (1 statement) + retry em colisão — ver createModule.
-      const [row] = await this.db
-        .insert(lessonBlocks)
-        .values({
-          id: randomUUID(),
-          lessonId,
-          kind,
-          sortOrder: sql`coalesce((select max(${lessonBlocks.sortOrder}) + 1 from ${lessonBlocks} where ${lessonBlocks.lessonId} = ${lessonId}), 0)`,
-          content,
-        })
-        .returning()
-      if (!row) throw new Error('insert de bloco não retornou a linha')
-      return toBlock(row)
+      // Cada tentativa ganha uma transação própria — ou um SAVEPOINT quando este repositório
+      // já está dentro de `withPintaChainLock`. Assim uma colisão 23505 não envenena a
+      // transação externa antes de o retry recalcular `max+1`.
+      return this.db.transaction(async (tx) => {
+        // O lock é por AULA, que é exatamente o agregado da ordenação. Ele cobre também
+        // cadeias diferentes e criações sem cadeia, eliminando a corrida de `max+1` entre
+        // todos os escritores que passam por este repositório.
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`lesson-block-order:${lessonId}`}, 0))`,
+        )
+        const [row] = await tx
+          .insert(lessonBlocks)
+          .values({
+            id: randomUUID(),
+            lessonId,
+            kind,
+            sortOrder: sql`coalesce((select max(${lessonBlocks.sortOrder}) + 1 from ${lessonBlocks} where ${lessonBlocks.lessonId} = ${lessonId}), 0)`,
+            content,
+          })
+          .returning()
+        if (!row) throw new Error('insert de bloco não retornou a linha')
+        return toBlock(row)
+      })
     })
   }
 
@@ -672,7 +683,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const clauses: SQL[] = [
       eq(lessons.courseId, courseId),
       eq(lessonBlocks.kind, 'pinta'),
-      sql`trim(${lessonBlocks.content}->>'chain') = ${chain}`,
+      sql`btrim(${lessonBlocks.content}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
     ]
     if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
     // ⚠️ Espelha `pintaAssetKindOf` (domínio) em SQL: o tipo é LIDO do snapshot, não de um campo

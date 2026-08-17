@@ -434,7 +434,11 @@ function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockConte
   if (JSON.stringify(initialAsset).length > MAX_PINTA_ASSET_CHARS) {
     throw new InvalidContentCommandError('Desenho inicial excede o tamanho máximo permitido')
   }
-  return { ...content, initialAsset }
+  const canonical = { ...content, initialAsset }
+  const chain = canonical.chain?.trim()
+  if (chain) canonical.chain = chain
+  else delete canonical.chain
+  return canonical
 }
 
 async function assertSingleCertificateBlock(

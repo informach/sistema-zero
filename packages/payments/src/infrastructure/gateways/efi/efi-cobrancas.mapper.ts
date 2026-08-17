@@ -2,6 +2,7 @@
 import type {
   ProviderChargeStatus,
   ProviderNotificationEntry,
+  ProviderSubscriptionCharge,
   ProviderSubscriptionStatus,
 } from '../../../domain/ports/payment-gateway.port'
 import { EfiGatewayError } from './efi.errors'
@@ -146,9 +147,130 @@ function principalInCents(data: any): bigint {
   return centsToBigInt(data?.total)
 }
 
-/** Converte um timestamp da Efí em `Date`, descartando datas inválidas/garbage. */
+/** `2026-08-14 03:03:16` — o formato SEM fuso que a API Cobranças devolve. */
+const NAIVE_TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?$/
+
+const SAO_PAULO_PARTS = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Sao_Paulo',
+  hourCycle: 'h23',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+})
+
+/** Offset de São Paulo VIGENTE no instante dado — perguntado ao ICU, não assumido. */
+function saoPauloOffsetMs(instant: Date): number {
+  const p: Record<string, number> = {}
+  for (const part of SAO_PAULO_PARTS.formatToParts(instant)) {
+    if (part.type !== 'literal') p[part.type] = Number(part.value)
+  }
+  const wallAsUtc = Date.UTC(
+    p.year ?? 0,
+    (p.month ?? 1) - 1,
+    p.day ?? 1,
+    p.hour ?? 0,
+    p.minute ?? 0,
+    p.second ?? 0,
+  )
+  return wallAsUtc - instant.getTime()
+}
+
+function matchesUtcComponents(
+  instant: Date,
+  expected: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    second: number
+  },
+): boolean {
+  return (
+    instant.getUTCFullYear() === expected.year &&
+    instant.getUTCMonth() + 1 === expected.month &&
+    instant.getUTCDate() === expected.day &&
+    instant.getUTCHours() === expected.hour &&
+    instant.getUTCMinutes() === expected.minute &&
+    instant.getUTCSeconds() === expected.second
+  )
+}
+
+function matchesSaoPauloWallClock(
+  instant: Date,
+  expected: {
+    year: number
+    month: number
+    day: number
+    hour: number
+    minute: number
+    second: number
+  },
+): boolean {
+  const actual: Record<string, number> = {}
+  for (const part of SAO_PAULO_PARTS.formatToParts(instant)) {
+    if (part.type !== 'literal') actual[part.type] = Number(part.value)
+  }
+  return (
+    actual.year === expected.year &&
+    actual.month === expected.month &&
+    actual.day === expected.day &&
+    actual.hour === expected.hour &&
+    actual.minute === expected.minute &&
+    actual.second === expected.second
+  )
+}
+
+/**
+ * Hora de parede de São Paulo → instante UTC. Ponto fixo em duas passadas (a 1ª
+ * estima o offset, a 2ª confirma): a conta continua certa se o Brasil voltar a
+ * ter horário de verão, em vez de cravar -03:00 no código.
+ */
+function saoPauloWallClockToUtc(m: RegExpExecArray): Date | undefined {
+  const expected = {
+    year: Number(m[1]),
+    month: Number(m[2]),
+    day: Number(m[3]),
+    hour: Number(m[4]),
+    minute: Number(m[5]),
+    second: m[6] ? Number(m[6]) : 0,
+  }
+  const wallAsUtc = Date.UTC(
+    expected.year,
+    expected.month - 1,
+    expected.day,
+    expected.hour,
+    expected.minute,
+    expected.second,
+  )
+  // `Date.UTC` normaliza overflow (mês 99, 29/02 não bissexto, hora 25).
+  // O round-trip civil impede que garbage vire silenciosamente uma data futura.
+  if (!matchesUtcComponents(new Date(wallAsUtc), expected)) return undefined
+  let utc = wallAsUtc
+  for (let i = 0; i < 2; i += 1) utc = wallAsUtc - saoPauloOffsetMs(new Date(utc))
+  const result = new Date(utc)
+  // Também rejeita uma eventual hora de parede inexistente numa transição de DST.
+  return matchesSaoPauloWallClock(result, expected) ? result : undefined
+}
+
+/**
+ * Converte um timestamp da Efí em `Date`, descartando datas inválidas/garbage.
+ *
+ * ⚠️⚠️ A API Cobranças devolve data **sem fuso** (`"2026-08-14 03:03:16"`), em
+ * horário de SÃO PAULO. `new Date(raw)` a lê como hora LOCAL do processo — em
+ * produção (TZ=UTC) isso ADIANTA o pagamento em 3 horas. Só o formato ingênuo
+ * recebe a regra; string com offset/`Z` (o `paid_at` do boleto vem ISO) passa
+ * intocada.
+ */
 function parseProviderDate(raw: unknown): Date | undefined {
   if (raw === undefined || raw === null || raw === '') return undefined
+  if (typeof raw === 'string') {
+    const naive = NAIVE_TIMESTAMP.exec(raw.trim())
+    if (naive) return saoPauloWallClockToUtc(naive)
+  }
   const d = new Date(raw as string | number)
   return Number.isNaN(d.getTime()) ? undefined : d
 }
@@ -223,17 +345,38 @@ export function parseCardDetailCharge(
   paidAt?: Date
 } {
   const data = dataOf(raw)
-  const history = Array.isArray(data?.history) ? data.history : []
-  const paidEntry = [...history]
-    .reverse()
-    .find((h: any) => h?.status === 'approved' || h?.status === 'paid' || h?.status === 'settled')
-  const paidAtRaw = data?.paid_at ?? paidEntry?.created_at ?? paidEntry?.date
   return {
     providerPaymentId: String(data?.charge_id ?? data?.id ?? fallbackId),
     status: mapCardStatus(data?.status),
     amountInCents: principalInCents(data),
-    paidAt: parseProviderDate(paidAtRaw),
+    paidAt: parseProviderDate(cardPaidAtRaw(data)),
   }
+}
+
+/**
+ * A data do pagamento no detalhe de CARTÃO.
+ *
+ * ⚠️⚠️ MEDIDO na Efí de produção (08/2026, cobranças 1049600345 e 1037001321): o
+ * `GET /charge/:id` de cartão **não tem `paid_at`**, e as entradas de `history`
+ * trazem `created_at` + `message` (texto em português) e **nenhum `status``**.
+ * Era por isso que o filtro por `h.status` nunca casava e a data saía indefinida
+ * — e aí o `markPaid` carimbava a hora do PROCESSAMENTO no lugar da hora do
+ * pagamento (num ciclo recuperado dias depois, a diferença foi de 3 dias).
+ *
+ * A fonte estruturada e confiável é `payment.created_at`. A varredura por
+ * `status` fica na frente porque outros endpoints/versões podem trazê-lo, e a
+ * última entrada do histórico é o último recurso. A `message` NUNCA é parseada.
+ */
+function cardPaidAtRaw(data: any): unknown {
+  if (data?.paid_at) return data.paid_at
+  const history: any[] = Array.isArray(data?.history) ? data.history : []
+  const flagged = [...history]
+    .reverse()
+    .find((h: any) => h?.status === 'approved' || h?.status === 'paid' || h?.status === 'settled')
+  if (flagged) return flagged.created_at ?? flagged.date
+  if (data?.payment?.created_at) return data.payment.created_at
+  const last = history.at(-1)
+  return last?.created_at ?? last?.date
 }
 
 /** Normaliza a lista de eventos de um `GET /notification/:token` (tolera variações). */
@@ -356,4 +499,24 @@ export function parseSubscriptionDetail(
     providerSubscriptionId: String(data?.subscription_id ?? data?.id ?? fallbackId),
     status: mapSubscriptionStatus(data?.status),
   }
+}
+
+/**
+ * Cobranças (ciclos) do `GET /subscription/:id`.
+ *
+ * ⚠️ MEDIDO em produção (08/2026): o campo é `history`, e cada entrada tem
+ * `charge_id` + `status` (`"paid"`) + `created_at` — formato DIFERENTE do
+ * `history` do `GET /charge/:id`, que não tem `status` nenhum. Entrada sem
+ * `charge_id` é descartada em silêncio (defensivo, como o resto do mapper).
+ */
+export function parseSubscriptionCharges(raw: any): ProviderSubscriptionCharge[] {
+  const data = dataOf(raw)
+  const history = Array.isArray(data?.history) ? data.history : []
+  const charges: ProviderSubscriptionCharge[] = []
+  for (const entry of history) {
+    const id = entry?.charge_id ?? entry?.id ?? entry?.identifiers?.charge_id
+    if (id == null) continue
+    charges.push({ chargeId: String(id), status: mapCardStatus(entry?.status) })
+  }
+  return charges
 }

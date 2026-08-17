@@ -615,6 +615,18 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   O **BFF agrega**: o handler `GET /api/members` hidrata nome/email do auth via
   `POST /auth/admin/users/batch` (`server/users.ts`: `batchGetUsers`/`getUser`). Adapter em
   `src/server/members.ts`; views em `src/lib/types.ts`.
+  ⚠️⚠️ **O selo da matrícula NÃO é `e.status` cru** (08/2026): a coluna do members fica
+  `'active'` mesmo depois da validade passar (só cancelamento do provedor, ação manual ou a
+  varredura de vencidas a mudam), então a ficha pintava **"Ativo"** de verde ao lado de uma
+  coluna "Validade" com data vencida — foi assim que um assinante cortado passou por ativo
+  no incidente de 17/08/2026. O members passou a mandar **`AdminEntitlementView.activeNow`**
+  (o `isActiveAt` dele) e a palavra sai do helper PURO `lib/entitlement-status.ts`
+  (`entitlementBadge`/`ENTITLEMENT_BADGE_LABEL`, testado em `tests/entitlement-status.test.ts`,
+  precedente do `submission-status.ts`): `active` + `activeNow===false` → **"Vencida"**
+  (variante `destructive` — acesso cortado não é estado neutro). ⚠️ `activeNow` é OPCIONAL:
+  members mais velho que o painel não manda o campo, e aí o selo cai no comportamento antigo
+  em vez de chamar tudo de vencido. As AÇÕES seguem gateadas pelo `status` cru — "Expirar"
+  desaparece numa matrícula já vencida, o que é o certo; "Estender"/"Revogar" ficam.
 - Membros — Autoria (via gateway, JWT+RBAC): `GET/POST /members/admin/courses`,
   `GET/PATCH/DELETE /members/admin/courses/:id` (GET = árvore curso+módulos+aulas); módulos/aulas
   via `…/modules`, `…/lessons` (+ `…/reorder`); blocos/anexos via `…/lessons/:id/blocks|attachments`

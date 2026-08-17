@@ -90,4 +90,12 @@ export interface EntitlementRepository {
    * atômico. Idempotente: não rebaixa `revoked` nem reexpira `expired`.
    */
   expireBySubscriptionId(subscriptionId: string, now: Date): Promise<SubscriptionStatusUpdateResult>
+  /**
+   * Marca como `expired` as matrículas `active` cuja validade já passou (a
+   * validade já embute a carência). Faz a COLUNA parar de contradizer a régua de
+   * acesso — antes, uma compra por período ou uma validade manual ficava `active`
+   * para sempre e o painel dizia "Ativo" sobre acesso cortado.
+   * Devolve quantas foram marcadas (para o log do ciclo).
+   */
+  expireLapsed(now: Date, limit: number): Promise<number>
 }

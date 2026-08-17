@@ -18,7 +18,7 @@ import { prepareTestDatabase } from './test-database'
  * elas não podem divergir do que eu escrevi — é justamente uma divergência do SQL que passaria
  * batida (mesma razão do `gating-block-sql.test.ts`). E aqui há dois espelhos frágeis de
  * propósito: `content->'initialAsset'->>'kind'` espelha `pintaAssetKindOf`, e o
- * `trim(content->>'chain')` espelha o `chain.trim()` do serviço.
+ * `btrim(content->>'chain', JS_WHITESPACE)` espelha o `chain.trim()` do serviço.
  */
 
 const testDatabaseUrl = await prepareTestDatabase()
@@ -60,6 +60,10 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
     )`)
     await conn.sql.unsafe(
       "alter table members.lesson_blocks add column if not exists content_revision varchar(32) not null default 'x'",
+    )
+    await conn.sql.unsafe('truncate table members.lesson_blocks')
+    await conn.sql.unsafe(
+      'create unique index if not exists lesson_blocks_lesson_sort_order_uq on members.lesson_blocks (lesson_id, sort_order)',
     )
     content = new DrizzleContentAdminRepository(conn.db)
     courses = new DrizzleCourseRepository(conn.db)
@@ -161,11 +165,36 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
       expect(irmaos.map((i) => i.lessonTitle)).toEqual(['Aula 1', 'Aula 2'])
     })
 
-    test('🚨 o `trim` vale nos DOIS lados (cadeia autorada com espaço sobrando)', async () => {
+    test('🚨 a régua do `trim` do JS vale também sobre o valor armazenado', async () => {
       // Sem o trim no valor ARMAZENADO a guarda não casaria e o estado quebrado nasceria mesmo
       // assim — a mesma armadilha que o carryover já documentava.
-      await inserirBloco(aula1, 'pinta', pinta('pixel-sprite', '  heroi '))
+      await inserirBloco(aula1, 'pinta', pinta('pixel-sprite', '\t heroi\u00a0'))
       expect(await content.listPintaChainBlocks(courseId, 'heroi')).toHaveLength(1)
+    })
+
+    test('retry de sort_order continua utilizável dentro do lock transacional da cadeia', async () => {
+      const service = new BlockAdminService(content)
+      const pixel = pintaAssetToWire({
+        ...createLessonAsset('pixel-sprite', 32, 'heroi'),
+        id: 'asset-concorrente',
+      })
+
+      const results = await Promise.allSettled(
+        Array.from({ length: 8 }, (_, index) =>
+          service.create(aula1, {
+            kind: 'pinta',
+            chain: `cadeia-${index}`,
+            initialAsset: pixel,
+          }),
+        ),
+      )
+
+      expect(results.filter((result) => result.status === 'rejected')).toEqual([])
+      const rows = await conn.sql.unsafe(
+        'select sort_order from members.lesson_blocks where lesson_id = $1 order by sort_order',
+        [aula1],
+      )
+      expect(rows.map((row) => row.sort_order)).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
     })
 
     test('exclui o PRÓPRIO bloco; não vaza de outro curso; ignora outra cadeia e bloco sem cadeia', async () => {
@@ -204,7 +233,8 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
 
   describe('findPrecedingChainBlock (o carryover)', () => {
     test('pega o bloco do MESMO kind na aula anterior da cadeia', async () => {
-      const b1 = await inserirBloco(aula1, 'pinta', pinta('pixel-sprite', 'heroi'))
+      // A linha legada usa whitespace que o `trim(text)` padrão do Postgres não remove.
+      const b1 = await inserirBloco(aula1, 'pinta', pinta('pixel-sprite', '\t heroi\u00a0'))
       await inserirBloco(aula2, 'pinta', pinta('pixel-sprite', 'heroi'))
 
       expect(await courses.findPrecedingChainBlock(courseId, aula2, 'heroi', 'pinta')).toEqual({
