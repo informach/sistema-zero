@@ -416,7 +416,6 @@ describe('marcos do curso nas listagens', () => {
     expect(bySlug.get('intocado-2d')?.milestones).toEqual({ completed: false, showcased: false })
     expect(gamification.careerCourseStateReads).toBe(1)
     expect(gamification.qualifyingCareerSlotReads).toBe(0)
-    expect(gamification.courseMilestoneReads).toBe(0)
   })
 
   test('"meus cursos" traz os mesmos marcos do catálogo', async () => {
@@ -495,6 +494,5 @@ describe('marcos do curso nas listagens', () => {
     })
     expect(gamification.careerCourseStateReads).toBe(0)
     expect(gamification.qualifyingCareerSlotReads).toBe(0)
-    expect(gamification.courseMilestoneReads).toBe(0)
   })
 })

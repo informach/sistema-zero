@@ -67,17 +67,20 @@ const CATEGORY_BY_TAB: Partial<Record<RoomBuilderTab, string>> = {
   luzes: 'light',
 }
 
-type RoomBuilderViewProps = {
+type RoomBuilderScene = {
   avatarPhotoUrl?: string | null
   data: RoomEditorView | null
   loadState: RoomLoadState
   draft: RoomStateView
-  selected: number | null
-  onSelectPiece: (index: number | null) => void
   onMoveItem: (index: number, x: number, y: number, wall?: 'left' | 'right') => void
   onPaintWall: (wall: 'left' | 'right', color: string) => void
   paintColor: string | null
   onRetry: () => void
+}
+
+type RoomBuilderSelection = {
+  selected: number | null
+  onSelectPiece: (index: number | null) => void
   stackPicker: boolean
   surfaces: { itemId: string; free: number }[]
   onBringDown: () => void
@@ -86,10 +89,16 @@ type RoomBuilderViewProps = {
   onRemoveSelected: () => void
   onPlaceOnSurface: (itemId: string) => void
   onCloseStackPicker: () => void
+}
+
+type RoomBuilderWallet = {
   coinsUnlimited: boolean
   balance: number
   saving: boolean
   onSave: () => void
+}
+
+type RoomBuilderCatalog = {
   tab: RoomBuilderTab
   onSelectTab: (tab: RoomBuilderTab) => void
   confirmBuyId: string | null
@@ -106,24 +115,20 @@ type RoomBuilderViewProps = {
   onPickPet: (id: string | null) => void
 }
 
+type RoomBuilderViewProps = {
+  scene: RoomBuilderScene
+  selection: RoomBuilderSelection
+  wallet: RoomBuilderWallet
+  catalog: RoomBuilderCatalog
+}
+
 /** Superfície visual do editor; regras de colocação, compra e persistência ficam no orquestrador. */
 export function RoomBuilderView(props: RoomBuilderViewProps) {
-  const {
-    avatarPhotoUrl,
-    data,
-    loadState,
-    draft,
-    selected,
-    paintColor,
-    stackPicker,
-    surfaces,
-    coinsUnlimited,
-    balance,
-    saving,
-    tab,
-    confirmBuyId,
-    busy,
-  } = props
+  const { scene, selection, wallet, catalog } = props
+  const { avatarPhotoUrl, data, loadState, draft, paintColor } = scene
+  const { selected, stackPicker, surfaces } = selection
+  const { coinsUnlimited, balance, saving } = wallet
+  const { tab, confirmBuyId, busy } = catalog
   const pendingBuy = resolvePendingBuy(data, confirmBuyId)
 
   return (
@@ -135,9 +140,9 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
             mode="edit"
             avatarPhotoUrl={avatarPhotoUrl}
             selectedIndex={selected}
-            onSelect={props.onSelectPiece}
-            onMove={props.onMoveItem}
-            onPaintWall={props.onPaintWall}
+            onSelect={selection.onSelectPiece}
+            onMove={scene.onMoveItem}
+            onPaintWall={scene.onPaintWall}
             paintColor={paintColor}
           />
         ) : loadState === 'error' ? (
@@ -147,7 +152,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
               <p className="font-semibold">Não consegui carregar seu quarto.</p>
               <button
                 type="button"
-                onClick={props.onRetry}
+                onClick={scene.onRetry}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-primary px-4 font-bold text-primary-foreground"
               >
                 <RefreshCw className="size-4" /> Tentar de novo
@@ -164,10 +169,10 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
             item={draft.placedItems[selected]}
             surfacesAvailable={surfaces.length > 0}
             stackPicker={stackPicker}
-            onBringDown={props.onBringDown}
-            onToggleStackPicker={props.onToggleStackPicker}
-            onRotate={props.onRotateSelected}
-            onRemove={props.onRemoveSelected}
+            onBringDown={selection.onBringDown}
+            onToggleStackPicker={selection.onToggleStackPicker}
+            onRotate={selection.onRotateSelected}
+            onRemove={selection.onRemoveSelected}
           />
         ) : null}
       </div>
@@ -185,7 +190,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
               <button
                 key={option.itemId}
                 type="button"
-                onClick={() => props.onPlaceOnSurface(option.itemId)}
+                onClick={() => selection.onPlaceOnSurface(option.itemId)}
                 className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-border bg-card px-3 font-semibold text-xs"
               >
                 <span aria-hidden="true">{info?.emoji ?? '📦'}</span>
@@ -198,7 +203,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
           })}
           <button
             type="button"
-            onClick={props.onCloseStackPicker}
+            onClick={selection.onCloseStackPicker}
             className="inline-flex min-h-11 items-center rounded-full px-3 font-semibold text-muted-foreground text-xs"
           >
             Cancelar
@@ -220,7 +225,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
                 // biome-ignore lint/suspicious/noArrayIndexKey: a ordem dos itens É a identidade.
                 key={index}
                 type="button"
-                onClick={() => props.onSelectPiece(selected === index ? null : index)}
+                onClick={() => selection.onSelectPiece(selected === index ? null : index)}
                 aria-pressed={selected === index}
                 className={cn(
                   'inline-flex min-h-11 items-center gap-1 rounded-full border-2 px-3 py-1.5 font-semibold text-xs',
@@ -244,7 +249,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
         </span>
         <button
           type="button"
-          onClick={props.onSave}
+          onClick={wallet.onSave}
           disabled={saving || loadState !== 'ready'}
           className={cn(
             'sz-btn-gradient h-11 px-6 text-base',
@@ -263,7 +268,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
             <button
               key={item.id}
               type="button"
-              onClick={() => props.onSelectTab(item.id)}
+              onClick={() => catalog.onSelectTab(item.id)}
               aria-pressed={active}
               className={cn(
                 'flex min-w-16 shrink-0 flex-col items-center gap-1 rounded-2xl border-2 px-3 py-2 font-semibold text-xs transition-colors',
@@ -288,7 +293,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={props.onCancelBuy}
+              onClick={catalog.onCancelBuy}
               disabled={Boolean(busy)}
               className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
             >
@@ -296,7 +301,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
             </button>
             <button
               type="button"
-              onClick={() => props.onBuy(pendingBuy.id)}
+              onClick={() => catalog.onBuy(pendingBuy.id)}
               disabled={Boolean(busy)}
               className="inline-flex h-11 items-center gap-1.5 rounded-full bg-primary px-4 font-bold text-primary-foreground text-sm"
             >
@@ -306,7 +311,7 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
         </div>
       ) : null}
 
-      {data ? <RoomBuilderTray {...props} data={data} /> : null}
+      {data ? <RoomBuilderTray data={data} draft={draft} catalog={catalog} /> : null}
     </div>
   )
 }
@@ -374,8 +379,16 @@ function SelectedItemActions({
   )
 }
 
-function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView }) {
-  const { data, tab, busy, confirmBuyId, draft, brush } = props
+function RoomBuilderTray({
+  data,
+  draft,
+  catalog,
+}: {
+  data: RoomEditorView
+  draft: RoomStateView
+  catalog: RoomBuilderCatalog
+}) {
+  const { tab, busy, confirmBuyId, brush } = catalog
   const appearance = resolveRoomAppearance(draft)
   const category = CATEGORY_BY_TAB[tab]
   if (category) {
@@ -386,11 +399,11 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
     return (
       <ShopGrid
         items={items}
-        owned={props.isOwned}
+        owned={catalog.isOwned}
         busy={busy}
         confirmingId={confirmBuyId}
-        onPick={props.onPickItem}
-        onBuy={props.onBuy}
+        onPick={catalog.onPickItem}
+        onBuy={catalog.onBuy}
       />
     )
   }
@@ -398,8 +411,8 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
     return (
       <TrophyTray
         trophies={data.items.filter((item) => item.tier === 'trophy')}
-        owned={props.isOwned}
-        onPick={props.onPickItem}
+        owned={catalog.isOwned}
+        onPick={catalog.onPickItem}
       />
     )
   }
@@ -410,8 +423,8 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
         activeId={appearance.floorId}
         busy={busy}
         confirmingId={confirmBuyId}
-        onApply={props.onApplyFloor}
-        onBuy={props.onBuy}
+        onApply={catalog.onApplyFloor}
+        onBuy={catalog.onBuy}
         label={(id) => floorInfo(id).labelPt}
         preview={(id) => {
           const floor = floorInfo(id)
@@ -433,8 +446,8 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
         activeId={appearance.lightingId}
         busy={busy}
         confirmingId={confirmBuyId}
-        onApply={props.onApplyLighting}
-        onBuy={props.onBuy}
+        onApply={catalog.onApplyLighting}
+        onBuy={catalog.onBuy}
         label={(id) => lightingPreset(id).labelPt}
         preview={(id) => (
           <span
@@ -453,8 +466,8 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
         activeId={draft.theme}
         busy={busy}
         confirmingId={confirmBuyId}
-        onApply={props.onApplyTheme}
-        onBuy={props.onBuy}
+        onApply={catalog.onApplyTheme}
+        onBuy={catalog.onBuy}
         label={(id) => ROOM_THEME_INFO[id]?.labelPt ?? id}
         preview={(id) => (
           <span
@@ -466,7 +479,7 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
       />
     )
   }
-  if (tab === 'parede') return <WallTray brush={brush} onPick={props.onPickBrush} />
+  if (tab === 'parede') return <WallTray brush={brush} onPick={catalog.onPickBrush} />
 
   return (
     <PetTray
@@ -474,8 +487,8 @@ function RoomBuilderTray(props: RoomBuilderViewProps & { data: RoomEditorView })
       current={draft.pet}
       busy={busy}
       confirmingId={confirmBuyId}
-      onPick={props.onPickPet}
-      onBuy={props.onBuy}
+      onPick={catalog.onPickPet}
+      onBuy={catalog.onBuy}
     />
   )
 }

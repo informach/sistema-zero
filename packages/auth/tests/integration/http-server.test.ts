@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { saoPauloDayKey } from '@sistemazero/core/time'
 import { decodeJwt } from 'jose'
 import { BatchGetProfilesService } from '../../src/application/admin/batch-get-profiles/batch-get-profiles.service'
 import { BatchGetUsersService } from '../../src/application/admin/batch-get-users/batch-get-users.service'
@@ -1859,12 +1860,13 @@ describe('Auth — perfis (estilo Netflix)', () => {
   test('cadastro com 18 anos completos → 400 PROFILE_AGE_RESTRICTED', async () => {
     const { app, allowance } = buildApp()
     allowance.maxProfiles = 1
-    const today = new Date()
-    const exactlyEighteen = new Date(
-      Date.UTC(today.getUTCFullYear() - 18, today.getUTCMonth(), today.getUTCDate()),
-    )
-      .toISOString()
-      .slice(0, 10)
+    // ⚠️ O dia de referência é o CIVIL DE SÃO PAULO, a mesma régua do agregado
+    // (`assertBirthDate` → `saoPauloDayKey`). Montar "18 anos exatos" a partir da
+    // data UTC reprovava TODA noite entre 21h e meia-noite de Brasília (00:00–03:00
+    // UTC): a data UTC já virou, a de São Paulo não, e o perfil saía com um dia a
+    // MENOS de 18 anos — ou seja, permitido. Foi vermelho real no CI às 00:09 UTC.
+    const [ano, mes, dia] = saoPauloDayKey(new Date()).split('-').map(Number)
+    const exactlyEighteen = `${String((ano ?? 0) - 18).padStart(4, '0')}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
 
     const response = await app.handle(
       req('POST', '/auth/profiles', gw(), { name: 'Pessoa adulta', birthDate: exactlyEighteen }),

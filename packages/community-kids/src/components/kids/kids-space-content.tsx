@@ -41,17 +41,23 @@ function timeAgo(iso: string): string {
   return `${Math.floor(hours / 24)} d`
 }
 
-type KidsSpaceContentProps = {
+type KidsSpaceContext = {
   isWall: boolean
   space: HubSpaceView
   viewerId: string
   spaceChannelIds: string[]
+  onOpenThreadById: (id: string) => void
+}
+
+type KidsSpaceNavigation = {
   channels: HubChannelView[]
   channel: HubChannelView | null
   onSelectChannel: (channel: HubChannelView) => void
+}
+
+type KidsSpaceDiscussion = {
   thread: HubThreadView | null
   comments: HubCommentView[]
-  busy: boolean
   replyBody: string
   onReplyBodyChange: (value: string) => void
   replyAttachments: UploadedAttachment[]
@@ -67,6 +73,9 @@ type KidsSpaceContentProps = {
   onRemix: ((thread: HubThreadView) => void) | null
   remixLockFor: (thread: HubThreadView) => { levelLabel: string | null } | null
   canReply: boolean
+}
+
+type KidsSpaceComposer = {
   canComposeInChannel: boolean
   showNew: boolean
   onToggleNew: () => void
@@ -82,6 +91,9 @@ type KidsSpaceContentProps = {
   onLoadMyGames: () => void
   onNewPlayIdChange: (value: string | null) => void
   onCreateThread: () => void
+}
+
+type KidsSpaceFeed = {
   threads: HubThreadView[]
   challengeThreads: HubThreadView[]
   challenge: { key: string; title: string; emoji: string } | null
@@ -89,7 +101,9 @@ type KidsSpaceContentProps = {
   threadsHasMore: boolean
   loadingMoreThreads: boolean
   onLoadMoreThreads: () => void
-  onOpenThreadById: (id: string) => void
+}
+
+type KidsSpaceReport = {
   reportOpen: boolean
   reportReason: string
   reportBusy: boolean
@@ -98,42 +112,22 @@ type KidsSpaceContentProps = {
   onSubmitReport: () => void
 }
 
+export type KidsSpaceContentProps = {
+  context: KidsSpaceContext
+  navigation: KidsSpaceNavigation
+  discussion: KidsSpaceDiscussion
+  composer: KidsSpaceComposer
+  feed: KidsSpaceFeed
+  report: KidsSpaceReport
+  busy: boolean
+}
+
 /** Apresentação do espaço; rede, autorização e estado continuam no orquestrador. */
 export function KidsSpaceContent(props: KidsSpaceContentProps) {
-  const {
-    isWall,
-    space,
-    viewerId,
-    spaceChannelIds,
-    channels,
-    channel,
-    thread,
-    comments,
-    busy,
-    replyBody,
-    replyAttachments,
-    commentsHasMore,
-    loadingMoreComments,
-    authorLabel,
-    onRemix,
-    remixLockFor,
-    canReply,
-    canComposeInChannel,
-    showNew,
-    newTitle,
-    newBody,
-    newAttachments,
-    myGames,
-    newPlayId,
-    threads,
-    challengeThreads,
-    challenge,
-    threadsHasMore,
-    loadingMoreThreads,
-    reportOpen,
-    reportReason,
-    reportBusy,
-  } = props
+  const { context, navigation, discussion, composer, feed, report, busy } = props
+  const { isWall, space, viewerId, spaceChannelIds } = context
+  const { channels, channel } = navigation
+  const { thread } = discussion
 
   return (
     <>
@@ -150,7 +144,7 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
             <ClubeActivityBell
               viewerId={viewerId}
               channelIds={spaceChannelIds}
-              onOpenThread={props.onOpenThreadById}
+              onOpenThread={context.onOpenThreadById}
             />
             <ClubeCombinados viewerId={viewerId} />
           </div>
@@ -174,7 +168,7 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
                 <button
                   type="button"
                   key={item.id}
-                  onClick={() => props.onSelectChannel(item)}
+                  onClick={() => navigation.onSelectChannel(item)}
                   className={`flex shrink-0 items-center gap-2 rounded-2xl border-2 px-3 py-2 text-left text-sm transition-colors ${
                     channel?.id === item.id
                       ? 'border-primary bg-(--kids-cyan-tint) font-bold text-primary'
@@ -200,207 +194,243 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
             {thread ? (
               <ThreadDetail
                 thread={thread}
-                comments={comments}
+                comments={discussion.comments}
                 busy={busy}
                 isWall={isWall}
-                replyBody={replyBody}
-                setReplyBody={props.onReplyBodyChange}
-                replyAttachments={replyAttachments}
-                setReplyAttachments={props.onReplyAttachmentsChange}
-                commentsHasMore={commentsHasMore}
-                loadingMoreComments={loadingMoreComments}
-                onLoadMoreComments={props.onLoadMoreComments}
-                onBack={props.onBackFromThread}
-                onSend={props.onSendReply}
-                onReact={props.onReact}
-                onReport={props.onReport}
-                authorLabel={authorLabel}
-                onRemix={onRemix}
-                remixLock={remixLockFor(thread)}
-                canReply={canReply}
+                replyBody={discussion.replyBody}
+                setReplyBody={discussion.onReplyBodyChange}
+                replyAttachments={discussion.replyAttachments}
+                setReplyAttachments={discussion.onReplyAttachmentsChange}
+                commentsHasMore={discussion.commentsHasMore}
+                loadingMoreComments={discussion.loadingMoreComments}
+                onLoadMoreComments={discussion.onLoadMoreComments}
+                onBack={discussion.onBackFromThread}
+                onSend={discussion.onSendReply}
+                onReact={discussion.onReact}
+                onReport={discussion.onReport}
+                authorLabel={discussion.authorLabel}
+                onRemix={discussion.onRemix}
+                remixLock={discussion.remixLockFor(thread)}
+                canReply={discussion.canReply}
               />
             ) : (
-              <div className="space-y-3">
-                {!isWall ? (
-                  <div className="flex items-center justify-between">
-                    <p className="text-muted-foreground text-sm">
-                      {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
-                    </p>
-                    {channel && canComposeInChannel ? (
-                      <button
-                        type="button"
-                        onClick={props.onToggleNew}
-                        className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
-                      >
-                        <Plus className="size-4" /> Começar conversa
-                      </button>
-                    ) : channel && channel.postingPolicy === 'staff_only' ? (
-                      <span className="text-muted-foreground text-xs">
-                        Aqui só a equipe escreve 💬
-                      </span>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                {!isWall && showNew && canComposeInChannel ? (
-                  <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
-                    <div className="flex flex-wrap gap-1.5">
-                      {SUGGESTION_STARTERS.map((suggestion) => (
-                        <button
-                          type="button"
-                          key={suggestion.chip}
-                          onClick={() => props.onNewTitleChange(suggestion.title)}
-                          className="rounded-full border-2 border-border px-2.5 py-1 font-bold text-muted-foreground text-xs transition-colors hover:border-primary hover:text-primary"
-                        >
-                          {suggestion.chip}
-                        </button>
-                      ))}
-                    </div>
-                    <label htmlFor="new-thread-title" className="sr-only">
-                      Título da conversa
-                    </label>
-                    <input
-                      id="new-thread-title"
-                      name="threadTitle"
-                      className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
-                      placeholder="Sobre o que você quer falar?"
-                      value={newTitle}
-                      onChange={(event) => props.onNewTitleChange(event.target.value)}
-                    />
-                    <RichEditor
-                      value={newBody}
-                      onChange={props.onNewBodyChange}
-                      ariaLabel="Mensagem da conversa"
-                    />
-                    <AttachmentUploader
-                      value={newAttachments}
-                      onChange={props.onNewAttachmentsChange}
-                      disabled={busy}
-                    />
-                    <GamePicker
-                      games={myGames}
-                      selectedId={newPlayId}
-                      onOpen={props.onLoadMyGames}
-                      onSelect={props.onNewPlayIdChange}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button
-                        type="button"
-                        className="rounded-2xl border-2 border-border px-4 py-2 text-sm"
-                        onClick={props.onCancelNew}
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        className="rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
-                        onClick={props.onCreateThread}
-                        disabled={busy}
-                      >
-                        Publicar
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
-
-                {threads.length === 0 ? (
-                  <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-                    <KidsMascot expression="happy" className="size-16" />
-                    <p>
-                      {isWall
-                        ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
-                        : channel
-                          ? channelPresentation(channel.slug).emptyState
-                          : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
-                    </p>
-                  </div>
-                ) : isWall ? (
-                  <WallThreads
-                    threads={threads}
-                    challengeThreads={challengeThreads}
-                    challenge={challenge}
-                    viewerId={viewerId}
-                    onOpenThread={props.onOpenThread}
-                    onRemix={onRemix}
-                    remixLockFor={remixLockFor}
-                  />
-                ) : (
-                  threads.map((item) => (
-                    <button
-                      type="button"
-                      key={item.id}
-                      onClick={() => props.onOpenThread(item)}
-                      className="w-full rounded-2xl border-2 border-border bg-card p-3 text-left transition-colors hover:border-primary"
-                    >
-                      <div className="flex items-center gap-2">
-                        {item.isPinned ? <Tag>Fixado</Tag> : null}
-                        {item.pending ? <Tag>Aguardando ✅</Tag> : null}
-                        <span className="truncate font-bold">{item.title}</span>
-                      </div>
-                      <p className="flex items-center gap-3 text-muted-foreground text-xs">
-                        <AuthorBadge
-                          item={item}
-                          viewerId={viewerId}
-                          nameNode={authorText(item, viewerId)}
-                        />
-                        <span className="inline-flex items-center gap-1">
-                          <MessageCircle className="size-3" /> {item.commentCount}
-                        </span>
-                        <span>{timeAgo(item.lastActivityAt)}</span>
-                      </p>
-                    </button>
-                  ))
-                )}
-                {threadsHasMore ? (
-                  <button
-                    type="button"
-                    onClick={props.onLoadMoreThreads}
-                    disabled={loadingMoreThreads}
-                    className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
-                  >
-                    {loadingMoreThreads
-                      ? 'Carregando…'
-                      : isWall
-                        ? 'Carregar mais projetos'
-                        : 'Carregar mais conversas'}
-                  </button>
-                ) : null}
-              </div>
+              <KidsSpaceFeedView
+                isWall={isWall}
+                viewerId={viewerId}
+                channel={channel}
+                composer={composer}
+                feed={feed}
+                discussion={discussion}
+                busy={busy}
+              />
             )}
           </main>
         </div>
       </div>
 
-      <Dialog
-        open={reportOpen}
-        onClose={props.onCloseReport}
-        title="Avisar um professor"
-        description="Conta o que aconteceu. Um professor vai dar uma olhada. 💙"
-        footer={
-          <>
-            <Button variant="outline" onClick={props.onCloseReport} disabled={reportBusy}>
-              Cancelar
-            </Button>
-            <Button onClick={props.onSubmitReport} disabled={reportBusy}>
-              Enviar aviso
-            </Button>
-          </>
-        }
-      >
-        <label htmlFor="report-reason" className="sr-only">
-          Motivo do aviso
-        </label>
-        <Textarea
-          id="report-reason"
-          name="reportReason"
-          value={reportReason}
-          onChange={(event) => props.onReportReasonChange(event.target.value)}
-          placeholder="O que aconteceu de errado?"
-          rows={4}
-          maxLength={1000}
-        />
-      </Dialog>
+      <ReportDialog report={report} />
     </>
+  )
+}
+
+function ReportDialog({ report }: { report: KidsSpaceReport }) {
+  return (
+    <Dialog
+      open={report.reportOpen}
+      onClose={report.onCloseReport}
+      title="Avisar um professor"
+      description="Conta o que aconteceu. Um professor vai dar uma olhada. 💙"
+      footer={
+        <>
+          <Button variant="outline" onClick={report.onCloseReport} disabled={report.reportBusy}>
+            Cancelar
+          </Button>
+          <Button onClick={report.onSubmitReport} disabled={report.reportBusy}>
+            Enviar aviso
+          </Button>
+        </>
+      }
+    >
+      <label htmlFor="report-reason" className="sr-only">
+        Motivo do aviso
+      </label>
+      <Textarea
+        id="report-reason"
+        name="reportReason"
+        value={report.reportReason}
+        onChange={(event) => report.onReportReasonChange(event.target.value)}
+        placeholder="O que aconteceu de errado?"
+        rows={4}
+        maxLength={1000}
+      />
+    </Dialog>
+  )
+}
+
+function KidsSpaceFeedView({
+  isWall,
+  viewerId,
+  channel,
+  composer,
+  feed,
+  discussion,
+  busy,
+}: {
+  isWall: boolean
+  viewerId: string
+  channel: HubChannelView | null
+  composer: KidsSpaceComposer
+  feed: KidsSpaceFeed
+  discussion: KidsSpaceDiscussion
+  busy: boolean
+}) {
+  return (
+    <div className="space-y-3">
+      {!isWall ? (
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground text-sm">
+            {channel ? channel.topic || `#${channel.slug}` : 'Escolha um canal'}
+          </p>
+          {channel && composer.canComposeInChannel ? (
+            <button
+              type="button"
+              onClick={composer.onToggleNew}
+              className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
+            >
+              <Plus className="size-4" /> Começar conversa
+            </button>
+          ) : channel && channel.postingPolicy === 'staff_only' ? (
+            <span className="text-muted-foreground text-xs">Aqui só a equipe escreve 💬</span>
+          ) : null}
+        </div>
+      ) : null}
+
+      {!isWall && composer.showNew && composer.canComposeInChannel ? (
+        <ThreadComposer composer={composer} busy={busy} />
+      ) : null}
+
+      {feed.threads.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
+          <KidsMascot expression="happy" className="size-16" />
+          <p>
+            {isWall
+              ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
+              : channel
+                ? channelPresentation(channel.slug).emptyState
+                : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
+          </p>
+        </div>
+      ) : isWall ? (
+        <WallThreads
+          threads={feed.threads}
+          challengeThreads={feed.challengeThreads}
+          challenge={feed.challenge}
+          viewerId={viewerId}
+          onOpenThread={feed.onOpenThread}
+          onRemix={discussion.onRemix}
+          remixLockFor={discussion.remixLockFor}
+        />
+      ) : (
+        feed.threads.map((item) => (
+          <button
+            type="button"
+            key={item.id}
+            onClick={() => feed.onOpenThread(item)}
+            className="w-full rounded-2xl border-2 border-border bg-card p-3 text-left transition-colors hover:border-primary"
+          >
+            <div className="flex items-center gap-2">
+              {item.isPinned ? <Tag>Fixado</Tag> : null}
+              {item.pending ? <Tag>Aguardando ✅</Tag> : null}
+              <span className="truncate font-bold">{item.title}</span>
+            </div>
+            <p className="flex items-center gap-3 text-muted-foreground text-xs">
+              <AuthorBadge item={item} viewerId={viewerId} nameNode={authorText(item, viewerId)} />
+              <span className="inline-flex items-center gap-1">
+                <MessageCircle className="size-3" /> {item.commentCount}
+              </span>
+              <span>{timeAgo(item.lastActivityAt)}</span>
+            </p>
+          </button>
+        ))
+      )}
+      {feed.threadsHasMore ? (
+        <button
+          type="button"
+          onClick={feed.onLoadMoreThreads}
+          disabled={feed.loadingMoreThreads}
+          className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
+        >
+          {feed.loadingMoreThreads
+            ? 'Carregando…'
+            : isWall
+              ? 'Carregar mais projetos'
+              : 'Carregar mais conversas'}
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy: boolean }) {
+  return (
+    <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+      <div className="flex flex-wrap gap-1.5">
+        {SUGGESTION_STARTERS.map((suggestion) => (
+          <button
+            type="button"
+            key={suggestion.chip}
+            onClick={() => composer.onNewTitleChange(suggestion.title)}
+            className="rounded-full border-2 border-border px-2.5 py-1 font-bold text-muted-foreground text-xs transition-colors hover:border-primary hover:text-primary"
+          >
+            {suggestion.chip}
+          </button>
+        ))}
+      </div>
+      <label htmlFor="new-thread-title" className="sr-only">
+        Título da conversa
+      </label>
+      <input
+        id="new-thread-title"
+        name="threadTitle"
+        className="w-full rounded-xl border-2 border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
+        placeholder="Sobre o que você quer falar?"
+        value={composer.newTitle}
+        onChange={(event) => composer.onNewTitleChange(event.target.value)}
+      />
+      <RichEditor
+        value={composer.newBody}
+        onChange={composer.onNewBodyChange}
+        ariaLabel="Mensagem da conversa"
+      />
+      <AttachmentUploader
+        value={composer.newAttachments}
+        onChange={composer.onNewAttachmentsChange}
+        disabled={busy}
+      />
+      <GamePicker
+        games={composer.myGames}
+        selectedId={composer.newPlayId}
+        onOpen={composer.onLoadMyGames}
+        onSelect={composer.onNewPlayIdChange}
+      />
+      <div className="flex justify-end gap-2">
+        <button
+          type="button"
+          className="rounded-2xl border-2 border-border px-4 py-2 text-sm"
+          onClick={composer.onCancelNew}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
+          onClick={composer.onCreateThread}
+          disabled={busy}
+        >
+          Publicar
+        </button>
+      </div>
+    </div>
   )
 }
 

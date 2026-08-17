@@ -839,40 +839,6 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return result
   }
 
-  /**
-   * Os dois marcos de curso SEM cruzar, por curso. Irmão direto do
-   * `listQualifyingCareerSlots`, mas sem self-join e sem `courses`: aqui não há
-   * degrau a resolver — a chave é o `sourceId` (= courseId) e quem sabe o resto
-   * é o chamador, que já tem os cursos em mãos.
-   * ⚠️ De propósito NÃO filtra por curso vivo/publicado: o mapa é consultado por
-   * id, então marco órfão (curso apagado) nunca é lido. Um INNER join aqui só
-   * pagaria por uma filtragem que o chamador faz de graça.
-   * O `where` bate no índice ÚNICO do ledger (user_id, source_type, source_id).
-   */
-  async listCourseMilestones(
-    userId: string,
-    audience: CourseAudience,
-  ): Promise<Map<string, CourseMilestones>> {
-    const rows = await this.db
-      .select({ sourceId: xpEvents.sourceId, sourceType: xpEvents.sourceType })
-      .from(xpEvents)
-      .where(
-        and(
-          eq(xpEvents.userId, userId),
-          eq(xpEvents.audience, audience),
-          inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
-        ),
-      )
-    const byCourse = new Map<string, CourseMilestones>()
-    for (const row of rows) {
-      const current = byCourse.get(row.sourceId) ?? { completed: false, showcased: false }
-      if (row.sourceType === 'course_complete') current.completed = true
-      else current.showcased = true
-      byCourse.set(row.sourceId, current)
-    }
-    return byCourse
-  }
-
   /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */
   async listCareerCourseState(
     userId: string,

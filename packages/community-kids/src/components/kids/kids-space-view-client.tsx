@@ -24,9 +24,10 @@ import type {
   HubThreadView,
 } from '@/lib/types'
 import { KidsLockedSpace } from './kids-locked-space'
-import { KidsSpaceContent } from './kids-space-content'
+import { KidsSpaceContent, type KidsSpaceContentProps } from './kids-space-content'
 import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
+import { useKidsSpaceReport } from './use-kids-space-report'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
@@ -133,13 +134,7 @@ export function KidsSpaceViewClient({
   const [commentsHasMore, setCommentsHasMore] = useState(false)
   const [loadingMoreComments, setLoadingMoreComments] = useState(false)
 
-  // Denúncia ("Avisar professor") por modal no app — sem window.prompt nativo.
-  const [reportTarget, setReportTarget] = useState<{
-    target: 'threads' | 'comments'
-    id: string
-  } | null>(null)
-  const [reportReason, setReportReason] = useState('')
-  const [reportBusy, setReportBusy] = useState(false)
+  const { onReport, report: reportProps } = useKidsSpaceReport()
 
   // Refs espelham o estado p/ os callbacks de reação/denúncia ficarem com
   // IDENTIDADE ESTÁVEL (deps vazias) — sem isso, um toque numa reação re-renderiza
@@ -524,32 +519,6 @@ export function KidsSpaceViewClient({
     [],
   )
 
-  const report = useCallback((target: 'threads' | 'comments', id: string) => {
-    setReportReason('')
-    setReportTarget({ target, id })
-  }, [])
-
-  async function submitReport() {
-    if (!reportTarget) return
-    const reason = reportReason.trim()
-    if (!reason) {
-      toast.error('Conta pra gente o que aconteceu. ✏️')
-      return
-    }
-    setReportBusy(true)
-    try {
-      await apiSend(`/api/hub/${reportTarget.target}/${enc(reportTarget.id)}/report`, 'POST', {
-        reason,
-      })
-      toast.success('Avisamos um professor. Obrigado! 💙')
-      setReportTarget(null)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não consegui avisar.')
-    } finally {
-      setReportBusy(false)
-    }
-  }
-
   if (loading) return <KidsSpaceSkeleton isWall={isWall} />
   if (unavailable) {
     return unavailableTitle ? (
@@ -576,69 +545,68 @@ export function KidsSpaceViewClient({
   }
   if (!space) return <p className="px-4 py-8 text-muted-foreground">Espaço não encontrado.</p>
 
-  return (
-    <KidsSpaceContent
-      isWall={isWall}
-      space={space}
-      viewerId={viewerId}
-      spaceChannelIds={spaceChannelIds}
-      channels={channels}
-      channel={channel}
-      onSelectChannel={setChannel}
-      thread={thread}
-      comments={comments}
-      busy={busy}
-      replyBody={replyBody}
-      onReplyBodyChange={setReplyBody}
-      replyAttachments={replyAttachments}
-      onReplyAttachmentsChange={setReplyAttachments}
-      commentsHasMore={commentsHasMore}
-      loadingMoreComments={loadingMoreComments}
-      onLoadMoreComments={loadMoreComments}
-      onBackFromThread={() => setThread(null)}
-      onSendReply={sendReply}
-      onReact={react}
-      onReport={report}
-      authorLabel={authorLabel}
-      onRemix={canRemix ? handleRemix : null}
-      remixLockFor={remixLockFor}
-      canReply={Boolean(
+  const contentProps: KidsSpaceContentProps = {
+    context: {
+      isWall,
+      space,
+      viewerId,
+      spaceChannelIds,
+      onOpenThreadById: openThreadById,
+    },
+    navigation: { channels, channel, onSelectChannel: setChannel },
+    discussion: {
+      thread,
+      comments,
+      replyBody,
+      onReplyBodyChange: setReplyBody,
+      replyAttachments,
+      onReplyAttachmentsChange: setReplyAttachments,
+      commentsHasMore,
+      loadingMoreComments,
+      onLoadMoreComments: loadMoreComments,
+      onBackFromThread: () => setThread(null),
+      onSendReply: sendReply,
+      onReact: react,
+      onReport,
+      authorLabel,
+      onRemix: canRemix ? handleRemix : null,
+      remixLockFor,
+      canReply: Boolean(
         thread &&
           (isStaff ||
             thread.isShowcase ||
             channels.find((item) => item.id === thread.channelId)?.postingPolicy !== 'staff_only'),
-      )}
-      canComposeInChannel={canComposeInChannel}
-      showNew={showNew}
-      onToggleNew={() => setShowNew((visible) => !visible)}
-      onCancelNew={() => setShowNew(false)}
-      newTitle={newTitle}
-      onNewTitleChange={setNewTitle}
-      newBody={newBody}
-      onNewBodyChange={setNewBody}
-      newAttachments={newAttachments}
-      onNewAttachmentsChange={setNewAttachments}
-      myGames={myGames}
-      newPlayId={newPlayId}
-      onLoadMyGames={loadMyGames}
-      onNewPlayIdChange={setNewPlayId}
-      onCreateThread={createThread}
-      threads={threads}
-      challengeThreads={challengeThreads}
-      challenge={challenge}
-      onOpenThread={openThread}
-      threadsHasMore={threadsHasMore}
-      loadingMoreThreads={loadingMoreThreads}
-      onLoadMoreThreads={loadMoreThreads}
-      onOpenThreadById={openThreadById}
-      reportOpen={reportTarget !== null}
-      reportReason={reportReason}
-      reportBusy={reportBusy}
-      onReportReasonChange={setReportReason}
-      onCloseReport={() => {
-        if (!reportBusy) setReportTarget(null)
-      }}
-      onSubmitReport={submitReport}
-    />
-  )
+      ),
+    },
+    composer: {
+      canComposeInChannel,
+      showNew,
+      onToggleNew: () => setShowNew((visible) => !visible),
+      onCancelNew: () => setShowNew(false),
+      newTitle,
+      onNewTitleChange: setNewTitle,
+      newBody,
+      onNewBodyChange: setNewBody,
+      newAttachments,
+      onNewAttachmentsChange: setNewAttachments,
+      myGames,
+      newPlayId,
+      onLoadMyGames: loadMyGames,
+      onNewPlayIdChange: setNewPlayId,
+      onCreateThread: createThread,
+    },
+    feed: {
+      threads,
+      challengeThreads,
+      challenge,
+      onOpenThread: openThread,
+      threadsHasMore,
+      loadingMoreThreads,
+      onLoadMoreThreads: loadMoreThreads,
+    },
+    report: reportProps,
+    busy,
+  }
+
+  return <KidsSpaceContent {...contentProps} />
 }
