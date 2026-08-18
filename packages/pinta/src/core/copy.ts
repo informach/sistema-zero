@@ -298,8 +298,9 @@ export const COPY = {
     namePlaceholder: 'Ex.: roupa',
     save: 'Salvar o nome',
     reorder: 'Arrastar para mudar a ordem',
-    /** Linha de forma agrupada: arrastar leva o grupo inteiro junto. */
-    reorderGroup: 'Arrastar para mudar a ordem do grupo inteiro',
+    reorderShape: 'Mudar a ordem da forma',
+    /** Alça agrupada: movimento fino sobre irmã; grupo inteiro sobre externa. */
+    reorderGroup: 'Mudar a ordem da forma ou do grupo',
     moveUp: 'Subir a camada',
     moveDown: 'Descer a camada',
     /** Nome automático: "Camada 1", "Camada 2"... */

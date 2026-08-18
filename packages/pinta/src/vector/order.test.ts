@@ -135,7 +135,7 @@ describe('moveShapesOrder — a seleção anda como UMA peça', () => {
   })
 })
 
-describe('dropShapesOrder — arrasto do painel Camadas', () => {
+describe('dropShapesOrder — alça do painel Camadas', () => {
   it('uma forma só atravessa igualzinho ao arrasto de antes', () => {
     const shapes = [rect('a'), rect('b'), rect('c')]
     expect(ordem(dropShapesOrder(shapes, ['a'], 'b'))).toEqual(['b', 'a', 'c'])

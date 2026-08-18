@@ -19,7 +19,7 @@ import type { JSX, PointerEvent as ReactPointerEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { VectorShape } from '../../../vector/model'
-import { dropShapesOrder, moveShapesOrder } from '../../../vector/order'
+import { dropShapesOrder } from '../../../vector/order'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
 import { Eye, EyeOff, GripVertical } from '../../ui/icons'
@@ -85,7 +85,7 @@ export function VectorLayerPanel({
 
   // De cima para baixo, como a criança vê o desenho (fim do array = topo).
   const rows = [...doc.shapes].reverse()
-  /** Grupo da linha em arrasto: o bloco inteiro se acende, não só a alça tocada. */
+  /** Grupo da linha em arrasto: o bloco inteiro se acende, mesmo no movimento fino. */
   const draggingGroup = dragging ? doc.shapes.find((s) => s.id === dragging)?.groupId : undefined
 
   function selectShape(shape: VectorShape): void {
@@ -108,12 +108,17 @@ export function VectorLayerPanel({
   }
 
   /**
-   * Um passo no EMPILHAMENTO (+1 = para cima/topo). Forma agrupada leva o grupo
-   * inteiro, igual ao clique que já seleciona o grupo todo — a régua mora em
-   * `vector/order.ts` e é a MESMA dos quatro botões da faixa.
+   * Um passo pela ALÇA (+1 = linha acima no painel). Usa a mesma régua do
+   * arrasto: sobre irmã move só a forma; sobre externa move o grupo inteiro.
+   * Os quatro botões da faixa continuam grossos via `moveShapesOrder`.
    */
-  function move(shape: VectorShape, delta: 1 | -1): void {
-    const next = moveShapesOrder(currentShapes(), [shape.id], delta)
+  function moveFromHandle(shape: VectorShape, delta: 1 | -1): void {
+    const shapes = currentShapes()
+    const index = shapes.findIndex((candidate) => candidate.id === shape.id)
+    if (index === -1) return
+    const over = shapes[index + delta]
+    if (!over) return
+    const next = dropShapesOrder(shapes, [shape.id], over.id)
     if (next) commitShapes(next)
   }
 
@@ -140,8 +145,8 @@ export function VectorLayerPanel({
       })
       const overId = items[overIndex]?.dataset.shape
       if (!overId) return
-      // Grupo vai junto, e passar por cima de um IRMÃO do bloco é no-op (o
-      // `dropShapesOrder` cuida dos dois, senão a lista se debate no caminho).
+      // Irmão = movimento fino; linha externa = grupo inteiro. A mesma operação
+      // pura atende o ponteiro e as setas da alça.
       const next = dropShapesOrder(currentShapes(), [shape.id], overId)
       if (next) commitShapes(next, false)
     }
@@ -165,7 +170,7 @@ export function VectorLayerPanel({
           const visible = shape.hidden !== true
           const label = shapeLabel(shape)
           const grouped = shape.groupId !== undefined
-          // O grupo INTEIRO se acende no arrasto: quem se mexe é o bloco todo.
+          // O grupo inteiro se acende para antecipar o movimento ao cruzar para fora.
           const moving =
             dragging !== null &&
             (shape.id === dragging || (grouped && shape.groupId === draggingGroup))
@@ -212,17 +217,17 @@ export function VectorLayerPanel({
               </button>
               <button
                 type="button"
-                aria-label={`${grouped ? COPY.layers.reorderGroup : COPY.layers.reorder}: ${label}`}
-                title={grouped ? COPY.layers.reorderGroup : COPY.layers.reorder}
+                aria-label={`${grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}: ${label}`}
+                title={grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}
                 onPointerDown={(event) => handleDragStart(shape, event)}
                 onKeyDown={(event) => {
                   // Teclado é a via acessível do arrastar.
                   if (event.key === 'ArrowUp') {
                     event.preventDefault()
-                    move(shape, 1)
+                    moveFromHandle(shape, 1)
                   } else if (event.key === 'ArrowDown') {
                     event.preventDefault()
-                    move(shape, -1)
+                    moveFromHandle(shape, -1)
                   }
                 }}
                 className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-pin-muted transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"

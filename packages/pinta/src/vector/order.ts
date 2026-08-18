@@ -117,18 +117,18 @@ export function moveShapesOrder(
 }
 
 /**
- * Soltar no lugar da forma `overId` (arrasto pela alça do painel Camadas). Segue
- * o PONTEIRO, uma linha por vez — pular o cluster inteiro é regra do passo de ±1,
- * aqui quem manda é o dedo.
+ * Colocar no lugar da forma `overId` pela alça do painel Camadas. Arrasto e
+ * teclado escolhem uma linha vizinha por vez — pular o cluster inteiro é regra
+ * dos quatro botões de ordem, não da alça.
  *
- * ⭐ **Dentro do grupo o arrasto é FINO.** Se a linha sob o dedo é irmã de grupo
- * da que está sendo arrastada, move-se só a arrastada, reordenando as partes por
+ * ⭐ **Dentro do grupo a alça é FINA.** Se a linha-alvo é irmã de grupo
+ * da que foi acionada, move-se só ela, reordenando as partes por
  * dentro; cruzar para FORA volta a mover o grupo inteiro. Sem isso, a régua "o
  * grupo é uma peça só" tirava a única forma de restacar as partes de um
  * personagem agrupado — sobrava desagrupar, arrumar e reagrupar.
  *
  * Os quatro BOTÕES de ordem seguem grossos de propósito (`moveShapesOrder` move a
- * seleção, que já é o grupo): o grosso é deles, o fino é do arrasto.
+ * seleção, que já é o grupo): o grosso é deles, o fino é da alça.
  */
 export function dropShapesOrder(
   shapes: readonly VectorShape[],

@@ -500,9 +500,10 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   (`alignShapes`): 6 botões no painel; 2+ = entre si, 1 = na tela; grupos transladam INTEIROS.
 - **CAMADAS do vetor** (`VectorLayerPanel`): uma linha por FORMA (topo primeiro) com olho,
   miniatura, nome (`COPY.vector.shapeNames`; texto = "Texto: <conteúdo>") e alça (arrasto = UMA
-  entrada de undo via replace+`commitGesture`; ↑/↓ pelo teclado). ⚠️ **A alça move o GRUPO
-  inteiro** (ver "Ordem-Z do grupo"), e a faixinha à esquerda da linha avisa que ela não anda
-  sozinha. Linha seleciona o GRUPO inteiro
+  entrada de undo via replace+`commitGesture`; ↑/↓ pelo teclado). A alça é FINA sobre um irmão
+  (move só a forma) e move o GRUPO inteiro ao cruzar uma linha externa; ponteiro e teclado usam
+  `dropShapesOrder`. A faixinha à esquerda avisa que a linha pertence a um grupo. Linha seleciona
+  o GRUPO inteiro
   (aria-label "Selecionar: <nome>" — distinto do botão de ferramenta). **`hidden?: boolean`** no
   `VectorShapeBase` (sanitize OMITE quando falso; helper `visibleShapes`): escondida some do
   palco e de TODO export/prévia num funil único (`shapesToMarkup`+`gradientDefsMarkup` no string,
@@ -550,20 +551,21 @@ A régua agora é uma só, compartilhada pelos quatro botões e pelo painel Cama
 | bem para a frente/fundo | o bloco vai ao topo/fundo, na ordem relativa |
 | vizinho **escondido** | não consome o passo (senão o botão parece morto) |
 | arranjo inalterado | `null`, e quem chama NÃO commita |
-| **arrasto sobre um IRMÃO de grupo** | reordena DENTRO do grupo (só a linha arrastada) |
-| arrasto cruzando para FORA | volta a mover o grupo inteiro |
+| **alça sobre um IRMÃO de grupo** (arrasto ou seta) | reordena DENTRO do grupo (só a linha acionada) |
+| alça cruzando para FORA | volta a mover o grupo inteiro |
 
-⭐ **O grosso é dos botões, o fino é do arrasto** (18/08). A 1ª versão fazia o arrasto sobre um
-irmão ser no-op, e o full review mostrou o preço: restacar as partes de um personagem agrupado só
-era possível desagrupando, arrumando e reagrupando. Agora `dropShapesOrder` olha se a linha sob o
-dedo é irmã de grupo — se é, o bloco encolhe para a forma arrastada. Os quatro botões seguem
-grossos de propósito (movem a seleção, que já é o grupo inteiro).
+⭐ **O grosso é dos botões, o fino é da alça** (18/08). A 1ª versão fazia o arrasto sobre um irmão
+ser no-op, e o full review mostrou o preço: restacar as partes de um personagem agrupado só era
+possível desagrupando, arrumando e reagrupando. Agora `dropShapesOrder` olha se a linha-alvo é irmã
+de grupo — se é, o bloco encolhe para a forma acionada. Arrasto e setas usam essa mesma operação;
+os quatro botões seguem grossos de propósito (movem a seleção, que já é o grupo inteiro).
 ⚠️ O destaque do arrasto continua acendendo o GRUPO todo, mesmo quando o movimento vai ser fino:
 sinalizar a mais é o erro mais seguro, porque o caso surpreendente é o outro (cruzar para fora e
 ver três linhas andarem).
 
-- ⭐ **`moveShapesOrder`/`dropShapesOrder` expandem os ids para o grupo POR DENTRO** — por isso o
-  painel manda só o id da linha e o grupo vem junto, sem importar UI dentro de `vector/`.
+- ⭐ **`moveShapesOrder` sempre expande os ids para o grupo; `dropShapesOrder`, só ao cruzar para
+  fora** — sobre um irmão, ele preserva apenas os ids pedidos. Por isso o painel manda só o id da
+  linha e mantém toda a regra dentro de `vector/`.
 - ⚠️ A chave de cluster é `g:<groupId>` **ou** `s:<id>`, em espaços SEPARADOS: com o `groupId ?? id`
   cru do `alignShapes`, um `groupId` igual ao `id` de outra forma grudaria as duas. `newId` não
   colide na prática, mas um `.pinta.json` importado escreve o que quiser nesses campos (medido: sem
