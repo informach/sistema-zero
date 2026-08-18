@@ -34,6 +34,30 @@ sob o ULID e o `load(<este id>)` nunca acha o rascunho (a criança PERDIA tudo n
 `tests/studio-project-id.test.ts`. ⚠️ Mudar o formato da chave ORFANA os rascunhos antigos (sem usuário
 real em prod, ok).
 
+⭐ **Aviso "você está enviando o projeto INICIAL" (08/2026 — anti-sobrescrita):** o caso do
+incidente é o editor semeado do TEMPLATE (passo 4 da ordem acima, num soluço de rede do passo 2)
++ "Reenviar" = template por cima do jogo entregue (upsert último-vence). O `studio-block` calcula
+`templateWarning` **ao ABRIR o confirm** (no onClick do botão Enviar — o projeto vivo só existe no
+`handleRef`): `submitted && isInitialTemplateProject(handleRef.getProject(), content.initialProject)`
+→ parágrafo `text-destructive` no Dialog apontando o "Sincronizar com o enviado". NÃO bloqueia
+(reenviar o template pode ser recomeço intencional). A régua é PURA em
+**`lib/studio-template.ts`** (`isInitialTemplateProject`, testada em `tests/studio-template.test.ts`):
+compara byte a byte os 3 arquivos canônicos (ausente = `''`); **`kind:'pro'` em qualquer lado →
+false** (no Pro os 3 são `''` — falso positivo garantido); contagem de `assets` diferente → false;
+entrada torta → false (aviso errado ensina a ignorar avisos). O members guarda a versão
+sobrescrita (migração 0066) e o professor restaura pelo admin — este aviso é a 1ª linha de defesa.
+
+⭐ **`navigator.storage.persist()` (08/2026 — rascunho não é mais despejável):**
+**`lib/persistent-storage.ts`** (`requestPersistentStorage` — best-effort, guard de módulo
+1×/sessão, try/catch + `.catch()` no promise, nunca lança; a concessão é POR ORIGEM;
+⚠️ o Firefox mostra PROMPT ao usuário — decisão de produto: aceito; +
+`resetPersistentStorageForTests`; teste em `tests/persistent-storage.test.ts`). Chamada no início
+do effect de carga dos TRÊS editores com IndexedDB de criança: `studio-block.tsx`,
+`pinta-block.tsx` e o `studio-full-client.tsx` do community-kids (via
+`@sistemazero/member-shell/lib/persistent-storage` — o exports map `./lib/*` cobre). Sem isso o
+Safari apaga TODO storage de origem não visitada por ~7 dias, e qualquer navegador despeja sob
+pressão de disco — o rascunho da criança sumia sem culpado.
+
 ## O que vive aqui vs no app
 
 | Aqui (shell) | No app |
