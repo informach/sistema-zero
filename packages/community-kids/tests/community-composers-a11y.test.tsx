@@ -88,7 +88,10 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
     render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }))
-    const title = screen.getByRole('textbox', { name: 'Título da conversa' })
+    // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
+    // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
+    // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
+    const title = await screen.findByRole('textbox', { name: 'Título da conversa' })
     expect(title.getAttribute('name')).toBe('threadTitle')
   })
 
