@@ -137,6 +137,11 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
 > (`ADD VALUE` anexa) — inserir no meio faz um `db:generate` futuro enxergar enum divergente e
 > propor RECRIÁ-LO, levando a coluna junto. Conferido rodando `db:generate` (propôs só o ADD
 > VALUE, nada destrutivo) e descartando a migration duplicada.
+> E **`0066`** (`0066_wide_randall`: `studio_submissions.previous_project` jsonb +
+> `previous_submitted_at` timestamptz, ambas NULLABLE — backup da versão anterior da entrega,
+> ver §Entregas; carimbo `when` do relógio real, acima da `0065`; o `db:generate` re-propôs o
+> `ALTER TYPE … ADD VALUE 'pinta'` e ele foi TIRADO do SQL — regra deste arquivo; a geração
+> também CUROU o snapshot `0065` ausente na linhagem `meta/`, criando o `0066_snapshot.json`).
 > ⚠️ As migrations `0029`/`0030` têm 55P04 LATENTE num banco ZERADO (enum ADD VALUE + uso no mesmo
 > lote) — os testes de banco criam o DDL direto em vez de rodar `migrate()` do zero.
 >
@@ -297,6 +302,34 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    criança só passa a ver o selo — `studioState.reviewed` na projeção da aula
    (`summarizeByBlockIds` traz `reviewedAt`; `get-lesson` compara com o `submittedAt`).
    Gateway: entrada nova `members-admin-studio-submissions-write` (a de leitura é GET-only).
+   ⭐⭐ **Backup "versão anterior" da entrega (08/2026, migration `0066` — fecha a janela do
+   reenvio último-vence):** colunas `previous_project` jsonb + `previous_submitted_at`
+   timestamptz em `studio_submissions`. O `upsert` copia a versão ANTIGA para elas nos DOIS
+   caminhos do `onConflictDoUpdate` — no SET, `` sql`${studioSubmissions.project}` `` (coluna
+   QUALIFICADA lê o valor VELHO da linha; ⚠️ NÃO é `excluded.*`, que seria o valor novo). Assim
+   a criança que reenvia o template por cima do jogo entregue tem UMA versão de volta.
+   - ⚠️ **`getOne` devolve SÓ `previousSubmittedAt`**, nunca o `previous_project`: o `getOne`
+     também serve o seed do aluno e o carryover — dois jsonb de até 1,5 MB dobrariam o payload
+     das rotas quentes. O projeto anterior tem endpoint dedicado:
+     **`GET /members/admin/blocks/:id/studio-submissions/:userId/previous`** →
+     `{project, submittedAt}`, 404 `ContentNotFoundError` sem backup (cabe no wildcard
+     `members-admin-blocks-read`).
+   - **`POST /members/admin/studio-submissions/:blockId/:userId/restore-previous`** (sem body;
+     wildcard `…-studio-submissions-write`): **UM UPDATE atômico** em que todas as expressões do
+     SET leem a linha ANTIGA — `project↔previous_project`, `submitted_at↔previous_submitted_at`,
+     `score/results/checked_at = null` — TROCA reversível (restaurar 2× volta ao que era).
+     **Preserva `passed_at`** (sticky: restauração do professor não pune a criança),
+     `reviewed_at/by` e `message`. `WHERE … previous_project IS NOT NULL` → sem backup = 404.
+     ⚠️ Efeito na FILA: restaurar move `submitted_at` para TRÁS, então as réguas
+     `reviewed`/`answered` (`>= submitted_at`) podem fechar a pendência — coerente (o professor
+     está mexendo nela). Provado contra Postgres real em
+     `tests/db/studio-submission-previous.test.ts` (upsert copia nos dois caminhos, swap
+     atômico, reversibilidade, restore sem backup = false).
+   - **`GET /members/admin/courses/:id/submission-counts`** → `{total, byLesson, byBlock}`
+     (`countByCourseGrouped`: GROUP BY block_id, lesson_id — colunas da própria tabela, sem
+     join; cabe no wildcard `members-admin-courses-read`). Alimenta os confirms de EXCLUSÃO do
+     admin: as FKs em cascata apagam as entregas junto do bloco/aula/módulo/curso, e o confirm
+     passa a dizer QUANTAS vão embora.
    A entrega grava **`account_id`**
    (conta responsável; no kids = o pai, ≠ do `user_id` que é o PERFIL da criança — no adulto são
    iguais; migration `0026`) → o BFF do admin hidrata a CRIANÇA (nome do perfil) + o RESPONSÁVEL.

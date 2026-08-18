@@ -34,6 +34,14 @@ export interface StudioSubmissionRecord {
   reviewedAt?: Date | null
   /** Qual staff carimbou (auditoria). Mesma regra do `reviewedAt`. */
   reviewedBy?: string | null
+  /**
+   * Backup da versão SOBRESCRITA pelo último reenvio (o upsert copia o
+   * projeto/data antigos para cá antes de gravar os novos). ⚠️ NÃO é aceito como
+   * entrada do `upsert` — as colunas só são escritas pelo próprio upsert (cópia
+   * da linha antiga) e pelo `restorePrevious` (troca). `null` = sem reenvio.
+   */
+  previousProject?: unknown | null
+  previousSubmittedAt?: Date | null
 }
 
 /** Resumo de uma entrega para o painel do professor (sem o projeto inteiro). */
@@ -74,6 +82,12 @@ export interface StudioSubmissionDetail {
   message: string | null
   /** Carimbo de "já conferi" (o botão do professor). `null` = nunca conferida. */
   reviewedAt: Date | null
+  /**
+   * Data da versão anterior (backup do último reenvio). SÓ o timestamp — o
+   * projeto anterior é pesado (até 1,5M chars) e este detalhe também alimenta o
+   * seed do aluno/carryover; quem quer o payload usa `getPrevious`.
+   */
+  previousSubmittedAt: Date | null
 }
 
 /**
@@ -177,6 +191,31 @@ export interface StudioSubmissionRepository {
   ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }>
   /** Entrega de um aluno num bloco (abrir no Estúdio do professor + correção). */
   getOne(userId: string, blockId: string): Promise<StudioSubmissionDetail | null>
+  /**
+   * A versão ANTERIOR da entrega (backup do último reenvio) — payload pesado,
+   * carregado só quando o professor pede (baixar/inspecionar). `null` = a linha
+   * não existe OU nunca houve reenvio.
+   */
+  getPrevious(
+    userId: string,
+    blockId: string,
+  ): Promise<{ project: unknown; submittedAt: Date } | null>
+  /**
+   * TROCA a entrega atual pela versão anterior (e vice-versa — reversível:
+   * restaurar 2× volta ao estado inicial) num único UPDATE atômico. Zera a
+   * correção (score/results/checked_at — era da versão sobrescrita) e PRESERVA
+   * `passed_at` (sticky: a restauração do professor não pune a criança),
+   * `reviewed_at/by` e `message`. `false` = sem linha ou sem versão anterior.
+   */
+  restorePrevious(input: { userId: string; blockId: string }): Promise<boolean>
+  /**
+   * Contagem de entregas por bloco/aula de um curso (linhas cruas; o service
+   * agrega) — alimenta o aviso destrutivo dos confirms de exclusão no admin
+   * (as FKs em cascata apagariam essas entregas junto).
+   */
+  countByCourseGrouped(
+    courseId: string,
+  ): Promise<{ blockId: string; lessonId: string; count: number }[]>
   /**
    * Carimba (ou tira) o "já conferi" do professor. `reviewed: false` limpa o
    * carimbo — desfazer um clique errado. Devolve `false` se a entrega não existe.

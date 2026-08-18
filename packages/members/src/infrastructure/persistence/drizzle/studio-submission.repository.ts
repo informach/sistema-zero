@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, inArray, lt, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
 import type {
@@ -42,6 +42,16 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       message: submission.message ?? null,
     }
 
+    // ⭐ Backup de 1 passo: o SET do ON CONFLICT copia o projeto/data que estavam
+    // na linha para `previous_*` ANTES de sobrescrever. Referenciar a COLUNA DA
+    // TABELA dentro do SET lê o valor ANTIGO da linha (≠ `excluded.*`, que é o
+    // valor proposto) — é o que torna a cópia atômica, sem SELECT prévio. O
+    // INSERT novo deixa `previous_*` null (nunca houve reenvio).
+    const previousBackupSet = {
+      previousProject: sql`${studioSubmissions.project}`,
+      previousSubmittedAt: sql`${studioSubmissions.submittedAt}`,
+    }
+
     if (!options?.preservePassedAt) {
       await this.db
         .insert(studioSubmissions)
@@ -49,6 +59,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         .onConflictDoUpdate({
           target: [studioSubmissions.userId, studioSubmissions.blockId],
           set: {
+            ...previousBackupSet,
             project: values.project,
             submittedAt: values.submittedAt,
             score: values.score,
@@ -86,6 +97,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         .onConflictDoUpdate({
           target: [studioSubmissions.userId, studioSubmissions.blockId],
           set: {
+            ...previousBackupSet,
             project: values.project,
             submittedAt: values.submittedAt,
             score: values.score,
@@ -310,6 +322,10 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         passedAt: studioSubmissions.passedAt,
         message: studioSubmissions.message,
         reviewedAt: studioSubmissions.reviewedAt,
+        // ⚠️ SÓ o timestamp da versão anterior — o jsonb `previous_project` fica de
+        // fora de propósito: este detalhe alimenta também o seed do aluno e o
+        // carryover (projetos de até 1,5M chars; dois jsonb dobrariam o payload).
+        previousSubmittedAt: studioSubmissions.previousSubmittedAt,
       })
       .from(studioSubmissions)
       .where(and(eq(studioSubmissions.userId, userId), eq(studioSubmissions.blockId, blockId)))
@@ -325,7 +341,75 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       passedAt: row.passedAt ?? null,
       message: row.message ?? null,
       reviewedAt: row.reviewedAt ?? null,
+      previousSubmittedAt: row.previousSubmittedAt ?? null,
     }
+  }
+
+  async getPrevious(
+    userId: string,
+    blockId: string,
+  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+    const rows = await this.db
+      .select({
+        project: studioSubmissions.previousProject,
+        submittedAt: studioSubmissions.previousSubmittedAt,
+      })
+      .from(studioSubmissions)
+      .where(and(eq(studioSubmissions.userId, userId), eq(studioSubmissions.blockId, blockId)))
+      .limit(1)
+    const row = rows[0]
+    // Sem linha OU sem backup (nunca houve reenvio) → null, o service resolve o 404.
+    if (!row || row.project == null || row.submittedAt == null) return null
+    return { project: row.project, submittedAt: row.submittedAt }
+  }
+
+  async restorePrevious(input: { userId: string; blockId: string }): Promise<boolean> {
+    // ⭐ TROCA atômica num UPDATE só: todas as expressões do SET leem a linha
+    // ANTIGA (semântica do UPDATE), então project↔previous e submitted↔previous
+    // trocam de lugar sem SELECT prévio nem lock — restaurar 2× volta ao estado
+    // inicial (reversível de propósito: o "desfazer" do próprio restaurar).
+    // Zera a correção (score/results/checked_at pertenciam à versão sobrescrita);
+    // PRESERVA passed_at (sticky — a restauração do professor não pune a criança),
+    // reviewed_at/by e message (não listados no SET).
+    const rows = await this.db
+      .update(studioSubmissions)
+      .set({
+        project: sql`${studioSubmissions.previousProject}`,
+        previousProject: sql`${studioSubmissions.project}`,
+        submittedAt: sql`${studioSubmissions.previousSubmittedAt}`,
+        previousSubmittedAt: sql`${studioSubmissions.submittedAt}`,
+        score: null,
+        results: null,
+        checkedAt: null,
+      })
+      .where(
+        and(
+          eq(studioSubmissions.userId, input.userId),
+          eq(studioSubmissions.blockId, input.blockId),
+          isNotNull(studioSubmissions.previousProject),
+          isNotNull(studioSubmissions.previousSubmittedAt),
+        ),
+      )
+      .returning({ blockId: studioSubmissions.blockId })
+    return rows.length > 0
+  }
+
+  async countByCourseGrouped(
+    courseId: string,
+  ): Promise<{ blockId: string; lessonId: string; count: number }[]> {
+    // Sem joins: block_id/lesson_id são colunas da própria tabela (snapshot no
+    // submit). Alimenta o aviso "este bloco/aula tem N entregas" dos confirms de
+    // exclusão do admin — as FKs em cascata apagariam essas linhas junto.
+    const rows = await this.db
+      .select({
+        blockId: studioSubmissions.blockId,
+        lessonId: studioSubmissions.lessonId,
+        value: count(),
+      })
+      .from(studioSubmissions)
+      .where(eq(studioSubmissions.courseId, courseId))
+      .groupBy(studioSubmissions.blockId, studioSubmissions.lessonId)
+    return rows.map((r) => ({ blockId: r.blockId, lessonId: r.lessonId, count: r.value }))
   }
 
   async markReviewed(input: {
