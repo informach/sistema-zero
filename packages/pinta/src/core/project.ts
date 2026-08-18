@@ -183,6 +183,12 @@ export interface PintaPixelLayer {
   id: string
   name: string
   visible: boolean
+  /**
+   * Cadeado: trancada, o CONTEÚDO não muda (desenhar/transformar/apagar a
+   * camada). Olho, nome e ordem continuam livres; excluir pede destrancar.
+   * Convenção do `hidden` do vetor: `true` emite a chave, o resto OMITE.
+   */
+  locked?: boolean
 }
 
 /** Um quadro de pixel: um cel por camada, alinhado com `asset.layers`. */
@@ -519,7 +525,13 @@ function sanitizePixelLayers(raw: unknown, celCount: number): PintaPixelLayer[] 
         typeof l.name === 'string' && l.name.trim()
           ? l.name.trim().slice(0, PINTA_LIMITS.maxAnimationNameChars)
           : `${COPY.layers.namePrefix} ${index + 1}`
-      return { id: candidate, name, visible: l.visible !== false }
+      return {
+        id: candidate,
+        name,
+        visible: l.visible !== false,
+        // Cadeado: `true` emite a chave, lixo/ausente OMITE (round-trip estrito).
+        ...(l.locked === true ? { locked: true as const } : {}),
+      }
     })
     if (layers.length > 0) return layers
   }

@@ -13,11 +13,14 @@ import {
   flattenCels,
   flattenCelsOrBlank,
   flattenCelsRange,
+  hasLockedLayer,
+  isLayerLocked,
   layerIndexOf,
   movePixelLayer,
   removePixelLayer,
   renamePixelLayer,
   stackBitmaps,
+  togglePixelLayerLocked,
   togglePixelLayerVisible,
   visibleComposite,
 } from './layers'
@@ -187,5 +190,43 @@ describe('movePixelLayer', () => {
     expect(movePixelLayer(base, 'l1', -1)).toBe(base)
     expect(movePixelLayer(base, 'l1', 9)).toBe(base)
     expect(movePixelLayer(base, 'sumiu', 1)).toBe(base)
+  })
+})
+
+describe('togglePixelLayerLocked / isLayerLocked / hasLockedLayer', () => {
+  it('trancar EMITE a chave; destrancar a REMOVE (round-trip estrito do wire)', () => {
+    const locked = togglePixelLayerLocked(sprite(), 'l1')
+    expect(locked.layers[0]?.locked).toBe(true)
+    // A vizinha não ganha a chave.
+    expect('locked' in (locked.layers[1] ?? {})).toBe(false)
+
+    const unlocked = togglePixelLayerLocked(locked, 'l1')
+    expect('locked' in (unlocked.layers[0] ?? {})).toBe(false)
+  })
+
+  it('id inexistente → MESMO asset', () => {
+    const base = sprite()
+    expect(togglePixelLayerLocked(base, 'sumiu')).toBe(base)
+  })
+
+  it('isLayerLocked segue a régua da camada ativa (null = a de cima)', () => {
+    const base = togglePixelLayerLocked(sprite(), 'l2')
+    expect(isLayerLocked(base, 'l2')).toBe(true)
+    expect(isLayerLocked(base, 'l1')).toBe(false)
+    // l2 é a de CIMA — null cai nela (é a ativa por default).
+    expect(isLayerLocked(base, null)).toBe(true)
+  })
+
+  it('hasLockedLayer vê qualquer camada trancada (a régua do espelhar/girar)', () => {
+    const base = sprite()
+    expect(hasLockedLayer(base)).toBe(false)
+    expect(hasLockedLayer(togglePixelLayerLocked(base, 'l1'))).toBe(true)
+  })
+
+  it('o cadeado NÃO mexe no desenho nem na visibilidade', () => {
+    const base = sprite()
+    const out = togglePixelLayerLocked(base, 'l1')
+    expect(out.layers[0]?.visible).toBe(true)
+    expect(out.animations).toBe(base.animations)
   })
 })

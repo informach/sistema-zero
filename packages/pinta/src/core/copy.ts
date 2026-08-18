@@ -306,6 +306,14 @@ export const COPY = {
     /** Nome automático: "Camada 1", "Camada 2"... */
     namePrefix: 'Camada',
     hiddenWarning: 'Esta camada está escondida! Toque no olhinho para ver o que você desenhar.',
+    /** Cadeado: prefixo + nome da camada/forma, como o show/hide. */
+    lock: 'Trancar',
+    unlock: 'Destrancar',
+    lockedWarning: 'Esta camada está trancada! Toque no cadeado para poder desenhar nela.',
+    lockedShapeWarning: 'Essa forma está trancada! Toque no cadeado da camada para mudar ela.',
+    lockedDelete: 'Esta camada está trancada! Destranque no cadeado para poder apagar.',
+    lockedTransform:
+      'Tem camada trancada neste desenho! Destranque os cadeados para virar ou girar o quadro.',
     thumbAlt: 'Desenho da camada',
   },
   animation: {

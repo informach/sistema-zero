@@ -48,6 +48,13 @@ interface VectorShapeBase {
    * (convenção do sanitize: `false` OMITE a chave).
    */
   hidden?: boolean
+  /**
+   * Cadeado do painel Camadas: trancada, a forma não muda nem sai do desenho
+   * (mover/estilo/pontos/apagar). Olho, nome e ordem seguem livres; ela
+   * CONTINUA no export/prévia (lock ≠ hidden). Mesma convenção do `hidden`:
+   * `true` emite a chave, o resto OMITE.
+   */
+  locked?: boolean
 }
 
 /** Só as formas visíveis (o funil de render/export respeita o olhinho). */
@@ -273,6 +280,7 @@ export function sanitizeVectorShape(raw: unknown): VectorShape | null {
     rotation,
     ...(groupId ? { groupId } : {}),
     ...(s.hidden === true ? { hidden: true } : {}),
+    ...(s.locked === true ? { locked: true } : {}),
   }
 
   switch (s.type) {

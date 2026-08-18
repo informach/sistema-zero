@@ -223,3 +223,95 @@ describe('painel Camadas do vetor', () => {
     })
   })
 })
+
+describe('cadeado da forma (vetor)', () => {
+  it('o cadeado da linha alterna (Trancar → Destrancar)', async () => {
+    await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: `${COPY.layers.unlock}: ${ELLIPSE}` })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.unlock}: ${ELLIPSE}` }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` })).toBeTruthy()
+    })
+  })
+
+  it('Ctrl+A NÃO leva a trancada junto', async () => {
+    await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` }))
+    fireEvent.keyDown(window, { key: 'a', ctrlKey: true })
+    await waitFor(() => {
+      expect(
+        screen
+          .getByRole('button', { name: `${COPY.vector.select}: ${RECT}` })
+          .getAttribute('aria-pressed'),
+      ).toBe('true')
+    })
+    expect(
+      screen
+        .getByRole('button', { name: `${COPY.vector.select}: ${ELLIPSE}` })
+        .getAttribute('aria-pressed'),
+    ).toBe('false')
+  })
+
+  it('Delete com SÓ a trancada selecionada: ela FICA e o aviso aparece', async () => {
+    const stage = await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` }))
+    // O painel segue selecionando a trancada (é o caminho para destrancar).
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.select}: ${ELLIPSE}` }))
+    fireEvent.keyDown(window, { key: 'Delete' })
+    await screen.findByText(COPY.layers.lockedShapeWarning)
+    expect(stage.querySelectorAll('ellipse').length).toBe(1)
+    expect(rowLabels()).toEqual([ELLIPSE, RECT])
+  })
+
+  it('o clique no palco ATRAVESSA a trancada (selecionar é gesto do painel)', async () => {
+    const stage = await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` }))
+    // O botão de FERRAMENTA "Selecionar" (o nome casa por inteiro; as linhas do
+    // painel são "Selecionar: <forma>", que não colidem).
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const ellipse = stage.querySelector('ellipse')
+    if (!ellipse) throw new Error('ellipse esperada no palco')
+    fireEvent.pointerDown(ellipse, { isPrimary: true, pointerId: 5, clientX: 132, clientY: 48 })
+    fireEvent.pointerUp(stage, { pointerId: 5 })
+    await waitFor(() => {
+      expect(
+        screen
+          .getByRole('button', { name: `${COPY.vector.select}: ${ELLIPSE}` })
+          .getAttribute('aria-pressed'),
+      ).toBe('false')
+    })
+  })
+
+  it('REORDENAR a trancada continua funcionando (a identidade fica)', async () => {
+    await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${RECT}` }))
+    const grip = screen.getByRole('button', { name: `${COPY.layers.reorderShape}: ${RECT}` })
+    fireEvent.keyDown(grip, { key: 'ArrowUp' })
+    await waitFor(() => {
+      expect(rowLabels()).toEqual([RECT, ELLIPSE])
+    })
+  })
+
+  it('duplicar a trancada nasce DESTRANCADA (cópia é material novo)', async () => {
+    await openWithTwoShapes()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` }))
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.select}: ${ELLIPSE}` }))
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selDuplicate }))
+    await waitFor(() => {
+      expect(rowLabels()).toEqual([ELLIPSE, ELLIPSE, RECT])
+    })
+    // Uma continua trancada (a original); a cópia nasce com o cadeado ABERTO.
+    expect(
+      screen.getAllByRole('button', { name: `${COPY.layers.unlock}: ${ELLIPSE}` }),
+    ).toHaveLength(1)
+    expect(screen.getAllByRole('button', { name: `${COPY.layers.lock}: ${ELLIPSE}` })).toHaveLength(
+      1,
+    )
+  })
+})

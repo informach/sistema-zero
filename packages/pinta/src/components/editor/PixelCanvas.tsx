@@ -165,6 +165,10 @@ export function PixelCanvas(): JSX.Element {
   const activeHidden =
     isPixelLayeredKind(asset) && asset.layers[layerIndexOf(asset, layerId)]?.visible === false
 
+  /** A camada ativa está trancada? Aí o traço é BLOQUEADO (≠ hidden, que só avisa). */
+  const activeLocked =
+    isPixelLayeredKind(asset) && asset.layers[layerIndexOf(asset, layerId)]?.locked === true
+
   /**
    * O desenho VISÍVEL inteiro (todas as camadas) — referência do balde e do
    * conta-gotas. Sem camadas extras é o próprio bitmap ativo.
@@ -342,15 +346,37 @@ export function PixelCanvas(): JSX.Element {
   function commitBitmap(next: PintaBitmap): void {
     // Ref VIVO da sessão (não o do render): o commit cai no quadro certo mesmo
     // se a seleção mudou durante o gesto.
-    selfCommitRef.current = true
     const state = editor.getState()
     const s = session.getState()
+    // Backstop do CADEADO no estado vivo: cobre qualquer caminho que os gates
+    // de UX esqueçam. ANTES do selfCommitRef — commit bloqueado não pode
+    // marcar "fui eu que mudei".
+    if (activeLayerLocked()) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
+    selfCommitRef.current = true
     state.commit(
       withActiveBitmap(
         state.asset,
         { animationId: s.animationId, frameIndex: s.frameIndex, layerId: s.layerId },
         next,
       ),
+    )
+  }
+
+  /**
+   * Cadeado da camada ativa no estado VIVO (ações de teclado/barra chegam sem
+   * re-render). É a régua dos gates de escrita da SELEÇÃO: mover/colar/virar
+   * criam recortes flutuantes que só commitam depois — bloquear na entrada
+   * evita o palco mostrar um estado que o carimbo vai recusar.
+   */
+  function activeLayerLocked(): boolean {
+    const state = editor.getState()
+    const s = session.getState()
+    return (
+      isPixelLayeredKind(state.asset) &&
+      state.asset.layers[layerIndexOf(state.asset, s.layerId)]?.locked === true
     )
   }
 
@@ -404,6 +430,10 @@ export function PixelCanvas(): JSX.Element {
   function pasteClipboard(): void {
     const clip = session.getState().clipboard
     if (!clip) return
+    if (activeLayerLocked()) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     const sel = selRef.current
     const from =
       sel?.kind === 'floating'
@@ -441,6 +471,10 @@ export function PixelCanvas(): JSX.Element {
    * acontece no recorte e ele volta espelhado no mesmo lugar.
    */
   function flipSelection(axis: 'h' | 'v'): void {
+    if (activeLayerLocked()) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     const sel = selRef.current
     const current = liveBitmap()
     if (!current) return
@@ -496,6 +530,12 @@ export function PixelCanvas(): JSX.Element {
       return
     }
     if (sel?.kind === 'rect' && inside(sel.rect, p)) {
+      // Trancada: mover o pedaço é ESCREVER (o carimbo recusaria depois — melhor
+      // avisar já na pegada). Marcar/copiar seguem livres, são leitura.
+      if (activeLayerLocked()) {
+        showToast(COPY.layers.lockedWarning)
+        return
+      }
       // Pegar o retângulo: extrai o recorte (buraco transparente) e passa a mover.
       const { remaining, floating } = extractSelection(bitmap, sel.rect)
       applySelection({ kind: 'floating', floating, remaining })
@@ -558,6 +598,12 @@ export function PixelCanvas(): JSX.Element {
     // desenho). Só o `pointerdown` traz o botão; o resto do traço herda a cor
     // pelo `settings` que fica congelado dentro do ToolGesture.
     const secondary = event.button === 2
+    // Camada TRANCADA: bloqueia as ferramentas de escrita (≠ hidden, que só
+    // avisa). O conta-gotas segue — ler cor não muda nada.
+    if (activeLocked && tool !== 'picker') {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     // Camada escondida: o traço iria para um lugar invisível — avisa em vez de
     // deixar a criança achar que a ferramenta quebrou (régua do `isTileBlank`).
     if (activeHidden) showToast(COPY.layers.hiddenWarning)

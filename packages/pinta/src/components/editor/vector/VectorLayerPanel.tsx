@@ -22,7 +22,7 @@ import type { VectorShape } from '../../../vector/model'
 import { dropShapesOrder } from '../../../vector/order'
 import { GradientDefs, ShapeElement } from '../../../vector/VectorFrameSvg'
 import { ToolButton } from '../../ui/Button'
-import { Eye, EyeOff, GripVertical } from '../../ui/icons'
+import { Eye, EyeOff, GripVertical, Lock, LockOpen } from '../../ui/icons'
 import { Panel, type PanelDisclosure } from '../../ui/Panel'
 import { useEditorStores } from '../editorContext'
 import { addPointerDragListeners } from '../pointerDrag'
@@ -105,6 +105,26 @@ export function VectorLayerPanel({
     )
     // Esconder tira da seleção (mexer no invisível assustaria).
     if (nowHidden) setSelectedIds((current) => current.filter((id) => id !== shape.id))
+  }
+
+  /**
+   * Cadeado da forma (espelho exato do olho): trancada não muda nem sai do
+   * desenho — mas CONTINUA no export/prévia (lock ≠ hidden). O guard do
+   * `commitShapes` deixa passar porque só a chave `locked` muda.
+   */
+  function toggleLocked(shape: VectorShape): void {
+    const nowLocked = shape.locked !== true
+    commitShapes(
+      currentShapes().map((s) => {
+        if (s.id !== shape.id) return s
+        if (nowLocked) return { ...s, locked: true }
+        const { locked: _drop, ...rest } = s
+        return rest as VectorShape
+      }),
+    )
+    // Trancar tira da seleção de AÇÃO (mover/apagar não a alcançam mais); a
+    // linha do painel segue selecionável para destrancar.
+    if (nowLocked) setSelectedIds((current) => current.filter((id) => id !== shape.id))
   }
 
   /**
@@ -194,6 +214,11 @@ export function VectorLayerPanel({
                 icon={visible ? Eye : EyeOff}
                 label={`${visible ? COPY.layers.hide : COPY.layers.show}: ${label}`}
                 onClick={() => toggleHidden(shape)}
+              />
+              <ToolButton
+                icon={shape.locked === true ? Lock : LockOpen}
+                label={`${shape.locked === true ? COPY.layers.unlock : COPY.layers.lock}: ${label}`}
+                onClick={() => toggleLocked(shape)}
               />
               <button
                 type="button"

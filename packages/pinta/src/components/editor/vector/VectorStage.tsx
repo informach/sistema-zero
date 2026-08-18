@@ -452,6 +452,9 @@ export function VectorStage(): JSX.Element {
     // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
     if (spaceHeld) return
     if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureRef.current) return
+    // Trancada: o clique ATRAVESSA para o palco (sem stopPropagation) — para o
+    // mouse ela não está ali. Selecionar trancada é gesto do PAINEL Camadas.
+    if (shape.locked === true) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     // Reshape: só seleciona (single) — quem arrasta o corpo NÃO move; os nós é
@@ -502,6 +505,12 @@ export function VectorStage(): JSX.Element {
   ): void {
     if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
+    // Redimensionar escala a seleção INTEIRA em torno da mesma âncora — com
+    // trancada dentro, escalar só as livres desmontaria o arranjo. Avisa e sai.
+    if (selected.some((s) => s.locked === true)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const anchor = {
       x: bounds.x + (1 - handle.fx) * bounds.width,
@@ -522,6 +531,11 @@ export function VectorStage(): JSX.Element {
   function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
     if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
     event.stopPropagation()
+    // Mesma régua do redimensionar: o giro é da seleção inteira.
+    if (selected.some((s) => s.locked === true)) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const center = boundsCenter(bounds)
     const at = svgPoint(event)
@@ -598,6 +612,7 @@ export function VectorStage(): JSX.Element {
   /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
   function handleShapeDoubleClick(shape: VectorShape): void {
     if (tool !== 'select' || shape.type !== 'text') return
+    if (shape.locked === true) return
     setTextDialog({ mode: 'edit', shapeId: shape.id })
     setTextValue(shape.text)
   }
@@ -655,7 +670,10 @@ export function VectorStage(): JSX.Element {
         dy = snapValue(dy, gridSpacing)
       }
       commitShapes(
-        gesture.baseShapes.map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
+        gesture.baseShapes.map((s) =>
+          // Seleção mista arrasta só as LIVRES (a trancada fica plantada).
+          selectedIds.includes(s.id) && s.locked !== true ? translateShape(s, dx, dy) : s,
+        ),
         false,
       )
       return
@@ -748,9 +766,11 @@ export function VectorStage(): JSX.Element {
         return
       }
       const shapes = currentShapes()
-      // O laço só pega formas VISÍVEIS (apagar algo invisível assustaria).
+      // O laço só pega formas VISÍVEIS (apagar algo invisível assustaria) e
+      // DESTRANCADAS (o laço existe para mover/apagar — trancada fica de fora;
+      // quem quer mexer nela usa o painel Camadas).
       const hit = visibleShapes(shapes)
-        .filter((s) => boundsIntersect(shapeBounds(s), box))
+        .filter((s) => s.locked !== true && boundsIntersect(shapeBounds(s), box))
         .map((s) => s.id)
       const expanded = expandToGroups(shapes, hit)
       setSelectedIds((current) =>

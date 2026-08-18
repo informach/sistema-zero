@@ -156,3 +156,60 @@ describe('painel de camadas', () => {
     expect(listedLayers()).toHaveLength(PINTA_LIMITS.maxPixelLayers)
   })
 })
+
+describe('cadeado da camada (pixel)', () => {
+  it('o cadeado alterna e fica salvo na linha (Trancar → Destrancar)', async () => {
+    await openBackground()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 1` }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: `${COPY.layers.unlock}: Camada 1` })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.unlock}: Camada 1` }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 1` })).toBeTruthy()
+    })
+  })
+
+  it('lixeira na camada trancada TOASTA em vez de abrir a confirmação', async () => {
+    await openBackground()
+    addLayer()
+    await waitFor(() => {
+      expect(listedLayers()).toHaveLength(2)
+    })
+    // A ativa é a Camada 2 (recém-criada). Tranca ela e tenta apagar.
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 2` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.layers.remove }))
+    await screen.findByText(COPY.layers.lockedDelete)
+    expect(screen.queryByText(COPY.layers.removeBody)).toBeNull()
+    expect(listedLayers()).toHaveLength(2)
+  })
+
+  it('desenhar na camada trancada é BLOQUEADO com aviso (≠ escondida, que só avisa)', async () => {
+    await openBackground()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 1` }))
+    const canvas = screen.getByRole('img', { name: COPY.a11y.drawArea })
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.pencil }))
+    fireEvent.pointerDown(canvas, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    await screen.findByText(COPY.layers.lockedWarning)
+  })
+
+  it('espelhar/girar com QUALQUER camada trancada avisa e não mexe', async () => {
+    await openBackground()
+    addLayer()
+    await waitFor(() => {
+      expect(listedLayers()).toHaveLength(2)
+    })
+    // Tranca a de BAIXO; a ativa (Camada 2) segue livre — mesmo assim bloqueia,
+    // porque a transformação escreve o quadro inteiro.
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 1` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.flipH }))
+    await screen.findByText(COPY.layers.lockedTransform)
+  })
+
+  it('"Limpar tudo" na camada trancada avisa e não mexe', async () => {
+    await openBackground()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.layers.lock}: Camada 1` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.clear }))
+    await screen.findByText(COPY.layers.lockedWarning)
+  })
+})

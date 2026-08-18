@@ -105,11 +105,26 @@ describe('sanitizeVectorShape — campo hidden (olhinho das Camadas)', () => {
     expect(shape && 'hidden' in shape).toBe(false)
   })
 
+  it('locked segue a MESMA convenção: true sobrevive, o resto omite a chave', () => {
+    expect(sanitizeVectorShape({ ...rect, locked: true })?.locked).toBe(true)
+    const withFalse = sanitizeVectorShape({ ...rect, locked: false })
+    expect(withFalse && 'locked' in withFalse).toBe(false)
+    const junk = sanitizeVectorShape({ ...rect, locked: 'sim' })
+    expect(junk).not.toBeNull()
+    expect(junk && 'locked' in junk).toBe(false)
+  })
+
   it('visibleShapes filtra só as escondidas', () => {
     const a = sanitizeVectorShape({ ...rect, id: 'a' })
     const b = sanitizeVectorShape({ ...rect, id: 'b', hidden: true })
     if (!a || !b) throw new Error('shapes esperados')
     expect(visibleShapes([a, b]).map((s) => s.id)).toEqual(['a'])
+  })
+
+  it('forma TRANCADA e visível segue no funil de render/export (lock ≠ hidden)', () => {
+    const locked = sanitizeVectorShape({ ...rect, id: 'trancada', locked: true })
+    if (!locked) throw new Error('shape esperado')
+    expect(visibleShapes([locked]).map((s) => s.id)).toEqual(['trancada'])
   })
 })
 

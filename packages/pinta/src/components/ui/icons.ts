@@ -51,6 +51,8 @@ export {
   Hexagon,
   Image,
   Link2,
+  Lock,
+  LockOpen,
   Map,
   Maximize,
   Minus,

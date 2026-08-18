@@ -68,6 +68,24 @@ describe('packSpritesheet — geometria', () => {
     // As duas visíveis entram; a escondida NÃO vai para o jogo.
     expect(Array.from(cell?.bitmap.data.slice(0, 3) ?? [])).toEqual([3, 7, 0])
   })
+
+  it('camada TRANCADA e visível ENTRA na folha (lock ≠ hidden)', () => {
+    const base = createPixelSpriteAsset({ name: 'heroi', frameSize: 4 })
+    const fundo = createBitmap(4, 4)
+    fundo.data[0] = 3
+    const trancada = createBitmap(4, 4)
+    trancada.data[1] = 7
+    const asset: PixelSpriteAsset = {
+      ...base,
+      layers: [
+        { id: 'l1', name: 'Camada 1', visible: true },
+        { id: 'l2', name: 'Camada 2', visible: true, locked: true },
+      ],
+      animations: [{ id: 'a1', name: 'parado', fps: 8, loop: true, frames: [[fundo, trancada]] }],
+    }
+    const cell = packSpritesheet(asset).cells[0]
+    expect(Array.from(cell?.bitmap.data.slice(0, 2) ?? [])).toEqual([3, 7])
+  })
 })
 
 describe('GUARDA de compatibilidade com o runtime do Studio', () => {

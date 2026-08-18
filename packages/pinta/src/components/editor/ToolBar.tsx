@@ -11,8 +11,9 @@ import { clsx } from 'clsx'
 import { Fragment, type JSX, useEffect } from 'react'
 import { activeBitmapOf, withActiveBitmap, withActiveCels } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import { resolveAssetPalette } from '../../core/project'
+import { isPixelLayeredKind, resolveAssetPalette } from '../../core/project'
 import { filterTools, toolFallback } from '../../core/toolCuration'
+import { hasLockedLayer, isLayerLocked } from '../../pixel/layers'
 import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
 import type { PintaSessionTool } from '../../state/sessionStore'
 import { IconButton, ToolButton } from '../ui/Button'
@@ -37,6 +38,7 @@ import {
   Square,
   SquareDashed,
 } from '../ui/icons'
+import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession, useToolCuration } from './editorContext'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 
@@ -72,6 +74,7 @@ export function ToolBar({
 }): JSX.Element {
   const vertical = orientation === 'vertical'
   const { editor, session } = useEditorStores()
+  const { showToast } = useToast()
   const tool = useSession((state) => state.tool)
   const brushSize = useSession((state) => state.brushSize)
   const mirrorX = useSession((state) => state.mirrorX)
@@ -101,6 +104,12 @@ export function ToolBar({
   function transformBitmap(op: 'flipH' | 'flipV' | 'rotate'): void {
     const ref = { animationId, frameIndex, layerId }
     const state = editor.getState()
+    // Espelhar/girar escrevem TODOS os cels do quadro — com QUALQUER camada
+    // trancada, meia transformação desalinharia o desenho. Bloqueia inteiro.
+    if (isPixelLayeredKind(state.asset) && hasLockedLayer(state.asset)) {
+      showToast(COPY.layers.lockedTransform)
+      return
+    }
     // Espelhar/girar valem para o quadro INTEIRO (todas as camadas juntas):
     // fazer só na ativa desalinharia o desenho.
     const transform = op === 'flipH' ? flipHorizontal : op === 'flipV' ? flipVertical : rotate90
@@ -112,6 +121,10 @@ export function ToolBar({
     // "Limpar tudo" age na CAMADA ativa (o resto do desenho fica).
     const ref = { animationId, frameIndex, layerId }
     const state = editor.getState()
+    if (isPixelLayeredKind(state.asset) && isLayerLocked(state.asset, layerId)) {
+      showToast(COPY.layers.lockedWarning)
+      return
+    }
     const bitmap = activeBitmapOf(state.asset, ref)
     if (!bitmap) return
     const next = clearBitmap(bitmap)
