@@ -208,7 +208,13 @@ describe('bloco Pinta — gate da conclusão', () => {
     expect(res.status).toBe(200)
   })
 
-  test('editar o bloco invalida a entrega antiga e fecha o gate novamente', async () => {
+  test('editar o bloco PRESERVA a entrega antiga (o desenho é trabalho da criança)', async () => {
+    // ⚠️ Comportamento REVERTIDO em 08/2026: a regra "editar o bloco apaga a
+    // entrega" (espelhada do Estúdio) destruiu entregas reais em produção — o
+    // save na nuvem da criança sumia a cada retoque da professora no bloco.
+    // Editar o bloco não toca mais a entrega; o gate segue aberto para quem já
+    // enviou. Se um dia for preciso "pedir de novo" após mudar a proposta, o
+    // caminho é um marcador de reenvio (migration), nunca apagar o desenho.
     const { app, courses, lessonId } = cenario()
     const blockId = seedPintaBlock(courses, lessonId)
 
@@ -229,10 +235,12 @@ describe('bloco Pinta — gate da conclusão', () => {
     )
     expect(edited.status).toBe(200)
 
-    expect((await readJson(await carregar(app, lessonId, blockId))).asset).toBeNull()
-    const blocked = await concluir(app, lessonId)
-    expect(blocked.status).toBe(409)
-    expect((await readJson(blocked)).error.code).toBe('PINTA_GATE_NOT_SUBMITTED')
+    const kept = await readJson(await carregar(app, lessonId, blockId))
+    expect(kept.asset).toMatchObject({ id: 'asset-aula', name: 'heroi' })
+    const restored = pintaAssetFromWire(kept.asset)
+    if (restored?.kind !== 'pixel-sprite') throw new Error('asset retornado inválido')
+    expect(restored.animations[0]?.frames[0]?.[0]?.data[0]).toBe(7)
+    expect((await concluir(app, lessonId)).status).toBe(200)
   })
 
   test('o gate do Pinta e o do Estúdio coexistem na MESMA aula', async () => {

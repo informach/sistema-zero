@@ -234,7 +234,10 @@ método, path, `targetId` (1º path param: id/userId/…; ou `targetField` no bo
 `targetResponseField` no JSON de resposta, ex. `user.id`), status, ip, user-agent, requestId. Usa
 `AUTH_URL` + `AUTH_INTERNAL_TOKEN` (sem o token → no-op). Rotas marcadas hoje:
 `payments-admin-refund`/`-subscription-cancel`, `auth-admin-user-{create,update,impersonate}`,
-`members-admin-{grant,entitlement-manage,certificate-revoke}`. O auth é o dono do store
+`members-admin-{grant,entitlement-manage,certificate-revoke}` e **`members-admin-blocks-write`**
+(08/2026 — editar/apagar bloco de aula muda o que o aluno vê e pode invalidar correção de
+quiz/Estúdio; o incidente das entregas sumidas ficou indiagnosticável sem trilha de QUANDO cada
+bloco foi salvo). O auth é o dono do store
 (tabela `auth.audit_logs`) e o painel lê em `GET /auth/admin/audit` (admin+). Para auditar uma
 rota nova, adicione `audit: {}` a ela (não precisa tocar código).
 

@@ -148,10 +148,8 @@ export function buildApp(
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
-  courses.onGatingBlockContentChanged = (blockId) => {
-    quizAttempts.deleteByBlockId(blockId)
-    studioSubmissions.deleteByBlockId(blockId)
-  }
+  courses.onQuizGateChanged = (blockId) => quizAttempts.deleteByBlockId(blockId)
+  courses.onStudioActivityChanged = (blockId) => studioSubmissions.resetCorrectionByBlockId(blockId)
   const ratings = new InMemoryCourseRatingRepository()
   const certificates = new InMemoryCertificateRepository()
   const avatar = new InMemoryAvatarRepository()

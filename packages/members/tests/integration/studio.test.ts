@@ -62,6 +62,15 @@ const updateBlock = (app: App, blockId: string, content: unknown) =>
     }),
   )
 
+/** O "save na nuvem": o projeto que o PRÓPRIO aluno enviou neste bloco. */
+const getOwnSubmission = (app: App, lessonId: string, blockId: string) =>
+  app.handle(
+    new Request(
+      `http://localhost/members/lessons/${lessonId}/blocks/${blockId}/studio-submission`,
+      { headers: authHeaders },
+    ),
+  )
+
 const STUDENT_PROJECT = {
   name: 'Minha entrega',
   files: { 'index.html': '<h1>Feito</h1>', 'style.css': '', 'script.js': 'console.log(1)' },
@@ -185,13 +194,87 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     })
     expect(patched.status).toBe(200)
 
+    // A aprovação antiga caiu (gate volta a travar) — mas por NOT_PASSED, não
+    // por NOT_SUBMITTED: a ENTREGA do aluno fica (é o save na nuvem dele).
     const blocked = await complete(app, lessonIds[0])
     expect(blocked.status).toBe(409)
-    expect((await readJson(blocked)).error.code).toBe('STUDIO_GATE_NOT_SUBMITTED')
+    expect((await readJson(blocked)).error.code).toBe('STUDIO_GATE_NOT_PASSED')
+
+    const kept = await getOwnSubmission(app, lessonIds[0], blockId)
+    expect(kept.status).toBe(200)
+    expect((await readJson(kept)).project).toEqual(STUDIO_LOOP_PROJECT)
 
     const newPass = await submit(app, lessonIds[0], blockId, STUDIO_FUNCTION_PROJECT)
     expect(newPass.status).toBe(200)
     expect((await readJson(newPass)).passed).toBe(true)
+    expect((await complete(app, lessonIds[0])).status).toBe(200)
+  })
+
+  test('editar o bloco SEM mudar a atividade preserva entrega, nota e aprovação', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = randomUUID()
+    const activity = {
+      instructions: 'use um laço',
+      passingScore: 100,
+      checks: [
+        {
+          id: 'loop',
+          label: 'usa laço',
+          kind: 'structure' as const,
+          rule: { type: 'usesLoop' as const },
+        },
+      ],
+    }
+    courses.blocks.push({
+      id: blockId,
+      lessonId: lessonIds[0],
+      kind: 'studio',
+      sortOrder: 20,
+      content: {
+        kind: 'studio',
+        level: 'iniciante',
+        allowCategories: ['JavaScript'],
+        initialProject: {
+          name: 'x',
+          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        },
+        activity,
+      },
+    })
+
+    const pass = await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT)
+    expect(pass.status).toBe(200)
+    expect((await readJson(pass)).passed).toBe(true)
+
+    // O caso REAL de produção (08/2026): o admin re-salva o bloco e o snapshot
+    // do initialProject sai re-serializado (normalizações do editor), a lista de
+    // blocos muda, a vitrine é ligada… nada disso é a ATIVIDADE — a entrega e a
+    // aprovação do aluno NÃO podem ser tocadas.
+    const patched = await updateBlock(app, blockId, {
+      kind: 'studio',
+      level: 'intermediario',
+      allowBlocks: ['sz_js_var_create'],
+      initialProject: {
+        name: 'x (retocado pela professora)',
+        files: { 'index.html': '<h1>novo</h1>', 'style.css': '', 'script.js': '' },
+      },
+      showcase: { enabled: true, title: 'Meu jogo' },
+      activity,
+    })
+    expect(patched.status).toBe(200)
+
+    const kept = await getOwnSubmission(app, lessonIds[0], blockId)
+    expect(kept.status).toBe(200)
+    expect((await readJson(kept)).project).toEqual(STUDIO_LOOP_PROJECT)
+
+    const lesson = await readJson(await getLesson(app, slug, lessonIds[0]))
+    const state = lesson.blocks.find((b: any) => b.id === blockId)?.studioState
+    expect(state?.submitted).toBe(true)
+    expect(state?.lastScore).toBe(100)
+    expect(state?.passed).toBe(true)
+
     expect((await complete(app, lessonIds[0])).status).toBe(200)
   })
 

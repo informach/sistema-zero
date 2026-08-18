@@ -2392,6 +2392,10 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      // Auditoria: editar/apagar bloco mexe no que o ALUNO vê e (quiz/atividade)
+      // pode invalidar correção — sem trilha, o incidente das entregas sumidas
+      // (08/2026) ficou indiagnosticável em produção.
+      audit: {},
     },
     // Leitura admin de blocos (GET `/members/admin/blocks/:id/studio-submissions[/:userId]`):
     // acompanhamento das entregas do Estúdio pelo professor (LEITURA staff+).
