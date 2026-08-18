@@ -172,18 +172,17 @@ function stableJson(value: unknown): string {
   return JSON.stringify(value) ?? 'undefined'
 }
 
-function shouldInvalidateBlockProgress(
-  previous: LessonBlockContent,
-  next: LessonBlockContent,
-): boolean {
-  const touchesGate =
-    previous.kind === 'quiz' ||
-    previous.kind === 'studio' ||
-    previous.kind === 'pinta' ||
-    next.kind === 'quiz' ||
-    next.kind === 'studio' ||
-    next.kind === 'pinta'
-  return touchesGate && stableJson(previous) !== stableJson(next)
+// Espelho do Drizzle: editar bloco NUNCA apaga entregas — quiz apaga TENTATIVAS
+// quando as questões/nota mudam; Estúdio zera SÓ a correção quando a ATIVIDADE
+// muda (o projeto do aluno fica); Pinta não toca a entrega.
+function quizGateFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'quiz') return 'none'
+  return stableJson({ questions: content.questions, passingScore: content.passingScore ?? null })
+}
+
+function studioActivityFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'studio') return 'none'
+  return stableJson(content.activity ?? null)
 }
 
 function isActive(s: EntitlementState, now: Date): boolean {
@@ -400,7 +399,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   lessons: Lesson[] = []
   blocks: LessonBlock[] = []
   attachments: LessonAttachment[] = []
-  onGatingBlockContentChanged?: (blockId: string) => void
+  onQuizGateChanged?: (blockId: string) => void
+  onStudioActivityChanged?: (blockId: string) => void
   private readonly pintaChainLocks = new Map<string, Promise<void>>()
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
@@ -804,11 +804,14 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
-    const invalidateProgress = shouldInvalidateBlockProgress(b.content, content)
+    const quizGateChanged = quizGateFingerprint(b.content) !== quizGateFingerprint(content)
+    const studioActivityChanged =
+      studioActivityFingerprint(b.content) !== studioActivityFingerprint(content)
     b.kind = kind
     b.content = content
     b.contentRevision = randomUUID().replaceAll('-', '')
-    if (invalidateProgress) this.onGatingBlockContentChanged?.(id)
+    if (quizGateChanged) this.onQuizGateChanged?.(id)
+    if (studioActivityChanged) this.onStudioActivityChanged?.(id)
     return b
   }
 
@@ -1362,6 +1365,17 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
   deleteByBlockId(blockId: string): void {
     for (let i = this.submissions.length - 1; i >= 0; i--) {
       if (this.submissions[i]?.blockId === blockId) this.submissions.splice(i, 1)
+    }
+  }
+
+  /** Espelho do reset de correção do updateBlock (a entrega FICA, a nota cai). */
+  resetCorrectionByBlockId(blockId: string): void {
+    for (const s of this.submissions) {
+      if (s.blockId !== blockId) continue
+      s.score = null
+      s.results = null
+      s.checkedAt = null
+      s.passedAt = null
     }
   }
 

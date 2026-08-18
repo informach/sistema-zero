@@ -371,9 +371,22 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    `GET …/pinta-carryover`. Projeção: **`pintaState`** em
    campo PRÓPRIO (mesma forma do `studioState`; os dois blocos coexistem na mesma aula e o front
    escolhe pelo `kind`, não por qual estado veio preenchido).
-   **Editar conteúdo do Pinta invalida a entrega anterior**, pela mesma régua de revisão dos
-   gates de quiz/Estúdio (`shouldInvalidateBlockProgress` apaga `studio_submissions`); sem isso
-   o desenho antigo continuava abrindo a conclusão de uma atividade que já mudou.
+   🚨 **Editar um bloco NUNCA apaga `studio_submissions` (regra REVERTIDA 08/2026 — incidente de
+   produção).** A régua antiga (`shouldInvalidateBlockProgress`: QUALQUER mudança de conteúdo de
+   bloco quiz/studio/pinta apagava as entregas do bloco) destruiu entregas reais: o snapshot do
+   `initialProject` re-serializado pelo admin quase nunca é byte-igual ao salvo (normalizações/
+   migrações do editor embutido), então TODO salvar de bloco Estúdio descartava os projetos
+   enviados de TODOS os alunos — o aluno via "você ainda não enviou nenhum projeto" no
+   Sincronizar, o seed do "save na nuvem" e o carryover da cadeia voltavam null, e a fila do
+   professor perdia o registro (caso real: aluno do Desafio do Primeiro Jogo, 08/2026). A regra
+   atual (`quizGateFingerprint`/`studioActivityFingerprint` no `updateBlock`): quiz com
+   questões/nota mudadas → apaga as TENTATIVAS (histórico de respostas, não trabalho autoral);
+   Estúdio com a ATIVIDADE mudada → zera SÓ a correção (`score`/`results`/`checked_at`/
+   `passed_at` — o `passed_at` sticky cai e o gate re-trava por `STUDIO_GATE_NOT_PASSED` até o
+   aluno reenviar; o projeto FICA); Pinta → edição não toca a entrega (o gate segue aberto para
+   quem já enviou — se um dia "mudou a proposta, peça de novo" for necessário, o caminho é um
+   marcador de reenvio com migration, nunca apagar o desenho da criança). SQL provado em
+   `tests/db/block-update-preserves-submissions.test.ts` (o fake espelha os fingerprints).
    **Cadeia entre aulas (`chain`)** — mesmo mecanismo do Estúdio: `GetStudioCarryoverService`
    ganhou o param `kind` e `CourseRepository.findPrecedingStudioBlockInChain` virou
    **`findPrecedingChainBlock(courseId, lessonId, chain, kind)`**. O kind entra na BUSCA: cadeia de

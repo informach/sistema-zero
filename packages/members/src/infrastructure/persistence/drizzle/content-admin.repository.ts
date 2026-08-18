@@ -175,18 +175,33 @@ function stableJson(value: unknown): string {
   return JSON.stringify(value) ?? 'undefined'
 }
 
-function shouldInvalidateBlockProgress(
-  previous: LessonBlockContent,
-  next: LessonBlockContent,
-): boolean {
-  const touchesGate =
-    previous.kind === 'quiz' ||
-    previous.kind === 'studio' ||
-    previous.kind === 'pinta' ||
-    next.kind === 'quiz' ||
-    next.kind === 'studio' ||
-    next.kind === 'pinta'
-  return touchesGate && stableJson(previous) !== stableJson(next)
+/**
+ * ⚠️ Editar um bloco NUNCA apaga `studio_submissions`. A entrega é TRABALHO do
+ * aluno: é o "save na nuvem" que restaura o editor num navegador novo, a fonte
+ * do carryover da cadeia e o registro da fila do professor. A regra antiga
+ * ("qualquer mudança de conteúdo apaga as entregas do bloco") destruiu entregas
+ * reais em produção (08/2026): o snapshot do `initialProject` re-serializado
+ * pelo admin quase nunca é byte-igual ao salvo (normalizações/migrações do
+ * editor embutido), então TODO salvar de bloco Estúdio descartava os projetos
+ * enviados de TODOS os alunos do bloco — o aluno via "você ainda não enviou
+ * nenhum projeto" e o professor perdia a fila.
+ *
+ * O que uma edição PODE invalidar é a CORREÇÃO: quando a ATIVIDADE avaliada do
+ * Estúdio muda, a nota/aprovação anterior não vale mais — os campos de correção
+ * (score/results/checked_at/passed_at) são ZERADOS e o gate volta a travar por
+ * `STUDIO_GATE_NOT_PASSED` até o aluno reenviar; o projeto enviado fica. Quiz
+ * segue apagando as TENTATIVAS quando as questões/nota de corte mudam
+ * (histórico de respostas de questões que não existem mais — não é trabalho
+ * autoral). Pinta não tem correção: editar o bloco não toca a entrega.
+ */
+function quizGateFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'quiz') return 'none'
+  return stableJson({ questions: content.questions, passingScore: content.passingScore ?? null })
+}
+
+function studioActivityFingerprint(content: LessonBlockContent): string {
+  if (content.kind !== 'studio') return 'none'
+  return stableJson(content.activity ?? null)
 }
 
 type DatabaseTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
@@ -565,7 +580,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const [current] = await tx.select().from(lessonBlocks).where(eq(lessonBlocks.id, id)).limit(1)
       if (!current) return null
 
-      const invalidateProgress = shouldInvalidateBlockProgress(current.content, content)
+      const quizGateChanged = quizGateFingerprint(current.content) !== quizGateFingerprint(content)
+      const studioActivityChanged =
+        studioActivityFingerprint(current.content) !== studioActivityFingerprint(content)
       const [row] = await tx
         .update(lessonBlocks)
         .set({ kind, content, contentRevision: randomUUID().replaceAll('-', '') })
@@ -573,9 +590,17 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .returning()
       if (!row) return null
 
-      if (invalidateProgress) {
+      if (quizGateChanged) {
         await tx.delete(quizAttempts).where(eq(quizAttempts.blockId, id))
-        await tx.delete(studioSubmissions).where(eq(studioSubmissions.blockId, id))
+      }
+      if (studioActivityChanged) {
+        // Zera SÓ a correção (o projeto do aluno FICA — ver o comentário dos
+        // fingerprints). `passed_at` é o sticky do gate: sem zerá-lo, a
+        // atividade nova nasceria "aprovada" pela versão antiga.
+        await tx
+          .update(studioSubmissions)
+          .set({ score: null, results: null, checkedAt: null, passedAt: null })
+          .where(eq(studioSubmissions.blockId, id))
       }
       return toBlock(row)
     })
