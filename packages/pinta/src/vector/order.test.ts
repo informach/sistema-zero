@@ -147,9 +147,27 @@ describe('dropShapesOrder — arrasto do painel Camadas', () => {
     expect(ordem(dropShapesOrder(shapes, ['a'], 'c'))).toEqual(['c', 'a', 'b'])
   })
 
-  it('soltar sobre um irmão do próprio bloco não mexe em nada', () => {
+  it('soltar sobre SI MESMA não mexe em nada', () => {
     const shapes = [rect('a', { groupId: 'g' }), rect('b', { groupId: 'g' }), rect('c')]
-    expect(dropShapesOrder(shapes, ['a'], 'b')).toBeNull()
     expect(dropShapesOrder(shapes, ['a'], 'a')).toBeNull()
+  })
+
+  it('⭐ sobre um IRMÃO, reordena DENTRO do grupo (o controle fino)', () => {
+    // Sem isso, restacar as partes de um personagem agrupado exigia desagrupar,
+    // arrumar e reagrupar — a régua "o grupo é uma peça só" tirava o único jeito.
+    const shapes = [rect('olho', { groupId: 'g' }), rect('rosto', { groupId: 'g' }), rect('fundo')]
+    // O olho sobe por cima do rosto, e o grupo NÃO se move como bloco.
+    expect(ordem(dropShapesOrder(shapes, ['olho'], 'rosto'))).toEqual(['rosto', 'olho', 'fundo'])
+  })
+
+  it('cruzar para FORA volta a mover o grupo inteiro', () => {
+    const shapes = [rect('olho', { groupId: 'g' }), rect('rosto', { groupId: 'g' }), rect('fundo')]
+    // ⭐ ANTI-VÁCUO da regra: aqui o alvo é de fora, então os DOIS membros andam.
+    expect(ordem(dropShapesOrder(shapes, ['olho'], 'fundo'))).toEqual(['fundo', 'olho', 'rosto'])
+  })
+
+  it('dentro do grupo, descer também vale', () => {
+    const shapes = [rect('olho', { groupId: 'g' }), rect('rosto', { groupId: 'g' }), rect('fundo')]
+    expect(ordem(dropShapesOrder(shapes, ['rosto'], 'olho'))).toEqual(['rosto', 'olho', 'fundo'])
   })
 })

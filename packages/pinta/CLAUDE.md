@@ -550,6 +550,17 @@ A régua agora é uma só, compartilhada pelos quatro botões e pelo painel Cama
 | bem para a frente/fundo | o bloco vai ao topo/fundo, na ordem relativa |
 | vizinho **escondido** | não consome o passo (senão o botão parece morto) |
 | arranjo inalterado | `null`, e quem chama NÃO commita |
+| **arrasto sobre um IRMÃO de grupo** | reordena DENTRO do grupo (só a linha arrastada) |
+| arrasto cruzando para FORA | volta a mover o grupo inteiro |
+
+⭐ **O grosso é dos botões, o fino é do arrasto** (18/08). A 1ª versão fazia o arrasto sobre um
+irmão ser no-op, e o full review mostrou o preço: restacar as partes de um personagem agrupado só
+era possível desagrupando, arrumando e reagrupando. Agora `dropShapesOrder` olha se a linha sob o
+dedo é irmã de grupo — se é, o bloco encolhe para a forma arrastada. Os quatro botões seguem
+grossos de propósito (movem a seleção, que já é o grupo inteiro).
+⚠️ O destaque do arrasto continua acendendo o GRUPO todo, mesmo quando o movimento vai ser fino:
+sinalizar a mais é o erro mais seguro, porque o caso surpreendente é o outro (cruzar para fora e
+ver três linhas andarem).
 
 - ⭐ **`moveShapesOrder`/`dropShapesOrder` expandem os ids para o grupo POR DENTRO** — por isso o
   painel manda só o id da linha e o grupo vem junto, sem importar UI dentro de `vector/`.

@@ -50,12 +50,23 @@ export class SubscriptionReconciliationWorker {
 
   start(): void {
     if (this.timer) return
-    this.timer = setInterval(() => {
-      void this.tick()
-    }, this.options.intervalMs)
     this.logger.info('subscription.reconcile.worker.started', {
       intervalMs: this.options.intervalMs,
     })
+    // ⚠️⚠️ Uma volta no BOOT, antes do intervalo. Sem ela a rede não existe na
+    // prática: o intervalo é de 6h e CADA deploy zera o relógio, então num dia de
+    // deploys frequentes a varredura nunca chega a rodar (medido em produção —
+    // `last_reconciled_at` ficou NUNCA nas duas assinaturas com o serviço horas no
+    // ar). Mesmo caso, e mesmo idioma, da purga de tokens do auth.
+    //
+    // ⚠️ IMEDIATO, nunca `setTimeout`: o `stop()` só conhece `clearInterval` + o
+    // `inFlight`, então um timer pendente seria invisível aos dois e dispararia
+    // depois do pool fechar. O `tick()` publica o `inFlight` de forma síncrona, e
+    // é isso que faz o shutdown drenar esta primeira volta.
+    void this.tick()
+    this.timer = setInterval(() => {
+      void this.tick()
+    }, this.options.intervalMs)
   }
 
   /** Para o agendamento e drena o ciclo em andamento (shutdown gracioso). */
