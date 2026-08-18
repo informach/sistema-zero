@@ -42,6 +42,7 @@ import {
   resolveInsertSource,
   shapesForInsert,
 } from '../../../vector/insertAsset'
+import { lockedIdsOf, lockedShapesViolation } from '../../../vector/lock'
 import {
   DEFAULT_VECTOR_FONT_FAMILY,
   isVectorGradient,
@@ -337,7 +338,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
   const single = selected.length === 1 ? (selected[0] ?? null) : null
   // Editar pontos é sempre de UMA forma por vez (o palco desenha os nós dela).
-  const nodeTarget = tool === 'reshape' ? single : null
+  // Trancada não expõe os nós (editar pontos muda a geometria).
+  const nodeTarget = tool === 'reshape' && single?.locked !== true ? single : null
   const nodePath = nodeTarget ? toEditablePath(nodeTarget) : null
   const nodeStructure = nodeTarget && nodePath ? `${nodeTarget.id}:${nodePath.nodes.length}` : null
 
@@ -388,15 +390,41 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   function commitShapes(next: VectorShape[], recordUndo = true): void {
     const state = editor.getState()
+    // Backstop do CADEADO: forma trancada não muda nem sai do documento (só
+    // destrancar/esconder/reordenar). Os gates de UX filtram antes; qualquer
+    // caminho esquecido morre aqui. Toast só no commit com undo — o replace
+    // por-frame dos gestos rodaria isto 60×/s.
+    const shapes = activeShapesOf(state.asset, currentRef())?.shapes ?? []
+    if (lockedShapesViolation(shapes, next)) {
+      if (recordUndo) showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     const updated = withActiveShapes(state.asset, currentRef(), next)
     if (updated === state.asset) return
     if (recordUndo) state.commit(updated)
     else state.replace(updated)
   }
 
+  /**
+   * Ids da seleção SEM os trancados — as mutações agem só neles (seleção mista
+   * mexe só nas livres). Devolve `null` (e toasta) quando a seleção inteira
+   * está trancada: aí não há o que fazer, e o silêncio leria como "quebrou".
+   */
+  function freeSelectedIds(): string[] | null {
+    const locked = lockedIdsOf(currentShapes())
+    const free = selectedIds.filter((id) => !locked.has(id))
+    if (free.length === 0 && selectedIds.length > 0) {
+      showToast(COPY.layers.lockedShapeWarning)
+      return null
+    }
+    return free
+  }
+
   function updateSelected(update: (shape: VectorShape) => VectorShape): void {
     if (selected.length === 0) return
-    commitShapes(currentShapes().map((s) => (selectedIds.includes(s.id) ? update(s) : s)))
+    const free = freeSelectedIds()
+    if (!free) return
+    commitShapes(currentShapes().map((s) => (free.includes(s.id) ? update(s) : s)))
   }
 
   /**
@@ -548,17 +576,24 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   function removeSelected(): void {
     if (selected.length === 0) return
-    commitShapes(currentShapes().filter((s) => !selectedIds.includes(s.id)))
-    setSelectedIds([])
+    const free = freeSelectedIds()
+    if (!free) return
+    commitShapes(currentShapes().filter((s) => !free.includes(s.id)))
+    // As trancadas FICAM (no desenho e na seleção — a criança vê que sobraram).
+    setSelectedIds(selectedIds.filter((id) => !free.includes(id)))
   }
 
   /** Agrupa a seleção (2+): passam a se mover/selecionar juntos. */
   function groupSelected(): void {
     if (selected.length < 2) return
+    // Agrupar muda o `groupId` — trancada exige destrancar antes.
+    const free = freeSelectedIds()
+    if (!free || free.length < 2) {
+      if (free) showToast(COPY.layers.lockedShapeWarning)
+      return
+    }
     const gid = newId()
-    commitShapes(
-      currentShapes().map((s) => (selectedIds.includes(s.id) ? { ...s, groupId: gid } : s)),
-    )
+    commitShapes(currentShapes().map((s) => (free.includes(s.id) ? { ...s, groupId: gid } : s)))
   }
 
   /**
@@ -574,7 +609,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * seguir ensina, e um botão apagado não ensina nada.
    */
   function pathfinderSelected(op: PathfinderOp): void {
-    const result = pathfinderShapes(currentShapes(), selectedIds, op)
+    // Misturar REESCREVE a geometria dos participantes: trancada fica de fora
+    // (e não some) — com menos de 2 livres o próprio pathfinder recusa.
+    const free = freeSelectedIds()
+    if (!free) return
+    const result = pathfinderShapes(currentShapes(), free, op)
     if (!result.ok) {
       showToast(PATHFINDER_REFUSALS[result.reason])
       return
@@ -586,9 +625,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   /** Desagrupa a seleção (tira o vínculo de grupo). */
   function ungroupSelected(): void {
     if (!selected.some((s) => s.groupId)) return
+    const free = freeSelectedIds()
+    if (!free) return
     commitShapes(
       currentShapes().map((s) =>
-        selectedIds.includes(s.id) && s.groupId ? { ...s, groupId: undefined } : s,
+        free.includes(s.id) && s.groupId ? { ...s, groupId: undefined } : s,
       ),
     )
   }
@@ -613,10 +654,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function selectAll(): void {
-    // Só as visíveis: selecionar (e apagar) algo invisível assustaria.
+    // Só as visíveis e DESTRANCADAS: o Ctrl+A existe para agir em cima do que
+    // vier (mover/apagar), e a trancada não entra nisso — quem quer mexer nela
+    // clica a linha dela no painel de propósito.
     setSelectedIds(
       currentShapes()
-        .filter((s) => s.hidden !== true)
+        .filter((s) => s.hidden !== true && s.locked !== true)
         .map((s) => s.id),
     )
   }
@@ -624,9 +667,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   /** Espelha cada shape selecionado em torno do PRÓPRIO centro. */
   function flipSelected(axis: 'h' | 'v'): void {
     if (selected.length === 0) return
+    const free = freeSelectedIds()
+    if (!free) return
     commitShapes(
       currentShapes().map((s) =>
-        selectedIds.includes(s.id) ? flipShape(s, axis, boundsCenter(shapeBounds(s))) : s,
+        free.includes(s.id) ? flipShape(s, axis, boundsCenter(shapeBounds(s))) : s,
       ),
     )
   }
@@ -637,19 +682,21 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    */
   function alignSelected(edge: AlignEdge): void {
     if (selected.length === 0 || !doc) return
+    const free = freeSelectedIds()
+    if (!free) return
     const target =
       selected.length >= 2
         ? boundsUnion(selected.map(shapeBounds))
         : { x: 0, y: 0, width: doc.width, height: doc.height }
-    commitShapes(alignShapes(currentShapes(), selectedIds, edge, target))
+    commitShapes(alignShapes(currentShapes(), free, edge, target))
   }
 
   /** Move a seleção com as setas (Shift = passos de 10). */
   function nudgeSelected(dx: number, dy: number): void {
     if (selectedIds.length === 0) return
-    commitShapes(
-      currentShapes().map((s) => (selectedIds.includes(s.id) ? translateShape(s, dx, dy) : s)),
-    )
+    const free = freeSelectedIds()
+    if (!free) return
+    commitShapes(currentShapes().map((s) => (free.includes(s.id) ? translateShape(s, dx, dy) : s)))
   }
 
   /** Zoom que encaixa o documento inteiro no palco visível. */

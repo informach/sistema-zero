@@ -77,6 +77,27 @@ A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cros
   a fila global circula sem fechar o dialog; `StudioEmbed` re-keya por `userId:blockId`);
   contador "N pendentes no total" nas Entregas (fetch paralelo `status=pending&limit=1` com o
   MESMO escopo curso/plataforma — independe do filtro de situação/página).
+- ⭐ **"Versão anterior" no `StudioSubmissionViewer` (08/2026):** quando o detalhe traz
+  `previousSubmittedAt` (members 0066 — o reenvio guarda a versão sobrescrita), o viewer mostra
+  o card "Versão anterior de {data} disponível" com **Baixar** (BFF
+  `GET /api/members/blocks/[id]/studio-submissions/[userId]/previous` → reusa
+  `downloadPintaJson`/`downloadProjectJson` por `isPintaAssetLike`) e **Restaurar** (`useConfirm`
+  destrutivo → `POST /api/members/studio-submissions/[blockId]/[userId]/restore-previous` →
+  re-fetch do detail via `load()` extraído do effect + `refreshProfessorCounts()`). A troca é
+  REVERSÍVEL (restaurar de novo desfaz) e zera a correção, preservando o `passed_at` sticky.
+  ⚠️ `previousSubmittedAt` é OPCIONAL no tipo (`StudioSubmissionDetailView`) — members antigo sem
+  o campo = sem botões. Adapters `getStudioSubmissionPrevious`/`restoreStudioSubmissionPrevious`
+  em `server/members.ts`.
+- ⭐ **Confirms de EXCLUSÃO avisam quantas entregas morrem (08/2026):** as FKs em cascata do
+  members apagam `studio_submissions` junto do bloco/aula/módulo/curso, em silêncio. Os 4
+  handlers de exclusão (bloco no `lesson-editor-client`, aula/módulo no `course-editor-client`,
+  curso no `courses-client`) buscam `GET /api/members/courses/[id]/submission-counts`
+  (`{total, byLesson, byBlock}`) ANTES de abrir o `useConfirm` e anexam o aviso destrutivo
+  ("Existem N entregas de alunos aqui, e elas serão apagadas junto."). Helpers em
+  `lib/submission-counts.ts` (`fetchSubmissionCountsSafe` — best-effort DE PROPÓSITO: members
+  fora → `null` → confirm de sempre, a exclusão NUNCA bloqueia; `moduleSubmissionCount`;
+  `submissionCountWarning` singular/plural). BFF `app/api/members/courses/[id]/submission-counts`
+  (⚠️ segmento `[id]` — regra do Next de nome único de slug).
 - **Modelos de resposta** (`components/professor/reply-templates.tsx`): dropdown "Modelos" nos
   DOIS editores de resposta (thread-dialog + teacher-thread-panel) — localStorage
   `sz:admin:reply-templates` (cap 20, por NAVEGADOR; padrão do studio-config-clipboard; members

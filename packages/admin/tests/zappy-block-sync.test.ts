@@ -14,10 +14,17 @@ mock.module('next/server', () => ({
 // sobrescrevemos só o que este teste precisa, para o vazamento ser inócuo.
 mock.module('server-only', () => ({}))
 const actualZappyKnowledge = await import('@/server/zappy-knowledge')
+// Mesmo motivo do spread acima, sentido inverso: este stub ESTREITO de
+// '@/server/members' vazava para os testes das rotas de entrega e apagava
+// getStudioSubmissionPrevious/restoreStudioSubmissionPrevious — o import nomeado
+// de previous/route.ts morria com SyntaxError SÓ no CI (a ordem de arquivos do
+// Linux registra este mock antes daquele arquivo linkar o módulo).
+const actualMembers = await import('@/server/members')
 
 let syncCalls = 0
 
 mock.module('@/server/members', () => ({
+  ...actualMembers,
   updateBlock: async () => ({
     status: 200,
     body: {

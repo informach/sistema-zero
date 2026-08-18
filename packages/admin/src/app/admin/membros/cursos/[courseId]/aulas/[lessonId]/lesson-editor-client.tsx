@@ -57,6 +57,7 @@ import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import {
   type AttachmentView,
   type BlockView,
@@ -717,10 +718,25 @@ export function LessonEditorClient({
       setBlockOpen(false)
     }, 'Bloco salvo.')
   }
-  function deleteBlock(b: BlockView) {
+  async function deleteBlock(b: BlockView) {
+    // A contagem vem ANTES do confirm (o `message` do useConfirm é fixo): as FKs em
+    // cascata apagam as entregas dos alunos junto com o bloco, e o professor precisa
+    // ver o custo. Best-effort — members fora → confirm de sempre, exclusão livre.
+    const counts = await fetchSubmissionCountsSafe(courseId)
+    const warning = submissionCountWarning(counts?.byBlock[b.id] ?? 0)
     confirm({
       title: 'Excluir bloco',
-      message: 'Tem certeza que deseja excluir este bloco? Esta ação não pode ser desfeita.',
+      message: (
+        <>
+          Tem certeza que deseja excluir este bloco? Esta ação não pode ser desfeita.
+          {warning ? (
+            <>
+              {' '}
+              <strong className="text-destructive">{warning}</strong>
+            </>
+          ) : null}
+        </>
+      ),
       confirmText: 'Excluir',
       confirmVariant: 'destructive',
       onConfirm: () =>
@@ -935,7 +951,7 @@ export function LessonEditorClient({
                       block={b}
                       canWrite={canWrite}
                       onEdit={() => openEditBlock(b)}
-                      onDelete={() => deleteBlock(b)}
+                      onDelete={() => void deleteBlock(b)}
                     />
                   ))}
                 </SortableContext>

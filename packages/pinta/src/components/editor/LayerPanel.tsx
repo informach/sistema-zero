@@ -30,12 +30,13 @@ import {
   movePixelLayer,
   removePixelLayer,
   renamePixelLayer,
+  togglePixelLayerLocked,
   togglePixelLayerVisible,
 } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Eye, EyeOff, GripVertical, Plus, Trash2 } from '../ui/icons'
+import { Eye, EyeOff, GripVertical, Lock, LockOpen, Plus, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
@@ -120,6 +121,11 @@ export function LayerPanel(): JSX.Element | null {
       showToast(COPY.layers.lastOne)
       return
     }
+    // Trancada não se apaga: destrancar primeiro é a decisão explícita.
+    if (activeLayer?.locked === true) {
+      showToast(COPY.layers.lockedDelete)
+      return
+    }
     setConfirmOpen(true)
   }
 
@@ -155,6 +161,13 @@ export function LayerPanel(): JSX.Element | null {
     const state = editor.getState()
     if (!isPixelLayeredKind(state.asset)) return
     const next = togglePixelLayerVisible(state.asset, layer.id)
+    commitLayers(next, next !== state.asset)
+  }
+
+  function toggleLocked(layer: PintaPixelLayer): void {
+    const state = editor.getState()
+    if (!isPixelLayeredKind(state.asset)) return
+    const next = togglePixelLayerLocked(state.asset, layer.id)
     commitLayers(next, next !== state.asset)
   }
 
@@ -248,6 +261,11 @@ export function LayerPanel(): JSX.Element | null {
                 icon={layer.visible ? Eye : EyeOff}
                 label={`${layer.visible ? COPY.layers.hide : COPY.layers.show}: ${layer.name}`}
                 onClick={() => toggleVisible(layer)}
+              />
+              <ToolButton
+                icon={layer.locked === true ? Lock : LockOpen}
+                label={`${layer.locked === true ? COPY.layers.unlock : COPY.layers.lock}: ${layer.name}`}
+                onClick={() => toggleLocked(layer)}
               />
               <button
                 type="button"

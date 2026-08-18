@@ -1388,6 +1388,10 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
     if (existing) {
+      // Espelho do backup do Drizzle: a versão SOBRESCRITA vai para previous_*
+      // ANTES do overwrite (undo de 1 passo, restaurável pelo professor).
+      existing.previousProject = existing.project
+      existing.previousSubmittedAt = existing.submittedAt
       existing.project = submission.project
       existing.submittedAt = submission.submittedAt
       existing.score = submission.score ?? null
@@ -1406,8 +1410,49 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         checkedAt: submission.checkedAt ?? null,
         passedAt: submission.passedAt ?? null,
         message: submission.message ?? null,
+        previousProject: null,
+        previousSubmittedAt: null,
       })
     }
+  }
+
+  async getPrevious(
+    userId: string,
+    blockId: string,
+  ): Promise<{ project: unknown; submittedAt: Date } | null> {
+    const s = this.submissions.find((x) => x.userId === userId && x.blockId === blockId)
+    if (!s || s.previousProject == null || s.previousSubmittedAt == null) return null
+    return { project: s.previousProject, submittedAt: s.previousSubmittedAt }
+  }
+
+  async restorePrevious(input: { userId: string; blockId: string }): Promise<boolean> {
+    const s = this.submissions.find((x) => x.userId === input.userId && x.blockId === input.blockId)
+    if (!s || s.previousProject == null || s.previousSubmittedAt == null) return false
+    // Troca reversível (espelho do UPDATE atômico): correção zerada, sticky fica.
+    const project = s.project
+    const submittedAt = s.submittedAt
+    s.project = s.previousProject
+    s.submittedAt = s.previousSubmittedAt
+    s.previousProject = project
+    s.previousSubmittedAt = submittedAt
+    s.score = null
+    s.results = null
+    s.checkedAt = null
+    return true
+  }
+
+  async countByCourseGrouped(
+    courseId: string,
+  ): Promise<{ blockId: string; lessonId: string; count: number }[]> {
+    const byKey = new Map<string, { blockId: string; lessonId: string; count: number }>()
+    for (const s of this.submissions) {
+      if (s.courseId !== courseId) continue
+      const key = `${s.blockId}:${s.lessonId}`
+      const entry = byKey.get(key)
+      if (entry) entry.count += 1
+      else byKey.set(key, { blockId: s.blockId, lessonId: s.lessonId, count: 1 })
+    }
+    return [...byKey.values()]
   }
 
   async summarizeByBlockIds(
@@ -1551,6 +1596,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           passedAt: s.passedAt ?? null,
           message: s.message ?? null,
           reviewedAt: s.reviewedAt ?? null,
+          previousSubmittedAt: s.previousSubmittedAt ?? null,
         }
       : null
   }

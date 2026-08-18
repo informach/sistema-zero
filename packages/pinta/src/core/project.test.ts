@@ -154,6 +154,28 @@ describe('sanitizePintaAsset (dados do disco/import — nunca lança)', () => {
     expect(out.animations[0]?.frames[0]).toHaveLength(2)
   })
 
+  it('cadeado da camada: locked true sobrevive; lixo/false OMITE a chave', () => {
+    const base = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const out = sanitizePintaAsset({
+      ...base,
+      layers: [
+        { id: 'l1', name: 'Camada 1', visible: true, locked: true },
+        { id: 'l2', name: 'Camada 2', visible: true, locked: false },
+        { id: 'l3', name: 'Camada 3', visible: true, locked: 'sim' },
+      ],
+      animations: [
+        {
+          ...base.animations[0],
+          frames: [[createBitmap(8, 8), createBitmap(8, 8), createBitmap(8, 8)]],
+        },
+      ],
+    })
+    if (out?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    expect(out.layers[0]?.locked).toBe(true)
+    expect('locked' in (out.layers[1] ?? {})).toBe(false)
+    expect('locked' in (out.layers[2] ?? {})).toBe(false)
+  })
+
   it('camadas inválidas preservam a posição dos cels e dos metadados válidos', () => {
     const background = createPixelBackgroundAsset({ name: 'ceu', width: 4, height: 4 })
     const cels = [1, 2, 3].map((color) => {

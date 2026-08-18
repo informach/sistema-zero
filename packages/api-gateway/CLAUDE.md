@@ -76,6 +76,12 @@ RBAC staff+ + `membersInternalTransforms`, 300/min. Literal de 3 segmentos, sem 
 `/members/admin/members/:userId` nem com os wildcards `/members/admin/courses/*` (coberto em
 `route-registry.test.ts`).
 
+As mutações de entrega são rotas explícitas (sem wildcard):
+`members-admin-studio-submissions-write` (`POST …/:blockId/:userId/review`, staff+, 120/min,
+corpo 64KB) marca/desmarca a conferência; `members-admin-studio-submissions-restore`
+(`POST …/:blockId/:userId/restore-previous`, mesma régua) troca a versão atual pela anterior e usa
+`audit: {}` porque altera o trabalho entregue e zera a correção automática.
+
 **Recados — conversas professor↔aluno (07/2026):** lado do ALUNO em rotas explícitas
 `members-teacher-threads-list`/`-unread-count` (`GET /members/teacher-threads[/unread-count]`,
 300/min — sino do kids busca a cada render), `members-teacher-thread-get` (`GET …/:id`, 300/min;

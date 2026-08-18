@@ -164,6 +164,40 @@ export function togglePixelLayerVisible<A extends PixelLayeredAsset>(asset: A, l
   }
 }
 
+/**
+ * Cadeado da camada: trancada, o CONTEÚDO dela não muda (desenhar, transformar,
+ * apagar a camada). Olho/nome/ordem seguem livres. Convenção de serialização do
+ * `hidden` do vetor: trancar EMITE `locked: true`; destrancar REMOVE a chave
+ * (round-trip estrito do wire).
+ */
+export function togglePixelLayerLocked<A extends PixelLayeredAsset>(asset: A, layerId: string): A {
+  const index = asset.layers.findIndex((layer) => layer.id === layerId)
+  const layer = asset.layers[index]
+  if (!layer) return asset
+  return {
+    ...asset,
+    layers: asset.layers.map((l, i) => {
+      if (i !== index) return l
+      if (l.locked === true) {
+        const { locked: _locked, ...rest } = l
+        return rest
+      }
+      return { ...l, locked: true }
+    }),
+  }
+}
+
+/** A camada (por id) está trancada? Id inexistente → false. */
+export function isLayerLocked(asset: PixelLayeredAsset, layerId: string | null): boolean {
+  const index = layerIndexOf(asset, layerId)
+  return asset.layers[index]?.locked === true
+}
+
+/** Alguma camada trancada? (Espelhar/girar escrevem TODOS os cels do quadro.) */
+export function hasLockedLayer(asset: PixelLayeredAsset): boolean {
+  return asset.layers.some((layer) => layer.locked === true)
+}
+
 export function renamePixelLayer<A extends PixelLayeredAsset>(
   asset: A,
   layerId: string,

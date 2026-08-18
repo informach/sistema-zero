@@ -22,6 +22,7 @@ import { CheckCheck, CheckCircle2, Download, Maximize2, Minimize2, Send } from '
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { resolvePintaSeed } from '../../lib/pinta-seed'
 import { preparePintaSubmission } from '../../lib/pinta-submission'
 import type { PintaBlock, PintaStateView, PintaSubmissionResultView } from '../../lib/types'
@@ -83,6 +84,9 @@ export function PintaBlockView({
   // biome-ignore lint/correctness/useExhaustiveDependencies: semeia UMA vez por bloco, de propósito
   useEffect(() => {
     let active = true
+    // O rascunho vive no IndexedDB: pede persistência p/ o navegador não despejá-lo
+    // (Safari ~7 dias sem visita; pressão de disco). Best-effort, 1× por sessão.
+    requestPersistentStorage()
     void (async () => {
       setLoadError(false)
       const result = await loadPintaLessonModule()

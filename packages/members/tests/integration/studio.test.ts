@@ -987,3 +987,160 @@ describe('Bloco Estúdio — vitrine (Mural dos Criadores)', () => {
     expect(body.eligible).toBe(false)
   })
 })
+
+// ── Versão anterior da entrega (backup do reenvio) + contagens de exclusão ────
+// Rotas admin exercitadas com o guard desligado (default do buildApp), como nos
+// demais describes deste arquivo.
+
+const getDetail = (app: App, blockId: string, userId: string) =>
+  app.handle(
+    new Request(`http://localhost/members/admin/blocks/${blockId}/studio-submissions/${userId}`, {
+      headers: authHeaders,
+    }),
+  )
+
+const getPrevious = (app: App, blockId: string, userId: string) =>
+  app.handle(
+    new Request(
+      `http://localhost/members/admin/blocks/${blockId}/studio-submissions/${userId}/previous`,
+      { headers: authHeaders },
+    ),
+  )
+
+const restorePrevious = (app: App, blockId: string, userId: string) =>
+  app.handle(
+    new Request(
+      `http://localhost/members/admin/studio-submissions/${blockId}/${userId}/restore-previous`,
+      { method: 'POST', headers: authHeaders },
+    ),
+  )
+
+const getCounts = (app: App, courseId: string) =>
+  app.handle(
+    new Request(`http://localhost/members/admin/courses/${courseId}/submission-counts`, {
+      headers: authHeaders,
+    }),
+  )
+
+describe('Versão anterior da entrega — backup do último reenvio', () => {
+  test('reenvio guarda a anterior; professor baixa e restaura (troca reversível)', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+
+    expect((await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)).status).toBe(200)
+    expect((await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT)).status).toBe(200)
+
+    const detail = await readJson(await getDetail(app, blockId, USER))
+    expect(detail.project).toEqual(STUDIO_LOOP_PROJECT)
+    expect(detail.previousSubmittedAt).toBeString()
+
+    const previous = await readJson(await getPrevious(app, blockId, USER))
+    expect(previous.project).toEqual(STUDENT_PROJECT)
+
+    expect((await restorePrevious(app, blockId, USER)).status).toBe(200)
+    const restored = await readJson(await getDetail(app, blockId, USER))
+    expect(restored.project).toEqual(STUDENT_PROJECT)
+    // A troca é reversível: a versão "descartada" vira a anterior…
+    expect((await readJson(await getPrevious(app, blockId, USER))).project).toEqual(
+      STUDIO_LOOP_PROJECT,
+    )
+    // …e restaurar de novo volta ao estado inicial.
+    expect((await restorePrevious(app, blockId, USER)).status).toBe(200)
+    expect((await readJson(await getDetail(app, blockId, USER))).project).toEqual(
+      STUDIO_LOOP_PROJECT,
+    )
+
+    // O save na nuvem do ALUNO acompanha a restauração (mesma linha).
+    expect((await readJson(await getOwnSubmission(app, lessonIds[0], blockId))).project).toEqual(
+      STUDIO_LOOP_PROJECT,
+    )
+  })
+
+  test('sem reenvio não há versão anterior: detail null, previous e restore 404', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = seedStudioBlock(courses, lessonIds[0])
+
+    await submit(app, lessonIds[0], blockId, STUDENT_PROJECT)
+    expect((await readJson(await getDetail(app, blockId, USER))).previousSubmittedAt).toBeNull()
+    expect((await getPrevious(app, blockId, USER)).status).toBe(404)
+    expect((await restorePrevious(app, blockId, USER)).status).toBe(404)
+  })
+
+  test('restaurar zera a correção mas PRESERVA a aprovação sticky', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blockId = randomUUID()
+    courses.blocks.push({
+      id: blockId,
+      lessonId: lessonIds[0],
+      kind: 'studio',
+      sortOrder: 20,
+      content: {
+        kind: 'studio',
+        level: 'iniciante',
+        allowCategories: ['JavaScript'],
+        initialProject: {
+          name: 'x',
+          files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        },
+        activity: {
+          instructions: 'use um laço',
+          passingScore: 100,
+          checks: [
+            { id: 'loop', label: 'usa laço', kind: 'structure', rule: { type: 'usesLoop' } },
+          ],
+        },
+      },
+    })
+
+    // Passa com laço; o reenvio SEM laço reprova, mas o sticky preserva o "passou".
+    expect(
+      (await readJson(await submit(app, lessonIds[0], blockId, STUDIO_LOOP_PROJECT))).passed,
+    ).toBe(true)
+    // A resposta do reenvio reporta a TENTATIVA atual (reprovada)…
+    expect(
+      (await readJson(await submit(app, lessonIds[0], blockId, STUDIO_FUNCTION_PROJECT))).passed,
+    ).toBe(false)
+    // …mas o `passed_at` sticky da linha segue de pé ("aprovou uma vez = destrava").
+    expect((await readJson(await getDetail(app, blockId, USER))).passed).toBe(true)
+
+    expect((await restorePrevious(app, blockId, USER)).status).toBe(200)
+    const detail = await readJson(await getDetail(app, blockId, USER))
+    expect(detail.project).toEqual(STUDIO_LOOP_PROJECT)
+    expect(detail.score).toBeNull()
+    expect(detail.checkedAt).toBeNull()
+    expect(detail.passed).toBe(true) // sticky intacto — a restauração não pune a criança
+    expect((await complete(app, lessonIds[0])).status).toBe(200)
+  })
+})
+
+describe('Contagem de entregas para os confirms de exclusão', () => {
+  test('agrega por bloco e por aula; curso sem entregas volta zerado', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const { courseId, slug, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const blocoAula1 = seedStudioBlock(courses, lessonIds[0])
+    const blocoAula2 = seedStudioBlock(courses, lessonIds[1])
+
+    await submit(app, lessonIds[0], blocoAula1, STUDENT_PROJECT)
+    await submit(app, lessonIds[1], blocoAula2, STUDENT_PROJECT)
+    // Reenvio NÃO conta duas vezes (1 linha por aluno+bloco).
+    await submit(app, lessonIds[1], blocoAula2, STUDIO_LOOP_PROJECT)
+
+    const counts = await readJson(await getCounts(app, courseId))
+    expect(counts.total).toBe(2)
+    expect(counts.byBlock[blocoAula1]).toBe(1)
+    expect(counts.byBlock[blocoAula2]).toBe(1)
+    expect(counts.byLesson[lessonIds[0]]).toBe(1)
+    expect(counts.byLesson[lessonIds[1]]).toBe(1)
+
+    const empty = await readJson(await getCounts(app, randomUUID()))
+    expect(empty.total).toBe(0)
+    expect(empty.byBlock).toEqual({})
+  })
+})

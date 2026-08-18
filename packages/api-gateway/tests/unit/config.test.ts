@@ -366,6 +366,20 @@ describe('gateway.config.ts (configuração real)', () => {
     }
   })
 
+  test('restauração de entrega tem rota explícita e auditada; review não usa wildcard', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    const review = byId.get('members-admin-studio-submissions-write')
+    const restore = byId.get('members-admin-studio-submissions-restore')
+
+    expect(review?.pathPattern).toBe('/members/admin/studio-submissions/:blockId/:userId/review')
+    expect(restore).toMatchObject({
+      methods: ['POST'],
+      pathPattern: '/members/admin/studio-submissions/:blockId/:userId/restore-previous',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      audit: {},
+    })
+  })
+
   test('persistência gerada pelo BFF do Zappy exige HMAC; demais rotas preservam JWT', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
     type RouteMethod = (typeof realConfig.routes)[number]['methods'][number]

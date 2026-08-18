@@ -466,6 +466,53 @@ Cenário e personagem animado têm **camadas** (peças NÃO — a pecinha é peq
 - ⚠️ O painel do TILEMAP também se chama "Camadas" (`COPY.tiles.layers`) — ao consultar por
   `section[aria-label="Camadas"]` num teste/QA, confira qual editor está aberto.
 
+## Cadeado de camada (pixel + vetor, 08/2026)
+
+Pedido da dona: um cadeado no painel de Camadas dos DOIS editores que tranca a camada para ela
+não sofrer alteração. Decisão de produto (dela): o cadeado bloqueia **CONTEÚDO + EXCLUSÃO**;
+olho, renomear e reordenar continuam livres; para excluir, destranca antes. Tilemap fica FORA.
+
+- **Convenção de serialização = a do `hidden`**: trancar EMITE `locked: true`; destrancar
+  REMOVE a chave por destructuring; lixo/`false` no sanitize OMITE (round-trip estrito do
+  `wire.test.ts` — payload antigo byte-idêntico). Vale para `PintaPixelLayer.locked?` e
+  `VectorShapeBase.locked?`. ⚠️ **lock ≠ hidden**: a trancada CONTINUA na folha/export/prévia
+  (`visibleShapes` e `flattenCels` só filtram `hidden`/`visible`) — travado por teste nos dois
+  funis (`spritesheet.test.ts` + `model.test.ts`).
+- **Pixel** (`pixel/layers.ts`: `togglePixelLayerLocked` + `isLayerLocked` [null = a de cima,
+  régua da ativa] + `hasLockedLayer`): gate no `pointerdown` do `PixelCanvas` (ferramentas de
+  ESCRITA bloqueiam com toast `lockedWarning`; conta-gotas e marcar/copiar da seleção seguem —
+  leitura) + gates nos caminhos de escrita da seleção (mover o pedaço/colar/virar — bloquear na
+  ENTRADA evita o palco mostrar um estado que o carimbo recusaria) + **backstop no
+  `commitBitmap`** (estado VIVO; ⚠️ ANTES do `selfCommitRef` — commit bloqueado não pode marcar
+  "fui eu que mudei"). `ToolBar`: espelhar/girar bloqueiam com QUALQUER camada trancada
+  (`lockedTransform` — a transformação escreve TODOS os cels; meia transformação desalinharia) e
+  "Limpar tudo" bloqueia na ativa trancada. `LayerPanel`: botão cadeado entre o olho e o corpo
+  (entra no undo via `commit`, como o olho); lixeira na ativa trancada → toast `lockedDelete`
+  sem dialog. **Permitidos de propósito**: visibilidade, renomear, reordenar, selecionar como
+  ativa (para destrancar), quadros/animações, `resizeAsset` e `removeExtraColor` (operações de
+  DOCUMENTO — excluir cels trancados do remapeamento corromperia o desenho).
+- **Vetor** — guard central PURO **`vector/lock.ts`** (`lockedShapesViolation(current, next)`:
+  trancada ausente em `next` → violação; MESMA referência → ok, o fast-path que libera
+  reordenar e editar as livres; referência nova → deep-compare ignorando SÓ `locked`/`hidden`
+  [destrancar/esconder permitidos] → diferente = violação; mudar `groupId` = violação). Imposto
+  como **backstop no `commitShapes`** (toast `lockedShapeWarning` SÓ com `recordUndo=true` — o
+  replace por-frame dos gestos rodaria 60×/s; o `commitGesture` final vira no-op). Gates de UX:
+  `freeSelectedIds()` filtra as trancadas nas mutações (nudge/flip/align/estilo/remover/
+  agrupar/desagrupar/pathfinder — seleção SÓ de trancadas → toast e sai; no remover as
+  trancadas FICAM selecionadas para a criança ver que sobraram); `expandToGroups` NÃO adiciona
+  membros trancados na EXPANSÃO (id explícito permanece — o painel seleciona trancada de
+  propósito, para destrancar); clique/duplo-clique no palco ATRAVESSA a trancada (return SEM
+  stopPropagation); marquee e Ctrl+A filtram; alças de resize/rotate com trancada na seleção →
+  toast; gesto de mover translada só as LIVRES; `reshape` não expõe os nós da trancada;
+  `cloneShapesWithNewIds` STRIPPA o `locked` (duplicar/colar nasce DESTRANCADO — cópia é
+  material novo, e é o jeito de variar sem tocar no original). `VectorLayerPanel`: botão
+  cadeado espelho do olho (o guard deixa passar porque só `locked` muda); trancar tira da
+  seleção de AÇÃO; reordenar trancada segue funcionando (identidade preservada).
+- Testes: `pixel/layers.test.ts`, `vector/lock.test.ts` (NOVO), sanitize em `model.test.ts` +
+  `core/project.test.ts`, round-trip em `assets/wire.test.ts` (fixtures com camada e forma
+  trancadas), lock≠hidden em `export/spritesheet.test.ts`, UI em `layersUi.test.tsx` +
+  `vectorLayersUi.test.tsx`.
+
 ## Editor de VETOR: paridade + recursos (08/2026, inspiração Vectorpea)
 
 Pedido da usuária: o vetor com o MESMO layout do pixel (a criança não estranha ao trocar) e só

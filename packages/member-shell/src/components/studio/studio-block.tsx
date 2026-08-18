@@ -19,7 +19,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
+import { requestPersistentStorage } from '../../lib/persistent-storage'
 import { lessonStudioProjectId } from '../../lib/studio-project-id'
+import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
 
@@ -125,6 +127,10 @@ export function StudioBlockView({
   // Confirmação antes de enviar: o envio destrava/regrava a entrega no professor —
   // um clique sem querer mandava um projeto vazio (relatado pela usuária).
   const [confirmOpen, setConfirmOpen] = useState(false)
+  // Aviso anti-sobrescrita: reenviar o TEMPLATE por cima de uma entrega feita (editor semeado
+  // do projeto inicial num navegador novo + "Reenviar" = perde o jogo entregue). Calculado ao
+  // ABRIR o confirm (o projeto vivo só existe no handle) — não bloqueia, só avisa.
+  const [templateWarning, setTemplateWarning] = useState(false)
   // Recado OPCIONAL do aluno ao professor, digitado no modal de confirmação.
   const [message, setMessage] = useState('')
   const MESSAGE_MAX = 1000
@@ -183,6 +189,9 @@ export function StudioBlockView({
   // re-hidratar por cima do WIP.
   useEffect(() => {
     let active = true
+    // O rascunho vive no IndexedDB: pede persistência p/ o navegador não despejá-lo
+    // (Safari ~7 dias sem visita; pressão de disco). Best-effort, 1× por sessão.
+    requestPersistentStorage()
     void (async () => {
       const mod = await import('@sistemazero/studio')
       if (!active) return
@@ -430,7 +439,17 @@ export function StudioBlockView({
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
-          <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setTemplateWarning(
+                submitted &&
+                  isInitialTemplateProject(handleRef.current?.getProject(), content.initialProject),
+              )
+              setConfirmOpen(true)
+            }}
+            disabled={submitting || !ready}
+          >
             {submitting ? <Spinner /> : <Send className="size-4" />}
             {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
           </Button>
@@ -569,6 +588,12 @@ export function StudioBlockView({
             ? ' Dica: clique em "Verificar" no editor antes, para ver se já atingiu a nota.'
             : ''}
         </p>
+        {templateWarning ? (
+          <p className="mt-3 text-sm font-medium text-destructive">
+            Atenção: você está enviando o projeto inicial da aula por cima do que você já entregou.
+            Se terminou em outro computador, use o menu ⋯ e escolha Sincronizar com o enviado antes.
+          </p>
+        ) : null}
         <div className="mt-4 flex flex-col gap-1.5">
           <label htmlFor="studio-teacher-message" className="font-medium text-sm">
             Recado para o professor{' '}

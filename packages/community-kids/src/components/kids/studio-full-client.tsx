@@ -6,6 +6,7 @@ import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 // traz os tokens, NÃO registra as cores p/ gerar as utilitárias (sem isso os modais e
 // menus do editor saem sem fundo/cor). Ver o comentário no globals.css.
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
+import { requestPersistentStorage } from '@sistemazero/member-shell/lib/persistent-storage'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
@@ -107,6 +108,9 @@ export function StudioFullClient({
     async (isCurrent?: () => boolean) => {
       setMod(null)
       setLoadError(false)
+      // Os projetos da criança vivem no IndexedDB: pede persistência p/ o navegador não
+      // despejá-los (Safari ~7 dias sem visita; pressão de disco). Best-effort, 1×/sessão.
+      requestPersistentStorage()
       try {
         const m = await import('@sistemazero/studio')
         if (isCurrent && !isCurrent()) return

@@ -13,15 +13,24 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { ArrowRight, CheckCheck, Download, Maximize2, MessageSquare, Minimize2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  ArrowRight,
+  CheckCheck,
+  Download,
+  History,
+  Maximize2,
+  MessageSquare,
+  Minimize2,
+} from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { useConfirm } from '@/components/admin/use-confirm'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { preparePintaDownload } from '@/lib/pinta-download'
-import type { StudioSubmissionDetailView } from '@/lib/types'
+import type { StudioSubmissionDetailView, StudioSubmissionPreviousView } from '@/lib/types'
 import { TeacherThreadPanel } from './teacher-thread-panel'
 
 /** Baixa o desenho como `.pinta.json` — o mesmo envelope que a galeria do Pinta restaura. */
@@ -106,15 +115,16 @@ export function StudioSubmissionViewer({
   // responder na hora — a lista atrás só recarrega quando o professor fecha.
   const [reviewed, setReviewed] = useState(false)
   const [reviewing, setReviewing] = useState(false)
+  const [restoring, setRestoring] = useState(false)
+  const { confirm, confirmDialog } = useConfirm()
   // Handle exigido pelo StudioEmbed; na inspeção é só leitura (não usamos getProject).
   const viewerRef = useRef<StudioHandle | null>(null)
   // Idem para a entrega de DESENHO (o embed exige o ref; aqui ninguém lê).
   const pintaViewerRef = useRef<PintaHandle | null>(null)
 
-  useEffect(() => {
-    if (!open) return
-    setMaximized(false)
-    setDetail(null)
+  // Extraído do effect: o "Restaurar versão anterior" recarrega o detalhe sem
+  // fechar o dialog. Devolve o cancelador do padrão `active`.
+  const load = useCallback(() => {
     let active = true
     setLoading(true)
     apiGet<StudioSubmissionDetailView>(
@@ -134,7 +144,14 @@ export function StudioSubmissionViewer({
     return () => {
       active = false
     }
-  }, [open, blockId, userId])
+  }, [blockId, userId])
+
+  useEffect(() => {
+    if (!open) return
+    setMaximized(false)
+    setDetail(null)
+    return load()
+  }, [open, load])
 
   /**
    * Carimba (ou tira) o "já conferi". É o que fecha a entrega quando o aluno NÃO
@@ -157,6 +174,56 @@ export function StudioSubmissionViewer({
     } finally {
       setReviewing(false)
     }
+  }
+
+  /** Baixa a versão ANTERIOR (backup do reenvio) sem trocar a atual. */
+  async function downloadPrevious(): Promise<void> {
+    try {
+      const prev = await apiGet<StudioSubmissionPreviousView>(
+        `/api/members/blocks/${blockId}/studio-submissions/${userId}/previous`,
+      )
+      if (isPintaAssetLike(prev.project)) downloadPintaJson(prev.project)
+      else downloadProjectJson(prev.project)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível baixar a versão anterior.')
+    }
+  }
+
+  /**
+   * Restaura a versão anterior (TROCA atual↔anterior — reversível: restaurar de
+   * novo desfaz). É o undo do professor para o reenvio acidental do template por
+   * cima da entrega boa. A correção automática é zerada; o "aprovado" da criança
+   * e o carimbo de conferida ficam.
+   */
+  function confirmRestorePrevious(): void {
+    confirm({
+      title: 'Restaurar a versão anterior?',
+      message: (
+        <>
+          A entrega atual troca de lugar com a versão anterior (dá para desfazer restaurando de
+          novo). A correção automática desta entrega será zerada; a aprovação da criança e o carimbo
+          de conferida ficam como estão.
+        </>
+      ),
+      confirmText: 'Restaurar',
+      onConfirm: async () => {
+        setRestoring(true)
+        try {
+          await apiSend(
+            `/api/members/studio-submissions/${blockId}/${userId}/restore-previous`,
+            'POST',
+          )
+          toast.success('Versão anterior restaurada.')
+          // O swap pode fechar a pendência na fila (submitted_at volta no tempo).
+          refreshProfessorCounts()
+          load()
+        } catch (err) {
+          toast.error((err as ApiError).message ?? 'Não foi possível restaurar.')
+        } finally {
+          setRestoring(false)
+        }
+      },
+    })
   }
 
   return (
@@ -218,6 +285,34 @@ export function StudioSubmissionViewer({
             </div>
           </div>
 
+          {/* Versão ANTERIOR (backup do último reenvio): baixar/restaurar. Só
+              aparece quando o members manda o timestamp (houve reenvio). */}
+          {detail.previousSubmittedAt ? (
+            <Card className="flex flex-wrap items-center justify-between gap-2 p-3">
+              <div className="flex items-center gap-1.5 text-sm">
+                <History className="size-4" aria-hidden />
+                <span>
+                  Versão anterior de {new Date(detail.previousSubmittedAt).toLocaleString('pt-BR')}{' '}
+                  disponível
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={downloadPrevious}>
+                  <Download className="size-4" /> Baixar versão anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={confirmRestorePrevious}
+                  disabled={restoring}
+                >
+                  {restoring ? <Spinner className="size-4" /> : <History className="size-4" />}
+                  Restaurar versão anterior
+                </Button>
+              </div>
+            </Card>
+          ) : null}
+
           {/* Recado opcional que o aluno escreveu ao enviar o projeto. */}
           {detail.message ? (
             <Card className="space-y-1 p-3">
@@ -269,20 +364,22 @@ export function StudioSubmissionViewer({
             </Card>
           ) : null}
 
-          {/* key por aluno+bloco: remonta o editor (re-semeia) ao trocar de entrega —
-              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente).
+          {/* key por aluno+bloco+VERSÃO: remonta o editor (re-semeia) ao trocar de entrega —
+              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente) e após o
+              swap atual↔anterior (mesmo aluno/bloco, `submittedAt` diferente). Sem a versão,
+              o embed preserva o seed do primeiro mount e continuaria mostrando o projeto velho.
               ⚠️ O professor PODE mexer no desenho/projeto aberto aqui, e isso é inócuo de
               propósito: `persistence:'none'` e ninguém captura o handle na inspeção. */}
           {isPintaAssetLike(detail.project) ? (
             <PintaEmbed
-              key={`${userId}:${blockId}`}
+              key={`${userId}:${blockId}:${detail.submittedAt}`}
               initialAsset={detail.project as never}
               handleRef={pintaViewerRef}
               className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
             />
           ) : (
             <StudioEmbed
-              key={`${userId}:${blockId}`}
+              key={`${userId}:${blockId}:${detail.submittedAt}`}
               initialProject={detail.project}
               handleRef={viewerRef}
               className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
@@ -297,6 +394,7 @@ export function StudioSubmissionViewer({
           )}
         </div>
       )}
+      {confirmDialog}
     </Dialog>
   )
 }

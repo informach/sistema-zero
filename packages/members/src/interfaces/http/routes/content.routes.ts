@@ -447,6 +447,17 @@ export function contentRoutes(deps: ContentRoutesDeps) {
         },
         { params: AdminStudioSubmissionParams },
       )
+      // A versão ANTERIOR da entrega (backup do último reenvio) — rota dedicada
+      // porque a resposta tem outra forma (score/results da linha são da versão
+      // ATUAL) e o payload é pesado (não vai no detalhe). 404 sem reenvio.
+      .get(
+        '/blocks/:id/studio-submissions/:userId/previous',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.getPreviousVersion(params.userId, params.id)
+        },
+        { params: AdminStudioSubmissionParams },
+      )
       // Entregas de TODAS as aulas do curso (aba "Entregas" por curso). Centraliza
       // o acompanhamento sem drilar aula→bloco; o detalhe reusa a rota por-bloco
       // acima (as linhas carregam `blockId` + `userId`). `id` = courseId.
@@ -493,6 +504,34 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           })
         },
         { params: ReviewSubmissionParams, body: ReviewSubmissionBody },
+      )
+      // Restaurar a versão anterior: TROCA atual↔anterior (reversível — 2× volta),
+      // zera a correção e preserva o sticky/carimbo/recado. É o undo do professor
+      // para o reenvio acidental do template por cima da entrega boa. 404 sem
+      // versão anterior. ⚠️ `submitted_at` volta no tempo → a entrega pode sair
+      // da fila de pendentes (as réguas comparam com `>= submitted_at`).
+      .post(
+        '/studio-submissions/:blockId/:userId/restore-previous',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.restorePrevious({
+            userId: params.userId,
+            blockId: params.blockId,
+          })
+        },
+        { params: ReviewSubmissionParams },
+      )
+      // Contagem de entregas por bloco/aula do curso — alimenta o aviso "este
+      // bloco/aula tem N entregas que serão apagadas junto" dos confirms de
+      // exclusão do admin (as FKs em cascata apagam studio_submissions em
+      // silêncio). `id` = courseId; módulo = soma das aulas dele no cliente.
+      .get(
+        '/courses/:id/submission-counts',
+        async ({ params, headers }) => {
+          guard(headers)
+          return deps.studioSubmissions.countByCourse(params.id)
+        },
+        { params: IdParams },
       )
   )
 }

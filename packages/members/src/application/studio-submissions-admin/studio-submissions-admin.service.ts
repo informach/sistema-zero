@@ -71,6 +71,26 @@ export interface StudioSubmissionDetailView {
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
   reviewed: boolean
+  /**
+   * ISO da versão ANTERIOR (backup do último reenvio); `null` = sem reenvio. Só o
+   * timestamp — o projeto anterior sai pela rota dedicada `…/previous`.
+   */
+  previousSubmittedAt: string | null
+}
+
+/** A versão anterior da entrega (backup do último reenvio), para baixar/inspecionar. */
+export interface StudioSubmissionPreviousView {
+  project: unknown
+  submittedAt: string
+}
+
+/** Contagem de entregas de um curso, agregada p/ os confirms de exclusão do admin. */
+export interface StudioSubmissionCountsView {
+  total: number
+  /** Entregas por AULA (soma dos blocos dela) — confirm de excluir aula/módulo. */
+  byLesson: Record<string, number>
+  /** Entregas por BLOCO — confirm de excluir bloco. */
+  byBlock: Record<string, number>
 }
 
 /**
@@ -154,7 +174,42 @@ export class StudioSubmissionsAdminService {
       message: row.message,
       reviewedAt: row.reviewedAt?.toISOString() ?? null,
       reviewed: row.reviewedAt != null && row.reviewedAt >= row.submittedAt,
+      previousSubmittedAt: row.previousSubmittedAt?.toISOString() ?? null,
     }
+  }
+
+  /** A versão anterior (backup do último reenvio) — 404 quando nunca houve reenvio. */
+  async getPreviousVersion(userId: string, blockId: string): Promise<StudioSubmissionPreviousView> {
+    const row = await this.submissions.getPrevious(userId, blockId)
+    if (!row) throw new ContentNotFoundError('Não há versão anterior desta entrega')
+    return { project: row.project, submittedAt: row.submittedAt.toISOString() }
+  }
+
+  /**
+   * TROCA a entrega atual pela versão anterior (reversível — restaurar 2× volta).
+   * Zera a correção (era da versão sobrescrita) e preserva `passed_at` (sticky),
+   * o carimbo do professor e o recado. ⚠️ Como `submitted_at` volta no tempo, as
+   * réguas `reviewed`/`answered` (comparadas com `>= submitted_at`) podem fechar a
+   * pendência na fila — coerente: é o professor mexendo na entrega agora.
+   */
+  async restorePrevious(input: { userId: string; blockId: string }): Promise<{ restored: true }> {
+    const ok = await this.submissions.restorePrevious(input)
+    if (!ok) throw new ContentNotFoundError('Não há versão anterior desta entrega')
+    return { restored: true }
+  }
+
+  /** Contagens p/ os confirms de exclusão (bloco/aula/módulo/curso) do admin. */
+  async countByCourse(courseId: string): Promise<StudioSubmissionCountsView> {
+    const rows = await this.submissions.countByCourseGrouped(courseId)
+    const byLesson: Record<string, number> = {}
+    const byBlock: Record<string, number> = {}
+    let total = 0
+    for (const r of rows) {
+      total += r.count
+      byLesson[r.lessonId] = (byLesson[r.lessonId] ?? 0) + r.count
+      byBlock[r.blockId] = (byBlock[r.blockId] ?? 0) + r.count
+    }
+    return { total, byLesson, byBlock }
   }
 
   /**

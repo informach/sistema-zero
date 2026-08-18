@@ -92,7 +92,12 @@ export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
   for (const s of shapes) if (ids.includes(s.id) && s.groupId) groups.add(s.groupId)
   if (groups.size === 0) return ids
   const result = new Set(ids)
-  for (const s of shapes) if (s.groupId && groups.has(s.groupId)) result.add(s.id)
+  // A EXPANSÃO pula membros trancados (mover o grupo não arrasta a trancada
+  // junto); id EXPLÍCITO permanece — o painel seleciona trancada de propósito,
+  // para destrancar.
+  for (const s of shapes) {
+    if (s.groupId && groups.has(s.groupId) && s.locked !== true) result.add(s.id)
+  }
   return [...result]
 }
 
@@ -108,7 +113,10 @@ export function cloneShapesWithNewIds(
 ): VectorShape[] {
   const groupIds = new Map<string, string>()
   return shapes.map((shape) => {
-    const moved = translateShape({ ...structuredClone(shape), id: newId() }, dx, dy)
+    // A cópia nasce DESTRANCADA (é material novo — duplicar uma trancada é
+    // justamente o jeito de mexer numa variação sem tocar no original).
+    const { locked: _locked, ...clone } = structuredClone(shape)
+    const moved = translateShape({ ...clone, id: newId() }, dx, dy)
     if (!shape.groupId) return moved
     const groupId = groupIds.get(shape.groupId) ?? newId()
     groupIds.set(shape.groupId, groupId)

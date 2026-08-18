@@ -1,7 +1,10 @@
 import { describe, expect, mock, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 
-GlobalRegistrator.register()
+// Guarda obrigatória: outro arquivo de teste pode ter registrado o happy-dom
+// antes (a ordem de arquivos do bun varia por plataforma) e o register()
+// repetido LANÇA "already been globally registered" como unhandled error.
+if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
 mock.module('next/navigation', () => ({

@@ -357,6 +357,16 @@ export const studioSubmissions = members.table(
     /** Snapshot `Project` do Estúdio enviado pelo aluno (importável no Estúdio do professor). */
     project: jsonb('project').$type<unknown>().notNull(),
     submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull(),
+    /**
+     * Backup da versão SOBRESCRITA pelo último reenvio (upsert é último-vence): o
+     * projeto e a data que estavam na linha ANTES do update. Undo de 1 passo,
+     * restaurável pelo professor (`restore-previous`) — protege a entrega boa de
+     * um reenvio acidental do template (editor semeado errado num navegador novo).
+     * `null` = nunca houve reenvio. NÃO entra no `getOne` (payload das rotas
+     * quentes de seed/carryover) — só `getPrevious` o carrega.
+     */
+    previousProject: jsonb('previous_project').$type<unknown>(),
+    previousSubmittedAt: timestamp('previous_submitted_at', { withTimezone: true }),
     // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ──────────
     /** Nota 0–100 da última entrega gradeada. */
     score: integer('score'),
