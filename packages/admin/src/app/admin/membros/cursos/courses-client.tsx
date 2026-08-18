@@ -32,6 +32,7 @@ import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { loadAllPages } from '@/lib/load-all-pages'
+import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import { COURSE_STATUSES, COURSE_TIER_OPTIONS, type CourseView, type Paginated } from '@/lib/types'
 import { CourseFormDialog, type CoursePrefill, slotsForTier } from './course-form-dialog'
 
@@ -113,13 +114,23 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     setOpen(true)
   }
 
-  function remove(c: CourseView) {
+  async function remove(c: CourseView) {
+    // Contagem ANTES do confirm (o `message` é fixo): a cascata do banco apaga as
+    // entregas dos alunos do curso inteiro. Best-effort — falhou → confirm de sempre.
+    const counts = await fetchSubmissionCountsSafe(c.id)
+    const warning = submissionCountWarning(counts?.total ?? 0)
     confirm({
       title: 'Excluir curso',
       message: (
         <>
           Excluir o curso <strong className="text-foreground">{c.title}</strong>? Módulos, aulas e
           progresso serão removidos. Esta ação não pode ser desfeita.
+          {warning ? (
+            <>
+              {' '}
+              <strong className="text-destructive">{warning}</strong>
+            </>
+          ) : null}
         </>
       ),
       confirmText: 'Excluir',
@@ -268,7 +279,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                           <Button variant="ghost" size="sm" onClick={() => openEdit(c)}>
                             <Pencil className="size-4" /> Editar
                           </Button>
-                          <Button variant="ghost" size="sm" onClick={() => remove(c)}>
+                          <Button variant="ghost" size="sm" onClick={() => void remove(c)}>
                             Excluir
                           </Button>
                         </>

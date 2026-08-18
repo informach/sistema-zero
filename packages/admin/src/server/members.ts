@@ -306,9 +306,56 @@ export function getStudioSubmission(
     reviewedAt: string | null
     /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
     reviewed: boolean
+    /** ISO da versão ANTERIOR (backup do reenvio); `null`/ausente = sem reenvio. */
+    previousSubmittedAt?: string | null
   }>
 > {
   return gatewayFetch(`/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}`)
+}
+
+/**
+ * A versão ANTERIOR da entrega (backup do último reenvio):
+ * `GET /members/admin/blocks/:id/studio-submissions/:userId/previous`. 404 quando
+ * nunca houve reenvio — o viewer só chama quando o detalhe traz o timestamp.
+ */
+export function getStudioSubmissionPrevious(
+  blockId: string,
+  userId: string,
+): Promise<GatewayResponse<{ project: unknown; submittedAt: string }>> {
+  return gatewayFetch(
+    `/members/admin/blocks/${enc(blockId)}/studio-submissions/${enc(userId)}/previous`,
+  )
+}
+
+/**
+ * Restaura a versão anterior (TROCA atual↔anterior; reversível — 2× volta):
+ * `POST /members/admin/studio-submissions/:blockId/:userId/restore-previous`.
+ * Zera a correção; preserva o "aprovado" sticky, o carimbo e o recado.
+ */
+export function restoreStudioSubmissionPrevious(
+  blockId: string,
+  userId: string,
+): Promise<GatewayResponse<{ restored: true }>> {
+  return gatewayFetch(
+    `/members/admin/studio-submissions/${enc(blockId)}/${enc(userId)}/restore-previous`,
+    { method: 'POST' },
+  )
+}
+
+/**
+ * Contagem de entregas do curso, agregada por bloco e por aula:
+ * `GET /members/admin/courses/:id/submission-counts`. Alimenta o aviso "N
+ * entregas serão apagadas junto" dos confirms de exclusão (as FKs em cascata
+ * apagam `studio_submissions` em silêncio). Módulo = soma das aulas no cliente.
+ */
+export function getCourseSubmissionCounts(courseId: string): Promise<
+  GatewayResponse<{
+    total: number
+    byLesson: Record<string, number>
+    byBlock: Record<string, number>
+  }>
+> {
+  return gatewayFetch(`/members/admin/courses/${enc(courseId)}/submission-counts`)
 }
 
 /**

@@ -36,6 +36,11 @@ import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { slugify } from '@/lib/slug'
+import {
+  fetchSubmissionCountsSafe,
+  moduleSubmissionCount,
+  submissionCountWarning,
+} from '@/lib/submission-counts'
 import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 import { CourseFormDialog } from '../course-form-dialog'
 import { CourseSubmissionsPanel } from './course-submissions-client'
@@ -190,13 +195,24 @@ export function CourseEditorClient({
       setModuleOpen(false)
     }, 'Módulo salvo.')
   }
-  function deleteModule(m: ModuleView) {
+  async function deleteModule(m: ModuleView) {
+    // Contagem ANTES do confirm (o `message` é fixo): a cascata do banco apaga as
+    // entregas dos alunos das aulas do módulo. Best-effort — falhou → confirm de sempre.
+    const counts = await fetchSubmissionCountsSafe(courseId)
+    const lessonIds = tree?.modules.find((x) => x.id === m.id)?.lessons.map((l) => l.id) ?? []
+    const warning = submissionCountWarning(moduleSubmissionCount(counts, lessonIds))
     confirm({
       title: 'Excluir módulo',
       message: (
         <>
           Excluir o módulo <strong className="text-foreground">{m.title}</strong> e todas as suas
           aulas? Esta ação não pode ser desfeita.
+          {warning ? (
+            <>
+              {' '}
+              <strong className="text-destructive">{warning}</strong>
+            </>
+          ) : null}
         </>
       ),
       confirmText: 'Excluir',
@@ -276,13 +292,21 @@ export function CourseEditorClient({
       setLessonOpen(false)
     }, 'Aula salva.')
   }
-  function deleteLesson(l: LessonView) {
+  async function deleteLesson(l: LessonView) {
+    const counts = await fetchSubmissionCountsSafe(courseId)
+    const warning = submissionCountWarning(counts?.byLesson[l.id] ?? 0)
     confirm({
       title: 'Excluir aula',
       message: (
         <>
           Excluir a aula <strong className="text-foreground">{l.title}</strong>? Esta ação não pode
           ser desfeita.
+          {warning ? (
+            <>
+              {' '}
+              <strong className="text-destructive">{warning}</strong>
+            </>
+          ) : null}
         </>
       ),
       confirmText: 'Excluir',
@@ -377,10 +401,10 @@ export function CourseEditorClient({
                   expanded={!collapsed.has(mod.id)}
                   onToggle={() => toggleCollapsed(mod.id)}
                   onEditModule={() => openEditModule(mod)}
-                  onDeleteModule={() => deleteModule(mod)}
+                  onDeleteModule={() => void deleteModule(mod)}
                   onCreateLesson={() => openCreateLesson(mod.id)}
                   onEditLesson={openEditLesson}
-                  onDeleteLesson={deleteLesson}
+                  onDeleteLesson={(l) => void deleteLesson(l)}
                   onLessonDragEnd={(e) => handleLessonDragEnd(mod, e)}
                 />
               ))}

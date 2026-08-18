@@ -644,6 +644,27 @@ export interface StudioSubmissionDetailView {
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
   reviewed: boolean
+  /**
+   * ISO da versão ANTERIOR (backup do último reenvio). OPCIONAL: members mais
+   * velho que o painel não manda — sem o campo, os botões de versão não aparecem.
+   */
+  previousSubmittedAt?: string | null
+}
+
+/** A versão anterior de uma entrega (backup do reenvio) — baixar/inspecionar. */
+export interface StudioSubmissionPreviousView {
+  project: Project
+  submittedAt: string
+}
+
+/**
+ * Contagem de entregas de um curso por bloco/aula — o aviso "N entregas serão
+ * apagadas junto" dos confirms de exclusão. Módulo = soma das aulas no cliente.
+ */
+export interface CourseSubmissionCounts {
+  total: number
+  byLesson: Record<string, number>
+  byBlock: Record<string, number>
 }
 
 /**
