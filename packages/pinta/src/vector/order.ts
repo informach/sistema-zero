@@ -117,19 +117,34 @@ export function moveShapesOrder(
 }
 
 /**
- * Soltar o bloco no lugar da forma `overId` (arrasto pela alça do painel
- * Camadas). Segue o PONTEIRO, uma linha por vez — pular o cluster inteiro é
- * regra do passo de ±1, aqui quem manda é o dedo.
+ * Colocar no lugar da forma `overId` pela alça do painel Camadas. Arrasto e
+ * teclado escolhem uma linha vizinha por vez — pular o cluster inteiro é regra
+ * dos quatro botões de ordem, não da alça.
+ *
+ * ⭐ **Dentro do grupo a alça é FINA.** Se a linha-alvo é irmã de grupo
+ * da que foi acionada, move-se só ela, reordenando as partes por
+ * dentro; cruzar para FORA volta a mover o grupo inteiro. Sem isso, a régua "o
+ * grupo é uma peça só" tirava a única forma de restacar as partes de um
+ * personagem agrupado — sobrava desagrupar, arrumar e reagrupar.
+ *
+ * Os quatro BOTÕES de ordem seguem grossos de propósito (`moveShapesOrder` move a
+ * seleção, que já é o grupo): o grosso é deles, o fino é da alça.
  */
 export function dropShapesOrder(
   shapes: readonly VectorShape[],
   ids: readonly string[],
   overId: string,
 ): VectorShape[] | null {
-  const block = movingBlock(shapes, ids)
-  // Passar por cima de um irmão do próprio bloco não move nada (senão a lista
-  // se debate enquanto o dedo atravessa o grupo).
-  if (block.size === 0 || block.has(overId)) return null
+  const grupoTodo = movingBlock(shapes, ids)
+  if (grupoTodo.size === 0) return null
+
+  // Irmão do próprio grupo → reordena DENTRO dele: o bloco vira só o que foi
+  // pedido (a linha arrastada). Soltar sobre si mesma continua sendo no-op.
+  const dentroDoGrupo = grupoTodo.has(overId)
+  const pedidos = new Set(ids)
+  if (dentroDoGrupo && pedidos.has(overId)) return null
+  const block = dentroDoGrupo ? pedidos : grupoTodo
+  if (block.size === 0) return null
 
   const positions = new Map(shapes.map((s, i) => [s.id, i] as const))
   const over = positions.get(overId)

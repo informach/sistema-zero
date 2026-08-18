@@ -276,4 +276,20 @@ describe('SubscriptionReconciliationWorker', () => {
     await Promise.all([firstTick, overlappingTick, stopping])
     expect(stopped).toBe(true)
   })
+
+  test('⭐ start() varre JÁ no boot, sem esperar o intervalo', async () => {
+    // ⚠️⚠️ Sem esta volta inicial a rede não existe na prática: o intervalo é de 6h
+    // e cada deploy zera o relógio. Medido em produção — a varredura ficou NUNCA.
+    // O teste não usa timer falso: o `start()` dispara de forma síncrona e o
+    // `stop()` drena pelo `inFlight`, então basta parar e olhar o efeito.
+    const ciclo = 'charge-no-boot'
+    gateway.setCycleChargeAmount(ciclo, 9700n)
+    gateway.setSubscriptionCharges(providerSubscriptionId, [{ chargeId: ciclo, status: 'PAID' }])
+
+    const worker = newWorker()
+    worker.start()
+    await worker.stop() // drena a volta do boot
+
+    expect((await payments.findByProviderPaymentId(gateway.provider, ciclo))?.status).toBe('PAID')
+  })
 })

@@ -120,7 +120,7 @@ describe('painel Camadas do vetor', () => {
   it('setas na alça reordenam o empilhamento', async () => {
     await openWithTwoShapes()
     const grip = screen.getByRole('button', {
-      name: `${COPY.layers.reorder}: ${RECT}`,
+      name: `${COPY.layers.reorderShape}: ${RECT}`,
     })
     fireEvent.keyDown(grip, { key: 'ArrowUp' })
     await waitFor(() => {
@@ -128,7 +128,7 @@ describe('painel Camadas do vetor', () => {
     })
     fireEvent.keyDown(
       screen.getByRole('button', {
-        name: `${COPY.layers.reorder}: ${RECT}`,
+        name: `${COPY.layers.reorderShape}: ${RECT}`,
       }),
       { key: 'ArrowDown' },
     )
@@ -140,7 +140,7 @@ describe('painel Camadas do vetor', () => {
   it('arrastar pela alça reordena com UMA entrada de undo', async () => {
     await openWithTwoShapes()
     const grip = screen.getByRole('button', {
-      name: `${COPY.layers.reorder}: ${RECT}`,
+      name: `${COPY.layers.reorderShape}: ${RECT}`,
     })
     // happy-dom: todos os <li> medem rect 0 → o move "cruza" a primeira linha.
     fireEvent.pointerDown(grip, { pointerId: 7, clientY: 0 })
@@ -156,7 +156,7 @@ describe('painel Camadas do vetor', () => {
     })
   })
 
-  describe('forma AGRUPADA anda com o grupo', () => {
+  describe('forma AGRUPADA: fino dentro, grupo fora', () => {
     /** Retângulo + círculo agrupados, e uma linha solta por cima deles. */
     async function openWithGroupAndLoose(): Promise<void> {
       const stage = await openWithTwoShapes()
@@ -174,16 +174,33 @@ describe('painel Camadas do vetor', () => {
       })
     }
 
-    it('a seta na alça sobe o GRUPO inteiro (e a alça avisa isso)', async () => {
+    it('a alça agrupada descreve a forma E o grupo, sem prometer o modo antigo', async () => {
       await openWithGroupAndLoose()
-      // ⭐ ANTI-VÁCUO: por forma, o retângulo passaria só o círculo e o grupo
-      // se partiria → [LINE, RECT, ELLIPSE]. O esperado abaixo reprova isso.
+      expect(
+        screen.getByRole('button', {
+          name: `Mudar a ordem da forma ou do grupo: ${RECT}`,
+        }),
+      ).toBeTruthy()
+    })
+
+    it('as setas espelham o arrasto: forma sobre irmã, grupo sobre externa', async () => {
+      await openWithGroupAndLoose()
+      const gripName = `${COPY.layers.reorderGroup}: ${RECT}`
       const grip = screen.getByRole('button', {
-        name: `${COPY.layers.reorderGroup}: ${RECT}`,
+        name: gripName,
       })
+
+      // Primeiro vizinho = irmão: só o retângulo passa pelo círculo.
       fireEvent.keyDown(grip, { key: 'ArrowUp' })
       await waitFor(() => {
-        expect(rowLabels()).toEqual([ELLIPSE, RECT, LINE])
+        expect(rowLabels()).toEqual([LINE, RECT, ELLIPSE])
+      })
+
+      // Próximo vizinho = linha externa: o grupo inteiro atravessa, sem inverter
+      // a ordem interna conquistada no passo anterior.
+      fireEvent.keyDown(screen.getByRole('button', { name: gripName }), { key: 'ArrowUp' })
+      await waitFor(() => {
+        expect(rowLabels()).toEqual([RECT, ELLIPSE, LINE])
       })
     })
 
