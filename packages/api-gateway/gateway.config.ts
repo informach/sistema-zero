@@ -2256,18 +2256,33 @@ const config: GatewayConfigInput = {
     // "Já conferi esta entrega" (`/studio-submissions/:blockId/:userId/review`).
     // É a AÇÃO GÊMEA de responder o recado — a saída da fila para a entrega sem
     // recado — então mesma régua: staff+, que é quem confere entrega todo dia.
-    // O wildcard não colide com a leitura acima (aquela é o literal de 3
-    // segmentos) e o corpo é um booleano só.
+    // A rota é EXPLÍCITA: nenhuma mutação futura sob `studio-submissions` herda
+    // permissão, limite de corpo ou ausência de auditoria por cair num wildcard.
     {
       id: 'members-admin-studio-submissions-write',
       methods: ['POST'],
-      pathPattern: '/members/admin/studio-submissions/*',
+      pathPattern: '/members/admin/studio-submissions/:blockId/:userId/review',
       service: 'members',
       auth: { required: true, mode: 'any', strategies: ['jwt'] },
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    // Swap atual↔anterior: operação administrativa reversível, mas altera a
+    // entrega do aluno e zera sua correção automática — por isso tem rota e
+    // trilha de auditoria próprias. O primeiro param (`blockId`) identifica o alvo.
+    {
+      id: 'members-admin-studio-submissions-restore',
+      methods: ['POST'],
+      pathPattern: '/members/admin/studio-submissions/:blockId/:userId/restore-previous',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      audit: {},
     },
     // Recados (conversas professor↔aluno) — lado do PROFESSOR (painel admin).
     // Responder aluno é tarefa diária de professor/staff → LEITURA e ESCRITA

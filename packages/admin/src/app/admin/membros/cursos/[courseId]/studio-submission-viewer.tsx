@@ -364,20 +364,22 @@ export function StudioSubmissionViewer({
             </Card>
           ) : null}
 
-          {/* key por aluno+bloco: remonta o editor (re-semeia) ao trocar de entrega —
-              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente).
+          {/* key por aluno+bloco+VERSÃO: remonta o editor (re-semeia) ao trocar de entrega —
+              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente) e após o
+              swap atual↔anterior (mesmo aluno/bloco, `submittedAt` diferente). Sem a versão,
+              o embed preserva o seed do primeiro mount e continuaria mostrando o projeto velho.
               ⚠️ O professor PODE mexer no desenho/projeto aberto aqui, e isso é inócuo de
               propósito: `persistence:'none'` e ninguém captura o handle na inspeção. */}
           {isPintaAssetLike(detail.project) ? (
             <PintaEmbed
-              key={`${userId}:${blockId}`}
+              key={`${userId}:${blockId}:${detail.submittedAt}`}
               initialAsset={detail.project as never}
               handleRef={pintaViewerRef}
               className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}
             />
           ) : (
             <StudioEmbed
-              key={`${userId}:${blockId}`}
+              key={`${userId}:${blockId}:${detail.submittedAt}`}
               initialProject={detail.project}
               handleRef={viewerRef}
               className={maximized ? 'h-[75dvh]' : 'h-[32rem]'}

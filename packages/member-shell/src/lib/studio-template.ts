@@ -15,8 +15,8 @@
  *   projeto clássico; ir/blocksState são derivados deles e mudam de forma entre versões.
  * - `kind: 'pro'` em QUALQUER lado → false: no Pro os 3 canônicos são `''` dos dois lados
  *   (o código vive na `tree`), então a comparação daria falso positivo GARANTIDO.
- * - Contagem de `assets` diferente → false: a criança que só adicionou imagens/sons também já
- *   trabalhou (os 3 arquivos podem seguir intactos num projeto só-de-assets).
+ * - `assets` inteiros diferentes → false: a criança que só editou/trocou imagens/sons também já
+ *   trabalhou (a quantidade pode continuar igual e os 3 arquivos podem seguir intactos).
  * - Entrada nula/torta → false: sem certeza, sem aviso (aviso errado ensina a ignorar avisos).
  */
 
@@ -31,8 +31,50 @@ function canonicalFile(files: Record<string, unknown>, name: string): string {
   return typeof content === 'string' ? content : ''
 }
 
-function assetsCount(project: Record<string, unknown>): number {
-  return Array.isArray(project.assets) ? project.assets.length : 0
+function projectAssets(project: Record<string, unknown>): readonly unknown[] | null {
+  if (project.assets === undefined) return []
+  return Array.isArray(project.assets) ? project.assets : null
+}
+
+/** Igualdade estrutural dos valores JSON dos assets, sem depender da ordem das chaves. */
+function jsonValueEqual(
+  left: unknown,
+  right: unknown,
+  activeLeft = new WeakSet<object>(),
+  activeRight = new WeakSet<object>(),
+): boolean {
+  if (typeof left !== 'object' || left === null || typeof right !== 'object' || right === null) {
+    return Object.is(left, right)
+  }
+  if (activeLeft.has(left) || activeRight.has(right)) return false
+
+  const leftIsArray = Array.isArray(left)
+  const rightIsArray = Array.isArray(right)
+  if (leftIsArray !== rightIsArray) return false
+
+  activeLeft.add(left)
+  activeRight.add(right)
+  try {
+    if (leftIsArray && rightIsArray) {
+      if (left.length !== right.length) return false
+      return left.every((value, index) =>
+        jsonValueEqual(value, right[index], activeLeft, activeRight),
+      )
+    }
+
+    const leftRecord = left as Record<string, unknown>
+    const rightRecord = right as Record<string, unknown>
+    const leftKeys = Object.keys(leftRecord)
+    if (leftKeys.length !== Object.keys(rightRecord).length) return false
+    return leftKeys.every(
+      (key) =>
+        Object.hasOwn(rightRecord, key) &&
+        jsonValueEqual(leftRecord[key], rightRecord[key], activeLeft, activeRight),
+    )
+  } finally {
+    activeLeft.delete(left)
+    activeRight.delete(right)
+  }
 }
 
 export function isInitialTemplateProject(project: unknown, template: unknown): boolean {
@@ -41,7 +83,10 @@ export function isInitialTemplateProject(project: unknown, template: unknown): b
   const projectFiles = project.files
   const templateFiles = template.files
   if (!isRecord(projectFiles) || !isRecord(templateFiles)) return false
-  if (assetsCount(project) !== assetsCount(template)) return false
+  const projectAssetList = projectAssets(project)
+  const templateAssetList = projectAssets(template)
+  if (!projectAssetList || !templateAssetList) return false
+  if (!jsonValueEqual(projectAssetList, templateAssetList)) return false
   return CANONICAL_FILES.every(
     (name) => canonicalFile(projectFiles, name) === canonicalFile(templateFiles, name),
   )

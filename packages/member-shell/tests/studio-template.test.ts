@@ -61,6 +61,74 @@ describe('isInitialTemplateProject', () => {
     expect(isInitialTemplateProject(comAsset, template)).toBe(false)
   })
 
+  test('assets com a mesma quantidade mas conteúdo diferente → false', () => {
+    const template = projeto(
+      { 'script.js': 'let x = 1' },
+      {
+        assets: [
+          {
+            id: 'gato',
+            name: 'gato',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,TEMPLATE',
+            source: 'upload',
+          },
+        ],
+      },
+    )
+    const editado = projeto(
+      { 'script.js': 'let x = 1' },
+      {
+        assets: [
+          {
+            id: 'gato',
+            name: 'gato',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,TRABALHO-DO-ALUNO',
+            source: 'upload',
+          },
+        ],
+      },
+    )
+
+    expect(isInitialTemplateProject(editado, template)).toBe(false)
+  })
+
+  test('assets estruturalmente idênticos continuam sendo o template', () => {
+    const template = projeto(
+      { 'script.js': 'let x = 1' },
+      {
+        assets: [
+          {
+            id: 'gato',
+            name: 'gato',
+            kind: 'image',
+            dataUrl: 'data:image/png;base64,IGUAL',
+            source: 'upload',
+            sprite: { frameWidth: 16, animations: [{ name: 'andar', from: 0, to: 3 }] },
+          },
+        ],
+      },
+    )
+    const atual = projeto(
+      { 'script.js': 'let x = 1' },
+      {
+        assets: [
+          {
+            source: 'upload',
+            dataUrl: 'data:image/png;base64,IGUAL',
+            kind: 'image',
+            name: 'gato',
+            id: 'gato',
+            sprite: { animations: [{ to: 3, from: 0, name: 'andar' }], frameWidth: 16 },
+          },
+        ],
+      },
+    )
+
+    expect(isInitialTemplateProject(atual, template)).toBe(true)
+  })
+
   test('assets ausentes contam como zero (compat com projeto sem o campo)', () => {
     const template = { files: { 'script.js': 'a' } }
     const atual = { files: { 'script.js': 'a' }, assets: [] }
@@ -76,5 +144,8 @@ describe('isInitialTemplateProject', () => {
     expect(isInitialTemplateProject({ files: 'não é objeto' }, { files: 'não é objeto' })).toBe(
       false,
     )
+    expect(
+      isInitialTemplateProject({ files: template.files, assets: 'não é uma lista' }, template),
+    ).toBe(false)
   })
 })
