@@ -1123,12 +1123,28 @@ describe('createCreationsCloud', () => {
     const a = await partOf({ id: 'a', dataUrl: 'data:image/png;base64,AAAA' })
     const b = await partOf({ id: 'b', dataUrl: 'data:image/png;base64,BBBB' })
     const server = fakeServer({ delayMs: 15 })
+    // ⚠️ Corta no INSTANTE em que o 1º PUT de parte chega ao servidor, não "depois de
+    // 60 ms": o fakeServer só confere `signal.aborted` na ENTRADA de cada chamada, então
+    // um abort por relógio disputava com o fluxo reserva→409→reserva→PUT→PUT→commit —
+    // no runner lento do CI (19/08) o commit já tinha saído quando o abort chegou
+    // (local passava 3/3 por ser rápido). Gatilhado pelo evento, a ordem é garantida:
+    // o PUT em voo termina, o commit que viria depois encontra o sinal abortado.
+    let cortou = false
+    let abortar: (() => void) | null = null
+    const cortandoNoPrimeiroPut: FetchLike = async (input, init) => {
+      if (!cortou && String(input).startsWith('https://r2.test/') && init?.method === 'PUT') {
+        cortou = true
+        abortar?.()
+      }
+      return server.fetchImpl(input, init)
+    }
     const cloud = createCreationsCloud({
       tool: 'studio',
-      fetch: server.fetchImpl,
+      fetch: cortandoNoPrimeiroPut,
       idleMs: 0,
       wait: noWait,
     })
+    abortar = () => cloud.dispose({ abort: true })
     const manifest = JSON.stringify({
       format: 'sz-studio-parts',
       version: 1,
@@ -1139,10 +1155,9 @@ describe('createCreationsCloud', () => {
       meta: { name: 'Jogo', kind: 'classic', updatedAt: 1 },
       parts: [a, b],
     }))
-    // Espera chegar aos PUTs das partes e corta tudo.
-    await new Promise((r) => setTimeout(r, 60))
-    cloud.dispose({ abort: true })
-    await new Promise((r) => setTimeout(r, 120))
+    // Deixa a fila andar até o 1º PUT (que dispara o corte) e o que sobrar assentar.
+    await new Promise((r) => setTimeout(r, 200))
+    expect(cortou).toBe(true)
     expect(server.calls.some((c) => c.url.endsWith('/commit'))).toBe(false)
 
     // Download com sinal abortado no meio das partes.

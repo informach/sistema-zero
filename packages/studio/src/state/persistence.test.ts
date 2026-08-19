@@ -55,11 +55,16 @@ const { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } = await import(
 )
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
-// timers reais. ⚠️ A folga era 5× (50 ms) e reprovou no CI em 18/08 e 19/08 —
-// runner de 2 vCPU rodando os 22 pacotes juntos: o autosave de um teste ainda
-// estava EM VOO quando o seguinte fazia `mockClear`, e o `setMany` atrasado
-// caía no contador do próximo ("recebeu 1, esperava 0"). Local passa até sob
-// carga, porque a máquina é mais rápida. 10× + o dreno no `afterEach` abaixo.
+// timers reais (folga de 10× para máquinas lentas/CI; o dreno no `afterEach`
+// impede um save em voo de cair no contador do caso seguinte).
+// ⚠️ Este arquivo ASSUME namespace de storage '' e `useProjectStore` sem projeto.
+// Em 19/08 três casos reprovaram SÓ no CI: não era tempo — era o
+// `personalSync.test.ts`, que no Linux roda ANTES deste e saía deixando
+// `setStorageNamespace('personal-sync-test-N')` e um projeto na store default.
+// O conserto mora lá (afterAll devolvendo o estado); fica aqui o aviso de que
+// "recebeu 1, esperava 0" neste arquivo é sintoma de ESTADO DE MÓDULO vazado de
+// outro arquivo, não de debounce curto. Reproduza com a ordem do CI
+// (`bun test <arquivos anteriores> src/state/persistence.test.ts`), nunca só este.
 const AUTOSAVE_TEST_DELAY_MS = 10
 const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 10)
 

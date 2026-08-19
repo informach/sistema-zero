@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 /**
  * "Editei o desenho no Pinta → o jogo se atualiza sozinho."
@@ -126,6 +126,23 @@ beforeEach(() => {
   setStorageNamespace(namespace)
   setPersonalAssetsNamespace(namespace)
   takeDrawingSyncFailures()
+  useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+})
+
+// ⚠️ O registro de módulos do bun:test NÃO é isolado por arquivo, e a ORDEM dos
+// arquivos muda por plataforma. Este arquivo troca o namespace GLOBAL do storage
+// e carrega projeto na store DEFAULT (`restoreProjectSnapshot`); sem devolver os
+// dois como encontrou, o próximo arquivo (no Linux do CI é o `persistence.test.ts`,
+// que assume namespace '' e projeto nulo) via autosave/cerca caírem no escopo
+// errado — 3 casos reprovavam SÓ no CI (19/08). Local passava porque no Windows
+// a ordem é outra.
+afterEach(() => {
+  useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+})
+
+afterAll(() => {
+  setStorageNamespace('')
+  setPersonalAssetsNamespace('')
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })
 
