@@ -55,9 +55,13 @@ const { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } = await import(
 )
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
-// timers reais (folga de 5x para máquinas lentas/CI).
+// timers reais. ⚠️ A folga era 5× (50 ms) e reprovou no CI em 18/08 e 19/08 —
+// runner de 2 vCPU rodando os 22 pacotes juntos: o autosave de um teste ainda
+// estava EM VOO quando o seguinte fazia `mockClear`, e o `setMany` atrasado
+// caía no contador do próximo ("recebeu 1, esperava 0"). Local passa até sob
+// carga, porque a máquina é mais rápida. 10× + o dreno no `afterEach` abaixo.
 const AUTOSAVE_TEST_DELAY_MS = 10
-const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
+const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 10)
 
 // Serviço sobre a store DEFAULT (mesmo arranjo do fallback fora de um
 // <Studio>); cada teste dá attach/detach.
@@ -113,7 +117,12 @@ describe('PersistenceService', () => {
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Drena um ciclo de autosave ANTES de o próximo teste limpar os mocks: um
+    // timer já disparado (ou um `setMany` em voo) deste teste não pode cair no
+    // contador do seguinte. O `detach()` de cada caso cancela o timer pendente,
+    // mas não espera o que já começou.
+    await waitForAutosave()
     setAutosaveDelayForTests(null)
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
