@@ -10,6 +10,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { deleteObjectKeysResilient, deleteObjectPrefixes } from '@sistemazero/core/creations'
 import { getEnv } from '../lib/env'
 
 // Espelha o @sistemazero/admin (src/server/r2.ts) — mesmo bucket R2, prefixo próprio.
@@ -358,7 +359,10 @@ export async function r2PresignPutUgc(input: {
       ContentType: input.contentType,
       ContentLength: input.contentLength,
     }),
-    { expiresIn: input.expiresInSeconds ?? 300 },
+    {
+      expiresIn: input.expiresInSeconds ?? 300,
+      signableHeaders: new Set(['content-type', 'content-length']),
+    },
   )
 }
 
@@ -401,5 +405,92 @@ export async function r2PutObjectUgc(input: R2PutObjectInput): Promise<void> {
   } catch (error) {
     console.error('[r2] putObjectUgc falhou', { key, error })
     throw new Error('Falha ao enviar o anexo para o armazenamento.', { cause: error })
+  }
+}
+
+/**
+ * Apaga UM objeto do bucket UGC. Usado pelo "guardado na sua conta": a cada commit de
+ * revisão nova, a revisão ANTERIOR do mesmo item é apagada (best-effort — quem chama
+ * engole a falha), para o bucket não crescer a cada autosave. Espelha `r2DeleteObjectPrivate`.
+ */
+export async function r2DeleteObjectUgc(key: string): Promise<void> {
+  const cfg = requireUgcR2Config()
+  await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }))
+}
+
+/**
+ * Apaga VÁRIOS objetos do bucket UGC de uma vez (até 1000 por comando): o commit de uma
+ * revisão com partes solta o manifesto anterior + as partes não referenciadas, e a lixeira
+ * solta tudo de um item. Best-effort (quem chama engole a falha).
+ */
+export async function r2DeleteObjectsUgc(keys: readonly string[]): Promise<void> {
+  const cfg = requireUgcR2Config()
+  await createR2UgcObjectStore(getClient(cfg), cfg.bucket).deleteObjects(keys)
+}
+
+/**
+ * HEAD no bucket UGC: `true` = existe, `false` = 404 definitivo, `null` = não deu para saber
+ * (erro de rede/permissão — o chamador decide; o commit das criações segue best-effort).
+ */
+export async function r2HeadObjectUgc(key: string): Promise<boolean | null> {
+  const cfg = requireUgcR2Config()
+  return createR2UgcObjectStore(getClient(cfg), cfg.bucket).head(key)
+}
+
+/** Apaga prefixos inteiros e só retorna depois de confirmar uma primeira página vazia. */
+export async function r2DeleteUgcPrefixes(prefixes: readonly string[]): Promise<void> {
+  const cfg = requireUgcR2Config()
+  await createR2UgcObjectStore(getClient(cfg), cfg.bucket).deletePrefixes(prefixes)
+}
+
+/** Adapter injetável de operações UGC; produção e testes exercitam o mesmo caminho. */
+export function createR2UgcObjectStore(client: S3Client, bucket: string) {
+  const operations = {
+    async listFirstPage(prefix: string): Promise<string[]> {
+      const page = await client.send(
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: normalizeKey(prefix), MaxKeys: 1000 }),
+      )
+      return (page.Contents ?? []).flatMap((entry) => (entry.Key ? [entry.Key] : []))
+    },
+    async deleteMany(keys: readonly string[]) {
+      const result = await client.send(
+        new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+        }),
+      )
+      return {
+        failedKeys: (result.Errors ?? [])
+          .map((entry) => entry.Key)
+          .filter((key): key is string => typeof key === 'string'),
+      }
+    },
+    async deleteOne(key: string): Promise<void> {
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }))
+    },
+    onBatchFailure(error: unknown, keys: readonly string[]): void {
+      console.warn('[r2] lote falhou, apagando um a um', { count: keys.length, error })
+    },
+    onPartialFailure(failedKeys: readonly string[]): void {
+      console.warn('[r2] alguns objetos não foram apagados no lote', { failedKeys })
+    },
+  }
+  return {
+    async deleteObjects(keys: readonly string[]): Promise<void> {
+      await deleteObjectKeysResilient(keys.map(normalizeKey), operations)
+    },
+    async deletePrefixes(prefixes: readonly string[]): Promise<void> {
+      await deleteObjectPrefixes(prefixes.map(normalizeKey), operations)
+    },
+    async head(key: string): Promise<boolean | null> {
+      try {
+        await client.send(new HeadObjectCommand({ Bucket: bucket, Key: normalizeKey(key) }))
+        return true
+      } catch (error) {
+        const name = (error as { name?: string }).name
+        if (name === 'NotFound' || name === 'NoSuchKey' || name === '404') return false
+        return null
+      }
+    },
   }
 }

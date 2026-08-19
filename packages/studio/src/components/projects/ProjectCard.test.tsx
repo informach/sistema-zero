@@ -153,3 +153,32 @@ describe('ProjectCard: a capa do jogo', () => {
     expect(view.getByText('A foto aparece quando você sai do editor')).toBeTruthy()
   })
 })
+
+describe('ProjectCard: data de atualização', () => {
+  afterEach(() => cleanup())
+
+  it('o formatador de módulo escreve a MESMA data que o `toLocaleString` por render escrevia (timestamp fixo)', () => {
+    const ts = Date.UTC(2026, 7, 19, 14, 5) // 19/08/2026 14:05 UTC
+    const expected = new Date(ts).toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+    const view = render(
+      <ProjectCard
+        summary={{ ...SUMMARY, updatedAt: ts }}
+        onChanged={() => undefined}
+        onOpen={() => undefined}
+      />,
+    )
+    expect(view.getByText(`Atualizado em ${expected}`)).toBeTruthy()
+  })
+
+  it('o botão "Abrir projeto" (que cobre o card) tem anel de foco POR DENTRO (o card recorta o que escapa)', () => {
+    renderCard()
+    const open = screen.getByRole('button', { name: 'Abrir projeto Meu Projeto' })
+    expect(open.className).toContain('focus-visible:ring-inset')
+  })
+})

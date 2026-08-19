@@ -13,8 +13,13 @@ import type {
   VectorTilesetAsset,
 } from './project'
 
+/**
+ * Tetos do pacote. ⚠️ NÃO há teto de QUANTIDADE de desenhos na galeria (18/08/2026, pedido dela:
+ * "sem teto, igual o Estúdio") — o que limita é o orçamento portátil de 32 MiB do backup
+ * (`MAX_BACKUP_FILE_BYTES`, com recado próprio) e, na nuvem, os tetos do members. A galeria tem
+ * BUSCA por nome/tipo/jogo para continuar navegável com centenas de desenhos.
+ */
 export const PINTA_LIMITS = {
-  maxAssets: 64,
   maxAnimations: 12,
   maxFramesPerAnimation: 24,
   minFrameSize: 8,

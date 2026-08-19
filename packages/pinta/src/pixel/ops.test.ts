@@ -9,6 +9,7 @@ import {
   flipHorizontal,
   flipVertical,
   floodFill,
+  remapBitmapColors,
   removeColorIndex,
   replaceColor,
   rotate90,
@@ -180,5 +181,51 @@ describe('transformações de bitmap inteiro', () => {
     expect(Array.from(out.data)).toEqual([3, 16, 0, 17, 0])
     // Original imutável.
     expect(Array.from(base.data)).toEqual([3, 16, 17, 18, 0])
+  })
+})
+
+describe('remapBitmapColors (colar entre desenhos de paletas diferentes)', () => {
+  // Paletas EFETIVAS mínimas: índice 0 = transparente.
+  const origem = ['', '#ffffff', '#ff0000', '#00ff00']
+  const destino = ['', '#ffffff', '#0000ff']
+
+  it('cor igual casa no índice do destino; cor que falta vira extra nova', () => {
+    const base = bmp(['12.', '3..'])
+    const out = remapBitmapColors(base, origem, destino, 64)
+    // 1 (#ffffff) existe no destino → 1; 2 (#ff0000) e 3 (#00ff00) viram extras 3 e 4.
+    expect(Array.from(out.bitmap.data)).toEqual([1, 3, 0, 4, 0, 0])
+    expect(out.extraColorsToAdd).toEqual(['#ff0000', '#00ff00'])
+    // Original imutável.
+    expect(rows(base)).toEqual(['12.', '3..'])
+  })
+
+  it('sem espaço para extras, cai na cor MAIS PARECIDA do destino', () => {
+    const base = bmp(['2'])
+    // maxColors = 3 → o destino já está cheio: o vermelho vai para a mais próxima.
+    // Na distância ponderada (verde pesa 4, azul 3, vermelho 2) o AZUL (#0000ff)
+    // fica mais perto do vermelho que o branco: 2·255² + 3·255² < 4·255² + 3·255².
+    const out = remapBitmapColors(base, origem, destino, 3)
+    expect(Array.from(out.bitmap.data)).toEqual([2])
+    expect(out.extraColorsToAdd).toEqual([])
+  })
+
+  it('a mesma cor repetida entra UMA vez nas extras e o transparente segue transparente', () => {
+    const base = bmp(['22', '.2'])
+    const out = remapBitmapColors(base, origem, destino, 64)
+    expect(Array.from(out.bitmap.data)).toEqual([3, 3, 0, 3])
+    expect(out.extraColorsToAdd).toEqual(['#ff0000'])
+  })
+
+  it('índice fora da paleta de origem sai transparente (o render faria o mesmo)', () => {
+    const base = { width: 2, height: 1, data: Uint8Array.from([9, 1]) }
+    const out = remapBitmapColors(base, origem, destino, 64)
+    expect(Array.from(out.bitmap.data)).toEqual([0, 1])
+  })
+
+  it('mesma paleta nos dois lados é identidade', () => {
+    const base = bmp(['123', '.2.'])
+    const out = remapBitmapColors(base, origem, origem, 64)
+    expect(rows(out.bitmap)).toEqual(rows(base))
+    expect(out.extraColorsToAdd).toEqual([])
   })
 })

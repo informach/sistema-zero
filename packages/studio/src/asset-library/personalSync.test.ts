@@ -19,6 +19,8 @@ const kvOf = (store?: { name?: string }): KV => {
   return kv
 }
 let reads = 0
+/** Chaves pedidas em `getMany` (prova que a varredura usa a lista LEVE, sem capas). */
+const askedKeys: string[] = []
 
 mock.module('idb-keyval', () => ({
   createStore: (dbName: string) => ({ name: dbName }),
@@ -28,6 +30,7 @@ mock.module('idb-keyval', () => ({
   },
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     reads += 1
+    for (const key of keys) if (typeof key === 'string') askedKeys.push(key)
     return keys.map((key) => kvOf(store).get(key))
   },
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
@@ -58,19 +61,25 @@ mock.module('idb-keyval', () => ({
 
 const { createEmptyProject } = await import('#core')
 type ProjectAsset = import('#core').ProjectAsset
-const { savePersonalAsset, setPersonalAssetsNamespace } = await import('./personal')
-const { loadProjectAssetsById, persistProject } = await import('../state/persistence')
+const { listPersonalAssets, savePersonalAsset, setPersonalAssetsNamespace } = await import(
+  './personal'
+)
+const { loadProjectAssetsById, persistProject, setStorageNamespace, writeProjectThumb } =
+  await import('../state/persistence')
 const { useProjectStore } = await import('../state/projectStore')
+const { getProjectStorageScope } = await import('../state/projectStorageRuntime')
 const {
+  adoptDrawingsFromRestoredProject,
   drawingNeedsSync,
   personalIdOf,
-  resetDrawingSyncClockForTests,
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
 } = await import('./personalSync')
+const { getPersonalAsset } = await import('./personal')
 
 const PNG = 'data:image/png;base64,AAAA'
 const PNG_NOVO = 'data:image/png;base64,BBBB'
+const PNG_PERFIL_B = 'data:image/png;base64,CCCC'
 /**
  * Imagem NO teto de um asset (800k chars) — válida sozinha. A MESMA string é
  * reusada em vários assets (JS compartilha por referência: o teste custa ~800KB
@@ -106,12 +115,16 @@ function seedOpenProject(assets: ProjectAsset[], id = 'aberto'): void {
   useProjectStore.setState({ project, isDirty: false, saveError: null })
 }
 
+let testScope = 0
+
 beforeEach(() => {
   dbs.clear()
   reads = 0
   localStorage.clear()
-  setPersonalAssetsNamespace('')
-  resetDrawingSyncClockForTests()
+  testScope += 1
+  const namespace = `personal-sync-test-${testScope}`
+  setStorageNamespace(namespace)
+  setPersonalAssetsNamespace(namespace)
   takeDrawingSyncFailures()
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })
@@ -130,6 +143,82 @@ describe('personalIdOf / drawingNeedsSync', () => {
     expect(drawingNeedsSync(asset, igual)).toBe(false)
     expect(drawingNeedsSync(asset, { ...igual, dataUrl: PNG_NOVO })).toBe(true)
     expect(drawingNeedsSync(asset, null)).toBe(false)
+  })
+})
+
+describe('adoptDrawingsFromRestoredProject (jogo que desceu da nuvem)', () => {
+  it('relógio remoto aparentemente maior não decide o vencedor: preserva os dois lados', async () => {
+    // O relógio deste aparelho não é comparável ao do computador que enviou o jogo.
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const localRevision = (await getPersonalAsset('d1'))?.updatedAt ?? 0
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000CLD', 'Vindo da nuvem'),
+      assets: [
+        drawingAsset({ dataUrl: PNG_NOVO, libRevision: localRevision + 1 }),
+        // Um desenho que a biblioteca NÃO tem: não entra sozinho ("Usar no Estúdio" é decisão dela).
+        drawingAsset({ id: 'asset-9', name: 'vilao', libId: 'personal:d9', dataUrl: PNG_NOVO }),
+      ],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    await useProjectStore.getState().restoreProjectSnapshot(raw, {
+      expectedId: '01J00000000000000000000CLD',
+    })
+    expect((await getPersonalAsset('d1'))?.dataUrl).toBe(PNG)
+    expect(await getPersonalAsset('d9')).toBeNull()
+    const restoredAsset = (await loadProjectAssetsById('01J00000000000000000000CLD'))[0]
+    expect(restoredAsset?.dataUrl).toBe(PNG_NOVO)
+    expect(restoredAsset?.libId).not.toBe('personal:d1')
+    const copyId = restoredAsset?.libId?.replace('personal:', '')
+    expect(copyId ? (await getPersonalAsset(copyId))?.dataUrl : null).toBe(PNG_NOVO)
+    // A varredura usa a cópia recém-criada como origem e não reverte o jogo.
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect((await loadProjectAssetsById('01J00000000000000000000CLD'))[0]?.dataUrl).toBe(PNG_NOVO)
+    expect(await adoptDrawingsFromRestoredProject({ assets: [restoredAsset!] })).toBe(0)
+  })
+
+  it('relógio remoto aparentemente menor também não decide o vencedor', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    const local = await getPersonalAsset('d1')
+    if (!local) throw new Error('desenho local não salvo')
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000OLD', 'Snapshot antigo'),
+      assets: [drawingAsset({ dataUrl: PNG, libRevision: local.updatedAt - 1 })],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+
+    await useProjectStore.getState().restoreProjectSnapshot(raw, {
+      expectedId: '01J00000000000000000000OLD',
+    })
+
+    expect((await getPersonalAsset('d1'))?.dataUrl).toBe(PNG_NOVO)
+    const restored = (await loadProjectAssetsById(raw.id))[0]
+    expect(restored?.dataUrl).toBe(PNG)
+    expect(restored?.libId).not.toBe('personal:d1')
+  })
+
+  it('preserva os dois lados quando um asset legado diverge sem carimbo de revisão', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000LEG', 'Snapshot legado'),
+      assets: [drawingAsset({ dataUrl: PNG_NOVO })],
+      createdAt: 1,
+      updatedAt: 2,
+    }
+
+    await useProjectStore.getState().restoreProjectSnapshot(raw, {
+      expectedId: '01J00000000000000000000LEG',
+    })
+
+    const personal = await listPersonalAssets()
+    expect(personal.find((asset) => asset.id === 'd1')?.dataUrl).toBe(PNG)
+    const copy = personal.find((asset) => asset.id !== 'd1')
+    expect(copy?.dataUrl).toBe(PNG_NOVO)
+    const restored = (await loadProjectAssetsById(raw.id))[0]
+    expect(restored?.libId).toBe(`personal:${copy?.id}`)
+    expect(restored?.dataUrl).toBe(PNG_NOVO)
   })
 })
 
@@ -197,6 +286,22 @@ describe('syncDrawingsIntoProjects', () => {
     const result = await syncDrawingsIntoProjects(useProjectStore)
     expect(result.updatedInOpenProject).toBe(1)
     expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(PNG_NOVO)
+  })
+
+  it('a varredura lista os jogos pela lista LEVE (nunca lê as capas) e relê a partição de assets de cada um', async () => {
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    for (let i = 0; i < 6; i += 1) {
+      const fechado = createEmptyProject(`fechado-${i}`, `Outro Jogo ${i}`)
+      fechado.assets = [drawingAsset({ id: `asset-${i}` })]
+      await persistProject(fechado)
+      await writeProjectThumb(`fechado-${i}`, 'data:image/jpeg;base64,AAA')
+    }
+    seedOpenProject([])
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
+    askedKeys.length = 0
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOtherProjects).toBe(6)
+    expect(askedKeys.some((key) => key.startsWith('sz:project-thumb:'))).toBe(false)
   })
 
   it('alcança TAMBÉM os jogos fechados (a decisão dela)', async () => {
@@ -298,6 +403,63 @@ describe('syncDrawingsIntoProjects', () => {
     // disparam no mesmo evento quando o painel está aberto).
     expect(a).toBe(b)
     expect(a.updatedInOpenProject).toBe(1)
+  })
+
+  it('troca de perfil não compartilha single-flight nem redireciona escritas em voo', async () => {
+    setStorageNamespace('perfil-a')
+    setPersonalAssetsNamespace('perfil-a')
+    await savePersonalAsset({ id: 'd1', name: 'heroi-a', dataUrl: PNG_NOVO })
+    for (let index = 0; index < 4; index += 1) {
+      const project = createEmptyProject(`a-${index}`, `Projeto A ${index}`)
+      project.assets = [drawingAsset({ id: `asset-a-${index}` })]
+      await persistProject(project)
+    }
+
+    let releaseYield: (() => void) | undefined
+    let notifyYieldStarted: (() => void) | undefined
+    const yieldStarted = new Promise<void>((resolve) => {
+      notifyYieldStarted = resolve
+    })
+    const previousScheduler = (globalThis as { scheduler?: unknown }).scheduler
+    ;(globalThis as { scheduler?: { yield: () => Promise<void> } }).scheduler = {
+      yield: () => {
+        notifyYieldStarted?.()
+        return new Promise<void>((resolve) => {
+          releaseYield = resolve
+        })
+      },
+    }
+
+    try {
+      const sweepA = syncDrawingsIntoProjects(useProjectStore)
+      await yieldStarted
+
+      setStorageNamespace('perfil-b')
+      setPersonalAssetsNamespace('perfil-b')
+      await savePersonalAsset({ id: 'd1', name: 'heroi-b', dataUrl: PNG_PERFIL_B })
+      const projectB = createEmptyProject('b-1', 'Projeto B')
+      projectB.assets = [drawingAsset({ id: 'asset-b' })]
+      await persistProject(projectB)
+
+      const sweepB = await syncDrawingsIntoProjects(useProjectStore)
+      expect(sweepB.updatedInOtherProjects).toBe(1)
+      expect((await loadProjectAssetsById('b-1'))[0]?.dataUrl).toBe(PNG_PERFIL_B)
+
+      releaseYield?.()
+      await sweepA
+
+      expect(
+        (await loadProjectAssetsById('a-3', getProjectStorageScope('perfil-a')))[0]?.dataUrl,
+      ).toBe(PNG_NOVO)
+      expect((await loadProjectAssetsById('b-1'))[0]?.dataUrl).toBe(PNG_PERFIL_B)
+    } finally {
+      if (previousScheduler === undefined) {
+        delete (globalThis as { scheduler?: unknown }).scheduler
+      } else {
+        ;(globalThis as { scheduler?: unknown }).scheduler = previousScheduler
+      }
+      releaseYield?.()
+    }
   })
 
   it('a recusa fica guardada para o painel mostrar (o sucesso é silencioso)', async () => {

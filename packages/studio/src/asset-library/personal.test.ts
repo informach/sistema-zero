@@ -69,17 +69,23 @@ afterEach(() => {
 describe('savePersonalAsset / listPersonalAssets', () => {
   it('salva, normaliza o nome e lista', async () => {
     const result = await savePersonalAsset({ id: 'a1', name: 'Meu Herói', dataUrl: PNG, width: 8 })
-    expect(result).toEqual({ ok: true, name: 'meu-heroi' })
+    expect(result).toEqual({ ok: true, name: 'meu-heroi', updatedAt: expect.any(Number) })
     const listed = await listPersonalAssets()
     expect(listed).toHaveLength(1)
     expect(listed[0]?.name).toBe('meu-heroi')
     expect(listed[0]?.kind).toBe('image')
+    expect(listed[0]?.updatedAt).toBe(result.updatedAt)
   })
 
   it('reenviar o MESMO id é upsert (atualiza, não duplica) e mantém o nome', async () => {
-    await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
+    const first = await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: PNG })
     const again = await savePersonalAsset({ id: 'a1', name: 'heroi', dataUrl: `${PNG}BB` })
-    expect(again).toEqual({ ok: true, name: 'heroi' })
+    expect(first).toEqual({ ok: true, name: 'heroi', updatedAt: expect.any(Number) })
+    expect(again).toEqual({ ok: true, name: 'heroi', updatedAt: expect.any(Number) })
+    if (first.updatedAt === undefined || again.updatedAt === undefined) {
+      throw new Error('O salvamento bem-sucedido precisa devolver a revisão persistida.')
+    }
+    expect(again.updatedAt).toBeGreaterThan(first.updatedAt)
     const listed = await listPersonalAssets()
     expect(listed).toHaveLength(1)
     expect(listed[0]?.dataUrl).toBe(`${PNG}BB`)

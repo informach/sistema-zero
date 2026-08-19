@@ -9,6 +9,7 @@ import {
   passwordResetTokens,
   profiles,
   refreshTokens,
+  userDeletionReceipts,
   users,
 } from './schema'
 
@@ -81,11 +82,60 @@ export class DrizzleUserRepository implements UserRepository {
     return updated.length === 1
   }
 
+  async prepareDeletion(id: string): Promise<{ profileIds: string[] } | null> {
+    return this.db.transaction(async (tx) => {
+      // O create de perfil usa a mesma chave: depois deste lock nenhum perfil
+      // pode aparecer entre a enumeração e o bloqueio da conta.
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`profile:${id}`}, 0))`)
+      const [user] = await tx
+        .select({ id: users.id, status: users.status })
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1)
+        .for('update')
+      if (!user) return null
+      if (user.status !== 'blocked') {
+        await tx
+          .update(users)
+          .set({ status: 'blocked', version: sql`${users.version} + 1`, updatedAt: new Date() })
+          .where(eq(users.id, id))
+      }
+      const ownedProfiles = await tx
+        .select({ id: profiles.id })
+        .from(profiles)
+        .where(eq(profiles.accountUserId, id))
+      return { profileIds: ownedProfiles.map((profile) => profile.id) }
+    })
+  }
+
+  async findDeletionReceipt(id: string): Promise<{ profileIds: string[] } | null> {
+    const [receipt] = await this.db
+      .select({ profileIds: userDeletionReceipts.profileIds })
+      .from(userDeletionReceipts)
+      .where(eq(userDeletionReceipts.userId, id))
+      .limit(1)
+    return receipt ?? null
+  }
+
   async deleteById(id: string): Promise<void> {
     // Tudo numa transação: ou some o usuário + todos os dependentes auth-owned, ou
     // nada. `audit_logs` NÃO é tocada de propósito (trilha de compliance; `actor_id`
     // é snapshot sem FK). `impersonation_tokens` cobre os dois lados (alvo OU ator).
     await this.db.transaction(async (tx) => {
+      const ownedProfiles = await tx
+        .select({ id: profiles.id })
+        .from(profiles)
+        .where(eq(profiles.accountUserId, id))
+      const [deleted] = await tx.delete(users).where(eq(users.id, id)).returning({ id: users.id })
+      // Resultado explícito distingue o no-op concorrente sem criar recibo falso.
+      if (!deleted) return false
+      await tx
+        .insert(userDeletionReceipts)
+        .values({
+          userId: id,
+          profileIds: ownedProfiles.map((profile) => profile.id),
+        })
+        .onConflictDoNothing({ target: userDeletionReceipts.userId })
       await tx.delete(refreshTokens).where(eq(refreshTokens.userId, id))
       await tx.delete(passwordResetTokens).where(eq(passwordResetTokens.userId, id))
       await tx.delete(otpCodes).where(eq(otpCodes.userId, id))
@@ -93,7 +143,7 @@ export class DrizzleUserRepository implements UserRepository {
         .delete(impersonationTokens)
         .where(or(eq(impersonationTokens.targetUserId, id), eq(impersonationTokens.actorId, id)))
       await tx.delete(profiles).where(eq(profiles.accountUserId, id))
-      await tx.delete(users).where(eq(users.id, id))
+      return true
     })
   }
 

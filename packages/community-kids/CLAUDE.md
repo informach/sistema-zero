@@ -347,6 +347,136 @@ O `max` e o cálculo usam o **dia civil de São Paulo** (`@sistemazero/core/time
 sem adiantar a data na virada UTC. Novo perfil exige menos de 18 anos (`PROFILE_AGE_RESTRICTED`); quem completa 18 depois preserva
 o perfil. O campo explica a regra e direciona adultos ao Instagram `@criecomhelenaejulio`.
 
+## "Guardado na sua conta" — Estúdio Completo e Pinta na nuvem (18/08/2026)
+
+Os dois editores livres guardavam só no IndexedDB (o host pede `requestPersistentStorage()`, mas o
+Safari despeja depois de uma semana). Agora cada jogo/desenho SOBE sozinho depois do autosave e
+DESCE sozinho onde falta — decisão da Helena: automático, por item. Design completo em
+`docs/plans/2026-08-18-guardar-na-conta-design.md`.
+
+- **Cliente + fila:** `src/lib/creations-cloud.ts` (`createCreationsCloud({tool, viewerId, idleMs})`):
+  reserva no BFF → PUT do gzip DIRETO no R2 (URL assinada) → commit `{revision}`; fila que sobe só
+  o SNAPSHOT MAIS RECENTE por item; falha de REDE (`navigator.onLine` false ou TypeError de fetch —
+  um TypeError qualquer NÃO é rede) = `offline` + backoff, e o `online` acorda a fila na hora; 5xx,
+  409 de revisão no commit e PUT falhado no R2 (`STORAGE_PUT_FAILED`, URL vencida) = 3 tentativas
+  (reserva nova = URL nova) e o item sai; 4xx = `error` com recado de criança (`CLOUD_MESSAGES`),
+  sem loop (enquanto há tentativa o selo segue "guardando"; erro só ao desistir); **429 da
+  borda** é TEMPORÁRIO: espera o `retry-after` (ou 15 s; teto 5 min; a espera NÃO é acordável
+  por `flush`/`online`/`pagehide` — cada acordar gastava uma tentativa) e tenta de novo (×3), e
+  com > 10 pendentes a fila anda no compasso de 250 ms (~240/min, abaixo dos 300/min por rota) —
+  a primeira sincronia de uma galeria grande não perde itens; `anySignal` compõe sinais com
+  fallback (Safari < 17.4 sem `AbortSignal.any` deixava a descida muda); **revisão-base:** cada
+  reserva leva `baseRevision` (a revisão da nuvem que este
+  aparelho conhece, das marcas; 0 = nunca viu) e um 409 `CREATION_STALE_BASE` (outro aparelho subiu
+  antes) tira o item da fila e chama `onStale` do adaptador — que guarda a versão da NUVEM como
+  cópia ("(de outro aparelho)" no Estúdio, `-copia` no Pinta), avança a marca para a revisão dela e
+  sobe de novo o item daqui (o aberto no editor continua sendo o item; nada se perde);
+  `onUploaded` só depois do commit confirmado — e NÃO roda se um `enqueueRemove` do mesmo item
+  chegou com o upload em voo (a lápide manda) —, `onRemoved` idem; apagar não espera o debounce e
+  um upload enfileirado depois não empurra o DELETE (`dueAt` mais cedo vence); commit/DELETE com
+  `keepalive` (a reserva também); o selo só é avisado quando algo VISÍVEL muda (10 autosaves
+  seguidos = 1 "guardando"); `pagehide`/`visibilitychange` disparam o pendente; ao desmontar o host faz
+  `flush({timeoutMs: 5000})` e só então `dispose()` (o PRO sai com 3 s de teto, e sem espera se já
+  está `offline` — a criança não fica presa num upload de MB nem no backoff; o que ficar sobe na
+  próxima carga). Toda chamada leva `x-sz-viewer` (o BFF recusa se a sessão trocou de perfil).
+  Sem `CompressionStream` = `unsupported` (tudo no-op). Shims em `app/api/creations/**` (dentro do
+  matcher do proxy: JSON pequeno). Estúdio sobe com 10 s de folga, Pinta 2 s. Os produtores dos
+  dois adaptadores devolvem `null` (zero HTTP) quando a marca confirmada JÁ é o `updatedAt` local.
+- **Partes (19/08/2026, só Estúdio):** o produtor pode devolver `parts: CloudPart[]`
+  (`{hash, text()}`; `hash` = `sha256Hex(canonicalJson(asset))`). `upload` declara os hashes SEM
+  bytes na 1ª reserva (o caso comum — só o programa mudou — termina aí, zero gzip de assets); 409
+  `CREATION_PARTS_NEED_BYTES {details.hashes}` → comprime SÓ as pedidas (`text()` é lido só aí) e
+  reserva de novo (≤ 3 voltas); PUT das partes faltantes (4 em paralelo) e DEPOIS o manifesto;
+  commit `{revision, uploadedParts}` (omitido sem parte nova: o corpo do Pinta não muda). `download`
+  devolve `parts` + `fetchPart(hash)` (baixa, descomprime e CONFERE o hash: `CREATION_PART_CORRUPT`
+  recusa; hash fora da revisão: `CREATION_PART_MISSING`). 409 `CREATION_PART_MISSING`/
+  `CREATION_PARTS_NEED_BYTES` na fila são retentáveis (×3, reserva nova). Ticket SEM `parts`
+  com partes declaradas (serviço antigo) → `CLOUD_PARTS_UNSUPPORTED` (503, retentável) — nunca o
+  manifesto sozinho. `hashSupported()` (sem `crypto.subtle` → item inteiro). Helpers exportados:
+  `canonicalJson` (chaves ordenadas em profundidade, `undefined` fora), `sha256Hex`,
+  `hashSupported`, `anySignal`.
+- **Reconciliador:** `src/lib/creations-sync.ts` (regras: só na nuvem baixa; só local sobe; com os
+  dois lados presentes, a MARCA confirmada — não a ordem dos relógios dos aparelhos — decide quem
+  mudou; se ambos mudaram, faz CÓPIA local só depois de baixar e validar; teto de 6 s na 1ª carga).
+  `SyncedMarks` em `localStorage` `sz:creations-synced:<tool>:<perfil>` (`updatedAt`; a REVISÃO
+  da nuvem em `<chave>:revisoes` — é a `baseRevision` da próxima reserva; avançam SÓ no commit
+  confirmado ou na descida gravada — nunca ao enfileirar; storage degradado lê o gravado por baixo
+  da memória; em MEMÓRIA com escrita coalescida (100 ms; `flush()` MESCLA com o que está no
+  storage antes de gravar — duas abas do mesmo perfil não se apagam; registro compartilhado por
+  chave na página: duas instâncias convergem; `resetStoredSyncedMarksForTests`) — antes relia e
+  reparseava o `localStorage` inteiro a cada acessor). Guardas da descida (v3 de 19/08):
+  `isBusy(itemId)` (item ABERTO num editor: nem cópia nem gravação; `skipped`) e
+  `localUpdatedAt(itemId)` (relê o disco na hora de gravar: edição feita no meio não é
+  sobrescrita); nos dois casos a marca não avança e, se a criança editar, a subida cai em base
+  vencida → cópia. O que não coube no orçamento da 1ª carga
+  (`deferred`) volta em passes seguidos (2 s de folga, até 5; abortável) em vez de esperar o F5 e LÁPIDES em `<chave>:apagados` (`{at, sent, revision}`: apagado aqui não volta da
+  nuvem só por estar lá — "ninguém editou depois" é por REVISÃO, não por relógio; DELETE não
+  enviado é reenviado; volta só se alguém editou depois). A reconciliação é single-flight por
+  instância (StrictMode/remontagem não geram duas cópias com o mesmo nome); descidas recusadas
+  saem no console (`[criacoes-nuvem]`). ⚠️ Limitação declarada: apagado noutro aparelho volta a
+  subir (a lápide é local).
+- **Pinta:** `src/lib/pinta-cloud-persistence.ts` embrulha `createPintaPersistence({namespace})`
+  (exportado pelo pacote) e é passado em `<PintaApp persistence>` no `pinta-client.tsx` — a galeria
+  e o editor usam o MESMO `PintaPersistence`, então tudo sobe (autosave, criar, renomear, importar,
+  trazer foto). **Local primeiro (19/08):** `listAllAssets()` devolve o LOCAL na hora e dispara a
+  reconciliação single-flight em segundo plano, avisando por `subscribe` (`sync-start` →
+  `changed` (debounced) → `sync-end`); a galeria do pacote relê a cada `changed`, mostra "Buscando
+  na sua conta…" enquanto `syncing`, e o `?desenho=` de outro aparelho espera o `sync-end` antes de
+  dizer "sumiu". Só o que mudou desde a marca é reenfileirado (não mais `[saved, ...linked]`).
+  A reconciliação roda UMA vez por carga (`RECONCILE_MIN_INTERVAL_MS` 60 s): a galeria relê o
+  local a cada `changed`/`sync-end` chamando `listAllAssets()` de novo — sem o intervalo, o fim
+  de uma reconciliação abria a seguinte em LAÇO. `isAssetOpen` (= `isPintaAssetOpen` do pacote):
+  a descida NÃO grava por baixo de um desenho aberto no editor — e `subscribeAssetOpenState`
+  (= `subscribePintaAssetOpenState`) faz a reconciliação voltar NA HORA ao fechar um desenho que
+  ficou pulado (gatilho pontual, fora do intervalo mínimo); o wrapper tem `dispose()` (o host
+  chama ao trocar de perfil). `resolveStale` com a versão da nuvem IGUAL à daqui (outra aba) só
+  avança a marca, sem `-copia`. Descidas gravam DIRETO no local (id preservado; peças antes dos mapas; nome já usado
+  por OUTRO desenho ganha sufixo `-2`; sem teto de quantidade local). Cópia de conflito =
+  `<nome>-copia` com id novo (sempre ≤ 48 chars).
+- **Estúdio:** `src/lib/studio-cloud.ts` liga `setStudioCloudMirror` (todo `persistProject`/rename/
+  assets/delete do pacote acorda o espelho) e faz `pullMissing()` em SEGUNDO PLANO no
+  `studio-full-client.tsx` (19/08: a lista aparece já com o que há neste aparelho e os jogos de
+  outro computador entram card a card pelo `PROJECT_CHANGED_EVENT` do pacote; antes esperava a
+  descida inteira — até ~10 s de "Carregando…"; abrir um jogo durante a descida → o restauro dele
+  é recusado pela guarda de aberto e a subida seguinte cai em `onStale`; `syncing` no selo =
+  "buscando na sua conta…"). O produtor relê o `Project` por `loadProjectSnapshotForCloud` (nome
+  cortado em 120) e, COM assets, monta o MANIFESTO + partes (`buildStudioCloudSnapshot`:
+  `{format:'sz-studio-parts', version:1, program:<Project com assets:[]>, assets:[hashes na
+  ordem]}`; um asset por vez no hash — pico de memória de UM JSON canônico); sem assets ou sem
+  `crypto.subtle`, o `Project` inteiro. A descida resolve primeiro (`resolveCloudProject`:
+  manifesto → reaproveita por hash o que o MESMO projeto já tem aqui via
+  `loadProjectAssetsSnapshotForCloud` (só a partição de assets) e baixa o resto (3 em paralelo,
+  hash conferido); parte fora da revisão → recusa, nada gravado; blob antigo passa direto) e é
+  CONFERIDA sem gravar por `validateCloudProjectSnapshot(raw, {expectedId})` no `fetch` (id,
+  tetos, saneamento ESTRITO — bloco/programa que esta versão não reconhece RECUSA, em vez de
+  gravar um jogo esvaziado) e só então grava por `restoreProjectFromCloud` (datas preservadas,
+  SUBSTITUINDO blocos/capa antigos, SEM acordar o espelho). A descida usa a lista LEVE
+  (`listProjectSummariesLightForCloud`), pula projeto ABERTO (`isProjectOpenAnywhere`: nem
+  cópia nem restauro — antes a cópia de conflito ficava órfã a cada passe) e relê o `updatedAt`
+  antes de gravar (`loadProjectSummaryForCloud`); ao VOLTAR à lista o host refaz `pullMissing()`
+  (single-flight) para o que ficou de fora entrar. `sync.restoreProject(id)` baixa, restaura e
+  avança a marca ("Recriar projeto neste aparelho" usa ele — sem a marca, a primeira edição
+  virava cópia "(de outro aparelho)"); `sync.downloadProject(id)` só baixa resolvido. Cópia de conflito =
+  `importProjectSnapshot(project, {name: "<nome> (deste computador)"})`; base vencida na subida =
+  cópia "(de outro aparelho)". "Recriar projeto neste aparelho" (Pensa) tenta a NUVEM antes de criar
+  um vazio com o id determinístico. A rota PRO (`studio-pro-client.tsx`, modo Código) também liga o
+  espelho (só `attach`; selo no canto INFERIOR — no topo cobria os botões da Topbar). O par
+  `{cloud, detach}` vive num estado só (o cleanup de uma fila nunca desliga o espelho da seguinte).
+- **Selo:** `components/kids/cloud-save-badge.tsx`: guardando · guardado · sem internet · não
+  consegui (recados de `CLOUD_MESSAGES`, nunca a mensagem crua do servidor). `idle`/`unsupported`
+  não mostram nada. Uma região viva (`sr-only`, sempre presente) anuncia só offline/erro. No Pinta é irmão do app; no Estúdio é uma CAMADA absoluta por cima da lista e
+  do editor PRO (a moldura é bloco e os filhos são `h-full` — no fluxo empurraria a lista).
+- Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
+  Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
+- **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com
+  `localStorage['sz:perf']='1'` ou `?szperf=1`; `[sz:perf]` no console + User Timing): spans
+  `kids:cloud:produce|gzip|gzip-parts|reserve|put|commit`, `kids:pinta:reconcile`,
+  `kids:studio:pull|hash|parts`. `tests/creations-cloud.perf.test.ts` registra tempo sem assertar.
+- Testes: `tests/creations-cloud.test.ts` (inclui partes), `tests/creations-sync.test.ts`,
+  `tests/pinta-cloud-persistence.test.ts`, `tests/studio-cloud.test.ts` (inclui manifesto/descida
+  em partes/`downloadProject`). **Pende QA em staging** (CORS PUT `application/gzip` no bucket UGC;
+  roteiro no doc do plano — inclui o de partes).
+
 ## Estúdio Completo (produto vendável — 06/2026)
 
 O **estúdio completo** (`@sistemazero/studio`) virou um PRODUTO vendável, ao lado do Mural/Clube:

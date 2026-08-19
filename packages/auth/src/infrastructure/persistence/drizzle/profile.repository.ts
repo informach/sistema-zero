@@ -5,7 +5,7 @@ import type {
 } from '../../../domain/ports/profile-repository.port'
 import { ProfileAggregate } from '../../../domain/profile/profile.aggregate'
 import type { Database } from './db'
-import { profiles } from './schema'
+import { profiles, users } from './schema'
 
 type Row = typeof profiles.$inferSelect
 
@@ -69,6 +69,12 @@ export class DrizzleProfileRepository implements ProfileRepository {
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`profile:${s.accountUserId}`}, 0))`,
       )
+      const [account] = await tx
+        .select({ status: users.status })
+        .from(users)
+        .where(eq(users.id, s.accountUserId))
+        .limit(1)
+      if (account?.status !== 'active') return { outcome: 'account_inactive' as const }
       const [agg] = await tx
         .select({
           count: sql<number>`count(*)::int`,

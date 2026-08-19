@@ -5,6 +5,7 @@
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { PintaHostAdapter, PintaInitialIntent } from '../core/types'
+import type { PintaClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import type { PintaGalleryState, PintaGalleryStore } from '../state/galleryStore'
 import type { PintaPersistence } from '../state/persistence'
@@ -32,6 +33,11 @@ export interface PintaAppContextValue {
    * que vai direto ao IndexedDB do perfil e ignoraria qualquer armazenamento injetado.
    */
   persistence: PintaPersistence
+  /**
+   * Área de transferência do APLICATIVO (copiar num desenho, colar em outro). Vive
+   * aqui, e não na sessão do editor, porque a sessão morre ao voltar à galeria.
+   */
+  clipboard: PintaClipboardStore
   /** Abre o editor do asset (a tela troca por estado). */
   openAsset(id: string): void
   /** Volta para a galeria. */

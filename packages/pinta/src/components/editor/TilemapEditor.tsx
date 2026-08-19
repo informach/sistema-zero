@@ -20,6 +20,7 @@ import {
   resolveAssetPalette,
   type TilemapAsset,
 } from '../../core/project'
+import { shortcut } from '../../core/shortcuts'
 import { bitmapToRGBA, paintSelectionOverlay } from '../../pixel/render'
 import {
   type CellPos,
@@ -41,6 +42,7 @@ import { blockCells, stampCells, type TileStamp } from '../../tiles/stamp'
 import {
   addLayer,
   cellAt,
+  flattenCellAt,
   flattenLayers,
   floodFillCells,
   growTilemap,
@@ -57,11 +59,15 @@ import { useEditor, useEditorStores, useSession } from './editorContext'
 import { MapStatusBar } from './MapStatusBar'
 import { stageCursor } from './stageCursor'
 import { MAP_TOOLS, type MapTool, TilemapSidebar, TilemapToolbar } from './TilemapPanels'
+import { useActionShortcuts } from './useActionShortcuts'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 import { useWheelZoom } from './useWheelZoom'
 import { ZoomControls } from './ZoomControls'
 
 const TOOL_SHORTCUTS = toolShortcutMap(MAP_TOOLS)
+
+/** O zoom com que o mapa abre (`sessionDefaultsFor`) — o "Ctrl+0" volta para ele. */
+const DEFAULT_TILEMAP_ZOOM = 2
 
 const GRID_STROKE = 'rgba(127,127,127,0.3)'
 
@@ -81,6 +87,13 @@ export function TilemapEditor(): JSX.Element | null {
   const stamp = useSession((state) => state.stamp)
   const autoExpand = useSession((state) => state.autoExpand)
   const tilesets = usePintaGallery((state) => state.assets)
+
+  // Zoom pelo teclado (Ctrl+= / Ctrl+- / Ctrl+0), como nos outros dois editores.
+  useActionShortcuts([
+    { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
+    { combo: shortcut('zoomOut'), run: () => session.getState().zoomOut(), repeat: true },
+    { combo: shortcut('zoomReset'), run: () => session.getState().setZoom(DEFAULT_TILEMAP_ZOOM) },
+  ])
 
   const tilemap = asset.kind === 'tilemap' ? asset : null
   const tileset = useMemo(
@@ -337,14 +350,14 @@ export function TilemapEditor(): JSX.Element | null {
       if (!ctx) return
       const ts = tileset.tileSize
       const sheetCols = Math.max(1, Math.floor(sheet.width / ts))
-      const flat = flattenLayers(map)
       ctx.imageSmoothingEnabled = false
       for (const { col, row } of cells) {
         if (col < 0 || row < 0 || col >= map.cols || row >= map.rows) continue
         const x = (col + pad) * cellPx
         const y = (row + pad) * cellPx
         ctx.clearRect(x, y, cellPx, cellPx)
-        const index = flat[row * map.cols + col] ?? -1
+        // Só a célula tocada (não o mapa inteiro achatado a cada pointermove).
+        const index = flattenCellAt(map, col, row)
         if (index >= 0) {
           const sx = (index % sheetCols) * ts
           const sy = Math.floor(index / sheetCols) * ts

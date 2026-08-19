@@ -52,7 +52,8 @@ const { createEmptyProject } = await import('#core')
 const { savePersonalAsset, setPersonalAssetsNamespace } = await import(
   '../../asset-library/personal'
 )
-const { resetDrawingSyncClockForTests } = await import('../../asset-library/personalSync')
+const { releaseDrawingSyncProfile } = await import('../../asset-library/personalSync')
+const { setStorageNamespace } = await import('../../state/persistence')
 const { useProjectStore } = await import('../../state/projectStore')
 const { StudioEditDrawingProvider } = await import('../../studio/edit-drawing')
 const { AssetsPanel } = await import('./AssetsPanel')
@@ -79,13 +80,16 @@ function renderPanel(onEditDrawing: ((id: string) => void) | null) {
 beforeEach(async () => {
   dbs.clear()
   localStorage.clear()
-  resetDrawingSyncClockForTests()
+  releaseDrawingSyncProfile('perfil-1')
+  setStorageNamespace('perfil-1')
   setPersonalAssetsNamespace('perfil-1')
   await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
 })
 
 afterEach(() => {
   cleanup()
+  releaseDrawingSyncProfile('perfil-1')
+  setStorageNamespace('')
   setPersonalAssetsNamespace('')
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })

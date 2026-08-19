@@ -1,11 +1,15 @@
 import 'server-only'
 import {
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   type PutObjectCommandInput,
   S3Client,
 } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import { deleteObjectPrefixes } from '@sistemazero/core/creations'
 import { getEnv } from '@/lib/env'
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable'
@@ -267,6 +271,46 @@ export async function r2PresignGetUgc(
     }),
     { expiresIn: opts.expiresInSeconds ?? 300 },
   )
+}
+
+/** Apaga, com paginação, todos os objetos do bucket UGC sob os prefixos informados. */
+export async function r2DeleteUgcPrefixes(prefixes: readonly string[]): Promise<void> {
+  const cfg = requireUgcR2Config()
+  const client = getClient(cfg)
+  await deleteObjectPrefixes(prefixes.map(normalizeKey), {
+    async listFirstPage(prefix) {
+      const page = await client.send(
+        new ListObjectsV2Command({
+          Bucket: cfg.bucket,
+          Prefix: prefix,
+          MaxKeys: 1000,
+        }),
+      )
+      return (page.Contents ?? []).flatMap((entry) => (entry.Key ? [entry.Key] : []))
+    },
+    async deleteMany(keys) {
+      const result = await client.send(
+        new DeleteObjectsCommand({
+          Bucket: cfg.bucket,
+          Delete: { Objects: keys.map((Key) => ({ Key })), Quiet: true },
+        }),
+      )
+      return {
+        failedKeys: (result.Errors ?? [])
+          .map((entry) => entry.Key)
+          .filter((key): key is string => typeof key === 'string'),
+      }
+    },
+    async deleteOne(key) {
+      await client.send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }))
+    },
+    onBatchFailure(error, keys) {
+      console.warn('[r2] lote UGC falhou, apagando um a um', { count: keys.length, error })
+    },
+    onPartialFailure(failedKeys) {
+      console.warn('[r2] exclusão UGC parcial, apagando falhas uma a uma', { failedKeys })
+    },
+  })
 }
 
 export function r2PublicUrl(key: string): string {

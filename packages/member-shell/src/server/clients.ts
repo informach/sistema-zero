@@ -19,6 +19,12 @@ import type {
   CourseDetailView,
   CourseFeedbackAnswers,
   CourseRatingView,
+  CreationCommitResultView,
+  CreationDeleteResultView,
+  CreationDownloadTicketView,
+  CreationSummaryView,
+  CreationToolView,
+  CreationUploadTicketView,
   EbookDownloadView,
   GamificationDelta,
   GamificationMeView,
@@ -1077,6 +1083,62 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         `/members/lessons/${enc(lessonId)}/blocks/${enc(blockId)}/pinta-carryover`,
         { method: 'GET' },
       )
+    },
+
+    // ── "Guardado na sua conta": criações do Estúdio Completo/Pinta (índice; blob no R2) ──
+    /** Índice do perfil numa ferramenta (só itens vivos e já confirmados). */
+    listCreations(
+      tool: CreationToolView,
+    ): Promise<GatewayResponse<{ items: CreationSummaryView[] }>> {
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}`, { method: 'GET' })
+    },
+    /** Reserva a próxima revisão (gate de posse + quota no members) — o BFF assina o PUT. */
+    reserveCreationUpload(
+      tool: CreationToolView,
+      itemId: string,
+      body: {
+        name: string
+        kind: string
+        itemUpdatedAt: string
+        bytes: number
+        thumb?: string | null
+        baseRevision?: number
+        parts?: Array<{ hash: string; bytes?: number }>
+      },
+    ): Promise<GatewayResponse<CreationUploadTicketView>> {
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/upload`, {
+        method: 'POST',
+        body,
+      })
+    },
+    /** Confirma a revisão reservada depois do PUT no R2 (bytes/meta são os da reserva). */
+    commitCreationUpload(
+      tool: CreationToolView,
+      itemId: string,
+      body: { revision: number; uploadedParts?: string[] },
+    ): Promise<GatewayResponse<CreationCommitResultView>> {
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/commit`, {
+        method: 'POST',
+        body,
+      })
+    },
+    /** Onde está o blob corrente (o BFF assina o GET). */
+    getCreationDownload(
+      tool: CreationToolView,
+      itemId: string,
+    ): Promise<GatewayResponse<CreationDownloadTicketView>> {
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}/download`, {
+        method: 'GET',
+      })
+    },
+    /** Lixeira lógica (idempotente). O `storageKey` devolvido é o blob que o BFF apaga do R2. */
+    deleteCreation(
+      tool: CreationToolView,
+      itemId: string,
+    ): Promise<GatewayResponse<CreationDeleteResultView>> {
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}`, {
+        method: 'DELETE',
+      })
     },
 
     // ── Recados (conversas com o professor — canal de retorno) ────────────────

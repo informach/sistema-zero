@@ -19,8 +19,11 @@ import type {
 import { RefreshCw } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
+import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
+import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
@@ -81,6 +84,25 @@ export function StudioFullClient({
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  // "Guardado na sua conta": a fila da nuvem por perfil (o selo lê daqui) JUNTO do
+  // desligar do espelho DELA — o par vive num estado só, para o cleanup de uma fila
+  // nunca desligar o espelho da fila seguinte (era o que um ref compartilhado fazia).
+  const [cloudSync, setCloudSync] = useState<{
+    cloud: CreationsCloud
+    detach: () => void
+    cancelPull: () => void
+    /** A descida (single-flight): de novo ao voltar à lista, para o que ficou de fora entrar. */
+    pullMissing: () => Promise<void>
+    /** Baixa E restaura um projeto (marca de sincronia avançada só depois de gravar). */
+    restoreProject: (id: string) => Promise<boolean>
+  } | null>(null)
+  // A DESCIDA está em andamento (a lista já está na tela; o selo avisa "buscando…").
+  const [syncing, setSyncing] = useState(false)
+  const pullCancellationRef = useRef<{
+    viewerId: string
+    cancelPull: () => void
+  } | null>(null)
+  const cloud = cloudSync?.cloud ?? null
   const [taskError, setTaskError] = useState<string | null>(null)
   const [missingTaskProject, setMissingTaskProject] = useState<{
     projectId: string
@@ -117,6 +139,43 @@ export function StudioFullClient({
         // Isola o armazenamento LOCAL por PERFIL (kids): irmãos no mesmo navegador NÃO compartilham
         // a lista de projetos. ANTES de renderizar a ProjectList. Vazio (sem sessão) = store padrão.
         m.setStudioStorageNamespace(viewerId ?? '')
+        // "Guardado na sua conta" (só com PERFIL — sem sessão de perfil não há dono na nuvem):
+        // liga o espelho (toda gravação local sobe) e dispara a DESCIDA em SEGUNDO PLANO. A
+        // lista aparece já com o que há neste aparelho (décimos de segundo) e os jogos de outro
+        // computador vão entrando conforme descem — cada restauro passa por `persistProject`,
+        // que avisa `PROJECT_CHANGED_EVENT`, e a lista relê só aquele card. (Antes a lista
+        // esperava a descida inteira: até ~10 s de "Carregando…" com tudo já no IndexedDB.)
+        // Se a criança abrir um jogo durante a descida, o restauro DELE é recusado pela guarda
+        // de projeto aberto e a subida seguinte cai em `onStale` (cópia "(de outro aparelho)").
+        if (viewerId) {
+          // O projeto INTEIRO sobe a cada folga (vários MB comprimidos): a folga é maior
+          // que a do Pinta. `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se
+          // a sessão já trocou de perfil. A fila anterior é desligada pelo cleanup do
+          // efeito `[cloudSync]` (nunca aqui dentro nem num updater).
+          const nextCloud = createCreationsCloud({ tool: 'studio', viewerId, idleMs: 10_000 })
+          const sync = createStudioCloudSync({ studio: m, cloud: nextCloud, viewerId })
+          const detach = sync.attach()
+          pullCancellationRef.current = { viewerId, cancelPull: sync.cancelPull }
+          setCloudSync({
+            cloud: nextCloud,
+            detach,
+            cancelPull: sync.cancelPull,
+            pullMissing: sync.pullMissing,
+            restoreProject: sync.restoreProject,
+          })
+          setSyncing(true)
+          void sync
+            .pullMissing()
+            .catch(() => {
+              // Sem nuvem agora: fica com o que há neste aparelho.
+            })
+            .finally(() => {
+              if (!isCurrent || isCurrent()) setSyncing(false)
+            })
+        } else {
+          setCloudSync(null)
+          setSyncing(false)
+        }
         setMod(m)
         // Aquece os chunks pesados (Blockly/Monaco) enquanto a criança olha a lista.
         m.prefetchStudioModes()
@@ -133,8 +192,29 @@ export function StudioFullClient({
     void loadStudio(() => active)
     return () => {
       active = false
+      if (viewerId && pullCancellationRef.current?.viewerId === viewerId) {
+        pullCancellationRef.current.cancelPull()
+      }
     }
-  }, [loadStudio])
+  }, [loadStudio, viewerId])
+
+  // Ao sair da página (ou trocar de fila): o espelho DESTA fila desliga, o que estiver
+  // pendente sobe INTEIRO e só então a fila fecha (`dispose()` antes do fim do `flush`
+  // deixava só um item subir). Se o pacote já foi trocado por outra fila, o `attach`
+  // dela veio depois e vence (o espelho é global no pacote).
+  useEffect(() => {
+    if (!cloudSync) return
+    const { cloud: current, detach, cancelPull } = cloudSync
+    return () => {
+      cancelPull()
+      if (pullCancellationRef.current?.cancelPull === cancelPull) {
+        pullCancellationRef.current = null
+      }
+      detach()
+      // Com teto (sem internet a fila espera o backoff): o que ficar sobe na próxima carga.
+      void current.flush({ timeoutMs: 5000 }).finally(() => current.dispose())
+    }
+  }, [cloudSync])
 
   const handoffTaskId = taskHandoff?.task.id ?? null
   const handoffProjectId = taskHandoff?.project.id ?? null
@@ -238,11 +318,27 @@ export function StudioFullClient({
     setTaskError(null)
     try {
       const persistence = mod.createLocalPersistenceAdapter()
-      const project = mod.createEmptyProject(
-        missingTaskProject.projectId,
-        missingTaskProject.projectName,
-      )
-      await persistence.save(project)
+      // Antes de criar um projeto VAZIO com o id determinístico: a nuvem pode ter o jogo de
+      // verdade (a descida da carga pode ter ficado de fora por tempo/rede). Um vazio subindo
+      // com o mesmo id só viraria conflito no outro aparelho.
+      let restored = false
+      if (cloudSync) {
+        try {
+          // O adaptador baixa (manifesto + partes → `Project`), restaura E avança a marca de
+          // sincronia — sem a marca, a primeira edição subia com base 0 e virava uma cópia
+          // "(de outro aparelho)" espúria.
+          restored = await cloudSync.restoreProject(missingTaskProject.projectId)
+        } catch {
+          restored = false
+        }
+      }
+      if (!restored) {
+        const project = mod.createEmptyProject(
+          missingTaskProject.projectId,
+          missingTaskProject.projectName,
+        )
+        await persistence.save(project)
+      }
       if (handoffProjectId) {
         try {
           localStorage.setItem(
@@ -256,7 +352,7 @@ export function StudioFullClient({
     } catch {
       setTaskError('Não consegui recriar o projeto neste aparelho.')
     }
-  }, [handoffProjectId, missingTaskProject, mod, viewerId])
+  }, [cloudSync, handoffProjectId, missingTaskProject, mod, viewerId])
 
   const taskSession = useMemo<StudioTaskSession | undefined>(
     () =>
@@ -446,13 +542,32 @@ export function StudioFullClient({
         }
         // O upsert pode sufixar o nome (colisão com OUTRO desenho) — o Estúdio
         // usa o nome salvo, senão os blocos referenciariam um nome divergente.
-        return { ok: true, asset: { ...result.asset, name: saved.name ?? result.asset.name } }
+        return {
+          ok: true,
+          asset: {
+            ...result.asset,
+            name: saved.name ?? result.asset.name,
+            libRevision: saved.updatedAt,
+          },
+        }
       },
     }
   }, [pintaOwned, viewerId])
 
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
-  const backToList = useCallback(() => setView({ name: 'list' }), [])
+  const backToList = useCallback(() => {
+    setView({ name: 'list' })
+    // De volta à lista: uma descida de novo (single-flight, barata — a lista da nuvem e a
+    // comparação), para o que ficou de fora enquanto um jogo estava ABERTO (a descida nem
+    // copia nem restaura um projeto aberto) entrar agora, e não só no próximo F5.
+    if (cloudSync) {
+      setSyncing(true)
+      void cloudSync
+        .pullMissing()
+        .catch(() => {})
+        .finally(() => setSyncing(false))
+    }
+  }, [cloudSync])
   const exitEditor = useCallback(() => {
     if (taskId) window.location.assign('/pensa')
     else backToList()
@@ -532,14 +647,22 @@ export function StudioFullClient({
       taskHandoffStatus === 'loading' || mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Estúdio…" />
       ) : view.name === 'list' ? (
-        <mod.ProjectList
-          onOpenProject={openProject}
-          theme={studioTheme}
-          professional={proAvailable}
-          initialExtensions={tier.initialExtensions}
-          allowedExtensions={tier.allowedExtensions}
-          showExamples={showExamples}
-        />
+        // O selo é uma CAMADA por cima (absoluto): a moldura é BLOCO e a lista se
+        // dimensiona por `h-full` — um selo no fluxo empurrava a lista para fora do
+        // `overflow-hidden`. `relative` só neste ramo, para não mexer no editor.
+        <div className="relative h-full">
+          <div className="pointer-events-none absolute top-1 right-2 z-10">
+            <CloudSaveBadge cloud={cloud} syncing={syncing} />
+          </div>
+          <mod.ProjectList
+            onOpenProject={openProject}
+            theme={studioTheme}
+            professional={proAvailable}
+            initialExtensions={tier.initialExtensions}
+            allowedExtensions={tier.allowedExtensions}
+            showExamples={showExamples}
+          />
+        </div>
       ) : (
         <StudioFullEditor
           mod={mod}

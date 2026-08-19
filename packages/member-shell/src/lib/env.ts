@@ -36,6 +36,8 @@ const EnvSchema = z
       .string()
       .min(16, 'MEMBER_SHELL_HMAC_SECRET deve ter ≥16 chars')
       .optional(),
+    // Bearer enviado pelo scheduler ao worker de limpeza R2 pós-TTL.
+    CREATION_CLEANUP_CRON_SECRET: z.string().min(24).optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
     // também serve apps que não possuem esse portão.

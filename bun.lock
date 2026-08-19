@@ -220,6 +220,16 @@
         "typescript": "^5",
       },
     },
+    "packages/creation-cleanup-cron": {
+      "name": "@sistemazero/creation-cleanup-cron",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@cloudflare/workers-types": "5.20260810.1",
+        "@types/bun": "^1.3.14",
+        "typescript": "^5.9.3",
+        "wrangler": "^4.120.1",
+      },
+    },
     "packages/fiscal": {
       "name": "@sistemazero/fiscal",
       "version": "0.1.0",
@@ -1396,6 +1406,8 @@
     "@sistemazero/community-kids": ["@sistemazero/community-kids@workspace:packages/community-kids"],
 
     "@sistemazero/core": ["@sistemazero/core@workspace:packages/core"],
+
+    "@sistemazero/creation-cleanup-cron": ["@sistemazero/creation-cleanup-cron@workspace:packages/creation-cleanup-cron"],
 
     "@sistemazero/fiscal": ["@sistemazero/fiscal@workspace:packages/fiscal"],
 

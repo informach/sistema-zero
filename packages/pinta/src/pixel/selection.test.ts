@@ -6,6 +6,7 @@ import {
   extractSelection,
   hasPaintedPixel,
   normalizeRect,
+  paintedBounds,
   stampSelection,
 } from './selection'
 
@@ -69,5 +70,20 @@ describe('seleção retangular', () => {
       '3443',
       '....',
     ])
+  })
+})
+
+describe('paintedBounds (Ctrl+A do pixel)', () => {
+  it('devolve o retângulo envolvente do que está pintado', () => {
+    const base = bmp(['....', '.12.', '..3.', '....'])
+    expect(paintedBounds(base)).toEqual({ x: 1, y: 1, width: 2, height: 2 })
+  })
+
+  it('bitmap vazio → null (não há o que selecionar)', () => {
+    expect(paintedBounds(bmp(['...', '...']))).toBeNull()
+  })
+
+  it('pixel único nos cantos opostos cobre o desenho inteiro', () => {
+    expect(paintedBounds(bmp(['1..', '...', '..1']))).toEqual({ x: 0, y: 0, width: 3, height: 3 })
   })
 })

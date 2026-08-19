@@ -146,6 +146,8 @@ export interface ProjectAsset {
   source: 'upload' | 'library'
   /** Quando veio da biblioteca embutida (starter pack). */
   libId?: string
+  /** Token de igualdade dos bytes copiados da biblioteca; nunca ordene entre aparelhos. */
+  libRevision?: number
   /**
    * Metadados de SPRITESHEET vindos do Pinta (animações nomeadas com faixa de
    * quadros/fps). Alimenta o SELETOR de animação por nome no bloco "Animar sprite"
@@ -513,6 +515,13 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     }
     if (source === 'library' && typeof a.libId === 'string' && a.libId.trim()) {
       asset.libId = a.libId.slice(0, 128)
+      if (
+        typeof a.libRevision === 'number' &&
+        Number.isFinite(a.libRevision) &&
+        a.libRevision > 0
+      ) {
+        asset.libRevision = Math.round(a.libRevision)
+      }
     }
     // Metadado do Pinta (animações/tiles) — opcional; inválido é DESCARTADO sem
     // derrubar o asset. Não entra na cota de `dataUrl` (tetos próprios por campo).

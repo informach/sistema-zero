@@ -4,7 +4,6 @@ import {
   createPixelBackgroundAsset,
   createTilemapAsset,
   createTilesetAsset,
-  isTilesetKind,
   PINTA_LIMITS,
 } from '../core/project'
 import { clearIdbMock, setIdbWriteGuard } from '../testing/idbMock'
@@ -72,19 +71,6 @@ describe('galleryStore — modelos prontos', () => {
     for (const a of store.getState().assets) {
       expect(a.projectRef?.id).toBe('p1')
     }
-  })
-
-  it('quota: modelo de mapa (2 assets) barra quando não cabem os dois', async () => {
-    const store = createGalleryStore()
-    // Enche até faltar 1 slot.
-    for (let i = 0; i < PINTA_LIMITS.maxAssets - 1; i += 1) {
-      await store.getState().create({ kind: 'pixel-sprite', name: `s${i}`, frameSize: 16 })
-    }
-    const map = await store
-      .getState()
-      .createFromTemplate({ templateId: 'fase-plataforma', name: 'fase' })
-    expect(map).toBeNull()
-    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
   })
 
   it('nome colidindo ganha sufixo (não sobrescreve)', async () => {
@@ -250,16 +236,24 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(await listAllAssets()).toHaveLength(2)
   })
 
-  it('quota de assets barra a criação com copy gentil', async () => {
+  it('não há teto de QUANTIDADE de desenhos (como o Estúdio): 150 criações entram, e o sufixo de nome vai além de 99', async () => {
     const store = createGalleryStore()
-    for (let i = 0; i < PINTA_LIMITS.maxAssets; i += 1) {
+    for (let i = 0; i < 150; i += 1) {
       await store.getState().create({ kind: 'pixel-sprite', name: `s-${i}`, frameSize: 8 })
     }
-    expect(store.getState().assets).toHaveLength(PINTA_LIMITS.maxAssets)
-    expect(
-      await store.getState().create({ kind: 'pixel-sprite', name: 'estourou', frameSize: 8 }),
-    ).toBeNull()
-    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
+    expect(store.getState().assets).toHaveLength(150)
+    expect(store.getState().mutateError).toBeNull()
+    // Duplicar o mesmo desenho 120 vezes: `heroi-2` … `heroi-121` (antes o sufixo parava em 99).
+    const heroi = await store
+      .getState()
+      .create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 8 })
+    if (!heroi) throw new Error('heroi esperado')
+    let last: string | undefined
+    for (let i = 0; i < 120; i += 1) {
+      const copy = await store.getState().duplicate(heroi.id)
+      last = copy?.name
+    }
+    expect(last).toBe('heroi-121')
   })
 
   it('load saneia registros corrompidos em silêncio', async () => {
@@ -290,26 +284,6 @@ describe('galleryStore — CRUD sobre o IndexedDB local', () => {
     expect(store.getState().assets.filter((a) => a.kind === 'tilemap')).toHaveLength(0)
     expect(res.added).toBe(0)
     expect(res.skipped).toBe(2)
-  })
-
-  it('importAssets atômico: com uma vaga, mapa + peças NÃO entram pela metade', async () => {
-    const store = createGalleryStore()
-    store
-      .getState()
-      .absorbMany(
-        Array.from({ length: PINTA_LIMITS.maxAssets - 1 }, (_, index) =>
-          createPixelBackgroundAsset({ name: `fundo-${index}`, width: 1, height: 1 }),
-        ),
-      )
-    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
-    const map = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 2, rows: 1 })
-
-    const result = await store.getState().importAssets([tileset, map], { atomic: true })
-
-    expect(result).toEqual({ added: 0, skipped: 2 })
-    expect(store.getState().mutateError).toBe(COPY.gallery.quotaFull)
-    expect(store.getState().assets.filter((asset) => isTilesetKind(asset))).toHaveLength(0)
-    expect(store.getState().assets.filter((asset) => asset.kind === 'tilemap')).toHaveLength(0)
   })
 
   it('importAssets atômico: falha de persistência não publica nenhuma metade do par', async () => {

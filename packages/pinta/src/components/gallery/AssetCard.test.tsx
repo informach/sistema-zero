@@ -7,6 +7,53 @@ import { AssetCard } from './AssetCard'
 afterEach(cleanup)
 
 describe('AssetCard', () => {
+  it('desconecta e descarta o observer compartilhado quando o último card sai', () => {
+    const previous = globalThis.IntersectionObserver
+    const instances: Array<{
+      observe: ReturnType<typeof mock>
+      unobserve: ReturnType<typeof mock>
+      disconnect: ReturnType<typeof mock>
+    }> = []
+    class FakeIntersectionObserver {
+      readonly root = null
+      readonly rootMargin = '50% 0px'
+      readonly thresholds = [0]
+      readonly observe = mock(() => {})
+      readonly unobserve = mock(() => {})
+      readonly disconnect = mock(() => {})
+      constructor(_callback: IntersectionObserverCallback) {
+        instances.push(this)
+      }
+      takeRecords(): IntersectionObserverEntry[] {
+        return []
+      }
+    }
+    globalThis.IntersectionObserver =
+      FakeIntersectionObserver as unknown as typeof IntersectionObserver
+    const asset = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const props = {
+      asset,
+      onOpen: () => {},
+      onRename: () => {},
+      onDuplicate: () => {},
+      onRemove: () => {},
+    }
+
+    try {
+      const first = render(<AssetCard {...props} />)
+      expect(instances).toHaveLength(1)
+      first.unmount()
+      expect(instances[0]?.unobserve).toHaveBeenCalledTimes(1)
+      expect(instances[0]?.disconnect).toHaveBeenCalledTimes(1)
+
+      const second = render(<AssetCard {...props} />)
+      expect(instances).toHaveLength(2)
+      second.unmount()
+    } finally {
+      globalThis.IntersectionObserver = previous
+    }
+  })
+
   it('as três ações ficam NO card, cada uma com alvo de 44px', () => {
     const asset = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
     render(
@@ -25,6 +72,24 @@ describe('AssetCard', () => {
       expect(botao.className).toContain('min-h-11')
       expect(botao.className).toContain('min-w-11')
     }
+  })
+
+  it('as ações avisam com o ID do desenho (callbacks estáveis na galeria: o card é memo)', () => {
+    const asset = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const seen: string[] = []
+    render(
+      <AssetCard
+        asset={asset}
+        onOpen={(id) => seen.push(`abrir:${id}`)}
+        onRename={(id) => seen.push(`renomear:${id}`)}
+        onDuplicate={() => {}}
+        onRemove={(id) => seen.push(`apagar:${id}`)}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: /^Abrir heroi/ }))
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.rename} heroi` }))
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} heroi` }))
+    expect(seen).toEqual([`abrir:${asset.id}`, `renomear:${asset.id}`, `apagar:${asset.id}`])
   })
 
   it('bloqueia duplo clique enquanto a duplicação está em andamento', async () => {

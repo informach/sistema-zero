@@ -40,6 +40,16 @@ export interface UserRepository {
    */
   update(user: UserAggregate, expectedVersion: number): Promise<boolean>
   /**
+   * Cerca uma exclusão: bloqueia a conta e devolve TODOS os perfis, inclusive
+   * arquivados. Usa o mesmo advisory lock da criação de perfil.
+   */
+  prepareDeletion(id: string): Promise<{ profileIds: string[] } | null>
+  /**
+   * Recibo durável de uma exclusão já concluída. Distingue retry legítimo de um
+   * UUID que nunca existiu e preserva os donos enumerados antes da cascata.
+   */
+  findDeletionReceipt(id: string): Promise<{ profileIds: string[] } | null>
+  /**
    * Exclui FÍSICA e definitivamente o usuário e os dados auth-owned keyados nele
    * (refresh tokens, tokens de reset/OTP, handoffs de impersonação, perfis), numa
    * única transação. A trilha de auditoria (`audit_logs`) é PRESERVADA (compliance —

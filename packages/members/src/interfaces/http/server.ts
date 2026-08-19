@@ -1,5 +1,9 @@
 import { swagger } from '@elysiajs/swagger'
-import { PayloadTooLargeError } from '@sistemazero/core/http'
+import {
+  type AccountDeletionFence,
+  assertAccountMutationAllowed,
+  PayloadTooLargeError,
+} from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
@@ -7,6 +11,8 @@ import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
+import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
+import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
@@ -16,10 +22,12 @@ import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.route
 export interface HttpDeps {
   env: Env
   logger: Logger
+  accountDeletionFence: AccountDeletionFence
   /** Probe de readiness (`/readyz`): banco alcançável. */
   readiness: ReadinessProbe
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
+  creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
@@ -115,6 +123,13 @@ export function createServer(deps: HttpDeps) {
       set.status = status
       return body
     })
+    .onBeforeHandle({ as: 'global' }, ({ request, headers }) =>
+      assertAccountMutationAllowed({
+        method: request.method,
+        headers,
+        fence: deps.accountDeletionFence,
+      }),
+    )
 
   if (deps.env.NODE_ENV !== 'production') {
     app.use(
@@ -136,6 +151,13 @@ export function createServer(deps: HttpDeps) {
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
     .use(pensaRoutes(deps.pensa))
+    .use(creationsRoutes(deps.creations))
+    .use(
+      creationCleanupRoutes({
+        cleanup: deps.admin.creationCleanup,
+        internalToken: deps.creations.internalToken,
+      }),
+    )
     .use(webhooksRoutes(deps.webhooks))
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))

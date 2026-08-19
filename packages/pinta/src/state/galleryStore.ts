@@ -8,6 +8,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { createAsset, type NewAssetInput } from '../core/newAsset'
+import { perfSpanAsync } from '../core/perf'
 import {
   assetStyle,
   isTilesetKind,
@@ -32,6 +33,17 @@ export interface PintaGalleryState {
   assets: PintaAsset[]
   loaded: boolean
   loading: boolean
+  /**
+   * O armazenamento está sincronizando por fora (nuvem do host): a galeria já mostra o local e
+   * avisa "buscando…"; quem procura um desenho que ainda não chegou (`?desenho=`) espera isto
+   * cair antes de dizer "sumiu".
+   */
+  syncing: boolean
+  /**
+   * Liga a escuta do armazenamento (`persistence.subscribe?`): `sync-start`/`changed`/`sync-end`.
+   * Idempotente; devolve o desligar. Sem `subscribe` na persistência, não faz nada.
+   */
+  attachPersistence: () => () => void
   loadError: string | null
   /** Erro da última mutação (criar/renomear/duplicar/apagar) — copy amigável. */
   mutateError: string | null
@@ -63,8 +75,9 @@ export interface PintaGalleryState {
   absorbMany(assets: readonly PintaAsset[]): void
   /**
    * Restaura assets de um backup `.pinta.json`: ids NOVOS + nome com sufixo em
-   * colisão (import nunca sobrescreve o que existe); respeita a quota — devolve
-   * quantos entraram e quantos ficaram de fora.
+   * colisão (import nunca sobrescreve o que existe); respeita o orçamento de bytes
+   * (`MAX_BACKUP_FILE_BYTES`; quantidade não tem teto) — devolve quantos entraram e
+   * quantos ficaram de fora.
    */
   importAssets(
     assets: PintaAsset[],
@@ -89,7 +102,8 @@ function persistenceErrorMessage(error: unknown): string {
 /** Nome único por sufixo numérico (`heroi` → `heroi-2`), respeitando o teto. */
 function uniqueName(base: string, taken: Set<string>): string | null {
   if (!taken.has(base)) return base
-  for (let n = 2; n <= 99; n += 1) {
+  // Sem teto de desenhos na galeria, o sufixo vai até 999 antes de desistir.
+  for (let n = 2; n <= 999; n += 1) {
     const suffix = `-${n}`
     const prefix = base.slice(0, PINTA_LIMITS.maxNameChars - suffix.length).replace(/-+$/, '')
     const candidate = `${prefix}${suffix}`
@@ -121,6 +135,9 @@ function cloneWithNewIds(asset: PintaAsset, name: string): PintaAsset {
  * armazenamento dele (ver `state/memoryPersistence.ts`). A store não sabe a diferença — toda
  * gravação já passava por este único objeto.
  */
+/** Coalesce as releituras pedidas por `changed` (cada desenho que desce avisa uma vez). */
+const CHANGED_RELOAD_DELAY_MS = 250
+
 export function createGalleryStore(
   persistence: PintaPersistence = createPintaPersistence(),
 ): PintaGalleryStore {
@@ -138,6 +155,8 @@ export function createGalleryStore(
     assets: [],
     loaded: false,
     loading: false,
+    syncing: false,
+    attachPersistence: () => () => {},
     loadError: null,
     mutateError: null,
     lastStyle: 'pixel',
@@ -145,7 +164,7 @@ export function createGalleryStore(
     async load() {
       set({ loading: true, loadError: null })
       try {
-        const assets = await persistence.listAllAssets()
+        const assets = await perfSpanAsync('pinta:gallery:load', () => persistence.listAllAssets())
         // O estilo do asset mais recente vira o default do "Criar novo".
         const recentStyle = assets
           .map((a) => assetStyle(a.kind))
@@ -163,10 +182,6 @@ export function createGalleryStore(
 
     async create(input) {
       const { assets } = get()
-      if (assets.length >= PINTA_LIMITS.maxAssets) {
-        set({ mutateError: COPY.gallery.quotaFull })
-        return null
-      }
       const name = normalizeAssetName(input.name)
       if (!name) {
         set({ mutateError: COPY.newAsset.nameInvalid })
@@ -199,10 +214,6 @@ export function createGalleryStore(
       }
       const built = template.build()
       const { assets } = get()
-      if (assets.length + built.assets.length > PINTA_LIMITS.maxAssets) {
-        set({ mutateError: COPY.gallery.quotaFull })
-        return null
-      }
       const chosen = normalizeAssetName(input.name)
       if (!chosen) {
         set({ mutateError: COPY.newAsset.nameInvalid })
@@ -275,10 +286,6 @@ export function createGalleryStore(
 
     async duplicate(id) {
       const { assets } = get()
-      if (assets.length >= PINTA_LIMITS.maxAssets) {
-        set({ mutateError: COPY.gallery.quotaFull })
-        return null
-      }
       const asset = assets.find((a) => a.id === id)
       if (!asset) return null
       const taken = new Set(assets.map((a) => a.name))
@@ -356,10 +363,6 @@ export function createGalleryStore(
         set({ mutateError: importError })
         return { added: 0, skipped: incoming.length }
       }
-      if (options.atomic && current.length + eligible.length > PINTA_LIMITS.maxAssets) {
-        set({ mutateError: COPY.gallery.quotaFull })
-        return { added: 0, skipped: incoming.length }
-      }
 
       // Mapa id-antigo → id-novo p/ religar tilemaps aos SEUS tilesets do backup.
       const idMap = new Map<string, string>()
@@ -367,10 +370,6 @@ export function createGalleryStore(
       const preparedTilesetIds = new Set<string>()
       const taken = new Set(current.map((asset) => asset.name))
       for (const asset of eligible) {
-        if (!options.atomic && current.length + prepared.length >= PINTA_LIMITS.maxAssets) {
-          skipped += 1
-          continue
-        }
         if (
           asset.kind === 'tilemap' &&
           incomingTilesetIds.has(asset.tilesetId) &&
@@ -463,5 +462,59 @@ export function createGalleryStore(
     remove: (id) => enqueueMutation(() => actions.remove(id)),
     importAssets: (assets, options) => enqueueMutation(() => actions.importAssets(assets, options)),
   })
+  // O armazenamento avisa mudanças feitas por fora (a nuvem do host): `changed` relê a lista
+  // (coalescido, na fila de mutações — e sem piscar: "Carregando…" exige `!loaded`);
+  // `sync-start`/`sync-end` ligam e desligam `syncing` — o `end` só depois da última releitura,
+  // para quem espera um desenho que "ainda não chegou" ver a lista completa antes de desistir.
+  // Ligado por `attachPersistence()` (o `PintaApp` liga num efeito e desliga ao desmontar: um
+  // `useState` duplicado do StrictMode não deixa uma store zumbi inscrita para sempre).
+  let detach: (() => void) | null = null
+  let reloadTimer: ReturnType<typeof setTimeout> | null = null
+  // Geração: um `sync-start` que chega DURANTE a releitura do `sync-end` anterior não pode ser
+  // apagado pelo `syncing: false` daquela releitura.
+  let syncGeneration = 0
+  store.setState({
+    attachPersistence: () => {
+      if (detach || !persistence.subscribe) return () => {}
+      const reloadSoon = () => {
+        if (reloadTimer) return
+        reloadTimer = setTimeout(() => {
+          reloadTimer = null
+          // `load` público já entra na fila de mutações (não embrulhar de novo: travaria).
+          void store.getState().load()
+        }, CHANGED_RELOAD_DELAY_MS)
+      }
+      const unsubscribe = persistence.subscribe((event) => {
+        if (event.type === 'sync-start') {
+          syncGeneration += 1
+          store.setState({ syncing: true })
+        } else if (event.type === 'changed') {
+          reloadSoon()
+        } else if (event.type === 'sync-end') {
+          if (reloadTimer) {
+            clearTimeout(reloadTimer)
+            reloadTimer = null
+          }
+          const generation = syncGeneration
+          void store
+            .getState()
+            .load()
+            .finally(() => {
+              if (syncGeneration === generation) store.setState({ syncing: false })
+            })
+        }
+      })
+      detach = () => {
+        detach = null
+        if (reloadTimer) {
+          clearTimeout(reloadTimer)
+          reloadTimer = null
+        }
+        unsubscribe()
+      }
+      return () => detach?.()
+    },
+  })
+
   return store
 }

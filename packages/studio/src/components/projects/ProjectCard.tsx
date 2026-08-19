@@ -1,5 +1,5 @@
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
-import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { memo, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Button, ConfirmDialog } from '#ui'
 import { downloadProjectAsJSON } from '../../export/download'
@@ -11,21 +11,30 @@ import { Spinner } from '../layout/LoadingViews'
 
 export interface ProjectCardProps {
   summary: ProjectSummary
-  onChanged: () => void
+  /**
+   * Algo mudou neste projeto (renomeou/duplicou/apagou). `id` = o projeto a reler (na
+   * duplicação, a CÓPIA nova); sem `id`, a lista recarrega tudo. Estável por id: o card é
+   * `memo`, e um callback novo a cada render da lista re-renderizaria todos os cards.
+   */
+  onChanged: (id?: string) => void
   /** Abre o projeto no editor (navegação é do host/página, não do card). */
-  onOpen: () => void
+  onOpen: (id: string) => void
   /** Nomes de TODOS os projetos da lista — renomear para um já usado é recusado. */
   takenNames?: ReadonlySet<string>
 }
 
+// Um formatador por módulo: `toLocaleString` com objeto de opções criava um `Intl.DateTimeFormat`
+// a cada render de cada card (500 cards × cada tecla da busca). Mesma saída.
+const DATE_FORMAT = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
 function formatDate(ts: number): string {
-  return new Date(ts).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  return DATE_FORMAT.format(new Date(ts))
 }
 
 // ⚠️ Acompanham o CSS do menu (w-48 + 4 itens de 44px + borda 2px): se os
@@ -53,7 +62,7 @@ function positionMenu(trigger: DOMRect): MenuPosition {
   return { left, top }
 }
 
-export function ProjectCard({
+export const ProjectCard = memo(function ProjectCard({
   summary,
   onChanged,
   onOpen,
@@ -166,14 +175,14 @@ export function ProjectCard({
     }
     const { useProjectStore } = await import('../../state/projectStore')
     await useProjectStore.getState().renameProject(summary.id, next)
-    onChanged()
+    onChanged(summary.id)
   }
 
   const handleDuplicate = async () => {
     closeMenu()
     const { useProjectStore } = await import('../../state/projectStore')
-    await useProjectStore.getState().duplicateProject(summary.id)
-    onChanged()
+    const copy = await useProjectStore.getState().duplicateProject(summary.id)
+    onChanged(copy?.id)
   }
 
   const handleDelete = async () => {
@@ -183,7 +192,7 @@ export function ProjectCard({
       const { useProjectStore } = await import('../../state/projectStore')
       await useProjectStore.getState().deleteProject(summary.id)
       setDeleteOpen(false)
-      onChanged()
+      onChanged(summary.id)
     } finally {
       setDeleting(false)
     }
@@ -205,7 +214,7 @@ export function ProjectCard({
   // assim o aluno vê que o clique pegou enquanto o editor carrega.
   const openProject = () => {
     setOpening(true)
-    onOpen()
+    onOpen(summary.id)
   }
 
   return (
@@ -218,11 +227,14 @@ export function ProjectCard({
         // que sobra para ela. Com 192px a foto do jogo virava uma tira de ~60px,
         // achatada a ponto de não dar para reconhecer o jogo; com 288px ela ganha
         // ~122px e volta a ser uma capa (proporção ~1.9:1, perto de um 16:9).
-        className="sz-home-panel sz-home-pop group relative z-0 flex h-72 flex-col p-4 text-left"
+        className="sz-home-panel sz-home-pop sz-project-card group relative z-0 flex h-72 flex-col p-4 text-left"
       >
         <button
           type="button"
-          className="absolute inset-0 z-0 cursor-pointer rounded-2xl"
+          // Anel de foco POR DENTRO (`ring-inset`): o card tem `content-visibility: auto`
+          // (= `contain: paint`), que recorta tudo o que escapa do padding box — e este botão
+          // ocupa o card inteiro, então um anel desenhado por fora sumia para quem navega por Tab.
+          className="absolute inset-0 z-0 cursor-pointer rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sz-accent/70"
           aria-label={`Abrir projeto ${summary.name}`}
           onPointerDown={prefetch}
           onClick={openProject}
@@ -441,7 +453,7 @@ export function ProjectCard({
       </ConfirmDialog>
     </>
   )
-}
+})
 
 function MenuItem({
   children,

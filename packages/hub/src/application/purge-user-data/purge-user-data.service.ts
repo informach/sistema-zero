@@ -16,6 +16,6 @@ export class PurgeUserDataService {
 
   async execute({ userId, profileIds }: PurgeUserDataCommand): Promise<void> {
     const userIds = [...new Set([userId, ...profileIds])]
-    await this.repo.purgeForUser(userIds)
+    await this.repo.purgeForUser(userIds, userId)
   }
 }

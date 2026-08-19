@@ -43,6 +43,12 @@ export function register(): void {
     if (!memberShellSecret || memberShellSecret.length < 16) {
       problems.push('MEMBER_SHELL_HMAC_SECRET com pelo menos 16 chars (persistência do Zappy)')
     }
+    const cleanupSecret = process.env.CREATION_CLEANUP_CRON_SECRET?.trim()
+    if (!cleanupSecret || cleanupSecret.length < 24) {
+      problems.push(
+        'CREATION_CLEANUP_CRON_SECRET com pelo menos 24 chars (limpeza durável de criações)',
+      )
+    }
   }
 
   if (problems.length > 0) {

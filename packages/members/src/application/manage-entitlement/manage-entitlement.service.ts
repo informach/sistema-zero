@@ -4,6 +4,7 @@ import {
   InvalidEntitlementCommandError,
 } from '../../domain/entitlement/entitlement.errors'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import { invalidateToolOwnership } from '../creations/tool-ownership-cache'
 import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/admin-views'
 
 export type EntitlementAction = 'revoke' | 'expire' | 'extend'
@@ -62,6 +63,8 @@ export class ManageEntitlementService {
 
     const ok = await this.entitlements.update(entitlement)
     if (!ok) throw new EntitlementConflictError('Conflito de concorrência ao atualizar a matrícula')
+    // Rebaixou (revogar/expirar): o cache da reserva das criações esquece a conta na hora.
+    if (cmd.action !== 'extend') invalidateToolOwnership(entitlement.userId)
 
     const fresh = await this.entitlements.findById(cmd.id)
     return toAdminEntitlementView(fresh ?? entitlement)

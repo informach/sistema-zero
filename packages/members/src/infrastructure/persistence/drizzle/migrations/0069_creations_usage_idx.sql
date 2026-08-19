@@ -1,0 +1,1 @@
+CREATE INDEX "creations_usage_idx" ON "members"."creations" USING btree ("user_id","tool","bytes") WHERE "members"."creations"."deleted_at" is null and "members"."creations"."storage_ref" is not null;

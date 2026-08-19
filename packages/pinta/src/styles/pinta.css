@@ -270,3 +270,13 @@
 [data-pinta-theme] .pin-scroll-x::-webkit-scrollbar {
   display: none;
 }
+
+/*
+ * Cards da galeria (19/08/2026): com centenas de desenhos, o navegador só mede/pinta os
+ * cards perto da janela; a altura intrínseca aproxima o card real (a 1ª rolagem acerta
+ * o resto). Só o CARD (não as seções, cuja altura varia); os diálogos são irmãos da grade.
+ */
+[data-pinta-theme] .pin-gallery-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 164px 232px;
+}

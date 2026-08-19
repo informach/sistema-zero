@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { strToU8, zipSync } from 'fflate'
 import { COPY } from '../core/copy'
 import { createPixelBackgroundAsset } from '../core/project'
@@ -322,7 +322,11 @@ describe('PintaApp — galeria', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Abrir pecas/ })).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: new RegExp(COPY.styles.pixel.title),
+      }),
+    )
     // `pressed: true` desambigua do card "Abrir pecas" da galeria atrás do
     // modal E já assere a pré-seleção.
     expect(screen.getByRole('button', { name: /pecas/, pressed: true })).toBeTruthy()
@@ -439,5 +443,62 @@ describe('PintaApp — galeria', () => {
     await waitFor(() => {
       expect(screen.getByText(new RegExp(COPY.editor.sendToStudio))).toBeTruthy()
     })
+  })
+
+  it('`initialAssetId` de um desenho que NÃO existe, com persistência SEM `subscribe` (aula/perfil): diz "sumiu" na hora, como antes', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    render(
+      <PintaApp
+        adapter={{ initialAssetId: 'nao-existe' }}
+        persistence={createMemoryPersistence()}
+      />,
+    )
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.drawingGone)).toBeTruthy()
+    })
+    expect(screen.queryByText(COPY.gallery.syncing)).toBeNull()
+  })
+
+  it('`initialAssetId` de um desenho que só CHEGA com a sincronia da nuvem: espera o fim da sincronia e abre (em vez de dizer "sumiu")', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const inner = createMemoryPersistence()
+    const listeners = new Set<(event: { type: 'sync-start' | 'changed' | 'sync-end' }) => void>()
+    const emit = (type: 'sync-start' | 'changed' | 'sync-end') => {
+      for (const listener of listeners) listener({ type })
+    }
+    let started = false
+    const persistence = {
+      ...inner,
+      // Como o wrapper da nuvem do host: a PRIMEIRA carga devolve o LOCAL na hora e já avisa
+      // que a sincronia começou (antes de a galeria marcar `loaded`); as releituras seguintes
+      // (o `sync-end` relê) NÃO abrem outra sincronia.
+      async listAllAssets() {
+        if (!started) {
+          started = true
+          emit('sync-start')
+        }
+        return inner.listAllAssets()
+      },
+      subscribe(listener: (event: { type: 'sync-start' | 'changed' | 'sync-end' }) => void) {
+        listeners.add(listener)
+        return () => {
+          listeners.delete(listener)
+        }
+      },
+    }
+    const chegando = createPixelSpriteAsset({ name: 'chegando', frameSize: 8 })
+    render(<PintaApp adapter={{ initialAssetId: chegando.id }} persistence={persistence} />)
+    await waitFor(() => {
+      expect(screen.getByText(COPY.gallery.syncing)).toBeTruthy()
+    })
+    // O desenho chega pela sincronia; o fim dela relê a galeria e o abridor abre.
+    await inner.persistAssets([chegando])
+    act(() => emit('sync-end'))
+    // Abriu o editor do desenho que chegou (não o toast de "sumiu").
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+    expect(screen.queryByText(COPY.gallery.drawingGone)).toBeNull()
   })
 })

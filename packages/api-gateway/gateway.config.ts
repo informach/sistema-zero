@@ -826,6 +826,17 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
+    {
+      id: 'auth-admin-user-deletion-prepare',
+      methods: ['POST'],
+      pathPattern: '/auth/admin/users/:id/deletion/prepare',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
     // Hidratação de identidade em LOTE (≤100 ids) — usada pelo painel admin (área de
     // membros lista userIds e precisa de nome/email). Leitura → superadmin/admin/staff.
     {
@@ -1698,6 +1709,67 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
     },
+    // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
+    // Só o ÍNDICE passa por aqui (metadados pequenos): o blob vai direto ao R2 UGC
+    // por URL pré-assinada do BFF (member-shell), então o teto de 2 MB da borda não
+    // é tocado. Recurso do PRÓPRIO perfil (ownership por user_id no members); o gate
+    // de PRODUTO (`estudio-completo`/`pinta`) é aplicado pelo members na RESERVA.
+    // Literal `creations` no 2º segmento — não colide com `/members/courses…` nem
+    // `/members/pensa/*`. Rate mais alto na reserva/commit: é o autosave.
+    {
+      id: 'members-creations-list',
+      methods: ['GET'],
+      pathPattern: '/members/creations/:tool',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-creations-upload',
+      methods: ['POST'],
+      pathPattern: '/members/creations/:tool/:itemId/upload',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      // Nome/kind/data/bytes + miniatura opcional (≤ 20 k chars) + até 128 PARTES
+      // (`{hash, bytes}` ≈ 90 bytes cada ≈ 11,5 KB).
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-creations-commit',
+      methods: ['POST'],
+      pathPattern: '/members/creations/:tool/:itemId/commit',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+    },
+    {
+      id: 'members-creations-download',
+      methods: ['GET'],
+      pathPattern: '/members/creations/:tool/:itemId/download',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-creations-delete',
+      methods: ['DELETE'],
+      pathPattern: '/members/creations/:tool/:itemId',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Resumo de progresso dos FILHOS (área dos pais, kids). A conta vem do header
     // confiável `x-auth-user-id` (o members usa resolveUserId — não o accountId do
     // cliente); o BFF chama atrás do portão de senha. Path literal `/members/parents/*`
@@ -2460,6 +2532,44 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       audit: {},
+    },
+    {
+      id: 'members-creation-cleanup-claim',
+      methods: ['POST'],
+      pathPattern: '/members/internal/creation-cleanups/claim',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-creation-cleanup-finish',
+      methods: ['POST'],
+      pathPattern: '/members/internal/creation-cleanups/:id/*',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'members-account-deletion-finalize',
+      methods: ['POST'],
+      pathPattern: '/members/internal/account-deletion/finalize',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: membersInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'hub-account-deletion-finalize',
+      methods: ['POST'],
+      pathPattern: '/hub/internal/account-deletion/finalize',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: hubInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Mensageria (@sistemazero/messaging) ─────────────────────────────────

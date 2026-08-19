@@ -24,22 +24,31 @@ export function createHistory<T>(options: {
   byteBudget?: number
 }): HistoryApi<T> {
   const budget = options.byteBudget ?? DEFAULT_BYTE_BUDGET
-  const past: T[] = []
+  // Cada passo guarda os bytes medidos UMA vez: o orçamento é um total corrente, não um
+  // `reduce` sobre a pilha inteira a cada pincelada (com sprites pequenos a pilha chega a
+  // centenas de passos, e `sizeOf` de um vetor percorre até 500 formas por snapshot).
+  const past: Array<{ snapshot: T; bytes: number }> = []
   const future: T[] = []
+  let total = 0
 
   function trimToBudget(): void {
-    let total = past.reduce((sum, s) => sum + options.sizeOf(s), 0)
     // Mantém pelo menos 1 passo mesmo que um snapshot sozinho estoure o
     // orçamento — desfazer uma vez sempre funciona.
     while (total > budget && past.length > 1) {
       const dropped = past.shift()
-      if (dropped !== undefined) total -= options.sizeOf(dropped)
+      if (dropped !== undefined) total -= dropped.bytes
     }
+  }
+
+  function push(snapshot: T): void {
+    const bytes = options.sizeOf(snapshot)
+    past.push({ snapshot, bytes })
+    total += bytes
   }
 
   return {
     record(snapshot) {
-      past.push(snapshot)
+      push(snapshot)
       // Um gesto novo invalida o redo (padrão universal de editores).
       future.length = 0
       trimToBudget()
@@ -47,13 +56,14 @@ export function createHistory<T>(options: {
     undo(current) {
       const prev = past.pop()
       if (prev === undefined) return null
+      total -= prev.bytes
       future.push(current)
-      return prev
+      return prev.snapshot
     },
     redo(current) {
       const next = future.pop()
       if (next === undefined) return null
-      past.push(current)
+      push(current)
       return next
     },
     canUndo: () => past.length > 0,
@@ -61,6 +71,7 @@ export function createHistory<T>(options: {
     clear() {
       past.length = 0
       future.length = 0
+      total = 0
     },
   }
 }

@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@sistemazero/core/http'
 import type { ProfileAllowanceGateway } from '../../domain/ports/profile-allowance-gateway.port'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import { ProfileAggregate } from '../../domain/profile/profile.aggregate'
@@ -65,6 +66,9 @@ export class CreateProfileService {
       : (await this.allowance.getAllowance(cmd.accountUserId)).maxProfiles
     if (maxProfiles <= 0) throw new ProfileLimitReachedError()
     const result = await this.profiles.createWithinLimit(profile, maxProfiles)
+    if (result.outcome === 'account_inactive') {
+      throw new ForbiddenError('A conta não pode mais criar perfis')
+    }
     if (result.outcome === 'limit_reached') throw new ProfileLimitReachedError()
     return toProfileView(result.profile)
   }

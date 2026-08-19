@@ -1254,6 +1254,117 @@ export const challengeMonthOverrides = members.table(
   ],
 )
 
+// ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
+// ÍNDICE das criações que os editores LIVRES sobem sozinhos depois do autosave. O
+// blob (o `Project` do Estúdio / o `.pinta.json` do desenho, gzip) vive no R2 UGC
+// privado (chave em `storage_ref`); aqui só metadados. Uma linha por (perfil,
+// ferramenta, id do item — preservado, é o vínculo com o IndexedDB e com o
+// `pensa-<id>`); reenvio = reserva (`pending_*`) + commit, com `revision` crescente.
+// `deleted_at` = lixeira lógica (a linha fica para um restauro futuro do índice; o blob é solto
+// — `storage_ref` zerado, o BFF apaga do R2 — e a lista não devolve).
+//
+// ⚠️ As colunas que a lista MOSTRA (name, kind, item_updated_at, thumb, deleted_at,
+// revision, bytes, storage_ref) só mudam no COMMIT. A reserva escreve só em `pending_*`
+// e em `last_reserved_revision`.
+export const creationToolEnum = members.enum('creation_tool', ['studio', 'pinta'])
+
+/** Shape de uma parte no JSONB (espelho de `CreationPartRef` do domínio). */
+export interface CreationPartRefRow {
+  hash: string
+  bytes: number
+}
+
+export const creations = members.table(
+  'creations',
+  {
+    id: uuid('id').primaryKey(),
+    /** Dono: o perfil da criança no kids; a própria conta no adulto. */
+    userId: uuid('user_id').notNull(),
+    /** Conta responsável (kids: o pai; adulto: = user_id). */
+    accountId: uuid('account_id').notNull(),
+    tool: creationToolEnum('tool').notNull(),
+    /** Id do projeto/desenho no editor (ulid/id do Pinta). Preservado de ponta a ponta. */
+    itemId: varchar('item_id', { length: 64 }).notNull(),
+    name: varchar('name', { length: 120 }).notNull(),
+    /** `kind` do Pinta (`pixel-sprite`…) ou o do Estúdio (`classic`/`pro`). */
+    kind: varchar('kind', { length: 40 }).notNull(),
+    /** `updatedAt` do ITEM (relógio do cliente): a régua de "quem é mais novo" na sincronia. */
+    itemUpdatedAt: timestamp('item_updated_at', { withTimezone: true }).notNull(),
+    /** Revisão corrente (a que `storage_ref` aponta). Cresce a cada commit. */
+    revision: integer('revision').notNull().default(0),
+    /**
+     * Maior revisão JÁ RESERVADA — contador monotônico (nunca volta, nem no delete):
+     * é o que garante chave nova no R2 para toda reserva, mesmo concorrente.
+     */
+    lastReservedRevision: integer('last_reserved_revision').notNull().default(0),
+    /** Reserva em voo (a chave já foi assinada). `null` = nada reservado. */
+    pendingRevision: integer('pending_revision'),
+    /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
+    pendingBytes: integer('pending_bytes'),
+    /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */
+    pendingName: varchar('pending_name', { length: 120 }),
+    pendingKind: varchar('pending_kind', { length: 40 }),
+    pendingItemUpdatedAt: timestamp('pending_item_updated_at', { withTimezone: true }),
+    pendingThumb: text('pending_thumb'),
+    /** Bytes COMPRIMIDOS da revisão corrente (quota por perfil). */
+    bytes: integer('bytes').notNull().default(0),
+    /** Chave do objeto no R2 UGC (revisão corrente). `null` = nunca commitou. */
+    storageRef: text('storage_ref'),
+    /** Miniatura pequena (PNG data URL) opcional, para a lista sem baixar o blob. */
+    thumb: text('thumb'),
+    /**
+     * PARTES da revisão CORRENTE (`[{hash, bytes}]`): assets do Estúdio endereçados por
+     * conteúdo, cada um um objeto próprio no R2 (o manifesto em `storage_ref` só aponta os
+     * hashes). `[]` = blob único (Pinta, legado). `bytes` da linha = TOTAL (manifesto + partes).
+     */
+    parts: jsonb('parts').$type<CreationPartRefRow[]>().notNull().default(sql`'[]'::jsonb`),
+    /** As partes da reserva em voo (todas as que a revisão reservada referencia). */
+    pendingParts: jsonb('pending_parts').$type<CreationPartRefRow[]>(),
+    deletedAt: timestamp('deleted_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    /** Última sincronia bem-sucedida (commit) ou remoção. */
+    syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('creations_user_tool_item_uq').on(t.userId, t.tool, t.itemId),
+    index('creations_user_tool_idx').on(t.userId, t.tool, t.deletedAt),
+    // Quota por perfil (`usageWith`: count + sum(bytes) dos vivos já confirmados) a cada
+    // reserva E commit, sob o advisory lock do perfil: índice PARCIAL com `bytes` como
+    // coluna final → index-only scan, sem heap fetch por linha (até 4.000 linhas/perfil).
+    index('creations_usage_idx')
+      .on(t.userId, t.tool, t.bytes)
+      .where(sql`${t.deletedAt} is null and ${t.storageRef} is not null`),
+  ],
+)
+
+/** Cerca durável: uma conta em exclusão nunca mais pode reservar uploads de criação. */
+export const accountDeletionFences = members.table('account_deletion_fences', {
+  accountId: uuid('account_id').primaryKey(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+
+/** Limpeza final pós-TTL dos objetos R2, com lease distribuído e retry durável. */
+export const creationCleanupJobs = members.table(
+  'creation_cleanup_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    userIds: jsonb('user_ids').$type<string[]>().notNull().default([]),
+    prefixes: jsonb('prefixes').$type<string[]>().notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('creation_cleanup_jobs_account_uq').on(t.accountId),
+    index('creation_cleanup_jobs_due_idx').on(t.completedAt, t.notBefore, t.lockedAt),
+  ],
+)
+
 // ── Deduplicação de webhooks de entrada ─────────────────────────────────────
 export const processedWebhooks = members.table(
   'processed_webhooks',
@@ -1305,6 +1416,9 @@ export const schema = {
   renewalRemindersSent,
   challengeCustomThemes,
   challengeMonthOverrides,
+  creations,
+  accountDeletionFences,
+  creationCleanupJobs,
   processedWebhooks,
 }
 

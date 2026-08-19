@@ -1,10 +1,17 @@
 import { Elysia } from 'elysia'
 import type { AccessCheckService } from '../../../application/access-check/access-check.service'
+import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetShowcasePayloadService } from '../../../application/get-showcase-payload/get-showcase-payload.service'
 import type { GetProfileAllowanceService } from '../../../application/profile-allowance/get-profile-allowance.service'
 import type { ValidateCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { assertInternalCaller } from '../auth'
-import { AccessCheckBody, IdParams, ProfileAllowanceQuery, ShowcaseEligibilityQuery } from '../dtos'
+import {
+  AccessCheckBody,
+  AccountDeletionFinalizeBody,
+  IdParams,
+  ProfileAllowanceQuery,
+  ShowcaseEligibilityQuery,
+} from '../dtos'
 
 export interface InternalRoutesDeps {
   accessCheck: AccessCheckService
@@ -14,6 +21,8 @@ export interface InternalRoutesDeps {
   showcasePayload: GetShowcasePayloadService
   /** Validação PÚBLICA de certificado (consumida pelo BFF da página `/validar/:id`). */
   validateCertificate: ValidateCertificateService
+  /** Segunda purga pós-TTL, consumida pelo worker durável do member-shell. */
+  purgeUserData: PurgeUserDataService
   /** Token interno (= INTERNAL_API_TOKEN). Exigido SEMPRE que setado (S2S, não passa pelo gateway). */
   internalToken?: string
 }
@@ -33,6 +42,17 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       .post('/access-check', ({ body }) => deps.accessCheck.execute(body.userId, body.courseRefs), {
         body: AccessCheckBody,
       })
+      .post(
+        '/account-deletion/finalize',
+        async ({ body }) => {
+          await deps.purgeUserData.execute({
+            userId: body.accountId,
+            profileIds: body.userIds.filter((id) => id !== body.accountId),
+          })
+          return { finalized: true }
+        },
+        { body: AccountDeletionFinalizeBody },
+      )
       .get('/profile-allowance', ({ query }) => deps.profileAllowance.execute(query.accountId), {
         query: ProfileAllowanceQuery,
       })

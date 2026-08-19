@@ -24,6 +24,7 @@ import {
   type PintaPixelLayer,
   resolveAssetPalette,
 } from '../../core/project'
+import { shortcut } from '../../core/shortcuts'
 import {
   addPixelLayer,
   layerIndexOf,
@@ -41,6 +42,7 @@ import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { addPointerDragListeners } from './pointerDrag'
+import { useActionShortcuts } from './useActionShortcuts'
 
 /** Miniatura do desenho da camada no quadro atual. */
 function LayerThumb({
@@ -85,6 +87,15 @@ export function LayerPanel(): JSX.Element | null {
   const dragCleanupRef = useRef<(() => void) | null>(null)
 
   useEffect(() => () => dragCleanupRef.current?.(), [])
+
+  // Shift+N = nova camada (Aseprite). `handleAdd` lê o estado vivo e é içada.
+  useActionShortcuts([
+    {
+      combo: shortcut('addLayer'),
+      run: () => handleAdd(),
+      when: () => isPixelLayeredKind(editor.getState().asset),
+    },
+  ])
 
   if (!isPixelLayeredKind(asset)) return null
 

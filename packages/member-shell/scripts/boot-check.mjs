@@ -12,6 +12,7 @@
  * Mantenha as regras em sincronia com `src/instrumentation.ts`.
  */
 const prod = process.env.NODE_ENV === 'production'
+const requireCreationCleanup = process.argv.includes('--require-creation-cleanup')
 const problems = []
 
 const hs256 = process.env.JWT_HS256_SECRET?.trim()
@@ -42,6 +43,14 @@ if (prod) {
   const memberShellSecret = process.env.MEMBER_SHELL_HMAC_SECRET?.trim()
   if (!memberShellSecret || memberShellSecret.length < 16) {
     problems.push('MEMBER_SHELL_HMAC_SECRET com pelo menos 16 chars (persistência do Zappy)')
+  }
+  if (requireCreationCleanup) {
+    const cleanupSecret = process.env.CREATION_CLEANUP_CRON_SECRET?.trim()
+    if (!cleanupSecret || cleanupSecret.length < 24) {
+      problems.push(
+        'CREATION_CLEANUP_CRON_SECRET com pelo menos 24 chars (limpeza durável de criações)',
+      )
+    }
   }
   if (process.env.REQUIRE_PARENT_GATE_HMAC_SECRET === '1') {
     const parentGateSecret = process.env.PARENT_GATE_HMAC_SECRET?.trim()

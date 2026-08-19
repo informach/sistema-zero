@@ -10,6 +10,7 @@
  * default `sistema-zero-pinta`.
  */
 import { createStore, del, get, getMany, keys, setMany } from 'idb-keyval'
+import { perfSpan, perfSpanAsync } from '../core/perf'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
@@ -36,15 +37,16 @@ export function getPintaStorageNamespace(): string {
   return storageNamespace
 }
 
+const dbNameFor = (namespace: string): string =>
+  namespace ? `sistema-zero-pinta-${namespace}` : 'sistema-zero-pinta'
+const dbNames = new WeakMap<StoreHandle, string>()
 function getStoreHandle(explicit?: string): StoreHandle {
   const namespace = explicit ?? storageNamespace
   const cached = stores.get(namespace)
   if (cached) return cached
-  const created = createStore(
-    namespace ? `sistema-zero-pinta-${namespace}` : 'sistema-zero-pinta',
-    'kv',
-  )
+  const created = createStore(dbNameFor(namespace), 'kv')
   stores.set(namespace, created)
+  dbNames.set(created, dbNameFor(namespace))
   return created
 }
 
@@ -53,12 +55,129 @@ function getStoreHandle(explicit?: string): StoreHandle {
 const writeChains = new WeakMap<StoreHandle, Promise<void>>()
 const backupSizeCaches = new WeakMap<StoreHandle, GalleryBackupSizeCache>()
 
+/**
+ * Desenhos ABERTOS no editor nesta página (id → quantos editores). O host usa
+ * `isPintaAssetOpen` para NÃO gravar por baixo de um desenho aberto (a descida da nuvem
+ * "nuvem mais nova, local intocado" sobrescreveria o disco enquanto o editor segura a versão
+ * antiga em memória — e o próximo autosave subiria por cima da versão do outro aparelho).
+ * Mesma ideia do `isProjectOpenAnywhere` do Estúdio.
+ */
+const openAssets = new Map<string, number>()
+export type PintaAssetOpenEvent = { type: 'opened' | 'closed'; id: string }
+const openListeners = new Set<(event: PintaAssetOpenEvent) => void>()
+function notifyOpen(event: PintaAssetOpenEvent): void {
+  for (const listener of openListeners) {
+    try {
+      listener(event)
+    } catch {
+      // Um ouvinte com defeito não pode derrubar o editor.
+    }
+  }
+}
+export function markPintaAssetOpen(id: string): void {
+  const count = openAssets.get(id) ?? 0
+  openAssets.set(id, count + 1)
+  if (count === 0) notifyOpen({ type: 'opened', id })
+}
+export function markPintaAssetClosed(id: string): void {
+  const count = openAssets.get(id) ?? 0
+  if (count <= 1) {
+    openAssets.delete(id)
+    if (count === 1) notifyOpen({ type: 'closed', id })
+  } else {
+    openAssets.set(id, count - 1)
+  }
+}
+export function isPintaAssetOpen(id: string): boolean {
+  return openAssets.has(id)
+}
+/**
+ * Observa abrir/fechar de desenhos no editor (o host usa para, ao FECHAR um desenho que a
+ * descida da nuvem pulou por estar aberto, trazer a versão da nuvem na hora — e não só na
+ * próxima carga). Devolve o desligar.
+ */
+export function subscribePintaAssetOpenState(
+  listener: (event: PintaAssetOpenEvent) => void,
+): () => void {
+  openListeners.add(listener)
+  return () => {
+    openListeners.delete(listener)
+  }
+}
+
+/**
+ * Outra ABA do mesmo perfil gravou/apagou (o Estúdio abre o Pinta em aba nova; a descida da
+ * nuvem de outra instância): avisa para o inventário do orçamento desta aba ESQUECER esses
+ * ids — são relidos (e medidos de novo) na próxima gravação. Sem isto o inventário guardava
+ * os bytes VELHOS de um desenho atualizado lá (mesmo id), e o orçamento dos 32 MiB podia
+ * deixar passar. Um canal por banco; o canal não recebe as próprias mensagens.
+ */
+const crossTabChannels = new WeakMap<StoreHandle, BroadcastChannel | null>()
+function crossTabChannelFor(storeHandle: StoreHandle, dbName: string): BroadcastChannel | null {
+  if (crossTabChannels.has(storeHandle)) return crossTabChannels.get(storeHandle) ?? null
+  let channel: BroadcastChannel | null = null
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      channel = new BroadcastChannel(`pinta:assets:${dbName}`)
+      channel.onmessage = (event: MessageEvent<{ ids?: unknown }>) => {
+        const ids = event.data?.ids
+        if (!Array.isArray(ids)) return
+        const cache = backupSizeCaches.get(storeHandle)
+        if (!cache) return
+        for (const id of ids) if (typeof id === 'string') cache.remove(id)
+      }
+    } catch {
+      channel = null
+    }
+  }
+  crossTabChannels.set(storeHandle, channel)
+  return channel
+}
+function notifyOtherTabs(storeHandle: StoreHandle, dbName: string, ids: readonly string[]): void {
+  if (ids.length === 0) return
+  try {
+    crossTabChannelFor(storeHandle, dbName)?.postMessage({ ids })
+  } catch {
+    // Canal fechado/indisponível: o inventário da outra aba se alinha na próxima carga.
+  }
+}
+
 function backupSizeCacheFor(storeHandle: StoreHandle): GalleryBackupSizeCache {
   const cached = backupSizeCaches.get(storeHandle)
   if (cached) return cached
   const created = new GalleryBackupSizeCache()
   backupSizeCaches.set(storeHandle, created)
   return created
+}
+
+/**
+ * Mede os bytes pendentes do inventário em fatias de tempo ocioso (só no navegador). Sem
+ * `requestIdleCallback` (Safari/iPad) cai em fatias curtas por `setTimeout` — senão a medição
+ * inteira caía no primeiro traço da criança justamente no tablet.
+ */
+const WARMUP_FALLBACK_SLICE_MS = 6
+function scheduleWarmUp(cache: GalleryBackupSizeCache): void {
+  if (typeof window === 'undefined' || cache.pendingCount === 0) return
+  const ric = (
+    globalThis as {
+      requestIdleCallback?: (cb: (deadline: { timeRemaining(): number }) => void) => number
+    }
+  ).requestIdleCallback
+  if (typeof ric === 'function') {
+    ric(function slice(deadline) {
+      perfSpan('pinta:backup:warmup', () => {
+        const done = cache.warmUp(Math.max(4, deadline.timeRemaining()))
+        if (!done) ric(slice)
+      })
+    })
+    return
+  }
+  setTimeout(function slice() {
+    perfSpan('pinta:backup:warmup', () => {
+      const done = cache.warmUp(WARMUP_FALLBACK_SLICE_MS)
+      if (!done) setTimeout(slice, 0)
+    })
+  }, 0)
 }
 
 export function runSerializedWrite(
@@ -79,12 +198,29 @@ export function runSerializedWrite(
   return next
 }
 
+/**
+ * Avisos de um armazenamento que muda POR FORA da galeria (o host que sincroniza com a nuvem,
+ * por exemplo): `sync-start`/`sync-end` delimitam uma sincronia em andamento (a galeria mostra
+ * "buscando…" e quem espera um desenho que ainda não chegou aguarda), `changed` diz que a lista
+ * do disco mudou (a galeria relê, coalescido).
+ */
+export type PintaPersistenceEvent =
+  | { type: 'sync-start' }
+  | { type: 'changed' }
+  | { type: 'sync-end' }
+
 export interface PintaPersistence {
   persistAsset(asset: PintaAsset): Promise<void>
   persistAssets(assets: readonly PintaAsset[]): Promise<void>
   deleteAsset(id: string): Promise<void>
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
+  /**
+   * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do
+   * perfil e o armazenamento da aula não emitem nada; o wrapper da nuvem do host, sim — é o
+   * que deixa a galeria abrir com o LOCAL na hora e receber o que desce depois.
+   */
+  subscribe?(listener: (event: PintaPersistenceEvent) => void): () => void
 }
 
 /**
@@ -148,41 +284,71 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     const pairs = [...unique.values()].map(
       (asset) => [assetKey(asset.id), asset] as [IDBValidKey, PintaAsset],
     )
-    await runSerializedWrite(storeHandle, async () => {
-      const current = await listAssetsForStore(storeHandle)
-      const projectedById = new Map(current.map((asset) => [asset.id, asset]))
-      for (const asset of unique.values()) projectedById.set(asset.id, asset)
-      const projected = [...projectedById.values()]
-      const changedIds = new Set(unique.keys())
-      // A primeira leitura aquece o legado; depois só percorre ids/timestamps.
-      // A projeção força exclusivamente os assets desta mutação.
-      const currentBytes = backupSizeCache.byteLength(current)
-      const projectedBytes = backupSizeCache.byteLength(projected, changedIds)
-      if (projectedBytes > MAX_BACKUP_FILE_BYTES) {
-        // Legado acima do teto continua editável quando a mutação REDUZ o
-        // backup. Em galeria saudável, qualquer projeção acima é recusada.
-        if (projectedBytes >= currentBytes) {
-          backupSizeCache.invalidate(changedIds)
-          throw new PintaStorageBudgetError(projectedBytes)
+    const changed = [...unique.values()]
+    await perfSpanAsync('pinta:persist', () =>
+      runSerializedWrite(storeHandle, async () => {
+        // O orçamento é projetado pelo INVENTÁRIO (total corrente − tocados + novos), sem
+        // reler a galeria inteira a cada autosave. Sem inventário (primeira gravação sem a
+        // galeria ter sido carregada — importar, galeria legada semeada direto no disco):
+        // semeia uma vez. Com inventário: só a lista de CHAVES (barata) para alinhar ids
+        // gravados/apagados por outra aba ou outra instância.
+        await perfSpanAsync('pinta:persist:read', async () => {
+          if (!backupSizeCache.seeded) {
+            backupSizeCache.seed(await listAssetsForStore(storeHandle))
+            return
+          }
+          const allKeys = await keys(storeHandle)
+          const ids = allKeys
+            .filter(
+              (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
+            )
+            .map((key) => key.slice(ASSET_KEY_PREFIX.length))
+          await backupSizeCache.syncIds(ids, async (missing) => {
+            const values = await getMany<unknown>(
+              missing.map((id) => assetKey(id)),
+              storeHandle,
+            )
+            return values
+              .map((value) => safeSanitize(value))
+              .filter((asset): asset is PintaAsset => asset !== null)
+          })
+        })
+        const { currentBytes, projectedBytes } = perfSpan('pinta:persist:budget', () => ({
+          currentBytes: backupSizeCache.totalBytes(),
+          projectedBytes: backupSizeCache.projectedBytes(changed),
+        }))
+        if (projectedBytes > MAX_BACKUP_FILE_BYTES) {
+          // Legado acima do teto continua editável quando a mutação REDUZ o
+          // backup. Em galeria saudável, qualquer projeção acima é recusada.
+          if (projectedBytes >= currentBytes) {
+            // A medição da versão RECUSADA não fica no cache (mesmo `{id, updatedAt}` pode voltar
+            // com outro conteúdo): como antes.
+            backupSizeCache.invalidate(changed.map((asset) => asset.id))
+            throw new PintaStorageBudgetError(projectedBytes)
+          }
         }
-      }
-      try {
-        await setMany(pairs, storeHandle)
-      } catch (error) {
-        // O cache já descreve a projeção; uma transação recusada continua com
-        // o estado anterior no disco, então a contribuição tocada é inválida.
-        backupSizeCache.invalidate(changedIds)
-        throw error
-      }
-    })
+        await perfSpanAsync('pinta:persist:write', () => setMany(pairs, storeHandle))
+        // Só depois do write resolver: uma transação recusada deixa o disco e o inventário como
+        // estavam.
+        backupSizeCache.commit(changed)
+        notifyOtherTabs(
+          storeHandle,
+          dbNames.get(storeHandle) ?? '',
+          changed.map((asset) => asset.id),
+        )
+      }),
+    )
   }
+  // Liga o canal entre abas deste banco (recebe os ids que outra aba gravou/apagou).
+  crossTabChannelFor(storeHandle, dbNames.get(storeHandle) ?? '')
   return {
     persistAsset: (asset) => persistAssetsForStore([asset]),
     persistAssets: persistAssetsForStore,
     deleteAsset: (id) =>
       runSerializedWrite(storeHandle, async () => {
         await del(assetKey(id), storeHandle)
-        backupSizeCache.invalidate([id])
+        backupSizeCache.remove(id)
+        notifyOtherTabs(storeHandle, dbNames.get(storeHandle) ?? '', [id])
       }),
     async loadAssetById(id) {
       const raw = await get<unknown>(assetKey(id), storeHandle)
@@ -191,6 +357,12 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     async listAllAssets() {
       const assets = await listAssetsForStore(storeHandle)
       assets.sort((a, b) => b.updatedAt - a.updatedAt)
+      // A carga da galeria SEMEIA o inventário do orçamento (é a mesma leitura) e mede os
+      // bytes em fatias ociosas: o custo de codificar a galeria inteira (RLE+JSON) sai do
+      // primeiro traço da criança. Sem `requestIdleCallback` (SSR/testes) fica para a
+      // primeira gravação, determinístico.
+      backupSizeCache.seed(assets)
+      scheduleWarmUp(backupSizeCache)
       return assets
     },
   }

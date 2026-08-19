@@ -4,9 +4,11 @@
  * junto. Serve os três editores: o pixel e o mapa trocam a ferramenta da sessão,
  * o vetor troca o estado local dele.
  *
- * Combinação com Ctrl/Cmd/Alt é ignorada (Ctrl+C/V/Z continuam sendo copiar/
- * colar/desfazer) e campos de texto também — digitar o nome do desenho não pode
- * trocar de ferramenta. Mesmo guard dos outros listeners do editor.
+ * Combinação com Ctrl/Cmd/Alt/Shift é ignorada (Ctrl+C/V/Z continuam sendo
+ * copiar/colar/desfazer; Shift+H/V/R/X/N são atalhos de AÇÃO do
+ * `useActionShortcuts`, 08/2026 — antes Shift+H trocava para a Mão junto) e
+ * campos de texto também — digitar o nome do desenho não pode trocar de
+ * ferramenta. Mesmo guard dos outros listeners do editor.
  */
 import { useEffect, useRef } from 'react'
 import { isTextEntryTarget } from '../../core/dom'
@@ -33,7 +35,7 @@ export function useToolShortcuts<T extends string>(
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
-      if (event.ctrlKey || event.metaKey || event.altKey) return
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
       if (isTextEntryTarget(event.target)) return
       const tool = shortcuts[event.key.toLowerCase()]
       if (tool) setToolRef.current(tool)

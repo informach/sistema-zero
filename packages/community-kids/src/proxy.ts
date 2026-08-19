@@ -48,9 +48,11 @@ export const config = {
   // (o "Compartilhar" do Estúdio Completo, multipart, com `requireUploadSession` próprio).
   // `api/studio/describe` FICA no matcher (JSON pequeno: ganha o anti-CSRF same-origin do proxy).
   // `api/studio/cleanup` fica FORA: é S2S do hub (rede interna, HMAC — não é sessão de aluno).
+  // `api/internal/creation-cleanups` também fica FORA: é acionado pelo scheduler com
+  // bearer próprio e chama o gateway por HMAC; o anti-CSRF de browser o bloquearia.
   // `api/certificates` (validação PÚBLICA do certificado pelo QR — `GET /api/certificates/:id/validate`)
   // fica FORA do matcher: é anônima (sem gate de sessão), igual a `api/studio/play`.
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/certificates).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/me/avatar|api/members/avatar/snapshot|api/hub/uploads/image|api/hub/showcase|api/studio/publish|api/studio/play|api/studio/cleanup|api/internal/creation-cleanups|api/certificates).*)',
   ],
 }

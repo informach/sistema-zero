@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { COPY } from '../../core/copy'
-import type { PintaAsset } from '../../core/project'
+import { type PintaAsset, sanitizePintaAsset } from '../../core/project'
 import type { RGBAImage } from '../../import/quantize'
 import { ImportImageDialog } from './ImportImageDialog'
 
@@ -100,6 +100,121 @@ describe('ImportImageDialog', () => {
       expect(asset.cels[0]?.width).toBe(32)
       expect(asset.cels[0]?.height).toBe(24)
     }
+  })
+
+  it('foto → PERSONAGEM → Médio (32) → nome → importa um pixel-sprite com o quadro casando o bitmap', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={redImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    // O cartão Personagem é o PRIMEIRO dos alvos (é o caso mais comum: um PNG que
+    // vira boneco). O 1º botão do diálogo é o "Fechar" do próprio Dialog.
+    const targetTitles = [
+      COPY.importImage.asSprite.title,
+      COPY.importImage.asBackground.title,
+      COPY.importImage.asTileset.title,
+    ]
+    const cards = screen
+      .getAllByRole('button')
+      .filter((b) => targetTitles.some((t) => b.textContent?.includes(t)))
+    expect(cards.map((b) => b.textContent)).toHaveLength(3)
+    expect(cards[0]?.textContent).toContain(COPY.importImage.asSprite.title)
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asSprite.title) }),
+    )
+
+    // O Médio (32) já vem marcado; a nota "entra inteira, sem cortar" aparece.
+    expect(screen.getByText(COPY.importImage.spriteSizeTitle)).toBeTruthy()
+    const medium = screen.getByRole('button', { name: new RegExp(`^${COPY.sizes[32]}`) })
+    expect(medium.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByText(new RegExp(COPY.importImage.spriteFitNote))).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.next }))
+
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'meu-heroi' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    expect(imported).not.toBeNull()
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-sprite')
+    expect(asset.name).toBe('meu-heroi')
+    if (asset.kind === 'pixel-sprite') {
+      expect(asset.frameWidth).toBe(32)
+      expect(asset.frameHeight).toBe(32)
+      const cel = asset.animations[0]?.frames[0]?.[0]
+      expect(cel?.width).toBe(32)
+      expect(cel?.height).toBe(32)
+      // Um cel por camada (o quadro nasce com a camada única da fábrica).
+      expect(asset.animations[0]?.frames[0]).toHaveLength(asset.layers.length)
+      // A imagem 16×16 vermelha foi AMPLIADA para preencher o quadro: nenhum pixel transparente.
+      expect(Array.from(cel?.data ?? []).every((index) => index !== 0)).toBe(true)
+    }
+    // O que entra pelo import é o que o sanitize aceita — senão sumiria da galeria.
+    expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
+  })
+
+  it('foto → PERSONAGEM → tamanho PERSONALIZADO deitado (16×8) → importa sem cortar (contain)', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={redImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asSprite.title) }),
+    )
+    // Personalizado semeia os DOIS campos a partir do preset marcado ("32" → 32 e 32).
+    fireEvent.click(screen.getByRole('button', { name: COPY.newAsset.customSize.card }))
+    const width = screen.getByLabelText(COPY.newAsset.customSize.width) as HTMLInputElement
+    const height = screen.getByLabelText(COPY.newAsset.customSize.height) as HTMLInputElement
+    expect(width.value).toBe('32')
+    expect(height.value).toBe('32')
+
+    // Fora da faixa (8..128) trava o Avançar.
+    fireEvent.change(width, { target: { value: '4' } })
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+
+    fireEvent.change(width, { target: { value: '16' } })
+    fireEvent.change(height, { target: { value: '8' } })
+    expect(next.disabled).toBe(false)
+    fireEvent.click(next)
+
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'nave' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-sprite')
+    if (asset.kind === 'pixel-sprite') {
+      expect(asset.frameWidth).toBe(16)
+      expect(asset.frameHeight).toBe(8)
+      const cel = asset.animations[0]?.frames[0]?.[0]
+      expect(cel?.width).toBe(16)
+      expect(cel?.height).toBe(8)
+      // A foto quadrada 16×16 entra INTEIRA num quadro deitado: vira 8×8 no meio,
+      // com 4 colunas transparentes de cada lado (contain, nunca cover).
+      const data = Array.from(cel?.data ?? [])
+      const row = data.slice(0, 16)
+      expect(row.slice(0, 4).every((i) => i === 0)).toBe(true)
+      expect(row.slice(4, 12).every((i) => i !== 0)).toBe(true)
+      expect(row.slice(12).every((i) => i === 0)).toBe(true)
+    }
+    expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
   })
 
   it('fechar no Personalizado e reabrir volta ao preset médio (o diálogo fica montado)', () => {

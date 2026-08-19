@@ -24,30 +24,57 @@ export class DeleteUserService {
     private readonly logger: Logger,
   ) {}
 
-  async execute(command: DeleteUserCommand): Promise<void> {
-    const { targetId, actor } = command
+  /** Bloqueia a conta e captura todos os donos de dados antes da purga externa. */
+  async prepare(command: DeleteUserCommand): Promise<{ profileIds: string[]; completed?: true }> {
+    this.assertActorAllowed(command)
+    const user = await this.users.findById(command.targetId)
+    if (!user) {
+      const receipt = await this.users.findDeletionReceipt(command.targetId)
+      if (!receipt) throw new UserNotFoundError()
+      return { ...receipt, completed: true }
+    }
+    this.assertTargetAllowed(user.role)
+    const prepared = await this.users.prepareDeletion(user.id)
+    if (!prepared) throw new UserNotFoundError()
+    this.logger.info('admin.user.deletion_prepared', {
+      userId: user.id,
+      profileCount: prepared.profileIds.length,
+      by: command.actor.id,
+    })
+    return prepared
+  }
 
+  async execute(command: DeleteUserCommand): Promise<void> {
+    this.assertActorAllowed(command)
+    const user = await this.users.findById(command.targetId)
+    if (!user) {
+      if (await this.users.findDeletionReceipt(command.targetId)) return
+      throw new UserNotFoundError()
+    }
+    this.assertTargetAllowed(user.role)
+    await this.users.deleteById(user.id)
+
+    this.logger.info('admin.user.deleted', {
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+      by: command.actor.id,
+    })
+  }
+
+  private assertActorAllowed(command: DeleteUserCommand): void {
+    const { targetId, actor } = command
     if (actor.role !== 'superadmin') {
       throw new ForbiddenError('Apenas superadmin pode excluir usuários')
     }
     if (actor.id === targetId) {
       throw new ForbiddenError('Você não pode excluir a própria conta')
     }
+  }
 
-    const user = await this.users.findById(targetId)
-    if (!user) throw new UserNotFoundError()
-
-    if (PROTECTED_ROLES.has(user.role)) {
+  private assertTargetAllowed(role: UserRole): void {
+    if (PROTECTED_ROLES.has(role)) {
       throw new ForbiddenError('Contas admin/superadmin não podem ser excluídas')
     }
-
-    await this.users.deleteById(targetId)
-
-    this.logger.info('admin.user.deleted', {
-      userId: targetId,
-      email: user.email,
-      role: user.role,
-      by: actor.id,
-    })
   }
 }

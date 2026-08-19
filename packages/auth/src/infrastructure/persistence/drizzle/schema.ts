@@ -55,6 +55,16 @@ export const users = auth.table(
 )
 
 /**
+ * Recibo da exclusão física. Não tem FK de propósito: sobrevive ao usuário e
+ * torna retries distinguíveis de IDs que nunca existiram.
+ */
+export const userDeletionReceipts = auth.table('user_deletion_receipts', {
+  userId: uuid('user_id').primaryKey(),
+  profileIds: uuid('profile_ids').array().notNull(),
+  completedAt: timestamp('completed_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+/**
  * Refresh tokens (rotação + reuse-detection). Guarda só o `tokenHash` (sha256) —
  * nunca o valor opaco. `familyId` agrupa uma cadeia de rotações: apresentar um
  * token já revogado revoga a FAMÍLIA inteira (mitiga roubo de refresh token).
@@ -245,6 +255,7 @@ export const auditLogs = auth.table(
 
 export const schema = {
   users,
+  userDeletionReceipts,
   refreshTokens,
   passwordResetTokens,
   otpCodes,

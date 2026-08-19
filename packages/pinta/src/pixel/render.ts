@@ -47,6 +47,56 @@ export function bitmapToRGBA(
 }
 
 /**
+ * Tamanho de pintura de uma MINIATURA: o bitmap inteiro quando cabe em `maxPx` (1:1,
+ * nítido), senão reduzido proporcionalmente para caber (um cenário 512×512 virava um
+ * canvas de 1 MiB por card; com 192 px no maior lado são ~147 KB). Puro (testável).
+ */
+export function thumbTargetSize(
+  width: number,
+  height: number,
+  maxPx: number,
+): { width: number; height: number; scale: number } {
+  const longest = Math.max(width, height)
+  if (longest <= maxPx || longest === 0) return { width, height, scale: 1 }
+  const scale = maxPx / longest
+  return {
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
+    scale,
+  }
+}
+
+/** Canvas auxiliar de módulo para reduzir miniaturas (um só, reaproveitado). */
+let thumbScratch: HTMLCanvasElement | null = null
+
+/**
+ * Pinta o bitmap num canvas de MINIATURA: 1:1 quando cabe em `maxPx`, senão reduzido
+ * (suavização alta — na galeria, reconhecer o cenário vale mais que a nitidez do pixel;
+ * o CSS `pixelated` continua). Devolve false sem contexto 2D (happy-dom).
+ */
+export function paintBitmapCapped(
+  canvas: HTMLCanvasElement,
+  bitmap: PintaBitmap,
+  colors: readonly string[],
+  maxPx: number,
+): boolean {
+  const target = thumbTargetSize(bitmap.width, bitmap.height, maxPx)
+  if (target.scale === 1) return paintBitmap(canvas, bitmap, colors)
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return false
+  if (typeof document === 'undefined') return false
+  thumbScratch ??= document.createElement('canvas')
+  if (!paintBitmap(thumbScratch, bitmap, colors)) return false
+  if (canvas.width !== target.width) canvas.width = target.width
+  if (canvas.height !== target.height) canvas.height = target.height
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.clearRect(0, 0, target.width, target.height)
+  ctx.drawImage(thumbScratch, 0, 0, bitmap.width, bitmap.height, 0, 0, target.width, target.height)
+  return true
+}
+
+/**
  * Pinta o bitmap 1:1 num canvas (redimensiona o canvas para o bitmap).
  * Devolve false se o ambiente não tem contexto 2D (happy-dom).
  */

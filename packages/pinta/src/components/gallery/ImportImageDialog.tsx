@@ -1,8 +1,12 @@
 /**
- * "Trazer uma foto": a criança escolhe se a imagem vira CENÁRIO ou PEÇAS, o
- * tamanho, e vê uma PRÉVIA já quantizada (cores do Pinta). Confirmar monta o
- * asset e entra pela mesma porta do backup (`galleryStore.importAssets`). A
- * decodificação (browser) acontece no GalleryScreen; aqui só o núcleo puro.
+ * "Trazer uma foto": a criança escolhe se a imagem vira PERSONAGEM, CENÁRIO ou
+ * PEÇAS, o tamanho, e vê uma PRÉVIA já quantizada (cores do Pinta). Confirmar
+ * monta o asset e entra pela mesma porta do backup (`galleryStore.importAssets`).
+ * A decodificação (browser) acontece no GalleryScreen; aqui só o núcleo puro.
+ *
+ * Personagem (08/2026, pedido dela): o PNG entra INTEIRO no quadro (contain,
+ * sem cortar, transparência preservada) — o cover do cenário cortaria braço ou
+ * orelha de um boneco. Vira `pixel-sprite` com um quadro na animação `parado`.
  */
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -11,16 +15,19 @@ import { getPalette } from '../../core/palette'
 import {
   BACKGROUND_SIZES,
   createPixelBackgroundAsset,
+  createPixelSpriteAsset,
   createTilesetAsset,
   normalizeAssetName,
   type PintaAsset,
   type PintaBitmap,
+  SPRITE_FRAME_SIZES,
   TILE_SIZES,
 } from '../../core/project'
 import {
   detectTileSize,
   quantizeToIndexed,
   type RGBAImage,
+  resizeContain,
   resizeCover,
   sliceIndexedTiles,
 } from '../../import/quantize'
@@ -37,8 +44,30 @@ import {
   seedCustomValues,
 } from './customSize'
 
-type Target = 'background' | 'tileset'
+type Target = 'sprite' | 'background' | 'tileset'
 type Step = 'target' | 'size' | 'name'
+
+const TARGETS: readonly Target[] = ['sprite', 'background', 'tileset']
+
+const DEFAULT_BACKGROUND_KEY = `${BACKGROUND_SIZES[1]?.width}x${BACKGROUND_SIZES[1]?.height}`
+/** O quadro Médio (32): o mesmo padrão sensato do "Criar novo". */
+const DEFAULT_SPRITE_KEY = String(SPRITE_FRAME_SIZES[1])
+
+/** "32" → 32×32; "128x32" → 128×32 (o formato que o assistente já usa). */
+function parseSizeKey(key: string, fallback: number): { width: number; height: number } {
+  const [w, h] = key.split('x').map(Number)
+  const width = Number.isFinite(w) && w ? w : fallback
+  return { width, height: Number.isFinite(h) && h ? h : width }
+}
+
+const SIZE_CARD = 'pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition' as const
+function sizeCardClass(pressed: boolean): string {
+  return `${SIZE_CARD} ${
+    pressed
+      ? 'border-pin-accent bg-pin-accent/10'
+      : 'border-pin-border bg-pin-bg hover:border-pin-accent'
+  }`
+}
 
 function BitmapCanvas({
   bitmap,
@@ -52,11 +81,18 @@ function BitmapCanvas({
     const canvas = canvasRef.current
     if (canvas) paintBitmap(canvas, bitmap, colors)
   }, [bitmap, colors])
+  // Prévia AMPLIADA por número inteiro (um personagem de 16×16 num canvas de 16 px na
+  // tela não deixa avaliar a quantização); o `max-*` segura o cenário grande.
+  const scale = Math.max(1, Math.min(8, Math.floor(160 / Math.max(bitmap.width, bitmap.height))))
   return (
     <canvas
       ref={canvasRef}
       className="pin-pixelated max-h-40 max-w-full object-contain"
-      style={{ imageRendering: 'pixelated' }}
+      style={{
+        imageRendering: 'pixelated',
+        width: bitmap.width * scale,
+        height: bitmap.height * scale,
+      }}
     />
   )
 }
@@ -75,10 +111,13 @@ export function ImportImageDialog({
 }): JSX.Element | null {
   const [step, setStep] = useState<Step>('target')
   const [target, setTarget] = useState<Target>('background')
-  const [sizeKey, setSizeKey] = useState<string>(
-    `${BACKGROUND_SIZES[1]?.width}x${BACKGROUND_SIZES[1]?.height}`,
-  )
+  const [sizeKey, setSizeKey] = useState<string>(DEFAULT_BACKGROUND_KEY)
   const [customValues, setCustomValues] = useState<CustomSizeValues>(EMPTY_CUSTOM_VALUES)
+  // Estado PRÓPRIO do personagem: a chave do cenário ("240x180") não serve de
+  // quadro, e misturar os dois vazaria o tamanho de um alvo no outro.
+  const [spriteSizeKey, setSpriteSizeKey] = useState<string>(DEFAULT_SPRITE_KEY)
+  const [spriteCustomValues, setSpriteCustomValues] =
+    useState<CustomSizeValues>(EMPTY_CUSTOM_VALUES)
   const [tileSize, setTileSize] = useState<number>(16)
   const [name, setName] = useState('')
 
@@ -94,10 +133,10 @@ export function ImportImageDialog({
     // com o card Personalizado selecionado e os campos recém-limpos seria um
     // beco (Avançar travado, sem prévia). A sentinela volta ao preset médio;
     // um preset comum escolhido continua lembrado, como antes.
-    setSizeKey((k) =>
-      k === CUSTOM_SIZE_KEY ? `${BACKGROUND_SIZES[1]?.width}x${BACKGROUND_SIZES[1]?.height}` : k,
-    )
+    setSizeKey((k) => (k === CUSTOM_SIZE_KEY ? DEFAULT_BACKGROUND_KEY : k))
     setCustomValues(EMPTY_CUSTOM_VALUES)
+    setSpriteSizeKey((k) => (k === CUSTOM_SIZE_KEY ? DEFAULT_SPRITE_KEY : k))
+    setSpriteCustomValues(EMPTY_CUSTOM_VALUES)
     setName('')
   }
   function close(): void {
@@ -105,20 +144,34 @@ export function ImportImageDialog({
     onClose()
   }
 
-  // Tamanho personalizado (só o CENÁRIO — peças mantêm a whitelist do motor):
-  // o import cria sempre pixel-background, então a spec é a dele. Chave real
-  // derivada dos campos; inválida ⇒ null ⇒ sem prévia e Avançar desabilitado.
-  const customSpec = customSizeSpecFor('pixel-background')
+  // Tamanho personalizado (cenário e personagem — peças mantêm a whitelist do
+  // motor). Chave real derivada dos campos; inválida ⇒ null ⇒ sem prévia e
+  // Avançar desabilitado.
+  const backgroundSpec = customSizeSpecFor('pixel-background')
+  const spriteSpec = customSizeSpecFor('pixel-sprite')
   const effectiveSizeKey =
-    sizeKey === CUSTOM_SIZE_KEY ? buildCustomSizeKey('pixel-background', customValues) : sizeKey
+    target === 'sprite'
+      ? spriteSizeKey === CUSTOM_SIZE_KEY
+        ? buildCustomSizeKey('pixel-sprite', spriteCustomValues)
+        : spriteSizeKey
+      : sizeKey === CUSTOM_SIZE_KEY
+        ? buildCustomSizeKey('pixel-background', customValues)
+        : sizeKey
 
   // Prévia: quantiza o resultado do alvo/tamanho corrente (memo por combinação
   // VÁLIDA — digitação inválida não recomputa nem some com a prévia anterior).
   const result = useMemo(() => {
     if (!image) return null
+    if (target === 'sprite') {
+      if (!effectiveSizeKey) return null
+      const { width: w, height: h } = parseSizeKey(effectiveSizeKey, 32)
+      const resized = resizeContain(image, w, h)
+      const { bitmap, extraColors } = quantizeToIndexed(resized)
+      return { kind: 'sprite' as const, bitmap, extraColors, width: w, height: h }
+    }
     if (target === 'background') {
       if (!effectiveSizeKey) return null
-      const [w = 240, h = 180] = effectiveSizeKey.split('x').map(Number)
+      const { width: w, height: h } = parseSizeKey(effectiveSizeKey, 240)
       const resized = resizeCover(image, w, h)
       const { bitmap, extraColors } = quantizeToIndexed(resized)
       return { kind: 'background' as const, bitmap, extraColors, width: w, height: h }
@@ -147,7 +200,25 @@ export function ImportImageDialog({
 
   function confirm(): void {
     if (!result || !normalized || tooMany) return
-    if (result.kind === 'background') {
+    if (result.kind === 'sprite') {
+      const base = createPixelSpriteAsset({
+        name: normalized,
+        frameSize: result.width,
+        frameWidth: result.width,
+        frameHeight: result.height,
+      })
+      const [first, ...others] = base.animations
+      if (!first) return
+      // ⚠️ O bitmap TEM que casar com frameWidth × frameHeight: os dois saem do
+      // mesmo `effectiveSizeKey`, então casam por construção. Um quadro fora de
+      // medida seria descartado pelo sanitize e o desenho sumiria da galeria.
+      onImport({
+        ...base,
+        // A foto entra como o único cel (uma camada) do primeiro quadro de `parado`.
+        animations: [{ ...first, frames: [[result.bitmap]] }, ...others],
+        ...(result.extraColors.length ? { extraColors: result.extraColors } : {}),
+      })
+    } else if (result.kind === 'background') {
       const base = createPixelBackgroundAsset({
         name: normalized,
         width: result.width,
@@ -176,18 +247,29 @@ export function ImportImageDialog({
     step === 'target'
       ? COPY.importImage.title
       : step === 'size'
-        ? target === 'background'
-          ? COPY.importImage.sizeTitle
-          : COPY.importImage.tileSizeTitle
+        ? target === 'sprite'
+          ? COPY.importImage.spriteSizeTitle
+          : target === 'background'
+            ? COPY.importImage.sizeTitle
+            : COPY.importImage.tileSizeTitle
         : COPY.newAsset.nameTitle
+
+  const targetInfo = {
+    sprite: COPY.importImage.asSprite,
+    background: COPY.importImage.asBackground,
+    tileset: COPY.importImage.asTileset,
+  } as const
+
+  const customOpen =
+    (target === 'sprite' && spriteSizeKey === CUSTOM_SIZE_KEY && spriteSpec) ||
+    (target === 'background' && sizeKey === CUSTOM_SIZE_KEY && backgroundSpec)
 
   return (
     <Dialog open onClose={close} title={title} wide={step !== 'name'}>
       {step === 'target' ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {(['background', 'tileset'] as const).map((t) => {
-            const info =
-              t === 'background' ? COPY.importImage.asBackground : COPY.importImage.asTileset
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {TARGETS.map((t) => {
+            const info = targetInfo[t]
             return (
               <button
                 key={t}
@@ -209,23 +291,22 @@ export function ImportImageDialog({
       {step === 'size' ? (
         <div className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2">
-            {target === 'background'
+            {target === 'sprite'
               ? [
-                  ...BACKGROUND_SIZES.map((size) => {
-                    const key = `${size.width}x${size.height}`
+                  ...SPRITE_FRAME_SIZES.map((size) => {
+                    const key = String(size)
                     return (
                       <button
                         key={key}
                         type="button"
-                        onClick={() => setSizeKey(key)}
-                        aria-pressed={sizeKey === key}
-                        className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
-                          sizeKey === key
-                            ? 'border-pin-accent bg-pin-accent/10'
-                            : 'border-pin-border bg-pin-bg hover:border-pin-accent'
-                        }`}
+                        onClick={() => setSpriteSizeKey(key)}
+                        aria-pressed={spriteSizeKey === key}
+                        className={sizeCardClass(spriteSizeKey === key)}
                       >
-                        {size.width} × {size.height}
+                        <span className="block font-bold">{COPY.sizes[size] ?? key}</span>
+                        <span className="block text-xs text-pin-muted">
+                          {size} × {size}
+                        </span>
                       </button>
                     )
                   }),
@@ -234,56 +315,89 @@ export function ImportImageDialog({
                     type="button"
                     // Só revela o formulário (aqui nem existe auto-avançar).
                     onClick={() => {
-                      if (sizeKey !== CUSTOM_SIZE_KEY) {
-                        setCustomValues(seedCustomValues('pixel-background', sizeKey))
-                        setSizeKey(CUSTOM_SIZE_KEY)
+                      if (spriteSizeKey !== CUSTOM_SIZE_KEY) {
+                        setSpriteCustomValues(seedCustomValues('pixel-sprite', spriteSizeKey))
+                        setSpriteSizeKey(CUSTOM_SIZE_KEY)
                       }
                     }}
-                    aria-pressed={sizeKey === CUSTOM_SIZE_KEY}
-                    className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
-                      sizeKey === CUSTOM_SIZE_KEY
-                        ? 'border-pin-accent bg-pin-accent/10'
-                        : 'border-pin-border bg-pin-bg hover:border-pin-accent'
-                    }`}
+                    aria-pressed={spriteSizeKey === CUSTOM_SIZE_KEY}
+                    className={sizeCardClass(spriteSizeKey === CUSTOM_SIZE_KEY)}
                   >
                     {COPY.newAsset.customSize.card}
                   </button>,
                 ]
-              : TILE_SIZES.map((ts) => (
-                  <button
-                    key={ts}
-                    type="button"
-                    onClick={() => setTileSize(ts)}
-                    aria-pressed={tileSize === ts}
-                    className={`pin-pop min-h-14 rounded-2xl border-2 p-2 text-sm transition ${
-                      tileSize === ts
-                        ? 'border-pin-accent bg-pin-accent/10'
-                        : 'border-pin-border bg-pin-bg hover:border-pin-accent'
-                    }`}
-                  >
-                    {ts} × {ts}
-                    {detected === ts ? (
-                      <span className="mt-0.5 block text-[10px] text-pin-muted">
-                        {COPY.importImage.detected}
-                      </span>
-                    ) : null}
-                  </button>
-                ))}
+              : target === 'background'
+                ? [
+                    ...BACKGROUND_SIZES.map((size) => {
+                      const key = `${size.width}x${size.height}`
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setSizeKey(key)}
+                          aria-pressed={sizeKey === key}
+                          className={sizeCardClass(sizeKey === key)}
+                        >
+                          {size.width} × {size.height}
+                        </button>
+                      )
+                    }),
+                    <button
+                      key={CUSTOM_SIZE_KEY}
+                      type="button"
+                      // Só revela o formulário (aqui nem existe auto-avançar).
+                      onClick={() => {
+                        if (sizeKey !== CUSTOM_SIZE_KEY) {
+                          setCustomValues(seedCustomValues('pixel-background', sizeKey))
+                          setSizeKey(CUSTOM_SIZE_KEY)
+                        }
+                      }}
+                      aria-pressed={sizeKey === CUSTOM_SIZE_KEY}
+                      className={sizeCardClass(sizeKey === CUSTOM_SIZE_KEY)}
+                    >
+                      {COPY.newAsset.customSize.card}
+                    </button>,
+                  ]
+                : TILE_SIZES.map((ts) => (
+                    <button
+                      key={ts}
+                      type="button"
+                      onClick={() => setTileSize(ts)}
+                      aria-pressed={tileSize === ts}
+                      className={sizeCardClass(tileSize === ts)}
+                    >
+                      {ts} × {ts}
+                      {detected === ts ? (
+                        <span className="mt-0.5 block text-[10px] text-pin-muted">
+                          {COPY.importImage.detected}
+                        </span>
+                      ) : null}
+                    </button>
+                  ))}
           </div>
 
-          {target === 'background' && sizeKey === CUSTOM_SIZE_KEY && customSpec ? (
-            <CustomSizeFields
-              spec={customSpec}
-              values={customValues}
-              onChange={(field, raw) => setCustomValues((v) => ({ ...v, [field]: raw }))}
-              idPrefix="pinta-import-size"
-            />
+          {customOpen ? (
+            target === 'sprite' && spriteSpec ? (
+              <CustomSizeFields
+                spec={spriteSpec}
+                values={spriteCustomValues}
+                onChange={(field, raw) => setSpriteCustomValues((v) => ({ ...v, [field]: raw }))}
+                idPrefix="pinta-import-size"
+              />
+            ) : backgroundSpec ? (
+              <CustomSizeFields
+                spec={backgroundSpec}
+                values={customValues}
+                onChange={(field, raw) => setCustomValues((v) => ({ ...v, [field]: raw }))}
+                idPrefix="pinta-import-size"
+              />
+            ) : null
           ) : null}
 
           {/* Prévia já quantizada + recado das cores. */}
           <div className="flex flex-col items-center gap-2 rounded-2xl bg-pin-bg p-3">
             <span className="pin-checkerboard flex items-center justify-center rounded-xl border-2 border-pin-border p-1">
-              {result?.kind === 'background' ? (
+              {result?.kind === 'sprite' || result?.kind === 'background' ? (
                 <BitmapCanvas bitmap={result.bitmap} colors={previewColors} />
               ) : (
                 <span className="flex flex-wrap items-center justify-center gap-0.5">
@@ -300,6 +414,7 @@ export function ImportImageDialog({
               )}
             </span>
             <span className="text-center text-xs text-pin-muted">
+              {target === 'sprite' ? `${COPY.importImage.spriteFitNote} ` : ''}
               {COPY.importImage.colorsNote}
               {result ? ` · ${COPY.importImage.newColors(result.extraColors.length)}` : ''}
               {result?.kind === 'tileset' && !result.tooMany

@@ -420,6 +420,27 @@ materializada de "o que o aluno PODE acessar agora") e **conteúdo+progresso**
    quem já enviou — se um dia "mudou a proposta, peça de novo" for necessário, o caminho é um
    marcador de reenvio com migration, nunca apagar o desenho da criança). SQL provado em
    `tests/db/block-update-preserves-submissions.test.ts` (o fake espelha os fingerprints).
+   ⭐ **Recuperação das entregas apagadas (18/08/2026) — o kit fica no repo.** A regra antiga valeu de
+   21/06 (`c10ebf0f`) a 18/08 (`2a690495`); em prod não havia backup do Postgres (0 backups, 0
+   agendamentos, sem PITR). O que trouxe as entregas de volta, e vale como runbook: (1) congelar
+   `alter table members.studio_submissions set (autovacuum_enabled=false, toast.autovacuum_enabled=false)`;
+   (2) **`bun run submissions:audit-lost`** (`scripts/audit-lost-studio-submissions.ts`, só leitura,
+   cross-schema members/hub/auth): cruza a EVIDÊNCIA de que a criança tinha entrega — ledger
+   `studio_submitted`/`studio_passed`, `lesson_completions` da aula com bloco gating, `teacher_threads`
+   — com as linhas vivas, e lista as fontes de cópia (posts do Mural = snapshot jogável INTEIRO em
+   `studio/play/<playId>.json`, público em `GET /api/studio/play/:id` do kids; entregas sobreviventes
+   da mesma cadeia); (3) forense com `pageinspect` (contrib, superuser): `heap_page_items` +
+   `tuple_data_split` do heap e do `pg_toast_<oid>` trazem as tuplas MORTAS (metadados inline: quem,
+   qual bloco, quando, recado) e os chunks do `project`; remontar por `chunk_id/chunk_seq`,
+   descomprimir pglz e decodificar o jsonb binário num Postgres LOCAL via `create cast (bytea as jsonb)
+   without function` — recuperou 5 dos 11 projetos deletados que ainda tinham storage (o toast dos
+   outros já tinha sido reciclado pelo autovacuum de 29/07); (4) **`bun run submissions:restore
+   --manifest <json> [--confirm]`** (`studio-submission-restore.ts`): `INSERT … ON CONFLICT (user_id,
+   block_id) DO NOTHING` — nunca sobrescreve linha viva, lê `lesson_id/course_id` do BLOCO, herda
+   `account_id`, dry-run por padrão; provado em `tests/db/studio-submission-restore.test.ts`. Decisão
+   da usuária para aula intermediária sem cópia exata: restaurar com a versão MAIS RECENTE do jogo
+   (Mural/aula seguinte). Depois: `reset (autovacuum_enabled, toast.autovacuum_enabled)` + `drop
+   extension pageinspect`. ⚠️ Ligar backups + PITR no Postgres do Railway (dashboard) — não existiam.
    **Cadeia entre aulas (`chain`)** — mesmo mecanismo do Estúdio: `GetStudioCarryoverService`
    ganhou o param `kind` e `CourseRepository.findPrecedingStudioBlockInChain` virou
    **`findPrecedingChainBlock(courseId, lessonId, chain, kind)`**. O kind entra na BUSCA: cadeia de
@@ -1426,6 +1447,103 @@ Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `applic
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
+## "Guardado na sua conta" — criações do Estúdio Completo e do Pinta (18/08/2026, migration `0067`)
+
+Os editores LIVRES (Estúdio Completo, Pinta) guardavam só no IndexedDB do navegador; a criança
+que trocasse de computador (ou cujo navegador apagasse) perdia tudo. Agora cada jogo/desenho SOBE
+sozinho depois do autosave e DESCE sozinho onde falta. O members guarda só o **ÍNDICE**
+(`members.creations`: perfil, ferramenta, `item_id` PRESERVADO — é o vínculo com o IndexedDB e o
+`pensa-<id>` —, nome, kind, `item_updated_at` do cliente, `revision`, `bytes`, `storage_ref`,
+`thumb`, `deleted_at`, mais a RESERVA em voo em `pending_revision/pending_bytes/pending_name/
+pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_revision`); o
+**BLOB** (gzip do `Project`/`.pinta.json`) vai DIRETO ao R2 UGC privado por URL pré-assinada do BFF
+(`member-shell/src/routes/creations.ts`), fora do teto de 2 MB da borda.
+
+- **Fluxo:** `POST /members/creations/:tool/:itemId/upload` (reserva: gate de POSSE
+  `estudio-completo`/`pinta` pela CONTA, quota, devolve `{revision, storageKey, bytes}`) → o
+  navegador PUTa no R2 na chave `creations/<perfil>/<tool>/<item>/<rev>.json.gz` → `POST
+  …/commit` `{revision}` (só a revisão RESERVADA confirma: `pending_revision = ?` — dois navegadores
+  no mesmo item disputam de forma honesta, o velho perde o commit e reenvia; devolve `{item,
+  previousStorageKey}` e o BFF apaga a revisão anterior do R2) → `GET /members/creations/:tool`
+  lista (só vivos e já confirmados) → `GET …/download` devolve a chave corrente → `DELETE` é lixeira
+  lógica (SOLTA o blob: devolve `storageKey` para o BFF apagar do R2 e zera `storage_ref`/`bytes`
+  — apagado não ocupa espaço fora da quota; a linha fica para um restauro futuro do índice; cancela
+  a reserva em voo). Listar/baixar/apagar o que é seu NÃO
+  exige assinatura ativa (a criança sempre traz de volta o que guardou); ownership mismatch = 404.
+- **⚠️ Regra de ouro (revisão de 18/08):** NADA do que a lista mostra (nome, kind,
+  `item_updated_at`, thumb, `deleted_at`, `bytes`, `storage_ref`) muda na RESERVA — só no COMMIT,
+  que PROMOVE os `pending_*`. Um PUT que não terminava deixava metadados novos apontando para o
+  blob velho, e o reconciliador perdia a referência do último estado confirmado. Corolários: os
+  BYTES da quota são os da reserva (o commit não recebe bytes);
+  a ressurreição de um item apagado só acontece no commit; a revisão é `last_reserved_revision +
+  1`, contador que NUNCA volta (duas reservas concorrentes, ou apagar e ressuscitar, nunca dividem
+  chave no R2); o commit da revisão já corrente é idempotente (200); a reserva roda sob
+  `pg_advisory_xact_lock` por PERFIL (quota) e por `(perfil, tool, item)` (revisão). A quota é
+  conferida na reserva e REVALIDADA no commit sob o lock do perfil — vários tickets emitidos antes
+  dos PUTs nunca conseguem confirmar acima do teto. A primeira reserva de um item novo não tem
+  linha para o `FOR UPDATE`; duas abas reconciliando o mesmo item
+  batiam na unique com 500); `usage` e o teto de itens contam só o que já commitou; as respostas
+  saem por `toCreationSummary` (nunca o `CreationRecord` — vazaria `userId`/`accountId`/
+  `storageRef`).
+- **Revisão-base (2ª revisão de 18/08):** a reserva aceita `baseRevision` (a revisão da nuvem
+  que o APARELHO conhece; 0 = nunca viu). Presente e diferente da corrente numa linha VIVA →
+  `CREATION_STALE_BASE` (409, `CreationStaleBaseError` com `currentRevision`): um aparelho
+  atrasado nunca sobrescreve às cegas o que outro subiu depois. Linha apagada (ou inexistente)
+  aceita qualquer base (a edição posterior vence a lixeira); ausente = sem conferência (clientes
+  antigos). O cliente kids resolve o 409 guardando a versão da nuvem como cópia e subindo de novo.
+- **Quota** (`CREATION_LIMITS`): 40 MB comprimidos por item, 1 GB por perfil (as duas
+  ferramentas; era 300 MB, subiu em 18/08 — bytes no R2 custam ~US$ 0,015/GB-mês, o teto é
+  freio de abuso), 2000 itens vivos por ferramenta (só freio de abuso: nem o Pinta nem o Estúdio
+  têm teto de quantidade; o que governa é o de bytes). A quota é conferida na RESERVA e DE NOVO no
+  COMMIT (reservar vários itens antes de confirmar não fura o teto). Reenviar TROCA os bytes do
+  item (não soma).
+  Nome/kind acima do teto são CORTADOS no BFF (o DTO ainda barra 120/40 como rede de segurança);
+  miniatura acima de 12 k chars é DESCARTADA pelo serviço (acima de 20 k o DTO recusa — nenhum
+  adaptador manda thumb na v1); `bytes` acima de 1 GB cai na validação (nunca 500).
+- **Partes (19/08/2026, migration `0070`):** um projeto do Estúdio COM assets não sobe mais
+  inteiro a cada autosave. O blob principal vira um MANIFESTO (programa + hashes dos assets) e cada
+  asset uma PARTE endereçada por conteúdo (SHA-256 do JSON canônico), na chave
+  `creations/<perfil>/<tool>/<item>/parts/<hash>.<rev>.gz` (`creationPartStorageKey` — definida
+  UMA vez em `@sistemazero/core/creations`, re-exportada pelo domínio e usada também pelo BFF
+  no HEAD do commit; `rev` = a revisão da reserva em que essa cópia subiu — parte conhecida
+  mantém a sua; uma chave NUNCA é reutilizada, então o apagar best-effort atrasado de uma parte
+  solta jamais alcança a cópia nova da mesma parte que voltou). Colunas JSONB `parts` (corrente: `[{hash, bytes, rev}]`) e `pending_parts` (da reserva);
+  `bytes`/`pending_bytes` = TOTAL (manifesto + Σ partes); `maxPartsPerItem = 128`. A reserva aceita `parts: [{hash, bytes?}]`
+  (hash `[a-f0-9]{64}`, sem repetidos) e devolve `missingParts` (só as que o item ainda NÃO tem,
+  com `storageKey`); parte faltante SEM `bytes` → 409 `CREATION_PARTS_NEED_BYTES` com
+  `details.hashes` (e NADA reservado — o cliente comprime só essas e reserva de novo); bytes
+  declarados para hash já conhecido são ignorados (valem os do servidor); total > 40 MB → 409 de
+  quota. O commit aceita `uploadedParts` e exige `uploadedParts ⊇ (pending_parts − parts)` senão
+  409 `CREATION_PART_MISSING` com `details.hashes` (a reserva FICA); promove `parts` e devolve
+  `releasedStorageKeys` (manifesto anterior + partes que a revisão nova não referencia — o BFF
+  apaga em lote); `previousStorageKey` continua por compat. O download lista `parts` com
+  `storageKey`; a lixeira zera `parts` e devolve `storageKeys` (tudo). Cliente antigo (sem
+  `parts`) sobe o item inteiro e isso SOLTA as partes no commit; linhas antigas `parts=[]`. Sem
+  dedupe entre itens (v2). `resolveParts` no repositório é a única regra de "faltante/sem bytes"
+  (o fake em memória a importa).
+- **Desempenho (19/08):** índice parcial `creations_usage_idx` (migration `0069`: `(user_id,
+  tool, bytes) WHERE deleted_at IS NULL AND storage_ref IS NOT NULL`, `bytes` como coluna de chave
+  — index-only scan da `usageWith` confirmado com `EXPLAIN`); `list` projeta só os campos do
+  resumo (inclui `thumb`, que É campo do resumo e hoje é sempre null; fora `pending_*`);
+  `assertToolOwned` tem cache de 60 s por processo (`tool-ownership-cache.ts`;
+  `resetToolOwnershipCacheForTests` no `buildApp` dos testes) — e quem rebaixa a matrícula
+  (`RevokeEntitlementService.cancel/expire`, `ManageEntitlementService` revogar/expirar) chama
+  `invalidateToolOwnership(contas)`: a reserva seguinte já é 403.
+- Camadas: `domain/creations/*` (tipos, tetos, `creationStorageKey`, `creationPartStorageKey`,
+  `toCreationSummary`, erros `CREATION_*` → 404/409 no error-handler, os de partes com
+  `details.hashes`), port `creations-repository.port.ts`,
+  `application/creations/creations.service.ts` (5 serviços pequenos), `DrizzleCreationsRepository`
+  (lock + quota + reserva numa transação; commit que promove), rotas
+  `interfaces/http/routes/creations.routes.ts` (prefixo `/members/creations`), gateway
+  `members-creations-*`. Na exclusão de conta, migration `0068` instala uma cerca por conta,
+  serializada com os mesmos locks de quota das reservas/commits, e agenda um job durável na
+  mesma transação que apaga o índice. O worker do member-shell só varre os prefixos da conta e
+  de **todos** os perfis depois dos 10 min de TTL do PUT + 5 min de margem. Testes:
+  `tests/integration/creations.test.ts` (fake `creations-in-memory.ts`, espelho fiel das regras),
+  `tests/db/creations.repository.test.ts` (Postgres real: recria a tabela do zero, porque a
+  `user-data-purge.test.ts` a cria com DDL mínimo) e `tests/db/user-data-purge.test.ts` (linha de
+  `creations` somada).
+
 ## Admin (painel `@sistemazero/admin`)
 
 Gestão de acesso pelo operador. Caminho `/members/admin/*` (distinto da API do aluno).
@@ -1489,16 +1607,21 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   o `extendTo` do ciclo de assinatura segue NUNCA ressuscitando `revoked`.
   `ManageEntitlementService`. Erros novos: `ENTITLEMENT_CONFLICT`→409,
   `OFFER_NOT_FOUND`→404. Oferta resolvida sem itens no grant manual → 400.
-- **`DELETE /members/admin/users/:id/data[?profileIds=<csv>]` (purga, 06/2026):** parte da
+- **`DELETE /members/admin/users/:id/data[?profileIds=<csv>]` (purga, endurecida em
+  19/08/2026):** parte da
   EXCLUSÃO de usuário pelo painel — purga TODOS os dados do aprendiz numa transação
   (`PurgeUserDataService` + `DrizzleUserDataPurgeRepository`): entitlements/lesson_completions/
   lesson_progress/quiz_attempts/course_ratings/xp_events/user_badges/coin_events/avatar_inventory/
   mission_claims/room_inventory (por `user_id IN (conta, ...perfis)`) + studio_submissions/
   gamification_profiles/avatar_configs/league_membership/room_state/certificates_issued (por
-  `user_id IN (...)` **OU** `account_id = conta` — cobre os dados kids dos perfis). NÃO toca
+  `user_id IN (...)` **OU** `account_id = conta` — cobre os dados kids dos perfis), incluindo o
+  índice `creations`. Antes dos DELETEs, sob os mesmos advisory locks das reservas, grava
+  `account_deletion_fences` (novas reservas falham) e `creation_cleanup_jobs` (retry durável da
+  limpeza R2 pós-TTL); cerca e job sobrevivem à purga. NÃO toca
   conteúdo (cursos/aulas) nem `processed_webhooks`. Idempotente; sucesso → **204**. Gateway:
   `members-admin-user-purge` (DELETE, `roles:['superadmin']`). O painel chama ANTES de apagar a
-  identidade no auth.
+  identidade no auth. O worker consome por `POST /members/internal/creation-cleanups/{claim,
+  :id/complete,:id/fail}` via gateway HMAC; claim usa lease + `FOR UPDATE SKIP LOCKED`.
 
 **Autoria de conteúdo** (`interfaces/http/routes/content.routes.ts`, prefixo `/members/admin`,
 coexiste com `admin.routes`). Porta de escrita SEPARADA (`ContentAdminRepository` +

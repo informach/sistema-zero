@@ -7,8 +7,13 @@ import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
+import { createClipboardStore } from '../state/clipboardStore'
 import { createGalleryStore } from '../state/galleryStore'
-import { createPintaPersistence, type PintaPersistence } from '../state/persistence'
+import {
+  createPintaPersistence,
+  getPintaStorageNamespace,
+  type PintaPersistence,
+} from '../state/persistence'
 import {
   type PintaAppContextValue,
   PintaAppProvider,
@@ -37,17 +42,28 @@ function InitialAssetOpener({ onMissing }: { onMissing(id: string): void }): nul
   const { gallery, openAsset, takeInitialAssetId } = usePintaApp()
   const { showToast } = useToast()
   const loaded = usePintaGallery((state) => state.loaded)
+  const syncing = usePintaGallery((state) => state.syncing)
+  // O id pedido é tomado UMA vez; se o desenho ainda não está aqui mas a nuvem está
+  // sincronizando (criado noutro aparelho, `?desenho=`/Pensa), espera a sincronia acabar.
+  const pendingRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!loaded) return
-    const id = takeInitialAssetId()
+    const id = pendingRef.current ?? takeInitialAssetId()
     if (!id) return
-    if (gallery.getState().assets.some((a) => a.id === id)) openAsset(id)
-    else {
-      onMissing(id)
-      showToast(COPY.gallery.drawingGone)
+    if (gallery.getState().assets.some((a) => a.id === id)) {
+      pendingRef.current = null
+      openAsset(id)
+      return
     }
-  }, [loaded, gallery, openAsset, takeInitialAssetId, onMissing, showToast])
+    if (syncing) {
+      pendingRef.current = id
+      return
+    }
+    pendingRef.current = null
+    onMissing(id)
+    showToast(COPY.gallery.drawingGone)
+  }, [loaded, syncing, gallery, openAsset, takeInitialAssetId, onMissing, showToast])
 
   return null
 }
@@ -64,9 +80,18 @@ export function PintaApp({
   // namespace vigente, e recriá-lo a cada render poderia atravessar perfis.
   const [store] = useState(() => {
     const resolved = persistence ?? createPintaPersistence()
-    return { persistence: resolved, gallery: createGalleryStore(resolved) }
+    return {
+      persistence: resolved,
+      gallery: createGalleryStore(resolved),
+      // Copiar num desenho e colar em outro: a área de transferência é do app (com
+      // espelho em localStorage, para atravessar abas e sobreviver a fechar).
+      clipboard: createClipboardStore({ namespace: getPintaStorageNamespace() }),
+    }
   })
   const { gallery } = store
+  // A escuta do armazenamento (nuvem do host) vive com o componente: liga ao montar, desliga ao
+  // desmontar (StrictMode monta/desmonta/monta: a store descartada nunca fica inscrita).
+  useEffect(() => gallery.getState().attachPersistence(), [gallery])
   const [view, setView] = useState<PintaView>({ screen: 'gallery' })
   const [initialIntentVersion, setInitialIntentVersion] = useState(0)
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)
@@ -88,6 +113,7 @@ export function PintaApp({
       adapter: resolvedAdapter,
       gallery,
       persistence: store.persistence,
+      clipboard: store.clipboard,
       openAsset: (id) => setView({ screen: 'editor', assetId: id }),
       closeEditor: () => setView({ screen: 'gallery' }),
       takeInitialIntent: () => {
@@ -107,7 +133,7 @@ export function PintaApp({
         return id
       },
     }),
-    [resolvedAdapter, gallery, store.persistence, initialIntentVersion],
+    [resolvedAdapter, gallery, store.persistence, store.clipboard, initialIntentVersion],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
   const taskOutputMissing = !!taskOutputId && missingAssetId === taskOutputId

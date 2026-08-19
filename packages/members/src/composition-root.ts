@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { CheckAccessService } from './application/access/check-access.service'
 import { AccessCheckService } from './application/access-check/access-check.service'
+import { CreationCleanupService } from './application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from './application/admin/purge-user-data/purge-user-data.service'
 import { ConsumeAiUsageService } from './application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from './application/ai-usage/get-ai-credits.service'
@@ -20,6 +21,13 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from './application/content-admin/content-admin.service'
+import {
+  CommitCreationUploadService,
+  DeleteCreationService,
+  GetCreationDownloadService,
+  ListCreationsService,
+  ReserveCreationUploadService,
+} from './application/creations/creations.service'
 import { AwardGamificationService } from './application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from './application/gamification/challenge-admin.service'
@@ -105,6 +113,8 @@ import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/d
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
+import { DrizzleCreationCleanupRepository } from './infrastructure/persistence/drizzle/creation-cleanup.repository'
+import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle/creations.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
@@ -463,6 +473,14 @@ export async function createApplication(env: Env): Promise<Application> {
   const getPensaTaskHandoff = new GetPensaTaskHandoffService(pensaRepo)
   const updatePensaTaskProgress = new UpdatePensaTaskProgressService(pensaRepo, clock)
 
+  // "Guardado na sua conta" (índice das criações do Estúdio Completo/Pinta; blob no R2 via BFF)
+  const creationsRepo = new DrizzleCreationsRepository(db)
+  const listCreations = new ListCreationsService(creationsRepo)
+  const reserveCreationUpload = new ReserveCreationUploadService(creationsRepo, accessCheck, clock)
+  const commitCreationUpload = new CommitCreationUploadService(creationsRepo, clock)
+  const getCreationDownload = new GetCreationDownloadService(creationsRepo)
+  const deleteCreation = new DeleteCreationService(creationsRepo, clock)
+
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
     catalog,
@@ -502,7 +520,12 @@ export async function createApplication(env: Env): Promise<Application> {
   })
   const manageEntitlement = new ManageEntitlementService(entitlements, clock)
   // Exclusão de usuário (painel): purga TODOS os dados do aluno em transação.
-  const purgeUserData = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(db))
+  const userDataPurgeRepository = new DrizzleUserDataPurgeRepository(db)
+  const purgeUserData = new PurgeUserDataService(userDataPurgeRepository)
+  const creationCleanup = new CreationCleanupService(
+    new DrizzleCreationCleanupRepository(db),
+    clock,
+  )
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
   // quando o banco responde — sem isto o redeploy promove uma réplica que ainda
@@ -520,6 +543,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     env,
     logger,
+    accountDeletionFence: userDataPurgeRepository,
     readiness,
     members: {
       listMyCourses,
@@ -591,6 +615,14 @@ export async function createApplication(env: Env): Promise<Application> {
       getGamification,
       internalToken: env.INTERNAL_API_TOKEN,
     },
+    creations: {
+      list: listCreations,
+      reserveUpload: reserveCreationUpload,
+      commitUpload: commitCreationUpload,
+      getDownload: getCreationDownload,
+      remove: deleteCreation,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     webhooks: {
       grant,
       revoke,
@@ -620,6 +652,7 @@ export async function createApplication(env: Env): Promise<Application> {
       challengeAdmin,
       revokeCertificate,
       purgeUserData,
+      creationCleanup,
       hub,
     },
     content: {
@@ -635,6 +668,7 @@ export async function createApplication(env: Env): Promise<Application> {
       zappyHistory: zappy,
     },
     internal: {
+      purgeUserData,
       accessCheck,
       profileAllowance,
       showcasePayload: getShowcasePayload,

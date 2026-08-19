@@ -19,13 +19,19 @@ import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
 import { assetStyle, type PintaAsset } from '../../core/project'
+import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
+import { filterTools } from '../../core/toolCuration'
 import {
   buildStudioPayload,
   type StudioPayload,
   validateStudioPayloadSize,
 } from '../../export/studioBridge'
 import { createEditorStore, type PintaEditorStore } from '../../state/editorStore'
-import { isPintaStorageBudgetError } from '../../state/persistence'
+import {
+  isPintaStorageBudgetError,
+  markPintaAssetClosed,
+  markPintaAssetOpen,
+} from '../../state/persistence'
 import {
   createSessionStore,
   type PintaSessionState,
@@ -42,6 +48,7 @@ import {
   ChevronDown,
   Download,
   Gamepad2,
+  Keyboard,
   Redo2,
   Rocket,
   Scaling,
@@ -49,16 +56,19 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
-import { PintaEditorProvider, useEditor, useSession } from './editorContext'
+import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
 import { LayerPanel } from './LayerPanel'
 import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
 import { ResizeAssetDialog } from './ResizeAssetDialog'
+import { ShortcutsDialog, type ShortcutsDialogTool } from './ShortcutsDialog'
 import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
+import { MAP_TOOLS } from './TilemapPanels'
 import { TileStrip } from './TileStrip'
-import { ToolBar } from './ToolBar'
+import { PIXEL_TOOL_SHORTCUTS, ToolBar } from './ToolBar'
+import { isPintaModalOpen, useActionShortcuts } from './useActionShortcuts'
 import { useMediaQuery } from './useMediaQuery'
 import { useStudioResync } from './useStudioResync'
 import { VectorEditorScope } from './vector/VectorEditorScope'
@@ -66,6 +76,7 @@ import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightC
 import { VectorSelectionBar } from './vector/VectorSelectionBar'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
+import { TOOLS as VECTOR_TOOLS } from './vector/vectorTools'
 import { ZoomControls } from './ZoomControls'
 
 function SaveBadge(): JSX.Element {
@@ -288,6 +299,15 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   const [sending, setSending] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const [resizeOpen, setResizeOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const shortcutEditor = shortcutEditorFor(asset)
+  const allowTools = useToolCuration()
+  const shortcutTools = useMemo(
+    () => shortcutToolsFor(shortcutEditor, allowTools),
+    [shortcutEditor, allowTools],
+  )
+  // `?` abre a janela de atalhos (o botão do topo faz o mesmo).
+  useActionShortcuts([{ combo: shortcut('help'), run: () => setShortcutsOpen(true) }])
   // `null` = kind que não muda de tamanho (peças: o tile é whitelist do motor), OU aula em que o
   // professor fixou o tamanho.
   const resizeTarget = lesson && !lesson.allowResize ? null : resizeTargetOf(asset)
@@ -465,6 +485,14 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         </span>
       ) : null}
       <div className="ml-auto flex items-center gap-2">
+        <IconButton
+          aria-label={COPY.shortcuts.button}
+          title={`${COPY.shortcuts.button} (?)`}
+          aria-haspopup="dialog"
+          onClick={() => setShortcutsOpen(true)}
+        >
+          <Keyboard aria-hidden="true" className="size-5" />
+        </IconButton>
         {canExport ? (
           <Button onClick={() => setExportOpen(true)}>
             <Download aria-hidden="true" className="size-4" />
@@ -508,8 +536,31 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           onClose={() => setExportOpen(false)}
         />
       ) : null}
+      <ShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+        editor={shortcutEditor}
+        tools={shortcutTools}
+        allowTools={allowTools}
+      />
     </header>
   )
+}
+
+/** Qual catálogo de atalhos vale para o asset aberto (pixel · vetor · mapa). */
+function shortcutEditorFor(asset: PintaAsset): ShortcutEditor {
+  if (asset.kind === 'tilemap') return 'tilemap'
+  return assetStyle(asset.kind) === 'vector' ? 'vector' : 'pixel'
+}
+
+/** As letras de ferramenta do editor aberto, lidas das próprias caixas (já CURADAS). */
+function shortcutToolsFor(
+  editor: ShortcutEditor,
+  allowTools: readonly string[] | undefined,
+): ReadonlyArray<ShortcutsDialogTool> {
+  const source =
+    editor === 'vector' ? VECTOR_TOOLS : editor === 'tilemap' ? MAP_TOOLS : PIXEL_TOOL_SHORTCUTS
+  return filterTools(source, allowTools).map((t) => ({ label: t.label, shortcut: t.shortcut }))
 }
 
 /**
@@ -583,6 +634,13 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     if (!stores) closeEditor()
   }, [stores, closeEditor])
 
+  // Enquanto este editor está montado, o desenho conta como ABERTO (o host não grava por
+  // baixo dele — ver `isPintaAssetOpen`).
+  useEffect(() => {
+    markPintaAssetOpen(assetId)
+    return () => markPintaAssetClosed(assetId)
+  }, [assetId])
+
   // O host (o bloco de aula) alcança o desenho vivo por aqui — ver `PintaHandle`.
   useEffect(() => {
     if (!stores || !onEditorReady) return
@@ -637,6 +695,8 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
     function onKeyDown(event: KeyboardEvent): void {
       if (!(event.ctrlKey || event.metaKey)) return
       if (isTextEntryTarget(event.target)) return
+      // Desfazer por trás de um modal aberto mexeria no que a criança não está olhando.
+      if (isPintaModalOpen()) return
       const key = event.key.toLowerCase()
       if (key === 'z' && !event.shiftKey) {
         event.preventDefault()

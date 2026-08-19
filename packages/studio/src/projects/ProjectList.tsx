@@ -1,5 +1,14 @@
 import type { JSX } from 'react'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Button } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
@@ -9,14 +18,28 @@ import {
   NewProjectModal,
 } from '../components/projects/NewProjectModal'
 import { ProjectCard } from '../components/projects/ProjectCard'
+import { perfMeasure, perfSpanAsync } from '../core/perf'
 import {
   listAllProjects,
+  loadProjectSummariesByIds,
+  PROJECT_CHANGED_EVENT,
   PROJECT_THUMB_UPDATED_EVENT,
+  type ProjectChangedDetail,
   type ProjectSummary,
 } from '../state/persistence'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { useT } from '../studio/i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
+import {
+  matchesNormalizedName,
+  matchesProjectMode,
+  normalizeProjectSearchText,
+  type ProjectModeFilter,
+  projectSearchTerms,
+} from './projectSearch'
+
+/** Folga para juntar os ids que chegam em rajada (descida da nuvem) numa leitura só. */
+const REFRESH_COALESCE_MS = 40
 
 const LazyKitGallery = lazy(async () => {
   const module = await import('./KitGallery')
@@ -70,6 +93,9 @@ export interface ProjectListProps {
  * duas linhas. Aqui eles sobram — a data precisa de 215px —, mas o piso é comum
  * de propósito, senão as duas home voltam a ter cards de tamanhos diferentes.
  */
+/** Um comparador por módulo (o `localeCompare(.., 'pt-BR')` criava um Collator por comparação). */
+const COLLATOR = new Intl.Collator('pt-BR')
+
 const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]'
 
 export function ProjectList({
@@ -83,6 +109,9 @@ export function ProjectList({
   const t = useT()
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
+  // Filtro de modo (Blocos × Código): junto da busca, é o que mantém a lista navegável
+  // sem teto de quantidade de projetos.
+  const [modeFilter, setModeFilter] = useState<ProjectModeFilter>('all')
   const [modalOpen, setModalOpen] = useState(false)
   // Vitrine de kits: aberta por padrão só no primeiro uso (lista vazia).
   const [kitsOpen, setKitsOpen] = useState(false)
@@ -93,22 +122,112 @@ export function ProjectList({
   const theme = themeProp ?? settingsTheme
   const loadSettings = useSettingsStore((s) => s.load)
 
-  const reload = useCallback(async () => {
-    const list = await listAllProjects()
-    setProjects(list)
+  /**
+   * Atualização INCREMENTAL: relê só os projetos que mudaram (capa pronta, renomear,
+   * duplicar, apagar, restauro da nuvem) em vez de reler meta + capa de TODOS (1,5–12 MB
+   * com centenas de projetos). Os ids chegam por evento e são drenados juntos, num
+   * `getMany` só; sem id (caminhos antigos) cai no `reload()` completo.
+   *
+   * Enquanto a PRIMEIRA leitura da lista está em voo (`projects === null`), os ids que
+   * chegam — a descida da nuvem começa antes de a lista montar — não podem ser jogados fora:
+   * o `keys()` daquela leitura é anterior à gravação, e sem isto o jogo restaurado só
+   * aparecia no F5. Ficam em `missedIds` e são reaplicados logo depois do `reload()`.
+   */
+  const pendingIds = useRef<Set<string> | null>(null)
+  const missedIds = useRef<Set<string>>(new Set())
+  const reloadRef = useRef<() => Promise<void>>(async () => {})
+  const refreshProjects = useCallback(async (ids: ReadonlySet<string>) => {
+    const list = [...ids]
+    let fresh: Array<ProjectSummary | null>
+    try {
+      fresh = await loadProjectSummariesByIds(list)
+    } catch {
+      // Leitura incremental falhou: volta para a leitura completa (o card não fica velho).
+      void reloadRef.current()
+      return
+    }
+    setProjects((current) => {
+      if (!current) {
+        for (const id of list) missedIds.current.add(id)
+        return current
+      }
+      const byId = new Map(current.map((p) => [p.id, p]))
+      list.forEach((id, index) => {
+        const summary = fresh[index]
+        if (summary) byId.set(id, summary)
+        else byId.delete(id)
+      })
+      return [...byId.values()]
+    })
   }, [])
+  const reload = useCallback(async () => {
+    const list = await perfSpanAsync('studio:list:load', () => listAllProjects())
+    setProjects(list)
+    // O que mudou DURANTE a leitura (restauro da nuvem, capa) entra por cima agora.
+    const missed = missedIds.current
+    if (missed.size > 0) {
+      missedIds.current = new Set()
+      await refreshProjects(missed)
+    }
+  }, [refreshProjects])
+  reloadRef.current = reload
 
   useEffect(() => {
     void reload()
   }, [reload])
 
-  // A miniatura é gravada em 2º plano DEPOIS que o aluno volta à lista (captura
-  // fire-and-forget do exit) — recarrega quando ela fica pronta.
+  // Medição: do início da leitura até a PRIMEIRA renderização com os cards (uma vez).
+  const renderedMeasured = useRef(false)
   useEffect(() => {
-    const onThumb = () => void reload()
+    if (projects !== null && !renderedMeasured.current) {
+      renderedMeasured.current = true
+      perfMeasure('studio:list:rendered', 'studio:list:load:start')
+    }
+  }, [projects])
+
+  const refreshProject = useCallback(
+    (id: string | undefined) => {
+      if (!id) {
+        void reload()
+        return
+      }
+      if (!pendingIds.current) {
+        pendingIds.current = new Set([id])
+        // Coalesce numa folga curta (não em rAF: em aba oculta o rAF não dispara e os ids
+        // ficavam presos; uma descida traz vários ids em sequência).
+        setTimeout(() => {
+          const ids = pendingIds.current
+          pendingIds.current = null
+          if (ids) void refreshProjects(ids)
+        }, REFRESH_COALESCE_MS)
+        return
+      }
+      pendingIds.current.add(id)
+    },
+    [reload, refreshProjects],
+  )
+
+  // A miniatura é gravada em 2º plano DEPOIS que o aluno volta à lista (captura
+  // fire-and-forget do exit) — e toda escrita local avisa `PROJECT_CHANGED_EVENT`
+  // (inclusive o restauro da nuvem): a lista ganha/atualiza SÓ aquele card.
+  useEffect(() => {
+    const onThumb = (event: Event) =>
+      refreshProject(
+        typeof (event as CustomEvent).detail === 'string'
+          ? (event as CustomEvent<string>).detail
+          : undefined,
+      )
+    const onChanged = (event: Event) => {
+      const detail = (event as CustomEvent<ProjectChangedDetail | undefined>).detail
+      refreshProject(detail?.id)
+    }
     window.addEventListener(PROJECT_THUMB_UPDATED_EVENT, onThumb)
-    return () => window.removeEventListener(PROJECT_THUMB_UPDATED_EVENT, onThumb)
-  }, [reload])
+    window.addEventListener(PROJECT_CHANGED_EVENT, onChanged)
+    return () => {
+      window.removeEventListener(PROJECT_THUMB_UPDATED_EVENT, onThumb)
+      window.removeEventListener(PROJECT_CHANGED_EVENT, onChanged)
+    }
+  }, [refreshProject])
 
   useEffect(() => {
     void loadSettings()
@@ -117,15 +236,35 @@ export function ProjectList({
   const projectSort = useSettingsStore((s) => s.projectSort)
   const setProjectSort = useSettingsStore((s) => s.setProjectSort)
 
+  // O campo responde na hora; a filtragem usa o valor ADIADO (React desprioriza a lista de
+  // centenas de cards enquanto a criança ainda digita).
+  const deferredSearch = useDeferredValue(search)
+  // Índice de busca: o nome normalizado UMA vez por projeto (não N vezes por tecla).
+  const searchIndex = useMemo(
+    () => (projects ?? []).map((p) => ({ p, text: normalizeProjectSearchText(p.name) })),
+    [projects],
+  )
+  const searchTerms = useMemo(() => projectSearchTerms(deferredSearch), [deferredSearch])
   const filtered = useMemo(() => {
     if (!projects) return null
-    const q = search.trim().toLowerCase()
-    const base = q ? projects.filter((p) => p.name.toLowerCase().includes(q)) : projects
-    const sorted = [...base]
-    if (projectSort === 'name') sorted.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'))
-    else sorted.sort((a, b) => b.updatedAt - a.updatedAt)
-    return sorted
-  }, [projects, search, projectSort])
+    // Busca com a mesma régua do Pinta (sem acento, minúsculas, vários termos) + modo.
+    const base = searchIndex
+      .filter(
+        ({ p, text }) =>
+          matchesProjectMode(p.mode, modeFilter) && matchesNormalizedName(text, searchTerms),
+      )
+      .map(({ p }) => p)
+    if (projectSort === 'name') base.sort((a, b) => COLLATOR.compare(a.name, b.name))
+    else base.sort((a, b) => b.updatedAt - a.updatedAt)
+    return base
+  }, [projects, searchIndex, searchTerms, modeFilter, projectSort])
+  // Filtro ATIVO = há termos de busca de verdade (só símbolos, "!!!", normalizam para nada e
+  // casam tudo — não é filtro) ou um modo escolhido.
+  const filtering = searchTerms.length > 0 || modeFilter !== 'all'
+  const clearFilters = () => {
+    setSearch('')
+    setModeFilter('all')
+  }
 
   const defaultName = useMemo(() => {
     const base = 'Meu projeto'
@@ -136,7 +275,18 @@ export function ProjectList({
     return `${base} ${n}`
   }, [projects])
 
-  const existingNames = useMemo(() => (projects ?? []).map((p) => p.name), [projects])
+  // Nomes em uso: memoizados pelo CONJUNTO de nomes (não pela lista), senão cada atualização
+  // incremental (uma capa pronta) trocava a referência e re-renderizava TODOS os cards.
+  const namesKey = useMemo(
+    () =>
+      (projects ?? [])
+        .map((p) => p.name)
+        .sort()
+        .join('\u0000'),
+    [projects],
+  )
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `namesKey` é a chave derivada de `projects`.
+  const existingNames = useMemo(() => (projects ?? []).map((p) => p.name), [namesKey])
   const takenNames = useMemo(() => new Set(existingNames), [existingNames])
 
   // Referência estável: inline, `listProTemplates()` novo a cada render entraria
@@ -207,15 +357,68 @@ export function ProjectList({
                 </select>
                 <input
                   name="project-search"
+                  type="search"
                   aria-label={t('projects.search')}
                   autoComplete="off"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape' && search) {
+                      e.preventDefault()
+                      setSearch('')
+                    }
+                  }}
                   placeholder={t('projects.search')}
                   className="min-h-11 w-72 rounded-xl border-2 border-sz-border bg-sz-bg px-4 text-base text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
                 />
               </div>
             </div>
+
+            {/* Filtro de modo + contador (só com projetos; a busca vazia não mostra contador). */}
+            {projects && projects.length > 0 ? (
+              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+                <fieldset className="m-0 flex min-w-0 flex-wrap items-center gap-1.5 border-0 p-0">
+                  <legend className="mr-1 text-sz-fg-soft text-xs uppercase tracking-wide">
+                    {t('projects.filterMode')}
+                  </legend>
+                  {(
+                    [
+                      { value: 'all', label: t('projects.filterAll') },
+                      { value: 'blocks', label: t('projects.filterBlocks'), emoji: '🧩' },
+                      { value: 'code', label: t('projects.filterCode'), emoji: '💻' },
+                    ] as ReadonlyArray<{ value: ProjectModeFilter; label: string; emoji?: string }>
+                  ).map((option) => {
+                    const active = option.value === modeFilter
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => setModeFilter(option.value)}
+                        className={`inline-flex min-h-9 items-center gap-1 rounded-full border-2 px-3 font-bold text-sm transition-colors ${
+                          active
+                            ? 'border-sz-accent bg-sz-accent text-white'
+                            : 'border-sz-border bg-sz-panel text-sz-fg hover:border-sz-accent'
+                        }`}
+                      >
+                        {option.emoji ? <span aria-hidden>{option.emoji}</span> : null}
+                        {option.label}
+                      </button>
+                    )
+                  })}
+                </fieldset>
+                {filtering && filtered ? (
+                  <p role="status" className="text-sm text-sz-fg-soft">
+                    {filtered.length === 1
+                      ? t('projects.searchCountOne', { total: projects.length })
+                      : t('projects.searchCount', {
+                          shown: filtered.length,
+                          total: projects.length,
+                        })}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
 
             {filtered === null ? (
               // Skeleton na MESMA grade dos cards (h-72): sem layout shift nem
@@ -259,7 +462,17 @@ export function ProjectList({
                 </div>
               </div>
             ) : filtered.length === 0 ? (
-              <p className="text-base text-sz-fg-soft">{t('projects.emptySearch')}</p>
+              <div className="flex flex-col items-start gap-3">
+                <p className="text-base text-sz-fg-soft">{t('projects.emptySearch')}</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="sz-home-btn-ghost"
+                  onClick={clearFilters}
+                >
+                  {t('projects.searchClearAll')}
+                </Button>
+              </div>
             ) : (
               <div className="flex flex-col gap-6">
                 {showExamples ? (
@@ -294,8 +507,8 @@ export function ProjectList({
                       key={summary.id}
                       summary={summary}
                       takenNames={takenNames}
-                      onChanged={() => void reload()}
-                      onOpen={() => onOpenProject(summary.id)}
+                      onChanged={refreshProject}
+                      onOpen={onOpenProject}
                     />
                   ))}
                 </div>

@@ -46,6 +46,24 @@ async function seedChannel(
 }
 
 describe('tópicos e comentários', () => {
+  test('JWT antigo de perfil da conta excluída não consegue recriar dados', async () => {
+    const accountId = randomUUID()
+    const ctx = buildApp({ deletedAccountIds: [accountId] })
+    const { channelId } = await seedChannel(ctx)
+
+    const response = await ctx.app.handle(
+      jsonRequest('POST', `/hub/channels/${channelId}/threads`, {
+        headers: studentHeaders(randomUUID(), { 'x-auth-account-id': accountId }),
+        body: { title: 'Não deve nascer', body: 'JWT antigo' },
+      }),
+    )
+
+    expect(response.status).toBe(403)
+    expect((await response.json()) as unknown).toMatchObject({
+      error: { code: 'FORBIDDEN', message: 'Esta conta está em processo de exclusão.' },
+    })
+  })
+
   test('aluno cria tópico, comenta e lê', async () => {
     const ctx = buildApp()
     const { channelId } = await seedChannel(ctx)

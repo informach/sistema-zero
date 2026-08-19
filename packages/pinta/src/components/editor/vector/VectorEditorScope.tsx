@@ -25,6 +25,7 @@ import { isTextEntryTarget } from '../../../core/dom'
 import { newId } from '../../../core/id'
 import { DEFAULT_PALETTE_ID, type PaletteId } from '../../../core/palette'
 import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
+import { shortcut } from '../../../core/shortcuts'
 import { ensureVectorFontLoaded, ensureVectorFontsForShapes } from '../../../vector/fonts'
 import {
   type AlignEdge,
@@ -78,11 +79,14 @@ import {
   toEditablePath,
 } from '../../../vector/pathNodes'
 import { DEFAULT_STYLE, type ShapeStyle } from '../../../vector/shapes'
+import { usePintaApp } from '../../appContext'
 import { useToast } from '../../ui/Toast'
 import { useEditor, useEditorStores, useSession } from '../editorContext'
+import { isPintaModalOpen, useActionShortcuts } from '../useActionShortcuts'
 import { useToolShortcuts } from '../useToolShortcuts'
 import {
   cloneShapesWithNewIds,
+  fitPastedShapes,
   MAX_CUSTOM_COLORS,
   paletteSwatches,
   TOOL_SHORTCUTS,
@@ -232,8 +236,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   const [activeChannel, setActiveChannel] = useState<VectorColorChannel>('fill')
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  // Área de transferência (copiar/colar) — shapes clonados, vive na sessão.
-  const clipboardRef = useRef<VectorShape[]>([])
+  // Área de transferência do APLICATIVO (copiar aqui, colar em outro desenho — ou
+  // receber pixel art de outro desenho como figura). Antes era um ref deste escopo.
+  const { clipboard } = usePintaApp()
   // Última estrutura de nós que nasceu de uma ação DESTE escopo. Se undo/redo
   // troca a quantidade por fora, nenhum índice escolhido pode atravessar.
   const expectedNodeStructureRef = useRef<string | null>(null)
@@ -268,6 +273,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     const editingNodes = tool === 'reshape' && selectedNodes.length > 0
     function onKeyDown(event: globalThis.KeyboardEvent): void {
       if (isTextEntryTarget(event.target)) return
+      // Mesmo portão dos atalhos de ação: com um modal do Pinta aberto, o Delete e as
+      // setas são do modal (o card focado), não da forma atrás dele.
+      if (isPintaModalOpen()) return
       const step = event.shiftKey ? 10 : 1
       switch (event.key) {
         case 'Delete':
@@ -302,17 +310,20 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [selectedIds, selectedNodes, tool])
 
-  // Copiar/colar/selecionar-tudo (Ctrl/Cmd+C/V/A) — sempre ativo, ignora campos
-  // de texto. Não colide com o desfazer/refazer do EditorScreen (Z/Y).
+  // Copiar/colar/selecionar-tudo (Ctrl/Cmd+C/V/A; Ctrl+Shift+A solta a seleção, como no
+  // pixel) — sempre ativo, ignora campos de texto e modal do Pinta aberto. Não colide
+  // com o desfazer/refazer do EditorScreen (Z/Y).
   // biome-ignore lint/correctness/useExhaustiveDependencies: lê estado vivo via stores/refs; só a seleção re-registra (p/ o copiar)
   useEffect(() => {
     function onKey(event: globalThis.KeyboardEvent): void {
       if (!(event.ctrlKey || event.metaKey)) return
       if (isTextEntryTarget(event.target)) return
+      if (isPintaModalOpen()) return
       const key = event.key.toLowerCase()
       if (key === 'a') {
         event.preventDefault()
-        selectAll()
+        if (event.shiftKey) setSelectedIds([])
+        else selectAll()
       } else if (key === 'c') {
         event.preventDefault()
         copySelected()
@@ -327,6 +338,41 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   // Arrow (não o `setTool` cru): amarra o genérico do hook ao id da ferramenta.
   useToolShortcuts(TOOL_SHORTCUTS, (id) => setTool(id))
+
+  // Atalhos de AÇÃO no padrão do Illustrator (08/2026): agrupar, ordem, trancar e
+  // esconder, zoom, grade, espelhar, Esc. As combinações vêm do catálogo
+  // (`core/shortcuts.ts`), que também alimenta a janela "Atalhos". As funções são
+  // declarações içadas — o hook lê sempre as do último render.
+  useActionShortcuts([
+    { combo: shortcut('group'), run: () => groupSelected() },
+    { combo: shortcut('ungroup'), run: () => ungroupSelected() },
+    { combo: shortcut('toFront'), run: () => moveOrder('front') },
+    { combo: shortcut('toBack'), run: () => moveOrder('back') },
+    { combo: shortcut('forward'), run: () => moveOrder(1) },
+    { combo: shortcut('backward'), run: () => moveOrder(-1) },
+    { combo: shortcut('duplicateShapes'), run: () => duplicateSelected() },
+    { combo: shortcut('swapFillStroke'), run: () => swapFillStroke() },
+    // A mesma tecla faz o inverso sem seleção (o "tudo" não tem combo próprio: Alt+Shift
+    // troca o idioma do teclado no Windows com dois layouts).
+    { combo: shortcut('lock'), run: () => (selectedIds.length > 0 ? lockSelected() : unlockAll()) },
+    { combo: shortcut('hide'), run: () => (selectedIds.length > 0 ? hideSelected() : showAll()) },
+    { combo: shortcut('zoomFit'), run: () => zoomToFit() },
+    { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
+    { combo: shortcut('zoomOut'), run: () => session.getState().zoomOut(), repeat: true },
+    { combo: shortcut('grid'), run: () => session.getState().toggleGrid() },
+    { combo: shortcut('flipShapesH'), run: () => flipSelected('h') },
+    { combo: shortcut('flipShapesV'), run: () => flipSelected('v') },
+    {
+      combo: shortcut('deselectShapes'),
+      run: () => setSelectedIds([]),
+      when: () => selectedIds.length > 0,
+    },
+    {
+      combo: shortcut('onion'),
+      run: () => session.getState().toggleOnion(),
+      when: () => asset.kind === 'vector-sprite',
+    },
+  ])
 
   const ref: ActiveFrameRef = { animationId, frameIndex }
   const doc = activeShapesOf(asset, ref)
@@ -583,6 +629,53 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setSelectedIds(selectedIds.filter((id) => !free.includes(id)))
   }
 
+  /**
+   * Ctrl+Shift+L (idioma do Figma): TRANCA a seleção. Trancada sai da seleção de
+   * ação (o mesmo que o cadeado do painel faz) — para destrancar uma só, o painel;
+   * para todas, o mesmo Ctrl+Shift+L sem nada selecionado. (Ctrl+2/Ctrl+Alt+2 do Illustrator são troca de aba no
+   * navegador; Ctrl+L viraria Cmd+L no Mac, a barra de endereço.)
+   */
+  function lockSelected(): void {
+    if (selectedIds.length === 0) return
+    const ids = new Set(selectedIds)
+    commitShapes(currentShapes().map((s) => (ids.has(s.id) ? { ...s, locked: true } : s)))
+    setSelectedIds([])
+  }
+
+  /** Ctrl+Shift+L SEM seleção: destranca TODAS as formas (destrancar é permitido pelo guard). */
+  function unlockAll(): void {
+    const shapes = currentShapes()
+    if (!shapes.some((s) => s.locked === true)) return
+    commitShapes(
+      shapes.map((s) => {
+        if (s.locked !== true) return s
+        const { locked: _drop, ...rest } = s
+        return rest as VectorShape
+      }),
+    )
+  }
+
+  /** Ctrl+Shift+H: ESCONDE a seleção (some do palco e do export; esconder desseleciona). */
+  function hideSelected(): void {
+    if (selectedIds.length === 0) return
+    const ids = new Set(selectedIds)
+    commitShapes(currentShapes().map((s) => (ids.has(s.id) ? { ...s, hidden: true } : s)))
+    setSelectedIds([])
+  }
+
+  /** Ctrl+Shift+H SEM seleção: MOSTRA todas as formas escondidas. */
+  function showAll(): void {
+    const shapes = currentShapes()
+    if (!shapes.some((s) => s.hidden === true)) return
+    commitShapes(
+      shapes.map((s) => {
+        if (s.hidden !== true) return s
+        const { hidden: _drop, ...rest } = s
+        return rest as VectorShape
+      }),
+    )
+  }
+
   /** Agrupa a seleção (2+): passam a se mover/selecionar juntos. */
   function groupSelected(): void {
     if (selected.length < 2) return
@@ -634,23 +727,61 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     )
   }
 
+  /**
+   * Guarda a seleção na área de transferência do APLICATIVO, com o tamanho do
+   * documento de origem (para centralizar num documento de outro tamanho ao colar).
+   */
   function copySelected(): void {
-    if (selected.length === 0) return
-    clipboardRef.current = selected.map((s) => structuredClone(s))
+    if (selected.length === 0 || !doc) return
+    clipboard.getState().set({
+      kind: 'shapes',
+      shapes: selected.map((s) => structuredClone(s)),
+      width: doc.width,
+      height: doc.height,
+    })
   }
 
-  /** Cola o clipboard (ids/grupos NOVOS, deslocado +12,+12), selecionando as cópias. */
+  /**
+   * Cola o que está na área de transferência, selecionando o que entrou:
+   * - formas (deste ou de OUTRO desenho): ids/grupos NOVOS; no mesmo tamanho de
+   *   documento entra deslocada +12,+12 (colar do lado, como sempre); vinda de um
+   *   documento de outro tamanho, cabe e centraliza (`fitPastedShapes`);
+   * - pixel art (de um desenho de pixel): vira FIGURA, pelo mesmo caminho do
+   *   "trazer um desenho da galeria" — recusa educada quando o PNG passa do teto.
+   */
   function pasteClipboard(): void {
-    const clip = clipboardRef.current
-    if (clip.length === 0) return
+    if (!doc) return
+    const item = clipboard.getState().get()
+    if (!item) return
     const shapes = currentShapes()
-    if (shapes.length + clip.length > PINTA_LIMITS.maxShapes) {
+    const target = { width: doc.width, height: doc.height }
+    let copies: VectorShape[]
+    if (item.kind === 'shapes') {
+      if (item.shapes.length === 0) return
+      copies = fitPastedShapes(item.shapes, { width: item.width, height: item.height }, target)
+    } else {
+      const source = resolveInsertSource({
+        kind: 'pixel',
+        width: item.bitmap.width,
+        height: item.bitmap.height,
+        bitmap: item.bitmap,
+        colors: item.colors,
+      })
+      // Sem canvas, ou PNG acima do teto que o sanitize aceita: recusa em vez de
+      // inserir uma figura que sumiria no próximo load (mesma régua do insertFromAsset).
+      if (source?.kind !== 'image') {
+        showToast(COPY.clipboard.figureUnavailable)
+        return
+      }
+      copies = [imageShapeForInsert(source, target)]
+    }
+    if (shapes.length + copies.length > PINTA_LIMITS.maxShapes) {
       showToast(COPY.vector.shapeLimit)
       return
     }
-    const copies = cloneShapesWithNewIds(clip)
     commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
+    if (item.kind === 'pixel') setTool('select')
   }
 
   function selectAll(): void {

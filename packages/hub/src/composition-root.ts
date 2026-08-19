@@ -107,7 +107,8 @@ export async function createApplication(env: Env): Promise<Application> {
   const spaceAdmin = new SpaceAdminService(communityAdmin)
   const channelAdmin = new ChannelAdminService(communityAdmin)
   // Exclusão de usuário (painel): purga reações/leitura/mutes-bans.
-  const purgeUserData = new PurgeUserDataService(new DrizzleUserDataPurgeRepository(db))
+  const userDataPurgeRepository = new DrizzleUserDataPurgeRepository(db)
+  const purgeUserData = new PurgeUserDataService(userDataPurgeRepository)
 
   // Casos de uso (leitura do aluno, com resolução de acesso)
   const accessResolution = new AccessResolutionService(members, accessCache)
@@ -194,6 +195,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     env,
     logger,
+    accountDeletionFence: userDataPurgeRepository,
     readiness,
     spaces: {
       read: readCommunity,

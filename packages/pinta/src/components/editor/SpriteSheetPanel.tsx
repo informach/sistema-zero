@@ -35,6 +35,7 @@ import {
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
+import { shortcut } from '../../core/shortcuts'
 import { flattenCels } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
@@ -55,6 +56,7 @@ import {
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { useActionShortcuts } from './useActionShortcuts'
 
 function PixelFrameThumb({
   bitmap,
@@ -167,6 +169,84 @@ export function SpriteSheetPanel({
       observer?.disconnect()
     }
   }, [timelineExpanded, timelineStructure])
+
+  /**
+   * A animação e o quadro ATIVOS segundo o estado VIVO (para os atalhos, que chegam
+   * sem re-render). `null` = não é personagem animado ou não há animação.
+   */
+  function liveFrame(): { sprite: AnimatedSpriteAsset; animationId: string; index: number } | null {
+    const sprite = editor.getState().asset
+    if (!isAnimatedSpriteKind(sprite)) return null
+    const s = session.getState()
+    const animation = activeAnimationOf(sprite, {
+      animationId: s.animationId,
+      frameIndex: s.frameIndex,
+    })
+    if (!animation) return null
+    return {
+      sprite,
+      animationId: animation.id,
+      index: Math.min(s.frameIndex, animation.frames.length - 1),
+    }
+  }
+
+  /** `.`/`,`: quadro seguinte/anterior, dando a volta (do último vai ao primeiro). */
+  function stepFrame(delta: 1 | -1): void {
+    const live = liveFrame()
+    if (!live) return
+    const animation = activeAnimationOf(live.sprite, {
+      animationId: live.animationId,
+      frameIndex: 0,
+    })
+    const count = animation?.frames.length ?? 0
+    if (count === 0) return
+    session.getState().selectFrame((live.index + delta + count) % count)
+  }
+
+  // Atalhos de QUADRO no padrão do Aseprite (08/2026): `.`/`,` andam, Alt+N cria,
+  // Alt+C duplica. Ficam AQUI porque as ações de quadro moram aqui; leem o estado
+  // vivo (o hook é chamado antes do portão de kind, como todo hook).
+  useActionShortcuts([
+    // Segurar `.`/`,` varre os quadros (como no Aseprite).
+    {
+      combo: shortcut('nextFrame'),
+      run: () => stepFrame(1),
+      when: () => liveFrame() !== null,
+      repeat: true,
+    },
+    {
+      combo: shortcut('prevFrame'),
+      run: () => stepFrame(-1),
+      when: () => liveFrame() !== null,
+      repeat: true,
+    },
+    {
+      combo: shortcut('addFrame'),
+      when: () => liveFrame() !== null,
+      run: () => {
+        const live = liveFrame()
+        if (!live) return
+        mutateFrames((sprite) => ({
+          next: addFrame(sprite, live.animationId, live.index),
+          selectIndex: live.index + 1,
+          limitToast: COPY.animation.frameLimit,
+        }))
+      },
+    },
+    {
+      combo: shortcut('duplicateFrame'),
+      when: () => liveFrame() !== null,
+      run: () => {
+        const live = liveFrame()
+        if (!live) return
+        mutateFrames((sprite) => ({
+          next: duplicateFrame(sprite, live.animationId, live.index),
+          selectIndex: live.index + 1,
+          limitToast: COPY.animation.frameLimit,
+        }))
+      },
+    },
+  ])
 
   if (!isAnimatedSpriteKind(asset)) return null
   const active = activeAnimationOf(asset, { animationId, frameIndex })

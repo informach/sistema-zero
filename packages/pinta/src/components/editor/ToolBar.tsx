@@ -11,8 +11,9 @@ import { clsx } from 'clsx'
 import { Fragment, type JSX, useEffect } from 'react'
 import { activeBitmapOf, withActiveBitmap, withActiveCels } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
-import { isPixelLayeredKind, resolveAssetPalette } from '../../core/project'
-import { filterTools, toolFallback } from '../../core/toolCuration'
+import { isAnimatedSpriteKind, isPixelLayeredKind, resolveAssetPalette } from '../../core/project'
+import { shortcut } from '../../core/shortcuts'
+import { filterTools, isToolAllowed, toolFallback } from '../../core/toolCuration'
 import { hasLockedLayer, isLayerLocked } from '../../pixel/layers'
 import { clearBitmap, flipHorizontal, flipVertical, rotate90 } from '../../pixel/ops'
 import type { PintaSessionTool } from '../../state/sessionStore'
@@ -40,6 +41,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession, useToolCuration } from './editorContext'
+import { useActionShortcuts } from './useActionShortcuts'
 import { toolShortcutMap, useToolShortcuts } from './useToolShortcuts'
 
 /**
@@ -66,6 +68,13 @@ const TOOLS: Array<{
 const TOOL_SHORTCUTS = toolShortcutMap(TOOLS)
 
 const BRUSH_SIZES = [1, 2, 3] as const
+
+/** O zoom com que o editor de pixel abre (`sessionStore` default) — o "Ctrl+0" volta para ele. */
+const DEFAULT_PIXEL_ZOOM = 8
+
+/** As letras da caixa do PIXEL, para a janela "Atalhos" (uma fonte só: esta lista). */
+export const PIXEL_TOOL_SHORTCUTS: ReadonlyArray<{ id: string; label: string; shortcut: string }> =
+  TOOLS.map((t) => ({ id: t.id, label: t.label, shortcut: t.shortcut }))
 
 export function ToolBar({
   orientation = 'vertical',
@@ -137,6 +146,56 @@ export function ToolBar({
   const canRotate =
     activeBitmap !== null &&
     (asset.kind !== 'pixel-sprite' || activeBitmap.width === activeBitmap.height)
+
+  // Atalhos de AÇÃO no padrão do Aseprite (08/2026): X troca as cores, Shift+H/V
+  // espelham o QUADRO, Shift+R gira, Ctrl+' grade, Alt+M espelhos, F3 fantasma,
+  // zoom. Registrados AQUI porque é aqui que as ações moram (as mesmas dos
+  // botões); os combos vêm do catálogo que alimenta a janela "Atalhos".
+  // ⚠️ Cada atalho respeita a CURADORIA da caixa (`allowTools`, as aulas): o que a
+  // professora escondeu não pode ligar pelo teclado (a grade, o espelho, os giros).
+  const allowed = (id: string) => isToolAllowed(allowTools, id)
+  useActionShortcuts([
+    { combo: shortcut('swapColors'), run: () => session.getState().swapColors() },
+    {
+      combo: shortcut('flipFrameH'),
+      run: () => transformBitmap('flipH'),
+      when: () => allowed('flipH'),
+    },
+    {
+      combo: shortcut('flipFrameV'),
+      run: () => transformBitmap('flipV'),
+      when: () => allowed('flipV'),
+    },
+    {
+      combo: shortcut('rotateFrame'),
+      run: () => transformBitmap('rotate'),
+      when: () => canRotate && allowed('rotate'),
+    },
+    {
+      combo: shortcut('grid'),
+      run: () => session.getState().toggleGrid(),
+      when: () => allowed('grid'),
+    },
+    {
+      combo: shortcut('mirrorH'),
+      run: () => session.getState().toggleMirror(),
+      when: () => allowed('mirror'),
+    },
+    {
+      combo: shortcut('mirrorV'),
+      run: () => session.getState().toggleMirrorY(),
+      when: () => allowed('mirrorV'),
+    },
+    {
+      combo: shortcut('onion'),
+      run: () => session.getState().toggleOnion(),
+      // O fantasma vive na faixa de quadros (não é curado): só depende do kind.
+      when: () => isAnimatedSpriteKind(asset),
+    },
+    { combo: shortcut('zoomIn'), run: () => session.getState().zoomIn(), repeat: true },
+    { combo: shortcut('zoomOut'), run: () => session.getState().zoomOut(), repeat: true },
+    { combo: shortcut('zoomReset'), run: () => session.getState().setZoom(DEFAULT_PIXEL_ZOOM) },
+  ])
 
   const divider = vertical ? (
     <hr className="col-span-2 my-1 w-8 border-pin-border" />

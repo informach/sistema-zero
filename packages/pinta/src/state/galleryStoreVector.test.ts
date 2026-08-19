@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { clearIdbMock } from '../testing/idbMock'
 
 const { createGalleryStore } = await import('./galleryStore')
-const { setPintaStorageNamespace } = await import('./persistence')
+const { createPintaPersistence, setPintaStorageNamespace } = await import('./persistence')
 
 beforeEach(() => {
   clearIdbMock()
@@ -57,9 +57,11 @@ describe('galleryStore — kinds vetoriais', () => {
       .create({ kind: 'tilemap', name: 'fase-v', tilesetId: tileset.id, cols: 2, rows: 2 })
     if (tilemap?.kind !== 'tilemap') throw new Error('tilemap esperado')
 
-    // Importa os DOIS num perfil limpo: o tilesetId precisa apontar pro clone.
-    clearIdbMock()
-    const store = createGalleryStore()
+    // Importa os DOIS em persistência própria: não apaga o registry IndexedDB
+    // compartilhado enquanto outros arquivos da suíte podem estar executando.
+    const store = createGalleryStore(
+      createPintaPersistence({ namespace: `test-vector-import-relink-${crypto.randomUUID()}` }),
+    )
     const result = await store.getState().importAssets([tileset, tilemap])
     expect(result.added).toBe(2)
     const imported = store.getState().assets

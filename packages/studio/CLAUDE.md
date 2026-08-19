@@ -112,6 +112,90 @@ Terminal/IA só em `mode === 'code'`). `useVisibleBottomTabs` (`src/components/l
 ponto único que cruza features×contexto×preferência — consumido pelo `BottomPanel` (wide), `NarrowPanels`
 (abas) e `Shell` (decide se a barra inferior existe). No wide, esconder tudo COLAPSA a barra inferior.
 
+## Busca e filtro de modo na lista de projetos (18/08/2026)
+
+A `ProjectList` já tinha busca por nome (substring) e ordenação; ganhou a mesma régua do Pinta:
+`projects/projectSearch.ts` (puro) normaliza sem acento/minúsculas/espaços→hífen e casa vários
+termos (`matchesProjectSearch`), e um filtro de MODO em chips (`aria-pressed`): Blocos (`blocks`
+e `bridge`) × Código (`code`) (`matchesProjectMode`). Contador "N de M projetos" (`role="status"`)
+quando há filtro, vazio com "Limpar busca", Esc limpa o campo. Chaves i18n `projects.search*`/
+`projects.filter*` em pt-BR e en. A lista nunca teve teto de quantidade; a busca é o que a mantém
+navegável. Testes: `projects/projectSearch.test.ts`, `projects/ProjectList.test.tsx`.
+
+## Espelho da nuvem: "guardado na sua conta" (18/08/2026)
+
+O host do Estúdio Completo sobe cada projeto para a conta da criança depois do autosave e desce o
+que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design em
+`docs/plans/2026-08-18-guardar-na-conta-design.md`). O pacote entrega quatro coisas, e só isso:
+
+- **`setStudioCloudMirror(mirror | null)`** (`state/persistence.ts`, exportado): gancho ÚNICO
+  chamado depois de TODA escrita/apagamento de PROJETO local — `persistProject`,
+  `renameProjectMeta`, `persistProjectAssets` (sincronia de desenhos do Pinta) → `onChanged(id)`;
+  `deleteProject` → `onDeleted(id)`. Por aqui passam autosave (`PersistenceService`),
+  renomear/duplicar/apagar do `ProjectCard`, `ImportButton` e `importProjectSnapshot` — nenhum
+  componente sabe que a nuvem existe. `writeProjectThumb` (capa do card) e o `game-storage` NÃO
+  avisam (não viajam: a capa fica vazia no outro aparelho até abrir o jogo). Best-effort: espelho
+  que lança não derruba a gravação. `null` desliga (aula, playground).
+- **`persistProject(project, {silent, replace})`**: `silent` grava SEM acordar o espelho (o que
+  acabou de descer não pode subir de novo); `replace` trata o snapshot como verdade COMPLETA —
+  apaga a partição de blocos quando ele não traz `blocksState` (o canvas vazio sanitiza para
+  `null`) e a capa antiga, DEPOIS do `setMany` no mesmo mutex (falha de quota não deixa o local
+  sem blocos). Sem `replace`, blocos apagados noutro computador ressuscitavam aqui e subiam por
+  cima da nuvem.
+- **`restoreProjectFromCloud(raw, {expectedId})`** (`projects/importSnapshot.ts`) →
+  `projectStore.restoreProjectSnapshot`, e **`validateCloudProjectSnapshot`** (o mesmo, SEM
+  gravar — o adaptador confere no `fetch`, antes de fazer cópia de conflito): o MESMO saneamento
+  do import (`sanitizeImportedProjectSnapshot`, que o `importProjectFromJSON` também usa) mas
+  PRESERVANDO `id`/`createdAt`/`updatedAt` do JSON — o id é o vínculo com a nuvem e com o
+  `pensa-<id>` — e ESTRITO (`sanitizeCloudProjectSnapshot`): um snapshot cujo saneamento
+  DESCARTARIA blocos ou o programa (bundle antigo lendo jogo salvo por bundle novo: bloco
+  desconhecido) é RECUSADO em vez de gravado com aviso — gravar + `replace` apagava a partição de
+  blocos local, o autosave subia o vazio e o outro aparelho baixava o vazio por cima (a classe de
+  defeito de allowlist que o Jogo 2D já pagou cinco vezes, agora destrutiva e propagável). O
+  canvas VAZIO da origem (`{szBehaviorAreasVersion}`, `isEmptyWorkspaceState`) não é "descartado":
+  sem aviso, e a partição cai. Recusa (lança) ANTES de gravar se o id do JSON não é o esperado/é
+  inválido (nada de ulid inventado) e se o projeto está ABERTO em QUALQUER editor da página
+  (`isProjectOpenAnywhere` em `persistence.ts`, registro alimentado por TODAS as stores no
+  `createProjectStore` — a guarda que olhava só a store default era falsa em produção, onde o
+  `<StudioEditor>` usa store por instância). O import continua mintando ulid novo. Depois de
+  gravar, `reconcileDrawingsFromRestoredProject` (ver "Meus desenhos").
+- **`loadProjectSnapshotForCloud`** (= `loadProjectById`, COMPLETO, com blocos e assets) é o que o
+  host relê na hora de subir — o `load` do adapter local é o SHELL (sem blocos) e não serve.
+  **`loadProjectAssetsSnapshotForCloud(id, {namespace})`** (19/08) = `loadProjectAssetsById` com
+  escopo de perfil: SÓ a partição de assets (sem meta/blocos) — a descida de um projeto guardado em
+  PARTES reaproveita por hash o que já está neste aparelho e baixa só o resto. Por isso
+  `loadProjectSnapshotForCloud` devolve os assets SANEADOS (`sanitizeProjectAssets`): o hash que
+  sobe é o que a descida compara. Irmãs (v3): `listProjectSummariesLightForCloud({namespace})`,
+  `loadProjectSummaryForCloud(id, {namespace})`, `isProjectOpenAnywhere` (exportado: a descida
+  nem copia nem restaura projeto aberto). Os scopes por `{namespace}` são MEMOIZADOS
+  (`getProjectStorageScope`; idem `getStoreHandle(namespace)` da biblioteca pessoal) — cada
+  `createStore` novo abria uma conexão com o IndexedDB a cada item da nuvem.
+- **Lista e varredura mais leves (19/08):** `listProjectSummariesLight(scope?)` /
+  `loadProjectSummaryById(id, scope?)` (exportados; `listAllProjects` segue COM capas — o
+  `StudioPersistenceAdapter.list` não muda) — a varredura de desenhos (`personalSync.sweep`) lista
+  sem capas, cede a main thread a cada 4 projetos (`yieldToMain`) e o `adopt` lê em lote
+  (`getPersonalAssets(ids)`); **`PROJECT_CHANGED_EVENT`** (`sz:project-changed`, `detail: {id,
+  deleted?}`) sai ao lado do espelho em toda gravação (inclusive `silent`) e a `ProjectList` relê
+  SÓ aquele card (`refreshProject`: ids coalescidos em 40 ms, um `getMany` só via
+  `loadProjectSummariesByIds`; ids que chegam ENQUANTO a primeira leitura está em voo ficam
+  em `missedIds` e entram logo depois — a descida da nuvem começa antes de a lista montar;
+  leitura incremental que falha cai no `reload()`), sem `reload()` completo; `ProjectCard` é
+  `memo` com `onOpen(id)`/`onChanged(id?)` estáveis, `DATE_FORMAT`/`COLLATOR` de módulo, e o
+  botão "Abrir projeto" (que cobre o card) tem anel de foco POR DENTRO (`ring-inset`: o
+  `content-visibility: auto` do card recorta no padding box); `takenNames` memoizado pelo
+  conjunto de nomes (uma capa pronta não re-renderiza todos os cards); a busca usa
+  `useDeferredValue` + índice pré-normalizado (`matchesNormalizedName`); `.sz-project-card` tem
+  `content-visibility: auto`. `persistProjectAssets` lê o meta PRIMEIRO e não recria a
+  partição de um projeto já apagado. Medição: `src/core/perf.ts` (flag `sz:perf`; spans `studio:list:load|
+  rendered`, `studio:projects:list`, `studio:drawings:sweep`, `studio:thumb:capture`);
+  `projects/ProjectList.perf.test.tsx` registra tempo sem assertar.
+- `persistProjectAssets` bumpa `updatedAt` no meta (como o rename): é a régua do "quem é mais
+  novo" da nuvem — sem isso a troca de desenho pelo Pinta subia com o mesmo `updatedAt` e o outro
+  computador nunca baixava.
+- Testes: `state/persistence.test.ts` ("espelho da nuvem": avisos, `silent`, `replace`, guardas de
+  id/aberto, `updatedAt` dos assets, espelho `null`, `loadProjectAssetsSnapshotForCloud`, lista
+  light sem capas, `PROJECT_CHANGED_EVENT`).
+
 ## Persistência do programa do aluno (guardar/ler que PERSISTE)
 
 O programa que o aluno cria (jogo/app) pode **guardar e ler estado entre execuções** — não só o CÓDIGO
@@ -985,8 +1069,12 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
 - **Projeto ABERTO** vai pela store (`updateAssetImage`, ação NOVA no `projectStore`); os demais pela
   partição de assets (`loadProjectAssetsById`/`persistProjectAssets`, par novo em `persistence.ts` —
   ⚠️ o persist esquece o id no `lastPersistedAssetsRef`, senão o dirty-check por referência mentiria).
-- **A comparação é de BYTES** (`dataUrl`), não de `updatedAt`: nada mais escreve pixels no asset do
-  projeto. Zero campo novo no `ProjectAsset`, zero migração, e já cobre assets anteriores à feature.
+- **Bytes iguais são no-op; divergência usa revisão.** `ProjectAsset.libRevision` guarda a revisão
+  de `PersonalAsset.updatedAt` cujos bytes entraram no jogo. No restauro,
+  `reconcileDrawingsFromRestoredProject` só substitui o lado comprovadamente mais velho; se um asset
+  legado diverge sem carimbo, preserva os dois (a versão restaurada vira outro desenho pessoal e o
+  projeto é religado). Isso impede tanto reverter o jogo novo com biblioteca velha quanto apagar
+  silenciosamente uma edição pessoal mais nova. Assets antigos continuam aceitos pelo sanitizer.
 - ⚠️ **`updateAssetImage` NUNCA toca em `name`/`id`/`libId`/`source`** — os blocos referenciam o asset
   PELO NOME (`FieldAssetPicker` serializa a string). Metadados: o desenho novo traz os dele → valem
   os dele; não traz e a geometria é a mesma → preserva o do projeto (peças/mapa do `TileConfigDialog`

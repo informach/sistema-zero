@@ -519,6 +519,68 @@ export interface OwnPintaSubmissionView {
   asset: unknown | null
 }
 
+// ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
+export type CreationToolView = 'studio' | 'pinta'
+
+/** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
+export interface CreationSummaryView {
+  tool: CreationToolView
+  itemId: string
+  name: string
+  kind: string
+  /** ISO — `updatedAt` do item no relógio do editor (a régua de "quem é mais novo"). */
+  itemUpdatedAt: string
+  revision: number
+  bytes: number
+  thumb: string | null
+  syncedAt: string
+}
+
+/** Uma PARTE (asset do Estúdio endereçado por conteúdo) a assinar/baixar. */
+export interface CreationPartTicketView {
+  hash: string
+  bytes: number
+  storageKey: string
+}
+
+/** `POST /members/creations/:tool/:itemId/upload` — a reserva que o BFF assina (+ as partes FALTANTES). */
+export interface CreationUploadTicketView {
+  revision: number
+  storageKey: string
+  bytes: number
+  parts: CreationPartTicketView[]
+}
+
+/**
+ * `POST /members/creations/:tool/:itemId/commit` — o resumo promovido + o que a revisão nova
+ * soltou no R2 (o BFF apaga, best-effort). `previousStorageKey` fica por compat;
+ * `releasedStorageKeys` é o conjunto completo (blob anterior + partes não referenciadas).
+ */
+export interface CreationCommitResultView {
+  item: CreationSummaryView
+  /** Chave da revisão ANTERIOR no R2 (o BFF apaga, best-effort). `null` = primeira/idempotente. */
+  previousStorageKey: string | null
+  releasedStorageKeys?: string[]
+}
+
+/** `DELETE /members/creations/:tool/:itemId` — lixeira lógica; `storageKeys` = tudo o que soltou (o BFF apaga). */
+export interface CreationDeleteResultView {
+  deleted: boolean
+  storageKey: string | null
+  storageKeys?: string[]
+  /** Revisão autoritativa no servidor (0 quando o item nunca existiu). */
+  revision: number
+}
+
+/** `GET /members/creations/:tool/:itemId/download` — onde está o blob corrente (+ partes). */
+export interface CreationDownloadTicketView {
+  storageKey: string
+  revision: number
+  bytes: number
+  summary: CreationSummaryView
+  parts?: CreationPartTicketView[]
+}
+
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
 export interface StudioSubmissionResultView {
   submittedAt: string

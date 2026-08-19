@@ -425,4 +425,13 @@ describe('gateway.config.ts (configuração real)', () => {
 
     expect(route?.rateLimit?.max).toBeGreaterThanOrEqual(60)
   })
+
+  test('reserva das criações aceita o corpo com miniatura + até 128 partes (≥ 64 KB); commit idem', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    // Miniatura (12 k chars) + 128 × `{hash: <64 hex>, bytes: n}` (~90 bytes cada) ≈ 24 KB:
+    // 32 KB deixava margem pequena; 64 KB é o teto "json pequeno" do gateway.
+    expect(byId.get('members-creations-upload')?.maxBodyBytes).toBeGreaterThanOrEqual(64 * 1024)
+    // `uploadedParts` com 128 hashes (~9 KB) cabe no commit.
+    expect(byId.get('members-creations-commit')?.maxBodyBytes).toBeGreaterThanOrEqual(16 * 1024)
+  })
 })

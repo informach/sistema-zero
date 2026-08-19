@@ -6,6 +6,10 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 const UUID = t.String({ pattern: UUID_PATTERN })
 
 export const IdParams = t.Object({ id: UUID })
+export const AccountDeletionFinalizeBody = t.Object({
+  accountId: UUID,
+  userIds: t.Array(UUID, { minItems: 1, maxItems: 51 }),
+})
 export const PlayIdParams = t.Object({ playId: UUID })
 export const SpaceIdParams = t.Object({ spaceId: UUID })
 /** Slug na rota do aluno (servidor) — não é uuid. */

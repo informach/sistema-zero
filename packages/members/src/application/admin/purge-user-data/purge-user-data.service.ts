@@ -14,10 +14,26 @@ export interface PurgeUserDataCommand {
  * kids que ficam keyados nela. Idempotente (DELETEs).
  */
 export class PurgeUserDataService {
-  constructor(private readonly repo: UserDataPurgeRepository) {}
+  constructor(
+    private readonly repo: UserDataPurgeRepository,
+    private readonly clock: () => Date = () => new Date(),
+    private readonly newId: () => string = () => crypto.randomUUID(),
+  ) {}
 
   async execute({ userId, profileIds }: PurgeUserDataCommand): Promise<void> {
     const userIds = [...new Set([userId, ...profileIds])]
-    await this.repo.purgeForUser({ userIds, accountId: userId })
+    const createdAt = this.clock()
+    await this.repo.purgeForUser({
+      userIds,
+      accountId: userId,
+      cleanup: {
+        id: this.newId(),
+        prefixes: userIds.map((ownerId) => `creations/${ownerId}/`),
+        // O JWT de acesso vale 15 min por padrão. Mais 5 min absorvem skew,
+        // operações iniciadas antes da cerca e URLs PUT ainda em voo.
+        notBefore: new Date(createdAt.getTime() + 20 * 60_000),
+        createdAt,
+      },
+    })
   }
 }

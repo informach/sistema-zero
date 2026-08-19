@@ -150,6 +150,18 @@
 }
 
 /*
+ * Cards da lista "Meus Jogos" (19/08/2026): com centenas de projetos, o navegador só
+ * pinta/mede os cards perto da janela; `h-72` = 288px, então a altura intrínseca casa e
+ * a rolagem não pula. Menu e diálogo de apagar são portalados (fora do `contain`). ⚠️ O
+ * `contain: paint` implícito recorta no padding box: indicadores de foco de filhos que ocupam
+ * o card inteiro precisam ser POR DENTRO (`ring-inset`, ver o botão "Abrir projeto").
+ */
+[data-sz-theme] .sz-project-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px 288px;
+}
+
+/*
  * Títulos e marca do Studio na fonte de DISPLAY do host (Baloo no kids).
  * ⚠️ Nome `sz-ui-display`, NUNCA `sz-display`: essa última é do community-kids
  * e as duas brigariam por "última definição vence" dentro do mesmo documento.

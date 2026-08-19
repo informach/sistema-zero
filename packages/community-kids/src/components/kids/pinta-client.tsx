@@ -8,6 +8,12 @@ import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { type CreationsCloud, createCreationsCloud } from '@/lib/creations-cloud'
+import {
+  createCloudMirroredPintaPersistence,
+  type PintaPersistenceLike,
+} from '@/lib/pinta-cloud-persistence'
+import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
@@ -30,6 +36,12 @@ export function PintaClient({
 }) {
   const [mod, setMod] = useState<PintaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
+  // "Guardado na sua conta": a fila da nuvem (uma por montagem, por perfil) e o
+  // armazenamento local EMBRULHADO no espelho — o pacote continua sem backend.
+  const [cloud, setCloud] = useState<CreationsCloud | null>(null)
+  // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
+  const [syncing, setSyncing] = useState(false)
+  const [persistence, setPersistence] = useState<PintaPersistenceLike | null>(null)
   const router = useRouter()
   // O Pinta SEGUE o tema da comunidade (next-themes) — sem toggle próprio.
   const { resolvedTheme } = useTheme()
@@ -62,6 +74,27 @@ export function PintaClient({
         // irmãos no mesmo navegador não compartilham a galeria.
         m.setPintaStorageNamespace(viewerId ?? '')
         if (isCurrent && !isCurrent()) return
+        // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Pinta abre
+        // como sempre (só local).
+        if (viewerId) {
+          // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
+          // trocou de perfil (irmão que entrou no meio de um upload em voo).
+          const nextCloud = createCreationsCloud({ tool: 'pinta', viewerId })
+          // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
+          // updater: efeito colateral em updater roda duas vezes no StrictMode).
+          setCloud(nextCloud)
+          setPersistence(
+            createCloudMirroredPintaPersistence({
+              local: m.createPintaPersistence({ namespace: viewerId }),
+              cloud: nextCloud,
+              viewerId,
+              // A descida não grava por baixo de um desenho ABERTO no editor — e, ao fechar um
+              // que ficou pulado, traz a versão da nuvem na hora.
+              isAssetOpen: m.isPintaAssetOpen,
+              subscribeAssetOpenState: m.subscribePintaAssetOpenState,
+            }),
+          )
+        }
         setMod(m)
       } catch {
         if (isCurrent && !isCurrent()) return
@@ -78,6 +111,32 @@ export function PintaClient({
       active = false
     }
   }, [loadPinta])
+
+  // Ao sair da página (ou trocar de fila), o que estiver pendente sobe INTEIRO e só
+  // então a fila fecha: `dispose()` antes do fim do `flush` deixava só um item subir.
+  // A troca de perfil no meio é barrada pelo BFF (`x-sz-viewer` ≠ sessão → 409).
+  useEffect(() => {
+    if (!cloud) return
+    return () => {
+      // Com teto: sem internet a fila espera o backoff e a antiga nunca fecharia (idas e
+      // vindas na SPA acumulavam filas vivas). O que ficar sobe na próxima carga (reconcilia).
+      void cloud.flush({ timeoutMs: 5000 }).finally(() => cloud.dispose())
+    }
+  }, [cloud])
+
+  // O selo acompanha a descida (a galeria já abriu com o local; os desenhos de outro aparelho
+  // vão chegando). Ao trocar de persistência (perfil), a antiga desliga o que escutava por fora.
+  useEffect(() => {
+    if (!persistence) return
+    const unsubscribe = persistence.subscribe?.((event) => {
+      if (event.type === 'sync-start') setSyncing(true)
+      else if (event.type === 'sync-end') setSyncing(false)
+    })
+    return () => {
+      unsubscribe?.()
+      persistence.dispose?.()
+    }
+  }, [persistence])
 
   const adapter = useMemo<PintaHostAdapter>(() => {
     const initialIntent: PintaInitialIntent | undefined =
@@ -246,7 +305,15 @@ export function PintaClient({
       handoffStatus === 'loading' || mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Pinta…" />
       ) : (
-        <mod.PintaApp adapter={adapter} />
+        <>
+          <div className="flex justify-end">
+            <CloudSaveBadge cloud={cloud} syncing={syncing} />
+          </div>
+          {/* O selo é irmão do app: o wrapper dá ao `h-full` do Pinta uma altura definida. */}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <mod.PintaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+          </div>
+        </>
       )}
     </div>
   )
