@@ -68,6 +68,7 @@ import {
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
 import { stageCursor } from '../stageCursor'
+import { isPintaModalOpen } from '../useActionShortcuts'
 import { useMediaQuery } from '../useMediaQuery'
 import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
@@ -255,11 +256,20 @@ export function VectorStage(): JSX.Element {
 
   // Enter fecha a forma da Caneta; Esc descarta os pontos. Registrado só com
   // pontos pendentes; ignora campos de texto E botões (Enter ativa botão).
+  //
+  // ⚠️ Em CAPTURA (`capture: true`): este listener é re-registrado a cada ponto, o
+  // que o mandava para o FIM da fila do `window` — depois dos atalhos de AÇÃO
+  // (`useActionShortcuts`, registrados uma vez na montagem). Sem a captura, o Enter
+  // que fecha a Caneta também dava play na prévia, e o Esc também soltava a
+  // seleção. Em captura ele roda ANTES de todos e o `preventDefault` avisa o resto.
   // biome-ignore lint/correctness/useExhaustiveDependencies: finishPen lê o estado vivo; re-registra por tool/pontos
   useEffect(() => {
     if (tool !== 'pen' || penPoints.length === 0) return
     function onKey(event: globalThis.KeyboardEvent): void {
       if (isInteractiveControlTarget(event.target)) return
+      // Com um modal do Pinta aberto (a ajuda `?`, por exemplo) o Esc é do modal — não pode
+      // descartar os pontos da Caneta por trás dele; e o Enter no card não fecha a forma.
+      if (isPintaModalOpen()) return
       if (event.key === 'Enter') {
         event.preventDefault()
         finishPen(penPoints)
@@ -269,8 +279,8 @@ export function VectorStage(): JSX.Element {
         setPenCursor(null)
       }
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, { capture: true })
+    return () => window.removeEventListener('keydown', onKey, { capture: true })
   }, [tool, penPoints])
 
   // Segurar ESPAÇO vira a Mão na hora (padrão dos programas de desenho).

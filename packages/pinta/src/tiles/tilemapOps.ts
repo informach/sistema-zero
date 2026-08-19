@@ -174,6 +174,30 @@ export function flattenLayers(
   return out
 }
 
+/**
+ * O valor achatado de UMA célula (a camada visível mais de cima que tem peça ali; -1 =
+ * vazio) — a mesma regra de `flattenLayers`, sem alocar e varrer o mapa inteiro. É o que
+ * o repaint incremental do mapa usa por célula durante o gesto (antes, cada pointermove
+ * achatava cols × rows × camadas).
+ */
+export function flattenCellAt(
+  tilemap: TilemapAsset,
+  col: number,
+  row: number,
+  include?: (layer: TilemapLayer) => boolean,
+): number {
+  if (col < 0 || row < 0 || col >= tilemap.cols || row >= tilemap.rows) return -1
+  const index = row * tilemap.cols + col
+  let out = -1
+  for (const layer of tilemap.layers) {
+    if (!layer.visible) continue
+    if (include && !include(layer)) continue
+    const value = layer.cells[index] ?? -1
+    if (value >= 0) out = value
+  }
+  return out
+}
+
 /** Achatado das camadas de FUNDO (tudo menos as marcadas "da frente"). */
 export function flattenBackground(tilemap: TilemapAsset): Int16Array {
   return flattenLayers(tilemap, (l) => l.front !== true)

@@ -16,12 +16,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useAnimationPlayer } from '../../animation/player'
 import { activeAnimationOf } from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
+import { isInteractiveControlTarget } from '../../core/dom'
 import {
   isAnimatedSpriteKind,
   type PintaPixelFrame,
   resolveAssetPalette,
   type VectorFrame,
 } from '../../core/project'
+import { shortcut } from '../../core/shortcuts'
 import { flattenCelsOrBlank } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
@@ -31,6 +33,7 @@ import { Play, Settings, SquarePen } from '../ui/icons'
 import { Panel, type PanelDisclosure } from '../ui/Panel'
 import { AnimationDetails } from './AnimationDetails'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { useActionShortcuts } from './useActionShortcuts'
 
 export function PreviewPlayer({
   disclosure,
@@ -47,6 +50,19 @@ export function PreviewPlayer({
 
   const animated = isAnimatedSpriteKind(asset) ? asset : null
   const animation = animated ? activeAnimationOf(animated, { animationId, frameIndex }) : null
+
+  // Enter = reproduzir/pausar a prévia (Aseprite). Não em cima de botão/campo: ali
+  // o Enter é o clique deles.
+  useActionShortcuts([
+    {
+      combo: shortcut('playPause'),
+      when: (event) => animated !== null && !isInteractiveControlTarget(event.target),
+      run: () => {
+        const s = session.getState()
+        s.setPlaying(!s.playing)
+      },
+    },
+  ])
 
   const playingIndex = useAnimationPlayer({
     playing: playing && Boolean(animation) && (disclosure?.open ?? true),

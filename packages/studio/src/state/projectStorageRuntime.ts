@@ -17,6 +17,35 @@ function databaseName(namespace: string): string {
   return namespace ? `sistema-zero-studio-${namespace}` : 'sistema-zero-studio'
 }
 
+/**
+ * Scope por namespace, MEMOIZADO: os caminhos da nuvem (subida/descida por item, biblioteca
+ * pessoal) chamam com `{namespace}` a cada item, e cada `createStore` novo abre uma conexão
+ * própria com o IndexedDB no 1º uso — centenas numa descida grande. Um scope por perfil basta
+ * (o handle é imutável). O caminho GLOBAL (`captureProjectStorageScope`) segue com o seu
+ * próprio cache, reiniciado a cada troca de perfil.
+ */
+const scopesByNamespace = new Map<string, ProjectStorageScope>()
+export function getProjectStorageScope(namespace: string): ProjectStorageScope {
+  const normalized = namespace.trim()
+  let scope = scopesByNamespace.get(normalized)
+  if (!scope) {
+    scope = createProjectStorageScope(normalized)
+    scopesByNamespace.set(normalized, scope)
+  }
+  return scope
+}
+
+/** Cria um scope imutável sem depender do perfil global ativo. */
+export function createProjectStorageScope(namespace: string): ProjectStorageScope {
+  const normalized = namespace.trim()
+  const identity = databaseName(normalized)
+  return Object.freeze({
+    namespace: normalized,
+    identity,
+    store: createStore(identity, 'kv'),
+  })
+}
+
 /** Troca o perfil ativo; operações já iniciadas conservam o scope capturado. */
 export function setProjectStorageNamespace(namespace: string): void {
   const next = namespace.trim()
@@ -28,13 +57,7 @@ export function setProjectStorageNamespace(namespace: string): void {
 /** Captura atômica do namespace + handle usados durante uma operação inteira. */
 export function captureProjectStorageScope(): ProjectStorageScope {
   if (!currentScope) {
-    const namespace = storageNamespace
-    const identity = databaseName(namespace)
-    currentScope = Object.freeze({
-      namespace,
-      identity,
-      store: createStore(identity, 'kv'),
-    })
+    currentScope = createProjectStorageScope(storageNamespace)
   }
   return currentScope
 }

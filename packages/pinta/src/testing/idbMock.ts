@@ -14,6 +14,18 @@ const dbs = new Map<string, KV>()
 // falha (simula disco cheio/quota p/ testar caminhos de erro). Default no-op.
 let writeGuard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null = null
 
+/** Contadores de chamadas (medições de desempenho: "quantas leituras completas por autosave?"). */
+const stats = { get: 0, getMany: 0, getManyKeys: 0, set: 0, setMany: 0, keys: 0, del: 0 }
+
+/** Fotografia dos contadores (zerados por `clearIdbMock`/`resetIdbMockStats`). */
+export function idbMockStats(): Readonly<typeof stats> {
+  return { ...stats }
+}
+
+export function resetIdbMockStats(): void {
+  for (const key of Object.keys(stats) as Array<keyof typeof stats>) stats[key] = 0
+}
+
 /** Faz o próximo(s) `set` lançar quando o guard lançar. `null` desliga. */
 export function setIdbWriteGuard(
   guard: ((key: IDBValidKey, value: unknown) => void | Promise<void>) | null,
@@ -34,24 +46,36 @@ function resolveKV(store?: { name?: string } | string): KV {
 
 mock.module('idb-keyval', () => ({
   createStore: (dbName: string, _storeName: string) => ({ name: dbName }),
-  get: async (key: IDBValidKey, store?: { name?: string }) => resolveKV(store).get(key),
-  getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
-    keys.map((key) => resolveKV(store).get(key)),
+  get: async (key: IDBValidKey, store?: { name?: string }) => {
+    stats.get += 1
+    return resolveKV(store).get(key)
+  },
+  getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
+    stats.getMany += 1
+    stats.getManyKeys += keys.length
+    return keys.map((key) => resolveKV(store).get(key))
+  },
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
     await writeGuard?.(key, value)
+    stats.set += 1
     resolveKV(store).set(key, value)
   },
   setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
     for (const [key, value] of pairs) await writeGuard?.(key, value)
+    stats.setMany += 1
     for (const [key, value] of pairs) resolveKV(store).set(key, value)
   },
   del: async (key: IDBValidKey, store?: { name?: string }) => {
+    stats.del += 1
     resolveKV(store).delete(key)
   },
   delMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     for (const key of keys) resolveKV(store).delete(key)
   },
-  keys: async (store?: { name?: string }) => [...resolveKV(store).keys()],
+  keys: async (store?: { name?: string }) => {
+    stats.keys += 1
+    return [...resolveKV(store).keys()]
+  },
   update: async (
     key: IDBValidKey,
     updater: (old: unknown) => unknown,
@@ -66,6 +90,7 @@ mock.module('idb-keyval', () => ({
 export function clearIdbMock(): void {
   dbs.clear()
   writeGuard = null
+  resetIdbMockStats()
 }
 
 /** Acesso direto a um DB (asserções de baixo nível). */

@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia'
+import type { CreationCleanupService } from '../../../application/admin/creation-cleanup/creation-cleanup.service'
 import type { PurgeUserDataService } from '../../../application/admin/purge-user-data/purge-user-data.service'
 import type { GetAiUsageStatsService } from '../../../application/ai-usage/get-ai-usage-stats.service'
 import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
@@ -39,6 +40,7 @@ import {
   ChallengeThemeBody,
   ChallengeThemePatchBody,
   CourseIdParams,
+  CreationCleanupFailureBody,
   GrantEntitlementBody,
   IdParams,
   ListMembersQuery,
@@ -75,6 +77,8 @@ export interface AdminRoutesDeps {
   revokeCertificate: RevokeCertificateService
   /** Purga TODOS os dados do aluno (exclusão de usuário pelo painel, superadmin-only no gateway). */
   purgeUserData: PurgeUserDataService
+  /** Fila durável da limpeza R2 pós-TTL. */
+  creationCleanup: CreationCleanupService
   /** Notifica o hub (comunidade) na concessão manual → invalida o cache de acesso na hora. */
   hub: HubGateway
 }
@@ -393,6 +397,33 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           set.status = 204
         },
         { params: IdParams, query: MemberDetailQuery },
+      )
+      .post('/creation-cleanups/claim', async ({ headers, set }) => {
+        requireAdmin(headers, deps.requireAdminEnabled)
+        const job = await deps.creationCleanup.claim()
+        if (!job) {
+          set.status = 204
+          return
+        }
+        return { job }
+      })
+      .post(
+        '/creation-cleanups/:id/complete',
+        async ({ headers, params }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return { completed: await deps.creationCleanup.complete(params.id) }
+        },
+        { params: IdParams },
+      )
+      .post(
+        '/creation-cleanups/:id/fail',
+        async ({ headers, params, body }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return {
+            released: await deps.creationCleanup.fail(params.id, body.error, body.attempts),
+          }
+        },
+        { params: IdParams, body: CreationCleanupFailureBody },
       )
       // Revoga um certificado emitido (a validação pública passa a mostrar inválido).
       // `/members/admin/certificates/:id/revoke` (4 segmentos) não colide com as demais.

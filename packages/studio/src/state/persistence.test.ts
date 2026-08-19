@@ -36,18 +36,37 @@ mock.module('idb-keyval', () => ({
   update: idb.update,
 }))
 
-const { listAllProjects, persistProject, renameProjectMeta } = await import('./persistence')
+const {
+  listAllProjects,
+  listProjectSummariesLight,
+  loadProjectSummaryById,
+  persistProject,
+  PROJECT_CHANGED_EVENT,
+  renameProjectMeta,
+} = await import('./persistence')
 const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProjectStore } =
   await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
 const { setStorageNamespace } = await import('./persistence')
+const { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } = await import(
+  '../blockly/blocksStateVersion'
+)
 
 // Sem fake timers no bun:test: encurta o debounce do autosave e espera com
-// timers reais (folga de 5x para máquinas lentas/CI).
+// timers reais (folga de 10× para máquinas lentas/CI; o dreno no `afterEach`
+// impede um save em voo de cair no contador do caso seguinte).
+// ⚠️ Este arquivo ASSUME namespace de storage '' e `useProjectStore` sem projeto.
+// Em 19/08 três casos reprovaram SÓ no CI: não era tempo — era o
+// `personalSync.test.ts`, que no Linux roda ANTES deste e saía deixando
+// `setStorageNamespace('personal-sync-test-N')` e um projeto na store default.
+// O conserto mora lá (afterAll devolvendo o estado); fica aqui o aviso de que
+// "recebeu 1, esperava 0" neste arquivo é sintoma de ESTADO DE MÓDULO vazado de
+// outro arquivo, não de debounce curto. Reproduza com a ordem do CI
+// (`bun test <arquivos anteriores> src/state/persistence.test.ts`), nunca só este.
 const AUTOSAVE_TEST_DELAY_MS = 10
-const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
+const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 10)
 
 // Serviço sobre a store DEFAULT (mesmo arranjo do fallback fora de um
 // <Studio>); cada teste dá attach/detach.
@@ -58,17 +77,34 @@ describe('setStorageNamespace — isolamento por perfil', () => {
   afterEach(() => setStorageNamespace(''))
 
   it('namespace → DB próprio por perfil; vazio → DB histórico compartilhado', async () => {
+    setStorageNamespace('perfil-A')
+    idb.createStore.mockClear()
     const list = createLocalPersistenceAdapter().list
     if (!list) throw new Error('adapter local sem list()') // narrow p/ o typecheck (list é opcional na interface)
-    idb.createStore.mockClear()
-    setStorageNamespace('perfil-A')
     await list()
     expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio-perfil-A', 'kv')
 
     idb.createStore.mockClear()
     setStorageNamespace('') // sem perfil → store padrão (lição/adulto)
-    await list()
+    const defaultList = createLocalPersistenceAdapter().list
+    if (!defaultList) throw new Error('adapter local sem list()')
+    await defaultList()
     expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio', 'kv')
+  })
+
+  it('adapter capturado para A continua lendo A depois de o namespace global mudar para B', async () => {
+    setStorageNamespace('perfil-A')
+    const adapterA = Reflect.apply(createLocalPersistenceAdapter, null, [
+      { namespace: 'perfil-A' },
+    ]) as ReturnType<typeof createLocalPersistenceAdapter>
+    const listA = adapterA.list
+    if (!listA) throw new Error('adapter local sem list()')
+
+    idb.createStore.mockClear()
+    setStorageNamespace('perfil-B')
+    await listA()
+
+    expect(idb.createStore).not.toHaveBeenCalledWith('sistema-zero-studio-perfil-B', 'kv')
   })
 })
 
@@ -86,7 +122,12 @@ describe('PersistenceService', () => {
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Drena um ciclo de autosave ANTES de o próximo teste limpar os mocks: um
+    // timer já disparado (ou um `setMany` em voo) deste teste não pode cair no
+    // contador do seguinte. O `detach()` de cada caso cancela o timer pendente,
+    // mas não espera o que já começou.
+    await waitForAutosave()
     setAutosaveDelayForTests(null)
     useProjectStore.setState({ project: null, isDirty: false, saveError: null })
   })
@@ -1116,6 +1157,66 @@ describe('listAllProjects', () => {
     ])
     expect(idb.getMany).toHaveBeenCalledWith(['sz:project:legacy'], expect.anything())
   })
+
+  it('a lista LEVE (`listProjectSummariesLight`) não lê as capas; `loadProjectSummaryById` relê meta + capa de UM projeto', async () => {
+    idb.keys.mockResolvedValueOnce(['sz:project-meta:a', 'sz:project-meta:b'])
+    idb.getMany.mockResolvedValueOnce([
+      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 20 },
+      { id: 'b', name: 'Projeto B', createdAt: 30, updatedAt: 40 },
+    ])
+    const light = await listProjectSummariesLight()
+    expect(light.map((p) => p.id)).toEqual(['b', 'a'])
+    // Um getMany só (os metas): nenhuma chave `sz:project-thumb:` foi pedida.
+    expect(idb.getMany).toHaveBeenCalledTimes(1)
+    const asked = (idb.getMany.mock.calls as unknown[][]).flatMap((call) => call[0] as string[])
+    expect(asked.some((key) => key.startsWith('sz:project-thumb:'))).toBe(false)
+
+    idb.getMany.mockClear()
+    idb.getMany.mockResolvedValueOnce([
+      { id: 'a', name: 'Projeto A', createdAt: 10, updatedAt: 99 },
+      { id: 'a', dataUrl: 'data:image/jpeg;base64,AAA' },
+    ])
+    await expect(loadProjectSummaryById('a')).resolves.toEqual({
+      id: 'a',
+      name: 'Projeto A',
+      createdAt: 10,
+      updatedAt: 99,
+      mode: 'blocks',
+      thumbDataUrl: 'data:image/jpeg;base64,AAA',
+    })
+    expect(idb.getMany).toHaveBeenCalledWith(
+      ['sz:project-meta:a', 'sz:project-thumb:a'],
+      expect.anything(),
+    )
+    // Apagado: `null` (sem cair no legado quando nem ele existe).
+    idb.getMany.mockResolvedValueOnce([undefined, undefined])
+    idb.get.mockResolvedValueOnce(undefined)
+    await expect(loadProjectSummaryById('sumiu')).resolves.toBeNull()
+  })
+
+  it('toda escrita/apagamento local avisa a página (`PROJECT_CHANGED_EVENT` com o id), inclusive o restauro silencioso', async () => {
+    const seen: Array<{ id: string; deleted?: boolean }> = []
+    const onChanged = (event: Event) => {
+      seen.push((event as CustomEvent<{ id: string; deleted?: boolean }>).detail)
+    }
+    window.addEventListener(PROJECT_CHANGED_EVENT, onChanged)
+    try {
+      const project = createEmptyProject('01J00000000000000000000EVT', 'Nave')
+      await persistProject(project)
+      await persistProject(project, { silent: true })
+      idb.get.mockResolvedValueOnce({ id: project.id, name: 'Nave', updatedAt: 1 })
+      await renameProjectMeta(project.id, 'Nave 2')
+      await deleteProject(project.id)
+      expect(seen).toEqual([
+        { id: project.id, deleted: false },
+        { id: project.id, deleted: false },
+        { id: project.id, deleted: false },
+        { id: project.id, deleted: true },
+      ])
+    } finally {
+      window.removeEventListener(PROJECT_CHANGED_EVENT, onChanged)
+    }
+  })
 })
 
 describe('persistProject — assets só reescritos quando a referência muda', () => {
@@ -1177,5 +1278,302 @@ describe('persistProject — assets só reescritos quando a referência muda', (
     await persistProject({ ...project, updatedAt: project.updatedAt + 1 })
 
     expect(lastSetManyKeys()).toContain('sz:project-assets:assets-retry')
+  })
+})
+
+const { setStudioCloudMirror, deleteProject, persistProjectAssets } = await import('./persistence')
+
+describe('espelho da nuvem ("guardado na sua conta")', () => {
+  afterEach(() => {
+    setStudioCloudMirror(null)
+    useProjectStore.setState({ project: null })
+  })
+
+  it('persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem)', async () => {
+    const changed: string[] = []
+    setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
+    idb.set.mockClear()
+    idb.get.mockResolvedValueOnce({ id: 'assets-sync', name: 'Nave', updatedAt: 1 })
+    const before = Date.now()
+    await persistProjectAssets('assets-sync', [])
+    expect(changed).toEqual(['assets-sync'])
+    const metaWrite = idb.set.mock.calls.find(
+      (call) => (call as unknown[])[0] === 'sz:project-meta:assets-sync',
+    ) as unknown[] | undefined
+    expect(metaWrite).toBeDefined()
+    const meta = metaWrite?.[1] as { updatedAt: number; name: string }
+    expect(meta.name).toBe('Nave')
+    expect(meta.updatedAt).toBeGreaterThanOrEqual(before)
+  })
+
+  it('espelho `null` (aula, playground) não chama nada e não quebra', async () => {
+    setStudioCloudMirror(null)
+    const project = createEmptyProject('01J00000000000000000000NUL', 'Nave')
+    await expect(persistProject(project)).resolves.toBeUndefined()
+    await expect(deleteProject(project.id)).resolves.toBeUndefined()
+  })
+
+  it('persistProjectAssets NÃO recria a partição de um projeto que já foi apagado (meta ausente): nada gravado, espelho não acordado', async () => {
+    const changed: string[] = []
+    setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
+    idb.set.mockClear()
+    idb.get.mockResolvedValueOnce(undefined) // meta não existe mais
+    await persistProjectAssets('apagado-no-meio', [])
+    expect(idb.set).not.toHaveBeenCalled()
+    expect(changed).toEqual([])
+  })
+
+  it('loadProjectSnapshotForCloud devolve os assets SANEADOS (a mesma forma do loadProjectAssetsById): o hash da parte que sobe é o mesmo que a descida compara', async () => {
+    const { loadProjectSnapshotForCloud } = await import('../projects/importSnapshot')
+    const base = createEmptyProject('01J00000000000000000000SAN', 'Com assets')
+    idb.getMany.mockResolvedValueOnce([
+      { id: base.id, name: base.name, createdAt: 1, updatedAt: 2, mode: 'blocks' },
+      { id: base.id, files: base.files },
+      { id: base.id, ir: null, blocksState: null },
+      undefined,
+      {
+        id: base.id,
+        assets: [
+          { id: 'a1', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,AAAA' },
+          { id: 'a2', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,BBBB' },
+          { id: 'a3', name: 'Doc', kind: 'pdf', dataUrl: 'data:application/pdf;base64,CCCC' },
+        ],
+      },
+    ])
+    const project = await loadProjectSnapshotForCloud(base.id)
+    expect(project?.assets?.map((asset) => asset.id)).toEqual(['a1'])
+  })
+
+  it('loadProjectSummariesByIds lê os resumos de vários projetos num `getMany` só (meta + capa de cada) e devolve null para quem não existe', async () => {
+    const { loadProjectSummariesByIds } = await import('./persistence')
+    idb.getMany.mockClear()
+    idb.get.mockClear()
+    idb.getMany.mockResolvedValueOnce([
+      { id: 'p1', name: 'Um', createdAt: 1, updatedAt: 5, mode: 'blocks' },
+      { id: 'p1', dataUrl: 'data:image/jpeg;base64,CAPA' },
+      undefined,
+      undefined,
+    ])
+    const [um, sumiu] = await loadProjectSummariesByIds(['p1', 'p2'])
+    expect(um?.name).toBe('Um')
+    expect(um?.thumbDataUrl).toBe('data:image/jpeg;base64,CAPA')
+    expect(sumiu).toBeNull()
+    expect(idb.getMany).toHaveBeenCalledTimes(1)
+    expect((idb.getMany.mock.calls[0] as unknown[])[0]).toEqual([
+      'sz:project-meta:p1',
+      'sz:project-thumb:p1',
+      'sz:project-meta:p2',
+      'sz:project-thumb:p2',
+    ])
+  })
+
+  it('loadProjectAssetsSnapshotForCloud lê SÓ a partição de assets, no DB do perfil pedido (a descida em partes reaproveita o que já está aqui)', async () => {
+    const { loadProjectAssetsSnapshotForCloud } = await import('../projects/importSnapshot')
+    idb.createStore.mockClear()
+    idb.get.mockClear()
+    idb.getMany.mockClear()
+    idb.get.mockResolvedValueOnce({
+      id: 'jogo-p',
+      assets: [
+        { id: 'a1', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,AAAA' },
+        { id: 'a2', name: 'Nave', kind: 'image', dataUrl: 'data:image/png;base64,BBBB' },
+        { id: 'a3', name: 'Doc', kind: 'pdf', dataUrl: 'data:application/pdf;base64,CCCC' },
+      ],
+    })
+    const assets = await loadProjectAssetsSnapshotForCloud('jogo-p', { namespace: 'perfil-Z' })
+    // Saneado como o resto do pacote (nome repetido e tipo desconhecido caem) e lido do DB do perfil.
+    expect(assets.map((asset) => asset.id)).toEqual(['a1'])
+    expect(idb.createStore).toHaveBeenCalledWith('sistema-zero-studio-perfil-Z', 'kv')
+    expect(idb.get).toHaveBeenCalledTimes(1)
+    expect((idb.get.mock.calls[0] as unknown[])[0]).toBe('sz:project-assets:jogo-p')
+    expect(idb.getMany).not.toHaveBeenCalled()
+    // Sem partição (legado) → lista vazia, sem lançar.
+    idb.get.mockResolvedValueOnce(undefined)
+    expect(await loadProjectAssetsSnapshotForCloud('legado', { namespace: 'perfil-Z' })).toEqual([])
+  })
+
+  it('o restauro SUBSTITUI: apaga a partição de blocos quando o snapshot não traz blocos, e a capa antiga', async () => {
+    idb.delMany.mockClear()
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000RPL', 'Sem blocos'),
+      blocksState: null,
+      createdAt: 1_700_000_000_000,
+      updatedAt: 1_700_000_100_000,
+    }
+    await useProjectStore.getState().restoreProjectSnapshot(raw)
+    const deleted = idb.delMany.mock.calls.flatMap((call) => (call as unknown[])[0] as string[])
+    expect(deleted).toContain('sz:project-blocks:01J00000000000000000000RPL')
+    expect(deleted).toContain('sz:project-thumb:01J00000000000000000000RPL')
+  })
+
+  it('o restauro é ESTRITO: bloco que esta versão não reconhece RECUSA (nada gravado, partição de blocos intacta); canvas VAZIO da origem passa sem aviso e apaga a partição', async () => {
+    idb.setMany.mockClear()
+    idb.delMany.mockClear()
+    const base = createEmptyProject('01J00000000000000000000STR', 'Novo demais')
+    // Um jogo salvo por um bundle mais novo (bloco desconhecido aqui): antes virava
+    // "aviso" + `replace` apagando os blocos locais; agora recusa antes de tocar no disco.
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot(
+        {
+          ...base,
+          blocksState: {
+            blocks: {
+              languageVersion: 0,
+              blocks: [{ type: 'bloco_do_futuro', fields: {} }],
+            },
+          },
+          createdAt: 1,
+          updatedAt: 2,
+        },
+        { expectedId: base.id },
+      ),
+    ).rejects.toThrow(/não reconhece/)
+    expect(idb.setMany).not.toHaveBeenCalled()
+    expect(idb.delMany).not.toHaveBeenCalled()
+    // A validação SEM gravar (o que o adaptador da nuvem chama no fetch) recusa igual.
+    const { validateCloudProjectSnapshot } = await import('../projects/importSnapshot')
+    expect(() =>
+      validateCloudProjectSnapshot(
+        { ...base, ir: { versao: 'do futuro' } },
+        { expectedId: base.id },
+      ),
+    ).toThrow(/não reconhece/)
+    // Canvas VAZIO (o que o Blockly grava com o canvas limpo): não é "blocos descartados".
+    const { project, warnings } = await useProjectStore.getState().restoreProjectSnapshot(
+      {
+        ...base,
+        blocksState: { [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION },
+        createdAt: 1,
+        updatedAt: 2,
+      },
+      { expectedId: base.id },
+    )
+    expect(warnings).toEqual([])
+    expect(project.blocksState).toBeNull()
+    expect(idb.setMany).toHaveBeenCalled()
+    const deleted = idb.delMany.mock.calls.flatMap((call) => (call as unknown[])[0] as string[])
+    expect(deleted).toContain('sz:project-blocks:01J00000000000000000000STR')
+    // O `validate` do mesmo snapshot devolve o mesmo projeto, sem gravar nada a mais.
+    idb.setMany.mockClear()
+    const validated = validateCloudProjectSnapshot(
+      { ...base, blocksState: { [BEHAVIOR_AREAS_STATE_KEY]: BEHAVIOR_AREAS_STATE_VERSION } },
+      { expectedId: base.id },
+    )
+    expect(validated.project.id).toBe(base.id)
+    expect(validated.warnings).toEqual([])
+    expect(idb.setMany).not.toHaveBeenCalled()
+  })
+
+  it('o restauro recusa projeto aberto em QUALQUER store (as por instância do editor, não só a default)', async () => {
+    idb.setMany.mockClear()
+    const instance = createProjectStore()
+    instance.setState({
+      project: createEmptyProject('01J00000000000000000000INS', 'Aberto na instância'),
+    })
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000INS', 'Da nuvem'),
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot(raw, {
+        expectedId: '01J00000000000000000000INS',
+      }),
+    ).rejects.toThrow(/aberto/)
+    expect(idb.setMany).not.toHaveBeenCalled()
+    // Fechou (trocou de projeto): o restauro passa.
+    instance.setState({ project: null })
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot(raw, {
+        expectedId: '01J00000000000000000000INS',
+      }),
+    ).resolves.toBeDefined()
+  })
+
+  it('o restauro recusa id inesperado ou inválido ANTES de gravar, e recusa projeto ABERTO', async () => {
+    idb.setMany.mockClear()
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000EXP', 'Nave'),
+      createdAt: 1,
+      updatedAt: 2,
+    }
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot(raw, { expectedId: 'outro-id' }),
+    ).rejects.toThrow(/id do projeto/)
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot({ ...raw, id: 'id com espaços!' }),
+    ).rejects.toThrow(/id do projeto/)
+    expect(idb.setMany).not.toHaveBeenCalled()
+
+    // Aberto no editor: recusa (a memória viva subiria por cima).
+    useProjectStore.setState({
+      project: createEmptyProject('01J00000000000000000000EXP', 'Aberto'),
+    })
+    await expect(
+      useProjectStore.getState().restoreProjectSnapshot(raw, {
+        expectedId: '01J00000000000000000000EXP',
+      }),
+    ).rejects.toThrow(/aberto/)
+    expect(idb.setMany).not.toHaveBeenCalled()
+  })
+
+  it('persistProject/renameProjectMeta/deleteProject avisam o espelho; `silent` e o restauro não', async () => {
+    const changed: string[] = []
+    const deleted: string[] = []
+    setStudioCloudMirror({
+      onChanged: (id) => changed.push(id),
+      onDeleted: (id) => deleted.push(id),
+    })
+    const project = createEmptyProject('01J00000000000000000000MIR', 'Nave')
+
+    await persistProject(project)
+    expect(changed).toEqual([project.id])
+
+    idb.get.mockResolvedValueOnce({ id: project.id, name: 'Nave', updatedAt: 1 })
+    await renameProjectMeta(project.id, 'Nave 2')
+    expect(changed).toEqual([project.id, project.id])
+
+    await persistProject(project, { silent: true })
+    expect(changed).toHaveLength(2)
+
+    await deleteProject(project.id)
+    expect(deleted).toEqual([project.id])
+
+    // O restauro grava com o MESMO id e as datas de origem, em silêncio.
+    const raw = {
+      ...createEmptyProject('01J00000000000000000000RST', 'Vinda da nuvem'),
+      createdAt: 1_700_000_000_000,
+      updatedAt: 1_700_000_100_000,
+    }
+    const { project: restored } = await useProjectStore.getState().restoreProjectSnapshot(raw)
+    expect(restored.id).toBe('01J00000000000000000000RST')
+    expect(restored.createdAt).toBe(1_700_000_000_000)
+    expect(restored.updatedAt).toBe(1_700_000_100_000)
+    expect(restored.name).toBe('Vinda da nuvem')
+    expect(changed).toHaveLength(2)
+    expect(idb.setMany).toHaveBeenCalled()
+  })
+
+  it('um espelho que lança não derruba a gravação local', async () => {
+    setStudioCloudMirror({
+      onChanged: () => {
+        throw new Error('nuvem fora do ar')
+      },
+      onDeleted: () => {
+        throw new Error('nuvem fora do ar')
+      },
+    })
+    const project = createEmptyProject('01J00000000000000000000ERR', 'Nave')
+    await expect(persistProject(project)).resolves.toBeUndefined()
+    await expect(deleteProject(project.id)).resolves.toBeUndefined()
+  })
+
+  it('o import de .szproject.json continua mintando id NOVO e avisa o espelho', async () => {
+    const changed: string[] = []
+    setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
+    const raw = createEmptyProject('01J00000000000000000000IMP', 'Importado')
+    const { project } = await useProjectStore.getState().importProjectFromJSON(raw)
+    expect(project.id).not.toBe('01J00000000000000000000IMP')
+    expect(changed).toEqual([project.id])
   })
 })

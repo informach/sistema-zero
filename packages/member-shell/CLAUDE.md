@@ -565,6 +565,59 @@ Tipos mirror em `lib/types.ts` (`TeacherThread{,Summary}View`/`TeacherMessageVie
 PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../members/CLAUDE.md`
 §Conversas com o professor.
 
+## "Guardado na sua conta" — BFF das criações (18/08/2026)
+
+`src/routes/creations.ts` (`shell.routes.creationsList/UploadUrl/Commit/DownloadUrl/Delete`), molde
+de `routes/hub.ts` (anexos): o members guarda o ÍNDICE (`/members/creations/*`) e AQUI só se assina
+o R2 UGC privado — `creationsUploadUrl` chama `members.reserveCreationUpload` (posse + quota +
+revisão) e devolve `r2PresignPutUgc` da chave `creations/<perfil>/<tool>/<item>/<rev>.json.gz` com
+**Content-Length e Content-Type (`application/gzip`) ASSINADOS** (TTL 600 s); `creationsCommit`
+manda `{revision, uploadedParts?}` (bytes/meta são os da reserva), apaga DEPOIS da resposta
+(`after()` do Next; `deferCleanup`) e best-effort tudo o que a revisão soltou (`releasedStorageKeys`
+do members — manifesto anterior + partes não referenciadas — em LOTE por `r2DeleteObjectsUgc`;
+`previousStorageKey` como fallback) e responde só `{item}`; `creationsDownloadUrl` assina o GET da
+revisão corrente (TTL 300 s) e um GET por PARTE (`parts: [{hash, bytes, url}]`, TTL 600 s).
+**Partes (19/08/2026):** a reserva aceita `parts: [{hash, bytes?}]` (≤128, hash `[a-f0-9]{64}`),
+pré-confere o total declarado (> 40 MB → 409 de quota sem ir ao members) e assina um PUT por parte
+FALTANTE que o members devolve (`parts: [{hash, bytes, uploadUrl}]`, Content-Length da parte);
+antes do commit com `uploadedParts`, HEAD best-effort no R2 (`r2HeadObjectUgc`, 8 em paralelo, na
+chave `creationPartStorageKey(perfil, tool, item, hash, revisão do commit)` de
+`@sistemazero/core/creations` — a MESMA função do members): 404 definitivo → 409
+`CREATION_PART_MISSING {details.hashes}` SEM chamar o members; erro de HEAD ≠ 404 segue. Partes
+declaradas mas members SEM `parts` na resposta (members anterior ao protocolo, janela de
+deploy/rollback — o DTO dele descarta campos desconhecidos) → 503 `UPSTREAM_INCOMPATIBLE`
+(retentável), nunca um ticket sem as faltantes. `r2DeleteObjectsUgc`: lote de até 1000; se o
+`DeleteObjects` falhar (checksum SDK×R2) ou recusar chaves, apaga as que faltaram uma a uma
+(`DeleteObject`) e avisa uma vez (`createR2UgcObjectStore` recebe o cliente de produção ou o
+cliente falso do teste em `tests/r2-delete-objects.test.ts`). O apagar é agendado por `deps.defer` (default `after()` do Next
+com fallback; `tests/creations-routes-after.test.ts` prova "responde, depois apaga"). 409 do members apaga SÓ o manifesto recusado (as partes podem estar em outra reserva em
+voo). A lixeira apaga em lote `storageKeys` (manifesto + partes). Nome (120) e kind (40) são
+CORTADOS (por caractere, não por UTF-16: emoji na borda não vira meio par), não recusados (o
+Estúdio aceita 200; um 400 deixava o jogo sem subir para sempre) e a miniatura acima de 12 k é
+descartada; `bytes` acima de 40 MB responde 409 `CREATION_QUOTA_EXCEEDED` "grande demais" (a MESMA
+resposta do members — um 400 genérico virava "vou tentar de novo" para uma condição permanente);
+`baseRevision` (revisão-base do aparelho) passa direto para o members (409 `CREATION_STALE_BASE`
+quando outro aparelho subiu antes). `creationsDelete` apaga do R2 o blob que a lixeira soltou
+(`storageKey` do members) e responde só `{deleted}`. Um 200 SEM corpo do members vira 502 (o
+cliente lia `{ok:true}` como ticket → `fetch(undefined)`). Sessão de suporte (impersonação) é só
+leitura nas escritas; `x-sz-viewer` SEM sessão de perfil não é mismatch (só sessão de OUTRO perfil). **`x-sz-viewer`**: o cliente manda o perfil que enfileirou
+a chamada; se a sessão já é de OUTRO perfil (irmão que entrou no meio de um upload em voo), TODAS
+as rotas respondem 409 `VIEWER_MISMATCH` — nem o jogo do A entra no índice do B, nem a lista do B
+desce para o IndexedDB do A. Clients em `server/clients.ts` (`listCreations`,
+`reserveCreationUpload` (com `parts`), `commitCreationUpload` (com `uploadedParts`),
+`getCreationDownload`, `deleteCreation`); views em `lib/types.ts` (`Creation*View`,
+`CreationPartTicketView`, `CreationCommitResultView.releasedStorageKeys`,
+`CreationDeleteResultView.storageKeys`). O blob nunca toca o Next nem o gateway. Testes:
+`tests/creations-routes.test.ts` (R2 falso com `head`/`deleteObjects`). Design:
+`docs/plans/2026-08-18-guardar-na-conta-design.md`.
+
+**Limpeza na exclusão de conta (19/08/2026):** `routes/creation-cleanup.ts` expõe o worker
+`POST /api/internal/creation-cleanups`, autenticado por bearer comparado em tempo constante
+(`CREATION_CLEANUP_CRON_SECRET`). Ele reivindica até 25 jobs no Members via gateway HMAC, apaga
+cada prefixo do R2 UGC relendo a primeira página até confirmar vazio e confirma/falha o job. A
+rota fica fora do proxy de sessão/anti-CSRF e deve ser acionada pelo scheduler a cada 5 min; a
+fila só libera o job após o TTL do PUT + margem. Produção do kids falha no boot sem o segredo.
+
 ## Bloco de aula do PINTA (`pinta`, 15/08/2026)
 
 O irmão do bloco `studio`, para DESENHO. `PintaBlockView`

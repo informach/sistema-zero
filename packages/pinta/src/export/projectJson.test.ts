@@ -167,15 +167,15 @@ describe('galleryToPintaJson / importPintaJson', () => {
 
 describe('galleryStore.importAssets (restauro)', () => {
   it('ids novos + tilemap religado ao tileset restaurado', async () => {
-    const { clearIdbMock } = await import('../testing/idbMock')
+    await import('../testing/idbMock')
     const { createGalleryStore } = await import('../state/galleryStore')
-    const { setPintaStorageNamespace } = await import('../state/persistence')
-    clearIdbMock()
-    setPintaStorageNamespace('')
+    const { createPintaPersistence } = await import('../state/persistence')
 
     const gallery = makeGallery()
     const { assets } = importPintaJson(galleryToPintaJson(gallery))
-    const store = createGalleryStore()
+    const store = createGalleryStore(
+      createPintaPersistence({ namespace: `test-project-json-relink-${crypto.randomUUID()}` }),
+    )
     const result = await store.getState().importAssets(assets)
     expect(result.added).toBe(5)
     expect(result.skipped).toBe(0)
@@ -192,13 +192,13 @@ describe('galleryStore.importAssets (restauro)', () => {
   })
 
   it('colisão de nome ganha sufixo; restauro repetido não sobrescreve', async () => {
-    const { clearIdbMock } = await import('../testing/idbMock')
+    await import('../testing/idbMock')
     const { createGalleryStore } = await import('../state/galleryStore')
-    const { setPintaStorageNamespace } = await import('../state/persistence')
-    clearIdbMock()
-    setPintaStorageNamespace('')
+    const { createPintaPersistence } = await import('../state/persistence')
 
-    const store = createGalleryStore()
+    const store = createGalleryStore(
+      createPintaPersistence({ namespace: `test-project-json-collision-${crypto.randomUUID()}` }),
+    )
     await store.getState().create({ kind: 'pixel-sprite', name: 'heroi', frameSize: 8 })
     const backup = importPintaJson(
       galleryToPintaJson([createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })]),

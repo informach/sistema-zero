@@ -223,8 +223,9 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       setDeletingUser(null)
       await load()
     } catch (err) {
-      // Mantém o modal aberto p/ nova tentativa (a conta segue intacta se a falha
-      // ocorreu antes de apagar a identidade no auth).
+      // Mantém o modal aberto p/ nova tentativa idempotente. A preparação pode já
+      // ter bloqueado a conta e alguma purga pode ter concluído, mas nenhum passo
+      // volta a liberar escrita nem impede o retry seguro.
       toast.error((err as ApiError).message ?? 'Não foi possível excluir o usuário.')
     }
   }

@@ -41,6 +41,7 @@ import {
   SZIRInputSchema,
 } from '#ir'
 import { findExtension, OFFICIAL_CATALOG } from '#official-extensions'
+import { reconcileDrawingsFromRestoredProject } from '../asset-library/personalSync'
 import {
   BEHAVIOR_AREAS_MIN_MIGRATABLE_STATE_VERSION,
   BEHAVIOR_AREAS_STATE_KEY,
@@ -59,13 +60,17 @@ import { migrateLegacyBlockProjectSnapshot } from '../projects/compatibility'
 import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
 import {
   deleteProject as deleteProjectFromDB,
+  isProjectOpenAnywhere,
   loadProjectBlocksById,
   loadProjectById,
   loadProjectMetaById,
   loadProjectShellById,
+  markProjectClosed,
+  markProjectOpen,
   persistProject,
   renameProjectMeta,
 } from './persistence'
+import type { ProjectStorageScope } from './projectStorageRuntime'
 import {
   addProDir,
   addProFile,
@@ -131,7 +136,20 @@ interface ProjectStore {
   duplicateProject: (id: string) => Promise<Project | null>
   deleteProject: (id: string) => Promise<void>
   renameProject: (id: string, name: string) => Promise<void>
-  importProjectFromJSON: (raw: unknown) => Promise<{ project: Project; warnings: string[] }>
+  importProjectFromJSON: (
+    raw: unknown,
+    options?: { storageScope?: ProjectStorageScope; silent?: boolean },
+  ) => Promise<{ project: Project; warnings: string[] }>
+  /**
+   * Restaura um snapshot vindo da NUVEM ("guardado na sua conta") preservando id e datas,
+   * gravando SEM acordar o espelho e SUBSTITUINDO o que havia (blocos/capa antigos não
+   * sobrevivem). Recusa (lança) se o id não for o esperado ou se o projeto estiver ABERTO
+   * no editor. Ver `setStudioCloudMirror` em `state/persistence.ts`.
+   */
+  restoreProjectSnapshot: (
+    raw: unknown,
+    options?: { expectedId?: string; storageScope?: ProjectStorageScope },
+  ) => Promise<{ project: Project; warnings: string[] }>
   setProject: (p: Project) => void
   setMode: (mode: IDEMode) => void
   /** Gradua um projeto básico para profissional (Vite). One-way. */
@@ -203,6 +221,7 @@ export interface NewAssetInput {
   height?: number
   source?: 'upload' | 'library'
   libId?: string
+  libRevision?: number
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
@@ -222,6 +241,8 @@ export interface UpdateAssetImageInput {
   sprite?: unknown
   tileset?: unknown
   tilemap?: unknown
+  /** Revisão dos bytes na biblioteca pessoal. */
+  libRevision?: number
 }
 
 function bump<T extends Project>(p: T): T {
@@ -1222,19 +1243,26 @@ function sanitizeStoredProject(
   })
 }
 
-export async function loadSanitizedProjectById(id: string): Promise<Project | null> {
-  return sanitizeStoredProject(await loadProjectById(id), id)
+export async function loadSanitizedProjectById(
+  id: string,
+  storageScope?: ProjectStorageScope,
+): Promise<Project | null> {
+  return sanitizeStoredProject(await loadProjectById(id, storageScope), id)
 }
 
-export async function loadSanitizedProjectShellById(id: string): Promise<Project | null> {
-  return sanitizeStoredProject(await loadProjectShellById(id), id)
+export async function loadSanitizedProjectShellById(
+  id: string,
+  storageScope?: ProjectStorageScope,
+): Promise<Project | null> {
+  return sanitizeStoredProject(await loadProjectShellById(id, storageScope), id)
 }
 
 export async function loadSanitizedProjectBlocksStateById(
   id: string,
   installedExtensions: InstalledExtension[] = [],
+  storageScope?: ProjectStorageScope,
 ): Promise<Project['blocksState']> {
-  const raw = await loadProjectBlocksById(id)
+  const raw = await loadProjectBlocksById(id, storageScope)
   if (!raw || typeof raw !== 'object' || Array.isArray(raw) || !isPlainRecord(raw)) return null
   const record = raw as Record<string, unknown>
   if (record.id != null && record.id !== id) return null
@@ -1244,7 +1272,7 @@ export async function loadSanitizedProjectBlocksStateById(
   // avaliado contra a allowlist só-núcleo perderia TODOS os blocos. O meta é a
   // fonte durável do que está instalado; unir nunca REMOVE uma permissão do
   // chamador, só re-adiciona as persistidas.
-  const meta = await loadProjectMetaById(id)
+  const meta = await loadProjectMetaById(id, storageScope)
   const metaExtensions = meta ? sanitizeImportedExtensions(meta.installedExtensions) : []
   const merged = new Map<string, InstalledExtension>()
   for (const extension of installedExtensions) merged.set(extension.id, extension)
@@ -1879,6 +1907,165 @@ export interface CreateProjectStoreOptions {
   translator?: Translator
 }
 
+/**
+ * O saneamento do import de `.szproject.json` (e do restauro da nuvem): mesmos tetos
+ * do load para arquivos, IR, extensões, blocos, assets, extras e Pro. NÃO persiste —
+ * quem chama decide (import minta ulid novo e grava; o restauro preserva `identity`
+ * e grava em silêncio). Devolve os avisos de descarte silencioso para a UI.
+ */
+function sanitizeImportedProjectSnapshot(
+  raw: unknown,
+  t: Translator,
+  identity?: { id: string; createdAt?: number; updatedAt?: number },
+  opts: {
+    /**
+     * Restauro da NUVEM: recusa (lança) em vez de gravar quando o saneamento DESCARTOU
+     * blocos ou o programa (IR) que a origem tinha — o caso do bundle antigo lendo um
+     * jogo salvo por um bundle novo (bloco desconhecido). Gravar "com avisos" e
+     * `replace` apagaria a partição de blocos local, o autosave subiria o vazio e o
+     * outro aparelho baixaria o vazio por cima do jogo de verdade.
+     */
+    strict?: boolean
+  } = {},
+): { project: Project; warnings: string[] } {
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Arquivo inválido: não é um objeto JSON.')
+  }
+  const r = raw as Record<string, unknown>
+  if (typeof r.name !== 'string' || !isProjectFiles(r.files)) {
+    throw new Error('Arquivo inválido: faltam campos obrigatórios (name, files).')
+  }
+  // Limites de tamanho — evita travar a IDE com arquivos enormes.
+  const files = sanitizeCanonicalProjectFiles(r.files)
+  if (!files) {
+    throw new Error('Arquivo inválido: conteúdo excede o tamanho máximo permitido.')
+  }
+
+  // IR: só aceita se passar pelo schema e pelos limites de tamanho/complexidade.
+  const ir = sanitizeImportedIR(r.ir)
+
+  const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
+  if (!importedIRMatchesInstalledExtensions(ir, installedExtensions)) {
+    throw new Error('Arquivo inválido: a IR usa extensões ausentes, duplicadas ou incompatíveis.')
+  }
+  const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
+  // Um canvas VAZIO serializa como `{szBehaviorAreasVersion: N}` (sem seção `blocks`) e
+  // sanitiza para `null` de propósito: não é "blocos descartados" — nem aviso, nem recusa.
+  const originHadBlocks = r.blocksState != null && !isEmptyWorkspaceState(r.blocksState)
+  const blocksDropped = originHadBlocks && blocksState == null
+  const irDropped = r.ir != null && ir == null
+  if (opts.strict && (blocksDropped || irDropped)) {
+    throw new Error(
+      'Snapshot recusado: traz blocos ou um programa que esta versão do Estúdio não reconhece (atualize a página e tente de novo).',
+    )
+  }
+
+  // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
+  // do load (sanitizeProTree/sanitizeProMeta). Sem isso, exportar→importar um
+  // projeto pro dropava esses campos e o projeto voltava como classic vazio.
+  // Qualquer falha de sanitização rebaixa para classic (igual a
+  // sanitizeStoredProject). `node_modules` nunca passa (barrado em proTree).
+  let tree: ProjectTree | undefined
+  let proMeta: ProProjectMeta | undefined
+  if (r.kind === 'pro') {
+    const sanitizedTree = sanitizeProTree(r.tree)
+    const sanitizedMeta = sanitizeProMeta(r.proMeta)
+    if (sanitizedTree && sanitizedMeta) {
+      tree = sanitizedTree
+      proMeta = sanitizedMeta
+    }
+  }
+  const isPro = tree != null && proMeta != null
+
+  const now = Date.now()
+  const base = createEmptyProject(identity?.id ?? ulid(), sanitizeProjectName(r.name))
+  const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
+  const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
+  const assets = sanitizeProjectAssets(r.assets)
+  const imported = migrateLegacyBlockProjectSnapshot({
+    ...base,
+    files,
+    // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
+    // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
+    // extras em silêncio, divergindo o registro no disco do que foi aberto.
+    extraFiles,
+    assets,
+    mode,
+    ir: ir ?? base.ir,
+    blocksState,
+    installedExtensions,
+    createdAt: identity?.createdAt ?? now,
+    updatedAt: identity?.updatedAt ?? now,
+    // Pro vive sempre no modo 'code' (mode já é 'code' acima).
+    ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
+  })
+
+  // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram
+  // partes em silêncio (cota/permissão/bloco desconhecido). Comparamos a entrada
+  // crua com o resultado e devolvemos a lista p/ a UI mostrar (em vez de sumir
+  // calado). Os estouros que LANÇAM acima (arquivos/IR/shape de blocos) já viram
+  // erro fatal e nem chegam aqui.
+  const warnings: string[] = []
+  const inLen = (v: unknown) => (Array.isArray(v) ? v.length : 0)
+  const droppedAssets = inLen(r.assets) - assets.length
+  if (droppedAssets > 0) warnings.push(t('projects.importWarn.assets', { count: droppedAssets }))
+  const droppedExtras = inLen(r.extraFiles) - extraFiles.length
+  if (droppedExtras > 0)
+    warnings.push(t('projects.importWarn.extraFiles', { count: droppedExtras }))
+  const droppedExt = inLen(r.installedExtensions) - installedExtensions.length
+  if (droppedExt > 0) warnings.push(t('projects.importWarn.extensions', { count: droppedExt }))
+  if (blocksDropped) {
+    // Quando a queda foi por TIPO desconhecido, nomeie os culpados — é o
+    // caso comum (arquivo de uma versão mais nova / extensão diferente) e
+    // "blocos sumiram" sem pista era o pior aviso possível.
+    const unknownTypes = collectUnknownBlockTypes(r.blocksState, installedExtensions)
+    if (unknownTypes.length > 0) {
+      warnings.push(t('projects.importWarn.unknownBlocks', { types: unknownTypes.join(', ') }))
+    } else {
+      const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
+      warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
+    }
+  } else if (irDropped && blocksState == null) {
+    warnings.push(t('projects.importWarn.program'))
+  }
+  if (r.kind === 'pro' && !isPro) warnings.push(t('projects.importWarn.proDowngrade'))
+
+  return { project: imported, warnings }
+}
+
+/**
+ * Saneia um snapshot vindo da NUVEM sem gravar nada — o mesmo caminho do
+ * `restoreProjectSnapshot`, separado para o adaptador conferir ANTES de tocar no
+ * disco (uma descida recusada não pode deixar uma cópia "(deste computador)" órfã
+ * a cada carga). Regras: o id do JSON tem que ser válido e igual a `expectedId`; as
+ * datas de origem são preservadas; e é ESTRITO — blocos ou programa que esta versão
+ * não reconhece recusam o snapshot em vez de virar aviso (ver `strict`).
+ */
+export function sanitizeCloudProjectSnapshot(
+  raw: unknown,
+  options: { expectedId?: string } = {},
+  t: Translator = defaultT,
+): { project: Project; warnings: string[] } {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    throw new Error('Snapshot inválido: não é um objeto JSON.')
+  }
+  const r = raw as Record<string, unknown>
+  // O id vem do JSON e TEM que ser o esperado pelo chamador (o item da nuvem): um id
+  // inválido cunharia ulid novo e gravaria um projeto órfão a cada carga.
+  const id = boundProjectIdFromBody(r.id)
+  if (id !== r.id || (options.expectedId !== undefined && id !== options.expectedId)) {
+    throw new Error('Snapshot inválido: o id do projeto não é o esperado.')
+  }
+  const stamp = (v: unknown): number | undefined =>
+    typeof v === 'number' && Number.isFinite(v) && v > 0 ? Math.round(v) : undefined
+  return sanitizeImportedProjectSnapshot(
+    raw,
+    t,
+    { id, createdAt: stamp(r.createdAt), updatedAt: stamp(r.updatedAt) },
+    { strict: true },
+  )
+}
+
 export function createProjectStore(
   options: CreateProjectStoreOptions = {},
 ): StoreApi<ProjectStore> {
@@ -1914,7 +2101,7 @@ export function createProjectStore(
   // Por instância (no closure do factory), não module-global: stores separadas
   // não disputam o mesmo contador.
   let loadSeq = 0
-  return createStore<ProjectStore>((set, get) => ({
+  const store = createStore<ProjectStore>((set, get) => ({
     project: null,
     isDirty: false,
     saveError: null,
@@ -2035,104 +2222,43 @@ export function createProjectStore(
         set({ project: { ...current, name: safeName, updatedAt: Date.now() }, saveError: null })
       }
     },
-    importProjectFromJSON: async (raw) => {
-      if (!raw || typeof raw !== 'object') {
-        throw new Error('Arquivo inválido: não é um objeto JSON.')
+    importProjectFromJSON: async (raw, options = {}) => {
+      const { project, warnings } = sanitizeImportedProjectSnapshot(raw, t)
+      await persistProject(project, { silent: options.silent }, options.storageScope)
+      return { project, warnings }
+    },
+    restoreProjectSnapshot: async (raw, options = {}) => {
+      // "Guardado na sua conta": o snapshot volta com o MESMO id (é o vínculo com a
+      // nuvem e com o `pensa-<id>`) e com as datas de origem — a régua de "quem é
+      // mais novo" na sincronia. Grava em SILÊNCIO: um restauro não pode acordar o
+      // espelho e re-subir o que acabou de descer. Id conferido e saneamento ESTRITO
+      // (nada é gravado com id inventado nem com blocos/programa descartados) ANTES de
+      // tocar no disco — `sanitizeCloudProjectSnapshot`.
+      const { project, warnings } = sanitizeCloudProjectSnapshot(
+        raw,
+        { expectedId: options.expectedId },
+        t,
+      )
+      // Projeto ABERTO em algum editor desta página (qualquer store, não só esta): a
+      // memória viva venceria no próximo autosave e subiria por cima do que acabou de
+      // descer. O host só restaura antes da lista; se por alguma corrida chegar aqui,
+      // recusa em vez de gravar por baixo do editor.
+      if (get().project?.id === project.id || isProjectOpenAnywhere(project.id)) {
+        throw new Error('Snapshot recusado: o projeto está aberto no editor.')
       }
-      const r = raw as Record<string, unknown>
-      if (typeof r.name !== 'string' || !isProjectFiles(r.files)) {
-        throw new Error('Arquivo inválido: faltam campos obrigatórios (name, files).')
-      }
-      // Limites de tamanho — evita travar a IDE com arquivos enormes.
-      const files = sanitizeCanonicalProjectFiles(r.files)
-      if (!files) {
-        throw new Error('Arquivo inválido: conteúdo excede o tamanho máximo permitido.')
-      }
-
-      // IR: só aceita se passar pelo schema e pelos limites de tamanho/complexidade.
-      const ir = sanitizeImportedIR(r.ir)
-
-      const installedExtensions = sanitizeImportedExtensions(r.installedExtensions)
-      if (!importedIRMatchesInstalledExtensions(ir, installedExtensions)) {
-        throw new Error(
-          'Arquivo inválido: a IR usa extensões ausentes, duplicadas ou incompatíveis.',
-        )
-      }
-      const blocksState = sanitizeImportedBlocksState(r.blocksState, installedExtensions)
-
-      // Modo profissional: reconstrói kind/tree/proMeta com os MESMOS sanitizers
-      // do load (sanitizeProTree/sanitizeProMeta). Sem isso, exportar→importar um
-      // projeto pro dropava esses campos e o projeto voltava como classic vazio.
-      // Qualquer falha de sanitização rebaixa para classic (igual a
-      // sanitizeStoredProject). `node_modules` nunca passa (barrado em proTree).
-      let tree: ProjectTree | undefined
-      let proMeta: ProProjectMeta | undefined
-      if (r.kind === 'pro') {
-        const sanitizedTree = sanitizeProTree(r.tree)
-        const sanitizedMeta = sanitizeProMeta(r.proMeta)
-        if (sanitizedTree && sanitizedMeta) {
-          tree = sanitizedTree
-          proMeta = sanitizedMeta
-        }
-      }
-      const isPro = tree != null && proMeta != null
-
-      const now = Date.now()
-      const base = createEmptyProject(ulid(), sanitizeProjectName(r.name))
-      const mode: IDEMode = isPro ? 'code' : normalizeClassicMode(r.mode)
-      const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
-      const assets = sanitizeProjectAssets(r.assets)
-      const imported = migrateLegacyBlockProjectSnapshot({
-        ...base,
-        files,
-        // Espelha o teto COMBINADO do load (canônicos + extras ≤ MAX_TOTAL_CHARS):
-        // sem isso a soma podia passar de 8 MB e o primeiro reopen derrubaria
-        // extras em silêncio, divergindo o registro no disco do que foi aberto.
-        extraFiles,
-        assets,
-        mode,
-        ir: ir ?? base.ir,
-        blocksState,
-        installedExtensions,
-        createdAt: now,
-        updatedAt: now,
-        // Pro vive sempre no modo 'code' (mode já é 'code' acima).
-        ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
+      // Antes de persistir, converge desenhos por revisão. Se só um lado é mais novo,
+      // ele vence; legado divergente preserva ambos e religa o projeto à cópia remota.
+      const drawings = await reconcileDrawingsFromRestoredProject(project, {
+        namespace: options.storageScope?.namespace,
       })
-      await persistProject(imported)
-
-      // Avisos não-fatais: o projeto FOI importado, mas alguns sanitizers cortaram
-      // partes em silêncio (cota/permissão/bloco desconhecido). Comparamos a entrada
-      // crua com o resultado e devolvemos a lista p/ a UI mostrar (em vez de sumir
-      // calado). Os estouros que LANÇAM acima (arquivos/IR/shape de blocos) já viram
-      // erro fatal e nem chegam aqui.
-      const warnings: string[] = []
-      const inLen = (v: unknown) => (Array.isArray(v) ? v.length : 0)
-      const droppedAssets = inLen(r.assets) - assets.length
-      if (droppedAssets > 0)
-        warnings.push(t('projects.importWarn.assets', { count: droppedAssets }))
-      const droppedExtras = inLen(r.extraFiles) - extraFiles.length
-      if (droppedExtras > 0)
-        warnings.push(t('projects.importWarn.extraFiles', { count: droppedExtras }))
-      const droppedExt = inLen(r.installedExtensions) - installedExtensions.length
-      if (droppedExt > 0) warnings.push(t('projects.importWarn.extensions', { count: droppedExt }))
-      if (r.blocksState != null && blocksState == null) {
-        // Quando a queda foi por TIPO desconhecido, nomeie os culpados — é o
-        // caso comum (arquivo de uma versão mais nova / extensão diferente) e
-        // "blocos sumiram" sem pista era o pior aviso possível.
-        const unknownTypes = collectUnknownBlockTypes(r.blocksState, installedExtensions)
-        if (unknownTypes.length > 0) {
-          warnings.push(t('projects.importWarn.unknownBlocks', { types: unknownTypes.join(', ') }))
-        } else {
-          const reason = describeBlocklyValidationFailure(r.blocksState, installedExtensions)
-          warnings.push(t('projects.importWarn.blocks', { reason: reason ?? '—' }))
-        }
-      } else if (r.ir != null && ir == null && blocksState == null) {
-        warnings.push(t('projects.importWarn.program'))
-      }
-      if (r.kind === 'pro' && !isPro) warnings.push(t('projects.importWarn.proDowngrade'))
-
-      return { project: imported, warnings }
+      // `replace`: o snapshot é a verdade completa — blocos/capa antigos não sobrevivem
+      // (a partição de blocos só cai quando a ORIGEM não tem blocos: o estrito garante).
+      await persistProject(
+        project,
+        { silent: !drawings.projectChanged, replace: true },
+        options.storageScope,
+      )
+      return { project, warnings }
     },
     setProject: (p) =>
       set({
@@ -2429,6 +2555,12 @@ export function createProjectStore(
           ? { height: input.height }
           : {}),
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
+        ...(input.source === 'library' &&
+        typeof input.libRevision === 'number' &&
+        Number.isFinite(input.libRevision) &&
+        input.libRevision > 0
+          ? { libRevision: Math.round(input.libRevision) }
+          : {}),
         // O sanitizer do load exige o fileName nos 3D — gravar é parte do contrato.
         ...(fileName3D ? { originalFileName: fileName3D.slice(0, 128) } : {}),
         ...(sprite ? { sprite } : {}),
@@ -2476,7 +2608,18 @@ export function createProjectStore(
       if (target.kind !== 'image') return 'Esse arquivo não é uma imagem.'
       // Mesmos bytes = nada a fazer. Sem esta guarda, um chamador distraído
       // marcaria o projeto como sujo e dispararia autosave à toa.
-      if (target.dataUrl === image.dataUrl) return null
+      const libRevision =
+        typeof image.libRevision === 'number' &&
+        Number.isFinite(image.libRevision) &&
+        image.libRevision > 0
+          ? Math.round(image.libRevision)
+          : undefined
+      if (
+        target.dataUrl === image.dataUrl &&
+        (libRevision === undefined || target.libRevision === libRevision)
+      ) {
+        return null
+      }
       if (!isValidAssetDataUrl(image.dataUrl)) return 'Imagem inválida ou grande demais.'
       // Orçamento do projeto contando o asset NOVO no lugar do velho (o
       // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
@@ -2517,6 +2660,7 @@ export function createProjectStore(
         ...(width ? { width } : {}),
         ...(height ? { height } : {}),
       }
+      if (libRevision !== undefined) next.libRevision = libRevision
       if (sprite) next.sprite = sprite
       else delete next.sprite
       if (tileset) next.tileset = tileset
@@ -2592,6 +2736,16 @@ export function createProjectStore(
       set({ project: bump({ ...p, tree: next }), isDirty: true, saveError: null })
     },
   }))
+  // Registro de projetos ABERTOS (qualquer store desta página): a régua do restauro da
+  // nuvem (`isProjectOpenAnywhere`). Só a troca de id conta; edições não.
+  store.subscribe((state, prev) => {
+    const nextId = state.project?.id ?? null
+    const prevId = prev.project?.id ?? null
+    if (nextId === prevId) return
+    if (prevId) markProjectClosed(prevId)
+    if (nextId) markProjectOpen(nextId)
+  })
+  return store
 }
 
 const defaultProjectStore = createProjectStore()

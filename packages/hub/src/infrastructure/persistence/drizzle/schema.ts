@@ -348,6 +348,12 @@ export const processedWebhooks = hub.table(
   (t) => [index('processed_webhooks_processed_at_idx').on(t.processedAt)],
 )
 
+/** Cerca durável: JWTs emitidos antes da exclusão não voltam a gravar no Hub. */
+export const accountDeletionFences = hub.table('account_deletion_fences', {
+  accountId: uuid('account_id').primaryKey(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const schema = {
   spaces,
   channels,
@@ -360,6 +366,7 @@ export const schema = {
   moderationActions,
   mutesBans,
   processedWebhooks,
+  accountDeletionFences,
 }
 
 export type SpaceRow = typeof spaces.$inferSelect

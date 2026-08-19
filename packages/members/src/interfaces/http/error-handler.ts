@@ -10,6 +10,10 @@ import {
 } from '@sistemazero/core/http'
 import { type Logger, serializeError } from '@sistemazero/core/logging'
 import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/course.errors'
+import {
+  CreationPartMissingError,
+  CreationPartsNeedBytesError,
+} from '../../domain/creations/creation.errors'
 import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
@@ -79,6 +83,14 @@ const DOMAIN_STATUS: Record<string, number> = {
   PENSA_TASK_TRANSITION_INVALID: 409,
   PENSA_TASK_DEPENDENCY_PENDING: 409,
   PENSA_TASK_PROGRESS_CONFLICT: 409,
+  // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
+  // ownership mismatch; quota e revisão vencida são conflitos.
+  CREATION_NOT_FOUND: 404,
+  CREATION_QUOTA_EXCEEDED: 409,
+  CREATION_REVISION_MISMATCH: 409,
+  CREATION_STALE_BASE: 409,
+  CREATION_PARTS_NEED_BYTES: 409,
+  CREATION_PART_MISSING: 409,
 }
 
 /** Traduz qualquer erro num par status + corpo padronizado. */
@@ -90,7 +102,7 @@ export function buildErrorResponse(input: {
   status: number
   body: ErrorEnvelope & {
     retryAvailableAt?: string
-    details?: { gate: string; missing: string[] }
+    details?: { gate: string; missing: string[] } | { hashes: string[] }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -133,6 +145,15 @@ export function buildErrorResponse(input: {
         ...envelope(error.code, error.message),
         details: { gate: error.gate, missing: error.missing },
       },
+    }
+  }
+
+  // Partes das criações: expõe `details.hashes` ESTRUTURADO (o cliente comprime só essas
+  // e reserva de novo / reenvia).
+  if (error instanceof CreationPartsNeedBytesError || error instanceof CreationPartMissingError) {
+    return {
+      status: 409,
+      body: { ...envelope(error.code, error.message), details: { hashes: [...error.hashes] } },
     }
   }
 

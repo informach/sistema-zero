@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { CheckAccessService } from '../src/application/access/check-access.service'
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
+import { CreationCleanupService } from '../src/application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
 import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from '../src/application/ai-usage/get-ai-credits.service'
@@ -20,6 +21,14 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from '../src/application/content-admin/content-admin.service'
+import {
+  CommitCreationUploadService,
+  DeleteCreationService,
+  GetCreationDownloadService,
+  ListCreationsService,
+  ReserveCreationUploadService,
+  resetToolOwnershipCacheForTests,
+} from '../src/application/creations/creations.service'
 import { AwardGamificationService } from '../src/application/gamification/award-gamification.service'
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from '../src/application/gamification/challenge-admin.service'
@@ -102,6 +111,7 @@ import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
+import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
 import {
   FakeCatalogGateway,
   InMemoryAnalyticsRepository,
@@ -136,8 +146,12 @@ export function buildApp(
     /** Probe do /readyz (default: pronto). */
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
     zappy?: ZappyHistoryService
+    /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
+    deletedAccountIds?: string[]
   } = {},
 ) {
+  // Cache de posse das criações é por processo: cada app de teste começa limpo.
+  resetToolOwnershipCacheForTests()
   const clockRef = { now: opts.now ?? new Date('2026-06-02T12:00:00.000Z') }
   const clock = () => clockRef.now
 
@@ -161,6 +175,7 @@ export function buildApp(
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
   const pensa = new InMemoryPensaRepository()
+  const creations = new InMemoryCreationsRepository()
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository()
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
@@ -256,6 +271,9 @@ export function buildApp(
   const app = createServer({
     env,
     logger: silentLogger,
+    accountDeletionFence: {
+      isFenced: async (accountId: string) => opts.deletedAccountIds?.includes(accountId) ?? false,
+    },
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
       listMyCourses: new ListMyCoursesService(
@@ -403,6 +421,18 @@ export function buildApp(
       getGamification: new GetGamificationService(gamification, clock),
       internalToken: opts.internalToken,
     },
+    creations: {
+      list: new ListCreationsService(creations),
+      reserveUpload: new ReserveCreationUploadService(
+        creations,
+        new AccessCheckService(entitlements, clock),
+        clock,
+      ),
+      commitUpload: new CommitCreationUploadService(creations, clock),
+      getDownload: new GetCreationDownloadService(creations),
+      remove: new DeleteCreationService(creations, clock),
+      internalToken: opts.internalToken,
+    },
     webhooks: {
       grant,
       revoke,
@@ -445,7 +475,15 @@ export function buildApp(
       revokeCertificate: new RevokeCertificateService(certificates, clock),
       // Purga: o fake do banco do membro guarda dados em arrays soltos; aqui só
       // garantimos que a rota responde (a purga real é coberta no Drizzle/DB).
-      purgeUserData: new PurgeUserDataService({ purgeForUser: async () => {} }),
+      purgeUserData: new PurgeUserDataService({
+        purgeForUser: async () => {},
+        isFenced: async () => false,
+      }),
+      creationCleanup: new CreationCleanupService({
+        claimDue: async () => null,
+        complete: async () => false,
+        fail: async () => false,
+      }),
       hub,
     },
     content: {
@@ -460,6 +498,10 @@ export function buildApp(
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
     },
     internal: {
+      purgeUserData: new PurgeUserDataService({
+        purgeForUser: async () => {},
+        isFenced: async () => false,
+      }),
       accessCheck: new AccessCheckService(entitlements, clock),
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
@@ -490,6 +532,7 @@ export function buildApp(
     avatar,
     room,
     pensa,
+    creations,
     processed,
     catalog,
     clockRef,

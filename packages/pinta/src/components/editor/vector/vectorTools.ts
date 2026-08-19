@@ -6,7 +6,7 @@
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
-import { translateShape } from '../../../vector/geometry'
+import { boundsUnion, scaleShape, shapeBounds, translateShape } from '../../../vector/geometry'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
@@ -122,6 +122,37 @@ export function cloneShapesWithNewIds(
     groupIds.set(shape.groupId, groupId)
     return { ...moved, groupId }
   })
+}
+
+/**
+ * Formas coladas de OUTRO documento (área de transferência do app): no mesmo
+ * tamanho de documento é o colar de sempre (ids novos, +12,+12 — "do lado");
+ * vindo de um documento de outro tamanho, a cópia ENCOLHE se não couber (fator
+ * único, sem distorcer; nunca amplia) e CENTRALIZA no destino. Grupos são
+ * preservados (cada grupo original vira um grupo novo), diferente do "trazer da
+ * galeria", que achata tudo num grupo só.
+ */
+export function fitPastedShapes(
+  shapes: readonly VectorShape[],
+  from: { width: number; height: number },
+  to: { width: number; height: number },
+): VectorShape[] {
+  if (from.width === to.width && from.height === to.height) return cloneShapesWithNewIds(shapes)
+  const clones = cloneShapesWithNewIds(shapes, 0, 0)
+  const bounds = boundsUnion(clones.map(shapeBounds))
+  const scale = Math.min(
+    1,
+    bounds.width > 0 ? to.width / bounds.width : 1,
+    bounds.height > 0 ? to.height / bounds.height : 1,
+  )
+  const scaled =
+    scale < 1
+      ? clones.map((shape) => scaleShape(shape, { x: bounds.x, y: bounds.y }, scale, scale))
+      : clones
+  const after = boundsUnion(scaled.map(shapeBounds))
+  const dx = to.width / 2 - (after.x + after.width / 2)
+  const dy = to.height / 2 - (after.y + after.height / 2)
+  return scaled.map((shape) => translateShape(shape, dx, dy))
 }
 
 /** Trava o ponto de arrasto: Shift = quadrado/círculo (formas) ou 45° (linha). */

@@ -11,6 +11,15 @@ const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a
 
 // ── Params de rota com ids uuid (Elysia valida ANTES do handler → 400) ──────
 export const IdParams = t.Object({ id: UUID })
+export const CreationCleanupFailureBody = t.Object({
+  error: t.String({ minLength: 1, maxLength: 1000 }),
+  attempts: t.Integer({ minimum: 1, maximum: 1000 }),
+})
+
+export const AccountDeletionFinalizeBody = t.Object({
+  accountId: UUID,
+  userIds: t.Array(UUID, { minItems: 1, maxItems: 51 }),
+})
 export const UserIdParams = t.Object({ userId: UUID })
 export const CourseIdParams = t.Object({ courseId: UUID })
 export const ModuleIdParams = t.Object({ moduleId: UUID })
@@ -1349,4 +1358,64 @@ export const ChallengeThemePatchBody = t.Object({
   title: t.Optional(t.String({ minLength: 1, maxLength: 80 })),
   description: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
   archived: t.Optional(t.Boolean()),
+})
+
+// ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta ─────────
+/** `studio` | `pinta` (o enum `creation_tool`). */
+export const CREATION_TOOL = t.Union([t.Literal('studio'), t.Literal('pinta')])
+export const CreationToolParams = t.Object({ tool: CREATION_TOOL })
+/**
+ * `itemId` = id do projeto/desenho no editor (ulid do Estúdio, uuid do Pinta,
+ * `pensa-<uuid sem hífen>`): charset seguro para virar chave no R2. Nunca `:`.
+ */
+export const CreationItemParams = t.Object({
+  tool: CREATION_TOOL,
+  itemId: t.String({ minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$' }),
+})
+/**
+ * Corpo da reserva de upload — só metadados; o blob vai direto ao R2. O BFF já corta
+ * nome/kind nos tetos e descarta a miniatura grande; os `maxLength` aqui são a rede de
+ * segurança de quem chegar por outro caminho.
+ */
+export const CreationUploadBody = t.Object({
+  name: t.String({ minLength: 1, maxLength: 120 }),
+  kind: t.String({ minLength: 1, maxLength: 40 }),
+  /** `updatedAt` do item no relógio do editor (ISO). */
+  itemUpdatedAt: t.String({ format: 'date-time' }),
+  /**
+   * Bytes COMPRIMIDOS que vão subir (o BFF assina exatamente esse Content-Length).
+   * O teto do DTO barra o absurdo antes de o serviço responder 409 (e antes de estourar
+   * o `integer` da coluna); o teto de negócio continua sendo `CREATION_LIMITS.maxItemBytes`.
+   */
+  bytes: t.Integer({ minimum: 1, maximum: 1_000_000_000 }),
+  /** PNG data URL pequeno, opcional. Acima do teto do serviço (12 k) é descartado, não recusado. */
+  thumb: t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()])),
+  /**
+   * A revisão da nuvem que o aparelho conhece para o item (0 = nunca viu / item novo).
+   * Presente → a reserva só passa se for a corrente (409 CREATION_STALE_BASE se outro
+   * aparelho subiu depois). Ausente → sem conferência (clientes antigos).
+   */
+  baseRevision: t.Optional(t.Integer({ minimum: 0 })),
+  /**
+   * PARTES referenciadas pela revisão (hash SHA-256 hex do conteúdo; `bytes` só é preciso
+   * para as que o item ainda não tem — o members responde 409 CREATION_PARTS_NEED_BYTES com
+   * os hashes quando faltam). Ausente = blob único.
+   */
+  parts: t.Optional(
+    t.Array(
+      t.Object({
+        hash: t.String({ pattern: '^[a-f0-9]{64}$' }),
+        bytes: t.Optional(t.Integer({ minimum: 1, maximum: 40 * 1024 * 1024 })),
+      }),
+      { maxItems: 128 },
+    ),
+  ),
+})
+/**
+ * Só a revisão: bytes e metadados são os da RESERVA (o que foi conferido e assinado).
+ * `uploadedParts` = hashes das partes que o cliente PUTou (as faltantes da reserva).
+ */
+export const CreationCommitBody = t.Object({
+  revision: t.Integer({ minimum: 1 }),
+  uploadedParts: t.Optional(t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 })),
 })

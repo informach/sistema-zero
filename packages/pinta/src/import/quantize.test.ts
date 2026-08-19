@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'bun:test'
-import { detectTileSize, downscaleRGBA, quantizeToIndexed, sliceIndexedTiles } from './quantize'
+import {
+  detectTileSize,
+  downscaleRGBA,
+  quantizeToIndexed,
+  resizeContain,
+  sliceIndexedTiles,
+} from './quantize'
 
 /** Constrói uma imagem RGBA a partir de uma lista de pixels [r,g,b,a]. */
 function img(width: number, height: number, pixels: Array<[number, number, number, number]>) {
@@ -77,6 +83,84 @@ describe('downscaleRGBA', () => {
     ])
     const out = downscaleRGBA(image, 1, 1)
     expect([out.data[0], out.data[1], out.data[2], out.data[3]]).toEqual([100, 150, 200, 255])
+  })
+})
+
+describe('resizeContain (personagem)', () => {
+  /** Alfa de cada pixel do resultado, linha a linha. */
+  function alphas(out: { data: Uint8ClampedArray; width: number; height: number }): number[][] {
+    const rows: number[][] = []
+    for (let y = 0; y < out.height; y += 1) {
+      const row: number[] = []
+      for (let x = 0; x < out.width; x += 1) row.push(out.data[(y * out.width + x) * 4 + 3] ?? 0)
+      rows.push(row)
+    }
+    return rows
+  }
+
+  it('mantém a proporção e centraliza: imagem deitada 4×2 num quadro 4×4 sobra transparente em cima e embaixo', () => {
+    const image = img(
+      4,
+      2,
+      Array.from({ length: 8 }, () => [255, 0, 0, 255] as [number, number, number, number]),
+    )
+    const out = resizeContain(image, 4, 4)
+    expect(out.width).toBe(4)
+    expect(out.height).toBe(4)
+    expect(alphas(out)).toEqual([
+      [0, 0, 0, 0],
+      [255, 255, 255, 255],
+      [255, 255, 255, 255],
+      [0, 0, 0, 0],
+    ])
+    // A cor sobrevive (nada de escurecer pela sobra transparente).
+    expect([out.data[(1 * 4 + 0) * 4], out.data[(1 * 4 + 0) * 4 + 1]]).toEqual([255, 0])
+  })
+
+  it('NÃO corta: uma imagem em pé 2×4 num quadro 4×4 sobra dos lados (o cover cortaria)', () => {
+    const image = img(
+      2,
+      4,
+      Array.from({ length: 8 }, () => [0, 0, 255, 255] as [number, number, number, number]),
+    )
+    const out = resizeContain(image, 4, 4)
+    expect(alphas(out)).toEqual([
+      [0, 255, 255, 0],
+      [0, 255, 255, 0],
+      [0, 255, 255, 0],
+      [0, 255, 255, 0],
+    ])
+  })
+
+  it('AMPLIA uma imagem menor que o quadro (nearest) e preserva o transparente do PNG', () => {
+    // 2×2: só o pixel de cima à esquerda é opaco.
+    const image = img(2, 2, [
+      [10, 20, 30, 255],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ])
+    const out = resizeContain(image, 4, 4)
+    expect(alphas(out)).toEqual([
+      [255, 255, 0, 0],
+      [255, 255, 0, 0],
+      [0, 0, 0, 0],
+      [0, 0, 0, 0],
+    ])
+    expect([out.data[0], out.data[1], out.data[2]]).toEqual([10, 20, 30])
+  })
+
+  it('quadro deitado 8×2 recebe uma imagem quadrada 2×2 sem distorcer (2×2 no meio)', () => {
+    const image = img(
+      2,
+      2,
+      Array.from({ length: 4 }, () => [0, 255, 0, 255] as [number, number, number, number]),
+    )
+    const out = resizeContain(image, 8, 2)
+    expect(alphas(out)).toEqual([
+      [0, 0, 0, 255, 255, 0, 0, 0],
+      [0, 0, 0, 255, 255, 0, 0, 0],
+    ])
   })
 })
 

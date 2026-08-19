@@ -47,6 +47,30 @@ export function hasPaintedPixel(bitmap: PintaBitmap, rect: SelectionRect): boole
   return false
 }
 
+/**
+ * O retângulo ENVOLVENTE de tudo que está pintado — o "selecionar tudo" (Ctrl+A)
+ * do pixel: pega o desenho, não o fundo quadriculado ao redor. `null` = bitmap
+ * inteiramente transparente (não há o que selecionar).
+ */
+export function paintedBounds(bitmap: PintaBitmap): SelectionRect | null {
+  let minX = bitmap.width
+  let minY = bitmap.height
+  let maxX = -1
+  let maxY = -1
+  for (let y = 0; y < bitmap.height; y += 1) {
+    for (let x = 0; x < bitmap.width; x += 1) {
+      const value = bitmap.data[y * bitmap.width + x] ?? TRANSPARENT_INDEX
+      if (value === TRANSPARENT_INDEX) continue
+      if (x < minX) minX = x
+      if (x > maxX) maxX = x
+      if (y < minY) minY = y
+      if (y > maxY) maxY = y
+    }
+  }
+  if (maxX < 0) return null
+  return { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 }
+}
+
 /** Copia o retângulo num bitmap próprio, SEM tocar na origem (o copiar). */
 export function cropBitmap(bitmap: PintaBitmap, rect: SelectionRect): PintaBitmap {
   const cut: PintaBitmap = {

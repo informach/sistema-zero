@@ -1,10 +1,15 @@
 import { swagger } from '@elysiajs/swagger'
-import { PayloadTooLargeError } from '@sistemazero/core/http'
+import {
+  type AccountDeletionFence,
+  assertAccountMutationAllowed,
+  PayloadTooLargeError,
+} from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody, setRawBody } from './raw-body'
+import { accountDeletionRoutes } from './routes/account-deletion.routes'
 import { type AdminRoutesDeps, adminRoutes } from './routes/admin.routes'
 import { type AttachmentsRoutesDeps, attachmentsRoutes } from './routes/attachments.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
@@ -20,6 +25,7 @@ import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.route
 export interface HttpDeps {
   env: Env
   logger: Logger
+  accountDeletionFence: AccountDeletionFence
   /** Probe de readiness (`/readyz`): banco alcançável. */
   readiness: ReadinessProbe
   spaces: SpacesRoutesDeps
@@ -75,6 +81,13 @@ export function createServer(deps: HttpDeps) {
       set.status = status
       return body
     })
+    .onBeforeHandle({ as: 'global' }, ({ request, headers }) =>
+      assertAccountMutationAllowed({
+        method: request.method,
+        headers,
+        fence: deps.accountDeletionFence,
+      }),
+    )
 
   if (deps.env.NODE_ENV !== 'production') {
     app.use(
@@ -99,6 +112,12 @@ export function createServer(deps: HttpDeps) {
     .use(reactionsRoutes(deps.reactions))
     .use(reportRoutes(deps.report))
     .use(showcaseRoutes(deps.showcase))
+    .use(
+      accountDeletionRoutes({
+        purgeUserData: deps.admin.purgeUserData,
+        internalToken: deps.admin.internalToken,
+      }),
+    )
     .use(adminRoutes(deps.admin))
     .use(moderationRoutes(deps.moderation))
     .use(webhooksRoutes(deps.webhooks))

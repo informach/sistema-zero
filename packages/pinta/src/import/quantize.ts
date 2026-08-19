@@ -119,6 +119,38 @@ export function resizeCover(
   return downscaleRGBA({ data: crop, width: cropW, height: cropH }, targetW, targetH)
 }
 
+/**
+ * Redimensiona por CONTAIN: a imagem INTEIRA cabe em `targetW × targetH` sem
+ * distorcer nem cortar (escala proporcional, centralizada, sobra transparente) —
+ * o caminho do PERSONAGEM. O cover do cenário cortaria braço/orelha de um boneco;
+ * aqui nada some, e o fundo transparente do PNG continua transparente (alfa 0
+ * nas bordas que sobram). Imagem menor que o quadro é AMPLIADA (o
+ * `downscaleRGBA` amplia por nearest quando o alvo é maior que a origem).
+ */
+export function resizeContain(
+  input: RGBAImage,
+  targetW: number,
+  targetH: number,
+): { data: Uint8ClampedArray; width: number; height: number } {
+  const { width: sw, height: sh } = input
+  const out = new Uint8ClampedArray(targetW * targetH * 4)
+  if (sw <= 0 || sh <= 0 || targetW <= 0 || targetH <= 0) {
+    return { data: out, width: targetW, height: targetH }
+  }
+  const scale = Math.min(targetW / sw, targetH / sh)
+  const fitW = Math.max(1, Math.min(targetW, Math.round(sw * scale)))
+  const fitH = Math.max(1, Math.min(targetH, Math.round(sh * scale)))
+  const fitted = downscaleRGBA(input, fitW, fitH)
+  const ox = Math.floor((targetW - fitW) / 2)
+  const oy = Math.floor((targetH - fitH) / 2)
+  for (let y = 0; y < fitH; y += 1) {
+    const srcRow = y * fitW * 4
+    const dstRow = ((oy + y) * targetW + ox) * 4
+    out.set(fitted.data.subarray(srcRow, srcRow + fitW * 4), dstRow)
+  }
+  return { data: out, width: targetW, height: targetH }
+}
+
 export interface QuantizeOptions {
   /** Paleta base (16 cores, índice 0 transparente); default = arcade. */
   baseColors?: readonly string[]

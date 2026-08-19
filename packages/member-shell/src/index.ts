@@ -2,6 +2,8 @@ import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { createShellRoutes } from './routes'
 import { createCertificateRoutes } from './routes/certificate'
+import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
+import { createCreationsRoutes } from './routes/creations'
 import { createHubRoutes } from './routes/hub'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
@@ -65,6 +67,8 @@ export function createShell(cfg: ShellConfig) {
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),
     ...createPensaAiRoutes({ members, session }),
+    ...createCreationsRoutes({ members, session }),
+    ...createCreationCleanupWorkerRoutes({ gateway }),
   }
 
   return {

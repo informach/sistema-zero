@@ -1,11 +1,16 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createPixelSpriteAsset, createVectorBackgroundAsset } from '../core/project'
-import { clearIdbMock, idbMockDb, setIdbWriteGuard } from '../testing/idbMock'
+import {
+  clearIdbMock,
+  idbMockDb,
+  idbMockStats,
+  resetIdbMockStats,
+  setIdbWriteGuard,
+} from '../testing/idbMock'
 import { MAX_IMAGE_SRC_CHARS, type VectorShape } from '../vector/model'
 
-const { PintaStorageBudgetError, persistAsset, setPintaStorageNamespace } = await import(
-  './persistence'
-)
+const { PintaStorageBudgetError, createPintaPersistence, persistAsset, setPintaStorageNamespace } =
+  await import('./persistence')
 
 beforeEach(() => {
   clearIdbMock()
@@ -79,5 +84,58 @@ describe('persistência por perfil', () => {
       undefined,
     )
     expect((idbMockDb('sistema-zero-pinta').get(key) as typeof legacy).shapes).toHaveLength(112)
+  })
+})
+
+describe('autosave com centenas de desenhos (medição)', () => {
+  it('500 desenhos na galeria: 50 autosaves de UM desenho não releem a galeria inteira a cada vez', async () => {
+    const persistence = createPintaPersistence()
+    const assets = Array.from({ length: 500 }, (_, i) =>
+      createPixelSpriteAsset({ name: `heroi-${i}`, frameSize: 16 }),
+    )
+    await persistence.persistAssets(assets)
+    // A carga da galeria (o que a criança faz antes de editar) semeia o que houver para semear.
+    const loadStart = performance.now()
+    const loaded = await persistence.listAllAssets()
+    expect(loaded).toHaveLength(500)
+    console.log(`[perf] pinta listAllAssets(500): ${(performance.now() - loadStart).toFixed(0)}ms`)
+
+    resetIdbMockStats()
+    const edited = assets[0] as (typeof assets)[number]
+    const start = performance.now()
+    for (let i = 0; i < 50; i += 1) {
+      await persistence.persistAsset({ ...edited, updatedAt: Date.now() + i })
+    }
+    const elapsed = performance.now() - start
+    const stats = idbMockStats()
+    console.log(`[perf] pinta 50 autosaves com 500 desenhos: ${elapsed.toFixed(0)}ms`, stats)
+    // O disco recebeu os 50 writes…
+    expect(stats.setMany).toBe(50)
+    // …e a galeria INTEIRA não foi relida a cada autosave (o teto aqui é a régua da
+    // otimização do orçamento incremental: antes, `getManyKeys` era 500 × 50 = 25.000).
+    expect(stats.getManyKeys).toBeLessThanOrEqual(500)
+  }, 120_000)
+
+  it('outra ABA atualiza um desenho (mesmo id): o aviso entre abas faz o inventário esquecer o id e relê-lo na próxima gravação (o orçamento não usa bytes velhos)', async () => {
+    const persistence = createPintaPersistence({ namespace: 'abas' })
+    const [x, y] = [
+      createPixelSpriteAsset({ name: 'x', frameSize: 16 }),
+      createPixelSpriteAsset({ name: 'y', frameSize: 16 }),
+    ]
+    await persistence.persistAssets([x, y])
+    await persistence.listAllAssets() // semeia o inventário
+    // A outra aba regrava X direto no "disco" (mesmo id, outra versão) e avisa pelo canal.
+    idbMockDb('sistema-zero-pinta-abas').set(`pinta:asset:${x.id}`, {
+      ...x,
+      updatedAt: x.updatedAt + 1,
+    })
+    const otherTab = new BroadcastChannel('pinta:assets:sistema-zero-pinta-abas')
+    otherTab.postMessage({ ids: [x.id] })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    otherTab.close()
+    resetIdbMockStats()
+    await persistence.persistAsset({ ...y, updatedAt: y.updatedAt + 1 })
+    // Releu SÓ o X (esquecido pelo aviso), não a galeria inteira.
+    expect(idbMockStats().getManyKeys).toBe(1)
   })
 })

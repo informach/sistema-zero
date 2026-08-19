@@ -53,14 +53,49 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
       estimated_minutes integer, is_published boolean not null default true,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now()
     )`)
+    // ⚠️ O banco de `tests/db` é COMPARTILHADO e `create table if not exists` é "quem chega
+    // primeiro vence": o `studio-submission-restore.test.ts` cria `members.lessons` com MENOS
+    // colunas e, quando roda antes (a ordem dos arquivos não é contrato — no CI foi assim em
+    // 19/08), este `create` vira no-op e o `findPrecedingChainBlock` morre em
+    // `column "is_published" does not exist`. Regra do CLAUDE.md: toda coluna USADA entra
+    // também num `add column if not exists` (com default nas `not null`).
+    for (const col of [
+      'module_id uuid',
+      'course_id uuid',
+      'slug text',
+      'title text',
+      'sort_order integer not null default 0',
+      'estimated_minutes integer',
+      'is_published boolean not null default true',
+      'created_at timestamptz not null default now()',
+      'updated_at timestamptz not null default now()',
+    ]) {
+      await conn.sql.unsafe(`alter table members.lessons add column if not exists ${col}`)
+    }
+    for (const col of [
+      'course_id uuid',
+      'title text',
+      'summary text',
+      'sort_order integer not null default 0',
+      'created_at timestamptz not null default now()',
+      'updated_at timestamptz not null default now()',
+    ]) {
+      await conn.sql.unsafe(`alter table members.modules add column if not exists ${col}`)
+    }
     await conn.sql.unsafe(`create table if not exists members.lesson_blocks (
       id uuid primary key, lesson_id uuid not null, kind text not null,
       sort_order integer not null default 0, content jsonb not null,
       content_revision varchar(32) not null default 'x'
     )`)
-    await conn.sql.unsafe(
-      "alter table members.lesson_blocks add column if not exists content_revision varchar(32) not null default 'x'",
-    )
+    for (const col of [
+      'lesson_id uuid',
+      'kind text',
+      'sort_order integer not null default 0',
+      'content jsonb',
+      "content_revision varchar(32) not null default 'x'",
+    ]) {
+      await conn.sql.unsafe(`alter table members.lesson_blocks add column if not exists ${col}`)
+    }
     await conn.sql.unsafe('truncate table members.lesson_blocks')
     await conn.sql.unsafe(
       'create unique index if not exists lesson_blocks_lesson_sort_order_uq on members.lesson_blocks (lesson_id, sort_order)',

@@ -49,6 +49,33 @@ describe('DeleteUserService', () => {
     expect(await users.findById(target.id)).toBeNull()
   })
 
+  test('retry após a exclusão concluída devolve o recibo sem reabrir a operação', async () => {
+    const target = makeUser({ role: 'customer' })
+    users.seed(target)
+    users.profileIdsByAccount.set(target.id, ['perfil-ativo', 'perfil-arquivado'])
+
+    await service.execute({ targetId: target.id, actor: SUPERADMIN })
+
+    await expect(service.prepare({ targetId: target.id, actor: SUPERADMIN })).resolves.toEqual({
+      profileIds: ['perfil-ativo', 'perfil-arquivado'],
+      completed: true,
+    })
+    await expect(
+      service.execute({ targetId: target.id, actor: SUPERADMIN }),
+    ).resolves.toBeUndefined()
+  })
+
+  test('preparação bloqueia a conta e devolve também perfis arquivados', async () => {
+    const target = makeUser({ role: 'customer' })
+    users.seed(target)
+    users.profileIdsByAccount.set(target.id, ['perfil-ativo', 'perfil-arquivado'])
+
+    const result = await service.prepare({ targetId: target.id, actor: SUPERADMIN })
+
+    expect(result).toEqual({ profileIds: ['perfil-ativo', 'perfil-arquivado'] })
+    expect((await users.findById(target.id))?.status).toBe('blocked')
+  })
+
   test('non-superadmin (admin) é barrado', async () => {
     const target = makeUser({ role: 'customer' })
     users.seed(target)

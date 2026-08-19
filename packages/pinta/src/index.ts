@@ -20,4 +20,17 @@ export type {
   PintaSendResult,
   PintaTaskSession,
 } from './core/types'
-export { setPintaStorageNamespace } from './state/persistence'
+export {
+  // "Guardado na sua conta" (18/08/2026): o host embrulha o armazenamento local num
+  // espelho que sobe/desce cada desenho da nuvem — o mesmo `PintaPersistence` que
+  // a galeria E o editor usam (`usePintaApp().persistence`).
+  createPintaPersistence,
+  // O host (a nuvem) NÃO grava por baixo de um desenho aberto no editor (ver o registro) e,
+  // ao fechar, traz o que ficou pulado.
+  isPintaAssetOpen,
+  type PintaAssetOpenEvent,
+  type PintaPersistence,
+  type PintaPersistenceEvent,
+  setPintaStorageNamespace,
+  subscribePintaAssetOpenState,
+} from './state/persistence'

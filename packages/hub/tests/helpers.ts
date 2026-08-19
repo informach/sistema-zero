@@ -60,6 +60,8 @@ export function buildApp(
     showcaseWallChannelSlug?: string
     /** Gateway de limpeza de R2 (moderação) — injetável p/ espiar a chamada no delete. */
     studioArtifacts?: StudioArtifactGateway
+    /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
+    deletedAccountIds?: string[]
   } = {},
 ) {
   const repo = new InMemoryCommunityAdminRepository()
@@ -87,6 +89,9 @@ export function buildApp(
   const app = createServer({
     env,
     logger: silentLogger,
+    accountDeletionFence: {
+      isFenced: async (accountId: string) => opts.deletedAccountIds?.includes(accountId) ?? false,
+    },
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     spaces: {
       read: new ReadCommunityService(repo, access, readStateRepo, threadRepo),
@@ -145,7 +150,10 @@ export function buildApp(
       internalToken,
       spaces: new SpaceAdminService(repo),
       channels: new ChannelAdminService(repo),
-      purgeUserData: new PurgeUserDataService({ purgeForUser: async () => {} }),
+      purgeUserData: new PurgeUserDataService({
+        purgeForUser: async () => {},
+        isFenced: async () => false,
+      }),
     },
     moderation: {
       requireAdminEnabled: opts.requireAdmin ?? false,

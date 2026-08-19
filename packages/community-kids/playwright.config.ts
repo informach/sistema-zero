@@ -31,6 +31,9 @@ export default defineConfig({
       JWT_ISSUER: 'http://127.0.0.1:3000',
       JWT_JWKS_URL: 'http://127.0.0.1:3000/auth/.well-known/jwks.json',
       MEMBER_SHELL_HMAC_SECRET: 'community-kids-e2e-member-shell-secret',
+      // O boot de prod (instrumentation + boot-check) exige o segredo do cron de limpeza
+      // desde 19/08; sem ele o `next start` do e2e morria no `register()` (CI vermelho).
+      CREATION_CLEANUP_CRON_SECRET: 'community-kids-e2e-creation-cleanup-secret',
       PARENT_GATE_HMAC_SECRET: 'community-kids-e2e-parent-gate-secret',
       PORT: String(port),
     },

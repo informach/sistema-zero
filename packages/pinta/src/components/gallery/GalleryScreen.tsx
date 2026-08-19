@@ -4,8 +4,26 @@
  * carregando/vazio/erro com retry.
  */
 import type { JSX } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { COPY } from '../../core/copy'
+import {
+  EMPTY_GALLERY_FILTERS,
+  filterGalleryAssets,
+  type GalleryFilters,
+  type GalleryRoleFilter,
+  type GalleryStyleFilter,
+  hasActiveGalleryFilters,
+} from '../../core/gallerySearch'
+import { perfMeasure } from '../../core/perf'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import type { PintaInitialIntent } from '../../core/types'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
@@ -17,10 +35,18 @@ import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Download, Image as ImageIcon, Plus, Sparkles, Upload } from '../ui/icons'
+import { Download, Image as ImageIcon, Plus, Search, Sparkles, Upload, X } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
-import { ImportImageDialog } from './ImportImageDialog'
+
+/**
+ * "Trazer uma foto" carrega junto o quantizador (median-cut) e o decodificador — nada
+ * disso é usado até a criança clicar; o chunk só entra quando o diálogo abre.
+ */
+const LazyImportImageDialog = lazy(() =>
+  import('./ImportImageDialog').then((m) => ({ default: m.ImportImageDialog })),
+)
+
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
 /**
@@ -44,7 +70,7 @@ const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
 function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
   const base = ROLE_NAME_BASE[role]
   if (!taken.has(base)) return base
-  for (let n = 2; n <= 99; n += 1) {
+  for (let n = 2; n <= 999; n += 1) {
     if (!taken.has(`${base}-${n}`)) return `${base}-${n}`
   }
   return ''
@@ -55,6 +81,11 @@ export function GalleryScreen(): JSX.Element {
   const { showToast } = useToast()
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
+  const syncing = usePintaGallery((state) => state.syncing)
+  // Medição: do início da leitura da galeria até a primeira renderização com os cards.
+  useEffect(() => {
+    if (loaded) perfMeasure('pinta:gallery:rendered', 'pinta:gallery:load:start')
+  }, [loaded])
   const loading = usePintaGallery((state) => state.loading)
   const loadError = usePintaGallery((state) => state.loadError)
   const [createOpen, setCreateOpen] = useState(false)
@@ -82,6 +113,25 @@ export function GalleryScreen(): JSX.Element {
   const photoRef = useRef<HTMLInputElement>(null)
   const [importImage, setImportImage] = useState<RGBAImage | null>(null)
   const restoreRef = useRef<HTMLInputElement>(null)
+  // Busca (nome, tipo, jogo) + filtros de estilo e tipo. Sem teto de desenhos, são
+  // eles que mantêm a galeria navegável.
+  const [filters, setFilters] = useState<GalleryFilters>(EMPTY_GALLERY_FILTERS)
+  const query = filters.query
+  const setQuery = (value: string) => setFilters((f) => ({ ...f, query: value }))
+  const searchRef = useRef<HTMLInputElement>(null)
+  const searching = hasActiveGalleryFilters(filters)
+  // O campo responde na hora; a filtragem usa os filtros ADIADOS (React desprioriza a grade de
+  // centenas de cards enquanto a criança ainda digita) e é memoizada — termos da busca uma vez
+  // por tecla, texto de cada desenho do cache (não N normalizações por tecla).
+  const deferredFilters = useDeferredValue(filters)
+  const visibleAssets = useMemo(
+    () =>
+      hasActiveGalleryFilters(deferredFilters)
+        ? filterGalleryAssets(assets, deferredFilters)
+        : assets,
+    [assets, deferredFilters],
+  )
+  const clearFilters = () => setFilters(EMPTY_GALLERY_FILTERS)
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
@@ -89,27 +139,60 @@ export function GalleryScreen(): JSX.Element {
     removeTarget && isTilesetKind(removeTarget)
       ? assets.filter((asset) => asset.kind === 'tilemap' && asset.tilesetId === removeTarget.id)
       : []
-  const tilesets = assets.filter(isTilesetKind)
+  const tilesets = useMemo(() => assets.filter(isTilesetKind), [assets])
   const lastStyle = usePintaGallery((state) => state.lastStyle)
-  const findAsset = (id: string): (typeof assets)[number] | null =>
-    assets.find((a) => a.id === id) ?? null
+  // Índice por id (o mapa de tiles procura as peças dele por card) e nomes já usados — uma vez
+  // por lista, não uma busca linear por card nem um `Set` novo a cada render.
+  const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
+  const findAsset = useCallback((id: string) => assetsById.get(id) ?? null, [assetsById])
+  const takenNames = useMemo(() => new Set(assets.map((a) => a.name)), [assets])
 
   // Agrupamento por jogo do Pensa: chave = projectRef.id (não o nome — dois
   // jogos homônimos não devem fundir). A ordem das seções segue o asset mais
   // recente (a lista já vem por updatedAt desc; o Map preserva a inserção).
-  const byProject = new Map<string, { name: string; assets: PintaAsset[] }>()
-  const looseAssets: PintaAsset[] = []
-  for (const asset of assets) {
-    const ref = asset.projectRef
-    if (!ref) {
-      looseAssets.push(asset)
-      continue
+  // A busca filtra ANTES do agrupamento: uma seção some quando nada nela casa.
+  const { projectSections, looseAssets } = useMemo(() => {
+    const byProject = new Map<string, { name: string; assets: PintaAsset[] }>()
+    const loose: PintaAsset[] = []
+    for (const asset of visibleAssets) {
+      const ref = asset.projectRef
+      if (!ref) {
+        loose.push(asset)
+        continue
+      }
+      const entry = byProject.get(ref.id) ?? { name: ref.name, assets: [] }
+      entry.assets.push(asset)
+      byProject.set(ref.id, entry)
     }
-    const entry = byProject.get(ref.id) ?? { name: ref.name, assets: [] }
-    entry.assets.push(asset)
-    byProject.set(ref.id, entry)
-  }
-  const projectSections = [...byProject.entries()]
+    return { projectSections: [...byProject.entries()], looseAssets: loose }
+  }, [visibleAssets])
+
+  // Ações do card POR ID, estáveis (o card é `memo`): trocar de diálogo ou digitar na busca
+  // não re-renderiza centenas de cards.
+  const onOpenCard = useCallback((id: string) => openAsset(id), [openAsset])
+  const onRenameCard = useCallback(
+    (id: string) => {
+      const target = assetsById.get(id)
+      if (!target) return
+      setRenameId(id)
+      setRenameValue(target.name)
+    },
+    [assetsById],
+  )
+  const onDuplicateCard = useCallback(
+    (id: string) =>
+      gallery
+        .getState()
+        .duplicate(id)
+        .then((copy) => {
+          if (!copy) {
+            const error = gallery.getState().mutateError
+            if (error) showToast(error)
+          }
+        }),
+    [gallery, showToast],
+  )
+  const onRemoveCard = useCallback((id: string) => setRemoveId(id), [])
 
   const renderCard = (asset: PintaAsset): JSX.Element => (
     <AssetCard
@@ -117,23 +200,10 @@ export function GalleryScreen(): JSX.Element {
       asset={asset}
       justCreated={asset.id === justCreatedId}
       findAsset={findAsset}
-      onOpen={() => openAsset(asset.id)}
-      onRename={() => {
-        setRenameId(asset.id)
-        setRenameValue(asset.name)
-      }}
-      onDuplicate={() => {
-        return gallery
-          .getState()
-          .duplicate(asset.id)
-          .then((copy) => {
-            if (!copy) {
-              const error = gallery.getState().mutateError
-              if (error) showToast(error)
-            }
-          })
-      }}
-      onRemove={() => setRemoveId(asset.id)}
+      onOpen={onOpenCard}
+      onRename={onRenameCard}
+      onDuplicate={onDuplicateCard}
+      onRemove={onRemoveCard}
     />
   )
 
@@ -220,7 +290,10 @@ export function GalleryScreen(): JSX.Element {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
+    <div
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6"
+      data-pin-scroll-root=""
+    >
       {/* Cabeçalho de SEÇÃO da comunidade (mesma escala de `/criar` e da home
           do kids): este é o título da página quando o Pinta está embarcado —
           por isso ele mora aqui e some sozinho ao abrir o editor. */}
@@ -278,6 +351,11 @@ export function GalleryScreen(): JSX.Element {
         </div>
       </header>
 
+      {syncing && loaded ? (
+        // Sem `role="status"`: o contador da busca é o único status da tela (os testes o
+        // procuram); isto é só um lembrete discreto de que mais desenhos podem chegar.
+        <p className="text-pin-muted text-sm">{COPY.gallery.syncing}</p>
+      ) : null}
       {loading && !loaded ? (
         <p className="py-12 text-center text-base text-pin-muted">{COPY.gallery.loading}</p>
       ) : null}
@@ -286,6 +364,124 @@ export function GalleryScreen(): JSX.Element {
         <div className="flex flex-col items-center gap-3 py-12">
           <p className="text-base text-pin-muted">{loadError}</p>
           <Button onClick={() => void gallery.getState().load()}>{COPY.gallery.retry}</Button>
+        </div>
+      ) : null}
+
+      {loaded && !loadError && assets.length > 0 ? (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <label className="relative flex min-w-56 flex-1 items-center sm:max-w-md">
+            <Search
+              aria-hidden="true"
+              className="pointer-events-none absolute left-3 size-4 text-pin-muted"
+            />
+            <input
+              ref={searchRef}
+              type="search"
+              name="pinta-gallery-search"
+              autoComplete="off"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              onKeyDown={(event) => {
+                // Esc limpa (e o Dialog nunca está aberto aqui: o campo é da galeria).
+                if (event.key === 'Escape' && query) {
+                  event.preventDefault()
+                  setQuery('')
+                }
+              }}
+              aria-label={COPY.gallery.search}
+              placeholder={COPY.gallery.searchPlaceholder}
+              className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-bg py-2 pr-11 pl-10 text-base outline-none [&::-webkit-search-cancel-button]:appearance-none focus:border-pin-accent"
+            />
+            {query ? (
+              <button
+                type="button"
+                aria-label={COPY.gallery.searchClear}
+                onClick={() => {
+                  setQuery('')
+                  searchRef.current?.focus()
+                }}
+                className="absolute right-1 inline-flex size-9 items-center justify-center rounded-lg text-pin-muted hover:bg-pin-surface hover:text-pin-text"
+              >
+                <X aria-hidden="true" className="size-4" />
+              </button>
+            ) : null}
+          </label>
+          {searching ? (
+            <p role="status" className="text-pin-muted text-sm">
+              {COPY.gallery.searchCount(visibleAssets.length, assets.length)}
+            </p>
+          ) : null}
+          <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
+            <FilterChips<GalleryStyleFilter>
+              label={COPY.gallery.filterStyle}
+              value={filters.style}
+              onChange={(style) => setFilters((f) => ({ ...f, style }))}
+              options={[
+                {
+                  value: 'all',
+                  label: COPY.gallery.filterAll,
+                  aria: COPY.gallery.filterAria.allStyles,
+                },
+                {
+                  value: 'pixel',
+                  label: COPY.styles.pixel.title,
+                  emoji: COPY.styles.pixel.emoji,
+                  aria: COPY.gallery.filterAria.pixel,
+                },
+                {
+                  value: 'vector',
+                  label: COPY.styles.vector.title,
+                  emoji: COPY.styles.vector.emoji,
+                  aria: COPY.gallery.filterAria.vector,
+                },
+              ]}
+            />
+            <FilterChips<GalleryRoleFilter>
+              label={COPY.gallery.filterRole}
+              value={filters.role}
+              onChange={(role) => setFilters((f) => ({ ...f, role }))}
+              options={[
+                {
+                  value: 'all',
+                  label: COPY.gallery.filterAll,
+                  aria: COPY.gallery.filterAria.allRoles,
+                },
+                {
+                  value: 'sprite',
+                  label: COPY.gallery.filterRoles.sprite,
+                  emoji: COPY.kinds['pixel-sprite'].emoji,
+                  aria: COPY.gallery.filterAria.sprite,
+                },
+                {
+                  value: 'background',
+                  label: COPY.gallery.filterRoles.background,
+                  emoji: COPY.kinds['pixel-background'].emoji,
+                  aria: COPY.gallery.filterAria.background,
+                },
+                {
+                  value: 'tileset',
+                  label: COPY.gallery.filterRoles.tileset,
+                  emoji: COPY.kinds.tileset.emoji,
+                  aria: COPY.gallery.filterAria.tileset,
+                },
+                {
+                  value: 'tilemap',
+                  label: COPY.gallery.filterRoles.tilemap,
+                  emoji: COPY.kinds.tilemap.emoji,
+                  aria: COPY.gallery.filterAria.tilemap,
+                },
+              ]}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {loaded && !loadError && searching && visibleAssets.length === 0 ? (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="max-w-md text-base text-pin-muted">{COPY.gallery.searchEmpty}</p>
+          <Button variant="ghost" onClick={clearFilters}>
+            {COPY.gallery.searchClearAll}
+          </Button>
         </div>
       ) : null}
 
@@ -305,7 +501,7 @@ export function GalleryScreen(): JSX.Element {
       ) : null}
 
       {projectSections.length === 0 ? (
-        <div className={GALLERY_GRID_CLASS}>{assets.map(renderCard)}</div>
+        <div className={GALLERY_GRID_CLASS}>{visibleAssets.map(renderCard)}</div>
       ) : (
         // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
         <div className="flex flex-col gap-6">
@@ -334,13 +530,11 @@ export function GalleryScreen(): JSX.Element {
         key={String(createOpen)}
         open={createOpen}
         tilesets={tilesets}
-        takenNames={new Set(assets.map((a) => a.name))}
+        takenNames={takenNames}
         creating={creating}
         initialStyle={intent?.style && intent.style !== 'either' ? intent.style : lastStyle}
         initialRole={intent?.artKind ?? null}
-        initialName={
-          intent?.artKind ? suggestName(intent.artKind, new Set(assets.map((a) => a.name))) : ''
-        }
+        initialName={intent?.artKind ? suggestName(intent.artKind, takenNames) : ''}
         projectName={intent?.projectRef.name ?? null}
         onClose={() => {
           // Fechar descarta o intent: o próximo "Criar novo" volta ao normal.
@@ -386,19 +580,36 @@ export function GalleryScreen(): JSX.Element {
         }}
       />
 
-      <ImportImageDialog
-        open={importImage !== null}
-        image={importImage}
-        onClose={() => setImportImage(null)}
-        onImport={(asset) => {
-          void gallery
-            .getState()
-            .importAssets([asset])
-            .then(({ added }) => {
-              showToast(added > 0 ? COPY.gallery.importDone : COPY.gallery.quotaFull)
-            })
-        }}
-      />
+      {importImage !== null ? (
+        // Enquanto o diálogo (pedaço separado do bundle) carrega: um aviso, não tela morta.
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+              <div className="pin-panel px-5 py-3 font-bold text-pin-fg">
+                {COPY.importImage.loading}
+              </div>
+            </div>
+          }
+        >
+          <LazyImportImageDialog
+            open
+            image={importImage}
+            onClose={() => setImportImage(null)}
+            onImport={(asset) => {
+              void gallery
+                .getState()
+                .importAssets([asset])
+                .then(({ added }) => {
+                  showToast(
+                    added > 0
+                      ? COPY.gallery.importDone
+                      : (gallery.getState().mutateError ?? COPY.gallery.importDecodeError),
+                  )
+                })
+            }}
+          />
+        </Suspense>
+      ) : null}
 
       <Dialog
         open={renameTarget !== null}
@@ -488,5 +699,47 @@ export function GalleryScreen(): JSX.Element {
         </div>
       </Dialog>
     </div>
+  )
+}
+
+/**
+ * Uma fileira de chips exclusivos (rádio): "Todos" + as opções. `aria-pressed` diz qual está
+ * ligado; alvo de 36px (a galeria é densa, mas o dedo da criança precisa acertar).
+ */
+function FilterChips<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: ReadonlyArray<{ value: T; label: string; emoji?: string; aria: string }>
+  onChange: (value: T) => void
+}): JSX.Element {
+  return (
+    <fieldset className="m-0 flex min-w-0 flex-wrap items-center gap-1.5 border-0 p-0">
+      <legend className="mr-1 text-pin-muted text-xs uppercase tracking-wide">{label}</legend>
+      {options.map((option) => {
+        const active = option.value === value
+        return (
+          <button
+            key={option.value}
+            type="button"
+            aria-pressed={active}
+            aria-label={option.aria}
+            onClick={() => onChange(option.value)}
+            className={`inline-flex min-h-9 items-center gap-1 rounded-full border-2 px-3 font-bold text-sm transition-colors ${
+              active
+                ? 'border-pin-accent bg-pin-accent text-pin-accent-fg'
+                : 'border-pin-border bg-pin-surface text-pin-text hover:border-pin-accent'
+            }`}
+          >
+            {option.emoji ? <span aria-hidden="true">{option.emoji}</span> : null}
+            {option.label}
+          </button>
+        )
+      })}
+    </fieldset>
   )
 }

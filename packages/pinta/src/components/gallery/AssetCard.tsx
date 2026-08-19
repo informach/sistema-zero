@@ -11,9 +11,10 @@
  * para o card. Os diálogos de renomear/apagar seguem no GalleryScreen.
  */
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { thumbnailBitmap, thumbnailShapes } from '../../core/assetThumb'
 import { COPY } from '../../core/copy'
+import { perfSpan } from '../../core/perf'
 import {
   assetStyle,
   isTilesetKind,
@@ -21,7 +22,7 @@ import {
   type PintaBitmap,
   resolveAssetPalette,
 } from '../../core/project'
-import { paintBitmap } from '../../pixel/render'
+import { paintBitmapCapped } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
 import { Copy, Pencil, Trash2 } from '../ui/icons'
@@ -52,16 +53,111 @@ const KIND_PANEL_CLASSES: Record<PintaAsset['kind'], string> = {
   'vector-tileset': '[--pin-panel-border:var(--color-pin-kind-tileset)]',
 }
 
-function PixelThumb({ asset, bitmap }: { asset: PintaAsset; bitmap: PintaBitmap }): JSX.Element {
+/**
+ * Teto da miniatura (maior lado, em pixels do canvas): a caixa do card tem ~140–160 px
+ * CSS, então 192 px mantém nitidez de sobra e corta o backing store de um cenário
+ * 512×512 de 1 MiB para ~147 KB — com centenas de cards montados é a diferença entre
+ * caber e não caber na memória de um tablet escolar.
+ */
+export const GALLERY_THUMB_MAX_PX = 192
+
+/**
+ * UM `IntersectionObserver` por RAIZ rolável (a galeria rola dentro de `overflow-y-auto`, não
+ * na janela; com `root` = janela, o retângulo do card era recortado pelo rolável ANTES da
+ * margem e nada era pintado "meia tela antes"): o canvas só é pintado quando o card chega
+ * perto da área visível (`rootMargin` de meia tela), e não volta a "longe". Sem a API
+ * (happy-dom, navegador antigo) pinta já. A raiz é o ancestral marcado com
+ * `data-pin-scroll-root`; sem ele, a janela.
+ */
+interface NearObserverSlot {
+  root: Element | null
+  observer: IntersectionObserver
+  targets: Set<Element>
+}
+
+const nearTargets = new WeakMap<Element, { slot: NearObserverSlot; onNear: () => void }>()
+const nearObservers = new Map<Element | null, NearObserverSlot>()
+
+function releaseNearTarget(element: Element, notify: boolean): void {
+  const registered = nearTargets.get(element)
+  if (!registered) return
+  const { slot, onNear } = registered
+  nearTargets.delete(element)
+  slot.targets.delete(element)
+  slot.observer.unobserve(element)
+  if (slot.targets.size === 0) {
+    slot.observer.disconnect()
+    nearObservers.delete(slot.root)
+  }
+  if (notify) onNear()
+}
+
+function nearObserverFor(root: Element | null): NearObserverSlot {
+  let slot = nearObservers.get(root)
+  if (!slot) {
+    const targets = new Set<Element>()
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) releaseNearTarget(entry.target, true)
+        }
+      },
+      { root, rootMargin: '50% 0px' },
+    )
+    slot = { root, observer, targets }
+    nearObservers.set(root, slot)
+  }
+  return slot
+}
+function observeNear(element: Element, onNear: () => void): () => void {
+  if (typeof IntersectionObserver === 'undefined') {
+    onNear()
+    return () => {}
+  }
+  const root = element.closest('[data-pin-scroll-root]')
+  const slot = nearObserverFor(root)
+  nearTargets.set(element, { slot, onNear })
+  slot.targets.add(element)
+  slot.observer.observe(element)
+  return () => releaseNearTarget(element, false)
+}
+
+/** `true` quando o elemento já esteve perto da janela (uma vez; não volta). */
+function useNearViewport(ref: { current: Element | null }, enabled: boolean): boolean {
+  const [near, setNear] = useState(!enabled)
+  useEffect(() => {
+    if (!enabled || near) return
+    const element = ref.current
+    if (!element) {
+      setNear(true)
+      return
+    }
+    return observeNear(element, () => setNear(true))
+  }, [enabled, near, ref])
+  return near
+}
+
+function PixelThumb({
+  asset,
+  bitmap,
+  paint,
+}: {
+  asset: PintaAsset
+  bitmap: PintaBitmap
+  /** Pinta o canvas (false = ainda longe da janela; fica no emoji de fundo). */
+  paint: boolean
+}): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !('paletteId' in asset)) return
-    // happy-dom: getContext() null → paintBitmap devolve false e a thumb fica
+    if (!paint || !canvas || !('paletteId' in asset)) return
+    // happy-dom: getContext() null → paintBitmapCapped devolve false e a thumb fica
     // no emoji de fundo (nunca quebra).
-    paintBitmap(canvas, bitmap, resolveAssetPalette(asset))
-  }, [asset, bitmap])
+    perfSpan('pinta:thumb:paint', () =>
+      paintBitmapCapped(canvas, bitmap, resolveAssetPalette(asset), GALLERY_THUMB_MAX_PX),
+    )
+  }, [asset, bitmap, paint])
 
   return (
     <canvas
@@ -81,12 +177,16 @@ function TilemapThumb({
 }): JSX.Element | null {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const tileset = findAsset?.(asset.tilesetId) ?? null
+  const colors = useMemo(
+    () => (tileset && isTilesetKind(tileset) ? tilemapMinimapColors(asset, tileset) : null),
+    [asset, tileset],
+  )
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || !tileset || !isTilesetKind(tileset)) return
-    paintMinimap(canvas, asset.cols, asset.rows, tilemapMinimapColors(asset, tileset))
-  }, [asset, tileset])
+    if (!canvas || !colors) return
+    paintMinimap(canvas, asset.cols, asset.rows, colors)
+  }, [asset, colors])
 
   if (!tileset || !isTilesetKind(tileset)) return null
   return (
@@ -106,9 +206,12 @@ function TilemapThumb({
 export function AssetThumb({
   asset,
   findAsset,
+  paint = true,
 }: {
   asset: PintaAsset
   findAsset?: (id: string) => PintaAsset | null
+  /** `false` = o canvas do pixel ainda não é pintado (card longe da janela). */
+  paint?: boolean
 }): JSX.Element {
   const bitmap = useMemo(() => thumbnailBitmap(asset), [asset])
   const shapesDoc = useMemo(() => thumbnailShapes(asset), [asset])
@@ -118,7 +221,7 @@ export function AssetThumb({
       <span aria-hidden="true" className="absolute text-4xl opacity-30">
         {COPY.kinds[asset.kind].emoji}
       </span>
-      {bitmap ? <PixelThumb asset={asset} bitmap={bitmap} /> : null}
+      {bitmap ? <PixelThumb asset={asset} bitmap={bitmap} paint={paint} /> : null}
       {shapesDoc && shapesDoc.shapes.length > 0 ? (
         <VectorFrameSvg
           width={shapesDoc.width}
@@ -132,7 +235,12 @@ export function AssetThumb({
   )
 }
 
-export function AssetCard({
+/**
+ * `memo` + callbacks POR ID (estáveis na galeria): com centenas de desenhos, digitar na
+ * busca ou abrir um diálogo re-renderizava todos os cards (e os callbacks inline davam
+ * identidade nova a cada render, o que anularia o memo).
+ */
+export const AssetCard = memo(function AssetCard({
   asset,
   justCreated = false,
   findAsset,
@@ -145,10 +253,10 @@ export function AssetCard({
   justCreated?: boolean
   /** Resolve outros assets do perfil (o tilemap precisa das peças p/ a thumb). */
   findAsset?: (id: string) => PintaAsset | null
-  onOpen: () => void
-  onRename: () => void
-  onDuplicate: () => Promise<void> | void
-  onRemove: () => void
+  onOpen: (id: string) => void
+  onRename: (id: string) => void
+  onDuplicate: (id: string) => Promise<void> | void
+  onRemove: (id: string) => void
 }): JSX.Element {
   const kind = COPY.kinds[asset.kind]
   const style = assetStyle(asset.kind)
@@ -156,13 +264,16 @@ export function AssetCard({
   // A trava do duplo clique é um REF: dois cliques no MESMO turno de JS chegam
   // antes de qualquer re-render marcar o botão como desabilitado.
   const duplicatingRef = useRef(false)
+  // O canvas da miniatura só é pintado perto da janela (uma vez).
+  const rootRef = useRef<HTMLDivElement>(null)
+  const near = useNearViewport(rootRef, true)
 
   async function handleDuplicate(): Promise<void> {
     if (duplicatingRef.current) return
     duplicatingRef.current = true
     setDuplicating(true)
     try {
-      await onDuplicate()
+      await onDuplicate(asset.id)
     } finally {
       duplicatingRef.current = false
       setDuplicating(false)
@@ -175,17 +286,18 @@ export function AssetCard({
 
   return (
     <div
-      className={`pin-panel pin-pop flex flex-col gap-1 p-2 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
+      ref={rootRef}
+      className={`pin-panel pin-pop pin-gallery-card flex flex-col gap-1 p-2 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
     >
       <button
         type="button"
-        onClick={onOpen}
+        onClick={() => onOpen(asset.id)}
         aria-label={COPY.a11y.openAsset(
           `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
         )}
         className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
       >
-        <AssetThumb asset={asset} findAsset={findAsset} />
+        <AssetThumb asset={asset} findAsset={findAsset} paint={near} />
       </button>
       <div className="flex items-center gap-1">
         <span
@@ -211,7 +323,7 @@ export function AssetCard({
       <div className="flex items-center justify-between gap-1">
         <button
           type="button"
-          onClick={onRename}
+          onClick={() => onRename(asset.id)}
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
           title={COPY.gallery.rename}
           className={`${actionClass} hover:bg-pin-border/40`}
@@ -231,7 +343,7 @@ export function AssetCard({
         </button>
         <button
           type="button"
-          onClick={onRemove}
+          onClick={() => onRemove(asset.id)}
           aria-label={`${COPY.gallery.remove} ${asset.name}`}
           title={COPY.gallery.remove}
           className={`${actionClass} text-pin-danger hover:bg-pin-danger/20`}
@@ -241,4 +353,4 @@ export function AssetCard({
       </div>
     </div>
   )
-}
+})

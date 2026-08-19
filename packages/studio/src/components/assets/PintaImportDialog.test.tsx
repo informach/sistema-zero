@@ -49,7 +49,8 @@ mock.module('idb-keyval', () => ({
 
 const { createEmptyProject } = await import('#core')
 const { setPersonalAssetsNamespace } = await import('../../asset-library/personal')
-const { resetDrawingSyncClockForTests } = await import('../../asset-library/personalSync')
+const { releaseDrawingSyncProfile } = await import('../../asset-library/personalSync')
+const { setStorageNamespace } = await import('../../state/persistence')
 const { useProjectStore } = await import('../../state/projectStore')
 const { StudioPintaLibraryProvider } = await import('../../studio/pinta-library')
 type PintaLibraryAdapter = import('../../studio/pinta-library').StudioPintaLibraryAdapter
@@ -120,13 +121,16 @@ async function openDialog(adapter: PintaLibraryAdapter | null): Promise<void> {
 beforeEach(() => {
   dbs.clear()
   localStorage.clear()
-  resetDrawingSyncClockForTests()
+  releaseDrawingSyncProfile('perfil-1')
+  setStorageNamespace('perfil-1')
   setPersonalAssetsNamespace('perfil-1')
   seedProject()
 })
 
 afterEach(() => {
   cleanup()
+  releaseDrawingSyncProfile('perfil-1')
+  setStorageNamespace('')
   setPersonalAssetsNamespace('')
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })

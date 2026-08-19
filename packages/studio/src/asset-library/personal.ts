@@ -45,7 +45,7 @@ const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
  * irmão não pode disparar a sincronia dos projetos do outro.
  */
 const CHANGED_KEY_PREFIX = 'sz:desenhos-alterados:'
-const changedKey = () => `${CHANGED_KEY_PREFIX}${storageNamespace}`
+const changedKey = (namespace = storageNamespace) => `${CHANGED_KEY_PREFIX}${namespace}`
 
 /** `localStorage` pode não existir (SSR) ou lançar (Safari privado, cota). */
 function safeLocalStorage(): Storage | null {
@@ -57,9 +57,9 @@ function safeLocalStorage(): Storage | null {
 }
 
 /** Carimba "a biblioteca deste perfil mudou agora". Best-effort. */
-function markPersonalAssetsChanged(): void {
+function markPersonalAssetsChanged(namespace?: string): void {
   try {
-    safeLocalStorage()?.setItem(changedKey(), JSON.stringify({ at: Date.now() }))
+    safeLocalStorage()?.setItem(changedKey(namespace), JSON.stringify({ at: Date.now() }))
   } catch {
     // fail-soft: sem o carimbo a sincronia só perde a otimização (ela ainda roda
     // uma vez por aba, porque o relógio dela começa em 0).
@@ -71,9 +71,9 @@ function markPersonalAssetsChanged(): void {
  * É o portão barato da sincronia: igual ao já visto ⇒ nada a fazer, sem tocar
  * no IndexedDB.
  */
-export function personalAssetsChangedAt(): number {
+export function personalAssetsChangedAt(namespace?: string): number {
   try {
-    const raw = safeLocalStorage()?.getItem(changedKey())
+    const raw = safeLocalStorage()?.getItem(changedKey(namespace))
     if (!raw) return 0
     const parsed: unknown = JSON.parse(raw)
     if (!parsed || typeof parsed !== 'object') return 0
@@ -118,6 +118,8 @@ export interface SavePersonalAssetResult {
   ok: boolean
   /** Nome final salvo (pode ganhar sufixo em colisão com OUTRO desenho). */
   name?: string
+  /** Revisão monotônica efetivamente persistida. */
+  updatedAt?: number
   error?: string
 }
 
@@ -141,14 +143,25 @@ export function getPersonalAssetsNamespace(): string {
   return storageNamespace
 }
 
-function getStoreHandle() {
+function personalAssetsDatabaseName(namespace: string): string {
+  return namespace ? `sistema-zero-personal-assets-${namespace}` : 'sistema-zero-personal-assets'
+}
+
+// Um handle por namespace explícito (a nuvem chama por item; cada `createStore` novo abre
+// uma conexão própria com o IndexedDB no 1º uso).
+const storesByNamespace = new Map<string, ReturnType<typeof createStore>>()
+function getStoreHandle(namespace?: string) {
+  if (namespace !== undefined) {
+    const key = namespace.trim()
+    let handle = storesByNamespace.get(key)
+    if (!handle) {
+      handle = createStore(personalAssetsDatabaseName(key), 'kv')
+      storesByNamespace.set(key, handle)
+    }
+    return handle
+  }
   if (!store) {
-    store = createStore(
-      storageNamespace
-        ? `sistema-zero-personal-assets-${storageNamespace}`
-        : 'sistema-zero-personal-assets',
-      'kv',
-    )
+    store = createStore(personalAssetsDatabaseName(storageNamespace), 'kv')
   }
   return store
 }
@@ -180,9 +193,11 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
 }
 
 /** Todos os desenhos do perfil, saneados e do mais recente para o mais antigo. */
-export async function listPersonalAssets(): Promise<PersonalAsset[]> {
+export async function listPersonalAssets(options?: {
+  namespace?: string
+}): Promise<PersonalAsset[]> {
   try {
-    const kvStore = getStoreHandle()
+    const kvStore = getStoreHandle(options?.namespace)
     const allKeys = await keys(kvStore)
     const assetKeys = allKeys.filter(
       (key): key is string => typeof key === 'string' && key.startsWith(ASSET_KEY_PREFIX),
@@ -204,17 +219,22 @@ export async function listPersonalAssets(): Promise<PersonalAsset[]> {
  * dedup de nome por sufixo (`heroi` → `heroi-2`) contra OUTROS ids e respeita
  * os tetos de contagem/orçamento. Nunca lança.
  */
-export async function savePersonalAsset(input: {
-  id: string
-  name: string
-  dataUrl: string
-  width?: number
-  height?: number
-  /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
-  sprite?: unknown
-  tileset?: unknown
-  tilemap?: unknown
-}): Promise<SavePersonalAssetResult> {
+export async function savePersonalAsset(
+  input: {
+    id: string
+    name: string
+    dataUrl: string
+    width?: number
+    height?: number
+    /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
+    sprite?: unknown
+    tileset?: unknown
+    tilemap?: unknown
+    /** Usado por restauros da nuvem para preservar a revisão autoritativa da origem. */
+    updatedAt?: number
+  },
+  options?: { namespace?: string },
+): Promise<SavePersonalAssetResult> {
   try {
     if (!input.id || input.id.includes(':')) {
       return { ok: false, error: 'Esse desenho veio com uma identificação inválida.' }
@@ -227,7 +247,7 @@ export async function savePersonalAsset(input: {
       return { ok: false, error: 'Esse nome não vai funcionar aqui.' }
     }
 
-    const existing = await listPersonalAssets()
+    const existing = await listPersonalAssets(options)
     const previous = existing.find((a) => a.id === input.id)
     const others = existing.filter((a) => a.id !== input.id)
 
@@ -254,6 +274,11 @@ export async function savePersonalAsset(input: {
     const sprite = sanitizeSpriteMeta(input.sprite)
     const tileset = sanitizeTilesetMeta(input.tileset)
     const tilemap = sanitizeTilemapMeta(input.tilemap)
+    const requestedRevision =
+      typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) && input.updatedAt > 0
+        ? Math.round(input.updatedAt)
+        : Date.now()
+    const updatedAt = Math.max(requestedRevision, (previous?.updatedAt ?? 0) + 1)
     const record: PersonalAsset = {
       id: input.id,
       name,
@@ -264,11 +289,11 @@ export async function savePersonalAsset(input: {
       ...(sprite ? { sprite } : {}),
       ...(tileset ? { tileset } : {}),
       ...(tilemap ? { tilemap } : {}),
-      updatedAt: Date.now(),
+      updatedAt,
     }
-    await set(assetKey(input.id), record, getStoreHandle())
-    markPersonalAssetsChanged()
-    return { ok: true, name }
+    await set(assetKey(input.id), record, getStoreHandle(options?.namespace))
+    markPersonalAssetsChanged(options?.namespace)
+    return { ok: true, name, updatedAt }
   } catch {
     return { ok: false, error: 'Não consegui salvar agora. Tente de novo daqui a pouco.' }
   }
@@ -288,9 +313,38 @@ export async function removePersonalAsset(id: string): Promise<RemovePersonalAss
 }
 
 /** Leitura pontual (testes/depuração). */
-export async function getPersonalAsset(id: string): Promise<PersonalAsset | null> {
+/**
+ * Vários desenhos de uma vez (uma transação `getMany`): quem precisa de N desenhos — o
+ * restauro da nuvem reconciliando os de um jogo — não paga N idas ao IndexedDB. Ids
+ * ausentes viram `null`. Nunca lança.
+ */
+export async function getPersonalAssets(
+  ids: readonly string[],
+  options?: { namespace?: string },
+): Promise<Map<string, PersonalAsset | null>> {
+  const result = new Map<string, PersonalAsset | null>()
+  const unique = [...new Set(ids)]
+  if (unique.length === 0) return result
   try {
-    const raw = await get<unknown>(assetKey(id), getStoreHandle())
+    const values = await getMany<unknown>(
+      unique.map((id) => assetKey(id)),
+      getStoreHandle(options?.namespace),
+    )
+    unique.forEach((id, index) => {
+      result.set(id, sanitizePersonalAsset(values[index]))
+    })
+  } catch {
+    for (const id of unique) result.set(id, null)
+  }
+  return result
+}
+
+export async function getPersonalAsset(
+  id: string,
+  options?: { namespace?: string },
+): Promise<PersonalAsset | null> {
+  try {
+    const raw = await get<unknown>(assetKey(id), getStoreHandle(options?.namespace))
     return sanitizePersonalAsset(raw)
   } catch {
     return null

@@ -79,13 +79,34 @@ export {
   renderProjectToPreviewDoc,
   renderProjectToPreviewDocAsync,
 } from './preview/renderProject'
-export { importProjectSnapshot } from './projects/importSnapshot'
+export {
+  discardImportedProjectSnapshot,
+  importProjectSnapshot,
+  listProjectSummariesLightForCloud,
+  loadProjectAssetsSnapshotForCloud,
+  loadProjectSnapshotForCloud,
+  loadProjectSummaryForCloud,
+  restoreProjectFromCloud,
+  validateCloudProjectSnapshot,
+} from './projects/importSnapshot'
 export { ProjectList, type ProjectListProps } from './projects/ProjectList'
 export {
   buildTilemapGameProject,
   type TilemapGamePayload,
 } from './projects/tilemapGame'
-export type { ProjectSummary } from './state/persistence'
+export {
+  // "Guardado na sua conta": o host observa toda escrita/apagamento local (subir
+  // para a nuvem) e relê o snapshot COMPLETO (com blocos) na hora de subir. A descida
+  // nem copia nem restaura um projeto ABERTO (`isProjectOpenAnywhere`).
+  isProjectOpenAnywhere,
+  listProjectSummariesLight,
+  loadProjectSummaryById,
+  PROJECT_CHANGED_EVENT,
+  type ProjectChangedDetail,
+  type ProjectSummary,
+  type StudioCloudMirror,
+  setStudioCloudMirror,
+} from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
 export type {
   ActivityCheck,
@@ -148,7 +169,8 @@ export type {
   StudioTaskSession,
 } from './studio/types'
 
-import { setPersonalAssetsNamespace } from './asset-library/personal'
+import { getPersonalAssetsNamespace, setPersonalAssetsNamespace } from './asset-library/personal'
+import { releaseDrawingSyncProfile } from './asset-library/personalSync'
 import { setStorageNamespace } from './state/persistence'
 
 /**
@@ -159,6 +181,9 @@ import { setStorageNamespace } from './state/persistence'
  * p/ '').
  */
 export function setStudioStorageNamespace(namespace: string): void {
+  const previous = getPersonalAssetsNamespace()
+  const next = namespace.trim()
+  if (previous !== next) releaseDrawingSyncProfile(previous)
   setStorageNamespace(namespace)
   setPersonalAssetsNamespace(namespace)
 }

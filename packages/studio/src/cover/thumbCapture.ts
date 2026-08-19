@@ -1,4 +1,5 @@
 import type { Project } from '#core'
+import { perfSpanAsync } from '../core/perf'
 import {
   MAX_PROJECT_THUMB_CHARS,
   PROJECT_THUMB_UPDATED_EVENT,
@@ -92,7 +93,11 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
  * a lista pelo evento `PROJECT_THUMB_UPDATED_EVENT` quando a gravação termina.
  * Best-effort: sem canvas/print/quota, o card só fica sem capa. NUNCA lança.
  */
-export async function captureAndStoreProjectThumb(project: Project): Promise<void> {
+export function captureAndStoreProjectThumb(project: Project): Promise<void> {
+  return perfSpanAsync('studio:thumb:capture', () => captureAndStoreUnmeasured(project))
+}
+
+async function captureAndStoreUnmeasured(project: Project): Promise<void> {
   try {
     const thumb = await resolveThumb(project)
     if (!thumb) return

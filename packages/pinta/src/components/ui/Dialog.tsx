@@ -147,6 +147,9 @@ export function Dialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        // Marca DO PINTA: os atalhos do editor consultam este atributo (não `role`, que um
+        // painel do host sempre montado também usa) para saber que há um modal aberto.
+        data-pinta-dialog=""
         tabIndex={-1}
         className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} max-h-full overflow-y-auto overscroll-contain rounded-2xl border-2 border-pin-border bg-pin-surface p-6 shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent`}
       >

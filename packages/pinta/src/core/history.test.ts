@@ -56,3 +56,28 @@ describe('createHistory (undo/redo por snapshots com orçamento)', () => {
     expect(bitmapBytes({ data: new Uint8Array(100) })).toBe(164)
   })
 })
+
+describe('orçamento com total corrente', () => {
+  it('`sizeOf` é chamado UMA vez por snapshot gravado (não a pilha inteira a cada gesto) e o orçamento continua o mesmo', () => {
+    let calls = 0
+    const history = createHistory<string>({
+      sizeOf: (s) => {
+        calls += 1
+        return s.length
+      },
+      byteBudget: 10,
+    })
+    history.record('aaaa') // 4
+    history.record('bbbb') // 8
+    history.record('cccc') // 12 → derruba 'aaaa'
+    expect(calls).toBe(3)
+    expect(history.undo('atual')).toBe('cccc')
+    expect(history.undo('cccc')).toBe('bbbb')
+    expect(history.undo('bbbb')).toBeNull()
+    // Refazer reinsere o estado corrente na pilha (medido de novo: 1 chamada).
+    expect(history.redo('bbbb')).toBe('cccc')
+    expect(calls).toBe(4)
+    history.clear()
+    expect(history.canUndo()).toBe(false)
+  })
+})

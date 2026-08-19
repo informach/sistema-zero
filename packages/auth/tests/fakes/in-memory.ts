@@ -62,6 +62,8 @@ export const fakeHasher: PasswordHasher = {
 /** Repositório de usuários em memória (reidrata snapshots, como o adapter real). */
 export class InMemoryUserRepository implements UserRepository {
   readonly byId = new Map<string, UserAggregate>()
+  readonly profileIdsByAccount = new Map<string, string[]>()
+  readonly deletionReceipts = new Map<string, string[]>()
 
   async findById(id: string): Promise<UserAggregate | null> {
     const user = this.byId.get(id)
@@ -119,7 +121,24 @@ export class InMemoryUserRepository implements UserRepository {
     return true
   }
 
+  async prepareDeletion(id: string): Promise<{ profileIds: string[] } | null> {
+    const user = this.byId.get(id)
+    if (!user) return null
+    user.changeStatus('blocked')
+    this.byId.set(id, UserAggregate.restore(user.toSnapshot()))
+    return { profileIds: [...(this.profileIdsByAccount.get(id) ?? [])] }
+  }
+
+  async findDeletionReceipt(id: string): Promise<{ profileIds: string[] } | null> {
+    const profileIds = this.deletionReceipts.get(id)
+    return profileIds ? { profileIds: [...profileIds] } : null
+  }
+
   async deleteById(id: string): Promise<void> {
+    const user = this.byId.get(id)
+    if (user) {
+      this.deletionReceipts.set(id, [...(this.profileIdsByAccount.get(id) ?? [])])
+    }
     this.byId.delete(id)
   }
 

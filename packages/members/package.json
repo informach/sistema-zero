@@ -15,6 +15,8 @@
     "db:push": "drizzle-kit push",
     "db:seed": "bun run scripts/seed-course.ts",
     "career:finalize-first-steps": "bun run scripts/finalize-first-steps-rollout.ts",
+    "submissions:audit-lost": "bun run scripts/audit-lost-studio-submissions.ts",
+    "submissions:restore": "bun run scripts/restore-studio-submissions.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "format": "biome format --write .",

@@ -114,6 +114,7 @@ export function PintaImportDialog({ onClose, onImported }: PintaImportDialogProp
         height: result.asset.height,
         source: 'library',
         libId: `personal:${result.asset.id}`,
+        libRevision: result.asset.libRevision,
         // Animações/tiles/mapa viajam junto (re-sanitizados no store), como no
         // caminho "Meus desenhos".
         sprite: result.asset.sprite,

@@ -18,6 +18,7 @@ import { ToastProvider } from '../components/ui/Toast'
 import { COPY } from '../core/copy'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import type { PintaHostAdapter } from '../core/types'
+import { createClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
 import { createMemoryPersistence } from '../state/memoryPersistence'
@@ -100,7 +101,14 @@ export function PintaLesson({
     const seed = sanitizePintaAsset(initialAsset)
     if (!seed) return null
     const resolved = resolvePersistence(persistence, seed)
-    return { seed, persistence: resolved, gallery: createGalleryStore(resolved) }
+    return {
+      seed,
+      persistence: resolved,
+      gallery: createGalleryStore(resolved),
+      // Copiar/colar dentro do desenho da aula, SÓ em memória: o desenho da aula é isolado
+      // da galeria pessoal, e o espelho em localStorage é compartilhado pela origem inteira.
+      clipboard: createClipboardStore({ mirror: null }),
+    }
   })
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(boot ? 'loading' : 'error')
   const editorRef = useRef<PintaEditorStore | null>(null)
@@ -173,6 +181,7 @@ export function PintaLesson({
             adapter,
             gallery: boot.gallery,
             persistence: boot.persistence,
+            clipboard: boot.clipboard,
             // Não há para onde navegar: o bloco é UM desenho. Os quatro pontos de navegação da galeria
             // existem no contrato do contexto e aqui não fazem nada, de propósito.
             openAsset: () => {},

@@ -1,5 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import { invalidateToolOwnership } from '../creations/tool-ownership-cache'
 
 export interface RevokeEntitlementDeps {
   entitlements: EntitlementRepository
@@ -21,6 +22,8 @@ export class RevokeEntitlementService {
       subscriptionId,
       this.deps.clock(),
     )
+    // A posse mudou: o cache da reserva das criações esquece estas contas na hora.
+    invalidateToolOwnership(result.userIds)
     this.deps.logger?.info('subscription.cancel', {
       subscriptionId,
       affected: result.affected,
@@ -34,6 +37,7 @@ export class RevokeEntitlementService {
       subscriptionId,
       this.deps.clock(),
     )
+    invalidateToolOwnership(result.userIds)
     this.deps.logger?.info('subscription.expire', {
       subscriptionId,
       affected: result.affected,

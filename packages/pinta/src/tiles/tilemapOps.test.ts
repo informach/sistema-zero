@@ -4,6 +4,7 @@ import {
   addLayer,
   cellAt,
   flattenBackground,
+  flattenCellAt,
   flattenFront,
   flattenLayers,
   floodFillCells,
@@ -188,5 +189,26 @@ describe('camadas', () => {
     expect([...flattenLayers(out)]).toEqual([9, 2])
     const hidden = toggleLayerVisible(out, top.id)
     expect([...flattenLayers(hidden)]).toEqual([1, 2])
+  })
+
+  it('flattenCellAt: a mesma resposta de flattenLayers célula a célula (e -1 fora do mapa)', () => {
+    const { tilemap, layerId } = makeMap(3, 2)
+    let out = setCell(tilemap, layerId, 0, 0, 1)
+    out = setCell(out, layerId, 2, 1, 4)
+    out = addLayer(out, 'topo')
+    const top = out.layers[1]
+    if (!top) throw new Error('camada esperada')
+    out = setCell(out, top.id, 0, 0, 9)
+    const hidden = toggleLayerVisible(out, top.id)
+    for (const map of [out, hidden]) {
+      const flat = flattenLayers(map)
+      for (let row = 0; row < map.rows; row += 1) {
+        for (let col = 0; col < map.cols; col += 1) {
+          expect(flattenCellAt(map, col, row)).toBe(flat[row * map.cols + col] ?? -1)
+        }
+      }
+    }
+    expect(flattenCellAt(out, -1, 0)).toBe(-1)
+    expect(flattenCellAt(out, 3, 0)).toBe(-1)
   })
 })

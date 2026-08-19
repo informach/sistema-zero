@@ -194,7 +194,7 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   (sem canvas) → o payload inteiro é `null`; os metadados são testados pelos helpers PUROS
   (`studioBridge.test.ts`), o resto é QA de browser.
 - **Stores zustand POR INSTÂNCIA** (factories, nunca singleton): `galleryStore` (CRUD + `lastStyle`;
-  import religa tilemap→tileset via idMap, tilesets entram PRIMEIRO na quota), `editorStore`
+  import religa tilemap→tileset via idMap, tilesets entram PRIMEIRO no orçamento de bytes), `editorStore`
   (history por snapshots com orçamento em bytes — `assetBytes` conta o payload real dos shapes —
   + autosave debounced ~1s; `dirty`/`pending` explícitos; `flush` devolve sucesso/erro e drena
   edições feitas durante um save; `savedAsset` é a revisão confirmada; `persist` injetável), `sessionStore`
@@ -207,6 +207,31 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   Desde o full review de 12/08/2026, toda mutação mede a galeria PROJETADA e recusa passar dos
   mesmos 32 MiB do restore. `GalleryBackupSizeCache` mantém a contribuição UTF-8 exata por
   `{id, updatedAt}` e força os ids tocados: a galeria inteira não é reserializada em cada autosave.
+  **Orçamento incremental (19/08/2026):** o cache tem INVENTÁRIO (`seed(assets)` em
+  `listAllAssets`; `syncIds(keys, loadMissing)` cobre outra aba/descida; `totalBytes`,
+  `projectedBytes(changed)`, `commit`, `remove`, `warmUp` ocioso via `requestIdleCallback`) —
+  `persistAssets` faz `keys()` + `syncIds` em vez de `getMany` da galeria inteira (500 desenhos ×
+  50 autosaves: 25.000 chaves lidas → 0); `byteLength` continua (compat). Outra ABA do mesmo
+  perfil (o Estúdio abre o Pinta em aba nova) que regrava um desenho: um `BroadcastChannel` por
+  banco (`pinta:assets:<db>`) avisa os ids gravados/apagados e o inventário desta aba os
+  ESQUECE (relidos na próxima gravação) — sem isso o orçamento usava os bytes velhos de um id
+  atualizado lá. A medição recusada é invalidada (como antes). Sem `requestIdleCallback`
+  (Safari/iPad) o `warmUp` cai em fatias por `setTimeout`. `PintaPersistence` ganhou o gancho
+  OPCIONAL `subscribe?(listener)` (`PintaPersistenceEvent`: `sync-start` / `changed` /
+  `sync-end`) — o `galleryStore` relê a cada `changed` (coalescido, sem piscar) e expõe
+  `syncing` (a galeria mostra "Buscando na sua conta…", `COPY.gallery.syncing`; o
+  `InitialAssetOpener` espera o `sync-end` antes de dizer que o desenho sumiu); a escuta é ligada
+  por `attachPersistence()` (o `PintaApp` liga num efeito e desliga ao desmontar — StrictMode não
+  deixa store zumbi inscrita) e um `sync-start` que chega durante a releitura do `sync-end` não é
+  apagado (geração). **Desenho ABERTO:** `markPintaAssetOpen/Closed` (o `EditorScreen` marca) e
+  `isPintaAssetOpen` (exportado): o host NÃO grava por baixo de um desenho aberto (a descida da
+  nuvem sobrescreveria o disco enquanto o editor segura a versão antiga; o autosave seguinte
+  subiria por cima da versão do outro aparelho); `subscribePintaAssetOpenState` avisa
+  abrir/fechar (o host traz a versão da nuvem ao fechar um desenho pulado).
+  O teste de "Trazer uma foto" substitui `import/decodeImage` na fronteira do módulo
+  (`gallery/importPhotoLazy.test.tsx`); o decoder de produção não expõe hooks de teste e é
+  coberto diretamente por `import/decodeImage.test.ts`. `memoryPersistence` e
+  o bloco de aula não mudam.
   Galeria legada já acima do teto só aceita mutação que reduza o backup (excluir continua sempre
   disponível). O erro é
   `PintaStorageBudgetError`, traduzido pela galeria e pelo badge do editor; não trocar por uma
@@ -361,6 +386,147 @@ ponteiro→célula pela LARGURA REAL do canvas — em happy-dom (rect 0) todo cl
 MESMO turno de JS faz cada um partir do bitmap velho (o React ainda não re-renderizou) — só o
 último sobrevive; use UM gesto com vários `pointermove`; (3) o toast/o repaint aparecem um
 microtask/efeito DEPOIS do evento — ler no mesmo turno dá falso negativo.
+
+## Galeria sem teto de quantidade + busca e filtros (18/08/2026)
+
+Pedido dela: "sem teto, igual o Estúdio", com busca e filtros. **`PINTA_LIMITS.maxAssets`
+morreu**: `create/duplicate/createFromTemplate/importAssets` e o `importPintaJson` não contam
+mais desenhos (o `uniqueName` da galeria vai até `-999`; o `suggestName` idem). O que limita é o
+orçamento portátil de 32 MiB do backup (`PintaStorageBudgetError`, recado próprio) e, na nuvem, os
+tetos do members. `core/gallerySearch.ts` (puro): `matchesGalleryFilters(asset, {query, style,
+role})` — busca por NOME/TIPO/JOGO com a normalização do nome (sem acento, minúsculas, espaços →
+hífen; vários termos casam TODOS), filtro de ESTILO (pixel × vetor; o mapa aparece nos dois) e
+de TIPO (personagem/cenário/peças/mapa por `assetRole`), combinados (E). `GalleryScreen`: campo
+`type="search"` (Esc/X limpam), chips exclusivos (`FilterChips`, `aria-pressed`), contador
+"N desenhos de M" (`role="status"`), vazio com "Limpar busca e filtros"; a filtragem acontece
+ANTES do agrupamento por jogo do Pensa (seção some quando nada nela casa). Testes:
+`core/gallerySearch.test.ts`, `components/gallery/gallerySearchUi.test.tsx` (inclui 80 desenhos
+sem teto), `galleryStore.test.ts` (150 criações + sufixo além de 99).
+
+**Galeria grande sem travar (19/08/2026):** `AssetCard` é `memo` com callbacks por id
+(`onOpen(id)`/`onRename(id)`/…); miniaturas REDUZIDAS (`paintBitmapCapped`/`thumbTargetSize`,
+`GALLERY_THUMB_MAX_PX = 192` — vale para os cards da galeria E para o seletor "Trazer um
+desenho" do vetor, que usa o mesmo `AssetThumb`; o EDITOR e o que é inserido seguem 1:1 — o
+WYSIWYG do seletor é de CONTEÚDO, não de resolução) pintadas só perto da área visível
+(`useNearViewport`: um `IntersectionObserver` por RAIZ rolável — a galeria rola em
+`data-pin-scroll-root`, não na janela; sem IO pinta já) e
+`.pin-gallery-card { content-visibility: auto }` (todos os cards FICAM no DOM — nada de lib de
+janela); filtragem memoizada (`core/gallerySearch.ts` `filterGalleryAssets` com `searchableText`
+em `WeakMap`, `useDeferredValue` nos filtros); histórico com total corrente (`history.ts`);
+`flattenCellAt` por célula no `TilemapEditor.paintCells`; `ImportImageDialog` é `lazy` (com
+aviso "Abrindo a foto..." enquanto o pedaço carrega). Medição:
+`core/perf.ts` (flag `localStorage['sz:perf']='1'`/`?szperf=1`; spans `pinta:gallery:load|rendered`,
+`pinta:persist` (`budget`/`write`), `pinta:thumb:paint`, `pinta:backup:warmup`);
+`components/gallery/galleryLoad.perf.test.tsx` e `state/persistence.test.ts` (contadores do mock
+de IDB, `idbMockStats()`) registram tempo sem assertar.
+
+## Importar como Personagem, área de transferência do APP e atalhos de AÇÃO (18/08/2026)
+
+Três pedidos dela no mesmo dia. **Personagem só pixel art; colar entre estilos = pixel dentro do
+vetor como figura; vetor no pixel só avisa** (decisões dela). Revisado no mesmo dia (teclado ABNT2,
+Mac, extras do pedaço colado, Caneta, curadoria).
+
+- **"Trazer uma foto" → Personagem** (`ImportImageDialog`, 1º cartão): `resizeContain`
+  (`import/quantize.ts`) escala PROPORCIONAL e centraliza com sobra TRANSPARENTE — personagem
+  nunca corta (o cover do cenário cortaria braço/orelha); imagem menor que o quadro é AMPLIADA
+  (o `downscaleRGBA` amplia por nearest). Presets `SPRITE_FRAME_SIZES` + Personalizado
+  (`customSizeSpecFor('pixel-sprite')`, largura × altura). Vira `createPixelSpriteAsset` com
+  `animations[0].frames = [[bitmap]]` — ⚠️ bitmap e `frameWidth/Height` saem do MESMO
+  `effectiveSizeKey`, senão o sanitize descarta e o desenho some da galeria. Estado do personagem é
+  PRÓPRIO (`spriteSizeKey`/`spriteCustomValues`): a chave do cenário ("240x180") não é quadro. A
+  prévia é AMPLIADA por inteiro (um 16×16 num canvas de 16 px não deixa avaliar a quantização).
+- **`state/clipboardStore.ts`** (zustand por instância; `PintaAppContextValue.clipboard`): a área de
+  transferência SAIU da sessão do editor (que morre ao voltar à galeria) e do `clipboardRef` do
+  escopo vetorial. Item tipado: `{kind:'pixel', bitmap, colors}` (as CORES EFETIVAS da origem —
+  `resolveAssetPalette`) ou `{kind:'shapes', shapes, width, height}` (tamanho do doc de origem).
+  Espelho best-effort em `localStorage['pinta:clipboard:<perfil>']` (padrão do
+  `sz:block-clipboard` do Estúdio: atravessa abas e sobrevive a fechar, mas irmãos no mesmo
+  navegador ficam ISOLADOS) só até `CLIPBOARD_MIRROR_MAX_CHARS` (1 milhão de CARACTERES do JSON; bitmap via
+  `encodeBitmap`, shapes via `sanitizeVectorShape` na leitura, com tetos de cores/formas); entre
+  memória e espelho vence o MAIS RECENTE (`at`); quota cheia ao gravar → o espelho ANTIGO sai (uma
+  aba nova não pode ler algo mais velho que o copiado). ⚠️ O `<PintaLesson>` usa `mirror: null`
+  (só memória): o desenho da aula é isolado da galeria pessoal.
+  - Pixel (`PixelCanvas`): colar de outro desenho REMAPEIA as cores — `remapBitmapColors`
+    (`pixel/ops.ts`): mesmo hex → índice do destino; falta → cor EXTRA nova; sem espaço (64) → a
+    mais parecida (mesma distância do quantize). ⚠️ **O remapeamento é NO CARIMBO, não ao colar
+    (revisão 18/08/2026):** o pedaço flutua com as cores de ORIGEM (`Selection.floating.colors` =
+    a paleta inteira do desenho de onde veio) e `resolveFloating(sel, paletaViva)` traduz para a
+    paleta viva na hora de pintar o palco E na hora de commitar (`stampPending` →
+    `commitBitmap(next, extraColorsToAdd)`), com cache por identidade. Remapear ao colar duplicava
+    extras quando a paleta mudava no meio (colar 2× sem carimbar, Ctrl+D do pedaço colado, Ctrl+Z
+    de uma cor enquanto flutua): `[A,B,A,B]` no disco → o `sanitizeExtraColors` deduplica ao
+    recarregar e os índices deslocam (pixels transparentes). Um Ctrl+Z desfaz pedaço e cores
+    juntos, e Ctrl+Z ANTES de carimbar não deixa nada. Ctrl+C de um pedaço colado ainda flutuando
+    grava as cores de origem dele (não a paleta daqui). Delete num pedaço recém-colado (nunca
+    carimbado) não commita (o "resto" É o desenho de agora: sem entrada vazia de desfazer). Bitmap
+    maior que o quadro cola e avisa. **Ctrl+A** seleciona o retângulo envolvente do pintado da CAMADA ATIVA
+    (`paintedBounds`, `pixel/selection.ts`); **Ctrl+Shift+A** solta (carimba). **Ctrl+D** duplica
+    pelo `floatBitmap` local, SEM tocar na área de transferência (o herói copiado noutro desenho não
+    some porque a criança duplicou um detalhe). Formas no clipboard → toast `clipboard.vectorIntoPixel`.
+    Sem a ferramenta `select` na curadoria da aula, colar/duplicar/Ctrl+A não fazem nada.
+  - Vetor (`VectorEditorScope`): shapes do MESMO tamanho de doc colam +12,+12 como sempre; de outro
+    tamanho, `fitPastedShapes` (`vectorTools.ts`) encolhe se não couber e centraliza, preservando
+    grupos (≠ `shapesForInsert`, que achata num grupo só). Pixel no clipboard → FIGURA pelos
+    helpers do `insertFromAsset` (`resolveInsertSource` + `imageShapeForInsert`); sem canvas/acima
+    do teto → toast `clipboard.figureUnavailable`. Ctrl+Shift+A solta a seleção (como no pixel).
+- **Atalhos de AÇÃO** — `core/shortcuts.ts` é o catálogo ÚNICO (`SHORTCUT_CATALOG`, `shortcut(id)`,
+  `shortcutsFor(editor, allowTools)`) que alimenta os listeners NOVOS e a janela "Atalhos"
+  (`ShortcutsDialog`, botão de teclado no topo + tecla `?`); os históricos (Ctrl+Z/Y/C/X/V/D/A,
+  Delete, setas, Espaço) entram como `bound: false` só para a janela e seguem em listeners
+  próprios. `useActionShortcuts(bindings)` (`components/editor/`) é o irmão do `useToolShortcuts`:
+  cada componente liga os SEUS onde as ações já moram (escopo vetorial: Ctrl+G/Ctrl+Shift+G,
+  Ctrl+]/[ e Ctrl+Shift+]/[, Ctrl+D, Shift+X, **Ctrl+Shift+L trancar a seleção (SEM seleção:
+  destrancar tudo), Ctrl+Shift+H esconder a seleção (SEM seleção: mostrar tudo)** (idioma do
+  Figma; o "tudo" é a mesma tecla — nada de Alt+Shift+letra: no Windows com dois teclados
+  instalados, ABNT2 + americano, Alt+Shift TROCA O IDIOMA junto e a criança perde o ç), Ctrl+0
+  ajustar, Ctrl+=/Ctrl+-, Ctrl+' grade, F3 fantasma (só `vector-sprite`), Shift+H/V, Esc;
+  `ToolBar` do pixel: X, Shift+H/V/R, Ctrl+', **Alt+M / Alt+W espelhos** (W = o M de cabeça para
+  baixo), F3, zoom; `SpriteSheetPanel`: `.`/`,`/Alt+N/Alt+C; `LayerPanel`: Shift+N;
+  `PreviewPlayer`: Enter; `TilemapEditor`: zoom). Regras: ignora campo de texto, evento
+  `defaultPrevented` e modal DO PINTA aberto (`[data-pinta-dialog]` do `Dialog` — não `role`, que
+  um painel do host sempre montado também usa; os listeners históricos de Ctrl+A/C/V/X/D, o
+  Ctrl+Z/Y do `EditorScreen`, o Delete/setas da seleção vetorial e a Caneta em captura respeitam
+  o mesmo portão); Cmd = Ctrl. ⚠️ **Tecla segurada (`event.repeat`): o combo casado é SEMPRE
+  prevenido** (senão segurar Ctrl+= vira zoom da PÁGINA a partir do 2º keydown, e o Ctrl+0 de
+  volta também é tomado), mas a ação só roda de novo com `repeat: true` no binding (zoom e
+  `.`/`,` varrendo quadros; Alt+N não cria quadros em rajada). ⚠️ **Mac:** Cmd+Shift+[ e
+  Cmd+Shift+] trocam de aba no Chrome/Safari (não dá para prevenir): as entradas `toFront`/`toBack`
+  têm `macCombo` (a ajuda mostra "Control+Shift+]", o Control FÍSICO — o listener já aceita
+  `ctrlKey || metaKey`); `entryKeys(entry, mac)` é o que a janela usa.
+  ⚠️ **Como a tecla casa (ABNT2 e Mac):** primeiro pelo `event.key` NORMALIZADO (`{`→`[`,
+  `+`→`=`, `?`→`/`…) — no ABNT2 a tecla `[` fica na posição do `BracketRight` americano, então
+  casar pelo `code` fazia Ctrl+`[` virar "para a frente" e Ctrl+Shift+`]` não fazer nada; o `code`
+  físico só entra sem caractere útil (`Dead`/`Unidentified`/`Process`) ou com Alt segurando uma
+  letra (no Mac, Option+N é `Dead`, Option+M `µ`, Option+C `ç`, Option+W `∑` → casam por
+  `KeyN/KeyM/KeyC/KeyW`) — e SÓ nesses casos: `Delete`/`Insert` do teclado numérico com NumLock
+  desligado têm `key` próprio e não viram `.`/`0` (o `CODE_BY_KEY` só tem posições da fileira
+  principal); o `?` casa só pelo caractere (pela posição `Slash`, o `:` do ABNT2 abriria a
+  ajuda). Ctrl+= também aceita Ctrl+Shift+= (o "Ctrl++"), e o `+`/`-` do numérico chegam como
+  caractere e casam sozinhos.
+  ⚠️ **`useToolShortcuts` passou a ignorar Shift** (antes Shift+H virava a Mão junto do espelhar).
+  ⚠️ **Combos que NÃO existem aqui de propósito:** Ctrl+2/3 do Illustrator (troca de aba do Chrome,
+  não dá para prevenir), Ctrl+N/T/W/Ctrl+Shift+N, e Ctrl+H/Ctrl+L (no Mac "Cmd no lugar de Ctrl"
+  faria Cmd+H ESCONDER O NAVEGADOR e Cmd+L pular para a barra de endereço). O teste do catálogo
+  trava isso (Shift+N sozinho É atalho vivo: nova camada). As letras de ferramenta (P/E/G…) NÃO
+  mudaram (as aulas gravadas ensinam essas).
+  ⚠️ **Caneta em CAPTURA:** o Enter/Esc da Caneta (`VectorStage`) é registrado com `capture: true`,
+  porque é re-registrado a cada ponto e cairia DEPOIS dos atalhos de ação — o Enter que fechava a
+  forma também dava play na prévia. Em captura ele roda antes de todos e o `preventDefault` avisa o
+  resto.
+  ⚠️ **Curadoria das aulas:** os atalhos respeitam `allowTools` (`when: isToolAllowed(...)` na
+  `ToolBar`; `curationId` no catálogo tira da janela "?" o que a professora escondeu — grade,
+  espelhos, giros e a seleção). `PIXEL_TOOL_SHORTCUTS` leva `id` por isso.
+- ⚠️ **Gotcha de teste que custou uma hora**: em `waitFor`, esperar um elemento SUMIR (o "Voltar"
+  ao sair do editor) leva ~8 s neste ambiente (happy-dom + polling); esperar o card seguinte
+  APARECER resolve em ms. `clipboardUi.test.tsx` e `PintaApp.test.tsx` fazem assim.
+- Testes: `quantize.test.ts` (`resizeContain`), `ImportImageDialog.test.tsx` (Personagem, Médio e
+  deitado 16×8), `clipboardStore.test.ts`, `ops.test.ts` (`remapBitmapColors`), `selection.test.ts`
+  (`paintedBounds`), `clipboardUi.test.tsx` (pixel→pixel com remap; extras junto do carimbo e um
+  Ctrl+Z só; Ctrl+D sem tocar no clipboard; Ctrl+A vazio; vetor no pixel avisa; vetor 480×360→48×48
+  cabe; pixel no vetor recusa sem canvas), `useActionShortcuts.test.ts` (parse/match, ABNT2, Mac,
+  Ctrl++, catálogo sem combos reservados, curadoria), `shortcutsUi.test.tsx` (inclui a Caneta ×
+  prévia). QA no navegador (18/08): importar Personagem 32×32 e 128×32; Ctrl+A/C/V entre desenhos
+  com remap; pixel→vetor vira Figura; Ctrl+G/Ctrl+Shift+G; janela `?` por editor.
 
 ## Painel de cores do PIXEL (redesign 08/2026)
 
@@ -1209,7 +1375,7 @@ fábricas + arte, ids frescos por chamada = cópia independente), `catalog.ts` (
 style,role,suggestedName,build()}` + `PINTA_TEMPLATES`), `data/*.ts` (8 modelos: herói/slime/moeda/
 nave pixel-sprite, chao-de-grama tileset [tem 1 peça PLATAFORMA, vitrine do F2], fase-plataforma
 mapa 20×15 2 camadas + tileset companheiro no MESMO build, fantasminha vetor, ceu-com-sol vetor).
-`galleryStore.createFromTemplate` (quota c/ companheiros, `firstFreeName`, projectRef sanitizado em
+`galleryStore.createFromTemplate` (orçamento de bytes c/ companheiros, `firstFreeName`, projectRef sanitizado em
 TODOS, persiste na ordem do build = tileset antes do mapa). Wizard: 3º cartão "✨ Modelos prontos"
 no passo de estilo → passo `template` (TemplatePicker, miniatura real por kind) → nome pré-preenchido;
 bolinhas por ramo. Teste-guarda `catalog.test.ts` (todo build passa sanitize, células<tileCount, ids

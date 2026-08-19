@@ -505,6 +505,14 @@ usar `studio_meta` como fronteira de segurança.
 `reports.reporter_account_id` + `reports.reporter_display_name` (nullable para legado). A listagem
 agora carrega o alvo denunciado e o contexto por SQL em lote; `tests/db/moderation-repository.test.ts`
 executa as migrations e os caminhos `listPending`/`listReports` num PostgreSQL real.
+**`0009_clean_deathstrike` (cerca de exclusão de conta, 19/08/2026 — journaled):** `CREATE TABLE IF NOT
+EXISTS hub.account_deletion_fences`. ⚠️⚠️ **O `db:generate` re-emitiu nela, SEM `IF NOT EXISTS`, o drift
+INTEIRO das 0005–0008** (7 colunas + 2 índices já aplicados em staging e prod — provado no banco de
+prod em 19/08) — e o preDeploy teria abortado no 1º `ADD COLUMN`, deixando o hub sem subir. Foi
+reescrita à mão com `IF NOT EXISTS` em tudo (no-op em banco vivo, cria em banco novo), e o snapshot
+0009 cura a linhagem. **Regra, de novo e com mais força:** depois de `db:generate`, LEIA o SQL e
+compare com o banco de prod ANTES de commitar — o teste de DB pega num banco que já tem as colunas
+(`column already exists`), mas só se for rodado.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do

@@ -161,6 +161,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       height: drawing.height,
       source: 'library',
       libId: `personal:${drawing.id}`,
+      libRevision: drawing.updatedAt,
       // Leva as animações/tiles/mapa do Pinta ao projeto → seletor por nome e
       // o bloco "Criar mapa do meu desenho" funcionam.
       sprite: drawing.sprite,

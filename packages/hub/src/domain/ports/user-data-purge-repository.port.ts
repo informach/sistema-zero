@@ -4,7 +4,9 @@
  * (read-state) e silenciamentos/banimentos. NÃO apaga tópicos/comentários
  * autorados (histórico imutável; `author_id` é snapshot). Idempotente.
  */
-export interface UserDataPurgeRepository {
-  /** Apaga as linhas keyadas em `user_id ∈ userIds` (conta + perfis kids). */
-  purgeForUser(userIds: string[]): Promise<void>
+export interface UserDataPurgeRepository extends AccountDeletionFence {
+  /** Apaga as linhas keyadas em `user_id ∈ userIds` e cerca a conta responsável. */
+  purgeForUser(userIds: string[], accountId: string): Promise<void>
 }
+
+import type { AccountDeletionFence } from '@sistemazero/core/http'

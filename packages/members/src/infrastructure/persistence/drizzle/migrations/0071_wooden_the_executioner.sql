@@ -1,0 +1,1 @@
+ALTER TABLE "members"."creation_cleanup_jobs" ADD COLUMN "user_ids" jsonb DEFAULT '[]'::jsonb NOT NULL;

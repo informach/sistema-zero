@@ -537,11 +537,15 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   `PATCH /auth/admin/users/:id` `{ role?, status?, firstName?, lastName?, phone?, version? }` → `{ user }`.
   Edição com `version` (concorrência otimista → 409 se defasada). Guards de papel/status são do `auth`
   (o client só faz gating de UX por `currentUser.role`).
-  **Exclusão EM CASCATA (06/2026):** `DELETE /api/admin/users/:id` → `server/users.ts deleteUser`
-  ORQUESTRA via gateway: `GET /auth/admin/users/:id/profiles` → `DELETE /members/admin/users/:id/data?profileIds=`
-  → `DELETE /hub/admin/users/:id/data?profileIds=` → `DELETE /auth/admin/users/:id` (identidade por
-  ÚLTIMO; falha antes disso aborta com o erro do upstream e a conta segue intacta p/ retry; sucesso →
-  200 `{ok:true}`). **Reten financeiro/fiscal** (payments/NFS-e não são tocados). UI: ação "Excluir" por
+  **Exclusão EM CASCATA (endurecida em 19/08/2026):** `DELETE /api/admin/users/:id` →
+  `server/users.ts deleteUser` ORQUESTRA: `POST /auth/admin/users/:id/deletion/prepare` bloqueia a
+  conta e devolve **todos** os perfis, inclusive arquivados → varre no R2 UGC
+  `creations/<conta|perfil>/…`
+  → `DELETE /members/admin/users/:id/data?profileIds=` → `DELETE /hub/admin/users/:id/data?profileIds=`
+  → repete a varredura R2 best-effort → `DELETE /auth/admin/users/:id` (identidade por ÚLTIMO;
+  falha aborta e a conta fica bloqueada, segura para retry; o Members agenda ainda, na mesma
+  transação da purga, uma limpeza pós-TTL que cobre PUTs pré-assinados em voo); sucesso → 200
+  `{ok:true}`. **Reten financeiro/fiscal** (payments/NFS-e não são tocados). UI: ação "Excluir" por
   linha em `users-client.tsx`, **gated por `currentUser.role === 'superadmin'`** + não-self +
   alvo não-admin/superadmin (o gateway/auth re-checam); **dupla confirmação** = `ConfirmDialog` com campo
   que exige digitar o E-MAIL do usuário (`confirmDisabled` até bater).

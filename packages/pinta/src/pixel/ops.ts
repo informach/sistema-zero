@@ -11,6 +11,7 @@
 import { TRANSPARENT_INDEX } from '../core/palette'
 import type { PintaBitmap } from '../core/project'
 import { cloneBitmap, inBounds, setPixel, type Vec2 } from './bitmap'
+import { hexToRgb } from './render'
 
 export interface BrushOptions {
   /** Índice de paleta (0 = borracha/transparente). */
@@ -225,6 +226,80 @@ export function replaceColor(bitmap: PintaBitmap, from: number, to: number): Pin
     if (next.data[i] === from) next.data[i] = to
   }
   return next
+}
+
+/** Distância de cor ponderada (a mesma régua do `quantize.ts`: verde pesa mais). */
+function colorDistance2(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+): number {
+  const dr = a[0] - b[0]
+  const dg = a[1] - b[1]
+  const db = a[2] - b[2]
+  return 2 * dr * dr + 4 * dg * dg + 3 * db * db
+}
+
+/**
+ * Traduz um bitmap copiado de um desenho com a paleta `fromColors` para um desenho
+ * com a paleta `toColors` (as duas EFETIVAS: base + extras, índice 0 = transparente).
+ * É o que faz colar entre desenhos de paletas diferentes sair com as cores certas.
+ *
+ * Regra por cor USADA no pedaço: mesmo hex no destino → esse índice; não existe →
+ * vira cor EXTRA nova (enquanto couber em `maxColors`, o teto do array efetivo);
+ * não cabe → a cor mais próxima da paleta de destino. Índice fora da origem sai
+ * transparente (o mesmo que o render faria).
+ *
+ * Devolve o bitmap remapeado e as extras a ACRESCENTAR no destino, na ordem em que
+ * os índices novos foram atribuídos (o chamador as concatena em `extraColors`).
+ */
+export function remapBitmapColors(
+  bitmap: PintaBitmap,
+  fromColors: readonly string[],
+  toColors: readonly string[],
+  maxColors: number,
+): { bitmap: PintaBitmap; extraColorsToAdd: string[] } {
+  const target = toColors.map((c) => c.toLowerCase())
+  const extraColorsToAdd: string[] = []
+  const map = new Map<number, number>()
+  map.set(TRANSPARENT_INDEX, TRANSPARENT_INDEX)
+  const next = cloneBitmap(bitmap)
+  for (let i = 0; i < next.data.length; i += 1) {
+    const from = next.data[i] ?? TRANSPARENT_INDEX
+    const known = map.get(from)
+    if (known !== undefined) {
+      next.data[i] = known
+      continue
+    }
+    const hex = (fromColors[from] ?? '').toLowerCase()
+    let to = TRANSPARENT_INDEX
+    if (hex) {
+      const same = target.indexOf(hex, 1)
+      if (same !== -1) to = same
+      else if (target.length < maxColors) {
+        target.push(hex)
+        extraColorsToAdd.push(hex)
+        to = target.length - 1
+      } else {
+        // Sem espaço para mais uma cor: a mais parecida que já existe.
+        const rgb = hexToRgb(hex)
+        let best = 1
+        let bestDist = Number.POSITIVE_INFINITY
+        for (let k = 1; k < target.length; k += 1) {
+          const candidate = target[k]
+          if (!candidate) continue
+          const dist = colorDistance2(rgb, hexToRgb(candidate))
+          if (dist < bestDist) {
+            bestDist = dist
+            best = k
+          }
+        }
+        to = best
+      }
+    }
+    map.set(from, to)
+    next.data[i] = to
+  }
+  return { bitmap: next, extraColorsToAdd }
 }
 
 /**

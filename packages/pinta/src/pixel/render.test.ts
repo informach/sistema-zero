@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import type { PintaBitmap } from '../core/project'
-import { mirrorGuideSegments } from './render'
+import { mirrorGuideSegments, thumbTargetSize } from './render'
 
 const bitmap = (width: number, height: number): PintaBitmap => ({
   width,
@@ -30,5 +30,19 @@ describe('mirrorGuideSegments', () => {
       { x1: 15, y1: 0, x2: 15, y2: 18 },
       { x1: 0, y1: 9, x2: 30, y2: 9 },
     ])
+  })
+})
+
+describe('thumbTargetSize (miniatura reduzida da galeria)', () => {
+  it('cabe no teto → 1:1 (sprites pequenos continuam nítidos); acima → reduz proporcionalmente', () => {
+    expect(thumbTargetSize(32, 32, 192)).toEqual({ width: 32, height: 32, scale: 1 })
+    expect(thumbTargetSize(192, 96, 192)).toEqual({ width: 192, height: 96, scale: 1 })
+    expect(thumbTargetSize(512, 512, 192)).toEqual({ width: 192, height: 192, scale: 0.375 })
+    const wide = thumbTargetSize(480, 360, 192)
+    expect(wide.width).toBe(192)
+    expect(wide.height).toBe(144)
+    // Nunca zera uma dimensão (faixa muito fina).
+    expect(thumbTargetSize(512, 1, 192).height).toBe(1)
+    expect(thumbTargetSize(0, 0, 192)).toEqual({ width: 0, height: 0, scale: 1 })
   })
 })

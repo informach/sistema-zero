@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sistemazero-creation-cleanup-cron",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-01",
+  // A cada 5 minutos (docs/ambientes-e-fluxo.md §Limpeza durável das criações excluídas).
+  "triggers": { "crons": ["*/5 * * * *"] },
+  // URLs são públicas (vars); os segredos NÃO vêm daqui — `wrangler secret put STAGING_SECRET` e
+  // `PRODUCTION_SECRET`, com o valor de `CREATION_CLEANUP_CRON_SECRET` de cada ambiente.
+  "vars": {
+    "STAGING_URL": "https://community-kids-staging.up.railway.app",
+    "PRODUCTION_URL": "https://kids.sistemazero.com.br"
+  },
+  "observability": { "enabled": true }
+}

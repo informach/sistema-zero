@@ -4,6 +4,7 @@ import type { ProfileAggregate } from '../profile/profile.aggregate'
 export type CreateProfileOutcome =
   | { outcome: 'created'; profile: ProfileAggregate }
   | { outcome: 'limit_reached' }
+  | { outcome: 'account_inactive' }
 
 /**
  * Persistência dos perfis (estilo Netflix) de uma conta. O `createWithinLimit`

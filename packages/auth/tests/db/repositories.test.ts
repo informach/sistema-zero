@@ -4,6 +4,7 @@ import path from 'node:path'
 import { sha256Hex } from '@sistemazero/core/security'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
 import { Email } from '../../src/domain/value-objects/email'
@@ -13,6 +14,7 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleOtpCodeRepository } from '../../src/infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from '../../src/infrastructure/persistence/drizzle/password-reset-token.repository'
+import { DrizzleProfileRepository } from '../../src/infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleRefreshTokenRepository } from '../../src/infrastructure/persistence/drizzle/refresh-token.repository'
 import { DrizzleUserRepository } from '../../src/infrastructure/persistence/drizzle/user.repository'
 
@@ -89,6 +91,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
   let refreshTokens: DrizzleRefreshTokenRepository
   let resetTokens: DrizzlePasswordResetTokenRepository
   let otpCodes: DrizzleOtpCodeRepository
+  let profiles: DrizzleProfileRepository
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string, { max: 5 })
@@ -112,6 +115,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     refreshTokens = new DrizzleRefreshTokenRepository(conn.db)
     resetTokens = new DrizzlePasswordResetTokenRepository(conn.db)
     otpCodes = new DrizzleOtpCodeRepository(conn.db)
+    profiles = new DrizzleProfileRepository(conn.db)
   })
 
   afterAll(async () => {
@@ -120,7 +124,8 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
 
   beforeEach(async () => {
     await conn.sql`
-      truncate table auth.users, auth.refresh_tokens, auth.password_reset_tokens, auth.otp_codes cascade`
+      truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
+        auth.password_reset_tokens, auth.otp_codes cascade`
   })
 
   test('UPDATE otimista persiste passwordHash (o bug histórico) e respeita a version', async () => {
@@ -156,6 +161,57 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       caught = error
     }
     expect(caught).toBeInstanceOf(EmailAlreadyInUseError)
+  })
+
+  test('prepareDeletion captura perfil arquivado, bloqueia a conta e cerca novos perfis', async () => {
+    const user = newUser('delete-prepare@example.com')
+    await users.create(user)
+    const activeId = randomUUID()
+    const archivedId = randomUUID()
+    await conn.sql`
+      insert into auth.profiles
+        (id, account_user_id, name, status, sort_order, created_at, updated_at)
+      values
+        (${activeId}, ${user.id}, 'Ativo', 'active', 0, now(), now()),
+        (${archivedId}, ${user.id}, 'Arquivado', 'archived', 1, now(), now())`
+
+    const prepared = await users.prepareDeletion(user.id)
+
+    expect(new Set(prepared?.profileIds)).toEqual(new Set([activeId, archivedId]))
+    expect((await users.findById(user.id))?.status).toBe('blocked')
+    const candidate = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: user.id,
+      name: 'Novo perfil',
+    })
+    expect(await profiles.createWithinLimit(candidate, 5)).toEqual({
+      outcome: 'account_inactive',
+    })
+  })
+
+  test('deleteById grava recibo durável com os perfis e o retry preserva o resultado', async () => {
+    const user = newUser('delete-receipt@example.com')
+    await users.create(user)
+    const firstProfileId = randomUUID()
+    const secondProfileId = randomUUID()
+    const profileIds = [firstProfileId, secondProfileId]
+    await conn.sql`
+      insert into auth.profiles
+        (id, account_user_id, name, status, sort_order, created_at, updated_at)
+      values
+        (${firstProfileId}, ${user.id}, 'Um', 'active', 0, now(), now()),
+        (${secondProfileId}, ${user.id}, 'Dois', 'archived', 1, now(), now())`
+
+    await users.deleteById(user.id)
+    expect(await users.findById(user.id)).toBeNull()
+    expect(new Set((await users.findDeletionReceipt(user.id))?.profileIds)).toEqual(
+      new Set(profileIds),
+    )
+
+    await users.deleteById(user.id)
+    expect(new Set((await users.findDeletionReceipt(user.id))?.profileIds)).toEqual(
+      new Set(profileIds),
+    )
   })
 
   test('claimForRotation é atômico: 2 claims CONCORRENTES → exatamente 1 vencedor', async () => {

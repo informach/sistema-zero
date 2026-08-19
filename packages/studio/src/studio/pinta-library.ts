@@ -49,6 +49,8 @@ export type StudioPintaImportResult =
         sprite?: unknown
         tileset?: unknown
         tilemap?: unknown
+        /** Revisão persistida na biblioteca pessoal pelo host. */
+        libRevision?: number
       }
     }
   | {

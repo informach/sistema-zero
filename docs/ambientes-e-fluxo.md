@@ -73,6 +73,28 @@ além das origens já usadas pelos apps de comunidade. A ordem segura de rollout
 Hub + migration `0008_moderation_reporter_snapshot`; depois Admin com
 `R2_UGC_BUCKET` e o CORS já atualizado.
 
+### Limpeza durável das criações excluídas
+
+O `community-kids` precisa de `CREATION_CLEANUP_CRON_SECRET` (mínimo 24 caracteres) em staging e
+produção. Configure um scheduler para fazer `POST /api/internal/creation-cleanups` a cada 5
+minutos, com `Authorization: Bearer <segredo>`. A rota reivindica jobs duráveis no Members via
+gateway HMAC e remove do `R2_UGC_BUCKET` os blobs de contas excluídas depois de expirarem as URLs
+PUT pré-assinadas. Resposta `200 {completed,failed}` é execução normal; `401` indica segredo
+divergente, `503` configuração ausente e `502` falha ao reivindicar no upstream.
+
+Ordem de rollout: migration Members `0068_account_deletion_cleanup` → Members → gateway →
+community-kids com a env e o scheduler configurados → Admin/Auth. Não publique o novo fluxo de
+exclusão antes de a fila e o worker estarem disponíveis.
+
+**O scheduler É o Worker `packages/creation-cleanup-cron`** (Cloudflare, cron `*/5 * * * *`,
+publicado 19/08/2026 como `sistemazero-creation-cleanup-cron`): um Worker só, que bate nos DOIS
+ambientes em paralelo com o segredo de cada um em Secret do Worker (`STAGING_SECRET`/
+`PRODUCTION_SECRET` = o `CREATION_CLEANUP_CRON_SECRET` do app correspondente; as URLs são `vars`
+no `wrangler.jsonc`). Alvo sem URL/segredo é pulado com aviso; status ≠ 200 e erro de rede viram
+log (`wrangler tail`), nunca exceção. ⚠️ Como o `studio-runtime`, **merge NÃO publica**: mudou o
+Worker → `bun run deploy` dentro do pacote; rotacionou o segredo no Railway → `wrangler secret
+put` do lado correspondente (os dois precisam bater, senão 401 a cada 5 min).
+
 ## Deploys
 
 - **Staging — AUTOMÁTICO via GitHub Actions**: push/merge na branch `staging` roda

@@ -55,10 +55,26 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'parent_reports_sent (account_id uuid not null, week_key text not null)',
       'parent_report_prefs (account_id uuid primary key)',
       'renewal_reminders_sent (entitlement_id uuid not null, expires_on date not null)',
+      // "Guardado na sua conta" (migration 0067). Mesma regra dos dois mundos das
+      // `teacher_threads`: a `creations.repository.test.ts` cria esta tabela com o DDL
+      // completo (várias colunas NOT NULL, `tool` enum) — por isso as colunas extras
+      // entram aqui NULLABLE (e `tool` como text) E no INSERT.
+      `creations (id uuid primary key, user_id uuid not null, account_id uuid not null,
+        tool text, item_id varchar(64), name varchar(120), kind varchar(40),
+        item_updated_at timestamptz, created_at timestamptz, synced_at timestamptz)`,
+      'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
+      `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
+        user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,
+        not_before timestamptz not null, attempts integer not null default 0,
+        locked_at timestamptz, last_error text, completed_at timestamptz,
+        created_at timestamptz not null, updated_at timestamptz not null)`,
     ]
     for (const definition of userTables) {
       await conn.sql.unsafe(`create table if not exists members.${definition}`)
     }
+    await conn.sql.unsafe(
+      `alter table members.creation_cleanup_jobs add column if not exists user_ids jsonb not null default '[]'::jsonb`,
+    )
   })
 
   afterAll(async () => {
@@ -73,6 +89,9 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
     await conn.sql`
       truncate table
+        members.creation_cleanup_jobs,
+        members.account_deletion_fences,
+        members.creations,
         members.zappy_conversations,
         members.renewal_reminders_sent,
         members.parent_report_prefs,
@@ -118,13 +137,30 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     await conn.sql`insert into members.parent_reports_sent (account_id, week_key) values (${accountId}, 'w:2026-07-20')`
     await conn.sql`insert into members.parent_report_prefs (account_id) values (${accountId})`
     await conn.sql`insert into members.renewal_reminders_sent (entitlement_id, expires_on) values (${entitlementId}, '2026-08-01')`
+    // Uma criação do PERFIL (user_id = perfil) e outra só da CONTA: as duas somem.
+    await conn.sql`
+      insert into members.creations
+        (id, user_id, account_id, tool, item_id, name, kind, item_updated_at, created_at, synced_at)
+      values
+        (${randomUUID()}, ${profileId}, ${accountId}, 'studio', 'proj-1', 'Nave', 'classic', now(), now(), now()),
+        (${randomUUID()}, ${accountId}, ${accountId}, 'pinta', 'd-1', 'nave', 'pixel-sprite', now(), now(), now())`
 
+    const cleanupId = randomUUID()
+    const createdAt = new Date('2026-08-19T12:00:00.000Z')
+    const notBefore = new Date('2026-08-19T12:15:00.000Z')
     await new DrizzleUserDataPurgeRepository(conn.db).purgeForUser({
       userIds: [accountId, profileId],
       accountId,
+      cleanup: {
+        id: cleanupId,
+        prefixes: [`creations/${accountId}/`, `creations/${profileId}/`],
+        notBefore,
+        createdAt,
+      },
     })
 
     const tables = [
+      'creations',
       'teacher_threads',
       'pensa_projects',
       'ai_usage_daily',
@@ -138,5 +174,58 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       )
       expect(rows[0]?.count).toBe(0)
     }
+    const [fence] = await conn.sql`
+      select account_id from members.account_deletion_fences where account_id = ${accountId}`
+    expect(fence?.account_id).toBe(accountId)
+    const [job] = await conn.sql<
+      Array<{ id: string; prefixes: string[]; not_before: string; completed_at: string | null }>
+    >`select id, prefixes, not_before, completed_at
+      from members.creation_cleanup_jobs where account_id = ${accountId}`
+    expect(job?.id).toBe(cleanupId)
+    expect(job?.prefixes).toEqual([`creations/${accountId}/`, `creations/${profileId}/`])
+    expect(new Date(job?.not_before ?? '').toISOString()).toBe(notBefore.toISOString())
+    expect(job?.completed_at).toBeNull()
+  })
+
+  test('espera reservas em voo no mesmo lock antes de instalar a cerca e apagar o índice', async () => {
+    const accountId = randomUUID()
+    const profileId = randomUUID()
+    let releaseLock!: () => void
+    let confirmLock!: () => void
+    const locked = new Promise<void>((resolve) => {
+      confirmLock = resolve
+    })
+    const release = new Promise<void>((resolve) => {
+      releaseLock = resolve
+    })
+    const holder = conn.sql.begin(async (sql) => {
+      await sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${profileId}`}, 0))`
+      confirmLock()
+      await release
+    })
+    await locked
+
+    let settled = false
+    const purge = new DrizzleUserDataPurgeRepository(conn.db)
+      .purgeForUser({
+        userIds: [accountId, profileId],
+        accountId,
+        cleanup: {
+          id: randomUUID(),
+          prefixes: [`creations/${accountId}/`, `creations/${profileId}/`],
+          notBefore: new Date('2026-08-19T12:15:00.000Z'),
+          createdAt: new Date('2026-08-19T12:00:00.000Z'),
+        },
+      })
+      .finally(() => {
+        settled = true
+      })
+    await Bun.sleep(30)
+    expect(settled).toBe(false)
+
+    releaseLock()
+    await holder
+    await purge
+    expect(settled).toBe(true)
   })
 })

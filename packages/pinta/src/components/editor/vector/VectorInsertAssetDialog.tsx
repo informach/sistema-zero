@@ -8,7 +8,7 @@
  * palavras, se aquilo vai virar FORMAS ou uma FIGURA.
  */
 import type { JSX } from 'react'
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { PintaAsset } from '../../../core/project'
 import { normalizeSearchText } from '../../../core/searchText'
@@ -31,7 +31,13 @@ export function VectorInsertAssetDialog({
   const { insertFromAsset } = useVectorEditor()
   const [query, setQuery] = useState('')
 
-  const findAsset = (id: string): PintaAsset | null => assets.find((a) => a.id === id) ?? null
+  // Índice por id estável (o `AssetThumb` do mapa procura as peças por card; sem memo, cada
+  // card fazia uma busca linear e a função nova por render anulava qualquer memo).
+  const assetsById = useMemo(() => new Map(assets.map((a) => [a.id, a])), [assets])
+  const findAsset = useCallback(
+    (id: string): PintaAsset | null => assetsById.get(id) ?? null,
+    [assetsById],
+  )
   const disponiveis = useMemo(
     () => insertableAssets(assets, currentId, '', normalizeSearchText),
     [assets, currentId],

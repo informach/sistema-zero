@@ -188,6 +188,19 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         },
         { params: UserIdParams },
       )
+      // 1ª fase da exclusão: bloqueia a conta e enumera TODOS os perfis (inclusive
+      // arquivados) sob o mesmo lock usado pela criação de perfis.
+      .post(
+        '/users/:id/deletion/prepare',
+        async ({ headers, params }) => {
+          const actor = requireActor(headers, DELETE_ROLES)
+          return deps.deleteUser.prepare({
+            targetId: params.id,
+            actor: { id: actor.id, role: actor.role },
+          })
+        },
+        { params: UserIdParams },
+      )
       // "Entrar como": emite o token de HANDOFF de impersonação (single-use, ~60s).
       // O serviço re-checa a matriz (admin só customer/staff; superadmin qualquer;
       // nunca a si mesmo) — o RBAC do gateway é só a 1ª camada. A URL devolvida

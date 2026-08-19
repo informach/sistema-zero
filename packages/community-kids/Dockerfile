@@ -39,4 +39,4 @@ COPY --from=build /app/packages/member-shell/scripts/boot-check.mjs ./packages/c
 RUN mkdir -p packages/community-kids/.next/cache && chown -R node:node packages/community-kids/.next
 USER node
 EXPOSE 3008
-CMD ["node", "packages/community-kids/boot-check.mjs"]
+CMD ["node", "packages/community-kids/boot-check.mjs", "--require-creation-cleanup"]
