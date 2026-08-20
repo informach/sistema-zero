@@ -37,7 +37,12 @@ async function handle<T>(res: Response): Promise<T> {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  return handle<T>(await fetch(path, { headers: { accept: 'application/json' } }))
+  // Os GETs do BFF são dados autenticados e mutáveis (entregas, progresso,
+  // conversas). Nunca reutilize uma resposta HTTP anterior: depois de um
+  // reenvio, por exemplo, a sincronização precisa trazer o snapshot novo.
+  return handle<T>(
+    await fetch(path, { cache: 'no-store', headers: { accept: 'application/json' } }),
+  )
 }
 
 export async function apiSend<T>(

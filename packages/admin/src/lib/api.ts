@@ -29,7 +29,11 @@ async function handle<T>(res: Response): Promise<T> {
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
-  return handle<T>(await fetch(path, { headers: { accept: 'application/json' } }))
+  // O admin lê filas e contadores que mudam por ações de outros usuários.
+  // Evita que o cache HTTP esconda uma entrega recém-enviada/reenviada.
+  return handle<T>(
+    await fetch(path, { cache: 'no-store', headers: { accept: 'application/json' } }),
+  )
 }
 
 export async function apiSend<T>(

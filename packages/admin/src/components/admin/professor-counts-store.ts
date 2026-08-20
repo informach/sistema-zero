@@ -8,11 +8,11 @@ import type { StudioSubmissionQueueRow, TeacherThreadRow } from '@/lib/types'
  * Contadores de pendências da Sala do Professor (badges da sidebar + Home) —
  * store singleton em escopo de MÓDULO com TTL + single-flight: a sidebar renderiza
  * os NavGroups DUAS vezes (coluna desktop + drawer mobile) e a Home usa os mesmos
- * dados; sem o single-flight cada consumidor dispararia o próprio fetch. Sem
- * polling em background: revalida no mount, ao voltar à aba (visibilitychange) e
- * na navegação — no-op dentro do TTL. Ações que mudam pendências (responder,
- * marcar lida, moderar, fechar o viewer) chamam `refreshProfessorCounts()` p/ o
- * badge não ficar 60s defasado depois do PRÓPRIO professor agir.
+ * dados; sem o single-flight cada consumidor dispararia o próprio fetch. A
+ * revalidação no mount/navegação respeita o TTL; ao voltar à janela e a cada
+ * intervalo enquanto a aba está visível força uma consulta. Isso inclui ações
+ * de OUTROS usuários (uma nova entrega do aluno), que não têm como invalidar o
+ * browser do professor. Ações locais continuam chamando refreshProfessorCounts.
  */
 export interface ProfessorCounts {
   pendingSubmissions: number | null
@@ -30,6 +30,7 @@ export interface ProfessorOverview {
 }
 
 const TTL_MS = 60_000
+const VISIBLE_REFRESH_MS = 15_000
 
 interface StoreState {
   overview: ProfessorOverview | null
@@ -87,16 +88,23 @@ export function refreshProfessorCounts(): void {
 /** Contadores compartilhados (sidebar + Home). `null` = fonte indisponível/1ª carga. */
 export function useProfessorOverview(): ProfessorOverview | null {
   const overview = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
-  const revalidate = useCallback(() => {
-    void ensureProfessorCounts()
+  const revalidate = useCallback((force = false) => {
+    void ensureProfessorCounts(force)
   }, [])
   useEffect(() => {
     revalidate()
     const onVisible = () => {
-      if (document.visibilityState === 'visible') revalidate()
+      if (document.visibilityState === 'visible') revalidate(true)
     }
+    const onFocus = () => revalidate(true)
+    const interval = window.setInterval(onVisible, VISIBLE_REFRESH_MS)
     document.addEventListener('visibilitychange', onVisible)
-    return () => document.removeEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onFocus)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onFocus)
+    }
   }, [revalidate])
   return overview
 }

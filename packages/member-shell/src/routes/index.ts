@@ -1218,7 +1218,12 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     GET: async (_req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
       const { lessonId, blockId } = await ctx.params
       const { status, body } = await members.getOwnStudioSubmission(lessonId, blockId)
-      return NextResponse.json(body ?? { project: null }, { status })
+      return NextResponse.json(body ?? { project: null }, {
+        status,
+        // Snapshot privado e mutável: "Sincronizar com o enviado" deve sempre
+        // observar o último reenvio, inclusive através de proxies/CDNs.
+        headers: { 'Cache-Control': 'private, no-store' },
+      })
     },
   }
 
