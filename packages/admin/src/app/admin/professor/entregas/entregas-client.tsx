@@ -27,6 +27,7 @@ import {
 import type { CourseView, Paginated, StudioSubmissionQueueRow } from '@/lib/types'
 
 const PAGE = 30
+const VISIBLE_REFRESH_MS = 15_000
 
 /** Nome de exibição do aluno: a criança (perfil) no kids; o titular no adulto. */
 function studentNameOf(s: StudioSubmissionQueueRow): string {
@@ -66,8 +67,8 @@ export function EntregasClient() {
   }, [q])
 
   const load = useCallback(
-    async (nextOffset: number, append: boolean) => {
-      setLoading(true)
+    async (nextOffset: number, append: boolean, background = false) => {
+      if (!background) setLoading(true)
       try {
         const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
         if (courseId) params.set('courseId', courseId)
@@ -85,9 +86,11 @@ export function EntregasClient() {
         setOffset(nextOffset)
         setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
-        toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
+        if (!background) {
+          toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
+        }
       } finally {
-        setLoading(false)
+        if (!background) setLoading(false)
       }
       // Total de PENDENTES do escopo curso/plataforma (independente da página e do
       // filtro de situação) — o `total` da fila com status=pending, em paralelo.
@@ -109,6 +112,24 @@ export function EntregasClient() {
   useEffect(() => {
     load(0, false)
   }, [load])
+
+  // A fila também muda por ação do ALUNO, fora deste browser. Enquanto a tela
+  // estiver visível, atualiza silenciosamente; voltar à janela força uma leitura
+  // imediata. Pausa com o viewer aberto para não trocar a fila sob a correção.
+  useEffect(() => {
+    if (open) return
+    const refresh = () => {
+      if (document.visibilityState === 'visible') void load(0, false, true)
+    }
+    const interval = window.setInterval(refresh, VISIBLE_REFRESH_MS)
+    window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      window.clearInterval(interval)
+      window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [load, open])
 
   // Cursos p/ o filtro (best-effort).
   useEffect(() => {

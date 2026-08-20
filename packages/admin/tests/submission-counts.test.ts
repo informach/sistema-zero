@@ -36,6 +36,7 @@ describe('avisos de entregas em exclusões', () => {
       expect(fetchOk).toHaveBeenCalledWith(
         '/api/members/courses/curso%2Fcom%20espa%C3%A7o/submission-counts',
         {
+          cache: 'no-store',
           headers: { accept: 'application/json' },
         },
       )
