@@ -1,4 +1,5 @@
 import { type Project, type ProjectAsset, sanitizeProjectAssets } from '#core'
+import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import {
   deleteProject,
   listProjectSummariesLight,
@@ -89,7 +90,10 @@ export async function loadProjectSnapshotForCloud(
     opts?.namespace === undefined ? undefined : getProjectStorageScope(opts.namespace)
   const project = await loadProjectById(id, storageScope)
   if (!project) return null
-  return { ...project, assets: sanitizeProjectAssets(project.assets) }
+  return snapshotProjectWithCurrentAuthority({
+    ...project,
+    assets: sanitizeProjectAssets(project.assets),
+  })
 }
 
 /**

@@ -3003,6 +3003,13 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   'pending'/'failed', `snapshotForSave` manda autosave/onChange/onSave SEM `blocksState` → o guard do
   `persistProject` pula a partição (reabrir na Ponte não reescreve mais a partição real com o estado
   DERIVADO; timeout 10s destrava a UI e resolução tardia ainda restaura).
+- ⭐ **Código da Ponte prevalece nos snapshots enquanto o reverse-parse está pendente (20/08).**
+  Cada edição textual carimba `Project.bridgeCodeAhead`; `getProject`, autosave, save e nuvem omitem
+  `ir`/`blocksState` antigos, e a persistência local apaga a partição de blocos defasada. A marca
+  atravessa servidor/reabertura e impede o Blockly de regenerar o código anterior; só
+  `markBridgeBlocksSynced` a remove quando alcança a última época de edição. Além disso,
+  `getProject()` descarrega os buffers síncronos registrados pelos editores (o Blockly agrupa
+  eventos por 120 ms), portanto enviar imediatamente nunca captura o frame anterior.
 - **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
   chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
 - ⭐ **Canvas VAZIO não é estado rejeitado** (15/08). `Blockly.serialization.workspaces.save()` num

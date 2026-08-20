@@ -1223,6 +1223,7 @@ function sanitizeStoredProject(
     }
   }
   const isPro = tree != null && proMeta != null
+  const bridgeCodeAhead = !isPro && r.bridgeCodeAhead === true
 
   return migrateLegacyBlockProjectSnapshot({
     ...base,
@@ -1233,12 +1234,17 @@ function sanitizeStoredProject(
     // Pro vive sempre no modo 'code'; básico vive em Blocos/Ponte ('code' legado
     // cai em 'bridge') — separação D2.
     mode: isPro ? 'code' : normalizeClassicMode(r.mode),
-    ir,
-    blocksState: sanitizeStoredBlocksState(r.blocksState, installedExtensions),
+    // A marca é a autoridade durável: estes dois campos podem ser válidos no
+    // shape e ainda assim pertencer à revisão anterior do texto da Ponte.
+    ir: bridgeCodeAhead ? null : ir,
+    blocksState: bridgeCodeAhead
+      ? null
+      : sanitizeStoredBlocksState(r.blocksState, installedExtensions),
     installedExtensions,
     assets: sanitizeProjectAssets(r.assets),
     createdAt,
     updatedAt,
+    ...(bridgeCodeAhead ? { bridgeCodeAhead: true as const } : {}),
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
   })
 }
@@ -1976,6 +1982,7 @@ function sanitizeImportedProjectSnapshot(
     }
   }
   const isPro = tree != null && proMeta != null
+  const bridgeCodeAhead = !isPro && r.bridgeCodeAhead === true
 
   const now = Date.now()
   const base = createEmptyProject(identity?.id ?? ulid(), sanitizeProjectName(r.name))
@@ -1991,11 +1998,12 @@ function sanitizeImportedProjectSnapshot(
     extraFiles,
     assets,
     mode,
-    ir: ir ?? base.ir,
-    blocksState,
+    ir: bridgeCodeAhead ? null : (ir ?? base.ir),
+    blocksState: bridgeCodeAhead ? null : blocksState,
     installedExtensions,
     createdAt: identity?.createdAt ?? now,
     updatedAt: identity?.updatedAt ?? now,
+    ...(bridgeCodeAhead ? { bridgeCodeAhead: true as const } : {}),
     // Pro vive sempre no modo 'code' (mode já é 'code' acima).
     ...(isPro ? { kind: 'pro' as const, tree, proMeta } : {}),
   })
@@ -2112,7 +2120,20 @@ export function createProjectStore(
     bridgeCodeEditEpoch: 0,
     bridgeBlocksSyncedEpoch: 0,
     markBridgeBlocksSynced: (epoch) =>
-      set((s) => ({ bridgeBlocksSyncedEpoch: Math.max(s.bridgeBlocksSyncedEpoch, epoch) })),
+      set((s) => {
+        const bridgeBlocksSyncedEpoch = Math.max(s.bridgeBlocksSyncedEpoch, epoch)
+        const project = s.project
+        if (project?.bridgeCodeAhead !== true || bridgeBlocksSyncedEpoch < s.bridgeCodeEditEpoch) {
+          return { bridgeBlocksSyncedEpoch }
+        }
+        const { bridgeCodeAhead: _bridgeCodeAhead, ...syncedProject } = project
+        return {
+          bridgeBlocksSyncedEpoch,
+          project: bump(syncedProject),
+          isDirty: true,
+          saveError: null,
+        }
+      }),
     loadProject: async (id) => {
       loadSeq += 1
       const seq = loadSeq
@@ -2329,7 +2350,11 @@ export function createProjectStore(
         return
       }
       set((s) => ({
-        project: bump({ ...p, files: nextFiles }),
+        project: bump({
+          ...p,
+          files: nextFiles,
+          ...(p.mode === 'bridge' ? { bridgeCodeAhead: true as const } : {}),
+        }),
         isDirty: true,
         saveError: null,
         // Edição de CÓDIGO na Ponte: os blocos ficam para trás até o
@@ -2348,7 +2373,11 @@ export function createProjectStore(
         return
       }
       set((s) => ({
-        project: bump({ ...p, files: nextFiles }),
+        project: bump({
+          ...p,
+          files: nextFiles,
+          ...(p.mode === 'bridge' ? { bridgeCodeAhead: true as const } : {}),
+        }),
         isDirty: true,
         saveError: null,
         ...(p.mode === 'bridge' ? { bridgeCodeEditEpoch: s.bridgeCodeEditEpoch + 1 } : {}),

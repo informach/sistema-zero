@@ -5,11 +5,16 @@ import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
+import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import { useChecksStoreApi } from '../state/checksStore'
 import { sanitizeProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
-import { createStudioStores, useStudioPersistence } from '../state/studioStores'
+import {
+  createStudioStores,
+  usePendingEditorEdits,
+  useStudioPersistence,
+} from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { StudioActivityProvider } from './activity'
 import { StudioCloudSyncProvider } from './cloud-sync'
@@ -207,6 +212,7 @@ function StudioCoreBody({
   const projectStoreApi = useProjectStoreApi()
   const checksStoreApi = useChecksStoreApi()
   const persistence = useStudioPersistence()
+  const pendingEditorEdits = usePendingEditorEdits()
   const hydrateProject = useProjectStore((s) => s.hydrateProject)
   const unloadProject = useProjectStore((s) => s.unloadProject)
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -224,14 +230,21 @@ function StudioCoreBody({
   useImperativeHandle(
     ref,
     (): StudioHandle => ({
-      getProject: () => projectStoreApi.getState().project,
-      save: () => persistence.save(),
+      getProject: () => {
+        pendingEditorEdits?.flush()
+        const project = projectStoreApi.getState().project
+        return project ? snapshotProjectWithCurrentAuthority(project) : null
+      },
+      save: () => {
+        pendingEditorEdits?.flush()
+        return persistence.save()
+      },
       replaceProject: (project) => setReplacedProject(project),
       setMode: (mode) => projectStoreApi.getState().setMode(mode),
       isDirty: () => projectStoreApi.getState().isDirty,
       getActivityResult: () => checksStoreApi.getState().lastResult,
     }),
-    [projectStoreApi, checksStoreApi, persistence],
+    [projectStoreApi, checksStoreApi, persistence, pendingEditorEdits],
   )
 
   useEffect(() => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createEmptyProject } from '#core'
-import { useProjectStore } from './projectStore'
+import { sanitizeProjectForHost, useProjectStore } from './projectStore'
 
 // Épocas da sincronização código⇄blocos da Ponte (`bridgeCodeEditEpoch` ×
 // `bridgeBlocksSyncedEpoch`): `code > synced` significa blocos DEFASADOS — a
@@ -28,6 +28,7 @@ describe('épocas da sincronização código⇄blocos (Ponte)', () => {
 
     useProjectStore.getState().setFile('script.js', 'a();\n')
     expect(useProjectStore.getState().bridgeCodeEditEpoch).toBe(1)
+    expect(useProjectStore.getState().project?.bridgeCodeAhead).toBe(true)
     useProjectStore.getState().setFiles({ 'script.js': 'b();\n' })
     expect(useProjectStore.getState().bridgeCodeEditEpoch).toBe(2)
 
@@ -46,6 +47,33 @@ describe('épocas da sincronização código⇄blocos (Ponte)', () => {
     // Um resultado ATRASADO do worker (época menor) não pode reabrir a trava.
     useProjectStore.getState().markBridgeBlocksSynced(1)
     expect(useProjectStore.getState().bridgeBlocksSyncedEpoch).toBe(3)
+  })
+
+  it('só retira a precedência do código quando os blocos alcançam a última edição', () => {
+    const p = createEmptyProject('p-authority', 'Projeto')
+    useProjectStore.setState({ project: { ...p, mode: 'bridge' } })
+    useProjectStore.getState().setFile('script.js', 'primeira();\n')
+    useProjectStore.getState().setFile('script.js', 'segunda();\n')
+
+    useProjectStore.getState().markBridgeBlocksSynced(1)
+    expect(useProjectStore.getState().project?.bridgeCodeAhead).toBe(true)
+
+    useProjectStore.getState().markBridgeBlocksSynced(2)
+    expect(useProjectStore.getState().project?.bridgeCodeAhead).toBeUndefined()
+  })
+
+  it('ao atravessar host/servidor, preserva o código novo e descarta derivados antigos', () => {
+    const project = createEmptyProject('p-submission', 'Projeto')
+    project.mode = 'bridge'
+    project.files['script.js'] = 'versaoNova();\n'
+    project.bridgeCodeAhead = true
+
+    const snapshot = sanitizeProjectForHost(project)
+
+    expect(snapshot?.files['script.js']).toBe('versaoNova();\n')
+    expect(snapshot?.bridgeCodeAhead).toBe(true)
+    expect(snapshot?.ir).toBeNull()
+    expect(snapshot?.blocksState).toBeNull()
   })
 
   it('trocar/carregar projeto zera as épocas', () => {

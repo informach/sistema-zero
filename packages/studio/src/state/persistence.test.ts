@@ -899,6 +899,26 @@ describe('loadProject', () => {
     expect(byKey.get('sz:project-blocks:split-blocks')?.blocksState).toEqual(blocksState)
   })
 
+  it('quando o código da Ponte está à frente, persiste a autoridade e apaga blocos antigos', async () => {
+    const project = createEmptyProject('bridge-code-ahead', 'Projeto')
+    project.mode = 'bridge'
+    project.files['script.js'] = 'versaoNova();\n'
+    project.bridgeCodeAhead = true
+
+    await persistProject(project)
+
+    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
+    const records = (lastArgs?.[0] ?? []) as [string, Record<string, unknown>][]
+    const byKey = new Map(records.map(([key, value]) => [key, value]))
+    expect(byKey.get('sz:project-meta:bridge-code-ahead')?.bridgeCodeAhead).toBe(true)
+    expect(byKey.get('sz:project-state:bridge-code-ahead')?.ir).toBeNull()
+    expect(byKey.has('sz:project-blocks:bridge-code-ahead')).toBe(false)
+    expect(idb.delMany).toHaveBeenCalledWith(
+      ['sz:project-blocks:bridge-code-ahead'],
+      expect.anything(),
+    )
+  })
+
   it('load rápido local não lê state/blocks pesados e preserva o modo salvo', async () => {
     // Abertura rápida: ir/blocksState voltam null (restaurados em segundo plano por
     // hydrateAfterLoad). Ler o blocksState (enorme) aqui travava "Carregando projeto…".

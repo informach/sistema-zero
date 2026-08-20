@@ -1,6 +1,6 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, render, waitFor } from '@testing-library/react'
-import { createRef, StrictMode } from 'react'
+import { createRef, StrictMode, useEffect } from 'react'
 import { createEmptyProject } from '#core'
 import { useT } from './i18n'
 import type { StudioHandle } from './types'
@@ -33,6 +33,10 @@ const { useProjectStore, sanitizeProjectForHost, PROJECT_FILE_LIMITS } = await i
   '../state/projectStore'
 )
 const { useUIStore } = await import('../state/uiStore')
+const { usePendingEditorEdits } = await import('../state/studioStores')
+
+let pendingEditorCode: string | null = null
+let pendingEditorRegistered = false
 
 // O Shell vira um PROBE: renderiza por DENTRO do provider da instância, então
 // os hooks aqui leem as stores POR INSTÂNCIA (as estáticas useXStore.getState
@@ -42,7 +46,19 @@ function ShellProbe(): React.JSX.Element {
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   const mode = useProjectStore((s) => s.project?.mode ?? '')
   const isDirty = useProjectStore((s) => s.isDirty)
+  const setFile = useProjectStore((s) => s.setFile)
   const previewRunning = useUIStore((s) => s.previewRunning)
+  const pendingEdits = usePendingEditorEdits()
+  useEffect(() => {
+    if (!pendingEdits || pendingEditorCode === null) return
+    const code = pendingEditorCode
+    pendingEditorRegistered = true
+    const unregister = pendingEdits.register(() => setFile('script.js', code))
+    return () => {
+      pendingEditorRegistered = false
+      unregister()
+    }
+  }, [pendingEdits, setFile])
   return (
     <div
       data-testid="editor-shell"
@@ -69,6 +85,8 @@ afterAll(() => {
 
 describe('Studio', () => {
   beforeEach(() => {
+    pendingEditorCode = null
+    pendingEditorRegistered = false
     // A store DEFAULT é compartilhada pela suíte inteira (singleton de módulo):
     // outro ARQUIVO pode ter deixado um projeto residual nela, e a ordem dos
     // arquivos varia entre SOs (no Linux, extraFilesPreservation.test rodava
@@ -180,6 +198,27 @@ describe('Studio', () => {
       expect(handleRef.current?.isDirty()).toBe(false)
     })
     setAutosaveDelayForTests(null)
+  })
+
+  it('getProject materializa uma edição pendente antes de expor o snapshot', async () => {
+    pendingEditorCode = 'console.log("versão mais recente")'
+    const handleRef = createRef<StudioHandle>()
+    const project = createEmptyProject('project-current-blocks', 'Blocos atuais')
+    project.mode = 'bridge'
+    render(<Studio ref={handleRef} initialProject={project} persistence="none" />)
+
+    await waitFor(() => {
+      expect(pendingEditorRegistered).toBe(true)
+      expect(handleRef.current?.getProject()?.id).toBe('project-current-blocks')
+    })
+
+    const submittedProject = handleRef.current?.getProject()
+    expect(submittedProject?.files['script.js']).toBe(pendingEditorCode)
+    // Na Ponte, o texto muda antes do reverse-parse assentar IR/blocos. Um
+    // snapshot externo não pode levar os derivados antigos junto: ao reabrir,
+    // eles regenerariam o código anterior por cima desta versão.
+    expect(submittedProject?.ir).toBeNull()
+    expect(submittedProject?.blocksState).toBeNull()
   })
 
   it('escopa o tema no root via data-sz-theme', async () => {
