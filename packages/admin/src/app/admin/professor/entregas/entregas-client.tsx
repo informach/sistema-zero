@@ -8,14 +8,29 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Inbox, MessageSquare, X } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
 // Viewer compartilhado com a aba "Entregas" do editor de curso (mesma tela de
 // correção; vive lá porque nasceu lá — mover é limpeza futura, o arquivo irmão
 // `teacher-thread-panel` tem WIP concorrente).
-import { StudioSubmissionViewer } from '@/app/admin/membros/cursos/[courseId]/studio-submission-viewer'
+import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+
+// LAZY de propósito, e não só por peso: o viewer (e os embeds do Estúdio/Pinta
+// atrás dele) só carrega quando uma entrega ABRE — a fila lista sem pagar o
+// chunk. E é o que deixa o teste da fila (`zz-entregas-client.test.tsx`) rodar
+// sem carregar nem MOCKAR o módulo do viewer: `mock.module` não religa módulo
+// já carregado, então um teste que o carregasse sob stubs congelaria os
+// bindings para o teste do próprio viewer (vermelho de 21/08, só no Linux).
+const StudioSubmissionViewer = dynamic(
+  () =>
+    import('@/app/admin/membros/cursos/[courseId]/studio-submission-viewer').then(
+      (m) => m.StudioSubmissionViewer,
+    ),
+  { ssr: false },
+)
+
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'

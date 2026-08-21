@@ -5,23 +5,38 @@ import type { StudioSubmissionQueueRow } from '../src/lib/types'
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
-// Este arquivo ordena por último de propósito: `mock.module` é global ao run do
-// Bun e estes doubles pesados não podem substituir módulos exercitados por
-// outros arquivos. O isolamento também evita carregar todo o Studio neste teste.
+// ⚠️ `mock.module` é global ao run do Bun e, NO LINUX DO CI, a chave de path casa
+// entre arquivos (no Windows não — por isso vazamento daqui nunca aparece local).
+// O prefixo `zz-` NÃO protege nada lá: o readdir do ext4 não é alfabético, e este
+// arquivo chegou a rodar ANTES do `studio-submission-viewer.test.tsx` no CI.
+// Regras deste arquivo, pagas em 21/08 (o viewer testava um componente que ESTE
+// mock tinha trocado por `() => null` — 3 runs vermelhos):
+// 1. NUNCA mockar um módulo que OUTRO teste exercita de verdade (o viewer). O
+//    peso que se quer evitar são os EMBEDS (dynamic/Studio) — mocka-se as folhas.
+// 2. Mock de módulo compartilhado espalha o REAL e sobrescreve só o necessário
+//    (idioma do zappy-block-sync): import nomeado de outro arquivo não pode morrer.
 mock.module('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ refresh() {} }),
 }))
-mock.module('sonner', () => ({ toast: { error() {} } }))
+const actualSonner = await import('sonner')
+mock.module('sonner', () => ({
+  ...actualSonner,
+  toast: { ...actualSonner.toast, error() {} },
+}))
+const actualAdminHeader = await import('../src/components/admin/admin-header')
 mock.module('@/components/admin/admin-header', () => ({
+  ...actualAdminHeader,
   AdminHeader: ({ title }: { title: string }) => <h1>{title}</h1>,
 }))
+const actualCountsStore = await import('../src/components/admin/professor-counts-store')
 mock.module('@/components/admin/professor-counts-store', () => ({
+  ...actualCountsStore,
   refreshProfessorCounts() {},
 }))
-mock.module('@/app/admin/membros/cursos/[courseId]/studio-submission-viewer', () => ({
-  StudioSubmissionViewer: () => null,
-}))
+// O viewer NÃO é mockado nem carregado aqui: o EntregasClient o importa por
+// `next/dynamic`, então com a fila fechada o módulo nunca entra neste processo
+// e o teste do viewer o carrega FRESCO, com o registry dele.
 
 interface QueueResponse {
   items: StudioSubmissionQueueRow[]
@@ -48,15 +63,26 @@ function deferred<T>(): Deferred<T> {
 }
 
 const listRequests: Array<Deferred<QueueResponse>> = []
+// ⚠️⚠️ Não existe "restaurar" um mock.module: o link ESTÁTICO de um módulo
+// carregado depois fica com a PRIMEIRA materialização da chave — re-registrar
+// no afterAll não alcança quem linkar depois (medido em 21/08: o viewer test,
+// no Linux, recebia este apiGet mesmo com restore antes do import dele). Logo o
+// double precisa ser INOFENSIVO POR CONSTRUÇÃO: atende só os paths DESTA fila e
+// repassa qualquer outro ao módulo real (que usa o globalThis.fetch do chamador).
+const actualApi = await import('../src/lib/api')
 mock.module('@/lib/api', () => ({
+  ...actualApi,
   apiGet(path: string) {
     if (path === '/api/members/courses?limit=100') {
       return Promise.resolve({ items: [], total: 0, limit: 100, offset: 0 })
     }
-    if (path.includes('status=pending')) return Promise.resolve({ total: 0 })
-    const request = deferred<QueueResponse>()
-    listRequests.push(request)
-    return request.promise
+    if (path.startsWith('/api/members/studio-submissions?')) {
+      if (path.includes('status=pending')) return Promise.resolve({ total: 0 })
+      const request = deferred<QueueResponse>()
+      listRequests.push(request)
+      return request.promise
+    }
+    return actualApi.apiGet(path)
   },
 }))
 
