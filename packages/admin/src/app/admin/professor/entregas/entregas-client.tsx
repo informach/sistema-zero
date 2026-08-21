@@ -19,10 +19,9 @@ import { AdminHeader } from '@/components/admin/admin-header'
 
 // LAZY de propósito, e não só por peso: o viewer (e os embeds do Estúdio/Pinta
 // atrás dele) só carrega quando uma entrega ABRE — a fila lista sem pagar o
-// chunk. E é o que deixa o teste da fila (`zz-entregas-client.test.tsx`) rodar
-// sem carregar nem MOCKAR o módulo do viewer: `mock.module` não religa módulo
-// já carregado, então um teste que o carregasse sob stubs congelaria os
-// bindings para o teste do próprio viewer (vermelho de 21/08, só no Linux).
+// chunk. Também mantém o módulo do viewer fora de qualquer processo de teste
+// que venha a carregar a fila: `mock.module` não religa módulo já materializado
+// (vermelhos de 21/08, só no Linux do CI).
 const StudioSubmissionViewer = dynamic(
   () =>
     import('@/app/admin/membros/cursos/[courseId]/studio-submission-viewer').then(
@@ -34,6 +33,7 @@ const StudioSubmissionViewer = dynamic(
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { createLatestWins } from '@/lib/latest-wins'
 import {
   isSubmissionPending,
   SUBMISSION_STATUS_LABEL,
@@ -77,8 +77,9 @@ export function EntregasClient() {
   const [qDebounced, setQDebounced] = useState('')
   const [hint, setHint] = useState<string | null>(null)
   // Toda leitura da fila substitui a anterior. Polling, foco, filtros e paginação
-  // podem se sobrepor; só a geração mais nova tem autoridade para publicar estado.
-  const loadGenerationRef = useRef(0)
+  // podem se sobrepor; só a geração mais nova tem autoridade para publicar estado
+  // (regra pura em lib/latest-wins, testada isolada).
+  const loadAuthority = useRef(createLatestWins()).current
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q.trim()), 250)
     return () => clearTimeout(t)
@@ -86,7 +87,7 @@ export function EntregasClient() {
 
   const load = useCallback(
     async (nextOffset: number, append: boolean, background = false) => {
-      const generation = ++loadGenerationRef.current
+      const generation = loadAuthority.begin()
       if (!background) setLoading(true)
       try {
         const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
@@ -100,19 +101,19 @@ export function EntregasClient() {
           total: number
           hint?: string
         }>(`/api/members/studio-submissions?${params}`)
-        if (generation !== loadGenerationRef.current) return
+        if (!loadAuthority.isCurrent(generation)) return
         setItems((prev) => (append ? [...prev, ...res.items] : res.items))
         setTotal(res.total)
         setOffset(nextOffset)
         setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
-        if (generation === loadGenerationRef.current && !background) {
+        if (loadAuthority.isCurrent(generation) && !background) {
           toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
         }
       } finally {
-        if (generation === loadGenerationRef.current) setLoading(false)
+        if (loadAuthority.isCurrent(generation)) setLoading(false)
       }
-      if (generation !== loadGenerationRef.current) return
+      if (!loadAuthority.isCurrent(generation)) return
       // Total de PENDENTES do escopo curso/plataforma (independente da página e do
       // filtro de situação) — o `total` da fila com status=pending, em paralelo.
       try {
@@ -122,12 +123,12 @@ export function EntregasClient() {
         const pending = await apiGet<{ total: number }>(
           `/api/members/studio-submissions?${pendingParams}`,
         )
-        if (generation === loadGenerationRef.current) setPendingTotal(pending.total)
+        if (loadAuthority.isCurrent(generation)) setPendingTotal(pending.total)
       } catch {
-        if (generation === loadGenerationRef.current) setPendingTotal(null)
+        if (loadAuthority.isCurrent(generation)) setPendingTotal(null)
       }
     },
-    [courseId, audience, status, studentFilter, qDebounced],
+    [courseId, audience, status, studentFilter, qDebounced, loadAuthority],
   )
 
   useEffect(() => {
@@ -137,9 +138,9 @@ export function EntregasClient() {
   useEffect(
     () => () => {
       // Invalida respostas que terminem depois do unmount.
-      loadGenerationRef.current += 1
+      loadAuthority.invalidate()
     },
-    [],
+    [loadAuthority],
   )
 
   // A fila também muda por ação do ALUNO, fora deste browser. Enquanto a tela
