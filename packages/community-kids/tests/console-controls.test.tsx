@@ -1,9 +1,10 @@
-import { describe, expect, it } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { defaultProjectControls } from '@sistemazero/studio/controls'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { createRef } from 'react'
 import {
+  CtrlBar,
   DPad,
   directionsAtPoint,
   FaceButtons,
@@ -250,5 +251,92 @@ describe('a cruz atende UM dedo por vez', () => {
     // E o primeiro dedo continua mandando: soltar ELE é que encerra.
     fireEvent.pointerUp(cruz, { clientX: 4, clientY: meio, pointerId: 1 })
     expect(enviadas).toEqual([{ action: 'keyup', key: 'ArrowLeft', code: 'ArrowLeft' }])
+  })
+})
+
+describe('o botão de tela cheia vira botão de VOLTAR', () => {
+  function fingirTelaCheia(elemento: Element | null) {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: elemento })
+    act(() => {
+      document.dispatchEvent(new Event('fullscreenchange'))
+    })
+  }
+
+  afterEach(() => {
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null })
+  })
+
+  it('troca de rótulo e de ícone conforme o navegador entra e sai', () => {
+    const { iframeRef } = palcoDeTeste()
+    const alvo = createRef<HTMLDivElement>()
+    render(
+      <>
+        <div ref={alvo} />
+        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+      </>,
+    )
+
+    expect(screen.getByRole('button', { name: 'Tela cheia' })).toBeTruthy()
+
+    fingirTelaCheia(document.createElement('div'))
+    expect(screen.getByRole('button', { name: 'Sair da tela cheia' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Tela cheia' })).toBeNull()
+  })
+
+  it('⚠️ volta a dizer "Tela cheia" quando o navegador sai SOZINHO', () => {
+    const { iframeRef } = palcoDeTeste()
+    const alvo = createRef<HTMLDivElement>()
+    render(
+      <>
+        <div ref={alvo} />
+        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+      </>,
+    )
+
+    fingirTelaCheia(document.createElement('div'))
+    expect(screen.getByRole('button', { name: 'Sair da tela cheia' })).toBeTruthy()
+
+    // A criança aperta Esc, usa o gesto do sistema ou o voltar do Android: ninguém
+    // avisa o botão. É a metade que reprova a versão que guarda o estado no clique.
+    fingirTelaCheia(null)
+    expect(screen.getByRole('button', { name: 'Tela cheia' })).toBeTruthy()
+  })
+
+  it('o botão não é remontado ao trocar de rótulo, senão o foco se perde', () => {
+    const { iframeRef } = palcoDeTeste()
+    const alvo = createRef<HTMLDivElement>()
+    render(
+      <>
+        <div ref={alvo} />
+        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+      </>,
+    )
+    const antes = screen.getByRole('button', { name: 'Tela cheia' })
+
+    fingirTelaCheia(document.createElement('div'))
+
+    // Mesmo ELEMENTO: com a `key` saindo do rótulo, o React trocava o botão e
+    // quem clicou pelo teclado ficava sem foco no ato.
+    expect(screen.getByRole('button', { name: 'Sair da tela cheia' })).toBe(antes)
+  })
+
+  it('já nasce dizendo "Sair" quando a tela cheia começou ANTES de ele montar', () => {
+    // Acontece de verdade: a criança entra em tela cheia pelo cabeçalho (modo sem
+    // console) e depois MOSTRA os controles — a barra monta com a tela já cheia.
+    // Sem a leitura inicial, ela nasceria oferecendo "Tela cheia" de novo.
+    Object.defineProperty(document, 'fullscreenElement', {
+      configurable: true,
+      value: document.createElement('div'),
+    })
+    const { iframeRef } = palcoDeTeste()
+    const alvo = createRef<HTMLDivElement>()
+    render(
+      <>
+        <div ref={alvo} />
+        <CtrlBar iframeRef={iframeRef} fullscreenTargetRef={alvo} onRestart={() => {}} />
+      </>,
+    )
+
+    expect(screen.getByRole('button', { name: 'Sair da tela cheia' })).toBeTruthy()
   })
 })

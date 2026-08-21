@@ -19,10 +19,10 @@ import type {
   ControlDirection,
   ProjectControls,
 } from '@sistemazero/studio/controls'
-import { Camera, Maximize, RefreshCw, Volume2, VolumeX } from 'lucide-react'
+import { Camera, Maximize, Minimize, RefreshCw, Volume2, VolumeX } from 'lucide-react'
 import type { CSSProperties, RefObject } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { requestGamepadFullscreen } from './gamepad-fullscreen'
+import { useFullscreen } from './use-fullscreen'
 
 export const C = {
   body: 'var(--snes-body)',
@@ -665,6 +665,7 @@ export function CtrlBar({
 }) {
   const [muted, setMuted] = useState(false)
   const [shooting, setShooting] = useState(false)
+  const { fullscreen, alternar: alternarTelaCheia } = useFullscreen(fullscreenTargetRef)
   const screenshotPendingRef = useRef(false)
   const screenshotExpiresAtRef = useRef(0)
   const screenshotTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -711,10 +712,6 @@ export function CtrlBar({
     iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: next }, '*')
   }
 
-  async function fullscreen() {
-    await requestGamepadFullscreen(fullscreenTargetRef.current)
-  }
-
   function screenshot() {
     if (screenshotPendingRef.current || !iframeRef.current?.contentWindow) return
     screenshotPendingRef.current = true
@@ -757,22 +754,32 @@ export function CtrlBar({
         borderTop: `1px solid ${C.ctrlBorder}`,
       }}
     >
+      {/* ⚠️ A `key` é o ID, e não o rótulo: os botões que TROCAM de rótulo (tela
+          cheia, som) seriam remontados a cada toque, e quem clicou pelo teclado
+          perderia o foco no ato. */}
       {[
-        { label: 'Reiniciar', icon: <RefreshCw size={18} />, onClick: onRestart },
-        { label: 'Tela cheia', icon: <Maximize size={18} />, onClick: fullscreen },
+        { id: 'reiniciar', label: 'Reiniciar', icon: <RefreshCw size={18} />, onClick: onRestart },
         {
+          id: 'tela-cheia',
+          label: fullscreen ? 'Sair da tela cheia' : 'Tela cheia',
+          icon: fullscreen ? <Minimize size={18} /> : <Maximize size={18} />,
+          onClick: alternarTelaCheia,
+        },
+        {
+          id: 'foto',
           label: 'Screenshot',
           icon: <Camera size={18} style={{ opacity: shooting ? 0.4 : 1 }} />,
           onClick: screenshot,
         },
         {
+          id: 'som',
           label: muted ? 'Ativar som' : 'Silenciar',
           icon: muted ? <VolumeX size={18} /> : <Volume2 size={18} />,
           onClick: toggleMute,
         },
-      ].map(({ label, icon, onClick }) => (
+      ].map(({ id, label, icon, onClick }) => (
         <button
-          key={label}
+          key={id}
           type="button"
           aria-label={label}
           onClick={onClick}

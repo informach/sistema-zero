@@ -510,6 +510,28 @@ estreito, então a largura manda: zerar toda a margem renderia só ~13% de área
 - A **tela cheia** passou a existir também sem console (no cabeçalho): quem esconde os controles é
   justamente quem mais quer área de jogo, e perdia o botão junto com a barra. O alvo continua sendo
   o CORPO do console quando ele existe (pedir na raiz deixaria o console num fundo preto).
+- **O mesmo botãozinho VOLTA** (`use-fullscreen.ts`, consumido pela barra do console e pelo
+  cabeçalho): em tela cheia ele vira "Sair da tela cheia" com o ícone de recolher. ⭐ Sair não exige
+  gesto do usuário (só entrar exige), então funciona sempre — inclusive quando quem tomou a tela foi
+  o jogo.
+  - ⚠️⚠️ **O estado vem do NAVEGADOR, nunca de "eu cliquei".** A criança sai por Esc, pelo gesto do
+    sistema ou pelo voltar do Android, e nesses caminhos ninguém avisa o botão: guardado no clique,
+    ele passa a dizer "Sair" com a tela já normal e o toque seguinte não faz nada. Travado pelo
+    teste que dispara `fullscreenchange` sem passar pelo botão.
+  - ⚠️ A pergunta é "tem ALGUÉM em tela cheia?", e não "é o MEU elemento": com o jogo segurando a
+    tela quem está lá é o `<iframe>`.
+  - ⚠️ A `key` dos botões da barra é o ID, e não o rótulo: os que TROCAM de rótulo (tela cheia, som)
+    eram remontados a cada toque e quem clicou pelo teclado perdia o foco no ato.
+  - ⚠️ O hook LÊ o documento ao montar, além de ouvir o evento: a barra pode montar com a tela já
+    cheia (a criança entra pelo cabeçalho, sem console, e depois mostra os controles) e nasceria
+    oferecendo "Tela cheia" de novo.
+  - **Sem `aria-pressed`, de propósito:** aqui o RÓTULO já descreve a próxima ação, e somar o estado
+    faz o leitor anunciar as duas coisas. É diferente do botão de controles e do `FocusModeToggle`,
+    que usam `aria-pressed` com rótulo que muda junto — não uniformizar sem pensar.
+  - ⚠️ **Em tela cheia só os botões do CONSOLE são alcançáveis**: o cabeçalho fica fora do elemento
+    que foi para a camada de topo (medido). É o esperado, e o que torna aceitável é justamente este
+    lote: a saída mora na barra, dentro do alvo. Esconder os controles em tela cheia exige sair
+    antes — dois toques, e não um.
 - ⚠️ O toque atravessa o giro sem conta nenhuma: o `__szInput` mede com `getBoundingClientRect` do
   canvas DENTRO do iframe, onde a rotação de fora não existe. Medido em Chrome: o centro da tela cai
   em (400, 236) de um palco 800x480, e os quatro lados mapeiam como rotação exata.

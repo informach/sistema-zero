@@ -2,7 +2,7 @@
 
 import type { Project, StudioProjectPlayerProps } from '@sistemazero/studio'
 import { describeProjectControls, type InternalPadMode } from '@sistemazero/studio/controls'
-import { Gamepad2, Maximize } from 'lucide-react'
+import { Gamepad2, Maximize, Minimize } from 'lucide-react'
 import { type ComponentType, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   type GamepadVisibilityOverride,
@@ -16,9 +16,9 @@ import {
   sanitizeStageAspect,
   shouldRotateStage,
 } from '@/lib/stage-fit'
-import { requestGamepadFullscreen } from './gamepad-fullscreen'
 import { KidsMascot } from './mascot'
 import { PublicStage } from './public-stage'
+import { useFullscreen } from './use-fullscreen'
 
 // O Player importado dinamicamente precisa aceitar ref — usamos forwardRef no lado do Studio.
 // Aqui apenas tipamos o ref como HTMLIFrameElement para o useRef.
@@ -98,6 +98,7 @@ function PublicPlayerForProject({ id }: { id: string }) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const stageRootRef = useRef<HTMLDivElement>(null)
   const viewport = useViewport()
+  const { fullscreen: telaCheia, alternar: alternarTelaCheia } = useFullscreen(stageRootRef)
 
   const handleRestart = useCallback(() => setReloadKey((k) => k + 1), [])
 
@@ -309,13 +310,11 @@ function PublicPlayerForProject({ id }: { id: string }) {
         {status === 'ready' && !gamepadVisible && (
           <button
             type="button"
-            aria-label="Tela cheia"
-            onClick={() => {
-              void requestGamepadFullscreen(stageRootRef.current)
-            }}
+            aria-label={telaCheia ? 'Sair da tela cheia' : 'Tela cheia'}
+            onClick={alternarTelaCheia}
             className="flex size-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <Maximize size={18} />
+            {telaCheia ? <Minimize size={18} /> : <Maximize size={18} />}
           </button>
         )}
         {/* Botão para ativar/desativar gamepad manualmente (desktop com touch, etc.) */}

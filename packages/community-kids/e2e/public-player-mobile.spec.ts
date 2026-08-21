@@ -346,3 +346,40 @@ test('quando o JOGO toma a tela cheia, a criança não fica sem controles', asyn
   // Com o jogo segurando a tela, o pad DELE é o que fica de pé.
   expect(modos.at(-1)).toBe('auto')
 })
+
+test('o botão de tela cheia leva e TRAZ de volta', async ({ page }) => {
+  await abrirJogo(page, { w: 800, h: 480 })
+
+  const emTelaCheia = () => page.evaluate(() => document.fullscreenElement !== null)
+  expect(await emTelaCheia()).toBe(false)
+
+  await page.getByRole('button', { name: 'Tela cheia' }).click()
+  await expect.poll(emTelaCheia).toBe(true)
+  // O MESMO botãozinho agora oferece a volta.
+  const voltar = page.getByRole('button', { name: 'Sair da tela cheia' })
+  await expect(voltar).toBeVisible()
+
+  await voltar.click()
+  await expect.poll(emTelaCheia).toBe(false)
+  await expect(page.getByRole('button', { name: 'Tela cheia' })).toBeVisible()
+})
+
+test('o botão do CABEÇALHO também leva e traz, com o palco girado', async ({ page }) => {
+  await abrirJogo(page, { w: 800, h: 480 })
+  await page.getByRole('button', { name: 'Ocultar controles' }).click()
+  await expect(page.getByRole('button', { name: 'Mostrar controles' })).toBeVisible()
+
+  // Caminho DIFERENTE do botão do console: outro alvo (a raiz do palco) e outro
+  // componente. Sem esta guarda, só a barra do console estava coberta.
+  await page.getByRole('button', { name: 'Tela cheia' }).click()
+  await expect
+    .poll(() => page.evaluate(() => document.fullscreenElement?.tagName ?? null))
+    .toBe('DIV')
+  // ⚠️ O alvo é a RAIZ, e não o iframe: é ela que carrega o giro. Indo pelo
+  // iframe, o jogo voltaria pequeno e em pé dentro da tela cheia.
+  expect(await page.locator('[style*="rotate(90deg)"]').count()).toBeGreaterThan(0)
+
+  await page.getByRole('button', { name: 'Sair da tela cheia' }).click()
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement !== null)).toBe(false)
+  await expect(page.getByRole('button', { name: 'Tela cheia' })).toBeVisible()
+})
