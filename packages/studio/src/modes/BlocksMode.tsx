@@ -33,7 +33,7 @@ export function BlocksMode(): JSX.Element {
   // Blocos DEFASADOS: o aluno editou código na Ponte e trocou p/ cá antes de o
   // reverse-parse assentar (o worker morre com a Ponte). Ver o recovery abaixo.
   const filesAheadOfBlocks = useProjectStore(
-    (s) => s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch,
+    (s) => s.project?.bridgeCodeAhead === true || s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch,
   )
   const projectStoreApi = useProjectStoreApi()
   const studioConfig = useStudioConfig()
@@ -78,7 +78,11 @@ export function BlocksMode(): JSX.Element {
         const state = projectStoreApi.getState()
         const current = state.project
         if (!current || current.id !== project.id) return
-        if (state.bridgeCodeEditEpoch <= state.bridgeBlocksSyncedEpoch) return
+        if (
+          current.bridgeCodeAhead !== true &&
+          state.bridgeCodeEditEpoch <= state.bridgeBlocksSyncedEpoch
+        )
+          return
         // Época capturada ANTES do parse: no modo Blocos não há editor de
         // código, então nenhuma edição avança a época durante o parse.
         const epoch = state.bridgeCodeEditEpoch

@@ -661,6 +661,12 @@ export interface Project {
   assets?: ProjectAsset[]
   ir: SZIRInput | null
   blocksState: unknown | null
+  /**
+   * O texto da Ponte é mais novo que IR/blocos. Enquanto `true`, arquivos são a
+   * fonte durável da verdade e snapshots externos omitem os derivados antigos.
+   * Some assim que o reverse-parse alcançar a última edição de código.
+   */
+  bridgeCodeAhead?: true
   installedExtensions: InstalledExtension[]
   /** Discriminante do modo. Ausente/undefined = 'classic'. */
   kind?: ProjectKind

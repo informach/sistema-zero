@@ -208,9 +208,12 @@ export async function persistProject(
       // ⚠️ `blocksState == null` aqui só acontece quando a ORIGEM não tem blocos: o restauro
       // da nuvem recusa (lança) o snapshot cujo saneamento DESCARTOU blocos, ver
       // `sanitizeCloudProjectSnapshot`.
-      const stale = options.replace
-        ? [projectThumbKey(id), ...(project.blocksState == null ? [projectBlocksKey(id)] : [])]
-        : []
+      const stale = [
+        ...(options.replace ? [projectThumbKey(id)] : []),
+        ...((options.replace && project.blocksState == null) || project.bridgeCodeAhead === true
+          ? [projectBlocksKey(id)]
+          : []),
+      ]
       // meta/files/state são pequenos e mudam a cada tecla — sempre reescritos.
       // `blocksState` fica em partição própria: pode ser enorme e não deve inchar
       // a leitura inicial do projeto nem o registro leve de IR.
@@ -225,7 +228,7 @@ export async function persistProject(
       // aluno editar antes do restore, o autosave gravaria vazio). Só persistimos a
       // partição de blocos quando há blocksState de fato; um workspace VAZIO serializa
       // como objeto (não null), então limpar de propósito continua sendo salvo.
-      if (project.blocksState != null) {
+      if (project.blocksState != null && project.bridgeCodeAhead !== true) {
         pairs.push([projectBlocksKey(id), projectToBlocksRecord(project)])
       }
       // Assets: só reescreve quando a referência mudou desde o último persist deste
@@ -681,7 +684,15 @@ function projectToMetaRecord(
   project: Project,
 ): Pick<
   Project,
-  'id' | 'name' | 'createdAt' | 'updatedAt' | 'mode' | 'installedExtensions' | 'kind' | 'proMeta'
+  | 'id'
+  | 'name'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'mode'
+  | 'installedExtensions'
+  | 'kind'
+  | 'proMeta'
+  | 'bridgeCodeAhead'
 > & { storageVersion: number } {
   return {
     id: project.id,
@@ -695,6 +706,7 @@ function projectToMetaRecord(
     // projetos classic (undefined é preservado pelo structured clone do IDB).
     kind: project.kind,
     proMeta: project.proMeta,
+    bridgeCodeAhead: project.bridgeCodeAhead,
   }
 }
 
@@ -713,7 +725,7 @@ function projectToFilesRecord(
 function projectToStateRecord(project: Project): Pick<Project, 'id' | 'ir'> {
   return {
     id: project.id,
-    ir: project.ir,
+    ir: project.bridgeCodeAhead === true ? null : project.ir,
   }
 }
 

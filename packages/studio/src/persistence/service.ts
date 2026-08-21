@@ -2,6 +2,7 @@ import type { Project } from '#core'
 // Import do MÓDULO PURO (não do barrel #blockly): o service vive no chunk do
 // núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
 import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
+import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
 import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
 import type { StudioPersistenceAdapter } from './types'
 
@@ -217,9 +218,10 @@ export function createPersistenceService(
    * clear deliberado do aluno continua sendo persistido.
    */
   function snapshotForSave(project: Project): Project {
-    if (project.blocksState == null) return project
-    if (!shouldStripBlocks(project.id)) return project
-    return { ...project, blocksState: null }
+    const currentAuthority = snapshotProjectWithCurrentAuthority(project)
+    if (currentAuthority.blocksState == null) return currentAuthority
+    if (!shouldStripBlocks(project.id)) return currentAuthority
+    return { ...currentAuthority, blocksState: null }
   }
 
   const internals: ServiceInternals = {
@@ -286,6 +288,13 @@ export function createPersistenceService(
     // aplicam) ou o host já entregou o projeto COMPLETO.
     if (!adapter?.loadBlocksState) return
     if (project.kind === 'pro') return
+    // A partição existente pertence aos blocos antigos: o texto da Ponte foi
+    // editado depois. Não a restaura por cima do código novo; o reverse-parse
+    // produzirá uma partição coerente e então retirará esta marca.
+    if (project.bridgeCodeAhead === true) {
+      setHydrationStatus(project.id, 'discarded')
+      return
+    }
     if (project.blocksState != null) return
     setHydrationStatus(project.id, 'pending')
     // O timeout NÃO abandona a leitura: só troca 'pending'→'failed' para a UI
@@ -305,6 +314,10 @@ export function createPersistenceService(
         const current = store.getState()
         if (current.project?.id !== project.id) {
           blocksHydrationById.delete(project.id)
+          return
+        }
+        if (current.project.bridgeCodeAhead === true) {
+          setHydrationStatus(project.id, 'discarded')
           return
         }
         if (blocksState == null) {

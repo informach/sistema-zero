@@ -7,6 +7,7 @@ import { createChecksStore } from './checksStore'
 import { createDiagnosticsStore } from './diagnosticsStore'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
+import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
 import { createProjectStore, type StudioLimits, useProjectStore } from './projectStore'
 import { createSourcemapStore } from './sourcemapStore'
 import { StudioStoresContext } from './storesContext'
@@ -30,6 +31,7 @@ export interface StudioStores {
   sourcemap: ReturnType<typeof createSourcemapStore>
   checks: ReturnType<typeof createChecksStore>
   diagnostics: ReturnType<typeof createDiagnosticsStore>
+  pendingEditorEdits: PendingEditorEdits
   persistence: PersistenceService
 }
 
@@ -62,6 +64,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     sourcemap: createSourcemapStore(),
     checks: createChecksStore(),
     diagnostics: createDiagnosticsStore(),
+    pendingEditorEdits: createPendingEditorEdits(),
     persistence: createPersistenceService(project, adapter),
   }
 }
@@ -79,4 +82,9 @@ export function useStudioPersistence(): PersistenceService {
     createLocalPersistenceAdapter(),
   )
   return defaultPersistenceService
+}
+
+/** Buffers de edição que devem ser materializados antes de expor um snapshot. */
+export function usePendingEditorEdits(): PendingEditorEdits | null {
+  return useContext(StudioStoresContext)?.pendingEditorEdits ?? null
 }

@@ -79,6 +79,11 @@ import { createEmptyProject, type StudioHandle } from '@sistemazero/studio'
 
 Props ESTÁTICAS por instância (trocar exige remount): `persistence`, `limits`, `locale`.
 
+`handle.getProject()` materializa primeiro as edições síncronas ainda agrupadas pelos editores. Na
+Ponte, se o texto novo ainda aguarda o reverse-parse, o snapshot mantém os arquivos como fonte da
+verdade e omite IR/blocos da revisão anterior; ao reabrir, o código mais recente nunca é regenerado
+por cima a partir de derivados antigos.
+
 **Botões de saída do projeto** (controlados por `features`, default ON; o `<StudioLesson>` desliga
 `export` e `download`): **Salvar** (persiste + dispara `onSave`), **Baixar** (`features.download`) gera um ZIP
 de FONTE legível pra continuar no VSCode, e **Exportar** (`features.export`, no menu ⋯) gera o ZIP de deploy

@@ -46,6 +46,7 @@ import { useHighlightStore } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
+import { usePendingEditorEdits } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
@@ -311,6 +312,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const applyProjectState = useProjectStore((s) => s.applyProjectState)
   const projectStoreApi = useProjectStoreApi()
   const diagnosticsStoreApi = useDiagnosticsStoreApi()
+  const pendingEditorEdits = usePendingEditorEdits()
   const studioTheme = useStudioTheme()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
@@ -440,7 +442,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // precedência já documentada no epoch do BridgeMode).
       {
         const s = projectStoreApi.getState()
-        if (options.force && s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch) return
+        if (
+          options.force &&
+          (s.project?.bridgeCodeAhead === true || s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch)
+        )
+          return
       }
       const state = markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace))
       const serialized = JSON.stringify(state)
@@ -535,6 +541,15 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     },
     [regenerateFromBlocks],
   )
+
+  // O host pode pedir o snapshot imediatamente após uma edição, antes dos
+  // 120 ms usados para agrupar eventos do Blockly. Nesse limite, materializa o
+  // workspace atual no Project para que enviar/salvar nunca leia a versão
+  // anterior. O coordenador é por instância: dois Studios não se atravessam.
+  useEffect(() => {
+    if (!pendingEditorEdits) return
+    return pendingEditorEdits.register(flushScheduledRegeneration)
+  }, [pendingEditorEdits, flushScheduledRegeneration])
 
   const persistWorkspaceLayout = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
