@@ -1,3 +1,4 @@
+import type { ImpersonationMode } from '../impersonation/impersonation-mode'
 import type { UserAggregate } from '../user/user.aggregate'
 
 /**
@@ -9,6 +10,8 @@ export interface ActClaim {
   sub: string
   email?: string
   name?: string
+  /** Ausente em tokens antigos; consumidores devem tratá-lo como `readonly`. */
+  mode?: ImpersonationMode
 }
 
 /**

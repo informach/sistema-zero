@@ -9,7 +9,7 @@ import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Inbox, MessageSquare, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 // Viewer compartilhado com a aba "Entregas" do editor de curso (mesma tela de
 // correção; vive lá porque nasceu lá — mover é limpeza futura, o arquivo irmão
@@ -61,6 +61,9 @@ export function EntregasClient() {
   const [q, setQ] = useState('')
   const [qDebounced, setQDebounced] = useState('')
   const [hint, setHint] = useState<string | null>(null)
+  // Toda leitura da fila substitui a anterior. Polling, foco, filtros e paginação
+  // podem se sobrepor; só a geração mais nova tem autoridade para publicar estado.
+  const loadGenerationRef = useRef(0)
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q.trim()), 250)
     return () => clearTimeout(t)
@@ -68,6 +71,7 @@ export function EntregasClient() {
 
   const load = useCallback(
     async (nextOffset: number, append: boolean, background = false) => {
+      const generation = ++loadGenerationRef.current
       if (!background) setLoading(true)
       try {
         const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
@@ -81,17 +85,19 @@ export function EntregasClient() {
           total: number
           hint?: string
         }>(`/api/members/studio-submissions?${params}`)
+        if (generation !== loadGenerationRef.current) return
         setItems((prev) => (append ? [...prev, ...res.items] : res.items))
         setTotal(res.total)
         setOffset(nextOffset)
         setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
-        if (!background) {
+        if (generation === loadGenerationRef.current && !background) {
           toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
         }
       } finally {
-        if (!background) setLoading(false)
+        if (generation === loadGenerationRef.current) setLoading(false)
       }
+      if (generation !== loadGenerationRef.current) return
       // Total de PENDENTES do escopo curso/plataforma (independente da página e do
       // filtro de situação) — o `total` da fila com status=pending, em paralelo.
       try {
@@ -101,9 +107,9 @@ export function EntregasClient() {
         const pending = await apiGet<{ total: number }>(
           `/api/members/studio-submissions?${pendingParams}`,
         )
-        setPendingTotal(pending.total)
+        if (generation === loadGenerationRef.current) setPendingTotal(pending.total)
       } catch {
-        setPendingTotal(null)
+        if (generation === loadGenerationRef.current) setPendingTotal(null)
       }
     },
     [courseId, audience, status, studentFilter, qDebounced],
@@ -112,6 +118,14 @@ export function EntregasClient() {
   useEffect(() => {
     load(0, false)
   }, [load])
+
+  useEffect(
+    () => () => {
+      // Invalida respostas que terminem depois do unmount.
+      loadGenerationRef.current += 1
+    },
+    [],
+  )
 
   // A fila também muda por ação do ALUNO, fora deste browser. Enquanto a tela
   // estiver visível, atualiza silenciosamente; voltar à janela força uma leitura

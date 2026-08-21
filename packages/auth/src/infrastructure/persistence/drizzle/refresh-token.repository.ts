@@ -1,13 +1,14 @@
-import { and, eq, inArray, isNull, lt } from 'drizzle-orm'
+import { and, eq, exists, gt, inArray, isNull, lt, notExists } from 'drizzle-orm'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
   RefreshTokenRepository,
 } from '../../../domain/ports/refresh-token-repository.port'
 import type { Database } from './db'
-import { refreshTokens } from './schema'
+import { refreshTokenFamilies, refreshTokens } from './schema'
 
 type RefreshRow = typeof refreshTokens.$inferSelect
+type RefreshFamilyRow = typeof refreshTokenFamilies.$inferSelect
 
 /**
  * Teto de linhas por DELETE da purga. Uma DELETE única num backlog grande (ex.:
@@ -20,27 +21,70 @@ const PURGE_BATCH_SIZE = 5_000
 export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
   constructor(private readonly db: Database) {}
 
-  async create(input: CreateRefreshTokenInput): Promise<void> {
-    await this.db.insert(refreshTokens).values({
-      id: input.id,
-      userId: input.userId,
-      familyId: input.familyId,
-      tokenHash: input.tokenHash,
-      expiresAt: input.expiresAt,
-      userAgent: input.userAgent ?? null,
-      ip: input.ip ?? null,
-      impersonatorUserId: input.impersonatorUserId ?? null,
-      activeProfileId: input.activeProfileId ?? null,
+  async create(input: CreateRefreshTokenInput): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      await tx
+        .insert(refreshTokenFamilies)
+        .values({
+          id: input.familyId,
+          userId: input.userId,
+          impersonatorUserId: input.impersonatorUserId ?? null,
+          impersonationWritable: input.impersonationWritable ?? false,
+          expiresAt: input.expiresAt,
+        })
+        .onConflictDoNothing()
+
+      // Sessão normal mantém o TTL deslizante histórico. Impersonação preserva
+      // o deadline absoluto da família, mesmo após rotações sucessivas.
+      if (!input.impersonatorUserId) {
+        await tx
+          .update(refreshTokenFamilies)
+          .set({ expiresAt: input.expiresAt, updatedAt: new Date() })
+          .where(
+            and(
+              eq(refreshTokenFamilies.id, input.familyId),
+              isNull(refreshTokenFamilies.revokedAt),
+            ),
+          )
+      }
+
+      const [activeFamily] = await tx
+        .select({ id: refreshTokenFamilies.id })
+        .from(refreshTokenFamilies)
+        .where(
+          and(
+            eq(refreshTokenFamilies.id, input.familyId),
+            isNull(refreshTokenFamilies.revokedAt),
+            gt(refreshTokenFamilies.expiresAt, new Date()),
+          ),
+        )
+        .limit(1)
+      if (!activeFamily) return false
+
+      await tx.insert(refreshTokens).values({
+        id: input.id,
+        userId: input.userId,
+        familyId: input.familyId,
+        tokenHash: input.tokenHash,
+        expiresAt: input.expiresAt,
+        userAgent: input.userAgent ?? null,
+        ip: input.ip ?? null,
+        impersonatorUserId: input.impersonatorUserId ?? null,
+        impersonationWritable: input.impersonationWritable ?? false,
+        activeProfileId: input.activeProfileId ?? null,
+      })
+      return true
     })
   }
 
   async findByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {
     const [row] = await this.db
-      .select()
+      .select({ token: refreshTokens, family: refreshTokenFamilies })
       .from(refreshTokens)
+      .innerJoin(refreshTokenFamilies, eq(refreshTokenFamilies.id, refreshTokens.familyId))
       .where(eq(refreshTokens.tokenHash, tokenHash))
       .limit(1)
-    return row ? toRecord(row) : null
+    return row ? toRecord(row.token, row.family) : null
   }
 
   async claimForRotation(id: string, rotatedAt: Date): Promise<boolean> {
@@ -56,36 +100,81 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
           eq(refreshTokens.id, id),
           isNull(refreshTokens.rotatedAt),
           isNull(refreshTokens.revokedAt),
+          exists(
+            this.db
+              .select({ id: refreshTokenFamilies.id })
+              .from(refreshTokenFamilies)
+              .where(
+                and(
+                  eq(refreshTokenFamilies.id, refreshTokens.familyId),
+                  isNull(refreshTokenFamilies.revokedAt),
+                  gt(refreshTokenFamilies.expiresAt, new Date()),
+                ),
+              ),
+          ),
         ),
       )
       .returning({ id: refreshTokens.id })
     return claimed.length === 1
   }
 
-  async revoke(id: string): Promise<void> {
-    // Só se ainda vigente: re-revogar sobrescreveria o timestamp ORIGINAL da
-    // revogação (trilha de auditoria da reuse-detection).
-    await this.db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date() })
-      .where(and(eq(refreshTokens.id, id), isNull(refreshTokens.revokedAt)))
+  async setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean> {
+    const updated = await this.db
+      .update(refreshTokenFamilies)
+      .set({ impersonationWritable: writable, updatedAt: new Date() })
+      .where(
+        and(
+          eq(refreshTokenFamilies.id, familyId),
+          isNull(refreshTokenFamilies.revokedAt),
+          gt(refreshTokenFamilies.expiresAt, new Date()),
+          exists(
+            this.db
+              .select({ id: refreshTokens.id })
+              .from(refreshTokens)
+              .where(
+                and(
+                  eq(refreshTokens.id, id),
+                  eq(refreshTokens.familyId, familyId),
+                  isNull(refreshTokens.rotatedAt),
+                  isNull(refreshTokens.revokedAt),
+                ),
+              ),
+          ),
+        ),
+      )
+      .returning({ id: refreshTokenFamilies.id })
+    return updated.length === 1
   }
 
   async revokeFamily(familyId: string): Promise<void> {
     // Idem: preserva o revokedAt original das linhas já revogadas (e evita
     // reescrever a família inteira a cada detecção de reuso repetida).
-    await this.db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date() })
-      .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)))
+    const now = new Date()
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(refreshTokenFamilies)
+        .set({ revokedAt: now, updatedAt: now })
+        .where(and(eq(refreshTokenFamilies.id, familyId), isNull(refreshTokenFamilies.revokedAt)))
+      await tx
+        .update(refreshTokens)
+        .set({ revokedAt: now })
+        .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)))
+    })
   }
 
   async revokeAllForUser(userId: string): Promise<void> {
     // Só os ainda vigentes (revokedAt IS NULL) — usa o índice `refresh_tokens_user_idx`.
-    await this.db
-      .update(refreshTokens)
-      .set({ revokedAt: new Date() })
-      .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
+    const now = new Date()
+    await this.db.transaction(async (tx) => {
+      await tx
+        .update(refreshTokenFamilies)
+        .set({ revokedAt: now, updatedAt: now })
+        .where(and(eq(refreshTokenFamilies.userId, userId), isNull(refreshTokenFamilies.revokedAt)))
+      await tx
+        .update(refreshTokens)
+        .set({ revokedAt: now })
+        .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
+    })
   }
 
   async deleteExpired(before: Date): Promise<number> {
@@ -103,21 +192,49 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
         .where(inArray(refreshTokens.id, batch))
         .returning({ id: refreshTokens.id })
       total += deleted.length
+      if (deleted.length < PURGE_BATCH_SIZE) break
+    }
+
+    // A família só sai depois de todas as linhas rotativas. Manter famílias sem
+    // tokens expirados para sempre trocaria uma fuga de segurança por fuga de dados.
+    for (;;) {
+      const batch = this.db
+        .select({ id: refreshTokenFamilies.id })
+        .from(refreshTokenFamilies)
+        .where(
+          and(
+            lt(refreshTokenFamilies.expiresAt, before),
+            notExists(
+              this.db
+                .select({ id: refreshTokens.id })
+                .from(refreshTokens)
+                .where(eq(refreshTokens.familyId, refreshTokenFamilies.id)),
+            ),
+          ),
+        )
+        .limit(PURGE_BATCH_SIZE)
+      const deleted = await this.db
+        .delete(refreshTokenFamilies)
+        .where(inArray(refreshTokenFamilies.id, batch))
+        .returning({ id: refreshTokenFamilies.id })
       if (deleted.length < PURGE_BATCH_SIZE) return total
     }
   }
 }
 
-function toRecord(row: RefreshRow): RefreshTokenRecord {
+function toRecord(row: RefreshRow, family: RefreshFamilyRow): RefreshTokenRecord {
   return {
     id: row.id,
     userId: row.userId,
     familyId: row.familyId,
+    familyExpiresAt: family.expiresAt,
+    familyRevokedAt: family.revokedAt,
     tokenHash: row.tokenHash,
     expiresAt: row.expiresAt,
     rotatedAt: row.rotatedAt,
     revokedAt: row.revokedAt,
-    impersonatorUserId: row.impersonatorUserId,
+    impersonatorUserId: family.impersonatorUserId,
+    impersonationWritable: family.impersonationWritable,
     activeProfileId: row.activeProfileId,
   }
 }

@@ -22,6 +22,14 @@ export interface AuthTokens {
   refreshExpiresIn: number
 }
 
+/** Resposta de mudança de capacidade: mantém o refresh vigente intacto. */
+export interface AuthSessionAccessToken {
+  accessToken: string
+  tokenType: 'Bearer'
+  expiresIn: number
+  refreshExpiresIn: number
+}
+
 /** Veredito da verificação ESTRITA (exp incluso) — p/ decisões de AUTORIZAÇÃO. */
 export type AccessVerdict = { ok: true; user: SessionUser } | { ok: false; expired: boolean }
 
@@ -86,7 +94,7 @@ function claimsToUser(payload: Record<string, unknown>): SessionUser | null {
     status,
   }
   // Impersonação (suporte): a claim `act` identifica o ADMIN navegando como o
-  // aluno — liga o banner e bloqueia mutações de credenciais/perfil.
+  // aluno — liga o banner e informa se mutações normais foram elevadas explicitamente.
   const act = parseActClaim(payload.act)
   if (act) user.act = act
   // Sessão de PERFIL (kids): a claim `pfl` traz a conta + nome do perfil ativo.
@@ -167,6 +175,14 @@ export function createSessionModule(cookieNames: SessionCookieNames) {
     store.set(refreshCookie, tokens.refreshToken, { ...base, maxAge: tokens.refreshExpiresIn })
   }
 
+  async function setAccessCookie(tokens: AuthSessionAccessToken): Promise<void> {
+    const store = await cookies()
+    const base = { httpOnly: true, sameSite: 'lax' as const, secure: isProd(), path: '/' }
+    // O refresh existente continua sendo a credencial da família. Regravar só o
+    // access evita que retry de elevação invalide/rotacione a sessão.
+    store.set(accessCookie, tokens.accessToken, { ...base, maxAge: tokens.refreshExpiresIn })
+  }
+
   async function clearSessionCookies(): Promise<void> {
     const store = await cookies()
     // `set('', maxAge: 0)` com os MESMOS atributos da escrita — `delete()` pelado
@@ -183,6 +199,7 @@ export function createSessionModule(cookieNames: SessionCookieNames) {
     getAccessToken,
     getRefreshToken,
     setSessionCookies,
+    setAccessCookie,
     clearSessionCookies,
   }
 }

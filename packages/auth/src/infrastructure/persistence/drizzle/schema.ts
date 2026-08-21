@@ -65,6 +65,29 @@ export const userDeletionReceipts = auth.table('user_deletion_receipts', {
 })
 
 /**
+ * Estado CANÔNICO da família de refresh. As linhas de `refresh_tokens` são
+ * consumíveis/rotativas; revogação e modo de suporte precisam sobreviver à
+ * criação concorrente de sucessores, por isso vivem nesta linha estável.
+ */
+export const refreshTokenFamilies = auth.table(
+  'refresh_token_families',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    impersonatorUserId: uuid('impersonator_user_id'),
+    impersonationWritable: boolean('impersonation_writable').notNull().default(false),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('refresh_token_families_user_idx').on(t.userId),
+    index('refresh_token_families_expires_idx').on(t.expiresAt),
+  ],
+)
+
+/**
  * Refresh tokens (rotação + reuse-detection). Guarda só o `tokenHash` (sha256) —
  * nunca o valor opaco. `familyId` agrupa uma cadeia de rotações: apresentar um
  * token já revogado revoga a FAMÍLIA inteira (mitiga roubo de refresh token).
@@ -81,11 +104,11 @@ export const refreshTokens = auth.table(
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     userAgent: text('user_agent'),
     ip: text('ip'),
-    // Sessão de IMPERSONAÇÃO: id do admin que está navegando como `userId`
-    // (`null` = sessão normal). Vive na FAMÍLIA: cada rotação re-deriva a claim
-    // `act` e o TTL curto a partir daqui — sem isso a rotação "esqueceria" a
-    // impersonação (re-emite do UserAggregate) e esticaria o TTL de volta.
+    // Espelho legado por linha, mantido para compatibilidade/backfill. A fonte
+    // canônica do ator é `refresh_token_families.impersonator_user_id`.
     impersonatorUserId: uuid('impersonator_user_id'),
+    // Espelho legado por linha. O modo efetivo vem sempre da família canônica.
+    impersonationWritable: boolean('impersonation_writable').notNull().default(false),
     // Sessão de PERFIL (estilo Netflix): id do perfil de criança ativo. O `userId`
     // da linha é a CONTA do responsável; `active_profile_id` é a sobreposição que
     // vira o `sub`/`pfl` do access token. Vive na FAMÍLIA: a rotação re-deriva a
@@ -256,6 +279,7 @@ export const auditLogs = auth.table(
 export const schema = {
   users,
   userDeletionReceipts,
+  refreshTokenFamilies,
   refreshTokens,
   passwordResetTokens,
   otpCodes,

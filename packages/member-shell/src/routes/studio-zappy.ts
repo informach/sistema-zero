@@ -1,6 +1,7 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import { resolveStudioTier } from '../lib/studio-tier'
 import type { AiCreditsView } from '../lib/types'
 import { consumeAiQuotaStrict } from '../server/ai-quota'
@@ -189,7 +190,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const user = await sessions.getSession()
       const query = historyQuery(req)
       if (!user) return error('UNAUTHORIZED', 401)
-      if (user.act) return error('IMPERSONATION_READONLY', 403)
+      if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
       if (!(await isStudioZappyAllowedForRequest(members, user)))
         return error('ZAPPY_NOT_ENABLED', 403)
       if (!query) return error('INVALID_INPUT', 400)
@@ -204,7 +205,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
       const startedAt = Date.now()
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
-      if (user.act) return error('IMPERSONATION_READONLY', 403)
+      if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
       let raw: unknown
       try {
         raw = await readBoundedJson(req, QUESTION_BODY_MAX_BYTES)
@@ -399,7 +400,7 @@ export function createStudioZappyRoutes(deps: { members: MembersClient; session:
     POST: async (req: Request) => {
       const user = await sessions.getSession()
       if (!user) return error('UNAUTHORIZED', 401)
-      if (user.act) return error('IMPERSONATION_READONLY', 403)
+      if (isReadonlyImpersonation(user)) return error('IMPERSONATION_READONLY', 403)
       if (!(await isStudioZappyAllowedForRequest(members, user)))
         return error('ZAPPY_NOT_ENABLED', 403)
       let raw: unknown

@@ -1,0 +1,1 @@
+ALTER TABLE "auth"."refresh_tokens" ADD COLUMN "impersonation_writable" boolean DEFAULT false NOT NULL;

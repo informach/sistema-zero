@@ -1,6 +1,7 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import { resolveStudioTier } from '../lib/studio-tier'
 import type { PensaArtifactView, PensaStageView } from '../lib/types'
 import type { MembersClient } from '../server/clients'
@@ -151,7 +152,7 @@ export function createPensaRoutes(deps: { members: MembersClient; session: Sessi
   const { members, session } = deps
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    if (user?.act) {
+    if (isReadonlyImpersonation(user)) {
       return NextResponse.json(
         { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
         { status: 403 },

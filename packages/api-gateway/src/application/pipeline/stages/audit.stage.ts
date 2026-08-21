@@ -4,9 +4,10 @@ import type { GatewayContext, Stage } from '../stage.port'
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 /**
- * Finalizer de AUDITORIA: quando a rota é `audit`-marcada e respondeu com SUCESSO
- * (2xx) por um ator resolvido, emite um evento ao auth (fire-and-forget). Roda SEMPRE
- * (é finalizer), mas só emite no caminho feliz de mutação — nunca em 3xx/4xx/5xx/erro.
+ * Finalizer de AUDITORIA: quando a rota é `audit`-marcada ou a sessão de suporte
+ * está em modo write e respondeu com SUCESSO (2xx) por um ator resolvido, emite um
+ * evento ao auth (fire-and-forget). Roda SEMPRE (é finalizer), mas só emite no
+ * caminho feliz de mutação — nunca em 3xx/4xx/5xx/erro.
  * NUNCA bloqueia a resposta: o `emit` é disparado sem `await` e, no caso em que o alvo
  * só existe no corpo da RESPOSTA, a LEITURA do corpo é adiada para fora do caminho
  * quente (clona síncrono — barato — e lê no disparo assíncrono), para que o finalize e
@@ -16,8 +17,11 @@ export function createAuditStage(deps: { emitter: AuditEmitter }): Stage {
   return {
     name: 'audit',
     run(ctx: GatewayContext) {
-      const audit = ctx.route?.route.audit
-      if (!audit) return undefined
+      const configuredAudit = ctx.route?.route.audit
+      const impersonationWrite =
+        ctx.user?.impersonatorId !== undefined && ctx.user.impersonationMode === 'write'
+      if (!configuredAudit && !impersonationWrite) return undefined
+      const audit = configuredAudit ?? {}
       const status = ctx.response?.status ?? 500
       if (status < 200 || status >= 300) return undefined
       if (!MUTATING_METHODS.has(ctx.method)) return undefined

@@ -477,6 +477,170 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   em partes/`downloadProject`). **Pende QA em staging** (CORS PUT `application/gzip` no bucket UGC;
   roteiro no doc do plano — inclui o de partes).
 
+## `/jogar`: o palco segue o JOGO, e gira no celular em pé (20/08/2026)
+
+Relato dela: no celular, com os controles escondidos, "ficou com muita área livre e pouca área de
+jogo". Medido num aparelho de 393x660: o palco ficava em 369x221 (31% da tela) com ~355px de fundo
+vazio. ⚠️ **O teto sem girar é GEOMETRIA, não espaçamento** — o palco é deitado e o celular em pé é
+estreito, então a largura manda: zerar toda a margem renderia só ~13% de área. Girar 90° rende 2,4x.
+
+- **`lib/stage-fit.ts`** (puro) — `sanitizeStageAspect` (a proporção vem do jogo da criança: é DADO,
+  então exige finitos, positivos e dentro de 0,2..5) e **`shouldRotateStage`**, que decide por
+  GEOMETRIA e não por "é celular": compara o palco que cabe em pé com o que cabe deitado e gira com
+  ganho ≥ 1,25x, só com ponteiro grosso. É o que faz a regra se acertar sozinha sem lista de
+  aparelhos — jogo EM PÉ num celular em pé não gira (girar o encolheria), desktop nunca gira.
+- **`components/kids/public-stage.tsx`** é o dono ÚNICO do layout nos quatro estados (console em pé,
+  console deitado, palco nu, palco nu girado); o `mobile-gamepad.tsx` ficou só com os widgets de
+  controle. ⭐ **Uma árvore SÓ, com a moldura condicional em volta de um `{children}` de posição
+  estável**: com um ramo de JSX por estado o React remonta o `<iframe>` e **o jogo REINICIA** — era o
+  que já acontecia ao esconder os controles e ao virar o celular com eles ligados.
+- **A proporção vem do IFRAME** (`sz:stage`, ver o CLAUDE.md do studio): o palco era 5:3 cravado, e
+  um jogo em pé (320x480) encaixotado nele saía com ~147px de largura — o pior caso de "pouca área
+  de jogo" que existia aqui. O host começa em 5:3 e ajusta quando a resposta chega.
+- O tamanho do palco é CALCULADO da caixa que sobrou, no lugar das fórmulas com altura de cabeçalho
+  cravada (`100dvh - 8rem`, `- 152px`), que erravam sempre que o cabeçalho mudava de altura.
+- ⚠️⚠️ **Mede por `clientWidth`/`clientHeight`, NUNCA por `getBoundingClientRect`**: o retângulo é o
+  da caixa já TRANSFORMADA, então dentro do palco girado ele volta com os lados trocados. Medido:
+  368x839 em vez de 839x368, o que fazia o palco girado sair MENOR que o de pé.
+- ⚠️⚠️ **O centramento do palco girado é ABSOLUTO** (`top/left 50%` + `translate(-50%,-50%)`), e não
+  `place-items: center`: o Chromium recua para `start` quando o item é MAIOR que a área de
+  alinhamento — e aqui ele é sempre maior, porque os lados estão trocados. Medido: o jogo ficava em
+  x 213..581 numa tela de 412, ou seja, METADE fora da tela. ⚠️ Área grande não é prova de nada: o
+  e2e passou com o defeito até ganhar a asserção de que a caixa cabe INTEIRA na viewport.
+- A **tela cheia** passou a existir também sem console (no cabeçalho): quem esconde os controles é
+  justamente quem mais quer área de jogo, e perdia o botão junto com a barra. O alvo continua sendo
+  o CORPO do console quando ele existe (pedir na raiz deixaria o console num fundo preto).
+- ⚠️ O toque atravessa o giro sem conta nenhuma: o `__szInput` mede com `getBoundingClientRect` do
+  canvas DENTRO do iframe, onde a rotação de fora não existe. Medido em Chrome: o centro da tela cai
+  em (400, 236) de um palco 800x480, e os quatro lados mapeiam como rotação exata.
+- Sentido: `rotate(90deg)`, ou seja, a criança vira o celular no ANTI-horário (o topo do aparelho
+  aponta para a esquerda) — e o cabeçalho, que gira junto, aparece no alto. Com o giro automático do
+  sistema destravado o aparelho já entra em paisagem e a rotação nossa sai de cena: ela existe para
+  o caso comum do giro TRAVADO.
+- Testes: `tests/stage-fit.test.ts` (a régua pura, com a metade que precisa FALHAR em cada caso),
+  `tests/public-player.test.tsx` (iframe não recriado, giro, proporção, fonte da mensagem) e
+  `e2e/public-player-mobile.spec.ts` (geometria real em Pixel 7).
+
+### Console estilo Super Nintendo, com os controles DERIVADOS do jogo (21/08/2026)
+
+O pad mandava **6 teclas** (as 4 setas, espaço e Enter) — o depara certo de quando o Jogo 2D só
+tinha isso. Hoje são QUATRO vocabulários de entrada: tecla livre no núcleo, 11 teclas no dropdown do
+Jogo 2D (**incluindo A/D/W/S e F, que o pad não mandava**), 9 ações semânticas, 10 no Avançado e
+`event.code` cru no 3D. A criança escolhia "tecla A", funcionava no computador e o jogo ficava morto
+no celular.
+
+⭐ **A descoberta que barateou tudo: tecla sintética já aciona TODAS as camadas de ação.** O Jogo 2D
+converte tecla em ação (`z`/`Space`→pular, `x`/`Shift`→correr, `Enter`→começar, `Escape`→pausar) e o
+Avançado faz o mesmo. Então um canal só — a tecla com `key` E `code` corretos — cobre as seis
+extensões, e não foi preciso protocolo novo de entrada.
+
+- **`@sistemazero/studio/controls`** (`describeProjectControls`) diz, a partir do PROJETO, o que cada
+  botão manda. Vale já no primeiro quadro, sem piscar. Ver o CLAUDE.md do studio.
+- ⚠️ **Conservador de propósito:** A (espaço) e B (Enter) e o direcional valem SEMPRE, com o que o
+  pad já mandava. Jogo que o Estúdio não entenda continua exatamente jogável — o que se ganha é X, Y
+  e a tira, que não existiam.
+- **`console-controls.tsx`** (era `mobile-gamepad.tsx`): cruz, diamante A/B/X/Y, tira SELECT/START e
+  a barra do pé, nos tokens `--snes-*` do globals.css (forma do videogame, cores da casa; as quatro
+  casas preservam o SENTIDO das cores originais). A face carrega a **letra**; o significado
+  ("Pular", "Soltar fogo") vai no `aria-label`, e casa que o jogo não usa fica apagada, inerte e
+  fora do Tab.
+- ⭐ **A cruz virou UMA superfície de toque e ganhou DIAGONAL.** Com um botão por braço, cada um
+  capturando o ponteiro, o dedo nunca alcançava dois braços nem rolava de um para o outro — e andar
+  em 4 direções, voo livre e nado normalizam movimento diagonal desde sempre, sem ninguém conseguir
+  usar. Régua pura em `directionsAtPoint`.
+- ⚠️ **Em pé a tira vai numa linha PRÓPRIA:** cruz + tira + diamante dá mais que a largura de um
+  celular, e o console saía com a cruz e o A cortados nas beiradas (medido em 412px).
+- ⚠️⚠️ **A seta gravada no braço tem token PRÓPRIO (`--snes-cross-ink`), e ele TROCA entre os
+  temas.** Ela contrasta com a CRUZ, não com o corpo do console: usando `--snes-ink` (a tinta de
+  texto, escura no tema claro porque o corpo é claro) a seta ficava escura sobre um braço escuro e
+  sumia — medido em ~1,2:1. A cruz é escura no claro e CLARA no escuro, então a tinta é branca num e
+  navy no outro; um valor só para os dois traz o defeito de volta. Travado por
+  `tests/console-controls.test.tsx`.
+- ⭐ **No desktop o teclado passou a chegar ao jogo sem clicar nele.** O foco nasce na página de
+  fora: a criança abria o link, apertava a seta e não acontecia NADA. Medido: 0 teclas antes do
+  clique, 1 depois. O foco é dado quando o jogo RESPONDE, não ao montar (até lá o `<Player>` ainda
+  troca de elemento).
+- **Tela cheia:** pelo botão do console vai o CORPO do console, com jogo e controles juntos (medido:
+  a cruz fica dentro do elemento em tela cheia). ⚠️⚠️ Quando é o JOGO que pede (o bloco "Tela
+  cheia"), quem vai é o `<iframe>` e o console fica de fora — e **promover o pedido é impossível**:
+  o gesto foi dentro do iframe, então a página de fora não tem ativação e o navegador recusa com
+  `Permissions check failed` (medido). O que dá, e é o que fazemos, é pedir ao jogo que desenhe o
+  pad DELE enquanto estiver com a tela.
+- Testes: `tests/console-controls.test.tsx` (a diagonal, o rolar do dedo, o alias de letra, a casa
+  apagada) + `e2e/public-player-mobile.spec.ts` (teclado sem clique, diagonal com o dedo, `KeyF`,
+  pad único, tela cheia do jogo).
+
+#### Full review do console (21/08/2026) — 5 correções
+
+Rodada sobre o próprio lote, medindo em vez de argumentar. Duas das cinco são regressões que a
+cruz-de-uma-superfície trouxe junto com a diagonal.
+
+1. ⭐⭐ **Um SEGUNDO dedo na cruz soltava a direção do primeiro.** Com quatro botões, cada braço tinha
+   captura própria e dois dedos conviviam; com uma superfície só, o `pointerdown` do segundo dedo
+   reassumia o gesto e o `pointerup` DELE mandava o `keyup` — a criança parava de andar com o dedo
+   ainda apertado (medido: `["keyup ArrowLeft"]` com o polegar da outra mão raspando no console).
+   A cruz passou a atender **um ponteiro por vez, e o primeiro manda**. Regressão em teste, provada
+   que morde.
+2. ⭐ **Num celular de 320px a cruz e o diamante ENCOSTAVAM** (medido: um termina e o outro começa no
+   mesmo pixel, e o diamante passava da margem do corpo). Os dois encolheram um pouco e a linha
+   ganhou `gap` — em `space-between` o gap é PISO, então eles não podem mais se tocar. Hoje sobram
+   12px no pior caso.
+3. **A largura reservada no console DEITADO era número mágico** (`+ 380px`, da época do pad antigo).
+   Virou `DECK_RESERVE_PX`, derivado do tamanho real dos controles, para não envelhecer de novo.
+4. **A mensagem do pad interno corria com o "Ao iniciar" do jogo:** ela saía num tempo fixo e podia
+   chegar ANTES de o `enableClassicControls` do jogo rodar — e aí voltavam dois direcionais. Agora
+   ela é reforçada UMA vez na primeira resposta de palco, que é a prova de que o começo do jogo já
+   rodou (é ele que cria o canvas). ⚠️ O e2e disso cobra o ESTADO final, não a contagem de avisos:
+   cravar o array exato quebrou por um `off` a mais.
+5. **Detalhes:** o foco só é tomado se ninguém estiver com ele (quem chegou de Tab não é puxado para
+   o jogo no meio da navegação), e o `<title>` que eu tinha posto no SVG da seta saiu — mostrava
+   tooltip em INGLÊS numa interface em português, e a regra do biome que eu achei que o exigia está
+   desligada.
+
+⚠️ **Conferido e NÃO é defeito:** num celular de 320px nada é cortado (cruz, tira e palco cabem);
+`describeProjectControls` devolve objeto novo a cada chamada, então não há estado compartilhado entre
+jogos; e a rede do `script.js` não cobre `__szInput.key('x')` do núcleo de propósito — `.key(` é
+genérico demais para regex, e o caminho da IR já cobre jogo feito em blocos.
+
+### Full review do lote acima (21/08/2026) — 4 correções
+
+Rodada sobre o próprio lote, medindo no navegador em vez de argumentar. Três das quatro só
+apareceram porque a medição foi feita em estados que os testes do lote não visitavam.
+
+1. ⭐⭐ **O `alignItems: 'stretch'` que desamarrou a medição GRUDOU o direcional no alto.** Ele
+   entrou para tirar a altura da área do palco de dentro do próprio palco (senão medir para calcular
+   vira laço), mas item com altura PRÓPRIA sob `stretch` assenta no início do eixo. Medido no
+   console deitado: o direcional ficava **60px acima** do centro do jogo. A linha voltou a
+   `center` e quem estica é SÓ a área do palco, por `alignSelf`. Regressão em e2e (reprova em 60,5px).
+2. ⭐ **O modo "preencher" no console EM PÉ era um ponto fixo auto-referente**: a altura saía de
+   `area.h`, que é medida daquela mesma caixa, que é dimensionada pela altura. Não colapsava só
+   porque herdava o valor do primeiro quadro, ainda em 5:3 — ou seja, o valor certo por acidente de
+   ordem. Ali não existe altura a preencher (a linha cresce com o conteúdo), então a altura passou a
+   sair SEMPRE da proporção. ⚠️ **O e2e desse caso NÃO reproduz o defeito** (passa com e sem o
+   conserto, pelo mesmo acidente); ele guarda o resultado, e o conserto é estrutural.
+3. ⭐⭐ **A janela de perguntas fechava em 10s, e o canvas do Jogo 2D Avançado só nasce quando a
+   criança aperta "Começar".** Uma criança parada na tela de título por mais que isso ficava com a
+   proporção padrão para sempre — justo no kit Profissional. Agora é rajada curta (6s) e depois
+   insistência LENTA (2s), que para assim que o formato é conhecido e não corre com a aba escondida.
+   ⚠️ "Não tenho palco" NÃO encerra a pergunta: é a resposta legítima de uma página só de HTML e
+   CSS **e** a que o jogo dá enquanto a tela de título não virou canvas.
+4. **O formato saía do canvas TOCADO** (ver o CLAUDE.md do studio): encostar num mini-mapa mudaria o
+   tamanho do palco no meio do jogo. Passou a ser o MAIOR canvas.
+
+⚠️ **A lição de teste da rodada, pela segunda vez neste lote:** o primeiro e2e da tela de título
+passava em **455ms** — sem canvas o palco preenche a caixa, que num celular em pé já é mais alta que
+larga, então "mais alta que larga" era verdade desde o começo. Cobrar a PROPORÇÃO do jogo (e afirmar
+que ela ainda NÃO vale antes) fez o teste levar 8,7s, que é o tempo de esperar de verdade.
+
+### Remediação do review final (21/08/2026)
+
+- Trocar o id do player remonta a instância do recurso: autor, projeto, iframe, aspecto e overrides
+  nunca vazam do jogo anterior enquanto a nova busca resolve.
+- Face A/B/X/Y e tira SELECT/START implementam o ciclo de tecla segurada também por Enter/Espaço,
+  com `keyup` em blur, troca de binding e unmount.
+- O protocolo `sz:pad-interno` carrega `mode: 'auto'|'always'|'off'`; nunca reduz `always` a `auto`.
+- `describeProjectControls` preserva esse modo exato e mapeia a tecla explícita `z` para a face A.
+
 ## Estúdio Completo (produto vendável — 06/2026)
 
 O **estúdio completo** (`@sistemazero/studio`) virou um PRODUTO vendável, ao lado do Mural/Clube:
@@ -853,7 +1017,9 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    segue sem `FUNNEL_URL` de env.
 5. **SEM `public/sw.js`** (kill-switch era cicatriz do domínio do community).
 6. `/impersonar` EXISTE (suporte): o admin gera o handoff com `?platform=kids` no auth → a URL
-   devolvida é a deste app. Gamificação é a fase 2 (ver seção própria) — NÃO improvisar
+   devolvida é a deste app. O banner persiste também em `/perfis`, usa o nome do perfil ativo e
+   fica vermelho no modo explícito `write`; ao sair/trocar de perfil a nova sessão volta a
+   `readonly`. Gamificação é a fase 2 (ver seção própria) — NÃO improvisar
    contadores fake no meio-tempo.
 7. **Branding (06/2026)**: logo = wordmark OFICIAL (`public/logo_dark|white.svg`, copiados do
    community) + selo "kids" composto em HTML (`kids-logo.tsx` — SVG via `<img>` não carrega

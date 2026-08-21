@@ -188,6 +188,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             password: body.password,
             userAgent: headers['user-agent'] ?? null,
             ip: clientIp({ request, server, headers }),
+            impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
           })
         },
         { body: ExitProfileSessionBody },

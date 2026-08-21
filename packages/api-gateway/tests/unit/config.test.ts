@@ -7,6 +7,18 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('self-service mutante da conta é autenticado no gateway e preserva o Bearer', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+
+    for (const id of ['auth-me-update', 'auth-me-password']) {
+      expect(byId.get(id)).toMatchObject({
+        auth: { required: true, mode: 'any', strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        upstreamAuth: 'passthrough',
+      })
+    }
+  })
+
   test('config real expõe o batch de perfis somente com JWT staff+', () => {
     const route = realConfig.routes.find((item) => item.id === 'auth-admin-profiles-batch')
     expect(route).toMatchObject({

@@ -12,8 +12,10 @@ import { SetUserPasswordService } from './application/admin/set-password/set-use
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
+import { ChangeImpersonationModeService } from './application/impersonation/change-impersonation-mode.service'
 import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
+import { ImpersonationSessionValidator } from './application/impersonation/impersonation-session-validator'
 import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
@@ -109,6 +111,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const profilesRepo = new DrizzleProfileRepository(db)
   const auditLogs = new DrizzleAuditLogRepository(db)
   const hasher = createBunPasswordHasher()
+  const impersonationSessions = new ImpersonationSessionValidator(users)
 
   // Teto de perfis (kids) resolvido S2S no members (matrícula = fonte da verdade).
   const profileAllowance = createMembersAllowanceGateway({
@@ -160,7 +163,14 @@ export async function createApplication(env: Env): Promise<Application> {
     { passwordMinLength: env.PASSWORD_MIN_LENGTH },
     logger,
   )
-  const refresh = new RefreshService(users, refreshTokens, authTokens, profilesRepo, logger)
+  const refresh = new RefreshService(
+    users,
+    refreshTokens,
+    authTokens,
+    profilesRepo,
+    impersonationSessions,
+    logger,
+  )
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
   // Reset/definição de senha + self-service de perfil.
@@ -267,6 +277,16 @@ export async function createApplication(env: Env): Promise<Application> {
     users,
     impersonationTokens,
     authTokens,
+    impersonationSessions,
+    logger,
+  )
+  const changeImpersonationMode = new ChangeImpersonationModeService(
+    users,
+    refreshTokens,
+    profilesRepo,
+    authTokens,
+    impersonationSessions,
+    auditLogs,
     logger,
   )
   // Perfis (estilo Netflix) gerenciados pelo responsável.
@@ -279,8 +299,18 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
-  const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
-  const exitProfileSession = new ExitProfileSessionService(users, hasher, authTokens)
+  const selectProfile = new SelectProfileService(
+    profilesRepo,
+    users,
+    authTokens,
+    impersonationSessions,
+  )
+  const exitProfileSession = new ExitProfileSessionService(
+    users,
+    hasher,
+    authTokens,
+    impersonationSessions,
+  )
   const getPublicProfile = new GetPublicProfileService(profilesRepo)
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida
@@ -327,6 +357,7 @@ export async function createApplication(env: Env): Promise<Application> {
     readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
+    changeImpersonationMode,
     // Report dos pais (S2S members): identidade mínima em lote.
     users,
     profilesRepo,

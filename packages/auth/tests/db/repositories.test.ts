@@ -26,8 +26,9 @@ import { DrizzleUserRepository } from '../../src/infrastructure/persistence/driz
  *  1. O UPDATE otimista persiste TODOS os campos mutáveis (incl. passwordHash).
  *  2. A unique de e-mail vale no banco (23505 → EmailAlreadyInUseError).
  *  3. `claimForRotation` é ATÔMICO sob concorrência (A1 do full review).
- *  4. A busca `q` escapa curingas do ILIKE (B5).
- *  5. `deleteExpired`/`lastIssuedAt` (purga M2 + cooldown M3).
+ *  4. Revogar a família impede inserir um sucessor após a corrida de logout.
+ *  5. A busca `q` escapa curingas do ILIKE (B5).
+ *  6. `deleteExpired`/`lastIssuedAt` (purga M2 + cooldown M3).
  *
  * Usa o Postgres de dev (Docker, porta 5433) num banco DEDICADO
  * `sistemazero_test` (criado aqui; nunca toca os dados de dev). Sem Postgres
@@ -125,6 +126,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
   beforeEach(async () => {
     await conn.sql`
       truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
+        auth.refresh_token_families,
         auth.password_reset_tokens, auth.otp_codes cascade`
   })
 
@@ -233,6 +235,35 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(results.filter(Boolean)).toHaveLength(1) // o lock de linha serializa: 1 vence
   })
 
+  test('família revogada não aceita sucessor criado depois do logout', async () => {
+    const user = newUser('family-revoke@example.com')
+    await users.create(user)
+    const familyId = randomUUID()
+    const firstId = randomUUID()
+    const expiresAt = new Date(Date.now() + 60_000)
+    expect(
+      await refreshTokens.create({
+        id: firstId,
+        userId: user.id,
+        familyId,
+        tokenHash: sha256Hex(`refresh-${firstId}`),
+        expiresAt,
+      }),
+    ).toBeTrue()
+    expect(await refreshTokens.claimForRotation(firstId, new Date())).toBeTrue()
+
+    await refreshTokens.revokeFamily(familyId)
+    expect(
+      await refreshTokens.create({
+        id: randomUUID(),
+        userId: user.id,
+        familyId,
+        tokenHash: sha256Hex(`successor-${firstId}`),
+        expiresAt,
+      }),
+    ).toBeFalse()
+  })
+
   test('busca q escapa curingas do ILIKE (literal, não padrão)', async () => {
     await users.create(newUser('alice@example.com'))
     await users.create(newUser('bob@example.com'))
@@ -283,13 +314,19 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       codeHash: sha256Hex('123456'),
       expiresAt: past,
     })
+    const expiredRefreshId = randomUUID()
+    const expiredFamilyId = randomUUID()
     await refreshTokens.create({
-      id: randomUUID(),
+      id: expiredRefreshId,
       userId: user.id,
-      familyId: randomUUID(),
+      familyId: expiredFamilyId,
       tokenHash: sha256Hex('refresh-velho'),
-      expiresAt: past,
+      expiresAt: future,
     })
+    // O port não aceita criar credencial já vencida; envelhece as duas linhas no
+    // banco para exercitar a purga real de token + família órfã.
+    await conn.sql`update auth.refresh_tokens set expires_at = ${past.toISOString()} where id = ${expiredRefreshId}`
+    await conn.sql`update auth.refresh_token_families set expires_at = ${past.toISOString()} where id = ${expiredFamilyId}`
 
     // lastIssuedAt enxerga a emissão mais recente (consumida ou não).
     expect(await resetTokens.lastIssuedAt(user.id)).not.toBeNull()
@@ -300,6 +337,9 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(await resetTokens.deleteExpired(cutoff)).toBe(1) // só o vencido
     expect(await otpCodes.deleteExpired(cutoff)).toBe(1)
     expect(await refreshTokens.deleteExpired(cutoff)).toBe(1)
+    const [families] =
+      await conn.sql`select count(*)::int as count from auth.refresh_token_families where id = ${expiredFamilyId}`
+    expect(families?.count).toBe(0)
     // O token vivo sobreviveu.
     expect(await resetTokens.findByHash(sha256Hex('reset-vivo'))).not.toBeNull()
   })

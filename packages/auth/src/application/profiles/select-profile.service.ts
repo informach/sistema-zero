@@ -1,10 +1,10 @@
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
-import type { ActClaim } from '../../domain/ports/token-issuer.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { ProfileNotFoundError } from '../../domain/profile/profile.errors'
 import { UserNotActiveError } from '../../domain/user/user.errors'
+import type { ImpersonationSessionValidator } from '../impersonation/impersonation-session-validator'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
-import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
+import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
 
 export interface SelectProfileCommand {
   /** Conta do responsável (resolvida da sessão atual — conta OU perfil). */
@@ -35,6 +35,7 @@ export class SelectProfileService {
     private readonly profiles: ProfileRepository,
     private readonly users: UserRepository,
     private readonly authTokens: AuthTokenService,
+    private readonly impersonationSessions: ImpersonationSessionValidator,
   ) {}
 
   async execute(cmd: SelectProfileCommand): Promise<{ profile: ProfileView; tokens: AuthTokens }> {
@@ -51,26 +52,34 @@ export class SelectProfileService {
     // família — a sessão de perfil herda o TTL curto e morre com o ator (a rotação
     // re-checa). Ator sumido/inativo entre o pedido e aqui → nega (não emite uma
     // sessão de suporte sem ator válido). Espelha a re-derivação do refresh.service.
-    let impersonatorUserId: string | null = null
-    let impersonatorAct: ActClaim | null = null
+    let impersonation: IssueContext['impersonation'] = null
     if (cmd.impersonatorUserId) {
-      const actor = await this.users.findById(cmd.impersonatorUserId)
-      if (!actor?.isActive()) throw new UserNotActiveError('Ator da impersonação indisponível')
-      impersonatorUserId = actor.id
-      impersonatorAct = { sub: actor.id, email: actor.email, name: actor.fullName }
+      const actor = await this.impersonationSessions.validateActor(cmd.impersonatorUserId, account)
+      if (!actor) throw new UserNotActiveError('Ator da impersonação indisponível')
+      // Toda entrada/troca de perfil reinicia a capacidade de suporte.
+      impersonation = {
+        actorId: actor.id,
+        act: {
+          sub: actor.id,
+          email: actor.email,
+          name: actor.fullName,
+          mode: 'readonly',
+        },
+      }
     }
 
     const tokens = await this.authTokens.issueForUser(account, {
       userAgent: cmd.userAgent,
       ip: cmd.ip,
-      activeProfileId: profile.id,
-      profileClaim: {
-        accountId: account.id,
-        name: profile.name,
-        pub: profile.publicProfileEnabled,
+      profile: {
+        profileId: profile.id,
+        claim: {
+          accountId: account.id,
+          name: profile.name,
+          pub: profile.publicProfileEnabled,
+        },
       },
-      impersonatorUserId,
-      impersonatorAct,
+      impersonation,
     })
     return { profile: toProfileView(profile), tokens }
   }

@@ -38,7 +38,12 @@ export function createJoseTokenIssuer(opts: JoseTokenIssuerOptions): TokenIssuer
       if (user.phone) claims.phone = user.phone
       if (user.signupSource) claims.signupSource = user.signupSource
       // Impersonação (RFC 8693): `sub` = alvo; `act.sub` = admin navegando como ele.
-      if (opts?.act) claims.act = opts.act
+      if (opts?.act) {
+        claims.act = {
+          ...opts.act,
+          mode: opts.act.mode === 'write' ? 'write' : 'readonly',
+        }
+      }
       // Sessão de perfil: `sub` = profileId; `pfl.accountId` = conta (x-auth-account-id).
       // A identidade/role/status seguem do `user` (a CONTA) — o perfil só herda.
       if (opts?.profile) {
@@ -120,7 +125,12 @@ function toActClaim(value: unknown): ActClaim | undefined {
   const candidate = value as Record<string, unknown>
   const sub = asString(candidate.sub)
   if (!sub) return undefined
-  return { sub, email: asString(candidate.email), name: asString(candidate.name) }
+  return {
+    sub,
+    email: asString(candidate.email),
+    name: asString(candidate.name),
+    mode: candidate.mode === 'write' ? 'write' : 'readonly',
+  }
 }
 
 function toProfileClaim(value: unknown): ProfileClaim | undefined {

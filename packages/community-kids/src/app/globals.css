@@ -170,6 +170,30 @@
   --sz-cta: var(--sz-kids-azul-texto);
   --sz-gradient: var(--sz-kids-grad-cta-azul);
 
+  /* Console da página pública de jogar: a FORMA é a do Super Nintendo (cruz à
+     esquerda, tira SELECT/START no meio, diamante A/B/X/Y à direita) e as CORES
+     são as da casa. As quatro casas preservam o SENTIDO das cores originais —
+     A vermelho, B quente, X azul, Y verde — trocando o pigmento do videogame
+     pelo da marca. ⚠️ `color-mix` aqui vai `in oklab`: em `oklch` a mistura
+     atravessa o círculo de matiz e sai ROSA (já pago em outra tela). */
+  --snes-body: color-mix(in oklab, var(--kids-cyan) 14%, white);
+  --snes-body-deep: color-mix(in oklab, var(--kids-cyan) 30%, white);
+  --snes-body-edge: color-mix(in oklab, var(--kids-cyan) 55%, white);
+  --snes-cross: color-mix(in oklab, var(--kids-cyan) 72%, black);
+  --snes-cross-edge: color-mix(in oklab, var(--kids-cyan) 88%, black);
+  /* ⚠️ A seta gravada no braço tem token PRÓPRIO: ela contrasta com a CRUZ, não
+     com o corpo do console. Usando o token de tinta (que é escuro no tema claro,
+     porque serve a texto sobre o corpo claro) a seta ficava escura sobre um braço
+     escuro — medido em 1,2:1, ou seja, invisível. */
+  --snes-cross-ink: oklch(0.98 0.01 255);
+  --snes-strip: color-mix(in oklab, var(--kids-cyan) 62%, black);
+  --snes-ink: color-mix(in oklab, var(--kids-cyan) 78%, black);
+  --snes-bezel: oklch(0.22 0.03 255);
+  --snes-a: var(--sz-hot);
+  --snes-b: var(--kids-lime);
+  --snes-x: var(--kids-cyan);
+  --snes-y: var(--kids-verde);
+
   /* Níveis do aluno (carreira de 8, reforma 2D/3D) — cor da AURA + insígnia.
      Versões AA p/ texto branco no light; o dark clareia (ver .dark). Cada nível
      tem sua cor, na ordem da escada. */
@@ -254,6 +278,19 @@
   --sz-hot-fg: oklch(0.18 0.04 262);
   --sz-cta: var(--sz-kids-azul-vivo);
   --sz-gradient: var(--sz-kids-grad-cta-azul-suave);
+
+  /* Console de jogar no dark: o corpo vira navy-noite e a cruz clareia, senão
+     ela some no fundo. As quatro casas já são as versões vivas do dark. */
+  --snes-body: color-mix(in oklab, var(--background) 72%, var(--brand-cyan));
+  --snes-body-deep: color-mix(in oklab, var(--background) 88%, black);
+  --snes-body-edge: color-mix(in oklab, var(--background) 55%, black);
+  --snes-cross: color-mix(in oklab, var(--background) 40%, var(--brand-cyan));
+  /* No escuro a cruz CLAREIA, então a seta escurece — o contraste vem do par,
+     não de uma cor fixa. */
+  --snes-cross-ink: oklch(0.2 0.04 258);
+  --snes-cross-edge: color-mix(in oklab, var(--background) 78%, black);
+  --snes-strip: color-mix(in oklab, var(--background) 45%, var(--brand-cyan));
+  --snes-ink: oklch(0.96 0.01 255);
 
   /* Níveis no dark: vivos/claros (a aura aparece sobre o navy-noite). */
   --level-noob: oklch(0.72 0.02 255);

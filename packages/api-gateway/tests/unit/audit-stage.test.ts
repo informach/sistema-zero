@@ -203,4 +203,27 @@ describe('audit stage', () => {
 
     expect(events[0]?.impersonatorId).toBeUndefined()
   })
+
+  test('audita toda mutação bem-sucedida em impersonação write mesmo sem marca na rota', async () => {
+    const { emitter, events } = recordingEmitter()
+    const ctx = makeContext({ method: 'POST', url: 'http://gw.local/members/lessons/1/submit' })
+    ctx.route = route({ id: 'members-studio-submit', audit: undefined })
+    ctx.user = {
+      ...ADMIN,
+      id: 'profile-1',
+      role: 'customer',
+      email: 'cliente@x.com',
+      impersonatorId: 'admin-1',
+      impersonationMode: 'write',
+    }
+    ctx.response = new Response('{}', { status: 200 })
+
+    await createAuditStage({ emitter }).run(ctx)
+
+    expect(events[0]).toMatchObject({
+      actorId: 'profile-1',
+      impersonatorId: 'admin-1',
+      action: 'members-studio-submit',
+    })
+  })
 })

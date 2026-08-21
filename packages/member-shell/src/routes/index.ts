@@ -2,13 +2,14 @@ import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import {
   DIRECT_DELIVERY_MIN_BYTES,
   resolveDownloadMedia,
   WATERMARK_MAX_BYTES,
 } from '../lib/download-mime'
 import { redactProfilesForProfileSession } from '../lib/profile-redaction'
-import type { ChildDashboardView } from '../lib/types'
+import { type ChildDashboardView, IMPERSONATION_MODES } from '../lib/types'
 import type { AuthClient, MembersClient, PaymentsClient, ProfilesClient } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import {
@@ -231,6 +232,8 @@ const ParentReportPrefsBody = z.object({
   disabled: z.boolean(),
 })
 
+const ImpersonationModeBody = z.object({ mode: z.enum(IMPERSONATION_MODES) })
+
 /** Resposta do aluno numa conversa com o professor (o members revalida ≤1000 + trim). */
 const TeacherReplyBody = z.object({ body: z.string().trim().min(1).max(1000) })
 
@@ -283,9 +286,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       { status: 403 },
     )
 
+  const impersonationCredentialsForbidden = () =>
+    NextResponse.json(
+      {
+        error: {
+          code: 'IMPERSONATION_CREDENTIALS_FORBIDDEN',
+          message: 'Credenciais não podem ser alteradas em uma sessão de suporte.',
+        },
+      },
+      { status: 403 },
+    )
+
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    return user?.act ? impersonationReadonly() : null
+    return isReadonlyImpersonation(user) ? impersonationReadonly() : null
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────
@@ -324,17 +338,52 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const authLogout = {
     POST: async () => {
       const refresh = await session.getRefreshToken()
-      if (refresh) await gateway.logoutRequest(refresh)
+      if (refresh && !(await gateway.logoutRequest(refresh))) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'SESSION_REVOKE_FAILED',
+              message: 'Não foi possível encerrar a sessão. Tente novamente.',
+            },
+          },
+          { status: 503 },
+        )
+      }
       await session.clearSessionCookies()
       return NextResponse.json({ ok: true })
+    },
+  }
+
+  const authImpersonationMode = {
+    POST: async (req: Request) => {
+      const user = await session.getSession()
+      if (!user?.act) {
+        return NextResponse.json(
+          { error: { code: 'IMPERSONATION_REQUIRED', message: 'Sessão de suporte necessária.' } },
+          { status: 403 },
+        )
+      }
+      const parsed = ImpersonationModeBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalidInput()
+      const refreshToken = await session.getRefreshToken()
+      if (!refreshToken) {
+        return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
+      }
+
+      const { status, body } = await gateway.changeImpersonationMode(refreshToken, parsed.data.mode)
+      if (status === 200 && body?.tokens) {
+        await session.setAccessCookie(body.tokens)
+        return NextResponse.json({ ok: true, mode: parsed.data.mode })
+      }
+      return NextResponse.json(body ?? { error: { code: 'MODE_CHANGE_FAILED' } }, {
+        status: status === 200 ? 502 : status,
+      })
     },
   }
 
   /** Edita o perfil do PRÓPRIO aluno (nome/telefone — e-mail não é editável). */
   const authMe = {
     PATCH: async (req: Request) => {
-      // Sessão de IMPERSONAÇÃO (claim `act`) é SOMENTE-LEITURA p/ dados do aluno:
-      // suporte não altera perfil/credenciais de quem está sendo atendido.
       const readonly = await requireWritableSession()
       if (readonly) return readonly
       const parsed = UpdateMeBody.safeParse(await req.json().catch(() => null))
@@ -350,10 +399,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
    */
   const authMePassword = {
     POST: async (req: Request) => {
-      // Sessão de IMPERSONAÇÃO é SOMENTE-LEITURA: suporte não troca a senha do
-      // aluno (trocar credenciais alheias seria takeover).
-      const readonly = await requireWritableSession()
-      if (readonly) return readonly
+      // Credenciais nunca são alteradas dentro de impersonação, mesmo em write.
+      const user = await session.getSession()
+      if (user?.act) return impersonationCredentialsForbidden()
       const parsed = ChangePasswordBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
       const { status, body } = await auth.changeMyPassword(parsed.data)
@@ -1418,8 +1466,22 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
       const { id } = await ctx.params
       if (!UUID_RE.test(id)) return invalidInput()
+      const previousRefresh = await session.getRefreshToken()
       const { status, body } = await profiles.select(id)
       if (status === 200 && body?.tokens) {
+        // A nova sessão sempre nasce readonly; encerra a família anterior para que
+        // uma capacidade write não sobreviva órfã após a troca de perfil.
+        if (previousRefresh && !(await gateway.logoutRequest(previousRefresh))) {
+          return NextResponse.json(
+            {
+              error: {
+                code: 'PROFILE_SESSION_REVOKE_FAILED',
+                message: 'Não foi possível encerrar a sessão anterior. Tente novamente.',
+              },
+            },
+            { status: 503 },
+          )
+        }
         await session.setSessionCookies(body.tokens)
         return NextResponse.json({ ok: true, profile: body.profile })
       }
@@ -1440,12 +1502,22 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       // Captura o refresh da SESSÃO DE PERFIL ANTES de trocar os cookies: ele tem
       // família PRÓPRIA (o exit emite uma família NOVA da conta), então sem revogá-lo
       // a sessão de perfil seguiria válida até expirar — um token órfão após voltar à
-      // área dos pais (full review F3). Revoga só esse token (não toca a nova sessão).
+      // área dos pais (full review F3). Revoga a família antiga (não toca a nova sessão).
       const profileRefresh = await session.getRefreshToken()
       const { status, body } = await profiles.exit(parsed.data.password)
       if (status === 200 && body?.tokens) {
+        if (profileRefresh && !(await gateway.logoutRequest(profileRefresh))) {
+          return NextResponse.json(
+            {
+              error: {
+                code: 'PROFILE_SESSION_REVOKE_FAILED',
+                message: 'Não foi possível encerrar a sessão anterior. Tente novamente.',
+              },
+            },
+            { status: 503 },
+          )
+        }
         await session.setSessionCookies(body.tokens)
-        if (profileRefresh) await gateway.logoutRequest(profileRefresh) // best-effort
         return NextResponse.json({ ok: true })
       }
       return NextResponse.json(body ?? { error: { code: 'EXIT_FAILED' } }, {
@@ -1502,6 +1574,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   return {
     authLogin,
     authLogout,
+    authImpersonationMode,
     authMe,
     authMePassword,
     authForgotPassword,

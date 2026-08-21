@@ -7,7 +7,7 @@ export interface LogoutCommand {
   allSessions?: boolean
 }
 
-/** Caso de uso de logout: revoga o refresh apresentado (ou todas as sessões). Idempotente. */
+/** Caso de uso de logout: encerra a família apresentada (ou todas). Idempotente. */
 export class LogoutService {
   constructor(private readonly refreshTokens: RefreshTokenRepository) {}
 
@@ -23,6 +23,6 @@ export class LogoutService {
     // inicia uma família própria — revogar só a família do token apresentado
     // deixaria os outros dispositivos logados).
     if (command.allSessions) await this.refreshTokens.revokeAllForUser(record.userId)
-    else await this.refreshTokens.revoke(record.id)
+    else await this.refreshTokens.revokeFamily(record.familyId)
   }
 }

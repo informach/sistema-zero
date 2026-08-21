@@ -1,6 +1,7 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import { resolveStudioTier } from '../lib/studio-tier'
 import type {
   PensaArtifactType,
@@ -165,7 +166,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
     POST: async (req: Request) => {
       const user = await session.getSession()
       if (!user) return error('UNAUTHENTICATED', 401)
-      if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
+      if (isReadonlyImpersonation(user))
+        return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
       if (!(await hasAiAppsLevel(members, user.role))) {
         return error(
           'CAREER_LEVEL_REQUIRED',
@@ -293,7 +295,8 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
     POST: async (req: Request, ctx: { params: Promise<{ cycleId: string }> }) => {
       const user = await session.getSession()
       if (!user) return error('UNAUTHENTICATED', 401)
-      if (user.act) return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
+      if (isReadonlyImpersonation(user))
+        return error('IMPERSONATION_READONLY', 403, 'Sessão de suporte é só leitura.')
       if (!(await hasAiAppsLevel(members, user.role))) {
         return error(
           'CAREER_LEVEL_REQUIRED',

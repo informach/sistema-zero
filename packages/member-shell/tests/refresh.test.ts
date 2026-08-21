@@ -7,7 +7,9 @@ mock.module('server-only', () => ({}))
 process.env.JWT_HS256_SECRET ??= 'segredo-de-teste-com-32-caracteres!'
 process.env.GATEWAY_URL ??= 'http://gateway.test'
 
-const { refreshTokens } = await import('../src/server/refresh')
+const { refreshTokens, replaceCachedAccessToken, withCurrentRefreshToken } = await import(
+  '../src/server/refresh'
+)
 
 const TOKENS = {
   accessToken: 'novo-access',
@@ -91,5 +93,43 @@ describe('refreshTokens (single-flight)', () => {
     const map = store[Symbol.for('@sistemazero/community:refresh-inflight')]
     expect(map).toBeInstanceOf(Map)
     expect((map as Map<string, unknown>).has('token-global')).toBe(true)
+  })
+
+  test('mode/logout aguardam refresh concorrente e usam o sucessor atual', async () => {
+    installFetch(
+      () =>
+        new Promise<Response>((resolve) => {
+          setTimeout(() => {
+            void okResponse().then(resolve)
+          }, 20)
+        }),
+    )
+
+    const rotating = refreshTokens('token-em-rotacao')
+    const usedBySensitiveOperation = withCurrentRefreshToken(
+      'token-em-rotacao',
+      async (current) => current,
+    )
+
+    await expect(rotating).resolves.toEqual(TOKENS)
+    await expect(usedBySensitiveOperation).resolves.toBe(TOKENS.refreshToken)
+  })
+
+  test('mudança de modo substitui o access readonly ainda cacheado pelo single-flight', async () => {
+    installFetch(okResponse)
+    await refreshTokens('token-antes-do-modo')
+    await replaceCachedAccessToken('token-antes-do-modo', {
+      accessToken: 'access-write',
+      tokenType: 'Bearer',
+      expiresIn: 900,
+      refreshExpiresIn: 3600,
+    })
+
+    const cached = await refreshTokens('token-antes-do-modo')
+    expect(cached).toEqual({
+      ...TOKENS,
+      accessToken: 'access-write',
+      refreshExpiresIn: 3600,
+    })
   })
 })

@@ -57,6 +57,9 @@ A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cros
   revalida no mount/navegação/`visibilitychange` (no-op no TTL) e **`refreshProfessorCounts()`
   é chamado nos pontos de MUTAÇÃO** (responder thread/panel, marcar lida, moderar, fechar o
   viewer, read-all) — sem isso o badge mente 60s após a própria ação. NUNCA polling/SSE.
+  Essa regra é da SIDEBAR. A página `/admin/professor/entregas` é a exceção deliberada:
+  enquanto visível e sem viewer aberto, atualiza a fila a cada 15s e em focus/visibilitychange;
+  respostas recebem uma geração e somente a requisição mais nova pode publicar estado.
 - **Members novos** (rotas estáticas ANTES de `/:id` no members): `GET /members/admin/
   teacher-threads/unread-count` (count POR STAFF — watermark individual) e `POST …/read-all`
   (escopo opcional = filtros da caixa; devolve `{updated}`); o gateway wildcard já cobria.

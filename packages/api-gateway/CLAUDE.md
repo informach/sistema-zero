@@ -157,7 +157,7 @@ O Elysia tem um único catch-all `.all('/*')` que monta o `GatewayContext` e rod
 
 **Ordem dos stages** (a 1ª `Response` curto-circuita):
 ```
-route-resolve → cors → auth → user-resolution → authorization → global-rate-limit → rate-limit → request-transform → proxy (terminal)
+route-resolve → cors → auth → user-resolution → authorization → impersonation-write → global-rate-limit → rate-limit → request-transform → proxy (terminal)
 ```
 (`user-resolution` resolve `ctx.user` das claims do JWT; `authorization` aplica o RBAC por rota. `global-rate-limit` roda **após** o auth — por isso isenta `principal`s — e só entra na cadeia quando `GLOBAL_RATE_LIMIT_PER_MINUTE > 0`.)
 **Finalizers (SEMPRE rodam, mesmo em curto-circuito/exceção):**
@@ -197,7 +197,7 @@ Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate lim
 
 **Autorização / RBAC** (`authorization.stage`): a rota pode declarar `authorize: { roles?, statuses?, scopes? }`. A presença do bloco exige um **usuário resolvido** (senão 401); `status` deve estar em `statuses` (default `['active']`); `roles`/`scopes` (se definidos) precisam casar (senão 403). Rotas sem `authorize` só exigem autenticação.
 
-**Identidade confiável ao upstream:** o `request-transform.stage` injeta `X-Auth-User-*` (id/email/name/role/status/phone/source) a partir de `ctx.user` e **remove** quaisquer `X-Auth-*` de entrada (anti-spoof). ⚠️ Valores com caractere fora do ASCII imprimível chegam **URI-encoded** (`headerSafeValue` em `header-rules.ts`): `headers.set()` LANÇA com não-ASCII — antes do fix (06/2026), "André" no `x-auth-user-name` virava **500 em toda rota autenticada** p/ usuário com acento no nome (incidente real de prod). Consumidor que precisar do valor original detecta `%` e aplica `decodeURIComponent` (hoje nenhum serviço lê o `name`). O upstream confia neles (vêm só do gateway). As rotas `/auth/*` são públicas + `passthrough` (o IdP cuida da própria auth; o `/me` precisa do Bearer chegando ao upstream). **Consumer HMAC ao upstream (06/2026):** em rotas não-`passthrough`, após o strip das credenciais de borda, o gateway **re-injeta `x-consumer-id` com o `ctx.principal.subject` AUTENTICADO** quando `principal.kind === 'hmac'` (nunca o valor cru do cliente; rotas `resign` sobrescrevem depois com o consumer do próprio gateway). É o que dá ao upstream a identidade do consumer p/ escopo de idempotência — sem isso a `Idempotency-Key` do messaging chegava sem consumer e o dedupe NUNCA engatava (achado crítico do 1º full review do messaging).
+**Identidade confiável ao upstream:** o `request-transform.stage` injeta `X-Auth-User-*` (id/email/name/role/status/phone/source) a partir de `ctx.user` e **remove** quaisquer `X-Auth-*` de entrada (anti-spoof). ⚠️ Valores com caractere fora do ASCII imprimível chegam **URI-encoded** (`headerSafeValue` em `header-rules.ts`): `headers.set()` LANÇA com não-ASCII — antes do fix (06/2026), "André" no `x-auth-user-name` virava **500 em toda rota autenticada** p/ usuário com acento no nome (incidente real de prod). Consumidor que precisar do valor original detecta `%` e aplica `decodeURIComponent` (hoje nenhum serviço lê o `name`). O upstream confia neles (vêm só do gateway). As rotas públicas de `/auth/*` usam `passthrough` porque o IdP valida seus próprios tokens; **`PATCH /auth/me` e `POST /auth/me/password` são JWT + status ativo no gateway E `passthrough`**: o primeiro gate materializa a impersonação para o `impersonation-write.stage`, e o Auth revalida o mesmo Bearer em profundidade. **Consumer HMAC ao upstream (06/2026):** em rotas não-`passthrough`, após o strip das credenciais de borda, o gateway **re-injeta `x-consumer-id` com o `ctx.principal.subject` AUTENTICADO** quando `principal.kind === 'hmac'` (nunca o valor cru do cliente; rotas `resign` sobrescrevem depois com o consumer do próprio gateway). É o que dá ao upstream a identidade do consumer p/ escopo de idempotência — sem isso a `Idempotency-Key` do messaging chegava sem consumer e o dedupe NUNCA engatava (achado crítico do 1º full review do messaging).
 
 ### 4.6 Padrões GoF presentes
 Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decorator (transforms, sticky), Chain of Responsibility (pipeline), Strategy (auth + LB).
@@ -223,9 +223,10 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 
 ---
 
-### 5.1 Auditoria de ações admin (`audit` por rota)
+### 5.1 Auditoria de ações admin e suporte
 
-Rota com `audit: {}` (opt-in, só em rota MUTANTE — POST/PUT/PATCH/DELETE; o boot valida) faz
+Rota com `audit: {}` (opt-in, só em rota MUTANTE — POST/PUT/PATCH/DELETE; o boot valida), ou
+qualquer mutação 2xx numa sessão de impersonação em modo `write`, faz
 o gateway EMITIR um registro S2S best-effort ao auth (`POST /auth/internal/audit`) após a rota
 responder **2xx** por um ator resolvido. É um **finalizer** (`createAuditStage`, roda entre
 `response-transform` e `finalize`); fire-and-forget (`void emitter.emit(...)`) — NUNCA bloqueia
@@ -245,7 +246,9 @@ método, path, `targetId` (1º path param: id/userId/…; ou `targetField` no bo
 quiz/Estúdio; o incidente das entregas sumidas ficou indiagnosticável sem trilha de QUANDO cada
 bloco foi salvo). O auth é o dono do store
 (tabela `auth.audit_logs`) e o painel lê em `GET /auth/admin/audit` (admin+). Para auditar uma
-rota nova, adicione `audit: {}` a ela (não precisa tocar código).
+rota admin nova, adicione `audit: {}` a ela (não precisa tocar código). Esta emissão é
+formalmente **best-effort**; a ativação do modo `write`, por outro lado, é gravada diretamente
+e de forma fail-closed pelo auth antes de a capacidade ser alterada.
 
 ## 6. Convenções de código
 

@@ -13,6 +13,7 @@ import type { SetUserPasswordService } from '../../application/admin/set-passwor
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
+import type { ChangeImpersonationModeService } from '../../application/impersonation/change-impersonation-mode.service'
 import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
 import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
 import type { WriteAuditLogService } from '../../application/internal/write-audit-log/write-audit-log.service'
@@ -75,6 +76,7 @@ export interface HttpDeps {
   readAuditLog: ReadAuditLogService
   createImpersonationToken: CreateImpersonationTokenService
   exchangeImpersonationToken: ExchangeImpersonationTokenService
+  changeImpersonationMode: ChangeImpersonationModeService
   /** Report dos pais (S2S members): identidade mínima em lote (users/emails + profiles/batch). */
   users: UserRepository
   profilesRepo: ProfileRepository
@@ -171,6 +173,7 @@ export function createServer(deps: HttpDeps) {
         trustProxy: deps.env.TRUST_PROXY,
         trustedProxyHops: deps.env.TRUSTED_PROXY_HOPS,
         exchange: deps.exchangeImpersonationToken,
+        changeMode: deps.changeImpersonationMode,
       }),
     )
     .use(profilesRoutes(deps.profiles))

@@ -1,6 +1,6 @@
 import 'server-only'
 import { getEnv } from '../lib/env'
-import type { AuthTokens } from './session'
+import type { AuthSessionAccessToken, AuthTokens } from './session'
 
 /**
  * Resultado da rotação: tokens novos, `invalid` (auth rejeitou — sessão morta,
@@ -34,6 +34,7 @@ interface InflightEntry {
  * encontro.
  */
 const INFLIGHT_KEY = Symbol.for('@sistemazero/community:refresh-inflight')
+const OPERATION_LOCKS_KEY = Symbol.for('@sistemazero/community:refresh-operation-locks')
 
 function inflightMap(): Map<string, InflightEntry> {
   const store = globalThis as Record<symbol, unknown>
@@ -43,6 +44,86 @@ function inflightMap(): Map<string, InflightEntry> {
     store[INFLIGHT_KEY] = map
   }
   return map
+}
+
+function operationLocks(): Map<string, Promise<void>> {
+  const store = globalThis as Record<symbol, unknown>
+  let map = store[OPERATION_LOCKS_KEY] as Map<string, Promise<void>> | undefined
+  if (!map) {
+    map = new Map<string, Promise<void>>()
+    store[OPERATION_LOCKS_KEY] = map
+  }
+  return map
+}
+
+async function serializeRefreshOperation<T>(
+  refreshToken: string,
+  run: () => Promise<T>,
+): Promise<T> {
+  const locks = operationLocks()
+  const previous = locks.get(refreshToken) ?? Promise.resolve()
+  let release = () => {}
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const current = previous.catch(() => undefined).then(() => gate)
+  locks.set(refreshToken, current)
+  await previous.catch(() => undefined)
+  try {
+    return await run()
+  } finally {
+    release()
+    if (locks.get(refreshToken) === current) locks.delete(refreshToken)
+  }
+}
+
+/**
+ * Serializa operações que usam o refresh e segue sucessores já emitidos pelo
+ * single-flight. Mode/logout não reapresentam uma credencial que acabou de ser
+ * rotacionada por outra request do mesmo processo.
+ */
+export function withCurrentRefreshToken<T>(
+  presented: string,
+  run: (current: string) => Promise<T>,
+): Promise<T> {
+  return serializeRefreshOperation(presented, async () => {
+    let current = presented
+    for (let hops = 0; hops < 8; hops++) {
+      const hit = inflightMap().get(current)
+      if (!hit || Date.now() - hit.at >= TTL_MS) break
+      const result = await hit.promise
+      if (typeof result === 'string') break
+      current = result.refreshToken
+    }
+    return run(current)
+  })
+}
+
+/**
+ * Atualiza os resultados ainda cacheados depois de uma mudança de modo. Sem
+ * isso, uma request que reaproveitasse o single-flight poderia regravar um
+ * access readonly antigo por cima do access recém-elevado.
+ */
+export async function replaceCachedAccessToken(
+  presented: string,
+  access: AuthSessionAccessToken,
+): Promise<void> {
+  const inflight = inflightMap()
+  let current = presented
+  for (let hops = 0; hops < 8; hops++) {
+    const entry = inflight.get(current)
+    if (!entry || Date.now() - entry.at >= TTL_MS) return
+    const result = await entry.promise
+    if (typeof result === 'string') return
+    entry.promise = Promise.resolve({
+      ...result,
+      accessToken: access.accessToken,
+      tokenType: access.tokenType,
+      expiresIn: access.expiresIn,
+      refreshExpiresIn: access.refreshExpiresIn,
+    })
+    current = result.refreshToken
+  }
 }
 
 /**
@@ -63,7 +144,9 @@ export function refreshTokens(
   const hit = inflight.get(refreshToken)
   if (hit && now - hit.at < TTL_MS) return hit.promise
 
-  const promise = doRefresh(refreshToken, forward).then((result) => {
+  const promise = serializeRefreshOperation(refreshToken, () =>
+    doRefresh(refreshToken, forward),
+  ).then((result) => {
     // Indisponibilidade é transitória — não cache (a próxima tentativa re-tenta).
     if (result === 'unavailable') inflight.delete(refreshToken)
     return result

@@ -702,17 +702,19 @@ const config: GatewayConfigInput = {
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
-    // Self-service de perfil (app community): o Bearer chega ao auth (passthrough),
-    // que o verifica e edita o PRÓPRIO usuário (nome/telefone — e-mail não).
+    // Self-service de perfil (app community): o gateway TAMBÉM verifica o JWT para
+    // materializar `ctx.user` e aplicar a barreira de impersonação. `passthrough`
+    // preserva o mesmo Bearer para a defesa em profundidade do próprio auth.
     {
       id: 'auth-me-update',
       methods: ['PATCH'],
       pathPattern: '/auth/me',
       service: 'auth',
-      auth: 'public',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
       upstreamAuth: 'passthrough',
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
-      rateLimit: { max: 30, windowMs: 60_000, by: 'ip' },
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
     // Troca de senha logado (exige a senha atual; revoga as sessões no auth).
     {
@@ -720,10 +722,11 @@ const config: GatewayConfigInput = {
       methods: ['POST'],
       pathPattern: '/auth/me/password',
       service: 'auth',
-      auth: 'public',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
       upstreamAuth: 'passthrough',
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
-      rateLimit: { max: 10, windowMs: 60_000, by: 'ip' },
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
     },
     // Token de DEFINIÇÃO de senha do 1º acesso pós-compra (S2S: funil → auth).
     // HMAC de borda (consumer `funnel`) + injeção do token interno do auth
@@ -933,6 +936,18 @@ const config: GatewayConfigInput = {
       id: 'auth-impersonate-exchange',
       methods: ['POST'],
       pathPattern: '/auth/impersonate/exchange',
+      service: 'auth',
+      auth: 'public',
+      upstreamAuth: 'passthrough',
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+    // Eleva/rebaixa a capacidade da sessão de suporte. O refresh opaco autentica a
+    // operação idempotente, mas NÃO é rotacionado; o auth devolve só um access novo.
+    {
+      id: 'auth-impersonate-mode',
+      methods: ['POST'],
+      pathPattern: '/auth/impersonate/mode',
       service: 'auth',
       auth: 'public',
       upstreamAuth: 'passthrough',

@@ -40,6 +40,8 @@ export function createClaimsUserResolver(): UserResolver {
       const act = claims.act
       const impersonatorId =
         act && typeof act === 'object' ? str((act as Record<string, unknown>).sub) : undefined
+      const impersonationMode =
+        impersonatorId && (act as Record<string, unknown>).mode === 'write' ? 'write' : 'readonly'
 
       const user: AuthenticatedUser = {
         id,
@@ -54,6 +56,7 @@ export function createClaimsUserResolver(): UserResolver {
         ...(profileName ? { profileName } : {}),
         ...(profilePublic !== undefined ? { profilePublic } : {}),
         ...(impersonatorId ? { impersonatorId } : {}),
+        ...(impersonatorId ? { impersonationMode } : {}),
       }
       return user
     },

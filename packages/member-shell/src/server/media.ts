@@ -1,6 +1,7 @@
 import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
+import { isReadonlyImpersonation } from '../lib/act'
 import { isSameOriginRequest, requiresOriginCheck } from '../lib/csrf'
 import { isProd } from '../lib/env'
 import type { SessionUser } from '../lib/types'
@@ -73,7 +74,7 @@ export function createMediaModule(deps: { session: SessionModule; gateway: Gatew
     // Sessão de IMPERSONAÇÃO (claim `act`) é SOMENTE-LEITURA: mutação (trocar o
     // avatar do aluno) é barrada; os GETs de download seguem — suporte pode VER o
     // que o aluno vê (a marca d'água sai com o e-mail do aluno, dono do acesso).
-    if (requiresOriginCheck(req.method) && verdict.user.act) {
+    if (requiresOriginCheck(req.method) && isReadonlyImpersonation(verdict.user)) {
       return NextResponse.json(
         {
           error: {

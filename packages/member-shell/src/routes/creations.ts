@@ -2,6 +2,7 @@ import 'server-only'
 import { creationPartStorageKey, creationStorageKey } from '@sistemazero/core/creations'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import type { MembersClient } from '../server/clients'
 import { mediaErrorResponse } from '../server/media'
 import {
@@ -219,7 +220,7 @@ export function createCreationsRoutes(deps: {
     const mismatch = await requireViewerMatch(req)
     if (mismatch) return mismatch
     const user = await session.getSession()
-    if (user?.act) {
+    if (isReadonlyImpersonation(user)) {
       return NextResponse.json(
         { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
         { status: 403 },

@@ -4,12 +4,17 @@ export interface RefreshTokenRecord {
   userId: string
   /** Família de rotação: detectar reuso revoga a família inteira (token roubado). */
   familyId: string
+  /** Expiração/revogação CANÔNICAS da família, independentes da linha rotativa. */
+  familyExpiresAt: Date
+  familyRevokedAt: Date | null
   tokenHash: string
   expiresAt: Date
   rotatedAt: Date | null
   revokedAt: Date | null
   /** Sessão de impersonação: admin navegando como `userId` (`null` = sessão normal). */
   impersonatorUserId: string | null
+  /** Capacidade explícita de escrita da sessão de suporte. `false` também cobre sessão normal. */
+  impersonationWritable: boolean
   /** Sessão de perfil: perfil de criança ativo (`userId` = conta; `null` = sessão da conta). */
   activeProfileId: string | null
 }
@@ -23,6 +28,7 @@ export interface CreateRefreshTokenInput {
   userAgent?: string | null
   ip?: string | null
   impersonatorUserId?: string | null
+  impersonationWritable?: boolean
   activeProfileId?: string | null
 }
 
@@ -31,7 +37,8 @@ export interface CreateRefreshTokenInput {
  * NUNCA é guardado — só o `tokenHash` (sha256), comparado em tempo constante.
  */
 export interface RefreshTokenRepository {
-  create(input: CreateRefreshTokenInput): Promise<void>
+  /** Retorna false quando a família já foi encerrada/expirou. */
+  create(input: CreateRefreshTokenInput): Promise<boolean>
   findByHash(tokenHash: string): Promise<RefreshTokenRecord | null>
   /**
    * Reivindica o token para rotação de forma ATÔMICA: só consome (marca
@@ -42,8 +49,12 @@ export interface RefreshTokenRepository {
    * reuse-detection para sempre.
    */
   claimForRotation(id: string, rotatedAt: Date): Promise<boolean>
-  /** Revoga um token específico (logout). */
-  revoke(id: string): Promise<void>
+  /**
+   * Muda a capacidade canônica sem consumir o refresh. Só aceita a linha atual
+   * vigente de uma família de impersonação ativa; retry com o mesmo token/modo
+   * é idempotente.
+   */
+  setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean>
   /** Revoga TODA a família (reuse-detection / logout global). */
   revokeFamily(familyId: string): Promise<void>
   /**

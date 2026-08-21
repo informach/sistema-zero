@@ -11,6 +11,7 @@ import { createAuthorizationStage } from './application/pipeline/stages/authoriz
 import { createCorsStage } from './application/pipeline/stages/cors.stage'
 import { createFinalizeStage } from './application/pipeline/stages/finalize.stage'
 import { createGlobalRateLimitStage } from './application/pipeline/stages/global-rate-limit.stage'
+import { createImpersonationWriteStage } from './application/pipeline/stages/impersonation-write.stage'
 import { createProxyStage } from './application/pipeline/stages/proxy.stage'
 import { createRateLimitStage } from './application/pipeline/stages/rate-limit.stage'
 import { createRequestTransformStage } from './application/pipeline/stages/request-transform.stage'
@@ -177,6 +178,7 @@ export async function createApplication(
     // Resolve o usuário (claims → ctx.user) e aplica RBAC (role/status/scope) por rota.
     createUserResolutionStage(userResolver),
     createAuthorizationStage(),
+    createImpersonationWriteStage(),
     // Safety-net global por IP (só tráfego anônimo) — antes do limite por-rota.
     // Habilitado só quando configurado (>0); roda após o auth para isentar principals.
     ...(env.GLOBAL_RATE_LIMIT_PER_MINUTE > 0
