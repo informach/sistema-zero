@@ -235,10 +235,7 @@ function StudioCoreBody({
         const project = projectStoreApi.getState().project
         return project ? snapshotProjectWithCurrentAuthority(project) : null
       },
-      save: () => {
-        pendingEditorEdits?.flush()
-        return persistence.save()
-      },
+      save: () => persistence.save(),
       replaceProject: (project) => setReplacedProject(project),
       setMode: (mode) => projectStoreApi.getState().setMode(mode),
       isDirty: () => projectStoreApi.getState().isDirty,

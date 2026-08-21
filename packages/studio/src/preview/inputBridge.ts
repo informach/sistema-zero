@@ -187,6 +187,64 @@ function buildPreviewControlsRuntime(): string {
       try { el.muted = _muted; } catch (err) {}
     });
   });
+  // Formato do palco: o parent (a página pública de jogar) precisa da PROPORÇÃO
+  // do jogo para dar ao iframe uma caixa do tamanho exato — sem tarja preta nas
+  // laterais e sem espaço vazio sobrando. Ele não consegue ler nada daqui (o
+  // sandbox não concede mesma origem, e a nossa é opaca), então PERGUNTA e nós
+  // respondemos. É pergunta/resposta, e não aviso espontâneo, por dois motivos:
+  // a resposta ganha um targetOrigin de verdade (e.origin) em vez de '*', como
+  // no screenshot; e o canvas NASCE DEPOIS (quem o cria é o "Ao iniciar" do
+  // jogo) e ainda pode ser trocado, então quem insiste é quem espera.
+  //
+  // Respondemos c.width/c.height, a resolução INTERNA: depois do resize de
+  // nitidez ela vale DPR vezes o tamanho lógico, mas a PROPORÇÃO — que é tudo o
+  // que o parent usa — continua exata. Sem canvas nenhum (projeto só de HTML e
+  // CSS) a resposta é 0 por 0, que significa "não tenho palco".
+  //
+  // ⚠️ Procura o MAIOR canvas, e NÃO reusa o getCanvas() do ponteiro: aquele
+  // cache aponta para a última tela TOCADA, então encostar num canvas
+  // secundário faria o palco mudar de tamanho no meio do jogo. Maior é a mesma
+  // convenção da captura de capa.
+  function biggestCanvas() {
+    var best = null;
+    var bestArea = -1;
+    try {
+      var all = document.querySelectorAll('canvas');
+      for (var i = 0; i < all.length; i++) {
+        var one = all[i];
+        var area = (Number(one.width) || 0) * (Number(one.height) || 0);
+        if (area > bestArea) { bestArea = area; best = one; }
+      }
+    } catch (err) {}
+    return best;
+  }
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
+    var d = e.data;
+    if (!d || d.type !== 'sz:stage?') return;
+    var stage = biggestCanvas();
+    var sw = stage && isFinite(stage.width) ? stage.width : 0;
+    var sh = stage && isFinite(stage.height) ? stage.height : 0;
+    try {
+      window.parent.postMessage({ type: 'sz:stage', w: sw, h: sh }, e.origin);
+    } catch (err) {}
+  });
+  // Pad de dentro do jogo: o runtime do Jogo 2D sabe desenhar o próprio direcional
+  // por cima do palco ("Ativar controles clássicos"). Quando a página de jogar
+  // desenha o console DELA, os dois aparecem juntos e a criança vê dois
+  // direcionais na mesma tela. O host manda desligar; jogo que não tem esse pad
+  // ignora em silêncio.
+  window.addEventListener('message', function (e) {
+    if (e.source !== window.parent) return;
+    var d = e.data;
+    if (!d || d.type !== 'sz:pad-interno') return;
+    var mode = d.mode === 'auto' || d.mode === 'always' || d.mode === 'off' ? d.mode : null;
+    if (!mode) return;
+    try {
+      var api = window.SZGame2D;
+      if (api && typeof api.enableClassicControls === 'function') api.enableClassicControls(mode);
+    } catch (err) {}
+  });
   // Screenshot: o parent pede, o iframe responde com o dataURL do canvas principal.
   window.addEventListener('message', function (e) {
     if (e.source !== window.parent) return;

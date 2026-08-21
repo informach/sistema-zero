@@ -8,17 +8,32 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Inbox, MessageSquare, X } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
 // Viewer compartilhado com a aba "Entregas" do editor de curso (mesma tela de
 // correção; vive lá porque nasceu lá — mover é limpeza futura, o arquivo irmão
 // `teacher-thread-panel` tem WIP concorrente).
-import { StudioSubmissionViewer } from '@/app/admin/membros/cursos/[courseId]/studio-submission-viewer'
+import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+
+// LAZY de propósito, e não só por peso: o viewer (e os embeds do Estúdio/Pinta
+// atrás dele) só carrega quando uma entrega ABRE — a fila lista sem pagar o
+// chunk. Também mantém o módulo do viewer fora de qualquer processo de teste
+// que venha a carregar a fila: `mock.module` não religa módulo já materializado
+// (vermelhos de 21/08, só no Linux do CI).
+const StudioSubmissionViewer = dynamic(
+  () =>
+    import('@/app/admin/membros/cursos/[courseId]/studio-submission-viewer').then(
+      (m) => m.StudioSubmissionViewer,
+    ),
+  { ssr: false },
+)
+
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { createLatestWins } from '@/lib/latest-wins'
 import {
   isSubmissionPending,
   SUBMISSION_STATUS_LABEL,
@@ -61,6 +76,10 @@ export function EntregasClient() {
   const [q, setQ] = useState('')
   const [qDebounced, setQDebounced] = useState('')
   const [hint, setHint] = useState<string | null>(null)
+  // Toda leitura da fila substitui a anterior. Polling, foco, filtros e paginação
+  // podem se sobrepor; só a geração mais nova tem autoridade para publicar estado
+  // (regra pura em lib/latest-wins, testada isolada).
+  const loadAuthority = useRef(createLatestWins()).current
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q.trim()), 250)
     return () => clearTimeout(t)
@@ -68,6 +87,7 @@ export function EntregasClient() {
 
   const load = useCallback(
     async (nextOffset: number, append: boolean, background = false) => {
+      const generation = loadAuthority.begin()
       if (!background) setLoading(true)
       try {
         const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
@@ -81,17 +101,19 @@ export function EntregasClient() {
           total: number
           hint?: string
         }>(`/api/members/studio-submissions?${params}`)
+        if (!loadAuthority.isCurrent(generation)) return
         setItems((prev) => (append ? [...prev, ...res.items] : res.items))
         setTotal(res.total)
         setOffset(nextOffset)
         setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
-        if (!background) {
+        if (loadAuthority.isCurrent(generation) && !background) {
           toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
         }
       } finally {
-        if (!background) setLoading(false)
+        if (loadAuthority.isCurrent(generation)) setLoading(false)
       }
+      if (!loadAuthority.isCurrent(generation)) return
       // Total de PENDENTES do escopo curso/plataforma (independente da página e do
       // filtro de situação) — o `total` da fila com status=pending, em paralelo.
       try {
@@ -101,17 +123,25 @@ export function EntregasClient() {
         const pending = await apiGet<{ total: number }>(
           `/api/members/studio-submissions?${pendingParams}`,
         )
-        setPendingTotal(pending.total)
+        if (loadAuthority.isCurrent(generation)) setPendingTotal(pending.total)
       } catch {
-        setPendingTotal(null)
+        if (loadAuthority.isCurrent(generation)) setPendingTotal(null)
       }
     },
-    [courseId, audience, status, studentFilter, qDebounced],
+    [courseId, audience, status, studentFilter, qDebounced, loadAuthority],
   )
 
   useEffect(() => {
     load(0, false)
   }, [load])
+
+  useEffect(
+    () => () => {
+      // Invalida respostas que terminem depois do unmount.
+      loadAuthority.invalidate()
+    },
+    [loadAuthority],
+  )
 
   // A fila também muda por ação do ALUNO, fora deste browser. Enquanto a tela
   // estiver visível, atualiza silenciosamente; voltar à janela força uma leitura

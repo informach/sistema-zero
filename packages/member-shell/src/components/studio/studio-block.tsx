@@ -310,9 +310,11 @@ export function StudioBlockView({
     } catch (err) {
       const apiErr = err as ApiError
       setError(
-        apiErr?.code === 'PAYLOAD_TOO_LARGE'
-          ? 'Seu projeto está muito grande para enviar.'
-          : 'Não foi possível enviar o projeto. Tente de novo.',
+        apiErr?.code === 'IMPERSONATION_READONLY'
+          ? 'Ative o modo de edição no banner para reenviar esta atividade.'
+          : apiErr?.code === 'PAYLOAD_TOO_LARGE'
+            ? 'Seu projeto está muito grande para enviar.'
+            : 'Não foi possível enviar o projeto. Tente de novo.',
       )
     } finally {
       setSubmitting(false)

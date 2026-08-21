@@ -10,7 +10,7 @@ export function parseActClaim(value: unknown): ActClaim | undefined {
   const candidate = value as Record<string, unknown>
   const sub = typeof candidate.sub === 'string' && candidate.sub.length > 0 ? candidate.sub : null
   if (!sub) return undefined
-  const act: ActClaim = { sub }
+  const act: ActClaim = { sub, mode: candidate.mode === 'write' ? 'write' : 'readonly' }
   if (typeof candidate.email === 'string' && candidate.email.length > 0) {
     act.email = candidate.email
   }
@@ -21,6 +21,11 @@ export function parseActClaim(value: unknown): ActClaim | undefined {
 /** Nome exibível do ATOR no banner de impersonação (nome → e-mail → genérico). */
 export function actorLabel(act: ActClaim): string {
   return act.name ?? act.email ?? 'um administrador'
+}
+
+/** Só bloqueia mutações quando a sessão de suporte não foi elevada explicitamente. */
+export function isReadonlyImpersonation(user: { act?: ActClaim } | null | undefined): boolean {
+  return Boolean(user?.act && user.act.mode !== 'write')
 }
 
 /**

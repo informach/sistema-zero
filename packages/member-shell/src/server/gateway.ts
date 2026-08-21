@@ -2,8 +2,14 @@ import 'server-only'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import { headers } from 'next/headers'
 import { getEnv } from '../lib/env'
-import { type ForwardHeaders, refreshTokens } from './refresh'
-import type { AuthTokens, SessionModule } from './session'
+import type { ImpersonationMode } from '../lib/types'
+import {
+  type ForwardHeaders,
+  refreshTokens,
+  replaceCachedAccessToken,
+  withCurrentRefreshToken,
+} from './refresh'
+import type { AuthSessionAccessToken, AuthTokens, SessionModule } from './session'
 
 // Tetos das chamadas de saída (upstream pendurado NÃO pode pendurar a request
 // do aluno): dados via gateway cobrem a rota mais lenta com folga; auth
@@ -266,13 +272,29 @@ export function createGatewayModule(session: SessionModule) {
     return publicAuthPost('/auth/impersonate/exchange', { token })
   }
 
-  /** Logout (revoga o refresh no auth). Best-effort. */
-  async function logoutRequest(refreshToken: string): Promise<void> {
-    try {
-      await publicAuthPost('/auth/logout', { refreshToken, allSessions: false })
-    } catch {
-      // best-effort; os cookies são limpos de qualquer forma
-    }
+  /** Rotaciona a sessão de suporte elevando/rebaixando sua capacidade explícita. */
+  function changeImpersonationMode(
+    refreshToken: string,
+    mode: ImpersonationMode,
+  ): Promise<GatewayResponse<{ tokens?: AuthSessionAccessToken; error?: unknown }>> {
+    return withCurrentRefreshToken(refreshToken, async (current) => {
+      const response = await publicAuthPost<{
+        tokens?: AuthSessionAccessToken
+        error?: unknown
+      }>('/auth/impersonate/mode', { refreshToken: current, mode })
+      if (response.status === 200 && response.body?.tokens) {
+        await replaceCachedAccessToken(refreshToken, response.body.tokens)
+      }
+      return response
+    })
+  }
+
+  /** Revoga o refresh no auth; o chamador decide se uma falha pode ser ignorada. */
+  async function logoutRequest(refreshToken: string): Promise<boolean> {
+    const response = await withCurrentRefreshToken(refreshToken, (current) =>
+      publicAuthPost('/auth/logout', { refreshToken: current, allSessions: false }),
+    )
+    return response.status >= 200 && response.status < 300
   }
 
   return {
@@ -283,6 +305,7 @@ export function createGatewayModule(session: SessionModule) {
     loginRequest,
     verifyOtpRequest,
     exchangeImpersonation,
+    changeImpersonationMode,
     logoutRequest,
   }
 }

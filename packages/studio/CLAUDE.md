@@ -37,7 +37,7 @@ mesma página não disputam singleton. A store recebe o mesmo tradutor na factor
 
 **Núcleo + dois componentes** (`src/studio/`): `StudioCore.tsx` é o motor (provider de stores POR INSTÂNCIA + corpo: resolução de config, memoização de chave primitiva `allowedModesKey`/`resolvedModesKey`, sanitize/hydrate, `StudioHandle`, locale latch). A resolução de config (`resolveStudioConfig`/`resolveLearning`/`resolvePreviewSecurity`) fica AQUI; os wrappers só passam props cruas + defaults — duplicar a resolução re-hidrataria por cima das edições do aluno (guardado em `Studio.test.tsx`, que segue testando o `StudioCore` pelo alias). A **atividade com auto-correção** (fase 2) entra por contexto próprio (`src/studio/activity.ts`: tipos `LessonActivity`/`ActivityCheck` — união `structure`/`behavior`/`testcase`/`code` — + `StudioActivityProvider`/`useStudioActivity`, default `null`); o `ActivityPanel` é self-gating → `<StudioEditor>` nunca provê o contexto, então o editor puro não paga pela feature de aula. É **responsivo e montado nos DOIS layouts** (6º review): coluna lateral `w-80` no wide, faixa de topo `w-full max-h-[45%]` no narrow — sem isso o aluno em tela estreita (kids no celular) ficava sem "Verificar" e o gate reprovava em silêncio. O enunciado é markdown (autorado no admin/TipTap) renderizado por `renderLessonMarkdown` (`components/layout/lessonMarkdown.ts`, puro, escape-FIRST + subconjunto seguro). **Runner** (`src/activity/`): `structure.ts` (anda o IR, PURO — espelhado no members p/ recálculo server-side, mesmas fixtures), `harness.ts` (STRING pura injetada no sandbox: roda behavior/testcase/code no `load` e posta `checkResult`), `sandbox.ts` (iframe OCULTO via `buildPreviewDoc`, autentica por `ev.source`), `grade.ts` (nota ponderada), `useActivityRunner` (botão "Verificar" → `checksStore` por instância; `StudioCore` zera o `lastResult` no hydrate/unload p/ não vazar nota entre projetos). `StudioHandle.getActivityResult()` expõe o último resultado p/ o host anexar no envio (correção híbrida). Canal `checkResult` em `src/preview/types.ts`. Só CLÁSSICO (pro/WebContainer fora). ⚠️ **A CSP do preview NÃO libera `'unsafe-eval'`** (só `'unsafe-inline'`): por isso o harness roda o `code` do professor e LÊ globais (`readGlobal`) via `<script>` INLINE injetado (`createElement('script')`+`textContent`) — NUNCA `eval`/`new Function` (bloqueados pela CSP) — e isso também alcança as globais LÉXICAS (`let`/`const` de topo, que NÃO viram `window[...]`). Mexeu no harness? Re-verifique num BROWSER real (o `bun test` não enforça CSP). ⚠️ As definições da atividade VÃO ao aluno (feedback instantâneo) — anti-cola do gate é o `structure` recalculado no servidor.
 
-**Arquitetura de estado**: stores Zustand POR INSTÂNCIA (factories + `StudioStoresContext`); os hooks `useXStore(selector)` caem na store DEFAULT de módulo fora de um `<Studio>` (lista/testes), e as estáticas `useXStore.getState/setState` operam SEMPRE na default (contrato dos testes). `settingsStore` é singleton de propósito (preferência do usuário). Persistência = `PersistenceService` por instância (`src/persistence/service.ts`): qualquer adapter ganha autosave debounced + flush (pagehide/unmount/Salvar); `onChange` SEMPRE no debounce, inclusive com 'none'.
+**Arquitetura de estado**: stores Zustand POR INSTÂNCIA (factories + `StudioStoresContext`); os hooks `useXStore(selector)` caem na store DEFAULT de módulo fora de um `<Studio>` (lista/testes), e as estáticas `useXStore.getState/setState` operam SEMPRE na default (contrato dos testes). `settingsStore` é singleton de propósito (preferência do usuário). Persistência = `PersistenceService` por instância (`src/persistence/service.ts`): qualquer adapter ganha autosave debounced + flush (pagehide/unmount/Salvar); antes de cada limite de snapshot o serviço drena `pendingEditorEdits`, portanto um editor ainda dentro do debounce também entra na gravação; `onChange` SEMPRE no debounce, inclusive com 'none'.
 
 **Paleta**: tokens `--color-sz-*` em `src/styles/studio.css` espelham a paleta oficial do sistema-zero (referência comunidade-sistema-zero) em oklch, dark E light, com identidade dual (accent = brand-lime no dark, cyan no light). Blockly tem temas `sz-dark`/`sz-light` em HEX equivalentes (`src/blockly/theme.ts` — manter em SINCRONIA com o CSS); Monaco segue o tema da instância. Toggle sol/lua na Topbar (some quando o host fixa `theme`). **Revamp visual estilo MakeCode (público kids):** o tema PADRÃO virou CLARO/creme (`#fef9ef`; era dark) — flip em `settingsStore` (init + fallback `?? 'light'`), `studio/theme.tsx` (context default) e `theme.ts`; toggle e host que fixa `theme` seguem. **COR = IDENTIDADE DA CATEGORIA em arco-íris** (`CATEGORY_COLORS`): cada categoria de topo tem 1 cor BEM distinta (Pesquisa cinza · HTML azul-escuro · CSS vermelho · SVG verde · Programação laranja · Canvas roxo · Avançado azul-céu · Jogo 2D rosa · Jogo 3D amarelo) e as SUB-categorias são TONS dela via `categoryShades(base, n)` (`blockly/colorShades.ts`, PURO/sem Blockly, viés-ESCURO — o texto do bloco é BRANCO em TODOS via `.blocklyText`, por isso os tons não podem clarear demais). Mudar a cor base RE-DERIVA os tons; cada `blocks/*.ts` e as extensões game-2d/3d aplicam `categoryShades` + um loop `COLOUR_BY_TYPE`. Fonte redonda `Baloo 2`/`Nunito` (`--font-family-sans` + `FONT_STYLE`, sem `@font-face`) na interface do Studio; os iframes e exports das extensões com HUD usam a fonte que a criança ESCOLHEU entre cinco (bloco "Usar a fonte"), local e incorporada por `official-extensions/gameUiFont.ts` + `gameUiFonts/`, com as licenças em `official-extensions/fonts/`. Toolbox = chips arredondados coloridos (só CSS no `studio.css`, faixa colorida por categoria). ⚠️ renderer custom foi TENTADO e REVERTIDO (dobrar o raio distorcia as "bocas" em C dos blocos com statement-input) — usa `zelos` puro; QA de bloco DEVE incluir blocos com statement-input. Logo oficial: `BrandLogo` (`src/ui-internal/BrandLogo.tsx`) = o SÍMBOLO 160×160 usado na Topbar compacta, extraído do `logoszs.svg` oficial. O símbolo mantém o gradiente lime→cyan e a moldura branca; os ids dos gradientes vêm de `useId()` para preservar a multi-instância.
 
@@ -479,6 +479,51 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
   carregar o editor inteiro). O player usa CSP `strict` por padrão (sem rede passiva) e aceita
   `originAdapter` para trocar `srcDoc` por uma URL HTTP(S) em outra origem; URL same-origin/data/blob
   é recusada. `securityProfile="creative"` é opt-in para conteúdo público que dependa de recursos https.
+- ⭐ **`sz:stage` — o iframe informa o FORMATO do palco (20/08/2026):** 4º par de mensagens do
+  `buildPreviewControlsRuntime` (`preview/inputBridge.ts`), ao lado de gamepad/áudio/screenshot e,
+  como eles, FORA do site exportado. O host pergunta `{type:'sz:stage?'}` e o iframe responde
+  `{type:'sz:stage', w, h}` com `c.width`/`c.height` do MAIOR canvas, no `e.origin` de quem
+  perguntou.
+  - ⚠️ **Maior, e NÃO o `getCanvas()` do ponteiro:** aquele cache aponta para a última tela TOCADA
+    (o `at(e)` o remaneja no `pointerdown`), então encostar num canvas secundário — um mini-mapa —
+    faria o palco mudar de tamanho no meio da partida. "Maior" é a mesma convenção da captura de
+    capa. Travado por teste que toca no secundário antes de perguntar. Nasceu porque a página pública de jogar tinha o palco 5:3 CRAVADO e encaixotava jogo de
+  outro formato (um 320x480 saía com ~147px de largura no celular); o host não pode ler nada de
+  dentro do iframe, então quem sabe informa.
+  - É pergunta/resposta, e não aviso espontâneo, por dois motivos: a resposta ganha um targetOrigin
+    de verdade em vez de `'*'`; e o canvas NASCE DEPOIS (quem o cria é o "Ao iniciar" do jogo) e
+    ainda pode ser trocado, então quem insiste é quem espera.
+  - Respondemos a resolução INTERNA: depois do resize de nitidez ela vale DPR vezes a lógica, mas a
+    PROPORÇÃO — que é tudo o que o host usa — continua exata. **Sem canvas responde 0 por 0**, que
+    significa "não tenho palco" (página só de HTML e CSS) e não silêncio.
+  - ⚠️ Comentário dentro deste runtime VAI para todo documento de preview: escrever o literal
+    `allow-same-origin` numa explicação reprova o teste que garante que o doc não o concede. Pego
+    por `__tests__/renderProject.test.ts` no mesmo dia em que a peça nasceu.
+- ⭐⭐ **`./controls` — o Estúdio diz quais CONTROLES um projeto pede (21/08/2026).** Subpath leve
+  (`src/controls/projectControls.ts`, PURO, no molde de `./server-catalog` e `./server-examples`):
+  `describeProjectControls(project)` varre a IR e devolve o direcional, as quatro casas A/B/X/Y, as
+  pílulas SELECT/START e se o jogo desenha o pad dele. Nasceu porque a página pública de jogar
+  mandava 6 teclas fixas enquanto o Jogo 2D já oferece 11 no dropdown (A/D/W/S e F entre elas).
+  - ⭐ **A tabela `key`+`code` é ÚNICA e mora aqui.** Os runtimes divergem: o 3D lê `event.code` CRU
+    (um botão com `code: 'w'` em vez de `KeyW` é um botão MORTO com cara de certo), o Avançado lê
+    `event.key` minúsculo, o Jogo 2D aceita os dois. Nada disso pode ser escrito à mão noutro lugar.
+  - ⭐ **Tecla sintética já aciona todas as camadas de AÇÃO** (`z`/`Space`→pular, `x`/`Shift`→correr,
+    `Enter`→começar, `Escape`→pausar, e as dez do Avançado), então um canal só cobre as seis
+    extensões — sem protocolo novo de entrada.
+  - ⚠️ **Direção quase nunca aparece como tecla**, e mesmo assim NÃO existe tabela de helpers de
+    movimento aqui: todos eles leem as SETAS (o 3D faz `keys.KeyA || keys.ArrowLeft`, o Jogo 2D manda
+    `ArrowLeft` e `a` para a mesma direção). WASD entra junto da seta só quando a criança usou o
+    bloco de tecla explícito, que é o caso que ficava sem resposta.
+  - ⚠️ Varre por FORMA (procura `type` em todo objeto aninhado), com pilha explícita e `WeakSet` —
+    mesmo molde do `gameUiFonts/resolve.ts`, e pelo mesmo motivo (a IR de um exemplo grande passa de
+    30 mil nós). Com rede no `script.js` para snapshot sem IR.
+  - ⚠️ O subpath é LEVE: só `import type` do núcleo, travado por teste (Blockly aqui colocaria o
+    editor inteiro no bundle de quem só quer jogar).
+- ⭐ **`sz:pad-interno` (21/08/2026):** o host manda o jogo ligar/desligar o pad que o RUNTIME
+  desenha (`SZGame2D.enableClassicControls`). Sem isso o Reino Zero mostrava DOIS direcionais no
+  celular. Também é a saída quando o próprio jogo toma a tela cheia: ali o `<iframe>` vira o elemento
+  em tela cheia e o console fica fora dele, e promover o pedido é impossível (o gesto foi dentro do
+  iframe, o navegador recusa com `Permissions check failed` — medido), então pedimos o pad de dentro.
 - **Desafio do mês (Fase 5, 07/2026):** `StudioShareAdapter.challenge?: { key, title }` — presente
   (o host SÓ passa quando a criança possui Clube+Estúdio), o `ShareDialog` mostra o checkbox
   "🏆 Participar do Desafio do mês: {title}" (opt-in explícito, reseta a cada abertura); marcado, o
@@ -3008,8 +3053,9 @@ passa a escrever também em literal REAL `sz_val_number` (não só shadow) — e
   `ir`/`blocksState` antigos, e a persistência local apaga a partição de blocos defasada. A marca
   atravessa servidor/reabertura e impede o Blockly de regenerar o código anterior; só
   `markBridgeBlocksSynced` a remove quando alcança a última época de edição. Além disso,
-  `getProject()` descarrega os buffers síncronos registrados pelos editores (o Blockly agrupa
-  eventos por 120 ms), portanto enviar imediatamente nunca captura o frame anterior.
+  `getProject()` e o próprio `PersistenceService` descarregam os buffers síncronos registrados
+  pelos editores (o Blockly agrupa eventos por 120 ms), portanto enviar, salvar, desmontar ou
+  fechar a página imediatamente nunca captura o frame anterior.
 - **Sanitizador da partição** une as extensões do META persistido (`loadProjectMetaById`) às do
   chamador — lista defasada não descarta mais um jogo inteiro (tudo-ou-nada continua).
 - ⭐ **Canvas VAZIO não é estado rejeitado** (15/08). `Blockly.serialization.workspaces.save()` num

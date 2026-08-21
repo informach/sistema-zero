@@ -27,6 +27,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <ImpersonationBanner
           studentName={`${session.firstName} ${session.lastName}`.trim() || session.email}
           actorName={actorLabel(session.act)}
+          mode={session.act.mode}
         />
       ) : null}
       <CommunityTopnav user={user} />

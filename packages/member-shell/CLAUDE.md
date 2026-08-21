@@ -233,8 +233,9 @@ numa região `aria-live="polite"` (a11y — o leitor anuncia bloqueado→elegív
 
 **Pensa (planejador de jogos — 08/2026):** o shell expõe o BFF de `@sistemazero/pensa` e espelha
 os contratos do members em `lib/types.ts` e `server/clients.ts`. `createPensaRoutes` valida e repassa
-projetos, ciclos, cinco artefatos, tarefas, handoff e progresso. Escritas respeitam impersonação
-read-only. `GET /tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
+projetos, ciclos, cinco artefatos, tarefas, handoff e progresso. Escritas respeitam o modo
+explícito da impersonação (`readonly` bloqueia; `write` preserva as validações normais). `GET
+/tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
 /tasks/:id/progress` valida IDs e transições.
 
 `createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
@@ -498,7 +499,7 @@ members) + **`avatarSnapshot`** (multipart, FORA do matcher — sobe o PNG p/ o 
 1×/dia — âncora de quem já terminou os cursos e só cria) e `childrenStats` (área dos pais: junta
 identidade dos perfis do auth com os stats por perfil do members; gateado por
 `requireParentGateAccountOnly` no shim do KIDS). Toda escrita passa por `requireWritableSession`
-(impersonação read-only); ids de path validados como UUID na borda.
+(`readonly` bloqueia; `write` libera o fluxo normal); ids de path validados como UUID na borda.
 
 **Privacidade — `authorProfileId` (perfil público, 06/2026):** o `redactAuthors` (`lib/hub-redact`)
 continua zerando o `authorId` cru de TERCEIROS, MAS quando o autor é PÚBLICO (`authorPublic` —
@@ -546,8 +547,13 @@ allowlist `AVATAR_PHOTO_URL_PREFIXES` no members). `select`/`exit` EMITEM tokens
 e o handler TROCA os cookies (igual ao exchange de impersonação): `select` = entrar/trocar de
 perfil (1 clique, sem PIN); `exit` = voltar à área dos pais (gateado pela senha do responsável
 no auth). **`exit` REVOGA o refresh da sessão de perfil deixada** (full review F3): captura o
-refresh ATUAL antes de trocar os cookies e chama `gateway.logoutRequest` (best-effort) — a
-família NOVA da conta não é tocada (família distinta), mas o token de perfil órfão não fica vivo. A claim **`pfl`** do JWT é lida por `parseProfileClaim` (`lib/act.ts`, pura/testada) →
+refresh ATUAL antes de trocar os cookies e chama `gateway.logoutRequest`; a revogação da família
+anterior precisa confirmar antes de instalar a nova sessão. A família NOVA da conta não é tocada
+(família distinta), mas nenhum sucessor concorrente da família antiga fica vivo. Mudança de modo
+usa só um access novo; `refresh.ts` serializa refresh/mode/logout e segue o sucessor cacheado para
+evitar resposta/cookie fora de ordem. O logout só limpa os cookies após o auth confirmar a
+revogação da família; indisponibilidade responde 503 e mantém o banner/sessão visíveis para retry.
+A claim **`pfl`** do JWT é lida por `parseProfileClaim` (`lib/act.ts`, pura/testada) →
 `SessionUser.activeProfile` (`{accountId, name}`). O **proxy** ganhou `requireProfileSelectPath`
 (opcional, só o kids usa): conta logada SEM `pfl` na área de aprender → redireciona p/ a grade
 (ex.: `/perfis`); a própria rota é isenta.
@@ -559,7 +565,7 @@ família NOVA da conta não é tocada (família distinta), mas o token de perfil
 `postTeacherMessage(id, body)` (resposta do aluno — corpo `{body}`), `markTeacherThreadRead(id)`.
 Handlers em `createShellRoutes` → `routes.teacherThreads{List,Unread}`/`teacherThread{Get,Reply,Read}`
 (`/api/members/teacher-threads*`): GET livres (impersonação PODE ler), `Reply`/`Read` gateados por
-`requireWritableSession` (impersonação read-only) + id validado UUID + Zod `TeacherReplyBody` (≤1000).
+`requireWritableSession` (modo `readonly` da impersonação) + id validado UUID + Zod `TeacherReplyBody` (≤1000).
 Tipos mirror em `lib/types.ts` (`TeacherThread{,Summary}View`/`TeacherMessageView`/
 `TeacherThreadContext`/`TeacherMessageRole`). O aluno só RESPONDE (não inicia); o texto renderiza
 PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../members/CLAUDE.md`
@@ -599,8 +605,8 @@ resposta do members — um 400 genérico virava "vou tentar de novo" para uma co
 `baseRevision` (revisão-base do aparelho) passa direto para o members (409 `CREATION_STALE_BASE`
 quando outro aparelho subiu antes). `creationsDelete` apaga do R2 o blob que a lixeira soltou
 (`storageKey` do members) e responde só `{deleted}`. Um 200 SEM corpo do members vira 502 (o
-cliente lia `{ok:true}` como ticket → `fetch(undefined)`). Sessão de suporte (impersonação) é só
-leitura nas escritas; `x-sz-viewer` SEM sessão de perfil não é mismatch (só sessão de OUTRO perfil). **`x-sz-viewer`**: o cliente manda o perfil que enfileirou
+cliente lia `{ok:true}` como ticket → `fetch(undefined)`). Sessão de suporte em `readonly` bloqueia
+as escritas; `write` segue os mesmos gates normais. `x-sz-viewer` SEM sessão de perfil não é mismatch (só sessão de OUTRO perfil). **`x-sz-viewer`**: o cliente manda o perfil que enfileirou
 a chamada; se a sessão já é de OUTRO perfil (irmão que entrou no meio de um upload em voo), TODAS
 as rotas respondem 409 `VIEWER_MISMATCH` — nem o jogo do A entra no índice do B, nem a lista do B
 desce para o IndexedDB do A. Clients em `server/clients.ts` (`listCreations`,

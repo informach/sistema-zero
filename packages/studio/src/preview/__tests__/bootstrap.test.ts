@@ -158,7 +158,11 @@ describe('buildPreviewDoc', () => {
       extensionScripts: ['window.SZGame2D = { ok: true };'],
     })
 
-    expect(doc.match(/window\.SZGame2D/g)).toHaveLength(1)
+    // ⚠️ Conta a ATRIBUIÇÃO, e não a menção ao nome: o bridge do preview LÊ esse
+    // global (é assim que ele desliga o pad que o próprio jogo desenha), então
+    // contar `window.SZGame2D` sozinho passou a acusar quem está certo. O que a
+    // guarda quer dizer é "o runtime da extensão entra UMA vez".
+    expect(doc.match(/window\.SZGame2D\s*=/g)).toHaveLength(1)
   })
 
   it('injeta o bridge de armazenamento antes do código do aluno e semeia o snapshot', () => {

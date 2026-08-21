@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
+import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
 import {
   ImpersonationForbiddenError,
@@ -31,13 +32,20 @@ function setup() {
     refreshTtlDays: 30,
     impersonationRefreshTtlSeconds: 7200,
   })
+  const validator = new ImpersonationSessionValidator(users)
   const create = new CreateImpersonationTokenService(
     users,
     tokens,
     { ttlSeconds: 60 },
     silentLogger,
   )
-  const exchange = new ExchangeImpersonationTokenService(users, tokens, authTokens, silentLogger)
+  const exchange = new ExchangeImpersonationTokenService(
+    users,
+    tokens,
+    authTokens,
+    validator,
+    silentLogger,
+  )
 
   const seedUser = (role: UserRole, status: UserStatus = 'active'): UserAggregate => {
     const id = randomUUID()

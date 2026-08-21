@@ -15,10 +15,13 @@ interface InputApi {
 function load(
   opts: {
     canvas?: unknown
+    canvases?: unknown[]
     gamepads?: unknown[]
     onGamepadQuery?: () => void
     onQuery?: () => void
     runtime?: string
+    /** Globais que o jogo publica (ex.: o `SZGame2D` do runtime do Jogo 2D). */
+    globals?: Record<string, unknown>
   } = {},
 ) {
   type Listener = (ev: unknown) => void
@@ -59,6 +62,7 @@ function load(
         opts.onQuery?.()
         return opts.canvas ?? null
       },
+      querySelectorAll: () => opts.canvases ?? (opts.canvas ? [opts.canvas] : []),
     },
     Audio: FakeAudio,
     navigator: {
@@ -69,6 +73,7 @@ function load(
     },
     parent,
     __szInput: undefined,
+    ...opts.globals,
   } as unknown as Record<string, unknown>
   // O bridge usa `window`, `document` (globais). Passamos como argumentos.
   new Function('window', 'document', 'KeyboardEvent', opts.runtime ?? buildInputBridgeRuntime())(
@@ -98,6 +103,7 @@ describe('inputBridge — window.__szInput', () => {
     expect(input.key('ArrowRight')).toBe(true)
     expect(runtime).not.toContain('sz:screenshot')
     expect(runtime).not.toContain('sz:audio')
+    expect(runtime).not.toContain('sz:stage')
   })
 
   it('key() é true enquanto a tecla está apertada e false após soltar', () => {
@@ -284,6 +290,143 @@ describe('inputBridge — window.__szInput', () => {
         targetOrigin: 'https://comunidade.sistemazero.com.br',
       },
     ])
+  })
+
+  it('responde o formato do palco ao parent, para ele dar ao jogo a caixa certa', () => {
+    const canvas = {
+      isConnected: true,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+      // Resolução INTERNA depois do resize de nitidez (DPR 2 sobre 800x480): o
+      // tamanho não é o lógico, mas a proporção — que é o que o parent usa — sim.
+      width: 1600,
+      height: 960,
+    }
+    const { fire, parent, sent } = load({ canvas })
+
+    fire('message', {
+      data: { type: 'sz:stage?' },
+      source: parent,
+      origin: 'https://kids.sistemazero.com.br',
+    })
+
+    expect(sent).toEqual([
+      {
+        message: { type: 'sz:stage', w: 1600, h: 960 },
+        targetOrigin: 'https://kids.sistemazero.com.br',
+      },
+    ])
+  })
+
+  it('responde 0 por 0 quando o projeto não tem palco (só HTML e CSS)', () => {
+    const { fire, parent, sent } = load()
+
+    fire('message', {
+      data: { type: 'sz:stage?' },
+      source: parent,
+      origin: 'https://kids.sistemazero.com.br',
+    })
+
+    // "Não tenho palco" é uma resposta, não silêncio: é ela que faz o parent
+    // parar de encaixotar a página numa proporção de jogo.
+    expect(sent).toEqual([
+      {
+        message: { type: 'sz:stage', w: 0, h: 0 },
+        targetOrigin: 'https://kids.sistemazero.com.br',
+      },
+    ])
+  })
+
+  it('o palco é o MAIOR canvas, e tocar num secundário não muda a resposta', () => {
+    const palco = {
+      isConnected: true,
+      getContext: () => ({}),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 800, height: 480 }),
+      width: 800,
+      height: 480,
+    }
+    const miniMapa = {
+      isConnected: true,
+      getContext: () => ({}),
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 120, height: 120 }),
+      width: 120,
+      height: 120,
+    }
+    // O primeiro do DOM é o pequeno: quem decide é o TAMANHO, não a ordem.
+    const { fire, parent, sent } = load({ canvas: miniMapa, canvases: [miniMapa, palco] })
+
+    // Encostar no mini-mapa move o cache do PONTEIRO para ele. Se o formato do
+    // palco saísse desse cache, o jogo mudaria de tamanho no meio da partida.
+    fire('pointerdown', { clientX: 10, clientY: 10, target: miniMapa })
+    fire('message', {
+      data: { type: 'sz:stage?' },
+      source: parent,
+      origin: 'https://kids.sistemazero.com.br',
+    })
+
+    expect(sent).toEqual([
+      {
+        message: { type: 'sz:stage', w: 800, h: 480 },
+        targetOrigin: 'https://kids.sistemazero.com.br',
+      },
+    ])
+  })
+
+  it('desliga o pad que o próprio jogo desenha, para não ficarem dois na tela', () => {
+    const chamadas: string[] = []
+    const { fire, parent } = load({
+      globals: {
+        SZGame2D: {
+          enableClassicControls: (mode: string) => {
+            chamadas.push(mode)
+          },
+        },
+      },
+    })
+
+    fire('message', { data: { type: 'sz:pad-interno', mode: 'off' }, source: parent, origin: 'x' })
+    expect(chamadas).toEqual(['off'])
+
+    fire('message', {
+      data: { type: 'sz:pad-interno', mode: 'always' },
+      source: parent,
+      origin: 'x',
+    })
+    expect(chamadas).toEqual(['off', 'always'])
+
+    // De um subframe, nada acontece.
+    fire('message', { data: { type: 'sz:pad-interno', mode: 'auto' }, source: {}, origin: 'y' })
+    expect(chamadas).toEqual(['off', 'always'])
+  })
+
+  it('jogo sem esse pad ignora o pedido em silêncio', () => {
+    const { fire, parent } = load()
+    expect(() => {
+      fire('message', {
+        data: { type: 'sz:pad-interno', mode: 'off' },
+        source: parent,
+        origin: 'x',
+      })
+    }).not.toThrow()
+  })
+
+  it('ignora o pedido de formato do palco vindo de um subframe', () => {
+    const canvas = {
+      isConnected: true,
+      getBoundingClientRect: () => ({ left: 0, top: 0, width: 0, height: 0 }),
+      width: 800,
+      height: 480,
+    }
+    const { fire, sent } = load({ canvas })
+    const attackerSent: unknown[] = []
+
+    fire('message', {
+      data: { type: 'sz:stage?' },
+      source: { postMessage: (message: unknown) => attackerSent.push(message) },
+      origin: 'https://atacante.invalid',
+    })
+
+    expect(attackerSent).toEqual([])
+    expect(sent).toEqual([])
   })
 
   it('aceita gamepad e áudio somente quando a mensagem vem do parent', () => {

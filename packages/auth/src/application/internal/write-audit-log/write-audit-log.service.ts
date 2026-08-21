@@ -18,7 +18,8 @@ export interface WriteAuditLogCommand {
 
 /**
  * Registra uma ação administrativa na trilha de auditoria (S2S, chamada pelo gateway).
- * Append-only; nunca falha o fluxo do chamador (o gateway emite best-effort).
+ * Append-only. Falhas são devolvidas normalmente; é o gateway que escolhe emitir
+ * em best-effort sem bloquear a resposta do usuário.
  */
 export class WriteAuditLogService {
   constructor(private readonly auditLogs: AuditLogRepository) {}

@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { sha256Hex } from '@sistemazero/core/security'
+import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
+import { LogoutService } from '../../src/application/logout/logout.service'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
@@ -23,6 +25,7 @@ describe('Rotação atômica do refresh token', () => {
   function setup() {
     const users = new InMemoryUserRepository()
     const refreshTokens = new InMemoryRefreshTokenRepository()
+    const validator = new ImpersonationSessionValidator(users)
     const tokens = new AuthTokenService(testTokenIssuer(), refreshTokens, {
       refreshTtlDays: 30,
       impersonationRefreshTtlSeconds: 7200,
@@ -32,6 +35,7 @@ describe('Rotação atômica do refresh token', () => {
       refreshTokens,
       tokens,
       new InMemoryProfileRepository(),
+      validator,
       silentLogger,
     )
 
@@ -109,5 +113,18 @@ describe('Rotação atômica do refresh token', () => {
     const antigo = await refreshTokens.findByHash(sha256Hex(raw))
     expect(antigo?.rotatedAt).not.toBeNull()
     expect(antigo?.revokedAt).not.toBeNull()
+  })
+
+  test('logout com token já rotacionado revoga também o sucessor da família', async () => {
+    const { refreshTokens, service, tokens, user } = setup()
+    const initial = await tokens.issueForUser(user)
+    const rotated = await service.execute({ refreshToken: initial.refreshToken })
+    const logout = new LogoutService(refreshTokens)
+
+    await logout.execute({ refreshToken: initial.refreshToken })
+
+    await expect(service.execute({ refreshToken: rotated.refreshToken })).rejects.toBeInstanceOf(
+      InvalidRefreshTokenError,
+    )
   })
 })

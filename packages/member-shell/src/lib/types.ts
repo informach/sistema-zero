@@ -16,15 +16,21 @@ import type {
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
+export const IMPERSONATION_MODES = ['readonly', 'write'] as const
+export type ImpersonationMode = (typeof IMPERSONATION_MODES)[number]
+
 /**
  * Claim de ATOR (RFC 8693 `act`): presente quando a sessão é de IMPERSONAÇÃO —
  * um admin navegando como o aluno (suporte). `sub` = id do admin; `email`/`name`
- * são do ADMIN (exibição no banner). Sessão normal não tem a claim.
+ * são do ADMIN (exibição no banner); `mode` controla a capacidade da sessão.
+ * Sessão normal não tem a claim.
  */
 export interface ActClaim {
   sub: string
   email?: string
   name?: string
+  /** Capacidade explícita da sessão; claims antigas são normalizadas para readonly. */
+  mode: ImpersonationMode
 }
 
 /**

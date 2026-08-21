@@ -40,17 +40,33 @@ describe('createClaimsUserResolver — sessão de perfil (claim pfl)', () => {
 })
 
 describe('createClaimsUserResolver — sessão de impersonação (claim act)', () => {
-  test('act.sub → user.impersonatorId; o sub continua sendo o ALVO', async () => {
+  test('act.sub/mode → impersonador e modo; o sub continua sendo o ALVO', async () => {
     const user = await resolver.resolve(
-      jwt('aluno-1', { ...baseClaims, act: { sub: 'admin-9', email: 'a@x.com', name: 'Admin' } }),
+      jwt('aluno-1', {
+        ...baseClaims,
+        act: { sub: 'admin-9', email: 'a@x.com', name: 'Admin', mode: 'write' },
+      }),
     )
     expect(user?.id).toBe('aluno-1')
     expect(user?.impersonatorId).toBe('admin-9')
+    expect(user?.impersonationMode).toBe('write')
+  })
+
+  test('claim antiga ou mode desconhecido permanece readonly', async () => {
+    const old = await resolver.resolve(
+      jwt('aluno-1', { ...baseClaims, act: { sub: 'admin-9', email: 'a@x.com' } }),
+    )
+    const malformed = await resolver.resolve(
+      jwt('aluno-1', { ...baseClaims, act: { sub: 'admin-9', mode: 'anything' } }),
+    )
+    expect(old?.impersonationMode).toBe('readonly')
+    expect(malformed?.impersonationMode).toBe('readonly')
   })
 
   test('sessão normal (sem act) → impersonatorId ausente', async () => {
     const user = await resolver.resolve(jwt('conta-1', baseClaims))
     expect(user?.impersonatorId).toBeUndefined()
+    expect(user?.impersonationMode).toBeUndefined()
   })
 
   test('act malformado (sem sub) → ignorado', async () => {

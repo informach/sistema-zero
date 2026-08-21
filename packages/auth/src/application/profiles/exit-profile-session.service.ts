@@ -5,7 +5,8 @@ import {
   UserNotActiveError,
   UserNotFoundError,
 } from '../../domain/user/user.errors'
-import type { AuthTokenService, AuthTokens } from '../tokens/auth-token.service'
+import type { ImpersonationSessionValidator } from '../impersonation/impersonation-session-validator'
+import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
 
 export interface ExitProfileSessionCommand {
   /** Conta do responsável (x-auth-account-id da sessão de perfil). */
@@ -14,6 +15,8 @@ export interface ExitProfileSessionCommand {
   password: string
   userAgent?: string | null
   ip?: string | null
+  /** Mantém o vínculo de suporte ao voltar à conta, sempre reiniciando em readonly. */
+  impersonatorUserId?: string | null
 }
 
 /**
@@ -27,6 +30,7 @@ export class ExitProfileSessionService {
     private readonly users: UserRepository,
     private readonly hasher: PasswordHasher,
     private readonly authTokens: AuthTokenService,
+    private readonly impersonationSessions: ImpersonationSessionValidator,
   ) {}
 
   async execute(cmd: ExitProfileSessionCommand): Promise<{ tokens: AuthTokens }> {
@@ -36,9 +40,27 @@ export class ExitProfileSessionService {
     const ok = await this.hasher.verify(cmd.password, account.passwordHash)
     if (!ok) throw new InvalidCredentialsError()
 
+    let impersonation: IssueContext['impersonation'] = null
+    if (cmd.impersonatorUserId) {
+      const actor = await this.impersonationSessions.validateActor(cmd.impersonatorUserId, account)
+      if (!actor) {
+        throw new UserNotActiveError('Ator da impersonação indisponível')
+      }
+      impersonation = {
+        actorId: actor.id,
+        act: {
+          sub: actor.id,
+          email: actor.email,
+          name: actor.fullName,
+          mode: 'readonly',
+        },
+      }
+    }
+
     const tokens = await this.authTokens.issueForUser(account, {
       userAgent: cmd.userAgent,
       ip: cmd.ip,
+      impersonation,
     })
     return { tokens }
   }

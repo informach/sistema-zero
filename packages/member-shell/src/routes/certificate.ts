@@ -1,5 +1,6 @@
 import 'server-only'
 import { NextResponse } from 'next/server'
+import { isReadonlyImpersonation } from '../lib/act'
 import { getEnv } from '../lib/env'
 import { renderCertificatePdf } from '../server/certificate-pdf'
 import type { MembersClient } from '../server/clients'
@@ -57,7 +58,7 @@ export function createCertificateRoutes(deps: { members: MembersClient; session:
     ) => {
       // Impersonação (claim `act`) é SOMENTE-LEITURA: suporte não emite certificado alheio.
       const user = await session.getSession()
-      if (user?.act) {
+      if (isReadonlyImpersonation(user)) {
         return NextResponse.json(
           { error: { code: 'IMPERSONATION_READONLY', message: 'Sessão de suporte é só leitura.' } },
           { status: 403 },

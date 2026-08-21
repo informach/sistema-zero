@@ -172,7 +172,11 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .patch(
       '/me',
       async ({ body, headers }) => {
-        const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
+        const claims = await requireBearer(
+          headers.authorization,
+          deps.tokenIssuer,
+          'account-details',
+        )
         const user = await deps.updateProfile.execute({
           userId: claims.sub,
           firstName: body.firstName,
@@ -187,7 +191,7 @@ export function authRoutes(deps: AuthRoutesDeps) {
     .post(
       '/me/password',
       async ({ body, headers }) => {
-        const claims = await requireBearer(headers.authorization, deps.tokenIssuer)
+        const claims = await requireBearer(headers.authorization, deps.tokenIssuer, 'credentials')
         return deps.changeMyPassword.execute({
           userId: claims.sub,
           currentPassword: body.currentPassword,
@@ -210,11 +214,26 @@ export function authRoutes(deps: AuthRoutesDeps) {
  * perfil-PADRÃO (cujo `sub` colide com o id da conta) a sessão de perfil escreveria
  * na conta — furando o portão da "área dos pais" (full review F1).
  */
-async function requireBearer(header: string | undefined, tokenIssuer: TokenIssuer) {
+type AccountMutation = 'account-details' | 'credentials'
+
+async function requireBearer(
+  header: string | undefined,
+  tokenIssuer: TokenIssuer,
+  mutation: AccountMutation,
+) {
   const token = extractBearer(header)
   if (!token) throw new UnauthorizedError('Token de acesso ausente')
   const claims = await tokenIssuer.verifyAccessToken(token)
   if (!claims) throw new UnauthorizedError('Token inválido ou expirado')
   if (claims.pfl) throw new ForbiddenError('Saia do perfil para gerenciar a conta')
+  if (claims.act) {
+    if (mutation === 'credentials') {
+      throw new ForbiddenError('Credenciais não podem ser alteradas durante uma sessão de suporte')
+    }
+    // Tokens anteriores à introdução do modo não têm `act.mode` e são readonly.
+    if (claims.act.mode !== 'write') {
+      throw new ForbiddenError('Ative o modo de edição para alterar os dados da conta')
+    }
+  }
   return claims
 }

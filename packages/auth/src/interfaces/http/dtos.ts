@@ -145,6 +145,12 @@ export const ImpersonateExchangeBody = t.Object({
   token: t.String({ minLength: 10, maxLength: 512 }),
 })
 
+/** Corpo de `POST /auth/impersonate/mode` (mudança idempotente da capacidade de suporte). */
+export const ImpersonationModeBody = t.Object({
+  refreshToken: t.String({ minLength: 1, maxLength: 4096 }),
+  mode: t.Union([t.Literal('readonly'), t.Literal('write')]),
+})
+
 /**
  * Corpo de `POST /auth/admin/users` (criação pelo painel — fluxo CONVITE).
  * SEM senha: o serviço gera uma aleatória e envia o e-mail de definição.

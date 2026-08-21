@@ -121,8 +121,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       {/* Sessão de impersonação (suporte): faixa persistente acima de tudo. */}
       {session.act ? (
         <ImpersonationBanner
-          studentName={`${session.firstName} ${session.lastName}`.trim() || session.email}
+          studentName={
+            session.activeProfile?.name ??
+            (`${session.firstName} ${session.lastName}`.trim() || session.email)
+          }
           actorName={actorLabel(session.act)}
+          mode={session.act.mode}
         />
       ) : null}
       <FocusModeProvider viewerId={session.id}>

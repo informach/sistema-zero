@@ -13,8 +13,10 @@ import { SetUserPasswordService } from '../../src/application/admin/set-password
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from '../../src/application/get-me/get-me.service'
+import { ChangeImpersonationModeService } from '../../src/application/impersonation/change-impersonation-mode.service'
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
+import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
 import { WriteAuditLogService } from '../../src/application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
@@ -70,6 +72,7 @@ function buildApp(
   const otpCooldownSeconds = opts.otpCooldownSeconds ?? 0
   const resetCooldownSeconds = opts.resetCooldownSeconds ?? 0
   const users = new InMemoryUserRepository()
+  const impersonationSessions = new ImpersonationSessionValidator(users)
   const refreshTokens = new InMemoryRefreshTokenRepository()
   const resetTokens = new InMemoryPasswordResetTokenRepository()
   const otpCodes = new InMemoryOtpCodeRepository()
@@ -89,7 +92,14 @@ function buildApp(
   )
   const login = new LoginService(users, fakeHasher, authTokens, {})
   const profilesRepo = new InMemoryProfileRepository()
-  const refresh = new RefreshService(users, refreshTokens, authTokens, profilesRepo, silentLogger)
+  const refresh = new RefreshService(
+    users,
+    refreshTokens,
+    authTokens,
+    profilesRepo,
+    impersonationSessions,
+    silentLogger,
+  )
   const logout = new LogoutService(refreshTokens)
   const getMe = new GetMeService(users)
   const createPasswordToken = new CreatePasswordTokenService(users, resetTokens, {
@@ -174,6 +184,7 @@ function buildApp(
     users,
     impersonationTokens,
     authTokens,
+    impersonationSessions,
     silentLogger,
   )
   const allowance = new FakeProfileAllowanceGateway()
@@ -187,9 +198,28 @@ function buildApp(
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
-  const selectProfile = new SelectProfileService(profilesRepo, users, authTokens)
-  const exitProfileSession = new ExitProfileSessionService(users, fakeHasher, authTokens)
+  const selectProfile = new SelectProfileService(
+    profilesRepo,
+    users,
+    authTokens,
+    impersonationSessions,
+  )
+  const exitProfileSession = new ExitProfileSessionService(
+    users,
+    fakeHasher,
+    authTokens,
+    impersonationSessions,
+  )
   const getPublicProfile = new GetPublicProfileService(profilesRepo)
+  const changeImpersonationMode = new ChangeImpersonationModeService(
+    users,
+    refreshTokens,
+    profilesRepo,
+    authTokens,
+    impersonationSessions,
+    auditLogs,
+    silentLogger,
+  )
 
   const env = {
     MAX_REQUEST_BODY_BYTES: 16 * 1024,
@@ -236,6 +266,7 @@ function buildApp(
     readAuditLog,
     createImpersonationToken,
     exchangeImpersonationToken,
+    changeImpersonationMode,
     users,
     profilesRepo,
     profiles: {
@@ -278,6 +309,14 @@ const REGISTER_BODY = {
 function post(path: string, body: unknown, headers: Record<string, string> = {}) {
   return new Request(`http://localhost${path}`, {
     method: 'POST',
+    headers: { 'content-type': 'application/json', ...headers },
+    body: JSON.stringify(body),
+  })
+}
+
+function patch(path: string, body: unknown, headers: Record<string, string> = {}) {
+  return new Request(`http://localhost${path}`, {
+    method: 'PATCH',
     headers: { 'content-type': 'application/json', ...headers },
     body: JSON.stringify(body),
   })
@@ -1614,7 +1653,7 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
     expect(exchanged.status).toBe(200)
     const session = (await exchanged.json()) as {
       user: UserView
-      tokens: { accessToken: string; refreshExpiresIn: number }
+      tokens: { accessToken: string; refreshToken: string; refreshExpiresIn: number }
     }
     expect(session.user.id).toBe(targetId)
     expect(session.tokens.refreshExpiresIn).toBe(60 * 60 * 2)
@@ -1622,6 +1661,65 @@ describe('Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impers
     const claims = await tokenIssuer.verifyAccessToken(session.tokens.accessToken)
     expect(claims?.sub).toBe(targetId)
     expect(claims?.act?.sub).toBe(adminId)
+    expect(claims?.act?.mode).toBe('readonly')
+
+    const readonlyBearer = { authorization: `Bearer ${session.tokens.accessToken}` }
+    expect(
+      (await app.handle(patch('/auth/me', { firstName: 'Não pode editar' }, readonlyBearer)))
+        .status,
+    ).toBe(403)
+
+    const elevated = await app.handle(
+      post('/auth/impersonate/mode', {
+        refreshToken: session.tokens.refreshToken,
+        mode: 'write',
+      }),
+    )
+    expect(elevated.status).toBe(200)
+    const elevatedBody = (await elevated.json()) as {
+      tokens: { accessToken: string; refreshToken?: string }
+    }
+    const elevatedClaims = await tokenIssuer.verifyAccessToken(elevatedBody.tokens.accessToken)
+    expect(elevatedClaims?.act).toMatchObject({ sub: adminId, mode: 'write' })
+    expect(elevatedBody.tokens.refreshToken).toBeUndefined()
+
+    const writeBearer = { authorization: `Bearer ${elevatedBody.tokens.accessToken}` }
+    expect(
+      (await app.handle(patch('/auth/me', { firstName: 'Editado' }, writeBearer))).status,
+    ).toBe(200)
+    expect(
+      (
+        await app.handle(
+          post(
+            '/auth/me/password',
+            {
+              currentPassword: 'qualquer-senha',
+              newPassword: 'nova-senha-segura-123',
+            },
+            writeBearer,
+          ),
+        )
+      ).status,
+    ).toBe(403)
+
+    // Retry da mesma intenção é idempotente e não consome o refresh.
+    const retry = await app.handle(
+      post('/auth/impersonate/mode', {
+        refreshToken: session.tokens.refreshToken,
+        mode: 'write',
+      }),
+    )
+    expect(retry.status).toBe(200)
+
+    // O refresh original continua válido e herda o modo canônico da família.
+    const rotated = await app.handle(
+      post('/auth/refresh', { refreshToken: session.tokens.refreshToken }),
+    )
+    expect(rotated.status).toBe(200)
+    const rotatedBody = (await rotated.json()) as { tokens: { accessToken: string } }
+    expect((await tokenIssuer.verifyAccessToken(rotatedBody.tokens.accessToken))?.act?.mode).toBe(
+      'write',
+    )
 
     // Single-use: o mesmo token de handoff não vale uma 2ª vez.
     expect(
@@ -2154,10 +2252,26 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(payload.sub).toBe(PROFILE_ID)
     expect(payload.pfl).toMatchObject({ accountId })
     // A claim `act` SOBREVIVE ao select (o banner de impersonação segue ligado).
-    expect(payload.act).toMatchObject({ sub: actorId })
+    expect(payload.act).toMatchObject({ sub: actorId, mode: 'readonly' })
     // TTL CURTO da impersonação (7200s) — não os 30 dias normais: a sessão de
     // suporte morre sozinha em vez de virar acesso longo e sem rastro do ator.
     expect(body.tokens.refreshExpiresIn).toBe(7200)
+
+    const exited = await app.handle(
+      req(
+        'POST',
+        '/auth/profile-session/exit',
+        { ...gwProfile(PROFILE_ID, accountId), 'x-auth-impersonator-id': actorId },
+        { password: REGISTER_BODY.password },
+      ),
+    )
+    expect(exited.status).toBe(200)
+    const exitPayload = decodeJwt(
+      ((await exited.json()) as { tokens: { accessToken: string } }).tokens.accessToken,
+    )
+    expect(exitPayload.sub).toBe(accountId)
+    expect(exitPayload.pfl).toBeUndefined()
+    expect(exitPayload.act).toMatchObject({ sub: actorId, mode: 'readonly' })
   })
 
   test('impersonação: ator sumido/inativo no select → negado (403)', async () => {

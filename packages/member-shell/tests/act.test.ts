@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { actorLabel, parseActClaim, parseProfileClaim } from '../src/lib/act'
+import {
+  actorLabel,
+  isReadonlyImpersonation,
+  parseActClaim,
+  parseProfileClaim,
+} from '../src/lib/act'
 
 describe('parseActClaim (claim de impersonação do JWT)', () => {
   test('shape válido → ActClaim (campos opcionais só quando presentes)', () => {
@@ -7,8 +12,13 @@ describe('parseActClaim (claim de impersonação do JWT)', () => {
       sub: 'adm-1',
       email: 'a@x.com',
       name: 'Ana Admin',
+      mode: 'readonly',
     })
-    expect(parseActClaim({ sub: 'adm-1' })).toEqual({ sub: 'adm-1' })
+    expect(parseActClaim({ sub: 'adm-1' })).toEqual({ sub: 'adm-1', mode: 'readonly' })
+    expect(parseActClaim({ sub: 'adm-1', mode: 'write' })).toEqual({
+      sub: 'adm-1',
+      mode: 'write',
+    })
   })
 
   test('shape inválido → undefined (sessão tratada como normal)', () => {
@@ -18,15 +28,26 @@ describe('parseActClaim (claim de impersonação do JWT)', () => {
   })
 
   test('email/name não-string são descartados sem derrubar a claim', () => {
-    expect(parseActClaim({ sub: 'adm-1', email: 42, name: null })).toEqual({ sub: 'adm-1' })
+    expect(parseActClaim({ sub: 'adm-1', email: 42, name: null })).toEqual({
+      sub: 'adm-1',
+      mode: 'readonly',
+    })
   })
 })
 
 describe('actorLabel', () => {
   test('nome → e-mail → genérico', () => {
-    expect(actorLabel({ sub: 'a', name: 'Ana', email: 'a@x.com' })).toBe('Ana')
-    expect(actorLabel({ sub: 'a', email: 'a@x.com' })).toBe('a@x.com')
-    expect(actorLabel({ sub: 'a' })).toBe('um administrador')
+    expect(actorLabel({ sub: 'a', name: 'Ana', email: 'a@x.com', mode: 'readonly' })).toBe('Ana')
+    expect(actorLabel({ sub: 'a', email: 'a@x.com', mode: 'readonly' })).toBe('a@x.com')
+    expect(actorLabel({ sub: 'a', mode: 'readonly' })).toBe('um administrador')
+  })
+})
+
+describe('isReadonlyImpersonation', () => {
+  test('sessão antiga/readonly bloqueia; write e sessão normal não bloqueiam', () => {
+    expect(isReadonlyImpersonation({ act: { sub: 'a', mode: 'readonly' } })).toBe(true)
+    expect(isReadonlyImpersonation({ act: { sub: 'a', mode: 'write' } })).toBe(false)
+    expect(isReadonlyImpersonation({})).toBe(false)
   })
 })
 

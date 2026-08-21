@@ -48,6 +48,7 @@ const { createProjectStore, MAX_BLOCKSTATE_BLOCKS, PROJECT_FILE_LIMITS, useProje
   await import('./projectStore')
 const { cancelPendingAutosavesFor, createPersistenceService, setAutosaveDelayForTests } =
   await import('../persistence/service')
+const { createPendingEditorEdits } = await import('./pendingEditorEdits')
 const { createLocalPersistenceAdapter } = await import('../persistence/local')
 const { setStorageNamespace } = await import('./persistence')
 const { BEHAVIOR_AREAS_STATE_KEY, BEHAVIOR_AREAS_STATE_VERSION } = await import(
@@ -253,6 +254,29 @@ describe('PersistenceService', () => {
     await waitForAutosave()
     expect(idb.setMany).toHaveBeenCalledTimes(1)
 
+    detach()
+  })
+
+  it('materializa o buffer do editor antes do snapshot de pagehide', () => {
+    const store = createProjectStore()
+    const pendingEditorEdits = createPendingEditorEdits()
+    const changes: Array<ReturnType<typeof createEmptyProject>> = []
+    const coordinated = createPersistenceService(store, null, {
+      flushPendingEditorEdits: () => pendingEditorEdits.flush(),
+    })
+    coordinated.handlers.onChange = (project) => changes.push(project)
+    const detach = coordinated.attach()
+    const unregister = pendingEditorEdits.register(() => {
+      store.getState().setFile('script.js', 'console.log("último frame");\n')
+    })
+
+    store.getState().setProject(createEmptyProject('project-editor-buffer', 'Projeto'))
+    window.dispatchEvent(new Event('pagehide'))
+
+    expect(changes).toHaveLength(1)
+    expect(changes[0]?.files['script.js']).toBe('console.log("último frame");\n')
+
+    unregister()
     detach()
   })
 

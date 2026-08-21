@@ -54,6 +54,11 @@ export interface PersistenceService {
   readonly hasAdapter: boolean
 }
 
+export interface PersistenceCoordination {
+  /** Materializa buffers síncronos dos editores antes de qualquer snapshot de saída. */
+  flushPendingEditorEdits?: () => void
+}
+
 interface PendingAutosave {
   timer: ReturnType<typeof setTimeout>
   project: Project
@@ -146,6 +151,7 @@ function formatPersistenceError(err: unknown): string {
 export function createPersistenceService(
   store: ProjectStoreApi,
   adapter: StudioPersistenceAdapter | null,
+  coordination: PersistenceCoordination = {},
 ): PersistenceService {
   const serviceScopeIdentity = adapter?.scopeIdentity ?? 'external'
   const pending = new Map<string, PendingAutosave>()
@@ -413,6 +419,10 @@ export function createPersistenceService(
   }
 
   function flushPending(): void {
+    // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
+    // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
+    // dedupe: a escrita síncrona re-arma `flushed` por meio de `schedule`.
+    coordination.flushPendingEditorEdits?.()
     // Já drenado neste ciclo de fechamento (pagehide já correu, beforeunload
     // chegou em seguida): no-op até uma nova edição re-armar.
     if (flushed) return
@@ -474,6 +484,9 @@ export function createPersistenceService(
   }
 
   async function save(): Promise<void> {
+    // Salvar é um limite de snapshot tanto quanto pagehide/unmount. A store só é
+    // lida depois que os editores materializam os buffers que ainda seguram.
+    coordination.flushPendingEditorEdits?.()
     const project = store.getState().project
     if (!project) return
     // Nem um save explícito limpa a cerca: ele pode ter sido disparado por uma

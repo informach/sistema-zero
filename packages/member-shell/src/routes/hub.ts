@@ -2,6 +2,7 @@ import 'server-only'
 import { randomUUID } from 'node:crypto'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { isReadonlyImpersonation } from '../lib/act'
 import {
   extForMime,
   HUB_ATTACHMENT_LIMITS,
@@ -147,7 +148,7 @@ export function createHubRoutes(deps: {
 
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
-    return user?.act ? impersonationReadonly() : null
+    return isReadonlyImpersonation(user) ? impersonationReadonly() : null
   }
 
   const hubSpaces = {

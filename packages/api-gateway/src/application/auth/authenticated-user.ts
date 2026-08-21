@@ -39,6 +39,8 @@ export interface AuthenticatedUser {
    * o vínculo (TTL curto + ator) seja perdido numa sessão normal de longa duração.
    */
   readonly impersonatorId?: string
+  /** Capacidade explícita da sessão de suporte. Claims antigas são somente leitura. */
+  readonly impersonationMode?: 'readonly' | 'write'
 }
 
 /**

@@ -123,9 +123,13 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
   = ADMIN; parse em `lib/act.ts`, puro/testado; `SessionUser.act?` em types) e refresh de TTL
   CURTO (2h, o auth preserva na rotação). UI: **`ImpersonationBanner`** (faixa âmbar persistente
   acima do topnav no layout `(app)`) com "Encerrar" = logout normal (revoga a família) +
-  `window.location.replace('/login')`. **Sessão impersonada é SOMENTE-LEITURA p/ dados do aluno**:
-  `PATCH /api/auth/me`, `POST /api/auth/me/password` e mutações de mídia (avatar — checagem no
-  `requireUploadSession`) respondem **403 `IMPERSONATION_READONLY`**; GETs de download seguem
+  `window.location.replace('/login')` somente após confirmação 2xx; falha mantém cookies/banner e
+  permite tentar novamente. A sessão nasce **SOMENTE-LEITURA**, mas o banner permite ao
+  admin ativar explicitamente o modo `write`: a mudança é idempotente, reemite só o access token,
+  mantém o refresh e exibe uma faixa VERMELHA enquanto estiver ativa. Mutações continuam passando
+  pelas permissões e validações normais; em `readonly` respondem **403 `IMPERSONATION_READONLY`**.
+  Credenciais nunca são alteráveis durante impersonação, nem em `write`
+  (`IMPERSONATION_CREDENTIALS_FORBIDDEN`). GETs de download seguem
   (a marca d'água sai com o e-mail do ALUNO, dono do acesso). Além disso, contas
   superadmin/admin/staff logadas NORMALMENTE na community enxergam TODOS os cursos publicados
   (chave-mestra virtual do members — sem cadeado no catálogo; rascunho continua invisível).

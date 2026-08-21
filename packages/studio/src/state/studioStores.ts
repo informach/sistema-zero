@@ -56,6 +56,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     options.persistence ?? 'local',
     createLocalPersistenceAdapter,
   )
+  const pendingEditorEdits = createPendingEditorEdits()
   return {
     project,
     ui: createUIStore(),
@@ -64,8 +65,10 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     sourcemap: createSourcemapStore(),
     checks: createChecksStore(),
     diagnostics: createDiagnosticsStore(),
-    pendingEditorEdits: createPendingEditorEdits(),
-    persistence: createPersistenceService(project, adapter),
+    pendingEditorEdits,
+    persistence: createPersistenceService(project, adapter, {
+      flushPendingEditorEdits: () => pendingEditorEdits.flush(),
+    }),
   }
 }
 

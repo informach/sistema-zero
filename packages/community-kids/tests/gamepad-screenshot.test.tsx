@@ -1,18 +1,32 @@
 import { afterEach, describe, expect, it, setSystemTime, spyOn } from 'bun:test'
+import { defaultProjectControls } from '@sistemazero/studio/controls'
 import { act, fireEvent, render } from '@testing-library/react'
 import { createRef } from 'react'
-import { MobileGamepad, SCREENSHOT_REQUEST_TIMEOUT_MS } from '../src/components/kids/mobile-gamepad'
+import { SCREENSHOT_REQUEST_TIMEOUT_MS } from '../src/components/kids/console-controls'
+import { PublicStage } from '../src/components/kids/public-stage'
+import { DEFAULT_STAGE_ASPECT } from '../src/lib/stage-fit'
 
 afterEach(() => setSystemTime())
 
 function renderGamepad() {
   const iframeRef = createRef<HTMLIFrameElement>()
+  const rootRef = createRef<HTMLDivElement>()
   const view = render(
     <>
       <iframe ref={iframeRef} title="Jogo de teste" />
-      <MobileGamepad iframeRef={iframeRef} onRestart={() => {}}>
+      <PublicStage
+        rootRef={rootRef}
+        iframeRef={iframeRef}
+        onRestart={() => {}}
+        showControls
+        rotated={false}
+        landscape={false}
+        stageAspect={DEFAULT_STAGE_ASPECT}
+        controls={defaultProjectControls()}
+        header={null}
+      >
         <div>Jogo</div>
-      </MobileGamepad>
+      </PublicStage>
     </>,
   )
   if (!iframeRef.current?.contentWindow) throw new Error('iframe de teste não foi montado')

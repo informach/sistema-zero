@@ -29,8 +29,10 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > (`otp_codes`), `0003_*` (`users.avatar_url`), `0004_*` (índices `expires_at` da
 > purga), `0005`–`0011` (impersonação/perfis Netflix/auditoria — ver histórico) e
 > **`0012_*`** (`users.password_set_at` — marco "o dono definiu a própria senha" —
-> **com backfill `created_at` para os existentes**, ver Decisão 13) **aplicadas** no
-> Postgres compartilhado local + produção.
+> **com backfill `created_at` para os existentes**, ver Decisão 13), `0014_*`
+> (`refresh_tokens.impersonation_writable`) e `0015_*` (`refresh_token_families`,
+> com backfill das famílias existentes). Não declare `0014`/`0015` aplicadas em
+> produção sem executar `db:migrate` no ambiente.
 
 ## Arquitetura (DDD + Hexagonal)
 
@@ -169,6 +171,9 @@ src/
    sem esse guard a sessão de perfil escreveria na conta, furando o portão da "área
    dos pais" (full review F1). A criança edita o PRÓPRIO perfil em
    `PATCH /auth/profiles/:id` (ver Perfis); a senha da conta fica na área dos pais.
+   Em IMPERSONAÇÃO, `PATCH /me` exige `act.mode='write'` (claim antiga/ausente = readonly)
+   e `/me/password` recusa qualquer `act`, inclusive write. O gateway aplica a mesma política,
+   mas este guard local impede bypass por acesso direto ao serviço.
 10. **Impersonação (06/2026 — admin "entra como" um usuário na COMMUNITY, p/ suporte):**
     dois passos, origens distintas (admin e community não compartilham cookies).
     (a) `POST /auth/admin/users/:id/impersonate` (gateway: JWT + roles
@@ -181,15 +186,21 @@ src/
     `<communityUrl>/impersonar?token=...`). (b) `POST /auth/impersonate/exchange`
     (pública, rate-limited por IP no gateway; token no CORPO): consome o handoff e
     emite sessão DO ALVO com claim **`act`** (RFC 8693 — `sub`=alvo,
-    `act.sub/email/name`=ator) e refresh de família MARCADA
-    (`refresh_tokens.impersonator_user_id`, migration `0005`) com TTL CURTO
-    (`IMPERSONATION_REFRESH_TTL_SECONDS`, 2h). **A rotação re-deriva `act` e o TTL
-    curto da família** (sem isso o /refresh re-emitiria do UserAggregate e
-    "esqueceria" a impersonação); ator removido/desativado na rotação ou no
-    exchange → revoga a família/nega. Erros de token são INDISTINGUÍVEIS
+    `act.sub/email/name/mode`=ator+capacidade) e refresh de família MARCADA. O
+    estado canônico fica em `refresh_token_families` (`0015`, com backfill):
+    ator, modo, expiração absoluta e revogação sobrevivem à criação concorrente
+    de sucessores; as linhas de `refresh_tokens` são só credenciais rotativas.
+    O TTL é CURTO (`IMPERSONATION_REFRESH_TTL_SECONDS`, 2h) e não se estende ao
+    rotacionar. **Toda reemissão revalida ator e alvo frescos + matriz de papéis**;
+    qualquer mudança que torne o par inválido revoga a família. `POST
+    /auth/impersonate/mode` muda `readonly|write` de forma idempotente, persiste
+    auditoria fail-closed e devolve só um access novo (o refresh permanece igual).
+    Erros de token são INDISTINGUÍVEIS
     (`INVALID_IMPERSONATION_TOKEN`→401); `IMPERSONATION_FORBIDDEN`→403,
     `TARGET_NOT_IMPERSONABLE`→409. Auditoria: `auth.impersonation.requested` /
-    `.exchanged` / `.actor_gone` (ids, sem PII). Purga periódica inclui a tabela.
+    `.exchanged` / `.actor_gone` (logs) e `auth.impersonation.mode_change`
+    (persistente). Logout comum revoga a família canônica inteira; purga periódica
+    inclui tokens e famílias órfãs expiradas.
 11. **OTP por e-mail (`otp_codes`):** código guardado **só como sha256**, single-use
     (`consumed_at`), TTL `OTP_TTL_MINUTES` (10); brute-force travado por `attempts`
     (`OTP_MAX_ATTEMPTS`, 5 — estourou → consome o código). Um código ativo por

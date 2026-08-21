@@ -1,6 +1,9 @@
+import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { redactProfilesForProfileSession } from '@sistemazero/member-shell/lib/profile-redaction'
 import { redirect } from 'next/navigation'
+import type { ReactNode } from 'react'
 import { ProfilesNotIncluded, ProfilesUnavailable } from '@/components/kids/profiles-unavailable'
+import { actorLabel } from '@/lib/act'
 import { resolveProfileAllowance } from '@/lib/profile-allowance'
 import { getProfileAllowanceReadonly, listAvatarsByProfileIdsReadonly } from '@/server/members'
 import { isParentVerifiedFor } from '@/server/parent-gate'
@@ -9,6 +12,26 @@ import { getSession } from '@/server/session'
 import { PerfisClient } from './perfis-client'
 
 export const dynamic = 'force-dynamic'
+
+type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>
+
+function ImpersonationFrame({ session, children }: { session: Session; children: ReactNode }) {
+  const studentName =
+    session.activeProfile?.name ??
+    (`${session.firstName} ${session.lastName}`.trim() || session.email)
+  return (
+    <>
+      {session.act ? (
+        <ImpersonationBanner
+          studentName={studentName}
+          actorName={actorLabel(session.act)}
+          mode={session.act.mode}
+        />
+      ) : null}
+      {children}
+    </>
+  )
+}
 
 /**
  * Grade de perfis (estilo Netflix): a CONTA escolhe qual perfil de criança usar.
@@ -27,7 +50,13 @@ export default async function PerfisPage({
   const [res, allowanceRes] = await Promise.all([listReadonly(), getProfileAllowanceReadonly()])
   // Falha da API não é uma conta vazia. Manter os estados separados evita abrir o
   // onboarding e sugerir a criação de um perfil que pode já existir.
-  if (res.status !== 200) return <ProfilesUnavailable />
+  if (res.status !== 200) {
+    return (
+      <ImpersonationFrame session={session}>
+        <ProfilesUnavailable />
+      </ImpersonationFrame>
+    )
+  }
   const isProfileSession = Boolean(session.activeProfile)
   const profiles = redactProfilesForProfileSession(
     res.body?.profiles ?? [],
@@ -40,10 +69,18 @@ export default async function PerfisPage({
   // Sem perfis, esses estados terminam aqui. Uma falha de leitura nunca vira uma
   // conta vazia com botão "+"; zero é ausência real de matrícula, com CTA próprio.
   if (profiles.length === 0 && profileAllowance.kind === 'unavailable') {
-    return <ProfilesUnavailable reason="allowance" />
+    return (
+      <ImpersonationFrame session={session}>
+        <ProfilesUnavailable reason="allowance" />
+      </ImpersonationFrame>
+    )
   }
   if (profiles.length === 0 && profileAllowance.kind === 'none') {
-    return <ProfilesNotIncluded />
+    return (
+      <ImpersonationFrame session={session}>
+        <ProfilesNotIncluded />
+      </ImpersonationFrame>
+    )
   }
   // Sessão da conta com o portão já aberto (senha verificada há pouco) → a Área
   // dos pais abre sem re-pedir a senha (ex.: logo após sair de um perfil).
@@ -65,17 +102,19 @@ export default async function PerfisPage({
   const { manage } = await searchParams
   const startManaging = parentVerified && manage === '1'
   return (
-    <PerfisClient
-      initialProfiles={profiles}
-      avatarPhotoByProfile={avatarPhotoByProfile}
-      isProfileSession={isProfileSession}
-      parentVerified={parentVerified}
-      startManaging={startManaging}
-      profileAllowance={profileAllowance}
-      // Tutorial guiado dos PAIS: keyado na CONTA (em sessão de conta, `session.id`
-      // É a conta). Em sessão de perfil (criança trocando de irmão) fica nulo — o
-      // guia nunca aparece para a criança.
-      guideKey={isProfileSession ? null : session.id}
-    />
+    <ImpersonationFrame session={session}>
+      <PerfisClient
+        initialProfiles={profiles}
+        avatarPhotoByProfile={avatarPhotoByProfile}
+        isProfileSession={isProfileSession}
+        parentVerified={parentVerified}
+        startManaging={startManaging}
+        profileAllowance={profileAllowance}
+        // Tutorial guiado dos PAIS: keyado na CONTA (em sessão de conta, `session.id`
+        // É a conta). Em sessão de perfil (criança trocando de irmão) fica nulo — o
+        // guia nunca aparece para a criança.
+        guideKey={isProfileSession ? null : session.id}
+      />
+    </ImpersonationFrame>
   )
 }

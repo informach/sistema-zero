@@ -151,24 +151,62 @@ export class InMemoryUserRepository implements UserRepository {
 /** Repositório de refresh tokens em memória (espelha rotação + revogação). */
 export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   readonly byId = new Map<string, RefreshTokenRecord>()
+  readonly families = new Map<
+    string,
+    {
+      userId: string
+      expiresAt: Date
+      revokedAt: Date | null
+      impersonatorUserId: string | null
+      impersonationWritable: boolean
+    }
+  >()
 
-  async create(input: CreateRefreshTokenInput): Promise<void> {
+  async create(input: CreateRefreshTokenInput): Promise<boolean> {
+    let family = this.families.get(input.familyId)
+    if (!family) {
+      family = {
+        userId: input.userId,
+        expiresAt: input.expiresAt,
+        revokedAt: null,
+        impersonatorUserId: input.impersonatorUserId ?? null,
+        impersonationWritable: input.impersonationWritable ?? false,
+      }
+      this.families.set(input.familyId, family)
+    } else if (!family.impersonatorUserId) {
+      family.expiresAt = input.expiresAt
+    }
+    if (family.revokedAt || family.expiresAt.getTime() <= Date.now()) return false
     this.byId.set(input.id, {
       id: input.id,
       userId: input.userId,
       familyId: input.familyId,
+      familyExpiresAt: family.expiresAt,
+      familyRevokedAt: family.revokedAt,
       tokenHash: input.tokenHash,
       expiresAt: input.expiresAt,
       rotatedAt: null,
       revokedAt: null,
-      impersonatorUserId: input.impersonatorUserId ?? null,
+      impersonatorUserId: family.impersonatorUserId,
+      impersonationWritable: family.impersonationWritable,
       activeProfileId: input.activeProfileId ?? null,
     })
+    return true
   }
 
   async findByHash(tokenHash: string): Promise<RefreshTokenRecord | null> {
     for (const record of this.byId.values()) {
-      if (record.tokenHash === tokenHash) return { ...record }
+      if (record.tokenHash === tokenHash) {
+        const family = this.families.get(record.familyId)
+        if (!family) return null
+        return {
+          ...record,
+          familyExpiresAt: family.expiresAt,
+          familyRevokedAt: family.revokedAt,
+          impersonatorUserId: family.impersonatorUserId,
+          impersonationWritable: family.impersonationWritable,
+        }
+      }
     }
     return null
   }
@@ -176,26 +214,54 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   async claimForRotation(id: string, rotatedAt: Date): Promise<boolean> {
     const record = this.byId.get(id)
     // Espelha o claim atômico do adapter: só consome se ainda vigente.
-    if (!record || record.rotatedAt !== null || record.revokedAt !== null) return false
+    const family = record ? this.families.get(record.familyId) : null
+    if (
+      !record ||
+      !family ||
+      family.revokedAt !== null ||
+      family.expiresAt.getTime() <= Date.now() ||
+      record.rotatedAt !== null ||
+      record.revokedAt !== null
+    )
+      return false
     record.rotatedAt = rotatedAt
     record.revokedAt = rotatedAt
     return true
   }
 
-  async revoke(id: string): Promise<void> {
+  async setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean> {
     const record = this.byId.get(id)
-    if (record) record.revokedAt = new Date()
+    const family = this.families.get(familyId)
+    if (
+      !record ||
+      record.familyId !== familyId ||
+      record.rotatedAt !== null ||
+      record.revokedAt !== null ||
+      !family?.impersonatorUserId ||
+      family.revokedAt !== null ||
+      family.expiresAt.getTime() <= Date.now()
+    )
+      return false
+    family.impersonationWritable = writable
+    return true
   }
 
   async revokeFamily(familyId: string): Promise<void> {
+    const now = new Date()
+    const family = this.families.get(familyId)
+    if (family && family.revokedAt === null) family.revokedAt = now
     for (const record of this.byId.values()) {
-      if (record.familyId === familyId) record.revokedAt = new Date()
+      if (record.familyId === familyId && record.revokedAt === null) record.revokedAt = now
     }
   }
 
   async revokeAllForUser(userId: string): Promise<void> {
+    const now = new Date()
+    for (const family of this.families.values()) {
+      if (family.userId === userId && family.revokedAt === null) family.revokedAt = now
+    }
     for (const record of this.byId.values()) {
-      if (record.userId === userId && record.revokedAt === null) record.revokedAt = new Date()
+      if (record.userId === userId && record.revokedAt === null) record.revokedAt = now
     }
   }
 
@@ -205,6 +271,12 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       if (record.expiresAt.getTime() < before.getTime()) {
         this.byId.delete(id)
         deleted += 1
+      }
+    }
+    for (const [familyId, family] of this.families) {
+      const stillReferenced = [...this.byId.values()].some((record) => record.familyId === familyId)
+      if (!stillReferenced && family.expiresAt.getTime() < before.getTime()) {
+        this.families.delete(familyId)
       }
     }
     return deleted

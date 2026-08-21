@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { sha256Hex } from '@sistemazero/core/security'
+import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
 import { AuthTokenService } from '../../src/application/tokens/auth-token.service'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
@@ -27,6 +28,7 @@ describe('Impersonação — emissão e rotação', () => {
     const users = new InMemoryUserRepository()
     const refreshTokens = new InMemoryRefreshTokenRepository()
     const issuer = testTokenIssuer()
+    const validator = new ImpersonationSessionValidator(users)
     const tokens = new AuthTokenService(issuer, refreshTokens, {
       refreshTtlDays: 30,
       impersonationRefreshTtlSeconds: IMPERSONATION_TTL,
@@ -36,6 +38,7 @@ describe('Impersonação — emissão e rotação', () => {
       refreshTokens,
       tokens,
       new InMemoryProfileRepository(),
+      validator,
       silentLogger,
     )
 
@@ -63,22 +66,24 @@ describe('Impersonação — emissão e rotação', () => {
     sub: actor.id,
     email: actor.email,
     name: actor.fullName,
+    mode: 'readonly' as const,
   })
 
   test('emissão impersonada: claim act no access + TTL curto + família marcada', async () => {
     const { refreshTokens, issuer, tokens, target, actor } = setup()
     const issued = await tokens.issueForUser(target, {
-      impersonatorUserId: actor.id,
-      impersonatorAct: actOf(actor),
+      impersonation: { actorId: actor.id, act: actOf(actor) },
     })
 
     expect(issued.refreshExpiresIn).toBe(IMPERSONATION_TTL)
     const claims = await issuer.verifyAccessToken(issued.accessToken)
     expect(claims?.sub).toBe(target.id)
     expect(claims?.act).toMatchObject({ sub: actor.id, email: actor.email })
+    expect(claims?.act?.mode).toBe('readonly')
 
     const record = await refreshTokens.findByHash(sha256Hex(issued.refreshToken))
     expect(record?.impersonatorUserId).toBe(actor.id)
+    expect(record?.impersonationWritable).toBeFalse()
   })
 
   test('emissão NORMAL permanece intacta (sem act, TTL cheio, família limpa)', async () => {
@@ -90,13 +95,13 @@ describe('Impersonação — emissão e rotação', () => {
     expect(claims?.act).toBeUndefined()
     const record = await refreshTokens.findByHash(sha256Hex(issued.refreshToken))
     expect(record?.impersonatorUserId).toBeNull()
+    expect(record?.impersonationWritable).toBeFalse()
   })
 
   test('rotação PRESERVA act e TTL curto (não estica de volta p/ 30 dias)', async () => {
     const { refreshTokens, issuer, refresh, tokens, target, actor } = setup()
     const issued = await tokens.issueForUser(target, {
-      impersonatorUserId: actor.id,
-      impersonatorAct: actOf(actor),
+      impersonation: { actorId: actor.id, act: actOf(actor) },
     })
 
     const rotated = await refresh.execute({ refreshToken: issued.refreshToken })
@@ -104,10 +109,12 @@ describe('Impersonação — emissão e rotação', () => {
     const claims = await issuer.verifyAccessToken(rotated.accessToken)
     expect(claims?.sub).toBe(target.id)
     expect(claims?.act).toMatchObject({ sub: actor.id, email: actor.email, name: actor.fullName })
+    expect(claims?.act?.mode).toBe('readonly')
 
     // O novo refresh continua marcado — a 2ª rotação também preserva.
     const record = await refreshTokens.findByHash(sha256Hex(rotated.refreshToken))
     expect(record?.impersonatorUserId).toBe(actor.id)
+    expect(record?.impersonationWritable).toBeFalse()
     expect(record?.familyId).toBeDefined()
 
     const again = await refresh.execute({ refreshToken: rotated.refreshToken })
@@ -118,8 +125,7 @@ describe('Impersonação — emissão e rotação', () => {
   test('ator removido/desativado → rotação revoga a família e nega', async () => {
     const { users, refreshTokens, refresh, tokens, target, actor } = setup()
     const issued = await tokens.issueForUser(target, {
-      impersonatorUserId: actor.id,
-      impersonatorAct: actOf(actor),
+      impersonation: { actorId: actor.id, act: actOf(actor) },
     })
 
     // O admin é suspenso depois de iniciar a sessão de suporte.
@@ -131,5 +137,55 @@ describe('Impersonação — emissão e rotação', () => {
     )
     const record = await refreshTokens.findByHash(sha256Hex(issued.refreshToken))
     expect(record?.revokedAt).not.toBeNull()
+  })
+
+  test('alvo suspenso revoga a família impersonada em vez de poder voltar depois', async () => {
+    const { users, refreshTokens, refresh, tokens, target, actor } = setup()
+    const issued = await tokens.issueForUser(target, {
+      impersonation: { actorId: actor.id, act: actOf(actor) },
+    })
+    target.changeStatus('suspended')
+    users.seed(target)
+
+    await expect(refresh.execute({ refreshToken: issued.refreshToken })).rejects.toBeInstanceOf(
+      InvalidRefreshTokenError,
+    )
+    expect(
+      (await refreshTokens.findByHash(sha256Hex(issued.refreshToken)))?.familyRevokedAt,
+    ).not.toBeNull()
+  })
+
+  test('ator rebaixado perde a sessão de suporte na próxima rotação', async () => {
+    const { users, refreshTokens, refresh, tokens, target, actor } = setup()
+    const issued = await tokens.issueForUser(target, {
+      impersonation: { actorId: actor.id, act: actOf(actor) },
+    })
+
+    actor.changeRole('customer')
+    users.seed(actor)
+
+    await expect(refresh.execute({ refreshToken: issued.refreshToken })).rejects.toBeInstanceOf(
+      InvalidRefreshTokenError,
+    )
+    expect(
+      (await refreshTokens.findByHash(sha256Hex(issued.refreshToken)))?.revokedAt,
+    ).not.toBeNull()
+  })
+
+  test('alvo promovido para admin invalida a sessão de um ator admin', async () => {
+    const { users, refreshTokens, refresh, tokens, target, actor } = setup()
+    const issued = await tokens.issueForUser(target, {
+      impersonation: { actorId: actor.id, act: actOf(actor) },
+    })
+
+    target.changeRole('admin')
+    users.seed(target)
+
+    await expect(refresh.execute({ refreshToken: issued.refreshToken })).rejects.toBeInstanceOf(
+      InvalidRefreshTokenError,
+    )
+    expect(
+      (await refreshTokens.findByHash(sha256Hex(issued.refreshToken)))?.revokedAt,
+    ).not.toBeNull()
   })
 })
