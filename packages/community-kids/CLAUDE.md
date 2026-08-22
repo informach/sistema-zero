@@ -49,7 +49,24 @@ verde→laranja-gradiente), aula = nó circular; com a **trava sequencial** do c
 CADEADO, NÃO clicável (estado `'locked'` em `trail-layout`); a mini-trilha lateral e a página da
 aula seguem a mesma regra, e abrir uma aula travada por URL cai no **423** → `KidsLockedLesson`
 (recado com mascote); equipe interna ignora a trava. Sem ícone por tipo: a outline não expõe
-blocos) e **celebração** ao
+blocos).
+
+⭐ **Módulo sem aula PUBLICADA não vira unidade (22/08/2026).** O `getMyCourse` do members filtra
+as AULAS por `isPublished`, mas o módulo em si continua vindo no outline — então um módulo que a
+autora ainda está montando desenhava um banner sozinho, com "0/0 aulas", um baú impossível e nada
+embaixo. A régua é **`visibleModules(course)`** (`trail-layout.ts`), usada pela trilha do curso E
+pela mini-trilha lateral da página da aula. Numeração ("Unidade N"), tema e o serpenteado saem do
+índice do que APARECE, senão um módulo vazio no meio pularia um número na cara da criança. ⚠️ O
+filtro é DAQUI, não do members: o backend segue contando e travando pelo outline inteiro, e o
+percentual do curso não muda (módulo vazio não tem aula para somar). ⚠️ A comunidade ADULTA
+continua como estava — o pedido foi para o kids.
+
+⚠️ **Curso com NENHUMA aula publicada precisa de recado, não de vazio** (achado do full review):
+antes os banners dos módulos preenchiam a página; escondendo-os, sobrava capa + barra de progresso
++ um vão mudo, que lê como página quebrada. O `CourseTrail` devolve um recado com o Zappy dormindo
+quando `buildTrail` vem vazio.
+
+E **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
 toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente

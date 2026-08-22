@@ -2,6 +2,7 @@ import { Check, Gift, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
+import { KidsMascot } from './mascot'
 import { balloonLabel, buildTrail, type TrailNode } from './trail-layout'
 import { UNIT_THEME_CLASS } from './unit-theme'
 
@@ -62,6 +63,23 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
   const lessonHref = (id: string) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(id)}`
 
+  // Curso sem NENHUMA aula publicada: antes de esconder os módulos vazios, aqui
+  // apareciam os banners deles (com "0/0 aulas"); agora não sobra nada, e uma
+  // área em branco depois da capa lê como página quebrada. O recado é curto e
+  // diz o que fazer: voltar depois.
+  if (units.length === 0) {
+    return (
+      <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-10 text-center">
+        <KidsMascot expression="sleeping" className="size-20" />
+        <h2 className="mt-4 sz-display text-xl">As aulas estão sendo preparadas</h2>
+        <p className="mt-2 text-muted-foreground">
+          Este curso ainda não tem aulas prontas para você. Volte daqui a pouco para ver as
+          novidades!
+        </p>
+      </section>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-10">
       {units.map((unit, unitIndex) => {
@@ -87,7 +105,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               {unit.nodes.map((node, nodeIndex) => {
                 const next = unit.nodes[nodeIndex + 1]
                 // Último nó da unidade conecta no BAÚ (mesma diagonal).
-                const nextOffset = next?.offset ?? unit.chest?.offset
+                const nextOffset = next?.offset ?? unit.chest.offset
                 return (
                   <li
                     key={node.lesson.id}
@@ -152,36 +170,34 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                 )
               })}
 
-              {unit.chest ? (
-                <li className="relative" style={{ height: 'var(--trail-row)' }}>
-                  <div
-                    role="img"
-                    aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto, você completou a unidade' : 'fechado, abre quando você completar a unidade'})`}
-                    className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
-                    style={{ left: `calc(50% + ${unit.chest.offset} * var(--trail-step))` }}
+              <li className="relative" style={{ height: 'var(--trail-row)' }}>
+                <div
+                  role="img"
+                  aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto, você completou a unidade' : 'fechado, abre quando você completar a unidade'})`}
+                  className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
+                  style={{ left: `calc(50% + ${unit.chest.offset} * var(--trail-step))` }}
+                >
+                  <span
+                    className={cn(
+                      'kids-node',
+                      unit.chest.opened ? 'kids-node--chest-open' : 'kids-node--chest-closed',
+                    )}
                   >
-                    <span
-                      className={cn(
-                        'kids-node',
-                        unit.chest.opened ? 'kids-node--chest-open' : 'kids-node--chest-closed',
-                      )}
-                    >
-                      <Gift
-                        className={cn('size-7', unit.chest.opened && 'kid-float')}
-                        strokeWidth={2.5}
-                      />
-                    </span>
-                    <span
-                      className={cn(
-                        'text-center font-semibold text-xs leading-tight',
-                        unit.chest.opened ? 'sz-display-grad' : 'text-muted-foreground',
-                      )}
-                    >
-                      {unit.chest.opened ? 'Baú aberto!' : 'Baú da unidade'}
-                    </span>
-                  </div>
-                </li>
-              ) : null}
+                    <Gift
+                      className={cn('size-7', unit.chest.opened && 'kid-float')}
+                      strokeWidth={2.5}
+                    />
+                  </span>
+                  <span
+                    className={cn(
+                      'text-center font-semibold text-xs leading-tight',
+                      unit.chest.opened ? 'sz-display-grad' : 'text-muted-foreground',
+                    )}
+                  >
+                    {unit.chest.opened ? 'Baú aberto!' : 'Baú da unidade'}
+                  </span>
+                </div>
+              </li>
             </ol>
           </section>
         )

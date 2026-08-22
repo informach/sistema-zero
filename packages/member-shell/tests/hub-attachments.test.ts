@@ -4,10 +4,13 @@ import {
   extForMime,
   formatBytes,
   HUB_ATTACHMENT_LIMITS,
+  HUB_UPLOAD_ACCEPT,
   isAllowedMime,
   isHubAttachmentKind,
   isInlineKind,
+  isUgcImageInput,
   sanitizeFilename,
+  UGC_ANIMATED_IMAGE_MIME,
   UGC_IMAGE_INPUT_MIME,
 } from '../src/lib/hub-attachments'
 
@@ -119,10 +122,33 @@ describe('HUB_ATTACHMENT_LIMITS', () => {
 })
 
 describe('UGC_IMAGE_INPUT_MIME (entrada do re-encode p/ WebP)', () => {
-  test('aceita png/jpeg/webp; recusa gif (re-encode perderia a animação)', () => {
+  test('aceita png/jpeg/webp; NÃO leva gif (o WebP daqui pegaria só o 1º quadro)', () => {
     expect(UGC_IMAGE_INPUT_MIME.has('image/png')).toBe(true)
     expect(UGC_IMAGE_INPUT_MIME.has('image/jpeg')).toBe(true)
     expect(UGC_IMAGE_INPUT_MIME.has('image/webp')).toBe(true)
     expect(UGC_IMAGE_INPUT_MIME.has('image/gif')).toBe(false)
+  })
+
+  test('gif entra pelo conjunto ANIMADO, que tem caminho próprio', () => {
+    expect(UGC_ANIMATED_IMAGE_MIME.has('image/gif')).toBe(true)
+    expect(UGC_ANIMATED_IMAGE_MIME.has('image/png')).toBe(false)
+  })
+})
+
+describe('isUgcImageInput (o que o upload de imagem aceita)', () => {
+  test('aceita as paradas E o gif animado', () => {
+    for (const mime of ['image/png', 'image/jpeg', 'image/webp', 'image/gif']) {
+      expect(isUgcImageInput(mime)).toBe(true)
+    }
+  })
+
+  test('recusa o que não é imagem', () => {
+    expect(isUgcImageInput('application/pdf')).toBe(false)
+    expect(isUgcImageInput('image/svg+xml')).toBe(false)
+    expect(isUgcImageInput('')).toBe(false)
+  })
+
+  test('o seletor de arquivo OFERECE gif (senão a criança nem consegue escolher)', () => {
+    expect(HUB_UPLOAD_ACCEPT.split(',')).toContain('image/gif')
   })
 })

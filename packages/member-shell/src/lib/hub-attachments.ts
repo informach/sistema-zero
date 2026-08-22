@@ -59,11 +59,28 @@ export const UGC_MIME_BY_KIND: Record<HubAttachmentKind, ReadonlySet<string>> = 
 }
 
 /**
- * MIME de IMAGEM que o BFF aceita NA ENTRADA (re-encoda p/ WebP via sharp: strip
- * de EXIF/metadados + anti image-bomb). GIF fica de fora do caminho de imagem
- * (re-encode perderia a animação em silêncio) e não é ofertado no uploader.
+ * MIME de IMAGEM PARADA que o BFF aceita NA ENTRADA (re-encoda p/ WebP via
+ * sharp: strip de EXIF/metadados + anti image-bomb).
+ *
+ * ⚠️ GIF NÃO entra aqui, e não é esquecimento: este caminho encoda WebP, e WebP
+ * a partir de um GIF fica só com o primeiro quadro — a animação sumiria em
+ * silêncio. Ele tem o caminho próprio abaixo. Quem usa este conjunto para
+ * decidir "posso aceitar esta imagem?" (a capa de jogo do `routes/studio.ts`,
+ * por exemplo) continua recusando GIF de propósito: uma capa é parada.
  */
 export const UGC_IMAGE_INPUT_MIME = new Set(['image/png', 'image/jpeg', 'image/webp'])
+
+/**
+ * MIME de imagem ANIMADA aceito na entrada (re-encodado GIF → GIF preservando os
+ * quadros, com teto de quadros e de pixels). Existe para o desenho animado do
+ * Pinta: a criança baixa o GIF da animação dela e o anexa numa publicação.
+ */
+export const UGC_ANIMATED_IMAGE_MIME = new Set(['image/gif'])
+
+/** Aceita como ANEXO de imagem (parada ou animada)? */
+export function isUgcImageInput(mime: string): boolean {
+  return UGC_IMAGE_INPUT_MIME.has(mime) || UGC_ANIMATED_IMAGE_MIME.has(mime)
+}
 
 const EXT_BY_MIME: Record<string, string> = {
   'application/pdf': 'pdf',
@@ -148,6 +165,7 @@ export function formatBytes(bytes: number): string {
 /** `accept` do <input type=file> (todos os tipos suportados). */
 export const HUB_UPLOAD_ACCEPT = [
   ...UGC_IMAGE_INPUT_MIME,
+  ...UGC_ANIMATED_IMAGE_MIME,
   ...UGC_MIME_BY_KIND.pdf,
   ...UGC_MIME_BY_KIND.document,
   ...UGC_MIME_BY_KIND.audio,

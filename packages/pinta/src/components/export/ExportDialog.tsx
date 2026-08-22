@@ -7,15 +7,22 @@
  */
 import type { JSX } from 'react'
 import { useState } from 'react'
-import { type ActiveFrameRef, activeShapesOf, flattenActiveOf } from '../../core/assetEdit'
+import {
+  type ActiveFrameRef,
+  activeAnimationOf,
+  activeShapesOf,
+  flattenActiveOf,
+} from '../../core/assetEdit'
 import { COPY } from '../../core/copy'
 import {
   type AnyTilesetAsset,
   assetStyle,
   isTilesetKind,
+  normalizeAssetName,
   type PintaAsset,
   resolveAssetPalette,
 } from '../../core/project'
+import { gifBlob, pixelAnimationGif, vectorAnimationGif } from '../../export/animationGif'
 import { assetBundleToJson } from '../../export/assetJson'
 import { triggerDownload } from '../../export/download'
 import { bitmapToPngDataUrl, dataUrlToBlob, PNG_SCALES } from '../../export/png'
@@ -45,8 +52,57 @@ import { vectorPngDataUrl } from '../../vector/rasterize'
 import { usePintaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { ClipboardCopy, FileJson, Film, Image, Map as MapIcon, PenTool, Puzzle } from '../ui/icons'
+import {
+  ClipboardCopy,
+  FileJson,
+  Film,
+  Image,
+  Map as MapIcon,
+  PenTool,
+  Play,
+  Puzzle,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
+
+/**
+ * Deixa o navegador PINTAR o "Preparando..." antes de a thread travar no
+ * encode. O GIF de um sprite grande ampliado (×4, 24 quadros) leva segundos, e
+ * sem esta pausa o botão só congela: a criança clica de novo achando que falhou.
+ */
+function afterPaint(): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 0)
+  })
+}
+
+/**
+ * O botão do GIF, igual nos dois estilos. Animação sem quadro nenhum não some o
+ * botão: ela fica com o recado de "desenhe um quadro" embaixo — botão que
+ * desaparece deixa a criança procurando o que ela viu ontem.
+ */
+function GifButton({
+  busy,
+  ready,
+  name,
+  onDownload,
+}: {
+  busy: boolean
+  ready: boolean
+  name: string
+  onDownload: () => void
+}): JSX.Element {
+  return (
+    <>
+      <Button disabled={busy || !ready} onClick={onDownload}>
+        <Play aria-hidden="true" className="size-4" />
+        {busy ? COPY.exportDialog.preparing : COPY.exportDialog.gif(name)}
+      </Button>
+      <p className="-mt-1 text-sm text-pin-muted">
+        {ready ? COPY.exportDialog.gifHint : COPY.exportDialog.gifEmpty}
+      </p>
+    </>
+  )
+}
 
 export function ExportDialog({
   open,
@@ -120,6 +176,39 @@ export function ExportDialog({
       null)
     : null
   const activeDoc = isVector ? activeShapesOf(asset, frameRef) : null
+  // A animação SELECIONADA (a que está tocando na prévia) é a que vira GIF.
+  // Separadas por estilo: os quadros são bitmap num caso e formas no outro, e a
+  // união não passa por nenhum dos dois codificadores.
+  const pixelAnimation = sprite ? activeAnimationOf(sprite, frameRef) : null
+  const vectorAnimation = vectorSprite ? activeAnimationOf(vectorSprite, frameRef) : null
+  const animation = pixelAnimation ?? vectorAnimation
+  // O nome da ANIMAÇÃO entra no arquivo, e ele (ao contrário do nome do desenho)
+  // nunca passou por normalização — a criança pode chamar de "andar rápido" ou
+  // "pular/cair". Mesma régua do resto dos downloads; sobrando nada, cai no genérico.
+  const animationName = (animation && normalizeAssetName(animation.name)) || 'animacao'
+  const gifReady = (animation?.frames.length ?? 0) > 0
+
+  /**
+   * GIF da animação SELECIONADA (a que está tocando na prévia) — um sprite pode
+   * ter várias, e exportar todas de uma vez viraria um monte de arquivo que
+   * ninguém pediu. Para outra animação, é trocar a seleção e baixar de novo.
+   */
+  function downloadGif(produce: () => Promise<Uint8Array | null> | Uint8Array | null): void {
+    if (busy) return
+    setBusy(true)
+    void afterPaint()
+      .then(produce)
+      .then((bytes) => {
+        if (!bytes) {
+          showToast(COPY.toast.downloadError)
+          return
+        }
+        triggerDownload(gifBlob(bytes), `${asset.name}-${animationName}.gif`)
+        showToast(COPY.toast.downloadReady)
+      })
+      .catch(() => showToast(COPY.toast.downloadError))
+      .finally(() => setBusy(false))
+  }
 
   async function copyGrid(): Promise<void> {
     if (!tilemap) return
@@ -323,6 +412,16 @@ export function ExportDialog({
               <FileJson aria-hidden="true" className="size-4" />
               {COPY.exportDialog.spritesheetJson}
             </Button>
+            {pixelAnimation ? (
+              <GifButton
+                busy={busy}
+                ready={gifReady}
+                name={pixelAnimation.name}
+                onDownload={() =>
+                  downloadGif(() => pixelAnimationGif(sprite, pixelAnimation, scale))
+                }
+              />
+            ) : null}
             <Button
               onClick={() =>
                 downloadDataUrl(
@@ -386,6 +485,16 @@ export function ExportDialog({
               <FileJson aria-hidden="true" className="size-4" />
               {COPY.exportDialog.spritesheetJson}
             </Button>
+            {vectorAnimation ? (
+              <GifButton
+                busy={busy}
+                ready={gifReady}
+                name={vectorAnimation.name}
+                onDownload={() =>
+                  downloadGif(() => vectorAnimationGif(vectorSprite, vectorAnimation, scale))
+                }
+              />
+            ) : null}
             {activeDoc ? (
               <>
                 <Button
