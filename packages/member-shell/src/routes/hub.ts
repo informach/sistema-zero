@@ -9,6 +9,7 @@ import {
   isAllowedMime,
   isHubAttachmentKind,
   isInlineKind,
+  isUgcImageInput,
   sanitizeFilename,
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
@@ -17,7 +18,7 @@ import { stripImageMarkdown } from '../lib/markdown'
 import type { HubAttachmentKind } from '../lib/types'
 import type { HubClient, MembersAudience, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
-import { optimizeImage } from '../server/image-optimizer'
+import { optimizeImage, optimizeUgcImage, UnsupportedImageError } from '../server/image-optimizer'
 import { type MediaModule, mediaErrorResponse, rejectOversizedRequest } from '../server/media'
 import { r2PresignGetUgc, r2PresignPutUgc, r2PutObject, r2PutObjectUgc } from '../server/r2'
 import type { SessionModule } from '../server/session'
@@ -428,9 +429,14 @@ export function createHubRoutes(deps: {
   }
 
   /**
-   * Upload de IMAGEM via BFF: re-encoda p/ WebP (strip de EXIF/metadados + anti
+   * Upload de IMAGEM via BFF: re-encoda (strip de EXIF/metadados + anti
    * image-bomb), sobe no R2 UGC e registra o metadado já `pending_upload`. Devolve
    * a view do anexo para o compositor pré-visualizar. Arquivo ≤ limite de imagem.
+   *
+   * PNG/JPG/WebP viram WebP; **GIF vira GIF** por um caminho próprio
+   * (`optimizeAnimatedGif`), porque o WebP daqui pegaria só o primeiro quadro e a
+   * animação sumiria em silêncio. Os dois re-encodam: o que vai ao R2 é sempre o
+   * que o sharp emitiu, nunca os bytes de quem enviou.
    */
   const hubUploadImage = {
     POST: async (req: Request) => {
@@ -450,12 +456,12 @@ export function createHubRoutes(deps: {
             { status: 400 },
           )
         }
-        if (!UGC_IMAGE_INPUT_MIME.has(file.type)) {
+        if (!isUgcImageInput(file.type)) {
           return NextResponse.json(
             {
               error: {
                 code: 'VALIDATION_ERROR',
-                message: 'Formato inválido. Use PNG, JPG ou WebP.',
+                message: 'Formato inválido. Use PNG, JPG, WebP ou GIF.',
               },
             },
             { status: 400 },
@@ -468,7 +474,24 @@ export function createHubRoutes(deps: {
           )
         }
 
-        const optimized = await optimizeImage(await file.arrayBuffer(), 'ugc')
+        const bytes = await file.arrayBuffer()
+        let optimized: Awaited<ReturnType<typeof optimizeUgcImage>>
+        try {
+          // A escolha do otimizador (GIF preserva quadros, resto vira WebP) mora
+          // no `image-optimizer` — é regra testável, não decisão de handler.
+          optimized = await optimizeUgcImage(bytes, file.type)
+        } catch (error) {
+          // Arquivo ruim é 400 com recado, não 500: cair no `mediaErrorResponse`
+          // daria "Falha na operação de mídia." à criança e acordaria o Sentry
+          // para algo que ela resolve trocando o arquivo.
+          if (error instanceof UnsupportedImageError) {
+            return NextResponse.json(
+              { error: { code: 'VALIDATION_ERROR', message: error.message } },
+              { status: 400 },
+            )
+          }
+          throw error
+        }
         const key = ugcKey(user.id, optimized.extension)
         await r2PutObjectUgc({
           key,

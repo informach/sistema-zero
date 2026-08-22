@@ -1700,6 +1700,145 @@ Testes: `core/toolCuration.test.ts`, `components/editor/toolCurationUi.test.tsx`
 editores), `components/editor/injectedPersistenceUi.test.tsx`, `lesson/pintaLessonUi.test.tsx`,
 `assets/purity.test.ts`, `export/assetJson.test.ts`. **Pende QA em navegador** e as Fases 2 e 3.
 
+## Baixar a animação em GIF (22/08/2026)
+
+Pedido dela: "às vezes eu fiz um desenho ali e quero mostrar para alguém a minha animação como
+ficou". O Pinta já baixava PNG, folha de quadros e o `.pinta.json` — só que PNG é parado, a folha
+só faz sentido dentro do Estúdio e o `.pinta.json` só abre aqui. **O GIF é o único formato que ela
+manda para alguém e a pessoa vê mexendo**, sem player, sem app, sem login.
+
+Botão "Animação «nome» em GIF" no `ExportDialog`, nos DOIS estilos, exportando a animação
+SELECIONADA (a que está tocando na prévia) com todos os quadros. Para outra animação, troca a
+seleção e baixa de novo — exportar todas de uma vez viraria um monte de arquivo que ninguém pediu.
+
+### ⭐ Por que não entrou dependência nenhuma
+
+**`export/gif.ts` é um codificador de GIF89a PURO** (~200 linhas: LZW de largura variável, tabela
+global, extensão NETSCAPE do laço, controle gráfico por quadro). O `fflate` que já está aqui não
+serviria — GIF usa LZW, não deflate.
+
+E o formato cai como uma luva no Pinta: **o GIF é indexado com tabela de cores e um índice
+transparente, que é exatamente o `PintaBitmap`** (1 byte de índice por pixel, índice 0
+transparente). No caminho do PIXEL não há conversão nem perda — os índices do desenho VIRAM os
+índices do GIF, sem passar por RGBA, sem canvas. Por tabela: roda no happy-dom e é testável de
+ponta a ponta, ao contrário de todo o resto do `export/`. O upscale ×2/×4 é repetição de pixel
+EXATA (nada de `drawImage` interpolando).
+
+O VETORIAL é o caminho caro: rasteriza a TIRA da animação de uma vez (um `<img>`, um canvas — não
+uma decodificação por quadro), fatia em quadros e reduz as cores em `export/quantize.ts`. Dois
+caminhos lá: **cabe tudo** (desenho de formas chapadas quase sempre tem menos de 255 cores
+distintas → paleta EXATA, zero perda) ou **corte mediano** sobre as cores exatas, com a caixa mais
+POPULOSA sendo partida primeiro e cada caixa virando a média PONDERADA — é isso que preserva o
+traço chapado em vez de virar lama.
+
+### ⚠️ Os três detalhes que o formato impõe
+
+- **256 cores por arquivo** (tabela GLOBAL, uma só para todos os quadros). A paleta do pixel tem 16
+  + 48 extras = 64, folgado.
+- **Transparência de 1 bit**: o pixel é opaco ou some, não existe meio caminho. No vetorial o alfa
+  é cortado num limiar (`ALPHA_THRESHOLD`), então a borda anti-serrilhada fica um pouco mais dura
+  no arquivo do que na tela. É limitação do formato, não escolha.
+- **Tempo inteiro em centésimos de segundo**, e navegador troca 0 e 1 por 10 — daí o piso
+  `MIN_DELAY_CS = 2`.
+
+### ⭐ O tempo do GIF é o MESMO da prévia
+
+`frameDurationsMs` (`animation/player.ts`) diz quanto cada quadro fica na tela. No `linear` é
+`1000/fps`; no `ease` a passada segura nas pontas e corre no meio, e isso **não é enfeite do
+player, é a animação que a criança montou** — o arquivo que ela manda para alguém tem que ser o que
+ela viu. A conta usa o INVERSO de `easeInOutQuad` (a curva é monótona, então tem inverso) e as
+fatias se encaixam pelas bordas, então a passada dura exatamente o mesmo nos dois modos. Travado
+por um teste que **amostra o relógio real do `frameIndexAt` de 0,5 em 0,5 ms** e compara com a
+conta fechada: se as duas divergirem, o GIF anima diferente da prévia.
+
+⚠️ `loop: false` sai **sem** a extensão NETSCAPE (toca uma vez e para). Sem ela, um GIF com vários
+quadros também toca só uma vez — a extensão é a única forma de dizer "repete para sempre".
+
+### ⚠️ A ordem do LZW é o coração, e nada de spread
+
+O código é emitido na largura ATUAL, e só depois a largura cresce e a entrada nova entra no
+dicionário. Trocar essa ordem gera um arquivo que ainda **passa em teste de cabeçalho** e sai
+embaralhado no decodificador de verdade. E nenhum `out.push(...bytes)` neste arquivo: um quadro
+grande passa de 60 mil bytes e o spread estoura o limite de argumentos — quebraria só no desenho
+grande, que é justo o que ninguém testa.
+
+### Como isto foi PROVADO
+
+1. **`testing/gifDecode.ts`** — um decodificador escrito a partir da especificação, de propósito por
+   um caminho diferente do codificador. Asserção de cabeçalho não prova nada num formato
+   comprimido: um GIF com o LZW embaralhado tem os mesmos primeiros bytes, o mesmo tamanho de
+   paleta e o mesmo terminador que um GIF certo. Os testes codificam, decodificam e comparam pixel
+   a pixel, incluindo 200×200 de ruído com 256 cores (que atravessa o crescimento da largura de
+   código E o reset do dicionário).
+2. **libvips (via `sharp`), um decodificador de produção independente**, leu o arquivo: `pages: 3`,
+   `delay: [250, 100, 500]`, transparência e cores certas, e **0 pixels errados em 40.000** no
+   ruído. É a rede contra o meu decodificador compartilhar uma ideia errada com o meu codificador.
+3. **Teste de UI ponta a ponta** (`animationUi.test.tsx`): clica em Baixar → clica no botão do GIF
+   → captura o Blob → decodifica. Prova o fio inteiro, inclusive o nome do arquivo
+   (`heroi-parado.gif` — o nome diz QUAL animação, porque um sprite tem várias).
+
+### Full review do lote do GIF (22/08/2026) — 6 achados
+
+Rodada logo depois de escrever a feature, porque código novo escrito de uma sentada é código que
+ninguém revisou. Os dois primeiros valem mais que os outros quatro.
+
+1. ⭐⭐ **`quantizeFrames` congelava a aba por 7,2 s.** MEDIDO no pior caso real do produto (sprite
+   vetorial de 128 px em ×4 com os 24 quadros do teto = 6,3 M pixels de degradê): a primeira versão
+   guardava uma caixa por cor EXATA e o corte mediano ordenava sub-listas de centenas de milhares de
+   entradas em cada uma das 255 divisões. Fix = histograma GROSSO de 5 bits por canal em arrays
+   DENSOS (teto fixo de 32768 caixas, chave = índice, sem hash), com as somas EXATAS dentro de cada
+   caixa. **7196 ms → 82 ms**, mesmos testes, e a memória parou de depender do desenho. O caminho SEM
+   perda não passa pelo histograma grosso (duas cores quase iguais cairiam na mesma caixa): ele
+   guarda as cores exatas enquanto couberem e DESISTE na primeira que não couber.
+   ⚠️ O guarda é um orçamento de tempo com folga de ~24× (`quantize.perf.test.ts`), não uma asserção
+   apertada — a suíte roda 22 pacotes juntos e teste sensível a tempo vira flake.
+2. ⭐⭐ **Eu quebrei o `svgToPngDataUrl` ao extrair o `svgToCanvas`.** O `toDataURL` ficou FORA do
+   try/catch, e ele **lança** em canvas manchado. Essa função é o funil de TODO export vetorial
+   (folha, tileset, mapa, miniatura da biblioteca do Estúdio) e todos os chamadores esperam `null`
+   para cair no recado gentil. Regressão silenciosa introduzida por um refactor "sem mudança de
+   comportamento" — o catch voltou, com comentário dizendo que não é decorativo.
+3. ⭐ **`encodeGif` MASCARAVA índice fora da paleta, em silêncio.** O LZW faz `& codeMask`, então
+   numa tabela de 4 o índice 5 saía como 1 e o 7 como 3 (medido) — cor trocada, arquivo válido,
+   nenhum erro. Não era alcançável pelos chamadores de hoje, mas é a armadilha exata que este
+   pacote documenta em todo lugar. Agora recusa, com um teste do último índice VÁLIDO junto para a
+   guarda não ficar estreita demais.
+4. ⭐ **A regra que a feature inteira existe para garantir não tinha teste.** A escolha "GIF preserva
+   os quadros, o resto vira WebP" morava DENTRO do handler do upload (que precisa de sessão, R2 e do
+   hub para rodar): apagar o ramo por engano não quebraria nada, o arquivo subiria certinho e só não
+   animaria. Virou `optimizeUgcImage(bytes, mime)` no `image-optimizer` do member-shell — regra
+   testável, e o handler ficou com uma chamada só. ⚠️ A alternativa (mock do módulo do R2) foi
+   REJEITADA: o registry de mocks do bun é global na suíte e três testes importam o R2 de verdade —
+   seria a armadilha de "CI vermelho, local verde por ORDEM DE ARQUIVOS".
+5. **Vetor: raster que falha EM BRANCO viraria GIF vazio com toast de sucesso.** Acima do teto de
+   canvas do aparelho o `getImageData` pode devolver tudo transparente em vez de lançar, e a tira de
+   uma animação longa em ×4 passa de 12000 px (o iPad corta em 4096). `rasterCameOutBlank` pergunta
+   "tinha forma VISÍVEL e não sobrou pixel opaco?" — conta só as visíveis, senão animação com tudo
+   escondido (legitimamente vazia) viraria erro.
+6. **Nome de animação entrava cru no arquivo.** O nome do DESENHO é kebab normalizado, o da animação
+   nunca foi (a criança pode chamar de "pular/cair"). Passou pelo mesmo `normalizeAssetName`.
+
+**Não-achados, MEDIDOS** (valem porque poupam a próxima rodada): as bordas de paleta (1 cor = vetor
+todo transparente, 2 cores, 3 cores) decodificam no libvips; o re-encode do GIF no servidor **não
+cresce** o arquivo (−0,0% em 8,25 MB de ruído), então não abriu risco de objeto órfão no R2; e a
+prova do libvips continua idêntica depois da guarda de índice.
+
+### QA em navegador, feito (playground :5199)
+
+O caminho VETORIAL não tem cobertura possível em happy-dom (precisa de canvas), então foi medido no
+Chrome, importando o módulo de produção pelo `/@fs/` do Vite:
+
+- Sprite vetorial de 32 px, 4 quadros, exportado em ×2 → o **`ImageDecoder` do próprio Chrome** lê
+  `frameCount: 4`, `animated: true`, 64×64 e **130000 µs por quadro** (= os 8 fps da animação).
+  Decodificador de produção, independente do nosso e do libvips.
+- Renderizado num `<img>` sobre xadrez: círculo com contorno, fundo transparente, **22 cores
+  distintas** (caminho SEM perda — a borda anti-serrilhada de um desenho de formas não chega perto
+  das 255) e **zero pixels meio-transparentes**, como o formato manda.
+- ⭐ **O custo do alfa de 1 bit, MEDIDO**: no render nativo do mesmo quadro, 96 dos 4096 pixels
+  (**2,3%**) eram meio-transparentes; no GIF, 60 viraram opacos e 36 sumiram. É uma borda de um
+  pixel, não uma degradação do desenho.
+
+⚠️ **Pende o QA dela desenhando** (o olho dela na borda, e o fluxo pelo botão de verdade).
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

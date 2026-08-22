@@ -55,10 +55,7 @@ describe('buildTrail', () => {
       ]),
     ])
     // O baú de fim de unidade TAMBÉM avança o índice do serpenteado.
-    const offsets = buildTrail(c).flatMap((u) => [
-      ...u.nodes.map((n) => n.offset),
-      ...(u.chest ? [u.chest.offset] : []),
-    ])
+    const offsets = buildTrail(c).flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
     expect(offsets).toEqual([0, 1, 2, 1, 0, -1, -2, -1, 0, 1, 2])
     // Colunas consecutivas sempre diferem de 1 (conectores diagonais).
     for (let i = 1; i < offsets.length; i++) {
@@ -66,16 +63,44 @@ describe('buildTrail', () => {
     }
   })
 
-  test('baú abre só com TODAS as aulas do módulo concluídas; unidade vazia não tem baú', () => {
+  test('baú abre só com TODAS as aulas do módulo concluídas', () => {
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true)]),
       moduleOf('m2', [lesson('c', true), lesson('d', false)]),
-      moduleOf('m3', []),
     ])
     const units = buildTrail(c)
     expect(units[0]?.chest).toMatchObject({ opened: true })
     expect(units[1]?.chest).toMatchObject({ opened: false })
-    expect(units[2]?.chest).toBeNull()
+  })
+
+  test('módulo SEM aula publicada não vira unidade (nem banner, nem baú)', () => {
+    const c = course([
+      moduleOf('m1', [lesson('a', true)]),
+      moduleOf('em-preparo', []),
+      moduleOf('m3', [lesson('b', false)]),
+    ])
+    const units = buildTrail(c)
+    expect(units.map((u) => u.module.id)).toEqual(['m1', 'm3'])
+    // O título do módulo em preparo não vaza para a criança em lugar nenhum.
+    expect(units.some((u) => u.module.title.includes('em-preparo'))).toBe(false)
+  })
+
+  test('unidade vazia no MEIO não abre buraco na numeração nem no serpenteado', () => {
+    const c = course([
+      moduleOf('m1', [lesson('a', false), lesson('b', false)]),
+      moduleOf('vazio', []),
+      moduleOf('m3', [lesson('c', false)]),
+    ])
+    const units = buildTrail(c)
+    // Tema pelo índice do que APARECE: a 2ª unidade visível é a 2ª cor, não a 3ª.
+    expect(units.map((u) => u.theme)).toEqual(['cyan', 'lime'])
+    // E as colunas seguem contíguas: aulas + baú de m1, depois m3.
+    const offsets = units.flatMap((u) => [...u.nodes.map((n) => n.offset), u.chest.offset])
+    expect(offsets).toEqual([0, 1, 2, 1, 0])
+  })
+
+  test('curso inteiro sem aula publicada não desenha trilha nenhuma', () => {
+    expect(buildTrail(course([moduleOf('m1', []), moduleOf('m2', [])]))).toEqual([])
   })
 
   test('current é a PRIMEIRA não concluída do curso inteiro — e é única', () => {

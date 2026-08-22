@@ -28,8 +28,7 @@ export interface TrailUnit {
   module: ModuleOutlineView
   theme: UnitTheme
   nodes: TrailNode[]
-  /** `null` em unidade sem aulas (não há o que fechar). */
-  chest: TrailChest | null
+  chest: TrailChest
 }
 
 /**
@@ -41,10 +40,30 @@ export interface TrailUnit {
 const OFFSETS = [0, 1, 2, 1, 0, -1, -2, -1] as const
 
 /**
+ * Módulos que VIRAM unidade na trilha: os que têm alguma aula para mostrar.
+ *
+ * O backend já entrega o outline só com aulas PUBLICADAS (`findOutline` com
+ * `publishedOnly`), mas o módulo em si continua vindo — então um módulo que a
+ * professora ainda está montando chegava aqui com `lessons: []` e desenhava um
+ * banner sozinho, com "0/0 aulas", um baú impossível e nada embaixo. A criança
+ * lia isso como "tem coisa aqui que eu não consigo abrir".
+ *
+ * Filtrar aqui (e não no `getMyCourse`) mantém a mudança na comunidade kids: o
+ * backend segue contando e travando pelo outline inteiro, e o percentual do
+ * curso não muda — módulo vazio não tem aula para somar em lugar nenhum.
+ */
+export function visibleModules(course: CourseDetailView): ModuleOutlineView[] {
+  return course.modules.filter((module) => module.lessons.length > 0)
+}
+
+/**
  * Deriva a trilha Duolingo do shape REAL do curso (members): módulo =
  * unidade temática, aula = nó, fim de unidade = baú. Quando o curso tem a
  * trava sequencial ligada, as aulas posteriores vêm `locked` do backend e
  * seus nós ficam não-clicáveis (cadeado); o baú nunca é clicável.
+ *
+ * Numeração ("Unidade N") e tema saem do índice do que APARECE: com um módulo
+ * vazio no meio, contar pelo índice cru pularia um número na cara da criança.
  */
 export function buildTrail(course: CourseDetailView): TrailUnit[] {
   // A "atual" é a 1ª não concluída E não travada (a trava garante que a 1ª
@@ -59,7 +78,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
     return offset
   }
 
-  return course.modules.map((module, moduleIndex) => ({
+  return visibleModules(course).map((module, moduleIndex) => ({
     module,
     theme: unitThemeAt(moduleIndex),
     nodes: module.lessons.map(
@@ -75,10 +94,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
               : 'todo',
       }),
     ),
-    chest:
-      module.lessons.length > 0
-        ? { offset: nextOffset(), opened: module.lessons.every((l) => l.completed) }
-        : null,
+    chest: { offset: nextOffset(), opened: module.lessons.every((l) => l.completed) },
   }))
 }
 

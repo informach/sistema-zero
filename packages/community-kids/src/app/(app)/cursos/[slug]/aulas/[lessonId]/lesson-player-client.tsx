@@ -28,6 +28,7 @@ import {
   lessonSupportsGuided,
 } from '@/components/kids/kids-lesson-blocks'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
+import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
@@ -108,15 +109,19 @@ export function LessonPlayer({
   // Numeração global da aula ("AULA N DE M" + círculos da mini-trilha).
   const flatLessons = useMemo(() => course.modules.flatMap((m) => m.lessons), [course.modules])
   const lessonNumber = flatLessons.findIndex((l) => l.id === lesson.id) + 1
+  // Módulo sem aula PUBLICADA não entra no índice lateral — só um título solto com
+  // lista vazia embaixo (mesma regra da trilha do curso, `visibleModules`). A
+  // numeração global não muda: módulo vazio soma zero aula em qualquer ordem.
+  const modules = useMemo(() => visibleModules(course), [course])
   const moduleStartIndexes = useMemo(() => {
     const starts: number[] = []
     let acc = 0
-    for (const m of course.modules) {
+    for (const m of modules) {
       starts.push(acc)
       acc += m.lessons.length
     }
     return starts
-  }, [course.modules])
+  }, [modules])
 
   // Há quiz com nota de corte ainda não aprovado? (bloqueia o concluir — 409 no backend)
   const blockedByQuiz = useMemo(
@@ -505,7 +510,7 @@ export function LessonPlayer({
               />
             </div>
             <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
-              {course.modules.map((module, moduleIndex) => (
+              {modules.map((module, moduleIndex) => (
                 <div key={module.id} className={UNIT_THEME_CLASS[unitThemeAt(moduleIndex)]}>
                   <p className="bg-muted/40 px-4 py-1.5 font-bold text-(--unit) text-xs uppercase tracking-wide [font-family:var(--font-display)]">
                     {module.title}
