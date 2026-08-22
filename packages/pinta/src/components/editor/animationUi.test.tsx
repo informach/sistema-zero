@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { importPintaJson } from '../../export/projectJson'
+import { decodeGif } from '../../testing/gifDecode'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
@@ -112,6 +113,60 @@ describe('UI de animação (F2)', () => {
       else Reflect.deleteProperty(URL, 'createObjectURL')
       if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor)
       else Reflect.deleteProperty(URL, 'revokeObjectURL')
+    }
+  })
+  it('baixa a animação SELECIONADA em GIF, com todos os quadros', async () => {
+    const createDescriptor = Object.getOwnPropertyDescriptor(URL, 'createObjectURL')
+    const revokeDescriptor = Object.getOwnPropertyDescriptor(URL, 'revokeObjectURL')
+    const downloads: Blob[] = []
+    const names: string[] = []
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: (blob: Blob) => {
+        downloads.push(blob)
+        return 'blob:pinta-gif-test'
+      },
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', { configurable: true, value: () => undefined })
+    // O nome do arquivo diz QUAL animação foi baixada — um sprite tem várias.
+    const clickDescriptor = Object.getOwnPropertyDescriptor(HTMLAnchorElement.prototype, 'click')
+    Object.defineProperty(HTMLAnchorElement.prototype, 'click', {
+      configurable: true,
+      value(this: HTMLAnchorElement) {
+        names.push(this.download)
+      },
+    })
+
+    try {
+      await openSpriteEditor()
+      // Dois quadros na animação de nascença ("parado").
+      fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
+      })
+
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.download }))
+      fireEvent.click(await screen.findByRole('button', { name: COPY.exportDialog.gif('parado') }))
+      await waitFor(() => expect(downloads).toHaveLength(1))
+
+      const blob = downloads[0] as Blob
+      expect(blob.type).toBe('image/gif')
+      expect(names[0]).toBe('heroi-parado.gif')
+      const gif = decodeGif(new Uint8Array(await blob.arrayBuffer()))
+      expect(gif.frames).toHaveLength(2)
+      expect(gif.width).toBe(8)
+      expect(gif.height).toBe(8)
+      // 8 fps de fábrica = 125 ms = 13 centésimos, e a animação repete.
+      expect(gif.frames.map((f) => f.delayCs)).toEqual([13, 13])
+      expect(gif.loop).toBe(true)
+    } finally {
+      if (createDescriptor) Object.defineProperty(URL, 'createObjectURL', createDescriptor)
+      else Reflect.deleteProperty(URL, 'createObjectURL')
+      if (revokeDescriptor) Object.defineProperty(URL, 'revokeObjectURL', revokeDescriptor)
+      else Reflect.deleteProperty(URL, 'revokeObjectURL')
+      if (clickDescriptor)
+        Object.defineProperty(HTMLAnchorElement.prototype, 'click', clickDescriptor)
+      else Reflect.deleteProperty(HTMLAnchorElement.prototype, 'click')
     }
   })
 })

@@ -698,6 +698,10 @@ export const COPY = {
     spritesheet: 'Folha de animações (PNG)',
     spritesheetSvg: 'Folha de animações (SVG)',
     spritesheetJson: 'Receita das animações (para o Estúdio)',
+    gif: (name: string) => `Animação "${name}" em GIF`,
+    gifHint:
+      'O GIF leva todos os quadros da animação e roda sozinho: dá para mandar para alguém, anexar numa publicação da comunidade ou usar onde quiser.',
+    gifEmpty: 'Esta animação ainda não tem quadros. Desenhe um quadro para poder baixar o GIF.',
     tilesetSheet: 'Folha de peças (PNG)',
     tilesetSheetSvg: 'Folha de peças (SVG)',
     tilemapImage: 'Imagem do mapa (PNG)',

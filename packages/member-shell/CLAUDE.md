@@ -667,6 +667,53 @@ importa lá sem ponte nova), Expandir e o selo "o professor já viu".
   editor sai sem cor). Idem o admin. Os `railway.json` dos TRÊS e o `ci.yml` listam
   `packages/pinta/**` como gatilho.
 
+## GIF animado no anexo do hub (22/08/2026)
+
+O Pinta passou a exportar a animação da criança em GIF, e o pedido dela foi poder **postar isso no
+Clube dos Criadores** — como anexo de uma publicação, igual a qualquer imagem. O anexo de imagem do
+hub barrava `image/gif` de propósito: o upload re-encoda tudo para WebP, e WebP a partir de um GIF
+fica só com o PRIMEIRO quadro — a animação sumiria em silêncio, com toast de sucesso.
+
+⚠️⚠️ **O MURAL NÃO ENTRA NISTO, e o código reflete a separação.** O Mural é a vitrine dos JOGOS
+publicados pelo Estúdio (`hubShowcase` + os dois `studioPublish`), e a capa de lá é uma imagem
+PARADA: os três caminhos continuam validando por `UGC_IMAGE_INPUT_MIME`, que segue **sem** gif. O
+GIF entrou só no `hubUploadImage`, que é o anexo de POST — Clube, comentários, fórum adulto.
+
+⭐ **A saída não foi afrouxar o re-encode, foi dar um ramo próprio.** `optimizeAnimatedGif`
+(`server/image-optimizer.ts`) roda o sharp em modo `animated` e emite `.gif()`: os quadros
+sobrevivem E o arquivo que vai ao R2 continua sendo o que o sharp EMITIU, nunca os bytes de quem
+enviou. O `hubUploadImage` escolhe o ramo pelo MIME; o resto da rota não mudou.
+
+- **`UGC_IMAGE_INPUT_MIME` continua SEM gif**, e isso é contrato: quem usa esse conjunto para
+  decidir "posso aceitar esta imagem parada?" (a capa de jogo do `routes/studio.ts`) segue
+  recusando GIF de propósito. Quem quer os dois usa **`isUgcImageInput`**; o animado tem conjunto
+  próprio (`UGC_ANIMATED_IMAGE_MIME`).
+- ⚠️ **`limitInputPixels` limita UM quadro** (largura × `pageHeight`), não o total: muitos quadros
+  pequenos somariam um decode enorme na réplica ÚNICA. Daí o teto de quadros (`MAX_GIF_FRAMES`
+  300) E o teto do produto total — os mesmos que a marca d'água já tinha.
+- ⚠️ **Sem `.rotate()` no ramo animado**: EXIF não existe em GIF, e o auto-rotate giraria a TIRA
+  inteira de quadros como se fosse uma imagem só.
+- O resto da cadeia já estava pronto: `UGC_MIME_BY_KIND.image` já listava `image/gif` (exibição),
+  `classifyMime` já o classificava como `image`, o `attachment-list` usa `<img>` cru (não
+  `next/image`, que congelaria) e o `watermarkImage` já sabia carimbar animado quadro a quadro.
+  Faltava só a ENTRADA — e o `HUB_UPLOAD_ACCEPT`, senão a criança nem consegue escolher o arquivo.
+- ⚠️ Vale para os DOIS apps (o member-shell é compartilhado): a comunidade adulta também passou a
+  aceitar GIF no anexo.
+- ⭐ **A escolha do otimizador é `optimizeUgcImage(bytes, mime)`, não um `if` no handler.** Ela é a
+  regra que a feature inteira existe para garantir, e solta dentro do `hubUploadImage` (que precisa
+  de sessão, R2 e do hub para rodar) ficava sem teste nenhum: apagar o ramo não quebraria upload
+  nenhum, o arquivo subiria certinho e só não animaria. ⚠️ Mockar o módulo do R2 para testar o
+  handler foi REJEITADO — o registry de mocks do bun é GLOBAL na suíte e três testes importam
+  `server/r2` de verdade; seria a armadilha de "CI vermelho, local verde por ORDEM DE ARQUIVOS".
+- ⭐ **`UnsupportedImageError`**: as recusas do GIF (ilegível, não é GIF, quadros demais, grande
+  demais) são TIPADAS e viram **400 com recado** no handler. Sem isso caíam no `mediaErrorResponse`
+  → 500, mensagem interna escondida em produção ("Falha na operação de mídia.") e um alerta no
+  Sentry para algo que a criança resolve trocando o arquivo.
+- Teste (`tests/image-optimizer-gif.test.ts`): o GIF é montado pelo **codificador REAL do Pinta**
+  (import relativo — ele é interno ao pacote), então as duas pontas ficam casadas: o arquivo que a
+  criança BAIXA é o que ela ANEXA. Junto vai o anti-vácuo que **prova que o caminho WebP mataria a
+  animação** (`pages: 1`) — é a razão de o ramo existir, escrita como teste em vez de comentário.
+
 ## Invariantes (NÃO quebrar)
 
 1. **Parametrização é por FACTORY, nunca por config em escopo de módulo**: o Turbopack separa

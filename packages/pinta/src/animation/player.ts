@@ -51,6 +51,42 @@ export function frameIndexAt(
 }
 
 /**
+ * Inverso de `easeInOutQuad` — a curva é estritamente crescente em [0,1], então
+ * tem inverso. Serve para perguntar "em que ponto da passada o quadro k entra?".
+ */
+function easeInOutQuadInverse(eased: number): number {
+  const e = Math.min(Math.max(eased, 0), 1)
+  return e < 0.5 ? Math.sqrt(e / 2) : 1 - Math.sqrt((1 - e) / 2)
+}
+
+/**
+ * Quanto CADA quadro fica na tela, em ms, numa passada da animação.
+ *
+ * No `linear` é sempre `1000/fps`. No `ease` a prévia mostra os quadros das
+ * pontas por mais tempo e os do meio por menos — e isso não é enfeite do
+ * player, é a animação que a criança montou. Quem exporta (GIF) precisa dos
+ * MESMOS tempos, senão o arquivo que ela manda para alguém não é o que ela viu.
+ *
+ * A soma bate exatamente com `animationDurationMs` (as fatias se encaixam pelas
+ * bordas), então a passada dura o mesmo nos dois modos.
+ */
+export function frameDurationsMs(
+  frameCount: number,
+  fps: number,
+  easing: PintaEasing = 'linear',
+): number[] {
+  if (frameCount <= 0) return []
+  const safeFps = Math.min(Math.max(fps, 1), 60)
+  if (easing === 'linear') return Array.from({ length: frameCount }, () => 1000 / safeFps)
+  const cycleMs = animationDurationMs(frameCount, fps)
+  return Array.from({ length: frameCount }, (_, k) => {
+    const from = easeInOutQuadInverse(k / frameCount)
+    const to = k + 1 >= frameCount ? 1 : easeInOutQuadInverse((k + 1) / frameCount)
+    return (to - from) * cycleMs
+  })
+}
+
+/**
  * Toca a animação: devolve o índice do quadro atual. `playing: false` congela
  * (e zera o relógio ao voltar a tocar — a prévia recomeça do início).
  */
