@@ -1,10 +1,12 @@
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
+import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import { ProfileNotFoundError } from '../../domain/profile/profile.errors'
 import { UserNotActiveError } from '../../domain/user/user.errors'
 import type { ImpersonationSessionValidator } from '../impersonation/impersonation-session-validator'
 import { type ProfileView, toProfileView } from '../mappers/profile-view'
 import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
+import { impersonationTransitionDeadline } from './impersonation-transition'
 
 export interface SelectProfileCommand {
   /** Conta do responsável (resolvida da sessão atual — conta OU perfil). */
@@ -20,6 +22,8 @@ export interface SelectProfileCommand {
    * numa sessão de perfil normal de longa duração e sem rastro do ator.
    */
   impersonatorUserId?: string | null
+  /** Refresh vigente que ancora o deadline absoluto da família de suporte. */
+  refreshToken?: string | null
 }
 
 /**
@@ -36,6 +40,7 @@ export class SelectProfileService {
     private readonly users: UserRepository,
     private readonly authTokens: AuthTokenService,
     private readonly impersonationSessions: ImpersonationSessionValidator,
+    private readonly refreshTokens: RefreshTokenRepository,
   ) {}
 
   async execute(cmd: SelectProfileCommand): Promise<{ profile: ProfileView; tokens: AuthTokens }> {
@@ -56,9 +61,16 @@ export class SelectProfileService {
     if (cmd.impersonatorUserId) {
       const actor = await this.impersonationSessions.validateActor(cmd.impersonatorUserId, account)
       if (!actor) throw new UserNotActiveError('Ator da impersonação indisponível')
+      const familyExpiresAt = await impersonationTransitionDeadline(
+        this.refreshTokens,
+        cmd.refreshToken,
+        actor.id,
+        account.id,
+      )
       // Toda entrada/troca de perfil reinicia a capacidade de suporte.
       impersonation = {
         actorId: actor.id,
+        familyExpiresAt,
         act: {
           sub: actor.id,
           email: actor.email,

@@ -12,8 +12,8 @@
  *   exatamente o modelo do GIF. Nada de canvas, nada de perda, e o upscale é
  *   repetição de pixel (nearest-neighbor EXATO, sem interpolação de canvas).
  *   Por tabela, roda no happy-dom e é testável de ponta a ponta.
- * - **Vetorial**: rasteriza a TIRA da animação de uma vez (um `<img>`, um
- *   canvas), fatia em quadros e reduz as cores (`quantize.ts`). Precisa de
+ * - **Vetorial**: rasteriza a animação em TIRAS limitadas (um `<img>` e um
+ *   canvas por bloco), fatia em quadros e reduz as cores (`quantize.ts`). Precisa de
  *   canvas de verdade, então devolve `null` no happy-dom, como o resto do vetor.
  *
  * O tempo de cada quadro sai de `frameDurationsMs`, o MESMO cálculo da prévia:
@@ -42,6 +42,43 @@ import { vectorStripPortableSvg } from './vectorSheet'
 
 /** Máximo de cores do formato (a posição 0 é o slot transparente). */
 const GIF_MAX_COLORS = 256
+/** Menor teto conhecido entre os devices suportados (Safari/iPad). */
+export const VECTOR_GIF_MAX_CANVAS_WIDTH = 4096
+
+export interface VectorGifChunk {
+  start: number
+  count: number
+}
+
+export type VectorGifRasterizer = (
+  svg: string,
+  width: number,
+  height: number,
+  scale: number,
+) => Promise<{
+  getContext(
+    contextId: '2d',
+  ): { getImageData(x: number, y: number, width: number, height: number): ImageData } | null
+} | null>
+
+/** Plano puro; `[]` quando nem um quadro individual cabe no teto do canvas. */
+export function vectorGifChunks(
+  frameCount: number,
+  frameWidth: number,
+  scale: number,
+  maxCanvasWidth = VECTOR_GIF_MAX_CANVAS_WIDTH,
+): VectorGifChunk[] {
+  const total = Math.max(0, Math.floor(frameCount))
+  if (total === 0) return []
+  const outputFrameWidth = Math.max(1, Math.round(frameWidth) * Math.max(1, Math.round(scale)))
+  if (outputFrameWidth > maxCanvasWidth) return []
+  const perChunk = Math.max(1, Math.floor(Math.max(1, maxCanvasWidth) / outputFrameWidth))
+  const chunks: VectorGifChunk[] = []
+  for (let start = 0; start < total; start += perChunk) {
+    chunks.push({ start, count: Math.min(perChunk, total - start) })
+  }
+  return chunks
+}
 
 /**
  * A paleta do asset como tabela RGB do GIF + quais índices são PINTÁVEIS.
@@ -139,39 +176,48 @@ export function pixelAnimationGif(
 }
 
 /**
- * GIF de uma animação do sprite VETORIAL. Rasteriza a tira inteira de uma vez
- * (uma decodificação de SVG só, não uma por quadro) e fatia.
+ * GIF de uma animação do sprite VETORIAL. Rasteriza tiras de até 4096 px
+ * (poucas decodificações de SVG, nunca uma por quadro) e fatia.
  * `null` sem canvas/Image (happy-dom), em SVG irrenderizável ou sem quadros.
  */
 export async function vectorAnimationGif(
   asset: VectorSpriteAsset,
   animation: PintaVectorAnimation,
   scale = 1,
+  rasterize: VectorGifRasterizer = svgToCanvas,
 ): Promise<Uint8Array | null> {
   const count = animation.frames.length
   if (count === 0) return null
   const step = Math.max(1, Math.round(scale))
-  const canvas = await svgToCanvas(
-    await vectorStripPortableSvg(asset, animation),
-    count * asset.frameWidth,
-    asset.frameHeight,
-    step,
-  )
-  const ctx = canvas?.getContext('2d')
-  if (!canvas || !ctx) return null
-
   const width = asset.frameWidth * step
   const height = asset.frameHeight * step
   const rgba: Uint8ClampedArray[] = []
-  try {
-    for (let i = 0; i < count; i += 1) rgba.push(ctx.getImageData(i * width, 0, width, height).data)
-  } catch {
-    // Canvas manchado ou acima do teto do device: o toast de erro é melhor que
-    // um GIF meio desenhado.
-    return null
+  const chunks = vectorGifChunks(count, asset.frameWidth, step)
+  if (chunks.length === 0) return null
+  for (const chunk of chunks) {
+    const chunkAnimation: PintaVectorAnimation = {
+      ...animation,
+      frames: animation.frames.slice(chunk.start, chunk.start + chunk.count),
+    }
+    const canvas = await rasterize(
+      await vectorStripPortableSvg(asset, chunkAnimation),
+      chunk.count * asset.frameWidth,
+      asset.frameHeight,
+      step,
+    )
+    const ctx = canvas?.getContext('2d')
+    if (!canvas || !ctx) return null
+    try {
+      for (let i = 0; i < chunk.count; i += 1) {
+        rgba.push(ctx.getImageData(i * width, 0, width, height).data)
+      }
+    } catch {
+      // Canvas manchado/limitado: nunca baixa uma animação pela metade.
+      return null
+    }
   }
 
-  const quantized = quantizeFrames(rgba, GIF_MAX_COLORS)
+  const quantized = quantizeFrames(rgba, GIF_MAX_COLORS, { width, dither: true })
   if (rasterCameOutBlank(animation.frames, quantized.palette.length)) return null
 
   const delays = delaysFor(animation)
@@ -191,11 +237,9 @@ export async function vectorAnimationGif(
 /**
  * A rasterização saiu vazia com o desenho NÃO estando vazio?
  *
- * ⚠️ Acima do teto de canvas do aparelho o `getImageData` pode devolver tudo
- * transparente **em vez de lançar** — e a tira de uma animação longa em ×4 passa
- * de 12000 px de largura, enquanto o iPad corta em 4096. Sem esta pergunta, esse
- * caso sairia como um GIF em branco com toast de SUCESSO, que é pior do que
- * falhar. Paleta com só o slot transparente = nenhum pixel opaco no raster.
+ * ⚠️ Mesmo dentro do teto conservador, um driver pode devolver tudo transparente
+ * **em vez de lançar**. Sem esta pergunta, o caso sairia como um GIF em branco
+ * com toast de SUCESSO. Paleta com só o slot transparente = nenhum pixel opaco.
  *
  * Conta só as formas VISÍVEIS: animação com tudo escondido é legitimamente
  * vazia, e recusar ali seria dizer "não consegui" para algo que funcionou.

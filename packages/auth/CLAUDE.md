@@ -194,12 +194,18 @@ src/
     rotacionar. **Toda reemissão revalida ator e alvo frescos + matriz de papéis**;
     qualquer mudança que torne o par inválido revoga a família. `POST
     /auth/impersonate/mode` muda `readonly|write` de forma idempotente, persiste
-    auditoria fail-closed e devolve só um access novo (o refresh permanece igual).
+    modo + auditoria na MESMA transação e devolve só um access novo (o refresh
+    permanece igual). Troca de modo e rotação disputam a MESMA linha rotativa:
+    quem vence define o estado, e o refresh relê a família depois do claim antes
+    de assinar o access. Auditoria persistente distingue
+    `auth.impersonation.mode.write`/`.readonly`; elevação falha fechada sem trilha,
+    enquanto rebaixamento cai para uma transação mode-only se o insert de auditoria
+    falhar (e emite error operacional), para nunca deixar suporte preso em write.
     Erros de token são INDISTINGUÍVEIS
     (`INVALID_IMPERSONATION_TOKEN`→401); `IMPERSONATION_FORBIDDEN`→403,
     `TARGET_NOT_IMPERSONABLE`→409. Auditoria: `auth.impersonation.requested` /
-    `.exchanged` / `.actor_gone` (logs) e `auth.impersonation.mode_change`
-    (persistente). Logout comum revoga a família canônica inteira; purga periódica
+    `.exchanged` / `.actor_gone` (logs) e as duas ações de modo acima
+    (persistentes). Logout comum revoga a família canônica inteira; purga periódica
     inclui tokens e famílias órfãs expiradas.
 11. **OTP por e-mail (`otp_codes`):** código guardado **só como sha256**, single-use
     (`consumed_at`), TTL `OTP_TTL_MINUTES` (10); brute-force travado por `attempts`
@@ -335,6 +341,9 @@ arquivado/sumido → CAI para sessão da conta — a criança volta à grade). R
   re-deriva o `act` do ATOR e marca a família — a sessão de perfil HERDA o TTL curto e
   morre com o ator (a rotação re-checa). Ator sumido/inativo no select → 403. Sem isso, o
   select "lavaria" a impersonação numa sessão de perfil normal de 30 dias e sem rastro.
+  `select` E `exit` recebem também o refresh vigente: ele precisa pertencer ao mesmo
+  alvo/ator e estar ativo, e seu `familyExpiresAt` autoritativo é copiado para a nova
+  família. Trocar de irmão ou voltar à conta nunca reinicia as 2h de suporte.
 - **Migração de produção (PR6) — `scripts/backfill-default-profiles.ts`** (`bun run
   db:backfill-profiles [--dry-run]`): cria o **perfil-padrão por conta com matrícula KIDS
   ativa** com `id = id da conta` — o progresso/gamificação/comunidade histórico (keyado no

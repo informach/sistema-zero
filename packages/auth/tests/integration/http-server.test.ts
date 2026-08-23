@@ -203,12 +203,14 @@ function buildApp(
     users,
     authTokens,
     impersonationSessions,
+    refreshTokens,
   )
   const exitProfileSession = new ExitProfileSessionService(
     users,
     fakeHasher,
     authTokens,
     impersonationSessions,
+    refreshTokens,
   )
   const getPublicProfile = new GetPublicProfileService(profilesRepo)
   const changeImpersonationMode = new ChangeImpersonationModeService(
@@ -217,7 +219,6 @@ function buildApp(
     profilesRepo,
     authTokens,
     impersonationSessions,
-    auditLogs,
     silentLogger,
   )
 
@@ -294,6 +295,7 @@ function buildApp(
     auditLogs,
     messaging,
     tokenIssuer,
+    authTokens,
   }
 }
 
@@ -2217,7 +2219,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
   })
 
   test('impersonação: selecionar perfil PROPAGA o ator (claim act + TTL curto) — não lava a sessão', async () => {
-    const { app, accountId, users } = await setup()
+    const { app, accountId, users, authTokens } = await setup()
     const actorId = '99999999-9999-4999-8999-999999999999'
     users.seed(
       UserAggregate.restore({
@@ -2237,16 +2239,30 @@ describe('Auth — sessão de perfil (PR2)', () => {
         updatedAt: new Date(),
       }),
     )
+    const account = await users.findById(accountId)
+    const actor = await users.findById(actorId)
+    if (!account || !actor) throw new Error('fixture de impersonação inválida')
+    const current = await authTokens.issueForUser(account, {
+      impersonation: {
+        actorId,
+        act: { sub: actorId, email: actor.email, name: actor.fullName, mode: 'write' },
+      },
+    })
     // O gateway injeta `x-auth-impersonator-id` (claim `act.sub`) numa sessão de suporte.
     const res = await app.handle(
-      req('POST', `/auth/profiles/${PROFILE_ID}/select`, {
-        ...gwAccount(accountId),
-        'x-auth-impersonator-id': actorId,
-      }),
+      req(
+        'POST',
+        `/auth/profiles/${PROFILE_ID}/select`,
+        {
+          ...gwAccount(accountId),
+          'x-auth-impersonator-id': actorId,
+        },
+        { refreshToken: current.refreshToken },
+      ),
     )
     expect(res.status).toBe(200)
     const body = (await res.json()) as {
-      tokens: { accessToken: string; refreshExpiresIn: number }
+      tokens: { accessToken: string; refreshToken: string; refreshExpiresIn: number }
     }
     const payload = decodeJwt(body.tokens.accessToken)
     expect(payload.sub).toBe(PROFILE_ID)
@@ -2262,7 +2278,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
         'POST',
         '/auth/profile-session/exit',
         { ...gwProfile(PROFILE_ID, accountId), 'x-auth-impersonator-id': actorId },
-        { password: REGISTER_BODY.password },
+        { password: REGISTER_BODY.password, refreshToken: body.tokens.refreshToken },
       ),
     )
     expect(exited.status).toBe(200)

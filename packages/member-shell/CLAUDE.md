@@ -550,8 +550,12 @@ no auth). **`exit` REVOGA o refresh da sessão de perfil deixada** (full review 
 refresh ATUAL antes de trocar os cookies e chama `gateway.logoutRequest`; a revogação da família
 anterior precisa confirmar antes de instalar a nova sessão. A família NOVA da conta não é tocada
 (família distinta), mas nenhum sucessor concorrente da família antiga fica vivo. Mudança de modo
-usa só um access novo; `refresh.ts` serializa refresh/mode/logout e segue o sucessor cacheado para
-evitar resposta/cookie fora de ordem. O logout só limpa os cookies após o auth confirmar a
+usa só um access novo; `refresh.ts` resolve primeiro a cadeia de sucessores e serializa
+refresh/mode/logout pelo token CANÔNICO (entrada pendente atrás do lock nunca é aguardada, para não
+criar deadlock). `select`/`exit` usam `gatewayFetchWithRefreshProof`: o corpo leva esse mesmo refresh
+canônico; se o access expirou, libera o lock, rotaciona e remonta a chamada com o sucessor. O Auth
+propaga o deadline absoluto da família de suporte para que a troca de perfil não renove as 2h.
+O logout só limpa os cookies após o auth confirmar a
 revogação da família; indisponibilidade responde 503 e mantém o banner/sessão visíveis para retry.
 A claim **`pfl`** do JWT é lida por `parseProfileClaim` (`lib/act.ts`, pura/testada) →
 `SessionUser.activeProfile` (`{accountId, name}`). O **proxy** ganhou `requireProfileSelectPath`

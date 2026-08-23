@@ -1467,7 +1467,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const { id } = await ctx.params
       if (!UUID_RE.test(id)) return invalidInput()
       const previousRefresh = await session.getRefreshToken()
-      const { status, body } = await profiles.select(id)
+      const { status, body } = await profiles.select(id, previousRefresh)
       if (status === 200 && body?.tokens) {
         // A nova sessão sempre nasce readonly; encerra a família anterior para que
         // uma capacidade write não sobreviva órfã após a troca de perfil.
@@ -1504,7 +1504,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       // a sessão de perfil seguiria válida até expirar — um token órfão após voltar à
       // área dos pais (full review F3). Revoga a família antiga (não toca a nova sessão).
       const profileRefresh = await session.getRefreshToken()
-      const { status, body } = await profiles.exit(parsed.data.password)
+      const { status, body } = await profiles.exit(parsed.data.password, profileRefresh)
       if (status === 200 && body?.tokens) {
         if (profileRefresh && !(await gateway.logoutRequest(profileRefresh))) {
           return NextResponse.json(

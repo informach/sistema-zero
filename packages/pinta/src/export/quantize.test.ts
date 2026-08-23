@@ -107,4 +107,31 @@ describe('quantizeFrames — quando NÃO cabe', () => {
     const result = quantizeFrames([rgba(pixels)], 999)
     expect(result.palette.length).toBeLessThanOrEqual(256)
   })
+
+  it('dithering de alfa preserva visualmente opacidade de 40%', () => {
+    const pixels = Array.from(
+      { length: 64 },
+      () => [220, 30, 30, 102] as [number, number, number, number],
+    )
+    const result = quantizeFrames([rgba(pixels)], 256, { width: 8, dither: true })
+    const opaque = Array.from(result.frames[0] ?? []).filter((index) => index !== 0).length
+    expect(opaque).toBeGreaterThanOrEqual(24)
+    expect(opaque).toBeLessThanOrEqual(27)
+  })
+
+  it('dithering de cor quebra as faixas largas de um degradê quantizado', () => {
+    const pixels = Array.from(
+      { length: 64 },
+      (_, i) => [i * 4, i * 4, i * 4] as [number, number, number],
+    )
+    const plain = quantizeFrames([rgba(pixels)], 4)
+    const dithered = quantizeFrames([rgba(pixels)], 4, { width: 64, dither: true })
+    const transitions = (frame: Uint8Array) =>
+      Array.from(frame)
+        .slice(1)
+        .filter((value, i) => value !== frame[i]).length
+    expect(transitions(dithered.frames[0] as Uint8Array)).toBeGreaterThan(
+      transitions(plain.frames[0] as Uint8Array),
+    )
+  })
 })

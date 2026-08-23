@@ -1,4 +1,5 @@
 import type { PasswordHasher } from '../../domain/ports/password-hasher.port'
+import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
 import type { UserRepository } from '../../domain/ports/user-repository.port'
 import {
   InvalidCredentialsError,
@@ -7,6 +8,7 @@ import {
 } from '../../domain/user/user.errors'
 import type { ImpersonationSessionValidator } from '../impersonation/impersonation-session-validator'
 import type { AuthTokenService, AuthTokens, IssueContext } from '../tokens/auth-token.service'
+import { impersonationTransitionDeadline } from './impersonation-transition'
 
 export interface ExitProfileSessionCommand {
   /** Conta do responsável (x-auth-account-id da sessão de perfil). */
@@ -17,6 +19,8 @@ export interface ExitProfileSessionCommand {
   ip?: string | null
   /** Mantém o vínculo de suporte ao voltar à conta, sempre reiniciando em readonly. */
   impersonatorUserId?: string | null
+  /** Refresh vigente que ancora o deadline absoluto da família de suporte. */
+  refreshToken?: string | null
 }
 
 /**
@@ -31,6 +35,7 @@ export class ExitProfileSessionService {
     private readonly hasher: PasswordHasher,
     private readonly authTokens: AuthTokenService,
     private readonly impersonationSessions: ImpersonationSessionValidator,
+    private readonly refreshTokens: RefreshTokenRepository,
   ) {}
 
   async execute(cmd: ExitProfileSessionCommand): Promise<{ tokens: AuthTokens }> {
@@ -46,8 +51,15 @@ export class ExitProfileSessionService {
       if (!actor) {
         throw new UserNotActiveError('Ator da impersonação indisponível')
       }
+      const familyExpiresAt = await impersonationTransitionDeadline(
+        this.refreshTokens,
+        cmd.refreshToken,
+        actor.id,
+        account.id,
+      )
       impersonation = {
         actorId: actor.id,
+        familyExpiresAt,
         act: {
           sub: actor.id,
           email: actor.email,

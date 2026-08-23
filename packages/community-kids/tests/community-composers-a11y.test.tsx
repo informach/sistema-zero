@@ -76,6 +76,23 @@ afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
+/**
+ * ⚠️ Timeout EXPLÍCITO nos `findBy` que montam o `KidsSpaceViewClient`, e não o
+ * 1000 ms padrão da testing-library.
+ *
+ * O primeiro caso a montar esse cliente paga o mount frio (módulos, dois fetches
+ * e o diálogo); o irmão logo depois faz o MESMO render e clique em ~200 ms. No
+ * runner do CI, com os 22 pacotes disputando CPU, esse primeiro mount passou de
+ * 1 s e reprovou (23/08; o mesmo caso já tinha flakado em 18/08, quando a corrida
+ * real foi consertada trocando `getBy` por `findBy`).
+ *
+ * Aqui a asserção é o NOME ACESSÍVEL do campo — o tempo de abrir o diálogo não é
+ * o que está sob teste, e deixar 1 s implícito transforma o teste num orçamento
+ * de latência que ninguém escolheu. O teto generoso vale para os DOIS casos: a
+ * ordem pode mudar, e quem correr primeiro é que paga o frio.
+ */
+const MOUNT_FRIO = { timeout: 5_000 } as const
+
 describe('nomes acessíveis dos compositores da comunidade', () => {
   test('o campo de resposta dos recados tem label persistente', async () => {
     render(<RecadoThreadClient threadId="thread-1" />)
@@ -87,18 +104,20 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
   test('o título da nova conversa tem label persistente', async () => {
     render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, MOUNT_FRIO))
     // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
     // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
     // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
-    const title = await screen.findByRole('textbox', { name: 'Título da conversa' })
+    const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, MOUNT_FRIO)
     expect(title.getAttribute('name')).toBe('threadTitle')
   })
 
   test('o corpo da nova conversa expõe o editor rico como campo nomeado', async () => {
     render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }))
-    expect(await screen.findByRole('textbox', { name: 'Mensagem da conversa' })).toBeTruthy()
+    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, MOUNT_FRIO))
+    expect(
+      await screen.findByRole('textbox', { name: 'Mensagem da conversa' }, MOUNT_FRIO),
+    ).toBeTruthy()
   })
 })

@@ -72,6 +72,22 @@ function preparaCruz(el: HTMLElement) {
 }
 
 describe('a cruz manda as teclas do jogo', () => {
+  it('solta a direção do teclado quando o botão perde foco', () => {
+    const { iframeRef, enviadas } = palcoDeTeste()
+    const controles = defaultProjectControls()
+    render(<DPad iframeRef={iframeRef} directions={controles.directions} />)
+    const label = controles.directions.up[0]?.label ?? 'up'
+    const up = screen.getByRole('button', { name: label })
+
+    fireEvent.keyDown(up, { key: 'Enter' })
+    fireEvent.blur(up)
+
+    expect(enviadas).toEqual([
+      { action: 'keydown', key: 'ArrowUp', code: 'ArrowUp' },
+      { action: 'keyup', key: 'ArrowUp', code: 'ArrowUp' },
+    ])
+  })
+
   it('a diagonal manda as DUAS direções, e soltar solta as duas', () => {
     const { iframeRef, enviadas } = palcoDeTeste()
     const controles = defaultProjectControls()

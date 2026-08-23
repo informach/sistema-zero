@@ -27,8 +27,9 @@ import { DrizzleUserRepository } from '../../src/infrastructure/persistence/driz
  *  2. A unique de e-mail vale no banco (23505 → EmailAlreadyInUseError).
  *  3. `claimForRotation` é ATÔMICO sob concorrência (A1 do full review).
  *  4. Revogar a família impede inserir um sucessor após a corrida de logout.
- *  5. A busca `q` escapa curingas do ILIKE (B5).
- *  6. `deleteExpired`/`lastIssuedAt` (purga M2 + cooldown M3).
+ *  5. Troca de modo disputa a mesma linha do claim e audita na mesma transação.
+ *  6. A busca `q` escapa curingas do ILIKE (B5).
+ *  7. `deleteExpired`/`lastIssuedAt` (purga M2 + cooldown M3).
  *
  * Usa o Postgres de dev (Docker, porta 5433) num banco DEDICADO
  * `sistemazero_test` (criado aqui; nunca toca os dados de dev). Sem Postgres
@@ -127,7 +128,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     await conn.sql`
       truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
         auth.refresh_token_families,
-        auth.password_reset_tokens, auth.otp_codes cascade`
+        auth.password_reset_tokens, auth.otp_codes, auth.audit_logs cascade`
   })
 
   test('UPDATE otimista persiste passwordHash (o bug histórico) e respeita a version', async () => {
@@ -233,6 +234,95 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       refreshTokens.claimForRotation(id, new Date()),
     ])
     expect(results.filter(Boolean)).toHaveLength(1) // o lock de linha serializa: 1 vence
+  })
+
+  test('troca de modo disputa a MESMA linha física que o claim de rotação', async () => {
+    const target = newUser('mode-target@example.com')
+    const actor = newUser('mode-actor@example.com')
+    await users.create(target)
+    await users.create(actor)
+    const id = randomUUID()
+    const familyId = randomUUID()
+    await refreshTokens.create({
+      id,
+      userId: target.id,
+      familyId,
+      tokenHash: sha256Hex(`refresh-${id}`),
+      expiresAt: new Date(Date.now() + 60_000),
+      impersonatorUserId: actor.id,
+    })
+
+    const locked = Promise.withResolvers<void>()
+    const release = Promise.withResolvers<void>()
+    const blocker = conn.sql.begin(async (tx) => {
+      await tx`select id from auth.refresh_tokens where id = ${id} for update`
+      locked.resolve()
+      await release.promise
+    })
+    await locked.promise
+
+    let settled = false
+    const changing = refreshTokens
+      .setImpersonationMode(id, familyId, true, {
+        id: randomUUID(),
+        actorId: target.id,
+        impersonatorId: actor.id,
+        action: 'auth.impersonation.mode.write',
+        method: 'POST',
+        path: '/auth/impersonate/mode',
+        status: 200,
+      })
+      .then((value) => {
+        settled = true
+        return value
+      })
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+      // Se o adapter atualizasse só a família, passaria reto pelo lock do token
+      // e a rotação poderia assinar o snapshot antigo em outra réplica.
+      expect(settled).toBe(false)
+    } finally {
+      release.resolve()
+    }
+    await blocker
+    expect(await changing).toBe(true)
+  })
+
+  test('falha no insert de auditoria reverte também a elevação de modo', async () => {
+    const target = newUser('audit-target@example.com')
+    const actor = newUser('audit-actor@example.com')
+    await users.create(target)
+    await users.create(actor)
+    const id = randomUUID()
+    const familyId = randomUUID()
+    const auditId = randomUUID()
+    const raw = `refresh-${id}`
+    await refreshTokens.create({
+      id,
+      userId: target.id,
+      familyId,
+      tokenHash: sha256Hex(raw),
+      expiresAt: new Date(Date.now() + 60_000),
+      impersonatorUserId: actor.id,
+    })
+    await conn.sql`
+      insert into auth.audit_logs
+        (id, actor_id, impersonator_id, action, method, path, status)
+      values
+        (${auditId}, ${target.id}, ${actor.id}, 'fixture', 'POST', '/fixture', 200)`
+
+    await expect(
+      refreshTokens.setImpersonationMode(id, familyId, true, {
+        id: auditId,
+        actorId: target.id,
+        impersonatorId: actor.id,
+        action: 'auth.impersonation.mode.write',
+        method: 'POST',
+        path: '/auth/impersonate/mode',
+        status: 200,
+      }),
+    ).rejects.toThrow()
+    expect((await refreshTokens.findByHash(sha256Hex(raw)))?.impersonationWritable).toBe(false)
   })
 
   test('família revogada não aceita sucessor criado depois do logout', async () => {

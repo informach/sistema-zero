@@ -402,6 +402,10 @@ export function DPad({
             }}
             onBlur={(e) => {
               e.currentTarget.style.boxShadow = ''
+              // Tab, troca de janela ou remoção de foco podem acontecer antes
+              // do keyup. Solta só esta direção para preservar diagonais ainda
+              // seguradas por outras teclas.
+              apply(heldRef.current.filter((heldDirection) => heldDirection !== dir))
             }}
           />
         )

@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { sha256Hex } from '@sistemazero/core/security'
 import type { ImpersonationMode } from '../../domain/impersonation/impersonation-mode'
-import type { AuditLogRepository } from '../../domain/ports/audit-log-repository.port'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
 import type { ProfileClaim } from '../../domain/ports/token-issuer.port'
@@ -33,7 +32,6 @@ export class ChangeImpersonationModeService {
     private readonly profiles: ProfileRepository,
     private readonly tokens: AuthTokenService,
     private readonly impersonationSessions: ImpersonationSessionValidator,
-    private readonly auditLogs: AuditLogRepository,
     private readonly logger: Logger,
   ) {}
 
@@ -100,7 +98,7 @@ export class ChangeImpersonationModeService {
       actorEmail: target.email,
       actorRole: target.role,
       impersonatorId: actor.id,
-      action: 'auth.impersonation.mode_change',
+      action: `auth.impersonation.mode.${command.mode}`,
       method: 'POST',
       path: '/auth/impersonate/mode',
       targetId: profile?.profileId ?? target.id,
@@ -109,11 +107,19 @@ export class ChangeImpersonationModeService {
       userAgent: command.userAgent ?? null,
       requestId: null,
     }
+    let updated: boolean
     try {
-      await this.auditLogs.create(audit)
+      // O adapter grava o modo e este sucesso auditável na MESMA transação. Se
+      // o CAS perder para refresh/logout, nenhum log mentiroso é publicado.
+      updated = await this.refreshTokens.setImpersonationMode(
+        record.id,
+        record.familyId,
+        command.mode === 'write',
+        audit,
+      )
     } catch (error) {
-      // Elevação falha fechada sem trilha. Rebaixamento jamais fica preso em
-      // write por indisponibilidade da auditoria: segue e registra o erro no log.
+      // Elevação falha fechada sem trilha. No downgrade, uma segunda transação
+      // reduz a capacidade sem auditoria e o erro operacional fica alertável.
       if (command.mode === 'write') throw error
       this.logger.error('auth.impersonation.mode_audit_failed', {
         actorId: actor.id,
@@ -121,13 +127,8 @@ export class ChangeImpersonationModeService {
         mode: command.mode,
         error: error instanceof Error ? error.message : String(error),
       })
+      updated = await this.refreshTokens.setImpersonationMode(record.id, record.familyId, false)
     }
-
-    const updated = await this.refreshTokens.setImpersonationMode(
-      record.id,
-      record.familyId,
-      command.mode === 'write',
-    )
     if (!updated) throw new InvalidRefreshTokenError()
 
     const refreshExpiresIn = Math.max(

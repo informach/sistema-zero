@@ -115,6 +115,45 @@ describe('refreshTokens (single-flight)', () => {
     await expect(usedBySensitiveOperation).resolves.toBe(TOKENS.refreshToken)
   })
 
+  test('operação sensível trava o SUCESSOR canônico, não o refresh ancestral', async () => {
+    installFetch(okResponse)
+    const ancestor = `token-ancestral-${crypto.randomUUID()}`
+    const first = await refreshTokens(ancestor)
+    if (typeof first === 'string') throw new Error('rotação inicial falhou')
+
+    const sensitiveMayFinish = Promise.withResolvers<void>()
+    const sensitiveStarted = Promise.withResolvers<void>()
+    const sensitive = withCurrentRefreshToken(ancestor, async (current) => {
+      expect(current).toBe(first.refreshToken)
+      sensitiveStarted.resolve()
+      await sensitiveMayFinish.promise
+      return current
+    })
+    await sensitiveStarted.promise
+
+    const refreshStarted = Promise.withResolvers<void>()
+    let didRefreshStart = false
+    installFetch(async () => {
+      didRefreshStart = true
+      refreshStarted.resolve()
+      return new Response(JSON.stringify({ tokens: { ...TOKENS, refreshToken: 'terceiro' } }), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      })
+    })
+    const rotatingSuccessor = refreshTokens(first.refreshToken)
+
+    // O refresh do sucessor precisa estar na fila atrás da operação sensível.
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(didRefreshStart).toBe(false)
+
+    sensitiveMayFinish.resolve()
+    await sensitive
+    await expect(rotatingSuccessor).resolves.toEqual({ ...TOKENS, refreshToken: 'terceiro' })
+    await expect(refreshStarted.promise).resolves.toBeUndefined()
+  })
+
   test('mudança de modo substitui o access readonly ainda cacheado pelo single-flight', async () => {
     installFetch(okResponse)
     await refreshTokens('token-antes-do-modo')

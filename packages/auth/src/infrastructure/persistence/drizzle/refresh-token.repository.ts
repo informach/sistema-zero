@@ -1,11 +1,13 @@
-import { and, eq, exists, gt, inArray, isNull, lt, notExists } from 'drizzle-orm'
+import { and, eq, exists, gt, inArray, isNotNull, isNull, lt, notExists } from 'drizzle-orm'
+import type { CreateAuditLogInput } from '../../../domain/ports/audit-log-repository.port'
 import type {
   CreateRefreshTokenInput,
   RefreshTokenRecord,
   RefreshTokenRepository,
 } from '../../../domain/ports/refresh-token-repository.port'
+import { auditLogInsertValues } from './audit-log.repository'
 import type { Database } from './db'
-import { refreshTokenFamilies, refreshTokens } from './schema'
+import { auditLogs, refreshTokenFamilies, refreshTokens } from './schema'
 
 type RefreshRow = typeof refreshTokens.$inferSelect
 type RefreshFamilyRow = typeof refreshTokenFamilies.$inferSelect
@@ -118,32 +120,63 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
     return claimed.length === 1
   }
 
-  async setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean> {
-    const updated = await this.db
-      .update(refreshTokenFamilies)
-      .set({ impersonationWritable: writable, updatedAt: new Date() })
-      .where(
-        and(
-          eq(refreshTokenFamilies.id, familyId),
-          isNull(refreshTokenFamilies.revokedAt),
-          gt(refreshTokenFamilies.expiresAt, new Date()),
-          exists(
-            this.db
-              .select({ id: refreshTokens.id })
-              .from(refreshTokens)
-              .where(
-                and(
-                  eq(refreshTokens.id, id),
-                  eq(refreshTokens.familyId, familyId),
-                  isNull(refreshTokens.rotatedAt),
-                  isNull(refreshTokens.revokedAt),
+  async setImpersonationMode(
+    id: string,
+    familyId: string,
+    writable: boolean,
+    audit?: CreateAuditLogInput,
+  ): Promise<boolean> {
+    return this.db.transaction(async (tx) => {
+      // PRIMEIRO toca a mesma linha que `claimForRotation` consome. Os dois
+      // comandos passam a disputar um lock físico comum: se o modo vence, o
+      // refresh espera e depois relê a família; se o claim vence, este WHERE
+      // reavaliado não casa e nenhuma auditoria é inserida.
+      const current = await tx
+        .update(refreshTokens)
+        .set({ impersonationWritable: writable })
+        .where(
+          and(
+            eq(refreshTokens.id, id),
+            eq(refreshTokens.familyId, familyId),
+            isNull(refreshTokens.rotatedAt),
+            isNull(refreshTokens.revokedAt),
+            exists(
+              tx
+                .select({ id: refreshTokenFamilies.id })
+                .from(refreshTokenFamilies)
+                .where(
+                  and(
+                    eq(refreshTokenFamilies.id, familyId),
+                    isNotNull(refreshTokenFamilies.impersonatorUserId),
+                    isNull(refreshTokenFamilies.revokedAt),
+                    gt(refreshTokenFamilies.expiresAt, new Date()),
+                  ),
                 ),
-              ),
+            ),
           ),
-        ),
-      )
-      .returning({ id: refreshTokenFamilies.id })
-    return updated.length === 1
+        )
+        .returning({ id: refreshTokens.id })
+      if (current.length !== 1) return false
+
+      const updatedFamily = await tx
+        .update(refreshTokenFamilies)
+        .set({ impersonationWritable: writable, updatedAt: new Date() })
+        .where(
+          and(
+            eq(refreshTokenFamilies.id, familyId),
+            isNotNull(refreshTokenFamilies.impersonatorUserId),
+            isNull(refreshTokenFamilies.revokedAt),
+            gt(refreshTokenFamilies.expiresAt, new Date()),
+          ),
+        )
+        .returning({ id: refreshTokenFamilies.id })
+      if (updatedFamily.length !== 1) {
+        // Força rollback também do touch na linha rotativa.
+        throw new Error('Família de impersonação mudou durante a troca de modo')
+      }
+      if (audit) await tx.insert(auditLogs).values(auditLogInsertValues(audit))
+      return true
+    })
   }
 
   async revokeFamily(familyId: string): Promise<void> {
@@ -152,13 +185,13 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
     const now = new Date()
     await this.db.transaction(async (tx) => {
       await tx
-        .update(refreshTokenFamilies)
-        .set({ revokedAt: now, updatedAt: now })
-        .where(and(eq(refreshTokenFamilies.id, familyId), isNull(refreshTokenFamilies.revokedAt)))
-      await tx
         .update(refreshTokens)
         .set({ revokedAt: now })
         .where(and(eq(refreshTokens.familyId, familyId), isNull(refreshTokens.revokedAt)))
+      await tx
+        .update(refreshTokenFamilies)
+        .set({ revokedAt: now, updatedAt: now })
+        .where(and(eq(refreshTokenFamilies.id, familyId), isNull(refreshTokenFamilies.revokedAt)))
     })
   }
 
@@ -167,13 +200,13 @@ export class DrizzleRefreshTokenRepository implements RefreshTokenRepository {
     const now = new Date()
     await this.db.transaction(async (tx) => {
       await tx
-        .update(refreshTokenFamilies)
-        .set({ revokedAt: now, updatedAt: now })
-        .where(and(eq(refreshTokenFamilies.userId, userId), isNull(refreshTokenFamilies.revokedAt)))
-      await tx
         .update(refreshTokens)
         .set({ revokedAt: now })
         .where(and(eq(refreshTokens.userId, userId), isNull(refreshTokens.revokedAt)))
+      await tx
+        .update(refreshTokenFamilies)
+        .set({ revokedAt: now, updatedAt: now })
+        .where(and(eq(refreshTokenFamilies.userId, userId), isNull(refreshTokenFamilies.revokedAt)))
     })
   }
 

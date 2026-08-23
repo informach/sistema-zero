@@ -31,9 +31,9 @@
  * iguais podem cair na mesma caixa): ele guarda as cores exatas enquanto elas
  * couberem na paleta e DESISTE na primeira que não couber.
  *
- * O alfa é cortado num limiar porque o GIF só tem transparência de 1 bit: não
- * existe meio-transparente, então a borda anti-serrilhada fica um pouco mais
- * dura no arquivo do que na tela. É limitação do formato, não escolha.
+ * O GIF só tem transparência de 1 bit. No caminho vetorial, um padrão Bayer
+ * ordenado converte o alfa em cobertura espacial estável entre quadros; chamadas
+ * sem dithering preservam o corte por limiar do contrato legado.
  */
 
 export type Rgb = [number, number, number]
@@ -47,8 +47,49 @@ export interface QuantizeResult {
   approximated: boolean
 }
 
-/** Alfa a partir do qual o pixel é considerado OPACO (o GIF não tem meio-termo). */
+/** Limiar do caminho legado/sem dithering (o GIF não tem meio-termo por pixel). */
 export const ALPHA_THRESHOLD = 128
+
+export interface QuantizeOptions {
+  /** Largura do quadro RGBA, necessária para o padrão espacial de dithering. */
+  width: number
+  /** Ativa cobertura de alfa e suavização de cor determinísticas. */
+  dither: boolean
+  alphaThreshold?: number
+}
+
+/** Bayer 8×8: padrão ordenado, estável entre quadros e sem ruído aleatório. */
+const BAYER_8 = [
+  0, 48, 12, 60, 3, 51, 15, 63, 32, 16, 44, 28, 35, 19, 47, 31, 8, 56, 4, 52, 11, 59, 7, 55, 40, 24,
+  36, 20, 43, 27, 39, 23, 2, 50, 14, 62, 1, 49, 13, 61, 34, 18, 46, 30, 33, 17, 45, 29, 10, 58, 6,
+  54, 9, 57, 5, 53, 42, 26, 38, 22, 41, 25, 37, 21,
+] as const
+
+function ditherCell(pixel: number, width: number): number {
+  const safeWidth = Math.max(1, Math.round(width))
+  const x = pixel % safeWidth
+  const y = Math.floor(pixel / safeWidth)
+  return BAYER_8[(y % 8) * 8 + (x % 8)] as number
+}
+
+function paintAlpha(
+  alpha: number,
+  pixel: number,
+  width: number,
+  dither: boolean,
+  threshold: number,
+): boolean {
+  if (!dither) return alpha >= threshold
+  if (alpha <= 0) return false
+  if (alpha >= 255) return true
+  // (cell + 0,5) / 64 é o limiar local. A cobertura média converge para
+  // alpha/255, que é a melhor aproximação possível no alfa binário do GIF.
+  return alpha * 128 > (ditherCell(pixel, width) * 2 + 1) * 255
+}
+
+function clampByte(value: number): number {
+  return Math.max(0, Math.min(255, Math.round(value)))
+}
 
 /** 5 bits por canal → 32768 caixas possíveis (teto do histograma). */
 const COARSE_SIZE = 1 << 15
@@ -179,8 +220,11 @@ function medianCut(buckets: ColorBucket[], maxBoxes: number): ColorBucket[][] {
 export function quantizeFrames(
   frames: ReadonlyArray<Uint8ClampedArray>,
   maxColors: number,
-  alphaThreshold: number = ALPHA_THRESHOLD,
+  options?: QuantizeOptions,
 ): QuantizeResult {
+  const alphaThreshold = options?.alphaThreshold ?? ALPHA_THRESHOLD
+  const dither = options?.dither === true
+  const width = options?.width ?? Math.max(1, (frames[0]?.length ?? 4) / 4)
   const available = Math.max(1, Math.min(maxColors, 256) - 1)
 
   const histogram: CoarseHistogram = {
@@ -193,8 +237,8 @@ export function quantizeFrames(
   let exactColors: Set<number> | null = new Set()
 
   for (const rgba of frames) {
-    for (let i = 0; i < rgba.length; i += 4) {
-      if ((rgba[i + 3] ?? 0) < alphaThreshold) continue
+    for (let i = 0, p = 0; i < rgba.length; i += 4, p += 1) {
+      if (!paintAlpha(rgba[i + 3] ?? 0, p, width, dither, alphaThreshold)) continue
       const r = rgba[i] ?? 0
       const g = rgba[i + 1] ?? 0
       const b = rgba[i + 2] ?? 0
@@ -247,15 +291,48 @@ export function quantizeFrames(
     }
   }
 
+  /** Cache global: a paleta é a mesma em todos os quadros. */
+  const nearestByCoarse = new Uint8Array(COARSE_SIZE)
+  const nearest = (r: number, g: number, b: number): number => {
+    const key = coarseKey(r, g, b)
+    const cached = nearestByCoarse[key] as number
+    if (cached > 0) return cached
+    let best = 1
+    let bestDistance = Number.POSITIVE_INFINITY
+    for (let index = 1; index < palette.length; index += 1) {
+      const color = palette[index] as Rgb
+      const dr = r - color[0]
+      const dg = g - color[1]
+      const db = b - color[2]
+      const distance = dr * dr + dg * dg + db * db
+      if (distance < bestDistance) {
+        bestDistance = distance
+        best = index
+      }
+    }
+    nearestByCoarse[key] = best
+    return best
+  }
+
   const out = frames.map((rgba) => {
     const indices = new Uint8Array(rgba.length / 4)
     for (let i = 0, p = 0; i < rgba.length; i += 4, p += 1) {
-      if ((rgba[i + 3] ?? 0) < alphaThreshold) continue // já nasce 0 (transparente)
-      const r = rgba[i] ?? 0
-      const g = rgba[i + 1] ?? 0
-      const b = rgba[i + 2] ?? 0
+      if (!paintAlpha(rgba[i + 3] ?? 0, p, width, dither, alphaThreshold)) continue
+      let r = rgba[i] ?? 0
+      let g = rgba[i + 1] ?? 0
+      let b = rgba[i + 2] ?? 0
+      if (approximated && dither) {
+        // ±16 níveis: suficiente para misturar vizinhos nas bordas de uma
+        // faixa sem transformar cores chapadas dominantes em ruído pesado.
+        const offset = ((ditherCell(p, width) + 0.5) / 64 - 0.5) * 32
+        r = clampByte(r + offset)
+        g = clampByte(g + offset)
+        b = clampByte(b + offset)
+      }
       indices[p] = approximated
-        ? (byCoarse[coarseKey(r, g, b)] as number)
+        ? dither
+          ? nearest(r, g, b)
+          : (byCoarse[coarseKey(r, g, b)] as number)
         : (byExact.get((r << 16) | (g << 8) | b) ?? 1)
     }
     return indices

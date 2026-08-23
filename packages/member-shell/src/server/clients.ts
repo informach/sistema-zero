@@ -166,11 +166,19 @@ export function createProfilesClient(gw: GatewayModule) {
     archive(id: string): Promise<GatewayResponse<{ archived: boolean }>> {
       return gw.gatewayFetch(`/auth/profiles/${enc(id)}`, { method: 'DELETE' })
     },
-    select(id: string): Promise<GatewayResponse<{ profile?: ProfileView; tokens?: AuthTokens }>> {
-      return gw.gatewayFetch(`/auth/profiles/${enc(id)}/select`, { method: 'POST' })
+    select(
+      id: string,
+      refreshToken: string | null,
+    ): Promise<GatewayResponse<{ profile?: ProfileView; tokens?: AuthTokens }>> {
+      return gw.gatewayFetchWithRefreshProof(`/auth/profiles/${enc(id)}/select`, refreshToken, {})
     },
-    exit(password: string): Promise<GatewayResponse<{ tokens?: AuthTokens }>> {
-      return gw.gatewayFetch('/auth/profile-session/exit', { method: 'POST', body: { password } })
+    exit(
+      password: string,
+      refreshToken: string | null,
+    ): Promise<GatewayResponse<{ tokens?: AuthTokens }>> {
+      return gw.gatewayFetchWithRefreshProof('/auth/profile-session/exit', refreshToken, {
+        password,
+      })
     },
   }
 }

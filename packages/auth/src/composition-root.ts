@@ -286,7 +286,6 @@ export async function createApplication(env: Env): Promise<Application> {
     profilesRepo,
     authTokens,
     impersonationSessions,
-    auditLogs,
     logger,
   )
   // Perfis (estilo Netflix) gerenciados pelo responsável.
@@ -304,12 +303,14 @@ export async function createApplication(env: Env): Promise<Application> {
     users,
     authTokens,
     impersonationSessions,
+    refreshTokens,
   )
   const exitProfileSession = new ExitProfileSessionService(
     users,
     hasher,
     authTokens,
     impersonationSessions,
+    refreshTokens,
   )
   const getPublicProfile = new GetPublicProfileService(profilesRepo)
 

@@ -1,3 +1,5 @@
+import type { CreateAuditLogInput } from './audit-log-repository.port'
+
 /** Linha persistida de refresh token (somente o HASH do token é guardado). */
 export interface RefreshTokenRecord {
   id: string
@@ -54,7 +56,13 @@ export interface RefreshTokenRepository {
    * vigente de uma família de impersonação ativa; retry com o mesmo token/modo
    * é idempotente.
    */
-  setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean>
+  setImpersonationMode(
+    id: string,
+    familyId: string,
+    writable: boolean,
+    /** Quando presente, o adapter persiste modo + auditoria na MESMA transação. */
+    audit?: CreateAuditLogInput,
+  ): Promise<boolean>
   /** Revoga TODA a família (reuse-detection / logout global). */
   revokeFamily(familyId: string): Promise<void>
   /**

@@ -9,7 +9,6 @@ import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { InvalidRefreshTokenError } from '../../src/domain/user/user.errors'
 import { Email } from '../../src/domain/value-objects/email'
 import {
-  InMemoryAuditLogRepository,
   InMemoryProfileRepository,
   InMemoryRefreshTokenRepository,
   InMemoryUserRepository,
@@ -24,7 +23,6 @@ describe('ChangeImpersonationModeService', () => {
     const profiles = new InMemoryProfileRepository()
     const issuer = testTokenIssuer()
     const validator = new ImpersonationSessionValidator(users)
-    const auditLogs = new InMemoryAuditLogRepository()
     const tokens = new AuthTokenService(issuer, refreshTokens, {
       refreshTtlDays: 30,
       impersonationRefreshTtlSeconds: 7200,
@@ -35,7 +33,6 @@ describe('ChangeImpersonationModeService', () => {
       profiles,
       tokens,
       validator,
-      auditLogs,
       silentLogger,
     )
     const target = UserAggregate.register({
@@ -65,12 +62,11 @@ describe('ChangeImpersonationModeService', () => {
       target,
       actor,
       validator,
-      auditLogs,
     }
   }
 
   test('ativa write ao rotacionar a mesma família impersonada', async () => {
-    const { refreshTokens, issuer, tokens, service, target, actor, auditLogs } = setup()
+    const { refreshTokens, issuer, tokens, service, target, actor } = setup()
     const initial = await tokens.issueForUser(target, {
       impersonation: {
         actorId: actor.id,
@@ -92,11 +88,11 @@ describe('ChangeImpersonationModeService', () => {
     expect(record?.familyId).toBe(
       (await refreshTokens.findByHash(sha256Hex(initial.refreshToken)))?.familyId,
     )
-    expect(auditLogs.logs).toContainEqual(
+    expect(refreshTokens.modeAuditLogs).toContainEqual(
       expect.objectContaining({
         actorId: target.id,
         impersonatorId: actor.id,
-        action: 'auth.impersonation.mode_change',
+        action: 'auth.impersonation.mode.write',
         status: 200,
       }),
     )
@@ -116,6 +112,9 @@ describe('ChangeImpersonationModeService', () => {
     expect(
       (await refreshTokens.findByHash(sha256Hex(writable.refreshToken)))?.impersonationWritable,
     ).toBeFalse()
+    expect(refreshTokens.modeAuditLogs).toContainEqual(
+      expect.objectContaining({ action: 'auth.impersonation.mode.readonly', status: 200 }),
+    )
   })
 
   test('sessão normal não pode transformar o próprio refresh em modo de suporte', async () => {
@@ -128,7 +127,7 @@ describe('ChangeImpersonationModeService', () => {
   })
 
   test('falha de auditoria impede a elevação e mantém a família readonly', async () => {
-    const { auditLogs, refreshTokens, tokens, service, target, actor } = setup()
+    const { refreshTokens, tokens, service, target, actor } = setup()
     const initial = await tokens.issueForUser(target, {
       impersonation: {
         actorId: actor.id,
@@ -140,9 +139,7 @@ describe('ChangeImpersonationModeService', () => {
         },
       },
     })
-    auditLogs.create = async () => {
-      throw new Error('audit indisponível')
-    }
+    refreshTokens.modeAuditFailure = new Error('audit indisponível')
 
     await expect(
       service.execute({ refreshToken: initial.refreshToken, mode: 'write' }),
@@ -153,7 +150,7 @@ describe('ChangeImpersonationModeService', () => {
   })
 
   test('falha de auditoria nunca impede o rebaixamento para readonly', async () => {
-    const { auditLogs, refreshTokens, issuer, tokens, service, target, actor } = setup()
+    const { refreshTokens, issuer, tokens, service, target, actor } = setup()
     const initial = await tokens.issueForUser(target, {
       impersonation: {
         actorId: actor.id,
@@ -165,9 +162,7 @@ describe('ChangeImpersonationModeService', () => {
         },
       },
     })
-    auditLogs.create = async () => {
-      throw new Error('audit indisponível')
-    }
+    refreshTokens.modeAuditFailure = new Error('audit indisponível')
 
     const lowered = await service.execute({
       refreshToken: initial.refreshToken,
@@ -242,5 +237,63 @@ describe('ChangeImpersonationModeService', () => {
     )
     expect(familyRevocations).toBe(0)
     expect(activeFamilyRecords.length).toBeGreaterThan(0)
+  })
+
+  test('refresh lê o modo canônico DEPOIS de vencer o claim de rotação', async () => {
+    const { users, refreshTokens, profiles, issuer, tokens, target, actor, validator } = setup()
+    const refresh = new RefreshService(
+      users,
+      refreshTokens,
+      tokens,
+      profiles,
+      validator,
+      silentLogger,
+    )
+    const initial = await tokens.issueForUser(target, {
+      impersonation: {
+        actorId: actor.id,
+        act: {
+          sub: actor.id,
+          email: actor.email,
+          name: actor.fullName,
+          mode: 'readonly',
+        },
+      },
+    })
+    const initialRecord = await refreshTokens.findByHash(sha256Hex(initial.refreshToken))
+    if (!initialRecord) throw new Error('refresh inicial não encontrado')
+
+    const originalClaim = refreshTokens.claimForRotation.bind(refreshTokens)
+    refreshTokens.claimForRotation = async (id, at) => {
+      // A troca de modo vence exatamente depois do find inicial do RefreshService
+      // e antes do claim. O access rotacionado precisa observar este estado.
+      const family = refreshTokens.families.get(initialRecord.familyId)
+      if (family) family.impersonationWritable = true
+      return originalClaim(id, at)
+    }
+
+    const rotated = await refresh.execute({ refreshToken: initial.refreshToken })
+    expect((await issuer.verifyAccessToken(rotated.accessToken))?.act?.mode).toBe('write')
+  })
+
+  test('CAS perdido não deixa auditoria falsa de sucesso', async () => {
+    const { refreshTokens, tokens, service, target, actor } = setup()
+    const initial = await tokens.issueForUser(target, {
+      impersonation: {
+        actorId: actor.id,
+        act: {
+          sub: actor.id,
+          email: actor.email,
+          name: actor.fullName,
+          mode: 'readonly',
+        },
+      },
+    })
+    refreshTokens.setImpersonationMode = async () => false
+
+    await expect(
+      service.execute({ refreshToken: initial.refreshToken, mode: 'write' }),
+    ).rejects.toBeInstanceOf(InvalidRefreshTokenError)
+    expect(refreshTokens.modeAuditLogs).toHaveLength(0)
   })
 })
