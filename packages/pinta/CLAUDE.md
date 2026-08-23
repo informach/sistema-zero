@@ -1711,7 +1711,7 @@ Botão "Animação «nome» em GIF" no `ExportDialog`, nos DOIS estilos, exporta
 SELECIONADA (a que está tocando na prévia) com todos os quadros. Para outra animação, troca a
 seleção e baixa de novo — exportar todas de uma vez viraria um monte de arquivo que ninguém pediu.
 
-### ⭐ Por que não entrou dependência nenhuma
+### ⭐ Por que não entrou dependência de runtime
 
 **`export/gif.ts` é um codificador de GIF89a PURO** (~200 linhas: LZW de largura variável, tabela
 global, extensão NETSCAPE do laço, controle gráfico por quadro). O `fflate` que já está aqui não
@@ -1724,20 +1724,23 @@ transparente). No caminho do PIXEL não há conversão nem perda — os índices
 ponta a ponta, ao contrário de todo o resto do `export/`. O upscale ×2/×4 é repetição de pixel
 EXATA (nada de `drawImage` interpolando).
 
-O VETORIAL é o caminho caro: rasteriza a TIRA da animação de uma vez (um `<img>`, um canvas — não
-uma decodificação por quadro), fatia em quadros e reduz as cores em `export/quantize.ts`. Dois
+O VETORIAL é o caminho caro: rasteriza TIRAS de no máximo **4096 px** (um `<img>`/canvas por bloco,
+nunca uma decodificação por quadro), fatia em quadros e reduz as cores em `export/quantize.ts`. No
+máximo da UI, 24×128 em escala 4, são três canvases de 4096×512 em vez de um de 12288×512. Dois
 caminhos lá: **cabe tudo** (desenho de formas chapadas quase sempre tem menos de 255 cores
 distintas → paleta EXATA, zero perda) ou **corte mediano** sobre as cores exatas, com a caixa mais
 POPULOSA sendo partida primeiro e cada caixa virando a média PONDERADA — é isso que preserva o
-traço chapado em vez de virar lama.
+traço chapado em vez de virar lama. Quando precisa aproximar, dithering Bayer 8×8 estável reduz
+faixas de degradê; o caminho exato de cores chapadas continua sem dithering de cor.
 
 ### ⚠️ Os três detalhes que o formato impõe
 
 - **256 cores por arquivo** (tabela GLOBAL, uma só para todos os quadros). A paleta do pixel tem 16
   + 48 extras = 64, folgado.
-- **Transparência de 1 bit**: o pixel é opaco ou some, não existe meio caminho. No vetorial o alfa
-  é cortado num limiar (`ALPHA_THRESHOLD`), então a borda anti-serrilhada fica um pouco mais dura
-  no arquivo do que na tela. É limitação do formato, não escolha.
+- **Transparência de 1 bit**: cada pixel ainda é opaco ou some, mas o vetorial usa dithering
+  ordenado para que a COBERTURA média preserve o alfa original. Uma forma em 40% ocupa ~40% da
+  malha em padrão estável, em vez de desaparecer inteira; a mesma matriz entre quadros evita ruído
+  aleatório/cintilação.
 - **Tempo inteiro em centésimos de segundo**, e navegador troca 0 e 1 por 10 — daí o piso
   `MIN_DELAY_CS = 2`.
 
@@ -1821,6 +1824,17 @@ ninguém revisou. Os dois primeiros valem mais que os outros quatro.
 todo transparente, 2 cores, 3 cores) decodificam no libvips; o re-encode do GIF no servidor **não
 cresce** o arquivo (−0,0% em 8,25 MB de ruído), então não abriu risco de objeto órfão no R2; e a
 prova do libvips continua idêntica depois da guarda de índice.
+
+### Remediação do review final (22/08/2026)
+
+- O máximo da UI deixou de depender de canvas de 12288 px: `vectorGifChunks` limita cada tira a
+  4096 px e mantém uma paleta global para os 24 quadros.
+- Alfa parcial usa cobertura Bayer determinística; degradês quantizados usam a mesma matriz antes
+  da busca pela cor mais próxima. Formas de 25–45% não somem mais e o banding fica menos marcado.
+- `animationGif.test.ts` ganhou raster REAL com `@napi-rs/canvas`: exporta 24 quadros de 128 px em
+  ×4, prova as três tiras de 4096 px, decodifica o GIF final e mede 38–42% de cobertura para uma
+  forma de 40%. O libvips via `sharp` confirma 24 páginas de 512×512. As dependências são só de
+  desenvolvimento; o browser continua no canvas nativo e no encoder próprio.
 
 ### QA em navegador, feito (playground :5199)
 

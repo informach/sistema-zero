@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'bun:test'
+import { createCanvas, loadImage } from '@napi-rs/canvas'
+import sharp from 'sharp'
 import {
   createBitmap,
   createPixelSpriteAsset,
@@ -7,7 +9,13 @@ import {
 } from '../core/project'
 import { decodeGif } from '../testing/gifDecode'
 import { DEFAULT_STYLE, makeRect } from '../vector/shapes'
-import { gifBlob, pixelAnimationGif, rasterCameOutBlank, vectorAnimationGif } from './animationGif'
+import {
+  gifBlob,
+  pixelAnimationGif,
+  rasterCameOutBlank,
+  vectorAnimationGif,
+  vectorGifChunks,
+} from './animationGif'
 
 /**
  * Sprite 2×2 de UMA camada com os quadros pedidos (índices de paleta crus).
@@ -158,6 +166,55 @@ describe('pixelAnimationGif', () => {
 })
 
 describe('vectorAnimationGif', () => {
+  it('divide o máximo da UI em canvases que nunca passam de 4096 px', () => {
+    expect(vectorGifChunks(24, 128, 4)).toEqual([
+      { start: 0, count: 8 },
+      { start: 8, count: 8 },
+      { start: 16, count: 8 },
+    ])
+    expect(vectorGifChunks(1, 2048, 4)).toEqual([])
+  })
+
+  it('exporta o máximo da UI com raster real e preserva 40% de opacidade', async () => {
+    const base = createVectorSpriteAsset({ name: 'efeito', frameSize: 128 })
+    const frame = [
+      makeRect({ x: 0, y: 0 }, { x: 128, y: 128 }, { fill: '#dc1e1e', stroke: null, opacity: 0.4 }),
+    ]
+    const animation = {
+      ...(base.animations[0] as NonNullable<(typeof base.animations)[0]>),
+      frames: Array.from({ length: 24 }, () => frame),
+    }
+    const widths: number[] = []
+    const bytes = await vectorAnimationGif(
+      base,
+      animation,
+      4,
+      async (svg, width, height, scale) => {
+        const canvas = createCanvas(width * scale, height * scale)
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(await loadImage(Buffer.from(svg)), 0, 0, canvas.width, canvas.height)
+        widths.push(canvas.width)
+        return canvas as unknown as HTMLCanvasElement
+      },
+    )
+
+    expect(bytes).not.toBeNull()
+    expect(widths).toEqual([4096, 4096, 4096])
+    const decoded = decodeGif(bytes as Uint8Array)
+    expect(decoded.frames).toHaveLength(24)
+    expect([decoded.width, decoded.height]).toEqual([512, 512])
+    const visible = Array.from(decoded.frames[0]?.indices ?? []).filter(
+      (index) => index !== 0,
+    ).length
+    const coverage = visible / (decoded.width * decoded.height)
+    expect(coverage).toBeGreaterThan(0.38)
+    expect(coverage).toBeLessThan(0.42)
+    const metadata = await sharp(Buffer.from(bytes as Uint8Array), { animated: true }).metadata()
+    expect(metadata.pages).toBe(24)
+    expect(metadata.width).toBe(512)
+    expect(metadata.pageHeight).toBe(512)
+  })
+
   it('sem canvas de verdade devolve null em vez de quebrar (happy-dom)', async () => {
     const asset = createVectorSpriteAsset({ name: 'nave', frameSize: 16 })
     expect(await vectorAnimationGif(asset, asset.animations[0] as never)).toBeNull()

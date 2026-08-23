@@ -59,7 +59,10 @@ A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cros
   viewer, read-all) — sem isso o badge mente 60s após a própria ação. NUNCA polling/SSE.
   Essa regra é da SIDEBAR. A página `/admin/professor/entregas` é a exceção deliberada:
   enquanto visível e sem viewer aberto, atualiza a fila a cada 15s e em focus/visibilitychange;
-  respostas recebem uma geração e somente a requisição mais nova pode publicar estado.
+  foreground (filtro/paginação) tem prioridade: polling não começa durante ação do operador e um
+  foreground novo invalida polling em voo, nunca o inverso. Depois de "Carregar mais", polling
+  pausa até voltar ao offset 0, pois substituir só a primeira página encolheria/reordenaria a lista.
+  A regra pura vive em `lib/latest-wins.ts` (`createForegroundPriority`).
 - **Members novos** (rotas estáticas ANTES de `/:id` no members): `GET /members/admin/
   teacher-threads/unread-count` (count POR STAFF — watermark individual) e `POST …/read-all`
   (escopo opcional = filtros da caixa; devolve `{updated}`); o gateway wildcard já cobria.

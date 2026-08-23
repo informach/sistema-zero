@@ -677,6 +677,8 @@ que ela ainda NÃO vale antes) fez o teste levar 8,7s, que é o tempo de esperar
   nunca vazam do jogo anterior enquanto a nova busca resolve.
 - Face A/B/X/Y e tira SELECT/START implementam o ciclo de tecla segurada também por Enter/Espaço,
   com `keyup` em blur, troca de binding e unmount.
+- Os botões invisíveis do direcional também soltam somente a própria direção em `blur`; perder foco
+  antes do `keyup` não deixa a seta presa e não desfaz outra tecla ainda segurada numa diagonal.
 - O protocolo `sz:pad-interno` carrega `mode: 'auto'|'always'|'off'`; nunca reduz `always` a `auto`.
 - `describeProjectControls` preserva esse modo exato e mapeia a tecla explícita `z` para a face A.
 

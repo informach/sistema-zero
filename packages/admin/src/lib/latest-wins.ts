@@ -1,38 +1,68 @@
-/**
- * Autoridade "a leitura mais nova vence" para buscas que se sobrepõem
- * (polling, foco, troca de filtro, paginação): cada leitura pega uma geração
- * ao COMEÇAR e, em cada publicação de estado, só segue valendo se ainda for a
- * mais nova. `invalidate` descarta tudo que está em voo sem iniciar leitura
- * nenhuma (unmount).
- *
- * Vive como lib PURA de propósito. A versão anterior era testada renderizando
- * o componente da fila com `mock.module` de módulos compartilhados
- * (next/navigation, @/lib/api) — e o registry global do bun:test fazia esse
- * mock vazar entre arquivos no Linux do CI (21/08: três vermelhos seguidos, o
- * último um hang de 30 min). Regra do pacote: lógica em lib pura testada,
- * componente fino.
- */
-export interface LatestWins {
-  /** Começa uma leitura: devolve a geração dela (e a torna a mais nova). */
-  begin(): number
-  /** A leitura desta geração ainda é a mais nova? */
-  isCurrent(generation: number): boolean
-  /** Descarta o que está em voo sem começar leitura nova (unmount). */
+export interface ReadTicket {
+  kind: 'foreground' | 'background'
+  generation: number
+  id: number
+  backgroundGeneration: number
+}
+
+export interface ForegroundPriority {
+  beginForeground(): ReadTicket
+  /** `null` enquanto qualquer leitura foreground estiver em voo. */
+  beginBackground(): ReadTicket | null
+  canPublish(ticket: ReadTicket): boolean
+  finish(ticket: ReadTicket): void
   invalidate(): void
 }
 
-export function createLatestWins(): LatestWins {
+/**
+ * Autoridade para telas com polling: foreground continua latest-wins, enquanto
+ * background nunca invalida uma ação do operador. Um foreground novo invalida
+ * qualquer polling já em voo.
+ */
+export function createForegroundPriority(): ForegroundPriority {
   let generation = 0
+  let backgroundGeneration = 0
+  let nextId = 0
+  const foregroundInFlight = new Set<number>()
   return {
-    begin() {
+    beginForeground() {
       generation += 1
-      return generation
+      const ticket: ReadTicket = {
+        kind: 'foreground',
+        generation,
+        id: ++nextId,
+        backgroundGeneration,
+      }
+      foregroundInFlight.add(ticket.id)
+      return ticket
     },
-    isCurrent(g) {
-      return g === generation
+    beginBackground() {
+      if (foregroundInFlight.size > 0) return null
+      backgroundGeneration += 1
+      return {
+        kind: 'background',
+        generation,
+        id: ++nextId,
+        backgroundGeneration,
+      }
+    },
+    canPublish(ticket) {
+      if (ticket.generation !== generation) return false
+      if (ticket.kind === 'foreground') return true
+      return ticket.backgroundGeneration === backgroundGeneration && foregroundInFlight.size === 0
+    },
+    finish(ticket) {
+      if (ticket.kind === 'foreground') foregroundInFlight.delete(ticket.id)
     },
     invalidate() {
       generation += 1
+      backgroundGeneration += 1
+      foregroundInFlight.clear()
     },
   }
+}
+
+/** Polling só substitui uma janela que ainda é exatamente a primeira página. */
+export function canBackgroundRefreshPage(offset: number): boolean {
+  return offset === 0
 }

@@ -17,22 +17,7 @@ export class DrizzleAuditLogRepository implements AuditLogRepository {
   constructor(private readonly db: Database) {}
 
   async create(input: CreateAuditLogInput): Promise<void> {
-    await this.db.insert(auditLogs).values({
-      id: input.id,
-      actorId: input.actorId,
-      actorEmail: input.actorEmail ?? null,
-      actorRole: input.actorRole ?? null,
-      impersonatorId: input.impersonatorId ?? null,
-      action: input.action,
-      method: input.method,
-      path: input.path,
-      targetId: input.targetId ?? null,
-      status: input.status,
-      ip: input.ip ?? null,
-      userAgent: input.userAgent ?? null,
-      requestId: input.requestId ?? null,
-      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
-    })
+    await this.db.insert(auditLogs).values(auditLogInsertValues(input))
   }
 
   async list(filter: AuditLogListFilter): Promise<{ items: AuditLogRecord[]; total: number }> {
@@ -68,6 +53,26 @@ export class DrizzleAuditLogRepository implements AuditLogRepository {
       total += deleted.length
       if (deleted.length < PURGE_BATCH_SIZE) return total
     }
+  }
+}
+
+/** Mapeamento único para inserts diretos e transacionais de auditoria. */
+export function auditLogInsertValues(input: CreateAuditLogInput): typeof auditLogs.$inferInsert {
+  return {
+    id: input.id,
+    actorId: input.actorId,
+    actorEmail: input.actorEmail ?? null,
+    actorRole: input.actorRole ?? null,
+    impersonatorId: input.impersonatorId ?? null,
+    action: input.action,
+    method: input.method,
+    path: input.path,
+    targetId: input.targetId ?? null,
+    status: input.status,
+    ip: input.ip ?? null,
+    userAgent: input.userAgent ?? null,
+    requestId: input.requestId ?? null,
+    ...(input.createdAt ? { createdAt: input.createdAt } : {}),
   }
 }
 

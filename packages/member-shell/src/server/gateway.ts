@@ -172,6 +172,29 @@ export function createGatewayModule(session: SessionModule) {
   }
 
   /**
+   * POST autenticado cujo corpo precisa levar o refresh CANÔNICO da mesma
+   * sessão. Se o access expirar, a primeira tentativa libera o lock, rotaciona
+   * e refaz corpo + chamada com o sucessor; nunca reapresenta o ancestral.
+   */
+  async function gatewayFetchWithRefreshProof<T = unknown>(
+    path: string,
+    refreshToken: string | null,
+    body: Record<string, unknown>,
+  ): Promise<GatewayResponse<T>> {
+    if (!refreshToken) return gatewayFetch(path, { method: 'POST', body })
+    const request = (access: string | null) =>
+      withCurrentRefreshToken(refreshToken, (current) =>
+        rawFetch(path, { method: 'POST', body: { ...body, refreshToken: current } }, access),
+      )
+    let res = await request(await session.getAccessToken())
+    if (res.status === 401) {
+      const renewed = await tryRefresh()
+      if (renewed) res = await request(renewed)
+    }
+    return { status: res.status, body: await readJson<T>(res) }
+  }
+
+  /**
    * Variante SOMENTE-LEITURA p/ Server Components (layouts/pages): NÃO tenta refresh
    * nem toca cookies (o Next proíbe escrita fora de Route Handler/Server Action —
    * `cookies().set()` lança). Access expirado → devolve o 401 cru e o caller usa um
@@ -300,6 +323,7 @@ export function createGatewayModule(session: SessionModule) {
   return {
     tryRefresh,
     gatewayFetch,
+    gatewayFetchWithRefreshProof,
     gatewayFetchReadonly,
     gatewayFetchHmac,
     loginRequest,

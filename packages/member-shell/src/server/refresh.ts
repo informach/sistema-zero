@@ -20,6 +20,8 @@ const TTL_MS = 60_000
 interface InflightEntry {
   promise: Promise<RefreshResult>
   at: number
+  settled: boolean
+  result?: RefreshResult
 }
 
 /**
@@ -82,21 +84,47 @@ async function serializeRefreshOperation<T>(
  * single-flight. Mode/logout não reapresentam uma credencial que acabou de ser
  * rotacionada por outra request do mesmo processo.
  */
-export function withCurrentRefreshToken<T>(
+export async function withCurrentRefreshToken<T>(
   presented: string,
   run: (current: string) => Promise<T>,
 ): Promise<T> {
-  return serializeRefreshOperation(presented, async () => {
-    let current = presented
-    for (let hops = 0; hops < 8; hops++) {
-      const hit = inflightMap().get(current)
-      if (!hit || Date.now() - hit.at >= TTL_MS) break
-      const result = await hit.promise
-      if (typeof result === 'string') break
-      current = result.refreshToken
-    }
-    return run(current)
-  })
+  let current = await resolveCurrentRefreshToken(presented, true)
+  const RETRY = Symbol('retry-canonical-refresh')
+  for (let hops = 0; hops < 8; hops++) {
+    let successor: string | null = null
+    const result = await serializeRefreshOperation<T | typeof RETRY>(current, async () => {
+      // Uma rotação pode ter ganhado o lock no intervalo entre resolver e
+      // entrar na fila. Depois que chegamos aqui ela já terminou; siga o
+      // sucessor e adquira o lock DELE. Nunca aguarde uma entrada ainda pendente
+      // aqui: ela está enfileirada atrás deste lock e causaria deadlock.
+      const resolved = await resolveCurrentRefreshToken(current, false)
+      if (resolved !== current) {
+        successor = resolved
+        return RETRY
+      }
+      return run(current)
+    })
+    if (result !== RETRY) return result
+    if (!successor) break
+    current = successor
+  }
+  throw new Error('Cadeia de refresh excedeu o limite de segurança')
+}
+
+async function resolveCurrentRefreshToken(
+  presented: string,
+  waitPending: boolean,
+): Promise<string> {
+  let current = presented
+  for (let hops = 0; hops < 8; hops++) {
+    const hit = inflightMap().get(current)
+    if (!hit || Date.now() - hit.at >= TTL_MS) break
+    if (!hit.settled && !waitPending) break
+    const result = hit.settled ? hit.result : await hit.promise
+    if (!result || typeof result === 'string') break
+    current = result.refreshToken
+  }
+  return current
 }
 
 /**
@@ -122,6 +150,8 @@ export async function replaceCachedAccessToken(
       expiresIn: access.expiresIn,
       refreshExpiresIn: access.refreshExpiresIn,
     })
+    entry.settled = true
+    entry.result = await entry.promise
     current = result.refreshToken
   }
 }
@@ -144,14 +174,18 @@ export function refreshTokens(
   const hit = inflight.get(refreshToken)
   if (hit && now - hit.at < TTL_MS) return hit.promise
 
+  let entry!: InflightEntry
   const promise = serializeRefreshOperation(refreshToken, () =>
     doRefresh(refreshToken, forward),
   ).then((result) => {
+    entry.settled = true
+    entry.result = result
     // Indisponibilidade é transitória — não cache (a próxima tentativa re-tenta).
     if (result === 'unavailable') inflight.delete(refreshToken)
     return result
   })
-  inflight.set(refreshToken, { promise, at: now })
+  entry = { promise, at: now, settled: false }
+  inflight.set(refreshToken, entry)
   for (const [k, v] of inflight) {
     if (now - v.at >= TTL_MS) inflight.delete(k)
   }

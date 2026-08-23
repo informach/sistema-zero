@@ -33,7 +33,7 @@ const StudioSubmissionViewer = dynamic(
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
-import { createLatestWins } from '@/lib/latest-wins'
+import { canBackgroundRefreshPage, createForegroundPriority } from '@/lib/latest-wins'
 import {
   isSubmissionPending,
   SUBMISSION_STATUS_LABEL,
@@ -76,10 +76,11 @@ export function EntregasClient() {
   const [q, setQ] = useState('')
   const [qDebounced, setQDebounced] = useState('')
   const [hint, setHint] = useState<string | null>(null)
-  // Toda leitura da fila substitui a anterior. Polling, foco, filtros e paginação
-  // podem se sobrepor; só a geração mais nova tem autoridade para publicar estado
-  // (regra pura em lib/latest-wins, testada isolada).
-  const loadAuthority = useRef(createLatestWins()).current
+  const offsetRef = useRef(offset)
+  offsetRef.current = offset
+  // Filtros/paginação seguem latest-wins. Polling tem autoridade separada:
+  // nunca cancela uma ação do operador nem publica depois que uma começou.
+  const loadAuthority = useRef(createForegroundPriority()).current
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q.trim()), 250)
     return () => clearTimeout(t)
@@ -87,7 +88,12 @@ export function EntregasClient() {
 
   const load = useCallback(
     async (nextOffset: number, append: boolean, background = false) => {
-      const generation = loadAuthority.begin()
+      // Depois de carregar páginas adicionais, congelamos o polling silencioso:
+      // substituir só a primeira página reordenaria/encolheria a lista; buscar
+      // tudo a cada 15 s seria custo crescente. Filtro novo volta ao offset 0.
+      if (background && !canBackgroundRefreshPage(offsetRef.current)) return
+      const ticket = background ? loadAuthority.beginBackground() : loadAuthority.beginForeground()
+      if (!ticket) return
       if (!background) setLoading(true)
       try {
         const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
@@ -101,32 +107,41 @@ export function EntregasClient() {
           total: number
           hint?: string
         }>(`/api/members/studio-submissions?${params}`)
-        if (!loadAuthority.isCurrent(generation)) return
+        if (!loadAuthority.canPublish(ticket)) {
+          loadAuthority.finish(ticket)
+          return
+        }
         setItems((prev) => (append ? [...prev, ...res.items] : res.items))
         setTotal(res.total)
+        offsetRef.current = nextOffset
         setOffset(nextOffset)
         setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
       } catch (err) {
-        if (loadAuthority.isCurrent(generation) && !background) {
+        if (loadAuthority.canPublish(ticket) && !background) {
           toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
         }
-      } finally {
-        if (loadAuthority.isCurrent(generation)) setLoading(false)
+        if (!loadAuthority.canPublish(ticket)) {
+          loadAuthority.finish(ticket)
+          return
+        }
       }
-      if (!loadAuthority.isCurrent(generation)) return
-      // Total de PENDENTES do escopo curso/plataforma (independente da página e do
-      // filtro de situação) — o `total` da fila com status=pending, em paralelo.
-      try {
-        const pendingParams = new URLSearchParams({ status: 'pending', limit: '1' })
-        if (courseId) pendingParams.set('courseId', courseId)
-        if (audience) pendingParams.set('audience', audience)
-        const pending = await apiGet<{ total: number }>(
-          `/api/members/studio-submissions?${pendingParams}`,
-        )
-        if (loadAuthority.isCurrent(generation)) setPendingTotal(pending.total)
-      } catch {
-        if (loadAuthority.isCurrent(generation)) setPendingTotal(null)
+      if (loadAuthority.canPublish(ticket)) {
+        // Total de PENDENTES do escopo curso/plataforma (independente da página e do
+        // filtro de situação) — o `total` da fila com status=pending, em paralelo.
+        try {
+          const pendingParams = new URLSearchParams({ status: 'pending', limit: '1' })
+          if (courseId) pendingParams.set('courseId', courseId)
+          if (audience) pendingParams.set('audience', audience)
+          const pending = await apiGet<{ total: number }>(
+            `/api/members/studio-submissions?${pendingParams}`,
+          )
+          if (loadAuthority.canPublish(ticket)) setPendingTotal(pending.total)
+        } catch {
+          if (loadAuthority.canPublish(ticket)) setPendingTotal(null)
+        }
       }
+      loadAuthority.finish(ticket)
+      if (!background && loadAuthority.canPublish(ticket)) setLoading(false)
     },
     [courseId, audience, status, studentFilter, qDebounced, loadAuthority],
   )

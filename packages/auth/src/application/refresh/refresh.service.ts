@@ -124,6 +124,35 @@ export class RefreshService {
       })
       throw new InvalidRefreshTokenError()
     }
+
+    // A troca de modo disputa o MESMO token vigente. Se ela venceu antes do
+    // claim acima, releia agora a família; se perdeu, o CAS dela falha porque a
+    // linha já foi consumida. Assim nunca assinamos access com o snapshot velho.
+    const claimedRecord = await this.refreshTokens.findByHash(sha256Hex(presented))
+    if (
+      !claimedRecord ||
+      claimedRecord.id !== record.id ||
+      claimedRecord.familyId !== record.familyId ||
+      claimedRecord.userId !== record.userId ||
+      claimedRecord.familyRevokedAt ||
+      claimedRecord.familyExpiresAt.getTime() <= Date.now()
+    ) {
+      throw new InvalidRefreshTokenError()
+    }
+    if (impersonation) {
+      if (claimedRecord.impersonatorUserId !== impersonation.actorId) {
+        await this.refreshTokens.revokeFamily(record.familyId)
+        throw new InvalidRefreshTokenError()
+      }
+      impersonation = {
+        ...impersonation,
+        familyExpiresAt: claimedRecord.familyExpiresAt,
+        act: {
+          ...impersonation.act,
+          mode: claimedRecord.impersonationWritable ? 'write' : 'readonly',
+        },
+      }
+    }
     return this.tokens.rotate(user, record.familyId, {
       userAgent: command.userAgent,
       ip: command.ip,

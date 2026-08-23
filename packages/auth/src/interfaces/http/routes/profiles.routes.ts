@@ -1,6 +1,6 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
-import { Elysia } from 'elysia'
+import { Elysia, t } from 'elysia'
 import type { ArchiveProfileService } from '../../../application/profiles/archive-profile.service'
 import type { CreateProfileService } from '../../../application/profiles/create-profile.service'
 import type { ExitProfileSessionService } from '../../../application/profiles/exit-profile-session.service'
@@ -13,6 +13,7 @@ import {
   CreateProfileBody,
   ExitProfileSessionBody,
   ProfileIdParams,
+  SelectProfileSessionBody,
   UpdateProfileBody,
 } from '../dtos'
 import { requireInternalToken } from '../internal-auth'
@@ -162,7 +163,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
       // perfil (trocar de irmão direto). Emite a sessão de perfil (o BFF troca cookies).
       .post(
         '/profiles/:id/select',
-        async ({ headers, params, request, server }) => {
+        async ({ headers, params, body, request, server }) => {
           const accountUserId = accountContext(headers)
           return deps.selectProfile.execute({
             accountUserId,
@@ -172,9 +173,10 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             // Sessão de impersonação: o gateway injeta o ATOR (claim `act.sub`) como
             // `x-auth-impersonator-id` — propaga o vínculo p/ a sessão de perfil.
             impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
+            refreshToken: body?.refreshToken ?? null,
           })
         },
-        { params: ProfileIdParams },
+        { body: t.Optional(SelectProfileSessionBody), params: ProfileIdParams },
       )
       // Sair do perfil para a área dos pais — gateado pela SENHA do responsável.
       .post(
@@ -189,6 +191,7 @@ export function profilesRoutes(deps: ProfilesRoutesDeps) {
             userAgent: headers['user-agent'] ?? null,
             ip: clientIp({ request, server, headers }),
             impersonatorUserId: headers['x-auth-impersonator-id']?.trim() || null,
+            refreshToken: body.refreshToken ?? null,
           })
         },
         { body: ExitProfileSessionBody },

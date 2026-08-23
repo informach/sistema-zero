@@ -151,6 +151,8 @@ export class InMemoryUserRepository implements UserRepository {
 /** Repositório de refresh tokens em memória (espelha rotação + revogação). */
 export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
   readonly byId = new Map<string, RefreshTokenRecord>()
+  readonly modeAuditLogs: CreateAuditLogInput[] = []
+  modeAuditFailure: Error | null = null
   readonly families = new Map<
     string,
     {
@@ -229,7 +231,12 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
     return true
   }
 
-  async setImpersonationMode(id: string, familyId: string, writable: boolean): Promise<boolean> {
+  async setImpersonationMode(
+    id: string,
+    familyId: string,
+    writable: boolean,
+    audit?: CreateAuditLogInput,
+  ): Promise<boolean> {
     const record = this.byId.get(id)
     const family = this.families.get(familyId)
     if (
@@ -242,7 +249,11 @@ export class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
       family.expiresAt.getTime() <= Date.now()
     )
       return false
+    // Espelha a transação real: falha do insert de auditoria acontece antes de
+    // qualquer estado ficar observável.
+    if (audit && this.modeAuditFailure) throw this.modeAuditFailure
     family.impersonationWritable = writable
+    if (audit) this.modeAuditLogs.push({ ...audit })
     return true
   }
 

@@ -255,7 +255,13 @@ export const UpdateProfileBody = t.Object({
   publicProfileEnabled: t.Optional(t.Boolean()),
 })
 
+/** Prova da família atual; obrigatória no serviço somente sob impersonação. */
+export const SelectProfileSessionBody = t.Object({
+  refreshToken: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
+})
+
 /** Corpo de `POST /auth/profile-session/exit` — senha do responsável (gate da área dos pais). */
 export const ExitProfileSessionBody = t.Object({
   password: t.String({ minLength: 1, maxLength: 200 }),
+  refreshToken: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
 })
