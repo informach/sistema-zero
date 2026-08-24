@@ -599,6 +599,12 @@ export const COPY = {
     nodeCorner: 'Ponto de canto',
     nodeSimplify: 'Suavizar o traço',
     nodeSimplifyDone: 'Este traço já está o mais liso que dá.',
+    /** Com pontos escolhidos o botão alcança SÓ eles, e o rótulo diz isso
+     *  antes do toque — o idioma da tesoura, que também troca de rótulo. */
+    nodeSimplifyPart: 'Suavizar os pontos escolhidos',
+    nodeSimplifyPartDone: 'Esses pontos já estão o mais lisos que dá.',
+    nodeSimplifyTooBig: 'Este desenho está grande demais para suavizar o traço.',
+    nodeSimplifyPartTooBig: 'Este desenho está grande demais para suavizar os pontos escolhidos.',
     /** O número vem da forma (3 num polígono, 2 num traço): dizer "alguns"
      *  não ajuda quem está tentando entender por que não apagou. */
     nodeFloor: (min: number) =>

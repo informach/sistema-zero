@@ -709,6 +709,194 @@ export function setHandle(
   return { nodes, closed: ep.closed }
 }
 
+/** A geometria que de fato volta do `d`: arredonda e descarta alça na âncora. */
+function persistedPath(ep: EditablePath): EditablePath {
+  return parseEditablePath(editablePathToD(ep)) ?? ep
+}
+
+/** Um passo da grade persistida (0,01), comparado como inteiro para não deixar
+ *  82 − 81,99 virar 0,010000000000005 por ponto flutuante. */
+function samePersistedPoint(a: Vec2, b: Vec2): boolean {
+  return (
+    Math.abs(Math.round(a.x * 100) - Math.round(b.x * 100)) <= 1 &&
+    Math.abs(Math.round(a.y * 100) - Math.round(b.y * 100)) <= 1
+  )
+}
+
+function sameOptionalPoint(a: Vec2 | undefined, b: Vec2 | undefined): boolean {
+  if (!a || !b) return a === b
+  return samePersistedPoint(a, b)
+}
+
+/**
+ * Igualdade VISUAL na precisão persistida. Comparar a string `d` crua é forte
+ * demais: recalcular uma tangente já suave pode mexer 0,01 no último dígito. A
+ * ida e volta também é load-bearing — uma alça sub-centésima vira controle em
+ * cima da âncora e o parser a descarta, portanto não pode contar como mudança.
+ */
+function samePathGeometry(left: EditablePath, right: EditablePath): boolean {
+  if (left.closed !== right.closed || left.nodes.length !== right.nodes.length) return false
+  return left.nodes.every((node, index) => {
+    const other = right.nodes[index]
+    return (
+      other !== undefined &&
+      samePersistedPoint(node.p, other.p) &&
+      sameOptionalPoint(node.in, other.in) &&
+      sameOptionalPoint(node.out, other.out)
+    )
+  })
+}
+
+/**
+ * ⚠️ Um toque só vale se a criança VER diferença. A primeira passada pode tirar
+ * ponto OU mudar uma alça — inclusive uma alça única/desalinhada, que ainda é
+ * quina. Se a geometria persistida continuar igual, a régua aperta até sair
+ * ponto; se nem assim mudar, recusa em vez de gravar um desfazer vazio.
+ */
+function escalate(
+  pass: (eps: number) => EditablePath | null,
+  epsilon: number,
+  base: EditablePath,
+  mayRemoveNodes: boolean,
+): EditablePath | null {
+  const persistedBase = persistedPath(base)
+  let eps = epsilon
+  let next = pass(eps)
+  let unchanged = next ? samePathGeometry(persistedPath(next), persistedBase) : false
+  while (next && unchanged && mayRemoveNodes && eps < 4096) {
+    eps *= 2
+    next = pass(eps)
+    unchanged = next ? samePathGeometry(persistedPath(next), persistedBase) : false
+  }
+  return !next || unchanged ? null : next
+}
+
+/**
+ * Os TRECHOS de índices seguidos dentro da escolha. Num caminho FECHADO o
+ * trecho que termina no último nó funde com o que começa no 0: a emenda é
+ * vizinhança de verdade, e sem isso "o último e o primeiro" seria o único par
+ * vizinho que não funcionaria.
+ */
+function contiguousRuns(indices: readonly number[], total: number, closed: boolean): number[][] {
+  const sorted = [...new Set(indices)].filter((i) => i >= 0 && i < total).sort((a, b) => a - b)
+  const runs: number[][] = []
+  for (const index of sorted) {
+    const last = runs[runs.length - 1]
+    if (last && last[last.length - 1] === index - 1) last.push(index)
+    else runs.push([index])
+  }
+  const first = runs[0]
+  const final = runs[runs.length - 1]
+  if (
+    closed &&
+    runs.length > 1 &&
+    first &&
+    final &&
+    first[0] === 0 &&
+    final[final.length - 1] === total - 1
+  ) {
+    runs.pop()
+    runs[0] = [...final, ...first]
+  }
+  return runs
+}
+
+/**
+ * A tangente Catmull-Rom do nó — `(depois − antes) / 6` para cada lado. É a
+ * MESMA fórmula que o pincel escreve e que o ramo fechado usa.
+ *
+ * ⚠️ Ponta de caminho aberto tem UM lado só: criar a alça do lado que não
+ * existe deixaria um controle solto, sem segmento para curvar (mesma regra do
+ * `makeSmooth`).
+ */
+function tangentNode(node: PathNode, previous: Vec2 | null, next: Vec2 | null): PathNode {
+  const p = node.p
+  const from = previous ?? p
+  const to = next ?? p
+  const tangent = { x: (to.x - from.x) / 6, y: (to.y - from.y) / 6 }
+  // ⚠️ Vizinhos no MESMO ponto não dão direção nenhuma. Devolver o nó INTACTO
+  // (e não um nó pelado) é a regra do `makeSmooth`: senão suavizar um trecho
+  // tirava, em silêncio, as alças de um nó degenerado no meio dele.
+  if (tangent.x === 0 && tangent.y === 0) return node
+  const fresh: PathNode = { p: copy(p) }
+  if (previous) fresh.in = { x: p.x - tangent.x, y: p.y - tangent.y }
+  if (next) fresh.out = { x: p.x + tangent.x, y: p.y + tangent.y }
+  return fresh
+}
+
+/**
+ * Suavizar SÓ os nós escolhidos.
+ *
+ * ⭐ As duas pontas de cada trecho ficam PRESAS (o RDP nunca tira a primeira nem
+ * a última âncora que recebe), então quem some é sempre INTERIOR ao trecho — um
+ * nó que ela NÃO escolheu nunca perde um vizinho, e a emenda com o resto do
+ * desenho não se mexe. Nó não escolhido também sai por REFERÊNCIA: as alças
+ * dele ficam byte a byte como estavam.
+ *
+ * ⚠️ NÃO dá para reusar o `catmullRomToPath` + `parseEditablePath` do ramo
+ * aberto: aquela ida-e-volta regenera o caminho INTEIRO e apagaria as alças de
+ * quem ficou de fora. Aqui os nós são montados à mão, como no ramo fechado.
+ */
+function smoothChosenNodes(
+  ep: EditablePath,
+  epsilon: number,
+  indices: readonly number[],
+): EditablePath | null {
+  const total = ep.nodes.length
+  const chosen = new Set(indices.filter((i) => i >= 0 && i < total))
+  const runs = contiguousRuns(indices, total, ep.closed)
+  const floor = ep.closed ? 3 : MIN_PATH_NODES
+
+  const pass = (eps: number): EditablePath | null => {
+    const keep = new Array<boolean>(total).fill(true)
+    for (const run of runs) {
+      if (run.length < 3) continue // trecho sem miolo: não há o que tirar
+      const anchors: Vec2[] = []
+      for (const index of run) {
+        const node = ep.nodes[index]
+        if (node) anchors.push(node.p)
+      }
+      // ⭐ `simplifyRDP` devolve as MESMAS referências (é um `filter`), então
+      // quem sobreviveu se marca por identidade, sem comparar coordenada.
+      const survivors = new Set(simplifyRDP(anchors, eps))
+      for (const index of run) {
+        const node = ep.nodes[index]
+        if (node && !survivors.has(node.p)) keep[index] = false
+      }
+    }
+    // Piso duro: abaixo dele o sanitize DESCARTA a forma no próximo load. É um
+    // BACKSTOP e hoje NÃO dispara (medido, e a conta fecha): com `r` trechos, e
+    // nunca todos os nós escolhidos, as remoções somam no máximo `n − 1 − 2r`,
+    // então sobram pelo menos `2r + 1 ≥ 3`. Fica porque quem mexer na régua dos
+    // trechos — soltar as pontas, por exemplo — perde essa conta sem perceber, e
+    // o preço é o desenho SUMIR da galeria, calado.
+    if (keep.filter(Boolean).length < floor) keep.fill(true)
+
+    const kept: Array<{ node: PathNode; chosen: boolean }> = []
+    for (let index = 0; index < total; index += 1) {
+      const node = ep.nodes[index]
+      if (node && keep[index]) kept.push({ node, chosen: chosen.has(index) })
+    }
+    const count = kept.length
+    const nodes = kept.map(({ node, chosen: isChosen }, index): PathNode => {
+      if (!isChosen) return node
+      const hasPrevious = ep.closed || index > 0
+      const hasNext = ep.closed || index < count - 1
+      const previous = hasPrevious ? (kept[(index - 1 + count) % count]?.node.p ?? null) : null
+      const next = hasNext ? (kept[(index + 1) % count]?.node.p ?? null) : null
+      return tangentNode(node, previous, next)
+    })
+    return { nodes, closed: ep.closed }
+  }
+
+  return escalate(
+    pass,
+    epsilon,
+    ep,
+    runs.some((run) => run.length >= 3),
+  )
+}
+
 /**
  * Tira o tremido do desenho à mão: joga fora os pontos que não mudam o traço
  * (Ramer-Douglas-Peucker) e recurva o que sobrou com a MESMA Catmull-Rom do
@@ -717,10 +905,24 @@ export function setHandle(
  * ⭐ Repetir suaviza mais, porque cada passada re-simplifica o resultado JÁ
  * simplificado (encolhe monotonicamente) — é o idioma do laço de cap do
  * `smoothStrokeToPathCapped`.
+ *
+ * ⭐ Com `indices`, age SÓ nos nós escolhidos (`smoothChosenNodes`), como todas
+ * as outras operações de nó deste arquivo. Escolha ausente, vazia, ou cobrindo
+ * TODOS os nós cai no caminho inteiro: é a promessa "se eu escolher a forma
+ * inteira, suaviza todos os pontos", e os dois casos usam o MESMO ramo, sem um
+ * comportamento paralelo para drifar.
  */
-export function smoothPath(ep: EditablePath, epsilon = 1.5): EditablePath | null {
+export function smoothPath(
+  ep: EditablePath,
+  epsilon = 1.5,
+  indices?: readonly number[],
+): EditablePath | null {
   const anchors = ep.nodes.map((n) => n.p)
   if (anchors.length < 3) return null
+  const chosen = indices ? new Set(indices.filter((i) => i >= 0 && i < anchors.length)) : null
+  if (chosen && chosen.size > 0 && chosen.size < anchors.length) {
+    return smoothChosenNodes(ep, epsilon, [...chosen])
+  }
   const pass = (eps: number): EditablePath | null => {
     let simplified = simplifyRDP(anchors, eps)
     // Um caminho fechado com dois nós vira apenas uma ida-e-volta. Além de
@@ -766,19 +968,5 @@ export function smoothPath(ep: EditablePath, epsilon = 1.5): EditablePath | null
     }
     return parseEditablePath(catmullRomToPath(simplified))
   }
-  // ⚠️ Um toque só vale se a criança VER diferença. Há duas maneiras de a
-  // passada mudar o desenho: tirar pontos, ou arredondar um canto que ainda era
-  // quina. Quando nenhuma das duas se aplica (traço de pincel, que já é todo
-  // curvo e cujos pontos o RDP guarda na mesma régua), o botão ficava MUDO —
-  // apertava e nada acontecia. Aí a régua aperta até sair ponto.
-  const temCanto = ep.nodes.some((n) => !n.in && !n.out)
-  let eps = epsilon
-  let next = pass(eps)
-  while (next && !temCanto && next.nodes.length >= anchors.length && eps < 4096) {
-    eps *= 2
-    next = pass(eps)
-  }
-  if (!next) return null
-  if (!temCanto && next.nodes.length >= anchors.length) return null
-  return next
+  return escalate(pass, epsilon, ep, true)
 }

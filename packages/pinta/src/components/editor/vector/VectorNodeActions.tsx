@@ -94,7 +94,14 @@ export function VectorNodeActions({
         onClick={() => setSelectedNodesSmooth(false)}
       />
       <Divider />
-      <ToolButton icon={Waves} label={COPY.vector.nodeSimplify} onClick={simplifyNodePath} />
+      {/* Sem escolha ele alcança o traço inteiro; com pontos escolhidos, só eles.
+          O rótulo diz qual dos dois vai acontecer — e ele nunca fica desligado,
+          porque funciona nos dois estados. */}
+      <ToolButton
+        icon={Waves}
+        label={noNodes ? COPY.vector.nodeSimplify : COPY.vector.nodeSimplifyPart}
+        onClick={simplifyNodePath}
+      />
       {showHint ? (
         <>
           <Divider />

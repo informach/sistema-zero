@@ -973,16 +973,33 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     )
   }
 
+  /**
+   * Sem ponto escolhido alcança o traço INTEIRO (como sempre); com pontos
+   * escolhidos alcança só eles — o mesmo contrato `(ep, indices)` que apagar,
+   * mover e curvar já usam. Escolher TODOS os pontos volta ao traço inteiro.
+   */
   function simplifyNodePath(): void {
     if (!nodePath) return
-    const next = smoothPath(nodePath)
+    const parcial = selectedNodes.length > 0
+    const antes = nodePath.nodes.length
+    const next = smoothPath(nodePath, undefined, selectedNodes)
     if (!next) {
-      showToast(COPY.vector.nodeSimplifyDone)
+      showToast(parcial ? COPY.vector.nodeSimplifyPartDone : COPY.vector.nodeSimplifyDone)
       return
     }
-    applyNodeEdit(next)
-    // Suavizar mexe na estrutura (some ponto): a escolha antiga não vale mais.
-    setSelectedNodes([])
+    if (!applyNodeEdit(next)) {
+      // `fromEditablePath` devolve a forma ORIGINAL quando o `d` estoura o teto,
+      // e arredondar ENGORDA o `d` (cada reta vira cúbica): sem isto o botão
+      // ficaria mudo justamente no desenho mais carregado. Recado PRÓPRIO — o da
+      // tesoura fala em "cortar", que não é o que ela pediu aqui.
+      showToast(parcial ? COPY.vector.nodeSimplifyPartTooBig : COPY.vector.nodeSimplifyTooBig)
+      return
+    }
+    // ⭐ Só a edição ESTRUTURAL invalida a escolha: índice velho não sobrevive a
+    // um ponto que some. Arredondar sem tirar ponto preserva os índices — e o
+    // efeito do `expectedNodeStructureRef` também não dispara, porque a
+    // contagem continua a mesma.
+    if (next.nodes.length !== antes) setSelectedNodes([])
   }
 
   const value: VectorEditorContextValue = {

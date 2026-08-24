@@ -1299,6 +1299,45 @@ describe('editar os pontos do vetor', () => {
     })
   })
 
+  it('com pontos escolhidos, suavizar alcanca SO eles e a escolha continua valendo', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    await drawQuad(stage)
+    startNodeEditing()
+    await waitFor(() => {
+      expect(nodeCircles(stage).length).toBe(4)
+    })
+    expect(handleCircles(stage).length).toBe(0)
+    // Sem escolha o rotulo promete o traco INTEIRO.
+    expect(screen.getByRole('button', { name: COPY.vector.nodeSimplify })).toBeTruthy()
+
+    // Laco nos dois de cima (mesmo gesto do teste de curva/reta).
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 21, clientX: 40, clientY: 40 })
+    fireEvent.pointerMove(stage, { pointerId: 21, clientX: 320, clientY: 150 })
+    fireEvent.pointerUp(stage, { pointerId: 21 })
+    await waitFor(() => {
+      expect(chosenNodes(stage).length).toBe(2)
+    })
+    // Com escolha o rotulo TROCA: ele diz o alcance antes do toque.
+    expect(screen.queryByRole('button', { name: COPY.vector.nodeSimplify })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.nodeSimplifyPart }))
+    await waitFor(() => {
+      expect(handleCircles(stage).length).toBe(4)
+    })
+    // Os dois nós escolhidos curvam os três trechos que encostam neles. O
+    // quarto trecho continua RETO: se a UI esquecer a seleção e suavizar o
+    // traço inteiro, aparecem 4 comandos C e esta prova fica vermelha.
+    const d = stage.querySelector('path')?.getAttribute('d') ?? ''
+    expect(d.match(/\bC\b/g)).toHaveLength(3)
+    expect(d.match(/\bL\b/g)).toHaveLength(1)
+    // Trecho de 2 nao tem miolo: nenhum ponto sumiu...
+    expect(nodeCircles(stage).length).toBe(4)
+    // ...entao a edicao nao foi ESTRUTURAL e a escolha sobrevive (o indice
+    // velho continua valendo). Limpar aqui obrigaria a escolher de novo.
+    expect(chosenNodes(stage).length).toBe(2)
+  })
+
   it('na tela estreita oferece todas as acoes de pontos da faixa desktop', async () => {
     const originalMatchMedia = window.matchMedia
     Object.defineProperty(window, 'matchMedia', {

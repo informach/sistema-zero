@@ -1057,7 +1057,8 @@ O mesmo botão faz três coisas conforme o estado, e os rótulos são load-beari
   arredondar um canto que ainda era quina. Quando nenhuma das duas se aplica (traço de pincel, que
   já é todo curvo e cujos pontos o RDP guarda na mesma régua), a régua DOBRA até sair ponto.
   Medido no playground: 21 → 18 → 13 nós em três toques. Sem isso, do segundo toque em diante o
-  botão não fazia nada.
+  botão não fazia nada. ⚠️ Desde 24/08/2026 ele alcança **só os pontos escolhidos** quando há
+  escolha — ver a seção dedicada logo abaixo.
 - ⚠️ **A ida e volta pelo `d` INVENTAVA alça** (defeito real, pego pelo teste de UI): um trecho com
   alça de um lado só vira um cúbico com o outro controle EM CIMA da âncora, e a releitura lia isso
   como alça degenerada no vizinho. Efeito: "ponto de canto" não fazia nada nele e a forma nunca
@@ -1075,6 +1076,136 @@ O mesmo botão faz três coisas conforme o estado, e os rótulos são load-beari
 `endGesture` ler o `marquee` ANTES da repintura e tratar o arrasto como toque (a seleção some).
 Dê uma folga entre os eventos. E o rect do palco tem que ser lido A CADA evento: a faixa contextual
 aparecendo/sumindo move o palco, e um rect cacheado joga o clique fora do alvo.
+
+### ⭐⭐ Suavizar alcança SÓ os pontos escolhidos (24/08/2026)
+
+Relato dela: *"a ferramenta suavizar o traço suaviza todos os pontos, mesmo quando estou
+selecionando apenas alguns pontos"*. Ela estava certa, e o diagnóstico é curto: `smoothPath` era a
+**única** ação de nó que não lia a seleção — todas as irmãs (`moveNodes`, `removeNodes`,
+`makeSmooth`, `makeCorner`, `segmentsForNodes`) já falam o contrato `(ep, indices, …)`.
+
+| escolha | alcance |
+|---|---|
+| nenhum ponto | o traço inteiro (o de sempre, byte a byte) |
+| **todos** os pontos | o traço inteiro — cai no MESMO ramo, sem comportamento paralelo |
+| trecho de 3+ seguidos | RDP nas âncoras do trecho + re-tangente dos escolhidos |
+| 2 seguidos / 1 solto | nada some (não há miolo): os escolhidos ficam redondos |
+| pontos separados | cada um é um trecho de tamanho 1 |
+| último + primeiro, num FECHADO | é UM trecho só (os índices dão a volta na emenda) |
+
+- ⭐⭐ **As duas pontas de cada trecho ficam PRESAS**, porque o RDP nunca tira a primeira nem a
+  última âncora que recebe. Disso decorre o invariante que a feature inteira compra: **um nó não
+  escolhido nunca perde um vizinho**, e a emenda com o resto do desenho não se mexe. Nó de fora sai
+  pela MESMA referência — as alças dele ficam byte a byte como estavam.
+- ⭐ **A única mudança que atravessa a fronteira da escolha é a alça do nó de borda**, e ela é
+  inevitável: a redondeza de um nó mora nos dois segmentos que o encostam. Medido no navegador (61
+  nós, 17 escolhidos): **51 dos 52 comandos de fora saíram byte-idênticos**, e o único que mudou
+  foi o segmento logo depois do último nó escolhido.
+- ⭐ **Continua diferente do "Ponto suave"**: `makeSmooth` PRESERVA o tamanho das alças que já
+  existiam; suavizar as REESCREVE pela corda dos vizinhos (Catmull-Rom). Um respeita o que ela fez,
+  o outro normaliza.
+- ⚠️ **A régua do "não pode ficar mudo" foi EXTRAÍDA (`escalate`) e agora serve aos dois ramos.**
+  Ela compara a geometria que realmente sobrevive à ida e volta pelo `d`, com tolerância de UM
+  passo da grade persistida (0,01). Comparar a string crua é forte demais: recalcular a tangente de
+  um nó JÁ suave pode mexer só o último dígito; olhar apenas `!in && !out` é fraco demais: um nó com
+  UMA alça ou duas desalinhadas continua sendo quina. Se a primeira passada não muda nada visível,
+  a régua dobra até sair ponto; se nem assim mudar, devolve `null`.
+- ⚠️ **Não dá para reusar o `catmullRomToPath` + `parseEditablePath` do ramo aberto** no parcial:
+  aquela ida-e-volta regenera o caminho INTEIRO e apagaria as alças de quem ficou de fora. O
+  parcial monta os nós à mão, como o ramo fechado sempre fez.
+- ⭐ **A escolha só é limpa quando a edição foi ESTRUTURAL** (índice velho não sobrevive a um ponto
+  que some). Arredondar sem tirar ponto preserva os índices — e o efeito do
+  `expectedNodeStructureRef` também não dispara, porque a contagem continua a mesma. Antes o botão
+  limpava sempre, o que obrigava a escolher tudo de novo para apertar duas vezes.
+- **O rótulo diz o alcance antes do toque** (idioma da tesoura): "Suavizar o traço" sem escolha,
+  "Suavizar os pontos escolhidos" com ela; e o recado de recusa tem as duas versões
+  (`nodeSimplifyDone` / `nodeSimplifyPartDone`). O botão segue SEM `disabled` — ele funciona nos
+  dois estados.
+- De quebra, `simplifyNodePath` passou a **olhar o `boolean` do `applyNodeEdit`** (ele o ignorava):
+  `fromEditablePath` devolve a forma ORIGINAL quando o `d` estoura `MAX_PATH_CHARS`, e sem isso o
+  botão ficaria mudo justamente no desenho mais carregado.
+
+**Testes:** 15 casos puros em `pathNodes.test.ts` (`describe('suavizar SÓ os pontos escolhidos')`)
+e 1 de UI em `vectorUi.test.tsx`. Nos 10 casos da feature original, ⚠️ o anti-vácuo é a segunda
+metade de cada asserção — *"e os outros continuam quina"*: **6 ficam vermelhos** contra a
+implementação antiga (conferido apagando o desvio para o ramo parcial). "Escolher todos ≡ não
+escolher nada" e "lista vazia ≡ sem lista" passam nos dois, de propósito: são as guardas de
+retrocompatibilidade.
+
+**QA em navegador, feito** (playground `:5199`, Chrome): rabisco de 61 nós → laço em 17 → o rótulo
+troca sozinho → um ponto some, e ele estava DENTRO do trecho; um Ctrl+Z devolve o `d` original
+idêntico; sem escolha o traço inteiro encolhe 61 → 59 como antes; trecho de 2 já lisos recusa com o
+recado novo num `aria-live="polite"`. E o caso da emenda, num pentágono: escolher o ÚLTIMO e o
+PRIMEIRO deixa `M 100 40 C 120 28.33 220 40 220 40 L 260 110 L 180 150 C … C 86.67 91.67 80 51.67
+100 40 Z` — só os dois escolhidos ganharam alça, os outros três seguem `L`, o fechado continua
+fechado e nenhuma âncora se mexeu. Zero erro no console.
+
+#### Full review do lote (24/08/2026) — 3 achados + 1 lacuna de teste
+
+Rodada logo depois de escrever a feature, porque código novo escrito de uma sentada é código que
+ninguém revisou. O instrumento foi uma **sonda determinística**: 17 formas (polígonos de 3 a 12
+quinas, traços de pincel de três amplitudes, retas puras, colineares, e quatro DEGENERADOS de
+propósito) × 926 combinações de escolha, procurando duas coisas — passada que devolve o desenho
+igualzinho, e crescimento do `d`. Os dois primeiros achados saíram dela.
+
+1. ⭐⭐ **Passada que não mudava nada devolvia `ok`, gravava um desfazer VAZIO e ficava muda.**
+   39 das 926 combinações. A causa é a tangente ZERO: quando os dois vizinhos de um nó escolhido
+   caem no MESMO ponto não há direção para arredondar, e a passada devolvia o traço idêntico. O
+   `commitShapes` não protege — `withActiveShapes` sempre monta um asset novo, então `updated ===
+   state.asset` nunca dá certo e a entrada de desfazer entra. É exatamente o "`null` no no-op é
+   obrigatório" que este pacote repete em todo lugar, e eu deixei passar.
+   **Fix inicial:** uma rede final comparava o `d` de antes com o de depois. O review seguinte
+   encontrou o caso sub-centésimo e levou a regra para dentro do `escalate`: hoje ela compara a
+   geometria depois da serialização e releitura, com tolerância de 0,01, e continua apertando o
+   épsilon enquanto a passada for visualmente igual.
+2. ⭐ **O nó degenerado perdia as alças dele, em silêncio.** Com tangente zero o `tangentNode`
+   devolvia um nó PELADO. Quando outro nó do mesmo trecho mudava, a passada valia e o degenerado ia
+   junto, sem alça. O `makeSmooth` já resolvia isso do jeito certo desde sempre (`if (chord.x === 0
+   && chord.y === 0) return node`) — bastava seguir o irmão. Hoje devolve o nó INTACTO.
+3. ⭐ **Recado errado na recusa por tamanho.** Eu reusei o `nodeCutTooBig` ("Este desenho está
+   grande demais para **cortar** aqui") num botão que não corta nada. Nasceu o
+   `nodeSimplifyTooBig`. ⚠️ E isso importa mais no parcial do que parece: o ramo inteiro só
+   ENCOLHE o `d`, mas o parcial o **engorda** (cada reta escolhida vira cúbica; medido 28 → 88
+   chars num triângulo). Olhar o booleano do `applyNodeEdit` deixou de ser luxo.
+4. **Lacuna de teste: o trecho que dá a volta nunca chegava a APAGAR ponto.** O caso da emenda só
+   exercitava um trecho de 2 (sem miolo). Teste novo: polígono de 7 em que os nós 6 e 0 caem
+   exatamente na reta que liga o 5 ao 1, então escolher `[5,6,0,1]` prende as pontas e joga os dois
+   fora — atravessando a emenda.
+
+**Não-achados, todos MEDIDOS** (valem porque poupam a próxima rodada):
+
+- **Custo, remedição final**: 100 passadas num traço sintético de teto (1500 pontos crus → 376 nós,
+  14k chars) deram média de **1,6 ms** para um trecho de 2 e **6,9 ms** para o ramo inteiro. Trecho
+  sem miolo não escala mais o épsilon, porque por construção não pode remover ponto.
+- **O rótulo mais longo não mexe no layout**: `ToolButton` desenha só o ícone e o rótulo vive no
+  `aria-label`/`title`. Zero risco do "a faixa cresce e o palco pula" que este pacote já pagou uma
+  vez.
+- **A guarda de piso é um BACKSTOP que não dispara** — 0 disparos na sonda, e a conta fecha: com
+  `r` trechos e nunca todos os nós escolhidos, sobram pelo menos `2r + 1 ≥ 3`. Ficou, com o
+  comentário dizendo isso em vez de fingir que é load-bearing.
+- **Extrair o `escalate` não mexeu no ramo inteiro**: os 51 testes antigos do arquivo passaram
+  desde o primeiro minuto, sem uma linha editada.
+- **Identidade em vez de coordenada** para marcar quem o RDP guardou: `simplifyRDP` é um `filter`,
+  então devolve as MESMAS referências. Dois nós com a mesma coordenada continuam distinguíveis, o
+  que a comparação por valor não daria.
+
+**QA em navegador dos consertos** (módulo de produção pelo `/@fs/` do Vite, Chrome): os dois
+degenerados recusam; o hexágono com `[1,2]` sai `M 0 20 C … C … C 70 3.33 80 20 80 20 L 60 40 L 20
+40 Z` (só os dois escolhidos com alça, o resto reto); e no traço de pincel os nós de fora saem pela
+MESMA referência.
+
+#### Remediação do review final (24/08/2026)
+
+- **Nó com alça ainda pode ser quina.** A heurística `!in && !out` recusava um nó com uma única
+  alça ou duas desalinhadas. A igualdade persistida substituiu a heurística: se re-tangenciar muda
+  a geometria visível, a passada vale independentemente de quantas alças já existiam.
+- **Tangente sub-centésima não cria undo vazio.** O controle pode ser não-zero em memória e
+  arredondar sobre a âncora no `d`; a comparação agora serializa e relê antes de decidir. A rede
+  cobre o traço inteiro e o parcial.
+- **O teste de UI prova o alcance.** Além de contar os quatro nós e preservar os dois escolhidos,
+  confere 3 comandos `C` e 1 `L`: suavizar os quatro pontos por engano deixa o teste vermelho.
+- **Recusa por tamanho tem duas mensagens.** O traço inteiro fala em “suavizar o traço”; uma
+  seleção fala em “suavizar os pontos escolhidos”.
 
 ## Misturar formas: unir, tirar a da frente, o pedaço em comum e o resto (14/08/2026)
 
