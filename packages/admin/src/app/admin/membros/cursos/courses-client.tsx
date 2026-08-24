@@ -82,6 +82,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }, [offset, q, status, platform])
 
   const loadCareer = useCallback(async () => {
+    // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
+    // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
+    // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
+    if (platform !== 'kids') return
     setCareerLoading(true)
     try {
       const courses = await loadAllPages((pageOffset, limit) =>
@@ -95,7 +99,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     } finally {
       setCareerLoading(false)
     }
-  }, [])
+  }, [platform])
 
   useEffect(() => {
     const t = setTimeout(load, 250)

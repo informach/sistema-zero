@@ -85,7 +85,14 @@ async function fetchOverview(): Promise<void> {
 
 /** Revalida se o TTL venceu (single-flight). `force` ignora o TTL (pós-ação). */
 export function ensureProfessorCounts(force = false): Promise<void> {
-  if (inflight) return inflight
+  if (inflight) {
+    if (!force) return inflight
+    // O fetch em voo pode ser da plataforma ANTIGA (troca do seletor no meio):
+    // engolir o force deixaria o badge errado até a próxima revalidação. Quando
+    // ele terminar, o re-check decide — snapshot fresco (mesma plataforma + TTL)
+    // é no-op; mismatch re-busca. Sem loop: a 2ª volta entra sem force.
+    return inflight.then(() => ensureProfessorCounts(false))
+  }
   const fresh = state.platform === getPlatform() && Date.now() - state.fetchedAt < TTL_MS
   if (!force && fresh) return Promise.resolve()
   inflight = fetchOverview().finally(() => {

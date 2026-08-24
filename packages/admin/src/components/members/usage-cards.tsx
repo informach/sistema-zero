@@ -15,9 +15,18 @@ import type { MemberCourseProgressView } from '@/lib/types'
  * futura ficha da criança montam a mesma grade.
  */
 
-function LastActivity({ iso, verb = 'última atividade' }: { iso: string | null; verb?: string }) {
+function LastActivity({
+  iso,
+  verb = 'última atividade',
+  noneLabel = 'Nunca abriu',
+}: {
+  iso: string | null
+  verb?: string
+  /** Copy do "nunca" por tipo de card ("Nunca abriu" não serve p/ comunidade). */
+  noneLabel?: string
+}) {
   const label = relativeDayLabel(iso)
-  if (!label) return <span className="text-muted-foreground text-xs">Nunca abriu</span>
+  if (!label) return <span className="text-muted-foreground text-xs">{noneLabel}</span>
   // "hoje"/"ontem"/"há N dias" seguem cru; data curta ganha o "em".
   const when = /^\d/.test(label) ? `em ${label}` : label
   return (
@@ -139,7 +148,11 @@ export function ClubeUsageCard({ name, usage }: { name: string; usage: ClubeUsag
             {usage.posts} {usage.posts === 1 ? 'conversa' : 'conversas'} · {usage.comments}{' '}
             {usage.comments === 1 ? 'comentário' : 'comentários'}
           </p>
-          <LastActivity iso={usage.lastActivityAt} verb="última participação" />
+          <LastActivity
+            iso={usage.lastActivityAt}
+            verb="última participação"
+            noneLabel="Nunca participou"
+          />
         </>
       )}
     </UsageCardShell>
@@ -157,7 +170,11 @@ export function MuralUsageCard({ name, usage }: { name: string; usage: MuralUsag
             {usage.published} {usage.published === 1 ? 'jogo publicado' : 'jogos publicados'} ·{' '}
             {usage.plays} {usage.plays === 1 ? 'jogada' : 'jogadas'}
           </p>
-          <LastActivity iso={usage.lastPublishedAt} verb="última publicação" />
+          <LastActivity
+            iso={usage.lastPublishedAt}
+            verb="última publicação"
+            noneLabel="Nunca publicou"
+          />
         </>
       )}
     </UsageCardShell>

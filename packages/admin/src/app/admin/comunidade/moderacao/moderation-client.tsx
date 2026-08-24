@@ -267,9 +267,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   }
 
   const visiblePending = pending.filter((item) => item.context.spaceAudience === platform)
-  const visibleReports = reports.filter(
-    (r) => (r.content?.context.spaceAudience ?? 'adult') === platform,
-  )
+  // A MESMA cascata do render do card: denúncia sem `content` (conteúdo já
+  // removido) cai na audiência do SERVIDOR — filtrar só pelo content mandaria
+  // uma denúncia kids órfã para o modo Adultos.
+  const reportAudience = (r: HubReportView) =>
+    r.content?.context.spaceAudience ?? spaces.find((s) => s.id === r.spaceId)?.audience ?? 'adult'
+  const visibleReports = reports.filter((r) => reportAudience(r) === platform)
 
   return (
     <div className="space-y-6">

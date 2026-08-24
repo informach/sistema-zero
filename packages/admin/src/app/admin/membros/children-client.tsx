@@ -110,18 +110,20 @@ export function ChildrenClient() {
                 return (
                   <TableRow key={child.profileId} className="hover:bg-muted/50">
                     <TableCell>
-                      <Link
-                        href={`/admin/membros/${encodeURIComponent(child.account?.id ?? '')}?learner=${encodeURIComponent(child.profileId)}`}
-                        className="flex items-center gap-2"
-                      >
-                        <ChildAvatar name={child.name} avatarUrl={child.avatarUrl} />
-                        <span className="font-medium">
-                          {child.name}
-                          {age !== null ? (
-                            <span className="text-muted-foreground"> · {age} anos</span>
-                          ) : null}
+                      {/* A ficha é a da FAMÍLIA — perfil sem conta (órfão de
+                          conta apagada) não tem destino, então fica sem link. */}
+                      {child.account ? (
+                        <Link
+                          href={`/admin/membros/${encodeURIComponent(child.account.id)}?learner=${encodeURIComponent(child.profileId)}`}
+                          className="flex items-center gap-2"
+                        >
+                          <ChildIdentity child={child} age={age} />
+                        </Link>
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          <ChildIdentity child={child} age={age} />
                         </span>
-                      </Link>
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {child.account ? (
@@ -149,10 +151,8 @@ export function ChildrenClient() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {child.overview
-                        ? child.overview.streakCurrent > 0
-                          ? `${child.overview.streakCurrent} dias`
-                          : '—'
+                      {child.overview && child.overview.streakCurrent > 0
+                        ? `${child.overview.streakCurrent} ${child.overview.streakCurrent === 1 ? 'dia' : 'dias'}`
                         : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground">{last ?? 'Nunca'}</TableCell>
@@ -179,6 +179,19 @@ export function ChildrenClient() {
 
       <Pagination total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
     </div>
+  )
+}
+
+/** Avatar + nome + idade — o miolo da célula, com ou sem link (conta apagada). */
+function ChildIdentity({ child, age }: { child: ChildListRow; age: number | null }) {
+  return (
+    <>
+      <ChildAvatar name={child.name} avatarUrl={child.avatarUrl} />
+      <span className="font-medium">
+        {child.name}
+        {age !== null ? <span className="text-muted-foreground"> · {age} anos</span> : null}
+      </span>
+    </>
   )
 }
 
