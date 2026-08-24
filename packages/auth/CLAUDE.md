@@ -417,7 +417,14 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   `{id,accountUserId,name,publicProfileEnabled}` de perfis ativos **ou arquivados**; isso permite à
   moderação reconstruir criança + responsável de registros legados sem snapshots e sem buscar todos
   os perfis de cada conta. A rota interna `/auth/internal/profiles/batch` permanece ativa-only e não
-  expõe `accountUserId`. O serviço lê o ator desses
+  expõe `accountUserId`.
+  **Busca UNIFICADA de perfis (`GET /auth/admin/profiles`, leitura staff+ — a 1ª busca por nome de
+  CRIANÇA):** `q?`/`limit?`/`offset?` → `{items, total}`: perfis ATIVOS (`id,name,avatarUrl,birthDate,
+  accountUserId`) + `account {id,email,firstName,lastName} | null` (LEFT JOIN local em `auth.users`;
+  conta apagada → `null`). `q` = ILIKE **escapado** em OR sobre nome do PERFIL + e-mail/nome do
+  RESPONSÁVEL; ordenação estável `name asc, id asc`; `total` com o MESMO where.
+  (`SearchProfilesService` + `ProfileRepository.searchWithAccount`, read-model plano — não agregado.
+  ⚠️ Pende a entrada da rota no GATEWAY, fora deste pacote.) O serviço lê o ator desses
   headers (`resolveGatewayActor`),
   re-checa papel/status (defesa em profundidade) e aplica os GUARDS hierárquicos:
   ninguém altera o próprio papel/status; `admin` não toca/promove a admin/superadmin;

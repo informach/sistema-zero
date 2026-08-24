@@ -9,6 +9,7 @@ import { GetUserService } from '../../src/application/admin/get-user/get-user.se
 import { ListUsersService } from '../../src/application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from '../../src/application/admin/read-audit-log/read-audit-log.service'
 import { ResendInviteService } from '../../src/application/admin/resend-invite/resend-invite.service'
+import { SearchProfilesService } from '../../src/application/admin/search-profiles/search-profiles.service'
 import { SetUserPasswordService } from '../../src/application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from '../../src/application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from '../../src/application/ensure-buyer/ensure-buyer.service'
@@ -91,7 +92,8 @@ function buildApp(
     silentLogger,
   )
   const login = new LoginService(users, fakeHasher, authTokens, {})
-  const profilesRepo = new InMemoryProfileRepository()
+  // O repositório de contas alimenta o LEFT JOIN da busca unificada de perfis.
+  const profilesRepo = new InMemoryProfileRepository(users)
   const refresh = new RefreshService(
     users,
     refreshTokens,
@@ -170,6 +172,7 @@ function buildApp(
   const deleteUser = new DeleteUserService(users, silentLogger)
   const batchGetUsers = new BatchGetUsersService(users)
   const batchGetProfiles = new BatchGetProfilesService(profilesRepo)
+  const searchProfiles = new SearchProfilesService(profilesRepo)
   const auditLogs = new InMemoryAuditLogRepository()
   const writeAuditLog = new WriteAuditLogService(auditLogs)
   const readAuditLog = new ReadAuditLogService(auditLogs)
@@ -261,6 +264,7 @@ function buildApp(
     deleteUser,
     batchGetUsers,
     batchGetProfiles,
+    searchProfiles,
     resendInvite,
     setUserPassword,
     writeAuditLog,
@@ -1207,6 +1211,33 @@ describe('Auth admin routes (/auth/admin/users)', () => {
     }
   }
 
+  function seedProfile(
+    profilesRepo: InMemoryProfileRepository,
+    over: Partial<{
+      accountUserId: string
+      name: string
+      avatarUrl: string | null
+      birthDate: string | null
+      status: 'active' | 'archived'
+    }> = {},
+  ): string {
+    const id = crypto.randomUUID()
+    profilesRepo.byId.set(id, {
+      id,
+      accountUserId: over.accountUserId ?? crypto.randomUUID(),
+      name: over.name ?? 'Criança Teste',
+      avatarUrl: over.avatarUrl ?? null,
+      whatsapp: null,
+      birthDate: over.birthDate ?? null,
+      publicProfileEnabled: false,
+      status: over.status ?? 'active',
+      sortOrder: 0,
+      createdAt: now,
+      updatedAt: now,
+    })
+    return id
+  }
+
   function getReq(path: string, headers: Record<string, string> = {}) {
     return new Request(`http://localhost${path}`, { headers })
   }
@@ -1388,6 +1419,132 @@ describe('Auth admin routes (/auth/admin/users)', () => {
         },
       ],
     })
+  })
+
+  test('GET /auth/admin/profiles — RBAC: sem ator → 401; customer → 403; staff lê (200)', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'mae@example.com' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Miguel' })
+
+    expect((await app.handle(getReq('/auth/admin/profiles'))).status).toBe(401)
+    const { 'x-internal-token': _omitted, ...forged } = actorHeaders('superadmin')
+    expect((await app.handle(getReq('/auth/admin/profiles', forged))).status).toBe(401)
+    expect(
+      (await app.handle(getReq('/auth/admin/profiles', actorHeaders('customer')))).status,
+    ).toBe(403)
+    expect((await app.handle(getReq('/auth/admin/profiles', actorHeaders('staff')))).status).toBe(
+      200,
+    )
+  })
+
+  test('GET /auth/admin/profiles?q=<nome da criança> acha o perfil com a conta responsável', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'mae@example.com', firstName: 'Ana' })
+    const profileId = seedProfile(profilesRepo, {
+      accountUserId: accountId,
+      name: 'Miguel',
+      avatarUrl: 'https://cdn.example/miguel.webp',
+      birthDate: '2016-03-09',
+    })
+    seedProfile(profilesRepo, { name: 'Outra Criança' })
+
+    const res = await app.handle(getReq('/auth/admin/profiles?q=migu', actorHeaders('staff')))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({
+      items: [
+        {
+          id: profileId,
+          name: 'Miguel',
+          avatarUrl: 'https://cdn.example/miguel.webp',
+          birthDate: '2016-03-09',
+          accountUserId: accountId,
+          account: {
+            id: accountId,
+            email: 'mae@example.com',
+            firstName: 'Ana',
+            lastName: 'Last',
+          },
+        },
+      ],
+      total: 1,
+    })
+  })
+
+  test('q por e-mail do responsável acha os perfis da conta; conta apagada → account: null', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'familia.souza@example.com' })
+    const bento = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Bento' })
+    const alice = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Alice' })
+    // Perfil cuja conta não existe mais (exclusão física preservou o registro).
+    const orphan = seedProfile(profilesRepo, { name: 'Zoe' })
+
+    const res = await app.handle(
+      getReq('/auth/admin/profiles?q=familia.souza', actorHeaders('staff')),
+    )
+    expect(res.status).toBe(200)
+    const json = (await res.json()) as {
+      items: { id: string; name: string }[]
+      total: number
+    }
+    // Ordenação estável por nome asc: Alice antes de Bento; só os da família.
+    expect(json.items.map((i) => [i.id, i.name])).toEqual([
+      [alice, 'Alice'],
+      [bento, 'Bento'],
+    ])
+    expect(json.total).toBe(2)
+
+    // Sem q → lista TODOS os ativos; o órfão volta com account: null.
+    const all = (await (
+      await app.handle(getReq('/auth/admin/profiles', actorHeaders('staff')))
+    ).json()) as { items: { id: string; account: unknown }[]; total: number }
+    expect(all.total).toBe(3)
+    expect(all.items.find((i) => i.id === orphan)?.account).toBeNull()
+  })
+
+  test('%/_ no q são LITERAIS (escape do ILIKE), não curingas', async () => {
+    const { app, profilesRepo } = buildApp()
+    seedProfile(profilesRepo, { name: 'Zeca' })
+    const percent = seedProfile(profilesRepo, { name: 'Zé 100%' })
+    const underscore = seedProfile(profilesRepo, { name: 'Ze_Under' })
+
+    // '%' sem escape casaria TODO MUNDO; escapado casa só o nome com % literal.
+    const wildcard = (await (
+      await app.handle(
+        getReq(`/auth/admin/profiles?q=${encodeURIComponent('%')}`, actorHeaders('staff')),
+      )
+    ).json()) as { items: { id: string }[]; total: number }
+    expect(wildcard.total).toBe(1)
+    expect(wildcard.items[0]?.id).toBe(percent)
+
+    // '_' sem escape casaria qualquer caractere; escapado casa só o _ literal.
+    const single = (await (
+      await app.handle(
+        getReq(`/auth/admin/profiles?q=${encodeURIComponent('_')}`, actorHeaders('staff')),
+      )
+    ).json()) as { items: { id: string }[]; total: number }
+    expect(single.total).toBe(1)
+    expect(single.items[0]?.id).toBe(underscore)
+  })
+
+  test('paginação: limit/offset com total do MESMO filtro; archived NÃO volta', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'pais@example.com' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Bruno' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Ana' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Caio' })
+    seedProfile(profilesRepo, { accountUserId: accountId, name: 'Duda', status: 'archived' })
+
+    const page1 = (await (
+      await app.handle(getReq('/auth/admin/profiles?limit=2&offset=0', actorHeaders('staff')))
+    ).json()) as { items: { name: string }[]; total: number }
+    expect(page1.total).toBe(3) // Duda (archived) fica fora do total também
+    expect(page1.items.map((i) => i.name)).toEqual(['Ana', 'Bruno'])
+
+    const page2 = (await (
+      await app.handle(getReq('/auth/admin/profiles?limit=2&offset=2', actorHeaders('staff')))
+    ).json()) as { items: { name: string }[]; total: number }
+    expect(page2.total).toBe(3)
+    expect(page2.items.map((i) => i.name)).toEqual(['Caio'])
   })
 
   test(':id que não é uuid → 400 na borda (não 500 do banco)', async () => {

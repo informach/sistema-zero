@@ -15,6 +15,7 @@ import type { ListMemberCertificatesService } from '../../../application/list-me
 import type { ListMemberRatingsService } from '../../../application/list-member-ratings/list-member-ratings.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import type { GetProfilesOverviewService } from '../../../application/profiles-overview/get-profiles-overview.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { GetMemberToolUsageService } from '../../../application/tool-usage/get-member-tool-usage.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
@@ -48,6 +49,7 @@ import {
   ListMembersQuery,
   ManageEntitlementBody,
   MemberDetailQuery,
+  ProfilesOverviewQuery,
   parseProfileIds,
   parseUserIds,
   TeacherThreadReplyBody,
@@ -65,6 +67,8 @@ export interface AdminRoutesDeps {
   getMemberDetail: GetMemberDetailService
   /** USO das ferramentas (Pensa/Pinta/Estúdio/Clube/Mural) por aprendiz — cartões da ficha. */
   getMemberToolUsage: GetMemberToolUsageService
+  /** Enriquecimento em lote da listagem de CRIANÇAS (nível/XP/ofensiva/pendências). */
+  profilesOverview: GetProfilesOverviewService
   getMemberActivity: GetMemberActivityService
   listMemberCertificates: ListMemberCertificatesService
   listMemberRatings: ListMemberRatingsService
@@ -125,6 +129,20 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
         },
         { params: UserIdParams, query: MemberDetailQuery },
+      )
+      // Enriquecimento em LOTE da LISTAGEM DE CRIANÇAS do painel (os profileIds
+      // vêm da página de busca no auth): nível/XP/ofensiva/última atividade +
+      // pendências de entrega. 3 idas ao banco por página, nunca N+1.
+      .get(
+        '/profiles-overview',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.profilesOverview.execute(
+            parseProfileIds(query.profileIds),
+            query.audience ?? 'kids',
+          )
+        },
+        { query: ProfilesOverviewQuery },
       )
       // USO das ferramentas (Pensa/Pinta/Estúdio + Clube/Mural via hub best-effort)
       // por aprendiz da FAMÍLIA — cartões da ficha, não é progresso de curso. Hub

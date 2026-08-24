@@ -202,17 +202,16 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     }))
   }
 
-  async listAll(
-    filter: StudioSubmissionGlobalFilter,
-  ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }> {
-    // Fila GLOBAL (página "Entregas" da Sala do Professor). `answered` = há
-    // mensagem do PROFESSOR na conversa desta entrega APÓS o último envio — um
-    // reenvio do aluno REABRE a pendência (o professor precisa olhar de novo).
-    // A conversa é ancorada por contexto (user_id + context_ref = blockId), o
-    // mesmo elo do viewer/`by-context` do teacher-threads. ⚠️ `context_ref` é
-    // TEXT (snapshot — também guarda ids do hub); o `block_id` uuid precisa do
-    // cast, senão o PG recusa `text = uuid` (achado da QA integrada).
-    const answered = sql<boolean>`exists (
+  /**
+   * `answered` = há mensagem do PROFESSOR na conversa desta entrega APÓS o
+   * último envio — um reenvio do aluno REABRE a pendência. A conversa é ancorada
+   * por contexto (user_id + context_ref = blockId), o mesmo elo do viewer/
+   * `by-context` do teacher-threads. ⚠️ `context_ref` é TEXT (snapshot — também
+   * guarda ids do hub); o `block_id` uuid precisa do cast, senão o PG recusa
+   * `text = uuid` (achado da QA integrada).
+   */
+  private answeredSql() {
+    return sql<boolean>`exists (
       select 1 from ${teacherThreads} tt
       join ${teacherMessages} tm on tm.thread_id = tt.id
       where tt.user_id = ${studioSubmissions.userId}
@@ -221,19 +220,45 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         and tm.author_role = 'teacher'
         and tm.created_at >= ${studioSubmissions.submittedAt}
     )`
+  }
 
-    // `reviewed` = o professor carimbou "já conferi" APÓS o último envio. É o
-    // caminho da entrega SEM recado (que não tem conversa e por isso não tinha
-    // como sair da fila). Mesma régua do `answered`: comparar com submitted_at
-    // faz o reenvio reabrir sozinho.
-    const reviewed = sql<boolean>`(
+  /**
+   * `reviewed` = o professor carimbou "já conferi" APÓS o último envio. Mesma
+   * régua do `answered`: comparar com submitted_at faz o reenvio reabrir sozinho.
+   */
+  private reviewedSql() {
+    return sql<boolean>`(
       ${studioSubmissions.reviewedAt} is not null
       and ${studioSubmissions.reviewedAt} >= ${studioSubmissions.submittedAt}
     )`
-    // FECHADA = respondida OU conferida. Os dois campos seguem separados na
-    // linha (o painel distingue "respondi" de "só conferi"), mas a fila de
-    // pendentes é a negação das DUAS.
-    const closed = sql<boolean>`(${answered} or ${reviewed})`
+  }
+
+  /**
+   * FECHADA = respondida OU conferida — a régua ÚNICA de "pendente" (a fila
+   * global E as contagens por aluno derivam DESTE fragmento; duplicar a régua
+   * seria drift silencioso entre o badge e a fila).
+   */
+  private closedSql() {
+    return sql<boolean>`(${this.answeredSql()} or ${this.reviewedSql()})`
+  }
+
+  async countPendingByUsers(userIds: string[]): Promise<Map<string, number>> {
+    if (userIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({ userId: studioSubmissions.userId, c: count() })
+      .from(studioSubmissions)
+      .where(and(inArray(studioSubmissions.userId, userIds), sql`not ${this.closedSql()}`))
+      .groupBy(studioSubmissions.userId)
+    return new Map(rows.map((r) => [r.userId, r.c]))
+  }
+
+  async listAll(
+    filter: StudioSubmissionGlobalFilter,
+  ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }> {
+    // Fila GLOBAL (página "Entregas" da Sala do Professor) — réguas nos helpers acima.
+    const answered = this.answeredSql()
+    const reviewed = this.reviewedSql()
+    const closed = this.closedSql()
 
     const where = and(
       filter.courseId ? eq(studioSubmissions.courseId, filter.courseId) : undefined,

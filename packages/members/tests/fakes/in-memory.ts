@@ -1553,6 +1553,20 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
    */
   readonly answeredKeys = new Set<string>()
 
+  async countPendingByUsers(userIds: string[]): Promise<Map<string, number>> {
+    const set = new Set(userIds)
+    const out = new Map<string, number>()
+    for (const s of this.submissions) {
+      if (!set.has(s.userId)) continue
+      // Mesma régua da fila: pendente = nem respondida nem conferida.
+      const answered = this.answeredKeys.has(`${s.userId}:${s.blockId}`)
+      const reviewed = s.reviewedAt != null && s.reviewedAt >= s.submittedAt
+      if (answered || reviewed) continue
+      out.set(s.userId, (out.get(s.userId) ?? 0) + 1)
+    }
+    return out
+  }
+
   async listAll(
     filter: StudioSubmissionGlobalFilter,
   ): Promise<{ items: StudioSubmissionGlobalRow[]; total: number }> {
@@ -2388,6 +2402,19 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     if (!rec) return null
     // `freezeGrantedMonth` mora num mapa à parte no fake — mirror do que o Drizzle lê da coluna.
     return { ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null }
+  }
+
+  async listByUserIds(
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]> {
+    const out: GamificationProfileRecord[] = []
+    for (const userId of userIds) {
+      const key = this.profileKey(userId, audience)
+      const rec = this.profiles.get(key)
+      if (rec) out.push({ ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null })
+    }
+    return out
   }
 
   async listByAccount(

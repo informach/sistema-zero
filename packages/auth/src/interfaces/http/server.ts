@@ -9,6 +9,7 @@ import type { GetUserService } from '../../application/admin/get-user/get-user.s
 import type { ListUsersService } from '../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../application/admin/read-audit-log/read-audit-log.service'
 import type { ResendInviteService } from '../../application/admin/resend-invite/resend-invite.service'
+import type { SearchProfilesService } from '../../application/admin/search-profiles/search-profiles.service'
 import type { SetUserPasswordService } from '../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
@@ -70,6 +71,8 @@ export interface HttpDeps {
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
   batchGetProfiles: BatchGetProfilesService
+  /** Busca unificada de perfis (criança OU responsável) do painel admin. */
+  searchProfiles: SearchProfilesService
   resendInvite: ResendInviteService
   setUserPassword: SetUserPasswordService
   writeAuditLog: WriteAuditLogService
@@ -186,6 +189,7 @@ export function createServer(deps: HttpDeps) {
         deleteUser: deps.deleteUser,
         batchGetUsers: deps.batchGetUsers,
         batchGetProfiles: deps.batchGetProfiles,
+        searchProfiles: deps.searchProfiles,
         resendInvite: deps.resendInvite,
         setUserPassword: deps.setUserPassword,
         readAuditLog: deps.readAuditLog,

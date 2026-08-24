@@ -81,6 +81,29 @@ export function getMember(
   })
 }
 
+/** Uma linha do enriquecimento da listagem de crianças (espelha o members). */
+export interface ProfileOverviewView {
+  profileId: string
+  xp: number
+  levelSlug: string
+  streakCurrent: number
+  lastActivityDate: string | null
+  pendingSubmissions: number
+}
+
+/**
+ * Enriquecimento em LOTE da listagem de CRIANÇAS: `GET /members/admin/profiles-overview`.
+ * Os profileIds vêm da página de busca do auth (≤50 — o teto da página).
+ */
+export function getProfilesOverview(
+  profileIds: string[],
+  audience: 'adult' | 'kids' = 'kids',
+): Promise<GatewayResponse<{ profiles: ProfileOverviewView[] }>> {
+  return gatewayFetch('/members/admin/profiles-overview', {
+    query: { profileIds: profileIds.join(','), audience },
+  })
+}
+
 /**
  * USO das ferramentas (Pensa/Pinta/Estúdio/Clube/Mural) por aprendiz da família:
  * `GET /members/admin/members/:userId/tool-usage`. Clube/Mural são best-effort no

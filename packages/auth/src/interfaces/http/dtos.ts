@@ -140,6 +140,17 @@ export const BatchGetUsersBody = t.Object({
   ids: t.Array(t.String({ pattern: UUID_PATTERN }), { minItems: 1, maxItems: 100 }),
 })
 
+/**
+ * Query de `GET /auth/admin/profiles` — busca UNIFICADA do painel: `q` casa o
+ * nome da CRIANÇA (perfil) OU o nome/e-mail do RESPONSÁVEL (conta), literal.
+ */
+export const SearchProfilesQuery = t.Object({
+  q: t.Optional(t.String({ maxLength: 320 })),
+  // t.Numeric coage a string da query string para número.
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0 })),
+})
+
 /** Corpo de `POST /auth/impersonate/exchange` (token de handoff single-use → sessão impersonada). */
 export const ImpersonateExchangeBody = t.Object({
   token: t.String({ minLength: 10, maxLength: 512 }),

@@ -27,6 +27,8 @@ import type { ProfileAllowanceGateway } from '../../src/domain/ports/profile-all
 import type {
   CreateProfileOutcome,
   ProfileRepository,
+  ProfileWithAccountRow,
+  SearchProfilesFilter,
 } from '../../src/domain/ports/profile-repository.port'
 import type {
   CreateRefreshTokenInput,
@@ -539,6 +541,51 @@ export class InMemoryOtpCodeRepository implements OtpCodeRepository {
 /** Repositório de perfis em memória (espelha o create atômico sob teto). */
 export class InMemoryProfileRepository implements ProfileRepository {
   readonly byId = new Map<string, ProfileSnapshot>()
+
+  /** `accounts` alimenta o LEFT JOIN do `searchWithAccount` (ausente → `account: null`). */
+  constructor(private readonly accounts?: InMemoryUserRepository) {}
+
+  async searchWithAccount(
+    filter: SearchProfilesFilter,
+  ): Promise<{ items: ProfileWithAccountRow[]; total: number }> {
+    const q = filter.q?.trim().toLowerCase()
+    const matched = [...this.byId.values()]
+      .filter((p) => p.status === 'active')
+      .map((p): ProfileWithAccountRow => {
+        const account = this.accounts?.byId.get(p.accountUserId)
+        return {
+          id: p.id,
+          name: p.name,
+          avatarUrl: p.avatarUrl,
+          birthDate: p.birthDate,
+          accountUserId: p.accountUserId,
+          account: account
+            ? {
+                id: account.id,
+                email: account.email,
+                firstName: account.firstName,
+                lastName: account.lastName,
+              }
+            : null,
+        }
+      })
+      .filter((row) => {
+        if (!q) return true
+        // `includes` = a MESMA semântica do ILIKE escapado: substring LITERAL
+        // case-insensitive (curingas do q não viram padrão).
+        return [row.name, row.account?.email, row.account?.firstName, row.account?.lastName].some(
+          (h) => h?.toLowerCase().includes(q),
+        )
+      })
+      // Ordenação estável do adapter: name asc, desempate por id asc.
+      .sort(
+        (a, b) => a.name.localeCompare(b.name, 'en') || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+      )
+    return {
+      items: matched.slice(filter.offset, filter.offset + filter.limit),
+      total: matched.length,
+    }
+  }
 
   async listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]> {
     return [...this.byId.values()]

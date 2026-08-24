@@ -18,6 +18,7 @@ import {
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, CreditCard, Inbox, LogIn, Mail, MailOpen, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
@@ -31,6 +32,7 @@ import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { entitlementBadge } from '@/lib/entitlement-status'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
+import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 import { type MemberToolUsageView, ownedToolCards } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
@@ -266,13 +268,22 @@ export function MemberDetailClient({
   const learner = learners.find((l) => l.id === learnerId) ?? learners[0]
   const showLearnerSwitcher = learners.length > 1 && LEARNER_SCOPED.includes(tab)
 
-  // Default do aprendiz no modo Kids (1× por carga; não briga com clique do operador).
+  // Default do aprendiz no modo Kids (1× por carga; não briga com clique do
+  // operador): `?learner=<profileId>` (deep-link da listagem de crianças) tem
+  // prioridade; senão, a 1ª criança.
+  const searchParams = useSearchParams()
   useEffect(() => {
     if (learnerDefaulted.current || !detail) return
     learnerDefaulted.current = true
+    const requested = searchParams.get('learner')
+    const match = requested ? detail.profiles?.find((p) => p.id === requested) : undefined
+    if (match) {
+      setLearnerId(match.id)
+      return
+    }
     const firstProfile = detail.profiles?.[0]
     if (platform === 'kids' && firstProfile) setLearnerId(firstProfile.id)
-  }, [detail, platform])
+  }, [detail, platform, searchParams])
 
   const canImpersonateUser =
     user != null &&
@@ -842,17 +853,6 @@ function Stat({
 // Rótulos de apresentação da gamificação — ESPELHAM o community-kids
 // (lib/level-info.ts LEVEL_INFO + components/kids/badges.ts BADGE_INFO).
 // Mudou o rótulo lá? Atualize aqui (o admin não importa do app kids).
-const STUDENT_RANK_LABELS: Record<string, string> = {
-  noob: 'Faísca',
-  coder: 'Construtor(a)',
-  hacker: 'Inventor(a)',
-  explorer: 'Explorador(a) de Mundos',
-  elite: 'Mestre dos Jogos',
-  architect: 'Arquiteto(a) de Mundos',
-  champion: 'Gênio da Criação',
-  god: 'Lenda',
-}
-
 const BADGE_LABELS: Record<string, string> = {
   'first-lesson': 'Primeiro passo',
   'first-showcase': 'Meu primeiro jogo',

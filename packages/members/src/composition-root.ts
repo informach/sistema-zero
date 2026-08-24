@@ -81,6 +81,7 @@ import { UpdatePensaTaskProgressService } from './application/pensa/update-task-
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
+import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
@@ -506,6 +507,11 @@ export async function createApplication(env: Env): Promise<Application> {
   // Uso por ferramenta (ficha admin) — hub best-effort (noop sem HUB_BASE_URL → cartões null).
   const toolUsage = new DrizzleToolUsageRepository(db)
   const getMemberToolUsage = new GetMemberToolUsageService(toolUsage, hub)
+  const profilesOverview = new GetProfilesOverviewService(
+    gamificationRepo,
+    studioSubmissions,
+    clock,
+  )
   const getMemberActivity = new GetMemberActivityService(
     progress,
     positions,
@@ -646,6 +652,7 @@ export async function createApplication(env: Env): Promise<Application> {
       listMembers,
       getMemberDetail,
       getMemberToolUsage,
+      profilesOverview,
       getMemberActivity,
       listMemberCertificates,
       listMemberRatings,

@@ -361,6 +361,12 @@ export const MemberDetailQuery = t.Object({
   profileIds: t.Optional(t.String({ maxLength: 2000 })),
 })
 
+/** Query da listagem de crianças do painel (batch): perfis da página + vitrine. */
+export const ProfilesOverviewQuery = t.Object({
+  profileIds: t.Optional(t.String({ maxLength: 2000 })),
+  audience: t.Optional(AUDIENCE),
+})
+
 const UUID_RE = new RegExp(UUID_PATTERN)
 /** Quebra o CSV de `profileIds` em uuids válidos (descarta lixo; teto de 50). */
 export function parseProfileIds(csv: string | undefined): string[] {

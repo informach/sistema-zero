@@ -75,8 +75,23 @@ denúncias seguem GLOBAIS** (o hub não filtra pending/reports por audiência �
 a listagem por `audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira
 do Criador só renderiza no modo Kids; Análises e Moderação cortam CLIENT-side (a moderação pode
 subcontar com fila >100 — limitação documentada); Desafio do mês mostra um banner informativo no
-modo Adultos (conteúdo visível). Falta a Etapa 4+ do plano `no-admin-eu-quero-piped-jellyfish.md`
-(busca por criança/listagem kids).
+modo Adultos (conteúdo visível).
+**Listagem de CRIANÇAS + busca por nome (Etapa 4, 08/2026 — a criança vira entidade de 1ª
+classe):** no modo Kids, "Alunos" (`/admin/membros`) vira a listagem de PERFIS
+(`children-client.tsx`; a page é um switch client por `usePlatform` — Adultos mantém o
+`MembersClient` de contas). Busca UNIFICADA (nome da criança OU nome/e-mail do responsável) via
+BFF agregador `GET /api/admin/children` = página do auth (`searchProfiles` →
+`GET /auth/admin/profiles`, rota NOVA do auth com LEFT JOIN na conta) + enriquecimento em LOTE
+best-effort no members (`getProfilesOverview` → `GET /members/admin/profiles-overview`:
+nível/XP/ofensiva de EXIBIÇÃO/última atividade/pendências — members fora → colunas "—").
+Colunas: criança (avatar+nome+IDADE — `lib/age.ts`, dia civil SP; e-mail SÓ do responsável),
+responsável, nível/XP (`lib/student-rank.ts`, movido da ficha), ofensiva, última atividade
+(`relativeCivilDayLabel` em `lib/format.ts` — ⚠️ data CIVIL nunca passa pelo
+`relativeDayLabel`: parse UTC mentiria um dia), pendências (badge → fila filtrada). A linha
+abre a ficha da família com **`?learner=<profileId>`** (deep-link que o member-detail respeita
+no default do aprendiz). Gateway: `auth-admin-profiles-list` + `members-admin-profiles-overview`
+(leitura staff+). Pendências usam a MESMA régua da fila (fragmento `closedSql` extraído no repo
+do members). Falta a Etapa 5+ do plano (ficha dedicada da criança, clone de curso).
 
 **Ficha do aluno v2 — progresso por TIPO de produto (08/2026, Etapa 2 kids-first):** a Visão
 geral virou FOCADA no aprendiz selecionado (o seletor de chips agora inclui a `overview`; no

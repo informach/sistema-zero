@@ -57,3 +57,25 @@ export function relativeDayLabel(
   if (days <= 30) return `há ${days} dias`
   return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short' }).format(d)
 }
+
+/**
+ * Como o `relativeDayLabel`, mas para uma DATA CIVIL SP (`YYYY-MM-DD`, ex.
+ * `gamification_profiles.last_activity_date`). ⚠️ Não passe data civil no
+ * `relativeDayLabel`: `new Date('YYYY-MM-DD')` é meia-noite UTC = 21h do dia
+ * ANTERIOR em SP — "hoje" viraria "ontem".
+ */
+export function relativeCivilDayLabel(
+  civilDate: string | null | undefined,
+  now: Date = new Date(),
+): string | null {
+  if (!civilDate || !/^\d{4}-\d{2}-\d{2}$/.test(civilDate)) return null
+  const dayMs = 24 * 60 * 60 * 1000
+  const days = Math.round(
+    (Date.parse(`${SP_DAY.format(now)}T00:00:00Z`) - Date.parse(`${civilDate}T00:00:00Z`)) / dayMs,
+  )
+  if (days <= 0) return 'hoje'
+  if (days === 1) return 'ontem'
+  if (days <= 30) return `há ${days} dias`
+  const [y, m, d] = civilDate.split('-')
+  return `${d}/${m}/${y}`
+}

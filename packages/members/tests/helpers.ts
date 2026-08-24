@@ -81,6 +81,7 @@ import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-
 import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
+import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from '../src/application/room/buy-room-item.service'
 import { GetRoomService } from '../src/application/room/get-room.service'
@@ -475,6 +476,7 @@ export function buildApp(
         new InMemoryToolUsageRepository(pensa, creations, studioSubmissions, courses),
         hub,
       ),
+      profilesOverview: new GetProfilesOverviewService(gamification, studioSubmissions, clock),
       getMemberActivity: new GetMemberActivityService(
         progress,
         positions,
