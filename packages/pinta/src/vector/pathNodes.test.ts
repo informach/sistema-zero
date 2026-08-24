@@ -669,6 +669,299 @@ describe('suavizar o traco (botao repetivel)', () => {
   })
 })
 
+describe('suavizar SÓ os pontos escolhidos', () => {
+  /** Seis quinas fechadas: nenhum nó nasce com alça. */
+  function hexagono(): EditablePathLike {
+    const ep = toEditablePath(
+      polygonOf([
+        { x: 0, y: 20 },
+        { x: 20, y: 0 },
+        { x: 60, y: 0 },
+        { x: 80, y: 20 },
+        { x: 60, y: 40 },
+        { x: 20, y: 40 },
+      ]),
+    )
+    if (!ep) throw new Error('polígono deveria abrir')
+    return ep
+  }
+
+  /** Traço reto com um TREMIDO miúdo (±0,5) nos índices 3..8. */
+  function tremido(): EditablePathLike {
+    const ep = toEditablePath(
+      pathOf(
+        [
+          'M 0 0',
+          'L 10 0',
+          'L 20 0',
+          'L 30 0.5',
+          'L 40 -0.5',
+          'L 50 0.5',
+          'L 60 -0.5',
+          'L 70 0.5',
+          'L 80 -0.5',
+          'L 90 0',
+          'L 100 0',
+          'L 110 0',
+        ].join(' '),
+      ),
+    )
+    if (!ep) throw new Error('traço deveria abrir')
+    return ep
+  }
+
+  const semAlca = (no: { in?: Vec2; out?: Vec2 }) => no.in === undefined && no.out === undefined
+
+  it('⚠️ escolher DOIS pontos arredonda só aqueles dois (os outros ficam quina)', () => {
+    const ep = hexagono()
+    const suave = smoothPath(ep, undefined, [1, 2])
+    if (!suave) throw new Error('deveria suavizar')
+
+    expect(suave.nodes.length).toBe(6) // trecho de 2 não tem miolo: nada some
+    expect(suave.nodes[1]?.in).toBeDefined()
+    expect(suave.nodes[1]?.out).toBeDefined()
+    expect(suave.nodes[2]?.in).toBeDefined()
+    expect(suave.nodes[2]?.out).toBeDefined()
+    // ⚠️ A metade que importa: quem NÃO foi escolhido continua quina. Sem ela,
+    // a implementação de antes (suaviza tudo) passaria neste teste.
+    for (const i of [0, 3, 4, 5]) {
+      const no = suave.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(semAlca(no)).toBe(true)
+    }
+  })
+
+  it('quem ficou de fora sai pela MESMA referência: nem a âncora nem a alça se mexem', () => {
+    const ep = tremido()
+    const suave = smoothPath(ep, undefined, [3, 4, 5, 6, 7, 8, 9])
+    if (!suave) throw new Error('deveria suavizar')
+
+    // Antes do trecho: os três primeiros nós são os MESMOS objetos.
+    for (const i of [0, 1, 2]) expect(suave.nodes[i]).toBe(ep.nodes[i])
+    // Depois do trecho: os dois últimos também.
+    expect(suave.nodes[suave.nodes.length - 1]).toBe(ep.nodes[ep.nodes.length - 1])
+    expect(suave.nodes[suave.nodes.length - 2]).toBe(ep.nodes[ep.nodes.length - 2])
+  })
+
+  it('some ponto só DENTRO do trecho, e as duas pontas dele ficam presas', () => {
+    const ep = tremido()
+    const suave = smoothPath(ep, undefined, [3, 4, 5, 6, 7, 8, 9])
+    if (!suave) throw new Error('deveria suavizar')
+
+    expect(suave.nodes.length).toBeLessThan(ep.nodes.length)
+    const ancoras = suave.nodes.map((n) => `${n.p.x},${n.p.y}`)
+    // Todo nó de FORA continua no desenho...
+    for (const i of [0, 1, 2, 10, 11]) {
+      const no = ep.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(ancoras).toContain(`${no.p.x},${no.p.y}`)
+    }
+    // ...e as duas PONTAS do trecho também (o RDP nunca tira a primeira nem a
+    // última âncora que recebe). É isso que mantém a emenda parada.
+    for (const i of [3, 9]) {
+      const no = ep.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(ancoras).toContain(`${no.p.x},${no.p.y}`)
+    }
+    // O que sumiu veio todo do miolo do trecho.
+    for (const i of [4, 5, 6, 7, 8]) {
+      const no = ep.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(ancoras).not.toContain(`${no.p.x},${no.p.y}`)
+    }
+  })
+
+  it('escolher TODOS os pontos é igualzinho a não escolher nenhum', () => {
+    const ep = toEditablePath(brushPath())
+    if (!ep) throw new Error('traço deveria abrir')
+    const todos = ep.nodes.map((_, i) => i)
+
+    const inteiro = smoothPath(ep)
+    const escolhido = smoothPath(ep, undefined, todos)
+    if (!inteiro || !escolhido) throw new Error('deveria suavizar')
+    expect(editablePathToD(escolhido)).toBe(editablePathToD(inteiro))
+  })
+
+  it('lista VAZIA é o traço inteiro (o botão sem escolha não mudou)', () => {
+    const ep = toEditablePath(brushPath())
+    if (!ep) throw new Error('traço deveria abrir')
+    const inteiro = smoothPath(ep)
+    const vazio = smoothPath(ep, undefined, [])
+    if (!inteiro || !vazio) throw new Error('deveria suavizar')
+    expect(editablePathToD(vazio)).toBe(editablePathToD(inteiro))
+  })
+
+  it('num caminho fechado, o ÚLTIMO e o PRIMEIRO ponto são um trecho só', () => {
+    const ep = hexagono()
+    const suave = smoothPath(ep, undefined, [5, 0])
+    if (!suave) throw new Error('deveria suavizar')
+
+    expect(suave.nodes.length).toBe(6)
+    expect(suave.nodes[5]?.out).toBeDefined()
+    expect(suave.nodes[0]?.in).toBeDefined()
+    for (const i of [1, 2, 3, 4]) {
+      const no = suave.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(semAlca(no)).toBe(true)
+    }
+  })
+
+  it('pontos SEPARADOS viram um trecho cada: os dois arredondam e nada some', () => {
+    const ep = tremido()
+    const suave = smoothPath(ep, undefined, [1, 5])
+    if (!suave) throw new Error('deveria suavizar')
+
+    expect(suave.nodes.length).toBe(ep.nodes.length)
+    expect(isSmoothNode(suave.nodes[1] as never)).toBe(true)
+    expect(isSmoothNode(suave.nodes[5] as never)).toBe(true)
+    for (const i of [0, 2, 3, 4, 6, 7, 8, 9, 10, 11]) expect(suave.nodes[i]).toBe(ep.nodes[i])
+  })
+
+  it('não fica MUDO na quina, e no segundo toque recusa em vez de fingir', () => {
+    const ep = hexagono()
+    const uma = smoothPath(ep, undefined, [1, 2])
+    if (!uma) throw new Error('o primeiro toque tem que arredondar')
+    // Já estão redondos e o trecho não tem miolo para tirar: recusar é o que
+    // faz o recado aparecer ("esses pontos já estão o mais lisos que dá").
+    expect(smoothPath(uma, undefined, [1, 2])).toBeNull()
+  })
+
+  it('suaviza um nó que ainda é canto mesmo quando ele já tem alça', () => {
+    const casos = [
+      // Uma alça só: ainda há uma quina na passagem pelo nó 1.
+      'M 0 0 C 0 0 5 5 10 0 L 20 0',
+      // Duas alças fora da mesma reta: também não é um nó suave.
+      'M 0 0 C 0 0 5 5 10 0 C 12 6 20 0 20 0',
+    ]
+
+    for (const d of casos) {
+      const ep = toEditablePath(pathOf(d))
+      if (!ep) throw new Error('traço deveria abrir')
+      const antes = ep.nodes[1]
+      if (!antes) throw new Error('nó do meio deveria existir')
+      expect(isSmoothNode(antes)).toBe(false)
+
+      const suave = smoothPath(ep, undefined, [1])
+      if (!suave) throw new Error('o nó ainda tem uma quina para suavizar')
+      const depois = suave.nodes[1]
+      if (!depois) throw new Error('nó suavizado deveria existir')
+      expect(isSmoothNode(depois)).toBe(true)
+    }
+  })
+
+  it('recusa tangente que desaparece na precisão persistida do d', () => {
+    const imperceptivel = toEditablePath(pathOf('M 0 0 L 0 1 L 0.01 0'))
+    if (!imperceptivel) throw new Error('traço deveria abrir')
+    // A tangente não é zero em memória, mas os controles arredondam sobre as
+    // âncoras e o parser os descarta: persistir isso seria um undo vazio.
+    expect(smoothPath(imperceptivel, undefined, [1])).toBeNull()
+
+    const visivel = toEditablePath(pathOf('M 0 0 L 0 1 L 0.1 0'))
+    if (!visivel) throw new Error('traço deveria abrir')
+    expect(smoothPath(visivel, undefined, [1])).not.toBeNull()
+  })
+
+  it('repetir num trecho converge: nunca cresce e o fechado nunca cai abaixo de 3', () => {
+    let atual = hexagono()
+    for (let toque = 0; toque < 6; toque += 1) {
+      const proximo = smoothPath(atual, undefined, [0, 1, 2, 3])
+      if (!proximo) break
+      expect(proximo.closed).toBe(true)
+      expect(proximo.nodes.length).toBeLessThanOrEqual(atual.nodes.length)
+      expect(proximo.nodes.length).toBeGreaterThanOrEqual(3)
+      atual = proximo
+    }
+  })
+
+  it('o traço que sai sobrevive ao sanitize (senão sumiria no próximo load)', () => {
+    const shape = pathOf(
+      editablePathToD(toEditablePath(brushPath()) as EditablePathLike) || 'M 0 0 L 1 0',
+    )
+    const ep = toEditablePath(shape)
+    if (!ep) throw new Error('traço deveria abrir')
+    const suave = smoothPath(ep, undefined, [2, 3, 4, 5])
+    if (!suave) throw new Error('deveria suavizar')
+    const editada = fromEditablePath(shape, suave)
+    expect(sanitizeVectorShape(editada)).not.toBeNull()
+    expect(toEditablePath(editada)).not.toBeNull()
+  })
+
+  /**
+   * ⚠️⚠️ Achados do full review (24/08/2026). Os três nasceram de uma sonda que
+   * varreu 926 combinações de forma × escolha atrás de duas coisas: passada que
+   * devolve o desenho IGUALZINHO, e trecho que apaga ponto na EMENDA.
+   */
+  it('⚠️ vizinho no mesmo ponto: RECUSA em vez de gravar um desfazer vazio', () => {
+    // Sem a rede final, a tangente zero devolvia o traço idêntico com `ok`: o
+    // botão ficava mudo, sem recado, E entrava uma entrada de desfazer que não
+    // desfaz nada. Foi a sonda que achou (39 no-ops em 926 combinações).
+    const zigue = toEditablePath(pathOf('M 0 0 L 20 20 L 0 0 L 30 30'))
+    if (!zigue) throw new Error('traço deveria abrir')
+    expect(smoothPath(zigue, undefined, [1])).toBeNull()
+
+    const pontinho = toEditablePath(pathOf('M 5 5 L 5 5 L 5 5 L 5 5 Z'))
+    if (!pontinho) throw new Error('traço deveria abrir')
+    for (const escolha of [[0], [1], [0, 1], [1, 2]]) {
+      expect(smoothPath(pontinho, undefined, escolha)).toBeNull()
+    }
+  })
+
+  it('⚠️ o nó degenerado do meio do trecho NÃO perde as alças dele', () => {
+    // O nó 1 tem os dois vizinhos no MESMO ponto (tangente zero). O nó 3 muda,
+    // então a passada vale — e é aí que o degenerado ia embora pelado.
+    const ep: EditablePathLike = {
+      closed: false,
+      nodes: [
+        { p: { x: 0, y: 0 } },
+        { p: { x: 20, y: 20 }, in: { x: 10, y: 5 }, out: { x: 30, y: 35 } },
+        { p: { x: 0, y: 0 } },
+        { p: { x: 40, y: 40 } },
+      ],
+    }
+    const suave = smoothPath(ep, undefined, [1, 3])
+    if (!suave) throw new Error('o nó 3 tem tangente, então deveria suavizar')
+    expect(suave.nodes.length).toBe(4)
+    expect(suave.nodes[1]?.in).toEqual({ x: 10, y: 5 })
+    expect(suave.nodes[1]?.out).toEqual({ x: 30, y: 35 })
+    expect(suave.nodes[3]?.in).toBeDefined()
+  })
+
+  it('o trecho que dá a volta APAGA ponto, e só do miolo dele', () => {
+    // Os nós 6, 0 e 1 estão na reta que liga 5 a 1 (x + y = 20): escolhendo
+    // [5,6,0,1] o RDP prende 5 e 1 e joga fora 6 e 0, que ficam no MIOLO do
+    // trecho mesmo ele cruzando a emenda.
+    const ep = toEditablePath(
+      polygonOf([
+        { x: 5, y: 15 },
+        { x: 20, y: 0 },
+        { x: 60, y: 40 },
+        { x: 20, y: 80 },
+        { x: 0, y: 80 },
+        { x: -20, y: 40 },
+        { x: -10, y: 30 },
+      ]),
+    )
+    if (!ep) throw new Error('polígono deveria abrir')
+    const suave = smoothPath(ep, undefined, [5, 6, 0, 1])
+    if (!suave) throw new Error('deveria suavizar')
+
+    expect(suave.closed).toBe(true)
+    expect(suave.nodes.length).toBe(5)
+    const ancoras = suave.nodes.map((n) => `${n.p.x},${n.p.y}`)
+    expect(ancoras).not.toContain('-10,30') // nó 6, miolo do trecho
+    expect(ancoras).not.toContain('5,15') //  nó 0, miolo do trecho
+    // As duas pontas do trecho ficaram presas...
+    expect(ancoras).toContain('-20,40')
+    expect(ancoras).toContain('20,0')
+    // ...e quem estava de fora saiu pela MESMA referência.
+    for (const i of [2, 3, 4]) {
+      const no = ep.nodes[i]
+      if (!no) throw new Error('nó deveria existir')
+      expect(suave.nodes).toContain(no)
+    }
+  })
+})
+
 describe('abrir no ponto e cortar em dois (a tesoura)', () => {
   /** Amostra o traço inteiro, na ordem, para provar que o desenho não mudou. */
   function samples(ep: EditablePathLike, perSegment = 20): Vec2[] {

@@ -45,6 +45,26 @@ BFFs novos: `GET /api/members/teacher-threads` (lista hidratada) + `[id]/{,messa
 `GET /api/members/studio-submissions` (fila global; adapter em `server/studio-submissions.ts`).
 A página Entregas REUSA o `StudioSubmissionViewer` da aba do curso (import cross-dir; mover p/
 `components/professor/` é limpeza futura). Testes puros da nav em `tests/nav.test.ts`.
+
+**Seletor GLOBAL de plataforma (Kids × Adultos — 08/2026, Etapa 0 da reestruturação
+kids-first):** alternador fixo na sidebar (desktop + drawer), estado num cookie de PREFERÊNCIA
+`sz_admin_platform` (1 ano, SameSite=Lax, SEM HttpOnly — o client grava; NÃO entra em
+`lib/cookies.ts`, que é dos `__Host-*` de sessão). **Kids é o default.** Peças: `lib/platform.ts`
+(puro: `Platform`/`parsePlatform`/`platformCookieString`, testado em `tests/platform.test.ts`) ·
+`components/admin/platform-store.ts` (store singleton de módulo + `useSyncExternalStore`, molde do
+counts-store; `usePlatform()`/`setPlatform()`/`getPlatform()` — este último legível por código
+não-React) · `components/admin/platform-switcher.tsx` (segmented; numa rota NÃO-escopada mostra a
+legenda "Esta tela mostra as duas plataformas"). O escopo vem de `pathIsPlatformScoped` no
+`nav.ts` (escopados: `/admin/professor`, `/admin/comunidade/moderacao`, `/admin/membros`;
+Gestão/servidores/auditoria = globais). Fluxo SSR: `app/admin/layout.tsx` lê o cookie e passa
+`initialPlatform` à `AdminSidebar`, que chama `initPlatform()` ANTES de qualquer `usePlatform()`
+(a sidebar renderiza primeiro na árvore). ⚠️ **`initPlatform` no SERVER adota o valor do request
+SEMPRE, sem latch** — o módulo é compartilhado entre requests no processo do Next; com latch, o
+1º request congelava a plataforma p/ todos os SSR seguintes (bug pego no QA browser: cookie
+`adult` ignorado no hard load). No BROWSER o latch vale (1ª hidratação semeia; depois manda o
+clique). Corolário: markup SSR-visível que dependa de `usePlatform` deve renderizar dentro do
+subtree síncrono pós-seed (sidebar) ou tolerar 1º paint neutro. As telas ainda NÃO filtram por
+plataforma (Etapas 2–4 do plano `no-admin-eu-quero-piped-jellyfish.md`).
 **Dia a dia do professor (full review 24/07):**
 - **Home do Professor** `/admin/professor` (item "Início", 1º do grupo → `homeForRole` aponta
   pra cá): 4 cards de pendências (entregas pendentes/recados não-lidos/moderação/denúncias,
