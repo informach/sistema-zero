@@ -1652,6 +1652,23 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
 `CourseAdminService`/`Module…`/`Lesson…`/`Block…`/`AttachmentAdminService`. Endpoints:
 - Cursos: `GET /courses` (lista, qualquer status), `POST /courses`, `GET /courses/:id` (ÁRVORE
   = curso + módulos + aulas), `PATCH/DELETE /courses/:id`. `delete` poda `lesson_completions`.
+  **`POST /courses/:courseId/clone` (08/2026 — clonar p/ a OUTRA plataforma, SEM migration):**
+  body `{audience: 'adult'|'kids', slug?, title?}` → `CourseAdminService.clone` +
+  `ContentAdminRepository.cloneCourseTree` copia numa transação ÚNICA a árvore inteira (módulos/
+  aulas/blocos [com `contentRevision`]/anexos, sortOrders preservados; anexos apontam para os
+  MESMOS storageRefs do R2 — nada é apagado por cascade do clone). O clone é um FORK independente:
+  nasce `draft`, `audience` = destino, `careerSlot: null` (ela etiqueta depois),
+  `sequentialLock`/`level`/`track` copiados, `metadata.clonedFrom = <slug de origem>`
+  (a `CourseView` devolve `clonedFrom` — badge no painel), `is_published` das aulas copiado (o
+  draft do curso segura a visibilidade). NÃO copia dados de aluno (completions/ratings/
+  submissions/threads). Slug default = `<slug>-adulto|-kids`; colisão → 409 `DUPLICATE_SLUG`.
+  Clonar p/ **adult** remove `metadata.studioUnlockBlocks` (currículo do Estúdio é conceito
+  kids); p/ kids preserva. Decisão da usuária (24/08): clone em vez de audiência "ambas" — o
+  enum `course_audience` é compartilhado por ~15 colunas (NUNCA adicionar 'both') e um curso
+  fora da carreira "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
+  exige o MESMO nome de param quando o segmento tem filhos (`/courses/:courseId/modules`).
+  Testes: `tests/integration/clone-course.test.ts`. Gateway: coberto por
+  `members-admin-courses-write`.
 - Módulos: `POST /courses/:courseId/modules`, `PATCH/DELETE /modules/:id`,
   `POST /courses/:courseId/modules/reorder`.
 - Aulas: `POST /modules/:moduleId/lessons`, `PATCH/DELETE /lessons/:id`,

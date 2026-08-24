@@ -357,6 +357,13 @@ export const ShowcaseEligibilityQuery = t.Object({
  * (estilo Netflix) da conta, p/ o progresso POR PERFIL. O handler valida o formato
  * uuid e limita a quantidade (perfis lixo/exagerados são descartados na borda).
  */
+/** Body do CLONE de curso p/ a outra plataforma (slug/título opcionais = derivados). */
+export const CloneCourseBody = t.Object({
+  audience: AUDIENCE,
+  slug: t.Optional(SLUG),
+  title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+})
+
 export const MemberDetailQuery = t.Object({
   profileIds: t.Optional(t.String({ maxLength: 2000 })),
 })

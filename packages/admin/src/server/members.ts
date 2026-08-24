@@ -193,13 +193,15 @@ export function manageEntitlement(
 export interface ListCoursesParams {
   q?: string
   status?: string
+  /** Plataforma (seletor global do painel) — o members filtra a listagem. */
+  audience?: 'adult' | 'kids'
   limit?: number
   offset?: number
 }
 
 export function listCourses(p: ListCoursesParams): Promise<GatewayResponse<Paginated<CourseView>>> {
   return gatewayFetch('/members/admin/courses', {
-    query: { q: p.q, status: p.status, limit: p.limit, offset: p.offset },
+    query: { q: p.q, status: p.status, audience: p.audience, limit: p.limit, offset: p.offset },
   })
 }
 export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>> {
@@ -207,6 +209,10 @@ export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>
 }
 export function getCourse(id: string): Promise<GatewayResponse<CourseTreeView>> {
   return gatewayFetch(`/members/admin/courses/${enc(id)}`)
+}
+/** CLONA o curso p/ a outra plataforma (fork — edições não sincronizam). */
+export function cloneCourse(id: string, body: unknown): Promise<GatewayResponse<CourseView>> {
+  return gatewayFetch(`/members/admin/courses/${enc(id)}/clone`, { method: 'POST', body })
 }
 export function updateCourse(id: string, body: unknown): Promise<GatewayResponse<CourseView>> {
   return gatewayFetch(`/members/admin/courses/${enc(id)}`, { method: 'PATCH', body })

@@ -91,7 +91,17 @@ responsável, nível/XP (`lib/student-rank.ts`, movido da ficha), ofensiva, últ
 abre a ficha da família com **`?learner=<profileId>`** (deep-link que o member-detail respeita
 no default do aprendiz). Gateway: `auth-admin-profiles-list` + `members-admin-profiles-overview`
 (leitura staff+). Pendências usam a MESMA régua da fila (fragmento `closedSql` extraído no repo
-do members). Falta a Etapa 5+ do plano (ficha dedicada da criança, clone de curso).
+do members). Falta a Etapa 5 do plano (ficha dedicada da criança — o deep-link cobre a v1).
+**Clonar curso p/ a outra plataforma (Etapa 6, 08/2026):** botão "Clonar" (ícone Copy) por linha
+na listagem de cursos → `CloneCourseDialog` (destino = a OUTRA plataforma, título/slug sugeridos
+com sufixo `-adulto`/`-kids`, aviso "edições depois do clone NÃO sincronizam") → BFF
+`POST /api/members/courses/[id]/clone` → members `POST /members/admin/courses/:courseId/clone`
+(fork independente: draft, careerSlot null, `metadata.clonedFrom`) → redirect ao editor do clone.
+A listagem mostra o badge "Clone de <slug>" quando `CourseView.clonedFrom` vem (campo OPCIONAL —
+members antigo sem ele = sem badge). Decisão da usuária: clone em vez de audiência "ambas".
+⚠️ O BFF `GET /api/members/courses` REPASSA `audience` (valores válidos apenas; lixo → sem
+filtro) — sem o repasse o filtro por plataforma da Etapa 3 era no-op silencioso (o client mandava
+o param e o BFF o derrubava; pego no QA da Etapa 6).
 
 **Ficha do aluno v2 — progresso por TIPO de produto (08/2026, Etapa 2 kids-first):** a Visão
 geral virou FOCADA no aprendiz selecionado (o seletor de chips agora inclui a `overview`; no

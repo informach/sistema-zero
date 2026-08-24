@@ -69,6 +69,7 @@ import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catal
 import type { CertificateRepository } from '../../src/domain/ports/certificate-repository.port'
 import type {
   AttachmentFields,
+  CloneCourseOverrides,
   ContentAdminRepository,
   CourseFields,
   LessonFields,
@@ -591,6 +592,47 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       if (lesson?.isPublished && wanted.has(lesson.courseId)) found.add(lesson.courseId)
     }
     return [...found]
+  }
+
+  async cloneCourseTree(
+    sourceCourseId: string,
+    overrides: CloneCourseOverrides,
+  ): Promise<Course | null> {
+    const src = this.courses.find((c) => c.id === sourceCourseId)
+    if (!src) return null
+    if (this.courses.some((c) => c.slug === overrides.slug)) throw new DuplicateSlugError()
+    const metadata: Record<string, unknown> = { ...(src.metadata ?? {}), clonedFrom: src.slug }
+    if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
+    const now = new Date()
+    const clone: Course = {
+      ...src,
+      id: randomUUID(),
+      version: 0,
+      slug: overrides.slug,
+      title: overrides.title,
+      status: 'draft',
+      audience: overrides.audience,
+      careerSlot: null,
+      metadata,
+      createdAt: now,
+      updatedAt: now,
+    }
+    this.courses.push(clone)
+    for (const m of this.modules.filter((m) => m.courseId === src.id)) {
+      const newModuleId = randomUUID()
+      this.modules.push({ ...m, id: newModuleId, courseId: clone.id })
+      for (const l of this.lessons.filter((l) => l.moduleId === m.id)) {
+        const newLessonId = randomUUID()
+        this.lessons.push({ ...l, id: newLessonId, moduleId: newModuleId, courseId: clone.id })
+        for (const b of this.blocks.filter((b) => b.lessonId === l.id)) {
+          this.blocks.push({ ...b, id: randomUUID(), lessonId: newLessonId })
+        }
+        for (const a of this.attachments.filter((a) => a.lessonId === l.id)) {
+          this.attachments.push({ ...a, id: randomUUID(), lessonId: newLessonId })
+        }
+      }
+    }
+    return clone
   }
 
   async createCourse(fields: CourseFields): Promise<Course> {

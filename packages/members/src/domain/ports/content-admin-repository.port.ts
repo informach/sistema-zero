@@ -85,6 +85,15 @@ export interface ListCoursesAdminFilter {
   offset: number
 }
 
+/** Overrides do CLONE de curso para a outra plataforma (o resto copia da origem). */
+export interface CloneCourseOverrides {
+  slug: string
+  title: string
+  audience: CourseAudience
+  /** `studioUnlockBlocks` é conceito kids — clone p/ adulto não o carrega. */
+  dropStudioUnlockBlocks: boolean
+}
+
 /**
  * Persistência de AUTORIA (CRUD de cursos/módulos/aulas/blocos/anexos) — separada
  * do `CourseRepository` (leitura do aluno). Slug duplicado (índice único) → lança
@@ -95,6 +104,16 @@ export interface ContentAdminRepository {
   // ── Cursos ──
   listCoursesAdmin(filter: ListCoursesAdminFilter): Promise<{ items: Course[]; total: number }>
   createCourse(fields: CourseFields): Promise<Course>
+  /**
+   * CLONA a árvore completa (curso → módulos → aulas → blocos → anexos) numa
+   * TRANSAÇÃO, para a plataforma destino: o clone nasce `draft`, `careerSlot`
+   * null (a operadora etiqueta depois), `metadata.clonedFrom` = slug de origem;
+   * sortOrders e `is_published` das aulas copiados; anexos apontam os MESMOS
+   * storageRefs do R2 (objetos nunca são apagados por cascade — seguro). NÃO
+   * copia dado de aluno (conclusões/entregas/ratings/threads). `null` = curso
+   * de origem não existe; slug em uso → `DuplicateSlugError`.
+   */
+  cloneCourseTree(sourceCourseId: string, overrides: CloneCourseOverrides): Promise<Course | null>
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError. */
   updateCourse(course: Course): Promise<boolean>
   deleteCourse(id: string): Promise<boolean>

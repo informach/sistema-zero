@@ -410,6 +410,8 @@ export interface CourseView {
    * members antigo.
    */
   studioUnlockBlocks?: string[]
+  /** Slug do curso de ORIGEM quando este é um clone; `null`/ausente senão. */
+  clonedFrom?: string | null
   /**
    * SÓ na listagem e SÓ no curso-base kids (posição 1): tem aula publicada com
    * bloco de Estúdio de vitrine? `false` = o aluno nunca publica no Mural → o
