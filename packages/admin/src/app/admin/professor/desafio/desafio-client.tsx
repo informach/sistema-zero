@@ -13,6 +13,7 @@ import { Plus, RotateCcw, Trophy } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { monthLabelPt } from '@/lib/dates'
@@ -74,12 +75,20 @@ export function DesafioClient() {
 
   const loading = !months || !themes
 
+  const platform = usePlatform()
+
   return (
     <div className="space-y-8">
       <AdminHeader
         title="Desafio do mês"
         description="Cada mês sempre tem um tema: o sorteio automático garante isso. Defina um tema quando quiser dirigir a game jam."
       />
+
+      {platform === 'adult' ? (
+        <Card className="border-dashed p-4 text-muted-foreground text-sm">
+          O Desafio do mês é da plataforma Kids — este conteúdo não muda no modo Adultos.
+        </Card>
+      ) : null}
 
       {loading ? (
         <div className="flex justify-center py-16">

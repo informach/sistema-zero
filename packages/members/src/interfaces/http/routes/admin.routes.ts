@@ -36,6 +36,7 @@ import {
   AdminTeacherThreadsQuery,
   AdminTeacherThreadsReadAllBody,
   AiUsageStatsQuery,
+  AudienceQuery,
   ChallengeMonthParams,
   ChallengeOverrideBody,
   ChallengeThemeBody,
@@ -234,10 +235,15 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         { query: AdminTeacherThreadsQuery },
       )
       // Badge da Sala do Professor — rota ESTÁTICA antes de `:id` (mesma régua do by-context).
-      .get('/teacher-threads/unread-count', async ({ headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.teacherThreads.unreadCountForAdmin(resolveUserId(headers))
-      })
+      .get(
+        '/teacher-threads/unread-count',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          // `?audience=` escopa o badge à plataforma ativa do painel (seletor global).
+          return deps.teacherThreads.unreadCountForAdmin(resolveUserId(headers), query.audience)
+        },
+        { query: AudienceQuery },
+      )
       // "Marcar todas como lidas" (escopo opcional = filtros da caixa) — estática antes de `:id`.
       .post(
         '/teacher-threads/read-all',

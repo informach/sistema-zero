@@ -11,6 +11,7 @@ import { Select } from '@sistemazero/ui/select'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -46,6 +47,7 @@ function PersonDetails({
 }) {
   const childName = identity?.childName ?? displayName
   const primaryName = audience === 'kids' ? childName : (identity?.accountName ?? displayName)
+
   return (
     <div className="space-y-0.5 text-xs text-muted-foreground">
       <p>
@@ -169,6 +171,10 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   const [spaceId, setSpaceId] = useState('')
   const [pending, setPending] = useState<HubPendingItemView[]>([])
   const [reports, setReports] = useState<HubReportView[]>([])
+  // Seletor global: a fila mostra só a plataforma ativa (corte CLIENT-side, v1 —
+  // o hub não filtra pending/reports por audiência; com fila >100 o corte pode
+  // subcontar, limitação documentada no plano).
+  const platform = usePlatform()
   const [mutesBans, setMutesBans] = useState<HubMuteBanView[]>([])
   const [busy, setBusy] = useState(false)
 
@@ -260,6 +266,11 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
     )
   }
 
+  const visiblePending = pending.filter((item) => item.context.spaceAudience === platform)
+  const visibleReports = reports.filter(
+    (r) => (r.content?.context.spaceAudience ?? 'adult') === platform,
+  )
+
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -281,12 +292,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       {/* ── Fila de aprovação ── */}
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Aguardando aprovação ({pending.length})
+          Aguardando aprovação ({visiblePending.length})
         </h2>
-        {pending.length === 0 ? (
+        {visiblePending.length === 0 ? (
           <Card className="p-4 text-sm text-muted-foreground">Nada pendente. 🎉</Card>
         ) : (
-          pending.map((item) => (
+          visiblePending.map((item) => (
             <Card key={item.id} className="space-y-4 p-4">
               <ModeratedContent content={item} />
               {canWrite ? (
@@ -326,12 +337,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       {/* ── Denúncias ── */}
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Denúncias abertas ({reports.length})
+          Denúncias abertas ({visibleReports.length})
         </h2>
-        {reports.length === 0 ? (
+        {visibleReports.length === 0 ? (
           <Card className="p-4 text-sm text-muted-foreground">Nenhuma denúncia aberta.</Card>
         ) : (
-          reports.map((r) => {
+          visibleReports.map((r) => {
             const reportSpace = spaces.find((space) => space.id === r.spaceId)
             const audience = r.content?.context.spaceAudience ?? reportSpace?.audience ?? 'adult'
             return (

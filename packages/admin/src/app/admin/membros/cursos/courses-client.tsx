@@ -26,6 +26,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -55,10 +56,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
 
+  // Seletor global: a listagem mostra só os cursos da plataforma ativa.
+  const platform = usePlatform()
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
+      params.set('audience', platform)
       if (q.trim()) params.set('q', q.trim())
       if (status) params.set('status', status)
       const page = await apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
@@ -69,7 +74,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [offset, q, status, platform])
 
   const loadCareer = useCallback(async () => {
     setCareerLoading(true)
@@ -162,14 +167,17 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         }
       />
 
-      <CareerReadiness
-        courses={careerItems}
-        loading={careerLoading}
-        canWrite={canWrite}
-        onPickSlot={(level, track, slot, course) =>
-          course ? openEdit(course) : openCreateAtSlot(level, track, slot)
-        }
-      />
+      {/* Carreira do Criador é conceito KIDS — no modo Adultos o painel some. */}
+      {platform === 'kids' ? (
+        <CareerReadiness
+          courses={careerItems}
+          loading={careerLoading}
+          canWrite={canWrite}
+          onPickSlot={(level, track, slot, course) =>
+            course ? openEdit(course) : openCreateAtSlot(level, track, slot)
+          }
+        />
+      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">

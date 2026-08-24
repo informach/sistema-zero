@@ -294,9 +294,15 @@ export class TeacherThreadsService {
     return { ok: true }
   }
 
-  /** Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE staff. */
-  async unreadCountForAdmin(staffUserId: string): Promise<{ count: number }> {
-    return { count: await this.repo.countUnreadForTeacher(staffUserId) }
+  /**
+   * Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE
+   * staff. `audience` opcional escopa à plataforma ativa (seletor global do painel).
+   */
+  async unreadCountForAdmin(
+    staffUserId: string,
+    audience?: CourseAudience,
+  ): Promise<{ count: number }> {
+    return { count: await this.repo.countUnreadForTeacher(staffUserId, audience) }
   }
 
   /** "Marcar todas como lidas" (escopo opcional espelha os filtros da caixa). */

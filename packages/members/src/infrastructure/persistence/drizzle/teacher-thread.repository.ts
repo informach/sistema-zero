@@ -255,11 +255,16 @@ export class DrizzleTeacherThreadRepository implements TeacherThreadRepository {
     `)
   }
 
-  async countUnreadForTeacher(staffUserId: string): Promise<number> {
+  async countUnreadForTeacher(staffUserId: string, audience?: CourseAudience): Promise<number> {
     const [row] = await this.db
       .select({ value: sql<number>`count(*)::int` })
       .from(teacherThreads)
-      .where(this.unreadForStaffSql(staffUserId))
+      .where(
+        and(
+          this.unreadForStaffSql(staffUserId),
+          audience ? eq(teacherThreads.audience, audience) : undefined,
+        ),
+      )
     return row?.value ?? 0
   }
 

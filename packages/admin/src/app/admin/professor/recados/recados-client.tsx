@@ -13,6 +13,7 @@ import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -46,7 +47,13 @@ export function RecadosClient() {
   const [hasMore, setHasMore] = useState(false)
   const [offset, setOffset] = useState(0)
   const [context, setContext] = useState('')
-  const [audience, setAudience] = useState('')
+  // Filtro "Plataforma" nasce na plataforma ATIVA do seletor global e re-sincroniza
+  // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
+  const platform = usePlatform()
+  const [audience, setAudience] = useState<string>(platform)
+  useEffect(() => {
+    setAudience(platform)
+  }, [platform])
   const [courseId, setCourseId] = useState('')
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [courses, setCourses] = useState<CourseView[]>([])

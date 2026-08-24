@@ -37,9 +37,14 @@ export function listTeacherThreads(
   })
 }
 
-/** Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE staff. */
-export function getTeacherThreadsUnreadCount(): Promise<GatewayResponse<{ count: number }>> {
-  return gatewayFetch('/members/admin/teacher-threads/unread-count')
+/**
+ * Badge da Sala do Professor: conversas com mensagem do aluno não lida POR ESTE
+ * staff. `audience` opcional escopa à plataforma ativa (seletor global do painel).
+ */
+export function getTeacherThreadsUnreadCount(
+  audience?: string,
+): Promise<GatewayResponse<{ count: number }>> {
+  return gatewayFetch('/members/admin/teacher-threads/unread-count', { query: { audience } })
 }
 
 /** "Marcar todas como lidas" (escopo opcional = filtros da caixa). */

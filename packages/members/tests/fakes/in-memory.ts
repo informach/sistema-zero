@@ -1867,8 +1867,10 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     if (t) this.staffReads.set(this.staffReadKey(threadId, staffUserId), t.lastMessageAt)
   }
 
-  async countUnreadForTeacher(staffUserId: string): Promise<number> {
-    return this.threads.filter((t) => this.unreadFor(t, 'teacher', staffUserId)).length
+  async countUnreadForTeacher(staffUserId: string, audience?: CourseAudience): Promise<number> {
+    return this.threads.filter(
+      (t) => (!audience || t.audience === audience) && this.unreadFor(t, 'teacher', staffUserId),
+    ).length
   }
 
   async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {

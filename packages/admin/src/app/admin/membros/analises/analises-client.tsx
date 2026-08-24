@@ -15,6 +15,7 @@ import { TrendingDown } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { CourseAnalyticsView, CourseFunnelView } from '@/lib/types'
@@ -24,6 +25,9 @@ const clampPct = (n: number) => Math.max(0, Math.min(100, n))
 
 export function AnalisesClient() {
   const [courses, setCourses] = useState<CourseAnalyticsView[]>([])
+  // Seletor global: as análises mostram só a plataforma ativa (filtro client-side —
+  // a view já traz `audience`; o funil abre por curso, então nada muda no server).
+  const platform = usePlatform()
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<CourseAnalyticsView | null>(null)
   const [funnel, setFunnel] = useState<CourseFunnelView | null>(null)
@@ -58,6 +62,8 @@ export function AnalisesClient() {
     }
   }
 
+  const visibleCourses = courses.filter((c) => c.audience === platform)
+
   return (
     <div className="space-y-6">
       <AdminHeader
@@ -79,14 +85,14 @@ export function AnalisesClient() {
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={5} />
-            ) : courses.length === 0 ? (
+            ) : visibleCourses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
                   Nenhum curso publicado.
                 </TableCell>
               </TableRow>
             ) : (
-              courses.map((c) => (
+              visibleCourses.map((c) => (
                 <TableRow
                   key={c.courseId}
                   className="cursor-pointer hover:bg-muted/50"
