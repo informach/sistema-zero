@@ -1,4 +1,5 @@
 import 'server-only'
+import type { MemberToolUsageView } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
   AiUsageStatsView,
@@ -76,6 +77,20 @@ export function getMember(
   profileIds: string[] = [],
 ): Promise<GatewayResponse<MemberDetailResponse>> {
   return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}`, {
+    query: { profileIds: profileIds.length > 0 ? profileIds.join(',') : undefined },
+  })
+}
+
+/**
+ * USO das ferramentas (Pensa/Pinta/Estúdio/Clube/Mural) por aprendiz da família:
+ * `GET /members/admin/members/:userId/tool-usage`. Clube/Mural são best-effort no
+ * members (hub fora → campos `null`) — a chamada nunca vira 500 por causa do hub.
+ */
+export function getMemberToolUsage(
+  userId: string,
+  profileIds: string[] = [],
+): Promise<GatewayResponse<MemberToolUsageView>> {
+  return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}/tool-usage`, {
     query: { profileIds: profileIds.length > 0 ? profileIds.join(',') : undefined },
   })
 }

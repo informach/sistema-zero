@@ -18,30 +18,32 @@ import {
 import { Textarea } from '@sistemazero/ui/textarea'
 import { ArrowLeft, CreditCard, Inbox, LogIn, Mail, MailOpen, Pencil, Plus } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
+import { usePlatform } from '@/components/admin/platform-store'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
+import { CourseProgressCard, ToolUsageGrid } from '@/components/members/usage-cards'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { entitlementBadge } from '@/lib/entitlement-status'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
+import { type MemberToolUsageView, ownedToolCards } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
   MemberActivityItemView,
   MemberActivityPage,
   MemberCertificateView,
-  MemberCourseProgressView,
   MemberDetail,
   MemberGamificationView,
   MemberRatingView,
   Paginated,
   PaymentRow,
 } from '@/lib/types'
-import { PAYMENT_METHOD_LABELS } from '@/lib/types'
+import { PAYMENT_METHOD_LABELS, PRODUCT_KIND_LABELS } from '@/lib/types'
 
 const SOURCE_LABELS: Record<string, string> = {
   payment: 'Pagamento',
@@ -74,8 +76,8 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'payments', label: 'Pagamentos' },
 ]
 
-/** Abas em que o aprendiz importa (dados por perfil no kids). */
-const LEARNER_SCOPED: Tab[] = ['gamification', 'activity', 'certificates', 'ratings']
+/** Abas em que o aprendiz importa (dados por perfil no kids) — inclui a Visão geral. */
+const LEARNER_SCOPED: Tab[] = ['overview', 'gamification', 'activity', 'certificates', 'ratings']
 
 export function MemberDetailClient({
   userId,
@@ -91,6 +93,10 @@ export function MemberDetailClient({
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('overview')
   const [learnerId, setLearnerId] = useState(userId)
+  // No modo Kids, a ficha abre FOCADA na 1ª criança (a conta é o responsável, não
+  // o aprendiz). Uma vez só — depois quem manda é o clique do operador.
+  const platform = usePlatform()
+  const learnerDefaulted = useRef(false)
   const [impersonating, setImpersonating] = useState(false)
   // "Entrar como": escolher a plataforma (comunidade adulta ou Kids) antes do handoff.
   const [impersonateOpen, setImpersonateOpen] = useState(false)
@@ -248,8 +254,9 @@ export function MemberDetailClient({
   const email = user?.email ?? userId
 
   // Aprendizes: a conta + cada perfil de criança (kids).
+  const hasProfiles = (detail?.profiles?.length ?? 0) > 0
   const learners: Learner[] = [
-    { id: userId, label: user ? 'Conta' : 'Conta', audience: 'adult' },
+    { id: userId, label: hasProfiles ? 'Conta (responsável)' : 'Conta', audience: 'adult' },
     ...(detail?.profiles ?? []).map((p) => ({
       id: p.id,
       label: p.name,
@@ -258,6 +265,14 @@ export function MemberDetailClient({
   ]
   const learner = learners.find((l) => l.id === learnerId) ?? learners[0]
   const showLearnerSwitcher = learners.length > 1 && LEARNER_SCOPED.includes(tab)
+
+  // Default do aprendiz no modo Kids (1× por carga; não briga com clique do operador).
+  useEffect(() => {
+    if (learnerDefaulted.current || !detail) return
+    learnerDefaulted.current = true
+    const firstProfile = detail.profiles?.[0]
+    if (platform === 'kids' && firstProfile) setLearnerId(firstProfile.id)
+  }, [detail, platform])
 
   const canImpersonateUser =
     user != null &&
@@ -369,9 +384,11 @@ export function MemberDetailClient({
             </div>
           ) : null}
 
-          {tab === 'overview' ? (
+          {tab === 'overview' && learner ? (
             <OverviewTab
               detail={detail}
+              userId={userId}
+              learner={learner}
               canWrite={canWrite}
               busyId={busyId}
               onRevoke={confirmRevoke}
@@ -552,9 +569,15 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
   )
 }
 
-/** Visão geral: progresso (conta ou perfis) + matrículas. */
+/**
+ * Visão geral FOCADA no aprendiz selecionado (a conta ou UMA criança): cursos com
+ * barra de progresso + cartões de USO das ferramentas/comunidades que a família
+ * possui + a tabela de matrículas (sempre da FAMÍLIA inteira).
+ */
 function OverviewTab({
   detail,
+  userId,
+  learner,
   canWrite,
   busyId,
   onRevoke,
@@ -562,33 +585,58 @@ function OverviewTab({
   onExtend,
 }: {
   detail: MemberDetail
+  userId: string
+  learner: Learner
   canWrite: boolean
   busyId: string | null
   onRevoke: (e: AdminEntitlementView) => void
   onExpire: (e: AdminEntitlementView) => void
   onExtend: (e: AdminEntitlementView) => void
 }) {
+  // Uso por ferramenta: 1 chamada por FAMÍLIA (o BFF resolve os perfis no auth).
+  const owned = ownedToolCards(detail.entitlements)
+  const usage = useSection<MemberToolUsageView>(
+    owned.length > 0 ? `/api/members/${userId}/tool-usage` : null,
+  )
+  const learnerUsage = usage.data?.learners.find((l) => l.userId === learner.id) ?? null
+
+  const profile = detail.profiles?.find((p) => p.id === learner.id) ?? null
+  const progress = learner.id === userId ? detail.progress : (profile?.progress ?? [])
+  const who = profile ? profile.name : 'da conta'
+
   return (
     <div className="space-y-6">
-      {detail.profiles && detail.profiles.length > 0 ? (
-        <section className="space-y-5">
-          <h2 className="font-semibold text-muted-foreground text-sm">Perfis e progresso</h2>
-          {detail.profiles.map((profile) => (
-            <div key={profile.id} className="space-y-2">
-              <div className="flex items-center gap-2">
-                <ProfileAvatar name={profile.name} avatarUrl={profile.avatarUrl} />
-                <span className="font-medium">{profile.name}</span>
-              </div>
-              {profile.progress.length > 0 ? (
-                <ProgressGrid progress={profile.progress} />
-              ) : (
-                <p className="pl-9 text-muted-foreground text-xs">Sem progresso ainda.</p>
-              )}
-            </div>
-          ))}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          {profile ? <ProfileAvatar name={profile.name} avatarUrl={profile.avatarUrl} /> : null}
+          <h2 className="font-semibold text-muted-foreground text-sm">
+            {profile ? `Cursos de ${who}` : 'Cursos da conta'}
+          </h2>
+        </div>
+        {progress.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {progress.map((p) => (
+              <CourseProgressCard key={p.courseRef} course={p} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            Nenhum curso começado nem matrícula específica ainda.
+          </p>
+        )}
+      </section>
+
+      {owned.length > 0 ? (
+        <section className="space-y-3">
+          <h2 className="font-semibold text-muted-foreground text-sm">
+            {profile ? `Ferramentas e comunidades de ${who}` : 'Ferramentas e comunidades'}
+          </h2>
+          {usage.loading || usage.error ? (
+            <SectionState loading={usage.loading} error={usage.error} />
+          ) : learnerUsage ? (
+            <ToolUsageGrid usage={learnerUsage} owned={owned} />
+          ) : null}
         </section>
-      ) : detail.progress.length > 0 ? (
-        <ProgressGrid progress={detail.progress} />
       ) : null}
 
       <Card>
@@ -619,7 +667,12 @@ function OverviewTab({
                   <TableCell>
                     <div className="font-medium">{e.name || e.courseRef || e.productId}</div>
                     <div className="text-muted-foreground text-xs">
-                      {ACCESS_LABELS[e.accessType] ?? e.accessType}
+                      {/* Entrega `community` cobre ferramenta E comunidade — o TIPO
+                          (kind do catálogo) é o rótulo honesto; o resto preserva as
+                          distinções de chave-mestra do ACCESS_LABELS. */}
+                      {e.accessType === 'community'
+                        ? (PRODUCT_KIND_LABELS[e.productKind] ?? 'Comunidade')
+                        : (ACCESS_LABELS[e.accessType] ?? e.accessType)}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -1080,29 +1133,6 @@ function PaymentsTab({ email }: { email: string | null }) {
         </TableBody>
       </Table>
     </Card>
-  )
-}
-
-/** Grade de cartões de progresso por curso (reusada pela conta e por cada perfil). */
-function ProgressGrid({ progress }: { progress: MemberCourseProgressView[] }) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {progress.map((p) => (
-        <Card key={p.courseRef} className="space-y-2 p-4">
-          <div className="font-medium">{p.title ?? p.courseRef}</div>
-          <div className="text-muted-foreground text-xs">{p.courseRef}</div>
-          <div className="h-2 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-2 rounded-full bg-[color:var(--primary)]"
-              style={{ width: `${p.percent}%` }}
-            />
-          </div>
-          <div className="text-muted-foreground text-xs">
-            {p.completedLessons}/{p.totalLessons} aulas · {p.percent}%
-          </div>
-        </Card>
-      ))}
-    </div>
   )
 }
 

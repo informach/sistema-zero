@@ -64,7 +64,26 @@ SEMPRE, sem latch** — o módulo é compartilhado entre requests no processo do
 `adult` ignorado no hard load). No BROWSER o latch vale (1ª hidratação semeia; depois manda o
 clique). Corolário: markup SSR-visível que dependa de `usePlatform` deve renderizar dentro do
 subtree síncrono pós-seed (sidebar) ou tolerar 1º paint neutro. As telas ainda NÃO filtram por
-plataforma (Etapas 2–4 do plano `no-admin-eu-quero-piped-jellyfish.md`).
+plataforma (Etapas 3–4 do plano `no-admin-eu-quero-piped-jellyfish.md`).
+
+**Ficha do aluno v2 — progresso por TIPO de produto (08/2026, Etapa 2 kids-first):** a Visão
+geral virou FOCADA no aprendiz selecionado (o seletor de chips agora inclui a `overview`; no
+modo Kids com perfis a ficha ABRE na 1ª criança — efeito 1× por carga, ref `learnerDefaulted` —
+e o 1º chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CourseProgressCard`
+(usa o `Progress` do @sistemazero/ui — ⚠️ ele recebe 0–1, o `percent` do members é 0–100 — +
+`lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
+não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
+(`components/members/usage-cards.tsx`, PUROS — a futura ficha da criança reusa): Pensa
+(planos/lançamentos), Pinta (desenhos na nuvem/entregas), Estúdio (jogos na nuvem/entregas),
+Clube (conversas/comentários) e Mural (jogos publicados/jogadas); Clube/Mural `null` = hub
+indisponível → "Indisponível agora" (≠ zeros). Quais cartões aparecem = `ownedToolCards` em
+`lib/tool-usage.ts` (matrículas `productKind` tool/community da família, identidade pelo `sku`
+do snapshot, dedupe + ordem da jornada; puro/testado em `tests/tool-usage.test.ts` junto do
+`relativeDayLabel` de `lib/format.ts` — dia civil SP). Dados: BFF novo
+`GET /api/members/[userId]/tool-usage` (resolve os profileIds no auth server-side, NUNCA do
+client) → `getMemberToolUsage` → gateway `members-admin-member-tool-usage`. A subcoluna da
+tabela de matrículas usa `PRODUCT_KIND_LABELS[productKind]` quando o accessType é `community`
+(Ferramenta/Comunidade — o resto preserva os rótulos de chave-mestra).
 **Dia a dia do professor (full review 24/07):**
 - **Home do Professor** `/admin/professor` (item "Início", 1º do grupo → `homeForRole` aponta
   pra cá): 4 cards de pendências (entregas pendentes/recados não-lidos/moderação/denúncias,

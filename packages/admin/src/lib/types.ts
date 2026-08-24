@@ -104,6 +104,8 @@ export interface AdminEntitlementView {
   courseRef: string | null
   offerId: string | null
   name: string
+  /** SKU do snapshot — identidade do cartão de uso da ferramenta. Opcional (skew). */
+  sku?: string | null
   sourceKind: string
   sourceId: string
   subscriptionId: string | null
@@ -118,6 +120,18 @@ export interface AdminEntitlementView {
   activeNow?: boolean
 }
 
+/** Rótulo do TIPO de produto (kind do catálogo) — a subcoluna "o que é isto". */
+export const PRODUCT_KIND_LABELS: Record<string, string> = {
+  course: 'Curso',
+  ebook: 'E-book',
+  tool: 'Ferramenta',
+  community: 'Comunidade',
+  bundle: 'Combo',
+  template_kit: 'Kit',
+  service: 'Serviço',
+  other: 'Produto',
+}
+
 /** Progresso do membro num curso (no detalhe). */
 export interface MemberCourseProgressView {
   courseRef: string
@@ -126,6 +140,12 @@ export interface MemberCourseProgressView {
   completedLessons: number
   totalLessons: number
   percent: number
+  /** Campos do members v2 (08/2026) — OPCIONAIS p/ tolerar members mais antigo. */
+  courseId?: string | null
+  /** Plataforma do curso (`adult`/`kids`); null na linha degradada de ref órfã. */
+  audience?: string | null
+  /** Última atividade do aprendiz no curso (ISO); null = matriculado e nunca abriu. */
+  lastActivityAt?: string | null
 }
 
 /** Um perfil (estilo Netflix) da conta + seu progresso (nome do auth, progresso do members). */
