@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, count, desc, eq, inArray } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, max } from 'drizzle-orm'
 import type {
   ProgressRepository,
   RecentLessonActivity,
@@ -120,6 +120,19 @@ export class DrizzleProgressRepository implements ProgressRepository {
       .orderBy(desc(lessonCompletions.completedAt))
       .limit(1)
     return row?.at ?? null
+  }
+
+  async lastCompletionByCourse(userId: string): Promise<Map<string, Date>> {
+    const rows = await this.db
+      .select({ courseId: lessonCompletions.courseId, at: max(lessonCompletions.completedAt) })
+      .from(lessonCompletions)
+      .where(eq(lessonCompletions.userId, userId))
+      .groupBy(lessonCompletions.courseId)
+    const out = new Map<string, Date>()
+    for (const r of rows) {
+      if (r.at) out.set(r.courseId, r.at)
+    }
+    return out
   }
 
   async listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]> {

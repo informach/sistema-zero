@@ -44,6 +44,12 @@ export interface ProgressRepository {
   /** Data da última conclusão no curso (ou `null`). */
   lastCompletedAt(userId: string, courseId: string): Promise<Date | null>
   /**
+   * Última CONCLUSÃO por curso (max `completedAt`), sobre TODOS os cursos do
+   * aprendiz — metade do "última atividade" da ficha admin (a outra metade vem do
+   * `VideoPositionRepository.lastAccessByCourse`; o service faz o max dos dois).
+   */
+  lastCompletionByCourse(userId: string): Promise<Map<string, Date>>
+  /**
    * Aulas concluídas mais recentes do aluno (ficha admin — linha do tempo), com
    * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).
    */

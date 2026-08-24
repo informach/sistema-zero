@@ -252,6 +252,15 @@ export const ShowcaseByAuthorBody = t.Object({
 })
 
 /**
+ * `POST /hub/internal/activity-by-authors` (members→hub S2S, HMAC — "uso por
+ * ferramenta" do admin): participação agregada no Clube e no Mural por perfil.
+ * Duplicados são aceitos (dedupe interno); teto 50, como as irmãs em lote.
+ */
+export const ActivityByAuthorsBody = t.Object({
+  authorIds: t.Array(UUID, { minItems: 1, maxItems: 50 }),
+})
+
+/**
  * `POST /hub/internal/play-check` (members→hub S2S, HMAC — validação do REMIX):
  * o playId existe/está visível no Mural? Devolve também o `authorId` (perfil) p/ o
  * members recusar self-remix. Anti-farm do marco `studio_remix`.

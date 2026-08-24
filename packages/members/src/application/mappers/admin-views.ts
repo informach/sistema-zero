@@ -20,6 +20,12 @@ export interface AdminEntitlementView {
   offerId: string | null
   /** Nome do produto congelado no snapshot (legível no painel). */
   name: string
+  /**
+   * SKU do produto congelado no snapshot — identidade estável p/ o painel casar a
+   * matrícula com o cartão de USO da ferramenta (Pensa/Pinta/Estúdio/Clube/Mural).
+   * `null` em snapshot legado sem o campo.
+   */
+  sku: string | null
   sourceKind: string
   sourceId: string
   subscriptionId: string | null
@@ -54,6 +60,7 @@ export function toAdminEntitlementView(
     courseRef: s.courseRef,
     offerId: s.offerId,
     name: s.snapshot.name,
+    sku: s.snapshot.sku ?? null,
     sourceKind: s.sourceKind,
     sourceId: s.sourceId,
     subscriptionId: s.subscriptionId,
@@ -82,14 +89,27 @@ export function toMemberSummaryView(m: MemberSummary): MemberSummaryView {
   }
 }
 
-/** Progresso do membro num curso (no detalhe). `title`/`status` nulos = curso ausente. */
+/**
+ * Progresso do membro num curso (no detalhe). Uma linha por CURSO REAL do
+ * aprendiz — por matrícula específica (mesmo sem começar) OU por atividade
+ * (cobre a chave-mestra). `title`/`status`/`courseId` nulos = matrícula cuja
+ * ref não resolve mais um curso (linha degradada, visível de propósito).
+ */
 export interface MemberCourseProgressView {
   courseRef: string
+  courseId: string | null
   title: string | null
   status: string | null
+  /** Plataforma do curso (`adult`/`kids`); `null` na linha degradada. */
+  audience: string | null
   completedLessons: number
   totalLessons: number
   percent: number
+  /**
+   * Última atividade do APRENDIZ no curso (max de conclusão de aula e acesso a
+   * vídeo), ISO. `null` = matriculado e nunca abriu.
+   */
+  lastActivityAt: string | null
 }
 
 /** Progresso de UM perfil (estilo Netflix) da conta, por curso. `userId` = profileId. */

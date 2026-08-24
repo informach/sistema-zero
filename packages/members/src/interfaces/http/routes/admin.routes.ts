@@ -16,6 +16,7 @@ import type { ListMemberRatingsService } from '../../../application/list-member-
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
+import type { GetMemberToolUsageService } from '../../../application/tool-usage/get-member-tool-usage.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
@@ -61,6 +62,8 @@ export interface AdminRoutesDeps {
   internalToken?: string
   listMembers: ListMembersService
   getMemberDetail: GetMemberDetailService
+  /** USO das ferramentas (Pensa/Pinta/Estúdio/Clube/Mural) por aprendiz — cartões da ficha. */
+  getMemberToolUsage: GetMemberToolUsageService
   getMemberActivity: GetMemberActivityService
   listMemberCertificates: ListMemberCertificatesService
   listMemberRatings: ListMemberRatingsService
@@ -119,6 +122,17 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           requireAdmin(headers, deps.requireAdminEnabled)
           // `?profileIds=<csv>` → progresso POR PERFIL (estilo Netflix); ausente → só a conta.
           return deps.getMemberDetail.execute(params.userId, parseProfileIds(query.profileIds))
+        },
+        { params: UserIdParams, query: MemberDetailQuery },
+      )
+      // USO das ferramentas (Pensa/Pinta/Estúdio + Clube/Mural via hub best-effort)
+      // por aprendiz da FAMÍLIA — cartões da ficha, não é progresso de curso. Hub
+      // fora → campos null (a rota nunca 500a). 1 chamada por família.
+      .get(
+        '/members/:userId/tool-usage',
+        async ({ params, query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.getMemberToolUsage.execute(params.userId, parseProfileIds(query.profileIds))
         },
         { params: UserIdParams, query: MemberDetailQuery },
       )

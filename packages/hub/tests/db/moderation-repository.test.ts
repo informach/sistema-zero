@@ -232,4 +232,142 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
     )
     expect((await threadRepo.findThreadById(threadId))?.status).toBe('deleted')
   })
+
+  test('activityByAuthors agrega Clube × Mural em LOTE com Date real e números (sum não vaza string)', async () => {
+    const now = new Date('2026-08-15T12:00:00.000Z')
+    const at = (ms: number) => new Date(now.getTime() + ms)
+    const spaceId = randomUUID()
+    const channelId = randomUUID()
+    const kidA = randomUUID()
+    const kidB = randomUUID()
+    await conn.db.insert(spaces).values({
+      id: spaceId,
+      slug: `space-${spaceId}`,
+      name: 'Clube Kids',
+      audience: 'kids',
+      accessConfig: { visibility: 'public', courses: [], roles: [] },
+      createdAt: now,
+      updatedAt: now,
+    })
+    await conn.db.insert(channels).values({
+      id: channelId,
+      spaceId,
+      slug: `channel-${channelId}`,
+      name: 'Geral',
+      createdAt: now,
+      updatedAt: now,
+    })
+    const clubThreadId = randomUUID()
+    const showcaseId = randomUUID()
+    await conn.db.insert(threads).values([
+      // Clube: 1 visível (conta) + 1 pendente (fora — participação APROVADA).
+      {
+        id: clubThreadId,
+        channelId,
+        authorId: kidA,
+        title: 'Clube visível',
+        slug: `t-${clubThreadId}`,
+        body: 'corpo',
+        status: 'visible',
+        lastActivityAt: now,
+        createdAt: now,
+      },
+      {
+        id: randomUUID(),
+        channelId,
+        authorId: kidA,
+        title: 'Clube pendente',
+        slug: `t-${randomUUID()}`,
+        body: 'corpo',
+        status: 'pending',
+        lastActivityAt: at(1_000),
+        createdAt: at(1_000),
+      },
+      // Mural: 1 vitrine visível com plays (conta) + 1 oculta (fora).
+      {
+        id: showcaseId,
+        channelId,
+        authorId: kidA,
+        title: 'Vitrine',
+        slug: `t-${showcaseId}`,
+        body: 'corpo',
+        status: 'visible',
+        isShowcase: true,
+        playsCount: 7,
+        lastActivityAt: at(3_000),
+        createdAt: at(3_000),
+      },
+      {
+        id: randomUUID(),
+        channelId,
+        authorId: kidA,
+        title: 'Vitrine oculta',
+        slug: `t-${randomUUID()}`,
+        body: 'corpo',
+        status: 'hidden',
+        isShowcase: true,
+        playsCount: 100,
+        lastActivityAt: at(4_000),
+        createdAt: at(4_000),
+      },
+    ])
+    await conn.db.insert(comments).values([
+      // Conta (visible, pai não-vitrine) — e é o item do Clube mais NOVO.
+      {
+        id: randomUUID(),
+        threadId: clubThreadId,
+        authorId: kidA,
+        body: 'no clube',
+        status: 'visible',
+        createdAt: at(2_000),
+      },
+      // Fora: pendente no clube.
+      {
+        id: randomUUID(),
+        threadId: clubThreadId,
+        authorId: kidA,
+        body: 'pendente',
+        status: 'pending',
+        createdAt: at(5_000),
+      },
+      // Fora do Clube: comentário em post de VITRINE (pai isShowcase).
+      {
+        id: randomUUID(),
+        threadId: showcaseId,
+        authorId: kidA,
+        body: 'na vitrine',
+        status: 'visible',
+        createdAt: at(6_000),
+      },
+    ])
+
+    const res = await threadRepo.activityByAuthors([kidA, kidB])
+    expect(res.length).toBe(2)
+    const a = res[0]
+    expect(a).toMatchObject({
+      authorId: kidA,
+      clubThreads: 1,
+      clubComments: 1,
+      showcasePublished: 1,
+      showcasePlays: 7,
+    })
+    // Gotcha postgres.js: sum/count viriam STRING sem o ::int — pinamos o tipo.
+    expect(typeof a?.showcasePlays).toBe('number')
+    expect(typeof a?.clubThreads).toBe('number')
+    // max(created_at) mapeia p/ Date REAL (não string) via o builder tipado.
+    expect(a?.lastClubActivityAt).toBeInstanceOf(Date)
+    expect(a?.lastClubActivityAt?.toISOString()).toBe(at(2_000).toISOString())
+    expect(a?.lastShowcaseAt).toBeInstanceOf(Date)
+    expect(a?.lastShowcaseAt?.toISOString()).toBe(at(3_000).toISOString())
+    // Régua do lote: autor sem atividade volta com zeros/nulls, na ordem pedida.
+    expect(res[1]).toEqual({
+      authorId: kidB,
+      clubThreads: 0,
+      clubComments: 0,
+      lastClubActivityAt: null,
+      showcasePublished: 0,
+      showcasePlays: 0,
+      lastShowcaseAt: null,
+    })
+  })
 })

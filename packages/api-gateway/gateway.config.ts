@@ -2159,8 +2159,21 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     // Ficha 360 do aluno (LEITURA staff+): gamificação, linha do tempo de atividade,
-    // certificados e classificações. Sufixos literais (≥5 segmentos) não colidem com
-    // `/members/admin/members/:userId` (mais específicos ganham na especificidade).
+    // certificados, classificações e USO por ferramenta. Sufixos literais (≥5
+    // segmentos) não colidem com `/members/admin/members/:userId` (mais
+    // específicos ganham na especificidade).
+    {
+      // Uso das ferramentas (Pensa/Pinta/Estúdio + Clube/Mural via hub best-effort)
+      // por aprendiz da família — cartões da ficha (?profileIds=csv).
+      id: 'members-admin-member-tool-usage',
+      methods: ['GET'],
+      pathPattern: '/members/admin/members/:userId/tool-usage',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-member-gamification',
       methods: ['GET'],

@@ -46,6 +46,7 @@ import type {
 } from '../../src/domain/ports/reaction-repository.port'
 import type { ReadStateRepository } from '../../src/domain/ports/read-state-repository.port'
 import type {
+  AuthorActivity,
   CreateCommentInput,
   CreateShowcaseThreadInput,
   CreateThreadInput,
@@ -352,6 +353,39 @@ export class InMemoryThreadRepository implements ThreadRepository {
       (t) => t.authorId === authorId && t.isShowcase && t.status === 'visible',
     )
     return { published: mine.length, plays: mine.reduce((sum, t) => sum + t.playsCount, 0) }
+  }
+
+  async activityByAuthors(authorIds: string[]): Promise<AuthorActivity[]> {
+    // Espelha o repo Drizzle: Clube = `visible` não-vitrine (comentário exige o
+    // tópico-PAI existir e não ser vitrine — inner join); Mural = vitrines visíveis.
+    // UM item por id dado, na ordem dada, zeros/nulls sem atividade.
+    const maxDate = (dates: Date[]): Date | null =>
+      dates.length === 0 ? null : new Date(Math.max(...dates.map((d) => d.getTime())))
+    return authorIds.map((authorId) => {
+      const clubThreads = this.threads.filter(
+        (t) => t.authorId === authorId && !t.isShowcase && t.status === 'visible',
+      )
+      const clubComments = this.comments.filter((c) => {
+        if (c.authorId !== authorId || c.status !== 'visible') return false
+        const parent = this.threads.find((t) => t.id === c.threadId)
+        return Boolean(parent && !parent.isShowcase)
+      })
+      const showcases = this.threads.filter(
+        (t) => t.authorId === authorId && t.isShowcase && t.status === 'visible',
+      )
+      return {
+        authorId,
+        clubThreads: clubThreads.length,
+        clubComments: clubComments.length,
+        lastClubActivityAt: maxDate([
+          ...clubThreads.map((t) => t.createdAt),
+          ...clubComments.map((c) => c.createdAt),
+        ]),
+        showcasePublished: showcases.length,
+        showcasePlays: showcases.reduce((sum, t) => sum + t.playsCount, 0),
+        lastShowcaseAt: maxDate(showcases.map((t) => t.createdAt)),
+      }
+    })
   }
 
   async listShowcaseByAuthors(

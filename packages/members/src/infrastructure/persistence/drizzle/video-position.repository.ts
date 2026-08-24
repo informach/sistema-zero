@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, desc, eq, inArray } from 'drizzle-orm'
+import { and, desc, eq, inArray, max } from 'drizzle-orm'
 import type { RecentLessonActivity } from '../../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../../domain/ports/video-position-repository.port'
 import type { Database } from './db'
@@ -55,6 +55,19 @@ export class DrizzleVideoPositionRepository implements VideoPositionRepository {
     const out = new Map<string, string>()
     for (const r of rows) {
       if (!out.has(r.courseId)) out.set(r.courseId, r.lessonId)
+    }
+    return out
+  }
+
+  async lastAccessByCourse(userId: string): Promise<Map<string, Date>> {
+    const rows = await this.db
+      .select({ courseId: lessonProgress.courseId, at: max(lessonProgress.updatedAt) })
+      .from(lessonProgress)
+      .where(eq(lessonProgress.userId, userId))
+      .groupBy(lessonProgress.courseId)
+    const out = new Map<string, Date>()
+    for (const r of rows) {
+      if (r.at) out.set(r.courseId, r.at)
     }
     return out
   }

@@ -2,7 +2,12 @@ import { PayloadTooLargeError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type { ShowcaseService } from '../../../application/showcase/showcase.service'
 import { ValidationError } from '../../../domain/shared/errors'
-import { PlayCheckBody, ShowcaseByAuthorBody, ShowcaseByAuthorsBody } from '../dtos'
+import {
+  ActivityByAuthorsBody,
+  PlayCheckBody,
+  ShowcaseByAuthorBody,
+  ShowcaseByAuthorsBody,
+} from '../dtos'
 import { getRawBody, isOversizeBody } from '../raw-body'
 import { assertWebhookSignature } from '../webhook-auth'
 
@@ -99,5 +104,29 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         return { visible: res.visible, authorId: res.visible ? res.authorId : null }
       },
       { body: PlayCheckBody },
+    )
+    .post(
+      // "Uso por ferramenta" do admin (members→hub S2S): participação agregada por
+      // autor (perfil) no Clube (tópicos/comentários APROVADOS — mesma régua do XP;
+      // comentário em post de VITRINE não conta como Clube) e no Mural (vitrines
+      // visíveis + plays). Como as irmãs, NUNCA vai ao gateway: agrega atividade de
+      // QUALQUER perfil — o members é quem restringe aos perfis da conta consultada.
+      // TODO authorId pedido volta no array (sem atividade → zeros/nulls).
+      '/activity-by-authors',
+      async ({ body }) => {
+        const items = await deps.showcase.activityByAuthors(body.authorIds)
+        return {
+          items: items.map((i) => ({
+            authorId: i.authorId,
+            clubThreads: i.clubThreads,
+            clubComments: i.clubComments,
+            lastClubActivityAt: i.lastClubActivityAt ? i.lastClubActivityAt.toISOString() : null,
+            showcasePublished: i.showcasePublished,
+            showcasePlays: i.showcasePlays,
+            lastShowcaseAt: i.lastShowcaseAt ? i.lastShowcaseAt.toISOString() : null,
+          })),
+        }
+      },
+      { body: ActivityByAuthorsBody },
     )
 }

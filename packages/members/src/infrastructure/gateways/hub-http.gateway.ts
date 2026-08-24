@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type {
+  HubAuthorActivity,
   HubGateway,
   PlayCheckResult,
   PublicGameItem,
@@ -31,6 +32,7 @@ export interface HubHttpGatewayOptions {
 const GRANT_PATH = '/hub/webhooks/grant'
 const SHOWCASE_BY_AUTHORS_PATH = '/hub/internal/showcase-by-authors'
 const SHOWCASE_BY_AUTHOR_PATH = '/hub/internal/showcase-by-author'
+const ACTIVITY_BY_AUTHORS_PATH = '/hub/internal/activity-by-authors'
 const PLAY_CHECK_PATH = '/hub/internal/play-check'
 const DEFAULT_TIMEOUT_MS = 4_000
 
@@ -181,6 +183,52 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
       }
     },
 
+    async listActivityByAuthors(authorIds: string[]): Promise<HubAuthorActivity[] | null> {
+      try {
+        const rawBody = JSON.stringify({ authorIds })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path: ACTIVITY_BY_AUTHORS_PATH, body: rawBody }),
+          ts,
+        )
+        const res = await doFetch(`${base}${ACTIVITY_BY_AUTHORS_PATH}`, {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-signature': `t=${ts},v1=${signature}`,
+          },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!res.ok) {
+          opts.logger?.warn('hub.activity_by_authors_failed', { status: res.status })
+          return null
+        }
+        const body = (await res.json()) as { items?: unknown }
+        if (!Array.isArray(body.items)) return null
+        return body.items
+          .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === 'object')
+          .map((i) => ({
+            authorId: typeof i.authorId === 'string' ? i.authorId : '',
+            clubThreads: typeof i.clubThreads === 'number' ? i.clubThreads : 0,
+            clubComments: typeof i.clubComments === 'number' ? i.clubComments : 0,
+            lastClubActivityAt:
+              typeof i.lastClubActivityAt === 'string' ? i.lastClubActivityAt : null,
+            showcasePublished: typeof i.showcasePublished === 'number' ? i.showcasePublished : 0,
+            showcasePlays: typeof i.showcasePlays === 'number' ? i.showcasePlays : 0,
+            lastShowcaseAt: typeof i.lastShowcaseAt === 'string' ? i.lastShowcaseAt : null,
+          }))
+          .filter((i) => i.authorId !== '')
+      } catch (error) {
+        // Best-effort: os cartões de Clube/Mural degradam p/ "indisponível".
+        opts.logger?.warn('hub.activity_by_authors_error', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+        return null
+      }
+    },
+
     async checkPlay(playId: string): Promise<PlayCheckResult | null> {
       try {
         const rawBody = JSON.stringify({ playId })
@@ -226,6 +274,9 @@ export const noopHubGateway: HubGateway = {
     return null
   },
   async listShowcaseByAuthor() {
+    return null
+  },
+  async listActivityByAuthors() {
     return null
   },
   async checkPlay() {

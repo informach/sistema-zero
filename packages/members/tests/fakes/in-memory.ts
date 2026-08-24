@@ -427,6 +427,11 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.courses.filter((c) => set.has(c.slug))
   }
 
+  async findCoursesByIds(ids: string[]): Promise<Course[]> {
+    const set = new Set(ids)
+    return this.courses.filter((c) => set.has(c.id))
+  }
+
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
@@ -1063,6 +1068,16 @@ export class InMemoryProgressRepository implements ProgressRepository {
       .completedAt
   }
 
+  async lastCompletionByCourse(userId: string): Promise<Map<string, Date>> {
+    const out = new Map<string, Date>()
+    for (const c of this.completions) {
+      if (c.userId !== userId) continue
+      const prev = out.get(c.courseId)
+      if (!prev || c.completedAt.getTime() > prev.getTime()) out.set(c.courseId, c.completedAt)
+    }
+    return out
+  }
+
   async listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]> {
     return this.completions
       .filter((c) => c.userId === userId)
@@ -1229,6 +1244,16 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
     for (const courseId of courseIds) {
       const lessonId = await this.lastAccessedLessonId(userId, courseId)
       if (lessonId) out.set(courseId, lessonId)
+    }
+    return out
+  }
+
+  async lastAccessByCourse(userId: string): Promise<Map<string, Date>> {
+    const out = new Map<string, Date>()
+    for (const r of this.rows) {
+      if (r.userId !== userId) continue
+      const prev = out.get(r.courseId)
+      if (!prev || r.updatedAt.getTime() > prev.getTime()) out.set(r.courseId, r.updatedAt)
     }
     return out
   }

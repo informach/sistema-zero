@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, lt, max, or, type SQL, sql } from 'drizzle-orm'
 import { DuplicateSlugError } from '../../../domain/hub-errors'
 import type {
+  AuthorActivity,
   CreateCommentInput,
   CreateShowcaseThreadInput,
   CreateThreadInput,
@@ -303,6 +304,91 @@ export class DrizzleThreadRepository implements ThreadRepository {
         ),
       )
     return { published: row?.published ?? 0, plays: row?.plays ?? 0 }
+  }
+
+  async activityByAuthors(authorIds: string[]): Promise<AuthorActivity[]> {
+    if (authorIds.length === 0) return []
+    // 3 agregações EM LOTE (GROUP BY por autor — nunca N+1). "Clube" = conteúdo
+    // APROVADO (`visible`, mesma régua do XP do Clube); vitrine fica de fora dos
+    // números do Clube e entra nos do Mural. Contagens em `::int` e soma via
+    // `coalesce(sum(...), 0)::int` (o `sum` tipado do drizzle devolveria STRING);
+    // `max(coluna)` tipado mapeia p/ Date (mesmo padrão do latestActivityByChannel).
+    const clubThreadRows = await this.db
+      .select({
+        authorId: threads.authorId,
+        count: sql<number>`count(*)::int`,
+        last: max(threads.createdAt),
+      })
+      .from(threads)
+      .where(
+        and(
+          inArray(threads.authorId, authorIds),
+          eq(threads.isShowcase, false),
+          eq(threads.status, 'visible'),
+        ),
+      )
+      .groupBy(threads.authorId)
+    // Comentário do Clube = comentário `visible` cujo TÓPICO-PAI não é vitrine
+    // (comentário em post do Mural conta como Mural na visão do admin, não aqui).
+    const clubCommentRows = await this.db
+      .select({
+        authorId: comments.authorId,
+        count: sql<number>`count(*)::int`,
+        last: max(comments.createdAt),
+      })
+      .from(comments)
+      .innerJoin(threads, eq(comments.threadId, threads.id))
+      .where(
+        and(
+          inArray(comments.authorId, authorIds),
+          eq(comments.status, 'visible'),
+          eq(threads.isShowcase, false),
+        ),
+      )
+      .groupBy(comments.authorId)
+    const showcaseRows = await this.db
+      .select({
+        authorId: threads.authorId,
+        count: sql<number>`count(*)::int`,
+        plays: sql<number>`coalesce(sum(${threads.playsCount}), 0)::int`,
+        last: max(threads.createdAt),
+      })
+      .from(threads)
+      .where(
+        and(
+          inArray(threads.authorId, authorIds),
+          eq(threads.isShowcase, true),
+          eq(threads.status, 'visible'),
+        ),
+      )
+      .groupBy(threads.authorId)
+
+    const clubThreads = new Map(clubThreadRows.map((r) => [r.authorId, r]))
+    const clubComments = new Map(clubCommentRows.map((r) => [r.authorId, r]))
+    const showcases = new Map(showcaseRows.map((r) => [r.authorId, r]))
+    // Régua das rotas em lote: TODO authorId pedido volta (sem atividade → zeros/nulls).
+    return authorIds.map((authorId) => {
+      const ct = clubThreads.get(authorId)
+      const cc = clubComments.get(authorId)
+      const sc = showcases.get(authorId)
+      const lastThread = ct?.last ?? null
+      const lastComment = cc?.last ?? null
+      const lastClubActivityAt =
+        lastThread && lastComment
+          ? lastThread > lastComment
+            ? lastThread
+            : lastComment
+          : (lastThread ?? lastComment)
+      return {
+        authorId,
+        clubThreads: ct?.count ?? 0,
+        clubComments: cc?.count ?? 0,
+        lastClubActivityAt,
+        showcasePublished: sc?.count ?? 0,
+        showcasePlays: sc?.plays ?? 0,
+        lastShowcaseAt: sc?.last ?? null,
+      }
+    })
   }
 
   async findThreadById(id: string): Promise<Thread | null> {

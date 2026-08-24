@@ -90,6 +90,28 @@ export interface ListCommentsOpts {
   limit: number
 }
 
+/**
+ * Agregado de participação de UM autor (perfil) no Clube (fórum) × Mural (vitrine)
+ * — alimenta o "uso por ferramenta" do admin (rota S2S `activity-by-authors`).
+ * Clube = conteúdo APROVADO (`visible`, mesma régua do XP): tópicos não-vitrine +
+ * comentários cujo TÓPICO-PAI não é vitrine. Mural = vitrines visíveis.
+ */
+export interface AuthorActivity {
+  authorId: string
+  /** Tópicos `visible` com `isShowcase=false` do autor. */
+  clubThreads: number
+  /** Comentários `visible` do autor cujo tópico-pai tem `isShowcase=false`. */
+  clubComments: number
+  /** max(`createdAt`) entre os tópicos e comentários do Clube acima — `null` sem atividade. */
+  lastClubActivityAt: Date | null
+  /** Posts de vitrine `visible` do autor. */
+  showcasePublished: number
+  /** Soma de `playsCount` dessas vitrines (0 se nenhuma). */
+  showcasePlays: number
+  /** max(`createdAt`) dessas vitrines — `null` sem vitrine. */
+  lastShowcaseAt: Date | null
+}
+
 export interface ThreadRepository {
   createThread(input: CreateThreadInput): Promise<Thread>
   /**
@@ -120,6 +142,13 @@ export interface ThreadRepository {
   }>
   /** Agregado da carreira: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
+  /**
+   * Participação Clube × Mural por autor, agregada EM LOTE no banco (GROUP BY —
+   * nunca N+1). Devolve UM item por `authorId` dado, NA ORDEM dada, com zeros/nulls
+   * quando não há atividade (régua das rotas em lote: todo id pedido volta).
+   * ⚠️ O chamador passa ids já DEDUPADOS (duplicata geraria item duplicado).
+   */
+  activityByAuthors(authorIds: string[]): Promise<AuthorActivity[]>
   /**
    * Posts de vitrine VISÍVEIS dos autores dados criados em `[from, to)` — report
    * dos pais (members→hub S2S; a rota NUNCA é exposta no gateway: vazaria playIds

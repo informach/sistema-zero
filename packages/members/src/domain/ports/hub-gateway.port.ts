@@ -21,6 +21,21 @@ export interface PublicGameItem {
   publishedAt: string
 }
 
+/**
+ * Participação agregada de um PERFIL no Clube (fórum) e no Mural (vitrine) —
+ * cartões de USO da ficha admin. Só conteúdo APROVADO (`visible`) conta, a mesma
+ * régua do XP do Clube.
+ */
+export interface HubAuthorActivity {
+  authorId: string
+  clubThreads: number
+  clubComments: number
+  lastClubActivityAt: string | null
+  showcasePublished: number
+  showcasePlays: number
+  lastShowcaseAt: string | null
+}
+
 /** Resultado do play-check S2S (validação do REMIX): o post existe/está visível? */
 export interface PlayCheckResult {
   visible: boolean
@@ -59,6 +74,13 @@ export interface HubGateway {
    * são públicos na página `/jogar`.
    */
   listShowcaseByAuthor(profileId: string, limit: number): Promise<PublicGameItem[] | null>
+  /**
+   * Participação no Clube + Mural dos autores dados, em LOTE (ficha admin — uso
+   * por ferramenta). S2S HMAC direto members→hub (rota NUNCA no gateway; o portão
+   * RBAC é a rota admin do members). **Best-effort**: erro/timeout → `null` (os
+   * cartões de Clube/Mural degradam para "indisponível"; a rota NUNCA 500a).
+   */
+  listActivityByAuthors(authorIds: string[]): Promise<HubAuthorActivity[] | null>
   /**
    * Valida um `playId` no hub (S2S HMAC direto) — anti-farm do marco de REMIX: sem
    * isso, um POST direto com uuids aleatórios farmaria a missão semanal. `null` =
