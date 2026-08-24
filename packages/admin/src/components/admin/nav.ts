@@ -216,3 +216,20 @@ export function pathIsRoleRestricted(pathname: string): boolean {
 export function homeForRole(role: string): string {
   return visibleGroups(role)[0]?.items[0]?.href ?? '/login'
 }
+
+/**
+ * Rotas ESCOPADAS pelo seletor global de plataforma (Kids × Adultos): telas de
+ * ensino/comunidade filtram pela plataforma ativa. `/admin/membros` cobre
+ * alunos, ficha, criança, análises e cursos (autoria); Gestão inteira,
+ * servidores da comunidade e auditoria são GLOBAIS (a legenda do switcher
+ * avisa). Mesma régua de prefixo por segmento do `prefixMatches`.
+ */
+const PLATFORM_SCOPED_PREFIXES = [
+  '/admin/professor',
+  '/admin/comunidade/moderacao',
+  '/admin/membros',
+] as const
+
+export function pathIsPlatformScoped(pathname: string): boolean {
+  return PLATFORM_SCOPED_PREFIXES.some((prefix) => prefixMatches(pathname, prefix))
+}

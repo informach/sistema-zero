@@ -4,6 +4,7 @@ import {
   canAccessSection,
   homeForRole,
   NAV_GROUPS,
+  pathIsPlatformScoped,
   pathIsRoleRestricted,
   sectionForPath,
   visibleGroups,
@@ -79,6 +80,28 @@ describe('nav — grupos e helpers de seção', () => {
     expect(activeHref('/admin/professor')).toBe('/admin/professor')
     expect(activeHref('/admin/professor/entregas')).toBe('/admin/professor/entregas')
     expect(activeHref('/admin/professor/recados')).toBe('/admin/professor/recados')
+  })
+
+  test('pathIsPlatformScoped: telas de ensino são escopadas; Gestão/servidores/auditoria são globais', () => {
+    // Escopadas pelo seletor Kids × Adultos.
+    expect(pathIsPlatformScoped('/admin/professor')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/professor/entregas')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/professor/recados')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/comunidade/moderacao')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros/u-123')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros/crianca/p-1')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros/cursos/c-1')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros/analises')).toBe(true)
+    // Globais (a legenda do switcher avisa).
+    expect(pathIsPlatformScoped('/admin')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/usuarios')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/pagamentos/transacoes')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/catalogo/produtos')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/comunidade/servidores')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/auditoria')).toBe(false)
+    // Prefixo por SEGMENTO (não string crua).
+    expect(pathIsPlatformScoped('/admin/membrosxyz')).toBe(false)
   })
 
   test('badgeKey: só Entregas/Recados/Moderação têm chip de contagem', () => {
