@@ -25,6 +25,14 @@ function fixtures(): PintaAsset[] {
 
   const tileset = createTilesetAsset({ name: 'pecas', tileSize: 16 })
   if (tileset.tiles[0]) tileset.tiles[0].data[1] = 4
+  // Paleta personalizada EMBUTIDA: precisa atravessar o wire intacta (o
+  // members roda o MESMO sanitize no servidor). Já na forma canônica: 16
+  // posições, [0] = '', slots vazios preservados.
+  tileset.paletteId = 'custom'
+  tileset.customPalette = {
+    name: 'Minhas cores',
+    colors: ['', '#101010', '#202020', '', ...Array.from({ length: 12 }, () => '')],
+  }
 
   let tilemap = createTilemapAsset({ name: 'fase', tilesetId: tileset.id, cols: 3, rows: 2 })
   const layerId = tilemap.layers[0]?.id

@@ -11,6 +11,7 @@ import type { JSX, MouseEvent as ReactMouseEvent, RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { PALETTES, type PaletteId, TRANSPARENT_INDEX } from '../../core/palette'
+import type { AssetPaletteId } from '../../core/project'
 import { Check } from '../ui/icons'
 
 export interface PaletteMenuAnchor {
@@ -113,7 +114,8 @@ export function PaletteMenu({
   onChoose,
 }: {
   anchor: PaletteMenuAnchor
-  activeId: PaletteId
+  /** `'custom'` não casa com nenhuma pronta — nenhum item fica marcado. */
+  activeId: AssetPaletteId
   onChoose: (id: PaletteId) => void
 }): JSX.Element | null {
   if (!anchor.open || !anchor.pos) return null

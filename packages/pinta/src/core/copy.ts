@@ -805,5 +805,7 @@ export const COPY = {
     openAsset: (label: string) => `Abrir ${label}`,
     defaultLayer: 'Chão',
     defaultAnimation: 'animação',
+    /** Nome de fábrica de uma paleta personalizada que chegou sem nome. */
+    customPaletteName: 'Minha paleta',
   },
 } as const

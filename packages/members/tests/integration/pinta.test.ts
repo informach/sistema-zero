@@ -143,6 +143,25 @@ describe('bloco Pinta — entrega', () => {
     expect(restored.animations[0]?.frames[0]?.[0]?.data[0]).toBe(7)
   })
 
+  test('desenho com PALETA PERSONALIZADA atravessa o servidor intacto', async () => {
+    // O members roda o MESMO sanitize do Pinta na borda (pintaAssetFromWire):
+    // se a chave `customPalette` fosse podada aqui, a paleta embutida no
+    // desenho da criança sumiria em silêncio no round-trip enviar→retomar.
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+
+    const customPalette = {
+      name: 'Minhas cores',
+      colors: ['', '#101010', '#202020', ...Array.from({ length: 13 }, () => '')],
+    }
+    const comPaleta = { ...DESENHO_DA_CRIANCA, paletteId: 'custom', customPalette }
+    expect((await enviar(app, lessonId, blockId, { asset: comPaleta })).status).toBe(200)
+
+    const voltou = await readJson(await carregar(app, lessonId, blockId))
+    expect(voltou.asset.paletteId).toBe('custom')
+    expect(voltou.asset.customPalette).toEqual(customPalette)
+  })
+
   test('sem nunca ter enviado, o GET devolve null em vez de erro', async () => {
     const { app, courses, lessonId } = cenario()
     const blockId = seedPintaBlock(courses, lessonId)

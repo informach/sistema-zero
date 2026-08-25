@@ -9,13 +9,21 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, del, get, getMany, keys, setMany } from 'idb-keyval'
+import { createStore, del, get, getMany, keys, set, setMany } from 'idb-keyval'
+import type { PaletteLibrary } from '../core/paletteLibrary'
+import { sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
 
 const ASSET_KEY_PREFIX = 'pinta:asset:'
 const assetKey = (id: string) => `${ASSET_KEY_PREFIX}${id}`
+/**
+ * Registro ÚNICO da biblioteca "Minhas paletas". FORA do prefixo `pinta:asset:`
+ * DE PROPÓSITO: assim ele nunca entra em `listAllAssets`, no backup
+ * (`galeria.pinta.json`) nem no orçamento de 32 MiB — travado por teste.
+ */
+const PALETTE_LIBRARY_KEY = 'pinta:palettes'
 
 let storageNamespace = ''
 type StoreHandle = ReturnType<typeof createStore>
@@ -221,6 +229,14 @@ export interface PintaPersistence {
    * que deixa a galeria abrir com o LOCAL na hora e receber o que desce depois.
    */
   subscribe?(listener: (event: PintaPersistenceEvent) => void): () => void
+  /**
+   * OPCIONAIS: a biblioteca "Minhas paletas" do perfil (registro único, fora
+   * da galeria/backup/orçamento). Armazenamento sem os métodos = a UI esconde
+   * a biblioteca e só a paleta EMBUTIDA no asset funciona (o bloco de aula usa
+   * isso de propósito — o desenho da aula é isolado da galeria pessoal).
+   */
+  loadPaletteLibrary?(): Promise<PaletteLibrary | null>
+  savePaletteLibrary?(library: PaletteLibrary): Promise<void>
 }
 
 /**
@@ -364,6 +380,14 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       backupSizeCache.seed(assets)
       scheduleWarmUp(backupSizeCache)
       return assets
+    },
+    async loadPaletteLibrary() {
+      const raw = await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle)
+      return sanitizePaletteLibrary(raw)
+    },
+    async savePaletteLibrary(library) {
+      // Na FIFO do banco, como toda escrita — não interleia com um setMany de assets.
+      await runSerializedWrite(storeHandle, () => set(PALETTE_LIBRARY_KEY, library, storeHandle))
     },
   }
 }

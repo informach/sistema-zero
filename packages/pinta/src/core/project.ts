@@ -12,7 +12,14 @@ import { sanitizeVectorShape, type VectorShape } from '../vector/model'
 import { normalizeHex } from './color'
 import { COPY } from './copy'
 import { newId } from './id'
-import { DEFAULT_PALETTE_ID, getPalette, isPaletteId, type PaletteId } from './palette'
+import {
+  DEFAULT_PALETTE_ID,
+  getPalette,
+  isPaletteId,
+  PALETTE_SIZE,
+  type PaletteId,
+  TRANSPARENT_INDEX,
+} from './palette'
 import {
   clampProjectInt,
   createBitmap,
@@ -168,6 +175,26 @@ export type PintaVectorAnimation = PintaAnimation<VectorFrame>
 export type PintaExtraColors = readonly string[]
 
 /**
+ * Paleta que um asset de PIXEL pode apontar: uma das prontas OU `'custom'` —
+ * e aí as cores moram em `customPalette`, EMBUTIDAS no próprio asset (o
+ * desenho viaja com a paleta dele: pack, nuvem, entrega ao professor). A
+ * união `PaletteId` continua fechada de propósito: o catálogo `PALETTES`/
+ * `isPaletteId` não conhece `'custom'`.
+ */
+export type AssetPaletteId = PaletteId | 'custom'
+
+/**
+ * Paleta personalizada embutida: SEMPRE 16 posições, `[0] = ''` (transparente)
+ * e slots vazios `''` PRESERVADOS — compactar deslocaria os índices já
+ * pintados no bitmap. O render já tolera `''` (pinta transparente; os
+ * swatches pulam o vazio).
+ */
+export interface PintaCustomPalette {
+  name: string
+  colors: readonly string[]
+}
+
+/**
  * CAMADA de um desenho de pixel — só os metadados (olho, nome, ordem). O
  * desenho de cada camada vive nos "cels": um `PintaBitmap` por camada,
  * ALINHADO por índice com `layers`. Espelha o `TilemapLayer`, mas sem os bytes
@@ -200,7 +227,9 @@ export interface PixelSpriteAsset extends PintaAssetBase {
   kind: 'pixel-sprite'
   frameWidth: number
   frameHeight: number
-  paletteId: PaletteId
+  paletteId: AssetPaletteId
+  /** Presente SOMENTE quando `paletteId === 'custom'` (o sanitize impõe). */
+  customPalette?: PintaCustomPalette
   extraColors?: PintaExtraColors
   /** ≥1 camada, válida para TODAS as animações (cada quadro tem um cel por camada). */
   layers: PintaPixelLayer[]
@@ -210,7 +239,9 @@ export interface PixelSpriteAsset extends PintaAssetBase {
 
 export interface PixelBackgroundAsset extends PintaAssetBase {
   kind: 'pixel-background'
-  paletteId: PaletteId
+  paletteId: AssetPaletteId
+  /** Presente SOMENTE quando `paletteId === 'custom'` (o sanitize impõe). */
+  customPalette?: PintaCustomPalette
   extraColors?: PintaExtraColors
   /** ≥1 camada (índice 0 = fundo). */
   layers: PintaPixelLayer[]
@@ -222,7 +253,9 @@ export interface TilesetAsset extends PintaAssetBase {
   kind: 'tileset'
   /** Tile QUADRADO (o bloco de tilemap do Studio usa um número só). */
   tileSize: number
-  paletteId: PaletteId
+  paletteId: AssetPaletteId
+  /** Presente SOMENTE quando `paletteId === 'custom'` (o sanitize impõe). */
+  customPalette?: PintaCustomPalette
   extraColors?: PintaExtraColors
   /** O índice no array É o índice do tile no Studio (empacotamento row-major). */
   tiles: PintaBitmap[]
@@ -326,8 +359,24 @@ export function isPixelLayeredKind(asset: PintaAsset): asset is PixelLayeredAsse
  * das peças na prática; vetoriais usam cor livre e só precisam de um valor
  * estável para os caminhos de export que pedem paleta).
  */
-export function paletteIdOf(asset: PintaAsset): PaletteId {
+export function paletteIdOf(asset: PintaAsset): AssetPaletteId {
   return 'paletteId' in asset ? asset.paletteId : DEFAULT_PALETTE_ID
+}
+
+/**
+ * A paleta personalizada embutida, quando o asset usa uma (`paletteId ===
+ * 'custom'`). Fronteira única: quem quer as CORES usa `resolveAssetPalette`;
+ * quem quer o NOME usa `assetPaletteName`.
+ */
+export function customPaletteOf(asset: PintaAsset): PintaCustomPalette | null {
+  if (!('paletteId' in asset) || asset.paletteId !== 'custom') return null
+  return asset.customPalette ?? null
+}
+
+/** Nome da paleta ativa do asset, para os títulos (PaletteBar e o painel do vetor). */
+export function assetPaletteName(asset: PintaAsset): string {
+  const custom = customPaletteOf(asset)
+  return custom ? custom.name : getPalette(paletteIdOf(asset)).name
 }
 
 /**
@@ -346,7 +395,11 @@ export function extraColorsOf(asset: PintaAsset): PintaExtraColors {
  * transparente (garantido em `bitmapToRGBA`).
  */
 export function resolveAssetPalette(asset: PintaAsset): readonly string[] {
-  const base = getPalette(paletteIdOf(asset)).colors
+  // Paleta personalizada EMBUTIDA no asset vence; `getPalette` cai em arcade
+  // para qualquer id que não conheça (inclusive um 'custom' órfão — estado que
+  // o sanitize não deixa existir).
+  const custom = customPaletteOf(asset)
+  const base = custom ? custom.colors : getPalette(paletteIdOf(asset)).colors
   const extra = extraColorsOf(asset)
   return extra.length > 0 ? [...base, ...extra] : base
 }
@@ -444,6 +497,56 @@ function sanitizeExtraColors(raw: unknown): PintaExtraColors | undefined {
     if (out.length >= PINTA_LIMITS.maxExtraColors) break
   }
   return out.length > 0 ? out : undefined
+}
+
+/**
+ * Paleta personalizada vinda do disco/import: 16 posições com os SLOTS
+ * PRESERVADOS (`''` = vazio; compactar deslocaria os índices pintados no
+ * bitmap), `[0]` sempre transparente, hex normalizado. `null` quando não
+ * sobra nenhuma cor pintável — aí o asset volta para a arcade SEM a chave.
+ */
+export function sanitizeCustomPalette(raw: unknown): PintaCustomPalette | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  if (!Array.isArray(r.colors)) return null
+  const colors: string[] = []
+  let painted = 0
+  for (let i = 0; i < PALETTE_SIZE; i += 1) {
+    if (i === TRANSPARENT_INDEX) {
+      colors.push('')
+      continue
+    }
+    const hex = typeof r.colors[i] === 'string' ? normalizeHex(r.colors[i] as string) : null
+    if (hex) {
+      colors.push(hex)
+      painted += 1
+    } else {
+      colors.push('')
+    }
+  }
+  if (painted === 0) return null
+  const name =
+    typeof r.name === 'string' && r.name.trim()
+      ? r.name.trim().slice(0, PINTA_LIMITS.maxNameChars)
+      : COPY.a11y.customPaletteName
+  return { name, colors }
+}
+
+/**
+ * O PAR paleta do asset: `'custom'` só vale com uma `customPalette` válida —
+ * senão degrada para a arcade SEM a chave (asset antigo continua
+ * byte-idêntico no round-trip; a emissão é condicional nos 3 kinds de pixel).
+ */
+function sanitizeAssetPalette(record: Record<string, unknown>): {
+  paletteId: AssetPaletteId
+  customPalette?: PintaCustomPalette
+} {
+  if (record.paletteId === 'custom') {
+    const customPalette = sanitizeCustomPalette(record.customPalette)
+    if (customPalette) return { paletteId: 'custom', customPalette }
+    return { paletteId: DEFAULT_PALETTE_ID }
+  }
+  return { paletteId: isPaletteId(record.paletteId) ? record.paletteId : DEFAULT_PALETTE_ID }
 }
 
 /** Suavização vinda do disco: só `ease` é reconhecido; o resto vira `linear`. */
@@ -647,7 +750,7 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
   const record = raw as Record<string, unknown>
   const base = sanitizeBase(record)
   if (!base) return null
-  const paletteId = isPaletteId(record.paletteId) ? record.paletteId : DEFAULT_PALETTE_ID
+  const palette = sanitizeAssetPalette(record)
 
   switch (record.kind) {
     case 'pixel-sprite': {
@@ -671,7 +774,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         kind: 'pixel-sprite',
         frameWidth: frame.width,
         frameHeight: frame.height,
-        paletteId,
+        paletteId: palette.paletteId,
+        ...(palette.customPalette ? { customPalette: palette.customPalette } : {}),
         ...(extraColors ? { extraColors } : {}),
         layers,
         animations: animations.map((animation) => ({
@@ -694,7 +798,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
       return {
         ...base,
         kind: 'pixel-background',
-        paletteId,
+        paletteId: palette.paletteId,
+        ...(palette.customPalette ? { customPalette: palette.customPalette } : {}),
         ...(extraColors ? { extraColors } : {}),
         layers,
         cels: alignCels(cels, layers.length, dims),
@@ -726,7 +831,8 @@ export function sanitizePintaAsset(raw: unknown): PintaAsset | null {
         ...base,
         kind: 'tileset',
         tileSize,
-        paletteId,
+        paletteId: palette.paletteId,
+        ...(palette.customPalette ? { customPalette: palette.customPalette } : {}),
         ...(extraColors ? { extraColors } : {}),
         tiles,
         solid,
