@@ -450,6 +450,15 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   avança a marca, sem `-copia`. Descidas gravam DIRETO no local (id preservado; peças antes dos mapas; nome já usado
   por OUTRO desenho ganha sufixo `-2`; sem teto de quantidade local). Cópia de conflito =
   `<nome>-copia` com id novo (sempre ≤ 48 chars).
+  **Biblioteca "Minhas paletas" (25/08):** viaja como UM item ESPECIAL do MESMO canal — itemId
+  fixo `sz-pinta-palettes`, kind `palette-library` (constantes exportadas). Salvar local
+  (`savePaletteLibrary` embrulhado) enfileira a subida; a reconciliação FILTRA o summary
+  especial da lista de ASSETS antes do `reconcileCreations` (senão o sanitize o descartaria
+  como "desenho corrompido"), desce e FUNDE por id+updatedAt (`mergePaletteLibraries` do
+  pacote), re-subindo o merge quando difere do remoto (carimbo novo p/ o produtor ver);
+  `onStale` idem. SEM lápide (paleta apagada num aparelho pode voltar se outro regravar —
+  registro pequeno, trade-off documentado no pacote). ⚠️ O `creationsUsageByUsers` do members
+  exclui o kind (a biblioteca não conta como "+1 desenho" no admin).
 - **Estúdio:** `src/lib/studio-cloud.ts` liga `setStudioCloudMirror` (todo `persistProject`/rename/
   assets/delete do pacote acorda o espelho) e faz `pullMissing()` em SEGUNDO PLANO no
   `studio-full-client.tsx` (19/08: a lista aparece já com o que há neste aparelho e os jogos de
