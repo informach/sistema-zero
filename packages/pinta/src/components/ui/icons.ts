@@ -84,6 +84,7 @@ export {
   Sparkles,
   Spline,
   Square,
+  SquareCheckBig,
   SquareDashed,
   SquarePen,
   // Os quatro glifos do pathfinder (dois quadrados sobrepostos), na MESMA

@@ -36,6 +36,18 @@ export const COPY = {
     storageBudget:
       'Sua galeria chegou ao limite de 32 MB. Apague um desenho ou uma figura grande para continuar salvando.',
     downloadAll: 'Baixar tudo',
+    /**
+     * Modo de seleção: baixar um PACK só com os desenhos marcados (o "Baixar
+     * tudo" segue baixando a galeria inteira). O contador NÃO é role=status —
+     * o da busca é o único status da tela.
+     */
+    select: 'Selecionar',
+    selectionCount: (count: number) => (count === 1 ? '1 selecionado' : `${count} selecionados`),
+    downloadSelection: 'Baixar seleção',
+    selectionMark: (name: string) => `Marcar ${name}`,
+    selectionUnmark: (name: string) => `Desmarcar ${name}`,
+    /** O pack levou junto as peças de um mapa marcado (sem elas o mapa não restaura). */
+    selectionTilesetIncluded: 'Baixei também as peças do mapa.',
     /** Busca da galeria (sem teto de desenhos, ela é o que mantém a galeria navegável). */
     search: 'Buscar desenho',
     searchPlaceholder: 'Buscar por nome, tipo ou jogo',
