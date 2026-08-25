@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { CourseProgressCard, ToolUsageGrid } from '@/components/members/usage-cards'
@@ -32,6 +32,8 @@ import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { entitlementBadge } from '@/lib/entitlement-status'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
+import { createLatestAppendGuard } from '@/lib/latest-wins'
+import { type LearnerSelection, resolveLearnerId } from '@/lib/learner-selection'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 import { type MemberToolUsageView, ownedToolCards } from '@/lib/tool-usage'
 import type {
@@ -94,11 +96,19 @@ export function MemberDetailClient({
   const [detail, setDetail] = useState<MemberDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<Tab>('overview')
-  const [learnerId, setLearnerId] = useState(userId)
-  // No modo Kids, a ficha abre FOCADA na 1ª criança (a conta é o responsável, não
-  // o aprendiz). Uma vez só — depois quem manda é o clique do operador.
   const platform = usePlatform()
-  const learnerDefaulted = useRef(false)
+  const searchParams = useSearchParams()
+  // Deep-link vale na carga inicial; a seleção registra a plataforma em que foi
+  // feita para não sobreviver silenciosamente a uma troca Kids ↔ Adultos.
+  const [learnerSelection, setLearnerSelection] = useState<LearnerSelection>(() => ({
+    platform,
+    learnerId: searchParams.get('learner'),
+  }))
+  useEffect(() => {
+    setLearnerSelection((current) =>
+      current.platform === platform ? current : { platform, learnerId: null },
+    )
+  }, [platform])
   const [impersonating, setImpersonating] = useState(false)
   // "Entrar como": escolher a plataforma (comunidade adulta ou Kids) antes do handoff.
   const [impersonateOpen, setImpersonateOpen] = useState(false)
@@ -265,25 +275,14 @@ export function MemberDetailClient({
       audience: 'kids' as const,
     })),
   ]
+  const learnerId = resolveLearnerId({
+    accountId: userId,
+    profileIds: detail?.profiles?.map((profile) => profile.id) ?? [],
+    platform,
+    selection: learnerSelection,
+  })
   const learner = learners.find((l) => l.id === learnerId) ?? learners[0]
   const showLearnerSwitcher = learners.length > 1 && LEARNER_SCOPED.includes(tab)
-
-  // Default do aprendiz no modo Kids (1× por carga; não briga com clique do
-  // operador): `?learner=<profileId>` (deep-link da listagem de crianças) tem
-  // prioridade; senão, a 1ª criança.
-  const searchParams = useSearchParams()
-  useEffect(() => {
-    if (learnerDefaulted.current || !detail) return
-    learnerDefaulted.current = true
-    const requested = searchParams.get('learner')
-    const match = requested ? detail.profiles?.find((p) => p.id === requested) : undefined
-    if (match) {
-      setLearnerId(match.id)
-      return
-    }
-    const firstProfile = detail.profiles?.[0]
-    if (platform === 'kids' && firstProfile) setLearnerId(firstProfile.id)
-  }, [detail, platform, searchParams])
 
   const canImpersonateUser =
     user != null &&
@@ -382,7 +381,7 @@ export function MemberDetailClient({
                 <button
                   key={l.id}
                   type="button"
-                  onClick={() => setLearnerId(l.id)}
+                  onClick={() => setLearnerSelection({ platform, learnerId: l.id })}
                   className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                     learner?.id === l.id
                       ? 'border-[color:var(--primary)] bg-[color:var(--primary)]/10 font-medium'
@@ -892,12 +891,16 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
   const [offset, setOffset] = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const appendGuard = useRef(createLatestAppendGuard()).current
   const LIMIT = 20
 
   // Reinicia ao trocar de aprendiz.
   useEffect(() => {
     let alive = true
+    appendGuard.invalidate()
+    setLoadingMore(false)
     setLoading(true)
     setError(null)
     setItems([])
@@ -912,20 +915,31 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
       .finally(() => alive && setLoading(false))
     return () => {
       alive = false
+      appendGuard.invalidate()
     }
-  }, [learnerId])
+  }, [learnerId, appendGuard])
 
   async function loadMore() {
+    const ticket = appendGuard.begin()
+    if (!ticket) return
     const next = offset + LIMIT
+    setLoadingMore(true)
     try {
       const d = await apiGet<MemberActivityPage>(
         `/api/members/${learnerId}/activity?limit=${LIMIT}&offset=${next}`,
       )
-      setItems((prev) => [...prev, ...d.items])
-      setOffset(next)
-      setHasMore(d.hasMore)
+      if (appendGuard.canPublish(ticket)) {
+        setItems((prev) => [...prev, ...d.items])
+        setOffset(next)
+        setHasMore(d.hasMore)
+      }
     } catch (e) {
-      toast.error((e as ApiError).message ?? 'Falha ao carregar mais.')
+      if (appendGuard.canPublish(ticket)) {
+        toast.error((e as ApiError).message ?? 'Falha ao carregar mais.')
+      }
+    } finally {
+      if (appendGuard.canPublish(ticket)) setLoadingMore(false)
+      appendGuard.finish(ticket)
     }
   }
 
@@ -959,8 +973,8 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
       ))}
       {hasMore ? (
         <div className="p-3 text-center">
-          <Button variant="outline" size="sm" onClick={loadMore}>
-            Carregar mais
+          <Button variant="outline" size="sm" disabled={loadingMore} onClick={loadMore}>
+            {loadingMore ? 'Carregando…' : 'Carregar mais'}
           </Button>
         </div>
       ) : null}

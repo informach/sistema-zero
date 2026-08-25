@@ -1,6 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
 import type {
-  DanfseClient,
   EmitDpsInput,
   EmitResult,
   SefinNacionalGateway,
@@ -35,11 +34,5 @@ export class FakeSefinGateway implements SefinNacionalGateway {
   async cancelNfse(input: { accessKey: string }): Promise<{ kind: 'accepted'; eventXml: string }> {
     this.logger.warn('fiscal.FAKE_sefin_cancel', { accessKey: input.accessKey })
     return { kind: 'accepted', eventXml: '<evento-FAKE/>' }
-  }
-}
-
-export class FakeDanfseClient implements DanfseClient {
-  async fetchPdf(): Promise<Uint8Array> {
-    return new TextEncoder().encode('%PDF-1.4 FAKE DANFSe (fase 1)')
   }
 }

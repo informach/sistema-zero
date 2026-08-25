@@ -47,6 +47,34 @@ export class DrizzleProgressRepository implements ProgressRepository {
     return new Map(rows.map((r) => [r.courseId, r.c]))
   }
 
+  async countCompletedByUsersAndCourseIds(
+    userIds: string[],
+    courseIds: string[],
+  ): Promise<Map<string, Map<string, number>>> {
+    if (userIds.length === 0 || courseIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({
+        userId: lessonCompletions.userId,
+        courseId: lessonCompletions.courseId,
+        c: count(),
+      })
+      .from(lessonCompletions)
+      .where(
+        and(
+          inArray(lessonCompletions.userId, userIds),
+          inArray(lessonCompletions.courseId, courseIds),
+        ),
+      )
+      .groupBy(lessonCompletions.userId, lessonCompletions.courseId)
+    const out = new Map<string, Map<string, number>>()
+    for (const row of rows) {
+      const byCourse = out.get(row.userId) ?? new Map<string, number>()
+      byCourse.set(row.courseId, row.c)
+      out.set(row.userId, byCourse)
+    }
+    return out
+  }
+
   async countCompletedPublished(userId: string, courseId: string): Promise<number> {
     // Join com `lessons` (FK mesmo schema): só conclusões de aulas AINDA
     // publicadas — o par correto do denominador `countPublishedLessons`.
@@ -131,6 +159,27 @@ export class DrizzleProgressRepository implements ProgressRepository {
     const out = new Map<string, Date>()
     for (const r of rows) {
       if (r.at) out.set(r.courseId, r.at)
+    }
+    return out
+  }
+
+  async lastCompletionByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>> {
+    if (userIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({
+        userId: lessonCompletions.userId,
+        courseId: lessonCompletions.courseId,
+        at: max(lessonCompletions.completedAt),
+      })
+      .from(lessonCompletions)
+      .where(inArray(lessonCompletions.userId, userIds))
+      .groupBy(lessonCompletions.userId, lessonCompletions.courseId)
+    const out = new Map<string, Map<string, Date>>()
+    for (const row of rows) {
+      if (!row.at) continue
+      const byCourse = out.get(row.userId) ?? new Map<string, Date>()
+      byCourse.set(row.courseId, row.at)
+      out.set(row.userId, byCourse)
     }
     return out
   }

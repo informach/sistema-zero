@@ -15,7 +15,12 @@ import {
   type Module,
   type ModuleWithLessons,
 } from '../../src/domain/course/course'
-import { CareerSlotConflictError, DuplicateSlugError } from '../../src/domain/course/course.errors'
+import {
+  CareerSlotConflictError,
+  CloneSameAudienceError,
+  CourseConflictError,
+  DuplicateSlugError,
+} from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
 import {
   isCompletionGatingBlock,
@@ -600,6 +605,13 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<Course | null> {
     const src = this.courses.find((c) => c.id === sourceCourseId)
     if (!src) return null
+    if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+    if (
+      src.version !== overrides.expectedSourceVersion ||
+      src.audience !== overrides.expectedSourceAudience
+    ) {
+      throw new CourseConflictError()
+    }
     if (this.courses.some((c) => c.slug === overrides.slug)) throw new DuplicateSlugError()
     const metadata: Record<string, unknown> = { ...(src.metadata ?? {}), clonedFrom: src.slug }
     if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
@@ -1055,6 +1067,22 @@ export class InMemoryProgressRepository implements ProgressRepository {
     return out
   }
 
+  async countCompletedByUsersAndCourseIds(
+    userIds: string[],
+    courseIds: string[],
+  ): Promise<Map<string, Map<string, number>>> {
+    const users = new Set(userIds)
+    const courses = new Set(courseIds)
+    const out = new Map<string, Map<string, number>>()
+    for (const completion of this.completions) {
+      if (!users.has(completion.userId) || !courses.has(completion.courseId)) continue
+      const byCourse = out.get(completion.userId) ?? new Map<string, number>()
+      byCourse.set(completion.courseId, (byCourse.get(completion.courseId) ?? 0) + 1)
+      out.set(completion.userId, byCourse)
+    }
+    return out
+  }
+
   /** Mirror do SQL: inner join com lessons publicadas. Sem source = tudo publicado. */
   private isPublished(lessonId: string): boolean {
     if (!this.lessonSource) return true
@@ -1116,6 +1144,21 @@ export class InMemoryProgressRepository implements ProgressRepository {
       if (c.userId !== userId) continue
       const prev = out.get(c.courseId)
       if (!prev || c.completedAt.getTime() > prev.getTime()) out.set(c.courseId, c.completedAt)
+    }
+    return out
+  }
+
+  async lastCompletionByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>> {
+    const users = new Set(userIds)
+    const out = new Map<string, Map<string, Date>>()
+    for (const completion of this.completions) {
+      if (!users.has(completion.userId)) continue
+      const byCourse = out.get(completion.userId) ?? new Map<string, Date>()
+      const previous = byCourse.get(completion.courseId)
+      if (!previous || completion.completedAt.getTime() > previous.getTime()) {
+        byCourse.set(completion.courseId, completion.completedAt)
+      }
+      out.set(completion.userId, byCourse)
     }
     return out
   }
@@ -1296,6 +1339,21 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
       if (r.userId !== userId) continue
       const prev = out.get(r.courseId)
       if (!prev || r.updatedAt.getTime() > prev.getTime()) out.set(r.courseId, r.updatedAt)
+    }
+    return out
+  }
+
+  async lastAccessByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>> {
+    const users = new Set(userIds)
+    const out = new Map<string, Map<string, Date>>()
+    for (const row of this.rows) {
+      if (!users.has(row.userId)) continue
+      const byCourse = out.get(row.userId) ?? new Map<string, Date>()
+      const previous = byCourse.get(row.courseId)
+      if (!previous || row.updatedAt.getTime() > previous.getTime()) {
+        byCourse.set(row.courseId, row.updatedAt)
+      }
+      out.set(row.userId, byCourse)
     }
     return out
   }
@@ -1595,11 +1653,16 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
    */
   readonly answeredKeys = new Set<string>()
 
-  async countPendingByUsers(userIds: string[]): Promise<Map<string, number>> {
+  async countPendingByUsers(
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, number>> {
     const set = new Set(userIds)
     const out = new Map<string, number>()
     for (const s of this.submissions) {
       if (!set.has(s.userId)) continue
+      const course = this.courses?.courses.find((candidate) => candidate.id === s.courseId)
+      if (course?.audience !== audience) continue
       // Mesma régua da fila: pendente = nem respondida nem conferida.
       const answered = this.answeredKeys.has(`${s.userId}:${s.blockId}`)
       const reviewed = s.reviewedAt != null && s.reviewedAt >= s.submittedAt

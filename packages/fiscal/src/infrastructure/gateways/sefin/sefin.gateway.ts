@@ -2,7 +2,6 @@ import type { Logger } from '@sistemazero/core/logging'
 import { buildCancelEventXml, buildDpsXml } from '../../../domain/dps/dps-builder'
 import type { EmitterProfile } from '../../../domain/dps/emitter-profile'
 import type {
-  DanfseClient,
   EmitDpsInput,
   EmitResult,
   SefinNacionalGateway,
@@ -198,29 +197,6 @@ export class SefinHttpGateway implements SefinNacionalGateway {
     if (res.status === 404) return { found: false }
     if (!res.ok) throw new Error(`ADN GET eventos respondeu ${res.status}`)
     return findCancellationEventInBody(await res.json())
-  }
-}
-
-/** DANFSe no ADN (`GET /danfse/{chave}`) — endpoint muda em jul/2026, por isso isolado. */
-export class AdnDanfseClient implements DanfseClient {
-  private readonly fetch: ReturnType<typeof createMtlsFetch>
-  private readonly base: string
-
-  constructor(
-    cert: A1Certificate,
-    opts: { ambiente: 'producao' | 'producao-restrita'; timeoutMs: number },
-  ) {
-    this.fetch = createMtlsFetch(cert, opts.timeoutMs)
-    this.base = sefinUrls(opts.ambiente).adnDanfse
-  }
-
-  async fetchPdf(accessKey: string): Promise<Uint8Array> {
-    const res = await this.fetch(`${this.base}/${accessKey}`)
-    const type = res.headers.get('content-type') ?? ''
-    if (!res.ok || !type.includes('pdf')) {
-      throw new Error(`DANFSe respondeu ${res.status} (${type})`)
-    }
-    return new Uint8Array(await res.arrayBuffer())
   }
 }
 

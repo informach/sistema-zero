@@ -680,12 +680,16 @@ export class DrizzleInvoiceRepository implements InvoiceRepository {
     })
   }
 
-  async findPdfByToken(
-    token: string,
-  ): Promise<{ invoiceId: string; content: Uint8Array; contentType: string } | null> {
+  async findPdfByToken(token: string): Promise<{
+    invoiceId: string
+    invoiceStatus: InvoiceStatus
+    content: Uint8Array
+    contentType: string
+  } | null> {
     const [row] = await this.db
       .select({
         invoiceId: invoicePdfs.invoiceId,
+        invoiceStatus: invoices.status,
         content: invoicePdfs.content,
         contentType: invoicePdfs.contentType,
       })

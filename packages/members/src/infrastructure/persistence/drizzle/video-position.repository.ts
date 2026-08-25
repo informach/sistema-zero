@@ -72,6 +72,27 @@ export class DrizzleVideoPositionRepository implements VideoPositionRepository {
     return out
   }
 
+  async lastAccessByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>> {
+    if (userIds.length === 0) return new Map()
+    const rows = await this.db
+      .select({
+        userId: lessonProgress.userId,
+        courseId: lessonProgress.courseId,
+        at: max(lessonProgress.updatedAt),
+      })
+      .from(lessonProgress)
+      .where(inArray(lessonProgress.userId, userIds))
+      .groupBy(lessonProgress.userId, lessonProgress.courseId)
+    const out = new Map<string, Map<string, Date>>()
+    for (const row of rows) {
+      if (!row.at) continue
+      const byCourse = out.get(row.userId) ?? new Map<string, Date>()
+      byCourse.set(row.courseId, row.at)
+      out.set(row.userId, byCourse)
+    }
+    return out
+  }
+
   async listRecentAccessed(userId: string, limit: number): Promise<RecentLessonActivity[]> {
     const rows = await this.db
       .select({

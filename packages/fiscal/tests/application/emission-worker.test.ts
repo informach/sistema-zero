@@ -12,7 +12,7 @@ import {
   InMemoryInvoiceRepository,
   paidSnapshot,
   RecordingMessagingClient,
-  ScriptedDanfseClient,
+  ScriptedDanfseProvider,
   ScriptedSefinGateway,
   silentLogger,
 } from '../fakes/in-memory'
@@ -34,7 +34,7 @@ function build(opts: { staleMs?: number } = {}) {
     invoices,
     payments,
     sefin,
-    new ScriptedDanfseClient(),
+    new ScriptedDanfseProvider(),
     new RecordingMessagingClient(),
     {
       serie: '2',

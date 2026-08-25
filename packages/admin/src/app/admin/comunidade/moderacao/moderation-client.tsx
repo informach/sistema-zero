@@ -7,11 +7,12 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
+import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -25,7 +26,11 @@ import type {
   HubReportView,
   HubSpaceView,
 } from '@/lib/hub-types'
+import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import { platformTransition } from '@/lib/platform-transition'
 import type { Paginated } from '@/lib/types'
+
+const PAGE = 20
 
 function preview(text: string, max = 240): string {
   const t = text.trim().replace(/\s+/g, ' ')
@@ -170,13 +175,15 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   const [spaces, setSpaces] = useState<HubSpaceView[]>([])
   const [spaceId, setSpaceId] = useState('')
   const [pending, setPending] = useState<HubPendingItemView[]>([])
+  const [pendingTotal, setPendingTotal] = useState(0)
+  const [pendingOffset, setPendingOffset] = useState(0)
   const [reports, setReports] = useState<HubReportView[]>([])
-  // Seletor global: a fila mostra só a plataforma ativa (corte CLIENT-side, v1 —
-  // o hub não filtra pending/reports por audiência; com fila >100 o corte pode
-  // subcontar, limitação documentada no plano).
+  const [reportsTotal, setReportsTotal] = useState(0)
+  const [reportsOffset, setReportsOffset] = useState(0)
   const platform = usePlatform()
   const [mutesBans, setMutesBans] = useState<HubMuteBanView[]>([])
   const [busy, setBusy] = useState(false)
+  const loadAuthority = useRef(createForegroundPriority()).current
 
   // ban/mute form
   const [mbUserId, setMbUserId] = useState('')
@@ -189,41 +196,66 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       .catch(() => {})
   }, [])
 
+  useEffect(() => {
+    const transition = platformTransition(platform).moderation
+    loadAuthority.invalidate()
+    setSpaceId(transition.spaceId)
+    setPendingOffset(transition.offset)
+    setReportsOffset(transition.offset)
+    setPending([])
+    setReports([])
+    setMutesBans([])
+  }, [platform, loadAuthority])
+
   const load = useCallback(async () => {
     // URLSearchParams (e não interpolação): sem servidor selecionado a versão
     // antiga gerava `…/pending&limit=100` (sem `?`) → o limit virava parte do
     // PATH e o upstream caía no default 20, truncando a fila (achado do review).
-    const pendQs = new URLSearchParams({ limit: '100' })
+    const pendQs = new URLSearchParams({
+      audience: platform,
+      limit: String(PAGE),
+      offset: String(pendingOffset),
+    })
     if (spaceId) pendQs.set('spaceId', spaceId)
-    const repQs = new URLSearchParams({ status: 'open', limit: '100' })
+    const repQs = new URLSearchParams({
+      audience: platform,
+      status: 'open',
+      limit: String(PAGE),
+      offset: String(reportsOffset),
+    })
     if (spaceId) repQs.set('spaceId', spaceId)
-    try {
-      const [pend, rep] = await Promise.all([
-        apiGet<Paginated<HubPendingItemView>>(`/api/hub/admin/pending?${pendQs}`),
-        apiGet<Paginated<HubReportView>>(`/api/hub/admin/reports?${repQs}`),
-      ])
-      setPending(pend.items)
-      setReports(rep.items)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar a moderação.')
-    }
-    if (spaceId) {
-      try {
-        const mb = await apiGet<{ items: HubMuteBanView[] }>(
-          `/api/hub/admin/mutes-bans?spaceId=${spaceId}`,
-        )
-        setMutesBans(mb.items)
-      } catch {
-        setMutesBans([])
-      }
-    } else {
-      setMutesBans([])
-    }
-  }, [spaceId])
+    await runLatestForeground(
+      loadAuthority,
+      () =>
+        Promise.all([
+          apiGet<Paginated<HubPendingItemView>>(`/api/hub/admin/pending?${pendQs}`),
+          apiGet<Paginated<HubReportView>>(`/api/hub/admin/reports?${repQs}`),
+          spaceId
+            ? apiGet<{ items: HubMuteBanView[] }>(
+                `/api/hub/admin/mutes-bans?spaceId=${spaceId}`,
+              ).catch(() => ({ items: [] }))
+            : Promise.resolve({ items: [] }),
+        ]),
+      {
+        onSuccess: ([pend, rep, mutes]) => {
+          setPending(pend.items)
+          setPendingTotal(pend.total)
+          setReports(rep.items)
+          setReportsTotal(rep.total)
+          setMutesBans(mutes.items)
+        },
+        onError: (error) => {
+          toast.error((error as ApiError).message ?? 'Falha ao carregar a moderação.')
+        },
+        onSettled: () => {},
+      },
+    )
+  }, [spaceId, platform, pendingOffset, reportsOffset, loadAuthority])
 
   useEffect(() => {
     void load()
-  }, [load])
+    return () => loadAuthority.invalidate()
+  }, [load, loadAuthority])
 
   async function run(fn: () => Promise<unknown>, okMsg?: string) {
     setBusy(true)
@@ -266,13 +298,7 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
     )
   }
 
-  const visiblePending = pending.filter((item) => item.context.spaceAudience === platform)
-  // A MESMA cascata do render do card: denúncia sem `content` (conteúdo já
-  // removido) cai na audiência do SERVIDOR — filtrar só pelo content mandaria
-  // uma denúncia kids órfã para o modo Adultos.
-  const reportAudience = (r: HubReportView) =>
-    r.content?.context.spaceAudience ?? spaces.find((s) => s.id === r.spaceId)?.audience ?? 'adult'
-  const visibleReports = reports.filter((r) => reportAudience(r) === platform)
+  const visibleSpaces = spaces.filter((space) => space.audience === platform)
 
   return (
     <div className="space-y-6">
@@ -282,9 +308,17 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       />
 
       <Field label="Servidor" htmlFor="mod-space">
-        <Select id="mod-space" value={spaceId} onChange={(e) => setSpaceId(e.target.value)}>
+        <Select
+          id="mod-space"
+          value={spaceId}
+          onChange={(event) => {
+            setSpaceId(event.target.value)
+            setPendingOffset(0)
+            setReportsOffset(0)
+          }}
+        >
           <option value="">Todos os servidores</option>
-          {spaces.map((s) => (
+          {visibleSpaces.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name} ({s.audience === 'kids' ? 'kids' : 'adulto'})
             </option>
@@ -295,12 +329,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       {/* ── Fila de aprovação ── */}
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Aguardando aprovação ({visiblePending.length})
+          Aguardando aprovação ({pendingTotal})
         </h2>
-        {visiblePending.length === 0 ? (
+        {pending.length === 0 ? (
           <Card className="p-4 text-sm text-muted-foreground">Nada pendente. 🎉</Card>
         ) : (
-          visiblePending.map((item) => (
+          pending.map((item) => (
             <Card key={item.id} className="space-y-4 p-4">
               <ModeratedContent content={item} />
               {canWrite ? (
@@ -335,19 +369,24 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
             </Card>
           ))
         )}
+        <Pagination
+          total={pendingTotal}
+          limit={PAGE}
+          offset={pendingOffset}
+          onChange={setPendingOffset}
+        />
       </section>
 
       {/* ── Denúncias ── */}
       <section className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Denúncias abertas ({visibleReports.length})
+          Denúncias abertas ({reportsTotal})
         </h2>
-        {visibleReports.length === 0 ? (
+        {reports.length === 0 ? (
           <Card className="p-4 text-sm text-muted-foreground">Nenhuma denúncia aberta.</Card>
         ) : (
-          visibleReports.map((r) => {
-            const reportSpace = spaces.find((space) => space.id === r.spaceId)
-            const audience = r.content?.context.spaceAudience ?? reportSpace?.audience ?? 'adult'
+          reports.map((r) => {
+            const audience = r.spaceAudience
             return (
               <Card key={r.id} className="space-y-4 p-4">
                 <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
@@ -430,6 +469,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
             )
           })
         )}
+        <Pagination
+          total={reportsTotal}
+          limit={PAGE}
+          offset={reportsOffset}
+          onChange={setReportsOffset}
+        />
       </section>
 
       {/* ── Silenciar / banir (por servidor) ── */}

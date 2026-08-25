@@ -48,7 +48,7 @@ export class GetProfilesOverviewService {
     const [records, qualifying, pending] = await Promise.all([
       this.gamification.listByUserIds(ids, audience),
       this.gamification.listQualifyingCareerSlotsForProfiles(ids, audience),
-      this.studioSubmissions.countPendingByUsers(ids),
+      this.studioSubmissions.countPendingByUsers(ids, audience),
     ])
     const byId = new Map(records.map((r) => [r.userId, r]))
     const today = localDateSaoPaulo(this.clock())

@@ -7,6 +7,7 @@ import type { HandlePaymentWebhookService } from '../../application/handle-payme
 import type { CatalogClient, PaymentsClient } from '../../domain/ports/clients.port'
 import type { InvoiceRepository } from '../../domain/ports/invoice-repository.port'
 import type { ProcessedWebhookStore } from '../../domain/ports/processed-webhook.port'
+import { applyStatusStamp, stampForStatus } from '../../infrastructure/danfse/status-stamp'
 import { adminRoutes } from './admin.routes'
 
 export interface HttpDeps {
@@ -216,7 +217,11 @@ export function createServer(deps: HttpDeps) {
           set.status = 404
           return { error: 'não encontrado' }
         }
-        return new Response(Buffer.from(pdf.content), {
+        // Nota CANCELLED/SUBSTITUTED: a marca d'água da NT 008 entra NA HORA de
+        // servir (o bytea da emissão é imutável) — best-effort, falha → original.
+        const stamp = stampForStatus(pdf.invoiceStatus)
+        const content = stamp ? await applyStatusStamp(pdf.content, stamp) : pdf.content
+        return new Response(Buffer.from(content), {
           headers: {
             // content-type fixado na borda; nosniff + no-store: a URL é mailada ao
             // comprador e buscada pelo messaging — documento fiscal com PII não deve

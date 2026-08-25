@@ -135,6 +135,8 @@ export interface HubReportView {
   targetType: HubModeratableTarget
   targetId: string
   spaceId: string
+  /** Audiência canônica do servidor, inclusive quando `content` é null. */
+  spaceAudience: 'adult' | 'kids'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null

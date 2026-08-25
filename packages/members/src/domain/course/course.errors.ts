@@ -75,6 +75,14 @@ export class DuplicateSlugError extends DomainError {
   }
 }
 
+/** O fluxo de clone é exclusivamente entre plataformas distintas. → 409. */
+export class CloneSameAudienceError extends DomainError {
+  readonly code = 'CLONE_SAME_AUDIENCE'
+  constructor(message = 'O curso só pode ser clonado para a outra plataforma') {
+    super(message)
+  }
+}
+
 /** Já existe outro curso no mesmo slot da etapa da carreira. → 409. */
 export class CareerSlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'

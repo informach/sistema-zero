@@ -26,16 +26,19 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
 import { loadAllPages } from '@/lib/load-all-pages'
+import { offsetForPlatform, pageForPlatform } from '@/lib/platform-pagination'
+import { courseCreationPrefill } from '@/lib/platform-transition'
 import { slugify } from '@/lib/slug'
 import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import { COURSE_STATUSES, COURSE_TIER_OPTIONS, type CourseView, type Paginated } from '@/lib/types'
@@ -45,10 +48,13 @@ const LIMIT = 20
 
 export function CoursesClient({ currentRole }: { currentRole: string }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
+  // Seletor global: a listagem mostra só os cursos da plataforma ativa.
+  const platform = usePlatform()
 
   const [items, setItems] = useState<CourseView[]>([])
   const [total, setTotal] = useState(0)
-  const [offset, setOffset] = useState(0)
+  const [page, setPage] = useState(() => ({ platform, offset: 0 }))
+  const offset = offsetForPlatform(page, platform)
   const [q, setQ] = useState('')
   const [status, setStatus] = useState('')
   const [loading, setLoading] = useState(true)
@@ -60,59 +66,82 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [cloning, setCloning] = useState<CourseView | null>(null)
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
+  const loadAuthority = useRef(createForegroundPriority()).current
+  const careerAuthority = useRef(createForegroundPriority()).current
 
-  // Seletor global: a listagem mostra só os cursos da plataforma ativa.
-  const platform = usePlatform()
+  useEffect(() => {
+    setPage((current) => pageForPlatform(current, platform))
+  }, [platform])
 
   const load = useCallback(async () => {
     setLoading(true)
-    try {
-      const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
-      params.set('audience', platform)
-      if (q.trim()) params.set('q', q.trim())
-      if (status) params.set('status', status)
-      const page = await apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
-      setItems(page.items)
-      setTotal(page.total)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar cursos.')
-    } finally {
-      setLoading(false)
-    }
-  }, [offset, q, status, platform])
+    await runLatestForeground(
+      loadAuthority,
+      () => {
+        const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
+        params.set('audience', platform)
+        if (q.trim()) params.set('q', q.trim())
+        if (status) params.set('status', status)
+        return apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
+      },
+      {
+        onSuccess: (result) => {
+          setItems(result.items)
+          setTotal(result.total)
+        },
+        onError: (error) => {
+          toast.error((error as ApiError).message ?? 'Falha ao carregar cursos.')
+        },
+        onSettled: () => setLoading(false),
+      },
+    )
+  }, [offset, q, status, platform, loadAuthority])
 
   const loadCareer = useCallback(async () => {
     // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
     // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
     // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
-    if (platform !== 'kids') return
-    setCareerLoading(true)
-    try {
-      const courses = await loadAllPages((pageOffset, limit) =>
-        apiGet<Paginated<CourseView>>(
-          `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
-        ),
-      )
-      setCareerItems(courses)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
-    } finally {
+    if (platform !== 'kids') {
+      careerAuthority.invalidate()
+      setCareerItems([])
       setCareerLoading(false)
+      return
     }
-  }, [platform])
+    setCareerLoading(true)
+    await runLatestForeground(
+      careerAuthority,
+      () =>
+        loadAllPages((pageOffset, limit) =>
+          apiGet<Paginated<CourseView>>(
+            `/api/members/courses?audience=kids&limit=${limit}&offset=${pageOffset}`,
+          ),
+        ),
+      {
+        onSuccess: setCareerItems,
+        onError: (error) => {
+          toast.error((error as ApiError).message ?? 'Falha ao conferir a Carreira do Criador.')
+        },
+        onSettled: () => setCareerLoading(false),
+      },
+    )
+  }, [platform, careerAuthority])
 
   useEffect(() => {
-    const t = setTimeout(load, 250)
-    return () => clearTimeout(t)
-  }, [load])
+    const timer = setTimeout(() => void load(), 250)
+    return () => {
+      clearTimeout(timer)
+      loadAuthority.invalidate()
+    }
+  }, [load, loadAuthority])
 
   useEffect(() => {
     void loadCareer()
-  }, [loadCareer])
+    return () => careerAuthority.invalidate()
+  }, [loadCareer, careerAuthority])
 
   function openCreate() {
     setEditing(null)
-    setPrefill(undefined)
+    setPrefill(courseCreationPrefill(platform))
     setOpen(true)
   }
   function openEdit(c: CourseView) {
@@ -195,7 +224,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
             placeholder="Buscar por título ou slug…"
             value={q}
             onChange={(e) => {
-              setOffset(0)
+              setPage({ platform, offset: 0 })
               setQ(e.target.value)
             }}
             className="pl-8"
@@ -204,7 +233,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         <Select
           value={status}
           onChange={(e) => {
-            setOffset(0)
+            setPage({ platform, offset: 0 })
             setStatus(e.target.value)
           }}
           className="sm:w-44"
@@ -323,7 +352,12 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         </Table>
       </Card>
 
-      <Pagination total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
+      <Pagination
+        total={total}
+        limit={LIMIT}
+        offset={offset}
+        onChange={(nextOffset) => setPage({ platform, offset: nextOffset })}
+      />
 
       <CourseFormDialog
         open={open}

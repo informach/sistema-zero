@@ -6,6 +6,7 @@ import { composeServiceDescription } from '../../domain/dps/emitter-profile'
 import { InvoiceStatus } from '../../domain/invoice/invoice.status'
 import type { CatalogClient, PaymentsClient } from '../../domain/ports/clients.port'
 import type { InvoiceRepository } from '../../domain/ports/invoice-repository.port'
+import { applyStatusStamp, stampForStatus } from '../../infrastructure/danfse/status-stamp'
 import { assertInternalCaller, requireAdmin } from './auth'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -98,7 +99,11 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             set.status = 404
             return envelope('PDF_NOT_FOUND', 'PDF indisponível para esta nota')
           }
-          return new Response(Buffer.from(pdf.content), {
+          // Nota CANCELLED/SUBSTITUTED sai com a marca d'água da NT 008 aplicada
+          // na hora de servir (o bytea armazenado na emissão é imutável).
+          const stamp = stampForStatus(invoice.status)
+          const content = stamp ? await applyStatusStamp(pdf.content, stamp) : pdf.content
+          return new Response(Buffer.from(content), {
             headers: {
               // content-type fixado na borda (não confia no valor do banco); nosniff +
               // no-store: documento fiscal com dados pessoais não deve ser sniffado nem cacheado.

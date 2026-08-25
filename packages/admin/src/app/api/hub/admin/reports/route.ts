@@ -8,6 +8,10 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const { status, body } = await listReports({
     spaceId: searchParams.get('spaceId') ?? undefined,
+    audience:
+      searchParams.get('audience') === 'kids' || searchParams.get('audience') === 'adult'
+        ? (searchParams.get('audience') as 'kids' | 'adult')
+        : undefined,
     status: searchParams.get('status') ?? undefined,
     limit: parseLimit(searchParams.get('limit')),
     offset: parseOffset(searchParams.get('offset')),

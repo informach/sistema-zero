@@ -42,8 +42,3 @@ export interface SefinNacionalGateway {
     | { kind: 'rejected'; errors: Array<{ code: string; message: string }> }
   >
 }
-
-/** Port SEPARADO: o padrão do DANFSe muda em jul/2026 (trocável sem tocar a emissão). */
-export interface DanfseClient {
-  fetchPdf(accessKey: string): Promise<Uint8Array>
-}

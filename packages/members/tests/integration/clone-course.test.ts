@@ -86,4 +86,48 @@ describe('clone de curso para a outra plataforma', () => {
       (await clone(app, 'f0000000-0000-4000-8000-000000000000', { audience: 'adult' })).status,
     ).toBe(404)
   })
+
+  test('recusa clone para a mesma plataforma sem criar uma segunda árvore', async () => {
+    const { app, courses } = buildApp()
+    const { courseId } = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const before = courses.courses.length
+
+    const res = await clone(app, courseId, { audience: 'kids' })
+
+    expect(res.status).toBe(409)
+    expect(await readJson(res)).toEqual({
+      error: {
+        code: 'CLONE_SAME_AUDIENCE',
+        message: 'O curso só pode ser clonado para a outra plataforma',
+      },
+    })
+    expect(courses.courses).toHaveLength(before)
+  })
+
+  test('recusa clone quando a origem muda entre a leitura e a transação', async () => {
+    const { app, courses } = buildApp()
+    const { courseId } = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
+    const originalFind = courses.findCourseById.bind(courses)
+    courses.findCourseById = async (id) => {
+      const found = await originalFind(id)
+      if (!found) return null
+      const snapshot = { ...found }
+      found.title = 'Título concorrente'
+      found.version += 1
+      return snapshot
+    }
+
+    const res = await clone(app, courseId, { audience: 'adult' })
+
+    expect(res.status).toBe(409)
+    expect(await readJson(res)).toEqual({
+      error: {
+        code: 'CONCURRENCY_CONFLICT',
+        message: 'Curso alterado por outra operação',
+      },
+    })
+    expect(
+      courses.courses.filter((course) => course.metadata?.clonedFrom === 'curso-kids'),
+    ).toEqual([])
+  })
 })

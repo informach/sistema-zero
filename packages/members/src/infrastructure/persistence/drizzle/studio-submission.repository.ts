@@ -242,12 +242,22 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
     return sql<boolean>`(${this.answeredSql()} or ${this.reviewedSql()})`
   }
 
-  async countPendingByUsers(userIds: string[]): Promise<Map<string, number>> {
+  async countPendingByUsers(
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<Map<string, number>> {
     if (userIds.length === 0) return new Map()
     const rows = await this.db
       .select({ userId: studioSubmissions.userId, c: count() })
       .from(studioSubmissions)
-      .where(and(inArray(studioSubmissions.userId, userIds), sql`not ${this.closedSql()}`))
+      .innerJoin(courses, eq(courses.id, studioSubmissions.courseId))
+      .where(
+        and(
+          inArray(studioSubmissions.userId, userIds),
+          eq(courses.audience, audience),
+          sql`not ${this.closedSql()}`,
+        ),
+      )
       .groupBy(studioSubmissions.userId)
     return new Map(rows.map((r) => [r.userId, r.c]))
   }

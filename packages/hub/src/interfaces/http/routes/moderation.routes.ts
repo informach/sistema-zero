@@ -60,6 +60,7 @@ export function moderationRoutes(deps: ModerationRoutesDeps) {
           guardId(headers)
           return m.listPending({
             spaceId: query.spaceId,
+            audience: query.audience,
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })
@@ -171,6 +172,7 @@ export function moderationRoutes(deps: ModerationRoutesDeps) {
           guardId(headers)
           return m.listReports({
             spaceId: query.spaceId,
+            audience: query.audience,
             status: query.status,
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,

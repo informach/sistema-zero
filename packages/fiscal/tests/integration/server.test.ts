@@ -214,6 +214,39 @@ describe('GET /fiscal/files/:token (capability-URL do DANFSe)', () => {
     const malformed = await app.handle(new Request('http://localhost/fiscal/files/curto.pdf'))
     expect(malformed.status).toBe(404)
   })
+
+  test('nota CANCELLED serve o PDF com a marca d’água aplicada NA HORA (NT 008 §2.5)', async () => {
+    const { PDFDocument } = await import('@cantoo/pdf-lib')
+    const { app, invoices } = build()
+    const invoice = await invoices.schedule({
+      paymentId: 'pay-2',
+      customer: { name: 'M', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+    const token = 'c'.repeat(64)
+    Object.assign(invoice, { status: 'EMITTED', pdfToken: token, claimToken: 'pdf-test-claim' })
+    // PDF REAL mínimo (o carimbo re-parseia; bytes fake cairiam no fallback do original).
+    const doc = await PDFDocument.create()
+    doc.addPage([595.28, 841.89])
+    const original = await doc.save()
+    await invoices.storePdf(invoice.id, original, 'pdf-test-claim')
+    Object.assign(invoice, { status: 'CANCELLED' })
+
+    const res = await app.handle(new Request(`http://localhost/fiscal/files/${token}.pdf`))
+    expect(res.status).toBe(200)
+    expect(res.headers.get('content-type')).toBe('application/pdf')
+    const bytes = new Uint8Array(await res.arrayBuffer())
+    expect(Buffer.from(bytes.slice(0, 5)).toString('latin1')).toBe('%PDF-')
+    // Carimbado ≠ original (o bytea armazenado fica intacto — overlay só no serve).
+    expect(bytes.byteLength).not.toBe(original.byteLength)
+    expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1)
+  })
 })
 
 describe('GET /metrics', () => {

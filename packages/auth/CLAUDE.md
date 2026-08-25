@@ -30,8 +30,10 @@ usuário das claims e autoriza por rota). Runtime: **Bun**. Linguagem: **TS (ESM
 > purga), `0005`–`0011` (impersonação/perfis Netflix/auditoria — ver histórico) e
 > **`0012_*`** (`users.password_set_at` — marco "o dono definiu a própria senha" —
 > **com backfill `created_at` para os existentes**, ver Decisão 13), `0014_*`
-> (`refresh_tokens.impersonation_writable`) e `0015_*` (`refresh_token_families`,
-> com backfill das famílias existentes). Não declare `0014`/`0015` aplicadas em
+> (`refresh_tokens.impersonation_writable`), `0015_*` (`refresh_token_families`,
+> com backfill das famílias existentes), `0016_enable_pg_trgm` (extensão de busca textual) e
+> `0017_profile_search_indexes` (GIN trigram no nome do perfil e no nome/e-mail concatenado da
+> conta). Não declare `0014`–`0017` aplicadas em
 > produção sem executar `db:migrate` no ambiente.
 
 ## Arquitetura (DDD + Hexagonal)
@@ -235,7 +237,8 @@ src/
     `tests/db/`). O `isUniqueViolation` do `user.repository` caminha a cadeia de
     `cause`; siga esse padrão em qualquer mapeamento novo de erro do Postgres.
     A busca `q` da listagem admin **escapa `%`/`_`/`\`** antes do ILIKE (busca
-    literal, não padrão).
+    literal, não padrão), aceita o nome completo do responsável e usa os índices trigram da
+    migration `0017` (a expressão do índice é a mesma concatenação imutável da consulta).
 
 13. **⚠️ `users.password_set_at` — "o dono definiu a própria senha?" (migration `0012`,
     07/2026):** timestamp NULLABLE. `null` nas contas de **CONVITE** (admin) e **COMPRA**

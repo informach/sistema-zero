@@ -56,6 +56,7 @@ export interface ReportView {
   targetType: ModeratableTarget
   targetId: string
   spaceId: string
+  spaceAudience: 'adult' | 'kids'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null
@@ -141,6 +142,7 @@ export const toReportView = (
   targetType: r.targetType,
   targetId: r.targetId,
   spaceId: r.spaceId,
+  spaceAudience: r.spaceAudience,
   reporterId: r.reporterId,
   reporterAccountId: r.reporterAccountId,
   reporterDisplayName: r.reporterDisplayName,

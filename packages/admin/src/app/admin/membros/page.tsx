@@ -1,6 +1,6 @@
 'use client'
 
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { ChildrenClient } from './children-client'
 import { MembersClient } from './members-client'
 

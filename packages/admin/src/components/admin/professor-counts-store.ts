@@ -43,10 +43,11 @@ interface StoreState {
 
 let state: StoreState = { overview: null, fetchedAt: 0, platform: null }
 let inflight: Promise<void> | null = null
+let queuedRefresh: Promise<void> | null = null
 const listeners = new Set<() => void>()
 
 // Trocar de plataforma re-busca NA HORA (o badge da sidebar conta a plataforma
-// ativa — Entregas/Recados; moderação segue global no BFF).
+// ativa — Entregas, Recados e Moderação usam a mesma audiência no BFF).
 subscribePlatform(() => {
   void ensureProfessorCounts(true)
 })
@@ -75,11 +76,14 @@ async function fetchOverview(): Promise<void> {
     const overview = await apiGet<ProfessorOverview>(
       `/api/admin/professor-overview?platform=${platform}`,
     )
+    // A plataforma mudou durante o await: o refresh enfileirado publicará o
+    // snapshot correto; o antigo nunca pisca na sidebar.
+    if (platform !== getPlatform()) return
     setState({ overview, fetchedAt: Date.now(), platform })
   } catch {
     // Best-effort: mantém o snapshot anterior (badge velho > badge sumindo);
     // carimba o fetchedAt p/ não re-tentar em loop a cada navegação.
-    setState({ ...state, fetchedAt: Date.now(), platform })
+    if (platform === getPlatform()) setState({ ...state, fetchedAt: Date.now(), platform })
   }
 }
 
@@ -87,11 +91,16 @@ async function fetchOverview(): Promise<void> {
 export function ensureProfessorCounts(force = false): Promise<void> {
   if (inflight) {
     if (!force) return inflight
-    // O fetch em voo pode ser da plataforma ANTIGA (troca do seletor no meio):
-    // engolir o force deixaria o badge errado até a próxima revalidação. Quando
-    // ele terminar, o re-check decide — snapshot fresco (mesma plataforma + TTL)
-    // é no-op; mismatch re-busca. Sem loop: a 2ª volta entra sem force.
-    return inflight.then(() => ensureProfessorCounts(false))
+    // Um force é uma exigência de NOVA leitura, mesmo na mesma plataforma. Todos
+    // os callers compartilham a mesma leitura enfileirada e a aguardam.
+    if (!queuedRefresh) {
+      const current = inflight
+      queuedRefresh = current.then(() => {
+        queuedRefresh = null
+        return ensureProfessorCounts(true)
+      })
+    }
+    return queuedRefresh
   }
   const fresh = state.platform === getPlatform() && Date.now() - state.fetchedAt < TTL_MS
   if (!force && fresh) return Promise.resolve()

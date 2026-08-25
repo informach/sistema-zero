@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import {
   buildApp,
   grantAllKidsCourses,
@@ -45,6 +46,68 @@ describe('admin member-detail v2 — progresso por TIPO de produto', () => {
       'clube-dos-criadores',
       'pensa',
     ])
+  })
+
+  test('carrega atividade e conclusões de todos os aprendizes em lotes únicos', async () => {
+    const { app, courses, entitlements, progress, positions } = buildApp()
+    const adult = seedSampleCourse(courses, 'curso-adulto-batch', 'published', 'adult')
+    const kids = seedSampleCourse(courses, 'curso-kids-batch', 'published', 'kids')
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: adult.slug })
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: kids.slug })
+    const profileIds = [randomUUID(), randomUUID()]
+    const learnerIds = [ACCOUNT, ...profileIds]
+    let legacyCalls = 0
+    let completionBatchCalls = 0
+    let accessBatchCalls = 0
+    let countBatchCalls = 0
+    const originalLastCompletion = progress.lastCompletionByCourse.bind(progress)
+    const originalLastAccess = positions.lastAccessByCourse.bind(positions)
+    const originalCount = progress.countCompletedByCourseIds.bind(progress)
+    progress.lastCompletionByCourse = async (userId) => {
+      legacyCalls += 1
+      return originalLastCompletion(userId)
+    }
+    positions.lastAccessByCourse = async (userId) => {
+      legacyCalls += 1
+      return originalLastAccess(userId)
+    }
+    progress.countCompletedByCourseIds = async (userId, courseIds) => {
+      legacyCalls += 1
+      return originalCount(userId, courseIds)
+    }
+    Object.assign(progress, {
+      lastCompletionByUsers: async (userIds: string[]) => {
+        completionBatchCalls += 1
+        expect(userIds).toEqual(learnerIds)
+        return new Map(userIds.map((id) => [id, new Map()]))
+      },
+      countCompletedByUsersAndCourseIds: async (userIds: string[], _courseIds: string[]) => {
+        countBatchCalls += 1
+        expect(userIds).toEqual(learnerIds)
+        return new Map(userIds.map((id) => [id, new Map()]))
+      },
+    })
+    Object.assign(positions, {
+      lastAccessByUsers: async (userIds: string[]) => {
+        accessBatchCalls += 1
+        expect(userIds).toEqual(learnerIds)
+        return new Map(userIds.map((id) => [id, new Map()]))
+      },
+    })
+
+    const res = await app.handle(
+      new Request(
+        `http://localhost/members/admin/members/${ACCOUNT}?profileIds=${profileIds.join(',')}`,
+      ),
+    )
+
+    expect(res.status).toBe(200)
+    expect({ completionBatchCalls, accessBatchCalls, countBatchCalls, legacyCalls }).toEqual({
+      completionBatchCalls: 1,
+      accessBatchCalls: 1,
+      countBatchCalls: 1,
+      legacyCalls: 0,
+    })
   })
 
   test('chave-mestra kids + atividade do perfil → card REAL com título e lastActivityAt', async () => {

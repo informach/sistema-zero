@@ -87,6 +87,9 @@ export interface ListCoursesAdminFilter {
 
 /** Overrides do CLONE de curso para a outra plataforma (o resto copia da origem). */
 export interface CloneCourseOverrides {
+  /** Snapshot validado pelo service; o repo confere novamente DENTRO da transação. */
+  expectedSourceVersion: number
+  expectedSourceAudience: CourseAudience
   slug: string
   title: string
   audience: CourseAudience
@@ -111,7 +114,8 @@ export interface ContentAdminRepository {
    * sortOrders e `is_published` das aulas copiados; anexos apontam os MESMOS
    * storageRefs do R2 (objetos nunca são apagados por cascade — seguro). NÃO
    * copia dado de aluno (conclusões/entregas/ratings/threads). `null` = curso
-   * de origem não existe; slug em uso → `DuplicateSlugError`.
+   * de origem não existe; origem alterada → `CourseConflictError`; slug em uso →
+   * `DuplicateSlugError`.
    */
   cloneCourseTree(sourceCourseId: string, overrides: CloneCourseOverrides): Promise<Course | null>
   /** `UPDATE ... WHERE id = ? AND version = ?` → `false` se conflito. 23505 → DuplicateSlugError. */

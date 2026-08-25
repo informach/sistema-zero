@@ -7,10 +7,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
-import type { Platform } from '@/lib/platform'
 import type { SessionUser } from '@/lib/types'
 import { activeHref, visibleGroups } from './nav'
-import { initPlatform } from './platform-store'
 import { PlatformSwitcher } from './platform-switcher'
 import {
   ensureProfessorCounts,
@@ -38,16 +36,7 @@ function badgeCount(counts: ProfessorCounts | undefined, key: string): number | 
  * topbar fina (logo + hambúrguer) + drawer lateral com o mesmo conteúdo, que
  * fecha ao navegar. Substituiu a topbar plana (07/2026).
  */
-export function AdminSidebar({
-  user,
-  initialPlatform,
-}: {
-  user: SessionUser
-  initialPlatform: Platform
-}) {
-  // Semeia o store da plataforma ANTES de qualquer `usePlatform()` (a sidebar
-  // renderiza antes do conteúdo na árvore) — idempotente, seguro sob StrictMode.
-  initPlatform(initialPlatform)
+export function AdminSidebar({ user }: { user: SessionUser }) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
   // UM store p/ as duas renderizações de NavGroups (desktop + drawer) — single-flight

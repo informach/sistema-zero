@@ -224,6 +224,25 @@ describe('activity-by-authors (rota interna HMAC — uso por ferramenta)', () =>
     })
   })
 
+  test('comentário visível deixa de contar quando o tópico pai do Clube é ocultado', async () => {
+    const author = randomUUID()
+    const commenter = randomUUID()
+    const threadId = await createClubThread(author)
+    await createComment(commenter, threadId)
+
+    let [item] = await query([commenter])
+    expect(item?.clubComments).toBe(1)
+
+    const hidden = await ctx.app.handle(
+      jsonRequest('POST', `/hub/admin/threads/${threadId}/hide`, { headers: adminHeaders() }),
+    )
+    expect(hidden.status).toBe(200)
+
+    ;[item] = await query([commenter])
+    expect(item?.clubComments).toBe(0)
+    expect(item?.lastClubActivityAt).toBeNull()
+  })
+
   test('só conteúdo APROVADO conta (mesma régua do XP): pendente fora; aprovar passa a contar; vitrine oculta sai', async () => {
     // Espaço do Clube COM pré-moderação: o tópico da criança nasce `pending`.
     const moderated = await ctx.repo.createSpace({

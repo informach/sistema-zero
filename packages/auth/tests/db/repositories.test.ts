@@ -431,6 +431,11 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(byEmail.total).toBe(2)
     expect(byEmail.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
 
+    // Nome completo atravessa o espaço entre first_name e last_name.
+    const byFullName = await profiles.searchWithAccount({ q: 'Ana Souza', limit: 10, offset: 0 })
+    expect(byFullName.total).toBe(2)
+    expect(byFullName.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
+
     // Sem q → todos os ativos; conta apagada → account: null (o perfil segue listável).
     const all = await profiles.searchWithAccount({ limit: 10, offset: 0 })
     expect(all.total).toBe(4)

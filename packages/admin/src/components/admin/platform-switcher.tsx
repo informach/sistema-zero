@@ -4,7 +4,8 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import { PLATFORM_LABELS, PLATFORMS } from '@/lib/platform'
 import { pathIsPlatformScoped } from './nav'
-import { setPlatform, usePlatform } from './platform-store'
+import { usePlatform } from './platform-provider'
+import { setPlatform } from './platform-store'
 
 /**
  * Alternador global Kids × Adultos da sidebar. Nas rotas ESCOPADAS

@@ -91,7 +91,10 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/membros')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros/u-123')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros/crianca/p-1')).toBe(true)
-    expect(pathIsPlatformScoped('/admin/membros/cursos/c-1')).toBe(true)
+    // Editor de entidade fixa mostra a audiência REAL do curso e não muda de
+    // conteúdo quando o seletor global troca.
+    expect(pathIsPlatformScoped('/admin/membros/cursos/c-1')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/membros/cursos/c-1/aulas/a-1')).toBe(false)
     expect(pathIsPlatformScoped('/admin/membros/analises')).toBe(true)
     // Globais (a legenda do switcher avisa).
     expect(pathIsPlatformScoped('/admin')).toBe(false)

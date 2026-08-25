@@ -179,6 +179,7 @@ export class ModerationService {
   // ── Fila de aprovação ──────────────────────────────────────────────────────
   async listPending(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     limit: number
     offset: number
   }): Promise<{ items: PendingItemView[]; total: number; limit: number; offset: number }> {
@@ -309,6 +310,7 @@ export class ModerationService {
   // ── Denúncias ──────────────────────────────────────────────────────────────
   async listReports(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     status?: ReportStatus
     limit: number
     offset: number

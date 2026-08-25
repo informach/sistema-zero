@@ -288,12 +288,14 @@ export const ResolveReportBody = t.Object({
 /** Fila de aprovação (admin). */
 export const PendingQuery = t.Object({
   spaceId: t.Optional(UUID),
+  audience: t.Optional(AUDIENCE),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
 export const ReportsQuery = t.Object({
   spaceId: t.Optional(UUID),
+  audience: t.Optional(AUDIENCE),
   status: t.Optional(REPORT_STATUS),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),

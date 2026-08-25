@@ -231,5 +231,8 @@ const PLATFORM_SCOPED_PREFIXES = [
 ] as const
 
 export function pathIsPlatformScoped(pathname: string): boolean {
+  // O editor aponta para um curso FIXO: trocar o seletor não troca a entidade.
+  // A tela mostra a audiência canônica do próprio curso.
+  if (pathname.startsWith('/admin/membros/cursos/')) return false
   return PLATFORM_SCOPED_PREFIXES.some((prefix) => prefixMatches(pathname, prefix))
 }

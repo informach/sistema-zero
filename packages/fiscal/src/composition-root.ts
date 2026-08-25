@@ -2,17 +2,18 @@ import { createLogger, type Logger } from '@sistemazero/core/logging'
 import { EmitInvoiceService } from './application/emit-invoice/emit-invoice.service'
 import { HandlePaymentWebhookService } from './application/handle-payment-webhook/handle-payment-webhook.service'
 import { buildDpsId, type EmitterProfile, INFORMACH_BASE } from './domain/dps/emitter-profile'
-import type { DanfseClient, SefinNacionalGateway } from './domain/ports/sefin-gateway.port'
+import type { SefinNacionalGateway } from './domain/ports/sefin-gateway.port'
 import {
   type A1Certificate,
   certDaysLeft,
   loadA1Certificate,
 } from './infrastructure/certificate/a1-certificate'
 import type { Env } from './infrastructure/config/env'
+import { LocalDanfseRenderer } from './infrastructure/danfse/danfse-renderer'
 import { CatalogHttpClient } from './infrastructure/gateways/catalog-http.client'
-import { FakeDanfseClient, FakeSefinGateway } from './infrastructure/gateways/fake-sefin.gateway'
+import { FakeSefinGateway } from './infrastructure/gateways/fake-sefin.gateway'
 import { PaymentsHttpClient } from './infrastructure/gateways/payments-http.client'
-import { AdnDanfseClient, SefinHttpGateway } from './infrastructure/gateways/sefin/sefin.gateway'
+import { SefinHttpGateway } from './infrastructure/gateways/sefin/sefin.gateway'
 import {
   createGatewayMessagingClient,
   createNullMessagingClient,
@@ -67,12 +68,15 @@ export function createApplication(env: Env): Application {
     pTotTribSN: env.NFSE_PTOTTRIB_SN,
   }
 
+  // O DANFSe é GERADO LOCALMENTE (NT 008/2026 — a API do governo foi desligada
+  // em produção): provider ÚNICO, sem depender de certificado/rede.
+  const danfse = new LocalDanfseRenderer(profile)
+
   // Gateway REAL quando há certificado A1; FAKE só em dev/teste sem cert.
   // Trava dura: o fake NUNCA roda apontando p/ produção (e produção sem cert
   // já falha no env.ts).
   const hasCert = Boolean(env.NFSE_CERT_PFX_BASE64 || env.NFSE_CERT_PFX_PATH)
   let sefin: SefinNacionalGateway
-  let danfse: DanfseClient
   let certInfo: A1Certificate | null = null
   if (hasCert) {
     certInfo = loadA1Certificate({
@@ -107,16 +111,11 @@ export function createApplication(env: Env): Application {
       },
       logger,
     )
-    danfse = new AdnDanfseClient(certInfo, {
-      ambiente: env.NFSE_AMBIENTE,
-      timeoutMs: env.NFSE_REQUEST_TIMEOUT_MS,
-    })
   } else {
     if (env.NFSE_AMBIENTE === 'producao') {
       throw new Error('FakeSefinGateway não pode rodar com NFSE_AMBIENTE=producao')
     }
     sefin = new FakeSefinGateway(logger)
-    danfse = new FakeDanfseClient()
   }
 
   const handleWebhook = new HandlePaymentWebhookService(

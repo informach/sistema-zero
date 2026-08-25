@@ -22,21 +22,26 @@
     "spike:02": "bun spike/02-emit.ts",
     "spike:03": "bun spike/03-cancel.ts",
     "spike:04": "bun spike/04-danfse.ts",
-    "spike:05": "bun spike/05-substitute.ts"
+    "spike:05": "bun spike/05-substitute.ts",
+    "spike:06": "bun spike/06-danfse-local.ts"
   },
   "dependencies": {
+    "@cantoo/pdf-lib": "^2.7.1",
     "@sentry/bun": "^10.56.0",
     "@sistemazero/core": "workspace:*",
+    "@xmldom/xmldom": "^0.8.13",
     "drizzle-orm": "^0.45.2",
     "elysia": "^1.4.9",
     "node-forge": "^1.3.1",
     "postgres": "^3.4.7",
+    "qrcode": "^1.5.4",
     "xml-crypto": "^6.1.2",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node-forge": "^1.3.11",
+    "@types/qrcode": "^1.5.6",
     "drizzle-kit": "^0.31.5"
   },
   "peerDependencies": {

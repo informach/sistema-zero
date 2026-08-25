@@ -250,9 +250,13 @@ export interface InvoiceRepository {
     claimToken: string,
     contentType?: string,
   ): Promise<boolean>
-  findPdfByToken(
-    token: string,
-  ): Promise<{ invoiceId: string; content: Uint8Array; contentType: string } | null>
+  /** `invoiceStatus` alimenta o carimbo CANCELADA/SUBSTITUÍDA na hora de servir. */
+  findPdfByToken(token: string): Promise<{
+    invoiceId: string
+    invoiceStatus: InvoiceStatus
+    content: Uint8Array
+    contentType: string
+  } | null>
   markEmailSent(id: string, claimToken: string): Promise<boolean>
 
   /**

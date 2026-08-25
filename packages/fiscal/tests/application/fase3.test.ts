@@ -13,7 +13,7 @@ import {
   InMemoryInvoiceRepository,
   paidSnapshot,
   RecordingMessagingClient,
-  ScriptedDanfseClient,
+  ScriptedDanfseProvider,
   ScriptedSefinGateway,
   silentLogger,
 } from '../fakes/in-memory'
@@ -31,7 +31,7 @@ function build() {
   const invoices = new InMemoryInvoiceRepository()
   const payments = new FakePaymentsClient()
   const sefin = new ScriptedSefinGateway()
-  const danfse = new ScriptedDanfseClient()
+  const danfse = new ScriptedDanfseProvider()
   const messaging = new RecordingMessagingClient()
   const service = new EmitInvoiceService(
     invoices,

@@ -14,7 +14,7 @@ import {
 } from '@sistemazero/ui/table'
 import { Search } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { ChildListRow } from '@/app/api/admin/children/route'
 import { AdminHeader } from '@/components/admin/admin-header'
@@ -22,6 +22,7 @@ import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { ageFrom } from '@/lib/age'
 import { type ApiError, apiGet } from '@/lib/api'
 import { relativeCivilDayLabel } from '@/lib/format'
+import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 
 const LIMIT = 20
@@ -38,28 +39,37 @@ export function ChildrenClient() {
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
+  const loadAuthority = useRef(createForegroundPriority()).current
 
   const load = useCallback(async () => {
     setLoading(true)
-    try {
-      const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
-      if (q.trim()) params.set('q', q.trim())
-      const page = await apiGet<{ items: ChildListRow[]; total: number }>(
-        `/api/admin/children?${params}`,
-      )
-      setItems(page.items)
-      setTotal(page.total)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar as crianças.')
-    } finally {
-      setLoading(false)
-    }
-  }, [offset, q])
+    await runLatestForeground(
+      loadAuthority,
+      () => {
+        const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
+        if (q.trim()) params.set('q', q.trim())
+        return apiGet<{ items: ChildListRow[]; total: number }>(`/api/admin/children?${params}`)
+      },
+      {
+        onSuccess: (page) => {
+          setItems(page.items)
+          setTotal(page.total)
+        },
+        onError: (error) => {
+          toast.error((error as ApiError).message ?? 'Falha ao carregar as crianças.')
+        },
+        onSettled: () => setLoading(false),
+      },
+    )
+  }, [offset, q, loadAuthority])
 
   useEffect(() => {
-    const t = setTimeout(load, 250)
-    return () => clearTimeout(t)
-  }, [load])
+    const timer = setTimeout(() => void load(), 250)
+    return () => {
+      clearTimeout(timer)
+      loadAuthority.invalidate()
+    }
+  }, [load, loadAuthority])
 
   return (
     <div className="space-y-6">

@@ -1174,6 +1174,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       id: string
       email: string
       firstName: string
+      lastName: string
       role: UserRole
       status: UserStatus
       version: number
@@ -1187,7 +1188,7 @@ describe('Auth admin routes (/auth/admin/users)', () => {
         email: over.email ?? `u-${id}@example.com`,
         passwordHash: 'hashed:x',
         firstName: over.firstName ?? 'First',
-        lastName: 'Last',
+        lastName: over.lastName ?? 'Last',
         passwordSetAt: null,
         role: over.role ?? 'customer',
         status: over.status ?? 'active',
@@ -1468,6 +1469,26 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       ],
       total: 1,
     })
+  })
+
+  test('GET /auth/admin/profiles busca pelo nome completo do responsável', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, {
+      email: 'ana@example.com',
+      firstName: 'Ana',
+      lastName: 'Souza',
+    })
+    const profileId = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Miguel' })
+    seedProfile(profilesRepo, { name: 'Outra Criança' })
+
+    const res = await app.handle(
+      getReq(`/auth/admin/profiles?q=${encodeURIComponent('Ana Souza')}`, actorHeaders('staff')),
+    )
+
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { items: { id: string }[]; total: number }
+    expect(body.total).toBe(1)
+    expect(body.items.map((item) => item.id)).toEqual([profileId])
   })
 
   test('q por e-mail do responsável acha os perfis da conta; conta apagada → account: null', async () => {

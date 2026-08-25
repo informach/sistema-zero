@@ -1,3 +1,4 @@
+import { composeMemberToolUsage } from '@/lib/member-tool-usage-bff'
 import { forwardUpstream } from '@/server/forward'
 import { getMemberToolUsage } from '@/server/members'
 import { getUserProfiles } from '@/server/users'
@@ -10,8 +11,6 @@ import { getUserProfiles } from '@/server/users'
 export async function GET(_req: Request, { params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params
   const profilesRes = await getUserProfiles(userId)
-  const profileIds =
-    profilesRes.status === 200 ? (profilesRes.body?.profiles ?? []).map((p) => p.id) : []
-  const usage = await getMemberToolUsage(userId, profileIds)
+  const usage = await composeMemberToolUsage(userId, profilesRes, getMemberToolUsage)
   return forwardUpstream(usage)
 }

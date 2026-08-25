@@ -65,3 +65,6 @@ playwright-report/
 # Screenshots/rascunhos soltos no root do monorepo (assets reais vivem em packages/*/public)
 /*.png
 qa-screens/
+
+# Artefatos de conferência/rascunho (dumps de PDF, capturas de review).
+tmp/

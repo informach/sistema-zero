@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { canBackgroundRefreshPage, createForegroundPriority } from '../src/lib/latest-wins'
+import {
+  canBackgroundRefreshPage,
+  createForegroundPriority,
+  createLatestAppendGuard,
+  runLatestForeground,
+} from '../src/lib/latest-wins'
 
 describe('foreground-priority — polling nunca engole paginação', () => {
   test('entre duas ações foreground, a mais nova continua vencendo', () => {
@@ -38,5 +43,58 @@ describe('foreground-priority — polling nunca engole paginação', () => {
     expect(canBackgroundRefreshPage(0)).toBe(true)
     expect(canBackgroundRefreshPage(30)).toBe(false)
     expect(canBackgroundRefreshPage(90)).toBe(false)
+  })
+
+  test('uma resposta antiga não publica dados, erro nem loading depois da mais nova', async () => {
+    const authority = createForegroundPriority()
+    let resolveOld: (value: string) => void = () => {}
+    let resolveNew: (value: string) => void = () => {}
+    const oldRead = new Promise<string>((resolve) => {
+      resolveOld = resolve
+    })
+    const newRead = new Promise<string>((resolve) => {
+      resolveNew = resolve
+    })
+    const published: string[] = []
+    const errors: unknown[] = []
+    let settled = 0
+    const handlers = {
+      onSuccess: (value: string) => published.push(value),
+      onError: (error: unknown) => errors.push(error),
+      onSettled: () => {
+        settled += 1
+      },
+    }
+
+    const oldRun = runLatestForeground(authority, () => oldRead, handlers)
+    const newRun = runLatestForeground(authority, () => newRead, handlers)
+    resolveNew('novo')
+    await newRun
+    resolveOld('antigo')
+    await oldRun
+
+    expect(published).toEqual(['novo'])
+    expect(errors).toEqual([])
+    expect(settled).toBe(1)
+  })
+})
+
+describe('append paginado por aprendiz', () => {
+  test('duplo clique inicia uma única página e a troca de aprendiz invalida a antiga', () => {
+    const guard = createLatestAppendGuard()
+    const oldLearner = guard.begin()
+    expect(oldLearner).not.toBeNull()
+    expect(guard.begin()).toBeNull()
+    if (!oldLearner) throw new Error('append deveria iniciar')
+
+    guard.invalidate()
+    expect(guard.canPublish(oldLearner)).toBe(false)
+
+    const newLearner = guard.begin()
+    expect(newLearner).not.toBeNull()
+    if (!newLearner) throw new Error('append do novo aprendiz deveria iniciar')
+    expect(guard.canPublish(newLearner)).toBe(true)
+    guard.finish(newLearner)
+    expect(guard.begin()).not.toBeNull()
   })
 })
