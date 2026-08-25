@@ -402,6 +402,29 @@ export const COPY = {
     baseColorLocked:
       'As cores da paleta são fixas! Você só pode apagar as cores que adicionou com o +.',
     pickColorFirst: 'Escolha uma cor primeiro para poder apagar.',
+    /** Biblioteca "Minhas paletas" + criação de paleta personalizada. */
+    myPalettes: 'Minhas paletas',
+    createPalette: 'Criar paleta',
+    paletteFromImage: 'Cores de uma imagem',
+    libraryFull: 'Você já tem muitas paletas guardadas. Apague uma para criar outra.',
+    createPaletteTitle: 'Criar paleta',
+    paletteNameLabel: 'Nome da paleta',
+    paletteNamePlaceholder: 'Minha paleta',
+    editSlot: (index: number) => `Trocar a cor ${index}`,
+    createConfirm: 'Criar e usar',
+    fromImageHint:
+      'Traga um print de uma paleta de cores. As cores da imagem viram uma paleta sua.',
+    fromImagePick: 'Escolher a imagem',
+    fromImagePreview: 'Cores encontradas:',
+    fromImageEmpty: 'Não encontrei nenhuma cor nessa imagem. Tente outra.',
+    paletteCreated: 'Paleta criada! Já está valendo neste desenho.',
+    managePalettes: 'Gerenciar paletas',
+    manageEmpty: 'Você ainda não guardou nenhuma paleta.',
+    /** Excluir da biblioteca NUNCA muda um desenho: a paleta usada fica embutida nele. */
+    manageDeleteNote: 'Apagar uma paleta daqui não muda nenhum desenho: cada um guarda a sua.',
+    manageRename: (name: string) => `Renomear ${name}`,
+    manageDelete: (name: string) => `Apagar ${name}`,
+    manageDeleteArm: (name: string) => `Apagar ${name}? Toque de novo para confirmar`,
   },
   colorPicker: {
     hex: 'Código da cor',

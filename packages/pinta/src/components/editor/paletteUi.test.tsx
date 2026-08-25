@@ -10,7 +10,7 @@ import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 
 const { PintaApp } = await import('../PintaApp')
-const { setPintaStorageNamespace } = await import('../../state/persistence')
+const { createPintaPersistence, setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
 const { createPixelBackgroundAsset } = await import('../../core/project')
 
@@ -105,6 +105,118 @@ describe('paleta: dropdown de troca', () => {
     await waitFor(() => {
       expect(screen.queryByRole('menu')).toBeNull()
     })
+  })
+})
+
+describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
+  it('"Criar paleta" pelo menu: aplica no desenho, guarda na biblioteca e é desfazível', async () => {
+    await openPixelEditor()
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitem', { name: COPY.palette.createPalette }))
+
+    // O diálogo nasce SEMEADO da paleta ativa (15 slots já pintados).
+    const nameInput = await screen.findByLabelText(COPY.palette.paletteNameLabel)
+    fireEvent.change(nameInput, { target: { value: 'Lava quente' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.createConfirm }))
+
+    // O título do painel vira o NOME da paleta nova (o asset está em custom).
+    await waitFor(() => {
+      expect(menuTrigger('Lava quente')).toBeTruthy()
+    })
+    await screen.findByText(COPY.palette.paletteCreated)
+
+    // Guardou na biblioteca: o menu reaberto lista em "Minhas paletas".
+    fireEvent.click(menuTrigger('Lava quente'))
+    await screen.findByRole('menu')
+    expect(screen.getByRole('menuitemradio', { name: /Lava quente/ })).toBeTruthy()
+    fireEvent.keyDown(document, { key: 'Escape' })
+
+    // Um desfazer devolve a paleta de antes (a troca é UM commit).
+    fireEvent.click(undoButton())
+    await waitFor(() => {
+      expect(menuTrigger('Arcade')).toBeTruthy()
+    })
+  })
+
+  it('gerenciar: renomeia e exclui da biblioteca (excluir NÃO toca o desenho)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Céu',
+          colors: ['', '#87f2ff', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+    })
+    await openPixelEditor()
+    // Aplica a paleta salva (o desenho passa a EMBUTI-la).
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Céu/ }))
+    await waitFor(() => {
+      expect(menuTrigger('Céu')).toBeTruthy()
+    })
+
+    fireEvent.click(menuTrigger('Céu'))
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitem', { name: COPY.palette.managePalettes }))
+    await screen.findByText(COPY.palette.manageDeleteNote)
+
+    // Renomear.
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.manageRename('Céu') }))
+    const input = await screen.findByLabelText(COPY.palette.paletteNameLabel)
+    fireEvent.change(input, { target: { value: 'Céu de verão' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.rename }))
+    await screen.findByRole('button', { name: COPY.palette.manageRename('Céu de verão') })
+
+    // Excluir em DOIS toques (1º arma no próprio botão).
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.manageDelete('Céu de verão') }))
+    fireEvent.click(
+      await screen.findByRole('button', { name: COPY.palette.manageDeleteArm('Céu de verão') }),
+    )
+    await screen.findByText(COPY.palette.manageEmpty)
+
+    // O desenho segue com a paleta EMBUTIDA (excluir da biblioteca não o toca).
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(menuTrigger('Céu')).toBeTruthy()
+    })
+  })
+
+  it('escolher uma paleta SALVA aplica e CLAMPA a cor da sessão para um slot pintável', async () => {
+    // Biblioteca pré-semeada com uma paleta de DUAS cores (slots 1 e 2).
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Céu de verão',
+          colors: ['', '#87f2ff', '#003fad', ...Array.from({ length: 13 }, () => '')],
+        },
+      ],
+    })
+    await openPixelEditor()
+    // Seleciona a cor 5 da arcade — na paleta nova esse slot é VAZIO.
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.colorLabel(5) }))
+
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Céu de verão/ }))
+
+    await waitFor(() => {
+      expect(menuTrigger('Céu de verão')).toBeTruthy()
+    })
+    // Slots vazios não viram swatch, e a seleção clampou para o 1º pintável.
+    expect(screen.queryByRole('button', { name: COPY.a11y.colorLabel(5) })).toBeNull()
+    expect(
+      screen.getByRole('button', { name: COPY.a11y.colorLabel(1) }).getAttribute('aria-pressed'),
+    ).toBe('true')
   })
 })
 

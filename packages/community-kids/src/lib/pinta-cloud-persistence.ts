@@ -29,11 +29,14 @@
  * ⚠️ Descidas gravadas por aqui NÃO passam pelo `persistAssets` embrulhado (senão
  * o que acabou de descer subiria de novo).
  */
-import type { PintaAsset } from '@sistemazero/pinta/assets'
+import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import {
   assetFromJson,
   assetToJson,
+  emptyPaletteLibrary,
+  mergePaletteLibraries,
   PINTA_LIMITS,
+  sanitizePaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
 import type { CloudCreationSummary, CreationsCloud } from './creations-cloud'
@@ -54,9 +57,22 @@ export interface PintaPersistenceLike {
   loadAssetById(id: string): Promise<PintaAsset | null>
   listAllAssets(): Promise<PintaAsset[]>
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
+  /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
+  loadPaletteLibrary?(): Promise<PaletteLibrary | null>
+  savePaletteLibrary?(library: PaletteLibrary): Promise<void>
   /** Desliga o que o wrapper escuta por fora (abrir/fechar do editor). O host chama ao trocar. */
   dispose?(): void
 }
+
+/**
+ * A biblioteca viaja como UM item ESPECIAL no MESMO canal das creations (zero
+ * migration/rota nova): itemId fixo, kind próprio. O members só o vê como mais
+ * um item; quem o distingue é (a) a reconciliação daqui, que o tira da lista de
+ * ASSETS antes do `reconcileCreations`, e (b) o `creationsUsageByUsers` do
+ * admin, que filtra o kind para não contar a biblioteca como "+1 desenho".
+ */
+export const PALETTE_LIBRARY_ITEM_ID = 'sz-pinta-palettes'
+export const PALETTE_LIBRARY_KIND = 'palette-library'
 
 const TILESET_KINDS = new Set(['tileset', 'vector-tileset'])
 /** Cada passe da descida trabalha até aqui; o resto volta em passes seguidos. */
@@ -148,6 +164,8 @@ export function createCloudMirroredPintaPersistence(options: {
 }): PintaPersistenceLike {
   const { local, cloud } = options
   const now = options.now ?? (() => Date.now())
+  const loadLibrary = local.loadPaletteLibrary?.bind(local)
+  const saveLibrary = local.savePaletteLibrary?.bind(local)
   const reconcileMinIntervalMs = options.reconcileMinIntervalMs ?? RECONCILE_MIN_INTERVAL_MS
   const budgetMs = options.budgetMs ?? FIRST_LOAD_BUDGET_MS
   const passDelayMs = options.passDelayMs ?? DEFERRED_PASS_DELAY_MS
@@ -221,6 +239,77 @@ export function createCloudMirroredPintaPersistence(options: {
     if (current) enqueue(current)
   }
 
+  /** Sobe a biblioteca "Minhas paletas" (item especial) quando o registro local mudou. */
+  function enqueuePaletteUpload(): void {
+    if (!loadLibrary) return
+    cloud.enqueueUpload(
+      PALETTE_LIBRARY_ITEM_ID,
+      async () => {
+        const library = await loadLibrary()
+        if (!library) return null
+        if (marks.get(PALETTE_LIBRARY_ITEM_ID) === library.updatedAt) return null
+        return {
+          json: JSON.stringify(library),
+          meta: {
+            name: 'Minhas paletas',
+            kind: PALETTE_LIBRARY_KIND,
+            updatedAt: library.updatedAt,
+            baseRevision: marks.revision(PALETTE_LIBRARY_ITEM_ID) ?? 0,
+          },
+        }
+      },
+      ({ itemId, updatedAt, revision }) => {
+        marks.set(itemId, updatedAt, revision)
+        marks.clearTombstone(itemId)
+      },
+      () => resolvePaletteConflict(),
+    )
+  }
+
+  /**
+   * Desce a biblioteca da nuvem e FUNDE com a local (por id de paleta, o
+   * `updatedAt` maior vence — `mergePaletteLibraries`, a regra ÚNICA). Grava o
+   * resultado e, quando o merge tem algo que a nuvem não tinha, sobe de novo.
+   * Serve a reconciliação (revisão que esta marca não conhece) E a base
+   * vencida na subida (outro aparelho subiu antes). Excluir/renomear paleta
+   * segue o mesmo canal — SEM lápide (registro pequeno; trade-off documentado
+   * no `mergePaletteLibraries`).
+   */
+  async function resolvePaletteConflict(): Promise<void> {
+    if (!saveLibrary) return
+    const downloaded = await cloud.download(PALETTE_LIBRARY_ITEM_ID)
+    if (downloaded) {
+      let remote: PaletteLibrary | null = null
+      try {
+        remote = sanitizePaletteLibrary(JSON.parse(downloaded.json))
+      } catch {
+        remote = null
+      }
+      if (remote) {
+        const localLibrary = (await loadLibrary?.()) ?? emptyPaletteLibrary()
+        const merged = mergePaletteLibraries(localLibrary, remote)
+        const changedVsRemote = JSON.stringify(merged.palettes) !== JSON.stringify(remote.palettes)
+        // Merge que difere do remoto é uma "edição" local: carimbo novo para o
+        // produtor ver que há o que subir (a marca fica na revisão da nuvem).
+        await saveLibrary(changedVsRemote ? { ...merged, updatedAt: now() } : merged)
+        marks.set(
+          PALETTE_LIBRARY_ITEM_ID,
+          downloaded.summary.itemUpdatedAt,
+          downloaded.summary.revision,
+        )
+        if (changedVsRemote) enqueuePaletteUpload()
+        return
+      }
+      marks.set(
+        PALETTE_LIBRARY_ITEM_ID,
+        downloaded.summary.itemUpdatedAt,
+        downloaded.summary.revision,
+      )
+    }
+    // Nuvem sem o item (ou ilegível): o que há aqui sobe.
+    enqueuePaletteUpload()
+  }
+
   function enqueueRemove(id: string): void {
     const at = now()
     const revision = marks.revision(id) ?? null
@@ -274,11 +363,30 @@ export function createCloudMirroredPintaPersistence(options: {
     const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
     if (!remote) return 0
     skippedOpen.clear()
+    // O item ESPECIAL da biblioteca sai da lista de ASSETS antes do reconcile
+    // (o sanitize o descartaria e ele viraria "desenho corrompido" no relatório).
+    const paletteSummary = remote.find((s) => s.itemId === PALETTE_LIBRARY_ITEM_ID) ?? null
+    const assetSummaries = paletteSummary
+      ? remote.filter((s) => s.itemId !== PALETTE_LIBRARY_ITEM_ID)
+      : remote
+    if (paletteSummary) {
+      // Revisão que esta marca não conhece → desce e funde (best-effort).
+      if (marks.revision(PALETTE_LIBRARY_ITEM_ID) !== paletteSummary.revision) {
+        void resolvePaletteConflict().catch(() => {})
+      }
+    } else if (loadLibrary) {
+      // Nuvem ainda sem a biblioteca: se há uma local com conteúdo, sobe.
+      void loadLibrary()
+        .then((library) => {
+          if (library && library.palettes.length > 0) enqueuePaletteUpload()
+        })
+        .catch(() => {})
+    }
     const takenNames = new Set(localAssets.map((a) => a.name))
     const nameOwner = new Map(localAssets.map((a) => [a.name, a.id]))
     const report = await reconcileCreations<PintaAsset, PintaAsset>({
       local: localAssets,
-      cloud: remote,
+      cloud: assetSummaries,
       marks,
       now,
       budgetMs,
@@ -408,6 +516,18 @@ export function createCloudMirroredPintaPersistence(options: {
         listeners.delete(listener)
       }
     },
+    // A biblioteca "Minhas paletas": leitura direta; salvar TAMBÉM enfileira a
+    // subida do item especial. Os métodos só existem quando o local os tem
+    // (armazenamento sem eles = biblioteca desligada, e o wrapper não inventa).
+    ...(loadLibrary ? { loadPaletteLibrary: () => loadLibrary() } : {}),
+    ...(saveLibrary
+      ? {
+          savePaletteLibrary: async (library: PaletteLibrary) => {
+            await saveLibrary(library)
+            enqueuePaletteUpload()
+          },
+        }
+      : {}),
     dispose() {
       unsubscribeOpenState?.()
       unsubscribeOpenState = null

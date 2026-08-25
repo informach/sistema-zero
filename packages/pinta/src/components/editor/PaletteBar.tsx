@@ -21,23 +21,46 @@
  * estreita — o dropdown ancora no ToolButton de paleta).
  */
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { useStore } from 'zustand'
 import { removeExtraColor } from '../../core/assetEdit'
 import { normalizeHex } from '../../core/color'
 import { COPY } from '../../core/copy'
-import { getPalette, PALETTE_SIZE, type PaletteId, TRANSPARENT_INDEX } from '../../core/palette'
-import { PINTA_LIMITS, resolveAssetPalette } from '../../core/project'
+import {
+  firstPaintableIndex,
+  PALETTE_SIZE,
+  type PaletteId,
+  TRANSPARENT_INDEX,
+} from '../../core/palette'
+import {
+  assetPaletteName,
+  PINTA_LIMITS,
+  type PintaAsset,
+  resolveAssetPalette,
+} from '../../core/project'
+import { usePintaApp } from '../appContext'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { ChevronDown, Palette, Plus, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { ColorPickerDialog } from './ColorPicker'
+import { CreatePaletteDialog } from './CreatePaletteDialog'
 import { useEditor, useEditorStores, useSession } from './editorContext'
+import { ManagePalettesDialog } from './ManagePalettesDialog'
 import { PaletteMenu, usePaletteMenu } from './PaletteMenu'
+
+/**
+ * "Cores de uma imagem" puxa decoder + quantizador — pedaço separado do
+ * bundle, só entra quando a criança abre (padrão LazyImportImageDialog).
+ */
+const LazyPaletteFromImageDialog = lazy(() =>
+  import('./PaletteFromImageDialog').then((m) => ({ default: m.PaletteFromImageDialog })),
+)
 
 export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): JSX.Element | null {
   const { editor, session } = useEditorStores()
+  const { paletteLibrary } = usePintaApp()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const color = useSession((state) => state.color)
@@ -50,11 +73,19 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   const [pickerOpen, setPickerOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [pickerValue, setPickerValue] = useState('#ff8800')
+  const [createOpen, setCreateOpen] = useState(false)
+  const [fromImageOpen, setFromImageOpen] = useState(false)
+  const [manageOpen, setManageOpen] = useState(false)
+  const libraryEnabled = useStore(paletteLibrary, (state) => state.enabled)
+  const savedPalettes = useStore(paletteLibrary, (state) => state.palettes)
+  useEffect(() => {
+    if (libraryEnabled) void paletteLibrary.getState().load()
+  }, [libraryEnabled, paletteLibrary])
 
   // Só kinds com paleta indexada própria (vetoriais usam cor livre).
   if (!('paletteId' in asset)) return null
   const colors = resolveAssetPalette(asset)
-  const paletteName = getPalette(asset.paletteId).name
+  const paletteName = assetPaletteName(asset)
   /** A lixeira só alcança cor EXTRA (as 16 base são fixas). */
   const deletable = tool !== 'eraser' && slotColor >= PALETTE_SIZE && slotColor < colors.length
   const selectedHex = colors[slotColor] ?? null
@@ -83,13 +114,69 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     setPickerOpen(false)
   }
 
+  /**
+   * Clamp obrigatório após trocar de paleta: uma personalizada pode ter SLOTS
+   * VAZIOS ('') e a cor da sessão cair num deles seria o "lápis que não
+   * pinta". A principal cai no primeiro índice pintável; a secundária pode
+   * ficar transparente (é o "apagar" dela).
+   */
+  function clampSessionColors(next: PintaAsset): void {
+    if (!('paletteId' in next)) return
+    const resolved = resolveAssetPalette(next)
+    const paintable = (index: number) =>
+      index > TRANSPARENT_INDEX && index < resolved.length && !!resolved[index]
+    const s = session.getState()
+    if (!paintable(s.color)) s.setColor(firstPaintableIndex(resolved))
+    if (s.colorSecondary !== TRANSPARENT_INDEX && !paintable(s.colorSecondary)) {
+      s.setColorSecondary(TRANSPARENT_INDEX)
+    }
+  }
+
   /** Troca a paleta base (commit desfazível; id igual é no-op) e fecha o menu. */
   function choosePalette(id: PaletteId): void {
     const current = editor.getState().asset
-    if ('paletteId' in current && current.paletteId !== id) {
-      editor.getState().commit({ ...current, paletteId: id })
+    if ('paletteId' in current && (current.paletteId !== id || current.customPalette)) {
+      // Sair de uma personalizada REMOVE a chave embutida (senão ela ficaria
+      // órfã no registro até o sanitize do próximo load a descartar).
+      const { customPalette: _dropped, ...rest } = current
+      const next: PintaAsset = { ...rest, paletteId: id }
+      editor.getState().commit(next)
+      clampSessionColors(next)
     }
     menu.close()
+  }
+
+  /** Aplica uma paleta personalizada como SNAPSHOT embutido no desenho. */
+  function applyCustomPalette(palette: { name: string; colors: readonly string[] }): void {
+    const current = editor.getState().asset
+    if (!('paletteId' in current)) return
+    const next: PintaAsset = {
+      ...current,
+      paletteId: 'custom',
+      customPalette: { name: palette.name, colors: [...palette.colors] },
+    }
+    editor.getState().commit(next)
+    clampSessionColors(next)
+  }
+
+  /**
+   * Criar (à mão ou de uma imagem): guarda na biblioteca (quando há uma) e
+   * APLICA no desenho. O teto trava só a BIBLIOTECA — a paleta ainda vale
+   * neste desenho (ela viaja embutida).
+   */
+  async function handleCreatePalette(name: string, paletteColors: string[]): Promise<void> {
+    setCreateOpen(false)
+    setFromImageOpen(false)
+    const library = paletteLibrary.getState()
+    const saved = library.enabled
+      ? await library.savePalette({ name, colors: paletteColors })
+      : null
+    applyCustomPalette(saved ?? { name, colors: paletteColors })
+    if (library.enabled && !saved) {
+      showToast(COPY.palette.libraryFull)
+      return
+    }
+    showToast(COPY.palette.paletteCreated)
   }
 
   /** Lixeira: extra → confirmação; base/borracha → aviso gentil (sem dialog). */
@@ -199,7 +286,66 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   )
 
   const paletteMenu = (
-    <PaletteMenu anchor={menu} activeId={asset.paletteId} onChoose={choosePalette} />
+    <PaletteMenu
+      anchor={menu}
+      activeId={asset.paletteId}
+      onChoose={choosePalette}
+      // As AÇÕES (criar/da imagem) aparecem SEMPRE — sem biblioteca (modo
+      // aula) a paleta criada só se aplica ao desenho, que é o que viaja.
+      library={{
+        palettes: libraryEnabled ? savedPalettes : [],
+        onChooseCustom: (palette) => {
+          applyCustomPalette(palette)
+          menu.close()
+        },
+        onCreate: () => {
+          setCreateOpen(true)
+          menu.close()
+        },
+        onFromImage: () => {
+          setFromImageOpen(true)
+          menu.close()
+        },
+        ...(libraryEnabled
+          ? {
+              onManage: () => {
+                setManageOpen(true)
+                menu.close()
+              },
+            }
+          : {}),
+      }}
+    />
+  )
+
+  const createDialogs = (
+    <>
+      <CreatePaletteDialog
+        key={String(createOpen)}
+        open={createOpen}
+        initialColors={colors.slice(0, PALETTE_SIZE)}
+        onClose={() => setCreateOpen(false)}
+        onCreate={(name, paletteColors) => void handleCreatePalette(name, paletteColors)}
+      />
+      {fromImageOpen ? (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+              <div className="pin-panel px-5 py-3 font-bold text-pin-fg">
+                {COPY.importImage.loading}
+              </div>
+            </div>
+          }
+        >
+          <LazyPaletteFromImageDialog
+            open
+            onClose={() => setFromImageOpen(false)}
+            onCreate={(name, paletteColors) => void handleCreatePalette(name, paletteColors)}
+          />
+        </Suspense>
+      ) : null}
+      <ManagePalettesDialog open={manageOpen} onClose={() => setManageOpen(false)} />
+    </>
   )
 
   const pickerDialog = (
@@ -259,6 +405,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
         {paletteMenu}
         {pickerDialog}
         {confirmDialog}
+        {createDialogs}
       </div>
     )
   }
@@ -301,6 +448,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       {paletteMenu}
       {pickerDialog}
       {confirmDialog}
+      {createDialogs}
     </Panel>
   )
 }

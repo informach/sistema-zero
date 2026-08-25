@@ -53,6 +53,8 @@ export class InMemoryToolUsageRepository implements ToolUsageRepository {
     for (const r of this.creations.rows.values()) {
       if (!set.has(r.userId) || r.tool !== tool) continue
       if (r.deletedAt !== null || r.storageRef === null) continue
+      // A biblioteca "Minhas paletas" (item especial do canal) não é desenho.
+      if (r.kind === 'palette-library') continue
       const prev = out.get(r.userId) ?? { count: 0, lastActivityAt: null }
       prev.count += 1
       if (!prev.lastActivityAt || r.itemUpdatedAt.getTime() > prev.lastActivityAt.getTime()) {

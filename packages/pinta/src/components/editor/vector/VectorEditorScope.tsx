@@ -23,7 +23,7 @@ import {
 import { COPY } from '../../../core/copy'
 import { isTextEntryTarget } from '../../../core/dom'
 import { newId } from '../../../core/id'
-import { DEFAULT_PALETTE_ID, type PaletteId } from '../../../core/palette'
+import { DEFAULT_PALETTE_ID } from '../../../core/palette'
 import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
 import { shortcut } from '../../../core/shortcuts'
 import { ensureVectorFontLoaded, ensureVectorFontsForShapes } from '../../../vector/fonts'
@@ -88,9 +88,10 @@ import {
   cloneShapesWithNewIds,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
-  paletteSwatches,
   TOOL_SHORTCUTS,
+  type VectorPaletteChoice,
   type VectorTool,
+  vectorPaletteSwatches,
 } from './vectorTools'
 
 /** Qual "canal" de cor recebe o próximo clique na paleta. */
@@ -105,8 +106,8 @@ export interface VectorEditorContextValue {
   customColors: string[]
   /** Apaga uma cor personalizada das recentes (lixeira do painel de cores). */
   forgetColor: (hex: string) => void
-  paletteId: PaletteId
-  setPaletteId: (id: PaletteId) => void
+  palette: VectorPaletteChoice
+  setPalette: (choice: VectorPaletteChoice) => void
   swatches: string[]
   selectedIds: string[]
   setSelectedIds: Dispatch<SetStateAction<string[]>>
@@ -217,7 +218,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Paleta SUGERIDA (a cor do vetor é livre; a paleta só troca as sugestões da
   // grade). Vive aqui, e não no asset como no pixel: kinds vetoriais não têm
   // campo `paletteId` e criar um entraria no desfazer sem mudar o desenho.
-  const [paletteId, setPaletteId] = useState<PaletteId>(DEFAULT_PALETTE_ID)
+  // Personalizada entra como SNAPSHOT (VectorPaletteChoice) — excluir da
+  // biblioteca não quebra a sessão aberta.
+  const [palette, setPalette] = useState<VectorPaletteChoice>({
+    kind: 'builtin',
+    id: DEFAULT_PALETTE_ID,
+  })
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   // Seleção de NÓS (só vale com a ferramenta de pontos). Guardada por ÍNDICE,
   // como o palco sempre desenhou os nós. ⭐ Índice velho nunca sobrevive a uma
@@ -413,7 +419,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Ordem da grade (espelho do pixel: base primeiro, adicionadas no fim): as 15
   // cores da paleta escolhida → as cores do JOGO (Pensa), que não podem sumir na
   // troca de paleta → as personalizadas recentes, que são as apagáveis.
-  const baseSwatches = paletteSwatches(paletteId)
+  const baseSwatches = vectorPaletteSwatches(palette)
   const projectSwatches = [...new Set(asset.projectRef?.palette ?? [])].filter(
     (hex) => !baseSwatches.includes(hex),
   )
@@ -1010,8 +1016,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     style,
     customColors,
     forgetColor,
-    paletteId,
-    setPaletteId,
+    palette,
+    setPalette,
     swatches,
     selectedIds,
     setSelectedIds,

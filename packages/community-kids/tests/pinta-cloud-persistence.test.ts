@@ -6,7 +6,7 @@
  * conflito real vira `-copia` DEPOIS de a descida ter sido baixada e validada.
  */
 import { describe, expect, test } from 'bun:test'
-import type { PintaAsset } from '@sistemazero/pinta/assets'
+import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import { assetFromJson, assetToJson, createAsset, PINTA_LIMITS } from '@sistemazero/pinta/assets'
 import type {
   CloudCreationSummary,
@@ -19,16 +19,21 @@ import type {
 import { createMemorySyncedMarks } from '../src/lib/creations-sync'
 import {
   createCloudMirroredPintaPersistence,
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
   type PintaPersistenceLike,
   uniqueAssetName,
 } from '../src/lib/pinta-cloud-persistence'
 
-function fakeLocal(
-  initial: PintaAsset[] = [],
-): PintaPersistenceLike & { rows: Map<string, PintaAsset> } {
+function fakeLocal(initial: PintaAsset[] = []): PintaPersistenceLike & {
+  rows: Map<string, PintaAsset>
+  library: { current: PaletteLibrary | null }
+} {
   const rows = new Map(initial.map((a) => [a.id, a]))
+  const library: { current: PaletteLibrary | null } = { current: null }
   return {
     rows,
+    library,
     async persistAsset(asset) {
       rows.set(asset.id, asset)
     },
@@ -43,6 +48,12 @@ function fakeLocal(
     },
     async listAllAssets() {
       return [...rows.values()]
+    },
+    async loadPaletteLibrary() {
+      return library.current
+    },
+    async savePaletteLibrary(next) {
+      library.current = next
     },
   }
 }
@@ -610,5 +621,138 @@ describe('uniqueAssetName', () => {
     const name = uniqueAssetName(long, taken)
     expect(name.length).toBeLessThanOrEqual(PINTA_LIMITS.maxNameChars)
     expect(name.endsWith('-2')).toBe(true)
+  })
+})
+
+const libraryOf = (
+  palettes: Array<{ id: string; name: string; updatedAt: number; hex: string }>,
+  updatedAt = Math.max(0, ...palettes.map((p) => p.updatedAt)),
+): PaletteLibrary => ({
+  version: 1,
+  updatedAt,
+  palettes: palettes.map((p) => ({
+    id: p.id,
+    name: p.name,
+    updatedAt: p.updatedAt,
+    colors: ['', p.hex, ...Array.from({ length: 14 }, () => '')],
+  })),
+})
+
+const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationSummary => ({
+  itemId: PALETTE_LIBRARY_ITEM_ID,
+  name: 'Minhas paletas',
+  kind: PALETTE_LIBRARY_KIND,
+  itemUpdatedAt: library.updatedAt,
+  revision,
+  bytes: 10,
+  thumb: null,
+  syncedAt: library.updatedAt,
+})
+
+describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
+  test('salvar a biblioteca enfileira o item ESPECIAL (kind próprio); o commit avança a marca', async () => {
+    const local = fakeLocal()
+    const { cloud, uploads } = fakeCloud(new Map())
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
+
+    const library = libraryOf([{ id: 'a', name: 'Céu', updatedAt: 100, hex: '#87f2ff' }])
+    await mirrored.savePaletteLibrary?.(library)
+    expect(local.library.current?.palettes).toHaveLength(1)
+
+    const job = uploads.get(PALETTE_LIBRARY_ITEM_ID)
+    expect(job).toBeDefined()
+    const snapshot = await job?.produce()
+    expect(snapshot?.meta).toEqual({
+      name: 'Minhas paletas',
+      kind: PALETTE_LIBRARY_KIND,
+      updatedAt: 100,
+      baseRevision: 0,
+    })
+    job?.onUploaded?.({ itemId: PALETTE_LIBRARY_ITEM_ID, updatedAt: 100, revision: 2 })
+    expect(marks.get(PALETTE_LIBRARY_ITEM_ID)).toBe(100)
+    // Nada mudou desde o commit: o produtor devolve null (zero HTTP).
+    expect(await job?.produce()).toBeNull()
+  })
+
+  test('reconciliação: o item especial NÃO vira asset; a biblioteca desce e FUNDE por updatedAt', async () => {
+    const nuvemLib = libraryOf([
+      { id: 'a', name: 'Céu novo', updatedAt: 7, hex: '#aaaaaa' },
+      { id: 'c', name: 'Lava', updatedAt: 3, hex: '#cccccc' },
+    ])
+    const remoto = sprite('da-nuvem', 500)
+    const remote = remoteOf([remoto])
+    remote.set(PALETTE_LIBRARY_ITEM_ID, {
+      json: JSON.stringify(nuvemLib),
+      summary: paletteSummaryOf(nuvemLib, 4),
+    })
+    const local = fakeLocal()
+    local.library.current = libraryOf([
+      { id: 'a', name: 'Céu velho', updatedAt: 5, hex: '#111111' },
+      { id: 'b', name: 'Minha', updatedAt: 9, hex: '#222222' },
+    ])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
+
+    const assets = await loadSettled(mirrored, local)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    // O desenho da nuvem desceu; o item especial NUNCA vira asset local.
+    expect(assets.map((a) => a.name)).toContain('da-nuvem')
+    expect(local.rows.has(PALETTE_LIBRARY_ITEM_ID)).toBe(false)
+
+    // Merge por id + updatedAt: 'a' da nuvem (7 > 5) vence; 'b' local fica; 'c' entra.
+    const merged = local.library.current
+    expect(merged?.palettes.map((p) => [p.id, p.name])).toEqual([
+      ['a', 'Céu novo'],
+      ['b', 'Minha'],
+      ['c', 'Lava'],
+    ])
+    // A marca conhece a revisão da nuvem, e o merge (tem 'b' a mais) sobe de novo.
+    expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(4)
+    expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
+  })
+
+  test('base vencida na subida: onStale funde com a nuvem e re-sobe', async () => {
+    const nuvemLib = libraryOf([
+      { id: 'x', name: 'De outro aparelho', updatedAt: 50, hex: '#ff0000' },
+    ])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        { json: JSON.stringify(nuvemLib), summary: paletteSummaryOf(nuvemLib, 9) },
+      ],
+    ])
+    const local = fakeLocal()
+    local.library.current = libraryOf([{ id: 'y', name: 'Daqui', updatedAt: 60, hex: '#00ff00' }])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
+
+    await mirrored.savePaletteLibrary?.(local.library.current)
+    await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.onStale?.({ itemId: PALETTE_LIBRARY_ITEM_ID })
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    expect(local.library.current?.palettes.map((p) => p.id).sort()).toEqual(['x', 'y'])
+    expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(9)
+    // O merge difere do remoto (tem 'y'): a subida foi re-enfileirada e o
+    // produtor tem o que subir (o carimbo novo é maior que a marca).
+    expect(await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()).not.toBeNull()
+  })
+
+  test('nuvem sem o item: biblioteca local COM conteúdo sobe na reconciliação', async () => {
+    const local = fakeLocal()
+    local.library.current = libraryOf([{ id: 'a', name: 'Céu', updatedAt: 5, hex: '#87f2ff' }])
+    const { cloud, uploads } = fakeCloud(remoteOf([]))
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'p1',
+      marks: createMemorySyncedMarks(),
+    })
+    await loadSettled(mirrored, local)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
   })
 })

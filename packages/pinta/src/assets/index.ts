@@ -24,6 +24,14 @@ export {
   type PintaLessonAssetKind,
 } from '../core/newAsset'
 export {
+  emptyPaletteLibrary,
+  MAX_SAVED_PALETTES,
+  mergePaletteLibraries,
+  type PaletteLibrary,
+  type SavedPalette,
+  sanitizePaletteLibrary,
+} from '../core/paletteLibrary'
+export {
   isPintaAssetLike,
   PINTA_ASSET_KINDS,
   PINTA_LIMITS,

@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, isNotNull, isNull, max } from 'drizzle-orm'
+import { and, count, eq, inArray, isNotNull, isNull, max, ne } from 'drizzle-orm'
 import type {
   LearnerCreationsUsage,
   LearnerDeliveriesUsage,
@@ -61,12 +61,17 @@ export class DrizzleToolUsageRepository implements ToolUsageRepository {
       .from(creations)
       // Viva E CONFIRMADA — o predicado do índice parcial `creations_usage_idx`
       // (uma reserva nunca-commitada tem `storage_ref` null e não é uma criação).
+      // ⚠️ A biblioteca "Minhas paletas" do Pinta viaja como um item ESPECIAL
+      // do mesmo canal (kind `palette-library`, itemId fixo `sz-pinta-palettes`)
+      // e NÃO é um desenho — sem o filtro, todo perfil com paleta salva
+      // ganharia "+1 desenho na nuvem" no cartão do admin.
       .where(
         and(
           inArray(creations.userId, userIds),
           eq(creations.tool, tool),
           isNull(creations.deletedAt),
           isNotNull(creations.storageRef),
+          ne(creations.kind, 'palette-library'),
         ),
       )
       .groupBy(creations.userId)

@@ -9,6 +9,7 @@ import { COPY } from '../core/copy'
 import type { PintaHostAdapter } from '../core/types'
 import { createClipboardStore } from '../state/clipboardStore'
 import { createGalleryStore } from '../state/galleryStore'
+import { createPaletteLibraryStore } from '../state/paletteLibraryStore'
 import {
   createPintaPersistence,
   getPintaStorageNamespace,
@@ -86,6 +87,9 @@ export function PintaApp({
       // Copiar num desenho e colar em outro: a área de transferência é do app (com
       // espelho em localStorage, para atravessar abas e sobreviver a fechar).
       clipboard: createClipboardStore({ namespace: getPintaStorageNamespace() }),
+      // "Minhas paletas" do perfil (fora da galeria); armazenamento sem os
+      // métodos opcionais → a store nasce desabilitada e a UI esconde a seção.
+      paletteLibrary: createPaletteLibraryStore(resolved),
     }
   })
   const { gallery } = store
@@ -114,6 +118,7 @@ export function PintaApp({
       gallery,
       persistence: store.persistence,
       clipboard: store.clipboard,
+      paletteLibrary: store.paletteLibrary,
       openAsset: (id) => setView({ screen: 'editor', assetId: id }),
       closeEditor: () => setView({ screen: 'gallery' }),
       takeInitialIntent: () => {
@@ -133,7 +138,14 @@ export function PintaApp({
         return id
       },
     }),
-    [resolvedAdapter, gallery, store.persistence, store.clipboard, initialIntentVersion],
+    [
+      resolvedAdapter,
+      gallery,
+      store.persistence,
+      store.clipboard,
+      store.paletteLibrary,
+      initialIntentVersion,
+    ],
   )
   const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
   const taskOutputMissing = !!taskOutputId && missingAssetId === taskOutputId

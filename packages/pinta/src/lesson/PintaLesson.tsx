@@ -22,6 +22,7 @@ import { createClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import { createGalleryStore } from '../state/galleryStore'
 import { createMemoryPersistence } from '../state/memoryPersistence'
+import { createPaletteLibraryStore } from '../state/paletteLibraryStore'
 import { createPintaPersistence, type PintaPersistence } from '../state/persistence'
 
 /** O que o host pode ligar de volta. Tudo nasce DESLIGADO: numa aula, menos é mais. */
@@ -108,6 +109,9 @@ export function PintaLesson({
       // Copiar/colar dentro do desenho da aula, SÓ em memória: o desenho da aula é isolado
       // da galeria pessoal, e o espelho em localStorage é compartilhado pela origem inteira.
       clipboard: createClipboardStore({ mirror: null }),
+      // "Minhas paletas" fica FORA da aula (mesma régua do clipboard): a
+      // paleta EMBUTIDA no asset continua funcionando — é o que viaja.
+      paletteLibrary: createPaletteLibraryStore(resolved, { disabled: true }),
     }
   })
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>(boot ? 'loading' : 'error')
@@ -182,6 +186,7 @@ export function PintaLesson({
             gallery: boot.gallery,
             persistence: boot.persistence,
             clipboard: boot.clipboard,
+            paletteLibrary: boot.paletteLibrary,
             // Não há para onde navegar: o bloco é UM desenho. Os quatro pontos de navegação da galeria
             // existem no contrato do contexto e aqui não fazem nada, de propósito.
             openAsset: () => {},
