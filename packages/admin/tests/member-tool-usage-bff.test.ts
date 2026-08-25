@@ -22,7 +22,15 @@ describe('composição do uso de ferramentas no BFF', () => {
     const calls: [string, string[]][] = []
     const result = await composeMemberToolUsage(
       'account',
-      { status: 200, body: { profiles: [{ id: 'child-a' }, { id: 'child-b' }] } },
+      {
+        status: 200,
+        body: {
+          profiles: [
+            { id: 'child-a', name: 'Bia', avatarUrl: null },
+            { id: 'child-b', name: 'Caio', avatarUrl: 'https://cdn.example/avatar.png' },
+          ],
+        },
+      },
       async (accountId, profileIds) => {
         calls.push([accountId, profileIds])
         return { status: 200, body: { learners: [] } }
@@ -31,5 +39,23 @@ describe('composição do uso de ferramentas no BFF', () => {
 
     expect(calls).toEqual([['account', ['child-a', 'child-b']]])
     expect(result.status).toBe(200)
+  })
+
+  test('200 malformado do Auth vira 502 e não consulta Members', async () => {
+    let usageCalls = 0
+    const result = await composeMemberToolUsage(
+      'account',
+      { status: 200, body: { profiles: [{ id: 'child-a' }, null] } },
+      async () => {
+        usageCalls += 1
+        return { status: 200, body: { learners: [] } }
+      },
+    )
+
+    expect(result).toEqual({
+      status: 502,
+      body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os perfis.' } },
+    })
+    expect(usageCalls).toBe(0)
   })
 })

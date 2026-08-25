@@ -41,6 +41,7 @@ function parseNfseXml(xml: string | null, accessKeyFallback: string): DanfseData
     const dps = childEl(inf, 'DPS')
     const infDps = dps ? childEl(dps, 'infDPS') : null
     const prest = infDps ? childEl(infDps, 'prest') : null
+    const subst = infDps ? childEl(infDps, 'subst') : null
     const regTrib = prest ? childEl(prest, 'regTrib') : null
     const toma = infDps ? childEl(infDps, 'toma') : null
     const serv = infDps ? childEl(infDps, 'serv') : null
@@ -53,6 +54,7 @@ function parseNfseXml(xml: string | null, accessKeyFallback: string): DanfseData
     const tribMun = trib ? childEl(trib, 'tribMun') : null
     const totTrib = trib ? childEl(trib, 'totTrib') : null
     const vTotTrib = totTrib ? childEl(totTrib, 'vTotTrib') : null
+    const pTotTrib = totTrib ? childEl(totTrib, 'pTotTrib') : null
     const nfseValores = childEl(inf, 'valores')
 
     const emitDoc = text(emitEl, 'CNPJ') ?? text(emitEl, 'CPF')
@@ -62,6 +64,7 @@ function parseNfseXml(xml: string | null, accessKeyFallback: string): DanfseData
 
     return {
       accessKey,
+      chSubstda: text(subst, 'chSubstda'),
       ambGer: text(inf, 'ambGer'),
       tpAmb: text(infDps, 'tpAmb'),
       nNFSe: text(inf, 'nNFSe'),
@@ -132,6 +135,9 @@ function parseNfseXml(xml: string | null, accessKeyFallback: string): DanfseData
         cLocIncid: text(inf, 'cLocIncid'),
         xLocIncid: text(inf, 'xLocIncid'),
         pTotTribSN: text(totTrib, 'pTotTribSN'),
+        pTotTribFed: text(pTotTrib, 'pTotTribFed'),
+        pTotTribEst: text(pTotTrib, 'pTotTribEst'),
+        pTotTribMun: text(pTotTrib, 'pTotTribMun'),
         vTotTribFed: text(vTotTrib, 'vTotTribFed'),
         vTotTribEst: text(vTotTrib, 'vTotTribEst'),
         vTotTribMun: text(vTotTrib, 'vTotTribMun'),
@@ -155,6 +161,7 @@ function fallbackData(input: DanfseRenderInput, profile: EmitterProfile): Danfse
   const doc = invoice.customer.document?.trim() || null
   return {
     accessKey: input.accessKey,
+    chSubstda: null,
     ambGer: '2',
     tpAmb: profile.tpAmb,
     nNFSe: nfseNumberFromAccessKey(input.accessKey),
@@ -227,6 +234,9 @@ function fallbackData(input: DanfseRenderInput, profile: EmitterProfile): Danfse
       cLocIncid: null,
       xLocIncid: null,
       pTotTribSN: profile.pTotTribSN || null,
+      pTotTribFed: null,
+      pTotTribEst: null,
+      pTotTribMun: null,
       vTotTribFed: null,
       vTotTribEst: null,
       vTotTribMun: null,

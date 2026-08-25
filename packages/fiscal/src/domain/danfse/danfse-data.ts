@@ -28,6 +28,8 @@ export interface DanfseParty {
 
 export interface DanfseData {
   accessKey: string
+  /** Chave da NFS-e substituída (`infDPS/subst/chSubstda`), quando houver. */
+  chSubstda: string | null
   /** `1` Prefeitura · `2` Sistema Nacional (TSAmbGeradorNFSe). */
   ambGer: string | null
   /** `1` Produção · `2` Homologação — decide o aviso VERMELHO do cabeçalho. */
@@ -78,6 +80,9 @@ export interface DanfseData {
     xLocIncid: string | null
     /** Percentual total de tributos do SN (Lei 12.741) — vai nas Inf. Complementares. */
     pTotTribSN: string | null
+    pTotTribFed: string | null
+    pTotTribEst: string | null
+    pTotTribMun: string | null
     vTotTribFed: string | null
     vTotTribEst: string | null
     vTotTribMun: string | null

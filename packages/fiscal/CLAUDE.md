@@ -108,7 +108,7 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
    ⚠️ Esta rota E o `GET /fiscal/admin/invoices/:id/pdf` aplicam a **marca d'água de ESTADO na hora
    de SERVIR** (NT 008 §2.5): nota `CANCELLED`/`SUBSTITUTED` sai com "CANCELADA"/"SUBSTITUÍDA" na
    diagonal (≥50pt, cinza K35 — `applyStatusStamp`/`stampForStatus` em
-   `infrastructure/danfse/status-stamp.ts`, best-effort: falha → serve o original). O bytea da
+   `infrastructure/danfse/status-stamp.ts`; falha → HTTP 500, nunca serve sem o carimbo). O bytea da
    emissão é IMUTÁVEL (registro do que foi mailado); o overlay cobre de graça o estoque histórico,
    inclusive PDFs antigos baixados do gerador do governo. `findPdfByToken` devolve `invoiceStatus`
    p/ isso.
@@ -174,8 +174,11 @@ nacional obrigatório ("DANFSe v2.0", Anexo I).
   `duplicate`).
 - **Renderer** (`infrastructure/danfse/danfse-renderer.ts`, `@cantoo/pdf-lib` + `qrcode` — molde
   do certificate-pdf do member-shell): 1 página A4 retrato, layout FLUIDO com as posições/fontes
-  da tabela 2.4.5 da NT (Helvetica no lugar de Arial/MS Sans Serif — a NT fixa TAMANHOS, não a
-  fonte embutida); QR ≥1,52cm com a URL literal da NT
+  da tabela 2.4.5 da NT: labels/títulos em Arial Bold, conteúdo em Microsoft Sans Serif e marca
+  d'água em Arial Regular. Os TTFs ficam em `assets/fonts`, entram no PDF como subset e são
+  verificados por SHA-256 no carregamento (`font-files.ts`); divergência interrompe o boot/serve,
+  sem fallback tipográfico. A autorização atual é temporária — operação e substituição dos
+  binários estão em `docs/operacao-fontes-danfse.md`. QR ≥1,52cm com a URL literal da NT
   (`https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=` + chave — `NFSE_CONSULTA_PUBLICA_URL`);
   homolog (`tpAmb=2` OU `ambiente≠producao`) → "NFS-e SEM VALIDADE JURÍDICA" em vermelho no
   cabeçalho; bloco vazio → linha única dos itens 2.3.1/2.3.2; campo sem info → traço "-" (nota
@@ -184,8 +187,8 @@ nacional obrigatório ("DANFSe v2.0", Anexo I).
   emoji); dinheiro por STRING (`domain/money.ts` — `formatBrl`/`centsToReais` extraídos do
   emit-invoice + `formatXmlDecimalBrl`); datas por slice/offset -03:00 fixo, nunca `new Date`
   de data civil.
-- ⚠️ Ao rodar `db:generate`/depurar PDF: renderizar PNG p/ conferir exige as standard fonts do
-  pdfjs (`standardFontDataUrl`) — sem elas o preview degrada o espaçamento e PARECE bug do PDF.
+- ⚠️ Ao depurar o PDF, use um viewer real ou a validação visual automatizada; previews incompletos
+  podem degradar as métricas das fontes incorporadas e parecer um defeito do renderer.
 - **Validação visual**: `bun run spike:06` renderiza `spike/out/danfse-local.pdf` do XML REAL do
   spike p/ comparar com `spike/out/danfse.pdf` (o PDF que o PRÓPRIO governo gerou p/ a mesma
   chave antes de desligar a API) + a variante cancelada. Testes:

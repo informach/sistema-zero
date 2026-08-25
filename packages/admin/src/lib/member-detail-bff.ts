@@ -1,10 +1,8 @@
+import { isRecord, parseMemberProfiles, parseProfilesProgress } from './member-profiles-bff'
+
 interface UpstreamResult<T = unknown> {
   status: number
   body: T
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 function invalidUpstream(): UpstreamResult {
@@ -23,24 +21,13 @@ export async function composeMemberDetail(
 ): Promise<UpstreamResult> {
   if (identityResult.status !== 200) return identityResult
   if (profilesResult.status !== 200) return profilesResult
-  if (!isRecord(identityResult.body) || !isRecord(profilesResult.body)) return invalidUpstream()
+  if (!isRecord(identityResult.body)) return invalidUpstream()
   if (!isRecord(identityResult.body.user)) return invalidUpstream()
-  if (!Array.isArray(profilesResult.body.profiles)) return invalidUpstream()
-
-  const profiles = profilesResult.body.profiles
-  if (
-    !profiles.every(
-      (profile) =>
-        isRecord(profile) &&
-        typeof profile.id === 'string' &&
-        typeof profile.name === 'string' &&
-        (profile.avatarUrl === null || typeof profile.avatarUrl === 'string'),
-    )
-  )
-    return invalidUpstream()
+  const profiles = parseMemberProfiles(profilesResult.body)
+  if (!profiles) return invalidUpstream()
   const detailResult = await loadMember(
     accountId,
-    profiles.map((profile) => (profile as { id: string }).id),
+    profiles.map((profile) => profile.id),
   )
   if (detailResult.status !== 200) return detailResult
   if (!isRecord(detailResult.body)) return invalidUpstream()
@@ -51,23 +38,22 @@ export async function composeMemberDetail(
   )
     return invalidUpstream()
 
-  const progressById = new Map<string, unknown>()
-  if (Array.isArray(detailResult.body.profilesProgress)) {
-    for (const item of detailResult.body.profilesProgress) {
-      if (isRecord(item) && typeof item.userId === 'string' && Array.isArray(item.progress)) {
-        progressById.set(item.userId, item.progress)
-      }
-    }
-  }
-  const hydratedProfiles = profiles.map((rawProfile) => {
-    const profile = rawProfile as { id: string; name: string; avatarUrl: string | null }
-    return {
+  const progressById = parseProfilesProgress(
+    detailResult.body,
+    profiles.map((profile) => profile.id),
+  )
+  if (!progressById) return invalidUpstream()
+  const hydratedProfiles = []
+  for (const profile of profiles) {
+    const progress = progressById.get(profile.id)
+    if (!progress) return invalidUpstream()
+    hydratedProfiles.push({
       id: profile.id,
       name: profile.name,
       avatarUrl: profile.avatarUrl,
-      progress: progressById.get(profile.id) ?? [],
-    }
-  })
+      progress,
+    })
+  }
 
   return {
     status: 200,

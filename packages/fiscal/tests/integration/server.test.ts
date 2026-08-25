@@ -231,7 +231,7 @@ describe('GET /fiscal/files/:token (capability-URL do DANFSe)', () => {
     })
     const token = 'c'.repeat(64)
     Object.assign(invoice, { status: 'EMITTED', pdfToken: token, claimToken: 'pdf-test-claim' })
-    // PDF REAL mínimo (o carimbo re-parseia; bytes fake cairiam no fallback do original).
+    // PDF REAL mínimo (o carimbo reabre o documento antes de aplicar o overlay).
     const doc = await PDFDocument.create()
     doc.addPage([595.28, 841.89])
     const original = await doc.save()
@@ -246,6 +246,34 @@ describe('GET /fiscal/files/:token (capability-URL do DANFSe)', () => {
     // Carimbado ≠ original (o bytea armazenado fica intacto — overlay só no serve).
     expect(bytes.byteLength).not.toBe(original.byteLength)
     expect((await PDFDocument.load(bytes)).getPageCount()).toBe(1)
+  })
+
+  test('nota CANCELLED com PDF corrompido falha fechada (500)', async () => {
+    const { app, invoices } = build()
+    const invoice = await invoices.schedule({
+      paymentId: 'pay-corrupted-pdf',
+      customer: { name: 'M', email: 'm@m.com', document: '52998224725' },
+      amountInCents: 3700n,
+      serviceDescription: 'Curso',
+      offerId: null,
+      guaranteeDays: null,
+      paidAt: new Date(),
+      scheduledFor: new Date(),
+      ambiente: 'producao-restrita',
+    })
+    const token = 'd'.repeat(64)
+    Object.assign(invoice, { status: 'EMITTED', pdfToken: token, claimToken: 'pdf-test-claim' })
+    await invoices.storePdf(
+      invoice.id,
+      new TextEncoder().encode('não sou um PDF'),
+      'pdf-test-claim',
+    )
+    Object.assign(invoice, { status: 'CANCELLED' })
+
+    const response = await app.handle(new Request(`http://localhost/fiscal/files/${token}.pdf`))
+
+    expect(response.status).toBe(500)
+    expect(await response.json()).toMatchObject({ error: { code: 'INTERNAL_ERROR' } })
   })
 })
 

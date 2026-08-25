@@ -14,6 +14,7 @@ certs
 **/certs
 secrets
 **/secrets
+**/.local-fonts
 *.p12
 *.pfx
 *.pem

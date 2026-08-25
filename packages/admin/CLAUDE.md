@@ -104,8 +104,8 @@ o param e o BFF o derrubava; pego no QA da Etapa 6).
 
 **Ficha do aluno v2 — progresso por TIPO de produto (08/2026, Etapa 2 kids-first):** a Visão
 geral virou FOCADA no aprendiz selecionado (o seletor de chips agora inclui a `overview`; no
-modo Kids com perfis a ficha ABRE na 1ª criança — efeito 1× por carga, ref `learnerDefaulted` —
-e o 1º chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CourseProgressCard`
+modo Kids com perfis a ficha ABRE na 1ª criança — seleção derivada uma vez por carga — e o 1º
+chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CourseProgressCard`
 (usa o `Progress` do @sistemazero/ui — ⚠️ ele recebe 0–1, o `percent` do members é 0–100 — +
 `lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
 não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
