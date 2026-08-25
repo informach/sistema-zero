@@ -11,12 +11,18 @@ import { getTeacherThreadsUnreadCount, listTeacherThreads } from '@/server/teach
  * STAFF (cache por processo vazaria entre operadores); o TTL vive no client
  * (`professor-counts-store`, 60s).
  */
-export async function GET() {
+export async function GET(req: Request) {
+  // `?platform=` = seletor global do painel: escopa ENTREGAS e RECADOS à
+  // plataforma ativa. Moderação/denúncias seguem GLOBAIS (o hub não filtra
+  // pending/reports por audiência — v1; o badge de moderação conta as duas).
+  const platformParam = new URL(req.url).searchParams.get('platform')
+  const audience = platformParam === 'kids' || platformParam === 'adult' ? platformParam : undefined
+
   const [submissions, threads, threadsUnread, moderation, reports] = await Promise.all([
     // `total` da fila com status=pending = entregas pendentes; os 5 itens = recentes.
-    listAllStudioSubmissions({ status: 'pending', limit: 5 }),
-    listTeacherThreads({ unread: true, limit: 5 }),
-    getTeacherThreadsUnreadCount(),
+    listAllStudioSubmissions({ status: 'pending', limit: 5, audience }),
+    listTeacherThreads({ unread: true, limit: 5, audience }),
+    getTeacherThreadsUnreadCount(audience),
     listPending({ limit: 1 }),
     listReports({ status: 'open', limit: 1 }),
   ])

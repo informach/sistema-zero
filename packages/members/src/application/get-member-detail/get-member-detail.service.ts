@@ -1,7 +1,8 @@
-import type { Course } from '../../domain/course/course'
+import type { Course, CourseAudience } from '../../domain/course/course'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress } from '../../domain/progress/progress'
 import {
   type MemberCourseProgressView,
@@ -12,75 +13,150 @@ import {
 
 /**
  * Detalhe admin do membro: TODAS as matrículas (qualquer status) + progresso por
- * curso. Diferente do aluno, inclui cursos `draft`/`archived` (admin vê tudo) —
- * por isso usa `findCoursesBySlugs` (sem filtro de status). Contagens em LOTE.
- * Os cursos são da CONTA (matrículas por `userId`); o progresso é por aprendiz —
- * o da conta (pré-perfis) e, se o painel passar `profileIds`, o de CADA perfil.
+ * curso POR APRENDIZ — o da conta e, quando o painel passa `profileIds`, o de
+ * CADA perfil (kids).
+ *
+ * O progresso de um aprendiz é a UNIÃO de duas origens:
+ * 1. matrículas ESPECÍFICAS de curso (`accessType === 'course'`) cujo curso é da
+ *    PLATAFORMA do aprendiz (conta → `adult`, perfil → `kids`) — inclui curso
+ *    nunca aberto (barra 0%, `lastActivityAt: null`);
+ * 2. cursos com ATIVIDADE real do aprendiz (conclusão de aula OU acesso a vídeo,
+ *    sem filtro de plataforma — atividade é evidência) — é o que faz a
+ *    chave-mestra (`all_courses`/`all_kids_courses`, courseRef null) aparecer:
+ *    ela não vira card por matrícula, e sim pelos cursos que o aprendiz tocou.
+ *
+ * ⚠️ Produto que NÃO é curso (Pensa/Pinta/Estúdio/Clube/Mural — accessType
+ * `community`, courseRef = o próprio sku) fica FORA daqui DE PROPÓSITO: uso de
+ * ferramenta tem cartão próprio (tool-usage), não barra de progresso. Era o bug
+ * da ficha: esses produtos viravam "cursos 0%" com slug cru enquanto o assinante
+ * do combo (só chave-mestra) não mostrava progresso nenhum.
  */
 export class GetMemberDetailService {
   constructor(
     private readonly entitlements: EntitlementRepository,
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
+    private readonly videoPositions: VideoPositionRepository,
   ) {}
 
   async execute(userId: string, profileIds: string[] = []): Promise<MemberDetailView> {
     const ents = await this.entitlements.listByUserId(userId)
 
-    const courseRefs = [
-      ...new Set(ents.map((e) => e.courseRef).filter((c): c is string => c !== null)),
+    // Matrícula específica de curso — o filtro por accessType É o fix (ver JSDoc).
+    const enrolledRefs = [
+      ...new Set(
+        ents
+          .filter((e) => e.accessType === 'course' && e.courseRef !== null)
+          .map((e) => e.courseRef as string),
+      ),
     ]
-    const courses = await this.courses.findCoursesBySlugs(courseRefs)
-    const bySlug = new Map(courses.map((c) => [c.slug, c]))
-    const courseIds = courses.map((c) => c.id)
+    const enrolledCourses = await this.courses.findCoursesBySlugs(enrolledRefs)
+    const enrolledSlugs = new Set(enrolledCourses.map((c) => c.slug))
+    // Matrícula cuja ref não resolve mais um curso: linha degradada VISÍVEL (não
+    // dá pra saber a plataforma dela — entra para todos os aprendizes).
+    const orphanRefs = enrolledRefs.filter((ref) => !enrolledSlugs.has(ref))
 
-    // Totais por curso (denominador) são iguais p/ todos os aprendizes.
-    const totals = await this.courses.countLessonsByCourseIds(courseIds)
-
-    // Progresso de UM aprendiz (conta ou perfil) sobre os cursos da família.
-    const progressFor = async (learnerId: string): Promise<MemberCourseProgressView[]> => {
-      const completed = await this.progress.countCompletedByCourseIds(learnerId, courseIds)
-      return courseRefs.map((ref) => buildCourseProgress(ref, bySlug.get(ref), totals, completed))
+    // Totais de aulas por curso não variam por aprendiz — cache do execute.
+    const totalsCache = new Map<string, number>()
+    const totalsFor = async (courseIds: string[]): Promise<Map<string, number>> => {
+      const missing = courseIds.filter((id) => !totalsCache.has(id))
+      if (missing.length > 0) {
+        const fetched = await this.courses.countLessonsByCourseIds(missing)
+        for (const id of missing) totalsCache.set(id, fetched.get(id) ?? 0)
+      }
+      return totalsCache
     }
 
-    const accountProgress = await progressFor(userId)
+    const progressFor = async (
+      learnerId: string,
+      learnerAudience: CourseAudience,
+    ): Promise<MemberCourseProgressView[]> => {
+      const [lastCompleted, lastAccessed] = await Promise.all([
+        this.progress.lastCompletionByCourse(learnerId),
+        this.videoPositions.lastAccessByCourse(learnerId),
+      ])
+      // Última atividade por curso = max(última conclusão, último acesso a vídeo).
+      const lastActivity = new Map<string, Date>(lastCompleted)
+      for (const [courseId, at] of lastAccessed) {
+        const prev = lastActivity.get(courseId)
+        if (!prev || at.getTime() > prev.getTime()) lastActivity.set(courseId, at)
+      }
+
+      const activityCourses = await this.courses.findCoursesByIds([...lastActivity.keys()])
+      const union = new Map<string, Course>()
+      for (const c of enrolledCourses) {
+        if (c.audience === learnerAudience) union.set(c.id, c)
+      }
+      for (const c of activityCourses) union.set(c.id, c)
+
+      const courseIds = [...union.keys()]
+      const [totals, completed] = await Promise.all([
+        totalsFor(courseIds),
+        this.progress.countCompletedByCourseIds(learnerId, courseIds),
+      ])
+
+      const views = [...union.values()].map((course) =>
+        buildCourseProgress(course, totals, completed, lastActivity.get(course.id) ?? null),
+      )
+      views.sort(byActivityThenTitle)
+      for (const ref of orphanRefs) views.push(orphanCourseProgress(ref))
+      return views
+    }
+
+    const entitlementViews = ents.map((e) => toAdminEntitlementView(e))
+    const accountProgress = await progressFor(userId, 'adult')
 
     // Sem perfis (conta nunca criou) → comportamento de sempre (só `progress`).
     if (profileIds.length === 0) {
-      return {
-        userId,
-        entitlements: ents.map((e) => toAdminEntitlementView(e)),
-        progress: accountProgress,
-      }
+      return { userId, entitlements: entitlementViews, progress: accountProgress }
     }
 
     const profilesProgress: MemberProfileProgressView[] = await Promise.all(
-      profileIds.map(async (pid) => ({ userId: pid, progress: await progressFor(pid) })),
+      profileIds.map(async (pid) => ({ userId: pid, progress: await progressFor(pid, 'kids') })),
     )
-    return {
-      userId,
-      entitlements: ents.map((e) => toAdminEntitlementView(e)),
-      progress: accountProgress,
-      profilesProgress,
-    }
+    return { userId, entitlements: entitlementViews, progress: accountProgress, profilesProgress }
   }
 }
 
 function buildCourseProgress(
-  courseRef: string,
-  course: Course | undefined,
+  course: Course,
   totals: Map<string, number>,
   completed: Map<string, number>,
+  lastActivityAt: Date | null,
 ): MemberCourseProgressView {
-  const total = course ? (totals.get(course.id) ?? 0) : 0
-  const done = course ? (completed.get(course.id) ?? 0) : 0
-  const p = computeProgress(done, total)
+  const p = computeProgress(completed.get(course.id) ?? 0, totals.get(course.id) ?? 0)
   return {
-    courseRef,
-    title: course?.title ?? null,
-    status: course?.status ?? null,
+    courseRef: course.slug,
+    courseId: course.id,
+    title: course.title,
+    status: course.status,
+    audience: course.audience,
     completedLessons: p.completedLessons,
     totalLessons: p.totalLessons,
     percent: p.percent,
+    lastActivityAt: lastActivityAt ? lastActivityAt.toISOString() : null,
   }
+}
+
+function orphanCourseProgress(courseRef: string): MemberCourseProgressView {
+  const p = computeProgress(0, 0)
+  return {
+    courseRef,
+    courseId: null,
+    title: null,
+    status: null,
+    audience: null,
+    completedLessons: p.completedLessons,
+    totalLessons: p.totalLessons,
+    percent: p.percent,
+    lastActivityAt: null,
+  }
+}
+
+/** Atividade mais recente primeiro; nunca-abertos por último, por título/slug. */
+function byActivityThenTitle(a: MemberCourseProgressView, b: MemberCourseProgressView): number {
+  if (a.lastActivityAt && b.lastActivityAt) return b.lastActivityAt.localeCompare(a.lastActivityAt)
+  if (a.lastActivityAt) return -1
+  if (b.lastActivityAt) return 1
+  return (a.title ?? a.courseRef).localeCompare(b.title ?? b.courseRef)
 }

@@ -2,7 +2,9 @@
 
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
+import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
 import {
@@ -16,6 +18,7 @@ import {
 import {
   CheckCircle2,
   CircleDashed,
+  Copy,
   Pencil,
   Plus,
   Search,
@@ -26,12 +29,14 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { loadAllPages } from '@/lib/load-all-pages'
+import { slugify } from '@/lib/slug'
 import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import { COURSE_STATUSES, COURSE_TIER_OPTIONS, type CourseView, type Paginated } from '@/lib/types'
 import { CourseFormDialog, type CoursePrefill, slotsForTier } from './course-form-dialog'
@@ -52,13 +57,18 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
+  const [cloning, setCloning] = useState<CourseView | null>(null)
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
+
+  // Seletor global: a listagem mostra só os cursos da plataforma ativa.
+  const platform = usePlatform()
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
+      params.set('audience', platform)
       if (q.trim()) params.set('q', q.trim())
       if (status) params.set('status', status)
       const page = await apiGet<Paginated<CourseView>>(`/api/members/courses?${params}`)
@@ -69,9 +79,13 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     } finally {
       setLoading(false)
     }
-  }, [offset, q, status])
+  }, [offset, q, status, platform])
 
   const loadCareer = useCallback(async () => {
+    // O painel da Carreira só existe no modo Kids — no Adultos nem busca (a
+    // varredura pagina TODOS os cursos kids; os call-sites pós-save chamam
+    // sempre e viram no-op aqui). Voltar para Kids re-dispara pelo effect.
+    if (platform !== 'kids') return
     setCareerLoading(true)
     try {
       const courses = await loadAllPages((pageOffset, limit) =>
@@ -85,7 +99,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     } finally {
       setCareerLoading(false)
     }
-  }, [])
+  }, [platform])
 
   useEffect(() => {
     const t = setTimeout(load, 250)
@@ -162,14 +176,17 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         }
       />
 
-      <CareerReadiness
-        courses={careerItems}
-        loading={careerLoading}
-        canWrite={canWrite}
-        onPickSlot={(level, track, slot, course) =>
-          course ? openEdit(course) : openCreateAtSlot(level, track, slot)
-        }
-      />
+      {/* Carreira do Criador é conceito KIDS — no modo Adultos o painel some. */}
+      {platform === 'kids' ? (
+        <CareerReadiness
+          courses={careerItems}
+          loading={careerLoading}
+          canWrite={canWrite}
+          onPickSlot={(level, track, slot, course) =>
+            course ? openEdit(course) : openCreateAtSlot(level, track, slot)
+          }
+        />
+      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -232,7 +249,17 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         </span>
                       ) : null}
                     </div>
-                    <div className="text-xs text-muted-foreground">{c.slug}</div>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{c.slug}</span>
+                      {c.clonedFrom ? (
+                        <span
+                          className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[11px]"
+                          title={`Clonado do curso ${c.clonedFrom} — edições não sincronizam`}
+                        >
+                          Clone de {c.clonedFrom}
+                        </span>
+                      ) : null}
+                    </div>
                     {c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
@@ -279,6 +306,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                           <Button variant="ghost" size="sm" onClick={() => openEdit(c)}>
                             <Pencil className="size-4" /> Editar
                           </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setCloning(c)}>
+                            <Copy className="size-4" /> Clonar
+                          </Button>
                           <Button variant="ghost" size="sm" onClick={() => void remove(c)}>
                             Excluir
                           </Button>
@@ -302,6 +332,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         prefill={prefill}
         careerCourses={careerItems}
         onSaved={async () => {
+          await Promise.all([load(), loadCareer()])
+        }}
+      />
+
+      <CloneCourseDialog
+        course={cloning}
+        onClose={() => setCloning(null)}
+        onCloned={async () => {
           await Promise.all([load(), loadCareer()])
         }}
       />
@@ -457,5 +495,87 @@ function CareerReadiness({
         ))}
       </div>
     </Card>
+  )
+}
+
+/**
+ * Clonar o curso para a OUTRA plataforma (o substituto da "audiência Ambas",
+ * decisão de produto de 24/08): o clone é um curso INDEPENDENTE na plataforma
+ * destino — entra na carreira/chave-mestra/XP de lá sem regra nova. É um FORK:
+ * edições depois do clone NÃO sincronizam (avisado aqui).
+ */
+function CloneCourseDialog({
+  course,
+  onClose,
+  onCloned,
+}: {
+  course: CourseView | null
+  onClose: () => void
+  onCloned: () => Promise<void>
+}) {
+  const targetAudience = course?.audience === 'kids' ? 'adult' : 'kids'
+  const targetLabel = targetAudience === 'kids' ? 'Kids' : 'Adulto'
+  const [slug, setSlug] = useState('')
+  const [title, setTitle] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  // Sugestões derivadas do curso de origem (re-semeia ao abrir p/ outro curso).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-semeia por curso
+  useEffect(() => {
+    if (!course) return
+    setSlug(`${course.slug}-${targetAudience === 'kids' ? 'kids' : 'adulto'}`)
+    setTitle(course.title)
+  }, [course?.id])
+
+  async function run() {
+    if (!course) return
+    setBusy(true)
+    try {
+      const view = await apiSend<CourseView>(`/api/members/courses/${course.id}/clone`, 'POST', {
+        audience: targetAudience,
+        slug: slugify(slug) || undefined,
+        title: title.trim() || undefined,
+      })
+      toast.success(`Curso clonado para a plataforma ${targetLabel} (rascunho).`)
+      onClose()
+      await onCloned()
+      window.location.assign(`/admin/membros/cursos/${view.id}`)
+    } catch (err) {
+      toast.error((err as ApiError).message ?? 'Não foi possível clonar o curso.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Dialog
+      open={course !== null}
+      onClose={onClose}
+      title={`Clonar para a plataforma ${targetLabel}`}
+      description="O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Carreira do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos."
+      footer={
+        <>
+          <Button variant="outline" onClick={onClose} disabled={busy}>
+            Cancelar
+          </Button>
+          <Button onClick={() => void run()} disabled={busy || !slug.trim() || !title.trim()}>
+            <Copy className="size-4" /> {busy ? 'Clonando…' : 'Clonar curso'}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <Field label="Título do clone" htmlFor="clone-title">
+          <Input id="clone-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        </Field>
+        <Field
+          label="Slug do clone"
+          htmlFor="clone-slug"
+          hint="Precisa ser único — o sugerido ganha o sufixo da plataforma."
+        >
+          <Input id="clone-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+        </Field>
+      </div>
+    </Dialog>
   )
 }

@@ -161,8 +161,11 @@ export interface TeacherThreadRepository {
   listForAdmin(filter: AdminThreadsFilter): Promise<TeacherThreadSummary[]>
   /** Nº de conversas com mensagem do professor NÃO lida pelo aluno (badge do sino). */
   countUnreadForStudent(userId: string, audience: CourseAudience): Promise<number>
-  /** Nº de conversas com mensagem do ALUNO não lida por ESTE professor (Sala do Professor). */
-  countUnreadForTeacher(staffUserId: string): Promise<number>
+  /**
+   * Nº de conversas com mensagem do ALUNO não lida por ESTE professor (Sala do
+   * Professor). `audience` opcional escopa o badge à plataforma ativa do painel.
+   */
+  countUnreadForTeacher(staffUserId: string, audience?: CourseAudience): Promise<number>
   /** Marca a conversa lida pelo aluno até a última mensagem PERSISTIDA. No-op fora da vitrine dele. */
   markReadByStudent(threadId: string, userId: string, audience: CourseAudience): Promise<void>
   /** Marca a conversa lida por UM professor até a última mensagem PERSISTIDA. */

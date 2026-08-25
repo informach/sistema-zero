@@ -1,7 +1,9 @@
-import { and, asc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, eq, ilike, inArray, or, type SQL, sql } from 'drizzle-orm'
 import type {
   CreateProfileOutcome,
   ProfileRepository,
+  ProfileWithAccountRow,
+  SearchProfilesFilter,
 } from '../../../domain/ports/profile-repository.port'
 import { ProfileAggregate } from '../../../domain/profile/profile.aggregate'
 import type { Database } from './db'
@@ -56,6 +58,61 @@ export class DrizzleProfileRepository implements ProfileRepository {
       .from(profiles)
       .where(and(inArray(profiles.id, ids), eq(profiles.status, 'active')))
     return rows.map(fromRow)
+  }
+
+  async searchWithAccount(
+    filter: SearchProfilesFilter,
+  ): Promise<{ items: ProfileWithAccountRow[]; total: number }> {
+    const where = buildSearchWhere(filter.q)
+    // Página + total com o MESMO where (molde do list do user.repository).
+    const [rows, [counted]] = await Promise.all([
+      this.db
+        .select({
+          id: profiles.id,
+          name: profiles.name,
+          avatarUrl: profiles.avatarUrl,
+          birthDate: profiles.birthDate,
+          accountUserId: profiles.accountUserId,
+          accountId: users.id,
+          accountEmail: users.email,
+          accountFirstName: users.firstName,
+          accountLastName: users.lastName,
+        })
+        .from(profiles)
+        .leftJoin(users, eq(users.id, profiles.accountUserId))
+        .where(where)
+        .orderBy(asc(profiles.name), asc(profiles.id))
+        .limit(filter.limit)
+        .offset(filter.offset),
+      this.db
+        .select({ count: sql<number>`cast(count(${profiles.id}) as integer)` })
+        .from(profiles)
+        .leftJoin(users, eq(users.id, profiles.accountUserId))
+        .where(where),
+    ])
+    return {
+      items: rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        avatarUrl: row.avatarUrl,
+        birthDate: row.birthDate,
+        accountUserId: row.accountUserId,
+        // LEFT JOIN sem linha → todas as colunas da conta vêm null (conta apagada).
+        account:
+          row.accountId !== null &&
+          row.accountEmail !== null &&
+          row.accountFirstName !== null &&
+          row.accountLastName !== null
+            ? {
+                id: row.accountId,
+                email: row.accountEmail,
+                firstName: row.accountFirstName,
+                lastName: row.accountLastName,
+              }
+            : null,
+      })),
+      total: counted?.count ?? 0,
+    }
   }
 
   async createWithinLimit(
@@ -121,4 +178,25 @@ export class DrizzleProfileRepository implements ProfileRepository {
       .returning({ id: profiles.id })
     return updated.length > 0
   }
+}
+
+/**
+ * WHERE da busca unificada: SÓ perfis ativos; com `q`, OR sobre nome do perfil
+ * e e-mail/nome/sobrenome da conta. `q` é busca LITERAL: escapa os curingas do
+ * LIKE (\, %, _) — espelha o `buildListWhere` do user.repository (achado B5).
+ */
+function buildSearchWhere(qRaw: string | undefined): SQL | undefined {
+  const clauses: SQL[] = [eq(profiles.status, 'active')]
+  const q = qRaw?.trim()
+  if (q) {
+    const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`
+    const match = or(
+      ilike(profiles.name, like),
+      ilike(users.email, like),
+      ilike(users.firstName, like),
+      ilike(users.lastName, like),
+    )
+    if (match) clauses.push(match)
+  }
+  return and(...clauses)
 }

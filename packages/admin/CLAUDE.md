@@ -63,8 +63,64 @@ SEMPRE, sem latch** — o módulo é compartilhado entre requests no processo do
 1º request congelava a plataforma p/ todos os SSR seguintes (bug pego no QA browser: cookie
 `adult` ignorado no hard load). No BROWSER o latch vale (1ª hidratação semeia; depois manda o
 clique). Corolário: markup SSR-visível que dependa de `usePlatform` deve renderizar dentro do
-subtree síncrono pós-seed (sidebar) ou tolerar 1º paint neutro. As telas ainda NÃO filtram por
-plataforma (Etapas 2–4 do plano `no-admin-eu-quero-piped-jellyfish.md`).
+subtree síncrono pós-seed (sidebar) ou tolerar 1º paint neutro.
+**O seletor VALE nas telas de ensino (Etapa 3, 08/2026):** Entregas/Recados nascem com o filtro
+"Plataforma" na plataforma ATIVA e re-sincronizam quando o global muda (o Select local segue como
+override pontual — "Todas"/a outra); os badges da sidebar contam a plataforma ativa
+(`professor-counts-store` manda `?platform=` ao `professor-overview`, guarda `platform` no
+snapshot [mismatch = stale] e re-busca via `subscribePlatform` — assinatura módulo-a-módulo, sem
+acoplar React); o BFF `professor-overview` repassa `audience` a entregas/recados/unread-count
+(members ganhou `?audience=` no `GET /members/admin/teacher-threads/unread-count`) e **moderação/
+denúncias seguem GLOBAIS** (o hub não filtra pending/reports por audiência — v1); Cursos filtra
+a listagem por `audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira
+do Criador só renderiza no modo Kids; Análises e Moderação cortam CLIENT-side (a moderação pode
+subcontar com fila >100 — limitação documentada); Desafio do mês mostra um banner informativo no
+modo Adultos (conteúdo visível).
+**Listagem de CRIANÇAS + busca por nome (Etapa 4, 08/2026 — a criança vira entidade de 1ª
+classe):** no modo Kids, "Alunos" (`/admin/membros`) vira a listagem de PERFIS
+(`children-client.tsx`; a page é um switch client por `usePlatform` — Adultos mantém o
+`MembersClient` de contas). Busca UNIFICADA (nome da criança OU nome/e-mail do responsável) via
+BFF agregador `GET /api/admin/children` = página do auth (`searchProfiles` →
+`GET /auth/admin/profiles`, rota NOVA do auth com LEFT JOIN na conta) + enriquecimento em LOTE
+best-effort no members (`getProfilesOverview` → `GET /members/admin/profiles-overview`:
+nível/XP/ofensiva de EXIBIÇÃO/última atividade/pendências — members fora → colunas "—").
+Colunas: criança (avatar+nome+IDADE — `lib/age.ts`, dia civil SP; e-mail SÓ do responsável),
+responsável, nível/XP (`lib/student-rank.ts`, movido da ficha), ofensiva, última atividade
+(`relativeCivilDayLabel` em `lib/format.ts` — ⚠️ data CIVIL nunca passa pelo
+`relativeDayLabel`: parse UTC mentiria um dia), pendências (badge → fila filtrada). A linha
+abre a ficha da família com **`?learner=<profileId>`** (deep-link que o member-detail respeita
+no default do aprendiz). Gateway: `auth-admin-profiles-list` + `members-admin-profiles-overview`
+(leitura staff+). Pendências usam a MESMA régua da fila (fragmento `closedSql` extraído no repo
+do members). Falta a Etapa 5 do plano (ficha dedicada da criança — o deep-link cobre a v1).
+**Clonar curso p/ a outra plataforma (Etapa 6, 08/2026):** botão "Clonar" (ícone Copy) por linha
+na listagem de cursos → `CloneCourseDialog` (destino = a OUTRA plataforma, título/slug sugeridos
+com sufixo `-adulto`/`-kids`, aviso "edições depois do clone NÃO sincronizam") → BFF
+`POST /api/members/courses/[id]/clone` → members `POST /members/admin/courses/:courseId/clone`
+(fork independente: draft, careerSlot null, `metadata.clonedFrom`) → redirect ao editor do clone.
+A listagem mostra o badge "Clone de <slug>" quando `CourseView.clonedFrom` vem (campo OPCIONAL —
+members antigo sem ele = sem badge). Decisão da usuária: clone em vez de audiência "ambas".
+⚠️ O BFF `GET /api/members/courses` REPASSA `audience` (valores válidos apenas; lixo → sem
+filtro) — sem o repasse o filtro por plataforma da Etapa 3 era no-op silencioso (o client mandava
+o param e o BFF o derrubava; pego no QA da Etapa 6).
+
+**Ficha do aluno v2 — progresso por TIPO de produto (08/2026, Etapa 2 kids-first):** a Visão
+geral virou FOCADA no aprendiz selecionado (o seletor de chips agora inclui a `overview`; no
+modo Kids com perfis a ficha ABRE na 1ª criança — efeito 1× por carga, ref `learnerDefaulted` —
+e o 1º chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CourseProgressCard`
+(usa o `Progress` do @sistemazero/ui — ⚠️ ele recebe 0–1, o `percent` do members é 0–100 — +
+`lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
+não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
+(`components/members/usage-cards.tsx`, PUROS — a futura ficha da criança reusa): Pensa
+(planos/lançamentos), Pinta (desenhos na nuvem/entregas), Estúdio (jogos na nuvem/entregas),
+Clube (conversas/comentários) e Mural (jogos publicados/jogadas); Clube/Mural `null` = hub
+indisponível → "Indisponível agora" (≠ zeros). Quais cartões aparecem = `ownedToolCards` em
+`lib/tool-usage.ts` (matrículas `productKind` tool/community da família, identidade pelo `sku`
+do snapshot, dedupe + ordem da jornada; puro/testado em `tests/tool-usage.test.ts` junto do
+`relativeDayLabel` de `lib/format.ts` — dia civil SP). Dados: BFF novo
+`GET /api/members/[userId]/tool-usage` (resolve os profileIds no auth server-side, NUNCA do
+client) → `getMemberToolUsage` → gateway `members-admin-member-tool-usage`. A subcoluna da
+tabela de matrículas usa `PRODUCT_KIND_LABELS[productKind]` quando o accessType é `community`
+(Ferramenta/Comunidade — o resto preserva os rótulos de chave-mestra).
 **Dia a dia do professor (full review 24/07):**
 - **Home do Professor** `/admin/professor` (item "Início", 1º do grupo → `homeForRole` aponta
   pra cá): 4 cards de pendências (entregas pendentes/recados não-lidos/moderação/denúncias,

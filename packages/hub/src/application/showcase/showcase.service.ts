@@ -6,7 +6,7 @@ import {
 } from '../../domain/hub-errors'
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
-import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type { AuthorActivity, ThreadRepository } from '../../domain/ports/thread-repository.port'
 import type { Channel } from '../../domain/space/space'
 import type { ThreadStudioMeta } from '../../domain/thread/thread'
 import type { Actor } from '../access/access-resolution.service'
@@ -313,6 +313,19 @@ export class ShowcaseService {
     Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
   > {
     return this.threads.listShowcaseByAuthor(authorId, limit)
+  }
+
+  /**
+   * "Uso por ferramenta" do admin (members→hub S2S, rota HMAC — NUNCA exposta no
+   * gateway): participação agregada por autor (perfil) no Clube (tópicos +
+   * comentários APROVADOS — `visible`, a mesma régua do XP; comentário em post de
+   * VITRINE não conta como Clube) e no Mural (vitrines visíveis + soma de plays).
+   * Dedupe interno do body (a rota aceita duplicados); TODO authorId pedido volta,
+   * zeros/nulls sem atividade — régua das rotas em lote. O members é quem garante
+   * que os authorIds são os perfis da conta/tela consultada.
+   */
+  async activityByAuthors(authorIds: string[]): Promise<AuthorActivity[]> {
+    return this.threads.activityByAuthors([...new Set(authorIds)])
   }
 
   /**

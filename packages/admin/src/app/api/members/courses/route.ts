@@ -4,9 +4,12 @@ import { createCourse, listCourses } from '@/server/members'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
+  const audienceParam = searchParams.get('audience')
   const { status, body } = await listCourses({
     q: searchParams.get('q') ?? undefined,
     status: searchParams.get('status') ?? undefined,
+    // Seletor global de plataforma: repassa só valores válidos (lixo → sem filtro).
+    audience: audienceParam === 'kids' || audienceParam === 'adult' ? audienceParam : undefined,
     limit: parseLimit(searchParams.get('limit')),
     offset: parseOffset(searchParams.get('offset')),
   })

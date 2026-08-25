@@ -24,6 +24,7 @@ import {
   AdminStudioSubmissionParams,
   AttachmentBody,
   BlockBody,
+  CloneCourseBody,
   CourseBody,
   CourseIdParams,
   CourseUpdateBody,
@@ -265,6 +266,19 @@ export function contentRoutes(deps: ContentRoutesDeps) {
           return deps.courses.get(params.id)
         },
         { params: IdParams },
+      )
+      // CLONE p/ a outra plataforma (fork — edições não sincronizam): árvore
+      // inteira numa transação; nasce draft, fora da carreira, com clonedFrom.
+      // ⚠️ `:courseId` (não `:id`): o Elysia exige o MESMO nome de param quando o
+      // segmento tem FILHOS (`/courses/:courseId/modules` já existe).
+      .post(
+        '/courses/:courseId/clone',
+        async ({ params, body, headers, set }) => {
+          guard(headers)
+          set.status = 201
+          return deps.courses.clone(params.courseId, body)
+        },
+        { params: CourseIdParams, body: CloneCourseBody },
       )
       .patch(
         '/courses/:id',

@@ -864,6 +864,19 @@ const config: GatewayConfigInput = {
       transforms: authInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // BUSCA de perfis por nome de CRIANÇA (unificada: acha também pelo nome/e-mail
+    // do responsável) — a listagem kids do painel. Literal de 3 segmentos, GET —
+    // não colide com o `POST /auth/admin/profiles/batch` (4 seg, outro método).
+    {
+      id: 'auth-admin-profiles-list',
+      methods: ['GET'],
+      pathPattern: '/auth/admin/profiles',
+      service: 'auth',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: authInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // "Entrar como" (impersonação p/ suporte): emite o token de HANDOFF single-use.
     // ESCRITA → superadmin/admin (o auth re-checa a matriz: admin só impersona
     // customer/staff; superadmin qualquer um; nunca a si mesmo). 4 segmentos —
@@ -2159,8 +2172,34 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     // Ficha 360 do aluno (LEITURA staff+): gamificação, linha do tempo de atividade,
-    // certificados e classificações. Sufixos literais (≥5 segmentos) não colidem com
-    // `/members/admin/members/:userId` (mais específicos ganham na especificidade).
+    // certificados, classificações e USO por ferramenta. Sufixos literais (≥5
+    // segmentos) não colidem com `/members/admin/members/:userId` (mais
+    // específicos ganham na especificidade).
+    {
+      // Enriquecimento em LOTE da listagem de CRIANÇAS do painel (?profileIds=csv
+      // da página de busca no auth + ?audience=): nível/XP/ofensiva/pendências.
+      // Literal de 3 segmentos — não colide com `/members/admin/members*`.
+      id: 'members-admin-profiles-overview',
+      methods: ['GET'],
+      pathPattern: '/members/admin/profiles-overview',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      // Uso das ferramentas (Pensa/Pinta/Estúdio + Clube/Mural via hub best-effort)
+      // por aprendiz da família — cartões da ficha (?profileIds=csv).
+      id: 'members-admin-member-tool-usage',
+      methods: ['GET'],
+      pathPattern: '/members/admin/members/:userId/tool-usage',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'members-admin-member-gamification',
       methods: ['GET'],

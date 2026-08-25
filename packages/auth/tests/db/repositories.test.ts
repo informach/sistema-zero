@@ -127,7 +127,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
   beforeEach(async () => {
     await conn.sql`
       truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
-        auth.refresh_token_families,
+        auth.refresh_token_families, auth.profiles,
         auth.password_reset_tokens, auth.otp_codes, auth.audit_logs cascade`
   })
 
@@ -377,6 +377,74 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
 
     const normal = await users.list({ q: 'alice', limit: 10, offset: 0 })
     expect(normal.total).toBe(1)
+  })
+
+  test('searchWithAccount: LEFT JOIN da conta, ILIKE escapado, só ativos, ordenação estável', async () => {
+    const ana = UserAggregate.register({
+      id: randomUUID(),
+      email: Email.create('ana@familia.com'),
+      passwordHash: 'hash:x',
+      firstName: 'Ana',
+      lastName: 'Souza',
+    })
+    ana.pullEvents()
+    await users.create(ana)
+    const rui = UserAggregate.register({
+      id: randomUUID(),
+      email: Email.create('rui@outra.com'),
+      passwordHash: 'hash:x',
+      firstName: 'Rui',
+      lastName: 'Prado',
+    })
+    rui.pullEvents()
+    await users.create(rui)
+
+    const miguel = randomUUID()
+    const alice = randomUUID()
+    const arquivada = randomUUID()
+    const orfao = randomUUID()
+    const promo = randomUUID()
+    await conn.sql`
+      insert into auth.profiles
+        (id, account_user_id, name, birth_date, status, sort_order, created_at, updated_at)
+      values
+        (${miguel}, ${ana.id}, 'Miguel', '2016-03-09', 'active', 0, now(), now()),
+        (${alice}, ${ana.id}, 'Alice', null, 'active', 1, now(), now()),
+        (${arquivada}, ${ana.id}, 'Beatriz', null, 'archived', 2, now(), now()),
+        (${orfao}, ${randomUUID()}, 'Zoe', null, 'active', 0, now(), now()),
+        (${promo}, ${rui.id}, 'Za 100%', null, 'active', 0, now(), now())`
+
+    // Por nome da criança (case-insensitive), com a conta responsável anexada.
+    const byChild = await profiles.searchWithAccount({ q: 'migu', limit: 10, offset: 0 })
+    expect(byChild.total).toBe(1)
+    expect(byChild.items[0]).toEqual({
+      id: miguel,
+      name: 'Miguel',
+      avatarUrl: null,
+      birthDate: '2016-03-09',
+      accountUserId: ana.id,
+      account: { id: ana.id, email: 'ana@familia.com', firstName: 'Ana', lastName: 'Souza' },
+    })
+
+    // Por e-mail do responsável: os perfis ATIVOS da conta (arquivado fora), nome asc.
+    const byEmail = await profiles.searchWithAccount({ q: 'ana@familia', limit: 10, offset: 0 })
+    expect(byEmail.total).toBe(2)
+    expect(byEmail.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
+
+    // Sem q → todos os ativos; conta apagada → account: null (o perfil segue listável).
+    const all = await profiles.searchWithAccount({ limit: 10, offset: 0 })
+    expect(all.total).toBe(4)
+    expect(all.items.find((i) => i.id === orfao)?.account).toBeNull()
+
+    // '%' é LITERAL (escapado): casa só o nome que contém % — não vira curinga.
+    const wildcard = await profiles.searchWithAccount({ q: '%', limit: 10, offset: 0 })
+    expect(wildcard.total).toBe(1)
+    expect(wildcard.items[0]?.id).toBe(promo)
+
+    // Paginação: página fatiada com total do MESMO filtro.
+    const page = await profiles.searchWithAccount({ limit: 2, offset: 2 })
+    expect(page.total).toBe(4)
+    expect(page.items.map((i) => i.name)).toEqual(['Za 100%', 'Zoe'])
   })
 
   test('deleteExpired purga só além do cutoff; lastIssuedAt ancora o cooldown', async () => {

@@ -81,6 +81,7 @@ import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-
 import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
+import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from '../src/application/room/buy-room-item.service'
 import { GetRoomService } from '../src/application/room/get-room.service'
@@ -92,6 +93,7 @@ import { GetStudioUnlocksService } from '../src/application/studio-unlocks/get-s
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from '../src/application/submit-studio-project/submit-studio-project.service'
 import { TeacherThreadsService } from '../src/application/teacher-threads/teacher-threads.service'
+import { GetMemberToolUsageService } from '../src/application/tool-usage/get-member-tool-usage.service'
 import {
   RevokeCertificateService,
   ValidateCertificateService,
@@ -106,7 +108,7 @@ import type {
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
-import type { HubGateway } from '../src/domain/ports/hub-gateway.port'
+import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
 import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
@@ -133,6 +135,7 @@ import {
   silentLogger,
 } from './fakes/in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
+import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
 
@@ -220,6 +223,9 @@ export function buildApp(
     string,
     { title: string; playId: string | null; coverUrl: string | null; publishedAt: string }[]
   >()
+  // Participação Clube/Mural por autor (ficha admin), semeável por teste.
+  // `items: null` (default) = hub indisponível → cartões clube/mural viram null.
+  const hubActivityByAuthors: { items: HubAuthorActivity[] | null } = { items: null }
   const hub: HubGateway = {
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
@@ -231,6 +237,22 @@ export function buildApp(
     async listShowcaseByAuthor(profileId, limit) {
       const items = hubGamesByAuthor.get(profileId)
       return items ? items.slice(0, limit) : null
+    },
+    async listActivityByAuthors(authorIds) {
+      if (!hubActivityByAuthors.items) return null
+      // Régua do hub real: TODO id pedido volta (zeros/nulls sem atividade).
+      return authorIds.map(
+        (id) =>
+          hubActivityByAuthors.items?.find((i) => i.authorId === id) ?? {
+            authorId: id,
+            clubThreads: 0,
+            clubComments: 0,
+            lastClubActivityAt: null,
+            showcasePublished: 0,
+            showcasePlays: 0,
+            lastShowcaseAt: null,
+          },
+      )
     },
     async checkPlay(playId) {
       return hubPlays.get(playId) ?? null
@@ -449,7 +471,12 @@ export function buildApp(
       requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken: opts.internalToken,
       listMembers: new ListMembersService(entitlements, clock),
-      getMemberDetail: new GetMemberDetailService(entitlements, courses, progress),
+      getMemberDetail: new GetMemberDetailService(entitlements, courses, progress, positions),
+      getMemberToolUsage: new GetMemberToolUsageService(
+        new InMemoryToolUsageRepository(pensa, creations, studioSubmissions, courses),
+        hub,
+      ),
+      profilesOverview: new GetProfilesOverviewService(gamification, studioSubmissions, clock),
       getMemberActivity: new GetMemberActivityService(
         progress,
         positions,
@@ -539,6 +566,7 @@ export function buildApp(
     hubCalls,
     hubShowcaseByAuthors,
     hubGamesByAuthor,
+    hubActivityByAuthors,
     hubPlays,
     authProfiles,
     aiUsage,
@@ -690,6 +718,55 @@ export function grantLifetime(
     grantedAt: now,
     expiresAt: opts.expiresAt ?? null,
     idempotencyKey: opts.key ?? `manual:${opts.userId}:${opts.courseRef}`,
+  })
+  entitlements.seed(e)
+  return e
+}
+
+/**
+ * Concede um PRODUTO que NÃO é curso (Pensa/Pinta/Estúdio/Clube/Mural):
+ * `accessType:'community'` com `courseRef` = o PRÓPRIO sku (é assim que o seed do
+ * catálogo os modela). `productKind` distingue ferramenta (`tool`) de comunidade.
+ */
+export function grantCommunityProduct(
+  entitlements: InMemoryEntitlementRepository,
+  opts: {
+    userId: string
+    sku: string
+    name?: string
+    productKind?: 'tool' | 'community'
+    now?: Date
+  },
+): EntitlementAggregate {
+  const now = opts.now ?? new Date('2026-06-01T00:00:00.000Z')
+  const kind = opts.productKind ?? 'tool'
+  const name = opts.name ?? opts.sku
+  const e = EntitlementAggregate.grant({
+    id: randomUUID(),
+    userId: opts.userId,
+    productId: randomUUID(),
+    productKind: kind,
+    accessType: 'community',
+    courseRef: opts.sku,
+    offerId: randomUUID(),
+    snapshot: {
+      offerId: 'o',
+      offerSlug: 'o',
+      productId: 'p',
+      sku: opts.sku,
+      name,
+      kind,
+      accessType: 'community',
+      courseRef: opts.sku,
+      fulfillment: { accessType: 'community', courseRef: opts.sku },
+      resolvedAt: now.toISOString(),
+    },
+    sourceKind: 'manual',
+    sourceId: 'seed',
+    subscriptionId: null,
+    grantedAt: now,
+    expiresAt: null,
+    idempotencyKey: `manual:${opts.userId}:${opts.sku}`,
   })
   entitlements.seed(e)
   return e

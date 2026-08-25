@@ -8,6 +8,7 @@ import type { GetUserService } from '../../../application/admin/get-user/get-use
 import type { ListUsersService } from '../../../application/admin/list-users/list-users.service'
 import type { ReadAuditLogService } from '../../../application/admin/read-audit-log/read-audit-log.service'
 import type { ResendInviteService } from '../../../application/admin/resend-invite/resend-invite.service'
+import type { SearchProfilesService } from '../../../application/admin/search-profiles/search-profiles.service'
 import type { SetUserPasswordService } from '../../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../../application/admin/update-user/update-user.service'
 import type { CreateImpersonationTokenService } from '../../../application/impersonation/create-impersonation-token.service'
@@ -22,6 +23,7 @@ import {
   ListAuditQuery,
   ListUsersQuery,
   PlatformQuery,
+  SearchProfilesQuery,
   SetUserPasswordBody,
   UpdateUserBody,
   UserIdParams,
@@ -36,6 +38,11 @@ export interface AdminRoutesDeps {
   deleteUser: DeleteUserService
   batchGetUsers: BatchGetUsersService
   batchGetProfiles: BatchGetProfilesService
+  /**
+   * Busca UNIFICADA do painel (a 1ª busca por nome de CRIANÇA): acha o perfil
+   * pelo nome da criança OU os perfis da família pelo nome/e-mail do responsável.
+   */
+  searchProfiles: SearchProfilesService
   /** Reenvia o convite (link de 1º acesso) — cliente com link expirado. */
   resendInvite: ResendInviteService
   /** Define a senha manualmente (suporte: cliente preso sem senha). */
@@ -141,6 +148,22 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.batchGetProfiles.execute(body.ids)
         },
         { body: BatchGetUsersBody },
+      )
+      // Busca UNIFICADA de perfis: uma caixa só acha a criança pelo nome do
+      // PERFIL ou a família pelo nome/e-mail do RESPONSÁVEL (ILIKE escapado, só
+      // ativos). LEITURA (staff+). 3 segmentos — não colide com o POST
+      // /profiles/batch acima (4 segmentos + método distinto).
+      .get(
+        '/profiles',
+        async ({ headers, query }) => {
+          requireActor(headers, READ_ROLES)
+          return deps.searchProfiles.execute({
+            q: query.q,
+            limit: query.limit ?? 20,
+            offset: query.offset ?? 0,
+          })
+        },
+        { query: SearchProfilesQuery },
       )
       .get(
         '/users/:id',

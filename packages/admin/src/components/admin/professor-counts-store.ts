@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
 import { apiGet } from '@/lib/api'
+import type { Platform } from '@/lib/platform'
 import type { StudioSubmissionQueueRow, TeacherThreadRow } from '@/lib/types'
+import { getPlatform, subscribePlatform } from './platform-store'
 
 /**
  * Contadores de pendências da Sala do Professor (badges da sidebar + Home) —
@@ -35,11 +37,19 @@ const VISIBLE_REFRESH_MS = 15_000
 interface StoreState {
   overview: ProfessorOverview | null
   fetchedAt: number
+  /** Plataforma do snapshot — mudou o seletor global → o snapshot é STALE. */
+  platform: Platform | null
 }
 
-let state: StoreState = { overview: null, fetchedAt: 0 }
+let state: StoreState = { overview: null, fetchedAt: 0, platform: null }
 let inflight: Promise<void> | null = null
 const listeners = new Set<() => void>()
+
+// Trocar de plataforma re-busca NA HORA (o badge da sidebar conta a plataforma
+// ativa — Entregas/Recados; moderação segue global no BFF).
+subscribePlatform(() => {
+  void ensureProfessorCounts(true)
+})
 
 function subscribe(listener: () => void): () => void {
   listeners.add(listener)
@@ -60,20 +70,31 @@ function setState(next: StoreState): void {
 }
 
 async function fetchOverview(): Promise<void> {
+  const platform = getPlatform()
   try {
-    const overview = await apiGet<ProfessorOverview>('/api/admin/professor-overview')
-    setState({ overview, fetchedAt: Date.now() })
+    const overview = await apiGet<ProfessorOverview>(
+      `/api/admin/professor-overview?platform=${platform}`,
+    )
+    setState({ overview, fetchedAt: Date.now(), platform })
   } catch {
     // Best-effort: mantém o snapshot anterior (badge velho > badge sumindo);
     // carimba o fetchedAt p/ não re-tentar em loop a cada navegação.
-    setState({ ...state, fetchedAt: Date.now() })
+    setState({ ...state, fetchedAt: Date.now(), platform })
   }
 }
 
 /** Revalida se o TTL venceu (single-flight). `force` ignora o TTL (pós-ação). */
 export function ensureProfessorCounts(force = false): Promise<void> {
-  if (inflight) return inflight
-  if (!force && Date.now() - state.fetchedAt < TTL_MS) return Promise.resolve()
+  if (inflight) {
+    if (!force) return inflight
+    // O fetch em voo pode ser da plataforma ANTIGA (troca do seletor no meio):
+    // engolir o force deixaria o badge errado até a próxima revalidação. Quando
+    // ele terminar, o re-check decide — snapshot fresco (mesma plataforma + TTL)
+    // é no-op; mismatch re-busca. Sem loop: a 2ª volta entra sem force.
+    return inflight.then(() => ensureProfessorCounts(false))
+  }
+  const fresh = state.platform === getPlatform() && Date.now() - state.fetchedAt < TTL_MS
+  if (!force && fresh) return Promise.resolve()
   inflight = fetchOverview().finally(() => {
     inflight = null
   })

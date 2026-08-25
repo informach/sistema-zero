@@ -81,6 +81,11 @@ function subscribe(listener: () => void): () => void {
   }
 }
 
+/** Assinatura para código NÃO-React (ex.: o counts-store re-busca ao trocar de plataforma). */
+export function subscribePlatform(listener: () => void): () => void {
+  return subscribe(listener)
+}
+
 /** Plataforma ativa, reativa (server snapshot = valor semeado pelo layout). */
 export function usePlatform(): Platform {
   return useSyncExternalStore(subscribe, getPlatform, getPlatform)

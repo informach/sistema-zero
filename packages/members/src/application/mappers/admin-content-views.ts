@@ -23,6 +23,8 @@ export interface CourseView {
   /** Página de vendas (funil) — de `metadata.salesPageUrl`; `null` se não setada. */
   salesPageUrl: string | null
   status: string
+  /** Slug do curso de ORIGEM quando este é um clone (`metadata.clonedFrom`); senão null. */
+  clonedFrom: string | null
   /** Plataforma do curso (`adult` | `kids`). */
   audience: string
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
@@ -49,6 +51,11 @@ export interface CourseView {
   updatedAt: string
 }
 
+function resolveClonedFrom(c: Course): string | null {
+  const value = c.metadata?.clonedFrom
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
 export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView {
   return {
     id: c.id,
@@ -66,6 +73,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     careerSlot: c.careerSlot,
     sequentialLock: c.sequentialLock,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
+    clonedFrom: resolveClonedFrom(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

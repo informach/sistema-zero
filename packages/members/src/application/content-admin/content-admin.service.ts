@@ -1,6 +1,7 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import type { CourseAudience } from '../../domain/course/course'
 import {
   ContentNotFoundError,
   CourseConflictError,
@@ -99,6 +100,32 @@ export class CourseAdminService {
       limit: filter.limit,
       offset: filter.offset,
     }
+  }
+
+  /**
+   * CLONA o curso para a plataforma destino (o substituto da "audiência Ambas"):
+   * o clone é um curso INDEPENDENTE — entra na carreira/chave-mestra/XP da
+   * plataforma dele sem nenhuma regra nova — e edições NÃO sincronizam (fork,
+   * avisado na UI). Nasce `draft` e fora da carreira; `metadata.clonedFrom`
+   * guarda a proveniência.
+   */
+  async clone(
+    courseId: string,
+    input: { audience: CourseAudience; slug?: string; title?: string },
+  ): Promise<CourseView> {
+    const source = await this.courses.findCourseById(courseId)
+    if (!source) throw new ContentNotFoundError('Curso não encontrado')
+    const slug =
+      input.slug?.trim() || `${source.slug}-${input.audience === 'kids' ? 'kids' : 'adulto'}`
+    const cloned = await this.content.cloneCourseTree(source.id, {
+      slug,
+      title: input.title?.trim() || source.title,
+      audience: input.audience,
+      // `studioUnlockBlocks` é currículo do Estúdio KIDS — clone p/ adulto não carrega.
+      dropStudioUnlockBlocks: input.audience === 'adult',
+    })
+    if (!cloned) throw new ContentNotFoundError('Curso não encontrado')
+    return toCourseView(cloned)
   }
 
   async create(fields: CourseFields): Promise<CourseView> {

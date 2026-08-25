@@ -188,6 +188,13 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      report OMITE a capa e tem janela ≤45 dias, esta NÃO tem janela). Alimenta a seção "Jogos
      publicados no Mural" do perfil público (`/crianca/[id]`). O members só monta a seção num
      perfil PÚBLICO (opt-in dos pais); os jogos já são públicos no `/jogar`.
+   - **Uso por ferramenta do admin (08/2026):** rota S2S **`POST /hub/internal/activity-by-authors`**
+     (mesmo hook HMAC, NUNCA no gateway): body `{authorIds 1..50}` (duplicados dedup-ados) → UM item
+     por id `{authorId, clubThreads, clubComments, lastClubActivityAt, showcasePublished,
+     showcasePlays, lastShowcaseAt}` — Clube = conteúdo `visible` NÃO-vitrine (comentário conta pelo
+     TÓPICO-PAI não-vitrine; mesma régua do XP), Mural = vitrines visíveis + soma de plays; TODO id
+     pedido volta (sem atividade → zeros/nulls). `ThreadRepository.activityByAuthors` (3 GROUP BY em
+     lote, nunca N+1); testes em `internal-activity.test.ts` + Postgres real no `tests/db`.
 13. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE

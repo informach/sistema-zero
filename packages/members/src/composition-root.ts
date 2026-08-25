@@ -81,6 +81,7 @@ import { UpdatePensaTaskProgressService } from './application/pensa/update-task-
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
+import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
 import { SendRenewalRemindersService } from './application/renewal-reminder/send-renewal-reminders.service'
 import { RevokeEntitlementService } from './application/revoke-entitlement/revoke-entitlement.service'
 import { BuyRoomItemService } from './application/room/buy-room-item.service'
@@ -93,6 +94,7 @@ import { GetStudioUnlocksService } from './application/studio-unlocks/get-studio
 import { SubmitQuizAttemptService } from './application/submit-quiz-attempt/submit-quiz-attempt.service'
 import { SubmitStudioProjectService } from './application/submit-studio-project/submit-studio-project.service'
 import { TeacherThreadsService } from './application/teacher-threads/teacher-threads.service'
+import { GetMemberToolUsageService } from './application/tool-usage/get-member-tool-usage.service'
 import {
   RevokeCertificateService,
   ValidateCertificateService,
@@ -128,6 +130,7 @@ import { DrizzleRoomRepository } from './infrastructure/persistence/drizzle/room
 import { DrizzleStudioSubmissionRepository } from './infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleStudioUnlockRepository } from './infrastructure/persistence/drizzle/studio-unlock.repository'
 import { DrizzleTeacherThreadRepository } from './infrastructure/persistence/drizzle/teacher-thread.repository'
+import { DrizzleToolUsageRepository } from './infrastructure/persistence/drizzle/tool-usage.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
@@ -500,7 +503,15 @@ export async function createApplication(env: Env): Promise<Application> {
 
   // Gestão admin (painel)
   const listMembers = new ListMembersService(entitlements, clock)
-  const getMemberDetail = new GetMemberDetailService(entitlements, courses, progress)
+  const getMemberDetail = new GetMemberDetailService(entitlements, courses, progress, positions)
+  // Uso por ferramenta (ficha admin) — hub best-effort (noop sem HUB_BASE_URL → cartões null).
+  const toolUsage = new DrizzleToolUsageRepository(db)
+  const getMemberToolUsage = new GetMemberToolUsageService(toolUsage, hub)
+  const profilesOverview = new GetProfilesOverviewService(
+    gamificationRepo,
+    studioSubmissions,
+    clock,
+  )
   const getMemberActivity = new GetMemberActivityService(
     progress,
     positions,
@@ -640,6 +651,8 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
       listMembers,
       getMemberDetail,
+      getMemberToolUsage,
+      profilesOverview,
       getMemberActivity,
       listMemberCertificates,
       listMemberRatings,

@@ -8,6 +8,7 @@ import { GetUserService } from './application/admin/get-user/get-user.service'
 import { ListUsersService } from './application/admin/list-users/list-users.service'
 import { ReadAuditLogService } from './application/admin/read-audit-log/read-audit-log.service'
 import { ResendInviteService } from './application/admin/resend-invite/resend-invite.service'
+import { SearchProfilesService } from './application/admin/search-profiles/search-profiles.service'
 import { SetUserPasswordService } from './application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
@@ -263,6 +264,8 @@ export async function createApplication(env: Env): Promise<Application> {
   const deleteUser = new DeleteUserService(users, logger)
   const batchGetUsers = new BatchGetUsersService(users)
   const batchGetProfiles = new BatchGetProfilesService(profilesRepo)
+  // Busca unificada do painel: criança (perfil) OU responsável (conta).
+  const searchProfiles = new SearchProfilesService(profilesRepo)
   // Auditoria: o gateway emite (S2S) e o painel lê.
   const writeAuditLog = new WriteAuditLogService(auditLogs)
   const readAuditLog = new ReadAuditLogService(auditLogs)
@@ -352,6 +355,7 @@ export async function createApplication(env: Env): Promise<Application> {
     deleteUser,
     batchGetUsers,
     batchGetProfiles,
+    searchProfiles,
     resendInvite,
     setUserPassword,
     writeAuditLog,

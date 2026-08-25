@@ -1,4 +1,5 @@
 import 'server-only'
+import type { MemberToolUsageView } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
   AiUsageStatsView,
@@ -80,6 +81,43 @@ export function getMember(
   })
 }
 
+/** Uma linha do enriquecimento da listagem de crianças (espelha o members). */
+export interface ProfileOverviewView {
+  profileId: string
+  xp: number
+  levelSlug: string
+  streakCurrent: number
+  lastActivityDate: string | null
+  pendingSubmissions: number
+}
+
+/**
+ * Enriquecimento em LOTE da listagem de CRIANÇAS: `GET /members/admin/profiles-overview`.
+ * Os profileIds vêm da página de busca do auth (≤50 — o teto da página).
+ */
+export function getProfilesOverview(
+  profileIds: string[],
+  audience: 'adult' | 'kids' = 'kids',
+): Promise<GatewayResponse<{ profiles: ProfileOverviewView[] }>> {
+  return gatewayFetch('/members/admin/profiles-overview', {
+    query: { profileIds: profileIds.join(','), audience },
+  })
+}
+
+/**
+ * USO das ferramentas (Pensa/Pinta/Estúdio/Clube/Mural) por aprendiz da família:
+ * `GET /members/admin/members/:userId/tool-usage`. Clube/Mural são best-effort no
+ * members (hub fora → campos `null`) — a chamada nunca vira 500 por causa do hub.
+ */
+export function getMemberToolUsage(
+  userId: string,
+  profileIds: string[] = [],
+): Promise<GatewayResponse<MemberToolUsageView>> {
+  return gatewayFetch(`/members/admin/members/${encodeURIComponent(userId)}/tool-usage`, {
+    query: { profileIds: profileIds.length > 0 ? profileIds.join(',') : undefined },
+  })
+}
+
 /**
  * Gamificação do aprendiz (ficha 360): `GET /members/admin/members/:userId/gamification`.
  * `audience` = `adult` para a conta, `kids` para um perfil (o BFF chama por aprendiz).
@@ -155,13 +193,15 @@ export function manageEntitlement(
 export interface ListCoursesParams {
   q?: string
   status?: string
+  /** Plataforma (seletor global do painel) — o members filtra a listagem. */
+  audience?: 'adult' | 'kids'
   limit?: number
   offset?: number
 }
 
 export function listCourses(p: ListCoursesParams): Promise<GatewayResponse<Paginated<CourseView>>> {
   return gatewayFetch('/members/admin/courses', {
-    query: { q: p.q, status: p.status, limit: p.limit, offset: p.offset },
+    query: { q: p.q, status: p.status, audience: p.audience, limit: p.limit, offset: p.offset },
   })
 }
 export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>> {
@@ -169,6 +209,10 @@ export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>
 }
 export function getCourse(id: string): Promise<GatewayResponse<CourseTreeView>> {
   return gatewayFetch(`/members/admin/courses/${enc(id)}`)
+}
+/** CLONA o curso p/ a outra plataforma (fork — edições não sincronizam). */
+export function cloneCourse(id: string, body: unknown): Promise<GatewayResponse<CourseView>> {
+  return gatewayFetch(`/members/admin/courses/${enc(id)}/clone`, { method: 'POST', body })
 }
 export function updateCourse(id: string, body: unknown): Promise<GatewayResponse<CourseView>> {
   return gatewayFetch(`/members/admin/courses/${enc(id)}`, { method: 'PATCH', body })

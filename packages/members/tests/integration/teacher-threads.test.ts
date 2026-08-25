@@ -170,15 +170,21 @@ describe('conversas com o professor (canal de retorno)', () => {
     await studentReply(app, a.id, 'Consertei!')
     await studentReply(app, b.id, 'Recebi o recado!')
 
-    const unreadCountAs = async (headers: Record<string, string>) =>
+    const unreadCountAs = async (headers: Record<string, string>, audience?: string) =>
       readJson(
         await app.handle(
-          new Request('http://localhost/members/admin/teacher-threads/unread-count', { headers }),
+          new Request(
+            `http://localhost/members/admin/teacher-threads/unread-count${audience ? `?audience=${audience}` : ''}`,
+            { headers },
+          ),
         ),
       )
     expect((await unreadCountAs(adminHeaders)).count).toBe(2)
     // Individual: o 2º professor também vê 2 (watermark é POR staff).
     expect((await unreadCountAs(adminHeaders2)).count).toBe(2)
+    // `?audience=` escopa o badge à plataforma ativa (seletor global do painel).
+    expect((await unreadCountAs(adminHeaders, 'kids')).count).toBe(2)
+    expect((await unreadCountAs(adminHeaders, 'adult')).count).toBe(0)
 
     // read-all do 1º professor zera SÓ o dele.
     const readAll = await readJson(

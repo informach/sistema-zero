@@ -20,6 +20,12 @@ export interface VideoPositionRepository {
   /** Última aula acessada por curso, em lote (evita N+1 em listagens). courseId → lessonId. */
   lastAccessedByCourseIds(userId: string, courseIds: string[]): Promise<Map<string, string>>
   /**
+   * Último ACESSO por curso (max `updatedAt`), sobre TODOS os cursos do aprendiz —
+   * par do `ProgressRepository.lastCompletionByCourse` no "última atividade" da
+   * ficha admin.
+   */
+  lastAccessByCourse(userId: string): Promise<Map<string, Date>>
+  /**
    * Aulas acessadas mais recentes do aluno (ficha admin — linha do tempo), com
    * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).
    */

@@ -11,6 +11,7 @@ import { CareerSlotConflictError, DuplicateSlugError } from '../../../domain/cou
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import type {
   AttachmentFields,
+  CloneCourseOverrides,
   ContentAdminRepository,
   CourseFields,
   LessonFields,
@@ -293,6 +294,127 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       throw error
     }
     return toCourse(row as CourseRow)
+  }
+
+  async cloneCourseTree(
+    sourceCourseId: string,
+    overrides: CloneCourseOverrides,
+  ): Promise<Course | null> {
+    // Transação única: ou a árvore inteira nasce, ou nada. Queries SEQUENCIAIS
+    // (mesma sessão do postgres.js — sem Promise.all dentro da txn).
+    return this.db.transaction(async (tx) => {
+      const [src] = await tx.select().from(courses).where(eq(courses.id, sourceCourseId)).limit(1)
+      if (!src) return null
+
+      const now = new Date()
+      const metadata: Record<string, unknown> = {
+        ...((src.metadata as Record<string, unknown> | null) ?? {}),
+        clonedFrom: src.slug,
+      }
+      if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
+
+      const row = {
+        id: randomUUID(),
+        version: 0,
+        slug: overrides.slug,
+        title: overrides.title,
+        subtitle: src.subtitle,
+        description: src.description,
+        coverImageUrl: src.coverImageUrl,
+        status: 'draft' as const,
+        audience: overrides.audience,
+        sequentialLock: src.sequentialLock,
+        level: src.level,
+        track: src.track,
+        // Fora da carreira até a operadora etiquetar (evita conflito de posição
+        // e a armadilha de um clone virar curso-base sem querer).
+        careerSlot: null,
+        metadata,
+        createdAt: now,
+        updatedAt: now,
+      }
+      try {
+        await tx.insert(courses).values(row)
+      } catch (error) {
+        if (isSlugUniqueViolation(error))
+          throw new DuplicateSlugError('Já existe um curso com esse slug')
+        throw error
+      }
+
+      const srcModules = await tx.select().from(modules).where(eq(modules.courseId, src.id))
+      const srcLessons = await tx.select().from(lessons).where(eq(lessons.courseId, src.id))
+      const lessonIds = srcLessons.map((l) => l.id)
+      const srcBlocks =
+        lessonIds.length > 0
+          ? await tx.select().from(lessonBlocks).where(inArray(lessonBlocks.lessonId, lessonIds))
+          : []
+      const srcAttachments =
+        lessonIds.length > 0
+          ? await tx
+              .select()
+              .from(lessonAttachments)
+              .where(inArray(lessonAttachments.lessonId, lessonIds))
+          : []
+
+      const moduleIdMap = new Map(srcModules.map((m) => [m.id, randomUUID()]))
+      const lessonIdMap = new Map(srcLessons.map((l) => [l.id, randomUUID()]))
+      if (srcModules.length > 0) {
+        await tx.insert(modules).values(
+          srcModules.map((m) => ({
+            id: moduleIdMap.get(m.id) as string,
+            courseId: row.id,
+            title: m.title,
+            summary: m.summary,
+            sortOrder: m.sortOrder,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        )
+      }
+      if (srcLessons.length > 0) {
+        await tx.insert(lessons).values(
+          srcLessons.map((l) => ({
+            id: lessonIdMap.get(l.id) as string,
+            moduleId: moduleIdMap.get(l.moduleId) as string,
+            courseId: row.id,
+            slug: l.slug,
+            title: l.title,
+            sortOrder: l.sortOrder,
+            estimatedMinutes: l.estimatedMinutes,
+            isPublished: l.isPublished,
+            createdAt: now,
+            updatedAt: now,
+          })),
+        )
+      }
+      if (srcBlocks.length > 0) {
+        await tx.insert(lessonBlocks).values(
+          srcBlocks.map((b) => ({
+            id: randomUUID(),
+            lessonId: lessonIdMap.get(b.lessonId) as string,
+            kind: b.kind,
+            sortOrder: b.sortOrder,
+            content: b.content,
+            // Conteúdo idêntico = mesma revisão (o Zappy não re-extrai à toa).
+            contentRevision: b.contentRevision,
+          })),
+        )
+      }
+      if (srcAttachments.length > 0) {
+        await tx.insert(lessonAttachments).values(
+          srcAttachments.map((a) => ({
+            id: randomUUID(),
+            lessonId: lessonIdMap.get(a.lessonId) as string,
+            label: a.label,
+            url: a.url,
+            fileType: a.fileType,
+            sizeBytes: a.sizeBytes,
+            sortOrder: a.sortOrder,
+          })),
+        )
+      }
+      return toCourse(row as CourseRow)
+    })
   }
 
   async updateCourse(course: Course): Promise<boolean> {

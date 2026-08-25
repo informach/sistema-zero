@@ -69,6 +69,7 @@ import type { CatalogGateway, ResolvedOffer } from '../../src/domain/ports/catal
 import type { CertificateRepository } from '../../src/domain/ports/certificate-repository.port'
 import type {
   AttachmentFields,
+  CloneCourseOverrides,
   ContentAdminRepository,
   CourseFields,
   LessonFields,
@@ -427,6 +428,11 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     return this.courses.filter((c) => set.has(c.slug))
   }
 
+  async findCoursesByIds(ids: string[]): Promise<Course[]> {
+    const set = new Set(ids)
+    return this.courses.filter((c) => set.has(c.id))
+  }
+
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
@@ -586,6 +592,47 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       if (lesson?.isPublished && wanted.has(lesson.courseId)) found.add(lesson.courseId)
     }
     return [...found]
+  }
+
+  async cloneCourseTree(
+    sourceCourseId: string,
+    overrides: CloneCourseOverrides,
+  ): Promise<Course | null> {
+    const src = this.courses.find((c) => c.id === sourceCourseId)
+    if (!src) return null
+    if (this.courses.some((c) => c.slug === overrides.slug)) throw new DuplicateSlugError()
+    const metadata: Record<string, unknown> = { ...(src.metadata ?? {}), clonedFrom: src.slug }
+    if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
+    const now = new Date()
+    const clone: Course = {
+      ...src,
+      id: randomUUID(),
+      version: 0,
+      slug: overrides.slug,
+      title: overrides.title,
+      status: 'draft',
+      audience: overrides.audience,
+      careerSlot: null,
+      metadata,
+      createdAt: now,
+      updatedAt: now,
+    }
+    this.courses.push(clone)
+    for (const m of this.modules.filter((m) => m.courseId === src.id)) {
+      const newModuleId = randomUUID()
+      this.modules.push({ ...m, id: newModuleId, courseId: clone.id })
+      for (const l of this.lessons.filter((l) => l.moduleId === m.id)) {
+        const newLessonId = randomUUID()
+        this.lessons.push({ ...l, id: newLessonId, moduleId: newModuleId, courseId: clone.id })
+        for (const b of this.blocks.filter((b) => b.lessonId === l.id)) {
+          this.blocks.push({ ...b, id: randomUUID(), lessonId: newLessonId })
+        }
+        for (const a of this.attachments.filter((a) => a.lessonId === l.id)) {
+          this.attachments.push({ ...a, id: randomUUID(), lessonId: newLessonId })
+        }
+      }
+    }
+    return clone
   }
 
   async createCourse(fields: CourseFields): Promise<Course> {
@@ -1063,6 +1110,16 @@ export class InMemoryProgressRepository implements ProgressRepository {
       .completedAt
   }
 
+  async lastCompletionByCourse(userId: string): Promise<Map<string, Date>> {
+    const out = new Map<string, Date>()
+    for (const c of this.completions) {
+      if (c.userId !== userId) continue
+      const prev = out.get(c.courseId)
+      if (!prev || c.completedAt.getTime() > prev.getTime()) out.set(c.courseId, c.completedAt)
+    }
+    return out
+  }
+
   async listRecentCompletions(userId: string, limit: number): Promise<RecentLessonActivity[]> {
     return this.completions
       .filter((c) => c.userId === userId)
@@ -1229,6 +1286,16 @@ export class InMemoryVideoPositionRepository implements VideoPositionRepository 
     for (const courseId of courseIds) {
       const lessonId = await this.lastAccessedLessonId(userId, courseId)
       if (lessonId) out.set(courseId, lessonId)
+    }
+    return out
+  }
+
+  async lastAccessByCourse(userId: string): Promise<Map<string, Date>> {
+    const out = new Map<string, Date>()
+    for (const r of this.rows) {
+      if (r.userId !== userId) continue
+      const prev = out.get(r.courseId)
+      if (!prev || r.updatedAt.getTime() > prev.getTime()) out.set(r.courseId, r.updatedAt)
     }
     return out
   }
@@ -1527,6 +1594,20 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
    * marca explicitamente; a semântica SQL é coberta pela QA integrada.
    */
   readonly answeredKeys = new Set<string>()
+
+  async countPendingByUsers(userIds: string[]): Promise<Map<string, number>> {
+    const set = new Set(userIds)
+    const out = new Map<string, number>()
+    for (const s of this.submissions) {
+      if (!set.has(s.userId)) continue
+      // Mesma régua da fila: pendente = nem respondida nem conferida.
+      const answered = this.answeredKeys.has(`${s.userId}:${s.blockId}`)
+      const reviewed = s.reviewedAt != null && s.reviewedAt >= s.submittedAt
+      if (answered || reviewed) continue
+      out.set(s.userId, (out.get(s.userId) ?? 0) + 1)
+    }
+    return out
+  }
 
   async listAll(
     filter: StudioSubmissionGlobalFilter,
@@ -1842,8 +1923,10 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
     if (t) this.staffReads.set(this.staffReadKey(threadId, staffUserId), t.lastMessageAt)
   }
 
-  async countUnreadForTeacher(staffUserId: string): Promise<number> {
-    return this.threads.filter((t) => this.unreadFor(t, 'teacher', staffUserId)).length
+  async countUnreadForTeacher(staffUserId: string, audience?: CourseAudience): Promise<number> {
+    return this.threads.filter(
+      (t) => (!audience || t.audience === audience) && this.unreadFor(t, 'teacher', staffUserId),
+    ).length
   }
 
   async markAllReadByTeacher(staffUserId: string, filter?: MarkAllReadFilter): Promise<number> {
@@ -2361,6 +2444,19 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     if (!rec) return null
     // `freezeGrantedMonth` mora num mapa à parte no fake — mirror do que o Drizzle lê da coluna.
     return { ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null }
+  }
+
+  async listByUserIds(
+    userIds: string[],
+    audience: CourseAudience,
+  ): Promise<GamificationProfileRecord[]> {
+    const out: GamificationProfileRecord[] = []
+    for (const userId of userIds) {
+      const key = this.profileKey(userId, audience)
+      const rec = this.profiles.get(key)
+      if (rec) out.push({ ...rec, freezeGrantedMonth: this.freezeMonths.get(key) ?? null })
+    }
+    return out
   }
 
   async listByAccount(

@@ -1561,11 +1561,33 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   (`POST /auth/admin/users/batch`). `total` = nº de GRUPOS (subquery sobre o `GROUP BY`,
   nunca contar linhas); ordenação `max(granted_at) desc, user_id` (paginação estável).
 - `GET /members/admin/members/:userId[?profileIds=<csv>]` → todas as matrículas (qualquer
-  status) + progresso por curso. Usa `findCoursesBySlugs` (SEM filtro de status → admin vê
-  draft/archived). **Perfis (estilo Netflix):** com `?profileIds=` (os perfis da conta, que o
-  painel busca no auth) devolve TAMBÉM `profilesProgress` = progresso de CADA perfil sobre os
-  MESMOS cursos da família (o nome do perfil é hidratado pelo painel). Ausente → só o progresso
-  da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda.
+  status) + progresso por curso. **v2 (08/2026 — progresso por TIPO de produto):** o progresso
+  de cada aprendiz é a UNIÃO de (a) matrículas ESPECÍFICAS de curso (`accessType==='course'`)
+  cujo curso é da plataforma do aprendiz (conta→adult, perfil→kids; inclui nunca-aberto, 0% e
+  `lastActivityAt:null`) e (b) cursos com ATIVIDADE real (`lastCompletionByCourse` +
+  `lastAccessByCourse`, max dos dois — é o que faz a CHAVE-MESTRA aparecer). ⚠️ Produto que NÃO
+  é curso (accessType `community` — Pensa/Pinta/Estúdio/Clube/Mural) fica FORA do progresso DE
+  PROPÓSITO (era o bug "pensa 0%"): uso de ferramenta sai pela rota `tool-usage` abaixo.
+  `MemberCourseProgressView` ganhou `courseId`/`audience`/`lastActivityAt` (aditivos; linha
+  degradada de ref órfã segue com nulls) e `AdminEntitlementView` ganhou `sku` (snapshot).
+  Ordenação: atividade mais recente primeiro, nunca-abertos por último. **Perfis (estilo
+  Netflix):** com `?profileIds=` devolve TAMBÉM `profilesProgress` por perfil. Ausente → só o
+  progresso da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda. Testes:
+  `tests/integration/admin-member-detail.test.ts`.
+- **`GET /members/admin/members/:userId/tool-usage[?profileIds=<csv>]` (08/2026)** → USO das
+  ferramentas por aprendiz da FAMÍLIA (cartões da ficha; 1 chamada por família):
+  `pensa {projects, cyclesCompleted, lastActivityAt}` (pensa_projects/cycles) · `pinta`/`estudio
+  {drawings|creations, deliveries, lastActivityAt}` (creations VIVAS E CONFIRMADAS — predicado do
+  `creations_usage_idx`: `deleted_at is null AND storage_ref is not null` — + studio_submissions
+  com o kind AUTORITATIVO do BLOCO, inner join) · `clube {posts, comments, lastActivityAt}` e
+  `mural {published, plays, lastPublishedAt}` via **hub S2S best-effort**
+  (`HubGateway.listActivityByAuthors` → `POST /hub/internal/activity-by-authors`, HMAC direto,
+  NUNCA no gateway) — hub fora → `clube`/`mural` = **null** (≠ zero; a rota NUNCA 500a).
+  `GetMemberToolUsageService` + port read-model `tool-usage-repository.port.ts`
+  (`DrizzleToolUsageRepository`, GROUP BY em lote, nunca N+1). Gateway:
+  `members-admin-member-tool-usage` (staff+, 120/min). ⚠️ O SQL do join de kind e o predicado de
+  criações vivem só aqui — `tests/db/tool-usage-sql.test.ts` os roda contra Postgres real (o fake
+  espelha em JS; foi esse teste que pegou o `storage_ref` faltando no drizzle).
 - **Ficha 360 do aluno (LEITURA, 06/2026):** 4 rotas read-only por APRENDIZ (o `:userId` é o
   aprendiz — a CONTA no adulto, o PERFIL no kids; o painel chama 1× por aprendiz). Reusam
   repos/serviços existentes; nenhuma toca dados.
@@ -1630,6 +1652,23 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
 `CourseAdminService`/`Module…`/`Lesson…`/`Block…`/`AttachmentAdminService`. Endpoints:
 - Cursos: `GET /courses` (lista, qualquer status), `POST /courses`, `GET /courses/:id` (ÁRVORE
   = curso + módulos + aulas), `PATCH/DELETE /courses/:id`. `delete` poda `lesson_completions`.
+  **`POST /courses/:courseId/clone` (08/2026 — clonar p/ a OUTRA plataforma, SEM migration):**
+  body `{audience: 'adult'|'kids', slug?, title?}` → `CourseAdminService.clone` +
+  `ContentAdminRepository.cloneCourseTree` copia numa transação ÚNICA a árvore inteira (módulos/
+  aulas/blocos [com `contentRevision`]/anexos, sortOrders preservados; anexos apontam para os
+  MESMOS storageRefs do R2 — nada é apagado por cascade do clone). O clone é um FORK independente:
+  nasce `draft`, `audience` = destino, `careerSlot: null` (ela etiqueta depois),
+  `sequentialLock`/`level`/`track` copiados, `metadata.clonedFrom = <slug de origem>`
+  (a `CourseView` devolve `clonedFrom` — badge no painel), `is_published` das aulas copiado (o
+  draft do curso segura a visibilidade). NÃO copia dados de aluno (completions/ratings/
+  submissions/threads). Slug default = `<slug>-adulto|-kids`; colisão → 409 `DUPLICATE_SLUG`.
+  Clonar p/ **adult** remove `metadata.studioUnlockBlocks` (currículo do Estúdio é conceito
+  kids); p/ kids preserva. Decisão da usuária (24/08): clone em vez de audiência "ambas" — o
+  enum `course_audience` é compartilhado por ~15 colunas (NUNCA adicionar 'both') e um curso
+  fora da carreira "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
+  exige o MESMO nome de param quando o segmento tem filhos (`/courses/:courseId/modules`).
+  Testes: `tests/integration/clone-course.test.ts`. Gateway: coberto por
+  `members-admin-courses-write`.
 - Módulos: `POST /courses/:courseId/modules`, `PATCH/DELETE /modules/:id`,
   `POST /courses/:courseId/modules/reorder`.
 - Aulas: `POST /modules/:moduleId/lessons`, `PATCH/DELETE /lessons/:id`,

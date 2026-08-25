@@ -121,6 +121,12 @@ export class DrizzleCourseRepository implements CourseRepository {
     return rows.map(toCourse)
   }
 
+  async findCoursesByIds(ids: string[]): Promise<Course[]> {
+    if (ids.length === 0) return []
+    const rows = await this.db.select().from(courses).where(inArray(courses.id, ids))
+    return rows.map(toCourse)
+  }
+
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     const rows = await this.db
       .select()

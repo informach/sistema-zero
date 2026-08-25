@@ -62,6 +62,32 @@ export interface AdminProfile {
   avatarUrl: string | null
   whatsapp: string | null
   sortOrder: number
+  /** `YYYY-MM-DD` (o upstream já devolve; identidade kids = nome + IDADE). */
+  birthDate?: string | null
+}
+
+/** Linha da BUSCA de perfis (kids-first): perfil + dados mínimos do responsável. */
+export interface AdminProfileSearchRow {
+  id: string
+  name: string
+  avatarUrl: string | null
+  birthDate: string | null
+  accountUserId: string
+  account: { id: string; email: string; firstName: string; lastName: string } | null
+}
+
+/**
+ * BUSCA unificada de perfis (kids-first): `GET /auth/admin/profiles?q=` acha a
+ * criança pelo NOME do perfil OU a família pelo nome/e-mail do responsável.
+ */
+export function searchProfiles(p: {
+  q?: string
+  limit?: number
+  offset?: number
+}): Promise<GatewayResponse<{ items: AdminProfileSearchRow[]; total: number }>> {
+  return gatewayFetch('/auth/admin/profiles', {
+    query: { q: p.q, limit: p.limit, offset: p.offset },
+  })
 }
 
 /** Perfis (estilo Netflix) de uma conta (admin): `GET /auth/admin/users/:id/profiles`. */

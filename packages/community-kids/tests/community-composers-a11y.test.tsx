@@ -77,21 +77,36 @@ afterEach(() => {
 })
 
 /**
- * ⚠️ Timeout EXPLÍCITO nos `findBy` que montam o `KidsSpaceViewClient`, e não o
- * 1000 ms padrão da testing-library.
+ * ⚠️⚠️ AQUECER o editor rico ANTES dos casos, para o carregamento tardio sair
+ * de dentro da janela de espera. O teto é só a rede de segurança.
  *
- * O primeiro caso a montar esse cliente paga o mount frio (módulos, dois fetches
- * e o diálogo); o irmão logo depois faz o MESMO render e clique em ~200 ms. No
- * runner do CI, com os 22 pacotes disputando CPU, esse primeiro mount passou de
- * 1 s e reprovou (23/08; o mesmo caso já tinha flakado em 18/08, quando a corrida
- * real foi consertada trocando `getBy` por `findBy`).
+ * O `RichEditor` do member-shell é `next/dynamic({ ssr:false })`, então o campo
+ * "Mensagem da conversa" só existe depois que o grafo do TipTap (StarterKit +
+ * tiptap-markdown) TERMINA de carregar — um import que, no meio do teste, num
+ * runner com 22 pacotes disputando CPU, já estourou 1 s (23/08) e depois 5 s
+ * (23/08, o outro caso). Quando dá certo o caso leva 54 ms: o custo não é do
+ * componente, é do carregamento tardio acontecer DENTRO da janela de espera.
  *
- * Aqui a asserção é o NOME ACESSÍVEL do campo — o tempo de abrir o diálogo não é
- * o que está sob teste, e deixar 1 s implícito transforma o teste num orçamento
- * de latência que ninguém escolheu. O teto generoso vale para os DOIS casos: a
- * ordem pode mudar, e quem correr primeiro é que paga o frio.
+ * ⚠️ A leitura anterior — "mount frio, quem roda primeiro paga" — estava
+ * ERRADA: no run verde os três casos levaram 17/54/194 ms, e a falha não é
+ * lentidão, é o campo NUNCA aparecer dentro do teto. Com o módulo já no
+ * registro, o `dynamic` resolve num microtask e a espera deixa de existir.
+ *
+ * Carregar aqui (e não mockar) preserva o que o teste PROVA: que o editor REAL
+ * expõe o nome acessível que o compositor passa. Bônus: import que FALHE passa a
+ * estourar no topo do arquivo, com a mensagem real, em vez de virar um timeout
+ * mudo lá embaixo.
+ *
+ * ⚠️ HONESTIDADE sobre a prova: esta máquina resolve o import em <120 ms com ou
+ * sem o aquecimento, então o anti-vácuo local NÃO distingue os dois — a
+ * lentidão é do runner do CI, e é lá que o conserto se prova. Se voltar a
+ * reprovar, a próxima parada é trocar o editor real por um duplo com o mesmo
+ * `aria-label` (perde-se provar o editor REAL, ganha-se determinismo).
  */
-const MOUNT_FRIO = { timeout: 5_000 } as const
+await import('@sistemazero/member-shell/components/rich-editor.impl')
+
+/** Rede de segurança para o resto (dois fetches + o diálogo), não orçamento. */
+const ESPERA = { timeout: 5_000 } as const
 
 describe('nomes acessíveis dos compositores da comunidade', () => {
   test('o campo de resposta dos recados tem label persistente', async () => {
@@ -104,20 +119,20 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
   test('o título da nova conversa tem label persistente', async () => {
     render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, MOUNT_FRIO))
+    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
     // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
     // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
     // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
-    const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, MOUNT_FRIO)
+    const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
     expect(title.getAttribute('name')).toBe('threadTitle')
   })
 
   test('o corpo da nova conversa expõe o editor rico como campo nomeado', async () => {
     render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, MOUNT_FRIO))
+    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
     expect(
-      await screen.findByRole('textbox', { name: 'Mensagem da conversa' }, MOUNT_FRIO),
+      await screen.findByRole('textbox', { name: 'Mensagem da conversa' }, ESPERA),
     ).toBeTruthy()
   })
 })

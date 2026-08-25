@@ -16,6 +16,7 @@ import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { usePlatform } from '@/components/admin/platform-store'
 
 // LAZY de propósito, e não só por peso: o viewer (e os embeds do Estúdio/Pinta
 // atrás dele) só carrega quando uma entrega ABRE — a fila lista sem pagar o
@@ -62,7 +63,13 @@ export function EntregasClient() {
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(true)
   const [courseId, setCourseId] = useState('')
-  const [audience, setAudience] = useState('')
+  // Filtro "Plataforma" nasce na plataforma ATIVA do seletor global e re-sincroniza
+  // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
+  const platform = usePlatform()
+  const [audience, setAudience] = useState<string>(platform)
+  useEffect(() => {
+    setAudience(platform)
+  }, [platform])
   const [status, setStatus] = useState('')
   const [courses, setCourses] = useState<CourseView[]>([])
   const [open, setOpen] = useState<StudioSubmissionQueueRow | null>(null)

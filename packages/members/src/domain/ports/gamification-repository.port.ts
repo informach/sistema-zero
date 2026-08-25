@@ -313,6 +313,12 @@ export interface GamificationRepository {
    * (defesa em profundidade); perfil sem atividade (sem linha) simplesmente não volta.
    * Usa o índice `gamification_profiles_account_idx`.
    */
+  /**
+   * Perfis de gamificação por ids, SEM filtro de conta — leitura ADMIN (o RBAC é
+   * do gateway; a versão dos PAIS é o `listByAccount`, que autoriza pela conta).
+   * Perfil sem linha (nunca pontuou) simplesmente não volta.
+   */
+  listByUserIds(userIds: string[], audience: CourseAudience): Promise<GamificationProfileRecord[]>
   listByAccount(
     accountId: string,
     userIds: string[],

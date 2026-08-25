@@ -18,6 +18,8 @@ export interface CourseRepository {
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
+  /** Cursos por IDS, qualquer status (ficha admin: resolve os cursos com atividade). */
+  findCoursesByIds(ids: string[]): Promise<Course[]>
   /**
    * TODOS os cursos `published` da AUDIÊNCIA (catálogo/descoberta), ordenados por
    * título. O param é obrigatório: cada vitrine (community/community-kids) decide.
