@@ -86,6 +86,66 @@ describe('moderação', () => {
     expect(others.items).toHaveLength(1)
   })
 
+  test('audiência filtra e pagina no servidor; denúncia órfã preserva a plataforma', async () => {
+    const ctx = buildApp()
+    const kids = await seed(ctx, {
+      space: { audience: 'kids', requiresApproval: true },
+    })
+    const adult = await seed(ctx, {
+      space: { audience: 'adult', requiresApproval: true },
+    })
+    await postThread(ctx, kids.channelId, studentHeaders(randomUUID()))
+    await postThread(ctx, adult.channelId, studentHeaders(randomUUID()))
+
+    const pending = (await (
+      await ctx.app.handle(
+        jsonRequest('GET', '/hub/admin/pending?audience=kids&limit=1&offset=0', {
+          headers: adminHeaders(),
+        }),
+      )
+    ).json()) as { items: Array<{ spaceId: string }>; total: number }
+    expect(pending.total).toBe(1)
+    expect(pending.items.map((item) => item.spaceId)).toEqual([kids.spaceId])
+
+    const kidsReportTarget = (
+      (await (await postThread(ctx, kids.channelId, adminHeaders())).json()) as { id: string }
+    ).id
+    const adultReportTarget = (
+      (await (await postThread(ctx, adult.channelId, adminHeaders())).json()) as { id: string }
+    ).id
+    for (const targetId of [kidsReportTarget, adultReportTarget]) {
+      const report = await ctx.app.handle(
+        jsonRequest('POST', `/hub/threads/${targetId}/report`, {
+          headers: studentHeaders(randomUUID()),
+          body: { reason: 'revisar' },
+        }),
+      )
+      expect(report.status).toBe(200)
+    }
+    ctx.threadRepo.threads = ctx.threadRepo.threads.filter(
+      (thread) => thread.id !== kidsReportTarget,
+    )
+
+    const reports = (await (
+      await ctx.app.handle(
+        jsonRequest('GET', '/hub/admin/reports?audience=kids&status=open&limit=1&offset=0', {
+          headers: adminHeaders(),
+        }),
+      )
+    ).json()) as {
+      items: Array<{ spaceId: string; spaceAudience: string; content: unknown }>
+      total: number
+    }
+    expect(reports.total).toBe(1)
+    expect(reports.items).toEqual([
+      expect.objectContaining({
+        spaceId: kids.spaceId,
+        spaceAudience: 'kids',
+        content: null,
+      }),
+    ])
+  })
+
   test('fila traz servidor, canal, autores, tópico pai, resposta e anexos', async () => {
     const ctx = buildApp()
     const { spaceId, channelId } = await seed(ctx, {

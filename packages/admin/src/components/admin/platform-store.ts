@@ -1,6 +1,5 @@
 'use client'
 
-import { useSyncExternalStore } from 'react'
 import {
   DEFAULT_PLATFORM,
   PLATFORM_COOKIE,
@@ -10,20 +9,11 @@ import {
 } from '@/lib/platform'
 
 /**
- * Plataforma ativa (Kids × Adultos) — store singleton em escopo de MÓDULO
- * (molde do `professor-counts-store`): a sidebar e as páginas leem o MESMO
- * valor sem prop-drilling, e código não-React (o próprio counts-store) pode
- * consultar `getPlatform()`.
- *
- * Semeadura anti-mismatch de hidratação: o layout (server) lê o cookie e a
- * `AdminSidebar` chama `initPlatform(valor)` ANTES do primeiro `usePlatform()`
- * (React renderiza em ordem de árvore, e a sidebar vem antes do conteúdo) —
- * assim o HTML do SSR e o 1º render do client partem do MESMO valor. O
- * fallback lazy pro cookie em `getPlatform` é cinto-e-suspensório p/ um
- * consumidor client que rode fora dessa ordem.
+ * Store imperativo da plataforma, exclusivo do NAVEGADOR. React recebe o
+ * snapshot SSR isolado por requisição via `PlatformProvider`; este módulo fica
+ * responsável pelo cookie e por consumidores não React, como os contadores da
+ * sidebar.
  */
-let current: Platform = DEFAULT_PLATFORM
-let seeded = false
 const listeners = new Set<() => void>()
 
 function readCookiePlatform(): Platform | null {
@@ -32,40 +22,19 @@ function readCookiePlatform(): Platform | null {
   return match ? parsePlatform(decodeURIComponent(match[1] ?? '')) : null
 }
 
-/**
- * Semeia com o valor lido pelo SERVER. No SSR o módulo é COMPARTILHADO entre
- * requests (o processo vive) — o seed adota o valor DESTE request SEMPRE, sem
- * latch (o subtree renderiza síncrono logo após, então não há corrida com
- * outro request no meio do próprio render). No BROWSER o latch vale: a 1ª
- * hidratação semeia e cliques do operador passam a mandar.
- */
-export function initPlatform(initial: Platform): void {
-  if (typeof document === 'undefined') {
-    current = initial
-    return
-  }
-  if (seeded) return
-  seeded = true
-  current = initial
-}
+// O bundle do navegador lê o cookie uma vez ao ser avaliado, fora do render do
+// React. O módulo avaliado no servidor permanece no default e nunca é mutado.
+let current: Platform =
+  typeof document === 'undefined' ? DEFAULT_PLATFORM : (readCookiePlatform() ?? DEFAULT_PLATFORM)
 
 export function getPlatform(): Platform {
-  if (!seeded) {
-    const fromCookie = readCookiePlatform()
-    if (fromCookie) {
-      seeded = true
-      current = fromCookie
-    }
-  }
+  if (typeof document === 'undefined') return DEFAULT_PLATFORM
   return current
 }
 
 export function setPlatform(next: Platform): void {
-  if (next === current) {
-    seeded = true
-    return
-  }
-  seeded = true
+  if (typeof document === 'undefined') return
+  if (next === current) return
   current = next
   if (typeof document !== 'undefined') {
     // biome-ignore lint/suspicious/noDocumentCookie: cookie de PREFERÊNCIA gravado de forma síncrona; a Cookie Store API é async e sem suporte universal
@@ -74,19 +43,9 @@ export function setPlatform(next: Platform): void {
   for (const listener of listeners) listener()
 }
 
-function subscribe(listener: () => void): () => void {
+export function subscribePlatform(listener: () => void): () => void {
   listeners.add(listener)
   return () => {
     listeners.delete(listener)
   }
-}
-
-/** Assinatura para código NÃO-React (ex.: o counts-store re-busca ao trocar de plataforma). */
-export function subscribePlatform(listener: () => void): () => void {
-  return subscribe(listener)
-}
-
-/** Plataforma ativa, reativa (server snapshot = valor semeado pelo layout). */
-export function usePlatform(): Platform {
-  return useSyncExternalStore(subscribe, getPlatform, getPlatform)
 }

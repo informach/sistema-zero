@@ -10,14 +10,16 @@ import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Switch } from '@sistemazero/ui/switch'
 import { Mail, MailCheck, X } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
+import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import { platformTransition } from '@/lib/platform-transition'
 import type { CourseView, Paginated, TeacherThreadContext, TeacherThreadRow } from '@/lib/types'
 import { ThreadDialog } from './thread-dialog'
 
@@ -51,10 +53,16 @@ export function RecadosClient() {
   // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
   const platform = usePlatform()
   const [audience, setAudience] = useState<string>(platform)
-  useEffect(() => {
-    setAudience(platform)
-  }, [platform])
+  const loadAuthority = useRef(createForegroundPriority()).current
   const [courseId, setCourseId] = useState('')
+  useEffect(() => {
+    const transition = platformTransition(platform).teaching
+    loadAuthority.invalidate()
+    setAudience(transition.audience)
+    setCourseId(transition.courseId)
+    setOffset(0)
+    setOpen(null)
+  }, [platform, loadAuthority])
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [courses, setCourses] = useState<CourseView[]>([])
   const [open, setOpen] = useState<TeacherThreadRow | null>(null)
@@ -76,33 +84,41 @@ export function RecadosClient() {
   const load = useCallback(
     async (nextOffset: number, append: boolean) => {
       setLoading(true)
-      try {
-        const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
-        if (context) params.set('context', context)
-        if (audience) params.set('audience', audience)
-        if (courseId) params.set('courseId', courseId)
-        if (unreadOnly) params.set('unread', 'true')
-        if (studentFilter) params.set('userId', studentFilter)
-        else if (qDebounced) params.set('q', qDebounced)
-        const res = await apiGet<{ threads: TeacherThreadRow[]; hint?: string }>(
-          `/api/members/teacher-threads?${params}`,
-        )
-        setThreads((prev) => (append ? [...prev, ...res.threads] : res.threads))
-        setHasMore(res.threads.length === PAGE)
-        setOffset(nextOffset)
-        setHint(res.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
-      } catch (err) {
-        toast.error((err as ApiError).message ?? 'Falha ao carregar os recados.')
-      } finally {
-        setLoading(false)
-      }
+      await runLatestForeground(
+        loadAuthority,
+        () => {
+          const params = new URLSearchParams({ limit: String(PAGE), offset: String(nextOffset) })
+          if (context) params.set('context', context)
+          if (audience) params.set('audience', audience)
+          if (courseId) params.set('courseId', courseId)
+          if (unreadOnly) params.set('unread', 'true')
+          if (studentFilter) params.set('userId', studentFilter)
+          else if (qDebounced) params.set('q', qDebounced)
+          return apiGet<{ threads: TeacherThreadRow[]; hint?: string }>(
+            `/api/members/teacher-threads?${params}`,
+          )
+        },
+        {
+          onSuccess: (result) => {
+            setThreads((previous) => (append ? [...previous, ...result.threads] : result.threads))
+            setHasMore(result.threads.length === PAGE)
+            setOffset(nextOffset)
+            setHint(result.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
+          },
+          onError: (error) => {
+            toast.error((error as ApiError).message ?? 'Falha ao carregar os recados.')
+          },
+          onSettled: () => setLoading(false),
+        },
+      )
     },
-    [context, audience, courseId, unreadOnly, studentFilter, qDebounced],
+    [context, audience, courseId, unreadOnly, studentFilter, qDebounced, loadAuthority],
   )
 
   useEffect(() => {
-    load(0, false)
-  }, [load])
+    void load(0, false)
+    return () => loadAuthority.invalidate()
+  }, [load, loadAuthority])
 
   // Cursos p/ o filtro (best-effort — sem eles o filtro só não aparece populado).
   useEffect(() => {

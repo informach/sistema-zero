@@ -190,11 +190,13 @@ function buildSearchWhere(qRaw: string | undefined): SQL | undefined {
   const q = qRaw?.trim()
   if (q) {
     const like = `%${q.replace(/[\\%_]/g, '\\$&')}%`
+    const accountSearch = sql<string>`${users.firstName} || ' ' || ${users.lastName} || ' ' || ${users.email}`
     const match = or(
       ilike(profiles.name, like),
-      ilike(users.email, like),
-      ilike(users.firstName, like),
-      ilike(users.lastName, like),
+      // Um único documento pesquisável cobre e-mail, partes isoladas E o nome
+      // completo atravessando first_name e last_name. A expressão é idêntica à
+      // do índice trigram declarado no schema.
+      ilike(accountSearch, like),
     )
     if (match) clauses.push(match)
   }

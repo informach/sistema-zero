@@ -8,7 +8,7 @@ import { DrizzleStudioSubmissionRepository } from '../../src/infrastructure/pers
 import { prepareTestDatabase } from './test-database'
 
 /**
- * Os três SQLs novos da proteção contra perda de entrega, contra Postgres real:
+ * SQLs da proteção e dos agregados de entrega, contra Postgres real:
  *
  * 1. O upsert copia a versão SOBRESCRITA para `previous_*` no PRÓPRIO ON
  *    CONFLICT — a semântica "coluna da tabela no SET lê o valor ANTIGO" (≠
@@ -17,8 +17,9 @@ import { prepareTestDatabase } from './test-database'
  *    expressões do SET leem a linha antiga), zera a correção e preserva o
  *    sticky/carimbo/recado.
  * 3. `countByCourseGrouped` (GROUP BY do aviso dos confirms de exclusão).
+ * 4. `countPendingByUsers` escopado pela audiência do curso.
  *
- * O fake in-memory reimplementa os três em JS — nenhum teste de integração
+ * O fake in-memory reimplementa os quatro em JS — nenhum teste de integração
  * alcança este SQL (mesma régua do `gating-block-sql.test.ts`).
  */
 
@@ -85,6 +86,12 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     await conn.sql.unsafe(
       'create unique index if not exists studio_submissions_user_block_uq on members.studio_submissions (user_id, block_id)',
     )
+    await conn.sql.unsafe(
+      'create table if not exists members.courses (id uuid primary key, slug text, title text, audience text)',
+    )
+    for (const col of ['slug text', 'title text', "audience text not null default 'kids'"]) {
+      await conn.sql.unsafe(`alter table members.courses add column if not exists ${col}`)
+    }
     repo = new DrizzleStudioSubmissionRepository(conn.db)
   })
 
@@ -215,5 +222,32 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     expect(byBlock.get(block1)).toEqual({ blockId: block1, lessonId: lesson1, count: 2 })
     expect(byBlock.get(block2)).toEqual({ blockId: block2, lessonId: lesson2, count: 1 })
     expect(await repo.countByCourseGrouped(randomUUID())).toEqual([])
+  })
+
+  test('countPendingByUsers filtra pela audiência do curso no próprio SQL', async () => {
+    const kidsCourseId = randomUUID()
+    const adultCourseId = randomUUID()
+    await conn.sql`insert into members.courses (id, slug, title, audience)
+      values
+        (${kidsCourseId}, ${`kids-${kidsCourseId}`}, 'Kids', 'kids'),
+        (${adultCourseId}, ${`adult-${adultCourseId}`}, 'Adulto', 'adult')`
+    try {
+      await repo.upsert(
+        entrega(randomUUID(), {}, new Date('2026-08-01T10:00:00.000Z'), {
+          courseId: kidsCourseId,
+        }),
+      )
+      await repo.upsert(
+        entrega(randomUUID(), {}, new Date('2026-08-01T10:01:00.000Z'), {
+          courseId: adultCourseId,
+        }),
+      )
+
+      expect(await repo.countPendingByUsers([aluno], 'kids')).toEqual(new Map([[aluno, 1]]))
+      expect(await repo.countPendingByUsers([aluno], 'adult')).toEqual(new Map([[aluno, 1]]))
+    } finally {
+      await conn.sql`delete from members.studio_submissions where course_id in (${kidsCourseId}, ${adultCourseId})`
+      await conn.sql`delete from members.courses where id in (${kidsCourseId}, ${adultCourseId})`
+    }
   })
 })

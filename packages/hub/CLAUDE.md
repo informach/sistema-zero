@@ -193,8 +193,9 @@ Linguagem: **TS (ESM)**. Framework HTTP: **Elysia**. Porta **3010**.
      por id `{authorId, clubThreads, clubComments, lastClubActivityAt, showcasePublished,
      showcasePlays, lastShowcaseAt}` — Clube = conteúdo `visible` NÃO-vitrine (comentário conta pelo
      TÓPICO-PAI não-vitrine; mesma régua do XP), Mural = vitrines visíveis + soma de plays; TODO id
-     pedido volta (sem atividade → zeros/nulls). `ThreadRepository.activityByAuthors` (3 GROUP BY em
-     lote, nunca N+1); testes em `internal-activity.test.ts` + Postgres real no `tests/db`.
+     pedido volta (sem atividade → zeros/nulls). `ThreadRepository.activityByAuthors` dispara os 3
+     GROUP BY independentes em paralelo, em lote e nunca N+1; comentário só conta quando o tópico
+     pai também está visível. Testes em `internal-activity.test.ts` + Postgres real no `tests/db`.
 13. **Snapshot de autor + nomes clicáveis (06/2026):** todo tópico/comentário guarda no CREATE um
    snapshot do **primeiro nome** (`author_display_name`) e da **flag pública** (`author_public`) do
    autor — alimenta os **nomes clicáveis** do Mural e do fórum kids (clube). A fonte é SEMPRE
@@ -335,12 +336,14 @@ os do gateway (`gateway.config.ts`).
 Estrutura (`admin.routes.ts`): `GET/POST /hub/admin/spaces`, `POST /hub/admin/spaces/reorder`,
 `GET/PATCH/DELETE /hub/admin/spaces/:id`, `POST /hub/admin/spaces/:id/channels`,
 `POST /hub/admin/spaces/:id/channels/reorder`, `PATCH/DELETE /hub/admin/channels/:id`. Moderação
-(`moderation.routes.ts`): `GET /hub/admin/pending`, `POST /hub/admin/threads/:id/{approve,reject,
+(`moderation.routes.ts`): `GET /hub/admin/pending[?audience=kids|adult&limit&offset]`, `POST /hub/admin/threads/:id/{approve,reject,
 hide,delete,pin,unpin,lock,unlock}` e `…/comments/:id/{approve,reject,hide,delete}`,
-`GET /hub/admin/reports` + `POST /hub/admin/reports/:id/resolve` `{action}`,
+`GET /hub/admin/reports[?audience=kids|adult&limit&offset]` + `POST /hub/admin/reports/:id/resolve` `{action}`,
 `GET /hub/admin/attachments/:id/resolve` (anexo privado para investigação, inclusive alvo oculto),
 `POST /hub/admin/{mutes,bans}` + `POST /hub/admin/{mutes,bans}/remove`, `GET /hub/admin/mutes-bans`.
 > ⚠️ Mute/ban são `/mutes` e `/bans` (não `/mute`/`/unmute`); remoção é `POST …/remove`, não DELETE.
+> A audiência é filtrada no repositório antes do `limit/offset`; denúncias devolvem a
+> audiência canônica do servidor mesmo quando o conteúdo denunciado já foi removido.
 
 **Exclusão de usuário (purga, 06/2026):** `DELETE /hub/admin/users/:id/data[?profileIds=<csv>]`
 (`PurgeUserDataService` + `DrizzleUserDataPurgeRepository`) — parte da exclusão de usuário pelo

@@ -16,7 +16,10 @@ const { createRoot } = await import('react-dom/client')
 const { CourseFormDialog } = await import('../src/app/admin/membros/cursos/course-form-dialog')
 
 describe('cadastro de curso', () => {
-  test('novo curso começa na audiência Kids', async () => {
+  test.each([
+    ['kids', 'kids'],
+    ['adult', 'adult'],
+  ])('novo curso respeita a audiência %s do contexto', async (_label, audience) => {
     const container = document.createElement('div')
     document.body.append(container)
     const root = createRoot(container)
@@ -25,6 +28,7 @@ describe('cadastro de curso', () => {
         <CourseFormDialog
           open
           editing={null}
+          prefill={{ audience }}
           careerCourses={[]}
           onClose={() => {}}
           onSaved={() => {}}
@@ -32,7 +36,7 @@ describe('cadastro de curso', () => {
       )
     })
 
-    expect((document.querySelector('#caudience') as HTMLSelectElement | null)?.value).toBe('kids')
+    expect((document.querySelector('#caudience') as HTMLSelectElement | null)?.value).toBe(audience)
 
     await act(async () => root.unmount())
     container.remove()

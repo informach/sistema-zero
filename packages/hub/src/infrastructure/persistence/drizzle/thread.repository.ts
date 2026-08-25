@@ -313,55 +313,58 @@ export class DrizzleThreadRepository implements ThreadRepository {
     // números do Clube e entra nos do Mural. Contagens em `::int` e soma via
     // `coalesce(sum(...), 0)::int` (o `sum` tipado do drizzle devolveria STRING);
     // `max(coluna)` tipado mapeia p/ Date (mesmo padrão do latestActivityByChannel).
-    const clubThreadRows = await this.db
-      .select({
-        authorId: threads.authorId,
-        count: sql<number>`count(*)::int`,
-        last: max(threads.createdAt),
-      })
-      .from(threads)
-      .where(
-        and(
-          inArray(threads.authorId, authorIds),
-          eq(threads.isShowcase, false),
-          eq(threads.status, 'visible'),
-        ),
-      )
-      .groupBy(threads.authorId)
-    // Comentário do Clube = comentário `visible` cujo TÓPICO-PAI não é vitrine
-    // (comentário em post do Mural conta como Mural na visão do admin, não aqui).
-    const clubCommentRows = await this.db
-      .select({
-        authorId: comments.authorId,
-        count: sql<number>`count(*)::int`,
-        last: max(comments.createdAt),
-      })
-      .from(comments)
-      .innerJoin(threads, eq(comments.threadId, threads.id))
-      .where(
-        and(
-          inArray(comments.authorId, authorIds),
-          eq(comments.status, 'visible'),
-          eq(threads.isShowcase, false),
-        ),
-      )
-      .groupBy(comments.authorId)
-    const showcaseRows = await this.db
-      .select({
-        authorId: threads.authorId,
-        count: sql<number>`count(*)::int`,
-        plays: sql<number>`coalesce(sum(${threads.playsCount}), 0)::int`,
-        last: max(threads.createdAt),
-      })
-      .from(threads)
-      .where(
-        and(
-          inArray(threads.authorId, authorIds),
-          eq(threads.isShowcase, true),
-          eq(threads.status, 'visible'),
-        ),
-      )
-      .groupBy(threads.authorId)
+    // As três agregações não compartilham transação nem dependem entre si.
+    const [clubThreadRows, clubCommentRows, showcaseRows] = await Promise.all([
+      this.db
+        .select({
+          authorId: threads.authorId,
+          count: sql<number>`count(*)::int`,
+          last: max(threads.createdAt),
+        })
+        .from(threads)
+        .where(
+          and(
+            inArray(threads.authorId, authorIds),
+            eq(threads.isShowcase, false),
+            eq(threads.status, 'visible'),
+          ),
+        )
+        .groupBy(threads.authorId),
+      // Comentário só conta quando ele E o tópico-pai do Clube estão visíveis.
+      this.db
+        .select({
+          authorId: comments.authorId,
+          count: sql<number>`count(*)::int`,
+          last: max(comments.createdAt),
+        })
+        .from(comments)
+        .innerJoin(threads, eq(comments.threadId, threads.id))
+        .where(
+          and(
+            inArray(comments.authorId, authorIds),
+            eq(comments.status, 'visible'),
+            eq(threads.status, 'visible'),
+            eq(threads.isShowcase, false),
+          ),
+        )
+        .groupBy(comments.authorId),
+      this.db
+        .select({
+          authorId: threads.authorId,
+          count: sql<number>`count(*)::int`,
+          plays: sql<number>`coalesce(sum(${threads.playsCount}), 0)::int`,
+          last: max(threads.createdAt),
+        })
+        .from(threads)
+        .where(
+          and(
+            inArray(threads.authorId, authorIds),
+            eq(threads.isShowcase, true),
+            eq(threads.status, 'visible'),
+          ),
+        )
+        .groupBy(threads.authorId),
+    ])
 
     const clubThreads = new Map(clubThreadRows.map((r) => [r.authorId, r]))
     const clubComments = new Map(clubCommentRows.map((r) => [r.authorId, r]))

@@ -12,9 +12,8 @@ import { getTeacherThreadsUnreadCount, listTeacherThreads } from '@/server/teach
  * (`professor-counts-store`, 60s).
  */
 export async function GET(req: Request) {
-  // `?platform=` = seletor global do painel: escopa ENTREGAS e RECADOS à
-  // plataforma ativa. Moderação/denúncias seguem GLOBAIS (o hub não filtra
-  // pending/reports por audiência — v1; o badge de moderação conta as duas).
+  // `?platform=` = seletor global do painel: todas as filas respeitam a
+  // plataforma ativa, inclusive moderação e denúncias.
   const platformParam = new URL(req.url).searchParams.get('platform')
   const audience = platformParam === 'kids' || platformParam === 'adult' ? platformParam : undefined
 
@@ -23,8 +22,8 @@ export async function GET(req: Request) {
     listAllStudioSubmissions({ status: 'pending', limit: 5, audience }),
     listTeacherThreads({ unread: true, limit: 5, audience }),
     getTeacherThreadsUnreadCount(audience),
-    listPending({ limit: 1 }),
-    listReports({ status: 'open', limit: 1 }),
+    listPending({ audience, limit: 1 }),
+    listReports({ audience, status: 'open', limit: 1 }),
   ])
 
   const counts = {

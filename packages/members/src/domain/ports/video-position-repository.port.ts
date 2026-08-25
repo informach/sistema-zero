@@ -25,6 +25,8 @@ export interface VideoPositionRepository {
    * ficha admin.
    */
   lastAccessByCourse(userId: string): Promise<Map<string, Date>>
+  /** Último acesso por aprendiz e curso em uma única consulta. */
+  lastAccessByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>>
   /**
    * Aulas acessadas mais recentes do aluno (ficha admin — linha do tempo), com
    * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).

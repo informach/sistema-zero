@@ -27,6 +27,11 @@ export interface ProgressRepository {
   countCompleted(userId: string, courseId: string): Promise<number>
   /** Concluídas por curso, em lote (cru — visão admin). courseId → concluídas. */
   countCompletedByCourseIds(userId: string, courseIds: string[]): Promise<Map<string, number>>
+  /** Concluídas por aprendiz e curso em uma única consulta (ficha admin da família). */
+  countCompletedByUsersAndCourseIds(
+    userIds: string[],
+    courseIds: string[],
+  ): Promise<Map<string, Map<string, number>>>
   /** Concluídas de aulas PUBLICADAS (visão do aluno — par do `countPublishedLessons`). */
   countCompletedPublished(userId: string, courseId: string): Promise<number>
   /** Concluídas de aulas PUBLICADAS por curso, em lote (visão do aluno, sem N+1). */
@@ -49,6 +54,8 @@ export interface ProgressRepository {
    * `VideoPositionRepository.lastAccessByCourse`; o service faz o max dos dois).
    */
   lastCompletionByCourse(userId: string): Promise<Map<string, Date>>
+  /** Última conclusão por aprendiz e curso em uma única consulta. */
+  lastCompletionByUsers(userIds: string[]): Promise<Map<string, Map<string, Date>>>
   /**
    * Aulas concluídas mais recentes do aluno (ficha admin — linha do tempo), com
    * aula/curso resolvidos por join. Limitado a `limit` (mais recentes primeiro).

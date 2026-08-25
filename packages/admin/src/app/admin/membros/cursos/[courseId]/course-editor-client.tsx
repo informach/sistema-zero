@@ -328,7 +328,11 @@ export function CourseEditorClient({
 
       <AdminHeader
         title={tree?.title ?? 'Curso'}
-        description={tree ? `${tree.slug} · ${tree.status}` : courseId}
+        description={
+          tree
+            ? `${tree.slug} · ${tree.status} · ${tree.audience === 'kids' ? 'Kids' : 'Adulto'}`
+            : courseId
+        }
         action={
           canWrite ? (
             <div className="flex items-center gap-2">

@@ -62,6 +62,8 @@ export interface ReportRecord {
   targetType: ModeratableTarget
   targetId: string
   spaceId: string
+  /** Audiência canônica do servidor, mesmo quando o alvo já foi removido. */
+  spaceAudience: 'adult' | 'kids'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null
@@ -110,7 +112,12 @@ export interface ModerationActionInput {
 
 export interface ModerationRepository {
   // ── Fila de aprovação ──
-  listPending(opts: { spaceId?: string; limit: number; offset: number }): Promise<{
+  listPending(opts: {
+    spaceId?: string
+    audience?: 'adult' | 'kids'
+    limit: number
+    offset: number
+  }): Promise<{
     items: PendingItem[]
     total: number
   }>
@@ -119,6 +126,7 @@ export interface ModerationRepository {
   createReport(input: CreateReportInput): Promise<void>
   listReports(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     status?: ReportStatus
     limit: number
     offset: number

@@ -68,11 +68,12 @@ export function deleteChannel(id: string): Promise<GatewayResponse<unknown>> {
 // ── Moderação ──
 export function listPending(p: {
   spaceId?: string
+  audience?: 'adult' | 'kids'
   limit?: number
   offset?: number
 }): Promise<GatewayResponse<Paginated<HubPendingItemView>>> {
   return gatewayFetch('/hub/admin/pending', {
-    query: { spaceId: p.spaceId, limit: p.limit, offset: p.offset },
+    query: { spaceId: p.spaceId, audience: p.audience, limit: p.limit, offset: p.offset },
   })
 }
 /**
@@ -96,12 +97,19 @@ export function commentAction(id: string, action: string): Promise<GatewayRespon
 }
 export function listReports(p: {
   spaceId?: string
+  audience?: 'adult' | 'kids'
   status?: string
   limit?: number
   offset?: number
 }): Promise<GatewayResponse<Paginated<HubReportView>>> {
   return gatewayFetch('/hub/admin/reports', {
-    query: { spaceId: p.spaceId, status: p.status, limit: p.limit, offset: p.offset },
+    query: {
+      spaceId: p.spaceId,
+      audience: p.audience,
+      status: p.status,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 /** Autoriza o anexo no Hub e resolve a referência privada somente dentro do BFF. */

@@ -66,3 +66,59 @@ export function createForegroundPriority(): ForegroundPriority {
 export function canBackgroundRefreshPage(offset: number): boolean {
   return offset === 0
 }
+
+export interface LatestReadHandlers<T> {
+  onSuccess(value: T): void
+  onError(error: unknown): void
+  onSettled(): void
+}
+
+export interface LatestAppendGuard {
+  begin(): ReadTicket | null
+  canPublish(ticket: ReadTicket): boolean
+  finish(ticket: ReadTicket): void
+  invalidate(): void
+}
+
+/** Single-flight para “Carregar mais”, com invalidação ao trocar a entidade dona da lista. */
+export function createLatestAppendGuard(): LatestAppendGuard {
+  const authority = createForegroundPriority()
+  let active: ReadTicket | null = null
+  return {
+    begin() {
+      if (active) return null
+      active = authority.beginForeground()
+      return active
+    },
+    canPublish(ticket) {
+      return authority.canPublish(ticket)
+    },
+    finish(ticket) {
+      authority.finish(ticket)
+      if (active?.id === ticket.id) active = null
+    },
+    invalidate() {
+      authority.invalidate()
+      active = null
+    },
+  }
+}
+
+/** Executa uma leitura foreground e só publica o resultado se ela ainda for a mais recente. */
+export async function runLatestForeground<T>(
+  authority: ForegroundPriority,
+  read: () => Promise<T>,
+  handlers: LatestReadHandlers<T>,
+): Promise<void> {
+  const ticket = authority.beginForeground()
+  try {
+    const value = await read()
+    if (authority.canPublish(ticket)) handlers.onSuccess(value)
+  } catch (error) {
+    if (authority.canPublish(ticket)) handlers.onError(error)
+  } finally {
+    const canPublish = authority.canPublish(ticket)
+    authority.finish(ticket)
+    if (canPublish) handlers.onSettled()
+  }
+}

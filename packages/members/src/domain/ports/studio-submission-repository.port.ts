@@ -238,7 +238,7 @@ export interface StudioSubmissionRepository {
    * global) por aluno, em LOTE. Alimenta a coluna "Pendências" da listagem kids
    * do painel; aluno sem pendência não volta no mapa.
    */
-  countPendingByUsers(userIds: string[]): Promise<Map<string, number>>
+  countPendingByUsers(userIds: string[], audience: CourseAudience): Promise<Map<string, number>>
   /** Entregas do aluno na audiência com `submitted_at` em `[from, to)` — report semanal. */
   countSubmittedInPeriodByAudience(
     userId: string,

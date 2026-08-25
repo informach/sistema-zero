@@ -40,7 +40,13 @@ export class GetMemberDetailService {
   ) {}
 
   async execute(userId: string, profileIds: string[] = []): Promise<MemberDetailView> {
-    const ents = await this.entitlements.listByUserId(userId)
+    const uniqueProfileIds = [...new Set(profileIds)].filter((profileId) => profileId !== userId)
+    const learnerIds = [userId, ...uniqueProfileIds]
+    const [ents, lastCompletedByLearner, lastAccessedByLearner] = await Promise.all([
+      this.entitlements.listByUserId(userId),
+      this.progress.lastCompletionByUsers(learnerIds),
+      this.videoPositions.lastAccessByUsers(learnerIds),
+    ])
 
     // Matrícula específica de curso — o filtro por accessType É o fix (ver JSDoc).
     const enrolledRefs = [
@@ -50,52 +56,55 @@ export class GetMemberDetailService {
           .map((e) => e.courseRef as string),
       ),
     ]
-    const enrolledCourses = await this.courses.findCoursesBySlugs(enrolledRefs)
+    const activityByLearner = new Map<string, Map<string, Date>>()
+    const allActivityCourseIds = new Set<string>()
+    for (const learnerId of learnerIds) {
+      const lastActivity = new Map(lastCompletedByLearner.get(learnerId) ?? [])
+      for (const [courseId, at] of lastAccessedByLearner.get(learnerId) ?? []) {
+        const previous = lastActivity.get(courseId)
+        if (!previous || at.getTime() > previous.getTime()) lastActivity.set(courseId, at)
+      }
+      activityByLearner.set(learnerId, lastActivity)
+      for (const courseId of lastActivity.keys()) allActivityCourseIds.add(courseId)
+    }
+
+    const [enrolledCourses, activityCourses] = await Promise.all([
+      this.courses.findCoursesBySlugs(enrolledRefs),
+      this.courses.findCoursesByIds([...allActivityCourseIds]),
+    ])
     const enrolledSlugs = new Set(enrolledCourses.map((c) => c.slug))
     // Matrícula cuja ref não resolve mais um curso: linha degradada VISÍVEL (não
     // dá pra saber a plataforma dela — entra para todos os aprendizes).
     const orphanRefs = enrolledRefs.filter((ref) => !enrolledSlugs.has(ref))
 
-    // Totais de aulas por curso não variam por aprendiz — cache do execute.
-    const totalsCache = new Map<string, number>()
-    const totalsFor = async (courseIds: string[]): Promise<Map<string, number>> => {
-      const missing = courseIds.filter((id) => !totalsCache.has(id))
-      if (missing.length > 0) {
-        const fetched = await this.courses.countLessonsByCourseIds(missing)
-        for (const id of missing) totalsCache.set(id, fetched.get(id) ?? 0)
+    const activityCourseById = new Map(activityCourses.map((course) => [course.id, course]))
+    const coursesByLearner = new Map<string, Map<string, Course>>()
+    const allCourseIds = new Set<string>()
+    for (const learnerId of learnerIds) {
+      const learnerAudience: CourseAudience = learnerId === userId ? 'adult' : 'kids'
+      const union = new Map<string, Course>()
+      for (const course of enrolledCourses) {
+        if (course.audience === learnerAudience) union.set(course.id, course)
       }
-      return totalsCache
+      for (const courseId of activityByLearner.get(learnerId)?.keys() ?? []) {
+        const course = activityCourseById.get(courseId)
+        if (course) union.set(course.id, course)
+      }
+      coursesByLearner.set(learnerId, union)
+      for (const courseId of union.keys()) allCourseIds.add(courseId)
     }
 
-    const progressFor = async (
-      learnerId: string,
-      learnerAudience: CourseAudience,
-    ): Promise<MemberCourseProgressView[]> => {
-      const [lastCompleted, lastAccessed] = await Promise.all([
-        this.progress.lastCompletionByCourse(learnerId),
-        this.videoPositions.lastAccessByCourse(learnerId),
-      ])
-      // Última atividade por curso = max(última conclusão, último acesso a vídeo).
-      const lastActivity = new Map<string, Date>(lastCompleted)
-      for (const [courseId, at] of lastAccessed) {
-        const prev = lastActivity.get(courseId)
-        if (!prev || at.getTime() > prev.getTime()) lastActivity.set(courseId, at)
-      }
+    // Denominadores e numeradores de TODA a família: duas queries, sem fan-out
+    // por perfil. O teto HTTP é 50 perfis, então isso remove centenas de awaits.
+    const [totals, completedByLearner] = await Promise.all([
+      this.courses.countLessonsByCourseIds([...allCourseIds]),
+      this.progress.countCompletedByUsersAndCourseIds(learnerIds, [...allCourseIds]),
+    ])
 
-      const activityCourses = await this.courses.findCoursesByIds([...lastActivity.keys()])
-      const union = new Map<string, Course>()
-      for (const c of enrolledCourses) {
-        if (c.audience === learnerAudience) union.set(c.id, c)
-      }
-      for (const c of activityCourses) union.set(c.id, c)
-
-      const courseIds = [...union.keys()]
-      const [totals, completed] = await Promise.all([
-        totalsFor(courseIds),
-        this.progress.countCompletedByCourseIds(learnerId, courseIds),
-      ])
-
-      const views = [...union.values()].map((course) =>
+    const progressFor = (learnerId: string): MemberCourseProgressView[] => {
+      const lastActivity = activityByLearner.get(learnerId) ?? new Map()
+      const completed = completedByLearner.get(learnerId) ?? new Map()
+      const views = [...(coursesByLearner.get(learnerId)?.values() ?? [])].map((course) =>
         buildCourseProgress(course, totals, completed, lastActivity.get(course.id) ?? null),
       )
       views.sort(byActivityThenTitle)
@@ -104,16 +113,17 @@ export class GetMemberDetailService {
     }
 
     const entitlementViews = ents.map((e) => toAdminEntitlementView(e))
-    const accountProgress = await progressFor(userId, 'adult')
+    const accountProgress = progressFor(userId)
 
     // Sem perfis (conta nunca criou) → comportamento de sempre (só `progress`).
-    if (profileIds.length === 0) {
+    if (uniqueProfileIds.length === 0) {
       return { userId, entitlements: entitlementViews, progress: accountProgress }
     }
 
-    const profilesProgress: MemberProfileProgressView[] = await Promise.all(
-      profileIds.map(async (pid) => ({ userId: pid, progress: await progressFor(pid, 'kids') })),
-    )
+    const profilesProgress: MemberProfileProgressView[] = uniqueProfileIds.map((profileId) => ({
+      userId: profileId,
+      progress: progressFor(profileId),
+    }))
     return { userId, entitlements: entitlementViews, progress: accountProgress, profilesProgress }
   }
 }

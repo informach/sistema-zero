@@ -14,7 +14,7 @@ import type {
   ReportStatus,
 } from '../../../domain/ports/moderation-repository.port'
 import type { Database } from './db'
-import { moderationActions, mutesBans, reports } from './schema'
+import { moderationActions, mutesBans, reports, spaces } from './schema'
 
 /** Linha crua da fila de aprovação (UNION ALL tópicos + comentários pendentes). */
 interface PendingRow {
@@ -59,12 +59,16 @@ export class DrizzleModerationRepository implements ModerationRepository {
 
   async listPending(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     limit: number
     offset: number
   }): Promise<{ items: PendingItem[]; total: number }> {
     // UNION ALL paginado NO BANCO (FIFO global por created_at) — sem carregar a
     // fila inteira em memória nem capar o `total`. `space_id` é opcional.
     const spaceCond = opts.spaceId ? sql`and ch.space_id = ${opts.spaceId}` : sql``
+    const audienceCond = opts.audience
+      ? sql`and s.audience = ${opts.audience}::hub.audience`
+      : sql``
     const union = sql`
       select 'thread'::text as type, t.id as id, ch.space_id as space_id,
              t.channel_id as channel_id, null::uuid as thread_id,
@@ -84,7 +88,7 @@ export class DrizzleModerationRepository implements ModerationRepository {
       from hub.threads t
       join hub.channels ch on ch.id = t.channel_id
       join hub.spaces s on s.id = ch.space_id
-      where t.status = 'pending' ${spaceCond}
+      where t.status = 'pending' ${spaceCond} ${audienceCond}
       union all
       select 'comment'::text as type, c.id as id, ch.space_id as space_id,
              t.channel_id as channel_id, c.thread_id as thread_id,
@@ -106,7 +110,7 @@ export class DrizzleModerationRepository implements ModerationRepository {
       join hub.channels ch on ch.id = t.channel_id
       join hub.spaces s on s.id = ch.space_id
       left join hub.comments rc on rc.id = c.reply_to_id
-      where c.status = 'pending' ${spaceCond}
+      where c.status = 'pending' ${spaceCond} ${audienceCond}
     `
     const [rows, [counted]] = await Promise.all([
       this.db.execute(sql`
@@ -140,28 +144,40 @@ export class DrizzleModerationRepository implements ModerationRepository {
 
   async listReports(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     status?: ReportStatus
     limit: number
     offset: number
   }): Promise<{ items: ReportRecord[]; total: number }> {
     const where: SQL[] = []
     if (opts.spaceId) where.push(eq(reports.spaceId, opts.spaceId))
+    if (opts.audience) where.push(eq(spaces.audience, opts.audience))
     if (opts.status) where.push(eq(reports.status, opts.status))
     const cond = where.length > 0 ? and(...where) : undefined
-    const [rows, [counted]] = await Promise.all([
+    const [joinedRows, [counted]] = await Promise.all([
       this.db
-        .select()
+        .select({ report: reports, spaceAudience: spaces.audience })
         .from(reports)
+        .innerJoin(spaces, eq(spaces.id, reports.spaceId))
         .where(cond)
         .orderBy(desc(reports.createdAt))
         .limit(opts.limit)
         .offset(opts.offset),
-      this.db.select({ c: count() }).from(reports).where(cond),
+      this.db
+        .select({ c: count() })
+        .from(reports)
+        .innerJoin(spaces, eq(spaces.id, reports.spaceId))
+        .where(cond),
     ])
+    const rows = joinedRows.map((row) => row.report)
     const contents = await this.loadReportedContents(rows)
     return {
-      items: rows.map((row) =>
-        toReport(row, contents.get(`${row.targetType}:${row.targetId}`) ?? null),
+      items: joinedRows.map(({ report, spaceAudience }) =>
+        toReport(
+          report,
+          spaceAudience,
+          contents.get(`${report.targetType}:${report.targetId}`) ?? null,
+        ),
       ),
       total: counted?.c ?? 0,
     }
@@ -237,8 +253,13 @@ export class DrizzleModerationRepository implements ModerationRepository {
   }
 
   async findReportById(id: string): Promise<ReportRecord | null> {
-    const [row] = await this.db.select().from(reports).where(eq(reports.id, id)).limit(1)
-    return row ? toReport(row) : null
+    const [row] = await this.db
+      .select({ report: reports, spaceAudience: spaces.audience })
+      .from(reports)
+      .innerJoin(spaces, eq(spaces.id, reports.spaceId))
+      .where(eq(reports.id, id))
+      .limit(1)
+    return row ? toReport(row.report, row.spaceAudience) : null
   }
 
   async resolveReport(
@@ -436,6 +457,7 @@ function toReportedContent(r: ReportedContentRow): ReportedContent {
 
 function toReport(
   r: typeof reports.$inferSelect,
+  spaceAudience: 'adult' | 'kids',
   content: ReportedContent | null = null,
 ): ReportRecord {
   return {
@@ -443,6 +465,7 @@ function toReport(
     targetType: r.targetType,
     targetId: r.targetId,
     spaceId: r.spaceId,
+    spaceAudience,
     reporterId: r.reporterId,
     reporterAccountId: r.reporterAccountId,
     reporterDisplayName: r.reporterDisplayName,

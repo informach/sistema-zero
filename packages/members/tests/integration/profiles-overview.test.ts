@@ -17,7 +17,12 @@ const prof = (profileId: string) => ({ 'x-auth-user-id': profileId, 'x-auth-acco
 describe('admin profiles-overview — enriquecimento da listagem de crianças', () => {
   test('xp/ofensiva/última atividade + pendências por perfil; TODO id pedido volta', async () => {
     const { app, courses, entitlements, studioSubmissions, clockRef } = buildApp()
-    const { slug, lessonIds } = seedSampleCourse(courses, 'kids-curso', 'published', 'kids')
+    const { courseId, slug, lessonIds } = seedSampleCourse(
+      courses,
+      'kids-curso',
+      'published',
+      'kids',
+    )
     void slug
     grantAllKidsCourses(entitlements, { userId: ACCOUNT })
     // Perfil A conclui uma aula (XP + streak + lastActivityDate do dia do relógio fixo).
@@ -33,7 +38,7 @@ describe('admin profiles-overview — enriquecimento da listagem de crianças', 
         accountId: ACCOUNT,
         blockId: randomUUID(),
         lessonId: lessonIds[0] as string,
-        courseId: 'c-x',
+        courseId,
         project: {},
         submittedAt,
       },
@@ -43,7 +48,7 @@ describe('admin profiles-overview — enriquecimento da listagem de crianças', 
         accountId: ACCOUNT,
         blockId: randomUUID(),
         lessonId: lessonIds[0] as string,
-        courseId: 'c-x',
+        courseId,
         project: {},
         submittedAt,
         reviewedAt: new Date(submittedAt.getTime() + 1000),
@@ -76,5 +81,34 @@ describe('admin profiles-overview — enriquecimento da listagem de crianças', 
     const { app } = buildApp()
     const body = await readJson(await get(app, '/members/admin/profiles-overview'))
     expect(body.profiles).toEqual([])
+  })
+
+  test('conta pendências somente na audiência solicitada', async () => {
+    const { app, courses, studioSubmissions, clockRef } = buildApp()
+    const kids = seedSampleCourse(courses, 'kids-curso', 'published', 'kids')
+    const adult = seedSampleCourse(courses, 'adult-curso', 'published', 'adult')
+    const submittedAt = clockRef.now
+    for (const course of [kids, adult]) {
+      studioSubmissions.submissions.push({
+        id: randomUUID(),
+        userId: PROFILE_A,
+        accountId: ACCOUNT,
+        blockId: randomUUID(),
+        lessonId: course.lessonIds[0] as string,
+        courseId: course.courseId,
+        project: {},
+        submittedAt,
+      })
+    }
+
+    const kidsBody = await readJson(
+      await get(app, `/members/admin/profiles-overview?profileIds=${PROFILE_A}&audience=kids`),
+    )
+    const adultBody = await readJson(
+      await get(app, `/members/admin/profiles-overview?profileIds=${PROFILE_A}&audience=adult`),
+    )
+
+    expect(kidsBody.profiles[0].pendingSubmissions).toBe(1)
+    expect(adultBody.profiles[0].pendingSubmissions).toBe(1)
   })
 })

@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import path from 'node:path'
+import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
 import {
@@ -158,7 +159,12 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
       now: new Date(now.getTime() + 3_000),
     })
 
-    const pending = await moderation.listPending({ spaceId, limit: 20, offset: 0 })
+    const pending = await moderation.listPending({
+      spaceId,
+      audience: 'kids',
+      limit: 20,
+      offset: 0,
+    })
     expect(pending.total).toBe(1)
     expect(pending.items[0]).toMatchObject({
       id: pendingId,
@@ -173,9 +179,13 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
     })
     expect(pending.items[0]?.createdAt).toBeInstanceOf(Date)
     expect(pending.items[0]?.context.thread?.createdAt).toBeInstanceOf(Date)
+    expect((await moderation.listPending({ audience: 'adult', limit: 20, offset: 0 })).total).toBe(
+      0,
+    )
 
     const listedReports = await moderation.listReports({
       spaceId,
+      audience: 'kids',
       status: 'open',
       limit: 20,
       offset: 0,
@@ -192,6 +202,26 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
       },
     })
     expect(listedReports.items[0]?.content?.createdAt).toBeInstanceOf(Date)
+    expect(listedReports.items[0]?.spaceAudience).toBe('kids')
+
+    await conn.db.delete(comments).where(eq(comments.id, pendingId))
+    const orphaned = await moderation.listReports({
+      audience: 'kids',
+      status: 'open',
+      limit: 20,
+      offset: 0,
+    })
+    expect(orphaned.items[0]).toMatchObject({ spaceAudience: 'kids', content: null })
+    expect(
+      (
+        await moderation.listReports({
+          audience: 'adult',
+          status: 'open',
+          limit: 20,
+          offset: 0,
+        })
+      ).total,
+    ).toBe(0)
   })
 
   test('UPDATE condicional impede transição terminal concorrente no adapter Drizzle', async () => {

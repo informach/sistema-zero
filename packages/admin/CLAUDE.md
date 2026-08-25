@@ -51,31 +51,30 @@ kids-first):** alternador fixo na sidebar (desktop + drawer), estado num cookie 
 `sz_admin_platform` (1 ano, SameSite=Lax, SEM HttpOnly — o client grava; NÃO entra em
 `lib/cookies.ts`, que é dos `__Host-*` de sessão). **Kids é o default.** Peças: `lib/platform.ts`
 (puro: `Platform`/`parsePlatform`/`platformCookieString`, testado em `tests/platform.test.ts`) ·
-`components/admin/platform-store.ts` (store singleton de módulo + `useSyncExternalStore`, molde do
-counts-store; `usePlatform()`/`setPlatform()`/`getPlatform()` — este último legível por código
-não-React) · `components/admin/platform-switcher.tsx` (segmented; numa rota NÃO-escopada mostra a
+`components/admin/platform-store.ts` (store imperativo exclusivo do navegador;
+`setPlatform()`/`getPlatform()` continuam legíveis por código não-React) ·
+`components/admin/platform-provider.tsx` (Context + `useSyncExternalStore`; `usePlatform()` usa o
+snapshot SSR isolado da requisição) · `components/admin/platform-switcher.tsx` (segmented; numa rota NÃO-escopada mostra a
 legenda "Esta tela mostra as duas plataformas"). O escopo vem de `pathIsPlatformScoped` no
 `nav.ts` (escopados: `/admin/professor`, `/admin/comunidade/moderacao`, `/admin/membros`;
 Gestão/servidores/auditoria = globais). Fluxo SSR: `app/admin/layout.tsx` lê o cookie e passa
-`initialPlatform` à `AdminSidebar`, que chama `initPlatform()` ANTES de qualquer `usePlatform()`
-(a sidebar renderiza primeiro na árvore). ⚠️ **`initPlatform` no SERVER adota o valor do request
-SEMPRE, sem latch** — o módulo é compartilhado entre requests no processo do Next; com latch, o
-1º request congelava a plataforma p/ todos os SSR seguintes (bug pego no QA browser: cookie
-`adult` ignorado no hard load). No BROWSER o latch vale (1ª hidratação semeia; depois manda o
-clique). Corolário: markup SSR-visível que dependa de `usePlatform` deve renderizar dentro do
-subtree síncrono pós-seed (sidebar) ou tolerar 1º paint neutro.
+`initialPlatform` ao `PlatformProvider`, cujo `getServerSnapshot` fecha sobre o valor DESTA
+requisição. O singleton nunca é lido nem alterado no servidor; no navegador, a primeira
+avaliação do módulo lê o mesmo cookie e depois o clique manda. Isso evita vazamento entre requests
+concorrentes sem mismatch de hidratação.
 **O seletor VALE nas telas de ensino (Etapa 3, 08/2026):** Entregas/Recados nascem com o filtro
 "Plataforma" na plataforma ATIVA e re-sincronizam quando o global muda (o Select local segue como
 override pontual — "Todas"/a outra); os badges da sidebar contam a plataforma ativa
 (`professor-counts-store` manda `?platform=` ao `professor-overview`, guarda `platform` no
 snapshot [mismatch = stale] e re-busca via `subscribePlatform` — assinatura módulo-a-módulo, sem
 acoplar React); o BFF `professor-overview` repassa `audience` a entregas/recados/unread-count
-(members ganhou `?audience=` no `GET /members/admin/teacher-threads/unread-count`) e **moderação/
-denúncias seguem GLOBAIS** (o hub não filtra pending/reports por audiência — v1); Cursos filtra
-a listagem por `audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira
-do Criador só renderiza no modo Kids; Análises e Moderação cortam CLIENT-side (a moderação pode
-subcontar com fila >100 — limitação documentada); Desafio do mês mostra um banner informativo no
-modo Adultos (conteúdo visível).
+(members ganhou `?audience=` no `GET /members/admin/teacher-threads/unread-count`) e o hub filtra
+fila/denúncias por audiência **antes** de paginar; Cursos filtra a listagem por
+`audience=<plataforma>` (a rota admin do members já aceitava) e o painel Carreira do Criador só
+renderiza no modo Kids; Análises e Moderação reiniciam seleção, paginação e requests em voo ao
+trocar de plataforma, sem publicar resposta obsoleta; Desafio do mês mostra um banner informativo
+no modo Adultos (conteúdo visível). Rotas fixas do editor de curso são globais: exibem a audiência
+canônica do curso e não mudam de contexto com o seletor.
 **Listagem de CRIANÇAS + busca por nome (Etapa 4, 08/2026 — a criança vira entidade de 1ª
 classe):** no modo Kids, "Alunos" (`/admin/membros`) vira a listagem de PERFIS
 (`children-client.tsx`; a page é um switch client por `usePlatform` — Adultos mantém o

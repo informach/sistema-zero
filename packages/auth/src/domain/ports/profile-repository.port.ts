@@ -54,7 +54,7 @@ export interface ProfileRepository {
    * Busca UNIFICADA do painel: perfis ATIVOS + identidade mínima da conta
    * responsável (LEFT JOIN local em `auth.users`; conta apagada → `account: null`).
    * `q` casa LITERAL (ILIKE escapado, case-insensitive) em OR sobre nome do
-   * perfil / e-mail / nome / sobrenome do responsável; ausente → lista todos os
+   * perfil / e-mail / nome, sobrenome ou nome completo do responsável; ausente → lista todos os
    * ativos. Ordenação ESTÁVEL `name asc, id asc`; `total` usa o MESMO filtro.
    */
   searchWithAccount(

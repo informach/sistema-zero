@@ -1,0 +1,2 @@
+CREATE INDEX "profiles_name_trgm_idx" ON "auth"."profiles" USING gin ("name" gin_trgm_ops);--> statement-breakpoint
+CREATE INDEX "users_admin_search_trgm_idx" ON "auth"."users" USING gin (("first_name" || ' ' || "last_name" || ' ' || "email") gin_trgm_ops);

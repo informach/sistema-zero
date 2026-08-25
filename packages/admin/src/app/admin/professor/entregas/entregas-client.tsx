@@ -16,7 +16,7 @@ import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 
 // LAZY de propósito, e não só por peso: o viewer (e os embeds do Estúdio/Pinta
 // atrás dele) só carrega quando uma entrega ABRE — a fila lista sem pagar o
@@ -35,6 +35,7 @@ import { refreshProfessorCounts } from '@/components/admin/professor-counts-stor
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { canBackgroundRefreshPage, createForegroundPriority } from '@/lib/latest-wins'
+import { platformTransition } from '@/lib/platform-transition'
 import {
   isSubmissionPending,
   SUBMISSION_STATUS_LABEL,
@@ -67,9 +68,6 @@ export function EntregasClient() {
   // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
   const platform = usePlatform()
   const [audience, setAudience] = useState<string>(platform)
-  useEffect(() => {
-    setAudience(platform)
-  }, [platform])
   const [status, setStatus] = useState('')
   const [courses, setCourses] = useState<CourseView[]>([])
   const [open, setOpen] = useState<StudioSubmissionQueueRow | null>(null)
@@ -88,6 +86,14 @@ export function EntregasClient() {
   // Filtros/paginação seguem latest-wins. Polling tem autoridade separada:
   // nunca cancela uma ação do operador nem publica depois que uma começou.
   const loadAuthority = useRef(createForegroundPriority()).current
+  useEffect(() => {
+    const transition = platformTransition(platform).teaching
+    loadAuthority.invalidate()
+    setAudience(transition.audience)
+    setCourseId(transition.courseId)
+    setOffset(0)
+    setOpen(null)
+  }, [platform, loadAuthority])
   useEffect(() => {
     const t = setTimeout(() => setQDebounced(q.trim()), 250)
     return () => clearTimeout(t)

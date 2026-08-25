@@ -573,9 +573,10 @@ export class InMemoryProfileRepository implements ProfileRepository {
         if (!q) return true
         // `includes` = a MESMA semântica do ILIKE escapado: substring LITERAL
         // case-insensitive (curingas do q não viram padrão).
-        return [row.name, row.account?.email, row.account?.firstName, row.account?.lastName].some(
-          (h) => h?.toLowerCase().includes(q),
-        )
+        const accountSearch = row.account
+          ? `${row.account.firstName} ${row.account.lastName} ${row.account.email}`
+          : null
+        return [row.name, accountSearch].some((h) => h?.toLowerCase().includes(q))
       })
       // Ordenação estável do adapter: name asc, desempate por id asc.
       .sort(

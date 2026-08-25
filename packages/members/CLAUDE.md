@@ -1572,7 +1572,9 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   degradada de ref órfã segue com nulls) e `AdminEntitlementView` ganhou `sku` (snapshot).
   Ordenação: atividade mais recente primeiro, nunca-abertos por último. **Perfis (estilo
   Netflix):** com `?profileIds=` devolve TAMBÉM `profilesProgress` por perfil. Ausente → só o
-  progresso da conta (compat). `parseProfileIds` valida uuid + capa em 50 na borda. Testes:
+  progresso da conta (compat). Conclusões, último acesso e totais são agregados em lotes únicos
+  para conta + perfis; a quantidade de consultas não cresce por aprendiz/curso. `parseProfileIds`
+  valida uuid + capa em 50 na borda. Testes:
   `tests/integration/admin-member-detail.test.ts`.
 - **`GET /members/admin/members/:userId/tool-usage[?profileIds=<csv>]` (08/2026)** → USO das
   ferramentas por aprendiz da FAMÍLIA (cartões da ficha; 1 chamada por família):
@@ -1667,6 +1669,8 @@ implementa as DUAS sobre os mesmos arrays. 5 serviços (`content-admin/content-a
   enum `course_audience` é compartilhado por ~15 colunas (NUNCA adicionar 'both') e um curso
   fora da carreira "não vale a pena pro Kids". ⚠️ A rota usa `:courseId` (não `:id`): o Elysia
   exige o MESMO nome de param quando o segmento tem filhos (`/courses/:courseId/modules`).
+  A transação revalida versão e audiência da origem antes de copiar; mudança concorrente devolve
+  `409 CONCURRENCY_CONFLICT`, impedindo clone de snapshot diferente do que o serviço validou.
   Testes: `tests/integration/clone-course.test.ts`. Gateway: coberto por
   `members-admin-courses-write`.
 - Módulos: `POST /courses/:courseId/modules`, `PATCH/DELETE /modules/:id`,

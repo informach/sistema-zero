@@ -68,4 +68,54 @@ describe('contadores da Sala do Professor', () => {
       container.remove()
     }
   })
+
+  test('refresh forçado durante um fetch em voo agenda e aguarda uma nova consulta', async () => {
+    const originalFetch = globalThis.fetch
+    const first = Promise.withResolvers<Response>()
+    const second = Promise.withResolvers<Response>()
+    let requests = 0
+    globalThis.fetch = Object.assign(
+      async () => {
+        requests += 1
+        return requests === 1 ? first.promise : second.promise
+      },
+      { preconnect: () => {} },
+    ) satisfies typeof fetch
+
+    try {
+      const initial = ensureProfessorCounts(true)
+      const forced = ensureProfessorCounts(true)
+      expect(requests).toBe(1)
+
+      first.resolve(
+        Response.json({
+          counts: {
+            pendingSubmissions: 1,
+            unreadThreads: 0,
+            moderationPending: 0,
+            openReports: 0,
+          },
+          recent: { submissions: [], threads: [] },
+        }),
+      )
+      await initial
+      await waitFor(() => requests === 2)
+
+      second.resolve(
+        Response.json({
+          counts: {
+            pendingSubmissions: 2,
+            unreadThreads: 0,
+            moderationPending: 0,
+            openReports: 0,
+          },
+          recent: { submissions: [], threads: [] },
+        }),
+      )
+      await forced
+      expect(requests).toBe(2)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
 })

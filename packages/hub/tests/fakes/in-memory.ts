@@ -368,7 +368,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       const clubComments = this.comments.filter((c) => {
         if (c.authorId !== authorId || c.status !== 'visible') return false
         const parent = this.threads.find((t) => t.id === c.threadId)
-        return Boolean(parent && !parent.isShowcase)
+        return Boolean(parent && parent.status === 'visible' && !parent.isShowcase)
       })
       const showcases = this.threads.filter(
         (t) => t.authorId === authorId && t.isShowcase && t.status === 'visible',
@@ -764,13 +764,25 @@ export class InMemoryModerationRepository implements ModerationRepository {
     private readonly structure: InMemoryCommunityAdminRepository,
   ) {}
 
-  async listPending(opts: { spaceId?: string; limit: number; offset: number }) {
+  async listPending(opts: {
+    spaceId?: string
+    audience?: 'adult' | 'kids'
+    limit: number
+    offset: number
+  }) {
     const channelSpace = new Map(this.structure.channels.map((c) => [c.id, c.spaceId]))
     const items: PendingItem[] = []
     for (const t of this.threads.threads) {
       if (t.status !== 'pending') continue
       const sid = channelSpace.get(t.channelId)
-      if (!sid || (opts.spaceId && sid !== opts.spaceId)) continue
+      const space = this.structure.spaces.find((item) => item.id === sid)
+      if (
+        !sid ||
+        !space ||
+        (opts.spaceId && sid !== opts.spaceId) ||
+        (opts.audience && space.audience !== opts.audience)
+      )
+        continue
       items.push({
         type: 'thread',
         id: t.id,
@@ -791,7 +803,14 @@ export class InMemoryModerationRepository implements ModerationRepository {
       const thread = this.threads.threads.find((x) => x.id === c.threadId)
       if (!thread) continue
       const sid = channelSpace.get(thread.channelId)
-      if (!sid || (opts.spaceId && sid !== opts.spaceId)) continue
+      const space = this.structure.spaces.find((item) => item.id === sid)
+      if (
+        !sid ||
+        !space ||
+        (opts.spaceId && sid !== opts.spaceId) ||
+        (opts.audience && space.audience !== opts.audience)
+      )
+        continue
       items.push({
         type: 'comment',
         id: c.id,
@@ -812,11 +831,14 @@ export class InMemoryModerationRepository implements ModerationRepository {
   }
 
   async createReport(input: CreateReportInput): Promise<void> {
+    const space = this.structure.spaces.find((item) => item.id === input.spaceId)
+    if (!space) throw new Error('Servidor inexistente no fake de moderação')
     this.reports.push({
       id: randomUUID(),
       targetType: input.targetType,
       targetId: input.targetId,
       spaceId: input.spaceId,
+      spaceAudience: space.audience,
       reporterId: input.reporterId,
       reporterAccountId: input.reporterAccountId,
       reporterDisplayName: input.reporterDisplayName,
@@ -831,12 +853,14 @@ export class InMemoryModerationRepository implements ModerationRepository {
 
   async listReports(opts: {
     spaceId?: string
+    audience?: 'adult' | 'kids'
     status?: ReportStatus
     limit: number
     offset: number
   }) {
     let rows = [...this.reports]
     if (opts.spaceId) rows = rows.filter((r) => r.spaceId === opts.spaceId)
+    if (opts.audience) rows = rows.filter((r) => r.spaceAudience === opts.audience)
     if (opts.status) rows = rows.filter((r) => r.status === opts.status)
     rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     return {

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import {
   boolean,
   date,
@@ -51,7 +52,14 @@ export const users = auth.table(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('users_email_uq').on(t.email)],
+  (t) => [
+    uniqueIndex('users_email_uq').on(t.email),
+    // Busca unificada do painel por responsável (nome completo ou e-mail).
+    index('users_admin_search_trgm_idx').using(
+      'gin',
+      sql`(${t.firstName} || ' ' || ${t.lastName} || ' ' || ${t.email}) gin_trgm_ops`,
+    ),
+  ],
 )
 
 /**
@@ -235,7 +243,10 @@ export const profiles = auth.table(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   // Lista da grade (perfis ativos da conta, em ordem) + contagem do limite.
-  (t) => [index('profiles_account_idx').on(t.accountUserId, t.sortOrder)],
+  (t) => [
+    index('profiles_account_idx').on(t.accountUserId, t.sortOrder),
+    index('profiles_name_trgm_idx').using('gin', t.name.op('gin_trgm_ops')),
+  ],
 )
 
 /**

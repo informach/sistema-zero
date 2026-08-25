@@ -3,6 +3,7 @@ import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
 import {
+  CloneSameAudienceError,
   ContentNotFoundError,
   CourseConflictError,
   CourseNotFoundError,
@@ -115,9 +116,12 @@ export class CourseAdminService {
   ): Promise<CourseView> {
     const source = await this.courses.findCourseById(courseId)
     if (!source) throw new ContentNotFoundError('Curso não encontrado')
+    if (source.audience === input.audience) throw new CloneSameAudienceError()
     const slug =
       input.slug?.trim() || `${source.slug}-${input.audience === 'kids' ? 'kids' : 'adulto'}`
     const cloned = await this.content.cloneCourseTree(source.id, {
+      expectedSourceVersion: source.version,
+      expectedSourceAudience: source.audience,
       slug,
       title: input.title?.trim() || source.title,
       audience: input.audience,

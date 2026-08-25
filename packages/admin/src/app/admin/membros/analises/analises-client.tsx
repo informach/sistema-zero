@@ -12,12 +12,14 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { TrendingDown } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { usePlatform } from '@/components/admin/platform-store'
+import { usePlatform } from '@/components/admin/platform-provider'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
+import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import { platformTransition } from '@/lib/platform-transition'
 import type { CourseAnalyticsView, CourseFunnelView } from '@/lib/types'
 
 /** Largura de barra segura (0–100%) — protege contra taxa fora da faixa nos dados. */
@@ -32,6 +34,15 @@ export function AnalisesClient() {
   const [selected, setSelected] = useState<CourseAnalyticsView | null>(null)
   const [funnel, setFunnel] = useState<CourseFunnelView | null>(null)
   const [funnelLoading, setFunnelLoading] = useState(false)
+  const funnelAuthority = useRef(createForegroundPriority()).current
+
+  useEffect(() => {
+    funnelAuthority.invalidate()
+    const transition = platformTransition(platform).analytics
+    if (transition.selectedCourseId === null) setSelected(null)
+    setFunnel(null)
+    setFunnelLoading(false)
+  }, [platform, funnelAuthority])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -53,13 +64,17 @@ export function AnalisesClient() {
     setSelected(c)
     setFunnel(null)
     setFunnelLoading(true)
-    try {
-      setFunnel(await apiGet<CourseFunnelView>(`/api/members/analytics/courses/${c.courseId}`))
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar o funil.')
-    } finally {
-      setFunnelLoading(false)
-    }
+    await runLatestForeground(
+      funnelAuthority,
+      () => apiGet<CourseFunnelView>(`/api/members/analytics/courses/${c.courseId}`),
+      {
+        onSuccess: setFunnel,
+        onError: (error) => {
+          toast.error((error as ApiError).message ?? 'Falha ao carregar o funil.')
+        },
+        onSettled: () => setFunnelLoading(false),
+      },
+    )
   }
 
   const visibleCourses = courses.filter((c) => c.audience === platform)

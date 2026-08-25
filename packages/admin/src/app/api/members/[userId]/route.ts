@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
-import type { MemberDetail, MemberProfileProgress } from '@/lib/types'
-import { normalizeUpstreamError } from '@/lib/upstream'
+import { composeMemberDetail } from '@/lib/member-detail-bff'
+import { forwardUpstream } from '@/server/forward'
 import { getMember } from '@/server/members'
 import { getUser, getUserProfiles } from '@/server/users'
 
@@ -13,40 +13,7 @@ import { getUser, getUserProfiles } from '@/server/users'
 export async function GET(_req: Request, { params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params
   const [identity, profilesRes] = await Promise.all([getUser(userId), getUserProfiles(userId)])
-  const accountProfiles = profilesRes.status === 200 ? (profilesRes.body?.profiles ?? []) : []
-
-  const detail = await getMember(
-    userId,
-    accountProfiles.map((p) => p.id),
-  )
-  if (detail.status !== 200 || !detail.body) {
-    // Normaliza erro fora do envelope `{ error }` (como faz a lista) p/ a UI não
-    // cair no genérico "Algo deu errado." (achado do review). Envelope presente →
-    // `normalizeUpstreamError` (só code+message, sem vazar campos extras do upstream).
-    const envelope = detail.body as { error?: { code?: string; message?: string } } | null
-    const normalized = envelope?.error?.message
-      ? normalizeUpstreamError(detail.body)
-      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } }
-    return NextResponse.json(normalized, { status: detail.status === 200 ? 502 : detail.status })
-  }
-
-  const user = identity.status === 200 ? (identity.body?.user ?? null) : null
-  const progressById = new Map(
-    (detail.body.profilesProgress ?? []).map((pp) => [pp.userId, pp.progress]),
-  )
-  const profiles: MemberProfileProgress[] = accountProfiles.map((p) => ({
-    id: p.id,
-    name: p.name,
-    avatarUrl: p.avatarUrl,
-    progress: progressById.get(p.id) ?? [],
-  }))
-
-  const merged: MemberDetail = {
-    userId: detail.body.userId,
-    entitlements: detail.body.entitlements,
-    progress: detail.body.progress,
-    user,
-    ...(profiles.length > 0 ? { profiles } : {}),
-  }
-  return NextResponse.json(merged, { status: 200 })
+  const result = await composeMemberDetail(userId, identity, profilesRes, getMember)
+  if (result.status !== 200) return forwardUpstream(result)
+  return NextResponse.json(result.body, { status: 200 })
 }

@@ -7,7 +7,12 @@ import type {
   LessonBlock,
   Module,
 } from '../../../domain/course/course'
-import { CareerSlotConflictError, DuplicateSlugError } from '../../../domain/course/course.errors'
+import {
+  CareerSlotConflictError,
+  CloneSameAudienceError,
+  CourseConflictError,
+  DuplicateSlugError,
+} from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import type {
   AttachmentFields,
@@ -303,8 +308,22 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     // Transação única: ou a árvore inteira nasce, ou nada. Queries SEQUENCIAIS
     // (mesma sessão do postgres.js — sem Promise.all dentro da txn).
     return this.db.transaction(async (tx) => {
-      const [src] = await tx.select().from(courses).where(eq(courses.id, sourceCourseId)).limit(1)
+      const [src] = await tx
+        .select()
+        .from(courses)
+        .where(eq(courses.id, sourceCourseId))
+        .limit(1)
+        .for('update')
       if (!src) return null
+      // As validações que dependem da origem pertencem à mesma transação que
+      // materializa o fork; validar só no service deixava uma janela TOCTOU.
+      if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+      if (
+        src.version !== overrides.expectedSourceVersion ||
+        src.audience !== overrides.expectedSourceAudience
+      ) {
+        throw new CourseConflictError()
+      }
 
       const now = new Date()
       const metadata: Record<string, unknown> = {
