@@ -696,6 +696,8 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     const { cloud, uploads } = fakeCloud(remote)
     const marks = createMemorySyncedMarks()
     const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
+    const events: string[] = []
+    mirrored.subscribe?.((event) => events.push(event.type))
 
     const assets = await loadSettled(mirrored, local)
     await new Promise((resolve) => setTimeout(resolve, 20))
@@ -714,6 +716,7 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     // A marca conhece a revisão da nuvem, e o merge (tem 'b' a mais) sobe de novo.
     expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(4)
     expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
+    expect(events).toContain('palette-library-changed')
   })
 
   test('base vencida na subida: onStale funde com a nuvem e re-sobe', async () => {

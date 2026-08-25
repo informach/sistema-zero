@@ -63,6 +63,34 @@ describe('composição da ficha do membro no BFF', () => {
     expect(memberCalls).toBe(0)
   })
 
+  test('recusa identidade e detalhe que pertencem a outra conta', async () => {
+    for (const scenario of [
+      {
+        identity: { status: 200, body: { user: { id: 'outra-conta' } } },
+        memberUserId: 'account',
+      },
+      {
+        identity: { status: 200, body: { user: { id: 'account' } } },
+        memberUserId: 'outra-conta',
+      },
+    ]) {
+      const result = await composeMemberDetail(
+        'account',
+        scenario.identity,
+        { status: 200, body: { profiles: [] } },
+        async () => ({
+          status: 200,
+          body: { userId: scenario.memberUserId, entitlements: [], progress: [] },
+        }),
+      )
+
+      expect(result).toEqual({
+        status: 502,
+        body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+      })
+    }
+  })
+
   test('carrega Members com todos os perfis e devolve a ficha hidratada', async () => {
     const result = await composeMemberDetail(
       'account',

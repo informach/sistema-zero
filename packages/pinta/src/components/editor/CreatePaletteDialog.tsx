@@ -4,8 +4,8 @@
  * buracos da paleta ativa (semear de uma custom furada deixa slots '' — e
  * buracos são suportados no modelo inteiro; ver o clamp da sessão).
  *
- * ⚠️ Monte com `key={String(open)}` (padrão NewAssetDialog): o estado nasce da
- * paleta ativa ATUAL a cada abertura.
+ * ⚠️ Monte com `key` prefixada pelo tipo + estado `open`: o estado nasce da
+ * paleta ativa ATUAL a cada abertura sem colidir com diálogos irmãos.
  */
 import type { JSX } from 'react'
 import { useState } from 'react'

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { MAX_SAVED_PALETTES } from '../core/paletteLibrary'
 import { clearIdbMock } from '../testing/idbMock'
+import type { PintaPersistenceEvent } from './persistence'
 
 const { createPintaPersistence, setPintaStorageNamespace } = await import('./persistence')
 const { createPaletteLibraryStore } = await import('./paletteLibraryStore')
@@ -41,7 +42,7 @@ describe('paletteLibraryStore', () => {
 
     const onDisk = await persistence.loadPaletteLibrary?.()
     expect(onDisk?.palettes).toEqual([])
-    expect(onDisk?.removed).toEqual([{ id: saved?.id ?? '', removedAt: 500 }])
+    expect(onDisk?.removed).toEqual([{ id: saved?.id ?? '', removedAt: 501 }])
   })
 
   it('load() RELÊ escrita feita POR FORA (a descida da nuvem grava direto no registro)', async () => {
@@ -80,6 +81,55 @@ describe('paletteLibraryStore', () => {
     expect(
       await store.getState().savePalette({ name: 'excedente', colors: colorsOf('#222222') }),
     ).toBeNull()
+  })
+
+  it('serializa saves concorrentes e usa timestamps monotônicos', async () => {
+    const store = createPaletteLibraryStore(createPintaPersistence(), { now: () => 100 })
+    await store.getState().load()
+
+    const [first, second] = await Promise.all([
+      store.getState().savePalette({ name: 'A', colors: colorsOf('#111111') }),
+      store.getState().savePalette({ name: 'B', colors: colorsOf('#222222') }),
+    ])
+
+    expect(store.getState().palettes.map((item) => item.name)).toEqual(['A', 'B'])
+    expect(second?.updatedAt).toBeGreaterThan(first?.updatedAt ?? 0)
+  })
+
+  it('relê a biblioteca quando a persistência avisa mudança vinda da nuvem', async () => {
+    const listeners = new Set<(event: PintaPersistenceEvent) => void>()
+    let library = null as Awaited<
+      ReturnType<NonNullable<ReturnType<typeof createPintaPersistence>['loadPaletteLibrary']>>
+    >
+    const base = createPintaPersistence()
+    const persistence = {
+      ...base,
+      loadPaletteLibrary: async () => library,
+      savePaletteLibrary: async (next: NonNullable<typeof library>) => {
+        library = next
+      },
+      subscribe(listener: (event: PintaPersistenceEvent) => void) {
+        listeners.add(listener)
+        return () => {
+          listeners.delete(listener)
+        }
+      },
+    }
+    const store = createPaletteLibraryStore(persistence)
+    const detach = store.getState().attachPersistence()
+    await store.getState().load()
+
+    library = {
+      version: 1,
+      updatedAt: 200,
+      palettes: [{ id: 'cloud', updatedAt: 200, name: 'Da nuvem', colors: colorsOf('#abcdef') }],
+      removed: [],
+    }
+    for (const listener of listeners) listener({ type: 'palette-library-changed' })
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(store.getState().palettes.map((item) => item.name)).toEqual(['Da nuvem'])
+    detach()
   })
 
   it('disabled (modo aula) e armazenamento sem os métodos → enabled false, save inerte', async () => {

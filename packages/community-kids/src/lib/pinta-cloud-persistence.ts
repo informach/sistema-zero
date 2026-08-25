@@ -48,6 +48,7 @@ import { perfSpanAsync } from './perf'
 export type PintaCloudPersistenceEvent =
   | { type: 'sync-start' }
   | { type: 'changed' }
+  | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
 
 /** A superfície do `PintaPersistence` do pacote (espelhada aqui para não importar o barril React). */
@@ -276,9 +277,8 @@ export function createCloudMirroredPintaPersistence(options: {
    * E a base vencida na subida (outro aparelho subiu antes).
    *
    * ⚠️ A comparação usa `paletteLibraryContentKey` (insensível à ORDEM dos
-   * arrays): comparar os arrays crus fazia dois aparelhos com ordens locais
-   * diferentes subirem um por cima do outro PARA SEMPRE (o merge preserva a
-   * ordem de quem funde — as ordens nunca se adotavam).
+   * arrays): comparar os arrays crus já fez aparelhos re-subirem conteúdo
+   * equivalente em ordens diferentes.
    */
   async function resolvePaletteConflict(): Promise<void> {
     if (!saveLibrary) return
@@ -303,7 +303,12 @@ export function createCloudMirroredPintaPersistence(options: {
           paletteLibraryContentKey(merged) !== paletteLibraryContentKey(remote)
         // Merge que difere do remoto é uma "edição" local: carimbo novo para o
         // produtor ver que há o que subir (a marca fica na revisão da nuvem).
-        await saveLibrary(changedVsRemote ? { ...merged, updatedAt: now() } : merged)
+        await saveLibrary(
+          changedVsRemote
+            ? { ...merged, updatedAt: Math.max(now(), merged.updatedAt + 1) }
+            : merged,
+        )
+        emit({ type: 'palette-library-changed' })
         marks.set(
           PALETTE_LIBRARY_ITEM_ID,
           downloaded.summary.itemUpdatedAt,
@@ -384,7 +389,11 @@ export function createCloudMirroredPintaPersistence(options: {
     if (paletteSummary) {
       // Revisão que esta marca não conhece → desce e funde (best-effort).
       if (marks.revision(PALETTE_LIBRARY_ITEM_ID) !== paletteSummary.revision) {
-        void resolvePaletteConflict().catch(() => {})
+        try {
+          await resolvePaletteConflict()
+        } catch {
+          // Best-effort: falha da biblioteca não bloqueia a galeria de desenhos.
+        }
       }
     } else if (loadLibrary) {
       // Nuvem ainda sem a biblioteca: se há uma local com conteúdo, sobe.

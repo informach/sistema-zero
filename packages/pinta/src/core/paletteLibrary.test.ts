@@ -47,13 +47,25 @@ describe('sanitizePaletteLibrary', () => {
     expect(old?.palettes).toHaveLength(1)
   })
 
-  it('id duplicado ganha id novo; corta no teto', () => {
+  it('deduplica id de forma determinística e não descarta paletas sincronizadas acima do teto de criação', () => {
     const lots = Array.from({ length: MAX_SAVED_PALETTES + 5 }, (_, i) => palette(`p${i}`, i))
     const out = sanitizePaletteLibrary({ version: 1, updatedAt: 0, palettes: lots })
-    expect(out?.palettes).toHaveLength(MAX_SAVED_PALETTES)
-    const dup = sanitizePaletteLibrary(libraryOf([palette('mesmo', 1), palette('mesmo', 2)]))
-    expect(dup?.palettes).toHaveLength(2)
-    expect(new Set(dup?.palettes.map((p) => p.id)).size).toBe(2)
+    expect(out?.palettes).toHaveLength(MAX_SAVED_PALETTES + 5)
+    const dup = sanitizePaletteLibrary(
+      libraryOf([palette('mesmo', 1, '#111111'), palette('mesmo', 2, '#222222')]),
+    )
+    expect(dup?.palettes).toHaveLength(1)
+    expect(dup?.palettes[0]?.colors[1]).toBe('#222222')
+  })
+
+  it('valida a coleção inteira antes de selecionar entradas válidas', () => {
+    const invalid = Array.from({ length: MAX_SAVED_PALETTES }, (_, i) => ({ id: `bad-${i}` }))
+    const out = sanitizePaletteLibrary({
+      version: 1,
+      updatedAt: 10,
+      palettes: [...invalid, palette('valida', 10)],
+    })
+    expect(out?.palettes.map((item) => item.id)).toEqual(['valida'])
   })
 
   it('lápides: dedupe pelo removedAt maior, cap, e lápide vencida por edição posterior CAI', () => {
@@ -94,12 +106,17 @@ describe('mergePaletteLibraries — nuvem ↔ local por id + updatedAt', () => {
     ])
   })
 
-  it('empate de updatedAt: a LOCAL vence (determinístico)', () => {
+  it('empate de updatedAt: o conteúdo canônico vence em qualquer ordem', () => {
     const merged = mergePaletteLibraries(
       libraryOf([palette('a', 5, '#111111')], [], 1),
       libraryOf([palette('a', 5, '#999999')], [], 1),
     )
-    expect(merged.palettes[0]?.colors[1]).toBe('#111111')
+    const reversed = mergePaletteLibraries(
+      libraryOf([palette('a', 5, '#999999')], [], 1),
+      libraryOf([palette('a', 5, '#111111')], [], 1),
+    )
+    expect(merged).toEqual(reversed)
+    expect(merged.palettes[0]?.colors[1]).toBe('#999999')
   })
 
   it('🚨 a LÁPIDE mata a cópia do outro lado: exclusão vale por mera reconciliação', () => {
@@ -120,6 +137,32 @@ describe('mergePaletteLibraries — nuvem ↔ local por id + updatedAt', () => {
     const merged = mergePaletteLibraries(local, remote)
     expect(merged.palettes.map((p) => p.id)).toEqual(['p1'])
     expect(merged.removed).toEqual([])
+  })
+
+  it('é comutativo mesmo acima do teto local e em empate de timestamp', () => {
+    const left = libraryOf([
+      ...Array.from({ length: MAX_SAVED_PALETTES }, (_, i) => palette(`l-${i}`, i + 1)),
+      palette('empate', 100, '#111111'),
+    ])
+    const right = libraryOf([
+      ...Array.from({ length: MAX_SAVED_PALETTES }, (_, i) => palette(`r-${i}`, i + 1)),
+      palette('empate', 100, '#999999'),
+    ])
+
+    const leftRight = mergePaletteLibraries(left, right)
+    const rightLeft = mergePaletteLibraries(right, left)
+
+    expect(leftRight).toEqual(rightLeft)
+    expect(leftRight.palettes).toHaveLength(MAX_SAVED_PALETTES * 2 + 1)
+  })
+
+  it('lápide vence a paleta no mesmo timestamp', () => {
+    const merged = mergePaletteLibraries(
+      libraryOf([palette('apagada', 50)]),
+      libraryOf([], [{ id: 'apagada', removedAt: 50 }]),
+    )
+    expect(merged.palettes).toEqual([])
+    expect(merged.removed).toEqual([{ id: 'apagada', removedAt: 50 }])
   })
 })
 

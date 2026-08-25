@@ -92,10 +92,11 @@ export function PintaApp({
       paletteLibrary: createPaletteLibraryStore(resolved),
     }
   })
-  const { gallery } = store
+  const { gallery, paletteLibrary } = store
   // A escuta do armazenamento (nuvem do host) vive com o componente: liga ao montar, desliga ao
   // desmontar (StrictMode monta/desmonta/monta: a store descartada nunca fica inscrita).
   useEffect(() => gallery.getState().attachPersistence(), [gallery])
+  useEffect(() => paletteLibrary.getState().attachPersistence(), [paletteLibrary])
   const [view, setView] = useState<PintaView>({ screen: 'gallery' })
   const [initialIntentVersion, setInitialIntentVersion] = useState(0)
   const [missingAssetId, setMissingAssetId] = useState<string | null>(null)

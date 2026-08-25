@@ -12,6 +12,7 @@ import { DrizzleModerationRepository } from '../../src/infrastructure/persistenc
 import {
   channels,
   comments,
+  reports,
   spaces,
   threads,
 } from '../../src/infrastructure/persistence/drizzle/schema'
@@ -81,7 +82,7 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
   })
 
   beforeEach(async () => {
-    await conn.sql`truncate table hub.spaces cascade`
+    await conn.sql`truncate table hub.reports, hub.spaces cascade`
   })
 
   test('migration + SQL cru carregam fila, contexto, snapshots e denúncia com datas reais', async () => {
@@ -152,6 +153,7 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
       targetType: 'comment',
       targetId: pendingId,
       spaceId,
+      spaceAudience: 'kids',
       reporterId,
       reporterAccountId,
       reporterDisplayName: 'Luna',
@@ -222,6 +224,50 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
         })
       ).total,
     ).toBe(0)
+
+    // Simula uma denúncia anterior ao snapshot que já ficou sem audiência.
+    const legacyReportId = randomUUID()
+    await conn.db.insert(reports).values({
+      id: legacyReportId,
+      targetType: 'thread',
+      targetId: randomUUID(),
+      spaceId,
+      reporterId: randomUUID(),
+      reason: 'legada',
+      status: 'open',
+      createdAt: new Date(now.getTime() + 4_000),
+    })
+
+    // Excluir o servidor cascateia canais/conteúdo, mas denúncias são evidência
+    // de moderação e precisam continuar alcançáveis.
+    await conn.db.delete(spaces).where(eq(spaces.id, spaceId))
+    const afterSpaceDeletion = await moderation.listReports({
+      audience: 'kids',
+      status: 'open',
+      limit: 20,
+      offset: 0,
+    })
+    expect(afterSpaceDeletion.total).toBe(2)
+    expect(afterSpaceDeletion.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ spaceId, spaceAudience: 'kids', content: null }),
+        expect.objectContaining({
+          id: legacyReportId,
+          spaceId,
+          spaceAudience: 'unknown',
+          content: null,
+        }),
+      ]),
+    )
+    const adultLegacy = await moderation.listReports({
+      audience: 'adult',
+      status: 'open',
+      limit: 20,
+      offset: 0,
+    })
+    expect(adultLegacy.items).toEqual([
+      expect.objectContaining({ id: legacyReportId, spaceAudience: 'unknown' }),
+    ])
   })
 
   test('UPDATE condicional impede transição terminal concorrente no adapter Drizzle', async () => {

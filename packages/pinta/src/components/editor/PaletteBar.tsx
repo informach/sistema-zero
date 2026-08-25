@@ -362,7 +362,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   const createDialogs = (
     <>
       <CreatePaletteDialog
-        key={String(createOpen)}
+        key={`create-${String(createOpen)}`}
         open={createOpen}
         initialColors={colors.slice(0, PALETTE_SIZE)}
         onClose={() => setCreateOpen(false)}
@@ -388,7 +388,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       {/* key: o estado ARMADO da exclusão não pode sobreviver a fechar/reabrir
           (a proteção de 2 toques furava — full review 25/08). */}
       <ManagePalettesDialog
-        key={String(manageOpen)}
+        key={`manage-${String(manageOpen)}`}
         open={manageOpen}
         onClose={() => setManageOpen(false)}
       />

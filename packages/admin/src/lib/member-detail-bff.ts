@@ -23,6 +23,7 @@ export async function composeMemberDetail(
   if (profilesResult.status !== 200) return profilesResult
   if (!isRecord(identityResult.body)) return invalidUpstream()
   if (!isRecord(identityResult.body.user)) return invalidUpstream()
+  if (identityResult.body.user.id !== accountId) return invalidUpstream()
   const profiles = parseMemberProfiles(profilesResult.body)
   if (!profiles) return invalidUpstream()
   const detailResult = await loadMember(
@@ -32,7 +33,7 @@ export async function composeMemberDetail(
   if (detailResult.status !== 200) return detailResult
   if (!isRecord(detailResult.body)) return invalidUpstream()
   if (
-    typeof detailResult.body.userId !== 'string' ||
+    detailResult.body.userId !== accountId ||
     !Array.isArray(detailResult.body.entitlements) ||
     !Array.isArray(detailResult.body.progress)
   )

@@ -5,17 +5,17 @@
  * `disabled: true` (o desenho da aula é isolado da galeria pessoal, mesma
  * régua do clipboard `mirror: null`).
  *
- * Escrita é last-write-wins sobre o estado corrente desta instância; a
+ * Escritas e releituras são serializadas sobre o estado desta instância; a
  * reconciliação entre abas/aparelhos é do wrapper da NUVEM do host, que faz o
  * merge por id + updatedAt (`mergePaletteLibraries`) antes de gravar. Excluir
  * grava uma LÁPIDE (`removed`) — sem ela a reconciliação do outro aparelho
  * ressuscitava a paleta (full review 25/08).
  *
- * ⚠️ `load()` RELÊ o disco a cada chamada (single-flight; o lido só entra se o
+ * ⚠️ `load()` RELÊ o disco a cada chamada (o lido só entra se o
  * `updatedAt` dele não for mais velho que o da memória): a nuvem grava o
  * registro POR FORA da store, e o latch de "carregou uma vez" deixava "Minhas
- * paletas" vazio num aparelho novo até o F5. Os painéis chamam `load()` também
- * ao ABRIR o menu — o momento da exibição é o momento da leitura.
+ * paletas" vazio num aparelho novo até o F5. O evento do host recarrega após o
+ * merge; abrir o menu continua sendo uma revalidação adicional.
  */
 import { createStore } from 'zustand/vanilla'
 import { newId } from '../core/id'
@@ -36,6 +36,8 @@ export interface PaletteLibraryState {
   removed: RemovedPaletteMark[]
   /** Timestamp do registro em memória (guarda de releitura). */
   libraryUpdatedAt: number
+  /** Liga a releitura quando o host terminar de fundir a biblioteca da nuvem. */
+  attachPersistence(): () => void
   load(): Promise<void>
   /**
    * Guarda uma paleta nova (id/updatedAt carimbados) e devolve a salva —
@@ -58,13 +60,29 @@ export function createPaletteLibraryStore(
     typeof persistence.loadPaletteLibrary === 'function' &&
     typeof persistence.savePaletteLibrary === 'function'
   let loadInFlight: Promise<void> | null = null
+  let mutationTail = Promise.resolve()
+  let lastLogicalTimestamp = 0
 
-  return createStore<PaletteLibraryState>()((set, get) => {
+  function enqueueMutation<T>(task: () => Promise<T>): Promise<T> {
+    const result = mutationTail.then(task, task)
+    mutationTail = result.then(
+      () => undefined,
+      () => undefined,
+    )
+    return result
+  }
+
+  const store = createStore<PaletteLibraryState>()((set, get) => {
+    function nextTimestamp(): number {
+      lastLogicalTimestamp = Math.max(now(), lastLogicalTimestamp + 1, get().libraryUpdatedAt + 1)
+      return lastLogicalTimestamp
+    }
+
     async function write(
       palettes: SavedPalette[],
       removed: RemovedPaletteMark[],
+      libraryUpdatedAt: number,
     ): Promise<boolean> {
-      const libraryUpdatedAt = now()
       const library: PaletteLibrary = { version: 1, updatedAt: libraryUpdatedAt, palettes, removed }
       try {
         await persistence.savePaletteLibrary?.(library)
@@ -84,6 +102,7 @@ export function createPaletteLibraryStore(
       palettes: [],
       removed: [],
       libraryUpdatedAt: 0,
+      attachPersistence: () => () => {},
       async load() {
         if (!enabled) return
         if (loadInFlight) return loadInFlight
@@ -93,6 +112,7 @@ export function createPaletteLibraryStore(
             // Só aplica um registro que não seja mais VELHO que a memória (um
             // save desta instância pode estar em voo na fila de escrita).
             if (library && library.updatedAt >= get().libraryUpdatedAt) {
+              lastLogicalTimestamp = Math.max(lastLogicalTimestamp, library.updatedAt)
               set({
                 loaded: true,
                 palettes: library.palettes,
@@ -116,20 +136,22 @@ export function createPaletteLibraryStore(
         if (palettes.length >= MAX_SAVED_PALETTES) return null
         const palette: SavedPalette = {
           id: newId(),
-          updatedAt: now(),
+          updatedAt: nextTimestamp(),
           name: input.name,
           colors: [...input.colors],
         }
-        await write([...palettes, palette], removed)
+        await write([...palettes, palette], removed, palette.updatedAt)
         return palette
       },
       async renamePalette(id, name) {
         const { palettes, removed } = get()
         const target = palettes.find((p) => p.id === id)
         if (!target || !name.trim()) return false
+        const updatedAt = nextTimestamp()
         await write(
-          palettes.map((p) => (p.id === id ? { ...p, name: name.trim(), updatedAt: now() } : p)),
+          palettes.map((p) => (p.id === id ? { ...p, name: name.trim(), updatedAt } : p)),
           removed,
+          updatedAt,
         )
         return true
       },
@@ -138,13 +160,40 @@ export function createPaletteLibraryStore(
         if (!palettes.some((p) => p.id === id)) return false
         // A LÁPIDE é o que faz a exclusão valer no outro aparelho (o merge da
         // nuvem mata a cópia de lá; uma edição posterior à lápide ressuscita).
-        const mark: RemovedPaletteMark = { id, removedAt: now() }
+        const removedAt = nextTimestamp()
+        const mark: RemovedPaletteMark = { id, removedAt }
         await write(
           palettes.filter((p) => p.id !== id),
           [...removed.filter((m) => m.id !== id), mark],
+          removedAt,
         )
         return true
       },
     }
   })
+
+  const actions = store.getState()
+  store.setState({
+    load: () => enqueueMutation(actions.load),
+    savePalette: (input) => enqueueMutation(() => actions.savePalette(input)),
+    renamePalette: (id, name) => enqueueMutation(() => actions.renamePalette(id, name)),
+    removePalette: (id) => enqueueMutation(() => actions.removePalette(id)),
+  })
+
+  let detach: (() => void) | null = null
+  store.setState({
+    attachPersistence: () => {
+      if (detach || !persistence.subscribe) return () => {}
+      const unsubscribe = persistence.subscribe((event) => {
+        if (event.type === 'palette-library-changed') void store.getState().load()
+      })
+      detach = () => {
+        detach = null
+        unsubscribe()
+      }
+      return () => detach?.()
+    },
+  })
+
+  return store
 }

@@ -76,7 +76,9 @@ describe('emissão', () => {
     payments.set(paidSnapshot())
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice, invoice.claimToken!)
+    // O adapter Drizzle devolve um snapshot destacado; ao contrário do fake, a
+    // alocação não muta por referência o objeto entregue ao service.
+    await service.execute(structuredClone(invoice), invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
@@ -95,6 +97,8 @@ describe('emissão', () => {
     expect(danfse.lastInput?.accessKey).toBe('1'.repeat(50))
     expect(danfse.lastInput?.competenceDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     expect(danfse.lastInput?.emittedAt).toBeInstanceOf(Date)
+    expect(danfse.lastInput?.invoice.dpsSeries).toBe('2')
+    expect(danfse.lastInput?.invoice.dpsNumber).toBe(1n)
   })
 
   test('re-verificação: pagamento estornado no meio tempo → SKIPPED sem chamar a Sefin', async () => {
@@ -197,17 +201,19 @@ describe('emissão', () => {
   })
 
   test('duplicate (re-POST pós-timeout) → recupera pela consulta, EMITTED sem nota dobrada', async () => {
-    const { invoices, payments, sefin, service } = build()
+    const { invoices, payments, sefin, danfse, service } = build()
     payments.set(paidSnapshot())
     // O gateway real resolve a chave na consulta do 400 e a devolve no resultado.
     sefin.nextResults.push({ kind: 'duplicate', accessKey: '9'.repeat(50), dpsXml: '<DPS/>' })
     const invoice = await scheduledInvoice(invoices)
 
-    await service.execute(invoice, invoice.claimToken!)
+    await service.execute(structuredClone(invoice), invoice.claimToken!)
 
     const after = await invoices.findById(invoice.id)
     expect(after?.status).toBe('EMITTED')
     expect(after?.accessKey).toBe('9'.repeat(50))
+    expect(danfse.lastInput?.invoice.dpsSeries).toBe('2')
+    expect(danfse.lastInput?.invoice.dpsNumber).toBe(1n)
   })
 
   test('tentativas esgotadas → FAILED', async () => {

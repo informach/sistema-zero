@@ -8,7 +8,7 @@
  * Na nuvem, o host espelha este registro como um item especial do canal de
  * creations (kind `palette-library`) — ver o wrapper do kids. O MERGE de duas
  * bibliotecas (duas abas/aparelhos) é por id de paleta com o `updatedAt` maior
- * vencendo — puro e testável aqui, longe do transporte.
+ * vencendo; empate usa conteúdo canônico — puro e testável longe do transporte.
  *
  * ⚠️ Exclusão viaja por LÁPIDE (`removed`, full review 25/08): sem ela, a mera
  * RECONCILIAÇÃO do outro aparelho ressuscitava a paleta (ausência remota não
@@ -19,7 +19,6 @@
  * o campo `removed` (o sanitize velho o poda) e exclusões daquela janela se
  * perdem — mesma classe do skew da `customPalette`.
  */
-import { newId } from './id'
 import { type PintaCustomPalette, sanitizeCustomPalette } from './project'
 
 export interface SavedPalette extends PintaCustomPalette {
@@ -41,10 +40,23 @@ export interface PaletteLibrary {
   removed: RemovedPaletteMark[]
 }
 
-/** Teto de paletas guardadas (freio de UI — o menu lista todas). */
+/** Teto para CRIAR novas paletas; a sincronização nunca trunca as existentes. */
 export const MAX_SAVED_PALETTES = 24
 /** Teto de lápides (2× o de paletas; as mais antigas caem primeiro). */
 export const MAX_REMOVED_MARKS = 48
+
+const compareId = (a: { id: string }, b: { id: string }): number =>
+  a.id === b.id ? 0 : a.id < b.id ? -1 : 1
+
+/** Desempate canônico: dois aparelhos precisam escolher o MESMO conteúdo. */
+function paletteRevisionKey(palette: SavedPalette): string {
+  return JSON.stringify({ name: palette.name, colors: palette.colors })
+}
+
+function newerPalette(a: SavedPalette, b: SavedPalette): SavedPalette {
+  if (a.updatedAt !== b.updatedAt) return a.updatedAt > b.updatedAt ? a : b
+  return paletteRevisionKey(a) >= paletteRevisionKey(b) ? a : b
+}
 
 export function emptyPaletteLibrary(): PaletteLibrary {
   return { version: 1, updatedAt: 0, palettes: [], removed: [] }
@@ -63,7 +75,8 @@ function applyTombstones(
   const alive: SavedPalette[] = []
   for (const palette of palettes) {
     const mark = marks.get(palette.id)
-    if (mark && mark.removedAt > palette.updatedAt) continue
+    // Empate é exclusão: uma resolução ambígua nunca pode ressuscitar dado.
+    if (mark && mark.removedAt >= palette.updatedAt) continue
     if (mark) marks.delete(mark.id)
     alive.push(palette)
   }
@@ -76,25 +89,26 @@ function applyTombstones(
 /**
  * Registro vindo do disco/nuvem: cada paleta passa pela MESMA régua da
  * `customPalette` embutida (16 posições, `[0]=''`, hex normalizado); inválida
- * cai. `null` só quando o registro nem tem a forma (aí o chamador começa do
- * zero) — biblioteca VAZIA é válida.
+ * cai. A coleção inteira é validada — o teto de criação não é teto de sync.
+ * `null` só quando o registro nem tem a forma; biblioteca VAZIA é válida.
  */
 export function sanitizePaletteLibrary(raw: unknown): PaletteLibrary | null {
   if (!raw || typeof raw !== 'object') return null
   const r = raw as Record<string, unknown>
   if (!Array.isArray(r.palettes)) return null
-  const seen = new Set<string>()
-  const palettes: SavedPalette[] = []
-  for (const entry of r.palettes.slice(0, MAX_SAVED_PALETTES)) {
+  const byId = new Map<string, SavedPalette>()
+  for (const entry of r.palettes) {
     if (!entry || typeof entry !== 'object') continue
     const e = entry as Record<string, unknown>
     const core = sanitizeCustomPalette(e)
     if (!core) continue
-    const id = typeof e.id === 'string' && e.id && !seen.has(e.id) ? e.id : newId()
-    seen.add(id)
+    if (typeof e.id !== 'string' || !e.id || e.id.length > 64) continue
+    const id = e.id
     const updatedAt =
       typeof e.updatedAt === 'number' && Number.isFinite(e.updatedAt) ? e.updatedAt : 0
-    palettes.push({ id, updatedAt, ...core })
+    const candidate = { id, updatedAt, ...core }
+    const existing = byId.get(id)
+    byId.set(id, existing ? newerPalette(existing, candidate) : candidate)
   }
   const seenMarks = new Map<string, RemovedPaletteMark>()
   if (Array.isArray(r.removed)) {
@@ -109,15 +123,21 @@ export function sanitizePaletteLibrary(raw: unknown): PaletteLibrary | null {
       }
     }
   }
-  const applied = applyTombstones(palettes, [...seenMarks.values()])
-  const updatedAt =
+  const applied = applyTombstones([...byId.values()].sort(compareId), [...seenMarks.values()])
+  const declaredUpdatedAt =
     typeof r.updatedAt === 'number' && Number.isFinite(r.updatedAt) ? r.updatedAt : 0
+  const updatedAt = Math.max(
+    declaredUpdatedAt,
+    0,
+    ...applied.palettes.map((palette) => palette.updatedAt),
+    ...applied.removed.map((mark) => mark.removedAt),
+  )
   return { version: 1, updatedAt, ...applied }
 }
 
 /**
  * Funde duas bibliotecas: paletas por id com `updatedAt` maior vencendo
- * (empate = `local`, determinístico; ordem = a da `local`, só-remotas no fim)
+ * (empate = conteúdo canônico, independente da ordem dos argumentos)
  * e lápides por id com `removedAt` maior. Depois a régua lápide×paleta decide
  * quem vive. É a regra ÚNICA da reconciliação nuvem↔local.
  */
@@ -129,16 +149,14 @@ export function mergePaletteLibraries(
   for (const palette of local.palettes) byId.set(palette.id, palette)
   for (const palette of remote.palettes) {
     const existing = byId.get(palette.id)
-    if (!existing || palette.updatedAt > existing.updatedAt) byId.set(palette.id, palette)
+    byId.set(palette.id, existing ? newerPalette(existing, palette) : palette)
   }
   const marks = new Map<string, RemovedPaletteMark>()
   for (const mark of [...local.removed, ...remote.removed]) {
     const existing = marks.get(mark.id)
     if (!existing || mark.removedAt > existing.removedAt) marks.set(mark.id, mark)
   }
-  const applied = applyTombstones([...byId.values()].slice(0, MAX_SAVED_PALETTES), [
-    ...marks.values(),
-  ])
+  const applied = applyTombstones([...byId.values()].sort(compareId), [...marks.values()])
   return {
     version: 1,
     updatedAt: Math.max(local.updatedAt, remote.updatedAt),
@@ -149,10 +167,8 @@ export function mergePaletteLibraries(
 /**
  * Chave de CONTEÚDO da biblioteca, insensível à ordem dos arrays E à ordem das
  * CHAVES de cada objeto. É o que o wrapper da nuvem compara para decidir se o
- * merge precisa re-subir: comparar os arrays crus fazia dois aparelhos com
- * ordens locais diferentes subirem um por cima do outro PARA SEMPRE
- * (pingue-pongue medido no full review 25/08 — o merge preserva a ordem de
- * quem funde, então as ordens nunca se adotavam). A projeção campo a campo é
+ * merge precisa re-subir: comparar os arrays crus já fez aparelhos re-subirem
+ * conteúdo equivalente em ordens diferentes. A projeção campo a campo é
  * obrigatória: o remoto sempre vem reconstruído pelo sanitize (uma ordem de
  * chaves), o local vem de quem o escreveu (outra) — `JSON.stringify` cru veria
  * "conteúdos diferentes" no mesmo conteúdo.

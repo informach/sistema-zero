@@ -26,7 +26,11 @@ import type {
   HubReportView,
   HubSpaceView,
 } from '@/lib/hub-types'
-import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import {
+  createForegroundPriority,
+  createScopeAuthority,
+  runLatestForeground,
+} from '@/lib/latest-wins'
 import { platformTransition } from '@/lib/platform-transition'
 import type { Paginated } from '@/lib/types'
 
@@ -44,7 +48,7 @@ function PersonDetails({
   userId,
   label = 'Autor',
 }: {
-  audience: 'adult' | 'kids'
+  audience: 'adult' | 'kids' | 'unknown'
   identity?: HubModerationIdentity
   displayName: string | null
   userId: string
@@ -184,6 +188,8 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   const [mutesBans, setMutesBans] = useState<HubMuteBanView[]>([])
   const [busy, setBusy] = useState(false)
   const loadAuthority = useRef(createForegroundPriority()).current
+  const mutationScope = useRef(createScopeAuthority(platform)).current
+  mutationScope.update(platform)
 
   // ban/mute form
   const [mbUserId, setMbUserId] = useState('')
@@ -258,11 +264,15 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
   }, [load, loadAuthority])
 
   async function run(fn: () => Promise<unknown>, okMsg?: string) {
+    const scope = mutationScope.capture()
     setBusy(true)
     try {
       await fn()
       if (okMsg) toast.success(okMsg)
-      await load()
+      // A closure de `load` pertence ao render do clique. Se a plataforma
+      // mudou enquanto a mutação estava em voo, o effect atual já carregou a
+      // audiência correta e esta recarga antiga não pode voltar a publicá-la.
+      if (mutationScope.isCurrent(scope)) await load()
       // Aprovar/rejeitar/resolver muda as pendências → badge da sidebar re-busca já.
       refreshProfessorCounts()
     } catch (err) {
@@ -391,7 +401,12 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
               <Card key={r.id} className="space-y-4 p-4">
                 <div className="space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-sm font-semibold">Denúncia</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold">Denúncia</span>
+                      {audience === 'unknown' ? (
+                        <Badge variant="outline">Plataforma desconhecida (legado)</Badge>
+                      ) : null}
+                    </div>
                     <time className="text-xs text-muted-foreground" dateTime={r.createdAt}>
                       {formatDate(r.createdAt)}
                     </time>

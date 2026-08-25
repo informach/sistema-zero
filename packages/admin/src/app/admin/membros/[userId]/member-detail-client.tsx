@@ -1157,7 +1157,7 @@ function ProfileAvatar({ name, avatarUrl }: { name: string; avatarUrl: string | 
       // biome-ignore lint/performance/noImgElement: avatar de R2 (URL externa arbitrária)
       <img
         src={avatarUrl}
-        alt={name}
+        alt=""
         className="size-7 rounded-full border border-border object-cover"
       />
     )

@@ -228,7 +228,7 @@ export function VectorColorsPanel({
       />
 
       <CreatePaletteDialog
-        key={String(createOpen)}
+        key={`create-${String(createOpen)}`}
         open={createOpen}
         initialColors={vectorPaletteColors(palette)}
         onClose={() => setCreateOpen(false)}
@@ -254,7 +254,7 @@ export function VectorColorsPanel({
       {/* key: o estado ARMADO da exclusão não pode sobreviver a fechar/reabrir
           (a proteção de 2 toques furava — full review 25/08). */}
       <ManagePalettesDialog
-        key={String(manageOpen)}
+        key={`manage-${String(manageOpen)}`}
         open={manageOpen}
         onClose={() => setManageOpen(false)}
       />

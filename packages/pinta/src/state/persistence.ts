@@ -215,6 +215,7 @@ export function runSerializedWrite(
 export type PintaPersistenceEvent =
   | { type: 'sync-start' }
   | { type: 'changed' }
+  | { type: 'palette-library-changed' }
   | { type: 'sync-end' }
 
 export interface PintaPersistence {
