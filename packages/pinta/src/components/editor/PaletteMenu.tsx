@@ -203,8 +203,13 @@ export function PaletteMenu({
               onClick={() => library.onChooseCustom(palette)}
               className={MENU_ITEM_CLASS(false)}
             >
-              <PaletteStripe colors={palette.colors} />
-              <span className="min-w-0 shrink-0 truncate text-pin-text text-xs font-bold">
+              {/* A faixa tem um MÍNIMO e o nome pode encolher: com `shrink-0`
+                  no nome o truncate era letra morta e um nome longo estourava
+                  o menu w-56 (full review 25/08). */}
+              <span aria-hidden="true" className="flex min-w-10 flex-1">
+                <PaletteStripe colors={palette.colors} />
+              </span>
+              <span className="min-w-0 truncate text-pin-text text-xs font-bold">
                 {palette.name}
               </span>
             </button>

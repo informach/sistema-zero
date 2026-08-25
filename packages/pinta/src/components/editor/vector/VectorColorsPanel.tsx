@@ -65,6 +65,10 @@ export function VectorColorsPanel({
   useEffect(() => {
     if (libraryEnabled) void paletteLibrary.getState().load()
   }, [libraryEnabled, paletteLibrary])
+  // A nuvem grava a biblioteca POR FORA da store: o menu aberto relê o disco.
+  useEffect(() => {
+    if (menu.open && libraryEnabled) void paletteLibrary.getState().load()
+  }, [menu.open, libraryEnabled, paletteLibrary])
 
   const paletteName = palette.kind === 'custom' ? palette.name : getPalette(palette.id).name
 
@@ -247,7 +251,13 @@ export function VectorColorsPanel({
           />
         </Suspense>
       ) : null}
-      <ManagePalettesDialog open={manageOpen} onClose={() => setManageOpen(false)} />
+      {/* key: o estado ARMADO da exclusão não pode sobreviver a fechar/reabrir
+          (a proteção de 2 toques furava — full review 25/08). */}
+      <ManagePalettesDialog
+        key={String(manageOpen)}
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+      />
     </Panel>
   )
 }

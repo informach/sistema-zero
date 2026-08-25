@@ -406,7 +406,8 @@ export const COPY = {
     myPalettes: 'Minhas paletas',
     createPalette: 'Criar paleta',
     paletteFromImage: 'Cores de uma imagem',
-    libraryFull: 'Você já tem muitas paletas guardadas. Apague uma para criar outra.',
+    libraryFull:
+      'Sua paleta já está valendo neste desenho, mas não foi guardada: você já tem muitas. Apague uma para abrir espaço.',
     createPaletteTitle: 'Criar paleta',
     paletteNameLabel: 'Nome da paleta',
     paletteNamePlaceholder: 'Minha paleta',

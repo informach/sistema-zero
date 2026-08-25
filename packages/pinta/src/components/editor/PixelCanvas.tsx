@@ -803,7 +803,10 @@ export function PixelCanvas(): JSX.Element {
     const result = toolPointerDown(bitmap, settings(secondary), pixelPos(event), composite)
     if (result.pickedColor !== undefined) {
       const s = session.getState()
-      if (result.pickedColor === TRANSPARENT_INDEX) {
+      // Índice cuja cor resolvida é VAZIA (pixel "fantasma" de uma troca de
+      // paleta personalizada) é invisível como o transparente — colhê-lo no
+      // lápis deixaria a criança com um lápis que não pinta (full review 25/08).
+      if (result.pickedColor === TRANSPARENT_INDEX || !colors[result.pickedColor]) {
         s.setTool('eraser')
       } else {
         // Conta-gotas com o botão direito guarda na cor SECUNDÁRIA.

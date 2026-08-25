@@ -7,11 +7,24 @@
  *
  * Escrita é last-write-wins sobre o estado corrente desta instância; a
  * reconciliação entre abas/aparelhos é do wrapper da NUVEM do host, que faz o
- * merge por id + updatedAt (`mergePaletteLibraries`) antes de gravar.
+ * merge por id + updatedAt (`mergePaletteLibraries`) antes de gravar. Excluir
+ * grava uma LÁPIDE (`removed`) — sem ela a reconciliação do outro aparelho
+ * ressuscitava a paleta (full review 25/08).
+ *
+ * ⚠️ `load()` RELÊ o disco a cada chamada (single-flight; o lido só entra se o
+ * `updatedAt` dele não for mais velho que o da memória): a nuvem grava o
+ * registro POR FORA da store, e o latch de "carregou uma vez" deixava "Minhas
+ * paletas" vazio num aparelho novo até o F5. Os painéis chamam `load()` também
+ * ao ABRIR o menu — o momento da exibição é o momento da leitura.
  */
 import { createStore } from 'zustand/vanilla'
 import { newId } from '../core/id'
-import { MAX_SAVED_PALETTES, type PaletteLibrary, type SavedPalette } from '../core/paletteLibrary'
+import {
+  MAX_SAVED_PALETTES,
+  type PaletteLibrary,
+  type RemovedPaletteMark,
+  type SavedPalette,
+} from '../core/paletteLibrary'
 import type { PintaPersistence } from './persistence'
 
 export interface PaletteLibraryState {
@@ -19,6 +32,10 @@ export interface PaletteLibraryState {
   enabled: boolean
   loaded: boolean
   palettes: SavedPalette[]
+  /** Lápides de exclusão (viajam no registro; a UI não as mostra). */
+  removed: RemovedPaletteMark[]
+  /** Timestamp do registro em memória (guarda de releitura). */
+  libraryUpdatedAt: number
   load(): Promise<void>
   /**
    * Guarda uma paleta nova (id/updatedAt carimbados) e devolve a salva —
@@ -40,19 +57,24 @@ export function createPaletteLibraryStore(
     options.disabled !== true &&
     typeof persistence.loadPaletteLibrary === 'function' &&
     typeof persistence.savePaletteLibrary === 'function'
+  let loadInFlight: Promise<void> | null = null
 
   return createStore<PaletteLibraryState>()((set, get) => {
-    async function write(palettes: SavedPalette[]): Promise<boolean> {
-      const library: PaletteLibrary = { version: 1, updatedAt: now(), palettes }
+    async function write(
+      palettes: SavedPalette[],
+      removed: RemovedPaletteMark[],
+    ): Promise<boolean> {
+      const libraryUpdatedAt = now()
+      const library: PaletteLibrary = { version: 1, updatedAt: libraryUpdatedAt, palettes, removed }
       try {
         await persistence.savePaletteLibrary?.(library)
       } catch {
         // Best-effort: a falha de disco não pode derrubar o editor — o estado
         // em memória segue valendo para a sessão.
-        set({ palettes })
+        set({ palettes, removed, libraryUpdatedAt })
         return false
       }
-      set({ palettes })
+      set({ palettes, removed, libraryUpdatedAt })
       return true
     }
 
@@ -60,18 +82,37 @@ export function createPaletteLibraryStore(
       enabled,
       loaded: !enabled,
       palettes: [],
+      removed: [],
+      libraryUpdatedAt: 0,
       async load() {
-        if (!enabled || get().loaded) return
-        try {
-          const library = await persistence.loadPaletteLibrary?.()
-          set({ loaded: true, palettes: library?.palettes ?? [] })
-        } catch {
-          set({ loaded: true })
-        }
+        if (!enabled) return
+        if (loadInFlight) return loadInFlight
+        loadInFlight = (async () => {
+          try {
+            const library = await persistence.loadPaletteLibrary?.()
+            // Só aplica um registro que não seja mais VELHO que a memória (um
+            // save desta instância pode estar em voo na fila de escrita).
+            if (library && library.updatedAt >= get().libraryUpdatedAt) {
+              set({
+                loaded: true,
+                palettes: library.palettes,
+                removed: library.removed,
+                libraryUpdatedAt: library.updatedAt,
+              })
+            } else {
+              set({ loaded: true })
+            }
+          } catch {
+            set({ loaded: true })
+          } finally {
+            loadInFlight = null
+          }
+        })()
+        return loadInFlight
       },
       async savePalette(input) {
         if (!enabled) return null
-        const { palettes } = get()
+        const { palettes, removed } = get()
         if (palettes.length >= MAX_SAVED_PALETTES) return null
         const palette: SavedPalette = {
           id: newId(),
@@ -79,22 +120,29 @@ export function createPaletteLibraryStore(
           name: input.name,
           colors: [...input.colors],
         }
-        await write([...palettes, palette])
+        await write([...palettes, palette], removed)
         return palette
       },
       async renamePalette(id, name) {
-        const { palettes } = get()
+        const { palettes, removed } = get()
         const target = palettes.find((p) => p.id === id)
         if (!target || !name.trim()) return false
         await write(
           palettes.map((p) => (p.id === id ? { ...p, name: name.trim(), updatedAt: now() } : p)),
+          removed,
         )
         return true
       },
       async removePalette(id) {
-        const { palettes } = get()
+        const { palettes, removed } = get()
         if (!palettes.some((p) => p.id === id)) return false
-        await write(palettes.filter((p) => p.id !== id))
+        // A LÁPIDE é o que faz a exclusão valer no outro aparelho (o merge da
+        // nuvem mata a cópia de lá; uma edição posterior à lápide ressuscita).
+        const mark: RemovedPaletteMark = { id, removedAt: now() }
+        await write(
+          palettes.filter((p) => p.id !== id),
+          [...removed.filter((m) => m.id !== id), mark],
+        )
         return true
       },
     }

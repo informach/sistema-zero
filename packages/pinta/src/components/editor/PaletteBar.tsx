@@ -81,6 +81,26 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   useEffect(() => {
     if (libraryEnabled) void paletteLibrary.getState().load()
   }, [libraryEnabled, paletteLibrary])
+  // A nuvem grava a biblioteca POR FORA da store: o menu aberto relê o disco
+  // (o momento da exibição é o momento da leitura — full review 25/08).
+  useEffect(() => {
+    if (menu.open && libraryEnabled) void paletteLibrary.getState().load()
+  }, [menu.open, libraryEnabled, paletteLibrary])
+  // ⚠️ Re-clamp na FRONTEIRA DA SESSÃO (full review 25/08): undo/redo de uma
+  // troca de paleta e um desenho importado com slots vazios chegam aqui SEM
+  // passar pelos handlers — sem este efeito a cor da sessão pousa num slot ''
+  // e o lápis "não pinta". Idempotente: no caso comum não seta nada.
+  useEffect(() => {
+    if (!('paletteId' in asset)) return
+    const resolved = resolveAssetPalette(asset)
+    const paintable = (index: number) =>
+      index > TRANSPARENT_INDEX && index < resolved.length && !!resolved[index]
+    const s = session.getState()
+    if (!paintable(s.color)) s.setColor(firstPaintableIndex(resolved))
+    if (s.colorSecondary !== TRANSPARENT_INDEX && !paintable(s.colorSecondary)) {
+      s.setColorSecondary(TRANSPARENT_INDEX)
+    }
+  }, [asset, session])
 
   // Só kinds com paleta indexada própria (vetoriais usam cor livre).
   if (!('paletteId' in asset)) return null
@@ -150,6 +170,17 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
   function applyCustomPalette(palette: { name: string; colors: readonly string[] }): void {
     const current = editor.getState().asset
     if (!('paletteId' in current)) return
+    // Reaplicar a paleta JÁ ativa é no-op ("null no no-op é obrigação"): sem
+    // isto o commit gravava um desfazer VAZIO e acordava autosave/nuvem à toa.
+    const active = current.paletteId === 'custom' ? current.customPalette : null
+    if (
+      active &&
+      active.name === palette.name &&
+      active.colors.length === palette.colors.length &&
+      active.colors.every((hex, index) => hex === palette.colors[index])
+    ) {
+      return
+    }
     const next: PintaAsset = {
       ...current,
       paletteId: 'custom',
@@ -203,11 +234,21 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     editor.getState().commit(next)
     // Clampa AS DUAS cores no tamanho novo (nunca no 0/transparente na
     // principal): a exclusão desloca os índices das extras seguintes.
-    const length = 'paletteId' in next ? resolveAssetPalette(next).length : PALETTE_SIZE
+    // ⚠️ E valida PINTABILIDADE (full review 25/08): numa paleta personalizada
+    // com menos de 15 cores o slot `length-1` é vazio — o clamp aritmético
+    // sozinho deixava o lápis num slot '' ("lápis que não pinta").
+    const resolved = 'paletteId' in next ? resolveAssetPalette(next) : []
+    const length = resolved.length || PALETTE_SIZE
+    const paintable = (value: number) =>
+      value > TRANSPARENT_INDEX && value < length && !!resolved[value]
     const clamp = (value: number, min: number): number =>
       Math.max(min, Math.min(value > index ? value - 1 : value, length - 1))
-    s.setColor(clamp(s.color, 1))
-    s.setColorSecondary(clamp(s.colorSecondary, TRANSPARENT_INDEX))
+    const primary = clamp(s.color, 1)
+    s.setColor(paintable(primary) ? primary : firstPaintableIndex(resolved))
+    const secondary = clamp(s.colorSecondary, TRANSPARENT_INDEX)
+    s.setColorSecondary(
+      secondary === TRANSPARENT_INDEX || paintable(secondary) ? secondary : TRANSPARENT_INDEX,
+    )
   }
 
   const swatches = (
@@ -344,7 +385,13 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
           />
         </Suspense>
       ) : null}
-      <ManagePalettesDialog open={manageOpen} onClose={() => setManageOpen(false)} />
+      {/* key: o estado ARMADO da exclusão não pode sobreviver a fechar/reabrir
+          (a proteção de 2 toques furava — full review 25/08). */}
+      <ManagePalettesDialog
+        key={String(manageOpen)}
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
+      />
     </>
   )
 

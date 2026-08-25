@@ -96,6 +96,15 @@ describe('modo de seleção da galeria (pack)', () => {
     })
     expect(screen.getByRole('button', { name: COPY.gallery.downloadSelection })).toBeTruthy()
 
+    // Busca VAZIA não tem o que limpar: o Esc no campo SAI do modo (antes a
+    // tecla morria sem efeito nenhum — full review 25/08).
+    fireEvent.keyDown(search, { key: 'Escape' })
+    await screen.findByRole('button', { name: /Abrir heroi/ })
+    expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()
+
+    // E fora do campo o Esc segue saindo do modo.
+    fireEvent.click(button(COPY.gallery.select))
+    await screen.findByRole('button', { name: COPY.gallery.selectionMark('heroi') })
     fireEvent.keyDown(window, { key: 'Escape' })
     await screen.findByRole('button', { name: /Abrir heroi/ })
     expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()

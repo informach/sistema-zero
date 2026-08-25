@@ -170,9 +170,11 @@ export function GalleryScreen(): JSX.Element {
     if (!selectionMode) return
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key !== 'Escape') return
-      // O Esc do campo de busca limpa a BUSCA, e o de um Dialog aberto fecha o
-      // diálogo — nenhum dos dois pode arrastar a saída do modo junto.
-      if (event.target === searchRef.current) return
+      // O Esc do campo de busca COM texto limpa a busca, e o de um Dialog
+      // aberto fecha o diálogo — nenhum dos dois pode arrastar a saída do modo
+      // junto. Busca VAZIA não tem o que limpar: aí o Esc sai do modo (senão a
+      // tecla morria sem efeito nenhum — full review 25/08).
+      if (event.target === searchRef.current && searchRef.current?.value) return
       if (document.querySelector('[data-pinta-dialog]')) return
       event.preventDefault()
       exitSelection()
@@ -281,7 +283,12 @@ export function GalleryScreen(): JSX.Element {
     // da tela): mapa marcado leva o tileset dele junto — sem as peças o
     // restauro recusaria o mapa.
     const expanded = expandSelection(gallery.getState().assets, selectedIds)
-    if (expanded.assets.length === 0) return
+    if (expanded.assets.length === 0) {
+      // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
+      // avisa em vez de um clique-morto silencioso.
+      showToast(COPY.gallery.drawingGone)
+      return
+    }
     setZipping(true)
     try {
       const bytes = await zipGallery(expanded.assets)
@@ -434,7 +441,15 @@ export function GalleryScreen(): JSX.Element {
               {COPY.gallery.downloadAll}
             </Button>
           ) : null}
-          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              // Criar navega ao editor e a galeria DESMONTA: sair do modo aqui
+              // evita a marcação morrer em silêncio no meio do gesto.
+              if (selectionMode) exitSelection()
+              setCreateOpen(true)
+            }}
+          >
             <Plus aria-hidden="true" className="size-4" />
             {COPY.gallery.create}
           </Button>

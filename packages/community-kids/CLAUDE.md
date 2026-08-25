@@ -450,15 +450,22 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   avança a marca, sem `-copia`. Descidas gravam DIRETO no local (id preservado; peças antes dos mapas; nome já usado
   por OUTRO desenho ganha sufixo `-2`; sem teto de quantidade local). Cópia de conflito =
   `<nome>-copia` com id novo (sempre ≤ 48 chars).
-  **Biblioteca "Minhas paletas" (25/08):** viaja como UM item ESPECIAL do MESMO canal — itemId
-  fixo `sz-pinta-palettes`, kind `palette-library` (constantes exportadas). Salvar local
-  (`savePaletteLibrary` embrulhado) enfileira a subida; a reconciliação FILTRA o summary
-  especial da lista de ASSETS antes do `reconcileCreations` (senão o sanitize o descartaria
-  como "desenho corrompido"), desce e FUNDE por id+updatedAt (`mergePaletteLibraries` do
-  pacote), re-subindo o merge quando difere do remoto (carimbo novo p/ o produtor ver);
-  `onStale` idem. SEM lápide (paleta apagada num aparelho pode voltar se outro regravar —
-  registro pequeno, trade-off documentado no pacote). ⚠️ O `creationsUsageByUsers` do members
-  exclui o kind (a biblioteca não conta como "+1 desenho" no admin).
+  **Biblioteca "Minhas paletas" (25/08; full review no MESMO dia):** viaja como UM item
+  ESPECIAL do MESMO canal — itemId fixo `sz-pinta-palettes`, kind `palette-library`
+  (constantes re-exportadas do módulo do MEMBERS — a fonte é
+  `members/src/domain/creations/palette-library.ts`, e
+  `tests/palette-library-conformance.test.ts` trava o lockstep + o itemId dentro da regex da
+  borda). Salvar local (`savePaletteLibrary` embrulhado) enfileira a subida; a reconciliação
+  FILTRA o summary especial da lista de ASSETS antes do `reconcileCreations` (senão o sanitize
+  o descartaria como "desenho corrompido"), desce e FUNDE (`mergePaletteLibraries` do pacote:
+  paletas por id+updatedAt E **LÁPIDES** por id+removedAt — a lápide é o que faz uma EXCLUSÃO
+  valer no outro aparelho em vez de a cópia local dele ressuscitar, o achado ALTO do review),
+  re-subindo o merge SÓ quando o CONTEÚDO difere do remoto
+  (**`paletteLibraryContentKey`** — canônica: insensível à ordem dos arrays E das chaves;
+  comparar cru fazia dois aparelhos com ordens diferentes subirem um por cima do outro para
+  SEMPRE); antes de gravar, relê e re-funde se a UI salvou no meio; `onStale` idem.
+  ⚠️ O `creationsUsageByUsers` do members exclui o kind (a biblioteca não conta como
+  "+1 desenho" no admin).
 - **Estúdio:** `src/lib/studio-cloud.ts` liga `setStudioCloudMirror` (todo `persistProject`/rename/
   assets/delete do pacote acorda o espelho) e faz `pullMissing()` em SEGUNDO PLANO no
   `studio-full-client.tsx` (19/08: a lista aparece já com o que há neste aparelho e os jogos de

@@ -1,4 +1,5 @@
 import { and, count, eq, inArray, isNotNull, isNull, max, ne } from 'drizzle-orm'
+import { PALETTE_LIBRARY_KIND } from '../../../domain/creations/palette-library'
 import type {
   LearnerCreationsUsage,
   LearnerDeliveriesUsage,
@@ -71,7 +72,7 @@ export class DrizzleToolUsageRepository implements ToolUsageRepository {
           eq(creations.tool, tool),
           isNull(creations.deletedAt),
           isNotNull(creations.storageRef),
-          ne(creations.kind, 'palette-library'),
+          ne(creations.kind, PALETTE_LIBRARY_KIND),
         ),
       )
       .groupBy(creations.userId)

@@ -10,6 +10,7 @@ import type { JSX } from 'react'
 import { useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { TRANSPARENT_INDEX } from '../../core/palette'
+import { PINTA_LIMITS } from '../../core/project'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import { paletteColorsFromImage } from '../../import/paletteFromImage'
 import { Button } from '../ui/Button'
@@ -104,6 +105,7 @@ export function PaletteFromImageDialog({
                 name="pinta-palette-from-image-name"
                 autoComplete="off"
                 value={name}
+                maxLength={PINTA_LIMITS.maxNameChars}
                 onChange={(event) => setName(event.target.value)}
                 placeholder={COPY.palette.paletteNamePlaceholder}
                 className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"

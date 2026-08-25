@@ -151,6 +151,7 @@ describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
           colors: ['', '#87f2ff', ...Array.from({ length: 14 }, () => '')],
         },
       ],
+      removed: [],
     })
     await openPixelEditor()
     // Aplica a paleta salva (o desenho passa a EMBUTI-la).
@@ -187,6 +188,120 @@ describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
     })
   })
 
+  it('reabrir o Gerenciar DESARMA a exclusão (a proteção de 2 toques não fura)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Céu',
+          colors: ['', '#87f2ff', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    await openPixelEditor()
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitem', { name: COPY.palette.managePalettes }))
+    await screen.findByText(COPY.palette.manageDeleteNote)
+
+    // 1º toque ARMA…
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.manageDelete('Céu') }))
+    await screen.findByRole('button', { name: COPY.palette.manageDeleteArm('Céu') })
+    // …fechar e reabrir NÃO pode manter armado (senão 1 toque apagaria direto).
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(screen.queryByText(COPY.palette.manageDeleteNote)).toBeNull()
+    })
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitem', { name: COPY.palette.managePalettes }))
+    await screen.findByText(COPY.palette.manageDeleteNote)
+    expect(screen.queryByRole('button', { name: COPY.palette.manageDeleteArm('Céu') })).toBeNull()
+    expect(screen.getByRole('button', { name: COPY.palette.manageDelete('Céu') })).toBeTruthy()
+  })
+
+  it('desfazer/refazer uma troca de paleta RE-CLAMPA a cor da sessão (efeito, não handler)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Duas cores',
+          colors: ['', '#111111', '#222222', ...Array.from({ length: 13 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    await openPixelEditor()
+    // Aplica a paleta furada (clamp do handler leva a cor para 1)…
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Duas cores/ }))
+    await waitFor(() => {
+      expect(menuTrigger('Duas cores')).toBeTruthy()
+    })
+    // …desfaz (volta à arcade), escolhe a cor 9…
+    fireEvent.click(undoButton())
+    await waitFor(() => {
+      expect(menuTrigger('Arcade')).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.colorLabel(9) }))
+    // …e REFAZ a troca: a cor 9 é slot VAZIO na paleta furada — sem o efeito de
+    // re-clamp o lápis ficava "não pintando".
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await waitFor(() => {
+      expect(menuTrigger('Duas cores')).toBeTruthy()
+    })
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: COPY.a11y.colorLabel(1) }).getAttribute('aria-pressed'),
+      ).toBe('true')
+    })
+  })
+
+  it('reaplicar a paleta custom JÁ ativa é no-op (não grava um desfazer vazio)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Céu',
+          colors: ['', '#87f2ff', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    await openPixelEditor()
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Céu/ }))
+    await waitFor(() => {
+      expect(menuTrigger('Céu')).toBeTruthy()
+    })
+    // Um desfazer disponível (a aplicação). Reaplicar a MESMA paleta…
+    expect(undoButton().disabled).toBe(false)
+    fireEvent.click(menuTrigger('Céu'))
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Céu/ }))
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
+    // …não cria commit novo: UM desfazer volta direto à arcade.
+    fireEvent.click(undoButton())
+    await waitFor(() => {
+      expect(menuTrigger('Arcade')).toBeTruthy()
+    })
+    expect(undoButton().disabled).toBe(true)
+  })
+
   it('escolher uma paleta SALVA aplica e CLAMPA a cor da sessão para um slot pintável', async () => {
     // Biblioteca pré-semeada com uma paleta de DUAS cores (slots 1 e 2).
     await createPintaPersistence().savePaletteLibrary?.({
@@ -200,6 +315,7 @@ describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
           colors: ['', '#87f2ff', '#003fad', ...Array.from({ length: 13 }, () => '')],
         },
       ],
+      removed: [],
     })
     await openPixelEditor()
     // Seleciona a cor 5 da arcade — na paleta nova esse slot é VAZIO.

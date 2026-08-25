@@ -28,6 +28,8 @@ export {
   MAX_SAVED_PALETTES,
   mergePaletteLibraries,
   type PaletteLibrary,
+  paletteLibraryContentKey,
+  type RemovedPaletteMark,
   type SavedPalette,
   sanitizePaletteLibrary,
 } from '../core/paletteLibrary'

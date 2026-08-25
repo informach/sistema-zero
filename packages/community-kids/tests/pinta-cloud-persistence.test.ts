@@ -627,6 +627,7 @@ describe('uniqueAssetName', () => {
 const libraryOf = (
   palettes: Array<{ id: string; name: string; updatedAt: number; hex: string }>,
   updatedAt = Math.max(0, ...palettes.map((p) => p.updatedAt)),
+  removed: Array<{ id: string; removedAt: number }> = [],
 ): PaletteLibrary => ({
   version: 1,
   updatedAt,
@@ -636,6 +637,7 @@ const libraryOf = (
     updatedAt: p.updatedAt,
     colors: ['', p.hex, ...Array.from({ length: 14 }, () => '')],
   })),
+  removed,
 })
 
 const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationSummary => ({
@@ -754,5 +756,70 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     await loadSettled(mirrored, local)
     await new Promise((resolve) => setTimeout(resolve, 20))
     expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
+  })
+})
+
+describe('lápides e convergência da biblioteca (full review 25/08)', () => {
+  test('🚨 EXCLUIR vale por mera reconciliação: a lápide da nuvem mata a cópia local', async () => {
+    // O outro aparelho excluiu p1 e subiu a lib SEM p1 + a lápide. ESTE
+    // aparelho ainda tem p1 e não editou nada — antes das lápides, o merge
+    // ressuscitava p1 daqui e o re-subia (o achado ALTO do review).
+    const nuvemLib = libraryOf([{ id: 'p2', name: 'Fica', updatedAt: 10, hex: '#222222' }], 60, [
+      { id: 'p1', removedAt: 50 },
+    ])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        { json: JSON.stringify(nuvemLib), summary: paletteSummaryOf(nuvemLib, 7) },
+      ],
+    ])
+    const local = fakeLocal()
+    local.library.current = libraryOf([
+      { id: 'p1', name: 'Excluída lá', updatedAt: 5, hex: '#111111' },
+      { id: 'p2', name: 'Fica', updatedAt: 10, hex: '#222222' },
+    ])
+    const { cloud, uploads } = fakeCloud(remote)
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'p1',
+      marks: createMemorySyncedMarks(),
+    })
+    await loadSettled(mirrored, local)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    // p1 morreu aqui também; e o conteúdo agora é IGUAL ao remoto → nada sobe.
+    expect(local.library.current?.palettes.map((p) => p.id)).toEqual(['p2'])
+    expect(local.library.current?.removed).toEqual([{ id: 'p1', removedAt: 50 }])
+    const job = uploads.get(PALETTE_LIBRARY_ITEM_ID)
+    expect(job ? await job.produce() : null).toBeNull()
+  })
+
+  test('mesmo CONTEÚDO em ordens diferentes NÃO re-sobe (mata o pingue-pongue)', async () => {
+    // A nuvem tem [pB, pA]; este aparelho tem [pA, pB] — conteúdo idêntico. A
+    // comparação sensível à ordem fazia cada reconciliação subir de novo, para
+    // sempre, entre dois aparelhos com ordens locais diferentes.
+    const pA = { id: 'a', name: 'A', updatedAt: 5, hex: '#aaaaaa' }
+    const pB = { id: 'b', name: 'B', updatedAt: 7, hex: '#bbbbbb' }
+    const nuvemLib = libraryOf([pB, pA])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        { json: JSON.stringify(nuvemLib), summary: paletteSummaryOf(nuvemLib, 3) },
+      ],
+    ])
+    const local = fakeLocal()
+    local.library.current = libraryOf([pA, pB])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    const mirrored = createCloudMirroredPintaPersistence({ local, cloud, viewerId: 'p1', marks })
+    await loadSettled(mirrored, local)
+    await new Promise((resolve) => setTimeout(resolve, 20))
+
+    // A marca conhece a revisão da nuvem e NADA foi enfileirado para subir
+    // (ou, se o job existir de uma rodada anterior, o produtor devolve null).
+    expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(3)
+    const job = uploads.get(PALETTE_LIBRARY_ITEM_ID)
+    expect(job ? await job.produce() : null).toBeNull()
   })
 })

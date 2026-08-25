@@ -28,6 +28,7 @@ function libraryOf(): PaletteLibrary {
         colors: ['', '#87f2ff', ...Array.from({ length: 14 }, () => '')],
       },
     ],
+    removed: [],
   }
 }
 

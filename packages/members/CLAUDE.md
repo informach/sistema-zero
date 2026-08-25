@@ -1582,7 +1582,10 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   {drawings|creations, deliveries, lastActivityAt}` (creations VIVAS E CONFIRMADAS — predicado do
   `creations_usage_idx`: `deleted_at is null AND storage_ref is not null` — **e `kind <>
   'palette-library'`** (25/08): a biblioteca "Minhas paletas" do Pinta viaja como item especial
-  do canal de creations e NÃO é desenho — + studio_submissions
+  do canal de creations e NÃO é desenho; as constantes (`PALETTE_LIBRARY_KIND` +
+  `PALETTE_LIBRARY_ITEM_ID = 'sz-pinta-palettes'`) moram em
+  `src/domain/creations/palette-library.ts` (módulo PURO — o wrapper do kids as re-exporta e um
+  conformance test de lá trava o lockstep) — + studio_submissions
   com o kind AUTORITATIVO do BLOCO, inner join) · `clube {posts, comments, lastActivityAt}` e
   `mural {published, plays, lastPublishedAt}` via **hub S2S best-effort**
   (`HubGateway.listActivityByAuthors` → `POST /hub/internal/activity-by-authors`, HMAC direto,

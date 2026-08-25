@@ -36,6 +36,7 @@ import {
   emptyPaletteLibrary,
   mergePaletteLibraries,
   PINTA_LIMITS,
+  paletteLibraryContentKey,
   sanitizePaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
@@ -267,13 +268,17 @@ export function createCloudMirroredPintaPersistence(options: {
   }
 
   /**
-   * Desce a biblioteca da nuvem e FUNDE com a local (por id de paleta, o
-   * `updatedAt` maior vence — `mergePaletteLibraries`, a regra ÚNICA). Grava o
-   * resultado e, quando o merge tem algo que a nuvem não tinha, sobe de novo.
-   * Serve a reconciliação (revisão que esta marca não conhece) E a base
-   * vencida na subida (outro aparelho subiu antes). Excluir/renomear paleta
-   * segue o mesmo canal — SEM lápide (registro pequeno; trade-off documentado
-   * no `mergePaletteLibraries`).
+   * Desce a biblioteca da nuvem e FUNDE com a local (paletas por id +
+   * updatedAt, LÁPIDES por id + removedAt — `mergePaletteLibraries`, a regra
+   * ÚNICA; é a lápide que faz uma EXCLUSÃO valer aqui em vez de a cópia local
+   * ressuscitar). Grava o resultado e, quando o CONTEÚDO difere do remoto,
+   * sobe de novo. Serve a reconciliação (revisão que esta marca não conhece)
+   * E a base vencida na subida (outro aparelho subiu antes).
+   *
+   * ⚠️ A comparação usa `paletteLibraryContentKey` (insensível à ORDEM dos
+   * arrays): comparar os arrays crus fazia dois aparelhos com ordens locais
+   * diferentes subirem um por cima do outro PARA SEMPRE (o merge preserva a
+   * ordem de quem funde — as ordens nunca se adotavam).
    */
   async function resolvePaletteConflict(): Promise<void> {
     if (!saveLibrary) return
@@ -286,9 +291,16 @@ export function createCloudMirroredPintaPersistence(options: {
         remote = null
       }
       if (remote) {
-        const localLibrary = (await loadLibrary?.()) ?? emptyPaletteLibrary()
-        const merged = mergePaletteLibraries(localLibrary, remote)
-        const changedVsRemote = JSON.stringify(merged.palettes) !== JSON.stringify(remote.palettes)
+        const base = (await loadLibrary?.()) ?? emptyPaletteLibrary()
+        let merged = mergePaletteLibraries(base, remote)
+        // A UI pode ter salvo ENTRE a leitura e a gravação (o registro é um
+        // documento só): relê e re-funde para não sobrescrever a escrita dela.
+        const latest = (await loadLibrary?.()) ?? emptyPaletteLibrary()
+        if (latest.updatedAt !== base.updatedAt) {
+          merged = mergePaletteLibraries(latest, remote)
+        }
+        const changedVsRemote =
+          paletteLibraryContentKey(merged) !== paletteLibraryContentKey(remote)
         // Merge que difere do remoto é uma "edição" local: carimbo novo para o
         // produtor ver que há o que subir (a marca fica na revisão da nuvem).
         await saveLibrary(changedVsRemote ? { ...merged, updatedAt: now() } : merged)

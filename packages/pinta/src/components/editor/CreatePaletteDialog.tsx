@@ -1,7 +1,8 @@
 /**
- * "Criar paleta": nome + 15 slots SEMEADOS da paleta ativa do desenho (a
- * paleta nova nunca nasce com buraco — quem traz buracos é só o import de
- * imagem). Tocar num slot abre o seletor livre para trocar a cor dele.
+ * "Criar paleta": nome + 15 slots SEMEADOS da paleta ativa do desenho. Tocar
+ * num slot abre o seletor livre para trocar a cor dele. ⚠️ A semente PROPAGA
+ * buracos da paleta ativa (semear de uma custom furada deixa slots '' — e
+ * buracos são suportados no modelo inteiro; ver o clamp da sessão).
  *
  * ⚠️ Monte com `key={String(open)}` (padrão NewAssetDialog): o estado nasce da
  * paleta ativa ATUAL a cada abertura.
@@ -11,6 +12,7 @@ import { useState } from 'react'
 import { normalizeHex } from '../../core/color'
 import { COPY } from '../../core/copy'
 import { PALETTE_SIZE, TRANSPARENT_INDEX } from '../../core/palette'
+import { PINTA_LIMITS } from '../../core/project'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import { ColorPickerDialog } from './ColorPicker'
@@ -52,6 +54,7 @@ export function CreatePaletteDialog({
               name="pinta-palette-name"
               autoComplete="off"
               value={name}
+              maxLength={PINTA_LIMITS.maxNameChars}
               onChange={(event) => setName(event.target.value)}
               placeholder={COPY.palette.paletteNamePlaceholder}
               className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"

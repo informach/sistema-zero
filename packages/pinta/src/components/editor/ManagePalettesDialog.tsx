@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import { TRANSPARENT_INDEX } from '../../core/palette'
+import { PINTA_LIMITS } from '../../core/project'
 import { usePintaApp } from '../appContext'
 import { Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
@@ -44,9 +45,11 @@ export function ManagePalettesDialog({
                 const armed = armedDeleteId === palette.id
                 return (
                   <li key={palette.id} className="flex min-h-11 items-center gap-2">
+                    {/* Faixa com MÍNIMO + nome que encolhe: `shrink-0` no nome
+                        matava o truncate e empurrava os botões p/ fora. */}
                     <span
                       aria-hidden="true"
-                      className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full"
+                      className="flex h-2.5 min-w-10 flex-1 overflow-hidden rounded-full"
                     >
                       {palette.colors.map((hex, i) =>
                         i === TRANSPARENT_INDEX || !hex ? null : (
@@ -58,7 +61,7 @@ export function ManagePalettesDialog({
                         ),
                       )}
                     </span>
-                    <span className="min-w-0 shrink-0 truncate font-bold text-pin-text text-sm">
+                    <span className="min-w-0 truncate font-bold text-pin-text text-sm">
                       {palette.name}
                     </span>
                     <ToolButton
@@ -113,6 +116,7 @@ export function ManagePalettesDialog({
             name="pinta-palette-rename"
             autoComplete="off"
             value={renameValue}
+            maxLength={PINTA_LIMITS.maxNameChars}
             onChange={(event) => setRenameValue(event.target.value)}
             aria-label={COPY.palette.paletteNameLabel}
             className="min-h-11 rounded-xl border-2 border-pin-border bg-pin-bg px-4 text-base outline-none focus:border-pin-accent"
