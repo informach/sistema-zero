@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { PDFDocument } from '@cantoo/pdf-lib'
+import { PDFDocument, StandardFonts } from '@cantoo/pdf-lib'
 import { nfseNumberFromAccessKey } from '../../src/domain/danfse/danfse-data'
 import type { EmitterProfile } from '../../src/domain/dps/emitter-profile'
 import { INFORMACH_BASE } from '../../src/domain/dps/emitter-profile'
@@ -11,6 +11,7 @@ import {
   LocalDanfseRenderer,
   NFSE_CONSULTA_PUBLICA_URL,
   sanitizeWinAnsi,
+  wrapText,
 } from '../../src/infrastructure/danfse/danfse-renderer'
 import { buildDanfseData } from '../../src/infrastructure/danfse/nfse-fields'
 import { applyStatusStamp, stampForStatus } from '../../src/infrastructure/danfse/status-stamp'
@@ -187,6 +188,23 @@ describe('LocalDanfseRenderer — PDF A4 do DANFSe v2.0', () => {
       `Treinamento on-line - ${'palavra '.repeat(260)}`,
     )
     await renderAndParse(renderInput({ nfseXml: longDesc }))
+    // Palavra ÚNICA gigante (URL sem espaços no nome do produto) também rende.
+    const monsterWord = SYNTHETIC_NFSE.replace(
+      'Treinamento on-line - Curso Exemplo',
+      `Treinamento https://exemplo.com/${'x'.repeat(300)}`,
+    )
+    await renderAndParse(renderInput({ nfseXml: monsterWord }))
+  })
+
+  test('wrapText quebra DURO palavra mais larga que a linha (nunca estoura a borda)', async () => {
+    const doc = await PDFDocument.create()
+    const helv = await doc.embedFont(StandardFonts.Helvetica)
+    const maxPt = 20.3 * 28.3465
+    const lines = wrapText(helv, `Treinamento https://exemplo.com/${'x'.repeat(300)}`, 6, maxPt)
+    expect(lines.length).toBeGreaterThan(1)
+    for (const line of lines) {
+      expect(helv.widthOfTextAtSize(line, 6)).toBeLessThanOrEqual(maxPt)
+    }
   })
 
   test('produção NÃO leva o aviso de homologação (tpAmb=1 + ambiente producao)', async () => {

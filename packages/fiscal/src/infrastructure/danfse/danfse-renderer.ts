@@ -220,8 +220,9 @@ class Drawer {
 /* ── blocos do leiaute ─────────────────────────────────────────────────── */
 
 function drawHeader(draw: Drawer, data: DanfseData, homolog: boolean, logo: PDFImage | null): void {
-  // Faixa do cabeçalho (1,16cm) com sombreado integral.
-  draw.shade(0, 0.3, FULL_W + 2 * C1, 1.16)
+  // Faixa do cabeçalho (1,16cm) com sombreado integral na LARGURA ÚTIL (21,0cm
+  // − 2 margens; FULL_W+2·C1 vazava 0,15cm além da borda direita — só clipava).
+  draw.shade(0, 0.3, 21.0 - 2 * MARGIN_CM, 1.16)
   if (logo) {
     // Área da NT: 4,00 × 0,85 @ 0,49/0,44 — encaixa preservando a proporção.
     const scale = Math.min((4.0 * CM) / logo.width, (0.85 * CM) / logo.height)
@@ -656,21 +657,41 @@ function clampText(font: PDFFont, value: string, size: number, maxWidthCm: numbe
   return `${out}...`
 }
 
-function wrapText(font: PDFFont, text: string, size: number, maxWidthPt: number): string[] {
-  const words = text.split(' ')
+export function wrapText(font: PDFFont, text: string, size: number, maxWidthPt: number): string[] {
   const lines: string[] = []
   let current = ''
-  for (const word of words) {
-    const candidate = current ? `${current} ${word}` : word
-    if (font.widthOfTextAtSize(candidate, size) <= maxWidthPt) {
-      current = candidate
-    } else {
-      if (current) lines.push(current)
-      current = word
+  for (const word of text.split(' ')) {
+    // Palavra que não cabe NUMA LINHA sozinha (URL/sequência sem espaços na
+    // descrição do produto): quebra DURA em pedaços — sem isso a linha
+    // atravessava a borda da página e o excesso sumia no clip (achado do review).
+    for (const piece of breakLongWord(font, word, size, maxWidthPt)) {
+      const candidate = current ? `${current} ${piece}` : piece
+      if (font.widthOfTextAtSize(candidate, size) <= maxWidthPt) {
+        current = candidate
+      } else {
+        if (current) lines.push(current)
+        current = piece
+      }
     }
   }
   if (current) lines.push(current)
   return lines
+}
+
+function breakLongWord(font: PDFFont, word: string, size: number, maxWidthPt: number): string[] {
+  if (font.widthOfTextAtSize(word, size) <= maxWidthPt) return [word]
+  const pieces: string[] = []
+  let current = ''
+  for (const ch of word) {
+    if (font.widthOfTextAtSize(current + ch, size) <= maxWidthPt) {
+      current += ch
+    } else {
+      if (current) pieces.push(current)
+      current = ch
+    }
+  }
+  if (current) pieces.push(current)
+  return pieces
 }
 
 function fmtDoc(party: DanfseParty): string | null {

@@ -194,6 +194,11 @@ nacional obrigatório ("DANFSe v2.0", Anexo I).
 - A NT 008 v1.02 oficial está em `spike/docs/nt-008-se-cgnfse-danfse-v1.02.pdf`.
 - Bloco IBS/CBS impresso com traços (nota SN 2026 não tem o grupo); os grupos entram quando a
   DPS passar a preenchê-los (adequação futura, outra NT).
+- Limitações ACEITAS (full review 25/08): (a) `CANCEL_PENDING`/`CANCEL_FAILED` servem o PDF SEM
+  carimbo — só o cancelamento CONSUMADO carimba (estado transitório não é "cancelada"); (b) a
+  nota do caminho raced (`forceCancelAfterRacedEmission` → CANCEL_PENDING sem nunca ter sido
+  EMITTED) fica SEM PDF (o delivery só reclama EMITTED — comportamento igual ao da era da API
+  do governo; o admin recebe 404 `PDF_NOT_FOUND`).
 
 ## Gotchas validados na Produção Restrita (spike, 12/06 — NÃO redescobrir)
 

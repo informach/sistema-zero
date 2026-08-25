@@ -27,13 +27,16 @@ export async function applyStatusStamp(
       // Centraliza o texto rotacionado na diagonal da página.
       const cx = width / 2 - (textWidth / 2) * Math.cos(angle)
       const cy = height / 2 - (textWidth / 2) * Math.sin(angle) - (size / 2) * Math.cos(angle)
+      // NT pede cinza K35 (rgb 0.65). Overlay por cima do conteúdo: 0.75 de
+      // opacidade chega perto do tom exigido sem apagar o texto nos cruzamentos
+      // (0.45 dava um cinza efetivo ~K16, claro demais — achado do review).
       page.drawText(stamp, {
         x: cx,
         y: cy,
         size,
         font,
         color,
-        opacity: 0.45,
+        opacity: 0.75,
         rotate: degrees((angle * 180) / Math.PI),
       })
     }

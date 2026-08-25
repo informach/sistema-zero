@@ -402,6 +402,50 @@ describe.skipIf(!testDatabaseUrl)(
       expect(current?.claimedAt).not.toBeNull()
     })
 
+    test('storePdf grava o bytea sob guard de claim; findPdfByToken devolve content + invoiceStatus', async () => {
+      const invoice = await repo.schedule(scheduleInput({ scheduledFor: new Date() }))
+      const [claimed] = await repo.claimDueForEmission({
+        batchSize: 1,
+        staleMs: 60_000,
+        maxAttempts: 10,
+      })
+      if (!claimed?.claimToken) throw new Error('claim inicial sem token')
+      const token = 'd'.repeat(64)
+      await repo.markEmitted(
+        invoice.id,
+        {
+          dpsXml: '<DPS/>',
+          nfseXml: '<NFSe/>',
+          accessKey: '7'.repeat(50),
+          competenceDate: '2026-08-25',
+          pdfToken: token,
+        },
+        claimed.claimToken,
+      )
+      const bytes = new TextEncoder().encode('%PDF-db-real')
+
+      // Claim ERRADO não grava (guard status+claim_token dentro da transação).
+      expect(await repo.storePdf(invoice.id, bytes, 'claim-errado')).toBe(false)
+      expect(await repo.findPdfByToken(token)).toBeNull()
+
+      expect(await repo.storePdf(invoice.id, bytes, claimed.claimToken)).toBe(true)
+      const stored = await repo.findPdfByToken(token)
+      expect(stored?.invoiceId).toBe(invoice.id)
+      expect(stored?.invoiceStatus).toBe('EMITTED')
+      expect(Buffer.from(stored?.content ?? new Uint8Array()).toString('latin1')).toBe(
+        '%PDF-db-real',
+      )
+
+      // Nota cancelada: o MESMO token passa a reportar o status novo (o serve
+      // aplica a marca d'água CANCELADA na hora — o bytea fica intacto).
+      await conn.sql`UPDATE fiscal.invoices SET status = 'CANCELLED' WHERE id = ${invoice.id}`
+      const cancelled = await repo.findPdfByToken(token)
+      expect(cancelled?.invoiceStatus).toBe('CANCELLED')
+      expect(Buffer.from(cancelled?.content ?? new Uint8Array()).toString('latin1')).toBe(
+        '%PDF-db-real',
+      )
+    })
+
     test('advisory lock entrega a transação bloqueada ao trabalho de retenção', async () => {
       const result = await withAdvisoryLock(conn.db, 7_223_991_888n, async (tx) => {
         const [row] = await tx.execute<{ value: number }>(sql`SELECT 1 AS value`)
