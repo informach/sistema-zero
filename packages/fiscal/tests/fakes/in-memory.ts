@@ -6,6 +6,7 @@ import type {
   PaymentSnapshot,
   PaymentsClient,
 } from '../../src/domain/ports/clients.port'
+import type { DanfseProvider, DanfseRenderInput } from '../../src/domain/ports/danfse-provider.port'
 import type {
   Invoice,
   InvoiceRepository,
@@ -13,7 +14,6 @@ import type {
 } from '../../src/domain/ports/invoice-repository.port'
 import type { ProcessedWebhookStore } from '../../src/domain/ports/processed-webhook.port'
 import type {
-  DanfseClient,
   EmitDpsInput,
   EmitResult,
   SefinNacionalGateway,
@@ -516,7 +516,7 @@ export class InMemoryInvoiceRepository implements InvoiceRepository {
     for (const inv of this.invoices.values()) {
       if (inv.pdfToken === token) {
         const pdf = this.pdfs.get(inv.id)
-        if (pdf) return { invoiceId: inv.id, ...pdf }
+        if (pdf) return { invoiceId: inv.id, invoiceStatus: inv.status, ...pdf }
       }
     }
     return null
@@ -712,10 +712,18 @@ export class RecordingMessagingClient {
   }
 }
 
-export class ScriptedDanfseClient implements DanfseClient {
+/**
+ * Provider roteirizável do DANFSe local: os testes de fluxo só precisam de
+ * "bytes ou falha" (o renderer REAL tem testes próprios em
+ * tests/unit/danfse-renderer.test.ts). Grava o último input p/ os testes
+ * conferirem que o service passa os campos FRESCOS (não o invoice obsoleto).
+ */
+export class ScriptedDanfseProvider implements DanfseProvider {
   failWith: Error | null = null
-  async fetchPdf(): Promise<Uint8Array> {
+  lastInput: DanfseRenderInput | null = null
+  async render(input: DanfseRenderInput): Promise<Uint8Array> {
     if (this.failWith) throw this.failWith
+    this.lastInput = input
     return new TextEncoder().encode('%PDF-fake')
   }
 }

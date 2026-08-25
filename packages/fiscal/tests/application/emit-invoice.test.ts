@@ -12,7 +12,7 @@ import {
   InMemoryInvoiceRepository,
   paidSnapshot,
   RecordingMessagingClient,
-  ScriptedDanfseClient,
+  ScriptedDanfseProvider,
   ScriptedSefinGateway,
   silentLogger,
 } from '../fakes/in-memory'
@@ -30,7 +30,7 @@ function build(opts: { maxAttempts?: number } = {}) {
   const invoices = new InMemoryInvoiceRepository()
   const payments = new FakePaymentsClient()
   const sefin = new ScriptedSefinGateway()
-  const danfse = new ScriptedDanfseClient()
+  const danfse = new ScriptedDanfseProvider()
   const messaging = new RecordingMessagingClient()
   const service = new EmitInvoiceService(
     invoices,
@@ -72,7 +72,7 @@ async function scheduledInvoice(invoices: InMemoryInvoiceRepository, paymentId =
 
 describe('emissão', () => {
   test('caminho feliz: re-verifica, aloca número, emite, EMITTED + PDF + pdfToken', async () => {
-    const { invoices, payments, sefin, service } = build()
+    const { invoices, payments, sefin, danfse, service } = build()
     payments.set(paidSnapshot())
     const invoice = await scheduledInvoice(invoices)
 
@@ -88,6 +88,13 @@ describe('emissão', () => {
     expect(sefin.emitted[0]?.dpsId).toBe(
       `DPS3106200243588758000103000020000000000000${'01'.padStart(2, '0')}`.slice(0, 45),
     )
+    // O DANFSe local recebe os campos FRESCOS da emissão — o objeto `invoice` em
+    // mãos no caminho síncrono é o PRÉ-markEmitted (nfseXml null nele; passar o
+    // invoice cru jogaria a 1ª geração no fallback — achado do review do plano).
+    expect(danfse.lastInput?.nfseXml).toBe('<NFSe/>')
+    expect(danfse.lastInput?.accessKey).toBe('1'.repeat(50))
+    expect(danfse.lastInput?.competenceDate).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    expect(danfse.lastInput?.emittedAt).toBeInstanceOf(Date)
   })
 
   test('re-verificação: pagamento estornado no meio tempo → SKIPPED sem chamar a Sefin', async () => {
@@ -455,7 +462,7 @@ describe('emissão', () => {
       invoices,
       payments,
       sefin,
-      new ScriptedDanfseClient(),
+      new ScriptedDanfseProvider(),
       createNullMessagingClient(), // sem GATEWAY_URL/FISCAL_HMAC_SECRET
       {
         serie: '2',

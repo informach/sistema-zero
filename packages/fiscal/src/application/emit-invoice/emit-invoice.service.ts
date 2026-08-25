@@ -3,10 +3,12 @@ import type { Logger } from '@sistemazero/core/logging'
 import { dCompetBRT } from '../../domain/dps/dps-builder'
 import { SkipReason } from '../../domain/invoice/invoice.status'
 import { redactDocuments, redactSensitiveText } from '../../domain/invoice/redact-documents'
+import { centsToReais, formatBrl } from '../../domain/money'
 import type { PaymentsClient } from '../../domain/ports/clients.port'
+import type { DanfseProvider } from '../../domain/ports/danfse-provider.port'
 import type { Invoice, InvoiceRepository } from '../../domain/ports/invoice-repository.port'
 import type { MessagingClient } from '../../domain/ports/messaging-client.port'
-import type { DanfseClient, SefinNacionalGateway } from '../../domain/ports/sefin-gateway.port'
+import type { SefinNacionalGateway } from '../../domain/ports/sefin-gateway.port'
 
 export interface EmitInvoiceConfig {
   serie: string
@@ -38,7 +40,7 @@ export class EmitInvoiceService {
     private readonly invoices: InvoiceRepository,
     private readonly payments: PaymentsClient,
     private readonly sefin: SefinNacionalGateway,
-    private readonly danfse: DanfseClient,
+    private readonly danfse: DanfseProvider,
     private readonly messaging: MessagingClient,
     private readonly config: EmitInvoiceConfig,
     private readonly logger: Logger,
@@ -181,10 +183,16 @@ export class EmitInvoiceService {
       return { complete: false, error: 'nota emitida sem chave de acesso ou pdfToken' }
     }
 
+    // Aqui o invoice é FRESCO (findById acima) — os campos "frescos" saem dele.
     const result = await this.deliverInvoiceArtifacts(
       invoice,
-      invoice.accessKey,
-      invoice.pdfToken,
+      {
+        accessKey: invoice.accessKey,
+        pdfToken: invoice.pdfToken,
+        nfseXml: invoice.nfseXml,
+        competenceDate: invoice.competenceDate,
+        emittedAt: invoice.emittedAt,
+      },
       claimToken,
     )
     if (result.complete) await this.invoices.markDeliveryComplete(invoice.id, claimToken)
@@ -278,10 +286,19 @@ export class EmitInvoiceService {
       }
     }
 
+    // ⚠️ `invoice` aqui é o objeto REIVINDICADO (pré-markEmitted): nfseXml/
+    // emittedAt/competenceDate são null NELE — os valores recém-autorizados vão
+    // explícitos (sem isso a 1ª geração do DANFSe cairia no fallback, achado do
+    // review do plano).
     const delivery = await this.deliverInvoiceArtifacts(
       invoice,
-      data.accessKey,
-      pdfToken,
+      {
+        accessKey: data.accessKey,
+        pdfToken,
+        nfseXml: data.nfseXml,
+        competenceDate: data.competenceDate,
+        emittedAt: new Date(),
+      },
       claimToken,
     )
     if (!delivery.complete && delivery.error) {
@@ -297,30 +314,42 @@ export class EmitInvoiceService {
   }
 
   /**
-   * Pós-emissão recuperável: DANFSe e e-mail são best-effort no caminho síncrono,
-   * mas precisam ser reexecutáveis sem reemitir a DPS. O worker chama este método
-   * para notas EMITTED com pdf/email pendentes.
+   * Pós-emissão recuperável: DANFSe e e-mail precisam ser reexecutáveis sem
+   * reemitir a DPS. O worker chama este método para notas EMITTED com pdf/email
+   * pendentes. O DANFSe é GERADO LOCALMENTE (NT 008/2026 — a API do governo foi
+   * desligada): determinístico, sem rede; o try/catch fica como proteção contra
+   * bug ambiental (o renderer é TOTAL sobre os dados e não lança por conteúdo).
    */
   private async deliverInvoiceArtifacts(
     invoice: Invoice,
-    accessKey: string,
-    pdfToken: string,
+    fresh: {
+      accessKey: string
+      pdfToken: string
+      nfseXml: string | null
+      competenceDate: string | null
+      emittedAt: Date | null
+    },
     claimToken: string,
   ): Promise<InvoiceDeliveryResult> {
-    // DANFSe: persistir o PDF blinda contra a troca do padrão em jul/2026; falha
-    // aqui NUNCA reverte a emissão.
+    const accessKey = fresh.accessKey
     let pdfStored = invoice.pdfStoredAt !== null
     try {
       if (!pdfStored) {
-        const pdf = await this.danfse.fetchPdf(accessKey)
+        const pdf = await this.danfse.render({
+          invoice,
+          accessKey,
+          nfseXml: fresh.nfseXml,
+          competenceDate: fresh.competenceDate,
+          emittedAt: fresh.emittedAt,
+        })
         const stored = await this.invoices.storePdf(invoice.id, pdf, claimToken)
         if (!stored) return { complete: false, error: 'claim de entrega perdido' }
         await this.invoices.appendEvent(invoice.id, 'PDF_STORED', 'system', { bytes: pdf.length })
         pdfStored = true
       }
     } catch (error) {
-      this.logger.error('fiscal.danfse_fetch_failed', { invoiceId: invoice.id, error: msg(error) })
-      return { complete: false, error: `DANFSe indisponível: ${msg(error)}` }
+      this.logger.error('fiscal.danfse_render_failed', { invoiceId: invoice.id, error: msg(error) })
+      return { complete: false, error: `geração do DANFSe falhou: ${msg(error)}` }
     }
 
     // E-mail ao comprador (best-effort, dedupado no messaging por nfse-<id>):
@@ -339,7 +368,7 @@ export class EmitInvoiceService {
           attachments: [
             {
               filename: 'nota-fiscal.pdf',
-              url: `${this.config.selfUrl}/fiscal/files/${pdfToken}.pdf`,
+              url: `${this.config.selfUrl}/fiscal/files/${fresh.pdfToken}.pdf`,
               contentType: 'application/pdf',
             },
           ],
@@ -440,18 +469,6 @@ export class EmitInvoiceService {
       })
     }
   }
-}
-
-/** "R$ 37,00" p/ o template de e-mail. */
-function formatBrl(cents: bigint): string {
-  const abs = cents < 0n ? -cents : cents
-  const reais = `${abs / 100n}`.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  return `${cents < 0n ? '-' : ''}R$ ${reais},${(abs % 100n).toString().padStart(2, '0')}`
-}
-
-function centsToReais(cents: bigint): string {
-  const abs = cents < 0n ? -cents : cents
-  return `${cents < 0n ? '-' : ''}${abs / 100n}.${(abs % 100n).toString().padStart(2, '0')}`
 }
 
 function msg(error: unknown): string {

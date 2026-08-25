@@ -101,3 +101,27 @@ Swagger contribuintes (homolog, requer browser/cert): `https://adn.producaorestr
 ### Ainda em aberto (não bloqueia Fase 1)
 - Motivo padrão do cancelamento pós-estorno: 2 (Serviço não Prestado) ou 9 (Outros)?
 - (Opcional) conferir uma nota real do Emissor Web lado a lado com `out/nfse.xml`
+
+### 25/08/2026 — API do DANFSe DESLIGADA em produção (NT 008/2026) → gerador LOCAL
+
+- Sintoma em produção: as 2 primeiras notas reais EMITIDAS com `last_error`
+  "DANFSe indisponível: DANFSe respondeu 503 (text/html)" e e-mail retido.
+- Sondas mTLS com o A1 real (25/08): `adn.nfse.gov.br/danfse/*` (produção) = `503 Service
+  Unavailable — No server is available to handle this request` no serviço INTEIRO (incl.
+  /docs/index.html); `adn.producaorestrita.../danfse/{chave-dummy}` = 404 (vivo);
+  `adn.nfse.gov.br/contribuintes/*` = 200 (o ADN em si está de pé); Sefin `/DANFSe` = 501
+  ("movido") desde sempre. Ou seja: NÃO é outage — é o desligamento anunciado.
+- **NT 008/2026** (v1.02 de 14/07, baixada em `docs/nt-008-se-cgnfse-danfse-v1.02.pdf`):
+  suspendeu a API de geração em 03/08/2026 (prazos anteriores: 01/07 → 15/07) e definiu o
+  leiaute nacional "DANFSe v2.0" (Anexo I + tabela 2.4.5 com posições em cm). QR code →
+  `https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=` + chave (literal do item 2.4.3).
+  Homolog (tpAmb=2) = "NFS-e SEM VALIDADE JURÍDICA" vermelho no cabeçalho; cancelada/
+  substituída = marca d'água diagonal ≥50pt cinza K35.
+- **Anatomia da chave de acesso (medida contra `out/chave-acesso.txt`)**: cMun(7) + ambGer(1)
+  + tpInsc(1) + inscrição(14) + nNFSe(13) + AnoMes(4) + código(9) + DV(1) — o nNFSe é
+  derivável da chave (fallback do gerador local sem XML).
+- Fix implementado: `LocalDanfseRenderer` (src/infrastructure/danfse/) — ver §DANFSe LOCAL no
+  CLAUDE.md. `spike:06` renderiza `out/danfse-local.pdf` do `out/nfse.xml` real p/ comparação
+  visual com `out/danfse.pdf` (o PDF do próprio governo, mesma chave).
+- ⚠️ Ao inspecionar PDFs com pdfjs: sem `standardFontDataUrl` o preview degrada o espaçamento
+  das StandardFonts e PARECE bug do gerador (não é — abra num viewer real).

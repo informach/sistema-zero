@@ -94,8 +94,9 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
    CPF inválido → nasce FAILED legível. `refunded` → SCHEDULED→SKIPPED; EMITTED→CANCEL_PENDING (≤180d).
 2. **`EmissionWorker`** (30s, claim SKIP LOCKED + lease, attempts++ NO claim): **re-verifica o
    pagamento NO MOMENTO da emissão** (fail-closed) → aloca número/série UMA vez (retry REUSA — re-POST
-   vira `duplicate` recuperado por `GET /dps/{id}`, nunca nota dobrada) → emite → EMITTED → DANFSe em
-   bytea (best-effort) → e-mail. Se DANFSe/e-mail falhar depois da NFS-e real, o `DeliveryWorker`
+   vira `duplicate` recuperado por `GET /dps/{id}`, nunca nota dobrada) → emite → EMITTED → **DANFSe
+   GERADO LOCALMENTE** (ver §DANFSe local abaixo — a API do governo foi DESLIGADA pela NT 008/2026)
+   e gravado em bytea → e-mail. Se a geração/e-mail falhar depois da NFS-e real, o `DeliveryWorker`
    reprocessa só esses efeitos pós-emissão, sem reemitir a DPS. Rejeição determinística → FAILED direto; rede → backoff
    exponencial (1min×2^n, teto 6h) até `NFSE_MAX_ATTEMPTS`.
 3. **Competência (`dCompet`) = data da EMISSÃO em BRT** (decisão do usuário 12/06), NÃO a do pagamento.
@@ -104,6 +105,13 @@ A Produção Restrita usa o MESMO certificado real e **não gera nota com valida
 4. **Substituição** = DPS NOVA com grupo `subst{chSubstda,cMotivo}` (NÃO é evento; o sistema cancela a
    original); quando a substituta emite, a original vira SUBSTITUTED.
 5. `GET /fiscal/files/:token.pdf` — capability-URL (token 32 bytes) p/ o messaging anexar o DANFSe.
+   ⚠️ Esta rota E o `GET /fiscal/admin/invoices/:id/pdf` aplicam a **marca d'água de ESTADO na hora
+   de SERVIR** (NT 008 §2.5): nota `CANCELLED`/`SUBSTITUTED` sai com "CANCELADA"/"SUBSTITUÍDA" na
+   diagonal (≥50pt, cinza K35 — `applyStatusStamp`/`stampForStatus` em
+   `infrastructure/danfse/status-stamp.ts`, best-effort: falha → serve o original). O bytea da
+   emissão é IMUTÁVEL (registro do que foi mailado); o overlay cobre de graça o estoque histórico,
+   inclusive PDFs antigos baixados do gerador do governo. `findPdfByToken` devolve `invoiceStatus`
+   p/ isso.
    `GET /metrics` (`{byStatus}`; `METRICS_TOKEN` via `x-metrics-token`/Bearer, obrigatório em prod)
    — alerte em `FAILED`/`CANCEL_PENDING` > 0. Teto de corpo = `MAX_REQUEST_BODY_BYTES` (Bun.serve).
 6. **Emissão MANUAL (admin+)**: `POST /fiscal/admin/invoices/:id/emit-now` antecipa uma SCHEDULED
@@ -138,10 +146,61 @@ emissão local recuperou a chave do spike). **Séries por ambiente (`NFSE_DPS_SE
 `901` · staging = `902` · produção = `2`** (a Sefin de produção é outro espaço — só convive com o
 Emissor Web, que usa série própria). O spike queimou os números 1–3 da série 2 em homolog.
 
+## DANFSe LOCAL (NT 008/2026 — 25/08/2026, substitui a API morta do governo)
+
+🚨 **A API oficial que gerava o PDF do DANFSe foi DESLIGADA em produção** (NT 008/2026 v1.02;
+descontinuação 03/08/2026 — prazos anteriores 01/07 e 15/07). Sonda mTLS com o A1 real em 25/08:
+`adn.nfse.gov.br/danfse/*` (produção) responde `503 No server is available` no serviço INTEIRO
+(até o /docs), enquanto a produção-restrita ainda responde e o resto do ADN de produção está de
+pé. Sintoma que isso causava: nota EMITTED com `last_error` "DANFSe indisponível: DANFSe
+respondeu 503 (text/html)", PDF nunca armazenado e **e-mail ao cliente retido para sempre** (o
+fluxo só envia com o PDF anexado). A NT transferiu a geração aos sistemas emissores, com leiaute
+nacional obrigatório ("DANFSe v2.0", Anexo I).
+
+- **Port**: `DanfseProvider.render(input)` (`domain/ports/danfse-provider.port.ts`) substitui o
+  antigo `DanfseClient.fetchPdf` (removido junto com `AdnDanfseClient`/`FakeDanfseClient`).
+  Provider ÚNICO no composition-root (`LocalDanfseRenderer`) — **o PDF não depende mais de
+  certificado nem de rede**; o modo fake só cobre a Sefin.
+- ⚠️⚠️ **Campos FRESCOS fora do invoice**: no caminho síncrono, `deliverInvoiceArtifacts` recebe
+  o invoice REIVINDICADO (pré-`markEmitted` — `nfseXml`/`emittedAt`/`competenceDate` null NELE);
+  os valores recém-autorizados viajam explícitos no input do render (sem isso a 1ª geração caía
+  no fallback — travado por assert no teste do caminho feliz).
+- **Parser TOTAL** (`infrastructure/danfse/nfse-fields.ts`, `@xmldom/xmldom` por FILHOS DIRETOS —
+  os subtrees `<Signature>` e a DPS embutida repetem tags): XML vazio/ilegível → FALLBACK
+  estruturado (linha + `EmitterProfile`; o **nNFSe sai da CHAVE** — anatomia
+  `cMun(7)+ambGer(1)+tpInsc(1)+inscrição(14)+nNFSe(13)+AnoMes(4)+…`, medida contra a chave real).
+  NUNCA lança por conteúdo: a fila de entrega não tem teto de tentativas e uma exceção
+  determinística viraria retry infinito de 15min. `nfseXml=''` acontece de verdade (caminho
+  `duplicate`).
+- **Renderer** (`infrastructure/danfse/danfse-renderer.ts`, `@cantoo/pdf-lib` + `qrcode` — molde
+  do certificate-pdf do member-shell): 1 página A4 retrato, layout FLUIDO com as posições/fontes
+  da tabela 2.4.5 da NT (Helvetica no lugar de Arial/MS Sans Serif — a NT fixa TAMANHOS, não a
+  fonte embutida); QR ≥1,52cm com a URL literal da NT
+  (`https://www.nfse.gov.br/ConsultaPublica/?tpc=1&chave=` + chave — `NFSE_CONSULTA_PUBLICA_URL`);
+  homolog (`tpAmb=2` OU `ambiente≠producao`) → "NFS-e SEM VALIDADE JURÍDICA" em vermelho no
+  cabeçalho; bloco vazio → linha única dos itens 2.3.1/2.3.2; campo sem info → traço "-" (nota
+  12); logomarca oficial EMBUTIDA em base64 (`logo-nfse.ts`); `sanitizeWinAnsi` REMOVE chars fora
+  do CP1252 (⚠️ o fork do pdf-lib trocaria por `?` EM SILÊNCIO — e a descrição do serviço admite
+  emoji); dinheiro por STRING (`domain/money.ts` — `formatBrl`/`centsToReais` extraídos do
+  emit-invoice + `formatXmlDecimalBrl`); datas por slice/offset -03:00 fixo, nunca `new Date`
+  de data civil.
+- ⚠️ Ao rodar `db:generate`/depurar PDF: renderizar PNG p/ conferir exige as standard fonts do
+  pdfjs (`standardFontDataUrl`) — sem elas o preview degrada o espaçamento e PARECE bug do PDF.
+- **Validação visual**: `bun run spike:06` renderiza `spike/out/danfse-local.pdf` do XML REAL do
+  spike p/ comparar com `spike/out/danfse.pdf` (o PDF que o PRÓPRIO governo gerou p/ a mesma
+  chave antes de desligar a API) + a variante cancelada. Testes:
+  `tests/unit/danfse-renderer.test.ts` (parser/fallback/chave/render/stamp/sanitize) + caso de
+  rota em `tests/integration/server.test.ts`.
+- A NT 008 v1.02 oficial está em `spike/docs/nt-008-se-cgnfse-danfse-v1.02.pdf`.
+- Bloco IBS/CBS impresso com traços (nota SN 2026 não tem o grupo); os grupos entram quando a
+  DPS passar a preenchê-los (adequação futura, outra NT).
+
 ## Gotchas validados na Produção Restrita (spike, 12/06 — NÃO redescobrir)
 
 - Base REAL da Sefin = `/SefinNacional` (o `/API/SefinNacional` da doc é só o redoc). DANFSe e
-  parametrização municipal moram no **ADN** (`GET adn.../danfse/{chave}`).
+  parametrização municipal moram no **ADN** (`GET adn.../danfse/{chave}`). ⚠️ **MORTO em
+  produção desde jul-ago/2026** (NT 008) — ver §DANFSe LOCAL acima; a produção-restrita ainda
+  responde, mas o código não a usa mais.
 - Specs OpenAPI exigem mTLS (sem cert = 403) — capturados em `spike/docs/swagger-*.json`.
 - Envelopes JSON: `{dpsXmlGZipB64}` → 201 `{chaveAcesso, nfseXmlGZipB64, idDps, ...}`; eventos
   `{pedidoRegistroEventoXmlGZipB64}`. Erro 400: `{idDPS, erros:[{Codigo,Descricao}]}` (PascalCase!).
