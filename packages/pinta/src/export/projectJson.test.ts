@@ -233,4 +233,18 @@ describe('zipGallery', () => {
     expect(bytes[0]).toBe(0x50)
     expect(bytes[1]).toBe(0x4b)
   })
+
+  it('o LEIA-ME do pack explica a seleção; o do backup fica byte-idêntico', async () => {
+    const { buildGalleryFileMap } = await import('./zip')
+    const gallery = makeGallery()
+
+    const backup = await buildGalleryFileMap(gallery)
+    expect(backup.readme[0]).toBe('Seus desenhos do Pinta! 🎨')
+
+    const pack = await buildGalleryFileMap(gallery, 'pack')
+    expect(pack.readme[0]).toBe('Seu pack de desenhos do Pinta! 🎨')
+    expect(pack.readme[1]).toContain('Trazer de volta')
+    // Só a abertura muda: o resto do mapa de arquivos é o mesmo.
+    expect(Object.keys(pack.files).sort()).toEqual(Object.keys(backup.files).sort())
+  })
 })

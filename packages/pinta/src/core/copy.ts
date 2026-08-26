@@ -44,10 +44,16 @@ export const COPY = {
     select: 'Selecionar',
     selectionCount: (count: number) => (count === 1 ? '1 selecionado' : `${count} selecionados`),
     downloadSelection: 'Baixar seleção',
+    selectionClear: 'Limpar',
     selectionMark: (name: string) => `Marcar ${name}`,
     selectionUnmark: (name: string) => `Desmarcar ${name}`,
     /** O pack levou junto as peças de um mapa marcado (sem elas o mapa não restaura). */
     selectionTilesetIncluded: 'Baixei também as peças do mapa.',
+    /** Toast do pack: diz QUANTOS foram (o do "Baixar tudo" segue o downloadReady genérico). */
+    downloadedSelection: (count: number) =>
+      count === 1
+        ? 'Baixei 1 desenho! Procure na pasta de downloads.'
+        : `Baixei ${count} desenhos! Procure na pasta de downloads.`,
     /** Busca da galeria (sem teto de desenhos, ela é o que mantém a galeria navegável). */
     search: 'Buscar desenho',
     searchPlaceholder: 'Buscar por nome, tipo ou jogo',

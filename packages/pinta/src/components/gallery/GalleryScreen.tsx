@@ -160,8 +160,19 @@ export function GalleryScreen(): JSX.Element {
     setSelectionMode(false)
     setSelectedIds(new Set())
   }, [])
-  // Conta só ids que ainda EXISTEM (a descida da nuvem pode remover um desenho
-  // marcado por baixo do modo).
+  // Poda as marcações de desenhos que SAÍRAM da galeria: a descida da nuvem
+  // preserva o id ao trazer um desenho de volta, então sem a poda ele
+  // reapareceria JÁ marcado. Devolver `prev` quando nada mudou evita o loop.
+  useEffect(() => {
+    setSelectedIds((prev) => {
+      if (prev.size === 0) return prev
+      const alive = new Set(assets.map((asset) => asset.id))
+      const next = new Set([...prev].filter((id) => alive.has(id)))
+      return next.size === prev.size ? prev : next
+    })
+  }, [assets])
+  // Conta só ids que ainda EXISTEM (cobre a janela de um render entre a lista
+  // mudar e a poda acima rodar).
   const selectedCount = useMemo(
     () => assets.reduce((count, asset) => (selectedIds.has(asset.id) ? count + 1 : count), 0),
     [assets, selectedIds],
@@ -291,15 +302,18 @@ export function GalleryScreen(): JSX.Element {
     }
     setZipping(true)
     try {
-      const bytes = await zipGallery(expanded.assets)
+      const bytes = await zipGallery(expanded.assets, 'pack')
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
         'pack-pinta.zip',
       )
+      // A contagem é do que FOI para o zip (marcados + peças auto-incluídas),
+      // coerente com o sufixo do tileset — o toast confere o pack sozinho.
+      const done = COPY.gallery.downloadedSelection(expanded.assets.length)
       showToast(
         expanded.autoIncludedTilesetIds.length > 0
-          ? `${COPY.toast.downloadReady} ${COPY.gallery.selectionTilesetIncluded}`
-          : COPY.toast.downloadReady,
+          ? `${done} ${COPY.gallery.selectionTilesetIncluded}`
+          : done,
       )
       // Pack baixado = tarefa concluída; sair do modo devolve os cards ao normal.
       exitSelection()
@@ -409,7 +423,12 @@ export function GalleryScreen(): JSX.Element {
             variant="ghost"
             disabled={restoring}
             aria-busy={restoring}
-            onClick={() => restoreRef.current?.click()}
+            onClick={() => {
+              // Importar muda a galeria por baixo das marcas: sai do modo
+              // (mesma régua do "Criar novo").
+              if (selectionMode) exitSelection()
+              restoreRef.current?.click()
+            }}
           >
             <Upload aria-hidden="true" className="size-4" />
             {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
@@ -425,7 +444,13 @@ export function GalleryScreen(): JSX.Element {
               event.target.value = ''
             }}
           />
-          <Button variant="ghost" onClick={() => photoRef.current?.click()}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (selectionMode) exitSelection()
+              photoRef.current?.click()
+            }}
+          >
             <ImageIcon aria-hidden="true" className="size-4" />
             {COPY.gallery.importImage}
           </Button>
@@ -435,7 +460,10 @@ export function GalleryScreen(): JSX.Element {
               {COPY.gallery.select}
             </Button>
           ) : null}
-          {assets.length > 0 ? (
+          {/* Some no modo seleção: ele desliza para a posição do "Selecionar"
+              que acabou de desmontar (mesmo ícone) e baixa a galeria INTEIRA
+              ignorando a marcação — a barra sticky é o comando do modo. */}
+          {assets.length > 0 && !selectionMode ? (
             <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
               <Download aria-hidden="true" className="size-4" />
               {COPY.gallery.downloadAll}
@@ -639,6 +667,15 @@ export function GalleryScreen(): JSX.Element {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
             <div className="flex items-center gap-2">
+              {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
+                  quem sai do modo é o Cancelar ao lado. */}
+              <Button
+                variant="ghost"
+                disabled={selectedCount === 0}
+                onClick={() => setSelectedIds(new Set())}
+              >
+                {COPY.gallery.selectionClear}
+              </Button>
               <Button variant="ghost" onClick={exitSelection}>
                 {COPY.gallery.cancel}
               </Button>
