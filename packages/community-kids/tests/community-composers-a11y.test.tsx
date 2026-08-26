@@ -77,35 +77,52 @@ afterEach(() => {
 })
 
 /**
- * ⚠️⚠️ AQUECER o editor rico ANTES dos casos, para o carregamento tardio sair
- * de dentro da janela de espera. O teto é só a rede de segurança.
+ * ⚠️⚠️ O editor rico entra como DUPLO aqui, e a razão é específica.
  *
- * O `RichEditor` do member-shell é `next/dynamic({ ssr:false })`, então o campo
- * "Mensagem da conversa" só existe depois que o grafo do TipTap (StarterKit +
- * tiptap-markdown) TERMINA de carregar — um import que, no meio do teste, num
- * runner com 22 pacotes disputando CPU, já estourou 1 s (23/08) e depois 5 s
- * (23/08, o outro caso). Quando dá certo o caso leva 54 ms: o custo não é do
- * componente, é do carregamento tardio acontecer DENTRO da janela de espera.
+ * O `aria-label` do editor real é definido DENTRO do `useEditor` do TipTap
+ * (`editorProps.attributes`), então o campo "Mensagem da conversa" só existe
+ * depois que a INSTÂNCIA do editor é criada — não basta o módulo estar
+ * carregado. Sob CPU disputada no CI, essa inicialização já estourou 1 s e
+ * depois 5 s, sempre cravada no valor do teto (o sinal de "não apareceu", não
+ * de "demorou").
  *
- * ⚠️ A leitura anterior — "mount frio, quem roda primeiro paga" — estava
- * ERRADA: no run verde os três casos levaram 17/54/194 ms, e a falha não é
- * lentidão, é o campo NUNCA aparecer dentro do teto. Com o módulo já no
- * registro, o `dynamic` resolve num microtask e a espera deixa de existir.
+ * ⚠️ Duas tentativas anteriores erraram o alvo e ficam registradas para não se
+ * repetirem: (1) subir o teto de espera — trata como latência algo que é
+ * inicialização assíncrona; (2) AQUECER o módulo com `await import` do `.impl`
+ * — resolve o carregamento, que não era o gargalo.
  *
- * Carregar aqui (e não mockar) preserva o que o teste PROVA: que o editor REAL
- * expõe o nome acessível que o compositor passa. Bônus: import que FALHE passa a
- * estourar no topo do arquivo, com a mensagem real, em vez de virar um timeout
- * mudo lá embaixo.
+ * O que este arquivo prova é a FIAÇÃO: que o compositor passa `ariaLabel` ao
+ * editor. Um duplo com o mesmo `aria-label` prova isso de forma determinística.
+ * O que se perde — que o editor REAL honra o `ariaLabel` — é responsabilidade do
+ * member-shell, dono do componente.
  *
- * ⚠️ HONESTIDADE sobre a prova: esta máquina resolve o import em <120 ms com ou
- * sem o aquecimento, então o anti-vácuo local NÃO distingue os dois — a
- * lentidão é do runner do CI, e é lá que o conserto se prova. Se voltar a
- * reprovar, a próxima parada é trocar o editor real por um duplo com o mesmo
- * `aria-label` (perde-se provar o editor REAL, ganha-se determinismo).
+ * ⭐ O duplo é INOFENSIVO POR CONSTRUÇÃO (lição de 21/08, `mock.module` é global
+ * ao run e a primeira materialização gruda): espalha o módulo real, troca só o
+ * `RichEditor`, e o substituto é um `<textarea>` de verdade com o mesmo nome
+ * acessível — qualquer outro teste que renderize o compositor continua achando
+ * um campo de texto nomeado, com value/onChange funcionando.
  */
-await import('@sistemazero/member-shell/components/rich-editor.impl')
+const actualRichEditor = await import('@sistemazero/member-shell/components/rich-editor')
+mock.module('@sistemazero/member-shell/components/rich-editor', () => ({
+  ...actualRichEditor,
+  RichEditor: ({
+    value,
+    onChange,
+    ariaLabel,
+  }: {
+    value: string
+    onChange: (next: string) => void
+    ariaLabel: string
+  }) => (
+    <textarea
+      aria-label={ariaLabel}
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  ),
+}))
 
-/** Rede de segurança para o resto (dois fetches + o diálogo), não orçamento. */
+/** Rede de segurança para os dois fetches e o diálogo, não orçamento de latência. */
 const ESPERA = { timeout: 5_000 } as const
 
 describe('nomes acessíveis dos compositores da comunidade', () => {
