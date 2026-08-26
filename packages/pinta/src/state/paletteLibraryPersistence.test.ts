@@ -71,4 +71,44 @@ describe('biblioteca de paletas na persistência local', () => {
     expect(await a.loadPaletteLibrary?.()).not.toBeNull()
     expect(await b.loadPaletteLibrary?.()).toBeNull()
   })
+
+  it('gravar com uma leitura VELHA não apaga a paleta da outra aba (merge no save)', async () => {
+    // Duas abas do mesmo perfil escrevem o MESMO registro (o Estúdio abre o
+    // Pinta em aba nova). Antes o save era cego: last-write-wins.
+    const persistence = createPintaPersistence()
+    await persistence.savePaletteLibrary?.(libraryOf())
+    // A outra aba partiu de uma biblioteca SEM p1 (leitura anterior) e salva p2.
+    await persistence.savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 50,
+      palettes: [
+        {
+          id: 'p2',
+          updatedAt: 50,
+          name: 'Festa',
+          colors: ['', '#ff8800', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    const loaded = await persistence.loadPaletteLibrary?.()
+    expect(loaded?.palettes.map((p) => p.id).sort()).toEqual(['p1', 'p2'])
+  })
+
+  it('a LÁPIDE continua matando no merge do save (exclusão não ressuscita)', async () => {
+    const persistence = createPintaPersistence()
+    await persistence.savePaletteLibrary?.(libraryOf())
+    // A store exclui: grava sem p1 e com a lápide mais nova que a edição.
+    await persistence.savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 60,
+      palettes: [],
+      removed: [{ id: 'p1', removedAt: 60 }],
+    })
+    expect((await persistence.loadPaletteLibrary?.())?.palettes).toEqual([])
+    // Uma regravação VELHA (outra aba com leitura anterior à exclusão) também
+    // não a traz de volta: a lápide do disco vence a edição mais antiga.
+    await persistence.savePaletteLibrary?.(libraryOf())
+    expect((await persistence.loadPaletteLibrary?.())?.palettes).toEqual([])
+  })
 })

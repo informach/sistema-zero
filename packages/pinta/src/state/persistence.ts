@@ -11,7 +11,7 @@
  */
 import { createStore, del, get, getMany, keys, set, setMany } from 'idb-keyval'
 import type { PaletteLibrary } from '../core/paletteLibrary'
-import { sanitizePaletteLibrary } from '../core/paletteLibrary'
+import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
@@ -387,8 +387,17 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       return sanitizePaletteLibrary(raw)
     },
     async savePaletteLibrary(library) {
-      // Na FIFO do banco, como toda escrita — não interleia com um setMany de assets.
-      await runSerializedWrite(storeHandle, () => set(PALETTE_LIBRARY_KEY, library, storeHandle))
+      // Ler-FUNDIR-gravar, tudo DENTRO da FIFO do banco (o `get` fora dela
+      // deixaria uma escrita enfileirada intercalar entre ler e gravar): duas
+      // ABAS do mesmo perfil (o Estúdio abre o Pinta em aba nova) escrevem o
+      // MESMO registro, e gravar cego era last-write-wins — a paleta criada na
+      // outra aba sumia. O merge com lápides é a régua única da nuvem, então a
+      // exclusão continua valendo (a lápide gravada aqui mata a cópia velha).
+      await runSerializedWrite(storeHandle, async () => {
+        const current = sanitizePaletteLibrary(await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle))
+        const merged = current ? mergePaletteLibraries(current, library) : library
+        await set(PALETTE_LIBRARY_KEY, merged, storeHandle)
+      })
     },
   }
 }

@@ -184,6 +184,9 @@ export function VectorColorsPanel({
       <PaletteMenu
         anchor={menu}
         activeId={palette.kind === 'custom' ? 'custom' : palette.id}
+        activeCustom={
+          palette.kind === 'custom' ? { name: palette.name, colors: palette.colors } : null
+        }
         onChoose={(id) => {
           setPalette({ kind: 'builtin', id })
           menu.close()

@@ -139,6 +139,50 @@ describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
     })
   })
 
+  it('o menu MARCA a paleta salva ativa e o foco cai nela (Enter não descarta a custom)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Festa',
+          colors: ['', '#ff8800', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    await openPixelEditor()
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Festa/ }))
+    await waitFor(() => {
+      expect(menuTrigger('Festa')).toBeTruthy()
+    })
+
+    // Reabrir: a salva ativa está aria-checked e é quem recebe o FOCO de
+    // abertura. Antes NADA ficava marcado com custom ativa: o foco caía no
+    // PRIMEIRO item (Arcade) e um Enter descartava a customPalette.
+    fireEvent.click(menuTrigger('Festa'))
+    await screen.findByRole('menu')
+    const saved = screen.getByRole('menuitemradio', { name: /Festa/ })
+    expect(saved.getAttribute('aria-checked')).toBe('true')
+    expect(screen.getByRole('menuitemradio', { name: /Arcade/ }).getAttribute('aria-checked')).toBe(
+      'false',
+    )
+    await waitFor(() => {
+      expect(document.activeElement).toBe(saved)
+    })
+
+    // Ativar o item focado (o Enter do teclado) MANTÉM a paleta: no-op + fecha.
+    fireEvent.click(saved)
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
+    expect(menuTrigger('Festa')).toBeTruthy()
+  })
+
   it('gerenciar: renomeia e exclui da biblioteca (excluir NÃO toca o desenho)', async () => {
     await createPintaPersistence().savePaletteLibrary?.({
       version: 1,

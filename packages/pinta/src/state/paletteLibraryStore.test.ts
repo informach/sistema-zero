@@ -142,6 +142,15 @@ describe('paletteLibraryStore', () => {
     // E NADA foi gravado no registro do perfil.
     expect(await persistence.loadPaletteLibrary?.()).toBeNull()
 
+    // renomear/remover têm o MESMO portão do save (anti-vácuo: paletas postas
+    // à força no estado — sem o portão, o caminho de escrita rodaria).
+    disabled.setState({
+      palettes: [{ id: 'p1', updatedAt: 10, name: 'forçada', colors: colorsOf('#111111') }],
+    })
+    expect(await disabled.getState().renamePalette('p1', 'nova')).toBe(false)
+    expect(await disabled.getState().removePalette('p1')).toBe(false)
+    expect(await persistence.loadPaletteLibrary?.()).toBeNull()
+
     const bare = createPaletteLibraryStore({
       persistAsset: async () => {},
       persistAssets: async () => {},

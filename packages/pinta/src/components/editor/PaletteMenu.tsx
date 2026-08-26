@@ -11,7 +11,7 @@ import type { JSX, MouseEvent as ReactMouseEvent, RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { PALETTES, type PaletteId, TRANSPARENT_INDEX } from '../../core/palette'
-import type { SavedPalette } from '../../core/paletteLibrary'
+import { type SavedPalette, sameCustomPalette } from '../../core/paletteLibrary'
 import type { AssetPaletteId } from '../../core/project'
 import { Check, Image as ImageIcon, Plus, Settings } from '../ui/icons'
 
@@ -142,12 +142,20 @@ export interface PaletteMenuLibrary {
 export function PaletteMenu({
   anchor,
   activeId,
+  activeCustom = null,
   onChoose,
   library = null,
 }: {
   anchor: PaletteMenuAnchor
-  /** `'custom'` não casa com nenhuma pronta — nenhum item fica marcado. */
+  /** `'custom'` não casa com nenhuma pronta — quem marca é o `activeCustom`. */
   activeId: AssetPaletteId
+  /**
+   * A paleta personalizada ATIVA (a embutida no asset, ou o snapshot do
+   * vetor): marca a salva de MESMO conteúdo na seção "Minhas paletas". Sem
+   * isto nada ficava `aria-checked` e o foco de abertura caía no PRIMEIRO
+   * item (Arcade) — um Enter descartava a customPalette sem querer.
+   */
+  activeCustom?: { name: string; colors: readonly string[] } | null
   onChoose: (id: PaletteId) => void
   /**
    * Presente = seção "Minhas paletas" + ações de criar. Ausente (modo aula,
@@ -156,6 +164,11 @@ export function PaletteMenu({
   library?: PaletteMenuLibrary | null
 }): JSX.Element | null {
   if (!anchor.open || !anchor.pos) return null
+  // A primeira por conteúdo (duas salvas idênticas marcam SÓ uma: radio).
+  const activeSavedId =
+    activeCustom && library
+      ? (library.palettes.find((palette) => sameCustomPalette(palette, activeCustom))?.id ?? null)
+      : null
   return (
     <div
       ref={anchor.menuRef}
@@ -194,26 +207,32 @@ export function PaletteMenu({
               {COPY.palette.myPalettes}
             </p>
           ) : null}
-          {library.palettes.map((palette) => (
-            <button
-              key={palette.id}
-              type="button"
-              role="menuitemradio"
-              aria-checked={false}
-              onClick={() => library.onChooseCustom(palette)}
-              className={MENU_ITEM_CLASS(false)}
-            >
-              {/* A faixa tem um MÍNIMO e o nome pode encolher: com `shrink-0`
-                  no nome o truncate era letra morta e um nome longo estourava
-                  o menu w-56 (full review 25/08). */}
-              <span aria-hidden="true" className="flex min-w-10 flex-1">
-                <PaletteStripe colors={palette.colors} />
-              </span>
-              <span className="min-w-0 truncate text-pin-text text-xs font-bold">
-                {palette.name}
-              </span>
-            </button>
-          ))}
+          {library.palettes.map((palette) => {
+            const active = palette.id === activeSavedId
+            return (
+              <button
+                key={palette.id}
+                type="button"
+                role="menuitemradio"
+                aria-checked={active}
+                onClick={() => library.onChooseCustom(palette)}
+                className={MENU_ITEM_CLASS(active)}
+              >
+                {/* A faixa tem um MÍNIMO e o nome pode encolher: com `shrink-0`
+                    no nome o truncate era letra morta e um nome longo estourava
+                    o menu w-56 (full review 25/08). */}
+                <span aria-hidden="true" className="flex min-w-10 flex-1">
+                  <PaletteStripe colors={palette.colors} />
+                </span>
+                <span className="min-w-0 truncate text-pin-text text-xs font-bold">
+                  {palette.name}
+                </span>
+                {active ? (
+                  <Check aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
+                ) : null}
+              </button>
+            )
+          })}
           <button
             type="button"
             role="menuitem"

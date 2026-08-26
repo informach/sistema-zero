@@ -144,6 +144,9 @@ export function createPaletteLibraryStore(
         return palette
       },
       async renamePalette(id, name) {
+        // Mesmo portão do savePalette: numa store desabilitada (aula) nada
+        // pode chegar ao disco do perfil, nem por um chamador futuro.
+        if (!enabled) return false
         const { palettes, removed } = get()
         const target = palettes.find((p) => p.id === id)
         if (!target || !name.trim()) return false
@@ -156,6 +159,7 @@ export function createPaletteLibraryStore(
         return true
       },
       async removePalette(id) {
+        if (!enabled) return false
         const { palettes, removed } = get()
         if (!palettes.some((p) => p.id === id)) return false
         // A LÁPIDE é o que faz a exclusão valer no outro aparelho (o merge da
