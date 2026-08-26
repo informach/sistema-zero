@@ -287,6 +287,9 @@ export const reports = hub.table(
     targetType: reportTargetEnum('target_type').notNull(),
     targetId: uuid('target_id').notNull(),
     spaceId: uuid('space_id').notNull(),
+    // Snapshot deliberadamente sem FK: a denúncia sobrevive à exclusão do servidor.
+    // Nullable apenas para rollout/backfill e órfãos históricos irrecuperáveis.
+    spaceAudience: audienceEnum('space_audience'),
     reporterId: uuid('reporter_id').notNull(),
     // Snapshots do denunciante: preservam o contexto mesmo se o perfil mudar/sumir.
     reporterAccountId: text('reporter_account_id'),

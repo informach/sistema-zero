@@ -86,6 +86,28 @@ export function paletteSwatches(id: PaletteId): string[] {
   return getPalette(id).colors.filter((hex, index) => index !== TRANSPARENT_INDEX && hex !== '')
 }
 
+/**
+ * A paleta sugerida do VETOR: uma pronta OU um SNAPSHOT de personalizada. O
+ * snapshot (nome + cores copiadas, nunca a referência da biblioteca) é o que
+ * deixa excluir a paleta da biblioteca sem quebrar a sessão aberta. Vive em
+ * estado de sessão do escopo — kinds vetoriais não têm campo no asset (cor é
+ * livre; a paleta só troca as SUGESTÕES da grade).
+ */
+export type VectorPaletteChoice =
+  | { kind: 'builtin'; id: PaletteId }
+  | { kind: 'custom'; name: string; colors: readonly string[] }
+
+/** As 16 posições da escolha (formato `PintaPalette.colors`; [0]=transparente). */
+export function vectorPaletteColors(choice: VectorPaletteChoice): readonly string[] {
+  return choice.kind === 'custom' ? choice.colors : getPalette(choice.id).colors
+}
+
+/** Os swatches da grade para a escolha (sem transparente/slots vazios). */
+export function vectorPaletteSwatches(choice: VectorPaletteChoice): string[] {
+  if (choice.kind === 'builtin') return paletteSwatches(choice.id)
+  return choice.colors.filter((hex, index) => index !== TRANSPARENT_INDEX && hex !== '')
+}
+
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
 export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
   const groups = new Set<string>()

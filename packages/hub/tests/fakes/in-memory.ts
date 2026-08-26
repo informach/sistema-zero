@@ -831,14 +831,12 @@ export class InMemoryModerationRepository implements ModerationRepository {
   }
 
   async createReport(input: CreateReportInput): Promise<void> {
-    const space = this.structure.spaces.find((item) => item.id === input.spaceId)
-    if (!space) throw new Error('Servidor inexistente no fake de moderação')
     this.reports.push({
       id: randomUUID(),
       targetType: input.targetType,
       targetId: input.targetId,
       spaceId: input.spaceId,
-      spaceAudience: space.audience,
+      spaceAudience: input.spaceAudience,
       reporterId: input.reporterId,
       reporterAccountId: input.reporterAccountId,
       reporterDisplayName: input.reporterDisplayName,
@@ -860,7 +858,9 @@ export class InMemoryModerationRepository implements ModerationRepository {
   }) {
     let rows = [...this.reports]
     if (opts.spaceId) rows = rows.filter((r) => r.spaceId === opts.spaceId)
-    if (opts.audience) rows = rows.filter((r) => r.spaceAudience === opts.audience)
+    if (opts.audience) {
+      rows = rows.filter((r) => r.spaceAudience === opts.audience || r.spaceAudience === 'unknown')
+    }
     if (opts.status) rows = rows.filter((r) => r.status === opts.status)
     rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     return {

@@ -8,6 +8,7 @@ import type { PintaHostAdapter, PintaInitialIntent } from '../core/types'
 import type { PintaClipboardStore } from '../state/clipboardStore'
 import type { PintaEditorStore } from '../state/editorStore'
 import type { PintaGalleryState, PintaGalleryStore } from '../state/galleryStore'
+import type { PaletteLibraryStore } from '../state/paletteLibraryStore'
 import type { PintaPersistence } from '../state/persistence'
 
 /**
@@ -38,6 +39,12 @@ export interface PintaAppContextValue {
    * aqui, e não na sessão do editor, porque a sessão morre ao voltar à galeria.
    */
   clipboard: PintaClipboardStore
+  /**
+   * Biblioteca "Minhas paletas" do perfil (registro único fora da galeria).
+   * `enabled: false` = armazenamento sem os métodos, ou modo AULA — a UI
+   * esconde a seção e só a paleta EMBUTIDA no asset funciona.
+   */
+  paletteLibrary: PaletteLibraryStore
   /** Abre o editor do asset (a tela troca por estado). */
   openAsset(id: string): void
   /** Volta para a galeria. */

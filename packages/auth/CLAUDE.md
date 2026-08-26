@@ -477,6 +477,17 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   `DATABASE_URL=postgres://postgres:postgres@localhost:5433/sistemazero`.
   **Não** precisa criar banco — a migration faz `CREATE SCHEMA "auth"`.
 - `bun run db:migrate` aplica a migration; `bun run db:seed ...` cria o 1º admin.
+- **Índices em tabelas ativas:** `0017_profile_search_indexes` já foi aplicada em staging e
+  produção e é histórico imutável. Novos ambientes devem aplicar todas as migrations antes de
+  receber tráfego. A partir de `0018`, não coloque `CREATE INDEX` sobre tabela existente nas
+  migrations normais: o migrator do Drizzle as executa em transação e o PostgreSQL pode bloquear
+  escritas; `CREATE INDEX CONCURRENTLY` também não pode rodar dentro dessa transação. O teste
+  `migration-safety.test.ts` impede ambos os casos e permite apenas índices de tabelas criadas no
+  mesmo arquivo. Para tabela ativa, use uma mudança operacional idempotente e fora de transação:
+  `CREATE INDEX CONCURRENTLY IF NOT EXISTS ...`; valide em `pg_index` que `indisvalid=true` e só
+  então faça o rollout do código que depende do índice. Em falha, remova o índice inválido com
+  `DROP INDEX CONCURRENTLY IF EXISTS ...` antes de tentar novamente. Rollback do código não exige
+  remover o índice; se a remoção for necessária, também deve ser concorrente e fora de transação.
 - E2E manual: suba `auth` (3002) + `gateway` (3000) e:
   `POST /auth/register` → recebe tokens; rota protegida com `Authorization: Bearer
   <access>` → 200; token inválido → 401; role/status insuficientes → 403.

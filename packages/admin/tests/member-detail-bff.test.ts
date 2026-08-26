@@ -63,6 +63,34 @@ describe('composição da ficha do membro no BFF', () => {
     expect(memberCalls).toBe(0)
   })
 
+  test('recusa identidade e detalhe que pertencem a outra conta', async () => {
+    for (const scenario of [
+      {
+        identity: { status: 200, body: { user: { id: 'outra-conta' } } },
+        memberUserId: 'account',
+      },
+      {
+        identity: { status: 200, body: { user: { id: 'account' } } },
+        memberUserId: 'outra-conta',
+      },
+    ]) {
+      const result = await composeMemberDetail(
+        'account',
+        scenario.identity,
+        { status: 200, body: { profiles: [] } },
+        async () => ({
+          status: 200,
+          body: { userId: scenario.memberUserId, entitlements: [], progress: [] },
+        }),
+      )
+
+      expect(result).toEqual({
+        status: 502,
+        body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+      })
+    }
+  })
+
   test('carrega Members com todos os perfis e devolve a ficha hidratada', async () => {
     const result = await composeMemberDetail(
       'account',
@@ -89,5 +117,57 @@ describe('composição da ficha do membro no BFF', () => {
         { id: 'child-a', name: 'Bia', avatarUrl: null, progress: [{ courseRef: 'kids' }] },
       ],
     })
+  })
+
+  test('Members sem profilesProgress para perfis solicitados vira 502', async () => {
+    const result = await composeMemberDetail(
+      'account',
+      { status: 200, body: { user: { id: 'account' } } },
+      {
+        status: 200,
+        body: { profiles: [{ id: 'child-a', name: 'Bia', avatarUrl: null }] },
+      },
+      async () => ({
+        status: 200,
+        body: { userId: 'account', entitlements: [], progress: [] },
+      }),
+    )
+
+    expect(result).toEqual({
+      status: 502,
+      body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+    })
+  })
+
+  test('Members com profilesProgress parcial ou malformado vira 502', async () => {
+    const profiles = {
+      status: 200,
+      body: {
+        profiles: [
+          { id: 'child-a', name: 'Bia', avatarUrl: null },
+          { id: 'child-b', name: 'Caio', avatarUrl: null },
+        ],
+      },
+    }
+
+    for (const profilesProgress of [
+      [{ userId: 'child-a', progress: [] }],
+      [
+        { userId: 'child-a', progress: [] },
+        { userId: 'child-b', progress: 'inválido' },
+      ],
+    ]) {
+      const result = await composeMemberDetail(
+        'account',
+        { status: 200, body: { user: { id: 'account' } } },
+        profiles,
+        async () => ({
+          status: 200,
+          body: { userId: 'account', entitlements: [], progress: [], profilesProgress },
+        }),
+      )
+
+      expect(result.status).toBe(502)
+    }
   })
 })

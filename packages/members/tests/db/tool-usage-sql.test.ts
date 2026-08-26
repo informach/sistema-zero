@@ -122,6 +122,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     itemUpdatedAt: string
     storageRef?: string | null
     deletedAt?: string | null
+    kind?: string
   }) => {
     // ⚠️ A tabela REAL (migrations) pode já existir no banco compartilhado, com
     // `created_at`/`synced_at` NOT NULL SEM default — supre os dois explícitos.
@@ -137,7 +138,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
         over.tool,
         randomUUID().slice(0, 12),
         'Criação',
-        'classic',
+        over.kind ?? 'classic',
         over.itemUpdatedAt,
         over.storageRef === undefined ? 'r2ugc:x' : over.storageRef,
         over.deletedAt ?? null,
@@ -194,5 +195,21 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     expect(pinta.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-05T09:00:00.000Z')
     const studio = await repo.creationsUsageByUsers([USER], 'studio')
     expect(studio.get(USER)?.count).toBe(1)
+  })
+
+  test('a biblioteca "Minhas paletas" (kind palette-library) NÃO conta como desenho', async () => {
+    await insertCreation({ userId: USER, tool: 'pinta', itemUpdatedAt: '2026-06-01T09:00:00.000Z' })
+    // O item ESPECIAL do canal (registro único da biblioteca, viva e confirmada).
+    await insertCreation({
+      userId: USER,
+      tool: 'pinta',
+      itemUpdatedAt: '2026-06-09T09:00:00.000Z',
+      kind: 'palette-library',
+    })
+
+    const pinta = await repo.creationsUsageByUsers([USER], 'pinta')
+    expect(pinta.get(USER)?.count).toBe(1)
+    // E nem o lastActivityAt vaza da biblioteca (o desenho é de 01/06).
+    expect(pinta.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-01T09:00:00.000Z')
   })
 })

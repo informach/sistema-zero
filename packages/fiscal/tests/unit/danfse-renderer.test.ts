@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { PDFDocument, StandardFonts } from '@cantoo/pdf-lib'
@@ -7,12 +8,14 @@ import type { EmitterProfile } from '../../src/domain/dps/emitter-profile'
 import { INFORMACH_BASE } from '../../src/domain/dps/emitter-profile'
 import { formatXmlDecimalBrl } from '../../src/domain/money'
 import type { Invoice } from '../../src/domain/ports/invoice-repository.port'
+import { buildComplementaryInformation } from '../../src/infrastructure/danfse/complementary-information'
 import {
   LocalDanfseRenderer,
   NFSE_CONSULTA_PUBLICA_URL,
   sanitizeWinAnsi,
   wrapText,
 } from '../../src/infrastructure/danfse/danfse-renderer'
+import { loadBundledDanfseFontFiles } from '../../src/infrastructure/danfse/font-files'
 import { buildDanfseData } from '../../src/infrastructure/danfse/nfse-fields'
 import { applyStatusStamp, stampForStatus } from '../../src/infrastructure/danfse/status-stamp'
 
@@ -120,6 +123,25 @@ describe('nfse-fields — parser do XML da NFS-e (TOTAL, nunca lança)', () => {
     expect(data.valores.pTotTribSN).toBe('8.24')
   })
 
+  test('extrai a chave substituída e os três percentuais aproximados', () => {
+    const substitutedKey = '31062002243588758000103000000000000226061871788140'
+    const xml = SYNTHETIC_NFSE.replace(
+      '<prest>',
+      `<subst><chSubstda>${substitutedKey}</chSubstda></subst><prest>`,
+    ).replace(
+      '<pTotTribSN>8.24</pTotTribSN>',
+      '<pTotTrib><pTotTribFed>4.20</pTotTribFed><pTotTribEst>1.10</pTotTribEst><pTotTribMun>3.00</pTotTribMun></pTotTrib>',
+    )
+
+    const data = buildDanfseData(renderInput({ nfseXml: xml }), profile)
+
+    expect(data.chSubstda).toBe(substitutedKey)
+    expect(data.valores.pTotTribFed).toBe('4.20')
+    expect(data.valores.pTotTribEst).toBe('1.10')
+    expect(data.valores.pTotTribMun).toBe('3.00')
+    expect(data.valores.pTotTribSN).toBeNull()
+  })
+
   test('sem <toma> → tomador null (bloco "não identificado" no PDF)', () => {
     const xml = SYNTHETIC_NFSE.replace(/<toma>.*?<\/toma>/, '')
     const data = buildDanfseData(renderInput({ nfseXml: xml }), profile)
@@ -161,6 +183,30 @@ describe('nfse-fields — parser do XML da NFS-e (TOTAL, nunca lança)', () => {
   })
 })
 
+describe('informações complementares — ordem e totais da NT 008/2026', () => {
+  test('chave substituída precede a linha fixa de percentuais', () => {
+    const data = buildDanfseData(renderInput(), profile)
+    data.chSubstda = '31062002243588758000103000000000000226061871788140'
+    data.valores.pTotTribSN = null
+    data.valores.pTotTribFed = '4.20'
+    data.valores.pTotTribEst = '1.10'
+    data.valores.pTotTribMun = '3.00'
+
+    expect(buildComplementaryInformation(data)).toEqual([
+      'NFS-e Subst.: 31062002243588758000103000000000000226061871788140',
+      'Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: 4,20% ; Estaduais: 1,10% ; Municipais: 3,00%',
+    ])
+  })
+
+  test('pTotTribSN não é atribuído falsamente a uma esfera tributária', () => {
+    const data = buildDanfseData(renderInput(), profile)
+
+    expect(buildComplementaryInformation(data)).toEqual([
+      'Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: Federais: - ; Estaduais: - ; Municipais: -',
+    ])
+  })
+})
+
 describe('LocalDanfseRenderer — PDF A4 do DANFSe v2.0', () => {
   const renderer = new LocalDanfseRenderer(profile)
 
@@ -177,7 +223,11 @@ describe('LocalDanfseRenderer — PDF A4 do DANFSe v2.0', () => {
   }
 
   test('caminho feliz (XML completo, com tomador)', async () => {
-    await renderAndParse()
+    const bytes = await renderAndParse()
+    const pdfSource = Buffer.from(bytes).toString('latin1')
+    expect(pdfSource).toContain('Arial')
+    expect(pdfSource).toContain('MicrosoftSansSerif')
+    expect(pdfSource).not.toContain('Helvetica')
   })
 
   test('sem tomador / fallback sem XML / descrição gigante — sempre 1 página A4', async () => {
@@ -220,6 +270,24 @@ describe('LocalDanfseRenderer — PDF A4 do DANFSe v2.0', () => {
   })
 })
 
+describe('fontes oficiais do DANFSe — ativos de implantação', () => {
+  test('carrega os três arquivos autorizados e verifica o inventário', () => {
+    const fonts = loadBundledDanfseFontFiles()
+    const sha256 = (bytes: Uint8Array) =>
+      createHash('sha256').update(bytes).digest('hex').toUpperCase()
+
+    expect(sha256(fonts.arialRegular)).toBe(
+      'B3658EADAE55E682B5F69EB64C439C1ECC8F196C0BB8D4756D145D13BC86476A',
+    )
+    expect(sha256(fonts.arialBold)).toBe(
+      'E8F4E3BAF6CC35FED6FCCE3A540E8B39E8F6CDA1D22A28F2EC8F526FEF7A43F5',
+    )
+    expect(sha256(fonts.microsoftSansSerif)).toBe(
+      '89B42A12EA0379133FB2F4A1D1BD53058FB61E2343C1D509452D5761ACC85B7A',
+    )
+  })
+})
+
 describe('sanitizeWinAnsi — CP1252 sem "?" mudo', () => {
   test('pt-BR passa intacto; emoji some; pontuação tipográfica fica', () => {
     expect(sanitizeWinAnsi('Instrução, treinamento — avaliação até ç')).toBe(
@@ -252,10 +320,9 @@ describe('applyStatusStamp — marca d’água CANCELADA/SUBSTITUÍDA no serve',
     expect(pdf.getPageCount()).toBe(1)
   })
 
-  test('bytes que não são PDF → devolve o ORIGINAL (best-effort, nunca quebra o serve)', async () => {
+  test('bytes que não são PDF → rejeita para o endpoint responder 500', async () => {
     const junk = new TextEncoder().encode('não sou um pdf')
-    const out = await applyStatusStamp(junk, 'SUBSTITUÍDA')
-    expect(out).toBe(junk)
+    expect(applyStatusStamp(junk, 'SUBSTITUÍDA')).rejects.toThrow()
   })
 
   test('stampForStatus: só CANCELLED/SUBSTITUTED carimbam', () => {

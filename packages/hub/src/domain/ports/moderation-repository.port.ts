@@ -62,8 +62,8 @@ export interface ReportRecord {
   targetType: ModeratableTarget
   targetId: string
   spaceId: string
-  /** Audiência canônica do servidor, mesmo quando o alvo já foi removido. */
-  spaceAudience: 'adult' | 'kids'
+  /** Audiência canônica; `unknown` só existe em denúncia legada sem snapshot/espaço. */
+  spaceAudience: 'adult' | 'kids' | 'unknown'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null
@@ -80,6 +80,7 @@ export interface CreateReportInput {
   targetType: ModeratableTarget
   targetId: string
   spaceId: string
+  spaceAudience: 'adult' | 'kids'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null

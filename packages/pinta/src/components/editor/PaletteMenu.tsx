@@ -11,7 +11,9 @@ import type { JSX, MouseEvent as ReactMouseEvent, RefObject } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import { PALETTES, type PaletteId, TRANSPARENT_INDEX } from '../../core/palette'
-import { Check } from '../ui/icons'
+import type { SavedPalette } from '../../core/paletteLibrary'
+import type { AssetPaletteId } from '../../core/project'
+import { Check, Image as ImageIcon, Plus, Settings } from '../ui/icons'
 
 export interface PaletteMenuAnchor {
   open: boolean
@@ -48,7 +50,9 @@ export function usePaletteMenu(): PaletteMenuAnchor {
       if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
         const items = menuRef.current
           ? Array.from(
-              menuRef.current.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]'),
+              menuRef.current.querySelectorAll<HTMLButtonElement>(
+                '[role="menuitemradio"], [role="menuitem"]',
+              ),
             )
           : []
         if (items.length === 0) return
@@ -107,14 +111,49 @@ export function usePaletteMenu(): PaletteMenuAnchor {
   }
 }
 
+/** Faixa de amostras de uma paleta (pula transparente/slots vazios). */
+function PaletteStripe({ colors }: { colors: readonly string[] }): JSX.Element {
+  return (
+    <span aria-hidden="true" className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full">
+      {colors.map((hex, i) =>
+        i === TRANSPARENT_INDEX || !hex ? null : (
+          <span key={hex + String(i)} className="h-full flex-1" style={{ background: hex }} />
+        ),
+      )}
+    </span>
+  )
+}
+
+const MENU_ITEM_CLASS = (active: boolean) =>
+  `flex min-h-11 shrink-0 items-center gap-2 rounded-xl border-2 px-2 transition ${
+    active ? 'border-pin-accent' : 'border-transparent hover:border-pin-border'
+  }`
+
+/** A seção "Minhas paletas" do menu: as salvas + as duas ações de criar. */
+export interface PaletteMenuLibrary {
+  palettes: readonly SavedPalette[]
+  onChooseCustom(palette: SavedPalette): void
+  onCreate(): void
+  onFromImage(): void
+  /** Presente E com paletas salvas → item "Gerenciar paletas". */
+  onManage?(): void
+}
+
 export function PaletteMenu({
   anchor,
   activeId,
   onChoose,
+  library = null,
 }: {
   anchor: PaletteMenuAnchor
-  activeId: PaletteId
+  /** `'custom'` não casa com nenhuma pronta — nenhum item fica marcado. */
+  activeId: AssetPaletteId
   onChoose: (id: PaletteId) => void
+  /**
+   * Presente = seção "Minhas paletas" + ações de criar. Ausente (modo aula,
+   * armazenamento sem biblioteca) = só as prontas, como sempre.
+   */
+  library?: PaletteMenuLibrary | null
 }): JSX.Element | null {
   if (!anchor.open || !anchor.pos) return null
   return (
@@ -134,24 +173,9 @@ export function PaletteMenu({
             role="menuitemradio"
             aria-checked={active}
             onClick={() => onChoose(p.id)}
-            className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl border-2 px-2 transition ${
-              active ? 'border-pin-accent' : 'border-transparent hover:border-pin-border'
-            }`}
+            className={MENU_ITEM_CLASS(active)}
           >
-            <span
-              aria-hidden="true"
-              className="flex h-2.5 min-w-0 flex-1 overflow-hidden rounded-full"
-            >
-              {p.colors.map((hex, i) =>
-                i === TRANSPARENT_INDEX || !hex ? null : (
-                  <span
-                    key={hex + String(i)}
-                    className="h-full flex-1"
-                    style={{ background: hex }}
-                  />
-                ),
-              )}
-            </span>
+            <PaletteStripe colors={p.colors} />
             <span className="shrink-0 text-xs font-bold text-pin-text">{p.name}</span>
             {active ? (
               <Check aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
@@ -159,6 +183,68 @@ export function PaletteMenu({
           </button>
         )
       })}
+      {library ? (
+        <>
+          <div aria-hidden="true" className="my-1 shrink-0 border-pin-border border-t-2" />
+          {library.palettes.length > 0 ? (
+            <p
+              aria-hidden="true"
+              className="shrink-0 px-2 text-pin-muted text-xs uppercase tracking-wide"
+            >
+              {COPY.palette.myPalettes}
+            </p>
+          ) : null}
+          {library.palettes.map((palette) => (
+            <button
+              key={palette.id}
+              type="button"
+              role="menuitemradio"
+              aria-checked={false}
+              onClick={() => library.onChooseCustom(palette)}
+              className={MENU_ITEM_CLASS(false)}
+            >
+              {/* A faixa tem um MÍNIMO e o nome pode encolher: com `shrink-0`
+                  no nome o truncate era letra morta e um nome longo estourava
+                  o menu w-56 (full review 25/08). */}
+              <span aria-hidden="true" className="flex min-w-10 flex-1">
+                <PaletteStripe colors={palette.colors} />
+              </span>
+              <span className="min-w-0 truncate text-pin-text text-xs font-bold">
+                {palette.name}
+              </span>
+            </button>
+          ))}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={library.onCreate}
+            className={MENU_ITEM_CLASS(false)}
+          >
+            <Plus aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
+            <span className="text-pin-text text-xs font-bold">{COPY.palette.createPalette}</span>
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={library.onFromImage}
+            className={MENU_ITEM_CLASS(false)}
+          >
+            <ImageIcon aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
+            <span className="text-pin-text text-xs font-bold">{COPY.palette.paletteFromImage}</span>
+          </button>
+          {library.onManage && library.palettes.length > 0 ? (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={library.onManage}
+              className={MENU_ITEM_CLASS(false)}
+            >
+              <Settings aria-hidden="true" className="size-4 shrink-0 text-pin-muted" />
+              <span className="text-pin-text text-xs font-bold">{COPY.palette.managePalettes}</span>
+            </button>
+          ) : null}
+        </>
+      ) : null}
     </div>
   )
 }

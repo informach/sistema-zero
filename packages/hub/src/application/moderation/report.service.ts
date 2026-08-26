@@ -27,11 +27,12 @@ export class ReportService {
     targetId: string,
     reason: string,
   ): Promise<{ ok: true }> {
-    const spaceId = await this.resolveSpaceWithAccess(actor, target, targetId)
+    const space = await this.resolveSpaceWithAccess(actor, target, targetId)
     await this.mod.createReport({
       targetType: target,
       targetId,
-      spaceId,
+      spaceId: space.id,
+      spaceAudience: space.audience,
       reporterId: actor.userId,
       reporterAccountId: actor.accountId,
       reporterDisplayName: actor.displayName,
@@ -46,7 +47,7 @@ export class ReportService {
     actor: Actor,
     target: ModeratableTarget,
     targetId: string,
-  ): Promise<string> {
+  ): Promise<{ id: string; audience: 'adult' | 'kids' }> {
     const channelId =
       target === 'thread'
         ? (await this.requireThread(targetId)).channelId
@@ -56,7 +57,7 @@ export class ReportService {
     const space = await this.read.findActiveSpaceById(channel.spaceId)
     if (!space) throw new ChannelNotFoundError()
     if (!(await this.access.canAccessChannel(actor, space, channel))) throw new AccessDeniedError()
-    return space.id
+    return { id: space.id, audience: space.audience }
   }
 
   private async requireThread(id: string) {

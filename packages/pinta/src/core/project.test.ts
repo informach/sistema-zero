@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import type { VectorShape } from '../vector/model'
 import { getPalette } from './palette'
 import {
+  assetPaletteName,
   assetRole,
   assetStyle,
   createBitmap,
@@ -487,6 +488,96 @@ describe('helpers de estilo/papel', () => {
     const resolved = resolveAssetPalette(withExtra)
     expect(resolved).toHaveLength(base.length + 1)
     expect(resolved[base.length]).toBe('#b63f16')
+  })
+
+  it('customPalette: round-trip via structuredClone é idêntico (custom vale)', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const withCustom = sanitizePintaAsset({
+      ...sprite,
+      paletteId: 'custom',
+      customPalette: { name: 'Do meu jogo', colors: ['', '#111111', '#222222'] },
+    })
+    if (withCustom?.kind !== 'pixel-sprite') throw new Error('sprite esperado')
+    expect(withCustom.paletteId).toBe('custom')
+    // ⚠️ structuredClone, NUNCA JSON: o JSON mata o Uint8Array e o sanitize
+    // recusaria por OUTRO motivo (o teste passaria pela razão errada).
+    expect(sanitizePintaAsset(structuredClone(withCustom))).toEqual(withCustom)
+  })
+
+  it('customPalette: 16 posições com slots vazios PRESERVADOS e [0] transparente', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    const colors = Array.from({ length: 16 }, () => '')
+    colors[0] = '#ff0000' // tenta ocupar o transparente: o sanitize zera
+    colors[3] = '#AB12CD'
+    colors[7] = '#f80' // hex curto expande
+    colors[9] = 'lixo'
+    const out = sanitizePintaAsset({
+      ...sprite,
+      paletteId: 'custom',
+      customPalette: { name: 'Buracos', colors },
+    })
+    if (out?.kind !== 'pixel-sprite' || !out.customPalette) throw new Error('custom esperado')
+    expect(out.customPalette.colors).toHaveLength(16)
+    expect(out.customPalette.colors[0]).toBe('')
+    expect(out.customPalette.colors[3]).toBe('#ab12cd')
+    expect(out.customPalette.colors[7]).toBe('#ff8800')
+    // Slot com lixo vira VAZIO no lugar (não compacta — deslocaria os índices).
+    expect(out.customPalette.colors[9]).toBe('')
+    expect(out.customPalette.colors[15]).toBe('')
+  })
+
+  it("'custom' sem paleta válida degrada para arcade SEM a chave", () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    for (const customPalette of [undefined, null, {}, { name: 'x', colors: ['', 'lixo'] }]) {
+      const out = sanitizePintaAsset({ ...sprite, paletteId: 'custom', customPalette })
+      expect(out?.kind === 'pixel-sprite' && out.paletteId).toBe('arcade')
+      expect(out?.kind === 'pixel-sprite' && 'customPalette' in out).toBe(false)
+    }
+  })
+
+  it('asset com paleta PRONTA nunca ganha a chave customPalette (histórico intacto)', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    // customPalette órfã (sem paletteId custom) é descartada em silêncio.
+    const out = sanitizePintaAsset({
+      ...sprite,
+      customPalette: { name: 'perdida', colors: ['', '#111111'] },
+    })
+    expect(out?.kind === 'pixel-sprite' && out.paletteId).toBe('arcade')
+    expect(out?.kind === 'pixel-sprite' && 'customPalette' in out).toBe(false)
+  })
+
+  it('resolveAssetPalette com custom: as 16 da paleta embutida + extras ≥16', () => {
+    const tileset = createTilesetAsset({ name: 'pecas', tileSize: 8 })
+    const out = sanitizePintaAsset({
+      ...tileset,
+      paletteId: 'custom',
+      customPalette: { name: 'Minhas cores', colors: ['', '#101010', '#202020'] },
+      extraColors: ['#b63f16'],
+    })
+    if (out?.kind !== 'tileset') throw new Error('tileset esperado')
+    const resolved = resolveAssetPalette(out)
+    expect(resolved).toHaveLength(17)
+    expect(resolved[1]).toBe('#101010')
+    expect(resolved[2]).toBe('#202020')
+    expect(resolved[15]).toBe('')
+    expect(resolved[16]).toBe('#b63f16')
+  })
+
+  it('assetPaletteName: custom usa o nome embutido; nome vazio cai no default', () => {
+    const sprite = createPixelSpriteAsset({ name: 'heroi', frameSize: 8 })
+    expect(assetPaletteName(sprite)).toBe('Arcade')
+    const named = sanitizePintaAsset({
+      ...sprite,
+      paletteId: 'custom',
+      customPalette: { name: '  Céu de verão  ', colors: ['', '#87f2ff'] },
+    })
+    expect(named?.kind === 'pixel-sprite' && assetPaletteName(named)).toBe('Céu de verão')
+    const unnamed = sanitizePintaAsset({
+      ...sprite,
+      paletteId: 'custom',
+      customPalette: { name: '', colors: ['', '#87f2ff'] },
+    })
+    expect(unnamed?.kind === 'pixel-sprite' && assetPaletteName(unnamed)).toBe('Minha paleta')
   })
 
   it('easing: "ease" sobrevive; qualquer outro vira linear (omitido)', () => {

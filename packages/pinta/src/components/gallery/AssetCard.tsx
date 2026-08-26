@@ -25,7 +25,7 @@ import {
 import { paintBitmapCapped } from '../../pixel/render'
 import { paintMinimap, tilemapMinimapColors } from '../../tiles/minimap'
 import { VectorFrameSvg } from '../../vector/VectorFrameSvg'
-import { Copy, Pencil, Trash2 } from '../ui/icons'
+import { Check, Copy, Pencil, Trash2 } from '../ui/icons'
 
 // Os dois extratores da "cara" do asset mudaram de casa para `core/assetThumb`
 // (são puros e o seletor "Trazer um desenho" do vetor também precisa deles).
@@ -248,6 +248,9 @@ export const AssetCard = memo(function AssetCard({
   onRename,
   onDuplicate,
   onRemove,
+  selectable = false,
+  selected = false,
+  onToggleSelect,
 }: {
   asset: PintaAsset
   justCreated?: boolean
@@ -257,6 +260,15 @@ export const AssetCard = memo(function AssetCard({
   onRename: (id: string) => void
   onDuplicate: (id: string) => Promise<void> | void
   onRemove: (id: string) => void
+  /**
+   * Modo de seleção do pack: o botão-miniatura ALTERNA marcar/desmarcar em vez
+   * de abrir, e as três ações ficam `disabled` (sumir mudaria a altura do card
+   * e a grade pularia). Props PRIMITIVAS + callback estável por id — nunca o
+   * Set inteiro, senão o `memo` re-renderiza a galeria toda a cada toque.
+   */
+  selectable?: boolean
+  selected?: boolean
+  onToggleSelect?: (id: string) => void
 }): JSX.Element {
   const kind = COPY.kinds[asset.kind]
   const style = assetStyle(asset.kind)
@@ -291,13 +303,33 @@ export const AssetCard = memo(function AssetCard({
     >
       <button
         type="button"
-        onClick={() => onOpen(asset.id)}
-        aria-label={COPY.a11y.openAsset(
-          `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
-        )}
-        className="rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+        onClick={() => {
+          if (selectable) onToggleSelect?.(asset.id)
+          else onOpen(asset.id)
+        }}
+        aria-pressed={selectable ? selected : undefined}
+        aria-label={
+          selectable
+            ? selected
+              ? COPY.gallery.selectionUnmark(asset.name)
+              : COPY.gallery.selectionMark(asset.name)
+            : COPY.a11y.openAsset(
+                `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
+              )
+        }
+        className={`relative rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent ${
+          selected ? 'rounded-xl ring-4 ring-pin-accent' : ''
+        }`}
       >
         <AssetThumb asset={asset} findAsset={findAsset} paint={near} />
+        {selectable && selected ? (
+          <span
+            aria-hidden="true"
+            className="absolute top-1.5 right-1.5 inline-flex size-6 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg shadow"
+          >
+            <Check className="size-4" />
+          </span>
+        ) : null}
       </button>
       <div className="flex items-center gap-1">
         <span
@@ -324,29 +356,31 @@ export const AssetCard = memo(function AssetCard({
         <button
           type="button"
           onClick={() => onRename(asset.id)}
+          disabled={selectable}
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
           title={COPY.gallery.rename}
-          className={`${actionClass} hover:bg-pin-border/40`}
+          className={`${actionClass} hover:bg-pin-border/40 disabled:opacity-40`}
         >
           <Pencil aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
           onClick={() => void handleDuplicate()}
-          disabled={duplicating}
+          disabled={selectable || duplicating}
           aria-busy={duplicating}
           aria-label={`${COPY.gallery.duplicate} ${asset.name}`}
           title={COPY.gallery.duplicate}
-          className={`${actionClass} hover:bg-pin-border/40 disabled:cursor-wait disabled:opacity-50`}
+          className={`${actionClass} hover:bg-pin-border/40 disabled:opacity-40 ${duplicating ? 'disabled:cursor-wait disabled:opacity-50' : ''}`}
         >
           <Copy aria-hidden="true" className="size-4" />
         </button>
         <button
           type="button"
           onClick={() => onRemove(asset.id)}
+          disabled={selectable}
           aria-label={`${COPY.gallery.remove} ${asset.name}`}
           title={COPY.gallery.remove}
-          className={`${actionClass} text-pin-danger hover:bg-pin-danger/20`}
+          className={`${actionClass} text-pin-danger hover:bg-pin-danger/20 disabled:opacity-40`}
         >
           <Trash2 aria-hidden="true" className="size-4" />
         </button>

@@ -3,6 +3,7 @@ import {
   canBackgroundRefreshPage,
   createForegroundPriority,
   createLatestAppendGuard,
+  createScopeAuthority,
   runLatestForeground,
 } from '../src/lib/latest-wins'
 
@@ -76,6 +77,20 @@ describe('foreground-priority — polling nunca engole paginação', () => {
     expect(published).toEqual(['novo'])
     expect(errors).toEqual([])
     expect(settled).toBe(1)
+  })
+})
+
+describe('escopo de mutação', () => {
+  test('trocar de plataforma invalida a recarga antiga, inclusive após ir e voltar', () => {
+    const authority = createScopeAuthority<'adult' | 'kids'>('adult')
+    const oldMutation = authority.capture()
+
+    authority.update('kids')
+    expect(authority.isCurrent(oldMutation)).toBe(false)
+
+    authority.update('adult')
+    expect(authority.isCurrent(oldMutation)).toBe(false)
+    expect(authority.isCurrent(authority.capture())).toBe(true)
   })
 })
 

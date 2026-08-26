@@ -30,6 +30,7 @@ certs/
 **/certs/
 secrets/
 **/secrets/
+packages/fiscal/.local-fonts/
 *.p12
 *.pfx
 *.pem

@@ -135,8 +135,8 @@ export interface HubReportView {
   targetType: HubModeratableTarget
   targetId: string
   spaceId: string
-  /** Audiência canônica do servidor, inclusive quando `content` é null. */
-  spaceAudience: 'adult' | 'kids'
+  /** `unknown` = denúncia legada cujo servidor já não existe. */
+  spaceAudience: 'adult' | 'kids' | 'unknown'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null

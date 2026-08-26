@@ -56,7 +56,7 @@ export interface ReportView {
   targetType: ModeratableTarget
   targetId: string
   spaceId: string
-  spaceAudience: 'adult' | 'kids'
+  spaceAudience: 'adult' | 'kids' | 'unknown'
   reporterId: string
   reporterAccountId: string | null
   reporterDisplayName: string | null

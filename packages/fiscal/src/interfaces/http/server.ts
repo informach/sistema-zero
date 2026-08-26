@@ -218,7 +218,8 @@ export function createServer(deps: HttpDeps) {
           return { error: 'não encontrado' }
         }
         // Nota CANCELLED/SUBSTITUTED: a marca d'água da NT 008 entra NA HORA de
-        // servir (o bytea da emissão é imutável) — best-effort, falha → original.
+        // servir (o bytea da emissão é imutável). A marca é obrigatória: se o
+        // carimbo falhar, a rota falha fechada em vez de servir status incorreto.
         const stamp = stampForStatus(pdf.invoiceStatus)
         const content = stamp ? await applyStatusStamp(pdf.content, stamp) : pdf.content
         return new Response(Buffer.from(content), {

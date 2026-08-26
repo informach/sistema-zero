@@ -16,17 +16,26 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
+import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { getPalette } from '../../../core/palette'
+import { usePintaApp } from '../../appContext'
 import { ToolButton } from '../../ui/Button'
 import { ChevronDown, Plus, Trash2 } from '../../ui/icons'
 import type { PanelDisclosure } from '../../ui/Panel'
 import { Panel } from '../../ui/Panel'
 import { useToast } from '../../ui/Toast'
 import { ColorPickerDialog } from '../ColorPicker'
+import { CreatePaletteDialog } from '../CreatePaletteDialog'
+import { ManagePalettesDialog } from '../ManagePalettesDialog'
 import { PaletteMenu, usePaletteMenu } from '../PaletteMenu'
 import { useVectorEditor } from './VectorEditorScope'
+import { vectorPaletteColors } from './vectorTools'
+
+const LazyPaletteFromImageDialog = lazy(() =>
+  import('../PaletteFromImageDialog').then((m) => ({ default: m.PaletteFromImageDialog })),
+)
 
 export function VectorColorsPanel({
   disclosure,
@@ -38,17 +47,47 @@ export function VectorColorsPanel({
     swatches,
     customColors,
     forgetColor,
-    paletteId,
-    setPaletteId,
+    palette,
+    setPalette,
     activeChannel,
     applyChannelColor,
     rememberColor,
   } = useVectorEditor()
+  const { paletteLibrary } = usePintaApp()
   const { showToast } = useToast()
   const menu = usePaletteMenu()
   const [pickerOpen, setPickerOpen] = useState(false)
+  const [createOpen, setCreateOpen] = useState(false)
+  const [fromImageOpen, setFromImageOpen] = useState(false)
+  const [manageOpen, setManageOpen] = useState(false)
+  const libraryEnabled = useStore(paletteLibrary, (state) => state.enabled)
+  const savedPalettes = useStore(paletteLibrary, (state) => state.palettes)
+  useEffect(() => {
+    if (libraryEnabled) void paletteLibrary.getState().load()
+  }, [libraryEnabled, paletteLibrary])
+  // A nuvem grava a biblioteca POR FORA da store: o menu aberto relê o disco.
+  useEffect(() => {
+    if (menu.open && libraryEnabled) void paletteLibrary.getState().load()
+  }, [menu.open, libraryEnabled, paletteLibrary])
 
-  const paletteName = getPalette(paletteId).name
+  const paletteName = palette.kind === 'custom' ? palette.name : getPalette(palette.id).name
+
+  /**
+   * Criar (à mão ou de uma imagem): guarda na biblioteca (quando há uma) e
+   * aplica como SNAPSHOT de sessão — no vetor a paleta é só sugestão da grade.
+   */
+  async function handleCreatePalette(name: string, colors: string[]): Promise<void> {
+    setCreateOpen(false)
+    setFromImageOpen(false)
+    const library = paletteLibrary.getState()
+    const saved = library.enabled ? await library.savePalette({ name, colors }) : null
+    setPalette({
+      kind: 'custom',
+      name: saved?.name ?? name,
+      colors: [...(saved?.colors ?? colors)],
+    })
+    showToast(library.enabled && !saved ? COPY.palette.libraryFull : COPY.palette.paletteCreated)
+  }
   const channelLabel = activeChannel === 'fill' ? COPY.vector.fill : COPY.vector.stroke
   // Cor "selecionada" do canal ativo (destaca o swatch correspondente).
   const activeHex =
@@ -144,10 +183,34 @@ export function VectorColorsPanel({
 
       <PaletteMenu
         anchor={menu}
-        activeId={paletteId}
+        activeId={palette.kind === 'custom' ? 'custom' : palette.id}
         onChoose={(id) => {
-          setPaletteId(id)
+          setPalette({ kind: 'builtin', id })
           menu.close()
+        }}
+        library={{
+          palettes: libraryEnabled ? savedPalettes : [],
+          onChooseCustom: (saved) => {
+            // SNAPSHOT: excluir da biblioteca depois não quebra a sessão.
+            setPalette({ kind: 'custom', name: saved.name, colors: [...saved.colors] })
+            menu.close()
+          },
+          onCreate: () => {
+            setCreateOpen(true)
+            menu.close()
+          },
+          onFromImage: () => {
+            setFromImageOpen(true)
+            menu.close()
+          },
+          ...(libraryEnabled
+            ? {
+                onManage: () => {
+                  setManageOpen(true)
+                  menu.close()
+                },
+              }
+            : {}),
         }}
       />
 
@@ -162,6 +225,38 @@ export function VectorColorsPanel({
           rememberColor(hex)
           applyChannelColor(hex)
         }}
+      />
+
+      <CreatePaletteDialog
+        key={`create-${String(createOpen)}`}
+        open={createOpen}
+        initialColors={vectorPaletteColors(palette)}
+        onClose={() => setCreateOpen(false)}
+        onCreate={(name, colors) => void handleCreatePalette(name, colors)}
+      />
+      {fromImageOpen ? (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+              <div className="pin-panel px-5 py-3 font-bold text-pin-fg">
+                {COPY.importImage.loading}
+              </div>
+            </div>
+          }
+        >
+          <LazyPaletteFromImageDialog
+            open
+            onClose={() => setFromImageOpen(false)}
+            onCreate={(name, colors) => void handleCreatePalette(name, colors)}
+          />
+        </Suspense>
+      ) : null}
+      {/* key: o estado ARMADO da exclusão não pode sobreviver a fechar/reabrir
+          (a proteção de 2 toques furava — full review 25/08). */}
+      <ManagePalettesDialog
+        key={`manage-${String(manageOpen)}`}
+        open={manageOpen}
+        onClose={() => setManageOpen(false)}
       />
     </Panel>
   )

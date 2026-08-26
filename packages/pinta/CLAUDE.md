@@ -1984,6 +1984,132 @@ Chrome, importando o módulo de produção pelo `/@fs/` do Vite:
 
 ⚠️ **Pende o QA dela desenhando** (o olho dela na borda, e o fluxo pelo botão de verdade).
 
+## Pack por seleção + paletas personalizadas (25/08/2026)
+
+Dois pedidos da artista no mesmo dia; design travado em plano com review adversarial.
+
+### F1 — "Baixar seleção" (pack distribuível)
+
+Modo "Selecionar" na galeria (`GalleryScreen` + `AssetCard`): a MINIATURA vira alternador
+(`aria-pressed`, check + anel; props PRIMITIVAS `selectable`/`selected` + `onToggleSelect(id)`
+estável — NUNCA o Set, senão o `memo` re-renderiza a galeria a cada toque), as 3 ações do card
+ficam `disabled` (sumir mudaria a altura e a grade pulava) e uma barra STICKY no rodapé do
+scroll root mostra "N selecionados · Baixar seleção · Cancelar". Esc sai do modo (sem atropelar
+o Esc da busca nem o de Dialog aberto — guarda `[data-pinta-dialog]`). Download =
+`zipGallery(expandSelection(...).assets)` → **`pack-pinta.zip`** (o MESMO envelope do backup:
+restaurável pelo "Trazer de volta" sem uma linha nova; alunos importam e criam os próprios packs).
+
+- **`core/gallerySelection.ts` `expandSelection(assets, selectedIds)`**: mapa selecionado leva o
+  TILESET dele junto (decisão dela — sem as peças o restauro recusa o mapa; toast avisa), dedupe,
+  peças ANTES do mapa, órfão entra (paridade com "Baixar tudo"), id fantasma ignorado.
+- ⚠️ **Sticky de verdade exigiu `pb-0` no scroll root em modo seleção**: o clamp do `bottom: 0` é
+  o CONTENT box do container — com `p-4/p-6` a barra flutuava 24px acima do rodapé (medido no
+  Chrome). O contador NÃO é `role=status` (o da busca é o único status da tela).
+- Testes: `gallerySelection.test.ts` (puros) + `gallerySelectionUi.test.tsx` (entra/sai/Esc,
+  toggle, disabled, download decodificado de volta com o tileset auto). QA browser feito
+  (44px, barra flush em qualquer scroll, 375px sem rolagem lateral).
+
+### F2 — Paletas personalizadas (embutidas no desenho + biblioteca na conta)
+
+O desenho VIAJA com a paleta; a biblioteca "Minhas paletas" é conveniência por perfil.
+
+- **Modelo**: `AssetPaletteId = PaletteId | 'custom'` (⚠️ a união `PaletteId`/`PALETTES`/
+  `isPaletteId` fica FECHADA) + `customPalette?: PintaCustomPalette {name, colors}` nos 3 kinds
+  de pixel — 16 posições, `[0]=''`, slots vazios `''` PRESERVADOS (compactar deslocaria índices
+  pintados). `sanitizeAssetPalette`: `'custom'` só com paleta válida, senão arcade SEM a chave
+  (asset antigo byte-idêntico; `customPalette` órfã cai). `resolveAssetPalette` é a fronteira
+  única (custom vence; extras ≥16 continuam por cima); `assetPaletteName`/`customPaletteOf`
+  para títulos. Round-trip travado em `project.test`/`wire.test` + caso no members
+  (`tests/integration/pinta.test.ts`) provando que o sanitize do SERVIDOR preserva a chave.
+- **Extração de cores**: `import/paletteFromImage.ts` `paletteColorsFromImage(image)` — print de
+  paleta → 16 posições por FREQUÊNCIA, via `quantizeFrames` do EXPORT (median-cut do GIF, SEM
+  PERDA ≤15 cores). ⚠️ NUNCA o `quantizeToIndexed` de `import/quantize.ts` (posteriza 4 bits —
+  branco viraria #f8f8f8). O fluxo "Cores de uma imagem" CRIA uma paleta (não anexa a
+  `extraColors` — esse é o "Trazer uma foto", intocado).
+- **Biblioteca**: registro ÚNICO `pinta:palettes` FORA do prefixo `pinta:asset:` → nunca entra
+  em galeria/backup/orçamento (travado por teste). Métodos OPCIONAIS no `PintaPersistence`
+  (`loadPaletteLibrary`/`savePaletteLibrary`); `core/paletteLibrary.ts` (puro, exportado em
+  `/assets`): `sanitizePaletteLibrary` + `mergePaletteLibraries` (paletas por id com
+  `updatedAt` maior vencendo E **LÁPIDES** `removed: RemovedPaletteMark[]` por id com
+  `removedAt` maior — a regra ÚNICA da nuvem; lápide mais nova MATA a paleta, edição mais
+  nova RESSUSCITA, a perdedora SAI; registro antigo lê `removed: []`) +
+  `paletteLibraryContentKey` (chave de conteúdo CANÔNICA — insensível à ordem dos arrays E
+  das chaves de cada objeto; é o "mudou vs remoto" do wrapper da nuvem) + tetos
+  `MAX_SAVED_PALETTES` 24 / `MAX_REMOVED_MARKS` 48. `state/paletteLibraryStore.ts` (por
+  instância, no `appContext`): `removePalette` grava a lápide junto, e `load()` RELÊ o disco
+  SEMPRE (single-flight; só adota leitura com `updatedAt` ≥ o da memória) — a descida da
+  nuvem grava por fora e o menu reabre mostrando; o `<PintaLesson>` cria com
+  `disabled: true` (isolamento da aula, régua do clipboard).
+- **UI (pixel + vetor)**: `PaletteMenu` generalizado — seção "Minhas paletas" + ações Criar/
+  Da-imagem/Gerenciar (`CreatePaletteDialog` semeado da paleta ativa; `PaletteFromImageDialog`
+  LAZY; `ManagePalettesDialog` renomeia/exclui em 2 toques — excluir NUNCA toca desenho). No
+  PIXEL aplicar = commit desfazível + ⚠️ **CLAMP obrigatório** (`firstPaintableIndex` de
+  `core/palette.ts` — cor de sessão num slot `''` é o "lápis que não pinta"); escolher uma
+  pronta REMOVE a chave embutida por destructuring. No VETOR = `VectorPaletteChoice`
+  (`vectorTools.ts`) — SNAPSHOT de sessão só-swatches. As ações aparecem TAMBÉM sem biblioteca
+  (aula): criam e aplicam direto no asset.
+- **Nuvem (kids)**: a biblioteca viaja como item ESPECIAL do canal de creations (itemId
+  `sz-pinta-palettes`, kind `palette-library` — ver o CLAUDE.md do community-kids). ⚠️ O
+  `creationsUsageByUsers` do members EXCLUI esse kind (senão o cartão do admin contaria a
+  biblioteca como "+1 desenho").
+- ⚠️ Skew ACEITO: asset custom aberto num Pinta velho degrada p/ arcade e o autosave consolida
+  (perde SÓ a cor; índices/desenho intactos; janela real = bundle cacheado).
+- Testes: `paletteLibrary.test.ts`, `paletteLibraryPersistence.test.ts`, `paletteFromImage.test.ts`,
+  `paletteLibraryStore.test.ts`, casos novos em `project.test.ts`/`paletteUi.test.tsx`/
+  `wire.test.ts`. QA browser feito no playground (criar → aplica → sobrevive ao reload → undo →
+  vetor snapshot → gerenciar). **Pende QA integrado no kids (:3008, 2 perfis/nuvem).**
+
+### Full review do lote (25/08/2026) — 2 ALTOS + 6 MÉDIOS + 5 BAIXOS corrigidos
+
+Rodado logo depois de escrever, porque código novo de uma sentada é código que ninguém revisou.
+3 revisores (pipeline de cor com slots vazios; estado/UX; nuvem/members + F1), achado só com
+evidência arquivo:linha; muitos suspeitos REFUTADOS com prova (ver o fim).
+
+1. ⭐⭐ **[ALTA] Excluir paleta ressuscitava por MERA reconciliação do outro aparelho.** O doc
+   dizia "volta se outro REGRAVAR"; a realidade era pior: ausência remota não remove no merge,
+   então a cópia local do outro aparelho sobrevivia e RE-SUBIA — excluir era um no-op de um
+   ciclo. Fix = LÁPIDES (`removed`) no modelo/merge/sanitize/store (ver a seção acima) +
+   convergência provada no teste do kids (a lápide da nuvem mata a cópia local e NADA re-sobe).
+2. ⭐⭐ **[ALTA] A proteção 2-toques do Gerenciar furava entre aberturas**: o dialog retorna
+   `null` sem DESMONTAR (o estado `armedDeleteId` sobrevivia), então fechar armado e reabrir
+   deixava o Apagar já armado — 1 toque apagava. Fix = `key={String(manageOpen)}` nos DOIS
+   consumidores (o CreatePaletteDialog já tinha; o Manage não). Provado no navegador: fechar
+   armado → reabrir → rótulo volta a "Apagar <nome>".
+3. **[MÉDIA] Pingue-pongue perpétuo de uploads**: o "mudou vs remoto" comparava
+   `JSON.stringify` cru — sensível à ordem dos ARRAYS (duas ordens locais nunca se adotavam)
+   e das CHAVES (o remoto vem reconstruído pelo sanitize; o local, de quem o escreveu). Fix =
+   `paletteLibraryContentKey` canônica (sort por id + projeção campo a campo).
+4. **[MÉDIA] Biblioteca descida da nuvem invisível até o F5**: o store tinha latch `loaded` e
+   nunca relia a escrita externa do wrapper. Fix = `load()` relê sempre (single-flight, adota
+   só leitura ≥ memória) + reload ao ABRIR o menu (PaletteBar/VectorColorsPanel) + o wrapper
+   relê e re-funde antes de gravar (a UI pode ter salvo entre a leitura e a gravação).
+5. **[MÉDIA] "Lápis que não pinta" por 3 caminhos que o clamp do aplicar não cobria**: undo/
+   redo de troca de paleta, lixeira de extra com clamp puramente aritmético, e conta-gotas em
+   pixel FANTASMA (índice apontando slot `''`). Fix = efeito re-clamp no PaletteBar observando
+   `[asset, session]` (pintabilidade + `firstPaintableIndex`), pintabilidade no confirmDelete,
+   e conta-gotas em slot vazio vira BORRACHA (PixelCanvas — mesma régua do transparente).
+6. **[MÉDIA] Reaplicar a custom já ativa gravava um desfazer VAZIO** (Ctrl+Z que "não faz
+   nada"). Fix = early-return por igualdade (nome + colors).
+7. **[MÉDIA] Par kind/itemId literal em 4 lugares sem conformance** → módulo puro no members
+   (`domain/creations/palette-library.ts`) re-exportado pelo wrapper do kids + teste de
+   conformance no kids (molde do badge-conformance; a regex da borda aceita o itemId).
+8. **[MÉDIA] maxLength ausente nos 3 dialogs de nome** + truncate MORTO no menu/Gerenciar
+   (o nome tinha `shrink-0` — estourava o w-56 p/ fora da tela). Fix = `maxLength=48` ×3 +
+   nome truncável e listra em wrapper `flex min-w-10 flex-1`. Medido no navegador: menu fixo
+   em 224px, reticências vivas, listra no piso de 40px.
+9. **[BAIXAS]** `bitmapDominantColor` contava fantasmas e podia devolver `''` (o `?? null`
+   não pega string vazia) → filtro + `|| null`; Esc na busca VAZIA da galeria era morto →
+   sai do modo seleção; download de card recém-apagado era clique-morto → toast
+   `drawingGone`; "Criar novo" dentro do modo seleção não saía do modo → sai; copy
+   `libraryFull` contraditória e comentário mentiroso no CreateDialog → corrigidos.
+
+**REFUTADOS com prova (não mexer à toa):** render/PNG/GIF/zip/ponte/remap/backup toleram
+slots `''` POR CONSTRUÇÃO (o `!hex → null` do bitmapToRGBA e o `paletteTable` do GIF pintam
+transparente — o "pixel fantasma" é uma CLASSE ACEITA, documentada, não um bug); balde/
+trocar-cor/seleção operam por ÍNDICE e preservam fantasmas; o itemId não-uuid PASSA na borda
+do members (a regex `^[A-Za-z0-9_-]{1,64}$` não exige uuid); F1 inteiro são; segurança limpa
+(nenhum caminho de injeção/PII novo).
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
@@ -2055,6 +2181,14 @@ por px reais.
   `PintaHandle`, curadoria da caixa nos três editores, persistência injetável + `onChange`,
   `assetToJson`/`assetFromJson` e `core/newAsset.ts`. 813 testes verdes. Ver a seção dedicada.
   **Pende QA em navegador e as Fases 2 e 3** (o bloco ponta a ponta e a cadeia entre aulas).
+- **Pack por seleção + paletas personalizadas (25/08/2026, staging local `83da7ca3`/`7cff0467`/
+  `ca0d56dd` + o lote de fixes do full review)**: "Baixar seleção" → `pack-pinta.zip` (mapa
+  auto-inclui tileset) + paletas personalizadas embutidas no asset + biblioteca "Minhas
+  paletas" na conta (item especial do canal de creations no kids; exclusão viaja por LÁPIDE).
+  Full review no mesmo dia: 2 ALTOS (ressurreição da exclusão; 2-toques do Gerenciar furando)
+  + 6 MÉDIOS + 5 BAIXOS corrigidos — ver as duas seções dedicadas. QA playground feito
+  (inclui truncate do menu e o desarme do Gerenciar medidos no navegador); pende QA integrado
+  no kids com nuvem.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

@@ -1,11 +1,5 @@
-import {
-  PDFDocument,
-  type PDFFont,
-  type PDFImage,
-  type PDFPage,
-  rgb,
-  StandardFonts,
-} from '@cantoo/pdf-lib'
+import { PDFDocument, type PDFFont, type PDFImage, type PDFPage, rgb } from '@cantoo/pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import { toBuffer as qrToBuffer } from 'qrcode'
 import {
   AMB_GERADOR_LABELS,
@@ -23,6 +17,8 @@ import {
 import type { EmitterProfile } from '../../domain/dps/emitter-profile'
 import { formatXmlDecimalBrl } from '../../domain/money'
 import type { DanfseProvider, DanfseRenderInput } from '../../domain/ports/danfse-provider.port'
+import { buildComplementaryInformation } from './complementary-information'
+import { type DanfseFontFiles, loadBundledDanfseFontFiles } from './font-files'
 import { logoNfsePng } from './logo-nfse'
 import { buildDanfseData } from './nfse-fields'
 
@@ -52,25 +48,27 @@ const LINE = rgb(0, 0, 0)
  * retrato; layout FLUIDO na vertical (cursor por bloco, com as supressões que a
  * NT permite — bloco vazio vira a linha única dos itens 2.3.1/2.3.2, o canhoto é
  * omitido e a folga vai para as Informações Complementares), colunas/tamanhos de
- * fonte da tabela 2.4.5. Helvetica no lugar de Arial/Microsoft Sans Serif
- * (fontes built-in do pdf-lib — mesmo racional do certificate-pdf do
- * member-shell; a NT fixa TAMANHOS mínimos, e a métrica da Helvetica é a análoga
- * universal da Arial).
+ * fonte da tabela 2.4.5. Os labels usam Arial e os conteúdos usam Microsoft Sans
+ * Serif, com os arquivos empacotados no serviço e verificados por SHA-256.
  *
  * TOTAL sobre os dados: campo ausente imprime o traço "-" (nota 12 da NT); XML
  * ilegível cai no fallback estruturado (nfse-fields). O QR é best-effort (falha
  * → PDF sai sem ele, nunca quebra a entrega).
  */
 export class LocalDanfseRenderer implements DanfseProvider {
-  constructor(private readonly profile: EmitterProfile) {}
+  constructor(
+    private readonly profile: EmitterProfile,
+    private readonly fonts: DanfseFontFiles = loadBundledDanfseFontFiles(),
+  ) {}
 
   async render(input: DanfseRenderInput): Promise<Uint8Array> {
     const data = buildDanfseData(input, this.profile)
     const doc = await PDFDocument.create()
+    doc.registerFontkit(fontkit)
     const page = doc.addPage([PAGE_W, PAGE_H])
-    const helv = await doc.embedFont(StandardFonts.Helvetica)
-    const bold = await doc.embedFont(StandardFonts.HelveticaBold)
-    const draw = new Drawer(page, helv, bold)
+    const content = await doc.embedFont(this.fonts.microsoftSansSerif, { subset: true })
+    const labelBold = await doc.embedFont(this.fonts.arialBold, { subset: true })
+    const draw = new Drawer(page, content, labelBold)
 
     // Homologação: o aviso vermelho do cabeçalho vale para tpAmb=2 E para o
     // ambiente da linha (cinto-e-suspensório — o fallback sem XML usa o profile).
@@ -135,7 +133,9 @@ function cmy(cmFromTop: number): number {
 class Drawer {
   constructor(
     readonly page: PDFPage,
+    /** Conteúdo dos campos: Microsoft Sans Serif (NT 008/2026, item 2.4). */
     readonly helv: PDFFont,
+    /** Labels/títulos em negrito: Arial Bold (NT 008/2026, itens 2.4.1–2.4.3). */
     readonly bold: PDFFont,
   ) {}
 
@@ -167,7 +167,7 @@ class Drawer {
   field(
     label: string,
     value: string | null,
-    opts: { x: number; top: number; w: number; valueBold?: boolean; shadeLabel?: boolean },
+    opts: { x: number; top: number; w: number; shadeLabel?: boolean },
   ): void {
     if (opts.shadeLabel) this.shade(opts.x, opts.top, opts.w, ROW_H)
     this.text(label, {
@@ -181,7 +181,6 @@ class Drawer {
       x: opts.x + 0.05,
       top: opts.top + 0.3,
       size: 7,
-      bold: opts.valueBold,
       maxWidth: opts.w - 0.1,
     })
   }
@@ -403,7 +402,7 @@ function drawParty(
 
 /** Bloco suprimido (NT 2.3.1/2.3.2): linha única centralizada, 0,32cm. */
 function drawSingleLineBlock(draw: Drawer, message: string, top: number): number {
-  centerText(draw, message, top + 0.06, 7, true, C1, FULL_W)
+  centerText(draw, message, top + 0.06, 7, false, C1, FULL_W)
   const y = top + 0.32
   draw.rule(y)
   return y
@@ -564,14 +563,12 @@ function drawTotals(draw: Drawer, data: DanfseData, top: number): number {
     x: C2,
     top: y,
     w: CELL_W,
-    valueBold: true,
   })
   draw.field('Total do IBS/CBS', null, { x: C3, top: y, w: CELL_W })
   draw.field('VALOR LÍQUIDO DA NFS-e + IBS/CBS', null, {
     x: C4,
     top: y,
     w: CELL_W,
-    valueBold: true,
     shadeLabel: true,
   })
   y += ROW_H
@@ -582,31 +579,10 @@ function drawTotals(draw: Drawer, data: DanfseData, top: number): number {
 function drawComplementary(draw: Drawer, data: DanfseData, top: number): void {
   draw.shade(C1, top, FULL_W, 0.32)
   draw.text('INFORMAÇÕES COMPLEMENTARES', { x: C1 + 0.05, top: top + 0.06, size: 7, bold: true })
-  const lines = complementaryLines(data)
+  const lines = buildComplementaryInformation(data)
   lines.slice(0, 8).forEach((line, i) => {
     draw.text(line, { x: C1 + 0.05, top: top + 0.42 + i * 0.32, size: 7, maxWidth: FULL_W - 0.1 })
   })
-}
-
-/** Nota 10 da NT: os totais aproximados (Lei 12.741) são linha OBRIGATÓRIA. */
-function complementaryLines(data: DanfseData): string[] {
-  const v = data.valores
-  const lines: string[] = []
-  if (v.vTotTribFed || v.vTotTribEst || v.vTotTribMun) {
-    lines.push(
-      'Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: ' +
-        `Federais: ${formatXmlDecimalBrl(v.vTotTribFed) ?? '-'}; ` +
-        `Estaduais: ${formatXmlDecimalBrl(v.vTotTribEst) ?? '-'}; ` +
-        `Municipais: ${formatXmlDecimalBrl(v.vTotTribMun) ?? '-'}`,
-    )
-  } else if (v.pTotTribSN) {
-    lines.push(
-      `Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: ${fmtPercent(v.pTotTribSN) ?? '-'}`,
-    )
-  } else {
-    lines.push('Totais Aproximados dos Tributos cfe. Lei nº 12.741/2012: -')
-  }
-  return lines
 }
 
 /* ── QR / texto / formatos ─────────────────────────────────────────────── */

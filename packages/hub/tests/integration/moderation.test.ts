@@ -144,6 +144,20 @@ describe('moderação', () => {
         content: null,
       }),
     ])
+
+    await ctx.repo.deleteSpace(kids.spaceId)
+    const afterSpaceDeletion = (await (
+      await ctx.app.handle(
+        jsonRequest('GET', '/hub/admin/reports?audience=kids&status=open', {
+          headers: adminHeaders(),
+        }),
+      )
+    ).json()) as { items: Array<{ spaceAudience: string; content: unknown }>; total: number }
+    expect(afterSpaceDeletion.total).toBe(1)
+    expect(afterSpaceDeletion.items[0]).toMatchObject({
+      spaceAudience: 'kids',
+      content: null,
+    })
   })
 
   test('fila traz servidor, canal, autores, tópico pai, resposta e anexos', async () => {

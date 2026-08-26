@@ -35,7 +35,11 @@ import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
-import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import {
+  createForegroundPriority,
+  createScopeAuthority,
+  runLatestForeground,
+} from '@/lib/latest-wins'
 import { loadAllPages } from '@/lib/load-all-pages'
 import { offsetForPlatform, pageForPlatform } from '@/lib/platform-pagination'
 import { courseCreationPrefill } from '@/lib/platform-transition'
@@ -68,9 +72,17 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const { confirm, confirmDialog } = useConfirm()
   const loadAuthority = useRef(createForegroundPriority()).current
   const careerAuthority = useRef(createForegroundPriority()).current
+  const mutationScope = useRef(createScopeAuthority(platform)).current
+  mutationScope.update(platform)
+  const renderScope = mutationScope.capture()
 
   useEffect(() => {
     setPage((current) => pageForPlatform(current, platform))
+    // Formulários abertos pertencem à plataforma em que foram iniciados.
+    setOpen(false)
+    setEditing(null)
+    setCloning(null)
+    setPrefill(undefined)
   }, [platform])
 
   const load = useCallback(async () => {
@@ -158,6 +170,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   }
 
   async function remove(c: CourseView) {
+    const scope = mutationScope.capture()
     // Contagem ANTES do confirm (o `message` é fixo): a cascata do banco apaga as
     // entregas dos alunos do curso inteiro. Best-effort — falhou → confirm de sempre.
     const counts = await fetchSubmissionCountsSafe(c.id)
@@ -182,7 +195,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         try {
           await apiSend(`/api/members/courses/${c.id}`, 'DELETE')
           toast.success('Curso excluído.')
-          await Promise.all([load(), loadCareer()])
+          if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadCareer()])
         } catch (err) {
           toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
         }
@@ -366,6 +379,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         prefill={prefill}
         careerCourses={careerItems}
         onSaved={async () => {
+          if (!mutationScope.isCurrent(renderScope)) return
           await Promise.all([load(), loadCareer()])
         }}
       />
@@ -374,6 +388,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         course={cloning}
         onClose={() => setCloning(null)}
         onCloned={async () => {
+          if (!mutationScope.isCurrent(renderScope)) return
           await Promise.all([load(), loadCareer()])
         }}
       />

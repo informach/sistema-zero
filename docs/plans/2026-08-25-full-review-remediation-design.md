@@ -33,4 +33,3 @@ A mudança de índice é aditiva e não exige backfill. A migration deve ser ger
 ## Estratégia de testes
 
 Cada causa raiz recebe primeiro um teste que falha no estado atual. Os testes devem observar comportamento público ou contratos de ports, sem expor métodos exclusivos de teste. Depois de cada grupo, executaremos a suíte focada. Ao final, executaremos testes, typecheck e Biome de todos os pacotes afetados, além de `git diff --check` e inspeção da migration gerada.
-

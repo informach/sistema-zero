@@ -15,7 +15,8 @@
     "db:push": "drizzle-kit push",
     "db:seed": "bun run scripts/seed-admin.ts",
     "db:backfill-profiles": "bun run scripts/backfill-default-profiles.ts",
-    "check": "biome check .",
+    "check": "biome check . && bun run check:migrations",
+    "check:migrations": "bun run scripts/migration-safety.ts",
     "check:fix": "biome check --write .",
     "format": "biome format --write .",
     "lint": "biome lint ."

@@ -5,6 +5,35 @@ export interface ReadTicket {
   backgroundGeneration: number
 }
 
+export interface ScopeTicket<T> {
+  value: T
+  generation: number
+}
+
+export interface ScopeAuthority<T> {
+  update(value: T): void
+  capture(): ScopeTicket<T>
+  isCurrent(ticket: ScopeTicket<T>): boolean
+}
+
+/**
+ * Autoridade para efeitos que pertencem a uma plataforma/entidade. A geração
+ * impede que uma operação antiga volte a ser aceita após A → B → A.
+ */
+export function createScopeAuthority<T>(initial: T): ScopeAuthority<T> {
+  let value = initial
+  let generation = 0
+  return {
+    update(next) {
+      if (Object.is(value, next)) return
+      value = next
+      generation += 1
+    },
+    capture: () => ({ value, generation }),
+    isCurrent: (ticket) => ticket.generation === generation && Object.is(ticket.value, value),
+  }
+}
+
 export interface ForegroundPriority {
   beginForeground(): ReadTicket
   /** `null` enquanto qualquer leitura foreground estiver em voo. */

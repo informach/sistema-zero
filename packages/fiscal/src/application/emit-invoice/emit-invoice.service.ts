@@ -87,6 +87,15 @@ export class EmitInvoiceService {
     )
     if (!allocation) return
     const { dpsNumber, dpsId } = allocation
+    // O Drizzle atualiza o banco e devolve a alocação, mas não muta o snapshot
+    // reivindicado. Materializamos a nova revisão para todos os consumidores
+    // síncronos (em especial o fallback estruturado do DANFSe).
+    const allocatedInvoice: Invoice = {
+      ...invoice,
+      dpsSeries: this.config.serie,
+      dpsNumber,
+      dpsId,
+    }
 
     // 3. Competência = HOJE em BRT, na MESMA base/margem do dhEmi (dps-builder):
     // sem isso, na virada da meia-noite dCompet podia ficar 1 dia à frente do
@@ -156,7 +165,7 @@ export class EmitInvoiceService {
     if (result.kind === 'duplicate') {
       // Resposta perdida num envio anterior: o gateway JÁ resolveu a chave na
       // consulta do Id da DPS (sem 2ª consulta aqui).
-      await this.finishEmission(invoice, claimToken, {
+      await this.finishEmission(allocatedInvoice, claimToken, {
         accessKey: result.accessKey,
         nfseXml: '',
         dpsXml: result.dpsXml,
@@ -166,7 +175,7 @@ export class EmitInvoiceService {
       return
     }
 
-    await this.finishEmission(invoice, claimToken, {
+    await this.finishEmission(allocatedInvoice, claimToken, {
       accessKey: result.accessKey,
       nfseXml: result.nfseXml,
       dpsXml: result.dpsXml,

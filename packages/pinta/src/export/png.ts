@@ -113,7 +113,10 @@ export function dataUrlToBlob(dataUrl: string): Blob | null {
 export function bitmapDominantColor(bitmap: PintaBitmap, colors: readonly string[]): string | null {
   const counts = new Array<number>(colors.length).fill(0)
   for (const index of bitmap.data) {
-    if (index !== TRANSPARENT_INDEX && index < counts.length) {
+    // Só o que se VÊ conta: índice de slot vazio ('' numa paleta personalizada
+    // furada) renderiza transparente — contá-lo fazia o minimapa do mapa sair
+    // vazio mesmo com pixels visíveis em minoria (full review 25/08).
+    if (index !== TRANSPARENT_INDEX && index < counts.length && colors[index]) {
       counts[index] = (counts[index] ?? 0) + 1
     }
   }
@@ -126,5 +129,5 @@ export function bitmapDominantColor(bitmap: PintaBitmap, colors: readonly string
       bestCount = count
     }
   }
-  return best >= 1 ? (colors[best] ?? null) : null
+  return best >= 1 ? colors[best] || null : null
 }

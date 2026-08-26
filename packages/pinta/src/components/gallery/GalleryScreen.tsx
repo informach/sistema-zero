@@ -23,6 +23,7 @@ import {
   type GalleryStyleFilter,
   hasActiveGalleryFilters,
 } from '../../core/gallerySearch'
+import { expandSelection } from '../../core/gallerySelection'
 import { perfMeasure } from '../../core/perf'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
 import type { PintaInitialIntent } from '../../core/types'
@@ -35,7 +36,16 @@ import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Download, Image as ImageIcon, Plus, Search, Sparkles, Upload, X } from '../ui/icons'
+import {
+  Download,
+  Image as ImageIcon,
+  Plus,
+  Search,
+  Sparkles,
+  SquareCheckBig,
+  Upload,
+  X,
+} from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
 
@@ -133,6 +143,46 @@ export function GalleryScreen(): JSX.Element {
   )
   const clearFilters = () => setFilters(EMPTY_GALLERY_FILTERS)
 
+  // Modo de seleção do PACK: marcar desenhos e baixar SÓ eles (`pack-pinta.zip`).
+  // O Set é por ID e INDEPENDE da busca/filtros (dá para marcar, filtrar e
+  // marcar mais); sair do modo sempre limpa.
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
+  const onToggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }, [])
+  const exitSelection = useCallback(() => {
+    setSelectionMode(false)
+    setSelectedIds(new Set())
+  }, [])
+  // Conta só ids que ainda EXISTEM (a descida da nuvem pode remover um desenho
+  // marcado por baixo do modo).
+  const selectedCount = useMemo(
+    () => assets.reduce((count, asset) => (selectedIds.has(asset.id) ? count + 1 : count), 0),
+    [assets, selectedIds],
+  )
+  useEffect(() => {
+    if (!selectionMode) return
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Escape') return
+      // O Esc do campo de busca COM texto limpa a busca, e o de um Dialog
+      // aberto fecha o diálogo — nenhum dos dois pode arrastar a saída do modo
+      // junto. Busca VAZIA não tem o que limpar: aí o Esc sai do modo (senão a
+      // tecla morria sem efeito nenhum — full review 25/08).
+      if (event.target === searchRef.current && searchRef.current?.value) return
+      if (document.querySelector('[data-pinta-dialog]')) return
+      event.preventDefault()
+      exitSelection()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selectionMode, exitSelection])
+
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
   const dependentMaps =
@@ -204,6 +254,9 @@ export function GalleryScreen(): JSX.Element {
       onRename={onRenameCard}
       onDuplicate={onDuplicateCard}
       onRemove={onRemoveCard}
+      selectable={selectionMode}
+      selected={selectionMode && selectedIds.has(asset.id)}
+      onToggleSelect={onToggleSelect}
     />
   )
 
@@ -217,6 +270,39 @@ export function GalleryScreen(): JSX.Element {
         'meus-desenhos-pinta.zip',
       )
       showToast(COPY.toast.downloadReady)
+    } catch {
+      showToast(COPY.gallery.zipError)
+    } finally {
+      setZipping(false)
+    }
+  }
+
+  async function handleDownloadSelection(): Promise<void> {
+    if (zipping) return
+    // Expande na hora do download, sobre a galeria VIVA (nunca a lista filtrada
+    // da tela): mapa marcado leva o tileset dele junto — sem as peças o
+    // restauro recusaria o mapa.
+    const expanded = expandSelection(gallery.getState().assets, selectedIds)
+    if (expanded.assets.length === 0) {
+      // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
+      // avisa em vez de um clique-morto silencioso.
+      showToast(COPY.gallery.drawingGone)
+      return
+    }
+    setZipping(true)
+    try {
+      const bytes = await zipGallery(expanded.assets)
+      triggerDownload(
+        new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
+        'pack-pinta.zip',
+      )
+      showToast(
+        expanded.autoIncludedTilesetIds.length > 0
+          ? `${COPY.toast.downloadReady} ${COPY.gallery.selectionTilesetIncluded}`
+          : COPY.toast.downloadReady,
+      )
+      // Pack baixado = tarefa concluída; sair do modo devolve os cards ao normal.
+      exitSelection()
     } catch {
       showToast(COPY.gallery.zipError)
     } finally {
@@ -291,7 +377,12 @@ export function GalleryScreen(): JSX.Element {
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6"
+      // Em modo seleção o padding de BAIXO sai (a barra sticky o substitui):
+      // o clamp do sticky é o content box do root, então qualquer pb deixaria
+      // a barra flutuando esse tanto acima do rodapé (medido: 24px).
+      className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 ${
+        selectionMode ? 'pb-0 sm:pb-0' : ''
+      }`}
       data-pin-scroll-root=""
     >
       {/* Cabeçalho de SEÇÃO da comunidade (mesma escala de `/criar` e da home
@@ -338,13 +429,27 @@ export function GalleryScreen(): JSX.Element {
             <ImageIcon aria-hidden="true" className="size-4" />
             {COPY.gallery.importImage}
           </Button>
+          {assets.length > 0 && !selectionMode ? (
+            <Button variant="ghost" onClick={() => setSelectionMode(true)}>
+              <SquareCheckBig aria-hidden="true" className="size-4" />
+              {COPY.gallery.select}
+            </Button>
+          ) : null}
           {assets.length > 0 ? (
             <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
               <Download aria-hidden="true" className="size-4" />
               {COPY.gallery.downloadAll}
             </Button>
           ) : null}
-          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+          <Button
+            variant="primary"
+            onClick={() => {
+              // Criar navega ao editor e a galeria DESMONTA: sair do modo aqui
+              // evita a marcação morrer em silêncio no meio do gesto.
+              if (selectionMode) exitSelection()
+              setCreateOpen(true)
+            }}
+          >
             <Plus aria-hidden="true" className="size-4" />
             {COPY.gallery.create}
           </Button>
@@ -524,6 +629,32 @@ export function GalleryScreen(): JSX.Element {
           ) : null}
         </div>
       )}
+
+      {selectionMode ? (
+        // Barra do pack: STICKY no rodapé do scroll root (o header ROLA com o
+        // conteúdo — a barra não pode sumir junto). As margens negativas cobrem
+        // o padding do root para o fundo ir de borda a borda. O contador NÃO é
+        // role=status: o da busca é o único status da tela.
+        <div className="-mx-4 sm:-mx-6 sticky bottom-0 z-10 mt-4 border-t-2 border-pin-border bg-pin-surface px-4 py-2 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" onClick={exitSelection}>
+                {COPY.gallery.cancel}
+              </Button>
+              <Button
+                variant="primary"
+                disabled={zipping || selectedCount === 0}
+                aria-busy={zipping}
+                onClick={() => void handleDownloadSelection()}
+              >
+                <Download aria-hidden="true" className="size-4" />
+                {COPY.gallery.downloadSelection}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {/* Montado só quando aberto: o passo de estilo nasce do lastStyle ATUAL. */}
       <NewAssetDialog

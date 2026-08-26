@@ -103,3 +103,16 @@ export function getPalette(id: PaletteId | string | undefined): PintaPalette {
 export function isPaletteId(value: unknown): value is PaletteId {
   return typeof value === 'string' && PALETTES.some((p) => p.id === value)
 }
+
+/**
+ * O primeiro índice PINTÁVEL de uma paleta (ignora o 0/transparente e slots
+ * vazios `''`). É o clamp obrigatório ao trocar para uma paleta personalizada
+ * com buracos: sem ele a cor da sessão cai num slot vazio e o lápis "não
+ * pinta". Paleta toda vazia (não existe pelo sanitize) cai no 1.
+ */
+export function firstPaintableIndex(colors: readonly string[]): number {
+  for (let i = TRANSPARENT_INDEX + 1; i < colors.length; i += 1) {
+    if (colors[i]) return i
+  }
+  return TRANSPARENT_INDEX + 1
+}

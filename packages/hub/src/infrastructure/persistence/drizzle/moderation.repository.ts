@@ -133,6 +133,7 @@ export class DrizzleModerationRepository implements ModerationRepository {
       targetType: input.targetType,
       targetId: input.targetId,
       spaceId: input.spaceId,
+      spaceAudience: input.spaceAudience,
       reporterId: input.reporterId,
       reporterAccountId: input.reporterAccountId,
       reporterDisplayName: input.reporterDisplayName,
@@ -151,14 +152,26 @@ export class DrizzleModerationRepository implements ModerationRepository {
   }): Promise<{ items: ReportRecord[]; total: number }> {
     const where: SQL[] = []
     if (opts.spaceId) where.push(eq(reports.spaceId, opts.spaceId))
-    if (opts.audience) where.push(eq(spaces.audience, opts.audience))
+    if (opts.audience) {
+      const audience = opts.audience
+      const audienceCondition = or(
+        eq(reports.spaceAudience, audience),
+        and(
+          isNull(reports.spaceAudience),
+          // Legado ainda ligado a um espaço usa a audiência atual. Órfão sem
+          // snapshot entra nos dois filtros para nunca ficar inalcançável.
+          or(eq(spaces.audience, audience), isNull(spaces.id)),
+        ),
+      )
+      if (audienceCondition) where.push(audienceCondition)
+    }
     if (opts.status) where.push(eq(reports.status, opts.status))
     const cond = where.length > 0 ? and(...where) : undefined
     const [joinedRows, [counted]] = await Promise.all([
       this.db
-        .select({ report: reports, spaceAudience: spaces.audience })
+        .select({ report: reports, currentSpaceAudience: spaces.audience })
         .from(reports)
-        .innerJoin(spaces, eq(spaces.id, reports.spaceId))
+        .leftJoin(spaces, eq(spaces.id, reports.spaceId))
         .where(cond)
         .orderBy(desc(reports.createdAt))
         .limit(opts.limit)
@@ -166,16 +179,16 @@ export class DrizzleModerationRepository implements ModerationRepository {
       this.db
         .select({ c: count() })
         .from(reports)
-        .innerJoin(spaces, eq(spaces.id, reports.spaceId))
+        .leftJoin(spaces, eq(spaces.id, reports.spaceId))
         .where(cond),
     ])
     const rows = joinedRows.map((row) => row.report)
     const contents = await this.loadReportedContents(rows)
     return {
-      items: joinedRows.map(({ report, spaceAudience }) =>
+      items: joinedRows.map(({ report, currentSpaceAudience }) =>
         toReport(
           report,
-          spaceAudience,
+          report.spaceAudience ?? currentSpaceAudience ?? 'unknown',
           contents.get(`${report.targetType}:${report.targetId}`) ?? null,
         ),
       ),
@@ -254,12 +267,14 @@ export class DrizzleModerationRepository implements ModerationRepository {
 
   async findReportById(id: string): Promise<ReportRecord | null> {
     const [row] = await this.db
-      .select({ report: reports, spaceAudience: spaces.audience })
+      .select({ report: reports, currentSpaceAudience: spaces.audience })
       .from(reports)
-      .innerJoin(spaces, eq(spaces.id, reports.spaceId))
+      .leftJoin(spaces, eq(spaces.id, reports.spaceId))
       .where(eq(reports.id, id))
       .limit(1)
-    return row ? toReport(row.report, row.spaceAudience) : null
+    return row
+      ? toReport(row.report, row.report.spaceAudience ?? row.currentSpaceAudience ?? 'unknown')
+      : null
   }
 
   async resolveReport(
@@ -457,7 +472,7 @@ function toReportedContent(r: ReportedContentRow): ReportedContent {
 
 function toReport(
   r: typeof reports.$inferSelect,
-  spaceAudience: 'adult' | 'kids',
+  spaceAudience: 'adult' | 'kids' | 'unknown',
   content: ReportedContent | null = null,
 ): ReportRecord {
   return {
