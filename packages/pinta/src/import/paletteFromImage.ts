@@ -11,12 +11,54 @@
  * cores do print entram EXATAS.
  */
 import { PALETTE_SIZE, TRANSPARENT_INDEX } from '../core/palette'
+import type { PintaBitmap } from '../core/project'
 import { quantizeFrames, type Rgb } from '../export/quantize'
 import type { RGBAImage } from './quantize'
 
 function rgbToHex([r, g, b]: Rgb): string {
   const hex = (value: number) => value.toString(16).padStart(2, '0')
   return `#${hex(r)}${hex(g)}${hex(b)}`
+}
+
+export interface PhotoQuantizeResult {
+  bitmap: PintaBitmap
+  /** 16 posições no formato da `customPalette`: `[0] = ''`, sobras `''` no fim. */
+  colors: string[]
+}
+
+/**
+ * "Trazer uma foto": RGBA → bitmap INDEXADO + a paleta PRÓPRIA da foto (até 15
+ * cores + transparente), pronta para virar a `customPalette` do desenho — o
+ * caminho que mantém a criação dentro do teto de 16 cores (antes a foto nascia
+ * `arcade` + até 48 extras e a paleta estourava sozinha).
+ *
+ * ⭐ Índice ↔ slot casam POR CONSTRUÇÃO: o `QuantizeResult` devolve os índices
+ * e a paleta na MESMA ordem (posição 0 = transparente), então o bitmap sai
+ * pronto, sem passe de vizinho-mais-próximo — e no caminho sem perda (≤15
+ * cores distintas) cada pixel fica com a SUA cor exata. Reordenar por
+ * frequência (como o `paletteColorsFromImage` acima faz) exigiria remapear o
+ * bitmap sem ganho visível.
+ */
+export function quantizeToPhotoPalette(image: RGBAImage): PhotoQuantizeResult {
+  const data =
+    image.data instanceof Uint8ClampedArray ? image.data : Uint8ClampedArray.from(image.data)
+  const result = quantizeFrames([data], PALETTE_SIZE, {
+    width: image.width,
+    dither: false,
+  })
+  const colors = Array.from({ length: PALETTE_SIZE }, () => '')
+  for (const [index, rgb] of result.palette.entries()) {
+    if (index === TRANSPARENT_INDEX || index >= PALETTE_SIZE) continue
+    colors[index] = rgbToHex(rgb)
+  }
+  return {
+    bitmap: {
+      width: image.width,
+      height: image.height,
+      data: result.frames[0] ?? new Uint8Array(image.width * image.height),
+    },
+    colors,
+  }
 }
 
 export function paletteColorsFromImage(image: RGBAImage): string[] {

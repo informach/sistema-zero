@@ -1,8 +1,14 @@
 /**
- * Núcleo PURO do "trazer uma foto": reduzir (downscale) e QUANTIZAR uma imagem
- * RGBA para o bitmap INDEXADO do Pinta (paleta arcade + até 48 cores extras).
- * Sem dithering — "as cores da foto viram as cores do Pinta", previsível e
- * explicável. Testável sem canvas (a decodificação da imagem vive à parte).
+ * Núcleo PURO do "trazer uma foto": reduzir (downscale) e fatiar uma imagem
+ * RGBA. Sem dithering — previsível e explicável. Testável sem canvas (a
+ * decodificação da imagem vive à parte).
+ *
+ * ⚠️ Desde 08/2026 a QUANTIZAÇÃO da foto vive em
+ * `import/paletteFromImage.ts` (`quantizeToPhotoPalette`): o desenho importado
+ * nasce com a `customPalette` PRÓPRIA da foto (≤15 cores + transparente, teto
+ * de 16 da criação de paleta) em vez de arcade + até 48 extras. O
+ * `quantizeToIndexed` daqui ficou SEM consumidor de produção (só os testes) —
+ * candidato a remoção num lote de limpeza futuro.
  */
 import { getPalette, TRANSPARENT_INDEX } from '../core/palette'
 import { PINTA_LIMITS, type PintaBitmap, TILE_SIZES } from '../core/project'

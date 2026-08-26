@@ -127,8 +127,11 @@ export const COPY = {
     spriteSizeTitle: 'Tamanho do quadro do personagem',
     spriteFitNote: 'A imagem entra inteira, sem cortar. O que sobrar fica transparente.',
     tileSizeTitle: 'Tamanho de cada peça',
-    colorsNote: 'As cores da foto viram as cores do Pinta.',
-    newColors: (n: number) => (n === 1 ? '1 cor nova' : `${n} cores novas`),
+    colorsNote: 'As cores da foto viram uma paleta só deste desenho.',
+    photoPalette: (n: number) =>
+      n === 1 ? 'A foto virou uma paleta com 1 cor.' : `A foto virou uma paleta com ${n} cores.`,
+    /** Nome da `customPalette` embutida no desenho importado (título do painel de Cores). */
+    photoPaletteName: 'Cores da foto',
     uniqueTiles: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
     tooManyTiles: 'Essa imagem tem peças demais! Tente um tamanho de peça maior.',
     detected: 'Detectei sozinho',

@@ -34,8 +34,10 @@ describe('ImportImageDialog', () => {
       screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
     )
 
-    // Passo 2: tamanho de peça + prévia (o recado das cores aparece).
+    // Passo 2: tamanho de peça + prévia (o recado das cores aparece, com a
+    // contagem da paleta que a foto virou — vermelho sólido = 1 cor).
     expect(screen.getByText(new RegExp(COPY.importImage.colorsNote))).toBeTruthy()
+    expect(screen.getByText(new RegExp(COPY.importImage.photoPalette(1)))).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: COPY.importImage.next }))
 
     // Passo 3: nome + criar.
@@ -52,6 +54,12 @@ describe('ImportImageDialog', () => {
       // arrays de colisão alinhados às peças
       expect(asset.solid).toHaveLength(asset.tiles.length)
       expect(asset.platform).toHaveLength(asset.tiles.length)
+      // A foto NASCE com a paleta própria (teto 16), nunca mais arcade + extras.
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.name).toBe(COPY.importImage.photoPaletteName)
+      expect(asset.customPalette?.colors[0]).toBe('')
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
   })
 
@@ -99,6 +107,9 @@ describe('ImportImageDialog', () => {
     if (asset.kind === 'pixel-background') {
       expect(asset.cels[0]?.width).toBe(32)
       expect(asset.cels[0]?.height).toBe(24)
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
   })
 
@@ -156,9 +167,16 @@ describe('ImportImageDialog', () => {
       expect(asset.animations[0]?.frames[0]).toHaveLength(asset.layers.length)
       // A imagem 16×16 vermelha foi AMPLIADA para preencher o quadro: nenhum pixel transparente.
       expect(Array.from(cel?.data ?? []).every((index) => index !== 0)).toBe(true)
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.name).toBe(COPY.importImage.photoPaletteName)
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
     // O que entra pelo import é o que o sanitize aceita — senão sumiria da galeria.
-    expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
+    // (Round-trip com structuredClone, nunca JSON: o IndexedDB usa structured clone.)
+    const sanitized = sanitizePintaAsset(structuredClone(asset))
+    expect(sanitized).not.toBeNull()
+    expect(sanitized?.kind === 'pixel-sprite' && sanitized.customPalette?.colors[1]).toBe('#ff0000')
   })
 
   it('foto → PERSONAGEM → tamanho PERSONALIZADO deitado (16×8) → importa sem cortar (contain)', () => {
