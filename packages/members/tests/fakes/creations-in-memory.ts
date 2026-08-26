@@ -5,6 +5,7 @@ import type {
   CreationSummary,
   CreationTool,
 } from '../../src/domain/creations/creation'
+import { PALETTE_LIBRARY_KIND } from '../../src/domain/creations/palette-library'
 import type {
   CreationCommitResult,
   CreationsRepository,
@@ -58,7 +59,8 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     let totalBytes = 0
     for (const row of this.rows.values()) {
       if (row.userId !== userId || !aliveCommitted(row)) continue
-      countByTool[row.tool] += 1
+      // A biblioteca de paletas não ocupa vaga (os bytes contam) — espelho do SQL.
+      if (row.kind !== PALETTE_LIBRARY_KIND) countByTool[row.tool] += 1
       totalBytes += row.bytes
     }
     return { totalBytes, countByTool }
@@ -84,7 +86,11 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       return { ok: false, reason: 'total-bytes' }
     }
     const committedAlive = alive && existing.storageRef !== null
-    if (!committedAlive && usage.countByTool[input.tool] >= input.limits.maxItemsPerTool) {
+    if (
+      !committedAlive &&
+      input.kind !== PALETTE_LIBRARY_KIND &&
+      usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+    ) {
       return { ok: false, reason: 'items-per-tool' }
     }
     if (input.baseRevision !== undefined && alive && input.baseRevision !== existing.revision) {
@@ -153,7 +159,9 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     const overBytes =
       usage.totalBytes - currentBytes + existing.pending.bytes > input.limits.maxTotalBytes
     const overItems =
-      !committedAlive && usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+      !committedAlive &&
+      existing.pending.kind !== PALETTE_LIBRARY_KIND &&
+      usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
     if (overBytes || overItems) {
       // Recusa por quota mata a reserva (o BFF apaga o blob dela): o cliente reserva de novo.
       this.rows.set(k, { ...existing, pending: null })

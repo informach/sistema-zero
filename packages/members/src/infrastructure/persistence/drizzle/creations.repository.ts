@@ -6,6 +6,7 @@ import type {
   CreationSummary,
   CreationTool,
 } from '../../../domain/creations/creation'
+import { PALETTE_LIBRARY_KIND } from '../../../domain/creations/palette-library'
 import type {
   CreationCommitResult,
   CreationsRepository,
@@ -186,7 +187,13 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         return { ok: false, reason: 'total-bytes' }
       }
       const committedAlive = alive && existing.storageRef !== null
-      if (!committedAlive && usage.countByTool[input.tool] >= input.limits.maxItemsPerTool) {
+      // A biblioteca de paletas não ocupa vaga — e não pode ser recusada por um
+      // perfil que já encheu o teto de desenhos (o espelho está no fake).
+      if (
+        !committedAlive &&
+        input.kind !== PALETTE_LIBRARY_KIND &&
+        usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+      ) {
         return { ok: false, reason: 'items-per-tool' }
       }
       // Base vencida: o aparelho conhece a revisão N, mas a corrente é outra (alguém subiu
@@ -289,7 +296,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const overBytes =
         usage.totalBytes - currentBytes + row.pendingBytes > input.limits.maxTotalBytes
       const overItems =
-        !committedAlive && usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+        !committedAlive &&
+        row.pendingKind !== PALETTE_LIBRARY_KIND &&
+        usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
       if (overBytes || overItems) {
         // A reserva recusada por quota MORRE aqui: o BFF apaga o blob dela do R2, então
         // um `commit(N)` que chegasse depois de a criança abrir espaço promoveria uma chave
@@ -437,12 +446,19 @@ function clearPending() {
   }
 }
 
-/** Uso do perfil: só itens vivos e JÁ CONFIRMADOS (reserva sem upload não ocupa vaga nem byte). */
+/**
+ * Uso do perfil: só itens vivos e JÁ CONFIRMADOS (reserva sem upload não ocupa vaga nem byte).
+ * A biblioteca de paletas do Pinta (kind `palette-library`, item especial do canal) fica FORA da
+ * CONTAGEM de itens — não é desenho e não pode ocupar vaga do teto por ferramenta (alinha com o
+ * cartão do admin em tool-usage.repository). Os BYTES dela CONTAM: `totalBytes` é o retrato do
+ * que ocupa o R2, e a aritmética `totalBytes - currentBytes + novos` assume a própria linha
+ * dentro do total.
+ */
 async function usageWith(db: Pick<Database, 'select'>, userId: string): Promise<CreationUsage> {
   const rows = await db
     .select({
       tool: creations.tool,
-      count: sql<number>`count(*)::int`,
+      count: sql<number>`count(*) filter (where ${creations.kind} <> ${PALETTE_LIBRARY_KIND})::int`,
       bytes: sql<number>`coalesce(sum(${creations.bytes}), 0)::bigint`,
     })
     .from(creations)

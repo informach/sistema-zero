@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+} from '../../src/domain/creations/palette-library'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import {
   createDbConnection,
@@ -315,6 +319,47 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       expect.objectContaining({ ok: false, reason: 'total-bytes' }),
     ])
     expect((await repo.usage(lote)).totalBytes).toBe(60)
+  })
+
+  test('biblioteca de paletas: fora da CONTAGEM de itens (bytes contam), e nunca recusada pelo teto', async () => {
+    // O SQL real do FILTER e das cláusulas de skip (o fake espelha em JS).
+    const dono = randomUUID()
+    const item = (itemId: string, kind: string) => ({
+      ...base,
+      userId: dono,
+      tool: 'pinta' as const,
+      itemId,
+      kind,
+      bytes: 10,
+    })
+    const save = async (itemId: string, kind: string) => {
+      const r = await repo.reserveUpload(item(itemId, kind))
+      if (!r.ok) return r
+      return repo.commit({
+        ...item(itemId, kind),
+        revision: r.revision,
+        storageRef: `k/${itemId}/${r.revision}`,
+      })
+    }
+
+    // Teto de desenhos (3) CHEIO → desenho novo recusado, biblioteca passa.
+    for (const id of ['d-a', 'd-b', 'd-c']) expect((await save(id, 'pixel-sprite')).ok).toBe(true)
+    expect(await repo.reserveUpload(item('d-d', 'pixel-sprite'))).toEqual({
+      ok: false,
+      reason: 'items-per-tool',
+    })
+    expect((await save(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND)).ok).toBe(true)
+
+    // O usage do SQL: a biblioteca fica FORA da contagem e DENTRO dos bytes.
+    const usage = await repo.usage(dono)
+    expect(usage.countByTool.pinta).toBe(3)
+    expect(usage.totalBytes).toBe(40)
+
+    // E o desenho novo continua recusado (a biblioteca não abriu vaga).
+    expect(await repo.reserveUpload(item('d-d', 'pixel-sprite'))).toEqual({
+      ok: false,
+      reason: 'items-per-tool',
+    })
   })
 
   test('PARTES no Postgres real: JSONB vai e volta com `rev`, commit exige as enviadas, idempotência não solta nada, `pending_parts` vira NULL, lixeira e ressurreição', async () => {

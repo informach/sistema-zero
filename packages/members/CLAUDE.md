@@ -1496,7 +1496,15 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   freio de abuso), 2000 itens vivos por ferramenta (só freio de abuso: nem o Pinta nem o Estúdio
   têm teto de quantidade; o que governa é o de bytes). A quota é conferida na RESERVA e DE NOVO no
   COMMIT (reservar vários itens antes de confirmar não fura o teto). Reenviar TROCA os bytes do
-  item (não soma).
+  item (não soma). ⚠️ **A biblioteca de paletas do Pinta (kind `palette-library`) fica FORA da
+  CONTAGEM de itens (26/08)** — `count(*) FILTER` no `usageWith` + skip nas cláusulas de teto da
+  reserva E do commit (um perfil com 2000 desenhos ainda sobe a biblioteca; ela não ocupa vaga) —
+  alinhado ao cartão do admin (`tool-usage.repository.ts`, que já excluía o kind). Os BYTES dela
+  CONTAM: `totalBytes` é o retrato do R2 e a aritmética `totalBytes - currentBytes + novos` assume
+  a própria linha dentro do total. Brecha teórica aceita: cliente etiquetando desenho como
+  `palette-library` fura o teto de ITENS — segue preso pelos tetos de bytes, mesmo nível de
+  confiança do filtro do cartão. Fake espelha; SQL provado em
+  `tests/db/creations.repository.test.ts`.
   Nome/kind acima do teto são CORTADOS no BFF (o DTO ainda barra 120/40 como rede de segurança);
   miniatura acima de 12 k chars é DESCARTADA pelo serviço (acima de 20 k o DTO recusa — nenhum
   adaptador manda thumb na v1); `bytes` acima de 1 GB cai na validação (nunca 500).
