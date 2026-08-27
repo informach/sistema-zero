@@ -35,8 +35,17 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // JANELA rolava e o rolável interno do app nunca rolava — o sticky da barra
     // de seleção ficava preso no fim do conteúdo, fora da tela. Os editores
     // nunca expuseram isso porque só TOMAM altura (h-full). Com o banner de
-    // impersonação a página rola a altura do banner (mesmo trade-off do mobile
-    // com a top bar).
+    // impersonação a página rola a altura do banner — como no mobile, onde o
+    // banner TAMPOUCO é descontado (a top bar, essa sim, é descontada no calc).
+    //
+    // ⚠️ O `md:min-h-[36rem]` casa com o piso `min-h-[34rem]` dos frames
+    // (`embedded-app-loading.tsx`) + os 2rem de `md:py-4` (full review 26/08):
+    // sem ele, uma janela desktop mais BAIXA que ~560px (snap de meia tela,
+    // zoom 175-200%) fazia o piso do frame estourar contra o `overflow-hidden`
+    // e o PÉ do app — a barra de seleção do Pinta — ficava CLIPADO sem nenhum
+    // caminho de rolagem (medido: 2px visíveis a 500px). Com o min-height, a
+    // página volta a rolar SÓ o necessário abaixo desse limiar, como antes do
+    // travamento; acima dele, nada muda.
     //
     // ⚠️ O `md:pl-9` (contra `md:pr-4`) abre a CALHA do puxador que esconde o menu:
     // ele fica AO LADO do app, nunca por cima. No Estúdio a borda esquerda é a caixa
@@ -46,7 +55,7 @@ export function MainContainer({ children }: { children: ReactNode }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-dvh md:flex-none md:py-4 md:pr-4 md:pb-4 md:pl-9"
+        className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-dvh md:min-h-[36rem] md:flex-none md:py-4 md:pr-4 md:pb-4 md:pl-9"
       >
         {/* Um mount point só cobre Estúdio, Pensa, Pinta e o /estudio/pro. Some
             sozinho abaixo de 768px, onde a sidebar nem existe (`navAvailable`). */}

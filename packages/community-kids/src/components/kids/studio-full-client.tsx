@@ -575,7 +575,9 @@ export function StudioFullClient({
 
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
   // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
-  // mantém a usabilidade em telas baixas (a página rola se não couber).
+  // mantém a usabilidade em telas baixas (a página rola se não couber — quem
+  // garante isso TAMBÉM no desktop é o `md:min-h-[36rem]` do MainContainer,
+  // par deste piso + 2rem de py; mexeu num, mexa no outro).
   // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
   // `embedded-app-loading.tsx`): sem card, porque o Estúdio é uma SEÇÃO da
   // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
