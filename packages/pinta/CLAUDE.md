@@ -2135,6 +2135,20 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   com o sufixo do tileset auto-incluído) — o toast confere o pack sozinho.
 - **Botão "Limpar" na barra sticky** (decisão dela: além do limpar-ao-baixar, que já existia):
   desmarca tudo e PERMANECE no modo; `disabled` com 0.
+- **A barra ASSENTA no rodapé mesmo SEM rolagem** (pedido dela, 2ª rodada 26/08): espaçador
+  `<div aria-hidden className="mt-auto" />` antes da barra — o scroll root já é coluna flex,
+  então em galeria CURTA o `mt-auto` absorve a sobra e a barra desce ao rodapé do rolável; com
+  rolagem ele zera e o sticky faz o de sempre (o `mt-4` da barra preserva o respiro no fim do
+  scroll). Medido no playground: sem rolagem `excesso 0` e barra em 768/768; com 40 desenhos,
+  grudada no meio do scroll e respiro de 16px no fim.
+  ⚠️⚠️ **O relato "não gruda quando o conteúdo rola" era o HOST kids no DESKTOP, não o Pinta**:
+  o `<main>` embarcado usava `md:h-auto md:flex-1` apostando que "a sidebar h-screen trava a
+  linha" — MEDIDO FALSO quando o conteúdo DÁ altura (o main cresceu a 2204px no esqueleto real):
+  a JANELA rolava e o rolável interno (`data-pin-scroll-root`) nunca rolava, então o sticky
+  ficava preso no fim do conteúdo, fora da tela. Fix no kids
+  (`components/kids/main-container.tsx`): `md:h-dvh md:flex-none` — mesmo remédio do mobile.
+  Os EDITORES nunca expuseram isso porque só TOMAM altura; a galeria é o primeiro conteúdo
+  embarcado que EMPURRA.
 - **Poda de `selectedIds`** (efeito sobre `[assets]`, updater devolve `prev` sem mudança): a
   descida da nuvem preserva o id ao regravar, então um desenho removido e re-baixado reaparecia
   **JÁ MARCADO**. ⚠️ No teste de UI, o ciclo da nuvem emite `sync-start`+`changed`+`sync-end` — o
