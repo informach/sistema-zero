@@ -55,7 +55,6 @@ mock.module('@sistemazero/member-shell/components/rich-editor', () => ({
   ),
 }))
 
-
 const navigation = await import('next/navigation')
 const push = mock(() => {})
 mock.module('next/navigation', () => ({ ...navigation, useRouter: () => ({ push }) }))
