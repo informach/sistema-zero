@@ -134,15 +134,15 @@ describe('quantizeToPhotoPalette — a foto vira bitmap + paleta PRÓPRIA (teto 
     expect([...bitmap.data].every((index) => index === 0)).toBe(true)
   })
 
-  it('alfa abaixo do limiar vira transparente (índice 0)', () => {
-    const opaque = imageOf([['#00aa55', 2]])
-    const faint = imageOf([['#00aa55', 2]], 100)
+  it('o limiar de alfa é 128 (contrato do ALPHA_THRESHOLD do export): 127 some, 128 pinta', () => {
+    // O import herdou o limiar do quantizador do GIF — quem mexer lá muda a
+    // silhueta de PNG semi-transparente do "Trazer uma foto"; a fronteira trava.
     const merged: RGBAImage = {
       width: 4,
       height: 1,
+      // Mesmo verde em 4 alfas: 255, 128 (no limiar, pinta), 127 (some), 0.
       data: Uint8ClampedArray.from([
-        ...(opaque.data as Uint8ClampedArray),
-        ...(faint.data as Uint8ClampedArray),
+        0, 170, 85, 255, 0, 170, 85, 128, 0, 170, 85, 127, 0, 170, 85, 0,
       ]),
     }
     const { bitmap, colors } = quantizeToPhotoPalette(merged)

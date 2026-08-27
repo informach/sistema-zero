@@ -196,6 +196,28 @@ export function PaletteMenu({
           </button>
         )
       })}
+      {/* Custom embutida SEM par salvo (a "Cores da foto" do import, uma salva
+          depois excluída/renomeada): sem esta linha NADA ficava marcado, o foco
+          de abertura caía no primeiro item (Arcade) e um Enter descartava a
+          customPalette recolorindo o desenho (full review 26/08). A linha é o
+          alvo seguro do foco: ativar só fecha o menu. */}
+      {activeId === 'custom' && activeCustom && !activeSavedId ? (
+        <button
+          type="button"
+          role="menuitemradio"
+          aria-checked
+          onClick={anchor.close}
+          className={MENU_ITEM_CLASS(true)}
+        >
+          <span aria-hidden="true" className="flex min-w-10 flex-1">
+            <PaletteStripe colors={activeCustom.colors} />
+          </span>
+          <span className="min-w-0 truncate text-pin-text text-xs font-bold">
+            {activeCustom.name}
+          </span>
+          <Check aria-hidden="true" className="size-4 shrink-0 text-pin-accent" />
+        </button>
+      ) : null}
       {library ? (
         <>
           <div aria-hidden="true" className="my-1 shrink-0 border-pin-border border-t-2" />

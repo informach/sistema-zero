@@ -9,7 +9,7 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, del, get, getMany, keys, set, setMany } from 'idb-keyval'
+import { createStore, del, get, getMany, keys, setMany, update } from 'idb-keyval'
 import type { PaletteLibrary } from '../core/paletteLibrary'
 import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
@@ -387,17 +387,25 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       return sanitizePaletteLibrary(raw)
     },
     async savePaletteLibrary(library) {
-      // Ler-FUNDIR-gravar, tudo DENTRO da FIFO do banco (o `get` fora dela
-      // deixaria uma escrita enfileirada intercalar entre ler e gravar): duas
-      // ABAS do mesmo perfil (o Estúdio abre o Pinta em aba nova) escrevem o
-      // MESMO registro, e gravar cego era last-write-wins — a paleta criada na
-      // outra aba sumia. O merge com lápides é a régua única da nuvem, então a
-      // exclusão continua valendo (a lápide gravada aqui mata a cópia velha).
-      await runSerializedWrite(storeHandle, async () => {
-        const current = sanitizePaletteLibrary(await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle))
-        const merged = current ? mergePaletteLibraries(current, library) : library
-        await set(PALETTE_LIBRARY_KEY, merged, storeHandle)
-      })
+      // Ler-FUNDIR-gravar ATÔMICO: duas ABAS do mesmo perfil (o Estúdio abre o
+      // Pinta em aba nova) escrevem o MESMO registro, e gravar cego era
+      // last-write-wins — a paleta criada na outra aba sumia. ⚠️ O `update` do
+      // idb-keyval faz get+put numa ÚNICA transação readwrite — e transação de
+      // IndexedDB serializa ENTRE ABAS; um get e um set separados deixavam uma
+      // janela de milissegundos em que a outra aba lia o valor velho (a FIFO do
+      // runSerializedWrite só serializa DENTRO desta aba — full review 26/08).
+      // O merge com lápides é a régua única da nuvem, então a exclusão continua
+      // valendo (a lápide gravada aqui mata a cópia velha do disco).
+      await runSerializedWrite(storeHandle, () =>
+        update<unknown>(
+          PALETTE_LIBRARY_KEY,
+          (raw) => {
+            const current = sanitizePaletteLibrary(raw)
+            return current ? mergePaletteLibraries(current, library) : library
+          },
+          storeHandle,
+        ),
+      )
     },
   }
 }

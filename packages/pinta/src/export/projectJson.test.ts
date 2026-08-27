@@ -244,7 +244,9 @@ describe('zipGallery', () => {
     const pack = await buildGalleryFileMap(gallery, 'pack')
     expect(pack.readme[0]).toBe('Seu pack de desenhos do Pinta! 🎨')
     expect(pack.readme[1]).toContain('Trazer de volta')
-    // Só a abertura muda: o resto do mapa de arquivos é o mesmo.
+    // Só a abertura muda: mesmas chaves E o backup canônico byte-idêntico
+    // (uma regressão em que o variant altere CONTEÚDO não passaria só por chaves).
     expect(Object.keys(pack.files).sort()).toEqual(Object.keys(backup.files).sort())
+    expect(pack.files['galeria.pinta.json']).toEqual(backup.files['galeria.pinta.json'])
   })
 })

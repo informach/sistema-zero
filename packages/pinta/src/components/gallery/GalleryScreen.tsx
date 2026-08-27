@@ -148,6 +148,11 @@ export function GalleryScreen(): JSX.Element {
   // marcar mais); sair do modo sempre limpa.
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
+  // Espelho da marcação VIVA para o handler assíncrono do download: o closure
+  // do clique congela o Set daquele render, e o auto-fechar do sucesso só vale
+  // se a criança não mexeu na marcação durante o zip (full review 26/08).
+  const selectedIdsRef = useRef(selectedIds)
+  selectedIdsRef.current = selectedIds
   const onToggleSelect = useCallback((id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev)
@@ -300,6 +305,11 @@ export function GalleryScreen(): JSX.Element {
       showToast(COPY.gallery.drawingGone)
       return
     }
+    // Identidade da marcação NO CLIQUE: se a criança mexer na seleção durante
+    // um zip demorado (Limpar, Cancelar + recomeçar, marcar mais um), o
+    // auto-fechar do sucesso NÃO pode engolir a sessão nova — todo toggle cria
+    // um Set novo, então identidade igual = ninguém tocou.
+    const markedAtClick = selectedIdsRef.current
     setZipping(true)
     try {
       const bytes = await zipGallery(expanded.assets, 'pack')
@@ -316,7 +326,7 @@ export function GalleryScreen(): JSX.Element {
           : done,
       )
       // Pack baixado = tarefa concluída; sair do modo devolve os cards ao normal.
-      exitSelection()
+      if (selectedIdsRef.current === markedAtClick) exitSelection()
     } catch {
       showToast(COPY.gallery.zipError)
     } finally {
@@ -672,7 +682,14 @@ export function GalleryScreen(): JSX.Element {
               <Button
                 variant="ghost"
                 disabled={selectedCount === 0}
-                onClick={() => setSelectedIds(new Set())}
+                onClick={(event) => {
+                  setSelectedIds(new Set())
+                  // Com 0 marcados este botão vira disabled e o navegador
+                  // derrubaria o foco no body (criança de teclado se perde):
+                  // manda para o Cancelar, o irmão SEGUINTE nesta barra.
+                  const next = event.currentTarget.nextElementSibling
+                  if (next instanceof HTMLElement) next.focus()
+                }}
               >
                 {COPY.gallery.selectionClear}
               </Button>

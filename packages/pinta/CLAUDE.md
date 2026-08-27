@@ -2167,6 +2167,60 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   "Cores da foto" com 15 cores + F5 + "+" ainda adiciona a Cor 16, menu marca/foca "festa" e
   Enter mantém. Pende QA integrado no kids (herdado).
 
+#### Full review do lote (26/08/2026) — 2 MÉDIAS + 2 BAIXAS corrigidas; SQL e pipeline de cor refutados com prova
+
+3 revisores (seleção/estado · pipeline de cor · biblioteca/members-SQL), achado só com evidência.
+Nenhuma ALTA. Corrigidos no mesmo dia:
+
+1. ⭐⭐ **[MÉDIA] Enter ainda descartava a custom SEM par salvo** — o fix do menu só marcava a
+   salva correspondente, e a "Cores da foto" (que NUNCA entra na biblioteca; idem salva
+   excluída/renomeada) deixava ZERO `aria-checked` → foco de abertura no Arcade → Enter removia
+   a `customPalette` recolorindo o desenho. O import de foto tinha tornado essa borda o caso
+   COMUM. Fix: **linha SINTÉTICA** no menu (`activeId === 'custom' && activeCustom &&
+   !activeSavedId` → menuitemradio marcada com a stripe+nome da embutida; ativar = só
+   `anchor.close()`). De quebra mata o estado transitório da 1ª abertura (o foco não depende
+   mais do `load()` da biblioteca resolver antes do efeito de foco).
+2. ⭐⭐ **[MÉDIA] O ler-fundir-gravar do `savePaletteLibrary` não era atômico ENTRE ABAS** —
+   `get`+`set` são DUAS transações IDB e a FIFO do `runSerializedWrite` só serializa DENTRO da
+   aba: get(A)→get(B)→set(A)→set(B) ainda perdia a paleta de A (janela de ms; e o guard
+   `updatedAt ≥` do load podia ADOTAR o disco de B em empate de relógio — a paleta sumia da
+   memória também). Fix: **`update()` do idb-keyval** (get+put numa ÚNICA transação readwrite —
+   transação IDB serializa entre abas; updater síncrono = sanitize+merge puros). O mock de teste
+   já implementava `update`.
+3. **[BAIXA] Auto-fechar do download engolia sessão nova** — durante um zip demorado, Limpar/
+   Cancelar+recomeçar/marcar seguiam vivos, e o `exitSelection()` do sucesso fechava e LIMPAVA a
+   sessão nova. Fix: espelho `selectedIdsRef` + identidade capturada no clique — todo toggle cria
+   Set novo, então **identidade igual = ninguém mexeu** → só então auto-fecha.
+4. **[BAIXA] Foco morria no body ao clicar Limpar** (o botão vira `disabled` com 0) → o clique
+   move o foco para o Cancelar (`nextElementSibling` — comentário marca o acoplamento de ordem).
+
+**Refutados com prova (não re-investigar):** `quantizeFrames(_, 16)` devolve `palette.length ≤ 16`
+POR CONSTRUÇÃO (`available = min(maxColors,256) - 1 = 15`; o guard `index >= PALETTE_SIZE` do
+helper é inalcançável — zero fantasma por estouro) e todo índice < palette.length nos DOIS
+caminhos; `sanitizeCustomPalette` PRESERVA slots duplicados (sem dedupe — contraste com
+`sanitizeExtraColors`); limiar de alfa idêntico ao antigo (128, medido na fronteira 127/128 —
+agora travado por teste); ⭐ **o caminho novo da foto é ~150× MAIS RÁPIDO que o antigo**
+(2048×2048: 32-50 ms vs 2,1-4,8 s — o `quantizeToIndexed` antigo fazia vizinho-mais-próximo
+sobre ≤63 candidatas POR PIXEL e é que travava a aba); a poda de `selectedIds` não loopa nem
+pesa (updater devolve `prev`; Set só com marcação viva); merge acima de 24 paletas NÃO trunca
+(design: "sync nunca trunca", igual à nuvem); SQL do members com precedente EM PRODUÇÃO
+(`count(*) filter` no zappy.repository, param bindado no helpdesk); fake ↔ drizzle espelhados
+nos 3 pontos; ressurreição de biblioteca soft-deleted no teto passa pelos dois skips.
+
+**Documentado sem corrigir (baixo/aceito):** "Criar novo" herda a posição do "Selecionar" ao
+entrar no modo (duplo clique abriria o diálogo — visível e cancelável, ordens de grandeza
+melhor que o bug original); galeria esvaziada pela nuvem DENTRO do modo deixa a barra sobre o
+empty-state; `photoPalette(n)` pode supercontar no alvo PEÇAS (paleta da imagem inteira,
+fatiamento corta margens — padrão pré-existente das extras); o teto de criação da biblioteca lê
+a MEMÓRIA (pós-merge o disco pode ter mais que 24 — coerente com "teto só de criação"); renomear
+na biblioteca desmarca o menu (snapshot ≠ salva, por design — a linha sintética cobre o buraco).
+
+Testes novos: linha sintética (paletteUi), foto transparente → arcade sem chave + foto de 2
+cores com round-trip (ImportImageDialog), fronteira do alfa 127/128 (paletteFromImage), conteúdo
+byte-idêntico do backup entre variantes (projectJson). Verde: pinta 1114 + typecheck + biome +
+typecheck kids; QA browser (linha sintética marcada+focada e Enter mantém; foco pós-Limpar cai
+no Cancelar).
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data
