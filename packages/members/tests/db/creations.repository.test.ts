@@ -361,21 +361,30 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       reason: 'items-per-tool',
     })
 
-    // O kind isolado não concede isenção: itemId arbitrário continua contando.
+    // ⚠️ A identidade da biblioteca é TUDO OU NADA: ferramenta + item reservado +
+    // kind reservado. Kind sozinho com itemId arbitrário não ganha isenção nenhuma
+    // e, mais que isso, é RECUSADO na origem em vez de virar linha malformada —
+    // `classifyPintaPaletteLibraryCreation` chama isso de `invalid-partial`.
+    // (A contagem do SQL já filtrava pela TRIPLA exata, então nunca houve brecha
+    // de teto aqui; o que mudou é não deixar a linha torta nascer.)
     expect(await repo.reserveUpload(item('desenho-falso', PALETTE_LIBRARY_KIND))).toEqual({
       ok: false,
-      reason: 'items-per-tool',
+      reason: 'palette-library-identity',
     })
 
     // Uma linha legada com o id reservado e kind comum não pode virar biblioteca.
     const legado = randomUUID()
+    // ⚠️ `Date` NÃO pode ser bindado em SQL cru do postgres.js: o driver chama
+    // `Buffer.byteLength` no valor e estoura ("Received an instance of Date").
+    // O Drizzle aplica o mapper da coluna; a tag `sql` crua, não.
+    const iso = now.toISOString()
     await conn.sql`
       insert into members.creations (
         id, user_id, account_id, tool, item_id, name, kind, item_updated_at,
         revision, last_reserved_revision, bytes, storage_ref, created_at, synced_at
       ) values (
         ${randomUUID()}, ${legado}, ${conta}, 'pinta', ${PALETTE_LIBRARY_ITEM_ID},
-        'legado', 'pixel-sprite', ${now}, 1, 1, 10, 'k/legado/1', ${now}, ${now}
+        'legado', 'pixel-sprite', ${iso}, 1, 1, 10, 'k/legado/1', ${iso}, ${iso}
       )
     `
     expect(
