@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { act, renderHook } from '@testing-library/react'
+import { act, fireEvent, renderHook } from '@testing-library/react'
 import { useGallerySelection } from './useGallerySelection'
 
 describe('useGallerySelection', () => {
@@ -31,5 +31,32 @@ describe('useGallerySelection', () => {
     expect(exited).toBe(true)
     expect(result.current.selectionMode).toBe(false)
     expect(result.current.selectedCount).toBe(0)
+  })
+
+  it('Esc com um Dialog do Pinta aberto NÃO sai do modo; sem dialog e busca vazia, sai', () => {
+    // O guard `[data-pinta-dialog]` nunca tinha teste (o Esc de um diálogo
+    // aberto não pode arrastar a saída do modo junto — full review 26/08).
+    const searchInputRef = { current: null }
+    const { result } = renderHook(() => useGallerySelection([{ id: 'a' }], searchInputRef))
+    act(() => {
+      result.current.enterSelection()
+    })
+
+    const dialog = document.createElement('div')
+    dialog.setAttribute('data-pinta-dialog', '')
+    document.body.appendChild(dialog)
+    try {
+      act(() => {
+        fireEvent.keyDown(window, { key: 'Escape' })
+      })
+      expect(result.current.selectionMode).toBe(true)
+    } finally {
+      dialog.remove()
+    }
+
+    act(() => {
+      fireEvent.keyDown(window, { key: 'Escape' })
+    })
+    expect(result.current.selectionMode).toBe(false)
   })
 })

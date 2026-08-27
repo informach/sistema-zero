@@ -2148,7 +2148,13 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   ficava preso no fim do conteúdo, fora da tela. Fix no kids
   (`components/kids/main-container.tsx`): `md:h-dvh md:flex-none` — mesmo remédio do mobile.
   Os EDITORES nunca expuseram isso porque só TOMAM altura; a galeria é o primeiro conteúdo
-  embarcado que EMPURRA.
+  embarcado que EMPURRA. ⚠️ **Full review 26/08: o travamento exige o par `md:min-h-[36rem]`**
+  (= piso 34rem dos frames + 2rem de py) — sem ele, janela desktop < ~560px (snap de meia tela,
+  zoom 175-200%) CLIPAVA a barra sem caminho de rolagem (2px visíveis medidos a 500px; com o
+  par, a página rola só o déficit e a barra volta inteira). Contrato travado por
+  `tests/main-container.test.tsx` no kids; aqui, o espaçador ganhou asserção estrutural
+  (`.mt-auto` presente no modo, ausente fora), e o foco pós-Limpar + o guard
+  `[data-pinta-dialog]` do Esc ganharam teste.
 - **Poda de `selectedIds`** (efeito sobre `[assets]`, updater devolve `prev` sem mudança): a
   descida da nuvem preserva o id ao regravar, então um desenho removido e re-baixado reaparecia
   **JÁ MARCADO**. ⚠️ No teste de UI, o ciclo da nuvem emite `sync-start`+`changed`+`sync-end` — o

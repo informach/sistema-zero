@@ -97,6 +97,11 @@ describe('modo de seleção da galeria (pack)', () => {
     expect(button(`${COPY.gallery.duplicate} heroi`).disabled).toBe(true)
     expect(button(`${COPY.gallery.remove} heroi`).disabled).toBe(true)
     expect(screen.getByText(COPY.gallery.selectionCount(0))).toBeTruthy()
+    // O espaçador que ASSENTA a barra no rodapé sem rolagem (happy-dom não faz
+    // layout — a classe É o mecanismo, mesma régua do width/height do palco).
+    expect(
+      document.querySelector('[data-pin-scroll-root] > .mt-auto[aria-hidden="true"]'),
+    ).toBeTruthy()
 
     fireEvent.click(button(COPY.gallery.selectionMark('heroi')))
     const unmark = await screen.findByRole('button', {
@@ -114,6 +119,8 @@ describe('modo de seleção da galeria (pack)', () => {
     fireEvent.click(button(COPY.gallery.cancel))
     await screen.findByRole('button', { name: /Abrir heroi/ })
     expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()
+    // Fora do modo o espaçador desmonta junto (nada de mt-auto solto no fluxo).
+    expect(document.querySelector('[data-pin-scroll-root] > .mt-auto')).toBeNull()
     fireEvent.click(button(COPY.gallery.select))
     await screen.findByRole('button', { name: COPY.gallery.selectionMark('heroi') })
     expect(screen.getByText(COPY.gallery.selectionCount(0))).toBeTruthy()
@@ -177,6 +184,9 @@ describe('modo de seleção da galeria (pack)', () => {
     // Continua no modo: alternadores na tela, baixar desabilitado de novo.
     expect(screen.getByRole('button', { name: COPY.gallery.selectionMark('heroi') })).toBeTruthy()
     expect(button(COPY.gallery.downloadSelection).disabled).toBe(true)
+    // O Limpar vira disabled com 0: o foco tem que ter ido ao Cancelar (senão
+    // morre no body e a criança de teclado recomeça do topo).
+    expect(document.activeElement).toBe(button(COPY.gallery.cancel))
   })
 
   it('"Trazer de volta" e "Trazer uma foto" saem do modo seleção', async () => {

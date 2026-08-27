@@ -254,7 +254,11 @@ export function GalleryScreen(): JSX.Element {
     if (zipping) return
     // Expande na hora do download, sobre a galeria VIVA (nunca a lista filtrada
     // da tela): mapa marcado leva o tileset dele junto — sem as peças o
-    // restauro recusaria o mapa.
+    // restauro recusaria o mapa. O snapshot também congela a IDENTIDADE da
+    // marcação no clique: se a criança mexer na seleção durante um zip demorado
+    // (Limpar, Cancelar + recomeçar, marcar mais um), o auto-fechar do sucesso
+    // NÃO pode engolir a sessão nova — todo toggle cria um Set novo, então
+    // identidade igual = ninguém tocou.
     const markedAtClick = captureSelection()
     const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
     if (expanded.assets.length === 0) {
@@ -263,10 +267,6 @@ export function GalleryScreen(): JSX.Element {
       showToast(COPY.gallery.drawingGone)
       return
     }
-    // Identidade da marcação NO CLIQUE: se a criança mexer na seleção durante
-    // um zip demorado (Limpar, Cancelar + recomeçar, marcar mais um), o
-    // auto-fechar do sucesso NÃO pode engolir a sessão nova — todo toggle cria
-    // um Set novo, então identidade igual = ninguém tocou.
     setZipping(true)
     try {
       const bytes = await zipGallery(expanded.assets, 'pack')
@@ -642,7 +642,7 @@ export function GalleryScreen(): JSX.Element {
               <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
               <div className="flex items-center gap-2">
                 {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
-                  quem sai do modo é o Cancelar ao lado. */}
+                    quem sai do modo é o Cancelar ao lado. */}
                 <Button
                   variant="ghost"
                   disabled={selectedCount === 0}
