@@ -34,6 +34,16 @@ function clearImage(): RGBAImage {
   return { data: new Uint8ClampedArray(16 * 16 * 4), width: 16, height: 16 }
 }
 
+/** Imagem menor que todas as peças oferecidas pelo diálogo. */
+function smallRedImage(): RGBAImage {
+  const data = new Uint8ClampedArray(8 * 8 * 4)
+  for (let i = 0; i < 8 * 8; i += 1) {
+    data[i * 4] = 255
+    data[i * 4 + 3] = 255
+  }
+  return { data, width: 8, height: 8 }
+}
+
 describe('ImportImageDialog', () => {
   it('foto → PEÇAS → tamanho → nome → importa um tileset', () => {
     let imported: PintaAsset | null = null
@@ -80,6 +90,62 @@ describe('ImportImageDialog', () => {
       expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
       expect(asset.extraColors).toBeUndefined()
     }
+  })
+
+  it('foto menor que a peça vira uma peça preenchida com transparência', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={smallRedImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
+    )
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(false)
+    expect(screen.getByText(new RegExp(COPY.importImage.uniqueTiles(1)))).toBeTruthy()
+    fireEvent.click(next)
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'peca-pequena' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('tileset')
+    if (asset.kind === 'tileset') {
+      expect(asset.tiles).toHaveLength(1)
+      expect(Array.from(asset.tiles[0]?.data ?? []).some((index) => index === 0)).toBe(true)
+    }
+  })
+
+  it('imagem transparente não avança para PEÇAS e explica o fallback sem dizer 0 cores', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={clearImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
+    )
+    expect(screen.getByText(COPY.importImage.noVisibleTiles)).toBeTruthy()
+    expect(screen.getByText(new RegExp(COPY.importImage.transparentPalette))).toBeTruthy()
+    expect(screen.queryByText(new RegExp(COPY.importImage.photoPalette(0)))).toBeNull()
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+    fireEvent.click(next)
+    expect(imported).toBeNull()
   })
 
   it('foto → CENÁRIO → tamanho PERSONALIZADO → nome → importa nas dimensões digitadas', () => {

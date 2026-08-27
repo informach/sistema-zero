@@ -1,5 +1,5 @@
 /**
- * Redução de cores para o GIF — PURA (recebe RGBA, devolve índices).
+ * Redução de cores compartilhada — PURA (recebe RGBA, devolve índices).
  *
  * O desenho de PIXEL já é indexado e nem passa por aqui. Quem precisa é o
  * VETORIAL: ele é rasterizado com anti-serrilhado, então uma borda que a criança

@@ -766,6 +766,7 @@ describe('criações guardadas na conta — HTTP', () => {
     // (a) Com o teto de desenhos CHEIO, a biblioteca ainda reserva E commita.
     for (let i = 0; i < 3; i += 1) expect((await save(`d-${i}`, 'pixel-sprite')).ok).toBe(true)
     expect((await save('d-cheio', 'pixel-sprite')).ok).toBe(false)
+    expect((await save('desenho-falso', PALETTE_LIBRARY_KIND)).ok).toBe(false)
     expect((await save(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND)).ok).toBe(true)
 
     // (b) E a biblioteca commitada NÃO ocupa vaga: os 3 slots de desenho
@@ -777,6 +778,29 @@ describe('criações guardadas na conta — HTTP', () => {
     expect((await save('d-b', 'pixel-sprite')).ok).toBe(true)
     expect((await save('d-c', 'pixel-sprite')).ok).toBe(true)
     expect((await save('d-d', 'pixel-sprite')).ok).toBe(false)
+  })
+
+  test('marcadores parciais da biblioteca são 400 e o item especial não muda de tipo', async () => {
+    const ctx = buildWithTools()
+    const attempts = [
+      await reserve(ctx, 'pinta', 'desenho-falso', { kind: PALETTE_LIBRARY_KIND }),
+      await reserve(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, { kind: 'pixel-sprite' }),
+      await reserve(ctx, 'studio', PALETTE_LIBRARY_ITEM_ID, { kind: PALETTE_LIBRARY_KIND }),
+    ]
+    for (const response of attempts) {
+      expect(response.status).toBe(400)
+      expect((await json(response)).error.code).toBe('VALIDATION_ERROR')
+    }
+
+    await saveItem(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, {
+      name: 'Minhas paletas',
+      kind: PALETTE_LIBRARY_KIND,
+    })
+    const transition = await reserve(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, {
+      kind: 'pixel-sprite',
+    })
+    expect(transition.status).toBe(400)
+    expect((await json(transition)).error.code).toBe('VALIDATION_ERROR')
   })
 
   test('validação de borda: ferramenta desconhecida, itemId com ":", corpo sem bytes e nome só de espaços são 4xx', async () => {

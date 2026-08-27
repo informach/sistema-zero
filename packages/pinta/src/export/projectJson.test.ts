@@ -235,7 +235,7 @@ describe('zipGallery', () => {
   })
 
   it('o LEIA-ME do pack explica a seleção; o do backup fica byte-idêntico', async () => {
-    const { buildGalleryFileMap } = await import('./zip')
+    const { buildGalleryFileMap, zipGallery } = await import('./zip')
     const gallery = makeGallery()
 
     const backup = await buildGalleryFileMap(gallery)
@@ -244,9 +244,21 @@ describe('zipGallery', () => {
     const pack = await buildGalleryFileMap(gallery, 'pack')
     expect(pack.readme[0]).toBe('Seu pack de desenhos do Pinta! 🎨')
     expect(pack.readme[1]).toContain('Trazer de volta')
-    // Só a abertura muda: mesmas chaves E o backup canônico byte-idêntico
-    // (uma regressão em que o variant altere CONTEÚDO não passaria só por chaves).
+    // Só a abertura muda: o README INTEIRO depois do preâmbulo e TODOS os
+    // demais arquivos continuam iguais, inclusive Uint8Array de PNG.
+    expect(pack.readme).toEqual([
+      'Seu pack de desenhos do Pinta! 🎨',
+      'Este pack tem só os desenhos escolhidos. Para abrir no Pinta, use o botão "Trazer de volta".',
+      '',
+      ...backup.readme.slice(3),
+    ])
     expect(Object.keys(pack.files).sort()).toEqual(Object.keys(backup.files).sort())
-    expect(pack.files['galeria.pinta.json']).toEqual(backup.files['galeria.pinta.json'])
+    for (const path of Object.keys(backup.files)) {
+      expect(pack.files[path]).toEqual(backup.files[path])
+    }
+
+    // O parâmetro novo não altera um backup canônico: compara o ZIP COMPLETO,
+    // não apenas chaves ou o JSON restaurável dentro dele.
+    expect(await zipGallery(gallery)).toEqual(await zipGallery(gallery, 'gallery'))
   })
 })

@@ -1,4 +1,8 @@
 import { describe, expect, test } from 'bun:test'
+import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+} from '../../src/domain/creations/palette-library'
 import { buildApp } from '../helpers'
 
 const ACCOUNT = 'a0000000-0000-4000-8000-000000000001'
@@ -76,7 +80,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     expect(b.pensa.projects).toBe(0)
   })
 
-  test('criações na nuvem: só vivas E confirmadas contam; ferramenta certa', async () => {
+  test('criações na nuvem: só vivas, confirmadas e fora da identidade exata da biblioteca contam', async () => {
     const { app, creations } = buildApp()
     const record = (over: Record<string, unknown>) => ({
       id: crypto.randomUUID(),
@@ -106,11 +110,28 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     creations.rows.set('k4', record({ itemId: 'i4', storageRef: null }))
     // Outra ferramenta não vaza.
     creations.rows.set('k5', record({ itemId: 'i5', tool: 'studio' }))
+    // A biblioteca exata não é desenho; usar apenas o kind reservado não concede a isenção.
+    creations.rows.set(
+      'k6',
+      record({
+        itemId: PALETTE_LIBRARY_ITEM_ID,
+        kind: PALETTE_LIBRARY_KIND,
+        itemUpdatedAt: new Date('2026-06-10'),
+      }),
+    )
+    creations.rows.set(
+      'k7',
+      record({
+        itemId: 'desenho-falso',
+        kind: PALETTE_LIBRARY_KIND,
+        itemUpdatedAt: new Date('2026-06-11'),
+      }),
+    )
 
     const body = await usageOf(app, [PROFILE_A])
     const a = body.learners.find((l: { userId: string }) => l.userId === PROFILE_A)
-    expect(a.pinta.drawings).toBe(2)
-    expect(a.pinta.lastActivityAt).toBe('2026-06-05T00:00:00.000Z')
+    expect(a.pinta.drawings).toBe(3)
+    expect(a.pinta.lastActivityAt).toBe('2026-06-11T00:00:00.000Z')
     expect(a.estudio.creations).toBe(1)
   })
 

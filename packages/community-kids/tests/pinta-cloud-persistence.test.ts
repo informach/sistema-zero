@@ -54,6 +54,7 @@ function fakeLocal(initial: PintaAsset[] = []): PintaPersistenceLike & {
     },
     async savePaletteLibrary(next) {
       library.current = next
+      return next
     },
   }
 }
@@ -717,6 +718,53 @@ describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
     expect(marks.revision(PALETTE_LIBRARY_ITEM_ID)).toBe(4)
     expect(uploads.has(PALETTE_LIBRARY_ITEM_ID)).toBe(true)
     expect(events).toContain('palette-library-changed')
+  })
+
+  test('reconciliação re-sobe uma escrita concorrente que só apareceu no save atômico', async () => {
+    const remoteLibrary = libraryOf([
+      { id: 'remote', name: 'Remota', updatedAt: 100, hex: '#111111' },
+    ])
+    const remote = new Map([
+      [
+        PALETTE_LIBRARY_ITEM_ID,
+        { json: JSON.stringify(remoteLibrary), summary: paletteSummaryOf(remoteLibrary, 7) },
+      ],
+    ])
+    const local = fakeLocal()
+    local.library.current = remoteLibrary
+    let saves = 0
+    local.savePaletteLibrary = async (next) => {
+      saves += 1
+      local.library.current =
+        saves === 1
+          ? libraryOf(
+              [
+                { id: 'remote', name: 'Remota', updatedAt: 100, hex: '#111111' },
+                { id: 'local', name: 'Outra aba', updatedAt: 100, hex: '#222222' },
+              ],
+              100,
+            )
+          : next
+      return local.library.current
+    }
+    const { cloud, uploads } = fakeCloud(remote)
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'p1',
+      marks: createMemorySyncedMarks(),
+      now: () => 500,
+    })
+
+    await loadSettled(mirrored, local)
+
+    expect(saves).toBe(2)
+    expect(local.library.current?.updatedAt).toBe(500)
+    expect(local.library.current?.palettes.map((palette) => palette.id)).toEqual([
+      'remote',
+      'local',
+    ])
+    expect(await uploads.get(PALETTE_LIBRARY_ITEM_ID)?.produce()).not.toBeNull()
   })
 
   test('base vencida na subida: onStale funde com a nuvem e re-sobe', async () => {

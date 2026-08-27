@@ -75,10 +75,11 @@ describe('biblioteca de paletas na persistência local', () => {
   it('gravar com uma leitura VELHA não apaga a paleta da outra aba (merge no save)', async () => {
     // Duas abas do mesmo perfil escrevem o MESMO registro (o Estúdio abre o
     // Pinta em aba nova). Antes o save era cego: last-write-wins.
-    const persistence = createPintaPersistence()
-    await persistence.savePaletteLibrary?.(libraryOf())
+    const tabA = createPintaPersistence()
+    const tabB = createPintaPersistence()
+    await tabA.savePaletteLibrary?.(libraryOf())
     // A outra aba partiu de uma biblioteca SEM p1 (leitura anterior) e salva p2.
-    await persistence.savePaletteLibrary?.({
+    const merged = await tabB.savePaletteLibrary?.({
       version: 1,
       updatedAt: 50,
       palettes: [
@@ -91,7 +92,10 @@ describe('biblioteca de paletas na persistência local', () => {
       ],
       removed: [],
     })
-    const loaded = await persistence.loadPaletteLibrary?.()
+    // O retorno é o que a transação REALMENTE gravou; a store não precisa
+    // adivinhar se outra aba acrescentou algo entre a leitura e o save.
+    expect(merged?.palettes.map((p) => p.id).sort()).toEqual(['p1', 'p2'])
+    const loaded = await tabA.loadPaletteLibrary?.()
     expect(loaded?.palettes.map((p) => p.id).sort()).toEqual(['p1', 'p2'])
   })
 

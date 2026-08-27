@@ -49,6 +49,8 @@ export type CreationUploadReservation =
   | { ok: false; reason: 'item-bytes' }
   /** Estourou o teto: de bytes do perfil, ou de itens vivos na ferramenta. */
   | { ok: false; reason: 'total-bytes' | 'items-per-tool' }
+  /** Marcadores reservados da biblioteca vieram incompletos ou mudariam a identidade da linha. */
+  | { ok: false; reason: 'palette-library-identity' }
   | { ok: false; reason: 'account-deleting' }
   /** A `baseRevision` do aparelho não é a corrente (outro aparelho subiu depois): 409. */
   | { ok: false; reason: 'stale-base'; currentRevision: number }
@@ -75,7 +77,10 @@ export type CreationCommitResult =
   /** A revisão pedida JÁ é a corrente (retry de um 200 perdido): idempotente. */
   | { ok: true; alreadyCommitted: true; previousStorageRef: null; releasedPartRefs: [] }
   /** Não é a revisão reservada (upload velho, outro navegador reservou depois, nada reservado). */
-  | { ok: false; reason?: 'total-bytes' | 'items-per-tool' }
+  | {
+      ok: false
+      reason?: 'total-bytes' | 'items-per-tool' | 'palette-library-identity'
+    }
   /** A reserva exigia partes que o cliente não confirmou ter enviado (a reserva fica viva). */
   | { ok: false; reason: 'parts-missing'; hashes: string[] }
 

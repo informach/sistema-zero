@@ -3,46 +3,16 @@
  * RGBA. Sem dithering — previsível e explicável. Testável sem canvas (a
  * decodificação da imagem vive à parte).
  *
- * ⚠️ Desde 08/2026 a QUANTIZAÇÃO da foto vive em
- * `import/paletteFromImage.ts` (`quantizeToPhotoPalette`): o desenho importado
- * nasce com a `customPalette` PRÓPRIA da foto (≤15 cores + transparente, teto
- * de 16 da criação de paleta) em vez de arcade + até 48 extras. O
- * `quantizeToIndexed` daqui ficou SEM consumidor de produção (só os testes) —
- * candidato a remoção num lote de limpeza futuro.
+ * A quantização da foto vive em `import/paletteFromImage.ts`: o desenho nasce
+ * com uma `customPalette` própria (≤15 cores + transparente).
  */
-import { getPalette, TRANSPARENT_INDEX } from '../core/palette'
+import { TRANSPARENT_INDEX } from '../core/palette'
 import { PINTA_LIMITS, type PintaBitmap, TILE_SIZES } from '../core/project'
-import { hexToRgb } from '../pixel/render'
 
 export interface RGBAImage {
   data: Uint8ClampedArray | readonly number[]
   width: number
   height: number
-}
-
-type RGB = [number, number, number]
-
-/** Distância de cor ponderada por luminância (verde pesa mais que azul/vermelho). */
-function colorDist2(a: RGB, b: RGB): number {
-  const dr = a[0] - b[0]
-  const dg = a[1] - b[1]
-  const db = a[2] - b[2]
-  return 2 * dr * dr + 4 * dg * dg + 3 * db * db
-}
-
-/**
- * Raio de FUSÃO de cores extras (distância²): balde novo mais longe que isto de
- * TODAS as candidatas vira cor extra; senão funde na mais próxima. Constante
- * única (afinada por teste) — subir agrupa mais, descer cria mais extras.
- */
-const FUSION_RADIUS_SQ = 1600
-
-function rgbToHex([r, g, b]: RGB): string {
-  const h = (v: number) =>
-    Math.min(255, Math.max(0, Math.round(v)))
-      .toString(16)
-      .padStart(2, '0')
-  return `#${h(r)}${h(g)}${h(b)}`
 }
 
 /**
@@ -157,102 +127,6 @@ export function resizeContain(
   return { data: out, width: targetW, height: targetH }
 }
 
-export interface QuantizeOptions {
-  /** Paleta base (16 cores, índice 0 transparente); default = arcade. */
-  baseColors?: readonly string[]
-  maxExtraColors?: number
-  /** Pixel com alpha abaixo disto vira transparente (índice 0). */
-  alphaThreshold?: number
-}
-
-/**
- * RGBA → bitmap INDEXADO + cores extras. As candidatas são as 15 cores base
- * (índices 1–15) mais até `maxExtraColors` cores extras escolhidas por
- * frequência (posterizadas a 4 bits/canal p/ agrupar ruído de JPEG). Cada pixel
- * cai na candidata mais próxima; alpha baixo → transparente.
- */
-export function quantizeToIndexed(
-  input: RGBAImage,
-  opts: QuantizeOptions = {},
-): { bitmap: PintaBitmap; extraColors: string[] } {
-  const base = opts.baseColors ?? getPalette('arcade').colors
-  const alphaThreshold = opts.alphaThreshold ?? 128
-  const maxExtra = opts.maxExtraColors ?? PINTA_LIMITS.maxExtraColors
-  const { data, width, height } = input
-  const pixels = width * height
-
-  // Candidatas base: cores 1..15 (0 é transparente) → [rgb, índice na paleta].
-  const baseRgb: RGB[] = []
-  const baseIndex: number[] = []
-  for (let i = 1; i < base.length; i += 1) {
-    const hex = base[i]
-    if (hex) {
-      baseRgb.push(hexToRgb(hex))
-      baseIndex.push(i)
-    }
-  }
-
-  // Histograma de cores OPACAS posterizadas (12 bits) → frequência.
-  const hist = new Map<number, { rgb: RGB; count: number }>()
-  for (let p = 0; p < pixels; p += 1) {
-    if ((data[p * 4 + 3] ?? 0) < alphaThreshold) continue
-    const r = data[p * 4] ?? 0
-    const g = data[p * 4 + 1] ?? 0
-    const b = data[p * 4 + 2] ?? 0
-    const key = ((r >> 4) << 8) | ((g >> 4) << 4) | (b >> 4)
-    const entry = hist.get(key)
-    if (entry) entry.count += 1
-    // Centro do balde (determinístico): (n>>4)*16 + 8.
-    else
-      hist.set(key, {
-        rgb: [((r >> 4) << 4) + 8, ((g >> 4) << 4) + 8, ((b >> 4) << 4) + 8],
-        count: 1,
-      })
-  }
-
-  // Cores EXTRAS por frequência: um balde vira extra se está longe de TODAS as
-  // candidatas já aceitas (base + extras).
-  const extrasRgb: RGB[] = []
-  const extras: string[] = []
-  const buckets = [...hist.values()].sort((a, b) => b.count - a.count)
-  for (const bucket of buckets) {
-    if (extras.length >= maxExtra) break
-    let nearest = Number.POSITIVE_INFINITY
-    for (const c of baseRgb) nearest = Math.min(nearest, colorDist2(bucket.rgb, c))
-    for (const c of extrasRgb) nearest = Math.min(nearest, colorDist2(bucket.rgb, c))
-    if (nearest > FUSION_RADIUS_SQ) {
-      extrasRgb.push(bucket.rgb)
-      extras.push(rgbToHex(bucket.rgb))
-    }
-  }
-
-  // Candidatas finais com o índice de paleta (base 1..15, extras 16..).
-  const candidates: Array<{ rgb: RGB; index: number }> = [
-    ...baseRgb.map((rgb, k) => ({ rgb, index: baseIndex[k] ?? 1 })),
-    ...extrasRgb.map((rgb, j) => ({ rgb, index: 16 + j })),
-  ]
-
-  const out = new Uint8Array(pixels)
-  for (let p = 0; p < pixels; p += 1) {
-    if ((data[p * 4 + 3] ?? 0) < alphaThreshold) {
-      out[p] = TRANSPARENT_INDEX
-      continue
-    }
-    const c: RGB = [data[p * 4] ?? 0, data[p * 4 + 1] ?? 0, data[p * 4 + 2] ?? 0]
-    let best = candidates[0]?.index ?? TRANSPARENT_INDEX
-    let bestD = Number.POSITIVE_INFINITY
-    for (const cand of candidates) {
-      const d = colorDist2(c, cand.rgb)
-      if (d < bestD) {
-        bestD = d
-        best = cand.index
-      }
-    }
-    out[p] = best
-  }
-  return { bitmap: { width, height, data: out }, extraColors: extras }
-}
-
 /**
  * Fatia um bitmap indexado em peças `tileSize × tileSize`, DEDUPLICANDO peças
  * idênticas (byte a byte) e PULANDO as 100% transparentes. `tooMany` quando
@@ -262,8 +136,11 @@ export function sliceIndexedTiles(
   bitmap: PintaBitmap,
   tileSize: number,
 ): { tiles: PintaBitmap[]; tooMany: boolean } {
-  const cols = Math.floor(bitmap.width / tileSize)
-  const rows = Math.floor(bitmap.height / tileSize)
+  // A última coluna/linha incompleta vira uma peça preenchida com transparência.
+  // `floor` descartava pixels da borda e devolvia ZERO peças quando a imagem era
+  // menor que o menor tile oferecido pelo diálogo.
+  const cols = Math.ceil(bitmap.width / tileSize)
+  const rows = Math.ceil(bitmap.height / tileSize)
   const seen = new Map<string, PintaBitmap>()
   let tooMany = false
   for (let ty = 0; ty < rows && !tooMany; ty += 1) {
@@ -295,7 +172,7 @@ export function sliceIndexedTiles(
  * altura; entre eles, o MENOR que ainda dá ≤ `maxTiles` peças — uma imagem de
  * tileset quase sempre quer ser fatiada nas peças MENORES (mais peças). Se
  * nenhum couber no teto, o MAIOR divisor (menos peças). Nenhum divisor → `null`
- * (a criança escolhe; a sobra é cortada com floor no fatiamento).
+ * (a criança escolhe; a borda incompleta recebe transparência no fatiamento).
  */
 export function detectTileSize(width: number, height: number): number | null {
   const divisors = TILE_SIZES.filter((ts) => width % ts === 0 && height % ts === 0)

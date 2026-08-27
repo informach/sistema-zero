@@ -29,6 +29,12 @@
  * ⚠️ Descidas gravadas por aqui NÃO passam pelo `persistAssets` embrulhado (senão
  * o que acabou de descer subiria de novo).
  */
+
+import {
+  PINTA_PALETTE_LIBRARY_ITEM_ID,
+  PINTA_PALETTE_LIBRARY_KIND,
+  PINTA_PALETTE_LIBRARY_TOOL,
+} from '@sistemazero/core/creations'
 import type { PaletteLibrary, PintaAsset } from '@sistemazero/pinta/assets'
 import {
   assetFromJson,
@@ -61,7 +67,7 @@ export interface PintaPersistenceLike {
   subscribe?(listener: (event: PintaCloudPersistenceEvent) => void): () => void
   /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
-  savePaletteLibrary?(library: PaletteLibrary): Promise<void>
+  savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
   /** Desliga o que o wrapper escuta por fora (abrir/fechar do editor). O host chama ao trocar. */
   dispose?(): void
 }
@@ -71,10 +77,11 @@ export interface PintaPersistenceLike {
  * migration/rota nova): itemId fixo, kind próprio. O members só o vê como mais
  * um item; quem o distingue é (a) a reconciliação daqui, que o tira da lista de
  * ASSETS antes do `reconcileCreations`, e (b) o `creationsUsageByUsers` do
- * admin, que filtra o kind para não contar a biblioteca como "+1 desenho".
+ * admin, que filtra a identidade exata para não contar a biblioteca como "+1 desenho".
  */
-export const PALETTE_LIBRARY_ITEM_ID = 'sz-pinta-palettes'
-export const PALETTE_LIBRARY_KIND = 'palette-library'
+export const PALETTE_LIBRARY_TOOL = PINTA_PALETTE_LIBRARY_TOOL
+export const PALETTE_LIBRARY_ITEM_ID = PINTA_PALETTE_LIBRARY_ITEM_ID
+export const PALETTE_LIBRARY_KIND = PINTA_PALETTE_LIBRARY_KIND
 
 const TILESET_KINDS = new Set(['tileset', 'vector-tileset'])
 /** Cada passe da descida trabalha até aqui; o resto volta em passes seguidos. */
@@ -303,18 +310,36 @@ export function createCloudMirroredPintaPersistence(options: {
           paletteLibraryContentKey(merged) !== paletteLibraryContentKey(remote)
         // Merge que difere do remoto é uma "edição" local: carimbo novo para o
         // produtor ver que há o que subir (a marca fica na revisão da nuvem).
-        await saveLibrary(
+        let saved = await saveLibrary(
           changedVsRemote
             ? { ...merged, updatedAt: Math.max(now(), merged.updatedAt + 1) }
             : merged,
         )
+        // O save local ainda pode ter fundido uma escrita atômica de outra aba
+        // depois da releitura acima. Decide a re-subida pelo valor realmente
+        // gravado, e garante um carimbo posterior ao remoto se essa diferença
+        // só apareceu dentro da transação.
+        let savedDiffersFromRemote =
+          paletteLibraryContentKey(saved) !== paletteLibraryContentKey(remote)
+        if (
+          savedDiffersFromRemote &&
+          !changedVsRemote &&
+          saved.updatedAt <= downloaded.summary.itemUpdatedAt
+        ) {
+          saved = await saveLibrary({
+            ...saved,
+            updatedAt: Math.max(now(), saved.updatedAt + 1, downloaded.summary.itemUpdatedAt + 1),
+          })
+          savedDiffersFromRemote =
+            paletteLibraryContentKey(saved) !== paletteLibraryContentKey(remote)
+        }
         emit({ type: 'palette-library-changed' })
         marks.set(
           PALETTE_LIBRARY_ITEM_ID,
           downloaded.summary.itemUpdatedAt,
           downloaded.summary.revision,
         )
-        if (changedVsRemote) enqueuePaletteUpload()
+        if (savedDiffersFromRemote) enqueuePaletteUpload()
         return
       }
       marks.set(
@@ -544,8 +569,9 @@ export function createCloudMirroredPintaPersistence(options: {
     ...(saveLibrary
       ? {
           savePaletteLibrary: async (library: PaletteLibrary) => {
-            await saveLibrary(library)
+            const saved = await saveLibrary(library)
             enqueuePaletteUpload()
+            return saved
           },
         }
       : {}),

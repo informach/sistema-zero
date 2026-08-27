@@ -13,7 +13,7 @@
  *   repetição de pixel (nearest-neighbor EXATO, sem interpolação de canvas).
  *   Por tabela, roda no happy-dom e é testável de ponta a ponta.
  * - **Vetorial**: rasteriza a animação em TIRAS limitadas (um `<img>` e um
- *   canvas por bloco), fatia em quadros e reduz as cores (`quantize.ts`). Precisa de
+ *   canvas por bloco), fatia em quadros e reduz as cores (`quantizeFrames.ts`). Precisa de
  *   canvas de verdade, então devolve `null` no happy-dom, como o resto do vetor.
  *
  * O tempo de cada quadro sai de `frameDurationsMs`, o MESMO cálculo da prévia:
@@ -32,12 +32,12 @@ import type {
   VectorSpriteAsset,
 } from '../core/project'
 import { resolveAssetPalette } from '../core/project'
+import { quantizeFrames, type Rgb } from '../core/quantizeFrames'
 import { flattenCelsOrBlank } from '../pixel/layers'
 import { hexToRgb } from '../pixel/render'
 import { visibleShapes } from '../vector/model'
 import { svgToCanvas } from '../vector/rasterize'
 import { encodeGif, msToDelayCs } from './gif'
-import { quantizeFrames, type Rgb } from './quantize'
 import { vectorStripPortableSvg } from './vectorSheet'
 
 /** Máximo de cores do formato (a posição 0 é o slot transparente). */

@@ -360,6 +360,30 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       ok: false,
       reason: 'items-per-tool',
     })
+
+    // O kind isolado não concede isenção: itemId arbitrário continua contando.
+    expect(await repo.reserveUpload(item('desenho-falso', PALETTE_LIBRARY_KIND))).toEqual({
+      ok: false,
+      reason: 'items-per-tool',
+    })
+
+    // Uma linha legada com o id reservado e kind comum não pode virar biblioteca.
+    const legado = randomUUID()
+    await conn.sql`
+      insert into members.creations (
+        id, user_id, account_id, tool, item_id, name, kind, item_updated_at,
+        revision, last_reserved_revision, bytes, storage_ref, created_at, synced_at
+      ) values (
+        ${randomUUID()}, ${legado}, ${conta}, 'pinta', ${PALETTE_LIBRARY_ITEM_ID},
+        'legado', 'pixel-sprite', ${now}, 1, 1, 10, 'k/legado/1', ${now}, ${now}
+      )
+    `
+    expect(
+      await repo.reserveUpload({
+        ...item(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND),
+        userId: legado,
+      }),
+    ).toEqual({ ok: false, reason: 'palette-library-identity' })
   })
 
   test('PARTES no Postgres real: JSONB vai e volta com `rev`, commit exige as enviadas, idempotência não solta nada, `pending_parts` vira NULL, lixeira e ressurreição', async () => {

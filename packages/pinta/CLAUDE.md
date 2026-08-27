@@ -1513,17 +1513,18 @@ bolinhas por ramo. Teste-guarda `catalog.test.ts` (todo build passa sanitize, c�
 frescos).
 
 **Importar imagem ("Trazer uma foto")**: `import/` — `quantize.ts` PURO (`downscaleRGBA` box+alpha
-premult, `resizeCover` cover+crop central, `sliceIndexedTiles` dedupe+pula vazias+`tooMany`,
-`detectTileSize` = MENOR peça que cabe
+premult, `resizeCover` cover+crop central, `sliceIndexedTiles` usa `ceil`, completa bordas com
+transparência, dedupe+pula vazias+`tooMany`, `detectTileSize` = MENOR peça que cabe
 no teto ⚠️ [maior daria 1 peça p/ imagem do tamanho de 1 tile]), `decodeImage.ts` BROWSER (ctx antes
 do `createImageBitmap`, cap 2048, accept png/jpeg/webp — `null` no happy-dom). `ImportImageDialog`
 (cenário `pixel-background` cover-crop OU peças `tileset` fatiado → entra por `galleryStore.
-importAssets`). Botão "Trazer uma foto" no header da galeria.
+importAssets`). Imagem pequena ainda produz uma peça preenchida nas sobras; imagem sem nenhum
+pixel visível mostra erro específico, usa Arcade na prévia e nunca anuncia "0 cores" nem importa
+um tileset vazio. Botão "Trazer uma foto" no header da galeria.
 ⚠️ **Desde 26/08/2026 a QUANTIZAÇÃO da foto mudou de casa e de resultado**: o desenho importado
 nasce com a `customPalette` PRÓPRIA da foto (`quantizeToPhotoPalette` em
-`import/paletteFromImage.ts`, median-cut do export, ≤15 cores + transparente, ZERO extras) — ver
-§"Correções do uso real (26/08/2026)". O `quantizeToIndexed` daqui (arcade + até 48 extras,
-posteriza 4 bits) ficou SEM consumidor de produção — candidato a remoção futura.
+`import/paletteFromImage.ts`, via `core/quantizeFrames.ts`, ≤15 cores + transparente, ZERO extras)
+— ver §"Correções do uso real (26/08/2026)". O quantizador antigo sem consumidor foi removido.
 
 ## Camada da frente + jogar meu mapa — lote MapperMate F4 (18/07)
 
@@ -1859,7 +1860,8 @@ ponta a ponta, ao contrário de todo o resto do `export/`. O upscale ×2/×4 é 
 EXATA (nada de `drawImage` interpolando).
 
 O VETORIAL é o caminho caro: rasteriza TIRAS de no máximo **4096 px** (um `<img>`/canvas por bloco,
-nunca uma decodificação por quadro), fatia em quadros e reduz as cores em `export/quantize.ts`. No
+nunca uma decodificação por quadro), fatia em quadros e reduz as cores em
+`core/quantizeFrames.ts` (módulo neutro compartilhado também pela importação). No
 máximo da UI, 24×128 em escala 4, são três canvases de 4096×512 em vez de um de 12288×512. Dois
 caminhos lá: **cabe tudo** (desenho de formas chapadas quase sempre tem menos de 255 cores
 distintas → paleta EXATA, zero perda) ou **corte mediano** sobre as cores exatas, com a caixa mais
@@ -2002,6 +2004,10 @@ o Esc da busca nem o de Dialog aberto — guarda `[data-pinta-dialog]`). Downloa
 `zipGallery(expandSelection(...).assets)` → **`pack-pinta.zip`** (o MESMO envelope do backup:
 restaurável pelo "Trazer de volta" sem uma linha nova; alunos importam e criam os próprios packs).
 
+O estado/ciclo de vida fica em `components/gallery/useGallerySelection.ts`: entrada/saída,
+toggle, limpar, poda de ids, Escape, contagem viva e snapshot por identidade para não encerrar
+uma seleção alterada enquanto o ZIP era montado. `GalleryScreen` só renderiza e coordena o download.
+
 - **`core/gallerySelection.ts` `expandSelection(assets, selectedIds)`**: mapa selecionado leva o
   TILESET dele junto (decisão dela — sem as peças o restauro recusa o mapa; toast avisa), dedupe,
   peças ANTES do mapa, órfão entra (paridade com "Baixar tudo"), id fantasma ignorado.
@@ -2025,9 +2031,8 @@ O desenho VIAJA com a paleta; a biblioteca "Minhas paletas" é conveniência por
   para títulos. Round-trip travado em `project.test`/`wire.test` + caso no members
   (`tests/integration/pinta.test.ts`) provando que o sanitize do SERVIDOR preserva a chave.
 - **Extração de cores**: `import/paletteFromImage.ts` `paletteColorsFromImage(image)` — print de
-  paleta → 16 posições por FREQUÊNCIA, via `quantizeFrames` do EXPORT (median-cut do GIF, SEM
-  PERDA ≤15 cores). ⚠️ NUNCA o `quantizeToIndexed` de `import/quantize.ts` (posteriza 4 bits —
-  branco viraria #f8f8f8). O fluxo "Cores de uma imagem" CRIA uma paleta (não anexa a
+  paleta → 16 posições por FREQUÊNCIA, via `core/quantizeFrames.ts` (median-cut do GIF, SEM
+  PERDA ≤15 cores). O fluxo "Cores de uma imagem" CRIA uma paleta (não anexa a
   `extraColors` — esse é o "Trazer uma foto", intocado).
 - **Biblioteca**: registro ÚNICO `pinta:palettes` FORA do prefixo `pinta:asset:` → nunca entra
   em galeria/backup/orçamento (travado por teste). Métodos OPCIONAIS no `PintaPersistence`
@@ -2042,7 +2047,9 @@ O desenho VIAJA com a paleta; a biblioteca "Minhas paletas" é conveniência por
   instância, no `appContext`): `removePalette` grava a lápide junto, e `load()` RELÊ o disco
   SEMPRE (single-flight; só adota leitura com `updatedAt` ≥ o da memória) — a descida da
   nuvem grava por fora e o menu reabre mostrando; o `<PintaLesson>` cria com
-  `disabled: true` (isolamento da aula, régua do clipboard).
+  `disabled: true` (isolamento da aula, régua do clipboard). O save atômico retorna o merge
+  autoritativo, que o emissor aplica; eventos locais e `BroadcastChannel` avisam as outras
+  stores/abas, que releem o registro. Duas instâncias convergem sem depender de novo F5/menu.
 - **UI (pixel + vetor)**: `PaletteMenu` generalizado — seção "Minhas paletas" + ações Criar/
   Da-imagem/Gerenciar (`CreatePaletteDialog` semeado da paleta ativa; `PaletteFromImageDialog`
   LAZY; `ManagePalettesDialog` renomeia/exclui em 2 toques — excluir NUNCA toca desenho). No
@@ -2051,10 +2058,10 @@ O desenho VIAJA com a paleta; a biblioteca "Minhas paletas" é conveniência por
   pronta REMOVE a chave embutida por destructuring. No VETOR = `VectorPaletteChoice`
   (`vectorTools.ts`) — SNAPSHOT de sessão só-swatches. As ações aparecem TAMBÉM sem biblioteca
   (aula): criam e aplicam direto no asset.
-- **Nuvem (kids)**: a biblioteca viaja como item ESPECIAL do canal de creations (itemId
-  `sz-pinta-palettes`, kind `palette-library` — ver o CLAUDE.md do community-kids). ⚠️ O
-  `creationsUsageByUsers` do members EXCLUI esse kind (senão o cartão do admin contaria a
-  biblioteca como "+1 desenho").
+- **Nuvem (kids)**: a biblioteca viaja como item ESPECIAL do canal de creations: identidade
+  exata `tool=pinta` + itemId `sz-pinta-palettes` + kind `palette-library` (contrato único em
+  `@sistemazero/core/creations`; ver o CLAUDE.md do community-kids). O members exclui somente
+  essa combinação exata da cota de itens e do cartão do admin; marcadores parciais são inválidos.
 - ⚠️ Skew ACEITO: asset custom aberto num Pinta velho degrada p/ arcade e o autosave consolida
   (perde SÓ a cor; índices/desenho intactos; janela real = bundle cacheado).
 - Testes: `paletteLibrary.test.ts`, `paletteLibraryPersistence.test.ts`, `paletteFromImage.test.ts`,
@@ -2144,7 +2151,7 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   apagaria pixels em silêncio; o único caminho de encolher segue `removeExtraColor`). O ÚNICO
   criador que estourava era o **"Trazer uma foto"** (nascia arcade + até 48 extras = até 63
   cores): agora nasce `paletteId:'custom'` + `customPalette` "Cores da foto"
-  (`quantizeToPhotoPalette` — `quantizeFrames` do EXPORT, ≤15 cores + transparente, índice↔slot
+  (`quantizeToPhotoPalette` — `core/quantizeFrames`, ≤15 cores + transparente, índice↔slot
   por construção, zero extras) nos TRÊS alvos (personagem contain, cenário cover, peças
   fatiadas). Foto 100% transparente cai em arcade SEM a chave (nunca emitir 'custom' sem cor
   pintável). Copy: `photoPalette(n)`/`photoPaletteName`; `newColors(n)` morreu.
@@ -2159,8 +2166,8 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   preservam exclusão no merge.
 - **Portões `enabled`** em `renamePalette`/`removePalette` (o `savePalette` já tinha) — store de
   aula nunca grava no disco do perfil.
-- **members**: a quota de ITENS das creations deixou de contar o kind `palette-library` (a
-  biblioteca não ocupa vaga de desenho; bytes CONTAM — ver o CLAUDE.md do members).
+- **members**: a quota de ITENS das creations deixou de contar a identidade exata da biblioteca
+  (ela não ocupa vaga de desenho; bytes CONTAM — ver o CLAUDE.md do members).
 - Verde: pinta 1111 (14 novos) + typecheck + biome; members 836 + typecheck + biome (tests/db
   pendem o :5433); typecheck kids. QA browser no playground (:5199): modo sem "Baixar tudo",
   Limpar, toast "Baixei 2 desenhos! Baixei também as peças do mapa.", foto de degradê → paleta
@@ -2220,6 +2227,28 @@ cores com round-trip (ImportImageDialog), fronteira do alfa 127/128 (paletteFrom
 byte-idêntico do backup entre variantes (projectJson). Verde: pinta 1114 + typecheck + biome +
 typecheck kids; QA browser (linha sintética marcada+focada e Enter mantém; foco pós-Limpar cai
 no Cancelar).
+
+#### Full review integrado de 27/08/2026 — correções de consistência e arquitetura
+
+- A identidade especial da biblioteca virou contrato puro em `@sistemazero/core/creations`:
+  somente tool+itemId+kind exatos recebem isenção. O Members recusa marcadores parciais e
+  transições de identidade na reserva, revalida no commit e usa a mesma regra na cota, no fake e
+  no read model administrativo. Kind isolado continua contando como desenho.
+- `sliceIndexedTiles` agora usa `ceil` e padding transparente, preservando imagens menores que um
+  tile e bordas parciais. Imagem 100% transparente não avança nem cria tileset vazio e recebe copy
+  explícita; a prévia fala em Arcade em vez de "0 cores".
+- `savePaletteLibrary` retorna o documento autoritativo produzido pelo `update()` atômico. A store
+  emissora o adota e as demais instâncias convergem por evento local/`BroadcastChannel` + releitura.
+  O teste usa duas persistências e duas stores independentes, sem `sleep` arbitrário.
+- O teste do ZIP compara todos os arquivos e bytes das variantes de backup, além do LEIA-ME
+  específico do pack. Assim, conteúdo parcial correto não mascara um backup corrompido.
+- `quantizeToIndexed` e seus helpers/testes mortos saíram; `quantizeFrames` foi para `core/`, onde
+  exportação GIF e importação de paleta podem depender dele sem inverter camadas.
+- `useGallerySelection` retirou de `GalleryScreen` o ciclo do modo, poda, Escape, contagem e
+  snapshot assíncrono. Há prova direta de que uma seleção alterada durante o ZIP não é encerrada.
+
+O desenho desta rodada está em
+`docs/plans/2026-08-27-pinta-members-full-review-corrections-design.md`.
 
 ## Regras não-negociáveis
 

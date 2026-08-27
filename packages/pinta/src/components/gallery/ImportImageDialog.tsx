@@ -190,6 +190,7 @@ export function ImportImageDialog({
   const normalized = useMemo(() => normalizeAssetName(name), [name])
   const nameError = !name.trim() ? null : !normalized ? COPY.newAsset.nameInvalid : null
   const tooMany = result?.kind === 'tileset' && result.tooMany
+  const noVisibleTiles = result?.kind === 'tileset' && !result.tooMany && result.tiles.length === 0
 
   if (!open || !image) return null
 
@@ -200,7 +201,7 @@ export function ImportImageDialog({
   }
 
   function confirm(): void {
-    if (!result || !normalized || tooMany) return
+    if (!result || !normalized || tooMany || noVisibleTiles) return
     // Foto 100% transparente (0 cores) cai em arcade SEM a chave — 'custom' sem
     // cor pintável seria degradado pelo sanitize; melhor nem criar o estado.
     const paletteFields =
@@ -426,8 +427,14 @@ export function ImportImageDialog({
             <span className="text-center text-xs text-pin-muted">
               {target === 'sprite' ? `${COPY.importImage.spriteFitNote} ` : ''}
               {COPY.importImage.colorsNote}
-              {result ? ` · ${COPY.importImage.photoPalette(paintedCount)}` : ''}
-              {result?.kind === 'tileset' && !result.tooMany
+              {result
+                ? ` · ${
+                    paintedCount > 0
+                      ? COPY.importImage.photoPalette(paintedCount)
+                      : COPY.importImage.transparentPalette
+                  }`
+                : ''}
+              {result?.kind === 'tileset' && !result.tooMany && result.tiles.length > 0
                 ? ` · ${COPY.importImage.uniqueTiles(result.tiles.length)}`
                 : ''}
             </span>
@@ -438,7 +445,11 @@ export function ImportImageDialog({
               role="status"
               className="text-center text-sm font-bold text-pin-danger"
             >
-              {tooMany ? COPY.importImage.tooManyTiles : ''}
+              {tooMany
+                ? COPY.importImage.tooManyTiles
+                : noVisibleTiles
+                  ? COPY.importImage.noVisibleTiles
+                  : ''}
             </span>
           </div>
 
@@ -448,7 +459,7 @@ export function ImportImageDialog({
             </Button>
             <Button
               variant="primary"
-              disabled={tooMany || !result}
+              disabled={tooMany || noVisibleTiles || !result}
               aria-describedby="pinta-import-size-error"
               onClick={() => setStep('name')}
             >

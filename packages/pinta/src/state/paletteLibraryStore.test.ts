@@ -92,8 +92,61 @@ describe('paletteLibraryStore', () => {
       store.getState().savePalette({ name: 'B', colors: colorsOf('#222222') }),
     ])
 
-    expect(store.getState().palettes.map((item) => item.name)).toEqual(['A', 'B'])
+    expect(
+      store
+        .getState()
+        .palettes.map((item) => item.name)
+        .sort(),
+    ).toEqual(['A', 'B'])
     expect(second?.updatedAt).toBeGreaterThan(first?.updatedAt ?? 0)
+  })
+
+  it('duas persistências e duas stores convergem depois de escritas concorrentes', async () => {
+    const namespace = `duas-abas-${crypto.randomUUID()}`
+    const persistenceA = createPintaPersistence({ namespace })
+    const persistenceB = createPintaPersistence({ namespace })
+    const storeA = createPaletteLibraryStore(persistenceA, { now: () => 100 })
+    const storeB = createPaletteLibraryStore(persistenceB, { now: () => 100 })
+    const detachA = storeA.getState().attachPersistence()
+    const detachB = storeB.getState().attachPersistence()
+    await Promise.all([storeA.getState().load(), storeB.getState().load()])
+
+    const converged = new Promise<void>((resolve) => {
+      const check = () => {
+        if (storeA.getState().palettes.length !== 2 || storeB.getState().palettes.length !== 2) {
+          return
+        }
+        unsubscribeA()
+        unsubscribeB()
+        resolve()
+      }
+      const unsubscribeA = storeA.subscribe(check)
+      const unsubscribeB = storeB.subscribe(check)
+    })
+
+    await Promise.all([
+      storeA.getState().savePalette({ name: 'A', colors: colorsOf('#111111') }),
+      storeB.getState().savePalette({ name: 'B', colors: colorsOf('#222222') }),
+    ])
+    await converged
+
+    expect(
+      storeA
+        .getState()
+        .palettes.map((item) => item.name)
+        .sort(),
+    ).toEqual(['A', 'B'])
+    expect(
+      storeB
+        .getState()
+        .palettes.map((item) => item.name)
+        .sort(),
+    ).toEqual(['A', 'B'])
+    expect(
+      (await persistenceA.loadPaletteLibrary?.())?.palettes.map((item) => item.name).sort(),
+    ).toEqual(['A', 'B'])
+    detachA()
+    detachB()
   })
 
   it('relê a biblioteca quando a persistência avisa mudança vinda da nuvem', async () => {
@@ -107,6 +160,7 @@ describe('paletteLibraryStore', () => {
       loadPaletteLibrary: async () => library,
       savePaletteLibrary: async (next: NonNullable<typeof library>) => {
         library = next
+        return next
       },
       subscribe(listener: (event: PintaPersistenceEvent) => void) {
         listeners.add(listener)
@@ -119,6 +173,15 @@ describe('paletteLibraryStore', () => {
     const detach = store.getState().attachPersistence()
     await store.getState().load()
 
+    const reloaded = new Promise<void>((resolve) => {
+      const unsubscribe = store.subscribe((state) => {
+        if (state.palettes.some((item) => item.id === 'cloud')) {
+          unsubscribe()
+          resolve()
+        }
+      })
+    })
+
     library = {
       version: 1,
       updatedAt: 200,
@@ -126,7 +189,7 @@ describe('paletteLibraryStore', () => {
       removed: [],
     }
     for (const listener of listeners) listener({ type: 'palette-library-changed' })
-    await new Promise((resolve) => setTimeout(resolve, 0))
+    await reloaded
 
     expect(store.getState().palettes.map((item) => item.name)).toEqual(['Da nuvem'])
     detach()

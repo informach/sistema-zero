@@ -130,10 +130,12 @@ export const COPY = {
     colorsNote: 'As cores da foto viram uma paleta só deste desenho.',
     photoPalette: (n: number) =>
       n === 1 ? 'A foto virou uma paleta com 1 cor.' : `A foto virou uma paleta com ${n} cores.`,
+    transparentPalette: 'A imagem é transparente; será usada a paleta Arcade.',
     /** Nome da `customPalette` embutida no desenho importado (título do painel de Cores). */
     photoPaletteName: 'Cores da foto',
     uniqueTiles: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
     tooManyTiles: 'Essa imagem tem peças demais! Tente um tamanho de peça maior.',
+    noVisibleTiles: 'A imagem não tem pixels visíveis para virar peças.',
     detected: 'Detectei sozinho',
     preview: 'Vai ficar assim:',
     back: 'Voltar',

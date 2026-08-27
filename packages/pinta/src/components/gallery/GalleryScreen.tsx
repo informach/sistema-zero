@@ -48,6 +48,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
+import { useGallerySelection } from './useGallerySelection'
 
 /**
  * "Trazer uma foto" carrega junto o quantizador (median-cut) e o decodificador — nada
@@ -143,61 +144,17 @@ export function GalleryScreen(): JSX.Element {
   )
   const clearFilters = () => setFilters(EMPTY_GALLERY_FILTERS)
 
-  // Modo de seleção do PACK: marcar desenhos e baixar SÓ eles (`pack-pinta.zip`).
-  // O Set é por ID e INDEPENDE da busca/filtros (dá para marcar, filtrar e
-  // marcar mais); sair do modo sempre limpa.
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
-  // Espelho da marcação VIVA para o handler assíncrono do download: o closure
-  // do clique congela o Set daquele render, e o auto-fechar do sucesso só vale
-  // se a criança não mexeu na marcação durante o zip (full review 26/08).
-  const selectedIdsRef = useRef(selectedIds)
-  selectedIdsRef.current = selectedIds
-  const onToggleSelect = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
-  const exitSelection = useCallback(() => {
-    setSelectionMode(false)
-    setSelectedIds(new Set())
-  }, [])
-  // Poda as marcações de desenhos que SAÍRAM da galeria: a descida da nuvem
-  // preserva o id ao trazer um desenho de volta, então sem a poda ele
-  // reapareceria JÁ marcado. Devolver `prev` quando nada mudou evita o loop.
-  useEffect(() => {
-    setSelectedIds((prev) => {
-      if (prev.size === 0) return prev
-      const alive = new Set(assets.map((asset) => asset.id))
-      const next = new Set([...prev].filter((id) => alive.has(id)))
-      return next.size === prev.size ? prev : next
-    })
-  }, [assets])
-  // Conta só ids que ainda EXISTEM (cobre a janela de um render entre a lista
-  // mudar e a poda acima rodar).
-  const selectedCount = useMemo(
-    () => assets.reduce((count, asset) => (selectedIds.has(asset.id) ? count + 1 : count), 0),
-    [assets, selectedIds],
-  )
-  useEffect(() => {
-    if (!selectionMode) return
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape') return
-      // O Esc do campo de busca COM texto limpa a busca, e o de um Dialog
-      // aberto fecha o diálogo — nenhum dos dois pode arrastar a saída do modo
-      // junto. Busca VAZIA não tem o que limpar: aí o Esc sai do modo (senão a
-      // tecla morria sem efeito nenhum — full review 25/08).
-      if (event.target === searchRef.current && searchRef.current?.value) return
-      if (document.querySelector('[data-pinta-dialog]')) return
-      event.preventDefault()
-      exitSelection()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectionMode, exitSelection])
+  const {
+    selectionMode,
+    selectedIds,
+    selectedCount,
+    enterSelection,
+    exitSelection,
+    clearSelection,
+    toggleSelection,
+    captureSelection,
+    exitSelectionIfUnchanged,
+  } = useGallerySelection(assets, searchRef)
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
@@ -272,7 +229,7 @@ export function GalleryScreen(): JSX.Element {
       onRemove={onRemoveCard}
       selectable={selectionMode}
       selected={selectionMode && selectedIds.has(asset.id)}
-      onToggleSelect={onToggleSelect}
+      onToggleSelect={toggleSelection}
     />
   )
 
@@ -298,7 +255,8 @@ export function GalleryScreen(): JSX.Element {
     // Expande na hora do download, sobre a galeria VIVA (nunca a lista filtrada
     // da tela): mapa marcado leva o tileset dele junto — sem as peças o
     // restauro recusaria o mapa.
-    const expanded = expandSelection(gallery.getState().assets, selectedIds)
+    const markedAtClick = captureSelection()
+    const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
     if (expanded.assets.length === 0) {
       // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
       // avisa em vez de um clique-morto silencioso.
@@ -309,7 +267,6 @@ export function GalleryScreen(): JSX.Element {
     // um zip demorado (Limpar, Cancelar + recomeçar, marcar mais um), o
     // auto-fechar do sucesso NÃO pode engolir a sessão nova — todo toggle cria
     // um Set novo, então identidade igual = ninguém tocou.
-    const markedAtClick = selectedIdsRef.current
     setZipping(true)
     try {
       const bytes = await zipGallery(expanded.assets, 'pack')
@@ -326,7 +283,7 @@ export function GalleryScreen(): JSX.Element {
           : done,
       )
       // Pack baixado = tarefa concluída; sair do modo devolve os cards ao normal.
-      if (selectedIdsRef.current === markedAtClick) exitSelection()
+      exitSelectionIfUnchanged(markedAtClick)
     } catch {
       showToast(COPY.gallery.zipError)
     } finally {
@@ -465,7 +422,7 @@ export function GalleryScreen(): JSX.Element {
             {COPY.gallery.importImage}
           </Button>
           {assets.length > 0 && !selectionMode ? (
-            <Button variant="ghost" onClick={() => setSelectionMode(true)}>
+            <Button variant="ghost" onClick={enterSelection}>
               <SquareCheckBig aria-hidden="true" className="size-4" />
               {COPY.gallery.select}
             </Button>
@@ -683,7 +640,7 @@ export function GalleryScreen(): JSX.Element {
                 variant="ghost"
                 disabled={selectedCount === 0}
                 onClick={(event) => {
-                  setSelectedIds(new Set())
+                  clearSelection()
                   // Com 0 marcados este botão vira disabled e o navegador
                   // derrubaria o foco no body (criança de teclado se perde):
                   // manda para o Cancelar, o irmão SEGUINTE nesta barra.

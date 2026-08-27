@@ -6,7 +6,13 @@ import type {
   CreationSummary,
   CreationTool,
 } from '../../../domain/creations/creation'
-import { PALETTE_LIBRARY_KIND } from '../../../domain/creations/palette-library'
+import {
+  classifyPintaPaletteLibraryCreation,
+  isPintaPaletteLibraryCreation,
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+  PALETTE_LIBRARY_TOOL,
+} from '../../../domain/creations/palette-library'
 import type {
   CreationCommitResult,
   CreationsRepository,
@@ -152,6 +158,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           lastReservedRevision: creations.lastReservedRevision,
           bytes: creations.bytes,
           storageRef: creations.storageRef,
+          kind: creations.kind,
           parts: creations.parts,
           deletedAt: creations.deletedAt,
         })
@@ -159,6 +166,25 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .where(whereItem(input.userId, input.tool, input.itemId))
         .limit(1)
         .for('update')
+
+      const nextIdentity = classifyPintaPaletteLibraryCreation(input)
+      if (nextIdentity === 'invalid-partial') {
+        return { ok: false, reason: 'palette-library-identity' }
+      }
+      const currentIdentity = existing
+        ? classifyPintaPaletteLibraryCreation({
+            tool: input.tool,
+            itemId: input.itemId,
+            kind: existing.kind,
+          })
+        : null
+      if (
+        existing &&
+        currentIdentity !== nextIdentity &&
+        (currentIdentity === 'palette-library' || nextIdentity === 'palette-library')
+      ) {
+        return { ok: false, reason: 'palette-library-identity' }
+      }
 
       const alive = existing !== undefined && existing.deletedAt === null
       // PARTES: quais o item já tem (revisão corrente, viva e confirmada) e quais faltam. As
@@ -187,12 +213,21 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         return { ok: false, reason: 'total-bytes' }
       }
       const committedAlive = alive && existing.storageRef !== null
-      // A biblioteca de paletas não ocupa vaga — e não pode ser recusada por um
-      // perfil que já encheu o teto de desenhos (o espelho está no fake).
+      // Projeta a contribuição desta linha: atualização comum troca 1 por 1;
+      // biblioteca troca 0 por 0; item novo soma conforme a identidade exata.
+      const currentItemCount =
+        committedAlive &&
+        !isPintaPaletteLibraryCreation({
+          tool: input.tool,
+          itemId: input.itemId,
+          kind: existing.kind,
+        })
+          ? 1
+          : 0
+      const nextItemCount = nextIdentity === 'palette-library' ? 0 : 1
       if (
-        !committedAlive &&
-        input.kind !== PALETTE_LIBRARY_KIND &&
-        usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+        usage.countByTool[input.tool] - currentItemCount + nextItemCount >
+        input.limits.maxItemsPerTool
       ) {
         return { ok: false, reason: 'items-per-tool' }
       }
@@ -295,10 +330,28 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const currentBytes = committedAlive ? row.bytes : 0
       const overBytes =
         usage.totalBytes - currentBytes + row.pendingBytes > input.limits.maxTotalBytes
+      const currentIdentity = classifyPintaPaletteLibraryCreation(row)
+      const pendingIdentity = classifyPintaPaletteLibraryCreation({
+        tool: row.tool,
+        itemId: row.itemId,
+        kind: row.pendingKind,
+      })
+      const invalidIdentity =
+        pendingIdentity === 'invalid-partial' ||
+        (currentIdentity !== pendingIdentity &&
+          (currentIdentity === 'palette-library' || pendingIdentity === 'palette-library'))
+      if (invalidIdentity) {
+        await tx
+          .update(creations)
+          .set(clearPending())
+          .where(whereItem(input.userId, input.tool, input.itemId))
+        return { ok: false, reason: 'palette-library-identity' }
+      }
+      const currentItemCount = committedAlive && currentIdentity !== 'palette-library' ? 1 : 0
+      const nextItemCount = pendingIdentity === 'palette-library' ? 0 : 1
       const overItems =
-        !committedAlive &&
-        row.pendingKind !== PALETTE_LIBRARY_KIND &&
-        usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+        usage.countByTool[input.tool] - currentItemCount + nextItemCount >
+        input.limits.maxItemsPerTool
       if (overBytes || overItems) {
         // A reserva recusada por quota MORRE aqui: o BFF apaga o blob dela do R2, então
         // um `commit(N)` que chegasse depois de a criança abrir espaço promoveria uma chave
@@ -458,7 +511,11 @@ async function usageWith(db: Pick<Database, 'select'>, userId: string): Promise<
   const rows = await db
     .select({
       tool: creations.tool,
-      count: sql<number>`count(*) filter (where ${creations.kind} <> ${PALETTE_LIBRARY_KIND})::int`,
+      count: sql<number>`count(*) filter (where not (
+        ${creations.tool} = ${PALETTE_LIBRARY_TOOL}
+        and ${creations.itemId} = ${PALETTE_LIBRARY_ITEM_ID}
+        and ${creations.kind} = ${PALETTE_LIBRARY_KIND}
+      ))::int`,
       bytes: sql<number>`coalesce(sum(${creations.bytes}), 0)::bigint`,
     })
     .from(creations)

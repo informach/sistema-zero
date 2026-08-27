@@ -85,14 +85,20 @@ export function createPaletteLibraryStore(
     ): Promise<boolean> {
       const library: PaletteLibrary = { version: 1, updatedAt: libraryUpdatedAt, palettes, removed }
       try {
-        await persistence.savePaletteLibrary?.(library)
+        const saved = await persistence.savePaletteLibrary?.(library)
+        if (!saved) throw new Error('Persistência não devolveu a biblioteca gravada')
+        lastLogicalTimestamp = Math.max(lastLogicalTimestamp, saved.updatedAt)
+        set({
+          palettes: saved.palettes,
+          removed: saved.removed,
+          libraryUpdatedAt: saved.updatedAt,
+        })
       } catch {
         // Best-effort: a falha de disco não pode derrubar o editor — o estado
         // em memória segue valendo para a sessão.
         set({ palettes, removed, libraryUpdatedAt })
         return false
       }
-      set({ palettes, removed, libraryUpdatedAt })
       return true
     }
 

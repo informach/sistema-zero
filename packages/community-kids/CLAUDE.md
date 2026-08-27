@@ -451,11 +451,11 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   por OUTRO desenho ganha sufixo `-2`; sem teto de quantidade local). Cópia de conflito =
   `<nome>-copia` com id novo (sempre ≤ 48 chars).
   **Biblioteca "Minhas paletas" (25/08; full review no MESMO dia):** viaja como UM item
-  ESPECIAL do MESMO canal — itemId fixo `sz-pinta-palettes`, kind `palette-library`
-  (constantes re-exportadas do módulo do MEMBERS — a fonte é
-  `members/src/domain/creations/palette-library.ts`, e
-  `tests/palette-library-conformance.test.ts` trava o lockstep + o itemId dentro da regex da
-  borda). Salvar local (`savePaletteLibrary` embrulhado) enfileira a subida; a reconciliação
+  ESPECIAL do MESMO canal — identidade exata `tool=pinta` + itemId fixo `sz-pinta-palettes` +
+  kind `palette-library` (fonte única em `@sistemazero/core/creations`; o wrapper e o members
+  re-exportam esse contrato, e `tests/palette-library-conformance.test.ts` trava o lockstep + o
+  itemId dentro da regex da borda). Salvar local (`savePaletteLibrary` embrulhado) devolve o
+  merge autoritativo e enfileira a subida; a reconciliação
   FILTRA o summary especial da lista de ASSETS antes do `reconcileCreations` (senão o sanitize
   o descartaria como "desenho corrompido"), desce e FUNDE (`mergePaletteLibraries` do pacote:
   paletas por id+updatedAt E **LÁPIDES** por id+removedAt — a lápide é o que faz uma EXCLUSÃO
@@ -464,8 +464,8 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   (**`paletteLibraryContentKey`** — canônica: insensível à ordem dos arrays E das chaves;
   comparar cru fazia dois aparelhos com ordens diferentes subirem um por cima do outro para
   SEMPRE); antes de gravar, relê e re-funde se a UI salvou no meio; `onStale` idem.
-  ⚠️ O `creationsUsageByUsers` do members exclui o kind (a biblioteca não conta como
-  "+1 desenho" no admin).
+  O `creationsUsageByUsers` e a quota do members excluem só a identidade exata (a biblioteca não
+  conta como "+1 desenho" no admin; kind/itemId parciais não ganham a isenção).
 - **Estúdio:** `src/lib/studio-cloud.ts` liga `setStudioCloudMirror` (todo `persistProject`/rename/
   assets/delete do pacote acorda o espelho) e faz `pullMissing()` em SEGUNDO PLANO no
   `studio-full-client.tsx` (19/08: a lista aparece já com o que há neste aparelho e os jogos de

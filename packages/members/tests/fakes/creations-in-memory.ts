@@ -5,7 +5,10 @@ import type {
   CreationSummary,
   CreationTool,
 } from '../../src/domain/creations/creation'
-import { PALETTE_LIBRARY_KIND } from '../../src/domain/creations/palette-library'
+import {
+  classifyPintaPaletteLibraryCreation,
+  isPintaPaletteLibraryCreation,
+} from '../../src/domain/creations/palette-library'
 import type {
   CreationCommitResult,
   CreationsRepository,
@@ -60,7 +63,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     for (const row of this.rows.values()) {
       if (row.userId !== userId || !aliveCommitted(row)) continue
       // A biblioteca de paletas não ocupa vaga (os bytes contam) — espelho do SQL.
-      if (row.kind !== PALETTE_LIBRARY_KIND) countByTool[row.tool] += 1
+      if (!isPintaPaletteLibraryCreation(row)) countByTool[row.tool] += 1
       totalBytes += row.bytes
     }
     return { totalBytes, countByTool }
@@ -69,6 +72,18 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   async reserveUpload(input: CreationUploadInput): Promise<CreationUploadReservation> {
     const k = key(input.userId, input.tool, input.itemId)
     const existing = this.rows.get(k)
+    const nextIdentity = classifyPintaPaletteLibraryCreation(input)
+    if (nextIdentity === 'invalid-partial') {
+      return { ok: false, reason: 'palette-library-identity' }
+    }
+    const currentIdentity = existing ? classifyPintaPaletteLibraryCreation(existing) : null
+    if (
+      existing &&
+      currentIdentity !== nextIdentity &&
+      (currentIdentity === 'palette-library' || nextIdentity === 'palette-library')
+    ) {
+      return { ok: false, reason: 'palette-library-identity' }
+    }
     const usage = await this.usage(input.userId)
     const alive = existing !== undefined && existing.deletedAt === null
     const committedParts = new Map(
@@ -86,10 +101,12 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       return { ok: false, reason: 'total-bytes' }
     }
     const committedAlive = alive && existing.storageRef !== null
+    const currentItemCount =
+      committedAlive && existing && !isPintaPaletteLibraryCreation(existing) ? 1 : 0
+    const nextItemCount = nextIdentity === 'palette-library' ? 0 : 1
     if (
-      !committedAlive &&
-      input.kind !== PALETTE_LIBRARY_KIND &&
-      usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+      usage.countByTool[input.tool] - currentItemCount + nextItemCount >
+      input.limits.maxItemsPerTool
     ) {
       return { ok: false, reason: 'items-per-tool' }
     }
@@ -158,10 +175,25 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     const currentBytes = committedAlive ? existing.bytes : 0
     const overBytes =
       usage.totalBytes - currentBytes + existing.pending.bytes > input.limits.maxTotalBytes
+    const currentIdentity = classifyPintaPaletteLibraryCreation(existing)
+    const pendingIdentity = classifyPintaPaletteLibraryCreation({
+      tool: input.tool,
+      itemId: input.itemId,
+      kind: existing.pending.kind,
+    })
+    const invalidIdentity =
+      pendingIdentity === 'invalid-partial' ||
+      (currentIdentity !== pendingIdentity &&
+        (currentIdentity === 'palette-library' || pendingIdentity === 'palette-library'))
+    if (invalidIdentity) {
+      this.rows.set(k, { ...existing, pending: null })
+      return { ok: false, reason: 'palette-library-identity' }
+    }
+    const currentItemCount = committedAlive && currentIdentity !== 'palette-library' ? 1 : 0
+    const nextItemCount = pendingIdentity === 'palette-library' ? 0 : 1
     const overItems =
-      !committedAlive &&
-      existing.pending.kind !== PALETTE_LIBRARY_KIND &&
-      usage.countByTool[input.tool] >= input.limits.maxItemsPerTool
+      usage.countByTool[input.tool] - currentItemCount + nextItemCount >
+      input.limits.maxItemsPerTool
     if (overBytes || overItems) {
       // Recusa por quota mata a reserva (o BFF apaga o blob dela): o cliente reserva de novo.
       this.rows.set(k, { ...existing, pending: null })

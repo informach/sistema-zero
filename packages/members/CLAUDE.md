@@ -1496,14 +1496,14 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   freio de abuso), 2000 itens vivos por ferramenta (só freio de abuso: nem o Pinta nem o Estúdio
   têm teto de quantidade; o que governa é o de bytes). A quota é conferida na RESERVA e DE NOVO no
   COMMIT (reservar vários itens antes de confirmar não fura o teto). Reenviar TROCA os bytes do
-  item (não soma). ⚠️ **A biblioteca de paletas do Pinta (kind `palette-library`) fica FORA da
-  CONTAGEM de itens (26/08)** — `count(*) FILTER` no `usageWith` + skip nas cláusulas de teto da
-  reserva E do commit (um perfil com 2000 desenhos ainda sobe a biblioteca; ela não ocupa vaga) —
-  alinhado ao cartão do admin (`tool-usage.repository.ts`, que já excluía o kind). Os BYTES dela
+  item (não soma). ⚠️ **Só a identidade exata da biblioteca de paletas do Pinta fica FORA da
+  CONTAGEM de itens (26–27/08)** — `tool=pinta` + itemId `sz-pinta-palettes` + kind
+  `palette-library`, classificados pelo contrato em `@sistemazero/core/creations`. `count(*)
+  FILTER` no `usageWith` + projeção nas cláusulas da reserva E do commit deixam um perfil com
+  2000 desenhos subir a biblioteca sem abrir isenção para um kind isolado. Marcadores parciais e
+  transições criação↔biblioteca são 400; o commit revalida defensivamente. Os BYTES dela
   CONTAM: `totalBytes` é o retrato do R2 e a aritmética `totalBytes - currentBytes + novos` assume
-  a própria linha dentro do total. Brecha teórica aceita: cliente etiquetando desenho como
-  `palette-library` fura o teto de ITENS — segue preso pelos tetos de bytes, mesmo nível de
-  confiança do filtro do cartão. Fake espelha; SQL provado em
+  a própria linha dentro do total. Fake espelha; SQL provado em
   `tests/db/creations.repository.test.ts`.
   Nome/kind acima do teto são CORTADOS no BFF (o DTO ainda barra 120/40 como rede de segurança);
   miniatura acima de 12 k chars é DESCARTADA pelo serviço (acima de 20 k o DTO recusa — nenhum
@@ -1588,12 +1588,11 @@ que não passou pela borda → 403). Rotas em `interfaces/http/routes/admin.rout
   ferramentas por aprendiz da FAMÍLIA (cartões da ficha; 1 chamada por família):
   `pensa {projects, cyclesCompleted, lastActivityAt}` (pensa_projects/cycles) · `pinta`/`estudio
   {drawings|creations, deliveries, lastActivityAt}` (creations VIVAS E CONFIRMADAS — predicado do
-  `creations_usage_idx`: `deleted_at is null AND storage_ref is not null` — **e `kind <>
-  'palette-library'`** (25/08): a biblioteca "Minhas paletas" do Pinta viaja como item especial
-  do canal de creations e NÃO é desenho; as constantes (`PALETTE_LIBRARY_KIND` +
-  `PALETTE_LIBRARY_ITEM_ID = 'sz-pinta-palettes'`) moram em
-  `src/domain/creations/palette-library.ts` (módulo PURO — o wrapper do kids as re-exporta e um
-  conformance test de lá trava o lockstep) — + studio_submissions
+  `creations_usage_idx`: `deleted_at is null AND storage_ref is not null` — e **nega somente a
+  identidade exata** da biblioteca (tool+itemId+kind; 27/08). Um kind reservado isolado continua
+  contando como desenho e como atividade. A fonte das três constantes e do classificador é
+  `@sistemazero/core/creations`; `src/domain/creations/palette-library.ts` só re-exporta o contrato
+  ao domínio — + studio_submissions
   com o kind AUTORITATIVO do BLOCO, inner join) · `clube {posts, comments, lastActivityAt}` e
   `mural {published, plays, lastPublishedAt}` via **hub S2S best-effort**
   (`HubGateway.listActivityByAuthors` → `POST /hub/internal/activity-by-authors`, HMAC direto,
