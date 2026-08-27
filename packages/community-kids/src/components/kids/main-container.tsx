@@ -26,8 +26,17 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // do app, nunca na janela). No mobile NÃO há sidebar para "fixar" a altura e a
     // raiz do `(app)` é `min-h-screen` (cresce) → sem uma altura explícita o app
     // empurraria a página inteira. `100dvh - 3.5rem` desconta a top bar sticky
-    // (h-14); o `pb-24` já reserva a tab bar (fixed). No desktop a sidebar
-    // `h-screen` já trava a linha → volta ao `flex-1`.
+    // (h-14); o `pb-24` já reserva a tab bar (fixed).
+    //
+    // ⚠️ No DESKTOP a altura também é EXPLÍCITA (`md:h-dvh md:flex-none`, 26/08).
+    // O `md:h-auto md:flex-1` antigo apostava que "a sidebar h-screen já trava a
+    // linha" — MEDIDO FALSO quando o conteúdo DÁ altura (a galeria do Pinta com
+    // muitos desenhos): o <main> crescia com o conteúdo (2204px medidos), a
+    // JANELA rolava e o rolável interno do app nunca rolava — o sticky da barra
+    // de seleção ficava preso no fim do conteúdo, fora da tela. Os editores
+    // nunca expuseram isso porque só TOMAM altura (h-full). Com o banner de
+    // impersonação a página rola a altura do banner (mesmo trade-off do mobile
+    // com a top bar).
     //
     // ⚠️ O `md:pl-9` (contra `md:pr-4`) abre a CALHA do puxador que esconde o menu:
     // ele fica AO LADO do app, nunca por cima. No Estúdio a borda esquerda é a caixa
@@ -37,7 +46,7 @@ export function MainContainer({ children }: { children: ReactNode }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-auto md:flex-1 md:py-4 md:pr-4 md:pb-4 md:pl-9"
+        className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-dvh md:flex-none md:py-4 md:pr-4 md:pb-4 md:pl-9"
       >
         {/* Um mount point só cobre Estúdio, Pensa, Pinta e o /estudio/pro. Some
             sozinho abaixo de 768px, onde a sidebar nem existe (`navAvailable`). */}

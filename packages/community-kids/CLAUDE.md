@@ -738,7 +738,15 @@ mecanismo já é app-agnóstico (`setStudioStorageNamespace(session.id)` — per
 quando o adulto ganhar a rota, o `StudioFullClient` deve ir p/ o member-shell (reuso, não cópia) e a página
 do adulto passa `session.id` igual. **LARGURA TOTAL:** o `MainContainer`
 (`components/kids/main-container.tsx`, usado no `(app)/layout`) tira o `max-w-5xl` na rota `/estudio` (IDE
-quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da comunidade:** o
+quer todo o espaço); demais páginas seguem com `max-w-5xl`.
+⚠️⚠️ **ALTURA TRAVADA também no DESKTOP (26/08/2026):** o ramo embarcado do `MainContainer` usava
+`md:h-auto md:flex-1` apostando que "a sidebar `h-screen` já trava a linha" — **medido FALSO**
+quando o conteúdo DÁ altura (a galeria do Pinta com muitos desenhos): o `<main>` crescia com o
+conteúdo (2204px no esqueleto real), a JANELA rolava e o rolável interno do app nunca rolava — o
+sticky da barra de seleção do Pinta ficava fora da tela. Agora `md:h-dvh md:flex-none` (mesmo
+remédio do mobile); com o banner de impersonação a página rola a altura do banner, trade-off já
+aceito no mobile. Os editores (Estúdio/Pensa) nunca expuseram o defeito porque só TOMAM altura
+(`h-full`). **SEGUE o tema da comunidade:** o
 `studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui
