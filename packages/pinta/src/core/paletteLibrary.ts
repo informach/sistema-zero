@@ -53,6 +53,23 @@ function paletteRevisionKey(palette: SavedPalette): string {
   return JSON.stringify({ name: palette.name, colors: palette.colors })
 }
 
+/**
+ * Mesma paleta por CONTEÚDO (nome + os 16 slots, posição a posição) — é o
+ * "qual das salvas está ativa" do menu e o no-op do reaplicar. Tipo estrutural
+ * de propósito: aceita `PintaCustomPalette`, `SavedPalette` e o snapshot do
+ * vetor sem cast.
+ */
+export function sameCustomPalette(
+  a: { name: string; colors: readonly string[] },
+  b: { name: string; colors: readonly string[] },
+): boolean {
+  return (
+    a.name === b.name &&
+    a.colors.length === b.colors.length &&
+    a.colors.every((hex, index) => hex === b.colors[index])
+  )
+}
+
 function newerPalette(a: SavedPalette, b: SavedPalette): SavedPalette {
   if (a.updatedAt !== b.updatedAt) return a.updatedAt > b.updatedAt ? a : b
   return paletteRevisionKey(a) >= paletteRevisionKey(b) ? a : b

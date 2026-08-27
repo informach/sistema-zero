@@ -44,10 +44,16 @@ export const COPY = {
     select: 'Selecionar',
     selectionCount: (count: number) => (count === 1 ? '1 selecionado' : `${count} selecionados`),
     downloadSelection: 'Baixar seleção',
+    selectionClear: 'Limpar',
     selectionMark: (name: string) => `Marcar ${name}`,
     selectionUnmark: (name: string) => `Desmarcar ${name}`,
     /** O pack levou junto as peças de um mapa marcado (sem elas o mapa não restaura). */
     selectionTilesetIncluded: 'Baixei também as peças do mapa.',
+    /** Toast do pack: diz QUANTOS foram (o do "Baixar tudo" segue o downloadReady genérico). */
+    downloadedSelection: (count: number) =>
+      count === 1
+        ? 'Baixei 1 desenho! Procure na pasta de downloads.'
+        : `Baixei ${count} desenhos! Procure na pasta de downloads.`,
     /** Busca da galeria (sem teto de desenhos, ela é o que mantém a galeria navegável). */
     search: 'Buscar desenho',
     searchPlaceholder: 'Buscar por nome, tipo ou jogo',
@@ -121,10 +127,15 @@ export const COPY = {
     spriteSizeTitle: 'Tamanho do quadro do personagem',
     spriteFitNote: 'A imagem entra inteira, sem cortar. O que sobrar fica transparente.',
     tileSizeTitle: 'Tamanho de cada peça',
-    colorsNote: 'As cores da foto viram as cores do Pinta.',
-    newColors: (n: number) => (n === 1 ? '1 cor nova' : `${n} cores novas`),
+    colorsNote: 'As cores da foto viram uma paleta só deste desenho.',
+    photoPalette: (n: number) =>
+      n === 1 ? 'A foto virou uma paleta com 1 cor.' : `A foto virou uma paleta com ${n} cores.`,
+    transparentPalette: 'A imagem é transparente; será usada a paleta Arcade.',
+    /** Nome da `customPalette` embutida no desenho importado (título do painel de Cores). */
+    photoPaletteName: 'Cores da foto',
     uniqueTiles: (n: number) => (n === 1 ? '1 peça' : `${n} peças`),
     tooManyTiles: 'Essa imagem tem peças demais! Tente um tamanho de peça maior.',
+    noVisibleTiles: 'A imagem não tem pixels visíveis para virar peças.',
     detected: 'Detectei sozinho',
     preview: 'Vai ficar assim:',
     back: 'Voltar',

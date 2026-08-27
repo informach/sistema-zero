@@ -9,9 +9,9 @@
  * para irmãos no mesmo navegador não compartilharem a galeria. Vazio = store
  * default `sistema-zero-pinta`.
  */
-import { createStore, del, get, getMany, keys, set, setMany } from 'idb-keyval'
+import { createStore, del, get, getMany, keys, setMany, update } from 'idb-keyval'
 import type { PaletteLibrary } from '../core/paletteLibrary'
-import { sanitizePaletteLibrary } from '../core/paletteLibrary'
+import { mergePaletteLibraries, sanitizePaletteLibrary } from '../core/paletteLibrary'
 import { perfSpan, perfSpanAsync } from '../core/perf'
 import { type PintaAsset, sanitizePintaAsset } from '../core/project'
 import { GalleryBackupSizeCache, MAX_BACKUP_FILE_BYTES } from '../export/projectJson'
@@ -114,6 +114,37 @@ export function subscribePintaAssetOpenState(
 }
 
 /**
+ * Avisos de um armazenamento que muda por fora da store. A persistência local
+ * usa o evento da biblioteca entre instâncias/abas; o host de nuvem também usa
+ * os eventos de sincronização e de galeria.
+ */
+export type PintaPersistenceEvent =
+  | { type: 'sync-start' }
+  | { type: 'changed' }
+  | { type: 'palette-library-changed' }
+  | { type: 'sync-end' }
+
+const persistenceListeners = new WeakMap<StoreHandle, Set<(event: PintaPersistenceEvent) => void>>()
+
+function listenersFor(storeHandle: StoreHandle): Set<(event: PintaPersistenceEvent) => void> {
+  const existing = persistenceListeners.get(storeHandle)
+  if (existing) return existing
+  const created = new Set<(event: PintaPersistenceEvent) => void>()
+  persistenceListeners.set(storeHandle, created)
+  return created
+}
+
+function emitPersistenceEvent(storeHandle: StoreHandle, event: PintaPersistenceEvent): void {
+  for (const listener of listenersFor(storeHandle)) {
+    try {
+      listener(event)
+    } catch {
+      // Um observador com defeito não desfaz um write que o IndexedDB já confirmou.
+    }
+  }
+}
+
+/**
  * Outra ABA do mesmo perfil gravou/apagou (o Estúdio abre o Pinta em aba nova; a descida da
  * nuvem de outra instância): avisa para o inventário do orçamento desta aba ESQUECER esses
  * ids — são relidos (e medidos de novo) na próxima gravação. Sem isto o inventário guardava
@@ -127,12 +158,17 @@ function crossTabChannelFor(storeHandle: StoreHandle, dbName: string): Broadcast
   if (typeof BroadcastChannel !== 'undefined') {
     try {
       channel = new BroadcastChannel(`pinta:assets:${dbName}`)
-      channel.onmessage = (event: MessageEvent<{ ids?: unknown }>) => {
+      channel.onmessage = (
+        event: MessageEvent<{ ids?: unknown; paletteLibraryChanged?: unknown }>,
+      ) => {
         const ids = event.data?.ids
-        if (!Array.isArray(ids)) return
-        const cache = backupSizeCaches.get(storeHandle)
-        if (!cache) return
-        for (const id of ids) if (typeof id === 'string') cache.remove(id)
+        if (Array.isArray(ids)) {
+          const cache = backupSizeCaches.get(storeHandle)
+          if (cache) for (const id of ids) if (typeof id === 'string') cache.remove(id)
+        }
+        if (event.data?.paletteLibraryChanged === true) {
+          emitPersistenceEvent(storeHandle, { type: 'palette-library-changed' })
+        }
       }
     } catch {
       channel = null
@@ -140,6 +176,17 @@ function crossTabChannelFor(storeHandle: StoreHandle, dbName: string): Broadcast
   }
   crossTabChannels.set(storeHandle, channel)
   return channel
+}
+
+function notifyPaletteLibraryChanged(storeHandle: StoreHandle, dbName: string): void {
+  // `BroadcastChannel` não entrega ao próprio contexto; o hub cobre as outras
+  // instâncias desta página e o canal cobre os demais contextos do navegador.
+  emitPersistenceEvent(storeHandle, { type: 'palette-library-changed' })
+  try {
+    crossTabChannelFor(storeHandle, dbName)?.postMessage({ paletteLibraryChanged: true })
+  } catch {
+    // O save já está no IndexedDB; abrir o menu ainda relê o registro autoritativo.
+  }
 }
 function notifyOtherTabs(storeHandle: StoreHandle, dbName: string, ids: readonly string[]): void {
   if (ids.length === 0) return
@@ -212,12 +259,6 @@ export function runSerializedWrite(
  * "buscando…" e quem espera um desenho que ainda não chegou aguarda), `changed` diz que a lista
  * do disco mudou (a galeria relê, coalescido).
  */
-export type PintaPersistenceEvent =
-  | { type: 'sync-start' }
-  | { type: 'changed' }
-  | { type: 'palette-library-changed' }
-  | { type: 'sync-end' }
-
 export interface PintaPersistence {
   persistAsset(asset: PintaAsset): Promise<void>
   persistAssets(assets: readonly PintaAsset[]): Promise<void>
@@ -226,8 +267,8 @@ export interface PintaPersistence {
   listAllAssets(): Promise<PintaAsset[]>
   /**
    * OPCIONAL: observar mudanças feitas por fora (ver `PintaPersistenceEvent`). O IndexedDB do
-   * perfil e o armazenamento da aula não emitem nada; o wrapper da nuvem do host, sim — é o
-   * que deixa a galeria abrir com o LOCAL na hora e receber o que desce depois.
+   * perfil emite mudanças da biblioteca entre stores/abas; o wrapper da nuvem do host acrescenta
+   * os eventos da galeria — é o que permite abrir com o LOCAL e receber o que desce depois.
    */
   subscribe?(listener: (event: PintaPersistenceEvent) => void): () => void
   /**
@@ -237,7 +278,8 @@ export interface PintaPersistence {
    * isso de propósito — o desenho da aula é isolado da galeria pessoal).
    */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
-  savePaletteLibrary?(library: PaletteLibrary): Promise<void>
+  /** Devolve o valor autoritativo gravado depois do merge transacional. */
+  savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
 }
 
 /**
@@ -294,6 +336,7 @@ export function isPintaStorageBudgetError(error: unknown): error is PintaStorage
  */
 export function createPintaPersistence(options: { namespace?: string } = {}): PintaPersistence {
   const storeHandle = getStoreHandle(options.namespace)
+  const dbName = dbNames.get(storeHandle) ?? ''
   const backupSizeCache = backupSizeCacheFor(storeHandle)
   const persistAssetsForStore = async (assets: readonly PintaAsset[]): Promise<void> => {
     if (assets.length === 0) return
@@ -357,7 +400,7 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
     )
   }
   // Liga o canal entre abas deste banco (recebe os ids que outra aba gravou/apagou).
-  crossTabChannelFor(storeHandle, dbNames.get(storeHandle) ?? '')
+  crossTabChannelFor(storeHandle, dbName)
   return {
     persistAsset: (asset) => persistAssetsForStore([asset]),
     persistAssets: persistAssetsForStore,
@@ -382,13 +425,42 @@ export function createPintaPersistence(options: { namespace?: string } = {}): Pi
       scheduleWarmUp(backupSizeCache)
       return assets
     },
+    subscribe(listener) {
+      const listeners = listenersFor(storeHandle)
+      listeners.add(listener)
+      return () => {
+        listeners.delete(listener)
+      }
+    },
     async loadPaletteLibrary() {
       const raw = await get<unknown>(PALETTE_LIBRARY_KEY, storeHandle)
       return sanitizePaletteLibrary(raw)
     },
     async savePaletteLibrary(library) {
-      // Na FIFO do banco, como toda escrita — não interleia com um setMany de assets.
-      await runSerializedWrite(storeHandle, () => set(PALETTE_LIBRARY_KEY, library, storeHandle))
+      // Ler-FUNDIR-gravar ATÔMICO: duas ABAS do mesmo perfil (o Estúdio abre o
+      // Pinta em aba nova) escrevem o MESMO registro, e gravar cego era
+      // last-write-wins — a paleta criada na outra aba sumia. ⚠️ O `update` do
+      // idb-keyval faz get+put numa ÚNICA transação readwrite — e transação de
+      // IndexedDB serializa ENTRE ABAS; um get e um set separados deixavam uma
+      // janela de milissegundos em que a outra aba lia o valor velho (a FIFO do
+      // runSerializedWrite só serializa DENTRO desta aba — full review 26/08).
+      // O merge com lápides é a régua única da nuvem, então a exclusão continua
+      // valendo (a lápide gravada aqui mata a cópia velha do disco).
+      let saved: PaletteLibrary | undefined
+      await runSerializedWrite(storeHandle, () =>
+        update<unknown>(
+          PALETTE_LIBRARY_KEY,
+          (raw) => {
+            const current = sanitizePaletteLibrary(raw)
+            saved = current ? mergePaletteLibraries(current, library) : library
+            return saved
+          },
+          storeHandle,
+        ),
+      )
+      if (!saved) throw new Error('A transação não produziu uma biblioteca de paletas')
+      notifyPaletteLibraryChanged(storeHandle, dbName)
+      return saved
     },
   }
 }

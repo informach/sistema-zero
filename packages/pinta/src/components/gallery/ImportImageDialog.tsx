@@ -11,7 +11,6 @@
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
-import { getPalette } from '../../core/palette'
 import {
   BACKGROUND_SIZES,
   createPixelBackgroundAsset,
@@ -23,9 +22,9 @@ import {
   SPRITE_FRAME_SIZES,
   TILE_SIZES,
 } from '../../core/project'
+import { quantizeToPhotoPalette } from '../../import/paletteFromImage'
 import {
   detectTileSize,
-  quantizeToIndexed,
   type RGBAImage,
   resizeContain,
   resizeCover,
@@ -160,35 +159,38 @@ export function ImportImageDialog({
 
   // Prévia: quantiza o resultado do alvo/tamanho corrente (memo por combinação
   // VÁLIDA — digitação inválida não recomputa nem some com a prévia anterior).
+  // A foto vira a PALETA PRÓPRIA do desenho (≤15 cores + transparente): é o que
+  // mantém a criação dentro do teto de 16 — antes nascia arcade + até 48 extras.
   const result = useMemo(() => {
     if (!image) return null
     if (target === 'sprite') {
       if (!effectiveSizeKey) return null
       const { width: w, height: h } = parseSizeKey(effectiveSizeKey, 32)
       const resized = resizeContain(image, w, h)
-      const { bitmap, extraColors } = quantizeToIndexed(resized)
-      return { kind: 'sprite' as const, bitmap, extraColors, width: w, height: h }
+      const { bitmap, colors } = quantizeToPhotoPalette(resized)
+      return { kind: 'sprite' as const, bitmap, colors, width: w, height: h }
     }
     if (target === 'background') {
       if (!effectiveSizeKey) return null
       const { width: w, height: h } = parseSizeKey(effectiveSizeKey, 240)
       const resized = resizeCover(image, w, h)
-      const { bitmap, extraColors } = quantizeToIndexed(resized)
-      return { kind: 'background' as const, bitmap, extraColors, width: w, height: h }
+      const { bitmap, colors } = quantizeToPhotoPalette(resized)
+      return { kind: 'background' as const, bitmap, colors, width: w, height: h }
     }
-    const { bitmap, extraColors } = quantizeToIndexed(image)
+    // O fatiamento opera em ÍNDICES; com a paleta da foto eles seguem ≤ 15.
+    const { bitmap, colors } = quantizeToPhotoPalette(image)
     const { tiles, tooMany } = sliceIndexedTiles(bitmap, tileSize)
-    return { kind: 'tileset' as const, tiles, extraColors, tooMany }
+    return { kind: 'tileset' as const, tiles, colors, tooMany }
   }, [image, target, effectiveSizeKey, tileSize])
 
-  const previewColors = useMemo(
-    () => [...getPalette('arcade').colors, ...(result?.extraColors ?? [])],
-    [result],
-  )
+  // Slot '' pinta transparente (mesma régua do bitmapToRGBA).
+  const previewColors = useMemo(() => result?.colors ?? [], [result])
+  const paintedCount = useMemo(() => (result ? result.colors.filter(Boolean).length : 0), [result])
 
   const normalized = useMemo(() => normalizeAssetName(name), [name])
   const nameError = !name.trim() ? null : !normalized ? COPY.newAsset.nameInvalid : null
   const tooMany = result?.kind === 'tileset' && result.tooMany
+  const noVisibleTiles = result?.kind === 'tileset' && !result.tooMany && result.tiles.length === 0
 
   if (!open || !image) return null
 
@@ -199,7 +201,16 @@ export function ImportImageDialog({
   }
 
   function confirm(): void {
-    if (!result || !normalized || tooMany) return
+    if (!result || !normalized || tooMany || noVisibleTiles) return
+    // Foto 100% transparente (0 cores) cai em arcade SEM a chave — 'custom' sem
+    // cor pintável seria degradado pelo sanitize; melhor nem criar o estado.
+    const paletteFields =
+      paintedCount > 0
+        ? {
+            paletteId: 'custom' as const,
+            customPalette: { name: COPY.importImage.photoPaletteName, colors: result.colors },
+          }
+        : {}
     if (result.kind === 'sprite') {
       const base = createPixelSpriteAsset({
         name: normalized,
@@ -216,7 +227,7 @@ export function ImportImageDialog({
         ...base,
         // A foto entra como o único cel (uma camada) do primeiro quadro de `parado`.
         animations: [{ ...first, frames: [[result.bitmap]] }, ...others],
-        ...(result.extraColors.length ? { extraColors: result.extraColors } : {}),
+        ...paletteFields,
       })
     } else if (result.kind === 'background') {
       const base = createPixelBackgroundAsset({
@@ -228,7 +239,7 @@ export function ImportImageDialog({
         ...base,
         // A foto entra como a camada única do cenário.
         cels: [result.bitmap],
-        ...(result.extraColors.length ? { extraColors: result.extraColors } : {}),
+        ...paletteFields,
       })
     } else {
       const base = createTilesetAsset({ name: normalized, tileSize })
@@ -237,7 +248,7 @@ export function ImportImageDialog({
         tiles: result.tiles,
         solid: result.tiles.map(() => false),
         platform: result.tiles.map(() => false),
-        ...(result.extraColors.length ? { extraColors: result.extraColors } : {}),
+        ...paletteFields,
       })
     }
     close()
@@ -416,8 +427,14 @@ export function ImportImageDialog({
             <span className="text-center text-xs text-pin-muted">
               {target === 'sprite' ? `${COPY.importImage.spriteFitNote} ` : ''}
               {COPY.importImage.colorsNote}
-              {result ? ` · ${COPY.importImage.newColors(result.extraColors.length)}` : ''}
-              {result?.kind === 'tileset' && !result.tooMany
+              {result
+                ? ` · ${
+                    paintedCount > 0
+                      ? COPY.importImage.photoPalette(paintedCount)
+                      : COPY.importImage.transparentPalette
+                  }`
+                : ''}
+              {result?.kind === 'tileset' && !result.tooMany && result.tiles.length > 0
                 ? ` · ${COPY.importImage.uniqueTiles(result.tiles.length)}`
                 : ''}
             </span>
@@ -428,7 +445,11 @@ export function ImportImageDialog({
               role="status"
               className="text-center text-sm font-bold text-pin-danger"
             >
-              {tooMany ? COPY.importImage.tooManyTiles : ''}
+              {tooMany
+                ? COPY.importImage.tooManyTiles
+                : noVisibleTiles
+                  ? COPY.importImage.noVisibleTiles
+                  : ''}
             </span>
           </div>
 
@@ -438,7 +459,7 @@ export function ImportImageDialog({
             </Button>
             <Button
               variant="primary"
-              disabled={tooMany || !result}
+              disabled={tooMany || noVisibleTiles || !result}
               aria-describedby="pinta-import-size-error"
               onClick={() => setStep('name')}
             >

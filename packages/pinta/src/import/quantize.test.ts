@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import {
-  detectTileSize,
-  downscaleRGBA,
-  quantizeToIndexed,
-  resizeContain,
-  sliceIndexedTiles,
-} from './quantize'
+import { detectTileSize, downscaleRGBA, resizeContain, sliceIndexedTiles } from './quantize'
 
 /** Constrói uma imagem RGBA a partir de uma lista de pixels [r,g,b,a]. */
 function img(width: number, height: number, pixels: Array<[number, number, number, number]>) {
@@ -18,60 +12,6 @@ function img(width: number, height: number, pixels: Array<[number, number, numbe
   })
   return { data, width, height }
 }
-
-const BW = ['', '#000000', '#ffffff'] // paleta mínima: transparente, preto, branco
-
-describe('quantizeToIndexed', () => {
-  it('alpha abaixo do limiar vira transparente (índice 0)', () => {
-    const image = img(2, 1, [
-      [255, 255, 255, 10], // quase invisível → 0
-      [255, 255, 255, 255], // branco opaco
-    ])
-    const { bitmap } = quantizeToIndexed(image, { baseColors: BW })
-    expect(bitmap.data[0]).toBe(0)
-    expect(bitmap.data[1]).toBe(2) // #ffffff = índice 2 nesta paleta
-  })
-
-  it('cor exata da paleta base mapeia no índice certo (arcade)', () => {
-    // arcade: 1 = branco, 15 = preto.
-    const image = img(2, 1, [
-      [255, 255, 255, 255],
-      [0, 0, 0, 255],
-    ])
-    const { bitmap, extraColors } = quantizeToIndexed(image)
-    expect(bitmap.data[0]).toBe(1)
-    expect(bitmap.data[1]).toBe(15)
-    expect(extraColors).toHaveLength(0) // brancos/pretos já são base
-  })
-
-  it('cores fora da base viram EXTRAS por frequência; próximas fundem', () => {
-    // base = preto/branco. vermelho e verde puros estão LONGE → 2 extras.
-    // um cinza quase-preto FUNDE no preto (não vira extra).
-    const image = img(4, 1, [
-      [255, 0, 0, 255], // vermelho → extra
-      [0, 255, 0, 255], // verde → extra
-      [5, 5, 5, 255], // ~preto → funde
-      [255, 0, 0, 255], // vermelho de novo (frequência)
-    ])
-    const { bitmap, extraColors } = quantizeToIndexed(image, { baseColors: BW })
-    expect(extraColors).toHaveLength(2)
-    // o pixel ~preto caiu no índice do preto (1), não num extra
-    expect(bitmap.data[2]).toBe(1)
-    // vermelho e verde caíram em índices extras (≥16)
-    expect(bitmap.data[0]).toBeGreaterThanOrEqual(16)
-    expect(bitmap.data[1]).toBeGreaterThanOrEqual(16)
-  })
-
-  it('respeita o teto de extras (maxExtraColors)', () => {
-    const image = img(3, 1, [
-      [255, 0, 0, 255],
-      [0, 255, 0, 255],
-      [0, 0, 255, 255],
-    ])
-    const { extraColors } = quantizeToIndexed(image, { baseColors: BW, maxExtraColors: 1 })
-    expect(extraColors).toHaveLength(1)
-  })
-})
 
 describe('downscaleRGBA', () => {
   it('bloco uniforme preserva a cor (média de bloco)', () => {
@@ -201,6 +141,16 @@ describe('sliceIndexedTiles', () => {
     const { tiles, tooMany } = sliceIndexedTiles({ width: 100, height: 1, data }, 1)
     expect(tiles.length).toBeLessThanOrEqual(15)
     expect(tooMany).toBe(false)
+  })
+
+  it('preserva imagem menor que a peça e completa a borda com transparência', () => {
+    const { tiles, tooMany } = sliceIndexedTiles(
+      { width: 1, height: 1, data: new Uint8Array([7]) },
+      2,
+    )
+    expect(tooMany).toBe(false)
+    expect(tiles).toHaveLength(1)
+    expect(Array.from(tiles[0]?.data ?? [])).toEqual([7, 0, 0, 0])
   })
 })
 

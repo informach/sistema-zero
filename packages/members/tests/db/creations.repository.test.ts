@@ -1,5 +1,9 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+} from '../../src/domain/creations/palette-library'
 import { DrizzleCreationsRepository } from '../../src/infrastructure/persistence/drizzle/creations.repository'
 import {
   createDbConnection,
@@ -315,6 +319,80 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       expect.objectContaining({ ok: false, reason: 'total-bytes' }),
     ])
     expect((await repo.usage(lote)).totalBytes).toBe(60)
+  })
+
+  test('biblioteca de paletas: fora da CONTAGEM de itens (bytes contam), e nunca recusada pelo teto', async () => {
+    // O SQL real do FILTER e das cláusulas de skip (o fake espelha em JS).
+    const dono = randomUUID()
+    const item = (itemId: string, kind: string) => ({
+      ...base,
+      userId: dono,
+      tool: 'pinta' as const,
+      itemId,
+      kind,
+      bytes: 10,
+    })
+    const save = async (itemId: string, kind: string) => {
+      const r = await repo.reserveUpload(item(itemId, kind))
+      if (!r.ok) return r
+      return repo.commit({
+        ...item(itemId, kind),
+        revision: r.revision,
+        storageRef: `k/${itemId}/${r.revision}`,
+      })
+    }
+
+    // Teto de desenhos (3) CHEIO → desenho novo recusado, biblioteca passa.
+    for (const id of ['d-a', 'd-b', 'd-c']) expect((await save(id, 'pixel-sprite')).ok).toBe(true)
+    expect(await repo.reserveUpload(item('d-d', 'pixel-sprite'))).toEqual({
+      ok: false,
+      reason: 'items-per-tool',
+    })
+    expect((await save(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND)).ok).toBe(true)
+
+    // O usage do SQL: a biblioteca fica FORA da contagem e DENTRO dos bytes.
+    const usage = await repo.usage(dono)
+    expect(usage.countByTool.pinta).toBe(3)
+    expect(usage.totalBytes).toBe(40)
+
+    // E o desenho novo continua recusado (a biblioteca não abriu vaga).
+    expect(await repo.reserveUpload(item('d-d', 'pixel-sprite'))).toEqual({
+      ok: false,
+      reason: 'items-per-tool',
+    })
+
+    // ⚠️ A identidade da biblioteca é TUDO OU NADA: ferramenta + item reservado +
+    // kind reservado. Kind sozinho com itemId arbitrário não ganha isenção nenhuma
+    // e, mais que isso, é RECUSADO na origem em vez de virar linha malformada —
+    // `classifyPintaPaletteLibraryCreation` chama isso de `invalid-partial`.
+    // (A contagem do SQL já filtrava pela TRIPLA exata, então nunca houve brecha
+    // de teto aqui; o que mudou é não deixar a linha torta nascer.)
+    expect(await repo.reserveUpload(item('desenho-falso', PALETTE_LIBRARY_KIND))).toEqual({
+      ok: false,
+      reason: 'palette-library-identity',
+    })
+
+    // Uma linha legada com o id reservado e kind comum não pode virar biblioteca.
+    const legado = randomUUID()
+    // ⚠️ `Date` NÃO pode ser bindado em SQL cru do postgres.js: o driver chama
+    // `Buffer.byteLength` no valor e estoura ("Received an instance of Date").
+    // O Drizzle aplica o mapper da coluna; a tag `sql` crua, não.
+    const iso = now.toISOString()
+    await conn.sql`
+      insert into members.creations (
+        id, user_id, account_id, tool, item_id, name, kind, item_updated_at,
+        revision, last_reserved_revision, bytes, storage_ref, created_at, synced_at
+      ) values (
+        ${randomUUID()}, ${legado}, ${conta}, 'pinta', ${PALETTE_LIBRARY_ITEM_ID},
+        'legado', 'pixel-sprite', ${iso}, 1, 1, 10, 'k/legado/1', ${iso}, ${iso}
+      )
+    `
+    expect(
+      await repo.reserveUpload({
+        ...item(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND),
+        userId: legado,
+      }),
+    ).toEqual({ ok: false, reason: 'palette-library-identity' })
   })
 
   test('PARTES no Postgres real: JSONB vai e volta com `rev`, commit exige as enviadas, idempotência não solta nada, `pending_parts` vira NULL, lixeira e ressurreição', async () => {

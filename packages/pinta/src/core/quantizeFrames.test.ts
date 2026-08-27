@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { quantizeFrames } from './quantize'
+import { quantizeFrames } from './quantizeFrames'
 
 /** RGBA a partir de uma lista de `[r,g,b,a]` (a = 255 quando omitido). */
 function rgba(pixels: Array<[number, number, number] | [number, number, number, number]>) {

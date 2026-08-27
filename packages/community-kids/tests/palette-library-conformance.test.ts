@@ -2,8 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import {
   PALETTE_LIBRARY_ITEM_ID as MEMBERS_ITEM_ID,
   PALETTE_LIBRARY_KIND as MEMBERS_KIND,
+  PALETTE_LIBRARY_TOOL as MEMBERS_TOOL,
 } from '../../members/src/domain/creations/palette-library'
-import { PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND } from '../src/lib/pinta-cloud-persistence'
+import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+  PALETTE_LIBRARY_TOOL,
+} from '../src/lib/pinta-cloud-persistence'
 
 /**
  * Conformância do item ESPECIAL "Minhas paletas" kids × members: o kids o SOBE
@@ -11,11 +16,12 @@ import { PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND } from '../src/lib/pinta-
  * do admin (senão a biblioteca conta como "+1 desenho"). Renomear de um lado
  * sem o outro não quebra nada visível — o upload segue funcionando e o filtro
  * simplesmente para de casar, EM SILÊNCIO (o tests/db do members testa o
- * literal dele mesmo). Este teste torna o lockstep executável, no molde do
- * `badge-conformance` (caminho relativo até o módulo PURO do members).
+ * literal dele mesmo). A fonte é `@sistemazero/core/creations`; este teste torna
+ * o lockstep dos reexports executável, no molde do `badge-conformance`.
  */
 describe('item especial da biblioteca de paletas — conformância com o members', () => {
-  test('kind e itemId são os MESMOS nos dois lados', () => {
+  test('tool, kind e itemId são os MESMOS nos dois lados', () => {
+    expect(PALETTE_LIBRARY_TOOL).toBe(MEMBERS_TOOL)
     expect(PALETTE_LIBRARY_KIND).toBe(MEMBERS_KIND)
     expect(PALETTE_LIBRARY_ITEM_ID).toBe(MEMBERS_ITEM_ID)
   })

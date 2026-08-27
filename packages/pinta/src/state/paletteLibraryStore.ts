@@ -85,14 +85,20 @@ export function createPaletteLibraryStore(
     ): Promise<boolean> {
       const library: PaletteLibrary = { version: 1, updatedAt: libraryUpdatedAt, palettes, removed }
       try {
-        await persistence.savePaletteLibrary?.(library)
+        const saved = await persistence.savePaletteLibrary?.(library)
+        if (!saved) throw new Error('Persistência não devolveu a biblioteca gravada')
+        lastLogicalTimestamp = Math.max(lastLogicalTimestamp, saved.updatedAt)
+        set({
+          palettes: saved.palettes,
+          removed: saved.removed,
+          libraryUpdatedAt: saved.updatedAt,
+        })
       } catch {
         // Best-effort: a falha de disco não pode derrubar o editor — o estado
         // em memória segue valendo para a sessão.
         set({ palettes, removed, libraryUpdatedAt })
         return false
       }
-      set({ palettes, removed, libraryUpdatedAt })
       return true
     }
 
@@ -144,6 +150,9 @@ export function createPaletteLibraryStore(
         return palette
       },
       async renamePalette(id, name) {
+        // Mesmo portão do savePalette: numa store desabilitada (aula) nada
+        // pode chegar ao disco do perfil, nem por um chamador futuro.
+        if (!enabled) return false
         const { palettes, removed } = get()
         const target = palettes.find((p) => p.id === id)
         if (!target || !name.trim()) return false
@@ -156,6 +165,7 @@ export function createPaletteLibraryStore(
         return true
       },
       async removePalette(id) {
+        if (!enabled) return false
         const { palettes, removed } = get()
         if (!palettes.some((p) => p.id === id)) return false
         // A LÁPIDE é o que faz a exclusão valer no outro aparelho (o merge da

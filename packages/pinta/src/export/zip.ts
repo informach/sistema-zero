@@ -66,17 +66,32 @@ function safeFileName(name: string, index: number, taken: Set<string>): string {
   return candidate
 }
 
-/** Monta o mapa de arquivos (async: rasterizações). Pula o que não renderizar. */
-export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
+/**
+ * Monta o mapa de arquivos (async: rasterizações). Pula o que não renderizar.
+ * `variant` só troca a abertura do LEIA-ME: o backup completo ('gallery',
+ * default) fica byte-idêntico ao histórico; o pack por seleção explica que o
+ * arquivo tem só os escolhidos e volta pelo "Trazer de volta".
+ */
+export async function buildGalleryFileMap(
+  assets: PintaAsset[],
+  variant: 'gallery' | 'pack' = 'gallery',
+): Promise<{
   files: FileMap
   readme: string[]
 }> {
   const files: FileMap = {}
-  const readme: string[] = [
-    'Seus desenhos do Pinta! 🎨',
-    'Cada pasta tem um tipo de desenho, prontos para usar no Estúdio ou em qualquer editor.',
-    '',
-  ]
+  const readme: string[] =
+    variant === 'pack'
+      ? [
+          'Seu pack de desenhos do Pinta! 🎨',
+          'Este pack tem só os desenhos escolhidos. Para abrir no Pinta, use o botão "Trazer de volta".',
+          '',
+        ]
+      : [
+          'Seus desenhos do Pinta! 🎨',
+          'Cada pasta tem um tipo de desenho, prontos para usar no Estúdio ou em qualquer editor.',
+          '',
+        ]
   const tilesetsById = new Map<string, AnyTilesetAsset>()
   for (const asset of assets) {
     if (isTilesetKind(asset)) tilesetsById.set(asset.id, asset)
@@ -185,8 +200,11 @@ export async function buildGalleryFileMap(assets: PintaAsset[]): Promise<{
 }
 
 /** Zipa o mapa (fflate sob demanda; chaves com `/` viram pastas). */
-export async function zipGallery(assets: PintaAsset[]): Promise<Uint8Array> {
-  const { files, readme } = await buildGalleryFileMap(assets)
+export async function zipGallery(
+  assets: PintaAsset[],
+  variant: 'gallery' | 'pack' = 'gallery',
+): Promise<Uint8Array> {
+  const { files, readme } = await buildGalleryFileMap(assets, variant)
   files['LEIA-ME.txt'] = readme.join('\n')
   const { strToU8, zipSync } = await import('fflate')
   const flat: Record<string, Uint8Array> = {}

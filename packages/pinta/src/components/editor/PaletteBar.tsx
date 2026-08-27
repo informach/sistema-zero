@@ -32,8 +32,10 @@ import {
   type PaletteId,
   TRANSPARENT_INDEX,
 } from '../../core/palette'
+import { sameCustomPalette } from '../../core/paletteLibrary'
 import {
   assetPaletteName,
+  customPaletteOf,
   PINTA_LIMITS,
   type PintaAsset,
   resolveAssetPalette,
@@ -173,14 +175,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     // Reaplicar a paleta JÁ ativa é no-op ("null no no-op é obrigação"): sem
     // isto o commit gravava um desfazer VAZIO e acordava autosave/nuvem à toa.
     const active = current.paletteId === 'custom' ? current.customPalette : null
-    if (
-      active &&
-      active.name === palette.name &&
-      active.colors.length === palette.colors.length &&
-      active.colors.every((hex, index) => hex === palette.colors[index])
-    ) {
-      return
-    }
+    if (active && sameCustomPalette(active, palette)) return
     const next: PintaAsset = {
       ...current,
       paletteId: 'custom',
@@ -330,6 +325,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
     <PaletteMenu
       anchor={menu}
       activeId={asset.paletteId}
+      activeCustom={customPaletteOf(asset)}
       onChoose={choosePalette}
       // As AÇÕES (criar/da imagem) aparecem SEMPRE — sem biblioteca (modo
       // aula) a paleta criada só se aplica ao desenho, que é o que viaja.
@@ -487,8 +483,9 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
         </>
       }
     >
-      {/* 5 por linha → painel mais largo e mais curto; as 17 células base
-          cabem em 4 linhas SEM scroll (extras rolam por dentro). */}
+      {/* 5 por linha → painel mais largo e mais curto; as 16 células base
+          (xadrez + 15 cores) cabem em 4 linhas SEM scroll (extras rolam por
+          dentro). */}
       <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5">
         {swatches}
       </div>

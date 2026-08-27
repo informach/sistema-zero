@@ -8,6 +8,10 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { CREATION_LIMITS } from '../../src/domain/creations/creation'
+import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+} from '../../src/domain/creations/palette-library'
 import { buildApp, grantCommunity, grantLifetime } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -721,6 +725,82 @@ describe('criações guardadas na conta — HTTP', () => {
     // Apagar abre vaga.
     await req(ctx.app, 'DELETE', '/members/creations/pinta/d-1')
     expect((await reserve(ctx, 'pinta', 'd-extra', { bytes: 1 })).status).toBe(200)
+  })
+
+  test('a biblioteca de paletas nem ocupa vaga nem é recusada pelo teto de itens', async () => {
+    // Direto no repositório com um teto PEQUENO (a regra vive lá; o SQL real é
+    // provado em tests/db). Cap 3 por ferramenta em todas as chamadas.
+    const ctx = buildWithTools()
+    const now = new Date('2026-08-26T12:00:00.000Z')
+    const limits = {
+      maxItemBytes: CREATION_LIMITS.maxItemBytes,
+      maxTotalBytes: CREATION_LIMITS.maxTotalBytes,
+      maxItemsPerTool: 3,
+    }
+    const save = async (itemId: string, kind: string) => {
+      const reserved = await ctx.creations.reserveUpload({
+        userId: USER,
+        accountId: ACCOUNT,
+        tool: 'pinta',
+        itemId,
+        name: itemId,
+        kind,
+        itemUpdatedAt: now,
+        bytes: 1,
+        thumb: null,
+        now,
+        limits,
+      })
+      if (!reserved.ok) return reserved
+      return ctx.creations.commit({
+        userId: USER,
+        tool: 'pinta',
+        itemId,
+        revision: reserved.revision,
+        storageRef: `k/${itemId}/${reserved.revision}`,
+        now,
+        limits,
+      })
+    }
+
+    // (a) Com o teto de desenhos CHEIO, a biblioteca ainda reserva E commita.
+    for (let i = 0; i < 3; i += 1) expect((await save(`d-${i}`, 'pixel-sprite')).ok).toBe(true)
+    expect((await save('d-cheio', 'pixel-sprite')).ok).toBe(false)
+    expect((await save('desenho-falso', PALETTE_LIBRARY_KIND)).ok).toBe(false)
+    expect((await save(PALETTE_LIBRARY_ITEM_ID, PALETTE_LIBRARY_KIND)).ok).toBe(true)
+
+    // (b) E a biblioteca commitada NÃO ocupa vaga: os 3 slots de desenho
+    // continuam livres (sem o filtro, o 3º desenho contaria como 4º item).
+    await ctx.creations.softDelete(USER, 'pinta', 'd-0', now)
+    await ctx.creations.softDelete(USER, 'pinta', 'd-1', now)
+    await ctx.creations.softDelete(USER, 'pinta', 'd-2', now)
+    expect((await save('d-a', 'pixel-sprite')).ok).toBe(true)
+    expect((await save('d-b', 'pixel-sprite')).ok).toBe(true)
+    expect((await save('d-c', 'pixel-sprite')).ok).toBe(true)
+    expect((await save('d-d', 'pixel-sprite')).ok).toBe(false)
+  })
+
+  test('marcadores parciais da biblioteca são 400 e o item especial não muda de tipo', async () => {
+    const ctx = buildWithTools()
+    const attempts = [
+      await reserve(ctx, 'pinta', 'desenho-falso', { kind: PALETTE_LIBRARY_KIND }),
+      await reserve(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, { kind: 'pixel-sprite' }),
+      await reserve(ctx, 'studio', PALETTE_LIBRARY_ITEM_ID, { kind: PALETTE_LIBRARY_KIND }),
+    ]
+    for (const response of attempts) {
+      expect(response.status).toBe(400)
+      expect((await json(response)).error.code).toBe('VALIDATION_ERROR')
+    }
+
+    await saveItem(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, {
+      name: 'Minhas paletas',
+      kind: PALETTE_LIBRARY_KIND,
+    })
+    const transition = await reserve(ctx, 'pinta', PALETTE_LIBRARY_ITEM_ID, {
+      kind: 'pixel-sprite',
+    })
+    expect(transition.status).toBe(400)
+    expect((await json(transition)).error.code).toBe('VALIDATION_ERROR')
   })
 
   test('validação de borda: ferramenta desconhecida, itemId com ":", corpo sem bytes e nome só de espaços são 4xx', async () => {

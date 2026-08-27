@@ -15,6 +15,35 @@ function redImage(): RGBAImage {
   return { data, width: 16, height: 16 }
 }
 
+/** Metade esquerda vermelha, direita azul (o caso de mais de uma cor). */
+function twoColorImage(): RGBAImage {
+  const data = new Uint8ClampedArray(16 * 16 * 4)
+  for (let y = 0; y < 16; y += 1) {
+    for (let x = 0; x < 16; x += 1) {
+      const i = (y * 16 + x) * 4
+      if (x < 8) data[i] = 255
+      else data[i + 2] = 255
+      data[i + 3] = 255
+    }
+  }
+  return { data, width: 16, height: 16 }
+}
+
+/** Imagem 100% transparente (todo alfa 0). */
+function clearImage(): RGBAImage {
+  return { data: new Uint8ClampedArray(16 * 16 * 4), width: 16, height: 16 }
+}
+
+/** Imagem menor que todas as peças oferecidas pelo diálogo. */
+function smallRedImage(): RGBAImage {
+  const data = new Uint8ClampedArray(8 * 8 * 4)
+  for (let i = 0; i < 8 * 8; i += 1) {
+    data[i * 4] = 255
+    data[i * 4 + 3] = 255
+  }
+  return { data, width: 8, height: 8 }
+}
+
 describe('ImportImageDialog', () => {
   it('foto → PEÇAS → tamanho → nome → importa um tileset', () => {
     let imported: PintaAsset | null = null
@@ -34,8 +63,10 @@ describe('ImportImageDialog', () => {
       screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
     )
 
-    // Passo 2: tamanho de peça + prévia (o recado das cores aparece).
+    // Passo 2: tamanho de peça + prévia (o recado das cores aparece, com a
+    // contagem da paleta que a foto virou — vermelho sólido = 1 cor).
     expect(screen.getByText(new RegExp(COPY.importImage.colorsNote))).toBeTruthy()
+    expect(screen.getByText(new RegExp(COPY.importImage.photoPalette(1)))).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: COPY.importImage.next }))
 
     // Passo 3: nome + criar.
@@ -52,7 +83,69 @@ describe('ImportImageDialog', () => {
       // arrays de colisão alinhados às peças
       expect(asset.solid).toHaveLength(asset.tiles.length)
       expect(asset.platform).toHaveLength(asset.tiles.length)
+      // A foto NASCE com a paleta própria (teto 16), nunca mais arcade + extras.
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.name).toBe(COPY.importImage.photoPaletteName)
+      expect(asset.customPalette?.colors[0]).toBe('')
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
+  })
+
+  it('foto menor que a peça vira uma peça preenchida com transparência', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={smallRedImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
+    )
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(false)
+    expect(screen.getByText(new RegExp(COPY.importImage.uniqueTiles(1)))).toBeTruthy()
+    fireEvent.click(next)
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'peca-pequena' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('tileset')
+    if (asset.kind === 'tileset') {
+      expect(asset.tiles).toHaveLength(1)
+      expect(Array.from(asset.tiles[0]?.data ?? []).some((index) => index === 0)).toBe(true)
+    }
+  })
+
+  it('imagem transparente não avança para PEÇAS e explica o fallback sem dizer 0 cores', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={clearImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asTileset.title) }),
+    )
+    expect(screen.getByText(COPY.importImage.noVisibleTiles)).toBeTruthy()
+    expect(screen.getByText(new RegExp(COPY.importImage.transparentPalette))).toBeTruthy()
+    expect(screen.queryByText(new RegExp(COPY.importImage.photoPalette(0)))).toBeNull()
+    const next = screen.getByRole('button', { name: COPY.importImage.next }) as HTMLButtonElement
+    expect(next.disabled).toBe(true)
+    fireEvent.click(next)
+    expect(imported).toBeNull()
   })
 
   it('foto → CENÁRIO → tamanho PERSONALIZADO → nome → importa nas dimensões digitadas', () => {
@@ -99,6 +192,9 @@ describe('ImportImageDialog', () => {
     if (asset.kind === 'pixel-background') {
       expect(asset.cels[0]?.width).toBe(32)
       expect(asset.cels[0]?.height).toBe(24)
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
   })
 
@@ -156,9 +252,16 @@ describe('ImportImageDialog', () => {
       expect(asset.animations[0]?.frames[0]).toHaveLength(asset.layers.length)
       // A imagem 16×16 vermelha foi AMPLIADA para preencher o quadro: nenhum pixel transparente.
       expect(Array.from(cel?.data ?? []).every((index) => index !== 0)).toBe(true)
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.name).toBe(COPY.importImage.photoPaletteName)
+      expect(asset.customPalette?.colors.filter(Boolean)).toEqual(['#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
     }
     // O que entra pelo import é o que o sanitize aceita — senão sumiria da galeria.
-    expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
+    // (Round-trip com structuredClone, nunca JSON: o IndexedDB usa structured clone.)
+    const sanitized = sanitizePintaAsset(structuredClone(asset))
+    expect(sanitized).not.toBeNull()
+    expect(sanitized?.kind === 'pixel-sprite' && sanitized.customPalette?.colors[1]).toBe('#ff0000')
   })
 
   it('foto → PERSONAGEM → tamanho PERSONALIZADO deitado (16×8) → importa sem cortar (contain)', () => {
@@ -215,6 +318,75 @@ describe('ImportImageDialog', () => {
       expect(row.slice(12).every((i) => i === 0)).toBe(true)
     }
     expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
+  })
+
+  it('foto 100% transparente cai em ARCADE sem customPalette (nunca custom sem cor pintável)', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={clearImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.next }))
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'vazia' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-background')
+    if (asset.kind === 'pixel-background') {
+      expect(asset.paletteId).toBe('arcade')
+      expect(asset.customPalette).toBeUndefined()
+      // Bitmap todo transparente: nenhum índice pintado apontando arcade.
+      expect(Array.from(asset.cels[0]?.data ?? [1]).every((index) => index === 0)).toBe(true)
+    }
+    expect(sanitizePintaAsset(structuredClone(asset))).not.toBeNull()
+  })
+
+  it('foto de DUAS cores: nota no plural e a paleta sai com as duas exatas (round-trip)', () => {
+    let imported: PintaAsset | null = null
+    render(
+      <ImportImageDialog
+        open
+        image={twoColorImage()}
+        onClose={() => {}}
+        onImport={(asset) => {
+          imported = asset
+        }}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(COPY.importImage.asBackground.title) }),
+    )
+    expect(screen.getByText(new RegExp(COPY.importImage.photoPalette(2)))).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.next }))
+    fireEvent.change(screen.getByPlaceholderText(COPY.newAsset.namePlaceholder), {
+      target: { value: 'bandeira' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.importImage.create }))
+
+    const asset = imported as unknown as PintaAsset
+    expect(asset.kind).toBe('pixel-background')
+    if (asset.kind === 'pixel-background') {
+      expect(asset.paletteId).toBe('custom')
+      expect(asset.customPalette?.colors.filter(Boolean).sort()).toEqual(['#0000ff', '#ff0000'])
+      expect(asset.extraColors).toBeUndefined()
+    }
+    // O round-trip do sanitize preserva a paleta nos alvos além do personagem.
+    const sanitized = sanitizePintaAsset(structuredClone(asset))
+    expect(
+      sanitized?.kind === 'pixel-background' &&
+        sanitized.customPalette?.colors.filter(Boolean).sort(),
+    ).toEqual(['#0000ff', '#ff0000'])
   })
 
   it('fechar no Personalizado e reabrir volta ao preset médio (o diálogo fica montado)', () => {

@@ -48,6 +48,7 @@ import {
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
 import { AssetCard } from './AssetCard'
+import { useGallerySelection } from './useGallerySelection'
 
 /**
  * "Trazer uma foto" carrega junto o quantizador (median-cut) e o decodificador — nada
@@ -143,45 +144,17 @@ export function GalleryScreen(): JSX.Element {
   )
   const clearFilters = () => setFilters(EMPTY_GALLERY_FILTERS)
 
-  // Modo de seleção do PACK: marcar desenhos e baixar SÓ eles (`pack-pinta.zip`).
-  // O Set é por ID e INDEPENDE da busca/filtros (dá para marcar, filtrar e
-  // marcar mais); sair do modo sempre limpa.
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set())
-  const onToggleSelect = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
-  const exitSelection = useCallback(() => {
-    setSelectionMode(false)
-    setSelectedIds(new Set())
-  }, [])
-  // Conta só ids que ainda EXISTEM (a descida da nuvem pode remover um desenho
-  // marcado por baixo do modo).
-  const selectedCount = useMemo(
-    () => assets.reduce((count, asset) => (selectedIds.has(asset.id) ? count + 1 : count), 0),
-    [assets, selectedIds],
-  )
-  useEffect(() => {
-    if (!selectionMode) return
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key !== 'Escape') return
-      // O Esc do campo de busca COM texto limpa a busca, e o de um Dialog
-      // aberto fecha o diálogo — nenhum dos dois pode arrastar a saída do modo
-      // junto. Busca VAZIA não tem o que limpar: aí o Esc sai do modo (senão a
-      // tecla morria sem efeito nenhum — full review 25/08).
-      if (event.target === searchRef.current && searchRef.current?.value) return
-      if (document.querySelector('[data-pinta-dialog]')) return
-      event.preventDefault()
-      exitSelection()
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [selectionMode, exitSelection])
+  const {
+    selectionMode,
+    selectedIds,
+    selectedCount,
+    enterSelection,
+    exitSelection,
+    clearSelection,
+    toggleSelection,
+    captureSelection,
+    exitSelectionIfUnchanged,
+  } = useGallerySelection(assets, searchRef)
 
   const renameTarget = assets.find((a) => a.id === renameId) ?? null
   const removeTarget = assets.find((a) => a.id === removeId) ?? null
@@ -256,7 +229,7 @@ export function GalleryScreen(): JSX.Element {
       onRemove={onRemoveCard}
       selectable={selectionMode}
       selected={selectionMode && selectedIds.has(asset.id)}
-      onToggleSelect={onToggleSelect}
+      onToggleSelect={toggleSelection}
     />
   )
 
@@ -282,27 +255,35 @@ export function GalleryScreen(): JSX.Element {
     // Expande na hora do download, sobre a galeria VIVA (nunca a lista filtrada
     // da tela): mapa marcado leva o tileset dele junto — sem as peças o
     // restauro recusaria o mapa.
-    const expanded = expandSelection(gallery.getState().assets, selectedIds)
+    const markedAtClick = captureSelection()
+    const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
     if (expanded.assets.length === 0) {
       // Corrida rara (a nuvem removeu os marcados entre o render e o clique):
       // avisa em vez de um clique-morto silencioso.
       showToast(COPY.gallery.drawingGone)
       return
     }
+    // Identidade da marcação NO CLIQUE: se a criança mexer na seleção durante
+    // um zip demorado (Limpar, Cancelar + recomeçar, marcar mais um), o
+    // auto-fechar do sucesso NÃO pode engolir a sessão nova — todo toggle cria
+    // um Set novo, então identidade igual = ninguém tocou.
     setZipping(true)
     try {
-      const bytes = await zipGallery(expanded.assets)
+      const bytes = await zipGallery(expanded.assets, 'pack')
       triggerDownload(
         new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' }),
         'pack-pinta.zip',
       )
+      // A contagem é do que FOI para o zip (marcados + peças auto-incluídas),
+      // coerente com o sufixo do tileset — o toast confere o pack sozinho.
+      const done = COPY.gallery.downloadedSelection(expanded.assets.length)
       showToast(
         expanded.autoIncludedTilesetIds.length > 0
-          ? `${COPY.toast.downloadReady} ${COPY.gallery.selectionTilesetIncluded}`
-          : COPY.toast.downloadReady,
+          ? `${done} ${COPY.gallery.selectionTilesetIncluded}`
+          : done,
       )
       // Pack baixado = tarefa concluída; sair do modo devolve os cards ao normal.
-      exitSelection()
+      exitSelectionIfUnchanged(markedAtClick)
     } catch {
       showToast(COPY.gallery.zipError)
     } finally {
@@ -409,7 +390,12 @@ export function GalleryScreen(): JSX.Element {
             variant="ghost"
             disabled={restoring}
             aria-busy={restoring}
-            onClick={() => restoreRef.current?.click()}
+            onClick={() => {
+              // Importar muda a galeria por baixo das marcas: sai do modo
+              // (mesma régua do "Criar novo").
+              if (selectionMode) exitSelection()
+              restoreRef.current?.click()
+            }}
           >
             <Upload aria-hidden="true" className="size-4" />
             {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
@@ -425,17 +411,26 @@ export function GalleryScreen(): JSX.Element {
               event.target.value = ''
             }}
           />
-          <Button variant="ghost" onClick={() => photoRef.current?.click()}>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (selectionMode) exitSelection()
+              photoRef.current?.click()
+            }}
+          >
             <ImageIcon aria-hidden="true" className="size-4" />
             {COPY.gallery.importImage}
           </Button>
           {assets.length > 0 && !selectionMode ? (
-            <Button variant="ghost" onClick={() => setSelectionMode(true)}>
+            <Button variant="ghost" onClick={enterSelection}>
               <SquareCheckBig aria-hidden="true" className="size-4" />
               {COPY.gallery.select}
             </Button>
           ) : null}
-          {assets.length > 0 ? (
+          {/* Some no modo seleção: ele desliza para a posição do "Selecionar"
+              que acabou de desmontar (mesmo ícone) e baixa a galeria INTEIRA
+              ignorando a marcação — a barra sticky é o comando do modo. */}
+          {assets.length > 0 && !selectionMode ? (
             <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
               <Download aria-hidden="true" className="size-4" />
               {COPY.gallery.downloadAll}
@@ -639,6 +634,22 @@ export function GalleryScreen(): JSX.Element {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
             <div className="flex items-center gap-2">
+              {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
+                  quem sai do modo é o Cancelar ao lado. */}
+              <Button
+                variant="ghost"
+                disabled={selectedCount === 0}
+                onClick={(event) => {
+                  clearSelection()
+                  // Com 0 marcados este botão vira disabled e o navegador
+                  // derrubaria o foco no body (criança de teclado se perde):
+                  // manda para o Cancelar, o irmão SEGUINTE nesta barra.
+                  const next = event.currentTarget.nextElementSibling
+                  if (next instanceof HTMLElement) next.focus()
+                }}
+              >
+                {COPY.gallery.selectionClear}
+              </Button>
               <Button variant="ghost" onClick={exitSelection}>
                 {COPY.gallery.cancel}
               </Button>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { quantizeFrames } from './quantize'
+import { quantizeFrames } from './quantizeFrames'
 
 /**
  * O pior caso REAL do produto: sprite vetorial de 128 px exportado em ×4 com o

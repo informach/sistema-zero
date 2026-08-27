@@ -1,6 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import {
+  PALETTE_LIBRARY_ITEM_ID,
+  PALETTE_LIBRARY_KIND,
+} from '../../src/domain/creations/palette-library'
+import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
@@ -123,6 +127,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     storageRef?: string | null
     deletedAt?: string | null
     kind?: string
+    itemId?: string
   }) => {
     // ⚠️ A tabela REAL (migrations) pode já existir no banco compartilhado, com
     // `created_at`/`synced_at` NOT NULL SEM default — supre os dois explícitos.
@@ -136,7 +141,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
         over.userId,
         randomUUID(),
         over.tool,
-        randomUUID().slice(0, 12),
+        over.itemId ?? randomUUID().slice(0, 12),
         'Criação',
         over.kind ?? 'classic',
         over.itemUpdatedAt,
@@ -197,19 +202,28 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     expect(studio.get(USER)?.count).toBe(1)
   })
 
-  test('a biblioteca "Minhas paletas" (kind palette-library) NÃO conta como desenho', async () => {
+  test('só a identidade exata da biblioteca não conta como desenho', async () => {
     await insertCreation({ userId: USER, tool: 'pinta', itemUpdatedAt: '2026-06-01T09:00:00.000Z' })
     // O item ESPECIAL do canal (registro único da biblioteca, viva e confirmada).
     await insertCreation({
       userId: USER,
       tool: 'pinta',
       itemUpdatedAt: '2026-06-09T09:00:00.000Z',
-      kind: 'palette-library',
+      itemId: PALETTE_LIBRARY_ITEM_ID,
+      kind: PALETTE_LIBRARY_KIND,
+    })
+    // Kind isolado é criação comum e também governa a última atividade.
+    await insertCreation({
+      userId: USER,
+      tool: 'pinta',
+      itemUpdatedAt: '2026-06-08T09:00:00.000Z',
+      itemId: 'desenho-falso',
+      kind: PALETTE_LIBRARY_KIND,
     })
 
     const pinta = await repo.creationsUsageByUsers([USER], 'pinta')
-    expect(pinta.get(USER)?.count).toBe(1)
-    // E nem o lastActivityAt vaza da biblioteca (o desenho é de 01/06).
-    expect(pinta.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-01T09:00:00.000Z')
+    expect(pinta.get(USER)?.count).toBe(2)
+    // A biblioteca (09/06) não vaza; o desenho de kind falso (08/06) conta.
+    expect(pinta.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-08T09:00:00.000Z')
   })
 })

@@ -139,6 +139,91 @@ describe('paleta personalizada: criar, escolher da biblioteca e clamp', () => {
     })
   })
 
+  it('custom embutida SEM par salvo (Cores da foto): linha sintética marcada e focada; ativar mantém', async () => {
+    // O caso comum desde o import de foto: customPalette embutida que NUNCA
+    // esteve na biblioteca. Sem a linha sintética nada ficava aria-checked, o
+    // foco de abertura caía no Arcade e um Enter recoloria o desenho inteiro.
+    const seed = createGalleryStore()
+    await seed.getState().importAssets([
+      {
+        ...createPixelBackgroundAsset({ name: 'ceu', width: 16, height: 16 }),
+        paletteId: 'custom' as const,
+        customPalette: {
+          name: 'Cores da foto',
+          colors: ['', '#ff8800', ...Array.from({ length: 14 }, () => '')],
+        },
+      },
+    ])
+    render(<PintaApp />)
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir ceu/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir ceu/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: COPY.a11y.drawArea })).toBeTruthy()
+    })
+
+    fireEvent.click(menuTrigger('Cores da foto'))
+    await screen.findByRole('menu')
+    const embedded = screen.getByRole('menuitemradio', { name: /Cores da foto/ })
+    expect(embedded.getAttribute('aria-checked')).toBe('true')
+    await waitFor(() => {
+      expect(document.activeElement).toBe(embedded)
+    })
+
+    // Ativar a linha (o Enter do teclado) só fecha: paleta intacta, sem undo.
+    fireEvent.click(embedded)
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
+    expect(menuTrigger('Cores da foto')).toBeTruthy()
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('o menu MARCA a paleta salva ativa e o foco cai nela (Enter não descarta a custom)', async () => {
+    await createPintaPersistence().savePaletteLibrary?.({
+      version: 1,
+      updatedAt: 1,
+      palettes: [
+        {
+          id: 'p1',
+          updatedAt: 1,
+          name: 'Festa',
+          colors: ['', '#ff8800', ...Array.from({ length: 14 }, () => '')],
+        },
+      ],
+      removed: [],
+    })
+    await openPixelEditor()
+    fireEvent.click(menuTrigger())
+    await screen.findByRole('menu')
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /Festa/ }))
+    await waitFor(() => {
+      expect(menuTrigger('Festa')).toBeTruthy()
+    })
+
+    // Reabrir: a salva ativa está aria-checked e é quem recebe o FOCO de
+    // abertura. Antes NADA ficava marcado com custom ativa: o foco caía no
+    // PRIMEIRO item (Arcade) e um Enter descartava a customPalette.
+    fireEvent.click(menuTrigger('Festa'))
+    await screen.findByRole('menu')
+    const saved = screen.getByRole('menuitemradio', { name: /Festa/ })
+    expect(saved.getAttribute('aria-checked')).toBe('true')
+    expect(screen.getByRole('menuitemradio', { name: /Arcade/ }).getAttribute('aria-checked')).toBe(
+      'false',
+    )
+    await waitFor(() => {
+      expect(document.activeElement).toBe(saved)
+    })
+
+    // Ativar o item focado (o Enter do teclado) MANTÉM a paleta: no-op + fecha.
+    fireEvent.click(saved)
+    await waitFor(() => {
+      expect(screen.queryByRole('menu')).toBeNull()
+    })
+    expect(menuTrigger('Festa')).toBeTruthy()
+  })
+
   it('gerenciar: renomeia e exclui da biblioteca (excluir NÃO toca o desenho)', async () => {
     await createPintaPersistence().savePaletteLibrary?.({
       version: 1,

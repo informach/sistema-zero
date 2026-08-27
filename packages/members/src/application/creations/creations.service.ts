@@ -29,6 +29,7 @@ import {
   CreationRevisionMismatchError,
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
+import { classifyPintaPaletteLibraryCreation } from '../../domain/creations/palette-library'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
@@ -180,6 +181,15 @@ export class ReserveCreationUploadService {
     const name = Array.from(input.name.trim()).slice(0, CREATION_LIMITS.maxNameChars).join('')
     const kind = Array.from(input.kind.trim()).slice(0, CREATION_LIMITS.maxKindChars).join('')
     if (!name || !kind) throw new ValidationError('Nome ou tipo da criação ausente')
+    if (
+      classifyPintaPaletteLibraryCreation({
+        tool: input.tool,
+        itemId: input.itemId,
+        kind,
+      }) === 'invalid-partial'
+    ) {
+      throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')
+    }
     // Miniatura grande demais é DESCARTADA (é enfeite da lista), nunca recusa o salvamento.
     const thumb =
       typeof input.thumb === 'string' &&
@@ -222,6 +232,9 @@ export class ReserveCreationUploadService {
     }
     if (!reservation.ok && reservation.reason === 'account-deleting') {
       throw new AccessDeniedError('A conta está sendo excluída e não aceita novos envios')
+    }
+    if (!reservation.ok && reservation.reason === 'palette-library-identity') {
+      throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')
     }
     if (!reservation.ok) {
       throw new CreationQuotaExceededError(
@@ -292,6 +305,9 @@ export class CommitCreationUploadService {
     })
     if (!result.ok) {
       if (result.reason === 'parts-missing') throw new CreationPartMissingError(result.hashes)
+      if (result.reason === 'palette-library-identity') {
+        throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')
+      }
       if (result.reason) {
         throw new CreationQuotaExceededError(
           result.reason === 'items-per-tool'
