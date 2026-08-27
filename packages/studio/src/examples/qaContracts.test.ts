@@ -7,7 +7,12 @@ import { registerExtensionBlocks } from '../blockly/blocks'
 import { buildIRFromWorkspace } from '../blockly/buildIR'
 import { ensureBlocklyInitialized } from '../blockly/setup'
 import { buildKitGroups, buildProjectFromKitEntry, type KitEntry } from '../projects/KitGallery'
-import { EXAMPLE_QA_CONTRACTS, type ExampleQAContract } from './qaContracts'
+import {
+  EXAMPLE_QA_CONTRACTS,
+  EXAMPLE_QA_TIMEOUTS,
+  type ExampleQAContract,
+  exampleQaTestTimeoutMs,
+} from './qaContracts'
 
 function collectTypes(value: unknown, out: Set<string> = new Set()): Set<string> {
   if (Array.isArray(value)) {
@@ -185,4 +190,40 @@ describe('contrato transversal dos 153 exemplos da KitGallery', () => {
       timeout,
     )
   }
+})
+
+describe('teto de teste dos cartões da KitGallery', () => {
+  // ⚠️ A lista é `as const`, então o elemento é um tipo LITERAL e `slowMountMs`
+  // só existe em um deles. Ler pela INTERFACE é o que torna a busca válida para
+  // o compilador — e mantém o teste sobre os contratos REAIS, não sobre um
+  // objeto sintético.
+  const contratos: readonly ExampleQAContract[] = EXAMPLE_QA_CONTRACTS
+  const comum = contratos.find((contract) => contract.slowMountMs === undefined)
+  const lento = contratos.find((contract) => contract.slowMountMs !== undefined)
+
+  it('⭐ o teto CABE as esperas que o harness faz em sequência, com folga para as interações', () => {
+    // Este é o caso que o default de 30 s do Playwright NÃO atendia: só a
+    // navegação somada ao poll do primeiro quadro já o consumia inteiro, e a
+    // montagem ficava sem orçamento. Anti-vácuo: se alguém devolver o teto para
+    // perto da soma das esperas, este caso reprova.
+    if (!comum) throw new Error('nenhum contrato sem slowMountMs')
+    const somaDasEsperas =
+      EXAMPLE_QA_TIMEOUTS.navigationMs +
+      EXAMPLE_QA_TIMEOUTS.mountMs * 2 +
+      EXAMPLE_QA_TIMEOUTS.firstFrameMs
+
+    expect(exampleQaTestTimeoutMs(comum)).toBeGreaterThan(somaDasEsperas)
+    expect(exampleQaTestTimeoutMs(comum)).toBeGreaterThan(30_000)
+  })
+
+  it('⭐ a folga declarada em slowMountMs passa a ser HONRÁVEL', () => {
+    // O "Reino Zero Ultra" declara 45 s de montagem. Com o teto de 30 s do
+    // Playwright essa espera era impossível de alcançar — a declaração existia e
+    // não valia nada. O teto derivado tem que ser MAIOR que ela.
+    if (!lento?.slowMountMs) throw new Error('nenhum contrato declara slowMountMs')
+    if (!comum) throw new Error('nenhum contrato sem slowMountMs')
+
+    expect(exampleQaTestTimeoutMs(lento)).toBeGreaterThan(lento.slowMountMs)
+    expect(exampleQaTestTimeoutMs(lento)).toBeGreaterThan(exampleQaTestTimeoutMs(comum))
+  })
 })

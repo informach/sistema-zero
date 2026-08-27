@@ -44,6 +44,56 @@ export interface ExampleQAContract {
 }
 
 /**
+ * Tetos que o harness do e2e gasta EM SEQUÊNCIA dentro de um único cartão.
+ * Ficam aqui, ao lado dos contratos, porque o teto do TESTE precisa conter a
+ * soma deles — e foi justamente essa conta que faltava (ver abaixo).
+ */
+export const EXAMPLE_QA_TIMEOUTS: {
+  readonly mountMs: number
+  readonly navigationMs: number
+  readonly firstFrameMs: number
+  readonly interactionsMs: number
+} = {
+  /** Espera pelo `srcdoc` e pelo `body` do preview (usada DUAS vezes). */
+  mountMs: 15_000,
+  /** Clicar no cartão até a URL do editor. */
+  navigationMs: 15_000,
+  /** `expect.poll` do primeiro quadro pintado. */
+  firstFrameMs: 15_000,
+  /** Interações do cenário depois do primeiro quadro. */
+  interactionsMs: 15_000,
+}
+
+/**
+ * Teto do TESTE para um cartão, derivado das esperas que o próprio harness faz.
+ *
+ * ⚠️⚠️ Por que existe: o Playwright estava no default de 30 s, e só a
+ * navegação (15 s) somada ao poll do primeiro quadro (15 s) já o consumia
+ * INTEIRO — sem sobrar nada para a montagem. Duas consequências, ambas reais:
+ *
+ * 1. Os cartões 3D (`world-3d`, `game-3d*`) reprovavam sob contenção de CPU no
+ *    CI, sempre em ~31 s e queimando as 3 tentativas, exigindo rerun manual em
+ *    três levas seguidas (~17 min de parede cada). Cena WebGL esperando o
+ *    primeiro quadro é lenta por natureza, não por defeito.
+ * 2. ⭐ O `slowMountMs: 45_000` do "Reino Zero Ultra" NUNCA pôde ser honrado: a
+ *    folga declarada era maior que o teto do teste que a continha. A declaração
+ *    existia e não valia nada.
+ *
+ * ⚠️ Isto continua NÃO sendo orçamento de desempenho — vale a mesma ressalva do
+ * `slowMountMs`: é teto de CORREÇÃO. Cartão que passa segue levando 1–2 s; o
+ * número só decide quando desistir.
+ */
+export function exampleQaTestTimeoutMs(contract: ExampleQAContract): number {
+  const mount = contract.slowMountMs ?? EXAMPLE_QA_TIMEOUTS.mountMs
+  return (
+    EXAMPLE_QA_TIMEOUTS.navigationMs +
+    mount * 2 +
+    EXAMPLE_QA_TIMEOUTS.firstFrameMs +
+    EXAMPLE_QA_TIMEOUTS.interactionsMs
+  )
+}
+
+/**
  * Contrato explícito da vitrine privilegiada. Não é derivado do catálogo:
  * adicionar, remover ou renomear um card exige decidir sua classificação e seu
  * cenário de aceite aqui, impedindo cobertura "por acidente".
