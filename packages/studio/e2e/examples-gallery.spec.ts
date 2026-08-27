@@ -2,8 +2,10 @@ import { expect, type FrameLocator, type Page, test } from '@playwright/test'
 import type { Project } from '../src/core/project'
 import {
   EXAMPLE_QA_CONTRACTS,
+  EXAMPLE_QA_TIMEOUTS,
   type ExampleQAContract,
   type ExampleQAInteraction,
+  exampleQaTestTimeoutMs,
 } from '../src/examples/qaContracts'
 import {
   makeAnimatedGlb,
@@ -24,7 +26,7 @@ function kitCard(page: Page, contract: ExampleQAContract) {
     .first()
 }
 
-const DEFAULT_MOUNT_TIMEOUT_MS = 15_000
+const DEFAULT_MOUNT_TIMEOUT_MS: number = EXAMPLE_QA_TIMEOUTS.mountMs
 
 async function expectFirstFrame(
   page: Page,
@@ -413,6 +415,8 @@ async function expectLogicalCanvasAtDpr(page: Page, expectedDpr: number): Promis
 test.describe(`KitGallery — os ${EXAMPLE_QA_CONTRACTS.length} cartões no Chromium`, () => {
   for (const contract of EXAMPLE_QA_CONTRACTS) {
     test(`${contract.key}: cria, mostra primeiro frame e aceita controles`, async ({ page }) => {
+      // O teto vem das esperas que o harness faz — ver `exampleQaTestTimeoutMs`.
+      test.setTimeout(exampleQaTestTimeoutMs(contract))
       await openAndExercise(page, contract)
     })
   }
@@ -599,6 +603,8 @@ for (const dpr of [1, 2, 3]) {
       test(`${contract.key}: primeiro frame e controles preservam o tamanho lógico`, async ({
         page,
       }) => {
+        // Mesmo harness, mesmo orçamento: soma ainda a checagem de DPR abaixo.
+        test.setTimeout(exampleQaTestTimeoutMs(contract) + EXAMPLE_QA_TIMEOUTS.firstFrameMs)
         await openAndExercise(page, contract)
         await expectLogicalCanvasAtDpr(page, dpr)
       })

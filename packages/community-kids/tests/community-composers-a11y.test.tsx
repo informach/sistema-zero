@@ -133,6 +133,20 @@ afterEach(() => {
 const ESPERA = { timeout: 5_000 } as const
 
 /**
+ * ⚠️⚠️ O teto do `bun:test` (o 3º argumento de `test`) é o que MANDA — e foi o
+ * que me escapou por três idas.
+ *
+ * O padrão do bun é 5 s. Enquanto eu subia o teto do `findBy` da
+ * testing-library, o RUNNER matava o caso antes: as falhas em 5001, 5003 e
+ * 5004 ms que eu lia como "meu teto estourou" eram sempre `Test ... timed out
+ * after 5000ms`. Teto de biblioteca acima do teto do runner é decoração.
+ *
+ * Os dois precisam andar juntos: o do runner cobre o CASO inteiro, o do
+ * `findBy` cobre UMA espera dentro dele.
+ */
+const TETO_DO_CASO_MS = 30_000
+
+/**
  * ⚠️ Teto SEPARADO e generoso só para o campo do editor, e a razão é honesta:
  * se por qualquer motivo o duplo acima não valer (chaves do `mock.module`
  * divergem entre plataformas — no Windows o mock pega nas duas posições, no
@@ -145,30 +159,42 @@ const ESPERA = { timeout: 5_000 } as const
 const ESPERA_EDITOR = { timeout: 30_000 } as const
 
 describe('nomes acessíveis dos compositores da comunidade', () => {
-  test('o campo de resposta dos recados tem label persistente', async () => {
-    render(<RecadoThreadClient threadId="thread-1" />)
+  test(
+    'o campo de resposta dos recados tem label persistente',
+    async () => {
+      render(<RecadoThreadClient threadId="thread-1" />)
 
-    const reply = await screen.findByRole('textbox', { name: 'Resposta para o professor' })
-    expect(reply.getAttribute('name')).toBe('reply')
-  })
+      const reply = await screen.findByRole('textbox', { name: 'Resposta para o professor' })
+      expect(reply.getAttribute('name')).toBe('reply')
+    },
+    TETO_DO_CASO_MS,
+  )
 
-  test('o título da nova conversa tem label persistente', async () => {
-    render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
+  test(
+    'o título da nova conversa tem label persistente',
+    async () => {
+      render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
-    // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
-    // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
-    // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
-    const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
-    expect(title.getAttribute('name')).toBe('threadTitle')
-  })
+      fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
+      // ⚠️ indBy (assíncrono), como o irmão logo abaixo: o conteúdo do diálogo não
+      // está no DOM no mesmo tique do clique. Com getBy síncrono o teste passava na
+      // máquina rápida e reprovava no CI (2 de 3 runs em 18/08) — flake por corrida.
+      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      expect(title.getAttribute('name')).toBe('threadTitle')
+    },
+    TETO_DO_CASO_MS,
+  )
 
-  test('o corpo da nova conversa expõe o editor rico como campo nomeado', async () => {
-    render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
+  test(
+    'o corpo da nova conversa expõe o editor rico como campo nomeado',
+    async () => {
+      render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
 
-    fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
-    expect(
-      await screen.findByRole('textbox', { name: 'Mensagem da conversa' }, ESPERA_EDITOR),
-    ).toBeTruthy()
-  })
+      fireEvent.click(await screen.findByRole('button', { name: 'Começar conversa' }, ESPERA))
+      expect(
+        await screen.findByRole('textbox', { name: 'Mensagem da conversa' }, ESPERA_EDITOR),
+      ).toBeTruthy()
+    },
+    TETO_DO_CASO_MS,
+  )
 })
