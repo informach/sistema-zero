@@ -738,7 +738,26 @@ mecanismo já é app-agnóstico (`setStudioStorageNamespace(session.id)` — per
 quando o adulto ganhar a rota, o `StudioFullClient` deve ir p/ o member-shell (reuso, não cópia) e a página
 do adulto passa `session.id` igual. **LARGURA TOTAL:** o `MainContainer`
 (`components/kids/main-container.tsx`, usado no `(app)/layout`) tira o `max-w-5xl` na rota `/estudio` (IDE
-quer todo o espaço); demais páginas seguem com `max-w-5xl`. **SEGUE o tema da comunidade:** o
+quer todo o espaço); demais páginas seguem com `max-w-5xl`.
+⚠️⚠️ **ALTURA TRAVADA também no DESKTOP (26/08/2026):** o ramo embarcado do `MainContainer` usava
+`md:h-auto md:flex-1` apostando que "a sidebar `h-screen` já trava a linha" — **medido FALSO**
+quando o conteúdo DÁ altura (a galeria do Pinta com muitos desenhos): o `<main>` crescia com o
+conteúdo (2204px no esqueleto real), a JANELA rolava e o rolável interno do app nunca rolava — o
+sticky da barra de seleção do Pinta ficava fora da tela. Agora `md:h-dvh md:flex-none` (mesmo
+remédio do mobile); com o banner de impersonação a página rola a altura do banner (como no
+mobile, onde o banner TAMBÉM não é descontado — a top bar, essa sim, é). De quebra o travamento
+consertou dois defeitos pré-existentes: a ProjectList do Estúdio com muitos projetos também dava
+altura à página (o `overflow-auto` interno dela nunca engatava), e o puxador do modo foco
+(`absolute top-1/2`) centrava no MEIO do main crescido — fora da tela.
+⚠️⚠️ **Par obrigatório do travamento: `md:min-h-[36rem]` (full review 26/08)** = o piso
+`min-h-[34rem]` dos frames (`embedded-app-loading.tsx`) + 2rem de `md:py-4`. Sem ele, janela
+desktop mais BAIXA que ~560px (snap de meia tela, zoom 175-200% — quem mais usa zoom é quem
+menos pode perder o controle) fazia o piso do frame estourar contra o `overflow-hidden` e o PÉ
+do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medido: 2px visíveis a
+500px; com o min-height, a página rola só o déficit de 76px e a barra volta inteira). Contrato
+travado por `tests/main-container.test.tsx` (regime das rotas embarcadas + ramo normal fora do
+regime + o par main↔frames); mexeu no piso de um lado, mexa no outro (o comentário do
+`studio-full-client` aponta o par). **SEGUE o tema da comunidade:** o
 `studio-full-client` lê `useTheme().resolvedTheme` (next-themes) e passa `theme` ao `<StudioEditor>` E ao
 `<ProjectList>` — assim o Estúdio não tem toggle próprio nem destoa do app (sem `theme`, o Studio mostraria
 o toggle e poderia ficar em tema diferente da comunidade). ⚠️ a **CSP** (`next.config.ts`) inclui

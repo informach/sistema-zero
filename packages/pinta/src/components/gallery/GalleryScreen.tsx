@@ -254,7 +254,11 @@ export function GalleryScreen(): JSX.Element {
     if (zipping) return
     // Expande na hora do download, sobre a galeria VIVA (nunca a lista filtrada
     // da tela): mapa marcado leva o tileset dele junto — sem as peças o
-    // restauro recusaria o mapa.
+    // restauro recusaria o mapa. O snapshot também congela a IDENTIDADE da
+    // marcação no clique: se a criança mexer na seleção durante um zip demorado
+    // (Limpar, Cancelar + recomeçar, marcar mais um), o auto-fechar do sucesso
+    // NÃO pode engolir a sessão nova — todo toggle cria um Set novo, então
+    // identidade igual = ninguém tocou.
     const markedAtClick = captureSelection()
     const expanded = expandSelection(gallery.getState().assets, markedAtClick.ids)
     if (expanded.assets.length === 0) {
@@ -263,10 +267,6 @@ export function GalleryScreen(): JSX.Element {
       showToast(COPY.gallery.drawingGone)
       return
     }
-    // Identidade da marcação NO CLIQUE: se a criança mexer na seleção durante
-    // um zip demorado (Limpar, Cancelar + recomeçar, marcar mais um), o
-    // auto-fechar do sucesso NÃO pode engolir a sessão nova — todo toggle cria
-    // um Set novo, então identidade igual = ninguém tocou.
     setZipping(true)
     try {
       const bytes = await zipGallery(expanded.assets, 'pack')
@@ -626,45 +626,53 @@ export function GalleryScreen(): JSX.Element {
       )}
 
       {selectionMode ? (
-        // Barra do pack: STICKY no rodapé do scroll root (o header ROLA com o
-        // conteúdo — a barra não pode sumir junto). As margens negativas cobrem
-        // o padding do root para o fundo ir de borda a borda. O contador NÃO é
-        // role=status: o da busca é o único status da tela.
-        <div className="-mx-4 sm:-mx-6 sticky bottom-0 z-10 mt-4 border-t-2 border-pin-border bg-pin-surface px-4 py-2 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
-            <div className="flex items-center gap-2">
-              {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
-                  quem sai do modo é o Cancelar ao lado. */}
-              <Button
-                variant="ghost"
-                disabled={selectedCount === 0}
-                onClick={(event) => {
-                  clearSelection()
-                  // Com 0 marcados este botão vira disabled e o navegador
-                  // derrubaria o foco no body (criança de teclado se perde):
-                  // manda para o Cancelar, o irmão SEGUINTE nesta barra.
-                  const next = event.currentTarget.nextElementSibling
-                  if (next instanceof HTMLElement) next.focus()
-                }}
-              >
-                {COPY.gallery.selectionClear}
-              </Button>
-              <Button variant="ghost" onClick={exitSelection}>
-                {COPY.gallery.cancel}
-              </Button>
-              <Button
-                variant="primary"
-                disabled={zipping || selectedCount === 0}
-                aria-busy={zipping}
-                onClick={() => void handleDownloadSelection()}
-              >
-                <Download aria-hidden="true" className="size-4" />
-                {COPY.gallery.downloadSelection}
-              </Button>
+        <>
+          {/* Espaçador flex: com galeria CURTA (sem rolagem interna) o mt-auto
+              absorve a sobra da coluna e a barra ASSENTA no rodapé do rolável
+              (sem ele, o sticky ficava solto logo abaixo da grade — pedido dela
+              26/08). Com rolagem ele vira 0 e o sticky faz o de sempre; o mt-4
+              da barra preserva o respiro no fim do scroll. */}
+          <div aria-hidden="true" className="mt-auto" />
+          {/* Barra do pack: STICKY no rodapé do scroll root (o header ROLA com o
+              conteúdo — a barra não pode sumir junto). As margens negativas cobrem
+              o padding do root para o fundo ir de borda a borda. O contador NÃO é
+              role=status: o da busca é o único status da tela. */}
+          <div className="-mx-4 sm:-mx-6 sticky bottom-0 z-10 mt-4 border-t-2 border-pin-border bg-pin-surface px-4 py-2 sm:px-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
+              <div className="flex items-center gap-2">
+                {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
+                    quem sai do modo é o Cancelar ao lado. */}
+                <Button
+                  variant="ghost"
+                  disabled={selectedCount === 0}
+                  onClick={(event) => {
+                    clearSelection()
+                    // Com 0 marcados este botão vira disabled e o navegador
+                    // derrubaria o foco no body (criança de teclado se perde):
+                    // manda para o Cancelar, o irmão SEGUINTE nesta barra.
+                    const next = event.currentTarget.nextElementSibling
+                    if (next instanceof HTMLElement) next.focus()
+                  }}
+                >
+                  {COPY.gallery.selectionClear}
+                </Button>
+                <Button variant="ghost" onClick={exitSelection}>
+                  {COPY.gallery.cancel}
+                </Button>
+                <Button
+                  variant="primary"
+                  disabled={zipping || selectedCount === 0}
+                  aria-busy={zipping}
+                  onClick={() => void handleDownloadSelection()}
+                >
+                  <Download aria-hidden="true" className="size-4" />
+                  {COPY.gallery.downloadSelection}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </>
       ) : null}
 
       {/* Montado só quando aberto: o passo de estilo nasce do lastStyle ATUAL. */}
