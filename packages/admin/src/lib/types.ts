@@ -1252,6 +1252,9 @@ export interface AmbassadorRedemptionView {
   status: 'pending' | 'completed' | 'failed'
   /** Terminal (ex.: `grant_conflict`) — aflora ao humano, nunca retry infinito. */
   failedReason: string | null
+  /** Último erro de upstream (`etapa:status[:código]`) — diagnóstico do pending preso. */
+  lastError?: string | null
+  attemptCount?: number
   createdAt: string
   completedAt: string | null
 }

@@ -18,6 +18,7 @@ import {
 import { Copy, Eye, Gift, Mail, Plus, Search } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -68,15 +69,6 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
   useEffect(() => {
     void load()
   }, [load])
-
-  async function copyText(text: string, label: string) {
-    try {
-      await navigator.clipboard.writeText(text)
-      toast.success(`${label} copiado.`)
-    } catch {
-      window.prompt('Copie o texto abaixo:', text)
-    }
-  }
 
   async function openDetail(id: string) {
     try {
@@ -272,7 +264,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         <AmbassadorDetailDialog
           detail={detail}
           onClose={() => setDetailOpen(false)}
-          onCopy={copyText}
+          onCopy={copyToClipboard}
         />
       )}
 
@@ -372,6 +364,11 @@ function AmbassadorDetailDialog({
       <div className="space-y-5">
         <div className="space-y-2 text-sm">
           <p className="text-muted-foreground">{a.email}</p>
+          <p className="text-xs text-muted-foreground">
+            {a.linkEmailSentAt
+              ? `E-mail do link enviado em ${formatDate(a.linkEmailSentAt)}.`
+              : 'O e-mail do link ainda não foi enviado — copie a página abaixo e mande por fora.'}
+          </p>
           {a.shareUrl && (
             <LinkRow label="Link de bolsa (compartilhável)" value={a.shareUrl} onCopy={onCopy} />
           )}
@@ -411,11 +408,20 @@ function AmbassadorDetailDialog({
                         {r.status === 'completed' ? (
                           <Badge className="bg-success/15 text-success-foreground">Concluído</Badge>
                         ) : r.status === 'failed' ? (
-                          <Badge variant="destructive" title={r.failedReason ?? undefined}>
+                          <Badge variant="destructive" title={r.lastError ?? undefined}>
                             Falhou{r.failedReason ? ` (${r.failedReason})` : ''}
                           </Badge>
                         ) : (
                           <Badge variant="muted">Pendente</Badge>
+                        )}
+                        {r.status !== 'completed' && r.lastError && (
+                          <div
+                            className="mt-1 max-w-52 truncate text-xs text-muted-foreground"
+                            title={r.lastError}
+                          >
+                            {r.lastError}
+                            {r.attemptCount ? ` · ${r.attemptCount} tentativa(s)` : ''}
+                          </div>
                         )}
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
