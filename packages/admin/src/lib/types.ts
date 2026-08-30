@@ -1216,3 +1216,47 @@ export interface ChallengeThemesAdminView {
   builtin: ChallengeThemeView[]
   custom: ChallengeThemeAdminView[]
 }
+
+// ── Indicações e bolsas (@sistemazero/referrals, 08/2026) ─────────────────────
+
+export interface AmbassadorView {
+  id: string
+  name: string
+  email: string
+  code: string | null
+  status: 'active' | 'disabled'
+  /** Capability-URL da página do embaixador (magic-link do e-mail). */
+  pageUrl: string | null
+  /** Link de bolsa que ele compartilha (`/bolsa/<code>`). */
+  shareUrl: string | null
+  linkEmailSentAt: string | null
+  createdAt: string
+}
+
+export interface AmbassadorListItemView {
+  id: string
+  name: string
+  email: string
+  code: string
+  status: 'active' | 'disabled'
+  redemptionsCompleted: number
+  invitesSent: number
+  linkEmailSentAt: string | null
+  createdAt: string
+}
+
+export interface AmbassadorRedemptionView {
+  id: string
+  name: string
+  email: string
+  status: 'pending' | 'completed' | 'failed'
+  /** Terminal (ex.: `grant_conflict`) — aflora ao humano, nunca retry infinito. */
+  failedReason: string | null
+  createdAt: string
+  completedAt: string | null
+}
+
+export interface AmbassadorDetailView {
+  ambassador: AmbassadorView
+  redemptions: AmbassadorRedemptionView[]
+}
