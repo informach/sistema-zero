@@ -63,6 +63,13 @@ describe('postRedeemScholarship (/api/bolsa/resgatar)', () => {
       gateway: fake.gateway,
     })
     expect(missing.status).toBe(404)
+
+    fake.setRedeemResult(429, { error: { code: 'RATE_LIMITED', message: 'Calma' } })
+    const throttled = await postRedeemScholarship(post('/api/bolsa/resgatar', valid), {
+      gateway: fake.gateway,
+    })
+    expect(throttled.status).toBe(429)
+    expect((await readJson(throttled)).error.code).toBe('RATE_LIMITED')
   })
 
   test('gateway fora (502/504) vira 502 GATEWAY_ERROR legível', async () => {

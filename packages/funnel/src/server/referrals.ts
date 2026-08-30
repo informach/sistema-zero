@@ -65,9 +65,9 @@ export async function postRedeemScholarship(
     email,
     ...(telefone ? { phone: telefone } : {}),
   })
-  // 201 completed · 202 processing · 404 código · 409 já-resgatada/terminal.
-  if (res.status === 201 || res.status === 202) return json(res.body, res.status)
-  return passthrough(res, [404, 409], deps.log, 'redeem')
+  // 201 completed · 202 processing · 404 código · 409 já-resgatada/terminal ·
+  // 429 teto do gateway. Sucesso e erro conhecido passam pelo MESMO cano.
+  return passthrough(res, [201, 202, 404, 409, 429], deps.log, 'redeem')
 }
 
 /** POST /api/embaixador/convites — convite de bolsa enviado pela plataforma. */
@@ -81,6 +81,6 @@ export async function postAmbassadorInvite(
   const { token, nome, email } = parsed.data
   const res = await deps.gateway.createAmbassadorInvite(token, { name: nome, email })
   if (res.status === 202) return json({ ok: true }, 202)
-  // 404 token · 409 já-convidado/já-resgatou · 429 cap diário.
+  // 404 token · 409 já-convidado/já-resgatou · 429 cap diário/teto do gateway.
   return passthrough(res, [404, 409, 429], deps.log, 'invite')
 }

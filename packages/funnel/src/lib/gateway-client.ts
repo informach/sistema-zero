@@ -24,6 +24,12 @@ export interface GatewayClientOptions {
 
 const DEFAULT_TIMEOUT_MS = 10_000
 const PAYMENT_CREATE_TIMEOUT_MS = 40_000
+/**
+ * O resgate da bolsa encadeia 3 S2S no referrals (conta → grant → e-mail) e o
+ * gateway dá 45s à rota — com o default de 10s o funil abortava um resgate VIVO
+ * no meio (o lease de 90s ainda seguraria a retomada, mas o usuário via erro).
+ */
+const REDEEM_TIMEOUT_MS = 45_000
 
 export interface GatewayResult<T = unknown> {
   status: number
@@ -477,7 +483,7 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       return requestJson(
         `${opts.baseUrl}${path}`,
         { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
-        timeoutMs,
+        REDEEM_TIMEOUT_MS,
       )
     },
   }

@@ -22,6 +22,14 @@ describe('isRateLimitedGetPath', () => {
     expect(isRateLimitedGetPath('/api/leads')).toBe(true)
   })
 
+  test('landings de indicacao entram no teto — inclusive os paths NUS', () => {
+    expect(isRateLimitedGetPath('/bolsa/vo-x7k2')).toBe(true)
+    expect(isRateLimitedGetPath('/embaixador/tok123')).toBe(true)
+    expect(isRateLimitedGetPath('/bolsa')).toBe(true)
+    expect(isRateLimitedGetPath('/embaixador')).toBe(true)
+    expect(isRateLimitedGetPath('/bolsao-de-ofertas')).toBe(false)
+  })
+
   test('nao limita paginas publicas que nao escrevem nem chamam gateway', () => {
     expect(isRateLimitedGetPath('/pro/no-comando-da-ia/quiz')).toBe(false)
     expect(isRateLimitedGetPath('/politica-de-privacidade')).toBe(false)

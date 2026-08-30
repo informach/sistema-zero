@@ -60,6 +60,8 @@ export default function BolsaResgate({ code, referrerName }: BolsaResgateProps) 
           setErroGeral(
             'Não conseguimos concluir o resgate para esse e-mail. Fale com a gente em contato@sistemazero.com.br que resolvemos rapidinho.',
           )
+        } else if (err.status === 429) {
+          setErroGeral('Muita gente resgatando agora. Espere um minutinho e tente de novo.')
         } else {
           setErroGeral('Não foi possível concluir agora. Tente de novo em instantes.')
         }
