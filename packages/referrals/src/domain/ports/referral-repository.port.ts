@@ -37,6 +37,8 @@ export interface RedemptionRecord {
   welcomeSentAt: Date | null
   status: RedemptionStatus
   failedReason: string | null
+  /** Último erro de upstream (diagnóstico do pending preso — aflora no admin). */
+  lastError: string | null
   attemptCount: number
   completedAt: Date | null
   createdAt: Date
@@ -100,6 +102,14 @@ export interface ReferralRepository {
   rotatePageToken(id: string, pageToken: string): Promise<boolean>
   /** Desativa/reativa o código do embaixador junto com ele. */
   setAmbassadorCodeStatus(ambassadorId: string, status: 'active' | 'disabled'): Promise<void>
+  /**
+   * PATCH atômico do embaixador (status e/ou token) — o código acompanha o
+   * status na MESMA transação (sem janela "embaixador off, código on").
+   */
+  updateAmbassador(
+    id: string,
+    patch: { status?: AmbassadorStatus; pageToken?: string },
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null>
 
   // ── Códigos ───────────────────────────────────────────────────────────────
   findCodeByCode(code: string): Promise<CodeRecord | null>
@@ -125,6 +135,8 @@ export interface ReferralRepository {
   /** granted_at + status completed + completed_at (o acesso é o produto). */
   markRedemptionGranted(id: string, when: Date): Promise<void>
   markRedemptionFailed(id: string, reason: string, lastError: string | null): Promise<void>
+  /** Grava o último erro de upstream SEM mudar o status (pending segue retryável). */
+  recordRedemptionError(id: string, lastError: string): Promise<void>
   /** Claim atômico do welcome (UPDATE ... WHERE welcome_sent_at IS NULL RETURNING). */
   claimRedemptionWelcome(id: string, when: Date): Promise<boolean>
   /** Libera o claim SÓ quando nada foi emitido (falha na emissão do token). */

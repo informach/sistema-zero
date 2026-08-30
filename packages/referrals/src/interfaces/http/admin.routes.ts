@@ -1,11 +1,13 @@
 import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
+import { EMAIL_PATTERN } from '../../domain/codes'
 import type { RedemptionRecord } from '../../domain/ports/referral-repository.port'
 import { assertInternalCaller, requireAdmin } from './auth'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-const EMAIL_PATTERN = '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+// String (não RegExp.source): o `pattern` do TypeBox compila SEM flags — um /i
+// perdido rejeitaria uuid maiúsculo com 422.
+const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
 export interface AdminRoutesDeps {
   ambassadors: AmbassadorAdminService
@@ -21,6 +23,8 @@ function toRedemptionView(r: RedemptionRecord) {
     email: r.email,
     status: r.status,
     failedReason: r.failedReason,
+    lastError: r.lastError,
+    attemptCount: r.attemptCount,
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt?.toISOString() ?? null,
   }
@@ -43,7 +47,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       // corpo malformado de chamador sem token não pode vazar a forma da rota.
       .onTransform(({ headers, request }) => {
         const method = request.method.toUpperCase()
-        guard(headers, method === 'POST' || method === 'PATCH')
+        // Fail-closed: tudo que não é leitura exige role de ESCRITA — um verbo
+        // novo (PUT/DELETE) nasce protegido em vez de cair na régua de leitura.
+        guard(headers, method !== 'GET' && method !== 'HEAD')
       })
       .post(
         '/ambassadors',
@@ -104,7 +110,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
             redemptions: detail.redemptions.map(toRedemptionView),
           }
         },
-        { params: t.Object({ id: t.String({ pattern: UUID_RE.source }) }) },
+        { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
       )
       .post(
         '/ambassadors/:id/resend-link',
@@ -117,7 +123,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           }
           return { sent: result.kind === 'sent' }
         },
-        { params: t.Object({ id: t.String({ pattern: UUID_RE.source }) }) },
+        { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
       )
       .patch(
         '/ambassadors/:id',
@@ -134,7 +140,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return { ambassador: updated }
         },
         {
-          params: t.Object({ id: t.String({ pattern: UUID_RE.source }) }),
+          params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }),
           body: t.Object({
             status: t.Optional(t.Union([t.Literal('active'), t.Literal('disabled')])),
             rotateToken: t.Optional(t.Boolean()),

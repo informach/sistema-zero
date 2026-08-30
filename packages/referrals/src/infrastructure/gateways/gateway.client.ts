@@ -110,8 +110,11 @@ export function createReferralsGatewayClient(opts: GatewayClientOptions): Referr
     },
 
     async grantManualOffer(input: GrantManualOfferInput): Promise<GatewayResult> {
-      const { deliveryId, ...body } = input
-      const rawBody = JSON.stringify(body)
+      const { deliveryId, ...rest } = input
+      // `mode` é OBRIGATÓRIO no DTO do members (t.Literal('offer')) — é detalhe
+      // do WIRE, não do domínio, por isso injetado aqui e não na porta. (Achado
+      // do full review: sem ele, TODA bolsa era reprovada pela validação.)
+      const rawBody = JSON.stringify({ mode: 'offer', ...rest })
       const path = '/members/webhooks/grant-manual'
       return requestJson(`${opts.baseUrl}${path}`, {
         method: 'POST',

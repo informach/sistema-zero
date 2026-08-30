@@ -69,7 +69,15 @@ export class RedeemScholarshipService {
       name,
       phone,
     })
-    if (!created && redemption.status === 'completed') return { kind: 'already_redeemed' }
+    if (!created && redemption.status === 'completed') {
+      // Grant já concluiu mas o welcome pode ter ficado pelo caminho (crash entre
+      // o completed e o e-mail): retoma SÓ o e-mail. O claim atômico do welcome
+      // já é o mutex desta etapa — dispensa o lease (que exclui completed).
+      if (!redemption.welcomeSentAt) {
+        await this.sendWelcome(redemption, redemption.buyerCreated === true, codeRecord.displayName)
+      }
+      return { kind: 'already_redeemed' }
+    }
 
     const leaseUntil = new Date(this.now().getTime() + this.opts.leaseMs)
     const leased = await this.repo.acquireRedemptionLease(redemption.id, leaseUntil, this.now())
@@ -108,6 +116,9 @@ export class RedeemScholarshipService {
       })
       const resolvedUserId = readString(res.body, 'userId')
       if ((res.status !== 200 && res.status !== 201) || !resolvedUserId) {
+        await this.repo
+          .recordRedemptionError(redemption.id, upstreamErrorSummary('ensure-buyer', res))
+          .catch(() => {})
         this.logger.warn('referrals.redeem_ensure_buyer_failed', {
           redemptionId: redemption.id,
           status: res.status,
@@ -137,10 +148,27 @@ export class RedeemScholarshipService {
         return { kind: 'failed', reason: 'grant_conflict' }
       }
       if (res.status < 200 || res.status >= 300) {
-        this.logger.warn('referrals.redeem_grant_failed', {
-          redemptionId: redemption.id,
-          status: res.status,
-        })
+        // O pending fica retryável, mas o motivo aflora no admin (lastError) —
+        // sem isso um SCHOLARSHIP_OFFER_SLUG errado seria invisível até alguém
+        // ler os logs. Oferta não resolvida/vazia é MISCONFIG (retry nunca cura)
+        // → ERROR (alertável via espelho do Sentry).
+        await this.repo
+          .recordRedemptionError(redemption.id, upstreamErrorSummary('grant', res))
+          .catch(() => {})
+        const errorCode = readErrorCode(res.body)
+        const misconfigured = errorCode === 'OFFER_UNRESOLVED' || errorCode === 'OFFER_EMPTY'
+        if (misconfigured) {
+          this.logger.error('referrals.redeem_grant_misconfigured', {
+            redemptionId: redemption.id,
+            status: res.status,
+            errorCode,
+          })
+        } else {
+          this.logger.warn('referrals.redeem_grant_failed', {
+            redemptionId: redemption.id,
+            status: res.status,
+          })
+        }
         return { kind: 'upstream_error' }
       }
       await this.repo.markRedemptionGranted(redemption.id, this.now())
@@ -148,14 +176,13 @@ export class RedeemScholarshipService {
 
     // 3) E-mail (best-effort — o ACESSO é o produto; fallback = "esqueci minha
     //    senha"). Claim atômico: só uma execução emite token/envia.
-    await this.sendWelcome(redemption, userId, buyerCreated === true, referrerName)
+    await this.sendWelcome(redemption, buyerCreated === true, referrerName)
 
     return { kind: 'completed' }
   }
 
   private async sendWelcome(
     redemption: RedemptionRecord,
-    _userId: string,
     buyerCreated: boolean,
     referrerName: string,
   ): Promise<void> {
@@ -231,4 +258,22 @@ function readBool(body: unknown, key: string): boolean {
   return Boolean(
     body && typeof body === 'object' && (body as Record<string, unknown>)[key] === true,
   )
+}
+
+/** Código de erro do envelope `{error: {code}}` (gateway/serviços) ou `{error: '<code>'}` (members). */
+function readErrorCode(body: unknown): string | null {
+  if (!body || typeof body !== 'object') return null
+  const err = (body as { error?: unknown }).error
+  if (typeof err === 'string' && err.length > 0) return err
+  if (err && typeof err === 'object') {
+    const code = (err as { code?: unknown }).code
+    if (typeof code === 'string' && code.length > 0) return code
+  }
+  return null
+}
+
+/** Resumo compacto `etapa:status[:código]` gravado em `last_error` (diagnóstico do admin). */
+function upstreamErrorSummary(step: string, res: GatewayResult): string {
+  const code = readErrorCode(res.body)
+  return (code ? `${step}:${res.status}:${code}` : `${step}:${res.status}`).slice(0, 300)
 }

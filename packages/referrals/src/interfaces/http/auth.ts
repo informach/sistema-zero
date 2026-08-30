@@ -1,5 +1,5 @@
-import { timingSafeEqual } from 'node:crypto'
 import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+import { safeEqual } from '@sistemazero/core/security'
 
 const ADMIN_ROLES = new Set(['superadmin', 'admin', 'staff'])
 const ADMIN_WRITE_ROLES = new Set(['superadmin', 'admin'])
@@ -22,12 +22,6 @@ export function requireAdmin(
   if (status !== 'active') throw new ForbiddenError('Conta inativa')
   const allowed = opts.write ? ADMIN_WRITE_ROLES : ADMIN_ROLES
   if (!allowed.has(role)) throw new ForbiddenError('Permissão insuficiente')
-}
-
-function safeEqual(a: string, b: string): boolean {
-  const ab = Buffer.from(a)
-  const bb = Buffer.from(b)
-  return ab.length === bb.length && timingSafeEqual(ab, bb)
 }
 
 /**

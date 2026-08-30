@@ -2,12 +2,10 @@ import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
-import { isValidCode, normalizeCode } from '../../domain/codes'
+import { EMAIL_PATTERN, isValidCode, normalizeCode } from '../../domain/codes'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { assertInternalCaller } from './auth'
 
-// E-mail: validação estrutural simples (o auth/messaging validam de novo).
-const EMAIL_PATTERN = '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
 const TOKEN_PATTERN = '^[A-Za-z0-9_-]{16,64}$'
 
 export interface InternalRoutesDeps {

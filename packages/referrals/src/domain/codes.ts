@@ -12,6 +12,12 @@ export const CODE_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789'
 /** Acentos combinantes do NFD (U+0300–U+036F) — removidos ao gerar slug. */
 const COMBINING_MARKS_RE = /[\u0300-\u036f]/g
 
+/**
+ * Valida\u00e7\u00e3o ESTRUTURAL de e-mail p/ os DTOs da borda (o auth/messaging validam
+ * de novo). Fonte \u00fanica do pacote \u2014 as rotas importam daqui.
+ */
+export const EMAIL_PATTERN = '^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$'
+
 export function isValidCode(value: string): boolean {
   return CODE_RE.test(value)
 }

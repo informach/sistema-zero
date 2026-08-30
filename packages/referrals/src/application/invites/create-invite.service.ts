@@ -48,12 +48,16 @@ export class CreateInviteService {
     const email = normalizeEmail(input.email)
     const name = input.name.trim().slice(0, 120)
 
-    // Já resgatou (qualquer estado) → convidar de novo só confundiria.
-    if (await this.repo.findRedemptionByEmail(email)) return { kind: 'already_redeemed' }
-
-    // Cap diário (janela móvel de 24h — simples e sem fuso).
+    // Cap diário = janela móvel de 24h (simples e sem fuso).
     const since = new Date(this.now().getTime() - 24 * 3600_000)
-    const sentToday = await this.repo.countInvitesSince(ambassador.id, since)
+    const [existingRedemption, sentToday] = await Promise.all([
+      this.repo.findRedemptionByEmail(email),
+      this.repo.countInvitesSince(ambassador.id, since),
+    ])
+    // Só bolsa CONCLUÍDA barra o convite — pending/failed é resgate que não
+    // aconteceu (upstream fora, desistiu no meio): o e-mail com o link é
+    // justamente o empurrão pra retomada.
+    if (existingRedemption?.status === 'completed') return { kind: 'already_redeemed' }
     if (sentToday >= this.opts.dailyLimit) return { kind: 'daily_limit' }
 
     const { created, invite } = await this.repo.insertInvite({

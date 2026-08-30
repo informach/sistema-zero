@@ -21,7 +21,7 @@ import type {
 export class InMemoryReferralRepository implements ReferralRepository {
   ambassadors: (AmbassadorRecord & { updatedAt: Date })[] = []
   codes: (CodeRecord & { createdAt: Date })[] = []
-  redemptions: (RedemptionRecord & { lastError: string | null })[] = []
+  redemptions: RedemptionRecord[] = []
   invites: InviteRecord[] = []
   /** Força UMA colisão de código no próximo createAmbassadorWithCode. */
   failNextCodeInsert = false
@@ -162,6 +162,21 @@ export class InMemoryReferralRepository implements ReferralRepository {
     for (const c of this.codes) if (c.ambassadorId === ambassadorId) c.status = status
   }
 
+  async updateAmbassador(
+    id: string,
+    patch: { status?: AmbassadorStatus; pageToken?: string },
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    const a = this.ambassadors.find((x) => x.id === id)
+    if (!a) return null
+    if (patch.status !== undefined) {
+      a.status = patch.status
+      await this.setAmbassadorCodeStatus(id, patch.status)
+    }
+    if (patch.pageToken !== undefined) a.pageToken = patch.pageToken
+    a.updatedAt = new Date()
+    return { ...a, code: this.codes.find((c) => c.ambassadorId === id)?.code ?? null }
+  }
+
   async findCodeByCode(code: string): Promise<CodeRecord | null> {
     return this.codes.find((c) => c.code === code) ?? null
   }
@@ -174,7 +189,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
     const existing = this.redemptions.find((r) => r.email === input.email)
     if (existing) return { created: false, redemption: existing }
-    const redemption: RedemptionRecord & { lastError: string | null } = {
+    const redemption: RedemptionRecord = {
       id: randomUUID(),
       codeId: input.codeId,
       email: input.email,
@@ -229,6 +244,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       r.status = 'completed'
       r.completedAt = when
       r.failedReason = null
+      r.lastError = null
     }
   }
 
@@ -239,6 +255,11 @@ export class InMemoryReferralRepository implements ReferralRepository {
       r.failedReason = reason
       r.lastError = lastError
     }
+  }
+
+  async recordRedemptionError(id: string, lastError: string): Promise<void> {
+    const r = this.redemptions.find((x) => x.id === id)
+    if (r) r.lastError = lastError
   }
 
   async claimRedemptionWelcome(id: string, when: Date): Promise<boolean> {

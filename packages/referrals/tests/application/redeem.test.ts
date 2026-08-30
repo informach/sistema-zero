@@ -128,6 +128,33 @@ describe('RedeemScholarshipService', () => {
     expect(repo.redemptions[0]!.welcomeSentAt).not.toBeNull()
   })
 
+  test('completed SEM welcome → re-submissão RETOMA só o e-mail (409 + envio)', async () => {
+    // Crash entre o grant e o welcome: token falhou → claim liberado, completed.
+    gateway.passwordTokenResult = { status: 503, body: {} }
+    await service.execute(input)
+    expect(repo.redemptions[0]!.welcomeSentAt).toBeNull()
+
+    gateway.passwordTokenResult = {
+      status: 201,
+      body: { token: 'tok-novo', expiresAt: new Date(Date.now() + 86_400_000).toISOString() },
+    }
+    const again = await service.execute(input)
+    expect(again.kind).toBe('already_redeemed') // UX: a bolsa JÁ é dela
+    const r = repo.redemptions[0]!
+    expect(r.welcomeSentAt).not.toBeNull() // ...mas o welcome saiu agora
+    expect(gateway.callsOf('sendEmail')).toHaveLength(1)
+    expect(gateway.callsOf('grantManualOffer')).toHaveLength(1) // grant NÃO repetiu
+  })
+
+  test('grant com OFFER_UNRESOLVED → lastError gravado (diagnóstico no admin)', async () => {
+    gateway.grantResult = { status: 502, body: { ok: false, error: 'OFFER_UNRESOLVED' } }
+    const result = await service.execute(input)
+    expect(result.kind).toBe('upstream_error')
+    const r = repo.redemptions[0]!
+    expect(r.status).toBe('pending') // segue retryável
+    expect(r.lastError).toBe('grant:502:OFFER_UNRESOLVED')
+  })
+
   test('lease em posse de outra execução → processing (202)', async () => {
     await repo.insertRedemption({
       codeId: repo.codes[0]!.id,

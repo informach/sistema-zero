@@ -147,17 +147,16 @@ export class AmbassadorAdminService {
     id: string,
     input: { status?: 'active' | 'disabled'; rotateToken?: boolean },
   ): Promise<AmbassadorView | null> {
-    const existing = await this.repo.findAmbassadorById(id)
-    if (!existing) return null
-    if (input.status && input.status !== existing.status) {
-      await this.repo.setAmbassadorStatus(id, input.status)
-      // O código acompanha o embaixador (desativado = landing 404 uniforme).
-      await this.repo.setAmbassadorCodeStatus(id, input.status)
+    const patch: { status?: 'active' | 'disabled'; pageToken?: string } = {}
+    if (input.status) patch.status = input.status
+    if (input.rotateToken) patch.pageToken = generatePageToken()
+    if (patch.status === undefined && patch.pageToken === undefined) {
+      const existing = await this.repo.findAmbassadorById(id)
+      return existing ? this.toView(existing) : null
     }
-    if (input.rotateToken) {
-      await this.repo.rotatePageToken(id, generatePageToken())
-    }
-    const updated = await this.repo.findAmbassadorById(id)
+    // Embaixador + código na MESMA transação (desativado = landing 404
+    // uniforme) — sem janela "embaixador off, código ainda on".
+    const updated = await this.repo.updateAmbassador(id, patch)
     return updated ? this.toView(updated) : null
   }
 }

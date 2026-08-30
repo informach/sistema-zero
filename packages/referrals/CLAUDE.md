@@ -39,16 +39,25 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 1. Código ativo? (404 **UNIFORME** p/ inexistente OU desativado — não vazar qual.)
 2. Normaliza e-mail (lower/trim) **ANTES** do UNIQUE e de qualquer S2S.
-3. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409;
+3. Claim da bolsa: `INSERT … ON CONFLICT (email) DO NOTHING`; conflito → `completed` = 409 —
+   mas se `welcome_sent_at` for NULL, **RETOMA só o e-mail antes do 409** (crash entre o grant e
+   o welcome; o claim atômico do welcome é o mutex — dispensa lease, que exclui completed);
    `pending/failed` = **RETOMADA por etapas** (colunas `user_id`/`granted_at`/`welcome_sent_at`
    pulam o que já concluiu; o 1º claim vence o `code_id`).
 4. **Lease** em coluna (`processing_until`, `REDEMPTION_LEASE_MS` 90s): só uma execução roda;
    segunda submissão → 202 `processing`; crash no meio expira sozinho.
 5. `POST /auth/internal/ensure-buyer` (via gateway, consumer `referrals`) com senha descartável e
    `source: 'scholarship'` → `{userId, created}`.
-6. `POST /members/webhooks/grant-manual` com `x-delivery-id: scholarship:<id>` **ESTÁVEL** +
-   `sourceId: 'scholarship:<id>'`. 409 = **terminal** (`failed_reason: grant_conflict`, aflora no
-   admin — nunca retry infinito); 5xx = solta lease + 502 (o usuário re-tenta; tudo idempotente).
+6. `POST /members/webhooks/grant-manual` — o CLIENTE injeta `mode: 'offer'` no corpo (detalhe do
+   WIRE, obrigatório no DTO do members; travado por `tests/unit/gateway-client.test.ts` contra o
+   cliente REAL — os fakes não pegariam) — com `x-delivery-id: scholarship:<id>` **ESTÁVEL** +
+   `sourceId: 'scholarship:<id>'` (a idempotência do members vira
+   `manual:userId:productId:scholarship:<id>` — cortesia admin do mesmo produto NUNCA colide com
+   a bolsa). 409 = **terminal** (`failed_reason: grant_conflict`, aflora no admin — nunca retry
+   infinito; o members NÃO marca a entrega, então destravar lá + re-submeter aqui conclui);
+   5xx = grava `last_error` (`grant:<status>[:código]`, some no sucesso) + solta lease + 502
+   (o usuário re-tenta; tudo idempotente). `OFFER_UNRESOLVED`/`OFFER_EMPTY` = MISCONFIG
+   (slug errado) → log **ERROR** alertável, não warn.
 7. Welcome com **claim atômico** (`welcome_sent_at`, molde `welcome-email.ts` do funil):
    conta NOVA → password-token (falha na emissão → release do claim; **emitido → NUNCA liberar**,
    reemitir mataria o link entregue — o auth consome tokens pendentes) → template
@@ -61,11 +70,12 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
   fail-closed). Rotas: POST/GET `ambassadors`, GET `:id`, POST `:id/resend-link`
   (Idempotency-Key versionada por `link_email_count`), PATCH `:id` {status, rotateToken}.
   Desativar o embaixador desativa o CÓDIGO junto.
-- `/referrals/internal/*` — consumidas pelo FUNIL (HMAC de borda lá): GET `codes/:code`,
-  GET `ambassadors/by-token/:token`, POST `…/invites` (202 | 409 INVITE_ALREADY_SENT |
-  409 EMAIL_ALREADY_REDEEMED | 429 cap diário 50/24h móvel), POST `redemptions`
-  (201 completed | 202 processing | 404 | 409 SCHOLARSHIP_ALREADY_REDEEMED |
-  409 SCHOLARSHIP_FAILED | 502).
+- `/referrals/internal/*` — consumidas pelo FUNIL (HMAC de borda lá; no gateway as 4 rotas têm
+  `allowedConsumers: ['funnel']`): GET `codes/:code`, GET `ambassadors/by-token/:token`,
+  POST `…/invites` (202 | 409 INVITE_ALREADY_SENT | 409 EMAIL_ALREADY_REDEEMED — SÓ bolsa
+  `completed` barra; pending/failed NÃO (o e-mail com o link é o empurrão da retomada) |
+  429 cap diário 50/24h móvel), POST `redemptions` (201 completed | 202 processing | 404 |
+  409 SCHOLARSHIP_ALREADY_REDEEMED | 409 SCHOLARSHIP_FAILED | 502).
 - `/healthz` · `/readyz` (probe select 1 — healthcheck do Railway) · `/metrics`
   ({redemptionsByStatus}, token obrigatório em prod).
 - Validação: envelope FIXO no `VALIDATION` (nunca ecoa input). Convites: dados MÍNIMOS

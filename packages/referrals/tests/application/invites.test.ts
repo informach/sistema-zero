@@ -57,14 +57,26 @@ describe('CreateInviteService', () => {
     )
   })
 
-  test('e-mail que já resgatou a bolsa → already_redeemed', async () => {
+  test('bolsa CONCLUÍDA → already_redeemed', async () => {
+    const { redemption } = await repo.insertRedemption({
+      codeId: repo.codes[0]!.id,
+      email: 'paula@example.com',
+      name: 'Paula',
+      phone: null,
+    })
+    await repo.markRedemptionGranted(redemption.id, new Date())
+    expect((await service.execute(input)).kind).toBe('already_redeemed')
+  })
+
+  test('resgate PENDENTE não barra o convite (o link é o empurrão da retomada)', async () => {
     await repo.insertRedemption({
       codeId: repo.codes[0]!.id,
       email: 'paula@example.com',
       name: 'Paula',
       phone: null,
     })
-    expect((await service.execute(input)).kind).toBe('already_redeemed')
+    expect((await service.execute(input)).kind).toBe('sent')
+    expect(gateway.callsOf('sendEmail')).toHaveLength(1)
   })
 
   test('cap diário → daily_limit', async () => {

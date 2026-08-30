@@ -12,7 +12,7 @@ import type {
   ReferralRepository,
 } from '../../../domain/ports/referral-repository.port'
 import type { Database } from './db'
-import { isUniqueViolation } from './pg-errors'
+import { escapeLike, isUniqueViolation } from './pg-errors'
 import { ambassadors, codes, invites, scholarshipRedemptions } from './schema'
 
 type AmbassadorRow = typeof ambassadors.$inferSelect
@@ -59,6 +59,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     welcomeSentAt: row.welcomeSentAt,
     status: row.status as RedemptionStatus,
     failedReason: row.failedReason,
+    lastError: row.lastError,
     attemptCount: row.attemptCount,
     completedAt: row.completedAt,
     createdAt: row.createdAt,
@@ -140,47 +141,45 @@ export class DrizzleReferralRepository implements ReferralRepository {
         )
       : undefined
 
-    const rows = await this.db
-      .select({ ambassador: ambassadors, code: codes })
-      .from(ambassadors)
-      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
-      .where(where)
-      .orderBy(desc(ambassadors.createdAt))
-      .limit(opts.limit)
-      .offset(opts.offset)
-
-    const [{ value: total } = { value: 0 }] = await this.db
-      .select({ value: count() })
-      .from(ambassadors)
-      .where(where)
+    // Página + total independem entre si; contagens dependem só da página.
+    const [rows, [{ value: total } = { value: 0 }]] = await Promise.all([
+      this.db
+        .select({ ambassador: ambassadors, code: codes })
+        .from(ambassadors)
+        .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+        .where(where)
+        .orderBy(desc(ambassadors.createdAt))
+        .limit(opts.limit)
+        .offset(opts.offset),
+      this.db.select({ value: count() }).from(ambassadors).where(where),
+    ])
 
     const ambassadorIds = rows.map((r) => r.ambassador.id)
     const codeIds = rows.flatMap((r) => (r.code ? [r.code.id] : []))
 
-    const redemptionCounts = new Map<string, number>()
-    if (codeIds.length > 0) {
-      const grouped = await this.db
-        .select({ codeId: scholarshipRedemptions.codeId, value: count() })
-        .from(scholarshipRedemptions)
-        .where(
-          and(
-            inArray(scholarshipRedemptions.codeId, codeIds),
-            eq(scholarshipRedemptions.status, 'completed'),
-          ),
-        )
-        .groupBy(scholarshipRedemptions.codeId)
-      for (const g of grouped) redemptionCounts.set(g.codeId, g.value)
-    }
-
-    const inviteCounts = new Map<string, number>()
-    if (ambassadorIds.length > 0) {
-      const grouped = await this.db
-        .select({ ambassadorId: invites.ambassadorId, value: count() })
-        .from(invites)
-        .where(and(inArray(invites.ambassadorId, ambassadorIds), eq(invites.status, 'sent')))
-        .groupBy(invites.ambassadorId)
-      for (const g of grouped) inviteCounts.set(g.ambassadorId, g.value)
-    }
+    const [redemptionGroups, inviteGroups] = await Promise.all([
+      codeIds.length > 0
+        ? this.db
+            .select({ codeId: scholarshipRedemptions.codeId, value: count() })
+            .from(scholarshipRedemptions)
+            .where(
+              and(
+                inArray(scholarshipRedemptions.codeId, codeIds),
+                eq(scholarshipRedemptions.status, 'completed'),
+              ),
+            )
+            .groupBy(scholarshipRedemptions.codeId)
+        : Promise.resolve([]),
+      ambassadorIds.length > 0
+        ? this.db
+            .select({ ambassadorId: invites.ambassadorId, value: count() })
+            .from(invites)
+            .where(and(inArray(invites.ambassadorId, ambassadorIds), eq(invites.status, 'sent')))
+            .groupBy(invites.ambassadorId)
+        : Promise.resolve([]),
+    ])
+    const redemptionCounts = new Map(redemptionGroups.map((g) => [g.codeId, g.value]))
+    const inviteCounts = new Map(inviteGroups.map((g) => [g.ambassadorId, g.value]))
 
     return {
       items: rows.map((r) => ({
@@ -222,23 +221,25 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .limit(1)
     if (!row) return null
 
-    let redemptionsCompleted = 0
-    if (row.code) {
-      const [c] = await this.db
+    const codeId = row.code?.id
+    const [[c] = [], [i]] = await Promise.all([
+      codeId
+        ? this.db
+            .select({ value: count() })
+            .from(scholarshipRedemptions)
+            .where(
+              and(
+                eq(scholarshipRedemptions.codeId, codeId),
+                eq(scholarshipRedemptions.status, 'completed'),
+              ),
+            )
+        : Promise.resolve([]),
+      this.db
         .select({ value: count() })
-        .from(scholarshipRedemptions)
-        .where(
-          and(
-            eq(scholarshipRedemptions.codeId, row.code.id),
-            eq(scholarshipRedemptions.status, 'completed'),
-          ),
-        )
-      redemptionsCompleted = c?.value ?? 0
-    }
-    const [i] = await this.db
-      .select({ value: count() })
-      .from(invites)
-      .where(and(eq(invites.ambassadorId, row.ambassador.id), eq(invites.status, 'sent')))
+        .from(invites)
+        .where(and(eq(invites.ambassadorId, row.ambassador.id), eq(invites.status, 'sent'))),
+    ])
+    const redemptionsCompleted = c?.value ?? 0
 
     return {
       ...toAmbassador(row.ambassador),
@@ -290,6 +291,33 @@ export class DrizzleReferralRepository implements ReferralRepository {
     status: 'active' | 'disabled',
   ): Promise<void> {
     await this.db.update(codes).set({ status }).where(eq(codes.ambassadorId, ambassadorId))
+  }
+
+  async updateAmbassador(
+    id: string,
+    patch: { status?: AmbassadorStatus; pageToken?: string },
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    return await this.db.transaction(async (tx) => {
+      const [ambassador] = await tx
+        .update(ambassadors)
+        .set({
+          ...(patch.status !== undefined ? { status: patch.status } : {}),
+          ...(patch.pageToken !== undefined ? { pageToken: patch.pageToken } : {}),
+          updatedAt: sql`now()`,
+        })
+        .where(eq(ambassadors.id, id))
+        .returning()
+      if (!ambassador) return null
+      if (patch.status !== undefined) {
+        await tx.update(codes).set({ status: patch.status }).where(eq(codes.ambassadorId, id))
+      }
+      const [codeRow] = await tx
+        .select({ code: codes.code })
+        .from(codes)
+        .where(eq(codes.ambassadorId, id))
+        .limit(1)
+      return { ...toAmbassador(ambassador), code: codeRow?.code ?? null }
+    })
   }
 
   // ── Códigos ───────────────────────────────────────────────────────────────
@@ -381,6 +409,13 @@ export class DrizzleReferralRepository implements ReferralRepository {
     await this.db
       .update(scholarshipRedemptions)
       .set({ status: 'failed', failedReason: reason, lastError, updatedAt: sql`now()` })
+      .where(eq(scholarshipRedemptions.id, id))
+  }
+
+  async recordRedemptionError(id: string, lastError: string): Promise<void> {
+    await this.db
+      .update(scholarshipRedemptions)
+      .set({ lastError, updatedAt: sql`now()` })
       .where(eq(scholarshipRedemptions.id, id))
   }
 
@@ -489,9 +524,4 @@ export class DrizzleReferralRepository implements ReferralRepository {
     for (const r of rows) out[r.status] = r.value
     return out
   }
-}
-
-/** Escapa curingas do LIKE p/ busca literal (local — evita import circular). */
-function escapeLike(value: string): string {
-  return value.replace(/[\\%_]/g, '\\$&')
 }
