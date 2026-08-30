@@ -755,11 +755,19 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   sourceId?}`. Reusa o `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
   braços do command: `sourceKind` FICA `'manual'` (enum INTOCADO — regra do monorepo) e a
   procedência vai em `sourceId` (ex.: `scholarship:<redemptionId>`); ausente → `'manual'`
-  (admin como sempre). Idempotência INALTERADA (`manual:userId:productId`). Régua de erros
+  (admin como sempre). Idempotência: `manual:userId:productId` — e com `sourceId` próprio
+  (≠ 'manual') a chave ganha o sufixo `:sourceId` (full review 08/2026): origens distintas
+  não colidem (cortesia admin revogada/expirando ≠ bolsa — viram 2 matrículas; o acesso
+  efetivo é o mais forte), e o replay da MESMA origem segue idempotente. Régua de erros
   da rota: oferta não resolvida/vazia → **502 SEM marcar** a entrega (re-entrega);
-  `EntitlementConflictError` (manual revogada/expirada do produto) → **409 E MARCA**
-  (terminal — retry nunca resolve; o chamador aflora ao humano); sucesso marca + notifica
-  o hub (mesma régua do `/grant`). Mesmo HMAC + `x-delivery-id` obrigatório do router.
+  `EntitlementSaveRaceError` (corrida de escrita esgotou retries) → **502 `GRANT_RETRY`
+  SEM marcar** (transitória); `EntitlementConflictError` (manual revogada/expirada da MESMA
+  origem) → **409 SEM marcar** — terminal para o CHAMADOR (o referrals marca a bolsa
+  `failed grant_conflict`), mas a entrega fica destravável: o operador reativa a matrícula
+  (estender) e o retry seguinte conclui. ⚠️ NÃO voltar a marcar no 409: entrega marcada +
+  retry pós-conserto → `{ok:true, deduped}` SEM conceder nada — sucesso FALSO no chamador.
+  Sucesso marca + notifica o hub (mesma régua do `/grant`). Mesmo HMAC + `x-delivery-id`
+  obrigatório do router.
   Gateway: rota `members-webhook-grant-manual` (hmac + `upstreamAuth: 'resign'`, espelho
   da `members-webhook-grant`). Testes: `tests/integration/grant-manual-webhook.test.ts`.
 - **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a

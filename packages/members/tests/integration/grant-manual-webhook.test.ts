@@ -85,7 +85,7 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     expect((await readJson(r2)).deduped).toBeUndefined()
   })
 
-  test('matrícula manual revogada do mesmo produto → 409 E MARCA (terminal)', async () => {
+  test('matrícula manual revogada do mesmo produto → 409 SEM marcar (destravável)', async () => {
     const { app, courses, catalog, entitlements } = buildApp()
     const course = seedSampleCourse(courses)
     catalog.set('oferta-c', offerWithCourse('oferta-c', course.slug))
@@ -100,9 +100,49 @@ describe('POST /members/webhooks/grant-manual (bolsa do referrals)', () => {
     expect(conflict.status).toBe(409)
     expect((await readJson(conflict)).error).toBe('ENTITLEMENT_CONFLICT')
 
-    // Terminal: a MESMA entrega agora deduplica (nunca retry infinito).
+    // NÃO marcou: a mesma entrega repete o 409 (o chamador é quem o trata como
+    // terminal). Marcar aqui seria pior: um retry pós-conserto deduparia com
+    // `ok:true` SEM conceder nada — sucesso falso para o chamador.
     const retry = await post(app, raw, 'gm-6')
-    expect((await readJson(retry)).deduped).toBe(true)
+    expect(retry.status).toBe(409)
+    expect((await readJson(retry)).deduped).toBeUndefined()
+
+    // Operador destrava (reativa via estender) → a MESMA entrega agora conclui.
+    // Recarrega ANTES de mutar: o update é otimista por `version` e a instância
+    // local ficou para trás depois do primeiro update.
+    const reloaded = await entitlements.findById(granted!.id)
+    reloaded!.reactivate(null, new Date())
+    expect(await entitlements.update(reloaded!)).toBe(true)
+    const healed = await post(app, raw, 'gm-6')
+    expect(healed.status).toBe(200)
+    expect((await readJson(healed)).granted).toBe(1)
+  })
+
+  test('sourceId próprio NÃO colide com cortesia admin do mesmo produto', async () => {
+    const { app, courses, catalog, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    catalog.set('oferta-e', offerWithCourse('oferta-e', course.slug))
+
+    // Cortesia admin (sem sourceId) já existe e foi REVOGADA…
+    const cortesia = JSON.stringify({ userId: USER, mode: 'offer', offerRef: 'oferta-e' })
+    expect((await post(app, cortesia, 'gm-9')).status).toBe(200)
+    const [existing] = await entitlements.listActiveByUser(USER, new Date())
+    existing!.revoke(new Date())
+    expect(await entitlements.update(existing!)).toBe(true)
+
+    // …e a BOLSA do mesmo produto ainda concede (chave própria por sourceId).
+    const bolsa = JSON.stringify({
+      userId: USER,
+      mode: 'offer',
+      offerRef: 'oferta-e',
+      sourceId: 'scholarship:red-9',
+    })
+    const res = await post(app, bolsa, 'gm-10')
+    expect(res.status).toBe(200)
+    expect((await readJson(res)).granted).toBe(1)
+    const active = await entitlements.listActiveByUser(USER, new Date())
+    expect(active).toHaveLength(1)
+    expect(active[0]!.toSnapshot().sourceId).toBe('scholarship:red-9')
   })
 
   test('expiresAt ISO válida vira validade; lixo → 400', async () => {

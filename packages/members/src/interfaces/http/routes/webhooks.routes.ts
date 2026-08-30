@@ -8,6 +8,7 @@ import type { RevokeEntitlementService } from '../../../application/revoke-entit
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import {
   EntitlementConflictError,
+  EntitlementSaveRaceError,
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../../domain/entitlement/entitlement.errors'
@@ -49,19 +50,12 @@ function resolveDeliveryId(headers: Record<string, string | undefined>): string 
   return id
 }
 
-function parsePaidAt(value: string | undefined): Date | null {
-  if (!value) return null
+/** Data ISO opcional dos webhooks — ausente/null → null; malformada → 400 nomeando o campo. */
+function parseIsoDate(field: string, value: string | null | undefined): Date | null {
+  if (value == null || value === '') return null
   const d = new Date(value)
   if (Number.isNaN(d.getTime()))
-    throw new ValidationError('paidAt inválido (deve ser uma data ISO-8601 válida)')
-  return d
-}
-
-function parseExpiresAt(value: string | null | undefined): Date | null {
-  if (value == null) return null
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime()))
-    throw new ValidationError('expiresAt inválido (deve ser uma data ISO-8601 válida ou null)')
+    throw new ValidationError(`${field} inválido (deve ser uma data ISO-8601 válida)`)
   return d
 }
 
@@ -121,7 +115,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           return { ok: true, deduped: true }
         }
 
-        const grantedAt = parsePaidAt(body.paidAt) ?? deps.now()
+        const grantedAt = parseIsoDate('paidAt', body.paidAt) ?? deps.now()
 
         const result = await deps.grant.execute({
           userId: body.userId,
@@ -164,15 +158,18 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
       // Primeiro Jogo concede a oferta COMPLETA sem pagamento (catálogo rejeita
       // oferta R$0 — grant direto é o único caminho). Régua de erros:
       // oferta não resolvida/vazia → 502 SEM marcar (re-entrega/retry do chamador);
-      // conflito de matrícula → 409 E MARCA (terminal — retry nunca resolve; o
-      // chamador aflora ao humano); sucesso → marca + notifica o hub (como /grant).
+      // corrida de escrita → 502 SEM marcar (transitória; retry resolve);
+      // conflito de matrícula → 409 SEM marcar (terminal para o CHAMADOR, que o
+      // trata; não marcar deixa o operador destravar — estender a matrícula — e o
+      // retry seguinte concluir, em vez de dedupar um estado quebrado p/ sempre);
+      // sucesso → marca + notifica o hub (como /grant).
       '/grant-manual',
       async ({ headers, body, set }) => {
         const deliveryId = resolveDeliveryId(headers)
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
         }
-        const expiresAt = parseExpiresAt(body.expiresAt)
+        const expiresAt = parseIsoDate('expiresAt', body.expiresAt)
         try {
           const result = await deps.grantManual.execute({
             mode: 'offer',
@@ -195,8 +192,12 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
             set.status = 502
             return { ok: false, error: 'OFFER_EMPTY' }
           }
+          if (error instanceof EntitlementSaveRaceError) {
+            deps.logger.warn('grant.manual.save_race', { userId: body.userId })
+            set.status = 502
+            return { ok: false, error: 'GRANT_RETRY' }
+          }
           if (error instanceof EntitlementConflictError) {
-            if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
             set.status = 409
             return { ok: false, error: 'ENTITLEMENT_CONFLICT' }
           }

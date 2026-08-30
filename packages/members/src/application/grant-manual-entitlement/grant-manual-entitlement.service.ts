@@ -3,6 +3,7 @@ import { CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import {
   EntitlementConflictError,
+  EntitlementSaveRaceError,
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../domain/entitlement/entitlement.errors'
@@ -21,8 +22,11 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
  * - `all_courses`: chave-mestra ADULTA (todos os cursos adult, atuais e futuros), sem oferta.
  * - `all_kids_courses`: chave-mestra KIDS (todos os cursos kids), sem oferta.
  *
- * Idempotente por `manual:${userId}:${productId}` (+ índice único user/product/source):
- * re-conceder o MESMO produto a um membro com matrícula manual ATIVA devolve a
+ * Idempotente por `manual:${userId}:${productId}` — e, quando a concessão tem
+ * `sourceId` próprio (ex.: `scholarship:<id>`), por `manual:userId:productId:sourceId`:
+ * ORIGENS distintas não colidem (uma cortesia admin expirando nunca transforma a
+ * bolsa num 409 terminal), e o replay da MESMA origem continua idempotente.
+ * Re-conceder o MESMO produto pela MESMA origem com matrícula ATIVA devolve a
  * existente; se a existente estiver revogada/expirada, falha 409 (use estender).
  */
 export type GrantManualCommand =
@@ -297,12 +301,15 @@ export class GrantManualEntitlementService {
       })
     }
 
-    throw new EntitlementConflictError('Conflito de concorrência ao conceder a matrícula manual')
+    // Corrida esgotou os retries: erro TRANSITÓRIO (não o 409 terminal) — o
+    // webhook grant-manual re-entrega; o admin vê 409 CONCURRENCY_CONFLICT.
+    throw new EntitlementSaveRaceError()
   }
 }
 
 function manualIdempotencyKey(p: GrantOneInput): string {
-  return `manual:${p.userId}:${p.productId}`
+  const base = `manual:${p.userId}:${p.productId}`
+  return p.sourceId && p.sourceId !== 'manual' ? `${base}:${p.sourceId}` : base
 }
 
 function buildManualEntitlement(

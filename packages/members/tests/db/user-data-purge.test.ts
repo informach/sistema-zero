@@ -75,6 +75,25 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     await conn.sql.unsafe(
       `alter table members.creation_cleanup_jobs add column if not exists user_ids jsonb not null default '[]'::jsonb`,
     )
+    // O outro lado da regra dos dois mundos: se OUTRA suíte criou `teacher_threads`/
+    // `teacher_messages` primeiro com MENOS colunas, o create acima virou no-op e o
+    // INSERT/DELETE daqui quebraria com 42703 conforme a ordem. Nullable de
+    // propósito (o INSERT daqui sempre preenche o que usa).
+    for (const column of [
+      'user_id uuid',
+      'account_id uuid',
+      'audience text',
+      'context_type text',
+      'last_message_at timestamptz',
+      'created_at timestamptz',
+    ]) {
+      await conn.sql.unsafe(
+        `alter table members.teacher_threads add column if not exists ${column}`,
+      )
+    }
+    await conn.sql.unsafe(
+      'alter table members.teacher_messages add column if not exists thread_id uuid',
+    )
   })
 
   afterAll(async () => {
