@@ -636,6 +636,7 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     webhooks: {
       grant,
+      grantManual,
       revoke,
       processed,
       hub,

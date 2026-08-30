@@ -748,6 +748,20 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   subscriptionId nunca a alcança; expira sozinha). Renovar = NOVA compra (paymentId
   novo → linha nova; o acesso efetivo é o mais forte). `subscription` presente VENCE
   o período (nunca chegam juntos do funil). Ausentes os dois → vitalícia (como sempre).
+- **`POST /members/webhooks/grant-manual` (08/2026 — bolsa do @sistemazero/referrals):**
+  concessão manual S2S SEM pagamento (o catálogo rejeita oferta R$ 0 — grant direto é o
+  único caminho da bolsa). `GrantManualWebhookBody` = `{userId, mode: 'offer' (literal —
+  v1 restrita; os demais modos seguem SÓ no admin JWT), offerRef, expiresAt?: ISO|null,
+  sourceId?}`. Reusa o `GrantManualEntitlementService`, que ganhou `sourceId?` em TODOS os
+  braços do command: `sourceKind` FICA `'manual'` (enum INTOCADO — regra do monorepo) e a
+  procedência vai em `sourceId` (ex.: `scholarship:<redemptionId>`); ausente → `'manual'`
+  (admin como sempre). Idempotência INALTERADA (`manual:userId:productId`). Régua de erros
+  da rota: oferta não resolvida/vazia → **502 SEM marcar** a entrega (re-entrega);
+  `EntitlementConflictError` (manual revogada/expirada do produto) → **409 E MARCA**
+  (terminal — retry nunca resolve; o chamador aflora ao humano); sucesso marca + notifica
+  o hub (mesma régua do `/grant`). Mesmo HMAC + `x-delivery-id` obrigatório do router.
+  Gateway: rota `members-webhook-grant-manual` (hmac + `upstreamAuth: 'resign'`, espelho
+  da `members-webhook-grant`). Testes: `tests/integration/grant-manual-webhook.test.ts`.
 - **Extensão de assinatura re-tenta sob conflito otimista** (até 3×, recarregando a
   matrícula): sem isso, a renovação que perdesse a corrida p/ um cancel/ação admin
   respondia 200 e a extensão do ciclo se perdia de vez. Conflito persistente → lança

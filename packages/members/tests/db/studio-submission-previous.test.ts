@@ -92,6 +92,22 @@ describe.skipIf(!testDatabaseUrl)('versão anterior da entrega (Postgres real)',
     for (const col of ['slug text', 'title text', "audience text not null default 'kids'"]) {
       await conn.sql.unsafe(`alter table members.courses add column if not exists ${col}`)
     }
+    // O `answeredSql` junta teacher_threads/messages — no banco COMPARTILHADO do
+    // CI outro arquivo (user-data-purge) pode ter criado a teacher_threads SEM as
+    // colunas de contexto ("quem chega primeiro vence"); regra do §tests/db:
+    // toda coluna usada entra também num `alter ... add column if not exists`.
+    await conn.sql.unsafe(
+      'create table if not exists members.teacher_threads (id uuid primary key, user_id uuid not null, context_type text, context_ref text)',
+    )
+    for (const col of ['user_id uuid', 'context_type text', 'context_ref text']) {
+      await conn.sql.unsafe(`alter table members.teacher_threads add column if not exists ${col}`)
+    }
+    await conn.sql.unsafe(
+      'create table if not exists members.teacher_messages (id uuid primary key, thread_id uuid not null, author_role text, created_at timestamptz)',
+    )
+    for (const col of ['thread_id uuid', 'author_role text', 'created_at timestamptz']) {
+      await conn.sql.unsafe(`alter table members.teacher_messages add column if not exists ${col}`)
+    }
     repo = new DrizzleStudioSubmissionRepository(conn.db)
   })
 

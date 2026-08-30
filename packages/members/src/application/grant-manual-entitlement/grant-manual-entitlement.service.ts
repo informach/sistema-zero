@@ -26,10 +26,16 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
  * existente; se a existente estiver revogada/expirada, falha 409 (use estender).
  */
 export type GrantManualCommand =
-  | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null }
-  | { mode: 'course'; userId: string; courseRef: string; expiresAt?: Date | null }
-  | { mode: 'all_courses'; userId: string; expiresAt?: Date | null }
-  | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null }
+  | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null; sourceId?: string }
+  | {
+      mode: 'course'
+      userId: string
+      courseRef: string
+      expiresAt?: Date | null
+      sourceId?: string
+    }
+  | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
+  | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -64,6 +70,12 @@ interface GrantOneInput {
   snapshot: EntitlementSnapshot
   expiresAt: Date | null
   now: Date
+  /**
+   * Procedência auditável da concessão (ex.: `scholarship:<redemptionId>` da
+   * bolsa do referrals). `sourceKind` FICA `'manual'` (enum intocado — regra do
+   * monorepo); ausente → `'manual'` (comportamento histórico do admin).
+   */
+  sourceId?: string
 }
 
 export class GrantManualEntitlementService {
@@ -74,13 +86,13 @@ export class GrantManualEntitlementService {
     const expiresAt = cmd.expiresAt ?? null
     switch (cmd.mode) {
       case 'offer':
-        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now)
+        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
       case 'course':
-        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now)
+        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now, cmd.sourceId)
       case 'all_courses':
-        return this.grantAllCourses(cmd.userId, expiresAt, now)
+        return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'all_kids_courses':
-        return this.grantAllKidsCourses(cmd.userId, expiresAt, now)
+        return this.grantAllKidsCourses(cmd.userId, expiresAt, now, cmd.sourceId)
     }
   }
 
@@ -89,6 +101,7 @@ export class GrantManualEntitlementService {
     offerRef: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     const offer = await this.deps.catalog.resolveOfferEntitlements(offerRef)
     if (!offer) throw new OfferNotFoundError()
@@ -125,6 +138,7 @@ export class GrantManualEntitlementService {
         snapshot,
         expiresAt,
         now,
+        sourceId,
       })
     }
     granted.push(...(await this.grantMany(grants)))
@@ -137,6 +151,7 @@ export class GrantManualEntitlementService {
     courseRef: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
     if (!course) throw new CourseNotFoundError()
@@ -165,6 +180,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.course', { userId, courseRef })
     return { granted: [view] }
@@ -174,6 +190,7 @@ export class GrantManualEntitlementService {
     userId: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     // Chave-mestra de cortesia: snapshot sintético, sem oferta nem curso específico.
     const snapshot: EntitlementSnapshot = {
@@ -198,6 +215,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.all_courses', { userId })
     return { granted: [view] }
@@ -207,6 +225,7 @@ export class GrantManualEntitlementService {
     userId: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     // Chave-mestra KIDS de cortesia: cobre todos os cursos kids (atuais e futuros).
     const snapshot: EntitlementSnapshot = {
@@ -231,6 +250,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.all_kids_courses', { userId })
     return { granted: [view] }
@@ -300,7 +320,7 @@ function buildManualEntitlement(
     offerId: p.offerId,
     snapshot: p.snapshot,
     sourceKind: 'manual',
-    sourceId: 'manual',
+    sourceId: p.sourceId ?? 'manual',
     subscriptionId: null,
     grantedAt: p.now,
     expiresAt: p.expiresAt,

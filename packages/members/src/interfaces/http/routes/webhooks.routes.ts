@@ -3,8 +3,14 @@ import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
 import type { AwardGamificationService } from '../../../application/gamification/award-gamification.service'
 import type { GrantEntitlementService } from '../../../application/grant-entitlement/grant-entitlement.service'
+import type { GrantManualEntitlementService } from '../../../application/grant-manual-entitlement/grant-manual-entitlement.service'
 import type { RevokeEntitlementService } from '../../../application/revoke-entitlement/revoke-entitlement.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
+import {
+  EntitlementConflictError,
+  InvalidEntitlementCommandError,
+  OfferNotFoundError,
+} from '../../../domain/entitlement/entitlement.errors'
 import { currentChallengeKey } from '../../../domain/gamification/challenges'
 import { deterministicSourceId } from '../../../domain/gamification/source-id'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
@@ -13,6 +19,7 @@ import { ValidationError } from '../../../domain/shared/errors'
 import {
   ChallengeWebhookBody,
   ClubeWebhookBody,
+  GrantManualWebhookBody,
   GrantWebhookBody,
   MuralCommentWebhookBody,
   MuralMessageWebhookBody,
@@ -50,8 +57,18 @@ function parsePaidAt(value: string | undefined): Date | null {
   return d
 }
 
+function parseExpiresAt(value: string | null | undefined): Date | null {
+  if (value == null) return null
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime()))
+    throw new ValidationError('expiresAt inválido (deve ser uma data ISO-8601 válida ou null)')
+  return d
+}
+
 export interface WebhooksRoutesDeps {
   grant: GrantEntitlementService
+  /** Concessão manual S2S (bolsa do referrals) — mode 'offer' apenas. */
+  grantManual: GrantManualEntitlementService
   revoke: RevokeEntitlementService
   processed: ProcessedWebhookRepository
   /** Notifica o hub (comunidade) no grant → invalida o cache de acesso na hora. */
@@ -141,6 +158,52 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { ok: true, granted: result.granted }
       },
       { body: GrantWebhookBody },
+    )
+    .post(
+      // Concessão MANUAL S2S (referrals → gateway [resign] → members): a bolsa do
+      // Primeiro Jogo concede a oferta COMPLETA sem pagamento (catálogo rejeita
+      // oferta R$0 — grant direto é o único caminho). Régua de erros:
+      // oferta não resolvida/vazia → 502 SEM marcar (re-entrega/retry do chamador);
+      // conflito de matrícula → 409 E MARCA (terminal — retry nunca resolve; o
+      // chamador aflora ao humano); sucesso → marca + notifica o hub (como /grant).
+      '/grant-manual',
+      async ({ headers, body, set }) => {
+        const deliveryId = resolveDeliveryId(headers)
+        if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
+          return { ok: true, deduped: true }
+        }
+        const expiresAt = parseExpiresAt(body.expiresAt)
+        try {
+          const result = await deps.grantManual.execute({
+            mode: 'offer',
+            userId: body.userId,
+            offerRef: body.offerRef,
+            expiresAt,
+            sourceId: body.sourceId,
+          })
+          if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
+          await deps.hub.notifyAccessChanged(body.userId, 'grant')
+          return { ok: true, granted: result.granted.length }
+        } catch (error) {
+          if (error instanceof OfferNotFoundError) {
+            deps.logger.warn('grant.manual.offer_unresolved', { offerRef: body.offerRef })
+            set.status = 502
+            return { ok: false, error: 'OFFER_UNRESOLVED' }
+          }
+          if (error instanceof InvalidEntitlementCommandError) {
+            deps.logger.error('grant.manual.offer_empty', { offerRef: body.offerRef })
+            set.status = 502
+            return { ok: false, error: 'OFFER_EMPTY' }
+          }
+          if (error instanceof EntitlementConflictError) {
+            if (deliveryId) await deps.processed.markProcessed(deliveryId, 'grant-manual')
+            set.status = 409
+            return { ok: false, error: 'ENTITLEMENT_CONFLICT' }
+          }
+          throw error
+        }
+      },
+      { body: GrantManualWebhookBody },
     )
     .post(
       '/subscription',

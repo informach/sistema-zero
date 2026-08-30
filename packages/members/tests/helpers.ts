@@ -457,6 +457,14 @@ export function buildApp(
     },
     webhooks: {
       grant,
+      grantManual: new GrantManualEntitlementService({
+        catalog,
+        courses,
+        entitlements,
+        newId: () => randomUUID(),
+        clock,
+        logger: silentLogger,
+      }),
       revoke,
       processed,
       hub,
