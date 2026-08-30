@@ -57,7 +57,16 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    template/braço whatsapp deste. Para mandar por WhatsApp um dia, precisaria expor o telefone no auth→members;
    `subscription-charge-failed` (e-mail + whatsapp, 07/2026): `nome`+`link` — dunning de ciclo de
    assinatura recusado, enviado pelo FUNIL (consumer `funnel`, `idempotencyKey =
-   dunning[-wa]-<paymentId>`).
+   dunning[-wa]-<paymentId>`);
+   **indicações/bolsas (e-mail SÓ, consumer HMAC `referrals`, 08/2026 — decisão de produto: a
+   plataforma NUNCA dispara WhatsApp frio; o embaixador compartilha o link no próprio WhatsApp):**
+   `referrals-ambassador-link`: `nome`+`link` (página do embaixador, `idempotencyKey =
+   ambassador-link:<id>:<n>` — versionada por reenvio); `referrals-scholarship-invite`:
+   `nome`+`indicador`+`link` (convite ÚNICO com rodapé LGPD "não enviaremos de novo",
+   `idempotencyKey = ambassador-invite:<inviteId>:<n>`); `referrals-scholarship-welcome`:
+   `nome`+`indicador`+`link` (boas-vindas da bolsa com link de definir senha — TTL 14 dias,
+   `idempotencyKey = scholarship-welcome:<redemptionId>`). Bolsista com conta PRÉ-EXISTENTE
+   recebe o `new-access` de sempre (sem template novo).
    `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
    RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.
