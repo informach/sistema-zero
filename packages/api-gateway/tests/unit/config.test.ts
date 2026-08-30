@@ -295,8 +295,6 @@ describe('loadGatewayConfig', () => {
       HELPDESK_INTERNAL_TOKEN: 'helpdesk-internal-16chr!',
       REFERRALS_INTERNAL_TOKEN: 'referrals-internal-16c!',
       REFERRALS_HMAC_SECRET: 'referrals-hmac-16chars!',
-  REFERRALS_INTERNAL_TOKEN: 'referrals-internal-16c!',
-  REFERRALS_HMAC_SECRET: 'referrals-hmac-16chars!',
       PAYMENTS_URL: 'http://payments.railway.internal:3001',
       AUTH_URL: 'http://auth.railway.internal:3002',
       FUNNEL_URL: 'http://funnel.railway.internal:4321',
@@ -306,7 +304,6 @@ describe('loadGatewayConfig', () => {
       FISCAL_URL: 'http://fiscal.railway.internal:3009',
       HUB_URL: 'http://hub.railway.internal:3010',
       REFERRALS_URL: 'http://referrals.railway.internal:3012',
-  REFERRALS_URL: 'http://referrals.railway.internal:3012',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
     })
     const routes = [
@@ -335,8 +332,6 @@ describe('loadGatewayConfig', () => {
       HELPDESK_INTERNAL_TOKEN: 'helpdesk-internal-16chr!',
       REFERRALS_INTERNAL_TOKEN: 'referrals-internal-16c!',
       REFERRALS_HMAC_SECRET: 'referrals-hmac-16chars!',
-  REFERRALS_INTERNAL_TOKEN: 'referrals-internal-16c!',
-  REFERRALS_HMAC_SECRET: 'referrals-hmac-16chars!',
       PAYMENTS_URL: 'http://payments.railway.internal:3001',
       AUTH_URL: 'http://auth.railway.internal:3002',
       FUNNEL_URL: 'http://funnel.railway.internal:4321',
@@ -346,7 +341,6 @@ describe('loadGatewayConfig', () => {
       FISCAL_URL: 'http://fiscal.railway.internal:3009',
       HUB_URL: 'http://hub.railway.internal:3010',
       REFERRALS_URL: 'http://referrals.railway.internal:3012',
-  REFERRALS_URL: 'http://referrals.railway.internal:3012',
       JWT_HS256_SECRET: 'segredo-hs256-com-mais-de-32-caracteres',
       JWT_ISSUER: 'sistemazero-auth',
       JWT_AUDIENCE: 'sistemazero',
