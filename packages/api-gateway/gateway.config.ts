@@ -2194,7 +2194,15 @@ const config: GatewayConfigInput = {
       methods: ['POST'],
       pathPattern: '/members/webhooks/grant-manual',
       service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      // allowedConsumers: rota que CONCEDE ACESSO — só o referrals (bolsa) chama.
+      // Sem a allowlist, qualquer consumer HMAC do registry (auth/fiscal/members/
+      // marketing, que só mandam e-mail) alcançaria a concessão com assinatura válida.
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['referrals'],
+      },
       upstreamAuth: 'resign',
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
@@ -3382,38 +3390,66 @@ const config: GatewayConfigInput = {
       methods: ['GET'],
       pathPattern: '/referrals/internal/codes/:code',
       service: 'referrals',
-      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      // ⚠️ O balde `by: 'principal'` destas 4 rotas é AGREGADO: o consumer é
+      // sempre `funnel` (1 principal = todo o tráfego das landings). A proteção
+      // por VISITANTE é o rate limit por IP do middleware do funil; aqui o teto
+      // é o disjuntor do agregado — dimensionado p/ um pico de campanha, não p/
+      // um usuário (300/min derrubava a landing inteira com ~5 acessos/s).
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
       transforms: referralsInternalTransforms,
-      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'referrals-internal-ambassador',
       methods: ['GET'],
       pathPattern: '/referrals/internal/ambassadors/by-token/:token',
       service: 'referrals',
-      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
       transforms: referralsInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'referrals-internal-invite',
       methods: ['POST'],
       pathPattern: '/referrals/internal/ambassadors/by-token/:token/invites',
       service: 'referrals',
-      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
       transforms: referralsInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
-      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
       id: 'referrals-internal-redeem',
       methods: ['POST'],
       pathPattern: '/referrals/internal/redemptions',
       service: 'referrals',
-      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
       transforms: referralsInternalTransforms,
       maxBodyBytes: SMALL_JSON_BODY_BYTES,
-      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      // O resgate encadeia 3 S2S (conta → grant → e-mail) — o default de 10s
+      // cortava o fluxo no meio em upstream frio (o funil espera até 45s).
+      timeoutMs: 45_000,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

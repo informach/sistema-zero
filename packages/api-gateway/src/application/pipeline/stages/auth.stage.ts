@@ -8,8 +8,25 @@ export function createAuthStage(chain: AuthChain): Stage {
     name: 'auth',
     async run(ctx) {
       if (!ctx.route) return undefined
-      const result = await chain.authenticate(ctx, ctx.route.route.auth)
+      const auth = ctx.route.route.auth
+      const result = await chain.authenticate(ctx, auth)
       if (result.ok === true) {
+        // Allowlist de consumers HMAC da rota: assinatura válida NÃO basta —
+        // o consumer precisa ser um dos esperados (um consumer de e-mail não
+        // pode alcançar o grant-manual só por existir no registry).
+        const allowed = typeof auth === 'object' ? auth.allowedConsumers : undefined
+        if (
+          allowed &&
+          result.principal.kind === 'hmac' &&
+          !allowed.includes(result.principal.subject)
+        ) {
+          ctx.logger.warn('gateway.consumer_not_allowed', {
+            requestId: ctx.requestId,
+            route: ctx.route.route.id,
+            consumer: result.principal.subject,
+          })
+          return errorResponse(403, 'CONSUMER_NOT_ALLOWED', 'Consumer não autorizado nesta rota')
+        }
         ctx.principal = result.principal
         return undefined
       }

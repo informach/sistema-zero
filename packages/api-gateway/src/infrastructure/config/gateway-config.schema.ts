@@ -38,6 +38,14 @@ export const authPolicySchema = z.union([
     required: z.boolean().default(true),
     mode: z.enum(['any', 'all']).default('any'),
     strategies: z.array(authStrategyKind).min(1),
+    /**
+     * Allowlist de consumers HMAC: quando presente, um principal `hmac` cujo
+     * subject não esteja na lista leva 403 (mesmo com assinatura VÁLIDA). É o
+     * que impede um consumer legítimo de OUTRO contexto (ex.: `auth`, que só
+     * envia e-mail) de alcançar uma rota que concede acesso (grant-manual).
+     * Não afeta principals jwt/session.
+     */
+    allowedConsumers: z.array(z.string().min(1)).optional(),
   }),
 ])
 

@@ -108,16 +108,19 @@ E roteia as **indicações e bolsas** (`@sistemazero/referrals`, 08/2026 — ups
 default `:3012`, healthCheck `/healthz`): **admin** em wildcards por método
 (`referrals-admin-read` GET `/referrals/admin/*` → staff+, 120/min; `referrals-admin-write`
 POST/PATCH → admin+, 60/min + corpo 64KB + `audit: {}`) e **internas do funil** (landings
-`/bolsa/<code>` e `/embaixador/<token>`) por HMAC de borda do consumer `funnel`
-(`referrals-internal-{code,ambassador,invite,redeem}` — GET codes/:code 300/min, GET
-ambassadors/by-token/:token 120/min, POST …/invites e POST redemptions 30/min + corpo 64KB) —
+`/bolsa/<code>` e `/embaixador/<token>`) por HMAC de borda com **`allowedConsumers: ['funnel']`**
+(`referrals-internal-{code,ambassador,invite,redeem}` — GET codes/:code 3000/min, GET
+ambassadors/by-token/:token 600/min, POST …/invites e POST redemptions 300/min + corpo 64KB;
+⚠️ o balde `by: 'principal'` é AGREGADO — o consumer é sempre `funnel` — então o teto é o
+disjuntor do agregado dimensionado p/ pico de campanha; a proteção por VISITANTE é o rate limit
+por IP do middleware do funil; `redeem` tem `timeoutMs: 45_000` — o resgate encadeia 3 S2S) —
 TODAS com `referralsInternalTransforms` (o serviço exige o `x-internal-token`,
 `REFERRALS_INTERNAL_TOKEN`). O **referrals também é consumer HMAC de borda**
 (`REFERRALS_HMAC_SECRET` + `REFERRALS_ALLOWED_CIDRS`, condicional como os demais): é como a bolsa
 chama `/auth/internal/{ensure-buyer,password-tokens}`, `/messaging/send` e o novo
 **`members-webhook-grant-manual`** (`POST /members/webhooks/grant-manual`, hmac +
-`upstreamAuth: 'resign'`, 120/min — espelho do `members-webhook-grant`; concede a oferta da bolsa
-SEM pagamento). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
+`allowedConsumers: ['referrals']` + `upstreamAuth: 'resign'`, 120/min — espelho do
+`members-webhook-grant`; concede a oferta da bolsa SEM pagamento). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
 `/referrals/admin/*`, e `grant-manual` ≠ `grant` (coberto em `route-registry.test.ts`).
 
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
@@ -205,7 +208,7 @@ Métodos: `slidingWindow` / `slidingWindowRefund(key, windowResetMs?)` (rate lim
 
 ### 4.5 Auth plugável (Strategy + Chain) + Autorização (RBAC)
 
-**Autenticação** por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose). Mensagem canônica do HMAC (06/2026): `"<MÉTODO>.<path>.<idem>.<corpo>"` via `canonicalHmacMessage` do core — método+path amarrados impedem replay cross-endpoint (GET→DELETE de corpo vazio); o verificador usa `ctx.url.pathname` (o path que o CONSUMIDOR chamou no gateway). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream — assinando o **`ctx.upstreamPath` FINAL sem query** (o resign roda DEPOIS dos path-rewrites no request-transform stage), que é exatamente o pathname que o upstream verifica. ⚠️ O `verify-webhook` (entregas do payments) continua assinando/verificando SÓ o corpo — contrato público com consumidores.
+**Autenticação** por rota: `any`/`all` sobre `hmac` (core `verifyHmacSignature` + IP CIDR + consumer registry da config), `session` (token opaco no store), `jwt` (jose). **`auth.allowedConsumers` (opcional, 08/2026):** allowlist de consumers HMAC da ROTA — principal `hmac` autenticado cujo subject não esteja na lista → **403 `CONSUMER_NOT_ALLOWED`** (enforcement no `auth.stage`, após a cadeia; principals jwt/session não são afetados). Use em rota sensível que só UM consumer deve alcançar (ex.: `members-webhook-grant-manual` → `['referrals']`; `referrals-internal-*` → `['funnel']`) — sem isso, QUALQUER consumer do registry (auth/fiscal/marketing, que só mandam e-mail) alcançaria a rota com assinatura válida. Mensagem canônica do HMAC (06/2026): `"<MÉTODO>.<path>.<idem>.<corpo>"` via `canonicalHmacMessage` do core — método+path amarrados impedem replay cross-endpoint (GET→DELETE de corpo vazio); o verificador usa `ctx.url.pathname` (o path que o CONSUMIDOR chamou no gateway). Em rotas `resign`, o gateway re-assina a chamada de saída como consumer do upstream — assinando o **`ctx.upstreamPath` FINAL sem query** (o resign roda DEPOIS dos path-rewrites no request-transform stage), que é exatamente o pathname que o upstream verifica. ⚠️ O `verify-webhook` (entregas do payments) continua assinando/verificando SÓ o corpo — contrato público com consumidores.
 
 **JWT (LIGADO)** — o emissor é o **[@sistemazero/auth](../auth)**. A `jwt.strategy` verifica **HS256** (segredo compartilhado `JWT_HS256_SECRET`) **e/ou RS256 via JWKS** (`JWT_JWKS_URL`); a chave é escolhida pelo `alg` do token e os algoritmos são **pinados**. A strategy liga quando `JWT_JWKS_URL` OU `JWT_HS256_SECRET` existe.
 
