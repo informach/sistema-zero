@@ -104,6 +104,22 @@ publisher-worker do marketing envia o lembrete WhatsApp de publicação manual v
 (template `marketing-reminder`, idempotência por publicação+fone). `MARKETING_HMAC_SECRET` está em
 `PROD_REQUIRED_SECRETS` (fail-fast em prod).
 
+E roteia as **indicações e bolsas** (`@sistemazero/referrals`, 08/2026 — upstream `REFERRALS_URL`,
+default `:3012`, healthCheck `/healthz`): **admin** em wildcards por método
+(`referrals-admin-read` GET `/referrals/admin/*` → staff+, 120/min; `referrals-admin-write`
+POST/PATCH → admin+, 60/min + corpo 64KB + `audit: {}`) e **internas do funil** (landings
+`/bolsa/<code>` e `/embaixador/<token>`) por HMAC de borda do consumer `funnel`
+(`referrals-internal-{code,ambassador,invite,redeem}` — GET codes/:code 300/min, GET
+ambassadors/by-token/:token 120/min, POST …/invites e POST redemptions 30/min + corpo 64KB) —
+TODAS com `referralsInternalTransforms` (o serviço exige o `x-internal-token`,
+`REFERRALS_INTERNAL_TOKEN`). O **referrals também é consumer HMAC de borda**
+(`REFERRALS_HMAC_SECRET` + `REFERRALS_ALLOWED_CIDRS`, condicional como os demais): é como a bolsa
+chama `/auth/internal/{ensure-buyer,password-tokens}`, `/messaging/send` e o novo
+**`members-webhook-grant-manual`** (`POST /members/webhooks/grant-manual`, hmac +
+`upstreamAuth: 'resign'`, 120/min — espelho do `members-webhook-grant`; concede a oferta da bolsa
+SEM pagamento). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
+`/referrals/admin/*`, e `grant-manual` ≠ `grant` (coberto em `route-registry.test.ts`).
+
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 
 ---
@@ -213,7 +229,7 @@ Proxy, Facade (`route-registry` + `gateway-plugin` + `gateway.config.ts`), Decor
 - **CORS por rota é SÓ `{ origins }`** (`routeCorsConfigSchema`, estrito): a checagem roda na requisição real (`cors.stage` → 403). O preflight (OPTIONS) e os demais headers CORS são da config **global** (plugin no `onRequest`, antes da resolução de rota) — declarar `methods`/`credentials`/etc. por rota **falha no boot** (prometeria um comportamento que não existe).
 - **Versionamento:** `versions[].upstreamGroup` troca o grupo de destino e `versions[].rewritePrefix` sobrepõe o prefixo de path da rota para aquela versão (aplicado no `route-resolve`). Rota **sem** `versions[]` só atende a versão **default** — pedir `/v9/...` (ou via header) → **400 `UNSUPPORTED_VERSION`** (servir como default em silêncio faria o cliente acreditar que a v9 existe).
 
-**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot; `JWT_HS256_SECRET` ≥ 32): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`, `MEMBERS_INTERNAL_TOKEN`, `CATALOG_INTERNAL_TOKEN`, `MESSAGING_INTERNAL_TOKEN`, `AUTH_INTERNAL_TOKEN`, `AUTH_HMAC_SECRET`, `PAYMENTS_INTERNAL_TOKEN`, `FISCAL_INTERNAL_TOKEN`, `FISCAL_HMAC_SECRET`, `HUB_INTERNAL_TOKEN`, `MARKETING_INTERNAL_TOKEN`, `METRICS_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia).
+**Segredos** (`hmacSecret` ≥ 16 chars, validado no boot; `JWT_HS256_SECRET` ≥ 32): defina em prod `FUNNEL_HMAC_SECRET`, `GATEWAY_CONSUMER_ID`/`GATEWAY_HMAC_SECRET`, `FUNNEL_INTERNAL_TOKEN`, `MEMBERS_INTERNAL_TOKEN`, `CATALOG_INTERNAL_TOKEN`, `MESSAGING_INTERNAL_TOKEN`, `AUTH_INTERNAL_TOKEN`, `AUTH_HMAC_SECRET`, `PAYMENTS_INTERNAL_TOKEN`, `FISCAL_INTERNAL_TOKEN`, `FISCAL_HMAC_SECRET`, `HUB_INTERNAL_TOKEN`, `MARKETING_INTERNAL_TOKEN`, `REFERRALS_INTERNAL_TOKEN`, `REFERRALS_HMAC_SECRET`, `METRICS_TOKEN`. Vazio/curto **falha no boot** (evita auth com chave efetivamente vazia). ⚠️ Os `REFERRALS_*` entraram em `PROD_REQUIRED_SECRETS` e `REFERRALS_URL` em `nonLoopbackProdUrls` — **setar as 3 envs no host de produção ANTES de deployar este config**, senão o gateway não sobe.
 
 **Fail-fast de PRODUÇÃO** (`env.ts`, 06/2026): com `NODE_ENV=production` o boot **exige** (senão não sobe): `METRICS_TOKEN` + os 8 tokens internos (`MEMBERS/CATALOG/MESSAGING/AUTH/PAYMENTS/FISCAL/HUB/MARKETING_INTERNAL_TOKEN`, ≥16 chars — vazio = injeção silenciosamente desligada, só aceitável em dev), `AUTH_HMAC_SECRET` (consumer `auth` na mensageria), `FISCAL_HMAC_SECRET` (consumer `fiscal` na mensageria), URLs de upstream não-loopback e **`TRUST_PROXY` definido EXPLICITAMENTE** (o default silencioso `false` atrás de proxy colapsaria todos os clientes no IP do edge → um único balde de rate limit). `FUNNEL_*`/resign/jwt já eram fail-fast por outros caminhos (consumer min 16, header-inject vazio, `validateReferences`; `JWT_HS256_SECRET` agora falha se tiver <32 chars). Também em prod: `SHUTDOWN_DRAIN_MS` sem env vira **5s** (não 0) e consumer com CIDR aberto (`0.0.0.0/0`/`::/0`) loga `gateway.consumer_cidr_open` (warn, não falha).
 

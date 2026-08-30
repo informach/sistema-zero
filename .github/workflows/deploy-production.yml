@@ -52,6 +52,9 @@ jobs:
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
             [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
             [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
+            # TODO(referrals): preencher ao criar o serviço no Railway (staging
+            # e produção) — mesmo id do ci.yml.
+            # [referrals]=<service-id>
           )
 
           # environmentId de production resolvido POR NOME (sem hardcode).

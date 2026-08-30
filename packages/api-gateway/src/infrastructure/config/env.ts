@@ -57,6 +57,7 @@ const nonLoopbackProdUrls: ReadonlyArray<{ key: string; why: string }> = [
   { key: 'MESSAGING_URL', why: 'upstream messaging' },
   { key: 'FISCAL_URL', why: 'upstream fiscal' },
   { key: 'HUB_URL', why: 'upstream hub' },
+  { key: 'REFERRALS_URL', why: 'upstream referrals' },
 ]
 
 const nonEmptyString = z
@@ -95,6 +96,14 @@ const PROD_REQUIRED_SECRETS: ReadonlyArray<{ key: string; why: string }> = [
   {
     key: 'HELPDESK_INTERNAL_TOKEN',
     why: 'prova ao helpdesk que a chamada veio do gateway (ferramenta interna staff+)',
+  },
+  {
+    key: 'REFERRALS_INTERNAL_TOKEN',
+    why: 'prova ao referrals que a chamada veio do gateway (indicações e bolsas)',
+  },
+  {
+    key: 'REFERRALS_HMAC_SECRET',
+    why: 'cadastra o referrals como consumer HMAC (auth/members/messaging da bolsa)',
   },
 ]
 
@@ -186,6 +195,7 @@ const EnvSchema = z
     HUB_INTERNAL_TOKEN: optionalSecret,
     MARKETING_INTERNAL_TOKEN: optionalSecret,
     HELPDESK_INTERNAL_TOKEN: optionalSecret,
+    REFERRALS_INTERNAL_TOKEN: optionalSecret,
 
     // Resiliência.
     HEALTH_PROBE_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
@@ -216,6 +226,11 @@ const EnvSchema = z
     FISCAL_URL: z.string().default('http://localhost:3009'),
     FISCAL_HMAC_SECRET: optionalSecret,
     FISCAL_ALLOWED_CIDRS: z.string().optional(),
+
+    // URL do referrals (@sistemazero/referrals) — lida pelo gateway.config.ts.
+    REFERRALS_URL: z.string().default('http://localhost:3012'),
+    REFERRALS_HMAC_SECRET: optionalSecret,
+    REFERRALS_ALLOWED_CIDRS: z.string().optional(),
 
     // URL do hub (@sistemazero/hub) — lida pelo gateway.config.ts.
     HUB_URL: z.string().default('http://localhost:3010'),

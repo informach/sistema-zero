@@ -95,6 +95,11 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      - name: Testes DB referrals (Postgres real)
+        run: cd packages/referrals && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
 
@@ -239,6 +244,10 @@ jobs:
             # helpdesk na lista do packages/core/* e helpdesk-app na do ui/*).
             # [helpdesk]=<service-id>
             # [helpdesk-app]=<service-id>
+            # TODO(referrals): preencher ao criar o serviço no Railway e
+            # descomentar o case packages/referrals/* abaixo (+ incluir
+            # referrals na lista do packages/core/*).
+            # [referrals]=<service-id>
           )
 
           declare -A WANT=()
@@ -287,6 +296,7 @@ jobs:
                   packages/marketing/*) add marketing ;; # ferramenta de marketing (API)
                   packages/marketing-app/*) add marketing-app ;; # front da ferramenta de marketing
                   # packages/helpdesk/*) add helpdesk ;; # help desk com IA (API) — descomentar c/ SVC_ID
+                  # packages/referrals/*) add referrals ;; # indicações e bolsas (API) — descomentar c/ SVC_ID
                   # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
                   packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
