@@ -47,6 +47,10 @@ export interface FakeGatewayState {
     logout: string[]
     passwordTokens: string[]
     messages: Array<{ input: SendMessageInput; idempotencyKey: string }>
+    resolveCode: string[]
+    ambassadorByToken: string[]
+    invites: Array<{ token: string; input: { name: string; email: string } }>
+    redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
   auth: { access: string; refresh: string; password: string; email: string }
@@ -71,6 +75,14 @@ export interface FakeGatewayState {
   setPasswordTokenStatus: (status: number) => void
   /** Status devolvido por sendMessage (default 202). */
   setSendMessageStatus: (status: number) => void
+  /** Resposta de resolveReferralCode (default 200 + view do código). */
+  setReferralCodeResult: (status: number, body?: unknown) => void
+  /** Resposta de getAmbassadorByToken (default 200 + view da página). */
+  setAmbassadorResult: (status: number, body?: unknown) => void
+  /** Resposta de createAmbassadorInvite (default 202). */
+  setInviteResult: (status: number, body?: unknown) => void
+  /** Resposta de redeemScholarship (default 201 completed). */
+  setRedeemResult: (status: number, body?: unknown) => void
 }
 
 /** Gateway falso em memória (não verifica HMAC; usado nos testes de checkout). */
@@ -102,6 +114,10 @@ export function createFakeGateway(): FakeGatewayState {
     logout: [],
     passwordTokens: [],
     messages: [],
+    resolveCode: [],
+    ambassadorByToken: [],
+    invites: [],
+    redemptions: [],
   }
   let ensureBuyerStatus = 201
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
@@ -110,6 +126,24 @@ export function createFakeGateway(): FakeGatewayState {
   let subscriptionResult: { status: number; body: unknown } | null = null
   let passwordTokenStatus = 201
   let sendMessageStatus = 202
+  let referralCodeResult: { status: number; body: unknown } = {
+    status: 200,
+    body: { code: 'vo-x7k2', ownerKind: 'ambassador', displayName: 'Vó Cida' },
+  }
+  let ambassadorResult: { status: number; body: unknown } = {
+    status: 200,
+    body: {
+      name: 'Vó Cida',
+      code: 'vo-x7k2',
+      shareUrl: 'https://sistemazero.com.br/bolsa/vo-x7k2',
+      stats: { redemptionsCompleted: 2, invitesSent: 5 },
+    },
+  }
+  let inviteResult: { status: number; body: unknown } = { status: 202, body: { ok: true } }
+  let redeemResult: { status: number; body: unknown } = {
+    status: 201,
+    body: { status: 'completed' },
+  }
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
@@ -276,6 +310,22 @@ export function createFakeGateway(): FakeGatewayState {
       }
       return { status: 202, body: { messageId: 'msg-1', status: 'QUEUED' } }
     },
+    async resolveReferralCode(code): Promise<GatewayResult> {
+      calls.resolveCode.push(code)
+      return referralCodeResult
+    },
+    async getAmbassadorByToken(token): Promise<GatewayResult> {
+      calls.ambassadorByToken.push(token)
+      return ambassadorResult
+    },
+    async createAmbassadorInvite(token, input): Promise<GatewayResult> {
+      calls.invites.push({ token, input })
+      return inviteResult
+    },
+    async redeemScholarship(input): Promise<GatewayResult> {
+      calls.redemptions.push({ input })
+      return redeemResult
+    },
   }
 
   return {
@@ -321,6 +371,18 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setSendMessageStatus: (status: number) => {
       sendMessageStatus = status
+    },
+    setReferralCodeResult: (status: number, body?: unknown) => {
+      referralCodeResult = { status, body: body ?? null }
+    },
+    setAmbassadorResult: (status: number, body?: unknown) => {
+      ambassadorResult = { status, body: body ?? null }
+    },
+    setInviteResult: (status: number, body?: unknown) => {
+      inviteResult = { status, body: body ?? null }
+    },
+    setRedeemResult: (status: number, body?: unknown) => {
+      redeemResult = { status, body: body ?? null }
     },
   }
 }

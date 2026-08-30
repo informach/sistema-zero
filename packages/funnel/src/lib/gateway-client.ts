@@ -76,6 +76,21 @@ export interface PasswordTokenResult {
   expiresAt: string
 }
 
+/** Resposta de `GET /referrals/internal/codes/:code` (landing /bolsa). */
+export interface ReferralCodeView {
+  code: string
+  ownerKind: 'ambassador' | 'account'
+  displayName: string
+}
+
+/** Resposta de `GET /referrals/internal/ambassadors/by-token/:token` (página do embaixador). */
+export interface AmbassadorPageView {
+  name: string
+  code: string
+  shareUrl: string
+  stats: { redemptionsCompleted: number; invitesSent: number }
+}
+
 /** Corpo de `POST /messaging/send` (gateway → @sistemazero/messaging). */
 export interface SendMessageInput {
   channel: 'email' | 'whatsapp'
@@ -407,6 +422,61 @@ export function createGatewayClient(opts: GatewayClientOptions) {
           headers: buildHeaders('POST', path, rawBody, idempotencyKey),
           body: rawBody,
         },
+        timeoutMs,
+      )
+    },
+
+    // ── Indicações e bolsas (@sistemazero/referrals, via gateway) ────────────
+
+    /** GET /referrals/internal/codes/:code — resolve o "quem indicou" da landing /bolsa. */
+    async resolveReferralCode(code: string): Promise<GatewayResult> {
+      const path = `/referrals/internal/codes/${encodeURIComponent(code)}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /** GET /referrals/internal/ambassadors/by-token/:token — página do embaixador (capability URL). */
+    async getAmbassadorByToken(token: string): Promise<GatewayResult> {
+      const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'GET', headers: buildHeaders('GET', path, '') },
+        timeoutMs,
+      )
+    },
+
+    /** POST …/by-token/:token/invites — a plataforma envia o convite de bolsa por e-mail. */
+    async createAmbassadorInvite(
+      token: string,
+      input: { name: string; email: string },
+    ): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}/invites`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
+    },
+
+    /**
+     * POST /referrals/internal/redemptions — resgate da bolsa (cria conta +
+     * concede o curso + boas-vindas, tudo no referrals; retomável por etapas).
+     */
+    async redeemScholarship(input: {
+      code: string
+      name: string
+      email: string
+      phone?: string
+    }): Promise<GatewayResult> {
+      const rawBody = JSON.stringify(input)
+      const path = '/referrals/internal/redemptions'
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'POST', headers: buildHeaders('POST', path, rawBody), body: rawBody },
         timeoutMs,
       )
     },

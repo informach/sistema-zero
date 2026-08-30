@@ -11,7 +11,7 @@ import { captureError } from './lib/sentry'
 // (e o branch de rate limit não pode rodar no prerender do build — ver abaixo).
 
 // Endpoints públicos de escrita que recebem um teto best-effort por IP.
-const RATE_LIMITED_WRITE = /^\/api\/(leads|events|contact|checkout)(\/|$)/
+const RATE_LIMITED_WRITE = /^\/api\/(leads|events|contact|checkout|bolsa|embaixador)(\/|$)/
 const WRITE_LIMIT = 240 // requisições…
 const RATE_WINDOW_MS = 60_000 // …por minuto, por IP (generoso: o quiz faz ~12 PATCH)
 
