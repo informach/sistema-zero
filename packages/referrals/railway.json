@@ -1,0 +1,21 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/referrals/Dockerfile",
+    "watchPatterns": [
+      "/packages/referrals/**",
+      "/packages/core/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": "bun run --filter @sistemazero/referrals db:migrate",
+    "startCommand": "bun run --filter @sistemazero/referrals start",
+    "healthcheckPath": "/readyz",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}
