@@ -52,16 +52,116 @@ export function suggestedSpriteSize(
 }
 
 /**
- * Preenche os soquetes W/H do bloco com o tamanho sugerido do asset escolhido.
- * SÓ mexe em SHADOW `sz_val_number`: valor que a criança plugou ou editou (o
- * shadow editado materializa em bloco real) nunca é sobrescrito. Zero impacto
- * no round-trip — é o mesmo que digitar o número no soquete.
+ * Soquetes que o seletor pode preencher, por bloco, com o DEFAULT DE FÁBRICA
+ * da sombra da paleta. É ALLOWLIST: bloco fora daqui (e fora do caso especial
+ * do tilemap) nunca recebe escrita. Os valores são a régua de "este número
+ * ainda é nosso": só um soquete no default de fábrica (ou na sugestão do
+ * asset anterior) aceita sugestão nova — ver `applySuggestedSize`. O campo
+ * core não importa extensão (mesmo precedente do `LEGACY_VALUE_FIELDS`); o
+ * drift em `applySuggestedSize.test.ts` confere cada valor contra a sombra
+ * REAL da toolbox e exige que todo bloco com seletor de imagem + soquete de
+ * tamanho esteja aqui OU no `SUGGESTION_OPT_OUT`.
  */
-function applySuggestedSize(field: Blockly.Field, asset: ProjectAsset): void {
+export interface SuggestibleSockets {
+  /** Tamanho do SPRITE na tela (sugestão frame-aware, com fator de ampliação). */
+  size?: { W: number; H: number }
+  /** Tamanho do QUADRO da folha (valor EXATO do metadado do Pinta, sem fator). */
+  frame?: { FW: number; FH: number }
+}
+
+export const SUGGESTIBLE_SOCKET_DEFAULTS: Record<string, SuggestibleSockets> = {
+  sz_g2d_create_image_sprite: { size: { W: 40, H: 40 } },
+  sz_g2d_spawn_image_in_group: { size: { W: 32, H: 32 } },
+  sz_g2d_define_enemy_type: { size: { W: 32, H: 32 } },
+  sz_g2d_define_enemy_smart: { size: { W: 32, H: 32 } },
+  sz_gk_create_character: { size: { W: 64, H: 64 } },
+  sz_gk_define_mold: { size: { W: 40, H: 40 } },
+  sz_canvas_draw_image: { size: { W: 100, H: 100 } },
+  sz_g2d_load_spritesheet: { frame: { FW: 32, FH: 32 } },
+  sz_gk_set_sheet: { frame: { FW: 32, FH: 32 } },
+  sz_gk_set_walk_sheet: { frame: { FW: 16, FH: 16 } },
+}
+
+/**
+ * Blocos com seletor de imagem E soquetes W/H em que sugerir tamanho em PIXEL
+ * é sempre errado: ali W/H são unidades de MUNDO 3D (fábrica 3 no quadro do
+ * Mundo, 1 na peça do molde). A escrita genérica antiga os alcançava e virava
+ * paredão sem erro nenhum; a allowlist matou a classe, e este conjunto
+ * registra a decisão para o drift não acusar bloco deliberadamente de fora.
+ */
+export const SUGGESTION_OPT_OUT: ReadonlySet<string> = new Set([
+  'sz_w3d_totem_image',
+  'sz_g3k_part',
+])
+
+/**
+ * Tamanho sugerido para um asset: folha com metadado do Pinta sugere o QUADRO
+ * (é um quadro por vez que aparece na tela), nunca a folha inteira — era isso
+ * que sugeria "128 × 32" para um personagem animado.
+ */
+export function suggestedSizeForAsset(asset: ProjectAsset): { w: number; h: number } | null {
+  const sprite = asset.sprite
+  if (sprite) return suggestedSpriteSize(sprite.frameW, sprite.frameH)
+  if (!asset.width || !asset.height) return null
+  return suggestedSpriteSize(asset.width, asset.height)
+}
+
+/** Literal-sombra numérico do soquete; null = vazio, variável/expressão ou bloco REAL. */
+function shadowNumberAt(block: Blockly.Block, inputName: string): number | null {
+  const target = block.getInput(inputName)?.connection?.targetBlock()
+  if (!target?.isShadow() || target.type !== 'sz_val_number') return null
+  const value = Number(target.getFieldValue('NUM'))
+  return Number.isFinite(value) ? value : null
+}
+
+interface SuggestedSlot {
+  input: string
+  /** O valor a escrever. */
+  next: number
+  /** Default de fábrica da sombra da paleta (`SUGGESTIBLE_SOCKET_DEFAULTS`). */
+  factory: number
+  /** Sugestão que ESTE campo teria calculado para o asset anterior, se houver. */
+  previous: number | null
+}
+
+/**
+ * Escreve um PAR de soquetes tudo-ou-nada: se qualquer um dos dois carrega um
+ * número da criança (nem fábrica, nem sugestão anterior) — ou não é sombra
+ * numérica (variável plugada, literal real pós-Ponte ainda sem cura) — nenhum
+ * dos dois muda. Atualizar só metade misturaria a proporção sugerida com a
+ * escolhida por ela.
+ */
+function applySuggestedPair(block: Blockly.Block, slots: SuggestedSlot[]): void {
+  for (const slot of slots) {
+    const current = shadowNumberAt(block, slot.input)
+    if (current === null) return
+    if (current !== slot.factory && current !== slot.previous) return
+  }
+  for (const slot of slots) setNumberShadow(block, slot.input, slot.next)
+}
+
+/**
+ * Preenche os soquetes do bloco com o tamanho sugerido do asset escolhido na
+ * grade. A sugestão só escreve por cima de um valor comprovadamente NOSSO — o
+ * default de fábrica da sombra ou a sugestão calculada para o asset ANTERIOR
+ * do campo; qualquer outro número foi a criança que pôs e nunca é tocado. A
+ * régua é por VALOR porque shadow-ness não distingue nada: editar a sombra
+ * NÃO a materializa em bloco real (Blockly 12) e a Ponte re-sombreia os
+ * literais no load (`restoreShadowLiterals`). Zero impacto no round-trip —
+ * escrever aqui é o mesmo que digitar o número no soquete.
+ */
+export function applySuggestedSize(
+  field: Blockly.Field,
+  asset: ProjectAsset,
+  previousAssetName?: string,
+): void {
   const block = field.getSourceBlock()
   if (!block) return
   // Mapa de tiles: preenche o "tamanho do tile" com o tamanho do tile NA ARTE (do
   // Pinta) — é o que fatia o tileset certo; o tamanho NA TELA é auto (encaixa no canvas).
+  // ⚠️ EXCEÇÃO DELIBERADA à regra do "não sobrescrever o digitado": o tileSize é a
+  // verdade OBJETIVA do fatiamento daquele desenho — um número divergente quebra a
+  // grade inteira — então aqui o metadado vence inclusive um valor da criança.
   // ⚠️ Escolher um asset de MAPA (com metadado tilemap) aqui NÃO auto-preenche
   // GRID/SOLID de propósito: neste bloco a IMAGE é a FOLHA a fatiar, e o asset de
   // mapa é o PNG ACHATADO — preencher deixaria a imagem errada sem nenhum erro.
@@ -71,11 +171,48 @@ function applySuggestedSize(field: Blockly.Field, asset: ProjectAsset): void {
     if (tileSize && tileSize > 0) setNumberShadow(block, 'TILE', tileSize)
     return
   }
-  if (!asset.width || !asset.height) return
-  const size = suggestedSpriteSize(asset.width, asset.height)
-  if (!size) return
-  setNumberShadow(block, 'W', size.w)
-  setNumberShadow(block, 'H', size.h)
+  const plan = SUGGESTIBLE_SOCKET_DEFAULTS[block.type]
+  if (!plan) return
+  const assets = (block.workspace as unknown as AssetAccessor).__szAssets?.() ?? []
+  const previous = previousAssetName
+    ? assets.find((a) => a?.kind === 'image' && a.name === previousAssetName)
+    : undefined
+
+  if (plan.size) {
+    const next = suggestedSizeForAsset(asset)
+    if (next) {
+      const before = previous ? suggestedSizeForAsset(previous) : null
+      applySuggestedPair(block, [
+        { input: 'W', next: next.w, factory: plan.size.W, previous: before?.w ?? null },
+        { input: 'H', next: next.h, factory: plan.size.H, previous: before?.h ?? null },
+      ])
+    }
+  }
+  if (plan.frame) {
+    const sprite = asset.sprite
+    const validFrame =
+      sprite &&
+      Number.isFinite(sprite.frameW) &&
+      sprite.frameW > 0 &&
+      Number.isFinite(sprite.frameH) &&
+      sprite.frameH > 0
+    if (validFrame) {
+      applySuggestedPair(block, [
+        {
+          input: 'FW',
+          next: sprite.frameW,
+          factory: plan.frame.FW,
+          previous: previous?.sprite?.frameW ?? null,
+        },
+        {
+          input: 'FH',
+          next: sprite.frameH,
+          factory: plan.frame.FH,
+          previous: previous?.sprite?.frameH ?? null,
+        },
+      ])
+    }
+  }
 }
 
 /** Escreve `value` no shadow `sz_val_number` do input, se houver (não sobrescreve bloco real). */
@@ -215,8 +352,12 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
           btn.appendChild(dims)
         }
         btn.addEventListener('click', () => {
+          // O nome ANTERIOR é capturado antes do setValue: é ele que deixa a
+          // sugestão reconhecer o número que ELA MESMA escreveu da outra vez e
+          // acompanhar a troca de imagem — sem nunca tocar num valor digitado.
+          const previousAssetName = `${this.getValue() ?? ''}`
           this.setValue(a.name)
-          applySuggestedSize(this, a)
+          applySuggestedSize(this, a, previousAssetName)
           Blockly.DropDownDiv.hideIfOwner(this)
         })
         grid.appendChild(btn)

@@ -1197,8 +1197,19 @@ shadow `sz_val_number`). ⚠️ É campo de EXIBIÇÃO **não-serializável** �
 → false`. Assim IR/round-trip/parser/allowlist ficam INTOCADOS (FROM/TO/FPS são a fonte da verdade;
 nenhum tipo de bloco novo). **Bloco "Criar mapa de tiles"** trocou o campo `SOLID` p/
 **`field_solid_tiles_picker`** (continua string `"0 1 2"` — serialização idêntica a `field_input`; só
-grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` também AUTO-PREENCHE FW/FH
-(de `sprite`) e TILE (de `tileset`) — garante que os índices batem no runtime. Sem metadado (upload/
+grade visual + "Sólidos do Pinta"). O `FieldAssetPicker.applySuggestedSize` AUTO-PREENCHE W/H (sugestão
+frame-aware: folha com `sprite` sugere o QUADRO, nunca a folha inteira), FW/FH (valor EXATO de
+`sprite` — garante que os índices batem no runtime) e TILE (de `tileset`). ⭐⭐ **Desde 31/08 a
+escrita é ALLOWLIST e NUNCA vence a criança** (`SUGGESTIBLE_SOCKET_DEFAULTS` no próprio campo): só
+soquete no default de FÁBRICA da paleta — ou na sugestão do asset ANTERIOR do campo — recebe valor,
+decidido por PAR tudo-ou-nada. Motivo: a escrita antiga gravava o tamanho da FOLHA (128×32) por cima
+do 54×54 digitado no "Criar sprite", e a guarda `isShadow()` não protegia nada — editar sombra NÃO
+materializa (Blockly 12) e a Ponte re-sombreia literais no load; a régua é o VALOR, não a
+shadow-ness. Exceção deliberada: TILE sobrescreve SEMPRE (tileSize divergente quebra a grade
+inteira). `sz_w3d_totem_image`/`sz_g3k_part` (W/H em unidades de MUNDO) estão no
+`SUGGESTION_OPT_OUT` — a sugestão em pixels ali era bug latente e PAROU. Drift bidirecional em
+`blockly/fields/__tests__/applySuggestedSize.test.ts` (mapa × sombras reais da toolbox; todo bloco
+com seletor de imagem + soquete de tamanho no mapa OU no opt-out). Sem metadado (upload/
 projeto antigo) → fallback manual. Ambos os campos registrados em `setup.ts` ANTES dos blocos da
 extensão. game-2d bump `0.19.0→0.20.0` (tile picker); o manifest atual está em **`0.79.1`** (`src/official-extensions/game-2d/manifest.ts`). Testes: `core/assetMeta.test.ts`, `blockly/fields/__tests__/
 FieldAnimationPicker.test.ts` (resolveAnimations/resolveTileset + ANIM não-serializado). **😈 Inimigos (v0.22):** grupos de inimigos por `field_sprite_picker` "inimigo" + comportamentos (perseguir/patrulhar/etc.) em `blocks.ts`. **🎨 Desenho — sprite por código (v0.23):** figura nomeada desenhada em código (`g2d:defineShape` + `paint_*`/Canvas no `runtime.ts`, exemplos em `examples.ts`) vira skin custom do sprite.
