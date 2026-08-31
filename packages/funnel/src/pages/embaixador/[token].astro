@@ -60,16 +60,16 @@ if (!view && !gatewayDown) Astro.response.status = 404
             stats={view.stats}
           />
           <p class="mt-6 text-center text-xs text-muted">
-            Esta página é sua chave de acesso — não compartilhe o endereço DELA (compartilhe o link
-            de bolsa acima).
+            Esta página é a sua chave de acesso, então guarde o endereço dela só para você. Para
+            presentear, compartilhe o link de bolsa ali de cima.
           </p>
         </>
       ) : gatewayDown ? (
         <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
           <h1 class="text-2xl font-bold text-ink">Um instantinho…</h1>
           <p class="mt-3 text-sm text-muted">
-            Não conseguimos carregar a sua página agora. Recarregue em alguns segundos — o seu
-            link continua valendo.
+            Não conseguimos carregar a sua página agora. Recarregue em alguns segundos, o seu link
+            continua valendo.
           </p>
         </div>
       ) : (

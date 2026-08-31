@@ -16,7 +16,7 @@ export interface EmbaixadorPainelProps {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
-export default function EmbaixadorPainel({ token, name, shareUrl, stats }: EmbaixadorPainelProps) {
+export default function EmbaixadorPainel({ token, shareUrl, stats }: EmbaixadorPainelProps) {
   const uid = useId()
   const [copied, setCopied] = useState<'link' | 'message' | null>(null)
   const [nome, setNome] = useState('')
@@ -87,7 +87,7 @@ export default function EmbaixadorPainel({ token, name, shareUrl, stats }: Embai
         <h2 className="text-lg font-bold text-ink">Compartilhe o seu link de bolsa</h2>
         <p className="mt-2 text-sm text-muted">
           Quem entrar por ele ganha o <strong className="text-ink">Desafio do Primeiro Jogo</strong>{' '}
-          completo, de graça e para sempre — indicado por você, {name.split(' ')[0]}.
+          completo, de graça e para sempre, indicado por você.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <input

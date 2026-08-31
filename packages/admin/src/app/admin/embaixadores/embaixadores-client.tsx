@@ -87,7 +87,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         'POST',
       )
       if (res.sent) toast.success(`E-mail do link reenviado para ${row.email}.`)
-      else toast.warning('Não foi possível enviar o e-mail agora — copie o link no detalhe.')
+      else toast.warning('Não foi possível enviar o e-mail agora. Copie o link no detalhe.')
       void load()
     } catch (err) {
       toast.error((err as ApiError).message)
@@ -121,7 +121,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       <AdminHeader
         title="Embaixadores"
-        description="Quem distribui bolsas 100% do Desafio do Primeiro Jogo — com ou sem conta na plataforma."
+        description="Quem distribui bolsas 100% do Desafio do Primeiro Jogo, com ou sem conta na plataforma."
         action={
           canWrite ? (
             <Button onClick={() => setCreateOpen(true)}>
@@ -251,9 +251,11 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
           onCreated={(view, emailSent) => {
             setCreateOpen(false)
             if (emailSent)
-              toast.success(`Embaixador criado — o link foi enviado para ${view.email}.`)
+              toast.success(`Embaixador criado! O link foi enviado para ${view.email}.`)
             else
-              toast.warning('Embaixador criado, mas o e-mail falhou — copie o link e envie você.')
+              toast.warning(
+                'Embaixador criado, mas o e-mail falhou. Copie o link e envie por fora.',
+              )
             void load()
             if (view.pageUrl) void openDetail(view.id)
           }}
@@ -367,14 +369,14 @@ function AmbassadorDetailDialog({
           <p className="text-xs text-muted-foreground">
             {a.linkEmailSentAt
               ? `E-mail do link enviado em ${formatDate(a.linkEmailSentAt)}.`
-              : 'O e-mail do link ainda não foi enviado — copie a página abaixo e mande por fora.'}
+              : 'O e-mail do link ainda não foi enviado. Copie a página abaixo e mande por fora.'}
           </p>
           {a.shareUrl && (
             <LinkRow label="Link de bolsa (compartilhável)" value={a.shareUrl} onCopy={onCopy} />
           )}
           {a.pageUrl && (
             <LinkRow
-              label="Página do embaixador (chave de acesso — só para ele)"
+              label="Página do embaixador (chave de acesso, só para ele)"
               value={a.pageUrl}
               onCopy={onCopy}
             />

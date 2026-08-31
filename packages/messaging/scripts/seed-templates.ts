@@ -541,7 +541,7 @@ const seeds = [
       title: '{{nome}}, você ganhou um presente de {{indicador}} 🎁',
       content: [
         p(
-          '<strong>{{indicador}}</strong> acha que tem uma criança aí na sua casa que ia adorar criar o próprio jogo — e indicou você para uma <strong>bolsa 100%</strong> do <strong>Desafio do Primeiro Jogo</strong>, do Sistema Zero.',
+          '<strong>{{indicador}}</strong> acha que tem uma criança aí na sua casa que ia adorar criar o próprio jogo. Por isso, indicou você para uma <strong>bolsa 100%</strong> do <strong>Desafio do Primeiro Jogo</strong>, do Sistema Zero.',
         ),
         p(
           'É o nosso curso em que a criança (a partir de 9 anos) monta um jogo de verdade em 5 dias, passo a passo. Com a bolsa, o acesso é completo, vitalício e sem pagar nada.',
@@ -550,12 +550,12 @@ const seeds = [
         ctaButton('Resgatar a bolsa', '{{link}}'),
         divider,
         small(
-          'Você recebeu este convite único porque {{indicador}} informou o seu e-mail. Não vamos enviar outras mensagens: se não tiver interesse, basta ignorar este e-mail e nada mais acontece.',
+          'Este é um convite único: {{indicador}} nos passou o seu e-mail só para isso. Se não tiver interesse, pode ignorar, que a gente não escreve de novo.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
       footerNote:
-        'Convite enviado a pedido de {{indicador}}. Sem interesse? Ignore — não enviaremos de novo.',
+        'Convite enviado a pedido de {{indicador}}. Sem interesse? Pode ignorar, não enviaremos de novo.',
     }),
   },
   {
@@ -569,10 +569,10 @@ const seeds = [
       title: 'Bolsa ativada, {{nome}} 🎉',
       content: [
         p(
-          'A bolsa indicada por <strong>{{indicador}}</strong> foi resgatada e o <strong>Desafio do Primeiro Jogo</strong> já está liberado na sua conta do <strong>Sistema Zero</strong> — completo e vitalício.',
+          'A bolsa indicada por <strong>{{indicador}}</strong> foi resgatada e o <strong>Desafio do Primeiro Jogo</strong> já está liberado na sua conta do <strong>Sistema Zero</strong>, completo e vitalício.',
         ),
         p(
-          'Falta só um passo: criar a sua senha de acesso (você é o responsável; o perfil da criança vocês criam juntos lá dentro, em um minutinho).',
+          'Falta só um passo: criar a sua senha de acesso. O perfil da criança vocês criam juntos lá dentro, em um minutinho.',
         ),
         ctaButton('Criar minha senha', '{{link}}'),
         p(
