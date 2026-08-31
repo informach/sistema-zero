@@ -1,0 +1,77 @@
+---
+import BolsaResgate from '../../islands/BolsaResgate'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getDeps } from '../../server/deps'
+
+// Landing de RESGATE da Bolsa do Primeiro Jogo (/bolsa/<codigo>). Página flat
+// fora do registry de funis (molde /renovar): o código pode ser de um
+// EMBAIXADOR ou (fase 2) de um MEMBRO — o referrals resolve os dois na mesma
+// rota. Código inválido/desativado → 404 amigável (envelope uniforme lá).
+export const prerender = false
+
+Astro.response.headers.set('cache-control', 'private, no-store')
+
+const { gateway } = getDeps()
+const codigo = (Astro.params.codigo ?? '').trim().toLowerCase()
+
+let referrerName: string | null = null
+let gatewayDown = false
+if (/^[a-z0-9-]{4,32}$/.test(codigo)) {
+  const res = await gateway.resolveReferralCode(codigo)
+  if (res.status === 200) {
+    const body = res.body as { displayName?: unknown }
+    if (typeof body?.displayName === 'string' && body.displayName.length > 0) {
+      referrerName = body.displayName
+    }
+  } else if (res.status !== 404) {
+    // Gateway/referrals fora: não afirmar que o código não existe.
+    gatewayDown = true
+  }
+}
+if (!referrerName && !gatewayDown) Astro.response.status = 404
+---
+
+<BaseLayout
+  title="Bolsa do Primeiro Jogo | Sistema Zero"
+  description="Resgate a bolsa 100% do Desafio do Primeiro Jogo: a criança cria o próprio jogo em 5 dias."
+  noindex
+  htmlClass="theme-kids"
+>
+  <main class="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-4 py-10">
+    {
+      referrerName ? (
+        <>
+          <header class="mb-6 text-center">
+            <p class="text-sm font-semibold uppercase tracking-wide text-cyan">
+              Bolsa 100% · presente de {referrerName}
+            </p>
+            <h1 class="mt-2 text-3xl font-bold text-ink">Desafio do Primeiro Jogo</h1>
+            <p class="mt-3 text-sm text-muted">
+              A criança (a partir de 9 anos) cria um jogo de verdade em 5 dias, passo a passo. Com
+              a bolsa, o acesso é completo, vitalício e sem pagar nada.
+            </p>
+          </header>
+          <BolsaResgate client:load code={codigo} referrerName={referrerName} />
+        </>
+      ) : gatewayDown ? (
+        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
+          <h1 class="text-2xl font-bold text-ink">Um instantinho…</h1>
+          <p class="mt-3 text-sm text-muted">
+            Não conseguimos carregar a sua bolsa agora. Recarregue a página em alguns segundos —
+            o seu link continua valendo.
+          </p>
+        </div>
+      ) : (
+        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
+          <h1 class="text-2xl font-bold text-ink">Link de bolsa não encontrado</h1>
+          <p class="mt-3 text-sm text-muted">
+            Confira se o endereço foi copiado por inteiro ou peça um link novo para quem indicou
+            você. Se quiser conhecer o Sistema Zero mesmo assim, é só visitar a nossa página
+            inicial.
+          </p>
+          <a href="/" class="btn btn-primary mt-6 inline-block">Conhecer o Sistema Zero</a>
+        </div>
+      )
+    }
+  </main>
+</BaseLayout>

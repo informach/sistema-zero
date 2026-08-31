@@ -202,6 +202,26 @@ A página passa `adminFunnelList()` (rótulos do dropdown + rótulos de resposta
 `AdminDashboard`. `RespostasTable` mostra as respostas do `quiz_answers` rotuladas pelas perguntas do
 funil + coluna Funil; Perfis/Performance rotulam por funil (perguntas viram "Pergunta N").
 
+**Landings de indicação (`/bolsa/[codigo]` e `/embaixador/[token]`, 08/2026 — Fase 1 do sistema
+de indicações):** páginas FLAT fora do registry (molde `/renovar` — registrar um funil exigiria
+`FUNNEL_OFFER_<KEY>` no Railway), tema kids, `no-store` + `noindex` (a do embaixador é
+capability-URL: o token de 32 bytes É a chave de acesso, sem conta/senha). O funil é só a BORDA:
+o estado (códigos, embaixadores, resgates, convites) vive no **@sistemazero/referrals**, alcançado
+via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferralCode`,
+`getAmbassadorByToken`, `createAmbassadorInvite`, `redeemScholarship`). SSR resolve o código/token
+(404 amigável UNIFORME p/ inexistente/desativado; gateway fora → tela "recarregue", NUNCA afirmar
+que o código não existe) e passa tudo por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
+mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
+completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
+falha continua de onde parou) e `EmbaixadorPainel` (copiar link/mensagem pronta pro WhatsApp DELE
+— a plataforma NUNCA dispara WhatsApp; convite por e-mail único). Handlers puros em
+`server/referrals.ts` (`postRedeemScholarship`/`postAmbassadorInvite` — repassam envelopes
+conhecidos [404/409/429], 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
+`/api/bolsa/resgatar` e `/api/embaixador/convites`. ⚠️ Rate limit: as escritas entraram no
+`RATE_LIMITED_WRITE` da middleware e os GETs SSR no `rate-limit-paths.ts` (cada hit = 1 chamada
+assinada ao gateway) — landing nova DEVE entrar nos dois regex. Testes:
+`tests/unit/referrals-handlers.test.ts` (+ fake-gateway com os 4 métodos).
+
 **Pendência (decidida):**
 - **Upsell/downsell:** rotas + flags + cadeia de `successPath` prontas (scaffolding; **404 até** um
   funil definir `upsell`/`downsell` no `FunnelDef`). A 2ª cobrança de um lead JÁ PAGO (guard

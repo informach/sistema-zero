@@ -203,6 +203,28 @@ if (!HELPDESK_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
   )
 }
 
+// Indicações e bolsas (@sistemazero/referrals): embaixadores, códigos e a Bolsa
+// do Primeiro Jogo (fases futuras: atribuição ?ref + carteira de créditos). O
+// gateway injeta o x-internal-token em TODAS as rotas /referrals/* (defesa em
+// profundidade). DEVE bater com o INTERNAL_API_TOKEN do referrals. O consumer
+// HMAC `referrals` é como o serviço chama /messaging/send e
+// /auth/internal/{ensure-buyer,password-tokens} (e /members/webhooks/grant-manual).
+const REFERRALS_URL = process.env.REFERRALS_URL ?? 'http://localhost:3012'
+const REFERRALS_INTERNAL_TOKEN = process.env.REFERRALS_INTERNAL_TOKEN ?? ''
+const referralsInternalTransforms = REFERRALS_INTERNAL_TOKEN
+  ? [
+      {
+        type: 'header-inject' as const,
+        options: { headers: { 'x-internal-token': REFERRALS_INTERNAL_TOKEN } },
+      },
+    ]
+  : []
+const REFERRALS_HMAC_SECRET = process.env.REFERRALS_HMAC_SECRET ?? ''
+const REFERRALS_ALLOWED_CIDRS = (process.env.REFERRALS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
+
 const sharedResilience = {
   loadBalancer: 'round-robin' as const,
   timeoutMs: 15_000,
@@ -266,6 +288,17 @@ const config: GatewayConfigInput = {
             id: 'member-shell',
             hmacSecret: MEMBER_SHELL_HMAC_SECRET,
             allowedCidrs: MEMBER_SHELL_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O referrals como consumer HMAC de borda (bolsa: ensure-buyer/password-tokens
+    // no auth, grant-manual no members, e-mails via /messaging/send). Condicional.
+    ...(REFERRALS_HMAC_SECRET
+      ? [
+          {
+            id: 'referrals',
+            hmacSecret: REFERRALS_HMAC_SECRET,
+            allowedCidrs: REFERRALS_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -336,6 +369,15 @@ const config: GatewayConfigInput = {
       name: 'fiscal',
       upstreamGroups: {
         default: [{ url: FISCAL_URL, healthCheckPath: '/healthz' }],
+      },
+      ...sharedResilience,
+    },
+    // Indicações e bolsas: embaixadores + Bolsa do Primeiro Jogo (admin via JWT;
+    // landings do funil via HMAC de borda do consumer `funnel`).
+    referrals: {
+      name: 'referrals',
+      upstreamGroups: {
+        default: [{ url: REFERRALS_URL, healthCheckPath: '/healthz' }],
       },
       ...sharedResilience,
     },
@@ -2144,6 +2186,26 @@ const config: GatewayConfigInput = {
       upstreamAuth: 'resign',
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
+    // Concessão MANUAL S2S (referrals → gateway → members): a Bolsa do Primeiro
+    // Jogo concede a oferta completa SEM pagamento. Espelho exato do
+    // members-webhook-grant (HMAC de borda + resign como consumer `gateway`).
+    {
+      id: 'members-webhook-grant-manual',
+      methods: ['POST'],
+      pathPattern: '/members/webhooks/grant-manual',
+      service: 'members',
+      // allowedConsumers: rota que CONCEDE ACESSO — só o referrals (bolsa) chama.
+      // Sem a allowlist, qualquer consumer HMAC do registry (auth/fiscal/members/
+      // marketing, que só mandam e-mail) alcançaria a concessão com assinatura válida.
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['referrals'],
+      },
+      upstreamAuth: 'resign',
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
 
     // ── Área de membros — Admin (painel `@sistemazero/admin`) ────────────────
     // Gestão de acesso pelo operador. JWT + RBAC no gateway (LEITURA → superadmin/
@@ -3292,6 +3354,102 @@ const config: GatewayConfigInput = {
       auth: 'public',
       transforms: helpdeskInternalTransforms,
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
+    },
+
+    // ── Indicações e bolsas (@sistemazero/referrals) ─────────────────────────
+    // Admin (painel): LEITURA staff+ / ESCRITA admin+, wildcards no molde do
+    // hub-admin. COM `referralsInternalTransforms` (o serviço exige o
+    // x-internal-token — X-Auth-User-* só são confiáveis vindos do gateway).
+    {
+      id: 'referrals-admin-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/*',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-admin-write',
+      methods: ['POST', 'PATCH'],
+      pathPattern: '/referrals/admin/*',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    // Internas consumidas pelo FUNIL (landings /bolsa e /embaixador): HMAC de
+    // borda (o consumer `funnel` já existe; rotas hmac não têm allowlist por
+    // consumer). Sem resign — o referrals confere só o x-internal-token injetado.
+    {
+      id: 'referrals-internal-code',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/codes/:code',
+      service: 'referrals',
+      // ⚠️ O balde `by: 'principal'` destas 4 rotas é AGREGADO: o consumer é
+      // sempre `funnel` (1 principal = todo o tráfego das landings). A proteção
+      // por VISITANTE é o rate limit por IP do middleware do funil; aqui o teto
+      // é o disjuntor do agregado — dimensionado p/ um pico de campanha, não p/
+      // um usuário (300/min derrubava a landing inteira com ~5 acessos/s).
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 3000, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-ambassador',
+      methods: ['GET'],
+      pathPattern: '/referrals/internal/ambassadors/by-token/:token',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-invite',
+      methods: ['POST'],
+      pathPattern: '/referrals/internal/ambassadors/by-token/:token/invites',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-internal-redeem',
+      methods: ['POST'],
+      pathPattern: '/referrals/internal/redemptions',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      // O resgate encadeia 3 S2S (conta → grant → e-mail) — o default de 10s
+      // cortava o fluxo no meio em upstream frio (o funil espera até 45s).
+      timeoutMs: 45_000,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

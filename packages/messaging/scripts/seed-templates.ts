@@ -499,6 +499,94 @@ const seeds = [
       '{{link}}',
     ].join('\n'),
   },
+  // ── Indicações e bolsas (@sistemazero/referrals, 08/2026) — E-MAIL SÓ ──────
+  // Decisão de produto: a plataforma NUNCA dispara WhatsApp frio (Evolution é
+  // não-oficial, mensagem a desconhecido = risco de ban do chip + LGPD frágil);
+  // o embaixador compartilha o link no PRÓPRIO WhatsApp.
+  {
+    key: 'referrals-ambassador-link',
+    channel: 'email' as const,
+    name: 'Página do embaixador (e-mail)',
+    subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}!',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Distribua bolsas do Desafio do Primeiro Jogo para quem você quiser.',
+      title: 'Sua página de embaixador está pronta, {{nome}} 🎁',
+      content: [
+        p(
+          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com uma <strong>bolsa 100% do Desafio do Primeiro Jogo</strong> (curso completo, vitalício).',
+        ),
+        p(
+          'Na sua página você encontra o seu link de bolsa para compartilhar e também pode enviar convites por e-mail. Tudo pronto, sem burocracia:',
+        ),
+        ctaButton('Abrir minha página', '{{link}}'),
+        divider,
+        small(
+          'Guarde este e-mail: o link acima é a sua chave de acesso à página (não precisa de senha). Se suspeitar que ele vazou, fale com a gente para gerar outro.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque foi cadastrado(a) como embaixador(a) do Sistema Zero.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-invite',
+    channel: 'email' as const,
+    name: 'Convite de bolsa (e-mail)',
+    subject: '{{indicador}} indicou você: bolsa 100% do Desafio do Primeiro Jogo 🎁',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'Um presente de {{indicador}}: o curso completo, sem pagar nada.',
+      title: '{{nome}}, você ganhou um presente de {{indicador}} 🎁',
+      content: [
+        p(
+          '<strong>{{indicador}}</strong> acha que tem uma criança aí na sua casa que ia adorar criar o próprio jogo — e indicou você para uma <strong>bolsa 100%</strong> do <strong>Desafio do Primeiro Jogo</strong>, do Sistema Zero.',
+        ),
+        p(
+          'É o nosso curso em que a criança (a partir de 9 anos) monta um jogo de verdade em 5 dias, passo a passo. Com a bolsa, o acesso é completo, vitalício e sem pagar nada.',
+        ),
+        p('Para resgatar, é só confirmar os seus dados de responsável no link abaixo:'),
+        ctaButton('Resgatar a bolsa', '{{link}}'),
+        divider,
+        small(
+          'Você recebeu este convite único porque {{indicador}} informou o seu e-mail. Não vamos enviar outras mensagens: se não tiver interesse, basta ignorar este e-mail e nada mais acontece.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Convite enviado a pedido de {{indicador}}. Sem interesse? Ignore — não enviaremos de novo.',
+    }),
+  },
+  {
+    key: 'referrals-scholarship-welcome',
+    channel: 'email' as const,
+    name: 'Boas-vindas da bolsa (e-mail)',
+    subject: 'Sua bolsa está ativa, {{nome}}! Crie sua senha e comecem hoje',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'O Desafio do Primeiro Jogo já está liberado na sua conta.',
+      title: 'Bolsa ativada, {{nome}} 🎉',
+      content: [
+        p(
+          'A bolsa indicada por <strong>{{indicador}}</strong> foi resgatada e o <strong>Desafio do Primeiro Jogo</strong> já está liberado na sua conta do <strong>Sistema Zero</strong> — completo e vitalício.',
+        ),
+        p(
+          'Falta só um passo: criar a sua senha de acesso (você é o responsável; o perfil da criança vocês criam juntos lá dentro, em um minutinho).',
+        ),
+        ctaButton('Criar minha senha', '{{link}}'),
+        p(
+          'Depois é só entrar, criar o perfil da criança e começar a primeira missão. Divirtam-se! 🚀',
+        ),
+        divider,
+        small(
+          'Por segurança, o link acima expira em <strong>14 dias</strong> e só pode ser usado uma vez. Se expirar, use a opção <strong>“Esqueci minha senha”</strong> na página de login para gerar outro.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque uma bolsa foi resgatada com este endereço.',
+    }),
+  },
 ]
 
 // ── Upsert ────────────────────────────────────────────────────────────────────

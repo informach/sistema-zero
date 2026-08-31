@@ -95,6 +95,11 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      - name: Testes DB referrals (Postgres real)
+        run: cd packages/referrals && bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
 
@@ -234,6 +239,7 @@ jobs:
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
             [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
             [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
+            [referrals]=1ad1c5ce-977c-4d7d-95a4-b8b08f2dc258
             # TODO(helpdesk): preencher ao criar os serviços no Railway e
             # descomentar os cases packages/helpdesk*/ abaixo (+ incluir
             # helpdesk na lista do packages/core/* e helpdesk-app na do ui/*).
@@ -269,7 +275,7 @@ jobs:
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing admin community community-kids; do add "$s"; done ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids; do add "$s"; done ;;
                   packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
@@ -286,6 +292,7 @@ jobs:
                   packages/fiscal/*) add fiscal ;;
                   packages/marketing/*) add marketing ;; # ferramenta de marketing (API)
                   packages/marketing-app/*) add marketing-app ;; # front da ferramenta de marketing
+                  packages/referrals/*) add referrals ;; # indicações e bolsas (API)
                   # packages/helpdesk/*) add helpdesk ;; # help desk com IA (API) — descomentar c/ SVC_ID
                   # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
                   packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)

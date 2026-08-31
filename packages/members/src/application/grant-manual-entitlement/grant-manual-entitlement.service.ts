@@ -3,6 +3,7 @@ import { CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import {
   EntitlementConflictError,
+  EntitlementSaveRaceError,
   InvalidEntitlementCommandError,
   OfferNotFoundError,
 } from '../../domain/entitlement/entitlement.errors'
@@ -21,15 +22,24 @@ import { type AdminEntitlementView, toAdminEntitlementView } from '../mappers/ad
  * - `all_courses`: chave-mestra ADULTA (todos os cursos adult, atuais e futuros), sem oferta.
  * - `all_kids_courses`: chave-mestra KIDS (todos os cursos kids), sem oferta.
  *
- * Idempotente por `manual:${userId}:${productId}` (+ índice único user/product/source):
- * re-conceder o MESMO produto a um membro com matrícula manual ATIVA devolve a
+ * Idempotente por `manual:${userId}:${productId}` — e, quando a concessão tem
+ * `sourceId` próprio (ex.: `scholarship:<id>`), por `manual:userId:productId:sourceId`:
+ * ORIGENS distintas não colidem (uma cortesia admin expirando nunca transforma a
+ * bolsa num 409 terminal), e o replay da MESMA origem continua idempotente.
+ * Re-conceder o MESMO produto pela MESMA origem com matrícula ATIVA devolve a
  * existente; se a existente estiver revogada/expirada, falha 409 (use estender).
  */
 export type GrantManualCommand =
-  | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null }
-  | { mode: 'course'; userId: string; courseRef: string; expiresAt?: Date | null }
-  | { mode: 'all_courses'; userId: string; expiresAt?: Date | null }
-  | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null }
+  | { mode: 'offer'; userId: string; offerRef: string; expiresAt?: Date | null; sourceId?: string }
+  | {
+      mode: 'course'
+      userId: string
+      courseRef: string
+      expiresAt?: Date | null
+      sourceId?: string
+    }
+  | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
+  | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -64,6 +74,12 @@ interface GrantOneInput {
   snapshot: EntitlementSnapshot
   expiresAt: Date | null
   now: Date
+  /**
+   * Procedência auditável da concessão (ex.: `scholarship:<redemptionId>` da
+   * bolsa do referrals). `sourceKind` FICA `'manual'` (enum intocado — regra do
+   * monorepo); ausente → `'manual'` (comportamento histórico do admin).
+   */
+  sourceId?: string
 }
 
 export class GrantManualEntitlementService {
@@ -74,13 +90,13 @@ export class GrantManualEntitlementService {
     const expiresAt = cmd.expiresAt ?? null
     switch (cmd.mode) {
       case 'offer':
-        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now)
+        return this.grantByOffer(cmd.userId, cmd.offerRef, expiresAt, now, cmd.sourceId)
       case 'course':
-        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now)
+        return this.grantByCourse(cmd.userId, cmd.courseRef, expiresAt, now, cmd.sourceId)
       case 'all_courses':
-        return this.grantAllCourses(cmd.userId, expiresAt, now)
+        return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
       case 'all_kids_courses':
-        return this.grantAllKidsCourses(cmd.userId, expiresAt, now)
+        return this.grantAllKidsCourses(cmd.userId, expiresAt, now, cmd.sourceId)
     }
   }
 
@@ -89,6 +105,7 @@ export class GrantManualEntitlementService {
     offerRef: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     const offer = await this.deps.catalog.resolveOfferEntitlements(offerRef)
     if (!offer) throw new OfferNotFoundError()
@@ -125,6 +142,7 @@ export class GrantManualEntitlementService {
         snapshot,
         expiresAt,
         now,
+        sourceId,
       })
     }
     granted.push(...(await this.grantMany(grants)))
@@ -137,6 +155,7 @@ export class GrantManualEntitlementService {
     courseRef: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
     if (!course) throw new CourseNotFoundError()
@@ -165,6 +184,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.course', { userId, courseRef })
     return { granted: [view] }
@@ -174,6 +194,7 @@ export class GrantManualEntitlementService {
     userId: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     // Chave-mestra de cortesia: snapshot sintético, sem oferta nem curso específico.
     const snapshot: EntitlementSnapshot = {
@@ -198,6 +219,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.all_courses', { userId })
     return { granted: [view] }
@@ -207,6 +229,7 @@ export class GrantManualEntitlementService {
     userId: string,
     expiresAt: Date | null,
     now: Date,
+    sourceId?: string,
   ): Promise<GrantManualResult> {
     // Chave-mestra KIDS de cortesia: cobre todos os cursos kids (atuais e futuros).
     const snapshot: EntitlementSnapshot = {
@@ -231,6 +254,7 @@ export class GrantManualEntitlementService {
       snapshot,
       expiresAt,
       now,
+      sourceId,
     })
     this.deps.logger?.info('grant.manual.all_kids_courses', { userId })
     return { granted: [view] }
@@ -277,12 +301,15 @@ export class GrantManualEntitlementService {
       })
     }
 
-    throw new EntitlementConflictError('Conflito de concorrência ao conceder a matrícula manual')
+    // Corrida esgotou os retries: erro TRANSITÓRIO (não o 409 terminal) — o
+    // webhook grant-manual re-entrega; o admin vê 409 CONCURRENCY_CONFLICT.
+    throw new EntitlementSaveRaceError()
   }
 }
 
 function manualIdempotencyKey(p: GrantOneInput): string {
-  return `manual:${p.userId}:${p.productId}`
+  const base = `manual:${p.userId}:${p.productId}`
+  return p.sourceId && p.sourceId !== 'manual' ? `${base}:${p.sourceId}` : base
 }
 
 function buildManualEntitlement(
@@ -300,7 +327,7 @@ function buildManualEntitlement(
     offerId: p.offerId,
     snapshot: p.snapshot,
     sourceKind: 'manual',
-    sourceId: 'manual',
+    sourceId: p.sourceId ?? 'manual',
     subscriptionId: null,
     grantedAt: p.now,
     expiresAt: p.expiresAt,

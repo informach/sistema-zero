@@ -150,6 +150,26 @@ const registry = new RouteRegistry([
     methods: ['PATCH'],
     pathPattern: '/members/pensa/tasks/:taskId/progress',
   }),
+  // Indicações e bolsas: admin em wildcards (read/write por método) + internas
+  // do funil (literais sob /referrals/internal) + o grant-manual do members.
+  r({ id: 'referrals-admin-read', methods: ['GET'], pathPattern: '/referrals/admin/*' }),
+  r({ id: 'referrals-admin-write', methods: ['POST', 'PATCH'], pathPattern: '/referrals/admin/*' }),
+  r({
+    id: 'referrals-internal-code',
+    methods: ['GET'],
+    pathPattern: '/referrals/internal/codes/:code',
+  }),
+  r({
+    id: 'referrals-internal-invite',
+    methods: ['POST'],
+    pathPattern: '/referrals/internal/ambassadors/by-token/:token/invites',
+  }),
+  r({
+    id: 'members-webhook-grant-manual',
+    methods: ['POST'],
+    pathPattern: '/members/webhooks/grant-manual',
+  }),
+  r({ id: 'members-webhook-grant', methods: ['POST'], pathPattern: '/members/webhooks/grant' }),
 ])
 
 describe('RouteRegistry', () => {
@@ -466,6 +486,34 @@ describe('RouteRegistry', () => {
     expect(reg.resolve('POST', '/hub/internal/showcase-thread', 'v1')?.route.id).toBe('sc')
     expect(reg.resolve('POST', '/hub/internal/showcase-thread-studio', 'v1')?.route.id).toBe(
       'sc-studio',
+    )
+  })
+
+  test('referrals: admin wildcard por método; internas não caem no wildcard; grant-manual ≠ grant', () => {
+    // Admin: o MESMO wildcard separado por método (leitura staff+ × escrita admin+).
+    expect(registry.resolve('GET', '/referrals/admin/ambassadors', 'v1')?.route.id).toBe(
+      'referrals-admin-read',
+    )
+    expect(registry.resolve('POST', '/referrals/admin/ambassadors', 'v1')?.route.id).toBe(
+      'referrals-admin-write',
+    )
+    expect(registry.resolve('PATCH', '/referrals/admin/ambassadors/abc', 'v1')?.route.id).toBe(
+      'referrals-admin-write',
+    )
+    // Internas do funil: prefixo /referrals/internal é literal distinto do /admin.
+    const code = registry.resolve('GET', '/referrals/internal/codes/vo-x7k2', 'v1')
+    expect(code?.route.id).toBe('referrals-internal-code')
+    expect(code?.params.code).toBe('vo-x7k2')
+    expect(
+      registry.resolve('POST', '/referrals/internal/ambassadors/by-token/tok123/invites', 'v1')
+        ?.route.id,
+    ).toBe('referrals-internal-invite')
+    // O literal `grant-manual` NUNCA cai no `grant` (segmento distinto).
+    expect(registry.resolve('POST', '/members/webhooks/grant-manual', 'v1')?.route.id).toBe(
+      'members-webhook-grant-manual',
+    )
+    expect(registry.resolve('POST', '/members/webhooks/grant', 'v1')?.route.id).toBe(
+      'members-webhook-grant',
     )
   })
 

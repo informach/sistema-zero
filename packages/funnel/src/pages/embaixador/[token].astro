@@ -1,0 +1,86 @@
+---
+import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getDeps } from '../../server/deps'
+
+// Página do EMBAIXADOR (/embaixador/<token>). O token é uma capability-URL
+// (32 bytes, chega por e-mail — sem conta/senha): noindex + no-store SEMPRE.
+// Token inválido/desativado → 404 amigável (uniforme, sem vazar qual).
+export const prerender = false
+
+Astro.response.headers.set('cache-control', 'private, no-store')
+
+const { gateway } = getDeps()
+const token = (Astro.params.token ?? '').trim()
+
+interface PageView {
+  name: string
+  code: string
+  shareUrl: string
+  stats: { redemptionsCompleted: number; invitesSent: number }
+}
+
+let view: PageView | null = null
+let gatewayDown = false
+if (/^[A-Za-z0-9_-]{16,64}$/.test(token)) {
+  const res = await gateway.getAmbassadorByToken(token)
+  if (res.status === 200) {
+    view = res.body as PageView
+  } else if (res.status !== 404) {
+    gatewayDown = true
+  }
+}
+if (!view && !gatewayDown) Astro.response.status = 404
+---
+
+<BaseLayout
+  title="Página do Embaixador | Sistema Zero"
+  description="Distribua bolsas 100% do Desafio do Primeiro Jogo."
+  noindex
+  htmlClass="theme-kids"
+>
+  <main class="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-4 py-10">
+    {
+      view ? (
+        <>
+          <header class="mb-6 text-center">
+            <p class="text-sm font-semibold uppercase tracking-wide text-cyan">
+              Embaixador(a) do Sistema Zero
+            </p>
+            <h1 class="mt-2 text-3xl font-bold text-ink">Olá, {view.name.split(' ')[0]}! 👋</h1>
+            <p class="mt-3 text-sm text-muted">
+              Presenteie crianças que você conhece com a bolsa 100% do Desafio do Primeiro Jogo.
+            </p>
+          </header>
+          <EmbaixadorPainel
+            client:load
+            token={token}
+            name={view.name}
+            shareUrl={view.shareUrl}
+            stats={view.stats}
+          />
+          <p class="mt-6 text-center text-xs text-muted">
+            Esta página é sua chave de acesso — não compartilhe o endereço DELA (compartilhe o link
+            de bolsa acima).
+          </p>
+        </>
+      ) : gatewayDown ? (
+        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
+          <h1 class="text-2xl font-bold text-ink">Um instantinho…</h1>
+          <p class="mt-3 text-sm text-muted">
+            Não conseguimos carregar a sua página agora. Recarregue em alguns segundos — o seu
+            link continua valendo.
+          </p>
+        </div>
+      ) : (
+        <div class="card rounded-2xl border-line/80 bg-card p-8 text-center">
+          <h1 class="text-2xl font-bold text-ink">Página não encontrada</h1>
+          <p class="mt-3 text-sm text-muted">
+            Confira se o link do e-mail foi copiado por inteiro. Se o problema continuar, fale com
+            a gente em contato@sistemazero.com.br.
+          </p>
+        </div>
+      )
+    }
+  </main>
+</BaseLayout>

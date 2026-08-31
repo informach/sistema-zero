@@ -273,6 +273,21 @@ export const GrantWebhookBody = t.Object({
 })
 
 /**
+ * Corpo de `POST /members/webhooks/grant-manual` — concessão manual S2S (referrals
+ * → gateway → members; bolsa do Primeiro Jogo). v1 restrita a `mode:'offer'` (a
+ * menor superfície que o resgate precisa — os demais modos seguem só no admin JWT).
+ * `sourceId` = procedência auditável (ex.: `scholarship:<redemptionId>`); o
+ * `sourceKind` fica `'manual'` (enum intocado). `expiresAt` ausente/null = vitalícia.
+ */
+export const GrantManualWebhookBody = t.Object({
+  userId: UUID,
+  mode: t.Literal('offer'),
+  offerRef: t.String({ minLength: 1, maxLength: 200 }),
+  expiresAt: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
+  sourceId: t.Optional(t.String({ minLength: 1, maxLength: 120 })),
+})
+
+/**
  * Corpo de `POST /members/internal/access-check` (S2S — consumido pela comunidade):
  * resolve, num passo, quais `courseRefs` o usuário acessa + se tem chave-mestra.
  */

@@ -977,6 +977,20 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   assina no bucket `R2_UGC_BUCKET`. A UI só oferece Ocultar quando `content.status='visible'`;
   o Hub re-checa a transição atomicamente e responde 409 sob corrida/repetição.
 
+## Embaixadores (indicações/bolsas — 08/2026, Fase 1)
+
+Item "Embaixadores" no grupo **Gestão** (ícone `Gift`) → `/admin/embaixadores`
+(`embaixadores-client.tsx`): gestão de quem distribui bolsas 100% do Desafio do Primeiro Jogo
+(pessoas COM ou SEM conta). Criar = nome + e-mail → o **@sistemazero/referrals** gera o código +
+a página (capability-URL) e envia o magic-link por e-mail (`emailSent:false` = copie o link no
+detalhe e mande por fora). Tabela: nome/código/bolsas resgatadas/convites/status; ações: detalhe
+(links copiáveis + resgates do código — `failedReason` tipo `grant_conflict` aflora aqui),
+reenviar e-mail do link (não rotaciona o token) e desativar/reativar (o CÓDIGO acompanha —
+landing 404). Escrita gated `superadmin/admin` (UX; o gateway `referrals-admin-write` + o
+serviço re-checam). BFF: adapter `server/referrals.ts` + shims
+`app/api/admin/referrals/ambassadors/{route,[id]/route,[id]/resend-link/route}.ts`; views
+`Ambassador*View` em `lib/types.ts`. Consome via gateway `GET|POST|PATCH /referrals/admin/*`.
+
 ## Checklist antes de finalizar
 
 - [ ] `bun test` verde · `bun run typecheck` limpo · `bun run check` (Biome) limpo · `bun run build` passa.

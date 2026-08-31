@@ -52,6 +52,7 @@ jobs:
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
             [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
             [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
+            [referrals]=1ad1c5ce-977c-4d7d-95a4-b8b08f2dc258
           )
 
           # environmentId de production resolvido POR NOME (sem hardcode).

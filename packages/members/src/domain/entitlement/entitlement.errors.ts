@@ -23,6 +23,18 @@ export class EntitlementConflictError extends DomainError {
   }
 }
 
+/**
+ * Corrida TRANSITÓRIA de escrita no grant manual (dois grants concorrentes;
+ * retry resolve). Distinta do `EntitlementConflictError` TERMINAL — o webhook
+ * grant-manual responde 502 (re-entrega) aqui e 409 lá. → 409 no admin.
+ */
+export class EntitlementSaveRaceError extends DomainError {
+  readonly code = 'CONCURRENCY_CONFLICT'
+  constructor(message = 'Conflito de concorrência ao conceder a matrícula — tente novamente') {
+    super(message)
+  }
+}
+
 /** A oferta informada na concessão manual não existe no catálogo. → 404. */
 export class OfferNotFoundError extends DomainError {
   readonly code = 'OFFER_NOT_FOUND'
