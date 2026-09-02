@@ -20,7 +20,9 @@ import { useEffect, useState } from 'react'
 import { type Hsv, hexToHsv, hsvToHex, normalizeHex } from '../../core/color'
 import { COPY } from '../../core/copy'
 import { safeSetPointerCapture } from '../../core/pointer'
+import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
+import { Pipette } from '../ui/icons'
 
 function clamp01(value: number): number {
   return Math.min(Math.max(value, 0), 1)
@@ -44,11 +46,18 @@ export function ColorPicker({
   onChange,
   recentColors,
   className,
+  onPickFromDrawing,
 }: {
   value: string
   onChange: (hex: string) => void
   recentColors?: readonly string[]
   className?: string
+  /**
+   * Conta-gotas: quem passa promete fechar a janelinha e deixar a criança tocar
+   * numa forma do palco (o vetor, nas pontas do degradê). Sem a prop o botão não
+   * existe, e o pixel continua como sempre.
+   */
+  onPickFromDrawing?: () => void
 }): JSX.Element {
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(value))
   const [hexText, setHexText] = useState(() => normalizeHex(value) ?? value)
@@ -165,6 +174,13 @@ export function ColorPicker({
         />
       </div>
 
+      {onPickFromDrawing ? (
+        <Button variant="outline" onClick={onPickFromDrawing} className="mt-3 w-full justify-start">
+          <Pipette aria-hidden="true" className="size-5" />
+          {COPY.colorPicker.pickFromDrawing}
+        </Button>
+      ) : null}
+
       {/* Cores recentes (se houver) */}
       {recentColors && recentColors.length > 0 ? (
         <div className="mt-3">
@@ -207,6 +223,7 @@ export function ColorPickerDialog({
   title,
   confirmLabel,
   recentColors,
+  onPickFromDrawing,
 }: {
   open: boolean
   value: string
@@ -215,6 +232,8 @@ export function ColorPickerDialog({
   title: string
   confirmLabel: string
   recentColors?: readonly string[]
+  /** Conta-gotas (ver `ColorPicker`): o clique já fecha esta janelinha, sem confirmar. */
+  onPickFromDrawing?: () => void
 }): JSX.Element | null {
   if (!open) return null
   return (
@@ -225,6 +244,7 @@ export function ColorPickerDialog({
       title={title}
       confirmLabel={confirmLabel}
       recentColors={recentColors}
+      onPickFromDrawing={onPickFromDrawing}
     />
   )
 }
@@ -236,11 +256,25 @@ function OpenColorPickerDialog({
   title,
   confirmLabel,
   recentColors,
+  onPickFromDrawing,
 }: Omit<Parameters<typeof ColorPickerDialog>[0], 'open'>): JSX.Element {
   const [draft, setDraft] = useState(() => normalizeHex(value) ?? '#000000')
   return (
     <Dialog open onClose={onClose} title={title}>
-      <ColorPicker value={draft} onChange={setDraft} recentColors={recentColors} />
+      <ColorPicker
+        value={draft}
+        onChange={setDraft}
+        recentColors={recentColors}
+        // O rascunho é DESCARTADO (como cancelar): a cor vai vir do toque na forma.
+        onPickFromDrawing={
+          onPickFromDrawing
+            ? () => {
+                onClose()
+                onPickFromDrawing()
+              }
+            : undefined
+        }
+      />
       <div className="mt-4 flex justify-end gap-2">
         <button
           type="button"
@@ -271,12 +305,15 @@ export function ColorButton({
   label,
   recentColors,
   className,
+  onPickFromDrawing,
 }: {
   value: string
   onChange: (hex: string) => void
   label: string
   recentColors?: readonly string[]
   className?: string
+  /** Conta-gotas (ver `ColorPicker`). */
+  onPickFromDrawing?: () => void
 }): JSX.Element {
   const [open, setOpen] = useState(false)
   return (
@@ -300,6 +337,7 @@ export function ColorButton({
         title={label}
         confirmLabel={COPY.colorPicker.apply}
         recentColors={recentColors}
+        onPickFromDrawing={onPickFromDrawing}
       />
     </>
   )

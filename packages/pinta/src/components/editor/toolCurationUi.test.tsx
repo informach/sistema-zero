@@ -147,6 +147,20 @@ describe('curadoria chega à caixa do VETOR', () => {
     })
     expect(hasTool(COPY.vector.select)).toBe(false)
   })
+
+  it('sem o conta-gotas na lista, a janelinha de cor do degradê não oferece pegar do desenho', async () => {
+    await semearCenarioVetor()
+    render(<PintaApp adapter={{ allowTools: ['brush', 'rect'] }} />)
+    await abrir('livre')
+    expect(hasTool(COPY.tools.picker)).toBe(false)
+
+    // A caixa reverteria a ferramenta na hora (`toolFallback`), então o botão nem
+    // aparece. O caso positivo (botão presente) vive em vectorUi.test.tsx.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientFrom }))
+    await screen.findByLabelText(COPY.colorPicker.hex)
+    expect(screen.queryByRole('button', { name: COPY.colorPicker.pickFromDrawing })).toBeNull()
+  })
 })
 
 describe('curadoria chega à caixa do MAPA', () => {

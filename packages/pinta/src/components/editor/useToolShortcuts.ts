@@ -12,6 +12,7 @@
  */
 import { useEffect, useRef } from 'react'
 import { isTextEntryTarget } from '../../core/dom'
+import { isPintaModalOpen } from './useActionShortcuts'
 
 /** Monta o mapa tecla → ferramenta a partir da lista de botões do editor. */
 export function toolShortcutMap<T extends string>(
@@ -37,6 +38,10 @@ export function useToolShortcuts<T extends string>(
     function onKeyDown(event: KeyboardEvent): void {
       if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return
       if (isTextEntryTarget(event.target)) return
+      // Modal do Pinta aberto (a ajuda `?`, o Degradê): a letra é do modal, não
+      // troca a ferramenta por trás dele. No meio de uma captura de cor, a troca
+      // ainda cancelaria a captura em silêncio.
+      if (isPintaModalOpen()) return
       const tool = shortcuts[event.key.toLowerCase()]
       if (tool) setToolRef.current(tool)
     }

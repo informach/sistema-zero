@@ -67,6 +67,45 @@ export const TOOL_SHORTCUTS = toolShortcutMap(TOOLS)
 export const MAX_CUSTOM_COLORS = 6
 
 /**
+ * Os SEIS degraus de espessura do contorno, compartilhados pela caixa de
+ * ferramentas (bolinhas) e pelo slider de Aparência. Passo de 0,5 a partir de
+ * meio pixel: o traço fino existe de verdade (pedido dela: o 1 era grosso demais
+ * para ser o primeiro, e o 8 não se usava). O default 2 TEM que estar na lista.
+ * Desenhos antigos podem carregar 4/6/8: continuam desenhando igual (o sanitize
+ * aceita até 64), só não acendem degrau nenhum.
+ */
+export const STROKE_WIDTHS = [0.5, 1, 1.5, 2, 2.5, 3] as const
+
+/**
+ * Degrau do slider para uma espessura: o primeiro preset que a alcança
+ * (arredonda para cima, como sempre foi). Acima do último (legado 4/6/8), o
+ * ÚLTIMO degrau. Antes o `findIndex` devolvia -1 e o `Math.max(-1, 0)` deixava
+ * o slider no degrau 0: o traço MAIS FINO para um traço grosso.
+ */
+export function strokeWidthIndex(width: number): number {
+  const index = STROKE_WIDTHS.findIndex((preset) => preset >= width)
+  return index === -1 ? STROKE_WIDTHS.length - 1 : index
+}
+
+/**
+ * "0,5" e não "0.5": a vírgula é o decimal que a criança lê. Duas casas no
+ * máximo: um legado "sujo" (0,30000000000000004) não pode chegar ao rótulo.
+ */
+export function formatStrokeWidth(width: number): string {
+  return String(Math.round(width * 100) / 100).replace('.', ',')
+}
+
+/**
+ * Diâmetro (px) da bolinha do preset na caixa: 6..16 para os seis degraus, em
+ * passos de 2px que o olho distingue e que cabem no botão de 44px. A fórmula
+ * antiga (`width * 2 + 4`) daria 5..10px com os degraus de meio pixel, quase
+ * iguais entre si.
+ */
+export function strokeDotSize(width: number): number {
+  return 4 + width * 4
+}
+
+/**
  * Degradê como `background` de CSS (amostras dos botões). O ângulo do modelo
  * não vira `deg` de propósito: a amostra é pequena e só precisa dizer "é um
  * degradê e são estas duas cores".

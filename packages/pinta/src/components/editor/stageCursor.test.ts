@@ -24,4 +24,14 @@ describe('stageCursor (o cursor da mãozinha)', () => {
     // Soltar o espaço no meio do arrasto deixa o gesto terminar (VectorStage).
     expect(stageCursor({ handTool: false, spaceHeld: false, panning: true })).toBe('grabbing')
   })
+
+  it('o conta-gotas mostra a MIRA, e a mão continua vencendo a mira', () => {
+    expect(stageCursor({ handTool: false, panning: false, pickerTool: true })).toBe('crosshair')
+    expect(
+      stageCursor({ handTool: false, spaceHeld: true, panning: false, pickerTool: true }),
+    ).toBe('grab')
+    expect(stageCursor({ handTool: false, panning: true, pickerTool: true })).toBe('grabbing')
+    // O mapa não passa `pickerTool` e segue sem cursor imposto.
+    expect(stageCursor({ handTool: false, panning: false, pickerTool: false })).toBeUndefined()
+  })
 })

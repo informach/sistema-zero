@@ -4,7 +4,7 @@
  * do .sz-btn-gradient do community-kids).
  */
 import { clsx } from 'clsx'
-import type { ButtonHTMLAttributes, JSX } from 'react'
+import type { ButtonHTMLAttributes, JSX, Ref } from 'react'
 import type { LucideIcon } from './icons'
 
 export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline'
@@ -22,7 +22,11 @@ export function Button({
   className,
   type,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }): JSX.Element {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant
+  /** React 19 entrega o `ref` como prop: ele segue no spread até o `<button>`. */
+  ref?: Ref<HTMLButtonElement>
+}): JSX.Element {
   return (
     <button
       type={type ?? 'button'}

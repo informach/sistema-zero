@@ -47,6 +47,12 @@ export function handleDialogDocumentKeyDown(
   card: HTMLElement,
   onClose: () => void,
 ): void {
+  // Tecla JÁ CONSUMIDA por quem veio antes não é deste modal (mesma régua dos
+  // atalhos de ação). ⚠️ O caso real: um Esc em captura cancela o modo de
+  // captura de cor e REABRE o Degradê; o React monta o Dialog no microtask entre
+  // um listener e o outro, e o MESMO keydown chegava aqui e fechava a janela que
+  // acabou de abrir (visto no navegador; o happy-dom, sob `act`, não reproduz).
+  if (event.defaultPrevented) return
   if (event.key === 'Escape') {
     event.preventDefault()
     event.stopPropagation()

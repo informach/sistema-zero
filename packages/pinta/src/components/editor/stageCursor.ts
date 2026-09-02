@@ -6,8 +6,12 @@
  * um `grab` preso à barra de espaço, e o arrasto nunca virava `grabbing`. Mora
  * num módulo próprio porque duplicar o ternário nos dois palcos é exatamente o
  * tipo de assimetria que o CLAUDE.md já registra como arrependimento.
+ *
+ * O vetor também passa `pickerTool`: o Conta-gotas (a ferramenta e o modo de
+ * captura da janelinha de cor) mostra a MIRA. A mão vence a mira de propósito:
+ * segurar espaço no meio da captura ainda arrasta a tela.
  */
-export type StageCursor = 'grab' | 'grabbing' | undefined
+export type StageCursor = 'grab' | 'grabbing' | 'crosshair' | undefined
 
 export function stageCursor(options: {
   /** A ferramenta ativa é a Mão. */
@@ -16,8 +20,11 @@ export function stageCursor(options: {
   spaceHeld?: boolean
   /** Um gesto de arrastar a tela está em andamento. */
   panning: boolean
+  /** A ferramenta ativa é o Conta-gotas (só o vetor passa). */
+  pickerTool?: boolean
 }): StageCursor {
   // Arrastando vence: a mão fechada é o retorno de que o gesto pegou.
   if (options.panning) return 'grabbing'
-  return options.handTool || options.spaceHeld === true ? 'grab' : undefined
+  if (options.handTool || options.spaceHeld === true) return 'grab'
+  return options.pickerTool === true ? 'crosshair' : undefined
 }
