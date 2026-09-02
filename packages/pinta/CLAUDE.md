@@ -296,7 +296,12 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   cicla Tab/Shift+Tab, trata Esc e remove os listeners ANTES de restaurar o acionador. Uma pilha
   global por card deixa só o modal do topo capturar foco/Escape; em modal aninhada o foco volta em
   duas etapas. `aria-modal` sozinho não implementa o trap. A regressão DOM cobre esse contrato;
-  manter QA cross-browser para comportamento real de foco.
+  manter QA cross-browser para comportamento real de foco. ⚠️ **Tecla JÁ CONSUMIDA
+  (`defaultPrevented`) é ignorada pelo trap (02/09/2026)**: o Esc do modo de captura de cor
+  (listener em captura) reabre o Degradê no MESMO keydown; o React monta o Dialog no microtask
+  entre um listener e o outro e o Escape chegava ao listener de documento do modal recém-nascido,
+  que fechava a janela que acabou de abrir. Visto no navegador; sob `act` o happy-dom não
+  reproduz, por isso o guard tem teste unitário próprio em `Dialog.test.tsx`.
 
 ## Seleção do pixel, atalhos e zoom pela rolagem (08/2026)
 
@@ -696,6 +701,15 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   Aparência) · faixa (Spritesheet/peças + zoom) em LARGURA TOTAL. A coluna dupla do
   vector-sprite MORREU (`PixelRightColumn` saiu do ramo vetor). Tela estreita: caixa horizontal +
   disclosure "Cores e camadas" (`VectorPanelsDisclosure`).
+- **Espessuras do contorno (02/09/2026, pedido dela)**: seis degraus `0,5 / 1 / 1,5 / 2 / 2,5 / 3`
+  (o 1 era grosso demais para ser o primeiro e o 8 não se usava), fonte ÚNICA `STROKE_WIDTHS` +
+  `strokeWidthIndex`/`formatStrokeWidth`/`strokeDotSize` em `vectorTools.ts` (antes a caixa e o
+  slider de Aparência tinham cada um a sua lista). O default de forma nova continua 2. Desenho
+  antigo com 4/6/8 desenha igual (o sanitize aceita até 64): nenhuma bolinha acende (igualdade
+  estrita; acender o "3" mentiria) e o slider para no ÚLTIMO degrau com `aria-valuetext` dizendo a
+  espessura real. ⚠️ Antes o `findIndex` devolvia -1 e o `Math.max(-1, 0)` mostrava o degrau mais
+  FINO para um traço grosso. Rótulos com vírgula ("Espessura do contorno: 0,5"). Testes:
+  `vector/vectorTools.test.ts` + 2 casos de UI em `vectorUi.test.tsx` (0,5 no palco; legado 8).
 - **Papel BRANCO fixo** no palco (sem xadrez — decisão de produto: cor absoluta nos 2 temas;
   forma branca sem contorno some — mitigado pelo contorno preto default e pela grade).
 - **Grade de apoio + snap** (`vector/grid.ts`): botão Grade na caixa (mesmo `session.showGrid` do
@@ -729,7 +743,11 @@ moldura "comia" o canto do desenho; os painéis `pin-panel` continuam arredondad
   slider "Tamanho da letra" no painel com 1 texto selecionado. **Raio do retângulo**: slider
   "Cantos arredondados" (o modelo/export já tinham `rx`; `makeRect` ganhou o param `radius`).
 - **Cores por CANAL** (`VectorColorsPanel`): UMA grade de swatches 5/linha aplicando no canal
-  ativo. O conta-gotas usa `adoptStyle` (muda SÓ o estilo vigente, sem re-estilizar a seleção).
+  ativo. O conta-gotas usa `adoptStyle` (muda SÓ o estilo vigente, sem re-estilizar a seleção);
+  o hit-test dele vive em **`vector/pickColor.ts`** (`hitShapeAt`: bbox do topo para baixo, com o
+  ponto levado ao espaço LOCAL da forma girada; escondida não conta, trancada conta) e a
+  ferramenta mostra o cursor de MIRA (`stageCursor({ pickerTool })`). O mesmo módulo responde
+  "QUAL cor sai da forma" para o conta-gotas da janelinha do degradê (ver "Ajustes do VETOR").
   Ver "Ajustes do vetor (08/2026)" abaixo — os chips saíram e o painel virou espelho do
   `PaletteBar`.
 - **Fora de escopo (futuro)**: degradê multi-stop/ângulo livre,
@@ -836,6 +854,8 @@ vence; senão `grab` se a Mão está ativa ou o espaço está segurado. O gesto 
 propósito, então há um `useState` `panning` ligado só nas BORDAS do arrasto: dois renders por
 gesto, zero durante o movimento. ⚠️ O efeito de troca de quadro/tile zera o `gestureRef` SEM
 passar pelo `endGesture` — tem que soltar o `panning` lá também, senão o cursor trava fechado.
+O vetor também passa `pickerTool` (o Conta-gotas e o modo de captura da janelinha de cor):
+`crosshair`, ABAIXO da mão na prioridade (segurar espaço no meio da captura ainda arrasta a tela).
 
 ### Texto de VÁRIAS linhas + alinhamento
 
@@ -1462,6 +1482,47 @@ já saberemos o que é preenchimento e o que é contorno".
   continua existindo (botão + espessura + opacidade): `section[aria-label="Aparência"]` é asserido.
   As seções condicionais (lados/pontas, cantos, tamanho da letra) viraram `Panel` com o VALOR no
   título e `aria-label` no input (o `<label>` que envolvia o range sumiu).
+- ⭐ **Conta-gotas na janelinha de cor do degradê (02/09/2026, pedido dela)**: "Cor do começo"/
+  "Cor do fim" abrem o `ColorPickerDialog`, que ganhou a prop OPCIONAL `onPickFromDrawing` (botão
+  "Pegar uma cor do desenho"; sem a prop nada muda, o pixel segue igual). Como a janelinha é uma
+  MODAL (trap de foco, overlay), tocar no palco exige um **modo de captura** fora dela: o clique
+  fecha as DUAS janelas num commit só e o escopo entra em `colorPick` (`beginColorPick` guarda a
+  request + a ferramenta de agora num REF e liga o conta-gotas); o palco resolve UMA cor
+  (`pickColorAt`: preenchimento sólido; no degradê a ponta mais PERTO do toque, por projeção na
+  bbox em unidades do `objectBoundingBox`, e no radial o meio fica a 0,25 do centro; contorno para
+  `none`/linha/pincel; figura de pixel art não tem cor única e toasta; forma SEM cor nenhuma nem
+  entra no hit-test, `paintsSomething`; a caixa cresce pela folga `10/zoom` + metade do contorno,
+  senão linha reta tem altura zero) e `endColorPick` restaura a
+  ferramenta e entrega a cor: `rememberColor` + `applyGradient` (UMA entrada de undo, como o
+  "Aplicar") + a janela do Degradê REABRE. Tocar no vazio não sai do modo. X na faixinha
+  flutuante (toque não tem Esc) e Esc (listener em CAPTURA com `preventDefault`, guardado por
+  `isPintaModalOpen`, senão o "soltar a seleção" dos atalhos rodava junto) cancelam e reabrem sem
+  mudar nada; trocar de ferramenta cancela SEM reabrir (ela quis desenhar). Na captura, alças e
+  barras flutuantes SOMEM (as alças não checam a ferramenta: tocar numa começaria um resize).
+  ⚠️ Limpar o ref ANTES do `setTool(previous)` é load-bearing (o efeito sobre `tool` cancelaria de
+  novo). ⚠️ O botão some quando o `picker` foi curado na aula (o `toolFallback` reverteria a
+  ferramenta na hora). ⭐ **A janela do Degradê é `VectorGradientDialog`, montada pelo PALCO, com
+  `gradientOpen`/`gradientButtonRef` no escopo** (full review 02/09): o painel de Aparência, dono
+  do botão, DESMONTA na tela estreita quando o disclosure "Cores e camadas" recolhe, e recolher
+  para enxergar o desenho é o gesto natural no meio da captura; antes disso a volta se perdia em
+  silêncio. Os handlers da captura vivem num ref atualizado a cada commit (`useLayoutEffect`) para
+  um `applyGradient` velho não aplicar com a seleção do render em que nasceu. Já em captura,
+  reabrir o Degradê e pedir a OUTRA ponta SUBSTITUI a request (a última pedida vence; antes a
+  recusa deixava a request velha e a cor caía na ponta errada). Pegar a MESMA cor que já está na
+  ponta não grava desfazer vazio. FOCO: a janela reaberta sozinha foca o botão "Degradê" ANTES de
+  abrir (o `Dialog` devolve o foco a quem estava focado ao abrir; depois de um toque no palco isso
+  seria o body) e o pointerdown da captura é cancelado (o mousedown de compatibilidade moveria o
+  foco para o body DEPOIS de o card focar). Leitor de tela: `role=status` sr-only SEMPRE montado
+  no palco recebe `pickColorBar` na captura. Alças somem com o conta-gotas em geral (ferramenta ou
+  captura; elas não checam a ferramenta). `useToolShortcuts` ganhou o portão `isPintaModalOpen`
+  (letra com modal aberto não troca a ferramenta por trás). Faixinha com `w-max` (com `left-1/2`
+  o shrink-to-fit só via a metade direita e a dica quebrava em 3 linhas em 375px); ela cobre
+  ~52px do topo do palco, aceito (a forma dali se pega noutro ponto ou rolando). Borda aceita:
+  entrar na captura descarta pontos pendentes da Caneta (é uma troca de ferramenta). Testes:
+  `vector/pickColor.test.ts`, `stageCursor.test.ts`, o describe "pegar uma cor do desenho" em
+  `vectorUi.test.tsx` (13 casos) e o caso curado em `toolCurationUi.test.tsx`. QA em navegador
+  no playground (:5199): as duas pontas, ponta mais perto num degradê em pé, X/Esc, troca de
+  ferramenta, um undo, 375px.
 - ⭐ **Paleta do vetor = espelho do `PaletteBar`**: sem chips (o canal é dito pelos dois
   quadradinhos da caixa), título = NOME da paleta com dropdown (Arcade/Doces/Lápis e carvão),
   lixeira + "+" no cabeçalho, grade 5/linha com "sem cor" na frente. Ordem: paleta escolhida (15) →
@@ -2349,6 +2410,11 @@ por px reais.
   + 6 MÉDIOS + 5 BAIXOS corrigidos — ver as duas seções dedicadas. QA playground feito
   (inclui truncate do menu e o desarme do Gerenciar medidos no navegador); pende QA integrado
   no kids com nuvem.
+- **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, não commitado)**: ver
+  "Espessuras do contorno" e "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
+  Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
+  na captura; forma sem cor roubando o toque; foco perdido ao reabrir) + baixas. Suíte (1154) +
+  typecheck + biome verdes; QA em navegador no playground feito, inclusive dos consertos.
 - **Pendências**: QA em browser real (palco vetorial, fluxo estilo→tipo, animação vetorial
   ponta-a-ponta, peças/mapa vetoriais, export, ponte entre perfis, tema claro/escuro, touch,
   Cartão de Criação → Pinta pré-preenchido → asset vinculado → envio ao Estúdio; o lote novo do

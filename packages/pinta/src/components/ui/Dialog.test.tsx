@@ -45,6 +45,54 @@ describe('Dialog', () => {
     expect(document.activeElement).toBe(outerTrigger)
   })
 
+  it('tecla JÁ CONSUMIDA (defaultPrevented) não fecha o modal nem mexe no foco', () => {
+    // O caso real: um Esc em captura cancela a captura de cor e reabre o Degradê;
+    // o Dialog monta no microtask entre um listener e o outro e recebia o MESMO
+    // keydown, fechando a janela que acabou de abrir.
+    const card = document.createElement('div')
+    const first = document.createElement('button')
+    card.tabIndex = -1
+    card.append(first)
+    document.body.append(card)
+    let closeCount = 0
+    try {
+      card.focus()
+      const consumedEscape = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      })
+      consumedEscape.preventDefault()
+      handleDialogDocumentKeyDown(consumedEscape, card, () => {
+        closeCount += 1
+      })
+      expect(closeCount).toBe(0)
+
+      // Shift+Tab a partir do card cairia no ramo que foca o ÚLTIMO focável
+      // (anti-vácuo: um Tab simples a partir do card já não move o foco).
+      const tab = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      })
+      tab.preventDefault()
+      handleDialogDocumentKeyDown(tab, card, () => {
+        closeCount += 1
+      })
+      expect(document.activeElement).toBe(card)
+
+      // Anti-vácuo: o mesmo Esc, sem estar consumido, fecha.
+      const fresh = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true })
+      handleDialogDocumentKeyDown(fresh, card, () => {
+        closeCount += 1
+      })
+      expect(closeCount).toBe(1)
+    } finally {
+      card.remove()
+    }
+  })
+
   it('listeners do documento recuperam foco e mantêm Tab/Shift+Tab dentro do modal', () => {
     const background = document.createElement('button')
     const card = document.createElement('div')

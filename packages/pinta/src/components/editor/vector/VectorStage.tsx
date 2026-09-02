@@ -42,6 +42,7 @@ import {
   nearestOnPath,
   setHandle,
 } from '../../../vector/pathNodes'
+import { hitShapeAt, pickColorAt } from '../../../vector/pickColor'
 import {
   makeEllipse,
   makeLine,
@@ -64,6 +65,7 @@ import {
   SquaresUnite,
   Trash2,
   Ungroup,
+  X,
 } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
@@ -72,6 +74,7 @@ import { isPintaModalOpen } from '../useActionShortcuts'
 import { useMediaQuery } from '../useMediaQuery'
 import { useWheelZoom } from '../useWheelZoom'
 import { useVectorEditor } from './VectorEditorScope'
+import { VectorGradientDialog } from './VectorGradientDialog'
 import { VectorNodeActions } from './VectorNodeActions'
 import {
   mergeNodeSelection,
@@ -162,11 +165,6 @@ const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'w', fx: 0, fy: 0.5 },
 ]
 
-/** Ponto dentro do retângulo (hit-test grosso do conta-gotas). */
-function bboxContains(b: Bounds, p: Vec2): boolean {
-  return p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height
-}
-
 export function VectorStage(): JSX.Element {
   const { editor } = useEditorStores()
   const { showToast } = useToast()
@@ -197,6 +195,9 @@ export function VectorStage(): JSX.Element {
     commitShapes,
     rememberColor,
     adoptStyle,
+    colorPick,
+    endColorPick,
+    cancelColorPick,
     duplicateSelected,
     removeSelected,
     flipSelected,
@@ -431,12 +432,30 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'picker') {
-      // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox — o
-      // clique de forma borbulha até aqui porque não é a ferramenta de seleção).
-      // `adoptStyle` muda SÓ o estilo vigente (não re-estiliza a seleção).
-      const hit = [...visibleShapes(currentShapes())]
-        .reverse()
-        .find((s) => bboxContains(shapeBounds(s), at))
+      // CAPTURA da janelinha de cor: o toque devolve UMA cor (fill, ponta do
+      // degradê mais perto, ou o contorno) e sai do modo. Tocar no vazio não
+      // faz nada (ela tenta de novo); figura de pixel art não tem cor única.
+      if (colorPick) {
+        // Cancelar o pointerdown segura o FOCO: o Degradê reabre e foca o card no
+        // microtask, e o mousedown de compatibilidade que viria depois moveria o
+        // foco para o body (o svg não é focável).
+        event.preventDefault()
+        const picked = pickColorAt(visibleShapes(currentShapes()), at, 10 / zoom)
+        if (!picked) return
+        if (!picked.hex) {
+          // Só a figura de pixel art chega aqui: forma sem cor nenhuma nem entra
+          // no hit-test (`paintsSomething`).
+          if (picked.shape.type === 'image') showToast(COPY.vector.pickColorNoColor)
+          return
+        }
+        endColorPick(picked.hex)
+        return
+      }
+      // Conta-gotas: adota o estilo da forma mais AO TOPO sob o toque (bbox com a
+      // folga do toque — o clique de forma borbulha até aqui porque não é a
+      // ferramenta de seleção). `adoptStyle` muda SÓ o estilo vigente (não
+      // re-estiliza a seleção).
+      const hit = hitShapeAt(visibleShapes(currentShapes()), at, 10 / zoom)
       if (hit) {
         adoptStyle({
           fill: hit.fill,
@@ -830,7 +849,33 @@ export function VectorStage(): JSX.Element {
           TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
           moram na faixa colada na barra de cima, e ter as duas na mesma tela
           confunde. Por isso as duas compartilham `aria-label` e rótulos. */}
-      {tool === 'reshape' && nodeTarget && nodePath && !wide ? (
+      {/* Região viva SEMPRE montada (vazia fora do modo): sem ela o leitor de
+          tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
+          para os dois não se duplicarem na árvore. */}
+      <span role="status" className="sr-only">
+        {colorPick ? COPY.vector.pickColorBar : ''}
+      </span>
+      {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
+          largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o
+          mesmo canto das barras flutuantes, que somem enquanto ela existe.
+          `w-max`: com `left-1/2` o shrink-to-fit só enxerga a metade direita do
+          palco (~188px em 375px) e a dica quebrava em três linhas; o teto de
+          largura continua valendo. */}
+      {colorPick ? (
+        <div
+          role="toolbar"
+          aria-label={COPY.vector.pickColorBar}
+          className="pin-panel absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3 shadow-lg"
+        >
+          <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
+          <ToolButton
+            icon={X}
+            label={COPY.vector.pickColorCancel}
+            onClick={() => cancelColorPick('user')}
+          />
+        </div>
+      ) : null}
+      {tool === 'reshape' && nodeTarget && nodePath && !wide && !colorPick ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.nodeBar}
@@ -839,7 +884,7 @@ export function VectorStage(): JSX.Element {
           <VectorNodeActions />
         </div>
       ) : null}
-      {tool !== 'reshape' && selected.length > 0 && !wide ? (
+      {tool !== 'reshape' && selected.length > 0 && !wide && !colorPick ? (
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}
@@ -896,7 +941,12 @@ export function VectorStage(): JSX.Element {
             className="block bg-white/60"
             style={{
               touchAction: 'none',
-              cursor: stageCursor({ handTool: tool === 'pan', spaceHeld, panning }),
+              cursor: stageCursor({
+                handTool: tool === 'pan',
+                spaceHeld,
+                panning,
+                pickerTool: tool === 'picker',
+              }),
             }}
             role="img"
             aria-label={COPY.a11y.drawArea}
@@ -994,7 +1044,10 @@ export function VectorStage(): JSX.Element {
             {/* Moldura + alças da seleção única. As medidas dividem pelo zoom
                 para manter um tamanho CONSTANTE na tela (alça pequena demais
                 em zoom baixo era impossível de tocar). */}
-            {tool !== 'reshape' && single && singleBounds ? (
+            {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
+                alças não checam a ferramenta, e tocar numa delas com ele
+                começaria um resize/giro em vez de pegar a cor. */}
+            {tool !== 'reshape' && tool !== 'picker' && single && singleBounds ? (
               <g
                 transform={
                   single.rotation !== 0
@@ -1154,7 +1207,7 @@ export function VectorStage(): JSX.Element {
                 giradas, girada como um bloco rígido, NÃO é a caixa da união
                 girada — a moldura sairia de cima do desenho. Ela é recalculada
                 a cada quadro, então "respira" enquanto as formas orbitam. */}
-            {selected.length > 1 ? (
+            {selected.length > 1 && tool !== 'picker' ? (
               <>
                 {selected.map((shape) => {
                   const b = shapeBounds(shape)
@@ -1240,6 +1293,7 @@ export function VectorStage(): JSX.Element {
 
       {/* Texto: criar num ponto OU reeditar (duplo clique no palco). Vazio
           mantém o botão desabilitado — sem apagar texto sem querer. */}
+      <VectorGradientDialog />
       <Dialog
         open={textDialog !== null}
         onClose={() => setTextDialog(null)}

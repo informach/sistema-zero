@@ -13,7 +13,6 @@
  * aqui embaixo, onde a criança só achava rolando a coluna inteira.
  */
 import type { JSX } from 'react'
-import { useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   fontFamilyOf,
@@ -24,21 +23,15 @@ import {
   VECTOR_FONT_FAMILY_INFO,
 } from '../../vector/model'
 import { Button, ToolButton } from '../ui/Button'
-import { Dialog } from '../ui/Dialog'
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  CircleDot,
-  MoveHorizontal,
-  MoveVertical,
-} from '../ui/icons'
+import { AlignCenter, AlignLeft, AlignRight } from '../ui/icons'
 import { Panel, type PanelDisclosure } from '../ui/Panel'
-import { ColorButton } from './ColorPicker'
 import { useVectorEditor } from './vector/VectorEditorScope'
-import { gradientCss } from './vector/vectorTools'
-
-const STROKE_WIDTHS = [1, 2, 3, 4, 6, 8] as const
+import {
+  formatStrokeWidth,
+  gradientCss,
+  STROKE_WIDTHS,
+  strokeWidthIndex,
+} from './vector/vectorTools'
 
 /** Painel lateral de aparência da seleção/ferramenta vetorial. */
 export function VectorPropertiesPanel({
@@ -48,7 +41,6 @@ export function VectorPropertiesPanel({
 } = {}): JSX.Element {
   const {
     style,
-    customColors,
     selected,
     tool,
     polygonSides,
@@ -60,14 +52,14 @@ export function VectorPropertiesPanel({
     fontFamily,
     setFontFamily,
     updateSelected,
-    rememberColor,
     applyStyle,
     currentGradient,
-    applyGradient,
+    gradientOpen,
+    setGradientOpen,
+    gradientButtonRef,
     setPolygonSides,
     setStarTips,
   } = useVectorEditor()
-  const [gradientOpen, setGradientOpen] = useState(false)
   const single = selected.length === 1
   const singleShape = single ? (selected[0] ?? null) : null
   const selectedRect = singleShape?.type === 'rect' ? singleShape : null
@@ -89,6 +81,7 @@ export function VectorPropertiesPanel({
       <Panel title={COPY.vector.appearance} disclosure={disclosure}>
         {/* A amostra mostra o degradê VIGENTE (ou o que sairia ao ligar). */}
         <Button
+          ref={gradientButtonRef}
           variant="outline"
           aria-haspopup="dialog"
           aria-expanded={gradientOpen}
@@ -111,10 +104,11 @@ export function VectorPropertiesPanel({
             min={0}
             max={STROKE_WIDTHS.length - 1}
             step={1}
-            value={Math.max(
-              STROKE_WIDTHS.findIndex((width) => width >= (style.stroke?.width ?? 2)),
-              0,
-            )}
+            // Degrau que alcança a espessura; legado 4/6/8 cai no ÚLTIMO (antes
+            // caía no primeiro, mostrando o traço mais fino para um grosso).
+            value={strokeWidthIndex(style.stroke?.width ?? 2)}
+            // O valor acessível é a espessura REAL ("8" no legado), não o índice.
+            aria-valuetext={formatStrokeWidth(style.stroke?.width ?? 2)}
             disabled={style.stroke === null}
             onChange={(event) => {
               const width = STROKE_WIDTHS[Number(event.target.value)] ?? 2
@@ -138,64 +132,6 @@ export function VectorPropertiesPanel({
           />
         </label>
       </Panel>
-
-      <Dialog
-        open={gradientOpen}
-        onClose={() => setGradientOpen(false)}
-        title={COPY.vector.gradient}
-      >
-        <div className="flex flex-wrap items-center gap-1">
-          <ToolButton
-            icon={MoveHorizontal}
-            label={COPY.vector.gradientH}
-            active={activeGradient?.type === 'linear' && activeGradient.angle === 0}
-            onClick={() => applyGradient({ type: 'linear', angle: 0 })}
-          />
-          <ToolButton
-            icon={MoveVertical}
-            label={COPY.vector.gradientV}
-            active={activeGradient?.type === 'linear' && activeGradient.angle === 90}
-            onClick={() => applyGradient({ type: 'linear', angle: 90 })}
-          />
-          <ToolButton
-            icon={CircleDot}
-            label={COPY.vector.gradientRadial}
-            active={activeGradient?.type === 'radial'}
-            onClick={() => applyGradient({ type: 'radial' })}
-          />
-          <ColorButton
-            label={COPY.vector.gradientFrom}
-            value={activeGradient?.from ?? currentGradient().from}
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyGradient({ from: hex })
-            }}
-          />
-          <ColorButton
-            label={COPY.vector.gradientTo}
-            value={activeGradient?.to ?? currentGradient().to}
-            recentColors={customColors}
-            onChange={(hex) => {
-              rememberColor(hex)
-              applyGradient({ to: hex })
-            }}
-          />
-        </div>
-        {/* Sem isto não existe caminho de volta: qualquer toque nos controles
-            acima vira degradê e a criança fica presa nele. */}
-        <Button
-          variant="outline"
-          disabled={!activeGradient}
-          onClick={() => {
-            applyStyle({ fill: (activeGradient ?? currentGradient()).from })
-            setGradientOpen(false)
-          }}
-          className="mt-4 w-full"
-        >
-          {COPY.vector.gradientOff}
-        </Button>
-      </Dialog>
 
       {tool === 'polygon' || tool === 'star' ? (
         <Panel

@@ -16,10 +16,7 @@ import { Grid3x3, Image, Maximize, Repeat } from '../../ui/icons'
 import { useEditor, useEditorStores, useSession, useToolCuration } from '../editorContext'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
 import { VectorInsertAssetDialog } from './VectorInsertAssetDialog'
-import { gradientCss, TOOLS } from './vectorTools'
-
-/** Mesmos degraus do slider de espessura do painel de aparência. */
-const STROKE_WIDTH_PRESETS = [1, 2, 3, 4, 6, 8] as const
+import { formatStrokeWidth, gradientCss, STROKE_WIDTHS, strokeDotSize, TOOLS } from './vectorTools'
 
 export function VectorToolbox({
   orientation = 'vertical',
@@ -46,23 +43,30 @@ export function VectorToolbox({
     <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
   )
 
-  const strokeWidths = STROKE_WIDTH_PRESETS.map((width) => (
-    <IconButton
-      key={width}
-      active={style.stroke?.width === width}
-      aria-label={`${COPY.vector.strokeWidth}: ${width}`}
-      aria-pressed={style.stroke?.width === width}
-      title={`${COPY.vector.strokeWidth}: ${width}`}
-      // Sem contorno? Escolher uma espessura LIGA o contorno (preto default).
-      onClick={() => applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } })}
-    >
-      <span
-        aria-hidden="true"
-        className="rounded-full bg-current"
-        style={{ width: width * 2 + 4, height: width * 2 + 4 }}
-      />
-    </IconButton>
-  ))
+  // Os degraus vêm de `STROKE_WIDTHS` (fonte única com o slider de Aparência).
+  // `active` é igualdade ESTRITA de propósito: um traço antigo de 8 não acende o
+  // "3" (mentiria), ele só não acende nada.
+  const strokeWidths = STROKE_WIDTHS.map((width) => {
+    const label = `${COPY.vector.strokeWidth}: ${formatStrokeWidth(width)}`
+    const dot = strokeDotSize(width)
+    return (
+      <IconButton
+        key={width}
+        active={style.stroke?.width === width}
+        aria-label={label}
+        aria-pressed={style.stroke?.width === width}
+        title={label}
+        // Sem contorno? Escolher uma espessura LIGA o contorno (preto default).
+        onClick={() => applyStyle({ stroke: { color: style.stroke?.color ?? '#000000', width } })}
+      >
+        <span
+          aria-hidden="true"
+          className="rounded-full bg-current"
+          style={{ width: dot, height: dot }}
+        />
+      </IconButton>
+    )
+  })
 
   const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
     <ToolButton

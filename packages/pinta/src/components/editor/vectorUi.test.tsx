@@ -15,6 +15,7 @@ beforeEach(() => {
 async function openVectorEditor(
   projectPalette?: readonly string[],
   seedExtra?: (store: ReturnType<typeof createGalleryStore>) => Promise<void>,
+  openName = 'livre',
 ): Promise<void> {
   const seed = createGalleryStore()
   await seed.getState().create({
@@ -28,12 +29,13 @@ async function openVectorEditor(
   })
   if (seedExtra) await seedExtra(seed)
   render(<PintaApp />)
+  const openLabel = new RegExp(`Abrir ${openName}`)
   await waitFor(() => {
-    expect(screen.getByRole('button', { name: /Abrir livre/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: openLabel })).toBeTruthy()
   })
-  fireEvent.click(screen.getByRole('button', { name: /Abrir livre/ }))
+  fireEvent.click(screen.getByRole('button', { name: openLabel }))
   await waitFor(() => {
-    expect(screen.getByText('livre')).toBeTruthy()
+    expect(screen.getByText(openName)).toBeTruthy()
   })
 }
 
@@ -300,8 +302,14 @@ describe('UI vetorial (F5)', () => {
 
   it('caixa de ferramentas: espessuras no topo, grade e os dois slots de cor no pé', async () => {
     await openVectorEditor()
-    // Presets de espessura (espelho dos tamanhos de pincel do pixel).
-    expect(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 4` })).toBeTruthy()
+    // Presets de espessura (espelho dos tamanhos de pincel do pixel): seis
+    // degraus de meio em meio, com vírgula no rótulo; o antigo "4" não existe mais.
+    for (const label of ['0,5', '1', '1,5', '2', '2,5', '3']) {
+      expect(
+        screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: ${label}` }),
+      ).toBeTruthy()
+    }
+    expect(screen.queryByRole('button', { name: `${COPY.vector.strokeWidth}: 4` })).toBeNull()
     // Toggle da grade de apoio (mesmo botão do pixel).
     expect(screen.getByRole('button', { name: COPY.tools.grid })).toBeTruthy()
     // Slots: preenchimento (verde default) na frente + o swatch verde da grade
@@ -311,6 +319,82 @@ describe('UI vetorial (F5)', () => {
     ).toBeGreaterThanOrEqual(2)
     expect(screen.getByRole('button', { name: `${COPY.vector.stroke}: preto` })).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.vector.swapFillStroke })).toBeTruthy()
+  })
+
+  it('escolher 0,5 desenha um contorno de meio pixel e o slider acompanha', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 0,5` }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(stage.querySelector('rect[stroke-width="0.5"]')).toBeTruthy()
+    })
+    const slider = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
+    expect(slider.value).toBe('0')
+    expect(slider.getAttribute('aria-valuetext')).toBe('0,5')
+
+    // O degrau mais grosso agora é o 3 (o retângulo recém-desenhado segue selecionado).
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: 3` }))
+    await waitFor(() => {
+      expect(stage.querySelector('rect[stroke-width="3"]')).toBeTruthy()
+    })
+    expect(slider.value).toBe('5')
+  })
+
+  it('traço antigo de 8 mantém a espessura e o slider para no ÚLTIMO degrau', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        const { createVectorBackgroundAsset } = await import('../../core/project')
+        const grosso = createVectorBackgroundAsset({ name: 'grosso', width: 480, height: 360 })
+        await seed.getState().importAssets([
+          {
+            ...grosso,
+            shapes: [
+              {
+                id: 'g1',
+                type: 'rect',
+                x: 20,
+                y: 20,
+                w: 80,
+                h: 80,
+                rx: 0,
+                fill: '#ff2121',
+                stroke: { color: '#000000', width: 8 },
+                opacity: 1,
+                rotation: 0,
+              },
+            ],
+          },
+        ])
+      },
+      'grosso',
+    )
+    const stage = measureStage()
+    const rect = stage.querySelector('rect[stroke-width="8"]')
+    if (!rect) throw new Error('retângulo com traço de 8 esperado')
+
+    // Selecionar a forma faz o painel ler a espessura DELA (inspetor).
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+
+    // O desenho continua com 8 (o modelo não muda)...
+    expect(stage.querySelector('rect[stroke-width="8"]')).toBeTruthy()
+    // ...nenhum degrau acende (acender o "3" mentiria)...
+    for (const label of ['0,5', '1', '1,5', '2', '2,5', '3']) {
+      const button = screen.getByRole('button', { name: `${COPY.vector.strokeWidth}: ${label}` })
+      expect(button.getAttribute('aria-pressed')).toBe('false')
+    }
+    // ...e o slider para no FIM dizendo a espessura real (antes caía no degrau
+    // mais fino, o oposto do que a forma tem).
+    const slider = screen.getByLabelText(COPY.vector.strokeWidth) as HTMLInputElement
+    expect(slider.value).toBe('5')
+    expect(slider.getAttribute('aria-valuetext')).toBe('8')
   })
 
   it('slots de cor distinguem ÁREA preenchida de MOLDURA de contorno', async () => {
@@ -1562,6 +1646,349 @@ describe('Misturar formas (pathfinder)', () => {
         configurable: true,
         value: originalMatchMedia,
       })
+    }
+  })
+})
+
+/**
+ * Conta-gotas da JANELINHA de cor do degradê (modo de captura): as duas janelas
+ * fecham, ela toca numa forma, a cor entra na ponta e a janela do Degradê volta.
+ */
+describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () => {
+  /** B verde em (100..160) e A vermelho em (16..64); A fica selecionado. */
+  async function drawTwoRects(): Promise<HTMLElement> {
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [100, 100], [160, 160])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+    })
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(2)
+    })
+    // A (recém-desenhado, selecionado) vira vermelho pelo swatch da paleta.
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.vector.fill}: vermelho` }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+    })
+    return stage
+  }
+
+  /** Abre Degradê → a ponta pedida → o botão do conta-gotas. */
+  async function startPicking(end: 'from' | 'to'): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: end === 'from' ? COPY.vector.gradientFrom : COPY.vector.gradientTo,
+      }),
+    )
+    fireEvent.click(await screen.findByRole('button', { name: COPY.colorPicker.pickFromDrawing }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
+    })
+  }
+
+  function pressed(name: string): string | null {
+    return screen.getByRole('button', { name }).getAttribute('aria-pressed')
+  }
+
+  it('o botão fecha as DUAS janelas e entra na captura: mira, dica, sem alças', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    // Com A selecionado, as 8 alças estão no palco (os testes de cima contam 8).
+    expect(stage.querySelectorAll('rect[width="14"]').length).toBe(8)
+    await startPicking('from')
+
+    expect(document.querySelector('[data-pinta-dialog]')).toBeNull()
+    expect(screen.queryByLabelText(COPY.colorPicker.hex)).toBeNull()
+    expect(pressed(COPY.tools.picker)).toBe('true')
+    expect(stage.getAttribute('style') ?? '').toContain('crosshair')
+    expect(stage.querySelectorAll('rect[width="14"]').length).toBe(0)
+  })
+
+  it('tocar numa forma leva a cor DELA para a ponta, devolve a ferramenta e reabre o Degradê em um desfazer', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('from')
+
+    // O toque cai NO retângulo B (verde) e borbulha até o palco.
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
+    expect(pressed(COPY.tools.rect)).toBe('true')
+    await waitFor(() => {
+      // A (selecionado) ganhou o degradê que COMEÇA na cor de B.
+      const stops = stage.querySelectorAll('linearGradient stop')
+      expect(stops[0]?.getAttribute('stop-color')).toBe('#78dc52')
+      expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(1)
+    })
+    // A cor pega também vira "recente" na janelinha.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradientFrom }))
+    expect(await screen.findByRole('button', { name: '#78dc52' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.cancel }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+
+    // UM desfazer devolve A ao vermelho sólido; B continua verde.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+      expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
+    })
+  })
+
+  it('a ponta do FIM também pega', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('to')
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    await waitFor(() => {
+      const stops = stage.querySelectorAll('linearGradient stop')
+      expect(stops[1]?.getAttribute('stop-color')).toBe('#78dc52')
+    })
+  })
+
+  it('tocar no vazio não sai da captura; o X volta ao Degradê sem mudar nada', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('from')
+
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 300, clientY: 300 })
+    expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
+    expect(screen.queryByRole('dialog')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.pickColorCancel }))
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
+    expect(pressed(COPY.tools.rect)).toBe('true')
+    expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+    expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
+  })
+
+  it('Esc cancela, reabre o Degradê e NÃO solta a seleção', async () => {
+    await openVectorEditor()
+    await drawTwoRects()
+    await startPicking('from')
+
+    fireEvent.keyDown(document.body, { key: 'Escape' })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
+    // O Esc foi consumido em captura: o "soltar a seleção" dos atalhos não rodou.
+    expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+  })
+
+  it('escolher outra ferramenta cancela SEM reabrir o Degradê', async () => {
+    await openVectorEditor()
+    await drawTwoRects()
+    await startPicking('from')
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.brush }))
+    await waitFor(() => {
+      expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
+    })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(pressed(COPY.vector.brush)).toBe('true')
+  })
+
+  it('na tela estreita a barra flutuante da seleção dá lugar à faixinha e volta ao cancelar', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      // Na tela estreita a paleta (e a Aparência) moram no disclosure: abre antes.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.panelsTitle }))
+      await drawTwoRects()
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+      await startPicking('from')
+      expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+      expect(screen.getByRole('toolbar', { name: COPY.vector.pickColorBar })).toBeTruthy()
+
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.pickColorCancel }))
+      await screen.findByRole('dialog', { name: COPY.vector.gradient })
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    } finally {
+      Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia })
+    }
+  })
+
+  it('o conta-gotas COMUM segue adotando o estilo da forma tocada', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.picker }))
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await waitFor(() => {
+      const slot = screen
+        .getAllByRole('button', { name: `${COPY.vector.fill}: verde` })
+        .find((button) => button.getAttribute('title') === COPY.vector.fill)
+      expect(slot).toBeTruthy()
+    })
+    // Adotar NÃO re-estiliza a seleção: A continua vermelho.
+    expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+  })
+
+  it('figura de pixel art avisa que não tem uma cor só e continua na captura', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        const { createVectorBackgroundAsset } = await import('../../core/project')
+        const figura = createVectorBackgroundAsset({ name: 'figura', width: 480, height: 360 })
+        await seed.getState().importAssets([
+          {
+            ...figura,
+            shapes: [
+              {
+                id: 'img1',
+                type: 'image',
+                x: 200,
+                y: 200,
+                w: 100,
+                h: 100,
+                src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                fill: 'none',
+                stroke: null,
+                opacity: 1,
+                rotation: 0,
+              },
+            ],
+          },
+        ])
+      },
+      'figura',
+    )
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+    })
+    await startPicking('from')
+    const figuraEl = stage.querySelector('image')
+    if (!figuraEl) throw new Error('figura esperada')
+    fireEvent.pointerDown(figuraEl, { isPrimary: true, pointerId: 1, clientX: 250, clientY: 250 })
+    expect(await screen.findByText(COPY.vector.pickColorNoColor)).toBeTruthy()
+    expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
+    expect(pressed(COPY.tools.picker)).toBe('true')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('reabrir o Degradê no meio da captura e pedir a OUTRA ponta: a última pedida vence', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('to')
+    // Com a faixinha na tela, o botão "Degradê" do painel continua vivo.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientFrom }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.colorPicker.pickFromDrawing }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    await waitFor(() => {
+      // A cor foi para o COMEÇO (a última pedida), e o fim ficou o branco de fábrica.
+      const stops = stage.querySelectorAll('linearGradient stop')
+      expect(stops[0]?.getAttribute('stop-color')).toBe('#78dc52')
+      expect(stops[1]?.getAttribute('stop-color')).toBe('#ffffff')
+    })
+    expect(pressed(COPY.tools.rect)).toBe('true')
+  })
+
+  it('ao fechar o Degradê reaberto pela captura, o foco volta ao botão "Degradê"', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('from')
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole('button', { name: COPY.vector.gradient }),
+      )
+    })
+  })
+
+  it('pegar a mesma cor que já está na ponta não grava um desfazer vazio', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    const alvo = stage.querySelector('rect[fill="#78dc52"]')
+    if (!alvo) throw new Error('retângulo verde esperado')
+    // 1ª captura: A ganha o degradê que começa no verde de B (uma entrada de desfazer).
+    await startPicking('from')
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    // 2ª captura da MESMA cor para a MESMA ponta: nada muda, nada entra no histórico.
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientFrom }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.colorPicker.pickFromDrawing }))
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull()
+    })
+    fireEvent.pointerDown(alvo, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    // UM desfazer devolve o vermelho sólido: se a 2ª captura tivesse gravado, A
+    // ainda estaria em degradê.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+      expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
+    })
+  })
+
+  it('na tela estreita, recolher "Cores e camadas" no meio da captura não perde a volta do Degradê', async () => {
+    const originalMatchMedia = window.matchMedia
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      value: (query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        dispatchEvent: () => true,
+      }),
+    })
+    try {
+      await openVectorEditor()
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.panelsTitle }))
+      await drawTwoRects()
+      await startPicking('from')
+      // Recolher o disclosure DESMONTA o painel de Aparência (o botão some)...
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.panelsTitle }))
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: COPY.vector.gradient })).toBeNull()
+      })
+      // ...mas a janela vive no palco: o X devolve o Degradê mesmo assim.
+      fireEvent.click(screen.getByRole('button', { name: COPY.vector.pickColorCancel }))
+      await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    } finally {
+      Object.defineProperty(window, 'matchMedia', { configurable: true, value: originalMatchMedia })
     }
   })
 })

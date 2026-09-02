@@ -20,12 +20,14 @@ import {
   previousShapesOf,
   withActiveShapes,
 } from '../../../core/assetEdit'
+import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { isTextEntryTarget } from '../../../core/dom'
 import { newId } from '../../../core/id'
 import { DEFAULT_PALETTE_ID } from '../../../core/palette'
 import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
 import { shortcut } from '../../../core/shortcuts'
+import { isToolAllowed } from '../../../core/toolCuration'
 import { ensureVectorFontLoaded, ensureVectorFontsForShapes } from '../../../vector/fonts'
 import {
   type AlignEdge,
@@ -96,6 +98,24 @@ import {
 
 /** Qual "canal" de cor recebe o próximo clique na paleta. */
 export type VectorColorChannel = 'fill' | 'stroke'
+
+/**
+ * Por que a captura de cor acabou sem cor: `user` = X/Esc (quem pediu quer
+ * voltar para onde estava), `tool` = ela escolheu outra ferramenta no meio (quer
+ * desenhar, não voltar).
+ */
+export type ColorPickCancelReason = 'user' | 'tool'
+
+/** O que a janelinha de cor pede ao palco: UMA cor, tocando numa forma. */
+export interface ColorPickRequest {
+  onPick: (hex: string) => void
+  onCancel: (reason: ColorPickCancelReason) => void
+}
+
+/** A captura em andamento (o que o palco precisa para renderizar a faixinha). */
+export interface ColorPickSession {
+  previousTool: VectorTool
+}
 
 export interface VectorEditorContextValue {
   doc: ActiveShapesDoc
@@ -168,6 +188,30 @@ export interface VectorEditorContextValue {
   swapFillStroke: () => void
   currentGradient: () => VectorGradient
   applyGradient: (partial: Partial<VectorGradient>) => void
+  /**
+   * Modo de CAPTURA de cor (conta-gotas da janelinha de cor): a janelinha fecha,
+   * a ferramenta vira o conta-gotas e o próximo toque numa forma devolve UMA cor
+   * pela `onPick`. `null` fora do modo.
+   */
+  colorPick: ColorPickSession | null
+  /**
+   * Entra no modo. `false` = recusado (conta-gotas curado). Já em captura, a
+   * pedida nova SUBSTITUI a anterior (a última ponta pedida vence).
+   */
+  beginColorPick: (request: ColorPickRequest) => boolean
+  /** Sai do modo com a cor tocada: restaura a ferramenta e entrega a cor. */
+  endColorPick: (hex: string) => void
+  /** Sai do modo sem cor. Só `user` restaura a ferramenta (`tool` já trocou). */
+  cancelColorPick: (reason: ColorPickCancelReason) => void
+  /**
+   * A janela do Degradê vive no ESCOPO (e é montada pelo palco): o painel de
+   * Aparência, dono do botão, desmonta na tela estreita quando o disclosure
+   * "Cores e camadas" recolhe, e a janela precisa reabrir depois da captura.
+   */
+  gradientOpen: boolean
+  setGradientOpen: (open: boolean) => void
+  /** O botão "Degradê" do painel: a janela reaberta sozinha devolve o foco a ele. */
+  gradientButtonRef: RefObject<HTMLButtonElement | null>
   moveOrder: (to: 1 | -1 | 'front' | 'back') => void
   duplicateSelected: () => void
   removeSelected: () => void
@@ -205,7 +249,7 @@ export function useVectorEditor(): VectorEditorContextValue {
 }
 
 export function VectorEditorScope({ children }: { children: ReactNode }): JSX.Element | null {
-  const { editor, session } = useEditorStores()
+  const { editor, session, allowTools } = useEditorStores()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const animationId = useSession((state) => state.animationId)
@@ -240,6 +284,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // Canal de cor SELECIONADO (espelho do activeSlot do pixel): a próxima cor
   // tocada na paleta cai no preenchimento ou no contorno.
   const [activeChannel, setActiveChannel] = useState<VectorColorChannel>('fill')
+  // Captura de cor da janelinha (conta-gotas). O ESTADO é o que renderiza
+  // (faixinha, alças escondidas, cursor); a request com os callbacks vive num
+  // REF: os handlers de ponteiro e o efeito da ferramenta leem sempre a request
+  // VIVA, sem entrar em deps nem correr atrás de um render.
+  const [colorPick, setColorPick] = useState<ColorPickSession | null>(null)
+  const colorPickRef = useRef<(ColorPickRequest & ColorPickSession) | null>(null)
+  const [gradientOpen, setGradientOpen] = useState(false)
+  const gradientButtonRef = useRef<HTMLButtonElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   // Área de transferência do APLICATIVO (copiar aqui, colar em outro desenho — ou
@@ -344,6 +396,32 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   // Arrow (não o `setTool` cru): amarra o genérico do hook ao id da ferramenta.
   useToolShortcuts(TOOL_SHORTCUTS, (id) => setTool(id))
+
+  // Trocar de ferramenta no meio da captura (caixa, letra de atalho ou o
+  // `toolFallback` da curadoria) cancela SEM restaurar: ela escolheu o que quer.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (trocou de ferramenta), não leitura
+  useEffect(() => {
+    if (colorPickRef.current && tool !== 'picker') cancelColorPick('tool')
+  }, [tool])
+
+  // Esc cancela a captura. Em CAPTURA (molde do Esc da Caneta no palco) e com
+  // `preventDefault`: o `useActionShortcuts` ignora evento já consumido, então o
+  // Esc de "soltar a seleção" não dispara junto. Com um modal do Pinta aberto por
+  // cima (a ajuda `?`), o Esc é do modal. ⚠️ Sem o guard de botão/campo da
+  // Caneta: ao fechar as janelinhas o foco cai no botão "Degradê", e o guard
+  // engoliria o Esc.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: cancelColorPick lê o ref vivo; só o modo re-registra
+  useEffect(() => {
+    if (!colorPick) return
+    function onKey(event: globalThis.KeyboardEvent): void {
+      if (event.key !== 'Escape') return
+      if (isPintaModalOpen()) return
+      event.preventDefault()
+      cancelColorPick('user')
+    }
+    window.addEventListener('keydown', onKey, { capture: true })
+    return () => window.removeEventListener('keydown', onKey, { capture: true })
+  }, [colorPick])
 
   // Atalhos de AÇÃO no padrão do Illustrator (08/2026): agrupar, ordem, trancar e
   // esconder, zoom, grade, espelhar, Esc. As combinações vêm do catálogo
@@ -602,6 +680,49 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
 
   function applyGradient(partial: Partial<VectorGradient>): void {
     applyStyle({ fill: { ...currentGradient(), ...partial } })
+  }
+
+  /**
+   * Entra na captura: guarda a request + a ferramenta de agora e liga o
+   * conta-gotas. Recusa com o conta-gotas CURADO (a caixa reverteria a
+   * ferramenta na hora pelo `toolFallback`; o botão nem aparece nesse caso, mas
+   * um no-op é mais seguro do que fechar as janelinhas para nada).
+   */
+  function beginColorPick(request: ColorPickRequest): boolean {
+    if (!isToolAllowed(allowTools, 'picker')) return false
+    // Já em captura (o Degradê reaberto por cima da faixinha pediu OUTRA ponta):
+    // a última pedida vence, e a ferramenta a restaurar continua a original.
+    const previousTool = colorPickRef.current?.previousTool ?? tool
+    colorPickRef.current = { ...request, previousTool }
+    setColorPick({ previousTool })
+    setTool('picker')
+    return true
+  }
+
+  /**
+   * Lê e LIMPA a request. ⚠️ Limpar ANTES do `setTool(previous)` é load-bearing:
+   * o efeito sobre `tool` roda depois do batch com a ferramenta restaurada e
+   * precisa achar o ref vazio, senão cancelaria uma segunda vez.
+   */
+  function takeColorPick(): (ColorPickRequest & ColorPickSession) | null {
+    const request = colorPickRef.current
+    colorPickRef.current = null
+    setColorPick(null)
+    return request
+  }
+
+  function endColorPick(hex: string): void {
+    const request = takeColorPick()
+    if (!request) return
+    setTool(request.previousTool)
+    request.onPick(normalizeHex(hex) ?? hex)
+  }
+
+  function cancelColorPick(reason: ColorPickCancelReason): void {
+    const request = takeColorPick()
+    if (!request) return
+    if (reason !== 'tool') setTool(request.previousTool)
+    request.onCancel(reason)
   }
 
   /**
@@ -1061,6 +1182,13 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     swapFillStroke,
     currentGradient,
     applyGradient,
+    colorPick,
+    beginColorPick,
+    endColorPick,
+    cancelColorPick,
+    gradientOpen,
+    setGradientOpen,
+    gradientButtonRef,
     moveOrder,
     duplicateSelected,
     removeSelected,

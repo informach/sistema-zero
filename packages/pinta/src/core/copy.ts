@@ -442,6 +442,8 @@ export const COPY = {
     hex: 'Código da cor',
     recent: 'Cores recentes',
     apply: 'Aplicar',
+    /** Conta-gotas da janelinha: fecha as janelas e deixa tocar numa forma do palco. */
+    pickFromDrawing: 'Pegar uma cor do desenho',
   },
   layers: {
     title: 'Camadas',
@@ -698,6 +700,15 @@ export const COPY = {
     gradientFrom: 'Cor do começo',
     gradientTo: 'Cor do fim',
     gradientOff: 'Tirar o degradê',
+    /**
+     * Modo de captura do conta-gotas (a janelinha de cor fecha e a criança toca
+     * numa forma). O X tem rótulo PRÓPRIO, distinto de "Cancelar", para nenhum
+     * `getByRole` colidir com o cancelar de um diálogo.
+     */
+    pickColorBar: 'Pegando uma cor do desenho',
+    pickColorHint: 'Toque numa forma para pegar a cor dela',
+    pickColorCancel: 'Voltar sem pegar a cor',
+    pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',
     toFront: 'Trazer bem para a frente',
