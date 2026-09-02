@@ -51,7 +51,15 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       // entrar nesta lista — senão o teste quebra com 42P01. Foi o caso do Zappy
       // (migration `0054`), que só aflorou quando o Postgres local voltou.
       'zappy_conversations (id uuid primary key, user_id uuid not null, account_id uuid)',
-      'ai_usage_daily (account_id uuid not null, day date not null, feature varchar(40) not null)',
+      // Mesma regra dos dois mundos: a `ai-usage-atomicity.test.ts` cria esta tabela
+      // com o DDL espelho da migration 0041 (`used`/`privileged`/`updated_at` NOT NULL
+      // com default) e lê `used`. Sem as três colunas aqui, quando ESTE arquivo roda
+      // primeiro a outra suíte cai com 42703 (`column ai_usage_daily.used does not
+      // exist`) — foi o CI de 02/09/2026. Com default, o INSERT de 3 colunas segue igual.
+      `ai_usage_daily (account_id uuid not null, day date not null, feature varchar(40) not null,
+        used integer default 0 not null, privileged boolean default false not null,
+        updated_at timestamptz default now() not null,
+        constraint ai_usage_daily_pk primary key (account_id, day, feature))`,
       'parent_reports_sent (account_id uuid not null, week_key text not null)',
       'parent_report_prefs (account_id uuid primary key)',
       'renewal_reminders_sent (entitlement_id uuid not null, expires_on date not null)',
