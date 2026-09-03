@@ -53,6 +53,7 @@ export function VectorPropertiesPanel({
     setFontFamily,
     updateSelected,
     applyStyle,
+    inspectedFill,
     currentGradient,
     gradientOpen,
     setGradientOpen,
@@ -64,7 +65,9 @@ export function VectorPropertiesPanel({
   const singleShape = single ? (selected[0] ?? null) : null
   const selectedRect = singleShape?.type === 'rect' ? singleShape : null
   const selectedText = singleShape?.type === 'text' ? singleShape : null
-  const activeGradient = isVectorGradient(style.fill) ? style.fill : null
+  // Mesma fonte da janela do Degradê: a forma selecionada, ou o estilo sem seleção.
+  const inspected = inspectedFill()
+  const activeGradient = isVectorGradient(inspected) ? inspected : null
 
   if (disclosure && !disclosure.open) {
     return (

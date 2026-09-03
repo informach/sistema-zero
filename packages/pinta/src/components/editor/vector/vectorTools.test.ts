@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'bun:test'
 import { DEFAULT_STYLE } from '../../../vector/shapes'
-import { formatStrokeWidth, STROKE_WIDTHS, strokeDotSize, strokeWidthIndex } from './vectorTools'
+import {
+  COPY_OFFSET,
+  formatStrokeWidth,
+  offsetInsideDoc,
+  STROKE_WIDTHS,
+  strokeDotSize,
+  strokeWidthIndex,
+} from './vectorTools'
 
 describe('espessuras do contorno (vetor)', () => {
   it('são seis degraus crescentes de meio em meio, e o default está entre eles', () => {
@@ -41,5 +48,42 @@ describe('espessuras do contorno (vetor)', () => {
 
   it('as bolinhas da caixa crescem de 2 em 2 px e cabem no botão de 44px', () => {
     expect(STROKE_WIDTHS.map(strokeDotSize)).toEqual([6, 8, 10, 12, 14, 16])
+  })
+})
+
+describe('offsetInsideDoc (a cópia nasce do lado, mas DENTRO do papel)', () => {
+  const papel = { width: 32, height: 32 }
+
+  it('cabendo, a cópia vai para +12,+12 (a régua de sempre)', () => {
+    expect(offsetInsideDoc({ x: 2, y: 2, width: 8, height: 8 }, papel)).toEqual({ dx: 12, dy: 12 })
+    expect(COPY_OFFSET).toBe(12)
+  })
+
+  it('perto da borda direita/inferior, volta para -12 em vez de sair do papel', () => {
+    // 20 + 8 + 12 = 40 > 32: para a direita sairia; 20 - 12 = 8 cabe.
+    expect(offsetInsideDoc({ x: 20, y: 20, width: 8, height: 8 }, papel)).toEqual({
+      dx: -12,
+      dy: -12,
+    })
+  })
+
+  it('os eixos são independentes', () => {
+    expect(offsetInsideDoc({ x: 2, y: 20, width: 8, height: 8 }, papel)).toEqual({
+      dx: 12,
+      dy: -12,
+    })
+  })
+
+  it('forma maior que o papel: fica +12 (parcialmente fora, mas não em cima do original)', () => {
+    expect(offsetInsideDoc({ x: 0, y: 0, width: 32, height: 32 }, papel)).toEqual({
+      dx: 12,
+      dy: 12,
+    })
+  })
+
+  it('num cenário grande a régua continua a de sempre', () => {
+    expect(
+      offsetInsideDoc({ x: 16, y: 16, width: 48, height: 48 }, { width: 480, height: 360 }),
+    ).toEqual({ dx: 12, dy: 12 })
   })
 })

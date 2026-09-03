@@ -6,7 +6,13 @@
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
-import { boundsUnion, scaleShape, shapeBounds, translateShape } from '../../../vector/geometry'
+import {
+  type Bounds,
+  boundsUnion,
+  scaleShape,
+  shapeBounds,
+  translateShape,
+} from '../../../vector/geometry'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
@@ -147,6 +153,32 @@ export function vectorPaletteSwatches(choice: VectorPaletteChoice): string[] {
   return choice.colors.filter((hex, index) => index !== TRANSPARENT_INDEX && hex !== '')
 }
 
+/** Deslocamento da cópia (Duplicar e colar): "do lado" do original. */
+export const COPY_OFFSET = 12
+
+/**
+ * Deslocamento da cópia que a MANTÉM DENTRO do papel: por eixo tenta +12; se a
+ * caixa da união sair do papel, tenta -12; se nenhum cabe (forma maior que o
+ * papel), fica +12 (parcialmente fora, mas visível e não em cima do original).
+ * Num personagem de 32 px, 12 é um terço do papel: uma forma pequena perto da
+ * borda direita/inferior nascia FORA (o `<svg>` aninhado clipa e a cópia some).
+ * Duplicar e colar usam a MESMA régua.
+ */
+export function offsetInsideDoc(
+  bounds: Bounds,
+  doc: { width: number; height: number },
+): { dx: number; dy: number } {
+  const axis = (start: number, size: number, limit: number): number => {
+    if (start + size + COPY_OFFSET <= limit) return COPY_OFFSET
+    if (start - COPY_OFFSET >= 0) return -COPY_OFFSET
+    return COPY_OFFSET
+  }
+  return {
+    dx: axis(bounds.x, bounds.width, doc.width),
+    dy: axis(bounds.y, bounds.height, doc.height),
+  }
+}
+
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
 export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
   const groups = new Set<string>()
@@ -198,7 +230,10 @@ export function fitPastedShapes(
   from: { width: number; height: number },
   to: { width: number; height: number },
 ): VectorShape[] {
-  if (from.width === to.width && from.height === to.height) return cloneShapesWithNewIds(shapes)
+  if (from.width === to.width && from.height === to.height) {
+    const offset = offsetInsideDoc(boundsUnion(shapes.map(shapeBounds)), to)
+    return cloneShapesWithNewIds(shapes, offset.dx, offset.dy)
+  }
   const clones = cloneShapesWithNewIds(shapes, 0, 0)
   const bounds = boundsUnion(clones.map(shapeBounds))
   const scale = Math.min(

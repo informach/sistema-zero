@@ -90,6 +90,7 @@ import {
   cloneShapesWithNewIds,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
+  offsetInsideDoc,
   TOOL_SHORTCUTS,
   type VectorPaletteChoice,
   type VectorTool,
@@ -186,6 +187,11 @@ export interface VectorEditorContextValue {
   setActiveChannel: (channel: VectorColorChannel) => void
   applyChannelColor: (hex: string) => void
   swapFillStroke: () => void
+  /**
+   * O preenchimento que a janela do Degradê inspeciona e edita: o da primeira
+   * forma selecionada com preenchimento; sem seleção, o estilo vigente.
+   */
+  inspectedFill: () => VectorFill
   currentGradient: () => VectorGradient
   applyGradient: (partial: Partial<VectorGradient>) => void
   /**
@@ -485,11 +491,13 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   // reaplicando a versão anterior.
   useEffect(() => {
     if (!single) return
-    setStyle({
-      fill: single.fill,
+    setStyle((current) => ({
+      // A linha não tem preenchimento que valha como inspetor: o estilo guarda o
+      // que já tinha (um degradê recém-montado para a PRÓXIMA forma, por exemplo).
+      fill: single.type === 'line' ? current.fill : single.fill,
       stroke: single.stroke ? { ...single.stroke } : null,
       opacity: single.opacity,
-    })
+    }))
   }, [single])
 
   if (!doc) return null
@@ -550,11 +558,20 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     return free
   }
 
+  /**
+   * Aplica só nas formas LIVRES da seleção. Sem commit quando nada mudou (o
+   * updater devolveu as mesmas referências): `withActiveShapes` sempre monta um
+   * asset novo, então sem isto uma edição que não muda nada gravaria um desfazer
+   * VAZIO (regra da casa: `null` no no-op é obrigação).
+   */
   function updateSelected(update: (shape: VectorShape) => VectorShape): void {
     if (selected.length === 0) return
     const free = freeSelectedIds()
     if (!free) return
-    commitShapes(currentShapes().map((s) => (free.includes(s.id) ? update(s) : s)))
+    const current = currentShapes()
+    const next = current.map((s) => (free.includes(s.id) ? update(s) : s))
+    if (next.every((s, i) => s === current[i])) return
+    commitShapes(next)
   }
 
   /**
@@ -631,19 +648,40 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function applyStyle(partial: Partial<ShapeStyle>): void {
+    // Seleção inteira trancada: nem o estilo muda (a janela do Degradê e os
+    // slots da caixa mentiriam mostrando uma cor que o desenho recusou).
+    if (selected.length > 0 && !freeSelectedIds()) return
     setStyle((current) => ({ ...current, ...partial }))
     if (selected.length > 0) {
-      updateSelected((shape) => ({
-        ...shape,
-        ...(partial.fill !== undefined && shape.type !== 'line' ? { fill: partial.fill } : {}),
-        ...(partial.stroke !== undefined ? { stroke: partial.stroke } : {}),
-        ...(partial.opacity !== undefined ? { opacity: partial.opacity } : {}),
-      }))
+      updateSelected((shape) => {
+        const fillApplies = partial.fill !== undefined && shape.type !== 'line'
+        const strokeApplies = partial.stroke !== undefined
+        const opacityApplies = partial.opacity !== undefined
+        // Nada se aplica a esta forma (linha recebendo só preenchimento): a
+        // MESMA referência, para o `updateSelected` não gravar desfazer vazio.
+        if (!fillApplies && !strokeApplies && !opacityApplies) return shape
+        return {
+          ...shape,
+          ...(fillApplies ? { fill: partial.fill } : {}),
+          ...(strokeApplies ? { stroke: partial.stroke } : {}),
+          ...(opacityApplies ? { opacity: partial.opacity } : {}),
+        }
+      })
     }
   }
 
-  /** Aplica uma cor da paleta (ou `'none'`) no CANAL ativo. */
+  /**
+   * Aplica uma cor da paleta (ou `'none'`) no CANAL ativo. Em CAPTURA de cor
+   * (conta-gotas da janelinha do degradê), a paleta e a cor livre também são
+   * FONTE: a criança pode pegar de qualquer lugar da tela, não só de uma forma
+   * (a dona testava clicando na paleta, e a cor sólida apagava o degradê da
+   * forma selecionada). "Sem cor" não é uma cor: não faz nada.
+   */
   function applyChannelColor(hex: string): void {
+    if (colorPickRef.current) {
+      if (hex !== 'none') endColorPick(hex)
+      return
+    }
     if (activeChannel === 'stroke') {
       applyStyle({
         stroke: hex === 'none' ? null : { color: hex, width: style.stroke?.width ?? 2 },
@@ -670,11 +708,25 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     applyStyle({ fill: nextFill, stroke: nextStroke })
   }
 
-  /** Degradê "de trabalho": o atual, ou um novo a partir da cor sólida vigente. */
+  /**
+   * O preenchimento que a janela do Degradê INSPECIONA e edita: o da primeira
+   * forma selecionada com preenchimento (linha e figura não contam); sem
+   * seleção, o estilo vigente. ⚠️ Antes era sempre `style.fill`, e o estilo
+   * descola da seleção em quatro situações reais (grupo: o efeito de
+   * sincronização só roda com UMA forma; conta-gotas da caixa: `adoptStyle` não
+   * commita; linha; trancada). Aí "pegar a cor do fim" montava o degradê em
+   * cima de uma cor velha e a criança via a PRIMEIRA cor trocar.
+   */
+  function inspectedFill(): VectorFill {
+    const inspected = selected.find((s) => s.type !== 'line' && s.type !== 'image')
+    return inspected ? inspected.fill : style.fill
+  }
+
+  /** Degradê "de trabalho": o inspecionado, ou um novo a partir da cor sólida dele. */
   function currentGradient(): VectorGradient {
-    if (isVectorGradient(style.fill)) return style.fill
-    const from =
-      typeof style.fill === 'string' && style.fill.startsWith('#') ? style.fill : '#78dc52'
+    const fill = inspectedFill()
+    if (isVectorGradient(fill)) return fill
+    const from = typeof fill === 'string' && fill.startsWith('#') ? fill : '#78dc52'
     return { type: 'linear', from, to: '#ffffff', angle: 90 }
   }
 
@@ -736,13 +788,17 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }
 
   function duplicateSelected(): void {
-    if (selected.length === 0) return
+    // O escopo devolve `null` sem documento; o narrowing não atravessa a função.
+    if (selected.length === 0 || !doc) return
     const shapes = currentShapes()
     if (shapes.length + selected.length > PINTA_LIMITS.maxShapes) {
       showToast(COPY.vector.shapeLimit)
       return
     }
-    const copies = cloneShapesWithNewIds(selected)
+    // A MESMA régua do colar: a cópia nasce do lado, mas DENTRO do papel (num
+    // personagem de 32 px o +12 cego jogava a forma pequena para fora).
+    const offset = offsetInsideDoc(boundsUnion(selected.map(shapeBounds)), doc)
+    const copies = cloneShapesWithNewIds(selected, offset.dx, offset.dy)
     commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
   }
@@ -1180,6 +1236,7 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setActiveChannel,
     applyChannelColor,
     swapFillStroke,
+    inspectedFill,
     currentGradient,
     applyGradient,
     colorPick,

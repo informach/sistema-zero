@@ -706,7 +706,7 @@ export const COPY = {
      * `getByRole` colidir com o cancelar de um diálogo.
      */
     pickColorBar: 'Pegando uma cor do desenho',
-    pickColorHint: 'Toque numa forma para pegar a cor dela',
+    pickColorHint: 'Toque numa forma ou numa cor da paleta',
     pickColorCancel: 'Voltar sem pegar a cor',
     pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
     forward: 'Uma camada para a frente',

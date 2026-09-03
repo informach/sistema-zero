@@ -28,10 +28,10 @@ type GradientEnd = 'from' | 'to'
 
 export function VectorGradientDialog(): JSX.Element {
   const {
-    style,
     customColors,
     rememberColor,
     applyStyle,
+    inspectedFill,
     currentGradient,
     applyGradient,
     beginColorPick,
@@ -39,7 +39,10 @@ export function VectorGradientDialog(): JSX.Element {
     setGradientOpen,
     gradientButtonRef,
   } = useVectorEditor()
-  const activeGradient = isVectorGradient(style.fill) ? style.fill : null
+  // A janela INSPECIONA e edita a forma selecionada (o estilo vigente só sem
+  // seleção): é o que faz "pegar a cor do fim" preservar o começo DA FORMA.
+  const fill = inspectedFill()
+  const activeGradient = isVectorGradient(fill) ? fill : null
   // Conta-gotas da janelinha de cor. Some quando o conta-gotas foi curado numa
   // aula: a caixa reverteria a ferramenta na hora (`toolFallback`) e o botão
   // pareceria quebrado.
