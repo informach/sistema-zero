@@ -1,0 +1,42 @@
+/**
+ * Ícones (lucide) num lugar só: trocar a biblioteca é mexer AQUI. Sempre
+ * renderizados com `aria-hidden` e um rótulo de texto ao lado ou no botão.
+ */
+export type { LucideIcon } from 'lucide-react'
+export {
+  ArrowLeft,
+  Box,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Circle,
+  Copy,
+  Cylinder,
+  Download,
+  Eraser,
+  ExternalLink,
+  FlipHorizontal2,
+  Focus,
+  Grid3x3,
+  Image as ImageIcon,
+  Loader2,
+  Magnet,
+  Minus,
+  Move,
+  PaintBucket,
+  Paintbrush,
+  Pencil,
+  Pipette,
+  Plus,
+  Redo2,
+  RotateCw,
+  Scaling,
+  Search,
+  Sparkles,
+  Sun,
+  Trash2,
+  Triangle,
+  Undo2,
+  Upload,
+  X,
+} from 'lucide-react'

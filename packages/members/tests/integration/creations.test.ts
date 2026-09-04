@@ -549,6 +549,30 @@ describe('criações guardadas na conta — HTTP', () => {
     expect(staff.status).toBe(200)
   })
 
+  test('molda: sem o produto a reserva é 403; com `molda` reserva e confirma um `model` (a chave leva a ferramenta)', async () => {
+    const ctx = buildApp()
+    // Comunidade (Estúdio) e Pinta NÃO dão o Molda: é produto vendido à parte.
+    grantCommunity(ctx.entitlements, { userId: ACCOUNT, communityKey: 'estudio-completo' })
+    grantLifetime(ctx.entitlements, { userId: ACCOUNT, courseRef: 'pinta' })
+    const denied = await reserve(ctx, 'molda', 'm-1', { kind: 'model', name: 'casa' })
+    expect(denied.status).toBe(403)
+    expect((await json(denied)).error.message).toContain('Molda')
+    expect(await listOf(ctx, 'molda')).toEqual([])
+
+    // A recusa não fica no cache de posse: a compra vale na reserva seguinte.
+    grantLifetime(ctx.entitlements, { userId: ACCOUNT, courseRef: 'molda' })
+    const saved = await saveItem(ctx, 'molda', 'm-1', { kind: 'model', name: 'casa' })
+    expect(saved.ticket.storageKey).toBe(`creations/${USER}/molda/m-1/1.json.gz`)
+    expect(saved.item.tool).toBe('molda')
+    expect(saved.item.kind).toBe('model')
+    expect((await listOf(ctx, 'molda')).map((item) => item.itemId)).toEqual(['m-1'])
+    // Cada ferramenta lista só o que é dela.
+    expect(await listOf(ctx, 'pinta')).toEqual([])
+
+    // Ferramenta que o enum não conhece não passa da borda.
+    expect((await reserve(ctx, 'blender', 'm-1')).status).not.toBe(200)
+  })
+
   test('a posse é CONSULTADA uma vez por minuto por (conta, ferramenta): reservas seguidas não batem nos entitlements; recusa não é guardada', async () => {
     const ctx = buildWithTools()
     const original = ctx.entitlements.listActiveByUser.bind(ctx.entitlements)

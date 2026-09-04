@@ -47,7 +47,9 @@ const MAX_PARTS = 128
 const HEAD_CONCURRENCY = 8
 const PartHash = z.string().regex(/^[a-f0-9]{64}$/)
 
-const Tool = z.enum(['studio', 'pinta'])
+/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
+const Tool = z.enum(['studio', 'pinta', 'molda'])
+type ToolName = z.infer<typeof Tool>
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
 const UploadBody = z.strictObject({
@@ -229,9 +231,7 @@ export function createCreationsRoutes(deps: {
     return null
   }
 
-  async function parseItem(
-    ctx: ItemCtx,
-  ): Promise<{ tool: 'studio' | 'pinta'; itemId: string } | null> {
+  async function parseItem(ctx: ItemCtx): Promise<{ tool: ToolName; itemId: string } | null> {
     const raw = await ctx.params
     const tool = Tool.safeParse(raw.tool)
     const itemId = ItemId.safeParse(raw.itemId)

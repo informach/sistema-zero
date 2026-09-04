@@ -56,7 +56,7 @@ function mainFor(path: string): HTMLElement {
 
 describe('MainContainer: regime de altura dos apps embarcados', () => {
   it('rota embarcada trava a altura (mobile calc + md:h-dvh + piso md:min-h-[36rem])', () => {
-    for (const path of ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa']) {
+    for (const path of ['/pinta', '/molda', '/estudio', '/estudio/pro/abc', '/pensa']) {
       const main = mainFor(path)
       const cls = main.className
       expect(cls).toContain('h-[calc(100dvh-3.5rem)]')

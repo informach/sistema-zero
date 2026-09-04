@@ -180,6 +180,28 @@ export const ptBR: Record<string, string> = {
   'pintaImport.kind.tilemap': '🗺️ mapa',
   'pintaImport.close': 'Fechar',
 
+  'moldaImport.button': '🧊 Trazer do Molda',
+  'moldaImport.title': 'Trazer do Molda',
+  'moldaImport.subtitle':
+    'Escolha um modelo, uma textura ou um céu da sua galeria do Molda para usar neste projeto.',
+  'moldaImport.search.label': 'Buscar criações',
+  'moldaImport.search.placeholder': 'Nome da criação…',
+  'moldaImport.loading': 'Abrindo a sua galeria do Molda…',
+  'moldaImport.loadError': 'Não consegui abrir a sua galeria do Molda agora.',
+  'moldaImport.retry': 'Tentar de novo',
+  'moldaImport.importError': 'Não consegui trazer essa criação agora. Tente de novo.',
+  'moldaImport.empty': 'Sua galeria do Molda está vazia. Monte algo lá e volte aqui!',
+  'moldaImport.noResults': 'Nenhuma criação combina com essa busca.',
+  'moldaImport.add': 'Adicionar ao projeto',
+  'moldaImport.adding': 'Trazendo…',
+  'moldaImport.inProject': '✓ no projeto',
+  'moldaImport.needs3d':
+    'Instale o Jogo 3D, o Jogo 3D Avançado ou o Mundo 3D (painel de Extensões) para usar modelos e céus. A textura entra como imagem.',
+  'moldaImport.kind.model': '🧊 modelo',
+  'moldaImport.kind.texture': '🧱 textura',
+  'moldaImport.kind.sky': '🌤️ céu',
+  'moldaImport.close': 'Fechar',
+
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
   'editor.fontSize.reset': 'Restaurar tamanho padrão',

@@ -26,6 +26,8 @@ export const proxy = createMemberProxy({
     '/pensa',
     // Pinta não tem `/api/pinta` (dados locais ao navegador) — só a página é gateada.
     '/pinta',
+    // Molda (oficina 3D): mesmo regime do Pinta — só a página é gateada.
+    '/molda',
     // Recados (conversas com o professor — canal de retorno).
     '/recados',
     '/perfis',

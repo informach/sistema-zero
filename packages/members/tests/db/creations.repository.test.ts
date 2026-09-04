@@ -39,9 +39,12 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     await conn.sql.unsafe(`do $$ begin
       if not exists (select 1 from pg_type t join pg_namespace n on n.oid = t.typnamespace
                      where t.typname = 'creation_tool' and n.nspname = 'members') then
-        create type members.creation_tool as enum ('studio', 'pinta');
+        create type members.creation_tool as enum ('studio', 'pinta', 'molda');
       end if;
     end $$;`)
+    // O banco de tests/db é compartilhado e o enum pode ter nascido antes do `molda` (0072):
+    // o mesmo `ADD VALUE IF NOT EXISTS` da migration, fora de transação (exigência do Postgres).
+    await conn.sql.unsafe(`alter type members.creation_tool add value if not exists 'molda'`)
     // O mesmo DDL da migration 0067. ⚠️ Recria do zero: o banco de tests/db é compartilhado
     // e a `user-data-purge.test.ts` cria esta MESMA tabela com um DDL mínimo (sem as
     // colunas `pending_*`); com `if not exists` o primeiro a rodar venceria e este teste

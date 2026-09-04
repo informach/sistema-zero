@@ -4,6 +4,7 @@ import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
 import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
+import type { StudioMoldaLibraryAdapter } from './molda-library'
 import type { StudioPintaLibraryAdapter } from './pinta-library'
 import type { StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
@@ -207,6 +208,15 @@ export interface StudioCommonProps {
    * Estável por instância (latchado, igual à `share`).
    */
   pintaLibrary?: StudioPintaLibraryAdapter
+  /**
+   * Adapter OPCIONAL "Trazer do Molda": quando presente, o painel de Imagens
+   * ganha o botão que abre a modal com TODAS as criações da galeria do Molda
+   * (modelos `.glb`, texturas `.png`, céus `.hdr`; busca + importar direto ao
+   * projeto). O host só o passa com posse do Molda E do Estúdio (produtos
+   * vendidos à parte). Ausente (default) → sem botão. Estável por instância
+   * (latchado, igual à `share`).
+   */
+  moldaLibrary?: StudioMoldaLibraryAdapter
   /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do

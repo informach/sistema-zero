@@ -38,6 +38,13 @@ const PENSA_OFFER_SLUG = 'pensa'
 const PINTA_SKU = 'pinta'
 const PINTA_OFFER_SLUG = 'pinta'
 
+// Molda (kids): a oficina 3D (modelos low poly, texturas e céus HDR) — quarto irmão do
+// fluxo Pensa → Pinta → Molda → Estúdio. Mesmo molde do Pinta: `kind: 'tool'` + entrega
+// via `community`; a CHAVE `molda` casa com o `/members/access?refs=molda` da página
+// /molda (os DADOS são locais ao navegador — não há backend do Molda).
+const MOLDA_SKU = 'molda'
+const MOLDA_OFFER_SLUG = 'molda'
+
 // Servidores da comunidade kids vendidos como produtos À PARTE (gate `community_gated`
 // no hub + `/members/access`). Cada um é INDEPENDENTE, com a SUA chave (= o slug do
 // produto, que casa com o `accessConfig` do servidor homônimo no hub):
@@ -311,6 +318,55 @@ async function main(): Promise<void> {
     logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
   }
 
+  // ── Molda (kids) — oficina 3D ──────────────────────────────────────────────
+  // Quarto irmão do fluxo criativo (Pensa planeja → Pinta desenha → Molda modela →
+  // Estúdio constrói): `kind: 'tool'` com entrega `community` — a página /molda
+  // gateia pelo `/members/access?refs=molda`; as criações são locais ao navegador.
+  // Preço inicial R$97 (placeholder, mesma faixa dos irmãos) — o operador ajusta.
+  let molda = await products.findBySku(MOLDA_SKU)
+  if (molda) {
+    logger.info('seed.product_exists', { id: molda.id, sku: molda.sku })
+  } else {
+    const view = await createProduct.execute({
+      sku: MOLDA_SKU,
+      slug: MOLDA_SKU,
+      name: 'Molda',
+      kind: 'tool',
+      status: 'active',
+      sellable: true,
+      description:
+        'A oficina 3D do Sistema Zero: a criança monta modelos com caixas, rampas, cilindros e bolas, pinta direto na superfície, cria texturas e céus 360°, e usa tudo nos jogos 3D do Estúdio.',
+      fulfillment: {
+        accessType: 'community',
+        courseRef: MOLDA_SKU,
+        release: { mode: 'immediate' },
+      },
+    })
+    logger.info('seed.product_created', { id: view.id, sku: view.sku })
+    molda = await products.findById(view.id)
+  }
+  if (!molda) throw new Error('Produto do Molda não encontrado após a criação')
+
+  const existingMoldaOffer = await offers.findBySlug(MOLDA_OFFER_SLUG)
+  if (existingMoldaOffer) {
+    logger.info('seed.offer_exists', { id: existingMoldaOffer.id, slug: existingMoldaOffer.slug })
+  } else {
+    const view = await createOffer.execute({
+      productId: molda.id,
+      code: 'molda-padrao',
+      slug: MOLDA_OFFER_SLUG,
+      name: 'Molda — Oferta padrão',
+      priceCents: 9700,
+      currency: 'BRL',
+      pricingMode: 'one_time',
+      installmentsMax: 12,
+      guaranteeDays: 7,
+      status: 'active',
+      content: { badge: 'Modele o mundo dos seus jogos', ctaLabel: 'Quero o Molda' },
+    })
+    logger.info('seed.offer_created', { id: view.id, slug: view.slug, priceCents: view.priceCents })
+  }
+
   // ── Comunidade kids: Clube + Mural (produtos `community`, SEPARADOS) ──────
   const clubeProductId = await ensureCommunityProduct({
     sku: CLUBE_SKU,
@@ -413,7 +469,7 @@ async function main(): Promise<void> {
       status: 'active',
       sellable: true,
       description:
-        'A assinatura da plataforma kids inteira: todos os cursos com professor acompanhando, o Clube e o Mural dos Criadores, e o kit de criação livre (Estúdio Completo, Pensa e Pinta).',
+        'A assinatura da plataforma kids inteira: todos os cursos com professor acompanhando, o Clube e o Mural dos Criadores, e o kit de criação livre (Estúdio Completo, Pensa, Pinta e Molda).',
       components: [
         { componentProductId: todosCursosKids.id, isPrimary: true, sortOrder: 0 },
         { componentProductId: clubeProductId, sortOrder: 1 },
@@ -421,6 +477,9 @@ async function main(): Promise<void> {
         { componentProductId: studio.id, sortOrder: 3 },
         { componentProductId: pensa.id, sortOrder: 4 },
         { componentProductId: pinta.id, sortOrder: 5 },
+        // ⚠️ O seed só CRIA o bundle quando ele não existe: em staging/prod o operador
+        // adiciona o Molda ao combo pelo admin E concede `molda` aos assinantes ativos.
+        { componentProductId: molda.id, sortOrder: 6 },
       ],
     })
     logger.info('seed.product_created', { id: view.id, sku: view.sku })

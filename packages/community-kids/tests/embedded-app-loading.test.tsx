@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import EstudioLoading from '../src/app/(app)/estudio/loading'
+import MoldaLoading from '../src/app/(app)/molda/loading'
 import PensaLoading from '../src/app/(app)/pensa/loading'
 import PintaLoading from '../src/app/(app)/pinta/loading'
 import {
@@ -31,6 +32,12 @@ describe('a espera dos apps embarcados vem toda do mesmo lugar', () => {
     )
   })
 
+  it('Molda usa a moldura compartilhada', () => {
+    expect(renderToStaticMarkup(<MoldaLoading />)).toBe(
+      renderToStaticMarkup(<EmbeddedAppLoading label="Carregando o Molda…" />),
+    )
+  })
+
   it('Estúdio usa a moldura compartilhada (a variante BLOCO)', () => {
     expect(renderToStaticMarkup(<EstudioLoading />)).toBe(
       renderToStaticMarkup(
@@ -43,6 +50,7 @@ describe('a espera dos apps embarcados vem toda do mesmo lugar', () => {
     for (const markup of [
       renderToStaticMarkup(<PensaLoading />),
       renderToStaticMarkup(<PintaLoading />),
+      renderToStaticMarkup(<MoldaLoading />),
       renderToStaticMarkup(<EstudioLoading />),
     ]) {
       // Era exatamente esta a moldura que sobrou e causou o piscar.

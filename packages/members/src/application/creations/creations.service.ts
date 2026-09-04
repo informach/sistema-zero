@@ -13,6 +13,7 @@
 import {
   CREATION_ACCESS_REF,
   CREATION_LIMITS,
+  CREATION_TOOL_NAMES,
   type CreationPartRef,
   type CreationSummary,
   type CreationTool,
@@ -95,11 +96,7 @@ async function assertToolOwned(
   const ref = CREATION_ACCESS_REF[tool]
   const result = await accessCheck.execute(accountId, [ref])
   if (!result.grants.includes(ref) && !result.communities.includes(ref)) {
-    throw new AccessDeniedError(
-      tool === 'studio'
-        ? 'Você não tem acesso ao Estúdio Completo'
-        : 'Você não tem acesso ao Pinta',
-    )
+    throw new AccessDeniedError(`Você não tem acesso ao ${CREATION_TOOL_NAMES[tool]}`)
   }
   rememberToolOwned(accountId, tool, now)
 }

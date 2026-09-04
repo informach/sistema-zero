@@ -44,6 +44,17 @@ export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
  */
 export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
 
+/**
+ * A oficina 3D (Molda: modelos low poly, texturas e céus HDR) abre no **Inventor(a)**,
+ * o degrau em que a trilha 3D começa (`docs/carreira-do-criador.md`): modelar só faz
+ * sentido para quem já constrói jogos 3D no Estúdio. Decisão da usuária (04/09/2026).
+ *
+ * Não custa por uso (tudo roda no navegador), então a régua é só pedagógica. Terceira
+ * constante ao lado das duas acima; NÃO reaproveitar `AI_APPS_MIN_LEVEL` mesmo com o
+ * mesmo valor: os motivos são diferentes e podem se separar.
+ */
+export const THREE_D_CREATION_MIN_LEVEL: CareerLevelSlug = 'hacker'
+
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 
 export function isPrivilegedRole(role: string | undefined): boolean {

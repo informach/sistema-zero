@@ -46,6 +46,7 @@ import {
   sanitizePaletteLibrary,
   sanitizePintaAsset,
 } from '@sistemazero/pinta/assets'
+import { conflictCopyName, uniqueCreationName } from './creation-names'
 import type { CloudCreationSummary, CreationsCloud } from './creations-cloud'
 import { createStoredSyncedMarks, reconcileCreations, type SyncedMarks } from './creations-sync'
 import { perfSpanAsync } from './perf'
@@ -122,25 +123,15 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 /**
  * Nome único por sufixo numérico, SEMPRE dentro do teto do pacote (48): um nome acima
  * do teto seria descartado pelo sanitize na próxima leitura — a cópia sumiria da galeria.
+ * (A régua vive em `creation-names.ts`, compartilhada com o Molda.)
  */
 export function uniqueAssetName(base: string, taken: Set<string>): string {
-  // Cortar no teto pode deixar um hífen na borda, que o `normalizeAssetName` da galeria
-  // apararia na próxima leitura (e a cópia voltaria a ter o nome do original): apara aqui.
-  const trimHyphen = (s: string) => s.replace(/-+$/, '')
-  const root = trimHyphen(base.slice(0, MAX_NAME))
-  if (!taken.has(root)) return root
-  for (let n = 2; n < 1000; n += 1) {
-    const suffix = `-${n}`
-    const candidate = `${trimHyphen(root.slice(0, MAX_NAME - suffix.length))}${suffix}`
-    if (!taken.has(candidate)) return candidate
-  }
-  const stamp = `-${Date.now().toString(36)}`
-  return `${trimHyphen(root.slice(0, MAX_NAME - stamp.length))}${stamp}`
+  return uniqueCreationName(base, taken, MAX_NAME)
 }
 
 /** Nome da CÓPIA de conflito: `nave` → `nave-copia`, `nave-copia-2`… (kebab, como o pacote exige). */
 export function copyName(name: string, taken: Set<string>): string {
-  return uniqueAssetName(`${name}-copia`, taken)
+  return conflictCopyName(name, taken, MAX_NAME)
 }
 
 export function createCloudMirroredPintaPersistence(options: {

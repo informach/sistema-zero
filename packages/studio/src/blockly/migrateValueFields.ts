@@ -189,6 +189,9 @@ export const LEGACY_VALUE_FIELDS: Record<string, Record<string, 'number' | 'text
   sz_js_repeat: { TIMES: 'number' },
   sz_g3d_set_camera: { X: 'number', Y: 'number', Z: 'number' },
   sz_g3d_create_box: { SIZE: 'number' },
+  // Molda (oficina 3D): o modelo vindo de arquivo .glb tem o MESMO soquete de
+  // tamanho do cubo — a guarda de drift cobrou o registro junto com o bloco.
+  sz_g3d_create_model_file: { SIZE: 'number' },
   sz_g3d_create_sphere: { RADIUS: 'number' },
   sz_g3d_create_block: { W: 'number', H: 'number', D: 'number' },
   sz_g3d_set_position: { X: 'number', Y: 'number', Z: 'number' },

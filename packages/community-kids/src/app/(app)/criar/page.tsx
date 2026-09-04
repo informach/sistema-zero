@@ -1,4 +1,4 @@
-import { ArrowRight, Blocks, House, Lightbulb, MessagesSquare, Palette } from 'lucide-react'
+import { ArrowRight, Blocks, Box, House, Lightbulb, MessagesSquare, Palette } from 'lucide-react'
 import Link from 'next/link'
 import { KidsMascot } from '@/components/kids/mascot'
 
@@ -26,9 +26,16 @@ const JOURNEY = [
     text: 'Desenhe os personagens, cenários e peças do seu jogo.',
   },
   {
+    href: '/molda',
+    icon: Box,
+    step: 3,
+    title: 'Molda',
+    text: 'Modele personagens, texturas e céus 3D para o seu jogo.',
+  },
+  {
     href: '/estudio',
     icon: Blocks,
-    step: 3,
+    step: 4,
     title: 'Estúdio',
     text: 'Construa com blocos que viram código de verdade. E jogue!',
   },

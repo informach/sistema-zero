@@ -905,6 +905,7 @@ const OBJECT3D_DECL_BLOCKS: Record<string, string[]> = {
   sz_g3d_create_plane: ['NAME'],
   sz_g3d_create_torus: ['NAME'],
   sz_g3d_create_model: ['NAME'],
+  sz_g3d_create_model_file: ['NAME'],
 }
 const GAME3D_OBJECT_VALUE_HOLDERS: NameFieldRegistry = {
   sz_js_var_create: ['NAME'],

@@ -11,6 +11,7 @@ import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { createStudioZappyAdapter } from '@sistemazero/member-shell/lib/studio-zappy-adapter'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type {
+  StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
   StudioTaskSession,
@@ -51,6 +52,7 @@ export function StudioFullClient({
   aiCredits = null,
   taskId = null,
   pintaOwned = false,
+  moldaOwned = false,
 }: {
   viewerId: string | null
   /**
@@ -80,6 +82,12 @@ export function StudioFullClient({
    * sem posse, o adapter nem é criado e o Estúdio esconde o botão.
    */
   pintaOwned?: boolean
+  /**
+   * Posse do MOLDA (a mesma ida `refs=estudio-completo,pinta,molda`) — liga o "Trazer
+   * do Molda" no painel de Imagens (modelos .glb, texturas .png, céus .hdr). Sem
+   * posse, o adapter nem é criado e o Estúdio esconde o botão.
+   */
+  moldaOwned?: boolean
 }) {
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -554,6 +562,91 @@ export function StudioFullClient({
     }
   }, [pintaOwned, viewerId])
 
+  // "Trazer do Molda" (fluxo pull, irmão do de cima): lista a galeria 3D e importa uma
+  // criação por id. O `exportAssetForStudio` já devolve o binário validado pelos tetos
+  // do Estúdio (modelo .glb, textura .png, céu .hdr); o import GRAVA em personal-assets
+  // (com o `kind` e o nome do arquivo) antes de devolver, pelo selo "✓ no projeto".
+  // Import dinâmico do SUBPATH `studio-library` (⚠️ NUNCA a raiz `@sistemazero/molda`,
+  // que puxaria o app inteiro, com three.js, pro bundle do /estudio).
+  const moldaLibrary = useMemo<StudioMoldaLibraryAdapter | undefined>(() => {
+    if (!moldaOwned) return undefined
+    return {
+      async list() {
+        const lib = await import('@sistemazero/molda/studio-library')
+        lib.setMoldaStorageNamespace(viewerId ?? '')
+        const items = await lib.listGalleryForStudio()
+        return items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          kind: item.kind,
+          updatedAt: item.updatedAt,
+          thumbDataUrl: item.thumbDataUrl,
+        }))
+      },
+      async import(creationId) {
+        const lib = await import('@sistemazero/molda/studio-library')
+        lib.setMoldaStorageNamespace(viewerId ?? '')
+        const result = await lib.exportAssetForStudio(creationId)
+        if (!result.ok) {
+          if (result.reason === 'not-found') {
+            return {
+              ok: false,
+              error: 'Essa criação não está mais na galeria do Molda.',
+              code: 'not-found',
+            }
+          }
+          if (result.reason === 'asset-too-big') {
+            return {
+              ok: false,
+              error: 'Essa criação é grande demais para o Estúdio.',
+              code: 'too-big',
+            }
+          }
+          return {
+            ok: false,
+            error: 'Não consegui preparar essa criação agora. Tente de novo.',
+            code: 'encode-failed',
+          }
+        }
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        bridge.setPersonalAssetsNamespace(viewerId ?? '')
+        const saved = await bridge.savePersonalAsset({
+          id: result.asset.id,
+          name: result.asset.name,
+          kind: result.asset.kind,
+          // A textura é imagem, mas NÃO é desenho do Pinta: sem a origem o painel
+          // ofereceria "editar desenho" e abriria o Pinta num id do Molda.
+          origin: 'molda',
+          dataUrl: result.asset.dataUrl,
+          originalFileName: result.asset.originalFileName,
+          ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
+          ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
+        })
+        if (!saved.ok) {
+          return {
+            ok: false,
+            error: saved.error ?? 'Não consegui trazer essa criação agora. Tente de novo.',
+          }
+        }
+        // O upsert pode sufixar o nome (colisão com OUTRA criação) — o Estúdio usa o
+        // nome salvo, senão os blocos referenciariam um nome divergente.
+        return {
+          ok: true,
+          asset: {
+            id: result.asset.id,
+            name: saved.name ?? result.asset.name,
+            kind: result.asset.kind,
+            dataUrl: result.asset.dataUrl,
+            originalFileName: result.asset.originalFileName,
+            ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
+            ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
+            ...(saved.updatedAt !== undefined ? { libRevision: saved.updatedAt } : {}),
+          },
+        }
+      },
+    }
+  }, [moldaOwned, viewerId])
+
   const openProject = useCallback((projectId: string) => setView({ name: 'editor', projectId }), [])
   const backToList = useCallback(() => {
     setView({ name: 'list' })
@@ -678,6 +771,7 @@ export function StudioFullClient({
           professional={proAvailable && tier.canPromoteToPro}
           taskSession={taskSession}
           pintaLibrary={pintaLibrary}
+          moldaLibrary={moldaLibrary}
         />
       )}
     </div>

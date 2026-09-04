@@ -300,7 +300,7 @@ export class FieldAssetPicker extends Blockly.FieldTextInput {
       const empty = document.createElement('div')
       empty.textContent =
         kind === '3d'
-          ? 'Nenhum modelo 3D no projeto ainda. Abra "Imagens" na barra de cima e envie um .glb/.hdr.'
+          ? 'Nenhum modelo 3D no projeto ainda. Monte um no Molda e toque em "Trazer do Molda" no painel Imagens (ou envie um .glb/.hdr por lá).'
           : kind === 'audio'
             ? 'Nenhum som no projeto ainda. Abra "Imagens" na barra de cima e envie um áudio.'
             : this.assetFilter === 'tilemap'

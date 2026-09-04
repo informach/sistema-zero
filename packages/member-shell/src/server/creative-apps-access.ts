@@ -1,9 +1,14 @@
 import 'server-only'
 import { careerLevelAtLeast } from '@sistemazero/core/career'
-import { AI_APPS_MIN_LEVEL, FREE_CREATION_MIN_LEVEL, isPrivilegedRole } from '../lib/studio-tier'
+import {
+  AI_APPS_MIN_LEVEL,
+  FREE_CREATION_MIN_LEVEL,
+  isPrivilegedRole,
+  THREE_D_CREATION_MIN_LEVEL,
+} from '../lib/studio-tier'
 import type { MembersClient } from './clients'
 
-export { AI_APPS_MIN_LEVEL, FREE_CREATION_MIN_LEVEL }
+export { AI_APPS_MIN_LEVEL, FREE_CREATION_MIN_LEVEL, THREE_D_CREATION_MIN_LEVEL }
 
 /**
  * São DOIS portões, não um.
@@ -45,4 +50,13 @@ export function meetsFreeCreationLevel(
 ): boolean {
   if (isPrivilegedRole(role)) return true
   return careerLevelAtLeast(levelSlug, FREE_CREATION_MIN_LEVEL)
+}
+
+/** Decisão síncrona para a oficina 3D (Molda): abre onde a trilha 3D começa. */
+export function meetsThreeDCreationLevel(
+  levelSlug: string | null | undefined,
+  role: string | undefined,
+): boolean {
+  if (isPrivilegedRole(role)) return true
+  return careerLevelAtLeast(levelSlug, THREE_D_CREATION_MIN_LEVEL)
 }

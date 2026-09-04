@@ -294,6 +294,13 @@ dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Casa com a t
 senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
+A Área dos Pais também mostra o card **Atendimento**, que leva a `/responsavel/ajuda` (FORA do
+layout e da navegação infantil). Essa página exige sessão da CONTA e `isParentVerifiedFor` no RSC;
+os três BFFs `/api/helpdesk/portal/*` repetem a proteção com
+`requireParentGateAccountOnly`. Nunca adicione esse destino ao `NAV_ITEMS`, aos
+`MOBILE_NAV_ITEMS` ou aos `protectedPrefixes`: estes últimos exigem perfil selecionado e são a área
+da criança. Um perfil que adivinhar a URL é redirecionado pela página e recebe 403 do BFF antes de
+qualquer chamada ao gateway.
 A página **"Meu perfil"** (`app/(app)/perfil`, sempre em sessão de perfil) edita o PRÓPRIO perfil
 (nome ≥ 3 / telefone; a IMAGEM vem só do avatar 3D desde 24/07) via `/api/profiles/:id` — NUNCA a conta (full review F1: o auth recusa
 `/auth/me` de escrita em sessão de perfil).
@@ -495,9 +502,13 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   um vazio com o id determinístico. A rota PRO (`studio-pro-client.tsx`, modo Código) também liga o
   espelho (só `attach`; selo no canto INFERIOR — no topo cobria os botões da Topbar). O par
   `{cloud, detach}` vive num estado só (o cleanup de uma fila nunca desliga o espelho da seguinte).
+- **Molda (04/09/2026):** `src/lib/molda-cloud-persistence.ts` é o terceiro adaptador (tool
+  `molda`), molde do Pinta sem o item especial; os nomes únicos/`-copia` dos dois wrappers vêm de
+  `src/lib/creation-names.ts` (`uniqueCreationName`/`conflictCopyName`, teto por pacote). Ver a
+  seção "Molda" abaixo.
 - **Selo:** `components/kids/cloud-save-badge.tsx`: guardando · guardado · sem internet · não
   consegui (recados de `CLOUD_MESSAGES`, nunca a mensagem crua do servidor). `idle`/`unsupported`
-  não mostram nada. Uma região viva (`sr-only`, sempre presente) anuncia só offline/erro. No Pinta é irmão do app; no Estúdio é uma CAMADA absoluta por cima da lista e
+  não mostram nada. Uma região viva (`sr-only`, sempre presente) anuncia só offline/erro. No Pinta e no Molda é irmão do app; no Estúdio é uma CAMADA absoluta por cima da lista e
   do editor PRO (a moldura é bloco e os filhos são `h-full` — no fluxo empurraria a lista).
 - Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
   Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
@@ -1179,6 +1190,49 @@ bloco+perfil) — a ponte para o Pinta completo é "Baixar o desenho" + importar
 isso as `pin-*` são no-op e os modais saem washed-out). Deploy: `packages/pinta/**` (e
 `packages/studio/**`) nos watchPatterns do railway.json + case `packages/pinta/*` no ci.yml.
 Produto no catálogo: sku/slug/chave **`pinta`** (seed idempotente, R$97 placeholder).
+
+## Molda (oficina 3D — produto vendável, 09/2026)
+
+O **Molda** (`@sistemazero/molda`) é a oficina 3D: a criança monta MODELOS low poly (peças cubo/
+rampa/cilindro/bola numa grade, pele pintada direto no modelo), TEXTURAS de superfície e CÉUS 360°
+(`.hdr`) para os jogos 3D do Estúdio — quarto irmão do fluxo criativo (**Pensa planeja → Pinta
+desenha → Molda modela → Estúdio constrói**). Item "Molda" no `nav.ts` (`Box`, entre Pinta e
+Estúdio; o `/criar` ganhou o card 3 e o Estúdio virou o 4) → rota `/molda` (`protectedPrefixes`,
+`EMBEDDED_APP_PREFIXES`), gate em 4 ESTADOS: `app/(app)/molda/page.tsx` chama
+`checkMoldaAccessReadonly()` (refs `molda,estudio-completo` numa ida — a 2ª vira `studioOwned`,
+atalho e dica do "Trazer do Molda") → 200 sem produto = `KidsLockedMolda`; status ≠ 200 =
+`KidsMoldaUnavailable` (retry); produto + carreira ≥ **`THREE_D_CREATION_MIN_LEVEL`**
+(`hacker`, o Inventor(a): ⚠️ NÃO é o Construtor(a) do Pinta — a oficina 3D abre onde a trilha 3D
+começa; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
+dinâmico no effect, tema do next-themes, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
+deep link `?criacao=`). **Sem backend próprio** (galeria no IndexedDB POR PERFIL), mas COM a nuvem
+desde 04/09: **"Guardado na sua conta" com a tool `molda`** — `src/lib/molda-cloud-persistence.ts`
+embrulha `createMoldaPersistence({namespace})` (molde do wrapper do Pinta, sem biblioteca de
+paletas; superfície `loadAll/load/save/saveMany/remove/removeMany/subscribe`; marcas
+`sz:creations-synced:molda:<perfil>`; a miniatura viaja SÓ no modelo e só até 12 000 chars; o
+registro de "aberta no editor" do pacote avisa SEM id, então o wrapper confere `isMoldaAssetOpen`
+nas puladas; os `changed` do próprio IndexedDB atravessam o embrulho) e o `molda-client` liga
+`createCreationsCloud({ tool: 'molda', viewerId, idleMs: 5_000 })` + `CloudSaveBadge` +
+`flush({timeoutMs: 5000})` no cleanup. ⚠️ O members precisa da migration `0072` (`creation_tool`
++ `molda`) ANTES do deploy do kids — sem ela a reserva falha e a fila retenta. Os espelhos do
+union (members domínio/schema/DTO/cache/contagem, core, member-shell, kids) são travados por
+`tests/molda-conformance.test.ts` (lê por texto + o `CREATION_TOOLS` puro do members).
+**"Trazer do Molda" no Estúdio (lote 7, 04/09):** a página `/estudio` passou a pedir
+`checkCreativeToolsAccessReadonly()` (refs `estudio-completo,pinta,molda` numa ida) e o
+`studio-full-client` monta o adapter `moldaLibrary` SÓ com `moldaOwned` (import dinâmico do subpath
+`@sistemazero/molda/studio-library`, NUNCA a raiz; `setMoldaStorageNamespace(viewerId)` em cada
+método; `import(id)` = `exportAssetForStudio` → `savePersonalAsset({kind, originalFileName,
+origin: 'molda'})` ANTES de devolver, com o nome salvo). No Estúdio o botão "🧊 Trazer do Molda"
+traz modelo/textura/céu, e o kit Jogo 3D ganhou "Criar o objeto … com o modelo" e "Usar o céu
+360°" (ver `packages/studio/CLAUDE.md`). A
+recompensa do Inventor(a)
+anuncia "Pensa + Zappy + Molda" (`career-rewards.ts`; o `career-rewards-conformance` trava a
+promessa em `THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
+do `molda.css` + `@source "../../../molda/src"` no globals.css (MESMO gotcha das `sz-*`/`pz-*`/
+`pin-*`: sem isso as `mld-*` são no-op). Deploy: `packages/molda/**` nos watchPatterns do
+railway.json + case `packages/molda/*` no ci.yml. Produto no catálogo: sku/slug/chave **`molda`**
+(seed idempotente, R$97 placeholder; ⚠️ o seed só CRIA o combo quando não existe — em staging/prod
+o operador adiciona o componente pelo admin E concede `molda` aos assinantes ativos).
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 

@@ -29,6 +29,8 @@ jobs:
       RAILWAY_API: https://backboard.railway.com/graphql/v2
       PROJECT_ID: 415d5a1c-5f75-432c-8445-b395d0977ce3
       FORCED: ${{ github.event.inputs.services }}
+      HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
+      HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
     steps:
       - name: Deployar produção com o sha da main
         run: |
@@ -54,6 +56,8 @@ jobs:
             [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
             [referrals]=1ad1c5ce-977c-4d7d-95a4-b8b08f2dc258
           )
+          [ -n "${HELPDESK_SERVICE_ID:-}" ] && SVC_ID[helpdesk]="$HELPDESK_SERVICE_ID"
+          [ -n "${HELPDESK_APP_SERVICE_ID:-}" ] && SVC_ID[helpdesk-app]="$HELPDESK_APP_SERVICE_ID"
 
           # environmentId de production resolvido POR NOME (sem hardcode).
           Q=$(jq -nc --arg pid "$PROJECT_ID" '{query:"query($pid:String!){environments(projectId:$pid){edges{node{id name}}}}",variables:{pid:$pid}}')

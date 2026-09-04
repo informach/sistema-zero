@@ -3,7 +3,7 @@ import type { ExtensionManifest } from '#extensions'
 export const gameThreeDManifest: ExtensionManifest = {
   id: 'game-3d',
   name: 'Jogo 3D',
-  version: '0.29.0',
+  version: '0.30.0',
   description:
     'Blocos e comandos para criar jogos 3D com Three.js: cena/câmera/luz (e cena em tela cheia responsiva), cubos/esferas/caixas, posição/rotação/escala, física (velocidade, gravidade, pulo, colisão), teclado, câmera que segue, genéricos de grade isométrica e de movimento (círculo, distância, cair girando, deslizar, girar) e Kits prontos: "Desvie", "Travessia", "Corrida", "Empilhar" e "Plataforma". Three.js carrega de um CDN fixado.',
   category: 'games',
@@ -49,10 +49,12 @@ em um evento ou em um construtor.
 
 - Cilindro, cone, plano e anel completam as primitivas; os exemplos não dependem de assets externos.
 - **Criar modelo** agrupa peças da mesma cena: cor, opacidade, material e visibilidade funcionam no grupo inteiro.
+- **Criar o objeto … com o modelo** põe na cena um modelo 3D de verdade: um arquivo \`.glb\` que você montou no **Molda** (toque em "Trazer do Molda" no painel Imagens) ou enviou. Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele como em qualquer objeto.
 - Texturas são opcionais e usam um asset escolhido no projeto; remover um objeto também libera seus recursos de GPU.
 - **Pintar com uma estampa** desenha a textura na hora, sem imagem nenhuma: tijolo, pedra, terra, grama, interrogação, cano, nuvem, água, lava, moeda, xadrez e listras, repetidas conforme o tamanho da peça. Dá para fazer um jogo inteiro sem depender de arquivo. **Deixar sem sombra** alivia cenários com muitas peças.
 - Remover um modelo desregistra também suas peças. Objetos que terminam uma queda deixam de ocupar o limite da cena e chamadas posteriores não descartam os mesmos recursos de novo.
 - Luz ambiente, sol, luz pontual, neblina, céu em degradê e sombras montam a atmosfera.
+- **Usar o céu 360°** troca o fundo por um céu de foto (arquivo \`.hdr\` do Molda ou enviado) que também ilumina a cena e dá reflexo aos objetos.
 
 ### Física & controles (dentro de "A cada quadro 3D")
 

@@ -27,6 +27,7 @@
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
     "@sistemazero/member-shell": "workspace:*",
+    "@sistemazero/molda": "workspace:*",
     "@sistemazero/pensa": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",

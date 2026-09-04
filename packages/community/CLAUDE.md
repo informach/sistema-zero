@@ -384,6 +384,12 @@ valida e só então importa o `server.js` standalone).
   faz backfill p/ conta pré-existente sem telefone; o form usa a máscara BR de
   `@sistemazero/ui/phone`), `POST /auth/me/password`
   `{currentPassword,newPassword}` (revoga todas as sessões).
+- Helpdesk: `GET|POST /helpdesk/portal/tickets`, `GET /helpdesk/portal/tickets/:id` e
+  `POST /helpdesk/portal/tickets/:id/messages` chegam pelo gateway e são expostos pelo BFF em
+  `/api/helpdesk/portal/*`. A rota adulta `/ajuda` usa o `CustomerHelpdeskPortal` compartilhado:
+  tickets são sempre do titular autenticado, notas internas não chegam ao browser e uma mensagem
+  do cliente reabre o chamado quando ele aguardava resposta. O item **Ajuda** pertence ao topo
+  adulto e `/ajuda` fica nos `protectedPrefixes`.
 - Members (JWT + x-internal-token injetados pelo gateway): `GET /members/courses` →
   `{courses: MyCourseView[]}` (+`continueLessonId`); `GET /members/catalog` →
   `{courses: CatalogCourseView[]}` ("Todos os cursos": published + `hasAccess` + `salesPageUrl` —

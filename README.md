@@ -60,8 +60,8 @@ Gateway. Cada serviço é um pacote em `packages/*`, deployável de forma indepe
 | [`@sistemazero/hub`](packages/hub) | 3010 | Comunidade em fórum: servidores/canais/tópicos/comentários + reações + moderação — DDD/Hexagonal |
 | [`@sistemazero/marketing`](packages/marketing) | 3011 | Marketing (back-end, interno/staff+): pipeline de conteúdo + publicações cross-post (IG/FB/YT/TikTok) + mídia R2 + métricas — DDD/Hexagonal |
 | [`@sistemazero/marketing-app`](packages/marketing-app) | 3012 | Front do marketing (Next.js 16, BFF via gateway): kanban, composer, calendário, biblioteca, conexões, métricas |
-| [`@sistemazero/helpdesk`](packages/helpdesk) | 3013 | Help desk com IA para `contato@` (back-end): ingestão do Gmail por polling, tickets, IA (classifica/resume/rascunha) + auto-resposta — DDD/Hexagonal |
-| [`@sistemazero/helpdesk-app`](packages/helpdesk-app) | 3014 | Front do help desk (Next.js 16, BFF via gateway): painel, caixa de entrada, thread/resposta, base de conhecimento, configurações |
+| [`@sistemazero/helpdesk`](packages/helpdesk) | 3013 | Help desk com IA para e-mail e portal (back-end): ingestão Gmail por polling, tickets, SLA interno e IA copiloto com revisão humana — DDD/Hexagonal |
+| [`@sistemazero/helpdesk-app`](packages/helpdesk-app) | 3014 | Front do help desk (Next.js 16, BFF via gateway): painel operacional, fila SLA, thread/resposta, base de conhecimento, configurações |
 | [`@sistemazero/funnel`](packages/funnel) | 4321 | Funil de vendas (Astro 6 + ilhas React): quiz → vendas → checkout (Pix/cartão/boleto) → admin |
 | [`@sistemazero/core`](packages/core) | — | Lib compartilhada (security/logging/errors/result/http), sem framework |
 | [`@sistemazero/member-shell`](packages/member-shell) | — | Shell compartilhado da área do aluno (route handlers, proxy anti-CSRF, componentes de domínio) — consumido por community/community-kids |

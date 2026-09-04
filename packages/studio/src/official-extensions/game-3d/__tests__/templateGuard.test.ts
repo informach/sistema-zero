@@ -57,6 +57,11 @@ describe('Guarda dos template literals do Jogo 3D', () => {
     expect(rawTemplateHazardsInside(src, 'gameThreeDPlatformRuntimeSource =')).toEqual([])
   })
 
+  it('runtimeModelAssets.ts: o fragmento dos modelos .glb / céu .hdr também é um literal só', () => {
+    const src = readFileSync(join(DIR, 'runtimeModelAssets.ts'), 'utf8')
+    expect(rawTemplateHazardsInside(src, 'gameThreeDModelAssetsRuntimeTemplate =')).toEqual([])
+  })
+
   it('ai.ts: idem (o contexto da IA também é um literal só)', () => {
     const src = readFileSync(join(DIR, 'ai.ts'), 'utf8')
     expect(rawTemplateHazardsInside(src, 'gameThreeDPromptContext =')).toEqual([])

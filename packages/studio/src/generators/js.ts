@@ -2585,6 +2585,10 @@ ${pad}});`
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createTorus(${identifiers.get(stmt.worldVar)}, { radius: ${compileExpr(valueToExpr(stmt.radius), 0, identifiers, recAt(base))}, tube: ${compileExpr(valueToExpr(stmt.tube), 0, identifiers, recAt(base))}, color: ${JSON.stringify(stmt.color)} });`
       case 'g3d:createModel':
         return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createModel(${identifiers.get(stmt.worldVar)});`
+      case 'g3d:createModelFile':
+        return `${pad}const ${identifiers.get(stmt.varName)} = SZGame3D.createModelFile(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)}, ${compileExpr(valueToExpr(stmt.size), 0, identifiers, recAt(base))});`
+      case 'g3d:skyPhoto':
+        return `${pad}SZGame3D.skyPhoto(${identifiers.get(stmt.worldVar)}, ${JSON.stringify(stmt.asset)});`
       case 'g3d:setColor':
         return `${pad}SZGame3D.setColor(${identifiers.get(stmt.objVar)}, ${JSON.stringify(stmt.color)});`
       case 'g3d:setOpacity':
@@ -6246,6 +6250,14 @@ function collectStatementIdentifiers(stmt: JSStatement, names: Set<string>): voi
         return
       case 'g3d:createModel':
         names.add(stmt.varName)
+        names.add(stmt.worldVar)
+        return
+      case 'g3d:createModelFile':
+        names.add(stmt.varName)
+        names.add(stmt.worldVar)
+        collectExprIdentifiers(valueToExpr(stmt.size), names)
+        return
+      case 'g3d:skyPhoto':
         names.add(stmt.worldVar)
         return
       case 'g3d:setColor':

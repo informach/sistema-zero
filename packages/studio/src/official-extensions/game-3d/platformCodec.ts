@@ -56,6 +56,13 @@ export function platformGameThreeDCallToIR(
   const { identifierName, toExpr, isSimpleValue, isInlineFunction, bodyOfFn } = tools
 
   switch (method) {
+    case 'skyPhoto': {
+      // generator: SZGame3D.skyPhoto(world, "nomeDoCeu") — o céu .hdr do Molda.
+      const worldVar = identifierName(args[0])
+      const asset = stringArg(args, 1)
+      if (!worldVar || asset === null) return null
+      return { type: 'g3d:skyPhoto', worldVar, asset }
+    }
     case 'classicPlatformer': {
       const objVar = identifierName(args[0])
       const worldVar = identifierName(args[1])
@@ -162,7 +169,7 @@ export function platformGameThreeDDeclarationToIR(
   varName: string,
   method: string,
   args: unknown[],
-  tools: Pick<PlatformCodecTools, 'identifierName'>,
+  tools: Pick<PlatformCodecTools, 'identifierName' | 'toExpr' | 'isSimpleValue'>,
 ): JSStatement | null | undefined {
   if (method === 'createPlatformScene') {
     const canvas = stringArg(args, 0)
@@ -174,7 +181,37 @@ export function platformGameThreeDDeclarationToIR(
     if (!worldVar || color === null) return null
     return { type: 'g3d:createHero', varName, worldVar, color }
   }
+  // `const nave = SZGame3D.createModelFile(cena, "nave", 2)` — o modelo .glb do Molda.
+  if (method === 'createModelFile') {
+    const worldVar = tools.identifierName(args[0])
+    const asset = stringArg(args, 1)
+    const size = tools.toExpr(args[2])
+    if (!worldVar || asset === null || !tools.isSimpleValue(size)) return null
+    return { type: 'g3d:createModelFile', varName, worldVar, asset, size }
+  }
   return undefined
+}
+
+/**
+ * Monta as ferramentas do codec a partir das primitivas do parser central, UMA vez
+ * (as funções ficam num fecho; cada chamada recebe o `source`/`ctx` daquela análise).
+ * Existe para o `parsers/js.ts` chamar os dois pontos de entrada com uma linha cada:
+ * a fachada está no teto de linhas.
+ */
+export function createPlatformTools(raw: {
+  identifierName: (node: unknown) => string | null
+  toExpr: (node: unknown, ctx: unknown) => JSExpr | null
+  isSimpleValue: (expr: JSExpr | null) => expr is JSExpr
+  isInlineFunction: (node: unknown) => boolean
+  bodyOfFn: (node: unknown, source: string, ctx: unknown) => JSStatement[]
+}): (source: string, ctx: unknown) => PlatformCodecTools {
+  return (source, ctx) => ({
+    identifierName: (node) => raw.identifierName(node) ?? '',
+    toExpr: (node) => raw.toExpr(node, ctx),
+    isSimpleValue: raw.isSimpleValue,
+    isInlineFunction: raw.isInlineFunction,
+    bodyOfFn: (node) => raw.bodyOfFn(node, source, ctx),
+  })
 }
 
 /** `SZGame3D.<metodo>(...)` em posição de VALOR, para os reporters do lote. */
@@ -279,6 +316,18 @@ export function platformGameThreeDBlockToIR(
   const number = (name: string, value: number) =>
     tools.expression(block, name, { type: 'num', value })
   switch (block.type) {
+    // Os dois blocos do Molda (modelo .glb e céu .hdr) entram por aqui, e não pelo
+    // switch central do buildIR: a fachada está no teto de linhas.
+    case 'sz_g3d_create_model_file':
+      return {
+        type: 'g3d:createModelFile',
+        varName: f('NAME'),
+        worldVar: f('WORLD'),
+        asset: f('MODEL'),
+        size: number('SIZE', 1),
+      }
+    case 'sz_g3d_sky_photo':
+      return { type: 'g3d:skyPhoto', worldVar: f('WORLD'), asset: f('PHOTO') }
     case 'sz_g3d_classic_platformer':
       return {
         type: 'g3d:classicPlatformer',

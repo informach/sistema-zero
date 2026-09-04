@@ -4,6 +4,7 @@ import { createShellRoutes } from './routes'
 import { createCertificateRoutes } from './routes/certificate'
 import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
+import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
@@ -62,6 +63,7 @@ export function createShell(cfg: ShellConfig) {
   const routes = {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
+    ...createHelpdeskRoutes({ gateway, session }),
     ...createStudioRoutes({ hub, members, media }),
     ...createStudioZappyRoutes({ members, session }),
     ...createCertificateRoutes({ members, session }),

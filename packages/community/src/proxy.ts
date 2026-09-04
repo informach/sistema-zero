@@ -11,7 +11,7 @@ import { ACCESS_COOKIE, REFRESH_COOKIE } from '@/lib/cookies'
  */
 export const proxy = createMemberProxy({
   cookies: { accessCookie: ACCESS_COOKIE, refreshCookie: REFRESH_COOKIE },
-  protectedPrefixes: ['/cursos', '/perfil', '/compras', '/comunidade'],
+  protectedPrefixes: ['/cursos', '/perfil', '/compras', '/comunidade', '/ajuda'],
   isRootProtected: true,
 })
 

@@ -28,6 +28,14 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `community` courseRef `pinta`; o EDITOR DE ASSETS de jogos (pixel art/animações/tiles/vetorial),
 > terceiro irmão do fluxo Pensa→Pinta→Estúdio — a chave casa com o `/members/access?refs=pinta`
 > da página `/pinta`; os DADOS são locais ao navegador, sem backend; oferta padrão `pinta`) ·
+> **Molda** (kids, R$97 — `kind: 'tool'`, entrega `community` courseRef `molda`, 04/09/2026; a
+> OFICINA 3D (modelos low poly `.glb`, texturas `.png`, céus `.hdr` para os jogos 3D do Estúdio),
+> quarto irmão do fluxo Pensa→Pinta→Molda→Estúdio — a chave casa com o
+> `/members/access?refs=molda` da página `/molda` (portão de carreira no Inventor(a),
+> `THREE_D_CREATION_MIN_LEVEL`); galeria local ao navegador + "Guardado na sua conta" pela tool
+> `molda` do members; oferta padrão `molda`; componente `sortOrder: 6` do combo abaixo — ⚠️ o seed só
+> CRIA o combo quando não existe: em staging/prod o operador adiciona o componente pelo admin E
+> concede `molda` aos assinantes ativos) ·
 > **Clube dos Criadores** e
 > **Mural dos Criadores** (kids, `kind: 'community'`, entrega `community` courseRef = slug — SEM oferta
 > no seed; o Mural é dado de BÔNUS na oferta do desafio) · **Desafio do Primeiro Jogo** (kids,
@@ -39,7 +47,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `all_kids_courses` SEM courseRef; só chega ao aluno dentro do combo) · **Comunidade dos
 > Criadores** (`comunidade-dos-criadores`, 07/2026 — o 1º COMBO real do seed: `kind:'bundle'`,
 > fulfillment null, componentes = chave-mestra **`isPrimary`** + Clube + Mural + Estúdio Completo +
-> Pensa + Pinta → a compra espalha os 6 entitlements; o Desafio do Mês destrava sozinho
+> Pensa + Pinta + Molda → a compra espalha os 7 entitlements; o Desafio do Mês destrava sozinho
 > [clube+estúdio] e Quarto/Carreira/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
 > ASSINATURA ativas**: `comunidade-dos-criadores-mensal` (R$ 97, `billingIntervalMonths: 1`) e
 > `comunidade-dos-criadores-anual` (R$ 797, intervalo 12, compareAt R$ 1.164 = 12× o mensal),

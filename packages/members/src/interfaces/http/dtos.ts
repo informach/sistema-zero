@@ -1388,9 +1388,9 @@ export const ChallengeThemePatchBody = t.Object({
   archived: t.Optional(t.Boolean()),
 })
 
-// ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta ─────────
-/** `studio` | `pinta` (o enum `creation_tool`). */
-export const CREATION_TOOL = t.Union([t.Literal('studio'), t.Literal('pinta')])
+// ── "Guardado na sua conta": criações do Estúdio Completo, do Pinta e do Molda ──
+/** `studio` | `pinta` | `molda` (o enum `creation_tool`; espelho de `CREATION_TOOLS`). */
+export const CREATION_TOOL = t.Union([t.Literal('studio'), t.Literal('pinta'), t.Literal('molda')])
 export const CreationToolParams = t.Object({ tool: CREATION_TOOL })
 /**
  * `itemId` = id do projeto/desenho no editor (ulid do Estúdio, uuid do Pinta,

@@ -2,8 +2,20 @@
 
 import { type AiCreditsView, diaCivilPorExtenso } from '@sistemazero/core/ai-credits'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
+import { buttonVariants } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import { Award, BookOpenCheck, Flame, Gamepad2, QrCode, Sparkles, Star, Trophy } from 'lucide-react'
+import {
+  Award,
+  BookOpenCheck,
+  Flame,
+  Gamepad2,
+  Headphones,
+  QrCode,
+  Sparkles,
+  Star,
+  Trophy,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
@@ -15,6 +27,32 @@ import type {
 } from '@/lib/types'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
+
+/** Atendimento é uma superfície da CONTA e só é renderizado na Área dos Pais. */
+export function ParentSupportCard() {
+  return (
+    <section className="w-full max-w-2xl">
+      <div className="rounded-2xl border-2 border-border bg-card p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Headphones className="size-5" aria-hidden="true" />
+            </span>
+            <div>
+              <h2 className="sz-display text-xl text-foreground">Atendimento</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Acompanhe pedidos da família e fale com a equipe da Sistema Zero.
+              </p>
+            </div>
+          </div>
+          <Link href="/responsavel/ajuda" className={buttonVariants({ variant: 'outline' })}>
+            Abrir atendimento
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
+}
 
 /** Uso familiar da IA, exibido apenas ao responsável e omitido em falhas best-effort. */
 export function FamilyAiCredits() {

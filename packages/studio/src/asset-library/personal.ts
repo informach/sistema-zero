@@ -86,23 +86,40 @@ export function personalAssetsChangedAt(namespace?: string): number {
 
 export const PERSONAL_ASSET_LIMITS = {
   maxCount: 128,
-  /** Orçamento total de `dataUrl` (~17 MB de binário inflado em base64). */
-  maxTotalChars: 24_000_000,
+  /**
+   * Orçamento total de `dataUrl` (~28 MB de binário inflado em base64). Subiu de 24 M
+   * em 09/2026, quando os binários 3D do Molda (modelo .glb até ~5 MB, céu .hdr)
+   * passaram a morar aqui ao lado dos desenhos.
+   */
+  maxTotalChars: 40_000_000,
   maxNameChars: 48,
 } as const
 
+/** O tipo de um item da biblioteca pessoal (imagem do Pinta; modelo/céu do Molda). */
+export type PersonalAssetKind = 'image' | 'model3d' | 'environment3d'
+
 /**
- * Um desenho na biblioteca pessoal. Compatível com o `ProjectAsset` do projeto
- * (mesmo shape de imagem) — "Adicionar ao projeto" só copia os campos.
+ * Um item na biblioteca pessoal. Compatível com o `ProjectAsset` do projeto
+ * (mesmo shape) — "Adicionar ao projeto" só copia os campos. Nasceu para os
+ * DESENHOS do Pinta; desde 09/2026 guarda também os binários 3D trazidos do Molda
+ * (`model3d` = `.glb`, `environment3d` = `.hdr`). Registro legado sem `kind` = imagem.
  */
 export interface PersonalAsset {
-  /** Id do desenho na ORIGEM (Pinta) — chave do upsert. */
+  /** Id do desenho na ORIGEM (Pinta/Molda) — chave do upsert. */
   id: string
   /** Nome kebab-case (o mesmo `normalizeAssetName` dos assets de projeto). */
   name: string
-  kind: 'image'
-  /** `data:image/...;base64,...` */
+  kind: PersonalAssetKind
+  /**
+   * De onde veio: `pinta` (default, e o legado sem o campo) ou `molda`. Uma textura do
+   * Molda é uma IMAGEM comum aqui, mas NÃO é um desenho do Pinta: sem o campo o painel
+   * ofereceria "✏️ editar desenho" e abriria o Pinta num id que não é dele.
+   */
+  origin?: 'pinta' | 'molda'
+  /** `data:image/...;base64,...` (imagem) ou o MIME do binário 3D (ver `isValidAssetDataUrl`). */
   dataUrl: string
+  /** Só nos 3D: `<nome>.glb` / `.hdr` — a validação cruza extensão × MIME × assinatura. */
+  originalFileName?: string
   width?: number
   height?: number
   /** Metadados do Pinta (animações da folha) — viajam até o `ProjectAsset` no projeto. */
@@ -172,9 +189,30 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
   if (typeof a.id !== 'string' || !a.id || a.id.includes(':')) return null
   const name = typeof a.name === 'string' ? normalizeAssetName(a.name) : null
   if (!name) return null
-  if (!isValidAssetDataUrl(a.dataUrl)) return null
+  const kind = personalAssetKindOf(a.kind)
+  const fileName =
+    typeof a.originalFileName === 'string' ? a.originalFileName.slice(0, 128) : undefined
+  // Binário 3D valida pelo MESMO portão do projeto (MIME × extensão × assinatura);
+  // a imagem, pelo de sempre.
+  if (kind === 'image') {
+    if (!isValidAssetDataUrl(a.dataUrl)) return null
+  } else if (!isValidAssetDataUrl(a.dataUrl, kind, fileName)) {
+    return null
+  }
   const updatedAt =
     typeof a.updatedAt === 'number' && Number.isFinite(a.updatedAt) ? a.updatedAt : 0
+  const origin = a.origin === 'molda' ? { origin: 'molda' as const } : {}
+  if (kind !== 'image') {
+    return {
+      id: a.id,
+      name,
+      kind,
+      ...origin,
+      dataUrl: a.dataUrl,
+      ...(fileName ? { originalFileName: fileName } : {}),
+      updatedAt,
+    }
+  }
   const sprite = sanitizeSpriteMeta(a.sprite)
   const tileset = sanitizeTilesetMeta(a.tileset)
   const tilemap = sanitizeTilemapMeta(a.tilemap)
@@ -182,6 +220,7 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     id: a.id,
     name,
     kind: 'image',
+    ...origin,
     dataUrl: a.dataUrl,
     width: typeof a.width === 'number' ? a.width : undefined,
     height: typeof a.height === 'number' ? a.height : undefined,
@@ -190,6 +229,11 @@ function sanitizePersonalAsset(raw: unknown): PersonalAsset | null {
     ...(tilemap ? { tilemap } : {}),
     updatedAt,
   }
+}
+
+/** Registro legado (sem `kind`) e valor desconhecido caem em imagem. */
+function personalAssetKindOf(value: unknown): PersonalAssetKind {
+  return value === 'model3d' || value === 'environment3d' ? value : 'image'
 }
 
 /** Todos os desenhos do perfil, saneados e do mais recente para o mais antigo. */
@@ -224,6 +268,12 @@ export async function savePersonalAsset(
     id: string
     name: string
     dataUrl: string
+    /** `'image'` (padrão, o Pinta), `'model3d'` (.glb) ou `'environment3d'` (.hdr) — o Molda. */
+    kind?: PersonalAssetKind
+    /** `'molda'` marca a criação do Molda (a textura não vira "desenho para editar no Pinta"). */
+    origin?: 'pinta' | 'molda'
+    /** OBRIGATÓRIO nos 3D (a validação cruza a extensão com o MIME e a assinatura). */
+    originalFileName?: string
     width?: number
     height?: number
     /** Metadados do Pinta (animações/tiles/mapa) — saneados aqui e guardados no registro. */
@@ -239,8 +289,16 @@ export async function savePersonalAsset(
     if (!input.id || input.id.includes(':')) {
       return { ok: false, error: 'Esse desenho veio com uma identificação inválida.' }
     }
-    if (!isValidAssetDataUrl(input.dataUrl)) {
-      return { ok: false, error: 'Essa imagem é grande demais para a biblioteca.' }
+    const kind = personalAssetKindOf(input.kind)
+    if (kind === 'image') {
+      if (!isValidAssetDataUrl(input.dataUrl)) {
+        return { ok: false, error: 'Essa imagem é grande demais para a biblioteca.' }
+      }
+    } else if (!isValidAssetDataUrl(input.dataUrl, kind, input.originalFileName)) {
+      return {
+        ok: false,
+        error: 'Esse arquivo 3D não é válido ou é grande demais para a biblioteca.',
+      }
     }
     const baseName = normalizeAssetName(input.name)
     if (!baseName) {
@@ -279,18 +337,32 @@ export async function savePersonalAsset(
         ? Math.round(input.updatedAt)
         : Date.now()
     const updatedAt = Math.max(requestedRevision, (previous?.updatedAt ?? 0) + 1)
-    const record: PersonalAsset = {
-      id: input.id,
-      name,
-      kind: 'image',
-      dataUrl: input.dataUrl,
-      width: input.width,
-      height: input.height,
-      ...(sprite ? { sprite } : {}),
-      ...(tileset ? { tileset } : {}),
-      ...(tilemap ? { tilemap } : {}),
-      updatedAt,
-    }
+    const origin = input.origin === 'molda' ? { origin: 'molda' as const } : {}
+    const record: PersonalAsset =
+      kind === 'image'
+        ? {
+            id: input.id,
+            name,
+            kind: 'image',
+            ...origin,
+            dataUrl: input.dataUrl,
+            width: input.width,
+            height: input.height,
+            ...(sprite ? { sprite } : {}),
+            ...(tileset ? { tileset } : {}),
+            ...(tilemap ? { tilemap } : {}),
+            updatedAt,
+          }
+        : {
+            id: input.id,
+            name,
+            kind,
+            ...origin,
+            dataUrl: input.dataUrl,
+            // O nome já passou na validação acima (só chega aqui com extensão certa).
+            originalFileName: (input.originalFileName ?? '').slice(0, 128),
+            updatedAt,
+          }
     await set(assetKey(input.id), record, getStoreHandle(options?.namespace))
     markPersonalAssetsChanged(options?.namespace)
     return { ok: true, name, updatedAt }

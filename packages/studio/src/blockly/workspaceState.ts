@@ -3492,6 +3492,20 @@ function statementToBlockInner(stmt: JSStatement): SerializedBlocklyBlock | null
           {},
           stmt.__id,
         )
+      case 'g3d:createModelFile': {
+        const size = exprToValueBlock(valueToExpr(stmt.size))
+        return size === null
+          ? rawJSBlock(stmt)
+          : block(
+              'sz_g3d_create_model_file',
+              { NAME: stmt.varName, MODEL: stmt.asset, WORLD: stmt.worldVar },
+              {},
+              stmt.__id,
+              { SIZE: size },
+            )
+      }
+      case 'g3d:skyPhoto':
+        return block('sz_g3d_sky_photo', { PHOTO: stmt.asset, WORLD: stmt.worldVar }, {}, stmt.__id)
       case 'g3d:setColor':
         return block('sz_g3d_set_color', { OBJ: stmt.objVar, COLOR: stmt.color }, {}, stmt.__id)
       case 'g3d:setOpacity': {

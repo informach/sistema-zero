@@ -30,6 +30,7 @@ import {
   gameKitCampaignExpressionCallToIR,
 } from '../official-extensions/game-2d-advanced/campaignParserCodec'
 import {
+  createPlatformTools,
   PLATFORM_SIMPLE_VALUE_TYPES,
   platformGameThreeDCallToIR,
   platformGameThreeDDeclarationToIR,
@@ -5043,7 +5044,13 @@ function tryFuseGame2DSpriteAssign(nodes: Node[], i: number, ctx: ParseCtx): Fus
 // ficam em tryMatchGame3DVarInit; os demais (chamada solta) em tryMatchGame3DCall.
 
 /** `SZGame3D.<metodo>(args)` → `{ method, args }` se o objeto for exatamente SZGame3D. */
-const PLATFORM_NAMES = { identifierName: (n: unknown) => identifierName(n as Node) }
+const platformTools = createPlatformTools({
+  identifierName: (n) => identifierName(n as Node),
+  toExpr: (n, ctx) => toExpr(n as Node, ctx as ParseCtx),
+  isSimpleValue,
+  isInlineFunction: (n) => isInlineFunction(n as Node),
+  bodyOfFn: (n, source, ctx) => bodyOfFn(n as Node, source, ctx as ParseCtx),
+})
 function asSZGame3DCall(expr: Node): { method: string; args: Node[] } | null {
   if (expr?.type !== 'CallExpression') return null
   const callee = expr.callee
@@ -9995,13 +10002,7 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
   const { method, args } = call
   const isFn = isInlineFunction
 
-  const platform = platformGameThreeDCallToIR(method, args, {
-    identifierName: (node) => identifierName(node as Node) ?? '',
-    toExpr: (node) => toExpr(node as Node, ctx),
-    isSimpleValue,
-    isInlineFunction: (node) => isInlineFunction(node as Node),
-    bodyOfFn: (node) => bodyOfFn(node as Node, source, ctx),
-  })
+  const platform = platformGameThreeDCallToIR(method, args, platformTools(source, ctx))
   if (platform !== undefined) return platform
 
   switch (method) {
@@ -10659,8 +10660,7 @@ function tryMatchGame3DCall(expr: Node, source: string, ctx: ParseCtx): JSStatem
       return { type: 'g3d:setVolume', level }
     }
     default:
-      // createScene/createBox/createSphere/createBlock/createGroup são var-init
-      // (tryMatchGame3DVarInit); como chamada solta caem no método genérico.
+      // createScene/createBox/… são var-init (tryMatchGame3DVarInit); solto cai no genérico.
       return null
   }
 }
@@ -10671,7 +10671,7 @@ function tryMatchGame3DVarInit(name: string, init: Node, ctx: ParseCtx): JSState
   if (!call) return null
   const { method, args } = call
   // As duas declarações do Kit Plataforma moram no codec da extensão.
-  const decl = platformGameThreeDDeclarationToIR(name, method, args, PLATFORM_NAMES)
+  const decl = platformGameThreeDDeclarationToIR(name, method, args, platformTools(ctx.source, ctx))
   if (decl !== undefined) return decl
   if (method === 'createScene') {
     if (args[0]?.type !== 'StringLiteral') return null
