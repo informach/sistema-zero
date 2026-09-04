@@ -853,7 +853,7 @@ export function VectorStage(): JSX.Element {
           tela ouve "a janela fechou" e nada mais. Texto diferente do da faixinha
           para os dois não se duplicarem na árvore. */}
       <span role="status" className="sr-only">
-        {colorPick ? COPY.vector.pickColorBar : ''}
+        {colorPick ? `${COPY.vector.pickColorBar}. ${COPY.vector.pickColorHint}` : ''}
       </span>
       {/* Faixinha do modo de CAPTURA de cor (conta-gotas da janelinha): em toda
           largura, porque toque não tem Esc e o desktop precisa da dica. Ocupa o

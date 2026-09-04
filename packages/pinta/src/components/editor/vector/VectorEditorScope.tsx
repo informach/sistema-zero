@@ -90,6 +90,7 @@ import {
   cloneShapesWithNewIds,
   fitPastedShapes,
   MAX_CUSTOM_COLORS,
+  occupiedBoundsOf,
   offsetInsideDoc,
   TOOL_SHORTCUTS,
   type VectorPaletteChoice,
@@ -193,7 +194,12 @@ export interface VectorEditorContextValue {
    */
   inspectedFill: () => VectorFill
   currentGradient: () => VectorGradient
+  /** Edita o degradê de CADA forma livre da seleção em cima do dela (e o estilo). */
   applyGradient: (partial: Partial<VectorGradient>) => void
+  /** "Tirar o degradê": cada forma com degradê fica com a cor do começo DELA. */
+  clearGradient: () => void
+  /** Há degradê para tirar (alguma forma selecionada com preenchimento; sem seleção, o estilo). */
+  hasGradient: boolean
   /**
    * Modo de CAPTURA de cor (conta-gotas da janelinha de cor): a janelinha fecha,
    * a ferramenta vira o conta-gotas e o próximo toque numa forma devolve UMA cor
@@ -244,6 +250,31 @@ const PATHFINDER_REFUSALS: Record<PathfinderRefusal, string> = {
   empty: COPY.vector.pathfinderEmpty,
   'too-big': COPY.vector.pathfinderTooBig,
   'geometry-failed': COPY.vector.pathfinderFailed,
+}
+
+/** Tem preenchimento que se vê: linha não tem miolo e a figura desenha a própria imagem. */
+function hasFill(shape: VectorShape): boolean {
+  return shape.type !== 'line' && shape.type !== 'image'
+}
+
+/**
+ * O degradê "de trabalho" de um preenchimento: o próprio, se já é degradê;
+ * sólido vira um degradê que COMEÇA nele; sem cor, o verde de fábrica.
+ */
+function gradientOf(fill: VectorFill): VectorGradient {
+  if (isVectorGradient(fill)) return fill
+  const from = typeof fill === 'string' && fill.startsWith('#') ? fill : '#78dc52'
+  return { type: 'linear', from, to: '#ffffff', angle: 90 }
+}
+
+function sameGradient(fill: VectorFill, gradient: VectorGradient): boolean {
+  return (
+    isVectorGradient(fill) &&
+    fill.type === gradient.type &&
+    fill.from === gradient.from &&
+    fill.to === gradient.to &&
+    fill.angle === gradient.angle
+  )
 }
 
 const VectorEditorContext = createContext<VectorEditorContextValue | null>(null)
@@ -473,6 +504,14 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   }, [doc, fontFamily])
   const selected = doc?.shapes.filter((s) => selectedIds.includes(s.id)) ?? []
   const single = selected.length === 1 ? (selected[0] ?? null) : null
+  // A forma que a janela do Degradê INSPECIONA (e da qual o estilo sincroniza
+  // numa seleção com várias): a primeira LIVRE com preenchimento, na ordem do
+  // documento (a de baixo na pilha; linha e figura não contam). Trancada só
+  // quando a seleção inteira está trancada: a janela mostra o que ela PODE
+  // editar (`applyStyle` só escreve nas livres), não o que ela não pode.
+  const lockedIds = doc ? lockedIdsOf(doc.shapes) : new Set<string>()
+  const fillBearing = selected.filter(hasFill)
+  const inspectedShape = fillBearing.find((s) => !lockedIds.has(s.id)) ?? fillBearing[0] ?? null
   // Editar pontos é sempre de UMA forma por vez (o palco desenha os nós dela).
   // Trancada não expõe os nós (editar pontos muda a geometria).
   const nodeTarget = tool === 'reshape' && single?.locked !== true ? single : null
@@ -485,20 +524,24 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     expectedNodeStructureRef.current = nodeStructure
   }, [nodeStructure])
 
-  // O estilo também funciona como inspetor da seleção. Undo/redo troca o
-  // objeto do shape sem trocar seu id; sem esta sincronização, o desenho era
-  // restaurado mas o painel (inclusive as pontas do degradê) ficava exibindo e
-  // reaplicando a versão anterior.
+  // O estilo também funciona como inspetor da seleção: com UMA forma, dela; com
+  // VÁRIAS (grupo), da inspecionada — senão o slot da caixa e a paleta mostravam
+  // a cor da forma ANTERIOR enquanto o botão do Degradê mostrava a do grupo
+  // (três respostas para "qual é a cor de agora"). Undo/redo troca o objeto do
+  // shape sem trocar seu id; sem esta sincronização, o desenho era restaurado
+  // mas o painel (inclusive as pontas do degradê) ficava exibindo e reaplicando
+  // a versão anterior.
+  const styleSource = single ?? inspectedShape
   useEffect(() => {
-    if (!single) return
+    if (!styleSource) return
     setStyle((current) => ({
-      // A linha não tem preenchimento que valha como inspetor: o estilo guarda o
-      // que já tinha (um degradê recém-montado para a PRÓXIMA forma, por exemplo).
-      fill: single.type === 'line' ? current.fill : single.fill,
-      stroke: single.stroke ? { ...single.stroke } : null,
-      opacity: single.opacity,
+      // Linha e figura não têm preenchimento que valha como inspetor: o estilo
+      // guarda o que já tinha (um degradê recém-montado para a PRÓXIMA forma).
+      fill: hasFill(styleSource) ? styleSource.fill : current.fill,
+      stroke: styleSource.stroke ? { ...styleSource.stroke } : null,
+      opacity: styleSource.opacity,
     }))
-  }, [single])
+  }, [styleSource])
 
   if (!doc) return null
 
@@ -568,6 +611,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     if (selected.length === 0) return
     const free = freeSelectedIds()
     if (!free) return
+    updateFree(free, update)
+  }
+
+  /** O miolo do `updateSelected`, para quem já resolveu as livres (sem checar o cadeado 2×). */
+  function updateFree(free: readonly string[], update: (shape: VectorShape) => VectorShape): void {
     const current = currentShapes()
     const next = current.map((s) => (free.includes(s.id) ? update(s) : s))
     if (next.every((s, i) => s === current[i])) return
@@ -647,27 +695,37 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     setStyle((current) => ({ ...current, ...partial }))
   }
 
+  /**
+   * As formas livres da seleção, ou `[]` sem seleção; `null` = seleção inteira
+   * trancada (o `freeSelectedIds` já toastou) — aí NEM o estilo muda: a janela
+   * do Degradê e os slots da caixa mentiriam mostrando uma cor que o desenho
+   * recusou. Custo aceito: com uma trancada selecionada pelo painel Camadas, a
+   * paleta não arma a cor da PRÓXIMA forma (o toast do cadeado explica; Esc
+   * solta a seleção).
+   */
+  function freeForStyle(): string[] | null {
+    return selected.length > 0 ? freeSelectedIds() : []
+  }
+
   function applyStyle(partial: Partial<ShapeStyle>): void {
-    // Seleção inteira trancada: nem o estilo muda (a janela do Degradê e os
-    // slots da caixa mentiriam mostrando uma cor que o desenho recusou).
-    if (selected.length > 0 && !freeSelectedIds()) return
+    const free = freeForStyle()
+    if (!free) return
     setStyle((current) => ({ ...current, ...partial }))
-    if (selected.length > 0) {
-      updateSelected((shape) => {
-        const fillApplies = partial.fill !== undefined && shape.type !== 'line'
-        const strokeApplies = partial.stroke !== undefined
-        const opacityApplies = partial.opacity !== undefined
-        // Nada se aplica a esta forma (linha recebendo só preenchimento): a
-        // MESMA referência, para o `updateSelected` não gravar desfazer vazio.
-        if (!fillApplies && !strokeApplies && !opacityApplies) return shape
-        return {
-          ...shape,
-          ...(fillApplies ? { fill: partial.fill } : {}),
-          ...(strokeApplies ? { stroke: partial.stroke } : {}),
-          ...(opacityApplies ? { opacity: partial.opacity } : {}),
-        }
-      })
-    }
+    if (free.length === 0) return
+    updateFree(free, (shape) => {
+      const fillApplies = partial.fill !== undefined && hasFill(shape)
+      const strokeApplies = partial.stroke !== undefined
+      const opacityApplies = partial.opacity !== undefined
+      // Nada se aplica a esta forma (linha ou figura recebendo só preenchimento):
+      // a MESMA referência, para o `updateFree` não gravar desfazer vazio.
+      if (!fillApplies && !strokeApplies && !opacityApplies) return shape
+      return {
+        ...shape,
+        ...(fillApplies ? { fill: partial.fill } : {}),
+        ...(strokeApplies ? { stroke: partial.stroke } : {}),
+        ...(opacityApplies ? { opacity: partial.opacity } : {}),
+      }
+    })
   }
 
   /**
@@ -675,11 +733,13 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * (conta-gotas da janelinha do degradê), a paleta e a cor livre também são
    * FONTE: a criança pode pegar de qualquer lugar da tela, não só de uma forma
    * (a dona testava clicando na paleta, e a cor sólida apagava o degradê da
-   * forma selecionada). "Sem cor" não é uma cor: não faz nada.
+   * forma selecionada). "Sem cor" não é uma cor: avisa e continua na captura
+   * (clique mudo não ensina nada).
    */
   function applyChannelColor(hex: string): void {
     if (colorPickRef.current) {
-      if (hex !== 'none') endColorPick(hex)
+      if (hex === 'none') showToast(COPY.vector.pickColorNone)
+      else endColorPick(hex)
       return
     }
     if (activeChannel === 'stroke') {
@@ -718,21 +778,53 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
    * cima de uma cor velha e a criança via a PRIMEIRA cor trocar.
    */
   function inspectedFill(): VectorFill {
-    const inspected = selected.find((s) => s.type !== 'line' && s.type !== 'image')
-    return inspected ? inspected.fill : style.fill
+    return inspectedShape ? inspectedShape.fill : style.fill
   }
 
   /** Degradê "de trabalho": o inspecionado, ou um novo a partir da cor sólida dele. */
   function currentGradient(): VectorGradient {
-    const fill = inspectedFill()
-    if (isVectorGradient(fill)) return fill
-    const from = typeof fill === 'string' && fill.startsWith('#') ? fill : '#78dc52'
-    return { type: 'linear', from, to: '#ffffff', angle: 90 }
+    return gradientOf(inspectedFill())
   }
 
+  /**
+   * Edita o degradê de CADA forma livre da seleção em cima do DELA (o começo de
+   * uma nunca vira o começo da outra; sólida vira degradê a partir da própria
+   * cor) e o estilo em cima do inspecionado; sem seleção, só o estilo. Forma que
+   * já tem exatamente esse degradê sai pela MESMA referência (sem desfazer vazio
+   * — é o "pegar a mesma cor que já está na ponta").
+   */
   function applyGradient(partial: Partial<VectorGradient>): void {
-    applyStyle({ fill: { ...currentGradient(), ...partial } })
+    const free = freeForStyle()
+    if (!free) return
+    setStyle((current) => ({ ...current, fill: { ...currentGradient(), ...partial } }))
+    if (free.length === 0) return
+    updateFree(free, (shape) => {
+      if (!hasFill(shape)) return shape
+      const next = { ...gradientOf(shape.fill), ...partial }
+      return sameGradient(shape.fill, next) ? shape : { ...shape, fill: next }
+    })
   }
+
+  /** "Tirar o degradê": cada forma livre com degradê fica com a cor do COMEÇO dela. */
+  function clearGradient(): void {
+    const free = freeForStyle()
+    if (!free) return
+    setStyle((current) => ({
+      ...current,
+      fill: isVectorGradient(current.fill) ? current.fill.from : current.fill,
+    }))
+    if (free.length === 0) return
+    updateFree(free, (shape) =>
+      isVectorGradient(shape.fill) ? { ...shape, fill: shape.fill.from } : shape,
+    )
+  }
+
+  // Trancada com degradê conta: o botão vivo leva ao toast do cadeado, que
+  // explica; desligado, a criança só veria um botão morto.
+  const hasGradient =
+    selected.length > 0
+      ? selected.some((s) => hasFill(s) && isVectorGradient(s.fill))
+      : isVectorGradient(style.fill)
 
   /**
    * Entra na captura: guarda a request + a ferramenta de agora e liga o
@@ -797,7 +889,11 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     }
     // A MESMA régua do colar: a cópia nasce do lado, mas DENTRO do papel (num
     // personagem de 32 px o +12 cego jogava a forma pequena para fora).
-    const offset = offsetInsideDoc(boundsUnion(selected.map(shapeBounds)), doc)
+    const offset = offsetInsideDoc(
+      boundsUnion(selected.map(shapeBounds)),
+      doc,
+      occupiedBoundsOf(shapes),
+    )
     const copies = cloneShapesWithNewIds(selected, offset.dx, offset.dy)
     commitShapes([...shapes, ...copies])
     setSelectedIds(copies.map((c) => c.id))
@@ -927,8 +1023,9 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   /**
    * Cola o que está na área de transferência, selecionando o que entrou:
    * - formas (deste ou de OUTRO desenho): ids/grupos NOVOS; no mesmo tamanho de
-   *   documento entra deslocada +12,+12 (colar do lado, como sempre); vinda de um
-   *   documento de outro tamanho, cabe e centraliza (`fitPastedShapes`);
+   *   documento entra pelo `offsetInsideDoc` (do lado, dentro do papel e fora de
+   *   cima do que já existe — a MESMA régua do Duplicar); vinda de um documento
+   *   de outro tamanho, cabe e centraliza (`fitPastedShapes`);
    * - pixel art (de um desenho de pixel): vira FIGURA, pelo mesmo caminho do
    *   "trazer um desenho da galeria" — recusa educada quando o PNG passa do teto.
    */
@@ -941,7 +1038,12 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     let copies: VectorShape[]
     if (item.kind === 'shapes') {
       if (item.shapes.length === 0) return
-      copies = fitPastedShapes(item.shapes, { width: item.width, height: item.height }, target)
+      copies = fitPastedShapes(
+        item.shapes,
+        { width: item.width, height: item.height },
+        target,
+        occupiedBoundsOf(shapes),
+      )
     } else {
       const source = resolveInsertSource({
         kind: 'pixel',
@@ -1239,6 +1341,8 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
     inspectedFill,
     currentGradient,
     applyGradient,
+    clearGradient,
+    hasGradient,
     colorPick,
     beginColorPick,
     endColorPick,

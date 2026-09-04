@@ -706,8 +706,13 @@ export const COPY = {
      * `getByRole` colidir com o cancelar de um diálogo.
      */
     pickColorBar: 'Pegando uma cor do desenho',
-    pickColorHint: 'Toque numa forma ou numa cor da paleta',
+    /** "Cores" é o nome da seção; "paleta" não aparece em lugar nenhum da tela. */
+    pickColorHint: 'Toque numa forma ou numa cor',
     pickColorCancel: 'Voltar sem pegar a cor',
+    /** Rótulo dos quadradinhos de cor ENQUANTO a captura está ligada (o canal não vale). */
+    pickColorTake: 'Pegar esta cor',
+    /** "Sem cor" tocado na captura: não é uma cor, e clique mudo não ensina nada. */
+    pickColorNone: 'Sem cor não vale aqui! Toque numa cor ou numa forma.',
     pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',

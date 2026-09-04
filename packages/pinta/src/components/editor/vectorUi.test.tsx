@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
@@ -10,6 +10,17 @@ const { createGalleryStore } = await import('../../state/galleryStore')
 beforeEach(() => {
   clearIdbMock()
   setPintaStorageNamespace('')
+  // O espelho da área de transferência é o localStorage da página (o teste do
+  // personagem pequeno copia): cada teste começa limpo, e nada vaza para o
+  // arquivo seguinte (o bun não isola módulos e o CI enumera noutra ordem).
+  localStorage.clear()
+})
+
+// Deixa o autosave pendente do editor assentar ANTES do próximo arquivo (régua
+// do `clipboardUi.test.tsx`): um autosave atrasado caía no IndexedDB do perfil
+// depois do `clearIdbMock()` do arquivo seguinte.
+afterEach(async () => {
+  await new Promise((resolve) => setTimeout(resolve, 30))
 })
 
 async function openVectorEditor(
@@ -2001,8 +2012,44 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
   }
 
   const azul = () => `${COPY.vector.fill}: ${COPY.colorNames['#003fad']}`
+  /** Rótulo de um quadradinho da paleta ENQUANTO a captura está ligada. */
+  const naCaptura = (hex: string) => `${COPY.vector.pickColorTake}: ${COPY.colorNames[hex]}`
 
-  it('seleção com VÁRIAS formas: a janela inspeciona a primeira forma, não o estilo descolado', async () => {
+  /** As paradas de todos os degradês do palco, na ordem do documento (de baixo para cima). */
+  function gradientes(stage: HTMLElement): (string | null)[][] {
+    return [...stage.querySelectorAll('linearGradient')].map((g) =>
+      [...g.querySelectorAll('stop')].map((s) => s.getAttribute('stop-color')),
+    )
+  }
+
+  /** Laço com a Selecionar que pega B e A (não uma eventual C em 200..260). */
+  async function lacoAB(stage: HTMLElement): Promise<void> {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 170, clientY: 170 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const marcadas = screen
+        .getAllByRole('button', { name: /^Selecionar: / })
+        .filter((b) => b.getAttribute('aria-pressed') === 'true')
+      expect(marcadas.length).toBe(2)
+    })
+  }
+
+  /** A (vermelha, selecionada) ganha vermelho→verde pela captura do fim em B; a janela fecha. */
+  async function aComDegrade(stage: HTMLElement): Promise<void> {
+    await startPicking('to')
+    const b = stage.querySelector('rect[fill="#78dc52"]')
+    if (!b) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(b, { isPrimary: true, pointerId: 1, clientX: 130, clientY: 130 })
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([['#ff2121', '#78dc52']])
+    })
+  }
+
+  it('seleção com VÁRIAS formas: a janela inspeciona a primeira forma, e cada uma guarda o PRÓPRIO começo', async () => {
     await openVectorEditor()
     const stage = await drawTwoRects()
     // C azul: o estilo vigente vira azul (C fica selecionado ao nascer).
@@ -2016,36 +2063,30 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
     await waitFor(() => {
       expect(stage.querySelectorAll('rect[fill="#003fad"]').length).toBe(1)
     })
-    // Laço com a Selecionar pega B e A (não C): seleção MÚLTIPLA, `single` nulo,
-    // e o estilo continua azul, descolado da seleção.
-    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
-    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 8, clientY: 8 })
-    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 170, clientY: 170 })
-    fireEvent.pointerUp(stage, { pointerId: 1 })
-    await waitFor(() => {
-      const pressed = screen
-        .getAllByRole('button', { name: /^Selecionar: / })
-        .filter((b) => b.getAttribute('aria-pressed') === 'true')
-      expect(pressed.length).toBe(2)
-    })
-    // A janela mostra o preenchimento da PRIMEIRA forma selecionada (B, verde).
+    // Laço com a Selecionar pega B e A (não C): seleção MÚLTIPLA, `single` nulo.
+    await lacoAB(stage)
+    // A janela mostra o preenchimento da PRIMEIRA forma selecionada (B, verde)...
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
     const fromSwatch = await screen.findByRole('button', { name: COPY.vector.gradientFrom })
     expect(swatchHex(fromSwatch)).toBe('#78dc52')
+    // ...e o slot da CAIXA concorda (o estilo sincroniza da inspecionada; antes
+    // ficava no azul de C, e a criança via duas cores para a mesma seleção).
+    const slotVerde = screen
+      .getAllByRole('button', { name: `${COPY.vector.fill}: ${COPY.colorNames['#78dc52']}` })
+      .some((b) => b.querySelector('[data-vector-color-shape="fill"]'))
+    expect(slotVerde).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
-    // Pegar a cor do FIM em C: o começo continua o verde de B nas duas formas.
+    // Pegar a cor do FIM em C: cada forma guarda o PRÓPRIO começo (B verde, A
+    // vermelha), na ordem do documento. Antes as duas recebiam o começo do estilo.
     await startPicking('to')
     const c = stage.querySelector('rect[fill="#003fad"]')
     if (!c) throw new Error('retângulo azul esperado')
     fireEvent.pointerDown(c, { isPrimary: true, pointerId: 1, clientX: 230, clientY: 230 })
     await screen.findByRole('dialog', { name: COPY.vector.gradient })
     await waitFor(() => {
-      const grads = [...stage.querySelectorAll('linearGradient')].map((g) =>
-        [...g.querySelectorAll('stop')].map((s) => s.getAttribute('stop-color')),
-      )
-      expect(grads).toEqual([
+      expect(gradientes(stage)).toEqual([
         ['#78dc52', '#003fad'],
-        ['#78dc52', '#003fad'],
+        ['#ff2121', '#003fad'],
       ])
     })
     expect(swatchHex(screen.getByRole('button', { name: COPY.vector.gradientTo }))).toBe('#003fad')
@@ -2216,29 +2257,38 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
     const xs = () =>
       [...stage.querySelectorAll('rect[fill="#ff2121"]')].map((r) => Number(r.getAttribute('x')))
     // 20 + 8 + 12 passa dos 32 do papel: a cópia vai para o outro lado, em 8 (dentro).
+    // (O toque acima seleciona pelo ELEMENTO tocado: o `measureStage` de 480×360
+    // é o do cenário, e a coordenada 300 nem existe num papel de 32.)
     await waitFor(() => {
       expect(xs()).toEqual([20, 8])
     })
-    // Duplicar a cópia (selecionada, em 8): 8 + 8 + 12 cabe, então +12 = 20. Mesma régua.
+    // Duplicar a cópia (selecionada, em 8): +12 cairia EM CIMA do original em 20,
+    // então a cópia vai para o próximo lugar livre (a folga de trás, 0). Mesma régua.
     fireEvent.click(screen.getByRole('button', { name: COPY.vector.selDuplicate }))
     await waitFor(() => {
-      expect(xs()).toEqual([20, 8, 20])
+      expect(xs()).toEqual([20, 8, 0])
     })
   })
 
-  it('na captura, uma cor da PALETA também serve de fonte (e "Sem cor" não faz nada)', async () => {
+  it('na captura, uma cor da PALETA também serve de fonte (e "Sem cor" avisa)', async () => {
     await openVectorEditor()
     const stage = await drawTwoRects()
     await startPicking('to')
-    // "Sem cor" não é uma cor: a captura continua e A não muda.
+    // Os quadradinhos dizem o que fazem na captura ("Pegar esta cor", sem o canal
+    // e sem `aria-pressed`, que é do estilo e não da captura).
+    expect(screen.queryByRole('button', { name: azul() })).toBeNull()
+    const azulNaCaptura = screen.getByRole('button', { name: naCaptura('#003fad') })
+    expect(azulNaCaptura.hasAttribute('aria-pressed')).toBe(false)
+    // "Sem cor" não é uma cor: avisa, a captura continua e A não muda.
     fireEvent.click(
-      screen.getByRole('button', { name: `${COPY.vector.fill}: ${COPY.vector.none}` }),
+      screen.getByRole('button', { name: `${COPY.vector.pickColorTake}: ${COPY.vector.none}` }),
     )
+    expect(await screen.findByText(COPY.vector.pickColorNone)).toBeTruthy()
     expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
     expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
     // Um swatch da paleta: a cor vai para a ponta pedida, sem apagar o degradê
     // (antes a paleta aplicava a cor SÓLIDA na forma e a captura seguia aberta).
-    fireEvent.click(screen.getByRole('button', { name: azul() }))
+    fireEvent.click(azulNaCaptura)
     await screen.findByRole('dialog', { name: COPY.vector.gradient })
     expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
     expect(pressed(COPY.tools.rect)).toBe('true')
@@ -2249,5 +2299,210 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       expect(stops).toEqual(['#ff2121', '#003fad'])
     })
     expect(swatchHex(screen.getByRole('button', { name: COPY.vector.gradientTo }))).toBe('#003fad')
+  })
+
+  it('a mesma cor numa ponta não engole a cor nas OUTRAS formas da seleção', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await aComDegrade(stage)
+    await lacoAB(stage)
+    // "Cor do fim" = verde, que A JÁ tem na ponta: A sai igual (sem desfazer
+    // vazio) e B, sólida, vira verde→verde. Antes o guard olhava só a
+    // inspecionada e B não recebia nada.
+    await startPicking('to')
+    fireEvent.click(screen.getByRole('button', { name: naCaptura('#78dc52') }))
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([
+        ['#78dc52', '#78dc52'],
+        ['#ff2121', '#78dc52'],
+      ])
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    // UM desfazer devolve B ao verde sólido; o degradê de A fica.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+      expect(gradientes(stage)).toEqual([['#ff2121', '#78dc52']])
+    })
+  })
+
+  it('"Tirar o degradê" com várias: vivo se ALGUMA tem, e cada uma volta para o PRÓPRIO começo', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    // Sem degradê em ninguém, o botão fica desligado (não há o que tirar).
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    const morto = await screen.findByRole('button', { name: COPY.vector.gradientOff })
+    expect(morto.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await aComDegrade(stage)
+    await lacoAB(stage)
+    // A inspecionada (B, a de baixo) é sólida, mas A tem degradê: o botão está VIVO.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    const vivo = await screen.findByRole('button', { name: COPY.vector.gradientOff })
+    expect(vivo.hasAttribute('disabled')).toBe(false)
+    fireEvent.click(vivo)
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([['#ff2121', '#78dc52']])
+    })
+  })
+
+  it('trancada + livre na seleção: a janela inspeciona a LIVRE, e a cor vai para ela', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    // Tranca A pelo cadeado, seleciona A pela linha (trancada, de propósito) e
+    // soma B com Shift no palco: seleção mista [A trancada, B livre].
+    fireEvent.click(
+      screen.getAllByRole('button', {
+        name: `${COPY.layers.lock}: ${COPY.vector.shapeNames.rect}`,
+      })[0] as HTMLElement,
+    )
+    fireEvent.click(screen.getAllByRole('button', { name: /^Selecionar: / })[0] as HTMLElement)
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[width="14"]').length).toBe(8)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const b = stage.querySelector('rect[fill="#78dc52"]')
+    if (!b) throw new Error('retângulo verde esperado')
+    fireEvent.pointerDown(b, {
+      isPrimary: true,
+      pointerId: 1,
+      clientX: 130,
+      clientY: 130,
+      shiftKey: true,
+    })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const marcadas = screen
+        .getAllByRole('button', { name: /^Selecionar: / })
+        .filter((row) => row.getAttribute('aria-pressed') === 'true')
+      expect(marcadas.length).toBe(2)
+    })
+    // A janela mostra o verde de B (quem ela PODE editar), não o vermelho da trancada.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(swatchHex(await screen.findByRole('button', { name: COPY.vector.gradientFrom }))).toBe(
+      '#78dc52',
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    // Pegar a cor do fim na paleta: B vira verde→azul escuro; A segue vermelha e sólida.
+    await startPicking('to')
+    fireEvent.click(screen.getByRole('button', { name: naCaptura('#003fad') }))
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([['#78dc52', '#003fad']])
+      expect(stage.querySelectorAll('rect[fill="#ff2121"]').length).toBe(1)
+    })
+  })
+
+  it('a cor livre do "+" na captura vai para a ponta, e ao fechar o Degradê o foco volta ao botão "Degradê"', async () => {
+    await openVectorEditor()
+    const stage = await drawTwoRects()
+    await startPicking('to')
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.addColor }))
+    const hex = await screen.findByLabelText(COPY.colorPicker.hex)
+    fireEvent.change(hex, { target: { value: '#123456' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.palette.add }))
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    expect(screen.queryByText(COPY.vector.pickColorHint)).toBeNull()
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([['#ff2121', '#123456']])
+    })
+    // O "+" fechou no MESMO commit em que o Degradê abriu e devolveu o foco ao
+    // seu botão; sem o `returnFocusTo`, o Degradê guardaria o "+" como acionador.
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(document.activeElement).toBe(
+        screen.getByRole('button', { name: COPY.vector.gradient }),
+      )
+    })
+  })
+
+  it('figura selecionada: o estilo guarda o degradê montado, e a paleta não grava desfazer vazio nela', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        const { createVectorBackgroundAsset } = await import('../../core/projectConfig')
+        const fundo = createVectorBackgroundAsset({ name: 'figura', width: 480, height: 360 })
+        await seed.getState().importAssets([
+          {
+            ...fundo,
+            shapes: [
+              {
+                id: 'quadro',
+                type: 'rect',
+                x: 16,
+                y: 16,
+                w: 48,
+                h: 48,
+                rx: 0,
+                fill: '#78dc52',
+                stroke: null,
+                opacity: 1,
+                rotation: 0,
+              },
+              {
+                id: 'foto',
+                type: 'image',
+                x: 200,
+                y: 200,
+                w: 40,
+                h: 40,
+                src: 'data:image/png;base64,iVBORw0KGgo=',
+                fill: 'none',
+                stroke: null,
+                opacity: 1,
+                rotation: 0,
+              },
+            ],
+          },
+        ])
+      },
+      'figura',
+    )
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const quadro = stage.querySelector('rect[fill="#78dc52"]')
+    if (!quadro) throw new Error('quadro esperado')
+    fireEvent.pointerDown(quadro, { isPrimary: true, pointerId: 1, clientX: 40, clientY: 40 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    // O quadro ganha verde→azul escuro pela paleta na captura.
+    await startPicking('to')
+    fireEvent.click(screen.getByRole('button', { name: naCaptura('#003fad') }))
+    await screen.findByRole('dialog', { name: COPY.vector.gradient })
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    await waitFor(() => {
+      expect(gradientes(stage)).toEqual([['#78dc52', '#003fad']])
+    })
+    // Seleciona a FIGURA: ela não tem preenchimento que valha como inspetor, então
+    // a janela continua mostrando o degradê montado (antes o `fill: 'none'` dela
+    // apagava o estilo e a janela voltava ao verde de fábrica).
+    const foto = stage.querySelector('image')
+    if (!foto) throw new Error('figura esperada')
+    fireEvent.pointerDown(foto, { isPrimary: true, pointerId: 1, clientX: 220, clientY: 220 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[width="14"]').length).toBe(8)
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    expect(swatchHex(await screen.findByRole('button', { name: COPY.vector.gradientTo }))).toBe(
+      '#003fad',
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.close }))
+    // Uma cor da paleta com a figura selecionada: nada a pintar nela, nenhum
+    // desfazer gravado. UM desfazer volta ao commit anterior (o degradê do quadro).
+    fireEvent.click(
+      screen.getByRole('button', { name: `${COPY.vector.fill}: ${COPY.colorNames['#ff2121']}` }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => {
+      expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
+      expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
+    })
   })
 })

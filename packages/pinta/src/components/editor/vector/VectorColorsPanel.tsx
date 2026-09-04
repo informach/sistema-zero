@@ -13,6 +13,14 @@
  *
  * Largura FIXA (w-68), como os painéis do pixel: sem ela a grade `1fr`
  * esticaria os vãos conforme o conteúdo.
+ *
+ * Em CAPTURA de cor (conta-gotas da janelinha do degradê, `colorPick`), a grade
+ * vira FONTE: o toque num quadradinho manda a cor para a ponta pedida e sai da
+ * captura (`applyChannelColor`), e o "+" também. Os rótulos trocam para "Pegar
+ * esta cor" (o canal não vale ali), o `aria-pressed` some (o destaque é do
+ * estilo, não da captura), a mira do palco chega aos quadradinhos e a grade
+ * ganha um anel — sem isso a dica da faixinha falava de uma paleta que não
+ * dava sinal nenhum.
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
@@ -52,6 +60,7 @@ export function VectorColorsPanel({
     activeChannel,
     applyChannelColor,
     rememberColor,
+    colorPick,
   } = useVectorEditor()
   const { paletteLibrary } = usePintaApp()
   const { showToast } = useToast()
@@ -88,7 +97,12 @@ export function VectorColorsPanel({
     })
     showToast(library.enabled && !saved ? COPY.palette.libraryFull : COPY.palette.paletteCreated)
   }
-  const channelLabel = activeChannel === 'fill' ? COPY.vector.fill : COPY.vector.stroke
+  const picking = colorPick !== null
+  const channelLabel = picking
+    ? COPY.vector.pickColorTake
+    : activeChannel === 'fill'
+      ? COPY.vector.fill
+      : COPY.vector.stroke
   // Cor "selecionada" do canal ativo (destaca o swatch correspondente).
   const activeHex =
     activeChannel === 'fill'
@@ -152,16 +166,25 @@ export function VectorColorsPanel({
         </>
       }
     >
-      <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5">
+      <div
+        className={clsx(
+          'grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5',
+          picking && 'cursor-crosshair rounded-lg ring-2 ring-pin-accent/60',
+        )}
+      >
         <button
           type="button"
           aria-label={`${channelLabel}: ${COPY.vector.none}`}
-          aria-pressed={noneActive}
+          aria-pressed={picking ? undefined : noneActive}
+          aria-disabled={picking || undefined}
           title={COPY.vector.none}
           onClick={() => applyChannelColor('none')}
           className={clsx(
             'pin-checkerboard size-11 shrink-0 rounded-md border-2',
-            noneActive ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border',
+            !picking && noneActive
+              ? 'border-pin-accent ring-2 ring-pin-accent'
+              : 'border-pin-border',
+            picking && 'opacity-40',
           )}
         />
         {swatches.map((hex) => (
@@ -169,12 +192,14 @@ export function VectorColorsPanel({
             key={hex}
             type="button"
             aria-label={`${channelLabel}: ${COPY.colorNames[hex] ?? hex}`}
-            aria-pressed={activeHex === hex}
+            aria-pressed={picking ? undefined : activeHex === hex}
             title={COPY.colorNames[hex] ?? hex}
             onClick={() => applyChannelColor(hex)}
             className={clsx(
               'size-11 shrink-0 rounded-md border-2',
-              activeHex === hex ? 'border-pin-accent ring-2 ring-pin-accent' : 'border-pin-border',
+              !picking && activeHex === hex
+                ? 'border-pin-accent ring-2 ring-pin-accent'
+                : 'border-pin-border',
             )}
             style={{ backgroundColor: hex }}
           />

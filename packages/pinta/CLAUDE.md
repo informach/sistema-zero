@@ -470,10 +470,18 @@ Mac, extras do pedaço colado, Caneta, curadoria).
     some porque a criança duplicou um detalhe). Formas no clipboard → toast `clipboard.vectorIntoPixel`.
     Sem a ferramenta `select` na curadoria da aula, colar/duplicar/Ctrl+A não fazem nada.
   - Vetor (`VectorEditorScope`): shapes do MESMO tamanho de doc colam com **`offsetInsideDoc`**
-    (`vectorTools.ts`, 03/09/2026): +12,+12 quando cabe no papel, senão −12 por eixo, e +12 se nem
-    isso cabe (forma maior que o papel). É a MESMA régua do Duplicar, e a régua existe porque num
-    personagem de 32 px o +12 cego jogava uma forma pequena perto da borda para FORA do papel (o
-    `<svg>` aninhado clipa: "Ctrl+V nasce fora do papel", relato dela); de outro
+    (`vectorTools.ts`, 03/09/2026), a MESMA régua do Duplicar. Por eixo, os candidatos em ordem:
+    +12; −12; a FOLGA que sobra até a borda da frente; a folga até a borda de trás (12 é medida
+    de cenário: num personagem de 32 px um corpo de 16 no meio não tem ±12 para lado nenhum, e
+    numa peça de 16 px nem cabe); sem folga nenhuma, +12 (parcialmente fora, mas visível). E o
+    primeiro par cujo destino NÃO coincide com a caixa de uma forma ou a união de um grupo que já
+    existe (`occupiedBoundsOf`) vence: sem isso, num papel pequeno a régua oscilava entre dois
+    lugares e a SEGUNDA cópia nascia exatamente em cima da original ("duplicar não fez nada"). A
+    régua existe porque o +12 cego jogava uma forma perto da borda para FORA do papel (o
+    `<svg>` aninhado clipa: "Ctrl+V nasce fora do papel", relato dela). ⚠️ A caixa é a do
+    `shapeBounds` (sem rotação e sem o contorno): forma girada ainda pode nascer com uma pontinha
+    fora. Testes: `vector/vectorTools.test.ts` (8 casos) + o do personagem pequeno em
+    `vectorUi.test.tsx`; de outro
     tamanho, `fitPastedShapes` (`vectorTools.ts`) encolhe se não couber e centraliza, preservando
     grupos (≠ `shapesForInsert`, que achata num grupo só). Pixel no clipboard → FIGURA pelos
     helpers do `insertFromAsset` (`resolveInsertSource` + `imageShapeForInsert`); sem canvas/acima
@@ -1530,26 +1538,53 @@ já saberemos o que é preenchimento e o que é contorno".
 - ⭐⭐ **A janela do Degradê INSPECIONA e edita a FORMA selecionada, não o estilo vigente
   (`inspectedFill`, 03/09/2026)**: relato dela em produção, "a cor do fim não recebe a cor do
   conta-gotas, ela substitui a primeira". O fio do botão sempre mandou a cor para a ponta certa;
-  o defeito era a FONTE: `currentGradient()` lia `style.fill` e `applyGradient` espalha
-  `{...currentGradient(), ...partial}`, então editar UMA ponta reescreve a OUTRA a partir do
-  estilo, e o estilo descola da seleção em quatro casos reais com o mesmo sintoma: seleção com
-  VÁRIAS formas (grupo: o efeito de sincronização `[single]` só roda com UMA forma); conta-gotas da
-  CAIXA antes de abrir (`adoptStyle` não commita, o efeito não roda); LINHA (`applyStyle` pula o
-  fill, e o efeito ressincronizava o estilo pela linha, perdendo o degradê); TRANCADA (o estilo
-  mudava antes de a seleção recusar). Agora `inspectedFill()` = preenchimento da primeira forma
-  selecionada com preenchimento (linha e figura não contam; sem seleção, o estilo), usado por
-  `currentGradient`, pela janela (amostras, `active` dos tipos, guard da mesma cor, "Tirar o
-  degradê") e pela amostra do botão no painel. Junto: `applyStyle` checa o cadeado ANTES do
-  `setStyle`; `updateSelected` não commita quando o updater devolve as mesmas referências (sem
-  desfazer VAZIO; a linha devolve a si mesma); o efeito `[single]` mantém o fill do estilo quando a
-  única selecionada é linha. O conta-gotas da caixa segue "adotar estilo" (Scratch) e o
-  `swapFillStroke` segue descartando o `to`. Testes: 5 casos novos no describe "pegar uma cor do
-  desenho" (grupo, conta-gotas da caixa, degradê existente com `stops[0]` fixo, linha, trancada).
+  o defeito era a FONTE: `currentGradient()` lia `style.fill` e `applyGradient` espalhava
+  `{...currentGradient(), ...partial}` em todas, então editar UMA ponta reescrevia a OUTRA a
+  partir do estilo, e o estilo descola da seleção em quatro casos reais com o mesmo sintoma:
+  seleção com VÁRIAS formas (grupo: o efeito de sincronização só rodava com UMA forma);
+  conta-gotas da CAIXA antes de abrir (`adoptStyle` não commita, o efeito não roda); LINHA
+  (`applyStyle` pula o fill, e o efeito ressincronizava o estilo pela linha, perdendo o degradê);
+  TRANCADA (o estilo mudava antes de a seleção recusar). Agora:
+  - `inspectedShape` = a primeira forma LIVRE com preenchimento, na ordem do documento (a de
+    baixo; linha e figura não contam; trancada só quando a seleção inteira está trancada: a
+    janela mostra o que ela PODE editar, porque `applyStyle` só escreve nas livres). Sem seleção,
+    o estilo. `inspectedFill()`/`currentGradient()` alimentam a janela (amostras, `active` dos
+    tipos) e a amostra do botão no painel.
+  - ⭐ **`applyGradient` edita CADA forma livre em cima do PRÓPRIO degradê** (sólida vira degradê
+    a partir da própria cor; o começo de uma nunca vira o da outra) e o estilo em cima do
+    inspecionado. Forma que já tem exatamente esse degradê sai pela MESMA referência: é o "pegar
+    a mesma cor que já está na ponta" sem desfazer vazio, forma a forma (o guard saiu da janela
+    porque olhava só a inspecionada e ENGOLIA a cor nas outras). `clearGradient` ("Tirar o
+    degradê") idem: cada uma volta para o começo DELA; `hasGradient` deixa o botão vivo se ALGUMA
+    forma com preenchimento tem degradê (trancada conta: o clique leva ao toast do cadeado, que
+    explica; desligado seria botão morto).
+  - O estilo sincroniza da inspecionada também na seleção com VÁRIAS (`styleSource = single ??
+    inspectedShape`): senão o slot da caixa e a paleta mostravam a cor da forma ANTERIOR enquanto
+    o botão do Degradê mostrava a do grupo. Linha e figura não recebem `fill` no `applyStyle` nem
+    apagam o fill do estilo no efeito (uma figura tem `fill: 'none'`, e selecioná-la matava o
+    degradê recém-montado para a próxima forma e gravava um `<linearGradient>` morto no export).
+  - `applyStyle`/`applyGradient`/`clearGradient` checam o cadeado ANTES do `setStyle`
+    (`freeForStyle`) e `updateFree` não commita quando o updater devolve as mesmas referências
+    (sem desfazer VAZIO). ⚠️ Custo aceito: com a seleção inteira trancada (o painel Camadas
+    seleciona trancada de propósito), a paleta não arma a cor da PRÓXIMA forma; o toast do
+    cadeado explica e Esc solta a seleção. O conta-gotas da caixa segue "adotar estilo" (Scratch)
+    e o `swapFillStroke` segue descartando o `to`.
+  - Testes (describe "pegar uma cor do desenho" em `vectorUi.test.tsx`): grupo (cada forma guarda
+    o próprio começo + o slot da caixa concorda), conta-gotas da caixa, linha, trancada, trancada
+    + livre, mesma cor numa ponta com várias, "Tirar o degradê" com várias, figura.
   ⭐ **Na captura, a PALETA (e a cor livre do "+") também é fonte** (03/09/2026): ela testava
   clicando numa cor da paleta com a captura ligada, e o clique aplicava a cor SÓLIDA na forma
   selecionada (apagando o degradê) enquanto a captura seguia aberta. `applyChannelColor` em
-  captura chama `endColorPick(hex)` e sai (`'none'` não faz nada). A dica da faixinha diz "Toque
-  numa forma ou numa cor da paleta".
+  captura chama `endColorPick(hex)` e sai; "Sem cor" toasta `pickColorNone` (clique mudo não
+  ensina). A dica da faixinha diz "Toque numa forma ou numa cor" ("paleta" não aparece em lugar
+  nenhum da tela; a seção se chama Cores) e o `role=status` do palco a anuncia junto. Enquanto a
+  captura está ligada, os quadradinhos do painel dizem "Pegar esta cor: <nome>" (o canal não
+  vale ali), sem `aria-pressed` (o destaque é do estilo), com a mira do palco e um anel na grade.
+  ⚠️ O "+" confirmado na captura fecha no MESMO commit em que o Degradê reabre, e o React roda
+  todos os cleanups antes de todos os efeitos: o "+" devolvia o foco ao seu botão e o Degradê
+  guardava o "+" como acionador (ao fechar, o foco caía no painel de Cores). O `Dialog` ganhou
+  `returnFocusTo` e o Degradê aponta para o próprio botão. Testes: paleta como fonte (rótulos,
+  "Sem cor", azul escuro) e o caso do "+".
 - ⭐ **Paleta do vetor = espelho do `PaletteBar`**: sem chips (o canal é dito pelos dois
   quadradinhos da caixa), título = NOME da paleta com dropdown (Arcade/Doces/Lápis e carvão),
   lixeira + "+" no cabeçalho, grade 5/linha com "sem cor" na frente. Ordem: paleta escolhida (15) →
@@ -2437,9 +2472,15 @@ por px reais.
   + 6 MÉDIOS + 5 BAIXOS corrigidos — ver as duas seções dedicadas. QA playground feito
   (inclui truncate do menu e o desarme do Gerenciar medidos no navegador); pende QA integrado
   no kids com nuvem.
-- **Degradê inspeciona a forma selecionada + cópia dentro do papel (03/09/2026)**: dois relatos
-  dela em produção ("Cor do fim substitui a primeira"; "Ctrl+V nasce fora do papel"). Ver os
-  bullets `inspectedFill` (conta-gotas do degradê) e `offsetInsideDoc` (área de transferência).
+- **Degradê inspeciona a forma selecionada + cópia dentro do papel (03/09/2026, staging
+  `e89fb0d6` + o lote do full review)**: dois relatos dela em produção ("Cor do fim substitui a
+  primeira"; "Ctrl+V nasce fora do papel"). Ver os bullets `inspectedFill` (conta-gotas do
+  degradê) e `offsetInsideDoc` (área de transferência). Full review no mesmo dia (3 revisores):
+  régua da cópia que ainda jogava formas médias para fora em papel pequeno e punha a SEGUNDA
+  cópia em cima da original (ALTO); janela usando a primeira forma como molde da seleção inteira
+  e "Tirar o degradê" morto num grupo (MÉDIOS); trancada como inspetora, figura, paleta muda na
+  captura, foco do "+" (BAIXOS). Suíte (1175) + typecheck + biome verdes; QA em navegador no
+  playground dos consertos.
 - **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, EM PRODUÇÃO no PR #154)**: ver
   "Espessuras do contorno" e "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
