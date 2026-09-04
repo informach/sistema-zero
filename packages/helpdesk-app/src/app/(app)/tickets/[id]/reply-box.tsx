@@ -68,7 +68,7 @@ export function ReplyBox({
       if (apiError.code === 'CONNECTION_NOT_CONNECTED') {
         toast.error('Conecte a caixa contato@ em Configurações antes de responder.')
       } else if (apiError.code === 'GMAIL_SEND_FAILED') {
-        toast.error('Não foi possível enviar o e-mail. Tente de novo.')
+        toast.error('Não foi possível enviar o e-mail. Confira a entrega antes de tentar de novo.')
       } else if (apiError.code === 'GMAIL_NOT_CONFIGURED') {
         toast.error('A integração com o Gmail ainda não foi configurada.')
       } else if (apiError.code === 'CONCURRENCY_CONFLICT') {
@@ -113,6 +113,9 @@ export function ReplyBox({
           {regenerating ? 'Gerando…' : 'Regenerar rascunho'}
         </Button>
       </div>
+      <p className="text-xs text-muted-foreground">
+        Revise o texto antes de enviar. A IA prepara sugestões, mas nunca responde sozinha.
+      </p>
       <Textarea
         id="reply-body"
         value={body}

@@ -1,7 +1,12 @@
 import type { GmailConnection } from '../connection/gmail-connection'
 
 export interface ConnectionRepository {
-  create(connection: GmailConnection): Promise<void>
+  /**
+   * Ativa esta conexão como a ÚNICA caixa que o worker pode sincronizar. A
+   * operação é transacional para que dois callbacks concorrentes não deixem
+   * caixas distintas lendo a fila de atendimento.
+   */
+  activate(connection: GmailConnection): Promise<void>
   byId(id: string): Promise<GmailConnection | null>
   byExternalId(externalId: string): Promise<GmailConnection | null>
   /** A conexão ativa (status connected/needs_reauth mais recente) ou null. */

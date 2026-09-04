@@ -64,6 +64,14 @@ const EnvSchema = z.object({
   OAUTH_STATE_TTL_MINUTES: z.coerce.number().int().positive().default(10),
   // Nome de exibição no From das respostas (`From: <nome> <contato@…>`).
   HELPDESK_FROM_NAME: z.string().min(1).default('Sistema Zero'),
+  // O serviço atende uma única caixa compartilhada. O callback OAuth confere o
+  // e-mail retornado por `users.getProfile` antes de persistir credenciais.
+  HELPDESK_MAILBOX_ADDRESS: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('HELPDESK_MAILBOX_ADDRESS deve ser um e-mail válido')
+    .default('contato@sistemazero.com.br'),
 
   // ── Sync do Gmail (gmail-sync-worker) ────────────────────────────────────────
   GMAIL_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(45_000),
@@ -113,6 +121,8 @@ export function gmailConfig(env: Env): {
   redirectBaseUrl: string
   /** URL do app (destino dos 302 do callback). */
   appUrl: string
+  /** Caixa única autorizada para a fila de atendimento. */
+  mailboxAddress: string
 } | null {
   if (
     !env.GOOGLE_CLIENT_ID ||
@@ -129,6 +139,7 @@ export function gmailConfig(env: Env): {
     encKeyBase64: env.HELPDESK_TOKEN_ENC_KEY,
     redirectBaseUrl: env.OAUTH_PUBLIC_BASE_URL.replace(/\/$/, ''),
     appUrl: env.HELPDESK_APP_URL.replace(/\/$/, ''),
+    mailboxAddress: env.HELPDESK_MAILBOX_ADDRESS,
   }
 }
 

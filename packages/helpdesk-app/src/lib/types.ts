@@ -42,12 +42,22 @@ export type TicketCategory =
   | 'outro'
 
 export type TicketPriority = 'baixa' | 'normal' | 'alta'
+export type TicketSource = 'email' | 'portal'
 
 export type AiStatus = 'idle' | 'pending' | 'processing' | 'done' | 'failed' | 'skipped'
+
+export interface TicketSlaView {
+  state: 'on_track' | 'at_risk' | 'breached'
+  priority: TicketPriority
+  targetMinutes: number
+  deadlineAt: string
+  remainingMinutes: number
+}
 
 export interface TicketView {
   id: string
   version: number
+  source: TicketSource
   subject: string
   status: TicketStatus
   category: TicketCategory | null
@@ -68,9 +78,8 @@ export interface TicketView {
   aiDraftEdited: boolean
   aiClassification: unknown
   aiStatus: AiStatus
-  autoReplyState: 'none' | 'sending' | 'sent' | 'aborted'
-  autoRepliedAt: string | null
-  autoReplyReason: string | null
+  /** Meta operacional interna; o portal do responsável recebe sempre `null`. */
+  sla: TicketSlaView | null
   createdAt: string
   updatedAt: string
 }
@@ -78,9 +87,12 @@ export interface TicketView {
 export interface MessageView {
   id: string
   ticketId: string
-  kind: 'email' | 'note'
+  kind: 'email' | 'note' | 'portal'
+  visibility: 'customer' | 'internal'
   direction: 'inbound' | 'outbound' | null
   sentVia: 'customer' | 'human' | 'ai' | 'gmail' | null
+  deliveryState: 'pending' | 'sent' | 'unknown' | 'failed' | null
+  deliveryLastError: string | null
   fromEmail: string | null
   fromName: string | null
   toEmails: string[]
@@ -112,7 +124,6 @@ export interface DailyVolumePoint {
   /** `YYYY-MM-DD` (dia de São Paulo). */
   date: string
   created: number
-  autoReplied: number
 }
 
 /** Agregados do painel (`GET /helpdesk/tickets/stats`). Espelha o `TicketStats` do backend. */
@@ -120,8 +131,7 @@ export interface TicketStatsView {
   counts: { new: number; open: number; waiting: number }
   resolvedToday: number
   resolved7d: number
-  autoRepliedToday: number
-  autoReplied7d: number
+  sla: { atRisk: number; breached: number; unassigned: number }
   /** Série densa dos últimos 14 dias, ascendente. */
   volume: DailyVolumePoint[]
 }
@@ -140,12 +150,9 @@ export interface KbArticleView {
   updatedAt: string
 }
 
-// ── Configurações (auto-resposta + assinatura) ──
+// ── Configurações (assinatura) ──────────────────────────────────────────────
 
 export interface SettingsView {
-  autoReplyEnabled: boolean
-  autoReplyCategories: TicketCategory[]
-  autoReplyConfidenceMin: number
   signature: string
   updatedAt: string | null
 }

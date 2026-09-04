@@ -1,9 +1,6 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { AiPipelineResult, TicketAiService } from '../../application/ai/ticket-ai.service'
-import type { SettingsRepository } from '../../domain/ports/settings-repository.port'
+import type { TicketAiService } from '../../application/ai/ticket-ai.service'
 import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
-import { decideAutoReply } from '../../domain/ticket/auto-reply-policy'
-import type { Ticket } from '../../domain/ticket/ticket'
 
 const MAX_BACKOFF_MS = 30 * 60_000
 
@@ -15,16 +12,9 @@ export interface AiWorkerConfig {
   maxAttempts: number
 }
 
-/** Envio da auto-resposta (implementado pelo ReplyService.autoReply). */
-export interface AutoReplySender {
-  autoReply(ticketId: string, body: string): Promise<{ sent: boolean; reason?: string }>
-}
-
 export interface AiWorkerDeps {
   tickets: TicketRepository
   ticketAi: TicketAiService
-  /** F4: decide e envia a auto-resposta após o pipeline (settings + sender). */
-  autoReply?: { settings: SettingsRepository; sender: AutoReplySender }
   now: () => Date
   logger: Logger
   config: AiWorkerConfig
@@ -66,10 +56,9 @@ export class AiWorker {
       const ticket = await this.deps.tickets.claimAiDue(this.deps.config.leaseMs, this.deps.now())
       if (!ticket) return
       try {
-        const result = await this.deps.ticketAi.runPipeline(ticket)
+        await this.deps.ticketAi.runPipeline(ticket)
         await this.deps.tickets.markAiDone(ticket.id, this.deps.now())
         this.deps.logger.info('ai.processed', { ticketId: ticket.id })
-        await this.maybeAutoReply(ticket, result)
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         const at = this.deps.now()
@@ -100,53 +89,6 @@ export class AiWorker {
       })
     } finally {
       this.running = false
-    }
-  }
-
-  /**
-   * F4: decide (política PURA) e, se coberto, ENVIA a auto-resposta com guard de
-   * fase. Qualquer critério falho vira rascunho + motivo visível na UI. Nunca
-   * derruba o processamento da IA (a auto-resposta é best-effort sobre o rascunho).
-   */
-  private async maybeAutoReply(ticket: Ticket, result: AiPipelineResult): Promise<void> {
-    if (!this.deps.autoReply) return
-    try {
-      const settings = await this.deps.autoReply.settings.get()
-      const decision = decideAutoReply({
-        settings: {
-          autoReplyEnabled: settings.autoReplyEnabled,
-          autoReplyCategories: settings.autoReplyCategories,
-          autoReplyConfidenceMin: settings.autoReplyConfidenceMin,
-        },
-        classification: {
-          category: result.classification.category,
-          confidence: result.classification.confidence,
-          sentiment: result.classification.sentiment,
-          flags: result.classification.flags,
-        },
-        kbCoverage: result.draft.kbCoverage,
-        ticket: { autoReplyState: ticket.autoReplyState, hasOutbound: result.hasOutbound },
-        inbound: {
-          isAutoreply: result.lastInbound?.isAutoreply ?? false,
-          fromEmail: result.lastInbound?.fromEmail ?? null,
-        },
-      })
-      const at = this.deps.now()
-      if (decision.action !== 'send') {
-        await this.deps.tickets.setAutoReplyReason(ticket.id, decision.reason, at)
-        return
-      }
-      const sent = await this.deps.autoReply.sender.autoReply(ticket.id, result.draft.reply)
-      if (sent.sent) {
-        this.deps.logger.info('auto_reply.sent', { ticketId: ticket.id })
-      } else {
-        await this.deps.tickets.setAutoReplyReason(ticket.id, sent.reason ?? decision.reason, at)
-      }
-    } catch (error) {
-      this.deps.logger.warn('auto_reply.decision_failed', {
-        ticketId: ticket.id,
-        error: error instanceof Error ? error.message : String(error),
-      })
     }
   }
 }

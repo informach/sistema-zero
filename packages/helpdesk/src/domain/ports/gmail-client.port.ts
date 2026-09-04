@@ -46,7 +46,7 @@ export interface ParsedEmail {
   attachments: AttachmentMeta[]
   internalDate: Date | null
   labelIds: string[]
-  /** Headers de anti-loop (autoresponder): auto-resposta nunca responde a estes. */
+  /** Headers de autoresponder/newsletter preservados como contexto da mensagem. */
   autoSubmitted: string | null
   listUnsubscribe: string | null
   isAutoreply: boolean
@@ -77,8 +77,13 @@ export interface GmailClient {
   ): Promise<GmailHistoryPage>
   /** users.messages.get(format=full) já parseado; null se a mensagem sumiu (404). */
   getMessage(accessToken: string, id: string): Promise<ParsedEmail | null>
-  /** users.messages.send: `raw` base64url + `threadId` (mantém a conversa). */
-  sendMessage(accessToken: string, input: { raw: string; threadId: string }): Promise<SentMessage>
+  /** Busca exata pelo header RFC 2822 Message-ID para reconciliar um send ambíguo. */
+  findMessageByRfc822MessageId(accessToken: string, messageId: string): Promise<SentMessage | null>
+  /**
+   * users.messages.send: `threadId` mantém uma conversa Gmail existente; ausente
+   * cria a primeira thread de um ticket iniciado no portal.
+   */
+  sendMessage(accessToken: string, input: { raw: string; threadId?: string }): Promise<SentMessage>
 }
 
 /** Erro da Gmail API. `permanent` (401/403 auth) sinaliza reauth; o resto é transitório. */

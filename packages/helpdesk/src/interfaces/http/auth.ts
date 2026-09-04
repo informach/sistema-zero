@@ -63,6 +63,29 @@ export function resolveActor(headers: Record<string, string | undefined>): Actor
   }
 }
 
+/**
+ * Resolve a identidade da conta que usa o portal. Sessões de perfil representam
+ * uma criança (`x-auth-account-id` presente) e são bloqueadas explicitamente:
+ * o helpdesk só pode ser aberto por um responsável em sua própria sessão.
+ */
+export function resolveCustomer(headers: Record<string, string | undefined>): {
+  accountId: string
+  email: string
+  name: string | null
+} {
+  if (headers['x-auth-account-id']) {
+    throw new ForbiddenError('O atendimento só pode ser acessado pela conta responsável')
+  }
+  const accountId = resolveUserId(headers)
+  if (headers['x-auth-user-status'] !== 'active') {
+    throw new ForbiddenError('Conta inativa')
+  }
+  const email = (decodeIdentity(headers['x-auth-user-email']) ?? '').trim().toLowerCase()
+  if (!email) throw new UnauthorizedError('E-mail da identidade ausente')
+  const name = (decodeIdentity(headers['x-auth-user-name']) ?? '').trim()
+  return { accountId, email, name: name || null }
+}
+
 /** Comparação em tempo constante (evita timing attack no token interno). */
 function safeEqual(a: string, b: string): boolean {
   const ab = Buffer.from(a)

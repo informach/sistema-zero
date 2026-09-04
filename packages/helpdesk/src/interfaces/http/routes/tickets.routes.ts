@@ -3,7 +3,15 @@ import type { TicketAiService } from '../../../application/ai/ticket-ai.service'
 import type { ReplyService } from '../../../application/tickets/reply.service'
 import type { TicketService } from '../../../application/tickets/ticket.service'
 import { assertInternalCaller, requireStaff, resolveActor } from '../auth'
-import { IdParams, NoteBody, ReplyBody, TicketPatchBody, TicketsQuery } from '../dtos'
+import {
+  DeliveryDiscardBody,
+  DeliveryParams,
+  IdParams,
+  NoteBody,
+  ReplyBody,
+  TicketPatchBody,
+  TicketsQuery,
+} from '../dtos'
 
 export interface TicketsRoutesDeps {
   tickets: TicketService
@@ -28,6 +36,9 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
           const page = await deps.tickets.list({
             status: query.status,
             category: query.category,
+            sla: query.sla,
+            assignment: query.assignment,
+            queue: query.queue,
             q: query.q,
             limit: query.limit ?? 50,
             offset,
@@ -50,6 +61,16 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
         '/helpdesk/tickets/:id/reply',
         ({ headers, params, body }) => deps.reply.reply(resolveActor(headers), params.id, body),
         { params: IdParams, body: ReplyBody },
+      )
+      .post(
+        '/helpdesk/tickets/:id/deliveries/:messageId/reconcile',
+        ({ params }) => deps.reply.reconcileDelivery(params.id, params.messageId),
+        { params: DeliveryParams },
+      )
+      .post(
+        '/helpdesk/tickets/:id/deliveries/:messageId/mark-failed',
+        ({ params }) => deps.reply.markDeliveryFailed(params.id, params.messageId),
+        { params: DeliveryParams, body: DeliveryDiscardBody },
       )
       .post(
         '/helpdesk/tickets/:id/notes',

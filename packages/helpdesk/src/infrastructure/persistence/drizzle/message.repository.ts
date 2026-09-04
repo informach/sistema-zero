@@ -18,13 +18,4 @@ export class DrizzleMessageRepository implements MessageRepository {
       .where(eq(ticketMessages.ticketId, ticketId))
       .orderBy(asc(ticketMessages.createdAt), asc(ticketMessages.id))
   }
-
-  async existsByGmailMessageId(gmailMessageId: string): Promise<boolean> {
-    const [row] = await this.db
-      .select({ id: ticketMessages.id })
-      .from(ticketMessages)
-      .where(eq(ticketMessages.gmailMessageId, gmailMessageId))
-      .limit(1)
-    return Boolean(row)
-  }
 }

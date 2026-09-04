@@ -371,6 +371,19 @@ describe('gateway.config.ts (configuração real)', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
+  test('portal do helpdesk aceita somente JWT de conta ativa e conserva o token interno', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    for (const id of ['helpdesk-portal-read', 'helpdesk-portal-write']) {
+      expect(byId.get(id)).toMatchObject({
+        pathPattern: '/helpdesk/portal/*',
+        service: 'helpdesk',
+        auth: { required: true, mode: 'any', strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+      })
+      expect(byId.get(id)?.transforms).toBeDefined()
+    }
+  })
+
   test('rotas novas (analytics + leitura de auditoria) presentes como GET autenticado', () => {
     const byId = new Map(realConfig.routes.map((r) => [r.id, r]))
     for (const id of [

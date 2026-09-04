@@ -9,7 +9,7 @@ export interface SettingsRoutesDeps {
   requireStaffEnabled: boolean
 }
 
-/** Configurações do help desk (toggles de auto-resposta + assinatura). */
+/** Configurações do help desk (assinatura das respostas humanas). */
 export function settingsRoutes(deps: SettingsRoutesDeps) {
   return new Elysia()
     .onBeforeHandle(({ headers }) => {

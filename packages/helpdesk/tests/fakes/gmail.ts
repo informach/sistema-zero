@@ -95,16 +95,36 @@ export class FakeGmailClient implements GmailClient {
     return this.messagesById.get(id) ?? null
   }
 
-  sent: Array<{ raw: string; threadId: string }> = []
+  sent: Array<{ raw: string; threadId?: string }> = []
+  sentByRfc822MessageId = new Map<string, { id: string; threadId: string }>()
   nextSendId = 'sent-1'
   sendError: Error | null = null
+  /** Gmail aceitou a mensagem, mas a resposta HTTP se perdeu no caminho. */
+  sendAfterAcceptedError: Error | null = null
   async sendMessage(
     _accessToken: string,
-    input: { raw: string; threadId: string },
+    input: { raw: string; threadId?: string },
   ): Promise<{ id: string; threadId: string }> {
     if (this.sendError) throw this.sendError
+    const threadId = input.threadId ?? `thread-${this.nextSendId}`
     this.sent.push(input)
-    return { id: this.nextSendId, threadId: input.threadId }
+    const raw = Buffer.from(input.raw, 'base64url').toString('utf8')
+    const messageId = raw.match(/^Message-ID:\s*(.+)$/im)?.[1]?.trim()
+    if (messageId) {
+      this.sentByRfc822MessageId.set(messageId, {
+        id: this.nextSendId,
+        threadId,
+      })
+    }
+    if (this.sendAfterAcceptedError) throw this.sendAfterAcceptedError
+    return { id: this.nextSendId, threadId }
+  }
+
+  async findMessageByRfc822MessageId(
+    _accessToken: string,
+    messageId: string,
+  ): Promise<{ id: string; threadId: string } | null> {
+    return this.sentByRfc822MessageId.get(messageId) ?? null
   }
 }
 

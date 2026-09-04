@@ -4,24 +4,21 @@ import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
-import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import { Switch } from '@sistemazero/ui/switch'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { Mail } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { CATEGORY_LABELS, TICKET_CATEGORIES } from '@/lib/categories'
 import { formatDate } from '@/lib/format'
-import type { ConnectionView, SettingsView, TicketCategory } from '@/lib/types'
+import type { ConnectionView, SettingsView } from '@/lib/types'
 
 export function ConfiguracoesClient() {
   return (
     <div className="space-y-6">
       <ConnectionCard />
-      <AutoReplyCard />
+      <SignatureCard />
     </div>
   )
 }
@@ -174,15 +171,11 @@ function ConnectionCard() {
   )
 }
 
-/** Regras da auto-resposta (switch global, categorias, confiança e assinatura). */
-function AutoReplyCard() {
+/** Assinatura anexada às respostas enviadas pela equipe. */
+function SignatureCard() {
   const [settings, setSettings] = useState<SettingsView | null>(null)
   const [failed, setFailed] = useState(false)
-  const [enabled, setEnabled] = useState(false)
-  const [categories, setCategories] = useState<TicketCategory[]>([])
-  const [confidence, setConfidence] = useState('0.8')
   const [signature, setSignature] = useState('')
-  const [confidenceError, setConfidenceError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -191,9 +184,6 @@ function AutoReplyCard() {
       .then((view) => {
         if (!alive) return
         setSettings(view)
-        setEnabled(view.autoReplyEnabled)
-        setCategories(view.autoReplyCategories)
-        setConfidence(String(view.autoReplyConfidenceMin))
         setSignature(view.signature)
       })
       .catch(() => {
@@ -204,23 +194,10 @@ function AutoReplyCard() {
     }
   }, [])
 
-  function toggleCategory(category: TicketCategory, checked: boolean) {
-    setCategories((cur) => (checked ? [...cur, category] : cur.filter((item) => item !== category)))
-  }
-
   async function save() {
-    const parsed = Number(confidence)
-    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
-      setConfidenceError('Informe um valor entre 0 e 1.')
-      return
-    }
-    setConfidenceError(null)
     setSaving(true)
     try {
       const saved = await apiSend<SettingsView>('/api/helpdesk/settings', 'PATCH', {
-        autoReplyEnabled: enabled,
-        autoReplyCategories: categories,
-        autoReplyConfidenceMin: parsed,
         signature,
       })
       setSettings(saved)
@@ -235,10 +212,10 @@ function AutoReplyCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Auto-resposta</CardTitle>
+        <CardTitle>Assinatura das respostas</CardTitle>
         <CardDescription>
-          Quando ligada, a IA responde sozinha os tickets das categorias marcadas, desde que a
-          classificação atinja a confiança mínima.
+          A IA prepara resumos e rascunhos para revisão. Toda resposta é enviada por uma pessoa da
+          equipe.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -255,68 +232,13 @@ function AutoReplyCard() {
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
-              <div>
-                <p className="text-sm font-medium">Responder automaticamente</p>
-                <p className="text-xs text-muted-foreground">
-                  Desligada, a IA só prepara rascunhos para a equipe revisar.
-                </p>
-              </div>
-              <Switch
-                id="auto-reply-enabled"
-                checked={enabled}
-                onCheckedChange={setEnabled}
-                disabled={saving}
-              />
-            </div>
-
-            <fieldset className="space-y-2">
-              <legend className="text-sm font-medium">Categorias com auto-resposta</legend>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {TICKET_CATEGORIES.map((category) => (
-                  <label
-                    key={category}
-                    className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={categories.includes(category)}
-                      onChange={(e) => toggleCategory(category, e.target.checked)}
-                      disabled={saving}
-                      className="size-4 accent-[var(--primary)]"
-                    />
-                    {CATEGORY_LABELS[category]}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <Field
-              label="Confiança mínima"
-              htmlFor="auto-reply-confidence"
-              error={confidenceError ?? undefined}
-              hint="De 0 a 1. A auto-resposta só sai quando a classificação da IA atinge esse valor."
-            >
-              <Input
-                id="auto-reply-confidence"
-                type="number"
-                min={0}
-                max={1}
-                step={0.05}
-                value={confidence}
-                onChange={(e) => setConfidence(e.target.value)}
-                disabled={saving}
-                className="max-w-32"
-              />
-            </Field>
-
             <Field
               label="Assinatura"
-              htmlFor="auto-reply-signature"
+              htmlFor="reply-signature"
               hint="Entra no fim de toda resposta enviada pelo helpdesk."
             >
               <Textarea
-                id="auto-reply-signature"
+                id="reply-signature"
                 value={signature}
                 onChange={(e) => setSignature(e.target.value)}
                 disabled={saving}

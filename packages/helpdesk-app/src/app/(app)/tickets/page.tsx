@@ -6,7 +6,7 @@ export default function TicketsPage() {
     <div className="space-y-8">
       <PageHeader
         title="Caixa de entrada"
-        description="Tickets do contato@: e-mails de alunos e interessados, classificados pela IA."
+        description="Pedidos por e-mail e pelo portal, priorizados pela meta interna de primeira resposta."
       />
       <TicketsClient />
     </div>

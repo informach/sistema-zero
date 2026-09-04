@@ -13,6 +13,7 @@ import {
 import {
   InMemoryConnectionRepository,
   InMemoryMessageRepository,
+  InMemoryTicketIngestionRepository,
   InMemoryTicketRepository,
 } from '../fakes/in-memory'
 
@@ -24,6 +25,7 @@ function build() {
   const connections = new InMemoryConnectionRepository()
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
+  const ingestion = new InMemoryTicketIngestionRepository(tickets, messages)
   const gmail = new FakeGmailClient()
   const provider = new FakeGmailOAuthProvider()
   const secretBox = new FakeSecretBox()
@@ -34,14 +36,7 @@ function build() {
     now,
     silentLogger,
   )
-  const ingest = new IngestService(
-    tickets,
-    messages,
-    { aiEnabled: false },
-    now,
-    () => randomUUID(),
-    silentLogger,
-  )
+  const ingest = new IngestService(ingestion, { aiEnabled: false }, now, () => randomUUID())
   const worker = new GmailSyncWorker({
     connections,
     gmailAccount,

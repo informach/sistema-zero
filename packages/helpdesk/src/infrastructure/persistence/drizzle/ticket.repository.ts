@@ -1,10 +1,11 @@
-import { and, asc, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, ilike, isNotNull, isNull, or, sql } from 'drizzle-orm'
 import type {
   AiClassificationUpdate,
   ListTicketsFilter,
   TicketRepository,
 } from '../../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../../domain/ticket/ticket'
+import { SLA_RISK_START_RATIO, SLA_TARGET_MINUTES } from '../../../domain/ticket/ticket-sla'
 import { densifyVolume, statsWindows, type TicketStats } from '../../../domain/ticket/ticket-stats'
 import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
@@ -26,26 +27,21 @@ export class DrizzleTicketRepository implements TicketRepository {
     return row ?? null
   }
 
-  async byGmailThreadId(threadId: string): Promise<Ticket | null> {
-    const [row] = await this.db
-      .select()
-      .from(tickets)
-      .where(eq(tickets.gmailThreadId, threadId))
-      .limit(1)
-    return row ?? null
-  }
-
   async update(ticket: Ticket, expectedVersion: number): Promise<boolean> {
     const updated = await this.db
       .update(tickets)
       .set({
         version: expectedVersion + 1,
+        gmailThreadId: ticket.gmailThreadId,
+        source: ticket.source,
         subject: ticket.subject,
         status: ticket.status,
+        resolvedAt: ticket.resolvedAt,
         category: ticket.category,
         categoryManual: ticket.categoryManual,
         priority: ticket.priority,
         requesterName: ticket.requesterName,
+        requesterAccountId: ticket.requesterAccountId,
         assignedTo: ticket.assignedTo,
         assignedToName: ticket.assignedToName,
         firstMessageAt: ticket.firstMessageAt,
@@ -62,9 +58,6 @@ export class DrizzleTicketRepository implements TicketRepository {
         aiNextAttemptAt: ticket.aiNextAttemptAt,
         aiAttempts: ticket.aiAttempts,
         aiLastError: ticket.aiLastError,
-        autoReplyState: ticket.autoReplyState,
-        autoRepliedAt: ticket.autoRepliedAt,
-        autoReplyReason: ticket.autoReplyReason,
         updatedAt: ticket.updatedAt,
       })
       .where(and(eq(tickets.id, ticket.id), eq(tickets.version, expectedVersion)))
@@ -74,16 +67,7 @@ export class DrizzleTicketRepository implements TicketRepository {
     return ok
   }
 
-  async claimForReply(id: string, expectedVersion: number, at: Date): Promise<boolean> {
-    const claimed = await this.db
-      .update(tickets)
-      .set({ version: expectedVersion + 1, updatedAt: at })
-      .where(and(eq(tickets.id, id), eq(tickets.version, expectedVersion)))
-      .returning({ id: tickets.id })
-    return claimed.length > 0
-  }
-
-  async list(filter: ListTicketsFilter): Promise<{ items: Ticket[]; total: number }> {
+  async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
     const conditions = []
     if (filter.status) conditions.push(eq(tickets.status, filter.status))
     if (filter.category) conditions.push(eq(tickets.category, filter.category))
@@ -97,14 +81,53 @@ export class DrizzleTicketRepository implements TicketRepository {
         ),
       )
     }
+    if (filter.assignment === 'assigned') conditions.push(isNotNull(tickets.assignedTo))
+    if (filter.assignment === 'unassigned') conditions.push(isNull(tickets.assignedTo))
+
+    // A expressão usa as constantes do domínio, mas roda no banco para filtrar e
+    // paginar sem trazer a fila inteira para a memória.
+    const targetMinutes = sql<number>`case ${tickets.priority}
+      when 'alta' then ${SLA_TARGET_MINUTES.alta}::integer
+      when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
+      else ${SLA_TARGET_MINUTES.normal}::integer
+    end`
+    const deadlineAt = sql<Date>`coalesce(${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * interval '1 minute')`
+    const riskAt = sql<Date>`coalesce(${tickets.lastInboundAt}, ${tickets.firstMessageAt}) + (${targetMinutes} * ${SLA_RISK_START_RATIO}::double precision * interval '1 minute')`
+    const nowIso = now.toISOString()
+    const active = sql`${tickets.status} in ('new', 'open')`
+    if (filter.queue === 'unassigned') {
+      conditions.push(sql`${active} and ${tickets.assignedTo} is null`)
+    }
+
+    if (filter.sla === 'breached') {
+      conditions.push(sql`${active} and ${deadlineAt} <= ${nowIso}::timestamptz`)
+    } else if (filter.sla === 'at_risk') {
+      conditions.push(
+        sql`${active} and ${deadlineAt} > ${nowIso}::timestamptz and ${riskAt} <= ${nowIso}::timestamptz`,
+      )
+    } else if (filter.sla === 'attention') {
+      conditions.push(sql`${active} and ${riskAt} <= ${nowIso}::timestamptz`)
+    }
+
     const where = conditions.length > 0 ? and(...conditions) : undefined
+    const operationalRank = sql<number>`case
+      when ${active} and ${deadlineAt} <= ${nowIso}::timestamptz then 0
+      when ${active} and ${riskAt} <= ${nowIso}::timestamptz then 1
+      when ${active} then 2
+      else 3
+    end`
     const [items, [totalRow]] = await Promise.all([
       this.db
         .select()
         .from(tickets)
         .where(where)
-        // `id` como desempate: paginação estável quando `lastMessageAt` colide.
-        .orderBy(desc(tickets.lastMessageAt), asc(tickets.id))
+        // A fila põe risco antes de recência; `id` torna a paginação estável.
+        .orderBy(
+          asc(operationalRank),
+          asc(deadlineAt),
+          desc(tickets.lastMessageAt),
+          asc(tickets.id),
+        )
         .limit(filter.limit)
         .offset(filter.offset),
       this.db.select({ value: count() }).from(tickets).where(where),
@@ -118,17 +141,37 @@ export class DrizzleTicketRepository implements TicketRepository {
     const num = (v: unknown) => Number(v ?? 0)
     // Volume agrupado por dia SP: `- interval '3 hours'` reproduz o offset fixo
     // de São Paulo (UTC-3, sem DST) sem depender do timezone do servidor.
-    const [totalsRows, createdRows, autoRows] = await Promise.all([
+    const nowIso = now.toISOString()
+    const [totalsRows, createdRows] = await Promise.all([
       this.connection.sql`
+        with ticket_sla as (
+          select *,
+            coalesce(last_inbound_at, first_message_at) + (
+              case priority
+                when 'alta' then ${SLA_TARGET_MINUTES.alta}::integer
+                when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
+                else ${SLA_TARGET_MINUTES.normal}::integer
+              end * interval '1 minute'
+            ) as sla_deadline,
+            coalesce(last_inbound_at, first_message_at) + (
+              case priority
+                when 'alta' then ${SLA_TARGET_MINUTES.alta}::integer
+                when 'baixa' then ${SLA_TARGET_MINUTES.baixa}::integer
+                else ${SLA_TARGET_MINUTES.normal}::integer
+              end * ${SLA_RISK_START_RATIO}::double precision * interval '1 minute'
+            ) as sla_risk_at
+          from helpdesk.tickets
+        )
         select
           count(*) filter (where status = 'new') as new_count,
           count(*) filter (where status = 'open') as open_count,
           count(*) filter (where status = 'waiting') as waiting_count,
-          count(*) filter (where status in ('resolved', 'closed') and updated_at >= ${w.todayStartIso}) as resolved_today,
-          count(*) filter (where status in ('resolved', 'closed') and updated_at >= ${w.weekStartIso}) as resolved_7d,
-          count(*) filter (where auto_replied_at >= ${w.todayStartIso}) as auto_today,
-          count(*) filter (where auto_replied_at >= ${w.weekStartIso}) as auto_7d
-        from helpdesk.tickets
+          count(*) filter (where status in ('resolved', 'closed') and resolved_at >= ${w.todayStartIso}) as resolved_today,
+          count(*) filter (where status in ('resolved', 'closed') and resolved_at >= ${w.weekStartIso}) as resolved_7d,
+          count(*) filter (where status in ('new', 'open') and sla_deadline <= ${nowIso}) as sla_breached,
+          count(*) filter (where status in ('new', 'open') and sla_deadline > ${nowIso} and sla_risk_at <= ${nowIso}) as sla_at_risk,
+          count(*) filter (where status in ('new', 'open') and assigned_to is null) as sla_unassigned
+        from ticket_sla
       `,
       this.connection.sql`
         select to_char(created_at - interval '3 hours', 'YYYY-MM-DD') as day, count(*) as n
@@ -136,16 +179,9 @@ export class DrizzleTicketRepository implements TicketRepository {
         where created_at >= ${w.seriesStartIso}
         group by day
       `,
-      this.connection.sql`
-        select to_char(auto_replied_at - interval '3 hours', 'YYYY-MM-DD') as day, count(*) as n
-        from helpdesk.tickets
-        where auto_replied_at is not null and auto_replied_at >= ${w.seriesStartIso}
-        group by day
-      `,
     ])
     const totals = totalsRows[0] ?? {}
     const createdByDay = new Map(createdRows.map((r) => [r.day as string, num(r.n)]))
-    const autoByDay = new Map(autoRows.map((r) => [r.day as string, num(r.n)]))
     return {
       counts: {
         new: num(totals.new_count),
@@ -154,9 +190,12 @@ export class DrizzleTicketRepository implements TicketRepository {
       },
       resolvedToday: num(totals.resolved_today),
       resolved7d: num(totals.resolved_7d),
-      autoRepliedToday: num(totals.auto_today),
-      autoReplied7d: num(totals.auto_7d),
-      volume: densifyVolume(w.dayKeys, createdByDay, autoByDay),
+      sla: {
+        atRisk: num(totals.sla_at_risk),
+        breached: num(totals.sla_breached),
+        unassigned: num(totals.sla_unassigned),
+      },
+      volume: densifyVolume(w.dayKeys, createdByDay),
     }
   }
 
@@ -171,7 +210,7 @@ export class DrizzleTicketRepository implements TicketRepository {
       set ai_status = 'processing', ai_next_attempt_at = ${leaseIso}, ai_attempts = ai_attempts + 1
       where id = (
         select id from helpdesk.tickets
-        where ai_status = 'pending' and ai_next_attempt_at <= ${nowIso}
+        where ai_status in ('pending', 'processing') and ai_next_attempt_at <= ${nowIso}
         order by ai_next_attempt_at
         limit 1
         for update skip locked
@@ -230,40 +269,6 @@ export class DrizzleTicketRepository implements TicketRepository {
     await this.connection.sql`
       update helpdesk.tickets set
         ai_status = 'failed', ai_last_error = ${error.slice(0, 500)}, ai_next_attempt_at = null, updated_at = ${iso}
-      where id = ${id}
-    `
-  }
-
-  async claimAutoReply(id: string, at: Date): Promise<boolean> {
-    const rows = await this.connection.sql`
-      update helpdesk.tickets
-      set auto_reply_state = 'sending', updated_at = ${at.toISOString()}
-      where id = ${id} and auto_reply_state = 'none'
-      returning id
-    `
-    return rows.length > 0
-  }
-
-  async finishAutoReply(
-    id: string,
-    state: 'sent' | 'aborted',
-    reason: string | null,
-    at: Date,
-  ): Promise<void> {
-    const iso = at.toISOString()
-    await this.connection.sql`
-      update helpdesk.tickets set
-        auto_reply_state = ${state}::helpdesk.auto_reply_state,
-        auto_reply_reason = ${reason},
-        auto_replied_at = case when ${state} = 'sent' then ${iso}::timestamptz else auto_replied_at end,
-        updated_at = ${iso}
-      where id = ${id}
-    `
-  }
-
-  async setAutoReplyReason(id: string, reason: string | null, at: Date): Promise<void> {
-    await this.connection.sql`
-      update helpdesk.tickets set auto_reply_reason = ${reason}, updated_at = ${at.toISOString()}
       where id = ${id}
     `
   }

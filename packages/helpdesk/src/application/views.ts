@@ -3,13 +3,16 @@ import type { KbArticle } from '../domain/kb/kb-article'
 import type { HelpdeskSettings } from '../domain/settings/settings'
 import type { Ticket } from '../domain/ticket/ticket'
 import type { TicketMessage } from '../domain/ticket/ticket-message'
+import { ticketSla } from '../domain/ticket/ticket-sla'
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null)
 
-export function toTicketView(ticket: Ticket) {
+export function toTicketView(ticket: Ticket, now?: Date) {
+  const sla = now ? ticketSla(ticket, now) : null
   return {
     id: ticket.id,
     version: ticket.version,
+    source: ticket.source,
     subject: ticket.subject,
     status: ticket.status,
     category: ticket.category,
@@ -30,9 +33,15 @@ export function toTicketView(ticket: Ticket) {
     aiDraftEdited: ticket.aiDraftEdited,
     aiClassification: ticket.aiClassification,
     aiStatus: ticket.aiStatus,
-    autoReplyState: ticket.autoReplyState,
-    autoRepliedAt: iso(ticket.autoRepliedAt),
-    autoReplyReason: ticket.autoReplyReason,
+    sla: sla
+      ? {
+          state: sla.state,
+          priority: sla.priority,
+          targetMinutes: sla.targetMinutes,
+          deadlineAt: sla.deadlineAt.toISOString(),
+          remainingMinutes: sla.remainingMinutes,
+        }
+      : null,
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
   }
@@ -44,8 +53,11 @@ export function toMessageView(message: TicketMessage) {
     id: message.id,
     ticketId: message.ticketId,
     kind: message.kind,
+    visibility: message.visibility,
     direction: message.direction,
     sentVia: message.sentVia,
+    deliveryState: message.deliveryState,
+    deliveryLastError: message.deliveryLastError,
     fromEmail: message.fromEmail,
     fromName: message.fromName,
     toEmails: message.toEmails,
@@ -80,9 +92,6 @@ export type KbArticleView = ReturnType<typeof toKbArticleView>
 
 export function toSettingsView(settings: HelpdeskSettings) {
   return {
-    autoReplyEnabled: settings.autoReplyEnabled,
-    autoReplyCategories: settings.autoReplyCategories,
-    autoReplyConfidenceMin: settings.autoReplyConfidenceMin,
     signature: settings.signature,
     updatedAt: iso(settings.updatedAt),
   }

@@ -5,7 +5,6 @@ import {
   integer,
   jsonb,
   pgSchema,
-  real,
   text,
   timestamp,
   uniqueIndex,
@@ -33,6 +32,7 @@ export const ticketStatusEnum = helpdesk.enum('ticket_status', [
   'resolved',
   'closed',
 ])
+export const ticketSourceEnum = helpdesk.enum('ticket_source', ['email', 'portal'])
 export const ticketCategoryEnum = helpdesk.enum('ticket_category', [
   'curso_acesso',
   'problema_tecnico',
@@ -50,19 +50,20 @@ export const aiStatusEnum = helpdesk.enum('ai_status', [
   'failed',
   'skipped',
 ])
-export const autoReplyStateEnum = helpdesk.enum('auto_reply_state', [
-  'none',
-  'sending',
-  'sent',
-  'aborted',
-])
-export const messageKindEnum = helpdesk.enum('message_kind', ['email', 'note'])
+export const messageKindEnum = helpdesk.enum('message_kind', ['email', 'note', 'portal'])
+export const messageVisibilityEnum = helpdesk.enum('message_visibility', ['customer', 'internal'])
 export const messageDirectionEnum = helpdesk.enum('message_direction', ['inbound', 'outbound'])
 export const messageSentViaEnum = helpdesk.enum('message_sent_via', [
   'customer',
   'human',
   'ai',
   'gmail',
+])
+export const messageDeliveryStateEnum = helpdesk.enum('message_delivery_state', [
+  'pending',
+  'sent',
+  'unknown',
+  'failed',
 ])
 
 // ── Conexão Gmail (tokens CIFRADOS — AES-256-GCM) ────────────────────────────
@@ -95,6 +96,11 @@ export const gmailConnections = helpdesk.table(
   },
   (t) => [
     uniqueIndex('gmail_connections_external_uq').on(t.externalId),
+    // Uma constante indexada com predicado parcial torna impossível manter duas
+    // caixas elegíveis para o worker, mesmo por um escritor futuro indevido.
+    uniqueIndex('gmail_connections_single_active_uq')
+      .on(sql`(1)`)
+      .where(sql`${t.status} in ('connected', 'needs_reauth')`),
     index('gmail_connections_claim_idx').on(t.status, t.syncNextAt),
   ],
 )
@@ -105,9 +111,13 @@ export const tickets = helpdesk.table(
   {
     id: uuid('id').primaryKey(),
     version: integer('version').notNull().default(0),
-    gmailThreadId: text('gmail_thread_id').notNull(),
+    gmailThreadId: text('gmail_thread_id'),
+    source: ticketSourceEnum('source').notNull().default('email'),
     subject: text('subject').notNull().default(''),
     status: ticketStatusEnum('status').notNull().default('new'),
+    // Fonte de verdade dos indicadores de resolução; `updated_at` muda também
+    // com IA, classificação e demais patches que não encerram o chamado.
+    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
     // Null = ainda não classificado (nem pela IA nem por humano).
     category: ticketCategoryEnum('category'),
     // Categoria escolhida por humano NUNCA é sobrescrita pela IA.
@@ -115,6 +125,7 @@ export const tickets = helpdesk.table(
     priority: ticketPriorityEnum('priority'),
     requesterName: text('requester_name'),
     requesterEmail: text('requester_email').notNull(),
+    requesterAccountId: uuid('requester_account_id'),
     assignedTo: uuid('assigned_to'),
     assignedToName: text('assigned_to_name'),
     firstMessageAt: timestamp('first_message_at', { withTimezone: true }).notNull(),
@@ -134,17 +145,15 @@ export const tickets = helpdesk.table(
     aiNextAttemptAt: timestamp('ai_next_attempt_at', { withTimezone: true }),
     aiAttempts: integer('ai_attempts').notNull().default(0),
     aiLastError: text('ai_last_error'),
-    // Guard de fase do envio automático (crash ambíguo → aborted, nunca reenvia).
-    autoReplyState: autoReplyStateEnum('auto_reply_state').notNull().default('none'),
-    autoRepliedAt: timestamp('auto_replied_at', { withTimezone: true }),
-    autoReplyReason: text('auto_reply_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [
     uniqueIndex('tickets_gmail_thread_uq').on(t.gmailThreadId),
     index('tickets_status_last_msg_idx').on(t.status, t.lastMessageAt),
+    index('tickets_resolved_at_idx').on(t.resolvedAt),
     index('tickets_requester_idx').on(t.requesterEmail),
+    index('tickets_requester_account_idx').on(t.requesterAccountId, t.lastMessageAt),
     index('tickets_category_idx').on(t.category),
     // Fila do ai-worker (parcial: só o que está aguardando/rodando).
     index('tickets_ai_claim_idx')
@@ -162,10 +171,14 @@ export const ticketMessages = helpdesk.table(
       .notNull()
       .references(() => tickets.id, { onDelete: 'cascade' }),
     kind: messageKindEnum('kind').notNull().default('email'),
+    visibility: messageVisibilityEnum('visibility').notNull().default('customer'),
     // Dedupe forte da ingestão (unique tolera N nulls — notas internas).
     gmailMessageId: text('gmail_message_id'),
     // Header `Message-ID` RFC 2822 — base do In-Reply-To/References da resposta.
     rfc822MessageId: text('rfc822_message_id'),
+    /** Estado de entrega para outbound criado pelo console; notas não têm estado. */
+    deliveryState: messageDeliveryStateEnum('delivery_state'),
+    deliveryLastError: text('delivery_last_error'),
     direction: messageDirectionEnum('direction'),
     sentVia: messageSentViaEnum('sent_via'),
     fromEmail: text('from_email'),
@@ -179,7 +192,7 @@ export const ticketMessages = helpdesk.table(
     // SÓ metadados (filename/mime/size/gmail_attachment_id) — bytes no Gmail.
     attachments: jsonb('attachments').$type<AttachmentMeta[]>().notNull().default([]),
     // Inbound de autoresponder/newsletter (Auto-Submitted/X-Autoreply/List-Unsubscribe)
-    // — gate da auto-resposta (anti-loop).
+    // preservado como contexto operacional; nunca aciona resposta automática.
     isAutoreply: boolean('is_autoreply').notNull().default(false),
     gmailInternalDate: timestamp('gmail_internal_date', { withTimezone: true }),
     createdBy: uuid('created_by'),
@@ -188,6 +201,7 @@ export const ticketMessages = helpdesk.table(
   },
   (t) => [
     uniqueIndex('ticket_messages_gmail_uq').on(t.gmailMessageId),
+    index('ticket_messages_delivery_idx').on(t.ticketId, t.deliveryState, t.createdAt),
     index('ticket_messages_ticket_idx').on(t.ticketId, t.createdAt),
   ],
 )
@@ -212,10 +226,6 @@ export const kbArticles = helpdesk.table(
 // ── Configuração (linha única, PK fixo `default`; get-or-create no repo) ─────
 export const settings = helpdesk.table('settings', {
   id: text('id').primaryKey(),
-  autoReplyEnabled: boolean('auto_reply_enabled').notNull().default(false),
-  // Subconjunto de ticket_category habilitado p/ auto-resposta.
-  autoReplyCategories: text('auto_reply_categories').array().notNull().default([]),
-  autoReplyConfidenceMin: real('auto_reply_confidence_min').notNull().default(0.75),
   signature: text('signature').notNull().default(''),
   updatedBy: uuid('updated_by'),
   updatedAt: timestamp('updated_at', { withTimezone: true }),

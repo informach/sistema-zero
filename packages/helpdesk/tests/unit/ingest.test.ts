@@ -2,21 +2,24 @@ import { describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { IngestService } from '../../src/application/tickets/ingest.service'
 import { makeParsedEmail } from '../fakes/gmail'
-import { InMemoryMessageRepository, InMemoryTicketRepository } from '../fakes/in-memory'
+import {
+  InMemoryMessageRepository,
+  InMemoryTicketIngestionRepository,
+  InMemoryTicketRepository,
+} from '../fakes/in-memory'
+import { makeMessage, makeTicket } from '../helpers'
 
-const silentLogger = { debug() {}, info() {}, warn() {}, error() {} }
 const MAILBOX = 'contato@sistemazero.com.br'
 
 function build(aiEnabled = false) {
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
+  const ingestion = new InMemoryTicketIngestionRepository(tickets, messages)
   const ingest = new IngestService(
-    tickets,
-    messages,
+    ingestion,
     { aiEnabled },
     () => new Date('2026-07-08T12:00:00Z'),
     () => randomUUID(),
-    silentLogger,
   )
   return { tickets, messages, ingest }
 }
@@ -91,11 +94,131 @@ describe('IngestService', () => {
     expect([...tickets.rows.values()][0]?.status).toBe('open')
   })
 
+  it('resposta do cliente tira o ticket de waiting e o devolve para a equipe', async () => {
+    const { tickets, ingest } = build()
+    await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-1' }), MAILBOX)
+    const ticket = [...tickets.rows.values()][0]
+    if (ticket) {
+      ticket.status = 'waiting'
+      await tickets.update(ticket, ticket.version)
+    }
+
+    await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-2' }), MAILBOX)
+
+    expect([...tickets.rows.values()][0]?.status).toBe('open')
+  })
+
   it('dedupe: mesma gmailMessageId duas vezes → segunda é duplicate', async () => {
     const { messages, ingest } = build()
     await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-dup' }), MAILBOX)
     const result = await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-dup' }), MAILBOX)
     expect(result.status).toBe('duplicate')
     expect(messages.rows).toHaveLength(1)
+  })
+
+  it('reconcilia o outbound pendente quando o poller o encontra antes do commit do envio', async () => {
+    const { tickets, messages, ingest } = build()
+    const ticket = makeTicket({ gmailThreadId: 'thread-reply-race', messageCount: 1 })
+    await tickets.create(ticket)
+    await messages.create(makeMessage(ticket.id, { gmailMessageId: 'gm-inbound' }))
+    await messages.create(
+      makeMessage(ticket.id, {
+        gmailMessageId: null,
+        rfc822MessageId: '<reply-pending@sistemazero.com.br>',
+        direction: 'outbound',
+        sentVia: 'human',
+        deliveryState: 'pending',
+        deliveryLastError: null,
+      }),
+    )
+
+    await ingest.ingest(
+      makeParsedEmail({
+        gmailMessageId: 'gm-outbound-confirmed',
+        gmailThreadId: ticket.gmailThreadId!,
+        rfc822MessageId: '<reply-pending@sistemazero.com.br>',
+        fromEmail: MAILBOX,
+      }),
+      MAILBOX,
+    )
+
+    expect(messages.rows).toHaveLength(2)
+    expect(messages.rows[1]?.gmailMessageId).toBe('gm-outbound-confirmed')
+    expect(messages.rows[1]?.deliveryState).toBe('sent')
+    expect((await tickets.byId(ticket.id))?.messageCount).toBe(2)
+  })
+
+  it('reconcilia a primeira resposta de um ticket do portal na thread e no estado de espera', async () => {
+    const { tickets, messages, ingest } = build()
+    const ticket = makeTicket({
+      source: 'portal',
+      gmailThreadId: null,
+      status: 'new',
+      messageCount: 1,
+    })
+    await tickets.create(ticket)
+    await messages.create(makeMessage(ticket.id, { kind: 'portal', gmailMessageId: null }))
+    await messages.create(
+      makeMessage(ticket.id, {
+        gmailMessageId: null,
+        rfc822MessageId: '<portal-first-reply@sistemazero.com.br>',
+        direction: 'outbound',
+        sentVia: 'human',
+        deliveryState: 'pending',
+        deliveryLastError: null,
+      }),
+    )
+
+    await ingest.ingest(
+      makeParsedEmail({
+        gmailMessageId: 'gm-portal-first-reply',
+        gmailThreadId: 'gmail-thread-after-first-reply',
+        rfc822MessageId: '<portal-first-reply@sistemazero.com.br>',
+        fromEmail: MAILBOX,
+      }),
+      MAILBOX,
+    )
+
+    expect(await tickets.byId(ticket.id)).toMatchObject({
+      gmailThreadId: 'gmail-thread-after-first-reply',
+      status: 'waiting',
+      messageCount: 2,
+    })
+  })
+
+  it('não separa o ticket do portal se uma decisão humana marcou a tentativa como falha', async () => {
+    const { tickets, messages, ingest } = build()
+    const ticket = makeTicket({ source: 'portal', gmailThreadId: null, messageCount: 1 })
+    await tickets.create(ticket)
+    await messages.create(
+      makeMessage(ticket.id, {
+        gmailMessageId: null,
+        rfc822MessageId: '<portal-failed-reply@sistemazero.com.br>',
+        direction: 'outbound',
+        sentVia: 'human',
+        deliveryState: 'failed',
+        deliveryLastError: 'Envio não confirmado descartado pela equipe',
+      }),
+    )
+
+    await ingest.ingest(
+      makeParsedEmail({
+        gmailMessageId: 'gm-portal-reply-after-failure',
+        gmailThreadId: 'gmail-thread-after-failure',
+        rfc822MessageId: '<portal-failed-reply@sistemazero.com.br>',
+        fromEmail: MAILBOX,
+      }),
+      MAILBOX,
+    )
+
+    expect(tickets.rows.size).toBe(1)
+    expect(await tickets.byId(ticket.id)).toMatchObject({
+      gmailThreadId: 'gmail-thread-after-failure',
+      status: 'waiting',
+      messageCount: 2,
+    })
+    expect(messages.rows.find((message) => message.deliveryState === 'failed')).toMatchObject({
+      deliveryLastError: 'Envio não confirmado descartado pela equipe',
+    })
   })
 })

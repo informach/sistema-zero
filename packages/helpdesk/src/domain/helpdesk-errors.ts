@@ -21,6 +21,12 @@ export class OAuthStateInvalidError extends DomainError {
     super(message)
   }
 }
+export class CustomerTicketCursorInvalidError extends DomainError {
+  readonly code = 'CUSTOMER_TICKET_CURSOR_INVALID'
+  constructor(message = 'Cursor de paginação inválido; atualize a lista e tente novamente') {
+    super(message)
+  }
+}
 
 // ── Conflito (409) ───────────────────────────────────────────────────────────
 export class ConcurrencyConflictError extends DomainError {
@@ -41,7 +47,6 @@ export class InvalidTicketStateError extends DomainError {
     super(message)
   }
 }
-
 // ── Falha de gateway externo (502) ───────────────────────────────────────────
 export class GmailSendFailedError extends DomainError {
   readonly code = 'GMAIL_SEND_FAILED'

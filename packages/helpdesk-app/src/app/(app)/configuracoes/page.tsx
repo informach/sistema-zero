@@ -6,7 +6,7 @@ export default function ConfiguracoesPage() {
     <div className="space-y-8">
       <PageHeader
         title="Configurações"
-        description="Conexão da caixa contato@ e regras da auto-resposta."
+        description="Conexão da caixa contato@ e assinatura das respostas da equipe."
       />
       <ConfiguracoesClient />
     </div>

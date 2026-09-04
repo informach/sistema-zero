@@ -5,6 +5,7 @@ import { GmailAccountService } from '../src/application/connection/gmail-account
 import { OAuthService } from '../src/application/connection/oauth.service'
 import { KbService } from '../src/application/kb/kb.service'
 import { SettingsService } from '../src/application/settings/settings.service'
+import { CustomerTicketService } from '../src/application/tickets/customer-ticket.service'
 import { ReplyService } from '../src/application/tickets/reply.service'
 import { TicketService } from '../src/application/tickets/ticket.service'
 import type { Ticket } from '../src/domain/ticket/ticket'
@@ -15,9 +16,11 @@ import { FakeLlmClient } from './fakes/ai'
 import { FakeGmailClient, FakeGmailOAuthProvider, FakeSecretBox } from './fakes/gmail'
 import {
   InMemoryConnectionRepository,
+  InMemoryCustomerTicketRepository,
   InMemoryKbRepository,
   InMemoryMessageRepository,
   InMemoryOAuthStateRepository,
+  InMemoryReplyDeliveryRepository,
   InMemorySettingsRepository,
   InMemoryTicketRepository,
 } from './fakes/in-memory'
@@ -63,6 +66,8 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
 
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
+  const customerTickets = new InMemoryCustomerTicketRepository(tickets, messages)
+  const replyDelivery = new InMemoryReplyDeliveryRepository(tickets, messages)
   const kb = new InMemoryKbRepository()
   const settings = new InMemorySettingsRepository()
   const connections = new InMemoryConnectionRepository()
@@ -73,6 +78,13 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const llm = new FakeLlmClient()
 
   const ticketService = new TicketService(tickets, messages, now, idGen)
+  const customerTicketService = new CustomerTicketService(
+    customerTickets,
+    messages,
+    { aiEnabled: false },
+    now,
+    idGen,
+  )
   const kbService = new KbService(kb, now, idGen)
   const settingsService = new SettingsService(settings, now)
   const revokeDeps = gmailEnabled ? { provider, secretBox } : null
@@ -80,7 +92,14 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const oauthService = new OAuthService(
     oauthStates,
     connections,
-    gmailEnabled ? { secretBox, redirectBaseUrl: TEST_GATEWAY_URL, appUrl: TEST_APP_URL } : null,
+    gmailEnabled
+      ? {
+          secretBox,
+          redirectBaseUrl: TEST_GATEWAY_URL,
+          appUrl: TEST_APP_URL,
+          mailboxAddress: 'contato@sistemazero.com.br',
+        }
+      : null,
     gmailEnabled ? provider : null,
     gmailClient,
     { stateTtlMinutes: 10 },
@@ -97,6 +116,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const replyService = new ReplyService(
     tickets,
     messages,
+    replyDelivery,
     connections,
     settings,
     gmailAccountService,
@@ -125,6 +145,10 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
       ai: ticketAiService,
       internalToken: INTERNAL_TOKEN,
       requireStaffEnabled: true,
+    },
+    customerTickets: {
+      tickets: customerTicketService,
+      internalToken: INTERNAL_TOKEN,
     },
     kb: {
       kb: kbService,
@@ -173,6 +197,22 @@ export function staffHeaders(extra: Record<string, string> = {}): Record<string,
   }
 }
 
+export const CUSTOMER_USER_ID = '22222222-2222-4222-8222-222222222222'
+
+/** Headers de uma conta responsável autenticada e injetada pelo gateway. */
+export function customerHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  return {
+    'content-type': 'application/json',
+    'x-internal-token': INTERNAL_TOKEN,
+    'x-auth-user-id': CUSTOMER_USER_ID,
+    'x-auth-user-email': 'maria@example.com',
+    'x-auth-user-name': 'Maria Silva',
+    'x-auth-user-role': 'customer',
+    'x-auth-user-status': 'active',
+    ...extra,
+  }
+}
+
 /** Corpo JSON com tipo frouxo — os asserts dos testes conhecem o shape. */
 // biome desliga noExplicitAny em tests/**
 export async function json(res: Response): Promise<any> {
@@ -201,13 +241,16 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     id: randomUUID(),
     version: 0,
     gmailThreadId: `thread-${randomUUID()}`,
+    source: 'email',
     subject: 'Não consigo acessar o curso',
     status: 'new',
+    resolvedAt: null,
     category: null,
     categoryManual: false,
     priority: null,
     requesterName: 'Maria Silva',
     requesterEmail: 'maria@example.com',
+    requesterAccountId: null,
     assignedTo: null,
     assignedToName: null,
     firstMessageAt: at,
@@ -224,9 +267,6 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     aiNextAttemptAt: null,
     aiAttempts: 0,
     aiLastError: null,
-    autoReplyState: 'none',
-    autoRepliedAt: null,
-    autoReplyReason: null,
     createdAt: at,
     updatedAt: at,
     ...overrides,
@@ -243,8 +283,11 @@ export function makeMessage(
     id: randomUUID(),
     ticketId,
     kind: 'email',
+    visibility: 'customer',
     gmailMessageId: `gm-${randomUUID()}`,
     rfc822MessageId: `<${randomUUID()}@mail.example.com>`,
+    deliveryState: 'sent',
+    deliveryLastError: null,
     direction: 'inbound',
     sentVia: 'customer',
     fromEmail: 'maria@example.com',

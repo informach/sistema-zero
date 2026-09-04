@@ -5,6 +5,10 @@ import { Elysia } from 'elysia'
 import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { type ConnectionRoutesDeps, connectionRoutes } from './routes/connection.routes'
+import {
+  type CustomerTicketsRoutesDeps,
+  customerTicketsRoutes,
+} from './routes/customer-tickets.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type KbRoutesDeps, kbRoutes } from './routes/kb.routes'
 import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
@@ -17,6 +21,7 @@ export interface HttpDeps {
   /** Probe de readiness (`/readyz`): banco alcançável. */
   readiness: ReadinessProbe
   tickets: TicketsRoutesDeps
+  customerTickets: CustomerTicketsRoutesDeps
   kb: KbRoutesDeps
   settings: SettingsRoutesDeps
   connection: ConnectionRoutesDeps
@@ -71,7 +76,7 @@ export function createServer(deps: HttpDeps) {
             title: 'Sistema Zero — Helpdesk API',
             version: '0.1.0',
             description:
-              'Help desk com IA: tickets a partir do Gmail, base de conhecimento e auto-resposta.',
+              'Help desk com IA copiloto: tickets do Gmail e portal, com respostas sempre aprovadas por humanos.',
           },
         },
       }),
@@ -81,6 +86,7 @@ export function createServer(deps: HttpDeps) {
   return app
     .use(healthRoutes(deps.readiness))
     .use(ticketsRoutes(deps.tickets))
+    .use(customerTicketsRoutes(deps.customerTickets))
     .use(kbRoutes(deps.kb))
     .use(settingsRoutes(deps.settings))
     .use(connectionRoutes(deps.connection))

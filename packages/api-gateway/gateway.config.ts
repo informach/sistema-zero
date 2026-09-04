@@ -3276,10 +3276,35 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
 
-    // ── Helpdesk (@sistemazero/helpdesk) — ferramenta INTERNA da equipe ──────
-    // Tickets/base de conhecimento são staff+; CONFIGURAÇÕES (toggle de
-    // auto-resposta), conexão da caixa Gmail e OAuth são admin+ (rotas
-    // explícitas vencem os wildcards por especificidade, padrão marketing).
+    // ── Helpdesk (@sistemazero/helpdesk) ─────────────────────────────────────
+    // O portal do responsável tem rotas explícitas: JWT de qualquer conta ativa,
+    // token interno e ownership rechecado pelo serviço. Sessão de perfil kids é
+    // bloqueada novamente no upstream por `x-auth-account-id`; o gateway injeta
+    // esse header só a partir da claim verificada e remove qualquer spoof do cliente.
+    {
+      id: 'helpdesk-portal-read',
+      methods: ['GET'],
+      pathPattern: '/helpdesk/portal/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'helpdesk-portal-write',
+      methods: ['POST'],
+      pathPattern: '/helpdesk/portal/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Tickets/base de conhecimento de operação são staff+; configurações,
+    // conexão da caixa Gmail e OAuth são admin+ (as rotas explícitas vencem os
+    // wildcards por especificidade, padrão marketing).
     {
       id: 'helpdesk-read',
       methods: ['GET'],

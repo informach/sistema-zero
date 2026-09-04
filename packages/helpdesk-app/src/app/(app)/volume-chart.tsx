@@ -4,8 +4,6 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
-  Legend,
-  Line,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -15,11 +13,8 @@ import type { DailyVolumePoint } from '@/lib/types'
 
 const COLOR_NEUTRAL = '#888888'
 const COLOR_CREATED = '#8b5cf6'
-const COLOR_AUTO = '#22c55e'
-
 const SERIES_LABELS: Record<string, string> = {
   created: 'Recebidos',
-  autoReplied: 'Auto-respondidos',
 }
 
 /** 'YYYY-MM-DD' → 'dd/MM' (a data JÁ é o dia civil de São Paulo). */
@@ -60,9 +55,9 @@ function ChartTooltip({
   )
 }
 
-/** Volume diário: barras de tickets recebidos + linha das auto-respostas da IA. */
+/** Volume diário: barras de tickets recebidos. A IA só gera material para revisão humana. */
 export function VolumeChart({ data }: { data: DailyVolumePoint[] }) {
-  const hasData = data.some((p) => p.created > 0 || p.autoReplied > 0)
+  const hasData = data.some((p) => p.created > 0)
   if (!hasData) {
     return (
       <div className="flex h-[280px] items-center justify-center rounded-xl border border-dashed border-border bg-card/50">
@@ -93,20 +88,7 @@ export function VolumeChart({ data }: { data: DailyVolumePoint[] }) {
           width={32}
         />
         <Tooltip content={<ChartTooltip />} />
-        <Legend
-          formatter={(value: string) => (
-            <span className="text-xs text-muted-foreground">{SERIES_LABELS[value] ?? value}</span>
-          )}
-        />
         <Bar dataKey="created" fill={COLOR_CREATED} radius={[3, 3, 0, 0]} maxBarSize={28} />
-        <Line
-          type="monotone"
-          dataKey="autoReplied"
-          stroke={COLOR_AUTO}
-          strokeWidth={2}
-          dot={{ r: 2 }}
-          activeDot={{ r: 4 }}
-        />
       </ComposedChart>
     </ResponsiveContainer>
   )

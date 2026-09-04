@@ -7,6 +7,7 @@ import type {
   TicketPriority,
   TicketStatus,
 } from '../../domain/ticket/ticket'
+import { isTerminalTicketStatus } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import type { TicketStats } from '../../domain/ticket/ticket-stats'
 import type { Actor } from '../actor'
@@ -30,11 +31,12 @@ export class TicketService {
   ) {}
 
   async list(filter: ListTicketsFilter): Promise<{ items: TicketView[]; total: number }> {
-    const { items, total } = await this.tickets.list(filter)
-    return { items: items.map(toTicketView), total }
+    const now = this.now()
+    const { items, total } = await this.tickets.list(filter, now)
+    return { items: items.map((ticket) => toTicketView(ticket, now)), total }
   }
 
-  /** Agregados do painel (contagens + resolvidos/auto-respostas + série de volume). */
+  /** Agregados do painel (contagens, resolvidos e série de volume). */
   async stats(): Promise<TicketStats> {
     return this.tickets.stats(this.now())
   }
@@ -42,12 +44,22 @@ export class TicketService {
   async byId(id: string): Promise<{ ticket: TicketView; messages: MessageView[] }> {
     const ticket = await this.requireTicket(id)
     const messages = await this.messages.byTicketId(id)
-    return { ticket: toTicketView(ticket), messages: messages.map(toMessageView) }
+    return { ticket: toTicketView(ticket, this.now()), messages: messages.map(toMessageView) }
   }
 
   async patch(actor: Actor, id: string, input: PatchTicketInput): Promise<TicketView> {
     const ticket = await this.requireTicket(id)
-    if (input.status !== undefined) ticket.status = input.status
+    const now = this.now()
+    if (input.status !== undefined) {
+      ticket.status = input.status
+      if (isTerminalTicketStatus(input.status)) {
+        // Preserva o instante original ao editar outro campo de um ticket já
+        // encerrado; uma transição nova recebe a hora real do encerramento.
+        ticket.resolvedAt ??= now
+      } else {
+        ticket.resolvedAt = null
+      }
+    }
     if (input.category !== undefined) {
       ticket.category = input.category
       // Escolha humana de categoria trava a reclassificação automática.
@@ -58,10 +70,10 @@ export class TicketService {
       ticket.assignedTo = input.assignToMe ? actor.userId : null
       ticket.assignedToName = input.assignToMe ? actor.displayName : null
     }
-    ticket.updatedAt = this.now()
+    ticket.updatedAt = now
     const ok = await this.tickets.update(ticket, input.version)
     if (!ok) throw new ConcurrencyConflictError()
-    return toTicketView(ticket)
+    return toTicketView(ticket, now)
   }
 
   /** Nota INTERNA (não vira e-mail): só aparece na thread para a equipe. */
@@ -72,8 +84,11 @@ export class TicketService {
       id: this.idGen(),
       ticketId: id,
       kind: 'note',
+      visibility: 'internal',
       gmailMessageId: null,
       rfc822MessageId: null,
+      deliveryState: null,
+      deliveryLastError: null,
       direction: null,
       sentVia: null,
       fromEmail: null,
