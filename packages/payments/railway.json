@@ -8,8 +8,8 @@
       "/packages/core/**",
       "/bun.lock",
       "/package.json",
-      "/railway.json",
-      "/.dockerignore"
+      "/.dockerignore",
+      "/packages/payments/railway.json"
     ]
   },
   "deploy": {
