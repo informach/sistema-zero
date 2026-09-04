@@ -495,7 +495,10 @@ describe('UI vetorial (F5)', () => {
     expect(screen.getAllByRole('button', { name: `${COPY.vector.fill}: #123456` })).toHaveLength(1)
   })
 
-  it('os cards da direita abrem e fecham de forma independente', async () => {
+  it('os cards da direita abrem e fecham de forma independente quando cabem', async () => {
+    // happy-dom não faz layout (scrollHeight/clientHeight = 0): a régua de
+    // encaixe da coluna é inerte e tudo nasce aberto. O accordion por medida
+    // tem o describe próprio, com stub na coluna.
     await openVectorEditor()
     const collapse = screen.getByRole('button', {
       name: COPY.panel.collapse(COPY.palette.title),
@@ -2504,5 +2507,108 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
       expect(stage.querySelectorAll('rect[fill="#78dc52"]').length).toBe(1)
       expect(stage.querySelectorAll('rect[fill^="url(#"]').length).toBe(0)
     })
+  })
+})
+
+/**
+ * Accordion POR MEDIDA da coluna direita: happy-dom não faz layout, então a
+ * coluna recebe um stub VIVO — aberto = 250px, recolhido = 50px, vãos de 8 — e
+ * um `clientHeight` fixo, para a régua ter o que medir.
+ */
+describe('a coluna da direita cabe na tela (accordion por medida)', () => {
+  const titles = [
+    COPY.animation.preview,
+    COPY.layers.title,
+    COPY.palette.title,
+    COPY.vector.appearance,
+  ]
+
+  function rightColumn(): HTMLElement {
+    const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
+    if (!column) throw new Error('coluna direita esperada')
+    return column
+  }
+
+  function stubColumn(column: HTMLElement, clientHeight: number): void {
+    const count = (label: (title: string) => string): number =>
+      titles.filter((title) => column.querySelector(`button[aria-label="${label(title)}"]`)).length
+    Object.defineProperties(column, {
+      clientHeight: { configurable: true, value: clientHeight },
+      scrollHeight: {
+        configurable: true,
+        get: () => {
+          const opened = count(COPY.panel.collapse)
+          const closed = count(COPY.panel.expand)
+          return opened * 250 + closed * 50 + Math.max(0, opened + closed - 1) * 8
+        },
+      },
+    })
+  }
+
+  const collapseBtn = (title: string): HTMLElement | null =>
+    screen.queryByRole('button', { name: COPY.panel.collapse(title) })
+  const expandBtn = (title: string): HTMLElement | null =>
+    screen.queryByRole('button', { name: COPY.panel.expand(title) })
+
+  it('abrir um painel que não cabe fecha os menos recentes, nunca o recém-aberto', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    })
+    stubColumn(rightColumn(), 500)
+
+    // Recolher à mão NÃO cascateia, mesmo com 566 > 500.
+    fireEvent.click(
+      screen.getByRole('button', { name: COPY.panel.collapse(COPY.vector.appearance) }),
+    )
+    expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+
+    // Reabrir arma a régua: 766 → fecha Camadas (566) → fecha Cores (366) → cabe.
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.expand(COPY.vector.appearance) }))
+    expect(expandBtn(COPY.layers.title)).toBeTruthy()
+    expect(expandBtn(COPY.palette.title)).toBeTruthy()
+    expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.vector.gradient })).toBeTruthy()
+  })
+
+  it('um painel ausente não conta como vítima e nasce ABERTO quando aparece', async () => {
+    await openVectorEditor()
+    stubColumn(rightColumn(), 300)
+    // Sem forma não há Camadas: só Cores e Aparência na tela.
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.collapse(COPY.palette.title) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.expand(COPY.palette.title) }))
+    // 508 > 301 → fecha Aparência (a menos recente); 308 > 301, mas só Cores sobrou: para.
+    expect(expandBtn(COPY.vector.appearance)).toBeTruthy()
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    })
+    // Crescer não fecha nada: Cores segue aberta (a coluna rola).
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+  })
+
+  it('desenhar (o conteúdo crescer) nunca fecha um painel', async () => {
+    await openVectorEditor()
+    Object.defineProperties(rightColumn(), {
+      clientHeight: { configurable: true, value: 100 },
+      scrollHeight: { configurable: true, value: 9999 },
+    })
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    drawRect(stage, [100, 100], [160, 160])
+    await waitFor(() => {
+      expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    })
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+    expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
   })
 })

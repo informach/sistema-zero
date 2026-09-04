@@ -134,10 +134,19 @@ function VectorLeftColumn(): JSX.Element {
  * se auto-remove nos demais) → CAMADAS → CORES, todos na mesma largura
  * (`w-68`). Os três rolam JUNTOS por dentro da coluna; os detalhes da animação
  * vivem numa modal (engrenagem da prévia).
+ *
+ * ⚠️ "Rolam juntos" só voltou a ser verdade em 04/09/2026: o `overflow-hidden`
+ * do `Panel` deixava os três ENCOLHEREM em vez de a coluna rolar (a Prévia
+ * perdia a fileira Reproduzir/Editar em 768px, medido 204 de 248). Hoje nenhum
+ * painel encolhe (`shrink-0` no `Panel`) e a `.pin-scroll-y` esconde a barra
+ * clássica, que roubaria 17px e cortaria a borda direita dos painéis `w-68`.
  */
 function PixelRightColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto">
+    <div
+      data-pin-right-column=""
+      className="pin-scroll-y flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+    >
       <PreviewPlayer />
       <LayerPanel />
       <PaletteBar />

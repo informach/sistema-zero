@@ -251,8 +251,10 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   controle de expansão só aparece quando a lista compacta tem overflow real; enquanto expandida,
   permanece visível para permitir recolher a faixa.
   Efeito colateral aceito: no PERSONAGEM
-  animado a coluna direita (prévia 244 + camadas + cores ≈ 700px) rola por dentro; no cenário
-  cabe inteira (626px).
+  animado a coluna direita (prévia 254 + camadas + cores ≈ 700px) rola por dentro; no cenário
+  cabe inteira (626px). ⚠️ Esse "rola por dentro" ficou FALSO entre o `overflow-hidden` do
+  `Panel` e 04/09/2026: os painéis ENCOLHIAM em vez de a coluna rolar (a Prévia perdia a fileira
+  de botões, medido 204 de 248 px) — ver "A coluna direita nunca corta um painel".
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
   (`editor/useMediaQuery.ts`, espelho do pensa) — em tela ESTREITA a coluna lateral do sprite
   (prévia + animações, `SpriteSidePanel`) vira FAIXA horizontal rolável abaixo do palco (a
@@ -282,8 +284,11 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
   e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto). `disclosure` é controlado
   e põe o chevron em um botão separado (o título da paleta continua livre para abrir seu menu).
-  Na coluna direita do vetor, Prévia/Camadas/Cores/Aparência são accordions independentes; fechar a
-  Prévia também pausa seu loop de animação.
+  Na coluna direita do vetor, Prévia/Camadas/Cores/Aparência são accordions independentes com uma
+  régua de ENCAIXE por cima (ver "A coluna direita nunca corta um painel"); fechar a Prévia também
+  pausa seu loop de animação. ⚠️ A `<section>` do `Panel` é `shrink-0` desde 04/09/2026:
+  `overflow-hidden` zera o mínimo automático do item flex, e sem isso o painel encolhia a ZERO numa
+  coluna apertada em vez de a coluna rolar.
 - **CSS**: tokens `--color-pin-*` em `@theme` sob `[data-pinta-theme]` (claro default kids).
   Cor de chip por PAPEL (`pin-kind-*`, só emoji) + selinho de ESTILO (`pin-style-*`, carrega
   TEXTO branco — ⚠️ manter L ≤ ~0.55 nos DOIS temas). SEM `@import "tailwindcss"`, SEM `@source`,
@@ -1605,6 +1610,37 @@ já saberemos o que é preenchimento e o que é contorno".
 - Medido no playground (1366×768, vector-sprite com Spritesheet + seleção): página não rola
   (768=768), faixa 54px, caixa travada na altura da coluna com as cores à vista, coluna da direita
   rolando por dentro. Em 375×812: faixa ausente, barra flutuante presente.
+- ⭐⭐ **A coluna direita nunca corta um painel (04/09/2026)**: relato dela, "a prévia está
+  ficando cortada", com a proposta de a Aparência nascer recolhida, abrir um painel recolher
+  outro e painel que cresce ter rolagem interna. Medido em 1366×768: a coluna (`min-h-0
+  overflow-y-auto`) NUNCA rolava porque o `Panel` é `min-h-0 overflow-hidden` (o `overflow-hidden`
+  zera o mínimo automático do item flex) e a Prévia era o ÚNICO filho sem `shrink-0`: ela
+  absorvia o déficit inteiro e media 8 px (4 com uma forma selecionada). No pixel os três
+  encolhiam juntos (Prévia 204 de 248: a fileira de botões sumia). Causa raiz: `shrink-0` na raiz
+  do `Panel` (nenhum consumidor dependia de encolher: todos vivem em colunas que rolam ou em
+  fileiras de largura fixa) e `.pin-scroll-y` nas duas colunas direitas (a barra clássica do
+  Windows roubaria 17 px e o `overflow-x-hidden` cortaria a borda direita dos painéis `w-68`).
+  Em cima disso, **accordion POR MEDIDA** no `VectorRightColumn` (decisões dela): ao abrir o
+  desenho e depois de cada ABRIR, se `scrollHeight > clientHeight + 1`, fecha o painel aberto há
+  mais tempo (LRU, `pickPanelToCollapse` em `vector/rightColumnFit.ts`), um por passada de
+  `useLayoutEffect`, até caber; nunca o recém-aberto (vai para o fim da lista) nem o último que
+  sobrou; só quem está aberto E presente no DOM conta (Prévia só no personagem, Camadas só com
+  forma: fechar ausente não ganha altura e o faria nascer recolhido). Ordem de sacrifício inicial
+  `appearance → layers → preview → colors` (Aparência primeiro, pedido dela; Cores por último
+  porque os slots da caixa só trocam o canal: sem o painel não se escolhe cor). Recolher à mão
+  NÃO cascateia; crescer (Camadas ganhando linhas, Aparência com texto) e redimensionar a janela
+  também não: aí a coluna rola. ⚠️ Num notebook de 768 px a coluna de um personagem tem ~370-430
+  px: cabe UM painel aberto (258 + 3 cabeçalhos de 50 + vãos = 432), então ali o accordion vira
+  "um por vez"; só tirar a Prévia da coluna (rodapé, como na tela estreita) mudaria a conta —
+  adiado por decisão dela. Em happy-dom (0/0) a régua é inerte e tudo nasce aberto; os testes a
+  dirigem com um stub na coluna (`[data-pin-right-column]`, aberto = 250, recolhido = 50):
+  `vectorUi.test.tsx` (describe "a coluna da direita cabe na tela": LRU + recém-aberto protegido,
+  ausente não é vítima e nasce aberto, crescer não fecha), `vectorSpriteUi.test.tsx` (regressão
+  do `shrink-0`; encaixe no MOUNT por patch no protótipo condicionado ao atributo, restaurado no
+  `finally`), `animationUi.test.tsx` (pixel), `rightColumnFit.test.ts` (puro). Fora do escopo:
+  tela estreita (`VectorPanelsDisclosure`), accordion no pixel, lembrar painéis entre sessões,
+  rolagem interna própria da Aparência (um `max-h` obrigaria o wrapper a encolher e recriaria o
+  defeito; o caso raro de ~570 px com texto rola a coluna).
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 
@@ -2481,6 +2517,10 @@ por px reais.
   e "Tirar o degradê" morto num grupo (MÉDIOS); trancada como inspetora, figura, paleta muda na
   captura, foco do "+" (BAIXOS). Suíte (1175) + typecheck + biome verdes; QA em navegador no
   playground dos consertos.
+- **A coluna direita nunca corta um painel (04/09/2026)**: relato dela ("a prévia está ficando
+  cortada"). `shrink-0` no `Panel` + `.pin-scroll-y` nos DOIS editores e accordion por MEDIDA no
+  vetor (Aparência recolhe primeiro, Cores por último, só ao abrir). Ver o bullet em "Ajustes do
+  VETOR". Suíte + typecheck + biome verdes; QA em navegador no playground.
 - **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, EM PRODUÇÃO no PR #154)**: ver
   "Espessuras do contorno" e "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê

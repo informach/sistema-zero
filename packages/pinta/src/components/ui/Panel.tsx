@@ -76,7 +76,12 @@ export function Panel({
     <section
       aria-label={ariaLabel ?? title}
       // `overflow-hidden` p/ a faixa respeitar o raio de 1rem do .pin-panel.
-      className={clsx('pin-panel flex min-h-0 flex-col overflow-hidden', className)}
+      // ⚠️ `shrink-0` é load-bearing (04/09/2026): `overflow-hidden` zera o mínimo
+      // automático do item flex, então numa coluna apertada o painel encolhia a
+      // ZERO e escondia o próprio conteúdo (a Prévia do vetor media 8px em
+      // 1366×768). A régua da casa: o painel tem a altura do conteúdo; quem não
+      // cabe ROLA, e quem rola é a coluna.
+      className={clsx('pin-panel flex min-h-0 shrink-0 flex-col overflow-hidden', className)}
     >
       <div className="pin-panel-head">
         {onTitleClick ? (
@@ -106,7 +111,9 @@ export function Panel({
               <button
                 type="button"
                 aria-expanded={disclosure.open}
-                aria-controls={bodyId}
+                // Recolhido, o body DESMONTA: apontar para um id que não existe
+                // é referência pendurada para o leitor de tela.
+                aria-controls={disclosure.open ? bodyId : undefined}
                 aria-label={disclosure.open ? disclosure.collapseLabel : disclosure.expandLabel}
                 title={disclosure.open ? disclosure.collapseLabel : disclosure.expandLabel}
                 onClick={() => disclosure.onOpenChange(!disclosure.open)}

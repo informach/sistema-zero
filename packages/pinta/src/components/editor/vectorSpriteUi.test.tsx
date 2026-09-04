@@ -19,6 +19,31 @@ beforeEach(() => {
   setPintaStorageNamespace('')
 })
 
+/** O protótipo que de fato define a propriedade (happy-dom a põe em Element ou HTMLElement). */
+function findOwner(property: string): object {
+  let proto: object | null = HTMLElement.prototype
+  while (proto && !Object.getOwnPropertyDescriptor(proto, property)) {
+    proto = Object.getPrototypeOf(proto)
+  }
+  if (!proto) throw new Error(`nenhum protótipo define ${property}`)
+  return proto
+}
+
+/** Altura "medida" da coluna direita: painel aberto = 250, recolhido = 50, vãos de 8. */
+function stubbedColumnHeight(column: HTMLElement): number {
+  const titles = [
+    COPY.animation.preview,
+    COPY.layers.title,
+    COPY.palette.title,
+    COPY.vector.appearance,
+  ]
+  const count = (label: (title: string) => string): number =>
+    titles.filter((title) => column.querySelector(`button[aria-label="${label(title)}"]`)).length
+  const opened = count(COPY.panel.collapse)
+  const closed = count(COPY.panel.expand)
+  return opened * 250 + closed * 50 + Math.max(0, opened + closed - 1) * 8
+}
+
 async function openAsset(name: string): Promise<void> {
   render(<PintaApp />)
   await waitFor(() => {
@@ -53,6 +78,68 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(document.querySelector(`section[aria-label="${COPY.vector.appearance}"]`)).toBeTruthy()
     // O painel avulso de w-56 morreu junto com a coluna dupla.
     expect(document.querySelector('.w-56')).toBeNull()
+  })
+
+  it('REGRESSÃO: nenhum painel da coluna direita encolhe; quem rola é a coluna', async () => {
+    // A Prévia era o único filho sem shrink-0 e virava uma faixa de 8px em
+    // 1366×768 ("a prévia está ficando cortada"). O `Panel` é `overflow-hidden`,
+    // que zera o mínimo automático do item flex: sem shrink-0 ele encolhe a zero.
+    await openVectorSprite()
+    const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
+    if (!column) throw new Error('coluna direita esperada')
+    expect(column.className).toContain('overflow-y-auto')
+    expect(column.className).toContain('pin-scroll-y')
+    const children = Array.from(column.children)
+    expect(children.length).toBeGreaterThanOrEqual(3)
+    for (const child of children) expect(child.classList.contains('shrink-0')).toBe(true)
+    const preview = column.querySelector(`section[aria-label="${COPY.animation.preview}"]`)
+    expect(preview?.classList.contains('shrink-0')).toBe(true)
+  })
+
+  it('ao abrir o desenho, se os painéis não cabem, fecha na ordem Aparência → Prévia e Cores fica', async () => {
+    // A coluna só existe depois do render, então o stub vai no PROTÓTIPO e vale
+    // só para o elemento marcado: aberto = 250px, recolhido = 50px, vãos de 8.
+    // Cada propriedade pode morar num protótipo diferente (Element × HTMLElement).
+    const owners = {
+      scrollHeight: findOwner('scrollHeight'),
+      clientHeight: findOwner('clientHeight'),
+    }
+    const saved = {
+      scrollHeight: Object.getOwnPropertyDescriptor(owners.scrollHeight, 'scrollHeight'),
+      clientHeight: Object.getOwnPropertyDescriptor(owners.clientHeight, 'clientHeight'),
+    }
+    if (!saved.scrollHeight || !saved.clientHeight) throw new Error('descritores esperados')
+    const isColumn = (el: unknown): el is HTMLElement =>
+      el instanceof HTMLElement && el.hasAttribute('data-pin-right-column')
+    Object.defineProperty(owners.clientHeight, 'clientHeight', {
+      configurable: true,
+      get(this: unknown) {
+        return isColumn(this) ? 300 : 0
+      },
+    })
+    Object.defineProperty(owners.scrollHeight, 'scrollHeight', {
+      configurable: true,
+      get(this: unknown) {
+        return isColumn(this) ? stubbedColumnHeight(this) : 0
+      },
+    })
+    try {
+      await openVectorSprite()
+      // 3 painéis presentes (sem forma não há Camadas): 766 → fecha Aparência
+      // (566) → fecha Prévia (366) → só Cores aberta: para (nunca fecha a última).
+      expect(
+        screen.getByRole('button', { name: COPY.panel.collapse(COPY.palette.title) }),
+      ).toBeTruthy()
+      expect(
+        screen.getByRole('button', { name: COPY.panel.expand(COPY.animation.preview) }),
+      ).toBeTruthy()
+      expect(
+        screen.getByRole('button', { name: COPY.panel.expand(COPY.vector.appearance) }),
+      ).toBeTruthy()
+    } finally {
+      Object.defineProperty(owners.scrollHeight, 'scrollHeight', saved.scrollHeight)
+      Object.defineProperty(owners.clientHeight, 'clientHeight', saved.clientHeight)
+    }
   })
 
   it('oculta a expansão quando a timeline compacta já mostra todo o conteúdo', async () => {

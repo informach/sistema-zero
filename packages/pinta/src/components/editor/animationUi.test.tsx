@@ -38,6 +38,19 @@ describe('UI de animação (F2)', () => {
     expect(screen.getByRole('button', { name: 'parado: quadro 1' })).toBeTruthy()
   })
 
+  it('REGRESSÃO: os painéis da coluna direita não encolhem (a Prévia perdia os botões em 768px)', async () => {
+    await openSpriteEditor()
+    const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
+    if (!column) throw new Error('coluna direita esperada')
+    expect(column.className).toContain('overflow-y-auto')
+    expect(column.className).toContain('pin-scroll-y')
+    for (const title of [COPY.animation.preview, COPY.layers.title, COPY.palette.title]) {
+      const section = column.querySelector(`section[aria-label="${title}"]`)
+      if (!section) throw new Error(`painel ${title} esperado`)
+      expect(section.classList.contains('shrink-0')).toBe(true)
+    }
+  })
+
   it('novo quadro aparece na faixa e vira o selecionado', async () => {
     await openSpriteEditor()
     fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))

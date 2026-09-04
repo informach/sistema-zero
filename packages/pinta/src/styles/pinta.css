@@ -272,6 +272,22 @@
 }
 
 /*
+ * Colunas direitas dos editores (04/09/2026): rolam por dentro quando os painéis
+ * não cabem, e os painéis são `w-68` como a coluna. A barra CLÁSSICA (Windows)
+ * roubaria 17px do content box e o `overflow-x-hidden` cortaria a borda direita
+ * dos painéis (chevrons, "+"). Mesmo remédio da .pin-scroll-x: some o desenho da
+ * barra, a rolagem por roda/toque fica; os cabeçalhos recolhidos e o painel
+ * parcialmente visível no fim são a pista de que há mais embaixo.
+ */
+[data-pinta-theme] .pin-scroll-y {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-pinta-theme] .pin-scroll-y::-webkit-scrollbar {
+  display: none;
+}
+
+/*
  * Cards da galeria (19/08/2026): com centenas de desenhos, o navegador só mede/pinta os
  * cards perto da janela; a altura intrínseca aproxima o card real (a 1ª rolagem acerta
  * o resto). Só o CARD (não as seções, cuja altura varia); os diálogos são irmãos da grade.
