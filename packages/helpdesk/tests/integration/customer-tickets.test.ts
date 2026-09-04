@@ -27,15 +27,92 @@ describe('portal do responsável', () => {
     expect(body.ticket).toMatchObject({
       source: 'portal',
       status: 'new',
-      requesterEmail: 'maria@example.com',
+      subject: 'Preciso de ajuda com a minha assinatura',
       category: 'pagamento_reembolso',
     })
     expect(body.message).toMatchObject({
       kind: 'portal',
       visibility: 'customer',
       direction: 'inbound',
-      sentVia: 'customer',
     })
+  })
+
+  // ⚠️ O repositorio do portal faz `select()` sem projecao e o BFF do member-shell
+  // repassa o corpo verbatim: sem a projecao estreita, o rascunho da IA (resposta que
+  // humano nenhum aprovou), o resumo, a classificacao (sentimento e flags) e o
+  // responsavel interno chegariam ao navegador do cliente. A tela nao os desenha, mas
+  // o JSON os carrega. Este caso e a tranca, nas tres rotas que devolvem ticket.
+  it('nao vaza bastidor da equipe: nem IA, nem responsavel, nem entrega', async () => {
+    const { app, repos } = buildTestApp()
+    const ticket = makeTicket({
+      requesterAccountId: CUSTOMER_USER_ID,
+      requesterEmail: 'maria@example.com',
+      source: 'portal',
+      aiDraft: 'Oi Maria, aqui vai o reembolso que a IA sugeriu sem ninguem revisar.',
+      aiSummary: 'Cliente pede reembolso.',
+      aiClassification: {
+        category: 'pagamento_reembolso',
+        priority: 'alta',
+        confidence: 0.91,
+        sentiment: 'irritado',
+        flags: { reembolso: true, juridico: false },
+      },
+      assignedTo: 'staff-1',
+      assignedToName: 'Atendente',
+      priority: 'alta',
+    })
+    await repos.tickets.create(ticket)
+    await repos.messages.create(
+      makeMessage(ticket.id, {
+        kind: 'portal',
+        gmailMessageId: null,
+        deliveryLastError: 'gmail 500 detalhe interno',
+        createdBy: 'staff-1',
+        createdByName: 'Atendente',
+      }),
+    )
+
+    const proibidos = [
+      'aiDraft',
+      'aiSummary',
+      'aiClassification',
+      'aiStatus',
+      'assignedTo',
+      'assignedToName',
+      'priority',
+      'sla',
+      'gmailThreadId',
+      'requesterEmail',
+      'deliveryLastError',
+      'deliveryState',
+      'sentVia',
+      'createdBy',
+      'toEmails',
+    ]
+
+    const detail = await json(
+      await request(app, 'GET', `/helpdesk/portal/tickets/${ticket.id}`, {
+        headers: customerHeaders(),
+      }),
+    )
+    const list = await json(
+      await request(app, 'GET', '/helpdesk/portal/tickets', { headers: customerHeaders() }),
+    )
+    const appended = await json(
+      await request(app, 'POST', `/helpdesk/portal/tickets/${ticket.id}/messages`, {
+        headers: customerHeaders(),
+        body: { body: 'Continuo sem conseguir.' },
+      }),
+    )
+
+    for (const payload of [detail, list, appended]) {
+      const cru = JSON.stringify(payload)
+      for (const campo of proibidos) expect(cru).not.toContain(campo)
+      expect(cru).not.toContain('sem ninguem revisar')
+      expect(cru).not.toContain('detalhe interno')
+      // Anti-vacuo: payload vazio passaria em tudo acima.
+      expect(cru).toContain(ticket.id)
+    }
   })
 
   it('lista e detalha somente tickets pertencentes à conta ou ao e-mail legado verificado', async () => {

@@ -75,6 +75,51 @@ export function toMessageView(message: TicketMessage) {
 }
 export type MessageView = ReturnType<typeof toMessageView>
 
+/**
+ * Projeção do PORTAL do cliente. Deliberadamente estreita: o `toTicketView` é a
+ * ficha da EQUIPE e carrega coisa que o cliente não pode ver — o rascunho da IA
+ * (uma resposta que humano nenhum aprovou), o resumo e a classificação
+ * (confiança, sentimento, flags), o responsável interno, a prioridade e o SLA.
+ * ⚠️ O repositório do portal faz `select()` sem projeção, então o filtro tem que
+ * ser AQUI; e o BFF do member-shell repassa o corpo verbatim, então o que entra
+ * nesta função é exatamente o que chega ao navegador do cliente. A forma espelha
+ * `CustomerTicketView` do member-shell, que é o contrato do único consumidor.
+ */
+export function toCustomerTicketView(ticket: Ticket) {
+  return {
+    id: ticket.id,
+    version: ticket.version,
+    source: ticket.source,
+    subject: ticket.subject,
+    status: ticket.status,
+    category: ticket.category,
+    lastMessageAt: ticket.lastMessageAt.toISOString(),
+    messageCount: ticket.messageCount,
+    createdAt: ticket.createdAt.toISOString(),
+  }
+}
+export type CustomerTicketView = ReturnType<typeof toCustomerTicketView>
+
+/**
+ * Mensagem como o cliente a vê. Fora ficam os campos de bastidor: `sentVia`,
+ * `deliveryState`/`deliveryLastError` (texto de erro interno), o `createdBy` da
+ * equipe, os cabeçalhos de e-mail e o `gmailInternalDate`. A visibilidade
+ * `internal` já é barrada antes, no service — esta função é a segunda tranca.
+ */
+export function toCustomerMessageView(message: TicketMessage) {
+  return {
+    id: message.id,
+    ticketId: message.ticketId,
+    kind: message.kind,
+    visibility: message.visibility,
+    direction: message.direction,
+    fromName: message.fromName,
+    bodyText: message.bodyText,
+    createdAt: message.createdAt.toISOString(),
+  }
+}
+export type CustomerMessageView = ReturnType<typeof toCustomerMessageView>
+
 export function toKbArticleView(article: KbArticle) {
   return {
     id: article.id,

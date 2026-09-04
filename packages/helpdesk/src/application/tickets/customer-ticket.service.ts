@@ -6,7 +6,12 @@ import type {
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { TicketCategory, TicketStatus } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
-import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
+import {
+  type CustomerMessageView,
+  type CustomerTicketView,
+  toCustomerMessageView,
+  toCustomerTicketView,
+} from '../views'
 import { decodeCustomerTicketCursor, encodeCustomerTicketCursor } from './customer-ticket-cursor'
 
 export interface CustomerRequester extends CustomerTicketOwner {
@@ -38,7 +43,12 @@ export class CustomerTicketService {
   async list(
     requester: CustomerRequester,
     input: CustomerTicketListInput,
-  ): Promise<{ items: TicketView[]; total: number; hasMore: boolean; nextCursor: string | null }> {
+  ): Promise<{
+    items: CustomerTicketView[]
+    total: number
+    hasMore: boolean
+    nextCursor: string | null
+  }> {
     const cursor = decodeCustomerTicketCursor(input.cursor)
     if (input.cursor !== undefined && !cursor) throw new CustomerTicketCursorInvalidError()
     const page = await this.tickets.listOwned({
@@ -51,7 +61,7 @@ export class CustomerTicketService {
     const last = items.at(-1)
     const hasMore = page.items.length > input.limit
     return {
-      items: items.map((ticket) => toTicketView(ticket)),
+      items: items.map(toCustomerTicketView),
       total: page.total,
       hasMore,
       nextCursor: hasMore && last ? encodeCustomerTicketCursor(last) : null,
@@ -61,19 +71,21 @@ export class CustomerTicketService {
   async byId(
     requester: CustomerRequester,
     id: string,
-  ): Promise<{ ticket: TicketView; messages: MessageView[] }> {
+  ): Promise<{ ticket: CustomerTicketView; messages: CustomerMessageView[] }> {
     const ticket = await this.requireOwnedTicket(requester, id)
     const messages = await this.messages.byTicketId(ticket.id)
     return {
-      ticket: toTicketView(ticket),
-      messages: messages.filter((message) => message.visibility === 'customer').map(toMessageView),
+      ticket: toCustomerTicketView(ticket),
+      messages: messages
+        .filter((message) => message.visibility === 'customer')
+        .map(toCustomerMessageView),
     }
   }
 
   async create(
     requester: CustomerRequester,
     input: CreateCustomerTicketInput,
-  ): Promise<{ ticket: TicketView; message: MessageView }> {
+  ): Promise<{ ticket: CustomerTicketView; message: CustomerMessageView }> {
     const at = this.now()
     const ticketId = this.idGen()
     const subject = input.subject.trim()
@@ -113,14 +125,14 @@ export class CustomerTicketService {
     }
     const message = this.customerMessage({ ticketId, body, requester, subject, at })
     await this.tickets.createWithInitialMessage({ ticket, message })
-    return { ticket: toTicketView(ticket), message: toMessageView(message) }
+    return { ticket: toCustomerTicketView(ticket), message: toCustomerMessageView(message) }
   }
 
   async addMessage(
     requester: CustomerRequester,
     ticketId: string,
     body: string,
-  ): Promise<{ ticket: TicketView; message: MessageView }> {
+  ): Promise<{ ticket: CustomerTicketView; message: CustomerMessageView }> {
     const ticket = await this.requireOwnedTicket(requester, ticketId)
     const at = this.now()
     const message = this.customerMessage({
@@ -138,7 +150,10 @@ export class CustomerTicketService {
       aiEnabled: this.config.aiEnabled,
     })
     if (!appended) throw new TicketNotFoundError()
-    return { ticket: toTicketView(appended.ticket), message: toMessageView(appended.message) }
+    return {
+      ticket: toCustomerTicketView(appended.ticket),
+      message: toCustomerMessageView(appended.message),
+    }
   }
 
   private async requireOwnedTicket(requester: CustomerTicketOwner, id: string) {
