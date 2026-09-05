@@ -253,6 +253,13 @@ const EnvSchema = z
     // Consumer HMAC do marketing (lembrete de publicação manual via /messaging/send).
     MARKETING_HMAC_SECRET: optionalSecret,
     MARKETING_ALLOWED_CIDRS: z.string().optional(),
+
+    // Consumer HMAC do helpdesk (aviso por e-mail da resposta a chamado do portal via
+    // /messaging/send). Opcional TAMBÉM em produção enquanto o helpdesk não estiver
+    // lá (fora do PROD_REQUIRED_SECRETS de propósito): sem a env o consumer não
+    // existe e o boot do gateway não depende de um serviço que ainda não subiu.
+    HELPDESK_HMAC_SECRET: optionalSecret,
+    HELPDESK_ALLOWED_CIDRS: z.string().optional(),
   })
   .refine((e) => e.STATE_BACKEND !== 'redis' || Boolean(e.REDIS_URL?.trim()), {
     message: 'REDIS_URL é obrigatória quando STATE_BACKEND=redis',

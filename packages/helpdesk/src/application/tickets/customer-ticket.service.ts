@@ -4,7 +4,7 @@ import type {
   CustomerTicketRepository,
 } from '../../domain/ports/customer-ticket-repository.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
-import type { TicketCategory, TicketStatus } from '../../domain/ticket/ticket'
+import type { TicketCategory, TicketPortal, TicketStatus } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import {
   type CustomerMessageView,
@@ -22,6 +22,8 @@ export interface CreateCustomerTicketInput {
   subject: string
   body: string
   category?: TicketCategory
+  /** Qual app abriu o chamado — vem do BFF (config do app), nunca do cliente. */
+  portal?: TicketPortal
 }
 
 export interface CustomerTicketListInput {
@@ -95,6 +97,7 @@ export class CustomerTicketService {
       version: 0,
       gmailThreadId: null,
       source: 'portal' as const,
+      portal: input.portal ?? null,
       subject,
       status: 'new' as const,
       resolvedAt: null,

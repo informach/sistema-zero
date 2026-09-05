@@ -9,6 +9,7 @@ import {
 import type { ConnectionRepository } from '../../domain/ports/connection-repository.port'
 import { GmailApiError, type GmailClient } from '../../domain/ports/gmail-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
+import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import { OAuthProviderError } from '../../domain/ports/oauth-provider.port'
 import type {
   PendingReplyMessage,
@@ -22,6 +23,7 @@ import { buildReplyRaw } from '../../infrastructure/gateways/google/rfc2822'
 import type { Actor } from '../actor'
 import type { GmailAccountService } from '../connection/gmail-account.service'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
+import { buildPortalReplyNotification, type PortalUrls } from './portal-reply-notification'
 
 /** Após esse prazo, uma intenção `pending` não é mais considerada envio em curso. */
 const PENDING_DELIVERY_RECOVERY_AFTER_MS = 2 * 60_000
@@ -36,10 +38,20 @@ export interface ReplyInput {
   version: number
 }
 
+/** Aviso por e-mail da resposta do PORTAL: cliente do messaging + origens dos apps. */
+export interface PortalReplyNotifier {
+  messaging: MessagingGateway
+  urls: PortalUrls
+}
+
 /**
- * Responde um ticket enviando o e-mail pela Gmail API (mesma thread, remetente
- * contato@). A intenção é gravada antes do side-effect e um timeout é
- * reconciliado pelo Message-ID RFC 822, evitando reenvio cego.
+ * Responde um ticket. Dois canais, decididos pelo ticket:
+ * - **e-mail** (ou portal que já vive numa thread do Gmail): envia pela Gmail API na
+ *   mesma thread, remetente contato@. A intenção é gravada antes do side-effect e
+ *   um timeout é reconciliado pelo Message-ID RFC 822, evitando reenvio cego.
+ * - **portal** (`source: 'portal'` sem `gmailThreadId`): a resposta vira mensagem da
+ *   conversa (visível no /ajuda na hora) e o cliente recebe um AVISO pelo
+ *   messaging, best-effort. Não depende da caixa Gmail estar conectada.
  */
 export class ReplyService {
   constructor(
@@ -51,6 +63,8 @@ export class ReplyService {
     private readonly gmailAccount: GmailAccountService,
     private readonly gmail: GmailClient,
     private readonly config: ReplyServiceConfig,
+    /** Null = grupo de env do aviso ausente: a resposta sai, o e-mail não. */
+    private readonly notifier: PortalReplyNotifier | null,
     private readonly now: () => Date,
     private readonly idGen: () => string,
     private readonly logger: Logger,
@@ -64,6 +78,13 @@ export class ReplyService {
   ): Promise<{ ticket: TicketView; message: MessageView }> {
     const ticket = await this.tickets.byId(ticketId)
     if (!ticket) throw new TicketNotFoundError()
+    // Ticket do portal que nunca passou pelo Gmail responde NO portal. Se a
+    // conversa já vive numa thread do Gmail (legado respondido por e-mail, e o
+    // cliente pode ter continuado por lá), segue pelo Gmail — a resposta também
+    // aparece no portal, porque já é `visibility: 'customer'`.
+    if (ticket.source === 'portal' && ticket.gmailThreadId === null) {
+      return this.deliverToPortal(actor, ticket, input)
+    }
     const connection = await this.requireConnection()
     const thread = await this.messages.byTicketId(ticketId)
 
@@ -78,6 +99,84 @@ export class ReplyService {
       createdBy: actor.userId,
       createdByName: actor.displayName,
     })
+  }
+
+  /**
+   * Resposta de ticket do PORTAL: sem transporte. Intenção e confirmação são o
+   * mesmo passo (`appendPortalReply`, transacional, CAS em `version`), e o
+   * aviso por e-mail sai DEPOIS do commit, best-effort — quando ele falha, a
+   * resposta já está na conversa.
+   */
+  private async deliverToPortal(
+    actor: Actor,
+    ticket: Ticket,
+    input: ReplyInput,
+  ): Promise<{ ticket: TicketView; message: MessageView }> {
+    const body = await this.withSignature(input.body)
+    const createdAt = this.now()
+    const message: TicketMessage = {
+      id: this.idGen(),
+      ticketId: ticket.id,
+      kind: 'portal',
+      visibility: 'customer',
+      gmailMessageId: null,
+      rfc822MessageId: null,
+      // Portal não tem máquina de entrega (igual à mensagem inbound do portal);
+      // `null` também mantém o DeliveryRecovery do app quieto.
+      deliveryState: null,
+      deliveryLastError: null,
+      direction: 'outbound',
+      sentVia: 'human',
+      fromEmail: null,
+      fromName: this.config.fromName,
+      toEmails: [ticket.requesterEmail],
+      ccEmails: [],
+      subject: ticket.subject,
+      bodyText: body,
+      bodyHtml: null,
+      snippet: body.slice(0, 500),
+      attachments: [],
+      isAutoreply: false,
+      gmailInternalDate: null,
+      createdBy: actor.userId,
+      createdByName: actor.displayName,
+      createdAt,
+    }
+    const result = await this.deliveries.appendPortalReply({
+      ticketId: ticket.id,
+      expectedVersion: input.version,
+      message,
+      at: createdAt,
+    })
+    if (result.status === 'not_found') throw new TicketNotFoundError()
+    if (result.status === 'conflict' || result.status === 'pending') {
+      throw new ConcurrencyConflictError()
+    }
+
+    await this.notifyPortalReply(result.ticket, result.message)
+    return { ticket: toTicketView(result.ticket), message: toMessageView(result.message) }
+  }
+
+  /** Best-effort: nunca falha a resposta, e o log fica sem PII. */
+  private async notifyPortalReply(ticket: Ticket, message: TicketMessage): Promise<void> {
+    if (!this.notifier) {
+      this.logger.info('reply.notify_skipped', {
+        ticketId: ticket.id,
+        reason: 'messaging_not_configured',
+      })
+      return
+    }
+    try {
+      await this.notifier.messaging.sendEmail(
+        buildPortalReplyNotification({ ticket, message, urls: this.notifier.urls }),
+      )
+    } catch (error) {
+      this.logger.warn('reply.notify_failed', {
+        ticketId: ticket.id,
+        messageId: message.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+    }
   }
 
   private async requireConnection(): Promise<GmailConnection> {

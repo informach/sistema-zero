@@ -202,6 +202,14 @@ if (!HELPDESK_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
     '[gateway] HELPDESK_INTERNAL_TOKEN ausente — as rotas /helpdesk/* responderão 401 (o serviço exige o token interno)',
   )
 }
+// O helpdesk como consumer HMAC de borda (aviso por e-mail da resposta a um chamado
+// do PORTAL via /messaging/send). Condicional, igual aos demais — sem a env o
+// consumer não existe. DEVE bater com o HELPDESK_HMAC_SECRET do helpdesk.
+const HELPDESK_HMAC_SECRET = process.env.HELPDESK_HMAC_SECRET ?? ''
+const HELPDESK_ALLOWED_CIDRS = (process.env.HELPDESK_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 
 // Indicações e bolsas (@sistemazero/referrals): embaixadores, códigos e a Bolsa
 // do Primeiro Jogo (fases futuras: atribuição ?ref + carteira de créditos). O
@@ -310,6 +318,17 @@ const config: GatewayConfigInput = {
             id: 'marketing',
             hmacSecret: MARKETING_HMAC_SECRET,
             allowedCidrs: MARKETING_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O helpdesk como consumer HMAC de borda (aviso por e-mail da resposta a chamado
+    // do portal via /messaging/send). Condicional, igual aos demais.
+    ...(HELPDESK_HMAC_SECRET
+      ? [
+          {
+            id: 'helpdesk',
+            hmacSecret: HELPDESK_HMAC_SECRET,
+            allowedCidrs: HELPDESK_ALLOWED_CIDRS,
           },
         ]
       : []),

@@ -3,6 +3,13 @@ export type TicketStatus = 'new' | 'open' | 'waiting' | 'resolved' | 'closed'
 /** Canal de origem do chamado. E-mail e portal compartilham a mesma fila da equipe. */
 export type TicketSource = 'email' | 'portal'
 
+/**
+ * Qual área do aluno abriu o chamado pelo portal. Espelha o `audience` do
+ * member-shell (`adult` = community, `kids` = community-kids) para o BFF passar a
+ * config compilada do app sem tabela de tradução. Nulo em ticket de e-mail e no legado.
+ */
+export type TicketPortal = 'adult' | 'kids'
+
 /** Categorias fixas do negócio (labels PT-BR ficam no front, em lockstep). */
 export type TicketCategory =
   | 'curso_acesso'
@@ -39,6 +46,12 @@ export interface Ticket {
   /** Thread do Gmail quando a conversa já passou por e-mail (unique quando presente). */
   gmailThreadId: string | null
   source: TicketSource
+  /**
+   * App que abriu o chamado pelo portal — decide o link do aviso de resposta
+   * (kids → /responsavel/ajuda; adult → /ajuda). Injetado pelo BFF, nunca lido do
+   * corpo do cliente. Nulo em e-mail e no legado (o aviso cai no adulto).
+   */
+  portal: TicketPortal | null
   subject: string
   status: TicketStatus
   /** Instante da transição para terminal; não muda em patches/IA posteriores. */

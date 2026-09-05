@@ -34,6 +34,8 @@ export class DrizzleTicketRepository implements TicketRepository {
         version: expectedVersion + 1,
         gmailThreadId: ticket.gmailThreadId,
         source: ticket.source,
+        // `portal` fica de fora de propósito, como `requesterEmail`: é imutável
+        // depois da criação (o app que abriu o chamado não muda).
         subject: ticket.subject,
         status: ticket.status,
         resolvedAt: ticket.resolvedAt,

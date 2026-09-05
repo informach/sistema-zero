@@ -14,8 +14,9 @@ back-end/API; o front interno é o **[@sistemazero/helpdesk-app](../helpdesk-app
 cliente é consumida por Community via api-gateway). A equipe (staff+) lê a caixa do Gmail por
 **polling** (Gmail API, 1 consent OAuth), agrupa cada thread num **ticket**, e a IA (OpenRouter)
 **classifica, resume e rascunha** a resposta — **sem auto-resposta**: toda resposta exige aprovação
-humana. Chamados abertos no portal entram na mesma fila; a primeira resposta da equipe também pode
-abrir a thread Gmail para manter a conversa por e-mail unificada. Runtime: **Bun**. Framework:
+humana. Chamados abertos no portal entram na mesma fila e são respondidos **no portal** (a resposta
+vira mensagem da conversa + aviso por e-mail pelo messaging), sem depender da caixa Gmail; só um
+ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Framework:
 **Elysia**. Porta **3013**. Schema Postgres próprio **`helpdesk`**.
 
 > Estado: **F0–F7 COMPLETAS (01/09/2026)** — roadmap inteiro entregue e testado.
@@ -75,6 +76,18 @@ abrir a thread Gmail para manter a conversa por e-mail unificada. Runtime: **Bun
     `requester_account_id` no SQL; tickets de e-mail anteriores ao portal só entram quando o
     e-mail verificado da conta coincide. Notas internas (`visibility='internal'`) jamais cruzam
     essa fronteira.
+11. **Ticket do portal responde NO portal (09/2026).** O Gmail serve para LER a caixa; responder
+    por e-mail só onde a conversa já É e-mail. `ReplyService.reply()` bifurca ANTES do
+    `requireConnection()`: `source='portal' && gmail_thread_id IS NULL` → `appendPortalReply`
+    (transação única: CAS em `version` +1, `new/open → waiting`, contadores; mensagem
+    `kind='portal'`, `direction='outbound'`, `delivery_state` NULL) e depois um AVISO por
+    e-mail via gateway → messaging (consumer HMAC `helpdesk`, template `helpdesk-reply`,
+    idempotência por MENSAGEM, só o link — nunca o texto), best-effort: falha do aviso vira
+    `warn`, a resposta já está na conversa. Ticket de portal COM thread do Gmail (legado
+    respondido por e-mail) segue pelo Gmail. `tickets.portal` (`adult`|`kids`, migration
+    0009) vem do BFF (config compilada do app, o cliente não escolhe) e decide o link
+    (`/ajuda` vs `/responsavel/ajuda`); nulo cai no adulto. O guarda de "uma saída em voo"
+    (`pending`/`unknown`) vale nos dois canais.
 
 ## Arquitetura (DDD + Hexagonal — espelha marketing/hub/messaging)
 
@@ -83,25 +96,27 @@ src/
 ├── domain/
 │   ├── ticket/{ticket,ticket-message,ticket-sla,ticket-stats}.ts # regras PURAS
 │   ├── mail/quote-strip.ts · settings/settings.ts · kb/kb-article.ts
-│   └── ports/                 # repos + gmail-client + llm-client + oauth-provider + secret-box
+│   └── ports/                 # repos + gmail-client + llm-client + oauth-provider + secret-box + messaging-gateway
 ├── application/
 │   ├── connection/{gmail-account,oauth,connection}.service.ts
-│   ├── tickets/{ticket,reply,ingest,customer-ticket}.service.ts
+│   ├── tickets/{ticket,reply,ingest,customer-ticket}.service.ts · tickets/portal-reply-notification.ts (PURO)
 │   ├── ai/{ticket-ai.service,prompts}.ts · kb/kb.service · settings/settings.service
 │   └── views.ts               # NUNCA expõe *_enc
 ├── infrastructure/
-│   ├── config/env.ts          # Zod fail-fast; grupos atômicos (Google, IA) → null-config 503
+│   ├── config/env.ts          # Zod fail-fast; grupos atômicos (Google, IA, aviso do portal) → null-config
 │   ├── security/secret-box.ts # AES-256-GCM, AAD 'helpdesk.gmail_connection'
 │   ├── persistence/drizzle/{schema,db,pg-errors,migrations/,*.repository.ts}
 │   ├── gateways/google/{gmail-oauth-provider,gmail-client,mime,rfc2822}.ts   # mime/rfc2822 PUROS
 │   ├── gateways/openrouter/openrouter-client.ts
+│   ├── gateways/messaging/gateway-messaging-client.ts   # HMAC consumer `helpdesk` → /messaging/send
 │   ├── observability/sentry.ts
 │   └── workers/{gmail-sync-worker,ai-worker}.ts
 ├── interfaces/http/{server,error-handler,auth,dtos}.ts
 │   └── routes/{health,tickets,customer-tickets,kb,settings,connection,oauth}.routes.ts
 ├── composition-root.ts (DI + workers + retenção advisory lock 71130324050607093) · index.ts
-tests/  fakes/{in-memory,gmail,ai}.ts · helpers.ts (monta a app inteira sem banco) · unit/ ·
-        integration/ (via app.handle) — 113 testes
+tests/  fakes/{in-memory,gmail,ai,messaging}.ts · helpers.ts (monta a app inteira sem banco) · unit/ ·
+        integration/ (via app.handle) — 147 testes (os `drizzle-*` só rodam com
+        `HELPDESK_TEST_DATABASE_URL` apontando p/ um banco `helpdesk_test` migrado)
 ```
 
 ## Comandos (de dentro de `packages/helpdesk`)
@@ -124,8 +139,10 @@ Saúde: `GET /health` · `GET /readyz` (banco). Negócio (rate limits no gateway
   `GET /helpdesk/portal/tickets/:id` (somente mensagens `visibility='customer'`) ·
   `POST …/:id/messages`. O gateway exige JWT de conta ativa, e o serviço revalida token interno,
   status, identidade/e-mail e a ausência de `x-auth-account-id`; ids de terceiros retornam 404.
-  `tickets.source='portal'` começa sem `gmail_thread_id`; ao responder por e-mail a equipe grava a
-  thread retornada pela Gmail e os próximos e-mails entram no mesmo ticket. A listagem usa cursor
+  `tickets.source='portal'` começa sem `gmail_thread_id` e é respondido NO portal (decisão 11);
+  a thread do Gmail só existe em ticket legado respondido por e-mail, e esse segue por e-mail.
+  O BFF manda `portal` (`adult`|`kids`) na criação — campo fora do DTO é DESCARTADO pelo
+  Elysia (não 422), o que deixa app e helpdesk deployarem em qualquer ordem. A listagem usa cursor
   opaco por `lastMessageAt,id`; não reintroduza offset numa fila que muda enquanto o cliente navega.
 
 - Tickets: `GET /helpdesk/tickets` (filtros status/category/q + `sla=attention|at_risk|breached`
@@ -135,7 +152,8 @@ Saúde: `GET /health` · `GET /readyz` (banco). Negócio (rate limits no gateway
   **`GET /helpdesk/tickets/stats`** (painel — agregado no banco, registrada ANTES de `/:id` p/ a
   rota estática vencer a paramétrica) · `GET /helpdesk/tickets/:id` (+ messages[]) ·
   `PATCH /helpdesk/tickets/:id` (status/category/priority/assignToMe + `version`→409) ·
-  `POST …/:id/reply` `{body, version}` ·
+  `POST …/:id/reply` `{body, version}` (portal → mensagem na conversa + aviso pelo messaging;
+  e-mail → Gmail na mesma thread) ·
   `POST …/:id/deliveries/:messageId/reconcile` (consulta o Gmail, sem reenviar) ·
   `POST …/:id/deliveries/:messageId/mark-failed` `{confirmation:'delivery-not-confirmed'}`
   (decisão humana explícita após revisar o risco) · `POST …/:id/notes` `{body}` ·
@@ -178,7 +196,8 @@ Retenção (fora do hot path, advisory xact-lock `71130324050607093` — só 1 r
 2. **`forwardUpstream` × 204/205/304**: `Response.json` estoura em corpo vazio — o error-handler
    trata esses status sem corpo (bug documentado; não regredir).
 3. **uuid validado na borda** (DTOs TypeBox) — id lixo → 400, nunca 22P02→500.
-4. **OpenRouter**: `AbortController` + `clearTimeout` (NUNCA `AbortSignal.timeout`).
+4. **OpenRouter e cliente do messaging**: `AbortController` + `clearTimeout` (NUNCA
+   `AbortSignal.timeout` — o sinal da fábrica não cancela e o timer pendura o `bun test`).
 5. **`x-internal-token` é defesa em profundidade**, não a auth: o RBAC real é do gateway.
 6. Testes via `app.handle` com fakes in-memory (`tests/helpers.ts` monta a app inteira sem banco);
    SQL cru novo (não coberto pelos fakes) validar com smoke descartável contra o Postgres local.
@@ -195,7 +214,12 @@ Retenção (fora do hot path, advisory xact-lock `71130324050607093` — só 1 r
 3. **Gateway**: `HELPDESK_INTERNAL_TOKEN` está no `PROD_REQUIRED_SECRETS` do gateway — enquanto o
    serviço não existir, isso derruba o boot do gateway em staging a cada redeploy. Remover da lista
    (ou setar a env) até o helpdesk subir.
-4. `OPENROUTER_API_KEY` (pode reusar a existente) + `OPENROUTER_HELPDESK_MODEL`.
+4. `OPENROUTER_API_KEY` (pode reusar a existente) + `OPENROUTER_HELPDESK_MODEL`. ⚠️ A chave
+   SOZINHA não liga nada: sem o modelo `aiConfig()` é null e todo ticket nasce `skipped`.
+5. **Aviso do portal** (grupo atômico): `GATEWAY_URL`, `HELPDESK_HMAC_SECRET` (MESMO valor no
+   gateway, que cadastra o consumer `helpdesk`), `COMMUNITY_URL`, `KIDS_COMMUNITY_URL`; e rodar
+   `bun run templates:seed` no messaging de cada ambiente (template `helpdesk-reply` — chave
+   ausente = 404 no aviso, a resposta continua indo).
 
 ## Checklist antes de finalizar
 

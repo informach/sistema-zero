@@ -2,6 +2,7 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
+import type { MembersAudience } from '../server/clients'
 import type { GatewayModule, GatewayResponse } from '../server/gateway'
 import type { SessionModule } from '../server/session'
 
@@ -60,8 +61,18 @@ async function ticketId(ctx: { params: Promise<{ id: string }> }): Promise<strin
  * posse do ticket; esta borda valida a forma, usa a sessão HttpOnly e preserva
  * a proibição de mutações em impersonação somente-leitura.
  */
-export function createHelpdeskRoutes(deps: { gateway: GatewayModule; session: SessionModule }) {
-  const { gateway, session } = deps
+export function createHelpdeskRoutes(deps: {
+  gateway: GatewayModule
+  session: SessionModule
+  /**
+   * Vitrine deste app (`adult` = community, `kids` = community-kids). Vira o
+   * `portal` do chamado no Helpdesk, que monta o link do aviso de resposta
+   * (/ajuda vs /responsavel/ajuda). Vem da config COMPILADA do app — o cliente
+   * não escolhe (o Zod `.strict()` abaixo recusa `portal` no corpo).
+   */
+  audience: MembersAudience
+}) {
+  const { gateway, session, audience } = deps
 
   async function requireWritableSession(): Promise<NextResponse | null> {
     const user = await session.getSession()
@@ -100,7 +111,7 @@ export function createHelpdeskRoutes(deps: { gateway: GatewayModule; session: Se
       return upstream(
         await gateway.gatewayFetch('/helpdesk/portal/tickets', {
           method: 'POST',
-          body: parsed.data,
+          body: { ...parsed.data, portal: audience },
         }),
       )
     },

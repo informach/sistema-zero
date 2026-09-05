@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import type { GmailConnection } from '../../src/domain/connection/gmail-connection'
 import { OAuthProviderError } from '../../src/domain/ports/oauth-provider.port'
+import type { Ticket } from '../../src/domain/ticket/ticket'
 import {
   buildTestApp,
   json,
@@ -9,6 +10,7 @@ import {
   makeTicket,
   request,
   STAFF_USER_ID,
+  TEST_PORTAL_URLS,
   type TestApp,
 } from '../helpers'
 
@@ -95,21 +97,21 @@ describe('responder ticket', () => {
     expect(outbound?.bodyText).toBe('Pronto.\n\nEquipe Sistema Zero')
   })
 
-  it('responde por e-mail um ticket iniciado no portal e registra a nova thread Gmail', async () => {
+  // Ticket de portal que JÁ foi respondido por e-mail antes (tem thread do Gmail):
+  // o cliente pode ter continuado por e-mail, então a conversa segue lá — e a
+  // resposta também aparece no portal, porque já é `visibility: 'customer'`.
+  it('ticket do portal que vive numa thread do Gmail (legado) segue pelo Gmail, na MESMA thread', async () => {
     const t = buildTestApp({ gmailEnabled: true })
     seedConnection(t)
     const ticket = makeTicket({
-      gmailThreadId: null,
+      gmailThreadId: 'thread-legado-1',
       source: 'portal',
+      portal: 'adult',
       requesterAccountId: '22222222-2222-4222-8222-222222222222',
     })
     await t.repos.tickets.create(ticket)
     await t.repos.messages.create(
-      makeMessage(ticket.id, {
-        kind: 'portal',
-        gmailMessageId: null,
-        rfc822MessageId: null,
-      }),
+      makeMessage(ticket.id, { kind: 'portal', gmailMessageId: null, rfc822MessageId: null }),
     )
 
     const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
@@ -117,8 +119,13 @@ describe('responder ticket', () => {
     })
 
     expect(res.status).toBe(200)
-    expect(t.gmailClient.sent[0]?.threadId).toBeUndefined()
-    expect((await t.repos.tickets.byId(ticket.id))?.gmailThreadId).toBe('thread-sent-1')
+    expect(t.gmailClient.sent).toHaveLength(1)
+    expect(t.gmailClient.sent[0]?.threadId).toBe('thread-legado-1')
+    expect(t.messaging.sent).toHaveLength(0)
+    const outbound = (await t.repos.messages.byTicketId(ticket.id)).filter(
+      (m) => m.direction === 'outbound',
+    )
+    expect(outbound.map((m) => m.kind)).toEqual(['email'])
   })
 
   it('duplo-clique (mesma version) → 409 e UM e-mail só', async () => {
@@ -326,5 +333,173 @@ describe('nota interna', () => {
 
     const msgs = await t.repos.messages.byTicketId(id)
     expect(msgs.some((m) => m.kind === 'note')).toBe(true)
+  })
+})
+
+describe('responder ticket do PORTAL (sem Gmail)', () => {
+  const ACCOUNT_ID = '22222222-2222-4222-8222-222222222222'
+
+  /** Ticket aberto pelo /ajuda: sem thread do Gmail, com 1 mensagem do cliente. */
+  async function seedPortalTicket(t: TestApp, overrides: Partial<Ticket> = {}) {
+    const ticket = makeTicket({
+      gmailThreadId: null,
+      source: 'portal',
+      portal: 'kids',
+      status: 'new',
+      messageCount: 1,
+      requesterAccountId: ACCOUNT_ID,
+      requesterName: 'Maria Silva',
+      requesterEmail: 'maria@example.com',
+      subject: 'Ajuda com acesso',
+      ...overrides,
+    })
+    await t.repos.tickets.create(ticket)
+    await t.repos.messages.create(
+      makeMessage(ticket.id, {
+        kind: 'portal',
+        gmailMessageId: null,
+        rfc822MessageId: null,
+        deliveryState: null,
+      }),
+    )
+    return ticket
+  }
+
+  // ⭐ Anti-vácuo: `gmailEnabled` false e NENHUMA conexão semeada — se sobrar
+  // qualquer resquício de requireConnection() no caminho do portal, reprova em 409.
+  it('responde NO portal: mensagem na conversa, ticket aguardando, aviso pelo messaging', async () => {
+    const t = buildTestApp()
+    await request(t.app, 'PATCH', '/helpdesk/settings', {
+      body: { signature: 'Equipe Sistema Zero' },
+    })
+    const ticket = await seedPortalTicket(t)
+
+    const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Oi Maria, seu acesso já está liberado.', version: 0 },
+    })
+
+    expect(res.status).toBe(200)
+    const body = await json(res)
+    expect(body.ticket.status).toBe('waiting')
+    // Um passo só (sem intenção + confirmação): version avança 1, não 2.
+    expect(body.ticket.version).toBe(1)
+    expect(body.ticket.messageCount).toBe(2)
+    expect(body.message).toMatchObject({
+      kind: 'portal',
+      direction: 'outbound',
+      visibility: 'customer',
+      sentVia: 'human',
+      deliveryState: null,
+      bodyText: 'Oi Maria, seu acesso já está liberado.\n\nEquipe Sistema Zero',
+      createdBy: STAFF_USER_ID,
+    })
+
+    // Nada pela Gmail — não existe nem conexão — e o ticket segue sem thread.
+    expect(t.gmailClient.sent).toHaveLength(0)
+    expect((await t.repos.tickets.byId(ticket.id))?.gmailThreadId).toBeNull()
+
+    // O aviso saiu pelo messaging, com o link do app que abriu o chamado.
+    expect(t.messaging.sent).toEqual([
+      {
+        templateKey: 'helpdesk-reply',
+        recipient: { name: 'Maria Silva', email: 'maria@example.com' },
+        variables: {
+          saudacao: 'Olá, Maria!',
+          assunto: 'Ajuda com acesso',
+          link: `${TEST_PORTAL_URLS.kids}/responsavel/ajuda`,
+        },
+        idempotencyKey: `helpdesk-reply:${body.message.id}`,
+      },
+    ])
+
+    // E a mensagem está na conversa que o cliente vê (visibility customer).
+    const stored = await t.repos.messages.byTicketId(ticket.id)
+    expect(
+      stored.filter((m) => m.direction === 'outbound' && m.visibility === 'customer'),
+    ).toHaveLength(1)
+  })
+
+  it('duplo-clique (mesma version) → 409 e UMA mensagem, UM aviso', async () => {
+    const t = buildTestApp()
+    const ticket = await seedPortalTicket(t)
+
+    const first = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Primeira.', version: 0 },
+    })
+    const second = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Primeira.', version: 0 },
+    })
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(409)
+    expect((await json(second)).error.code).toBe('CONCURRENCY_CONFLICT')
+    const outbound = (await t.repos.messages.byTicketId(ticket.id)).filter(
+      (m) => m.direction === 'outbound',
+    )
+    expect(outbound).toHaveLength(1)
+    expect(t.messaging.sent).toHaveLength(1)
+  })
+
+  it('entrega Gmail pendurada (`unknown`) no ticket bloqueia a resposta no portal — uma saída em voo', async () => {
+    const t = buildTestApp()
+    const ticket = await seedPortalTicket(t)
+    await t.repos.messages.create(
+      makeMessage(ticket.id, {
+        direction: 'outbound',
+        sentVia: 'human',
+        gmailMessageId: null,
+        deliveryState: 'unknown',
+      }),
+    )
+
+    const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Outra.', version: 0 },
+    })
+
+    expect(res.status).toBe(409)
+    expect(t.messaging.sent).toHaveLength(0)
+  })
+
+  it('aviso por e-mail falhando NÃO derruba a resposta: 200 e a mensagem fica na conversa', async () => {
+    const t = buildTestApp()
+    t.messaging.failNext = new Error('messaging/send falhou: 502')
+    const ticket = await seedPortalTicket(t)
+
+    const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Resolvido por aqui.', version: 0 },
+    })
+
+    expect(res.status).toBe(200)
+    expect(t.messaging.sent).toHaveLength(0)
+    const outbound = (await t.repos.messages.byTicketId(ticket.id)).filter(
+      (m) => m.direction === 'outbound',
+    )
+    expect(outbound).toHaveLength(1)
+    expect((await t.repos.tickets.byId(ticket.id))?.status).toBe('waiting')
+  })
+
+  it('sem o grupo de env do aviso, responde mesmo assim (só não avisa)', async () => {
+    const t = buildTestApp({ messagingEnabled: false })
+    const ticket = await seedPortalTicket(t)
+
+    const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Resolvido.', version: 0 },
+    })
+
+    expect(res.status).toBe(200)
+    expect(t.messaging.sent).toHaveLength(0)
+  })
+
+  it('ticket sem `portal` (legado) e sem nome: link do adulto e destinatário com fallback', async () => {
+    const t = buildTestApp()
+    const ticket = await seedPortalTicket(t, { portal: null, requesterName: null })
+
+    await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Olá!', version: 0 },
+    })
+
+    expect(t.messaging.sent[0]?.variables.link).toBe(`${TEST_PORTAL_URLS.adult}/ajuda`)
+    expect(t.messaging.sent[0]?.recipient.name).toBe('Cliente')
+    expect(t.messaging.sent[0]?.variables.saudacao).toBe('Olá!')
   })
 })

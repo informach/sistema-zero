@@ -95,8 +95,12 @@ helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sani
 **Portal de atendimento (08/2026):** `createHelpdeskRoutes` em `routes/helpdesk.ts` é o BFF
 compartilhado de `/api/helpdesk/portal/tickets` (lista, criação, detalhe e mensagens). Ele valida
 na borda com Zod, faz a chamada somente pelo gateway e bloqueia mutações em impersonação
-somente-leitura. A UI reutilizável `components/customer-helpdesk-portal.tsx` fala apenas com esse
-BFF e renderiza texto das mensagens como texto, nunca HTML. A posse do chamado continua sendo
+somente-leitura. Na criação ele injeta `portal` = `audience` do app (`adult`|`kids`, config
+COMPILADA — o cliente não escolhe; o Zod `.strict()` recusa `portal` no corpo): é o que decide
+o link do aviso de resposta por e-mail (`/ajuda` vs `/responsavel/ajuda`). A UI reutilizável
+`components/customer-helpdesk-portal.tsx` fala apenas com esse BFF e renderiza texto das
+mensagens como texto, nunca HTML; a resposta da equipe chega NO portal e não há polling, então o
+detalhe tem "Atualizar" (recarrega a conversa sem apagar o rascunho). A posse do chamado continua sendo
 autoritativa no Helpdesk, por `requesterAccountId` e e-mail normalizado legado. O community expõe
 os handlers diretamente; o community-kids DEVE envolver cada handler com
 `requireParentGateAccountOnly`, pois um perfil infantil herda o e-mail da conta e não pode tocar

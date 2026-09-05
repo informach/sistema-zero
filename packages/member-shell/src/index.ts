@@ -63,7 +63,7 @@ export function createShell(cfg: ShellConfig) {
   const routes = {
     ...createShellRoutes({ session, gateway, auth, members, payments, profiles, media }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
-    ...createHelpdeskRoutes({ gateway, session }),
+    ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
     ...createStudioRoutes({ hub, members, media }),
     ...createStudioZappyRoutes({ members, session }),
     ...createCertificateRoutes({ members, session }),

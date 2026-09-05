@@ -69,6 +69,7 @@ export class IngestService {
       version: 0,
       gmailThreadId: parsed.gmailThreadId,
       source: 'email',
+      portal: null,
       subject: cleanSubject(parsed.subject) || '(sem assunto)',
       status: isFromUs ? 'waiting' : 'new',
       resolvedAt: null,

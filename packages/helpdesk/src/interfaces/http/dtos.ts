@@ -28,6 +28,9 @@ const TICKET_CATEGORY = t.Union([
 ])
 
 const TICKET_PRIORITY = t.Union([t.Literal('baixa'), t.Literal('normal'), t.Literal('alta')])
+
+// Área do aluno que abriu o chamado (espelha o `audience` do member-shell).
+const TICKET_PORTAL = t.Union([t.Literal('adult'), t.Literal('kids')])
 const TICKET_SLA_FILTER = t.Union([
   t.Literal('attention'),
   t.Literal('at_risk'),
@@ -77,10 +80,15 @@ export const CustomerTicketsQuery = t.Object({
   cursor: t.Optional(t.String({ minLength: 1, maxLength: 256 })),
 })
 
+// ⚠️ SEM `additionalProperties: false`: o Elysia normaliza e DESCARTA campo fora do
+// DTO, e é isso que deixa app e helpdesk deployarem em qualquer ordem (o BFF
+// manda `portal` antes de o helpdesk conhecê-lo → ignorado, não 422).
 export const CustomerTicketCreateBody = t.Object({
   subject: t.String({ minLength: 3, maxLength: 300 }),
   body: t.String({ minLength: 1, maxLength: 10_000 }),
   category: t.Optional(TICKET_CATEGORY),
+  // Injetado pelo BFF a partir da config compilada do app (o cliente não escolhe).
+  portal: t.Optional(TICKET_PORTAL),
 })
 
 export const CustomerTicketMessageBody = t.Object({

@@ -10,6 +10,9 @@ const TICKET_ID = '2f1fb385-caad-47c2-9709-47f922584276'
 function routes(options?: { readonly?: boolean }) {
   const calls: Array<{ path: string; options: unknown }> = []
   const instance = createHelpdeskRoutes({
+    // Explícito de propósito: sem ele `portal: undefined` satisfaria o toEqual e o
+    // caso da criação passaria vazio.
+    audience: 'kids',
     gateway: {
       gatewayFetch: async (path: string, requestOptions?: unknown) => {
         calls.push({ path, options: requestOptions })
@@ -52,7 +55,7 @@ describe('BFF do portal de atendimento', () => {
     ])
   })
 
-  test('valida a criação e encaminha somente o payload permitido ao Helpdesk', async () => {
+  test('valida a criação e encaminha o payload permitido + o `portal` deste app ao Helpdesk', async () => {
     const { helpdeskTickets, calls } = routes()
     const res = await helpdeskTickets.POST(
       new Request('https://community.test/api/helpdesk/portal/tickets', {
@@ -75,6 +78,7 @@ describe('BFF do portal de atendimento', () => {
             subject: 'Não consigo abrir a aula',
             body: 'A tela fica carregando.',
             category: 'curso_acesso',
+            portal: 'kids',
           },
         },
       },

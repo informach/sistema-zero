@@ -232,4 +232,44 @@ describe('portal do responsável', () => {
     expect(res.status).toBe(403)
     expect((await json(res)).error.code).toBe('FORBIDDEN')
   })
+
+  // ⚠️ Fixa o DESCARTE do Elysia (normalize): campo fora do DTO é ignorado, não 422.
+  // É o que deixa app e helpdesk deployarem em qualquer ordem. Quem "consertar"
+  // com `additionalProperties: false` reprova aqui.
+  it('guarda o app que abriu o chamado (`portal`) e ignora campo fora do contrato', async () => {
+    const { app, repos } = buildTestApp()
+    const res = await request(app, 'POST', '/helpdesk/portal/tickets', {
+      headers: customerHeaders(),
+      body: {
+        subject: 'Preciso de ajuda',
+        body: 'A aula não abre.',
+        portal: 'kids',
+        campoQueNaoExiste: 'x',
+      },
+    })
+
+    expect(res.status).toBe(201)
+    const body = await json(res)
+    expect((await repos.tickets.byId(body.ticket.id))?.portal).toBe('kids')
+    // A projeção do cliente não expõe `portal` (a tela não usa) — `source` sim.
+    expect(body.ticket).not.toHaveProperty('portal')
+    expect(body.ticket.source).toBe('portal')
+  })
+
+  it('app antigo (sem `portal`) abre com portal nulo; valor fora do enum é recusado na borda', async () => {
+    const { app, repos } = buildTestApp()
+    const res = await request(app, 'POST', '/helpdesk/portal/tickets', {
+      headers: customerHeaders(),
+      body: { subject: 'Preciso de ajuda', body: 'A aula não abre.' },
+    })
+    expect(res.status).toBe(201)
+    expect((await repos.tickets.byId((await json(res)).ticket.id))?.portal).toBeNull()
+
+    const invalid = await request(app, 'POST', '/helpdesk/portal/tickets', {
+      headers: customerHeaders(),
+      body: { subject: 'Preciso de ajuda', body: 'A aula não abre.', portal: 'lixo' },
+    })
+    expect(invalid.status).toBe(400)
+    expect((await json(invalid)).error.code).toBe('VALIDATION_ERROR')
+  })
 })

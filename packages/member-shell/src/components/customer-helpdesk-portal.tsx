@@ -164,13 +164,17 @@ export function CustomerHelpdeskPortal({
     }
   }
 
-  async function openTicket(id: string) {
+  /**
+   * `keepDraft`: o "Atualizar" do detalhe recarrega a conversa (a resposta da
+   * equipe chega por aqui, não há polling) sem apagar o que o cliente digitava.
+   */
+  async function openTicket(id: string, options: { keepDraft?: boolean } = {}) {
     setLoadingDetail(true)
     clearFeedback()
     try {
       const next = await apiGet<CustomerTicketDetail>(`/api/helpdesk/portal/tickets/${id}`)
       setDetail(next)
-      setReply('')
+      if (!options.keepDraft) setReply('')
       setMode('detail')
     } catch (reason) {
       registerError(reason)
@@ -386,7 +390,7 @@ export function CustomerHelpdeskPortal({
           <Button variant="ghost" size="icon" onClick={showList} aria-label="Voltar aos chamados">
             <ArrowLeft className="size-4" />
           </Button>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 id="support-title" className="truncate text-2xl font-bold tracking-tight">
                 {detail.ticket.subject}
@@ -401,6 +405,16 @@ export function CustomerHelpdeskPortal({
                 : 'Atendimento'}
             </p>
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => void openTicket(detail.ticket.id, { keepDraft: true })}
+            disabled={loadingDetail}
+            aria-label="Atualizar a conversa"
+          >
+            {loadingDetail ? <Spinner className="size-4" /> : <RefreshCw className="size-4" />}
+            Atualizar
+          </Button>
         </header>
         {feedback}
         <div className="space-y-3" aria-live="polite">

@@ -1,8 +1,10 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import type {
+  AppendPortalReplyResult,
   CreateReplyIntentResult,
   ReplyDeliveryRepository,
 } from '../../../domain/ports/reply-delivery-repository.port'
+import type { TicketMessage } from '../../../domain/ticket/ticket-message'
 import type { Database } from './db'
 import { ticketMessages, tickets } from './schema'
 
@@ -113,6 +115,59 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
         .where(eq(tickets.id, updatedMessage.ticketId))
         .returning()
       return updatedTicket ? { ticket: updatedTicket, message: updatedMessage } : null
+    })
+  }
+
+  async appendPortalReply(input: {
+    ticketId: string
+    expectedVersion: number
+    message: TicketMessage
+    at: Date
+  }): Promise<AppendPortalReplyResult> {
+    return this.db.transaction(async (tx) => {
+      const [ticket] = await tx
+        .select({ id: tickets.id })
+        .from(tickets)
+        .where(eq(tickets.id, input.ticketId))
+        .limit(1)
+      if (!ticket) return { status: 'not_found' }
+
+      // Mesmo guarda do createIntent: uma saída em voo por ticket, seja qual for
+      // o canal — uma entrega Gmail `unknown` ainda pode aparecer depois.
+      const [activeDelivery] = await tx
+        .select({ id: ticketMessages.id })
+        .from(ticketMessages)
+        .where(
+          and(
+            eq(ticketMessages.ticketId, input.ticketId),
+            inArray(ticketMessages.deliveryState, ['pending', 'unknown']),
+          ),
+        )
+        .limit(1)
+      if (activeDelivery) return { status: 'pending' }
+
+      // postgres.js sob Bun exige ISO string em parâmetros dentro de SQL cru.
+      const atIso = input.at.toISOString()
+      // Intenção e confirmação num passo só (não há transporte): o CAS em `version`
+      // é o do createIntent e a projeção do ticket é a do markSent, sem thread.
+      const [updatedTicket] = await tx
+        .update(tickets)
+        .set({
+          version: input.expectedVersion + 1,
+          status: sql`case
+            when ${tickets.status} in ('new', 'open') then 'waiting'::helpdesk.ticket_status
+            else ${tickets.status}
+          end`,
+          messageCount: sql`${tickets.messageCount} + 1`,
+          lastMessageAt: sql`greatest(${tickets.lastMessageAt}, ${atIso})`,
+          updatedAt: input.at,
+        })
+        .where(and(eq(tickets.id, input.ticketId), eq(tickets.version, input.expectedVersion)))
+        .returning()
+      if (!updatedTicket) return { status: 'conflict' }
+
+      await tx.insert(ticketMessages).values(input.message)
+      return { status: 'created', ticket: updatedTicket, message: input.message }
     })
   }
 

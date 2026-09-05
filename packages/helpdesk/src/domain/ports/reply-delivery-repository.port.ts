@@ -18,6 +18,12 @@ export type CreateReplyIntentResult =
   | { status: 'pending' }
   | { status: 'not_found' }
 
+export type AppendPortalReplyResult =
+  | { status: 'created'; ticket: Ticket; message: TicketMessage }
+  | { status: 'conflict' }
+  | { status: 'pending' }
+  | { status: 'not_found' }
+
 /**
  * Outbox transacional da resposta humana. A intenção e o bump de versão são
  * persistidos antes do Gmail; assim um timeout nunca se transforma em reenvio
@@ -39,4 +45,16 @@ export interface ReplyDeliveryRepository {
   markUnknown(messageId: string, error: string): Promise<void>
   /** Falha conhecida antes de confirmação do Gmail; libera uma nova resposta. */
   markFailed(messageId: string, error: string): Promise<TicketMessage | null>
+  /**
+   * Resposta de ticket do PORTAL: não há transporte, então intenção e
+   * confirmação são o mesmo passo — grava a mensagem e move o ticket (CAS em
+   * `version`, `waiting`, contadores) numa transação só. Mantém o guarda de
+   * "uma saída em voo por ticket" do `createIntent` (`pending`).
+   */
+  appendPortalReply(input: {
+    ticketId: string
+    expectedVersion: number
+    message: TicketMessage
+    at: Date
+  }): Promise<AppendPortalReplyResult>
 }

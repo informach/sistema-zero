@@ -33,6 +33,7 @@ export const ticketStatusEnum = helpdesk.enum('ticket_status', [
   'closed',
 ])
 export const ticketSourceEnum = helpdesk.enum('ticket_source', ['email', 'portal'])
+export const ticketPortalEnum = helpdesk.enum('ticket_portal', ['adult', 'kids'])
 export const ticketCategoryEnum = helpdesk.enum('ticket_category', [
   'curso_acesso',
   'problema_tecnico',
@@ -113,6 +114,9 @@ export const tickets = helpdesk.table(
     version: integer('version').notNull().default(0),
     gmailThreadId: text('gmail_thread_id'),
     source: ticketSourceEnum('source').notNull().default('email'),
+    // App que abriu o chamado pelo portal (link do aviso de resposta). Nulo em
+    // e-mail e no legado; imutável depois de criado.
+    portal: ticketPortalEnum('portal'),
     subject: text('subject').notNull().default(''),
     status: ticketStatusEnum('status').notNull().default('new'),
     // Fonte de verdade dos indicadores de resolução; `updated_at` muda também

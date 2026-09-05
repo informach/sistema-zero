@@ -21,7 +21,9 @@ Porta **3014**. Domínio futuro: `helpdesk.sistemazero.com.br` (ou `atendimento`
 > de atenção/atribuição, filtros status/categoria/busca e badges de SLA/canal), **Ticket**
 > (thread com citação colapsada + painel resumo IA + editor prefilled com o rascunho + Enviar/
 > Regenerar/Resumir/Nota; timeout de envio permite verificar o Gmail antes de liberar uma nova
-> resposta; 409 → toast + soft-reload), **Base de conhecimento** (CRUD + toggle
+> resposta; 409 → toast + soft-reload; chamado do PORTAL: o editor diz "Publicar resposta" e
+> a mensagem vai para a conversa do /ajuda + aviso por e-mail, SEM depender da caixa Gmail —
+> o canal é do ticket, decidido no backend), **Base de conhecimento** (CRUD + toggle
 > Publicado), **Configurações** (conexão Gmail conectar/reconectar + assinatura). IA é somente
 > copiloto: todo rascunho exige revisão e envio humano.
 > Padrões-chave: 409 CONCURRENCY_CONFLICT → toast + soft-reload (preserva o texto digitado);

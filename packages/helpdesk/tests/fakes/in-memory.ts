@@ -13,6 +13,7 @@ import type {
   OAuthStateRepository,
 } from '../../src/domain/ports/oauth-state-repository.port'
 import type {
+  AppendPortalReplyResult,
   CreateReplyIntentResult,
   PendingReplyMessage,
   ReplyDeliveryRepository,
@@ -413,6 +414,34 @@ export class InMemoryReplyDeliveryRepository implements ReplyDeliveryRepository 
     if (input.at.getTime() > ticket.lastMessageAt.getTime()) ticket.lastMessageAt = input.at
     ticket.updatedAt = input.at
     return { ticket: clone(ticket), message: clone(message) }
+  }
+
+  async appendPortalReply(input: {
+    ticketId: string
+    expectedVersion: number
+    message: TicketMessage
+    at: Date
+  }): Promise<AppendPortalReplyResult> {
+    const ticket = this.tickets.rows.get(input.ticketId)
+    if (!ticket) return { status: 'not_found' }
+    if (
+      this.messages.rows.some(
+        (message) =>
+          message.ticketId === input.ticketId &&
+          (message.deliveryState === 'pending' || message.deliveryState === 'unknown'),
+      )
+    ) {
+      return { status: 'pending' }
+    }
+    if (ticket.version !== input.expectedVersion) return { status: 'conflict' }
+
+    ticket.version += 1
+    if (ticket.status === 'new' || ticket.status === 'open') ticket.status = 'waiting'
+    ticket.messageCount += 1
+    if (input.at.getTime() > ticket.lastMessageAt.getTime()) ticket.lastMessageAt = input.at
+    ticket.updatedAt = input.at
+    this.messages.rows.push(clone(input.message))
+    return { status: 'created', ticket: clone(ticket), message: clone(input.message) }
   }
 
   async markUnknown(messageId: string, error: string): Promise<void> {

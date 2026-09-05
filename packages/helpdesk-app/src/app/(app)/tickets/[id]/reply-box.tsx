@@ -6,7 +6,7 @@ import { Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiSend } from '@/lib/api'
-import type { MessageView, TicketView } from '@/lib/types'
+import type { MessageView, TicketSource, TicketView } from '@/lib/types'
 
 type ReplyResponse = { ticket: TicketView; message: MessageView }
 
@@ -22,13 +22,16 @@ function aiErrorToast(error: ApiError): void {
 }
 
 /**
- * Editor de resposta ao cliente: envia pelo Gmail na mesma thread (assinatura vem
- * do backend). Vem preenchido com o rascunho da IA (quando existe); "Regenerar
- * rascunho" pede um novo à IA e substitui o texto.
+ * Editor de resposta ao cliente. O canal é do TICKET, decidido no backend: e-mail
+ * vai pelo Gmail na mesma thread; chamado aberto no portal (Ajuda) vira mensagem
+ * da conversa + aviso por e-mail, sem depender da caixa Gmail. A assinatura vem
+ * do backend nos dois casos. Vem preenchido com o rascunho da IA (quando existe);
+ * "Regenerar rascunho" pede um novo à IA e substitui o texto.
  */
 export function ReplyBox({
   ticketId,
   version,
+  source,
   initialDraft,
   onSent,
   onStale,
@@ -36,6 +39,8 @@ export function ReplyBox({
 }: {
   ticketId: string
   version: number
+  /** Canal do chamado — só muda a copy; quem decide o transporte é o backend. */
+  source: TicketSource
   /** Rascunho da IA no carregamento (prefill do editor). */
   initialDraft: string
   /** Sucesso: o chamador recarrega o detalhe (versão nova + mudança do poller). */
@@ -49,6 +54,7 @@ export function ReplyBox({
   const [sending, setSending] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
   const busy = sending || regenerating
+  const viaPortal = source === 'portal'
 
   async function send() {
     const text = body.trim()
@@ -59,7 +65,7 @@ export function ReplyBox({
         body: text,
         version,
       })
-      toast.success('Resposta enviada.')
+      toast.success(viaPortal ? 'Resposta publicada na Ajuda do cliente.' : 'Resposta enviada.')
       setBody('')
       onSent()
     } catch (error) {
@@ -76,8 +82,10 @@ export function ReplyBox({
       } else {
         toast.error('Não foi possível enviar a resposta. Tente novamente.')
       }
-      // O claim reserva a version ANTES do envio; qualquer falha pós-claim a bumpou.
-      // Re-GET soft ressincroniza a version (o texto digitado é preservado).
+      // E-mail: o claim reserva a version ANTES do envio, então qualquer falha
+      // pós-claim a bumpou. Portal: um passo só, mas um 409 significa que alguém
+      // mexeu no ticket. Nos dois casos o re-GET soft ressincroniza a version (o
+      // texto digitado é preservado).
       onStale()
     } finally {
       setSending(false)
@@ -114,6 +122,9 @@ export function ReplyBox({
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
+        {viaPortal
+          ? 'A resposta aparece na Ajuda do cliente na hora, e ele recebe um aviso por e-mail. '
+          : 'A resposta vai por e-mail, na mesma conversa. '}
         Revise o texto antes de enviar. A IA prepara sugestões, mas nunca responde sozinha.
       </p>
       <Textarea
@@ -126,7 +137,7 @@ export function ReplyBox({
       />
       <div className="flex justify-end">
         <Button onClick={send} disabled={busy || body.trim().length === 0}>
-          {sending ? 'Enviando…' : 'Enviar resposta'}
+          {sending ? 'Enviando…' : viaPortal ? 'Publicar resposta' : 'Enviar resposta'}
         </Button>
       </div>
     </div>

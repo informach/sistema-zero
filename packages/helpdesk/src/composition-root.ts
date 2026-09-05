@@ -10,9 +10,10 @@ import { CustomerTicketService } from './application/tickets/customer-ticket.ser
 import { IngestService } from './application/tickets/ingest.service'
 import { ReplyService } from './application/tickets/reply.service'
 import { TicketService } from './application/tickets/ticket.service'
-import { aiConfig, type Env, gmailConfig } from './infrastructure/config/env'
+import { aiConfig, type Env, gmailConfig, portalNotifyConfig } from './infrastructure/config/env'
 import { GoogleGmailClient } from './infrastructure/gateways/google/gmail-client'
 import { GmailOAuthProvider } from './infrastructure/gateways/google/gmail-oauth-provider'
+import { createGatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { OpenRouterClient } from './infrastructure/gateways/openrouter/openrouter-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleConnectionRepository } from './infrastructure/persistence/drizzle/connection.repository'
@@ -97,6 +98,25 @@ export function createApplication(env: Env): Application {
     })
   }
 
+  // Aviso de resposta do PORTAL (gateway → messaging), best-effort: sem o grupo, a
+  // resposta segue indo para a conversa; só o e-mail de aviso não sai.
+  const notify = portalNotifyConfig(env)
+  if (!notify) {
+    logger.warn('messaging.not_configured', {
+      hint: 'GATEWAY_URL, HELPDESK_HMAC_SECRET, COMMUNITY_URL ou KIDS_COMMUNITY_URL ausentes — resposta no portal sai sem e-mail de aviso',
+    })
+  }
+  const portalNotifier = notify
+    ? {
+        messaging: createGatewayMessagingClient({
+          gatewayUrl: notify.gatewayUrl,
+          hmacSecret: notify.hmacSecret,
+          timeoutMs: notify.timeoutMs,
+        }),
+        urls: notify.urls,
+      }
+    : null
+
   // Casos de uso
   const ticketService = new TicketService(ticketRepo, messageRepo, now, idGen)
   const customerTicketService = new CustomerTicketService(
@@ -149,6 +169,7 @@ export function createApplication(env: Env): Application {
     gmailAccountService,
     gmailClient,
     { fromName: env.HELPDESK_FROM_NAME },
+    portalNotifier,
     now,
     idGen,
     logger,

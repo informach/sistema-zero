@@ -38,6 +38,8 @@ function directionLabel(message: MessageView): string {
   if (message.direction === 'outbound') {
     if (message.sentVia === 'ai') return 'Registro histórico de resposta automática'
     if (message.sentVia === 'gmail') return 'Respondido pelo Gmail'
+    if (message.kind === 'portal')
+      return `Publicado na Ajuda por ${message.createdByName ?? 'Equipe'}`
     return `Enviado por ${message.createdByName ?? 'Equipe'}`
   }
   return 'Mensagem'
@@ -404,6 +406,7 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           <ReplyBox
             ticketId={ticketId}
             version={ticket.version}
+            source={ticket.source}
             initialDraft={ticket.aiDraft ?? ''}
             onSent={softReload}
             onStale={softReload}

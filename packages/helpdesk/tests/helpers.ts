@@ -24,6 +24,7 @@ import {
   InMemorySettingsRepository,
   InMemoryTicketRepository,
 } from './fakes/in-memory'
+import { FakeMessagingGateway } from './fakes/messaging'
 
 export const INTERNAL_TOKEN = 'test-internal-token-1234'
 
@@ -36,6 +37,8 @@ const silentLogger = {
 
 export const TEST_APP_URL = 'http://app.test'
 export const TEST_GATEWAY_URL = 'http://gateway.test'
+/** Origens públicas das áreas do aluno nos testes (link do aviso de resposta). */
+export const TEST_PORTAL_URLS = { adult: 'https://community.test', kids: 'https://kids.test' }
 
 export interface TestApp {
   app: { handle: (request: Request) => Promise<Response> }
@@ -51,10 +54,14 @@ export interface TestApp {
   gmailClient: FakeGmailClient
   secretBox: FakeSecretBox
   llm: FakeLlmClient
+  /** Avisos de resposta do portal capturados (gateway → messaging fake). */
+  messaging: FakeMessagingGateway
 }
 
 /** Monta a app HTTP inteira sobre fakes in-memory (sem banco, sem Gmail real). */
-export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestApp {
+export function buildTestApp(
+  overrides: { gmailEnabled?: boolean; messagingEnabled?: boolean } = {},
+): TestApp {
   const env = loadEnv({
     NODE_ENV: 'test',
     DATABASE_URL: 'postgres://unused-in-tests',
@@ -63,6 +70,9 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
   const now = () => new Date()
   const idGen = () => randomUUID()
   const gmailEnabled = overrides.gmailEnabled ?? false
+  // Aviso do portal LIGADO por padrão: é o caminho comum em produção.
+  const messagingEnabled = overrides.messagingEnabled ?? true
+  const messaging = new FakeMessagingGateway()
 
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
@@ -122,6 +132,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     gmailAccountService,
     gmailClient,
     { fromName: 'Sistema Zero' },
+    messagingEnabled ? { messaging, urls: TEST_PORTAL_URLS } : null,
     now,
     idGen,
     silentLogger,
@@ -179,6 +190,7 @@ export function buildTestApp(overrides: { gmailEnabled?: boolean } = {}): TestAp
     gmailClient,
     secretBox,
     llm,
+    messaging,
   }
 }
 
@@ -242,6 +254,7 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     version: 0,
     gmailThreadId: `thread-${randomUUID()}`,
     source: 'email',
+    portal: null,
     subject: 'Não consigo acessar o curso',
     status: 'new',
     resolvedAt: null,
