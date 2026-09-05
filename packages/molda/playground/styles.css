@@ -1,0 +1,32 @@
+/*
+ * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor):
+ * um consumer real replica as 3 primeiras linhas no css dele.
+ */
+@import "tailwindcss";
+/* Primitivos da marca kids — o host REAL (community-kids) os importa, então sem
+   isto o playground mostraria só os valores de reserva e o QA visual mentiria.
+   Caminho relativo de propósito: não cria dependência de package no Molda. */
+@import "../../ui/src/styles/theme-kids.css";
+@import "../src/styles/molda.css";
+
+@source "../src";
+
+/* Simula o next/font do host (lá as famílias têm nome hasheado; aqui são as
+   literais das webfonts carregadas no index.html). */
+:root {
+  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Resets de APP standalone — fora do CSS exportado pelo package. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

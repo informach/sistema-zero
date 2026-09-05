@@ -64,6 +64,14 @@ const EnvSchema = z.object({
   OAUTH_STATE_TTL_MINUTES: z.coerce.number().int().positive().default(10),
   // Nome de exibição no From das respostas (`From: <nome> <contato@…>`).
   HELPDESK_FROM_NAME: z.string().min(1).default('Sistema Zero'),
+  // O serviço atende uma única caixa compartilhada. O callback OAuth confere o
+  // e-mail retornado por `users.getProfile` antes de persistir credenciais.
+  HELPDESK_MAILBOX_ADDRESS: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('HELPDESK_MAILBOX_ADDRESS deve ser um e-mail válido')
+    .default('contato@sistemazero.com.br'),
 
   // ── Sync do Gmail (gmail-sync-worker) ────────────────────────────────────────
   GMAIL_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(45_000),
@@ -91,6 +99,18 @@ const EnvSchema = z.object({
   // Clamp da thread no prompt (caracteres) — e-mails longos não estouram contexto.
   AI_MAX_THREAD_CHARS: z.coerce.number().int().positive().default(24_000),
 
+  // ── Aviso por e-mail da resposta do PORTAL (gateway → messaging, consumer HMAC
+  // `helpdesk`) — grupo ATÔMICO: qualquer um ausente → a resposta no portal segue
+  // funcionando, só o e-mail de aviso não sai (boot loga `messaging.not_configured`)
+  GATEWAY_URL: z.string().url().optional(),
+  // MESMO valor do HELPDESK_HMAC_SECRET do gateway do mesmo ambiente.
+  HELPDESK_HMAC_SECRET: z.string().min(16).optional(),
+  S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+  // Origens PÚBLICAS das áreas do aluno — montam o link do aviso (mesmos nomes
+  // usados pelo auth e pelo members).
+  COMMUNITY_URL: z.string().url().optional(),
+  KIDS_COMMUNITY_URL: z.string().url().optional(),
+
   // Retenção e limpeza periódica (oauth_states vencidos).
   RETENTION_CLEANUP_INTERVAL_MS: z.coerce
     .number()
@@ -113,6 +133,8 @@ export function gmailConfig(env: Env): {
   redirectBaseUrl: string
   /** URL do app (destino dos 302 do callback). */
   appUrl: string
+  /** Caixa única autorizada para a fila de atendimento. */
+  mailboxAddress: string
 } | null {
   if (
     !env.GOOGLE_CLIENT_ID ||
@@ -129,6 +151,7 @@ export function gmailConfig(env: Env): {
     encKeyBase64: env.HELPDESK_TOKEN_ENC_KEY,
     redirectBaseUrl: env.OAUTH_PUBLIC_BASE_URL.replace(/\/$/, ''),
     appUrl: env.HELPDESK_APP_URL.replace(/\/$/, ''),
+    mailboxAddress: env.HELPDESK_MAILBOX_ADDRESS,
   }
 }
 
@@ -141,6 +164,32 @@ export function aiConfig(env: Env): {
   const model = env.OPENROUTER_HELPDESK_MODEL ?? env.OPENROUTER_MODEL
   if (!env.OPENROUTER_API_KEY || !model) return null
   return { apiKey: env.OPENROUTER_API_KEY, model, referer: env.OPENROUTER_REFERER ?? null }
+}
+
+/**
+ * Config do aviso por e-mail das respostas do portal ou null (grupo atômico —
+ * sem ele a resposta continua indo para a conversa; só o e-mail não sai).
+ */
+export function portalNotifyConfig(env: Env): {
+  gatewayUrl: string
+  hmacSecret: string
+  timeoutMs: number
+  urls: { adult: string; kids: string }
+} | null {
+  if (
+    !env.GATEWAY_URL ||
+    !env.HELPDESK_HMAC_SECRET ||
+    !env.COMMUNITY_URL ||
+    !env.KIDS_COMMUNITY_URL
+  ) {
+    return null
+  }
+  return {
+    gatewayUrl: env.GATEWAY_URL,
+    hmacSecret: env.HELPDESK_HMAC_SECRET,
+    timeoutMs: env.S2S_TIMEOUT_MS,
+    urls: { adult: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL },
+  }
 }
 
 /** Valida e tipa as variáveis de ambiente no boot (fail-fast). */

@@ -153,6 +153,14 @@ describe('AssetsPanel — seção "Modelos 3D"', () => {
     expect(screen.queryByText('📦 Enviar modelo 3D')).toBeNull()
   })
 
+  it('o kit Jogo 3D (iniciante) também consome .glb/.hdr desde os blocos do Molda: botão presente', () => {
+    const project = createEmptyProject('p1', 'Meu Jogo')
+    project.installedExtensions = [{ id: 'game-3d', version: '0.30.0', installedAt: 0 }]
+    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    render(<AssetsPanel open onClose={() => {}} />)
+    expect(screen.getByText('📦 Enviar modelo 3D')).not.toBeNull()
+  })
+
   it('asset 3D ÓRFÃO continua listado e só é excluído após confirmação', () => {
     // O gate é só da porta de ENTRADA: esconder a seção criaria um órfão
     // invisível comendo a cota, sem como a criança excluir.

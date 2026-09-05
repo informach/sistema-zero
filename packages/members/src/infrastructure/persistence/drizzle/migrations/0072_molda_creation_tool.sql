@@ -1,0 +1,12 @@
+-- "Guardado na sua conta" ganha o MOLDA (a oficina 3D: modelos .glb, texturas .png, céus .hdr).
+-- O enum `creation_tool` recebe o terceiro valor, no FIM (espelho de `CREATION_TOOLS`).
+--
+-- ⚠️ ADD VALUE só ADICIONA o rótulo; nada nesta migração o ESCREVE. O Postgres proíbe escrever
+-- um valor de enum adicionado na MESMA transação (medido na 0065: literal, cast e subquery do
+-- pg_enum, os três recusados), e o drizzle roda todas as pendentes numa transação só.
+--
+-- ⚠️ Subir o CÓDIGO antes desta migração dá `invalid input value for enum` na reserva do Molda
+-- (a forma do incidente de 03/08). O preDeploy roda `db:migrate` antes do boot, então a ordem
+-- está garantida; e o members sobe ANTES do kids (sem o valor, a reserva `molda` falha e a
+-- fila do navegador retenta).
+ALTER TYPE "members"."creation_tool" ADD VALUE IF NOT EXISTS 'molda';

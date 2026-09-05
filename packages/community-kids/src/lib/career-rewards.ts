@@ -31,9 +31,9 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
       'Você cria os seus jogos quando quiser, com as ferramentas dos cursos que terminou, e desenha os seus personagens no Pinta.',
   },
   hacker: {
-    title: 'Pensa + Zappy',
+    title: 'Pensa + Zappy + Molda',
     description:
-      'O Pensa te ajuda a planejar a ideia do jogo, e o Zappy fica do seu lado dentro do Estúdio.',
+      'O Pensa te ajuda a planejar a ideia do jogo, o Zappy fica do seu lado dentro do Estúdio, e o Molda abre a sua oficina 3D.',
   },
   explorer: {
     title: 'Um posto novo no mapa',

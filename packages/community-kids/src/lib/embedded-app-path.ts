@@ -1,10 +1,10 @@
 /**
- * Rotas dos apps de criação embarcados (Estúdio, Pensa e Pinta). São as telas em
- * que um app inteiro ocupa a área útil — largura E altura totais, sem cabeçalho
- * do host — e por isso ganham tratamento próprio no `MainContainer` e o puxador
- * que esconde o menu lateral (`FocusModeToggle` na variante `edge`).
+ * Rotas dos apps de criação embarcados (Estúdio, Pensa, Pinta e Molda). São as
+ * telas em que um app inteiro ocupa a área útil — largura E altura totais, sem
+ * cabeçalho do host — e por isso ganham tratamento próprio no `MainContainer` e o
+ * puxador que esconde o menu lateral (`FocusModeToggle` na variante `edge`).
  */
-export const EMBEDDED_APP_PREFIXES = ['/estudio', '/pensa', '/pinta'] as const
+export const EMBEDDED_APP_PREFIXES = ['/estudio', '/pensa', '/pinta', '/molda'] as const
 
 /**
  * `true` nas rotas dos apps embarcados, INCLUSIVE sub-rotas (`/estudio/pro/<id>`).

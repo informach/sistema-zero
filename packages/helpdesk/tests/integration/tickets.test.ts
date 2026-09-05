@@ -35,6 +35,69 @@ describe('tickets', () => {
     expect(found.items[0].subject).toBe('Reembolso do pedido')
   })
 
+  it('filtra a fila por situação de SLA e por atribuição, preservando a prioridade operacional', async () => {
+    const { app, repos } = buildTestApp()
+    const now = Date.now()
+    const breached = makeTicket({
+      subject: 'Já passou da meta',
+      firstMessageAt: new Date(now - 13 * 60 * 60_000),
+      lastInboundAt: new Date(now - 13 * 60 * 60_000),
+      lastMessageAt: new Date(now - 13 * 60 * 60_000),
+    })
+    const risk = makeTicket({
+      subject: 'Perto da meta',
+      firstMessageAt: new Date(now - 10 * 60 * 60_000),
+      lastInboundAt: new Date(now - 10 * 60 * 60_000),
+      lastMessageAt: new Date(now - 10 * 60 * 60_000),
+    })
+    const assigned = makeTicket({
+      subject: 'Já atribuído',
+      assignedTo: '33333333-3333-4333-8333-333333333333',
+      assignedToName: 'Rafa',
+      firstMessageAt: new Date(now - 60 * 60_000),
+      lastInboundAt: new Date(now - 60 * 60_000),
+      lastMessageAt: new Date(now - 60 * 60_000),
+    })
+    const resolvedUnassigned = makeTicket({
+      subject: 'Resolvido mas sem responsável',
+      status: 'resolved',
+      firstMessageAt: new Date(now - 60 * 60_000),
+      lastInboundAt: new Date(now - 60 * 60_000),
+      lastMessageAt: new Date(now - 60 * 60_000),
+    })
+    await Promise.all([
+      repos.tickets.create(breached),
+      repos.tickets.create(risk),
+      repos.tickets.create(assigned),
+      repos.tickets.create(resolvedUnassigned),
+    ])
+
+    const attention = await request(app, 'GET', '/helpdesk/tickets?sla=attention')
+    const attentionBody = await json(attention)
+    expect(attentionBody.items.map((ticket: { id: string }) => ticket.id)).toEqual([
+      breached.id,
+      risk.id,
+    ])
+    expect(
+      attentionBody.items.map((ticket: { sla: { state: string } }) => ticket.sla.state),
+    ).toEqual(['breached', 'at_risk'])
+
+    const unassigned = await request(app, 'GET', '/helpdesk/tickets?assignment=unassigned')
+    const unassignedBody = await json(unassigned)
+    expect(unassignedBody.items.map((ticket: { id: string }) => ticket.id)).toEqual([
+      breached.id,
+      risk.id,
+      resolvedUnassigned.id,
+    ])
+
+    const queue = await request(app, 'GET', '/helpdesk/tickets?queue=unassigned')
+    expect(queue.status).toBe(200)
+    expect((await json(queue)).items.map((ticket: { id: string }) => ticket.id)).toEqual([
+      breached.id,
+      risk.id,
+    ])
+  })
+
   it('detalhe traz o ticket com a thread de mensagens', async () => {
     const { app, repos } = buildTestApp()
     const ticket = makeTicket()
@@ -100,6 +163,25 @@ describe('tickets', () => {
     })
     expect(stale.status).toBe(409)
     expect((await json(stale)).error.code).toBe('CONCURRENCY_CONFLICT')
+  })
+
+  it('grava a data de resolução uma vez e a limpa quando o ticket reabre', async () => {
+    const { app, repos } = buildTestApp()
+    const ticket = makeTicket()
+    await repos.tickets.create(ticket)
+
+    const resolved = await request(app, 'PATCH', `/helpdesk/tickets/${ticket.id}`, {
+      body: { status: 'resolved', version: 0 },
+    })
+    expect(resolved.status).toBe(200)
+    const resolvedAt = (await repos.tickets.byId(ticket.id))?.resolvedAt
+    expect(resolvedAt).toBeInstanceOf(Date)
+
+    const reopened = await request(app, 'PATCH', `/helpdesk/tickets/${ticket.id}`, {
+      body: { status: 'open', version: 1 },
+    })
+    expect(reopened.status).toBe(200)
+    expect((await repos.tickets.byId(ticket.id))?.resolvedAt).toBeNull()
   })
 
   it('remover categoria manual (null) destrava a reclassificação', async () => {

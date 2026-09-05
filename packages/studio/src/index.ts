@@ -126,6 +126,12 @@ export type {
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 export type {
+  StudioMoldaCreationKind,
+  StudioMoldaCreationSummary,
+  StudioMoldaImportResult,
+  StudioMoldaLibraryAdapter,
+} from './studio/molda-library'
+export type {
   StudioPintaDrawingSummary,
   StudioPintaImportResult,
   StudioPintaLibraryAdapter,

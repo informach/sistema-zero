@@ -1696,6 +1696,24 @@ export const gameThreeDBlocks = [
     tooltip: 'Um grupo vazio para montar um modelo com várias peças (use "adicionar ao modelo").',
   },
   {
+    // Modelo de VERDADE (.glb trazido do Molda ou enviado): nasce como um cubo de
+    // reserva e vira o arquivo quando o parse resolve (o `runProject` é síncrono).
+    type: 'sz_g3d_create_model_file',
+    placement: 'start-only-command',
+    message0: 'Criar o objeto %1 com o modelo %2 na cena %3 tamanho %4',
+    args0: [
+      { type: 'field_input', name: 'NAME', text: 'nave' },
+      { type: 'field_asset_picker', name: 'MODEL', text: 'modelo', kind: '3d', filter: 'model3d' },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+      { type: 'input_value', name: 'SIZE', check: 'JSValue' },
+    ],
+    inputsInline: true,
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Põe na cena um modelo 3D de verdade (arquivo .glb que você trouxe do Molda ou enviou no painel Imagens). Ele nasce como um cubo e ganha a forma do arquivo assim que carrega; o tamanho é o lado maior, em blocos. Mover, girar, colidir e pintar funcionam nele.',
+  },
+  {
     type: 'sz_g3d_add_to_model',
     placement: 'start-only-command',
     message0: 'Adicionar %1 ao modelo %2',
@@ -1889,6 +1907,25 @@ export const gameThreeDBlocks = [
     previousStatement: 'JSStmt',
     nextStatement: 'JSStmt',
     tooltip: 'Pinta o fundo com um degradê do topo até o horizonte (céu).',
+  },
+  {
+    type: 'sz_g3d_sky_photo',
+    placement: 'start-only-command',
+    message0: 'Usar o céu 360° %1 na cena %2',
+    args0: [
+      {
+        type: 'field_asset_picker',
+        name: 'PHOTO',
+        text: 'ceu',
+        kind: '3d',
+        filter: 'environment3d',
+      },
+      { type: 'field_name_picker', name: 'WORLD', text: 'cena', kind: 'g3d-world' },
+    ],
+    previousStatement: 'JSStmt',
+    nextStatement: 'JSStmt',
+    tooltip:
+      'Troca o fundo pelo céu 360° (arquivo .hdr que você trouxe do Molda ou enviou). Ele também ilumina a cena e dá reflexo aos objetos.',
   },
   {
     type: 'sz_g3d_set_shadows',
@@ -2217,6 +2254,7 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
       'sz_g3d_create_plane',
       'sz_g3d_create_torus',
       'sz_g3d_create_model',
+      'sz_g3d_create_model_file',
       'sz_g3d_add_to_model',
       'sz_g3d_set_visible',
       'sz_g3d_remove_object',
@@ -2241,6 +2279,7 @@ const SUBCAT_DEFINITIONS: { name: string; types: string[] }[] = [
       'sz_g3d_add_point_light',
       'sz_g3d_set_fog',
       'sz_g3d_set_sky',
+      'sz_g3d_sky_photo',
       'sz_g3d_set_shadows',
     ],
   },
@@ -2395,6 +2434,7 @@ const txtShadow = (text: string) => ({ shadow: { type: 'sz_val_text', fields: { 
 const G3D_SOCKET_SHADOWS: Record<string, Record<string, unknown>> = {
   sz_g3d_set_camera: { X: numShadow(4), Y: numShadow(3), Z: numShadow(6) },
   sz_g3d_create_box: { SIZE: numShadow(1) },
+  sz_g3d_create_model_file: { SIZE: numShadow(1) },
   sz_g3d_create_sphere: { RADIUS: numShadow(0.5) },
   sz_g3d_create_block: { W: numShadow(10), H: numShadow(0.5), D: numShadow(50) },
   sz_g3d_set_position: { X: numShadow(0), Y: numShadow(0), Z: numShadow(0) },

@@ -251,8 +251,10 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   controle de expansão só aparece quando a lista compacta tem overflow real; enquanto expandida,
   permanece visível para permitir recolher a faixa.
   Efeito colateral aceito: no PERSONAGEM
-  animado a coluna direita (prévia 244 + camadas + cores ≈ 700px) rola por dentro; no cenário
-  cabe inteira (626px).
+  animado a coluna direita (prévia 254 + camadas + cores ≈ 700px) rola por dentro; no cenário
+  cabe inteira (626px). ⚠️ Esse "rola por dentro" ficou FALSO entre o `overflow-hidden` do
+  `Panel` e 04/09/2026: os painéis ENCOLHIAM em vez de a coluna rolar (a Prévia perdia a fileira
+  de botões, medido 204 de 254 px: a fileira de botões de 44 px sumia) — ver "A coluna direita nunca corta um painel".
 - **Responsivo (07/2026)**: `EditorScreen` usa `useMediaQuery('(min-width: 768px)')`
   (`editor/useMediaQuery.ts`, espelho do pensa) — em tela ESTREITA a coluna lateral do sprite
   (prévia + animações, `SpriteSidePanel`) vira FAIXA horizontal rolável abaixo do palco (a
@@ -282,8 +284,16 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
   e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto). `disclosure` é controlado
   e põe o chevron em um botão separado (o título da paleta continua livre para abrir seu menu).
-  Na coluna direita do vetor, Prévia/Camadas/Cores/Aparência são accordions independentes; fechar a
-  Prévia também pausa seu loop de animação.
+  Na coluna direita do vetor, Prévia/Camadas/Cores/Aparência são accordions independentes com uma
+  régua de ENCAIXE por cima (ver "A coluna direita nunca corta um painel"); a Prévia recolhida
+  vira uma MINIATURA VIVA no cabeçalho (`collapsedActions`) e o loop não pausa. Com `disclosure`,
+  o TÍTULO inteiro é o botão de abrir/recolher (nome acessível = o título; o chevron ao lado
+  mantém o "Mostrar/Recolher X", então nunca há dois botões com o mesmo nome), e RECOLHIDO o
+  painel esconde as `actions` (a lixeira e o "+" da paleta agiam num corpo desmontado) e mostra o
+  `ariaLabel` como título ("Cores", não "Arcade"). ⚠️ A `<section>` do `Panel` é `shrink-0` desde
+  04/09/2026: o `min-h-0` explícito e o `overflow-hidden` zeram o mínimo automático do item flex,
+  e sem isso o painel encolhia até quase sumir (8 px medidos) numa coluna apertada em vez de a
+  coluna rolar.
 - **CSS**: tokens `--color-pin-*` em `@theme` sob `[data-pinta-theme]` (claro default kids).
   Cor de chip por PAPEL (`pin-kind-*`, só emoji) + selinho de ESTILO (`pin-style-*`, carrega
   TEXTO branco — ⚠️ manter L ≤ ~0.55 nos DOIS temas). SEM `@import "tailwindcss"`, SEM `@source`,
@@ -469,7 +479,19 @@ Mac, extras do pedaço colado, Caneta, curadoria).
     pelo `floatBitmap` local, SEM tocar na área de transferência (o herói copiado noutro desenho não
     some porque a criança duplicou um detalhe). Formas no clipboard → toast `clipboard.vectorIntoPixel`.
     Sem a ferramenta `select` na curadoria da aula, colar/duplicar/Ctrl+A não fazem nada.
-  - Vetor (`VectorEditorScope`): shapes do MESMO tamanho de doc colam +12,+12 como sempre; de outro
+  - Vetor (`VectorEditorScope`): shapes do MESMO tamanho de doc colam com **`offsetInsideDoc`**
+    (`vectorTools.ts`, 03/09/2026), a MESMA régua do Duplicar. Por eixo, os candidatos em ordem:
+    +12; −12; a FOLGA que sobra até a borda da frente; a folga até a borda de trás (12 é medida
+    de cenário: num personagem de 32 px um corpo de 16 no meio não tem ±12 para lado nenhum, e
+    numa peça de 16 px nem cabe); sem folga nenhuma, +12 (parcialmente fora, mas visível). E o
+    primeiro par cujo destino NÃO coincide com a caixa de uma forma ou a união de um grupo que já
+    existe (`occupiedBoundsOf`) vence: sem isso, num papel pequeno a régua oscilava entre dois
+    lugares e a SEGUNDA cópia nascia exatamente em cima da original ("duplicar não fez nada"). A
+    régua existe porque o +12 cego jogava uma forma perto da borda para FORA do papel (o
+    `<svg>` aninhado clipa: "Ctrl+V nasce fora do papel", relato dela). ⚠️ A caixa é a do
+    `shapeBounds` (sem rotação e sem o contorno): forma girada ainda pode nascer com uma pontinha
+    fora. Testes: `vector/vectorTools.test.ts` (8 casos) + o do personagem pequeno em
+    `vectorUi.test.tsx`; de outro
     tamanho, `fitPastedShapes` (`vectorTools.ts`) encolhe se não couber e centraliza, preservando
     grupos (≠ `shapesForInsert`, que achata num grupo só). Pixel no clipboard → FIGURA pelos
     helpers do `insertFromAsset` (`resolveInsertSource` + `imageShapeForInsert`); sem canvas/acima
@@ -1523,6 +1545,56 @@ já saberemos o que é preenchimento e o que é contorno".
   `vectorUi.test.tsx` (13 casos) e o caso curado em `toolCurationUi.test.tsx`. QA em navegador
   no playground (:5199): as duas pontas, ponta mais perto num degradê em pé, X/Esc, troca de
   ferramenta, um undo, 375px.
+- ⭐⭐ **A janela do Degradê INSPECIONA e edita a FORMA selecionada, não o estilo vigente
+  (`inspectedFill`, 03/09/2026)**: relato dela em produção, "a cor do fim não recebe a cor do
+  conta-gotas, ela substitui a primeira". O fio do botão sempre mandou a cor para a ponta certa;
+  o defeito era a FONTE: `currentGradient()` lia `style.fill` e `applyGradient` espalhava
+  `{...currentGradient(), ...partial}` em todas, então editar UMA ponta reescrevia a OUTRA a
+  partir do estilo, e o estilo descola da seleção em quatro casos reais com o mesmo sintoma:
+  seleção com VÁRIAS formas (grupo: o efeito de sincronização só rodava com UMA forma);
+  conta-gotas da CAIXA antes de abrir (`adoptStyle` não commita, o efeito não roda); LINHA
+  (`applyStyle` pula o fill, e o efeito ressincronizava o estilo pela linha, perdendo o degradê);
+  TRANCADA (o estilo mudava antes de a seleção recusar). Agora:
+  - `inspectedShape` = a primeira forma LIVRE com preenchimento, na ordem do documento (a de
+    baixo; linha e figura não contam; trancada só quando a seleção inteira está trancada: a
+    janela mostra o que ela PODE editar, porque `applyStyle` só escreve nas livres). Sem seleção,
+    o estilo. `inspectedFill()`/`currentGradient()` alimentam a janela (amostras, `active` dos
+    tipos) e a amostra do botão no painel.
+  - ⭐ **`applyGradient` edita CADA forma livre em cima do PRÓPRIO degradê** (sólida vira degradê
+    a partir da própria cor; o começo de uma nunca vira o da outra) e o estilo em cima do
+    inspecionado. Forma que já tem exatamente esse degradê sai pela MESMA referência: é o "pegar
+    a mesma cor que já está na ponta" sem desfazer vazio, forma a forma (o guard saiu da janela
+    porque olhava só a inspecionada e ENGOLIA a cor nas outras). `clearGradient` ("Tirar o
+    degradê") idem: cada uma volta para o começo DELA; `hasGradient` deixa o botão vivo se ALGUMA
+    forma com preenchimento tem degradê (trancada conta: o clique leva ao toast do cadeado, que
+    explica; desligado seria botão morto).
+  - O estilo sincroniza da inspecionada também na seleção com VÁRIAS (`styleSource = single ??
+    inspectedShape`): senão o slot da caixa e a paleta mostravam a cor da forma ANTERIOR enquanto
+    o botão do Degradê mostrava a do grupo. Linha e figura não recebem `fill` no `applyStyle` nem
+    apagam o fill do estilo no efeito (uma figura tem `fill: 'none'`, e selecioná-la matava o
+    degradê recém-montado para a próxima forma e gravava um `<linearGradient>` morto no export).
+  - `applyStyle`/`applyGradient`/`clearGradient` checam o cadeado ANTES do `setStyle`
+    (`freeForStyle`) e `updateFree` não commita quando o updater devolve as mesmas referências
+    (sem desfazer VAZIO). ⚠️ Custo aceito: com a seleção inteira trancada (o painel Camadas
+    seleciona trancada de propósito), a paleta não arma a cor da PRÓXIMA forma; o toast do
+    cadeado explica e Esc solta a seleção. O conta-gotas da caixa segue "adotar estilo" (Scratch)
+    e o `swapFillStroke` segue descartando o `to`.
+  - Testes (describe "pegar uma cor do desenho" em `vectorUi.test.tsx`): grupo (cada forma guarda
+    o próprio começo + o slot da caixa concorda), conta-gotas da caixa, linha, trancada, trancada
+    + livre, mesma cor numa ponta com várias, "Tirar o degradê" com várias, figura.
+  ⭐ **Na captura, a PALETA (e a cor livre do "+") também é fonte** (03/09/2026): ela testava
+  clicando numa cor da paleta com a captura ligada, e o clique aplicava a cor SÓLIDA na forma
+  selecionada (apagando o degradê) enquanto a captura seguia aberta. `applyChannelColor` em
+  captura chama `endColorPick(hex)` e sai; "Sem cor" toasta `pickColorNone` (clique mudo não
+  ensina). A dica da faixinha diz "Toque numa forma ou numa cor" ("paleta" não aparece em lugar
+  nenhum da tela; a seção se chama Cores) e o `role=status` do palco a anuncia junto. Enquanto a
+  captura está ligada, os quadradinhos do painel dizem "Pegar esta cor: <nome>" (o canal não
+  vale ali), sem `aria-pressed` (o destaque é do estilo), com a mira do palco e um anel na grade.
+  ⚠️ O "+" confirmado na captura fecha no MESMO commit em que o Degradê reabre, e o React roda
+  todos os cleanups antes de todos os efeitos: o "+" devolvia o foco ao seu botão e o Degradê
+  guardava o "+" como acionador (ao fechar, o foco caía no painel de Cores). O `Dialog` ganhou
+  `returnFocusTo` e o Degradê aponta para o próprio botão. Testes: paleta como fonte (rótulos,
+  "Sem cor", azul escuro) e o caso do "+".
 - ⭐ **Paleta do vetor = espelho do `PaletteBar`**: sem chips (o canal é dito pelos dois
   quadradinhos da caixa), título = NOME da paleta com dropdown (Arcade/Doces/Lápis e carvão),
   lixeira + "+" no cabeçalho, grade 5/linha com "sem cor" na frente. Ordem: paleta escolhida (15) →
@@ -1542,7 +1614,66 @@ já saberemos o que é preenchimento e o que é contorno".
   menu aberto traz 3 a mais.
 - Medido no playground (1366×768, vector-sprite com Spritesheet + seleção): página não rola
   (768=768), faixa 54px, caixa travada na altura da coluna com as cores à vista, coluna da direita
-  rolando por dentro. Em 375×812: faixa ausente, barra flutuante presente.
+  rolando por dentro (⚠️ esse "rolando por dentro" era falso: os painéis encolhiam; ver o bullet
+  seguinte). Em 375×812: faixa ausente, barra flutuante presente.
+- ⭐⭐ **A coluna direita nunca corta um painel (04/09/2026)**: relato dela, "a prévia está
+  ficando cortada", com a proposta de a Aparência nascer recolhida, abrir um painel recolher
+  outro e painel que cresce ter rolagem interna. Medido em 1366×768: a coluna (`min-h-0
+  overflow-y-auto`) NUNCA rolava porque o `Panel` é `min-h-0 overflow-hidden` (o `overflow-hidden`
+  zera o mínimo automático do item flex) e a Prévia era o ÚNICO filho sem `shrink-0`: ela
+  absorvia o déficit inteiro e media 8 px (4 com uma forma selecionada). No pixel os três
+  encolhiam juntos (Prévia 204 de 248: a fileira de botões sumia). Causa raiz: `shrink-0` na raiz
+  do `Panel` (nenhum consumidor dependia de encolher: todos vivem em colunas que rolam ou em
+  fileiras de largura fixa) e `.pin-scroll-y` nas duas colunas direitas (a barra clássica do
+  Windows roubaria 17 px e o `overflow-x-hidden` cortaria a borda direita dos painéis `w-68`).
+  Em cima disso, **accordion POR MEDIDA** no `VectorRightColumn` (decisões dela): ao abrir o
+  desenho e depois de cada ABRIR, se `scrollHeight > clientHeight + 1`, fecha o painel aberto há
+  mais tempo (LRU, `pickPanelToCollapse` em `vector/rightColumnFit.ts`), um por passada de
+  `useLayoutEffect`, até caber; nunca o recém-aberto (vai para o fim da lista) nem o último que
+  sobrou; só quem está aberto E presente no DOM conta (Prévia só no personagem, Camadas só com
+  forma: fechar ausente não ganha altura e o faria nascer recolhido). Ordem de sacrifício inicial
+  `appearance → layers → preview → colors` (Aparência primeiro, pedido dela; Cores por último
+  porque os slots da caixa só trocam o canal: sem o painel não se escolhe cor). Recolher à mão
+  NÃO cascateia; crescer (Camadas ganhando linhas, Aparência com texto) e redimensionar a janela
+  também não (nem reabre o que a régua fechou): aí a coluna rola. ⚠️ Num notebook de 768 px a
+  coluna de um personagem tem ~370-430 px: cabe UM painel aberto (o de Cores, 258, + 3 cabeçalhos
+  de 50 + 3 vãos de 8 = 432), então ali o accordion vira "um por vez"; só tirar a Prévia da
+  coluna (rodapé, como na tela estreita) mudaria a conta — adiado por decisão dela. Em happy-dom
+  (0/0) a régua é inerte e tudo nasce aberto; os testes a dirigem com o stub de
+  `testing/rightColumnStub.ts` (`stubColumn` vivo na instância e `withRightColumnPrototypeStub`
+  para o encaixe no MOUNT, patch no protótipo condicionado ao atributo e restaurado no `finally`;
+  aberto = 250, recolhido = 50, vãos de 8 — o modelo NÃO sabe que a Aparência cresce com os
+  sub-painéis): `vectorUi.test.tsx` (describe "a coluna da direita cabe na tela": LRU +
+  recém-aberto protegido em três passadas, ausente não é vítima e nasce aberto, crescer e
+  `resize` não fecham, anúncio, título que abre/recolhe, Cores recolhida sem botões, captura de
+  cor), `vectorSpriteUi.test.tsx` (regressão do `shrink-0`; mount mudo + miniatura),
+  `animationUi.test.tsx` (pixel), `rightColumnFit.test.ts` (puro: `pickPanelToCollapse` e
+  `touchRecent`). Fora do escopo: tela estreita (`VectorPanelsDisclosure`), accordion no pixel,
+  lembrar painéis entre sessões, reabrir ao crescer a janela, rolagem interna própria da
+  Aparência (um `max-h` obrigaria o wrapper a encolher e recriaria o defeito; o caso raro de
+  ~570 px com texto rola a coluna).
+  **Full review do lote (04/09/2026, 3 revisores)**, corrigido no mesmo dia: (1) em CAPTURA de
+  cor a Aparência (dona do botão Degradê, que a janela reabre focando) e as Cores (fonte da
+  captura) não são vítimas (`colorPick` do escopo); (2) coluna sem layout (`clientHeight` 0) não
+  é "estourou" (a régua desarma sem fechar nada); (3) a régua só arma quando o painel de fato
+  abre (`!open[key]`, o mesmo guard do updater — armar num no-op deixaria a régua pendurada para
+  o próximo recolher à mão); (4) o leitor de tela ouve quem a régua recolheu depois de um abrir
+  DA CRIANÇA (`role=status` sr-only que monta VAZIO, `COPY.panel.autoCollapsed`: "Recolhi
+  Camadas e Cores para tudo caber na tela."; o mount é mudo); (5) foco dentro do painel que vai
+  recolher vai para o chevron dele (Safari não foca botão no toque: cairia no body); (6) a
+  Prévia recolhida virou MINIATURA VIVA no cabeçalho (em 768 px ela nasce recolhida e a
+  animação sumia e parava sem aviso); (7) `Panel` com disclosure: título inteiro abre/recolhe,
+  recolhido esconde as `actions` (menu/lixeira/"+" das Cores agiam num corpo desmontado — a
+  lixeira APAGAVA cor invisível) e mostra o `ariaLabel`; (8) degradê no pé das duas colunas
+  (`useScrollMore`, irmão absoluto FORA do rolável para não entrar no `scrollHeight` da régua):
+  com a barra escondida, no pixel em 768 px o painel de Cores fica inteiro abaixo da dobra e a
+  única pista era um painel cortado; (9) as listas internas (Camadas/Cores dos dois editores)
+  perderam o `overscroll-contain`, que impedia a roda de chegar à coluna quando a lista chegava
+  ao fim; (10) `.pin-scroll-x` nas fileiras estreitas (`SpritePanelDisclosure` e
+  `VectorPanelsDisclosure`): o `LayerPanel` `w-68` não encolhe mais e a barra clássica somaria
+  17 px acima do palco. Aceitos e documentados: cruzar o breakpoint desmonta a coluna (tudo nasce
+  de novo); recolher a Aparência leva os sub-painéis condicionais junto (fonte/alinhamento/
+  cantos); o pixel segue sem chevrons (assimetria visível, decisão dela).
 
 ## Colisão por peça: sólido × plataforma (one-way) — lote MapperMate F2 (18/07)
 
@@ -2410,7 +2541,23 @@ por px reais.
   + 6 MÉDIOS + 5 BAIXOS corrigidos — ver as duas seções dedicadas. QA playground feito
   (inclui truncate do menu e o desarme do Gerenciar medidos no navegador); pende QA integrado
   no kids com nuvem.
-- **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, não commitado)**: ver
+- **Degradê inspeciona a forma selecionada + cópia dentro do papel (03/09/2026, staging
+  `e89fb0d6` + o lote do full review)**: dois relatos dela em produção ("Cor do fim substitui a
+  primeira"; "Ctrl+V nasce fora do papel"). Ver os bullets `inspectedFill` (conta-gotas do
+  degradê) e `offsetInsideDoc` (área de transferência). Full review no mesmo dia (3 revisores):
+  régua da cópia que ainda jogava formas médias para fora em papel pequeno e punha a SEGUNDA
+  cópia em cima da original (ALTO); janela usando a primeira forma como molde da seleção inteira
+  e "Tirar o degradê" morto num grupo (MÉDIOS); trancada como inspetora, figura, paleta muda na
+  captura, foco do "+" (BAIXOS). Suíte (1175) + typecheck + biome verdes; QA em navegador no
+  playground dos consertos.
+- **A coluna direita nunca corta um painel (04/09/2026, staging `329ab2e9` + o lote do full
+  review, no PR #155)**: relato dela ("a prévia está ficando cortada"). `shrink-0` no `Panel` +
+  `.pin-scroll-y` nos DOIS editores e accordion por MEDIDA no vetor (Aparência recolhe primeiro,
+  Cores por último, só ao abrir). Full review no mesmo dia (3 revisores): captura de cor
+  protegida, coluna sem layout, anúncio ao leitor de tela, miniatura viva da Prévia, título que
+  abre/recolhe, Cores recolhida sem botões mortos, degradê no pé das colunas. Ver o bullet em
+  "Ajustes do VETOR". Suíte + typecheck + biome verdes; QA em navegador no playground.
+- **Espessuras 0,5..3 + conta-gotas na janelinha do degradê (02/09/2026, EM PRODUÇÃO no PR #154)**: ver
   "Espessuras do contorno" e "Conta-gotas na janelinha de cor do degradê" nas seções do vetor.
   Full review no mesmo dia (3 revisores): 3 MÉDIAS corrigidas (request velha ao reabrir o Degradê
   na captura; forma sem cor roubando o toque; foco perdido ao reabrir) + baixas. Suíte (1154) +

@@ -92,6 +92,20 @@ ver "Full review do Clube dos Criadores" abaixo). Os
 helpers PUROS de anexo (`lib/hub-attachments`: allowlist de MIME, limites, `sanitizeFilename`,
 `extForMime`, `isInlineKind`) têm cobertura em `tests/hub-attachments.test.ts`.
 
+**Portal de atendimento (08/2026):** `createHelpdeskRoutes` em `routes/helpdesk.ts` é o BFF
+compartilhado de `/api/helpdesk/portal/tickets` (lista, criação, detalhe e mensagens). Ele valida
+na borda com Zod, faz a chamada somente pelo gateway e bloqueia mutações em impersonação
+somente-leitura. Na criação ele injeta `portal` = `audience` do app (`adult`|`kids`, config
+COMPILADA — o cliente não escolhe; o Zod `.strict()` recusa `portal` no corpo): é o que decide
+o link do aviso de resposta por e-mail (`/ajuda` vs `/responsavel/ajuda`). A UI reutilizável
+`components/customer-helpdesk-portal.tsx` fala apenas com esse BFF e renderiza texto das
+mensagens como texto, nunca HTML; a resposta da equipe chega NO portal e não há polling, então o
+detalhe tem "Atualizar" (recarrega a conversa sem apagar o rascunho). A posse do chamado continua sendo
+autoritativa no Helpdesk, por `requesterAccountId` e e-mail normalizado legado. O community expõe
+os handlers diretamente; o community-kids DEVE envolver cada handler com
+`requireParentGateAccountOnly`, pois um perfil infantil herda o e-mail da conta e não pode tocar
+dados de atendimento.
+
 **Full review do Clube dos Criadores (07/2026 — EM PRODUÇÃO):** o Clube KIDS passou a mostrar
 ROSTO+NOME de todos os autores de tópico/comentário (o fórum ADULTO fica INTACTO). Mudanças de
 contrato (todas testadas + em prod):
@@ -576,6 +590,12 @@ PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../membe
 §Conversas com o professor.
 
 ## "Guardado na sua conta" — BFF das criações (18/08/2026)
+
+⚠️ A `Tool` da rota (`z.enum(['studio', 'pinta', 'molda'])`) e o `CreationToolView` de
+`lib/types.ts` são ESPELHOS de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026):
+ferramenta nova entra nos dois, senão o BFF responde 400 antes de o members ser consultado
+(`community-kids/tests/molda-conformance.test.ts` trava o lockstep). O resto da rota é genérico
+por `:tool`.
 
 `src/routes/creations.ts` (`shell.routes.creationsList/UploadUrl/Commit/DownloadUrl/Delete`), molde
 de `routes/hub.ts` (anexos): o members guarda o ÍNDICE (`/members/creations/*`) e AQUI só se assina

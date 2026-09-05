@@ -1,5 +1,15 @@
 export type TicketStatus = 'new' | 'open' | 'waiting' | 'resolved' | 'closed'
 
+/** Canal de origem do chamado. E-mail e portal compartilham a mesma fila da equipe. */
+export type TicketSource = 'email' | 'portal'
+
+/**
+ * Qual área do aluno abriu o chamado pelo portal. Espelha o `audience` do
+ * member-shell (`adult` = community, `kids` = community-kids) para o BFF passar a
+ * config compilada do app sem tabela de tradução. Nulo em ticket de e-mail e no legado.
+ */
+export type TicketPortal = 'adult' | 'kids'
+
 /** Categorias fixas do negócio (labels PT-BR ficam no front, em lockstep). */
 export type TicketCategory =
   | 'curso_acesso'
@@ -17,12 +27,6 @@ export type TicketPriority = 'baixa' | 'normal' | 'alta'
  */
 export type AiStatus = 'idle' | 'pending' | 'processing' | 'done' | 'failed' | 'skipped'
 
-/**
- * Guard de fase do envio automático: `sending` é persistido ANTES do send;
- * crash no meio → `aborted` (rascunho mantido, NUNCA reenvia).
- */
-export type AutoReplyState = 'none' | 'sending' | 'sent' | 'aborted'
-
 export type Sentiment = 'positivo' | 'neutro' | 'negativo' | 'irritado'
 export type KbCoverage = 'covered' | 'partial' | 'not_covered'
 
@@ -39,16 +43,27 @@ export interface AiClassification {
 export interface Ticket {
   id: string
   version: number
-  /** Thread do Gmail — a chave natural do agrupamento (unique). */
-  gmailThreadId: string
+  /** Thread do Gmail quando a conversa já passou por e-mail (unique quando presente). */
+  gmailThreadId: string | null
+  source: TicketSource
+  /**
+   * App que abriu o chamado pelo portal — decide o link do aviso de resposta
+   * (kids → /responsavel/ajuda; adult → /ajuda). Injetado pelo BFF, nunca lido do
+   * corpo do cliente. Nulo em e-mail e no legado (o aviso cai no adulto).
+   */
+  portal: TicketPortal | null
   subject: string
   status: TicketStatus
+  /** Instante da transição para terminal; não muda em patches/IA posteriores. */
+  resolvedAt: Date | null
   category: TicketCategory | null
   /** Categoria escolhida por humano NUNCA é sobrescrita pela IA. */
   categoryManual: boolean
   priority: TicketPriority | null
   requesterName: string | null
   requesterEmail: string
+  /** Conta autenticada que abriu o chamado no portal; nunca vem do corpo HTTP. */
+  requesterAccountId: string | null
   assignedTo: string | null
   assignedToName: string | null
   firstMessageAt: Date
@@ -65,10 +80,6 @@ export interface Ticket {
   aiNextAttemptAt: Date | null
   aiAttempts: number
   aiLastError: string | null
-  autoReplyState: AutoReplyState
-  autoRepliedAt: Date | null
-  /** Motivo de NÃO ter auto-respondido (visível na UI: "aguardando revisão"). */
-  autoReplyReason: string | null
   createdAt: Date
   updatedAt: Date
 }
@@ -91,10 +102,14 @@ export const TICKET_CATEGORIES: readonly TicketCategory[] = [
 ]
 
 /**
- * Reabertura por mensagem nova do cliente: ticket fechado/resolvido volta a
- * `open` (regra do ingest); demais estados são preservados.
+ * Reabertura por mensagem nova do cliente: ticket fechado/resolvido e ticket
+ * aguardando o cliente voltam a `open`, pois agora há trabalho para a equipe.
  */
 export function statusOnInbound(current: TicketStatus): TicketStatus {
-  if (current === 'resolved' || current === 'closed') return 'open'
+  if (current === 'waiting' || current === 'resolved' || current === 'closed') return 'open'
   return current
+}
+
+export function isTerminalTicketStatus(status: TicketStatus): boolean {
+  return status === 'resolved' || status === 'closed'
 }

@@ -1266,7 +1266,9 @@ export const challengeMonthOverrides = members.table(
 // ⚠️ As colunas que a lista MOSTRA (name, kind, item_updated_at, thumb, deleted_at,
 // revision, bytes, storage_ref) só mudam no COMMIT. A reserva escreve só em `pending_*`
 // e em `last_reserved_revision`.
-export const creationToolEnum = members.enum('creation_tool', ['studio', 'pinta'])
+// ⚠️ Espelho de `CREATION_TOOLS` (domínio): valor novo SEMPRE no fim + migration própria com
+// `ADD VALUE IF NOT EXISTS` (`0065_pinta_block`, `0072_molda_creation_tool`).
+export const creationToolEnum = members.enum('creation_tool', ['studio', 'pinta', 'molda'])
 
 /** Shape de uma parte no JSONB (espelho de `CreationPartRef` do domínio). */
 export interface CreationPartRefRow {

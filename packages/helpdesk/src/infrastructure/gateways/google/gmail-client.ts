@@ -135,9 +135,24 @@ export class GoogleGmailClient implements GmailClient {
     return parseGmailMessage(raw)
   }
 
+  async findMessageByRfc822MessageId(
+    accessToken: string,
+    messageId: string,
+  ): Promise<SentMessage | null> {
+    const normalized = messageId.replace(/^<|>$/g, '')
+    const page = await this.listMessages(accessToken, {
+      q: `rfc822msgid:${normalized}`,
+      maxResults: 1,
+    })
+    const id = page.ids[0]
+    if (!id) return null
+    const message = await this.getMessage(accessToken, id)
+    return message ? { id, threadId: message.gmailThreadId } : null
+  }
+
   async sendMessage(
     accessToken: string,
-    input: { raw: string; threadId: string },
+    input: { raw: string; threadId?: string },
   ): Promise<SentMessage> {
     let res: Response
     try {
@@ -148,7 +163,10 @@ export class GoogleGmailClient implements GmailClient {
           'content-type': 'application/json',
           accept: 'application/json',
         },
-        body: JSON.stringify({ raw: input.raw, threadId: input.threadId }),
+        body: JSON.stringify({
+          raw: input.raw,
+          ...(input.threadId ? { threadId: input.threadId } : {}),
+        }),
       })
     } catch (error) {
       throw new GmailApiError('Falha de rede na Gmail API', 0, false, { cause: error })
@@ -156,6 +174,7 @@ export class GoogleGmailClient implements GmailClient {
     if (!res.ok) throw await this.errorFrom(res, 'sendMessage')
     const data = (await res.json()) as { id?: string; threadId?: string }
     if (!data.id) throw new GmailApiError('sendMessage sem id', res.status, false)
-    return { id: data.id, threadId: data.threadId ?? input.threadId }
+    if (!data.threadId) throw new GmailApiError('sendMessage sem threadId', res.status, false)
+    return { id: data.id, threadId: data.threadId }
   }
 }

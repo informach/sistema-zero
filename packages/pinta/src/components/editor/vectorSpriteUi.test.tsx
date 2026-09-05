@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
+import { withRightColumnPrototypeStub } from '../../testing/rightColumnStub'
 
 const { PintaApp } = await import('../PintaApp')
 const { persistAsset, setPintaStorageNamespace } = await import('../../state/persistence')
@@ -53,6 +54,46 @@ describe('personagem vetorial — paridade com o pixel', () => {
     expect(document.querySelector(`section[aria-label="${COPY.vector.appearance}"]`)).toBeTruthy()
     // O painel avulso de w-56 morreu junto com a coluna dupla.
     expect(document.querySelector('.w-56')).toBeNull()
+  })
+
+  it('REGRESSÃO: nenhum painel da coluna direita encolhe; quem rola é a coluna', async () => {
+    // A Prévia era o único filho sem shrink-0 e virava uma faixa de 8px em
+    // 1366×768 ("a prévia está ficando cortada"). O `Panel` é `overflow-hidden`,
+    // que zera o mínimo automático do item flex: sem shrink-0 ele encolhe a zero.
+    await openVectorSprite()
+    const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
+    if (!column) throw new Error('coluna direita esperada')
+    expect(column.className).toContain('overflow-y-auto')
+    expect(column.className).toContain('pin-scroll-y')
+    const children = Array.from(column.children)
+    expect(children.length).toBeGreaterThanOrEqual(3)
+    for (const child of children) expect(child.classList.contains('shrink-0')).toBe(true)
+    const preview = column.querySelector(`section[aria-label="${COPY.animation.preview}"]`)
+    expect(preview?.classList.contains('shrink-0')).toBe(true)
+  })
+
+  it('ao abrir o desenho, se os painéis não cabem, fecha na ordem Aparência → Prévia e Cores fica', async () => {
+    // A coluna só existe depois do render: o stub vai no protótipo (só para a
+    // coluna marcada; aberto = 250, recolhido = 50, vãos de 8), restaurado no finally.
+    await withRightColumnPrototypeStub(300, async () => {
+      await openVectorSprite()
+      // 3 painéis presentes (sem forma não há Camadas): 766 → fecha Aparência
+      // (566) → fecha Prévia (366) → só Cores aberta: para (nunca fecha a última).
+      expect(
+        screen.getByRole('button', { name: COPY.panel.collapse(COPY.palette.title) }),
+      ).toBeTruthy()
+      expect(
+        screen.getByRole('button', { name: COPY.panel.expand(COPY.animation.preview) }),
+      ).toBeTruthy()
+      expect(
+        screen.getByRole('button', { name: COPY.panel.expand(COPY.vector.appearance) }),
+      ).toBeTruthy()
+      // O mount é MUDO para o leitor de tela (nada a anunciar antes de ela agir)...
+      expect(screen.queryByText(/para tudo caber na tela/)).toBeNull()
+      // ...e a Prévia recolhida segue VIVA no cabeçalho: a miniatura está lá.
+      const preview = document.querySelector(`section[aria-label="${COPY.animation.preview}"]`)
+      expect(preview?.querySelector('svg')).toBeTruthy()
+    })
   })
 
   it('oculta a expansão quando a timeline compacta já mostra todo o conteúdo', async () => {

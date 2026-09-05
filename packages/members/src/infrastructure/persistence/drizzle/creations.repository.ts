@@ -1,10 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
-import type {
-  CreationPartRef,
-  CreationRecord,
-  CreationSummary,
-  CreationTool,
+import {
+  type CreationPartRef,
+  type CreationRecord,
+  type CreationSummary,
+  type CreationTool,
+  emptyCountByTool,
 } from '../../../domain/creations/creation'
 import {
   classifyPintaPaletteLibraryCreation,
@@ -521,7 +522,7 @@ async function usageWith(db: Pick<Database, 'select'>, userId: string): Promise<
     .from(creations)
     .where(and(eq(creations.userId, userId), whereAliveCommitted()))
     .groupBy(creations.tool)
-  const countByTool: Record<CreationTool, number> = { studio: 0, pinta: 0 }
+  const countByTool = emptyCountByTool()
   let totalBytes = 0
   for (const row of rows) {
     countByTool[row.tool] = Number(row.count)

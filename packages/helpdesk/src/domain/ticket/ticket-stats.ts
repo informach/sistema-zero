@@ -49,12 +49,11 @@ export function statsWindows(now: Date, days = STATS_WINDOW_DAYS): StatsWindows 
   }
 }
 
-/** Um ponto da série de volume: tickets RECEBIDOS e AUTO-RESPONDIDOS no dia. */
+/** Um ponto da série de volume: tickets recebidos no dia. */
 export interface DailyVolumePoint {
   /** Dia civil SP (`YYYY-MM-DD`). */
   date: string
   created: number
-  autoReplied: number
 }
 
 /** Estatísticas completas do painel (contrato do `GET /helpdesk/tickets/stats`). */
@@ -64,9 +63,8 @@ export interface TicketStats {
   /** Tickets resolvidos/fechados hoje (proxy: `updated_at` na última transição). */
   resolvedToday: number
   resolved7d: number
-  /** Auto-respostas enviadas pela IA (`auto_replied_at`, timestamp confiável). */
-  autoRepliedToday: number
-  autoReplied7d: number
+  /** Exceções operacionais que merecem a atenção da equipe primeiro. */
+  sla: { atRisk: number; breached: number; unassigned: number }
   /** Série densa dos últimos {@link STATS_WINDOW_DAYS} dias, ascendente. */
   volume: DailyVolumePoint[]
 }
@@ -78,11 +76,9 @@ export interface TicketStats {
 export function densifyVolume(
   dayKeys: string[],
   createdByDay: Map<string, number>,
-  autoRepliedByDay: Map<string, number>,
 ): DailyVolumePoint[] {
   return dayKeys.map((date) => ({
     date,
     created: createdByDay.get(date) ?? 0,
-    autoReplied: autoRepliedByDay.get(date) ?? 0,
   }))
 }

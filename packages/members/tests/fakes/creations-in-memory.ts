@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import type {
-  CreationPartRef,
-  CreationRecord,
-  CreationSummary,
-  CreationTool,
+import {
+  type CreationPartRef,
+  type CreationRecord,
+  type CreationSummary,
+  type CreationTool,
+  emptyCountByTool,
 } from '../../src/domain/creations/creation'
 import {
   classifyPintaPaletteLibraryCreation,
@@ -58,7 +59,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   }
 
   async usage(userId: string): Promise<CreationUsage> {
-    const countByTool: Record<CreationTool, number> = { studio: 0, pinta: 0 }
+    const countByTool = emptyCountByTool()
     let totalBytes = 0
     for (const row of this.rows.values()) {
       if (row.userId !== userId || !aliveCommitted(row)) continue

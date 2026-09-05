@@ -5,7 +5,8 @@
  * dois ao mesmo tempo; nenhum manifesto carrega chave, então o layout pode mudar sem migrar
  * dados (só com deploy dos dois lados).
  */
-export type CreationStorageTool = 'studio' | 'pinta'
+/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
+export type CreationStorageTool = 'studio' | 'pinta' | 'molda'
 
 /**
  * O blob principal (o item inteiro, ou o MANIFESTO quando há partes): imutável por revisão —

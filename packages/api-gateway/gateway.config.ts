@@ -202,6 +202,14 @@ if (!HELPDESK_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
     '[gateway] HELPDESK_INTERNAL_TOKEN ausente — as rotas /helpdesk/* responderão 401 (o serviço exige o token interno)',
   )
 }
+// O helpdesk como consumer HMAC de borda (aviso por e-mail da resposta a um chamado
+// do PORTAL via /messaging/send). Condicional, igual aos demais — sem a env o
+// consumer não existe. DEVE bater com o HELPDESK_HMAC_SECRET do helpdesk.
+const HELPDESK_HMAC_SECRET = process.env.HELPDESK_HMAC_SECRET ?? ''
+const HELPDESK_ALLOWED_CIDRS = (process.env.HELPDESK_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 
 // Indicações e bolsas (@sistemazero/referrals): embaixadores, códigos e a Bolsa
 // do Primeiro Jogo (fases futuras: atribuição ?ref + carteira de créditos). O
@@ -310,6 +318,17 @@ const config: GatewayConfigInput = {
             id: 'marketing',
             hmacSecret: MARKETING_HMAC_SECRET,
             allowedCidrs: MARKETING_ALLOWED_CIDRS,
+          },
+        ]
+      : []),
+    // O helpdesk como consumer HMAC de borda (aviso por e-mail da resposta a chamado
+    // do portal via /messaging/send). Condicional, igual aos demais.
+    ...(HELPDESK_HMAC_SECRET
+      ? [
+          {
+            id: 'helpdesk',
+            hmacSecret: HELPDESK_HMAC_SECRET,
+            allowedCidrs: HELPDESK_ALLOWED_CIDRS,
           },
         ]
       : []),
@@ -3276,10 +3295,35 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 20, windowMs: 60_000, by: 'ip' },
     },
 
-    // ── Helpdesk (@sistemazero/helpdesk) — ferramenta INTERNA da equipe ──────
-    // Tickets/base de conhecimento são staff+; CONFIGURAÇÕES (toggle de
-    // auto-resposta), conexão da caixa Gmail e OAuth são admin+ (rotas
-    // explícitas vencem os wildcards por especificidade, padrão marketing).
+    // ── Helpdesk (@sistemazero/helpdesk) ─────────────────────────────────────
+    // O portal do responsável tem rotas explícitas: JWT de qualquer conta ativa,
+    // token interno e ownership rechecado pelo serviço. Sessão de perfil kids é
+    // bloqueada novamente no upstream por `x-auth-account-id`; o gateway injeta
+    // esse header só a partir da claim verificada e remove qualquer spoof do cliente.
+    {
+      id: 'helpdesk-portal-read',
+      methods: ['GET'],
+      pathPattern: '/helpdesk/portal/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'helpdesk-portal-write',
+      methods: ['POST'],
+      pathPattern: '/helpdesk/portal/*',
+      service: 'helpdesk',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: helpdeskInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
+    // Tickets/base de conhecimento de operação são staff+; configurações,
+    // conexão da caixa Gmail e OAuth são admin+ (as rotas explícitas vencem os
+    // wildcards por especificidade, padrão marketing).
     {
       id: 'helpdesk-read',
       methods: ['GET'],

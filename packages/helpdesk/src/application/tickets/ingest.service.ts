@@ -1,9 +1,9 @@
-import type { Logger } from '@sistemazero/core/logging'
 import type { ParsedEmail } from '../../domain/ports/gmail-client.port'
-import type { MessageRepository } from '../../domain/ports/message-repository.port'
-import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
-import { statusOnInbound, type Ticket } from '../../domain/ticket/ticket'
-import type { TicketMessage } from '../../domain/ticket/ticket-message'
+import type {
+  IngestedGmailMessage,
+  TicketIngestionRepository,
+} from '../../domain/ports/ticket-ingestion-repository.port'
+import type { Ticket } from '../../domain/ticket/ticket'
 
 export type IngestStatus = 'created' | 'appended' | 'duplicate'
 export interface IngestResult {
@@ -32,53 +32,27 @@ function cleanSubject(subject: string): string {
  */
 export class IngestService {
   constructor(
-    private readonly tickets: TicketRepository,
-    private readonly messages: MessageRepository,
+    private readonly ingestion: TicketIngestionRepository,
     private readonly config: IngestConfig,
     private readonly now: () => Date,
     private readonly idGen: () => string,
-    private readonly logger: Logger,
   ) {}
 
   async ingest(parsed: ParsedEmail, connectionEmail: string): Promise<IngestResult> {
-    // Dedupe forte: mensagem já persistida (tick anterior / re-backfill) → skip.
-    if (await this.messages.existsByGmailMessageId(parsed.gmailMessageId)) {
-      return { status: 'duplicate' }
-    }
     const fromUs = normalizeEmail(parsed.fromEmail)
     const isFromUs = fromUs !== null && fromUs === normalizeEmail(connectionEmail)
     const at = parsed.internalDate ?? this.now()
     const direction = isFromUs ? 'outbound' : 'inbound'
 
-    const existing = await this.tickets.byGmailThreadId(parsed.gmailThreadId)
-    if (!existing) {
-      const ticket = this.buildTicket(parsed, isFromUs, at)
-      await this.tickets.create(ticket)
-      await this.messages.create(this.buildMessage(ticket.id, parsed, isFromUs, at))
-      return { status: 'created', ticketId: ticket.id, direction }
-    }
-
-    await this.messages.create(this.buildMessage(existing.id, parsed, isFromUs, at))
-    await this.applyToTicket(existing.id, (ticket) => {
-      if (at.getTime() > ticket.lastMessageAt.getTime()) ticket.lastMessageAt = at
-      ticket.messageCount += 1
-      if (!isFromUs) {
-        if (!ticket.lastInboundAt || at.getTime() > ticket.lastInboundAt.getTime()) {
-          ticket.lastInboundAt = at
-        }
-        // Reabre resolvido/fechado; demais estados preservados.
-        ticket.status = statusOnInbound(ticket.status)
-        // Novo inbound re-dispara a IA (resumo/rascunho); o auto-envio segue
-        // gated por auto_reply_state (máx. 1 auto-resposta por ticket).
-        if (this.config.aiEnabled) {
-          ticket.aiStatus = 'pending'
-          ticket.aiNextAttemptAt = at
-          ticket.aiAttempts = 0
-          ticket.aiLastError = null
-        }
-      }
+    const ticket = this.buildTicket(parsed, isFromUs, at)
+    const result = await this.ingestion.ingest({
+      ticket,
+      message: this.buildMessage(ticket.id, parsed, isFromUs, at),
+      direction,
+      aiEnabled: this.config.aiEnabled,
+      at,
     })
-    return { status: 'appended', ticketId: existing.id, direction }
+    return { ...result, direction: result.status === 'duplicate' ? undefined : direction }
   }
 
   private buildTicket(parsed: ParsedEmail, isFromUs: boolean, at: Date): Ticket {
@@ -94,13 +68,17 @@ export class IngestService {
       id: this.idGen(),
       version: 0,
       gmailThreadId: parsed.gmailThreadId,
+      source: 'email',
+      portal: null,
       subject: cleanSubject(parsed.subject) || '(sem assunto)',
       status: isFromUs ? 'waiting' : 'new',
+      resolvedAt: null,
       category: null,
       categoryManual: false,
       priority: null,
       requesterName: isFromUs ? null : parsed.fromName,
       requesterEmail,
+      requesterAccountId: null,
       assignedTo: null,
       assignedToName: null,
       firstMessageAt: at,
@@ -117,9 +95,6 @@ export class IngestService {
       aiNextAttemptAt: aiStatus === 'pending' ? at : null,
       aiAttempts: 0,
       aiLastError: null,
-      autoReplyState: 'none',
-      autoRepliedAt: null,
-      autoReplyReason: null,
       createdAt: at,
       updatedAt: at,
     }
@@ -130,13 +105,16 @@ export class IngestService {
     parsed: ParsedEmail,
     isFromUs: boolean,
     at: Date,
-  ): TicketMessage {
+  ): IngestedGmailMessage {
     return {
       id: this.idGen(),
       ticketId,
       kind: 'email',
+      visibility: 'customer',
       gmailMessageId: parsed.gmailMessageId,
       rfc822MessageId: parsed.rfc822MessageId,
+      deliveryState: 'sent',
+      deliveryLastError: null,
       direction: isFromUs ? 'outbound' : 'inbound',
       // Detectado pelo poller: inbound do cliente, ou outbound dado no Gmail.
       sentVia: isFromUs ? 'gmail' : 'customer',
@@ -150,7 +128,7 @@ export class IngestService {
       snippet: parsed.snippet,
       attachments: parsed.attachments,
       // Autoresponder/newsletter? (Auto-Submitted≠no / X-Autoreply / List-Unsubscribe)
-      // — a auto-resposta nunca responde a estes (anti-loop).
+      // — metadado exibido à equipe; não existe auto-resposta neste produto.
       isAutoreply:
         parsed.isAutoreply ||
         (parsed.autoSubmitted !== null && parsed.autoSubmitted.toLowerCase() !== 'no') ||
@@ -160,21 +138,5 @@ export class IngestService {
       createdByName: null,
       createdAt: at,
     }
-  }
-
-  /**
-   * Atualiza os contadores/estado do ticket com concorrência otimista + retry
-   * (um PATCH humano pode correr com a ingestão). A mensagem já foi inserida.
-   */
-  private async applyToTicket(ticketId: string, mutate: (ticket: Ticket) => void): Promise<void> {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const ticket = await this.tickets.byId(ticketId)
-      if (!ticket) return
-      const expected = ticket.version
-      mutate(ticket)
-      ticket.updatedAt = this.now()
-      if (await this.tickets.update(ticket, expected)) return
-    }
-    this.logger.warn('ingest.ticket_update_conflict', { ticketId })
   }
 }

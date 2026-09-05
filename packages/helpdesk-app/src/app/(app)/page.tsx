@@ -8,7 +8,7 @@ export default function PainelPage() {
     <div className="space-y-8">
       <PageHeader
         title="Painel"
-        description="Visão geral do atendimento. Acompanhe os tickets do contato@."
+        description="Visão geral do atendimento. Priorize primeiro o que precisa de uma resposta da equipe."
       />
       <PainelClient />
     </div>

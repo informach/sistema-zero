@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { CREATOR_CAREER_LEVELS } from '../../core/src/career/catalog'
-import { AI_APPS_MIN_LEVEL, FREE_CREATION_MIN_LEVEL } from '../../member-shell/src/lib/studio-tier'
+import {
+  AI_APPS_MIN_LEVEL,
+  FREE_CREATION_MIN_LEVEL,
+  THREE_D_CREATION_MIN_LEVEL,
+} from '../../member-shell/src/lib/studio-tier'
 import { CAREER_REWARD_INFO } from '../src/lib/career-rewards'
 
 /**
@@ -20,6 +24,7 @@ import { CAREER_REWARD_INFO } from '../src/lib/career-rewards'
 const PROMISES_BRIDGE = /\bPonte\b/
 const PROMISES_PRO = /\bPro\b/
 const PROMISES_PINTA = /\bPinta\b/
+const PROMISES_MOLDA = /\bMolda\b/
 const PROMISES_PENSA = /\bPensa\b/
 const PROMISES_ZAPPY = /\bZappy\b/
 
@@ -91,6 +96,13 @@ describe('career-rewards (kids) — a copy não promete o que a regra não dá',
       PROMISES_PINTA.test(textOf(level.slug)),
     ).map((level) => level.slug)
     expect(anunciam).toEqual([levelOf(FREE_CREATION_MIN_LEVEL)!])
+  })
+
+  test('o Molda é anunciado no posto da oficina 3D, e em nenhum outro', () => {
+    const anunciam = CREATOR_CAREER_LEVELS.filter((level) =>
+      PROMISES_MOLDA.test(textOf(level.slug)),
+    ).map((level) => level.slug)
+    expect(anunciam).toEqual([levelOf(THREE_D_CREATION_MIN_LEVEL)!])
   })
 
   test('Pensa e Zappy são anunciados no posto da IA, e em nenhum outro', () => {

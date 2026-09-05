@@ -1,0 +1,3 @@
+ALTER TABLE "helpdesk"."tickets" ADD COLUMN "resolved_at" timestamp with time zone;--> statement-breakpoint
+CREATE UNIQUE INDEX "gmail_connections_single_active_uq" ON "helpdesk"."gmail_connections" USING btree ((1)) WHERE "helpdesk"."gmail_connections"."status" in ('connected', 'needs_reauth');--> statement-breakpoint
+CREATE INDEX "tickets_resolved_at_idx" ON "helpdesk"."tickets" USING btree ("resolved_at");

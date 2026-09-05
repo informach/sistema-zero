@@ -1,0 +1,22 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/payments/Dockerfile",
+    "watchPatterns": [
+      "/packages/payments/**",
+      "/packages/core/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore",
+      "/packages/payments/railway.json"
+    ]
+  },
+  "deploy": {
+    "preDeployCommand": "bun run --filter @sistemazero/payments db:migrate",
+    "startCommand": "bun run --filter @sistemazero/payments start",
+    "healthcheckPath": "/readyz",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3
+  }
+}

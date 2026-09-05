@@ -10,6 +10,11 @@
  * MODAL "Animação selecionada" (`AnimationDetails` dentro de um Dialog, como o
  * seletor de cor da paleta): o dia a dia usa os defaults, ajustar é um desvio
  * explícito.
+ *
+ * Com `disclosure` (coluna do vetor), o painel RECOLHIDO mostra uma miniatura
+ * VIVA do quadro no cabeçalho (`collapsedActions` do `Panel`) e o loop NÃO
+ * pausa: o accordion por medida recolhe a Prévia sozinho em telas de 768px, e
+ * sem a miniatura a animação sumia e parava sem aviso (full review 04/09/2026).
  */
 import type { JSX } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -47,6 +52,11 @@ export function PreviewPlayer({
   const playing = useSession((state) => state.playing)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const miniCanvasRef = useRef<HTMLCanvasElement>(null)
+  // RECOLHIDA (accordion da coluna do vetor), a Prévia vira uma MINIATURA VIVA
+  // no próprio cabeçalho: em 768px ela nasce recolhida (só um painel cabe), e
+  // a criança precisa continuar vendo o personagem mexer.
+  const collapsed = disclosure ? !disclosure.open : false
 
   const animated = isAnimatedSpriteKind(asset) ? asset : null
   const animation = animated ? activeAnimationOf(animated, { animationId, frameIndex }) : null
@@ -64,8 +74,9 @@ export function PreviewPlayer({
     },
   ])
 
+  // O loop segue com o painel recolhido: a miniatura do cabeçalho é quem mostra.
   const playingIndex = useAnimationPlayer({
-    playing: playing && Boolean(animation) && (disclosure?.open ?? true),
+    playing: playing && Boolean(animation),
     fps: animation?.fps ?? 8,
     frameCount: animation?.frames.length ?? 0,
     loop: animation?.loop ?? true,
@@ -85,18 +96,42 @@ export function PreviewPlayer({
   const shownShapes = animated?.kind === 'vector-sprite' && shown ? (shown as VectorFrame) : null
 
   useEffect(() => {
-    const canvas = canvasRef.current
+    // Recolhido só existe a miniatura; aberto, só o canvas grande.
+    const canvas = (collapsed ? miniCanvasRef : canvasRef).current
     if (canvas && shownBitmap && animated?.kind === 'pixel-sprite') {
       paintBitmap(canvas, shownBitmap, resolveAssetPalette(animated))
     }
-  }, [shownBitmap, animated])
+  }, [shownBitmap, animated, collapsed])
 
   if (!animated || !animation) return null
+
+  const mini = (
+    <span
+      aria-hidden="true"
+      className="pin-checkerboard flex size-9 shrink-0 items-center justify-center rounded-lg border-2 border-pin-border p-0.5"
+    >
+      {animated.kind === 'pixel-sprite' ? (
+        <canvas
+          ref={miniCanvasRef}
+          className="pin-pixelated block size-7 object-contain"
+          style={{ imageRendering: 'pixelated' }}
+        />
+      ) : (
+        <VectorFrameSvg
+          width={animated.frameWidth}
+          height={animated.frameHeight}
+          shapes={shownShapes ?? []}
+          className="block size-7"
+        />
+      )}
+    </span>
+  )
 
   return (
     <Panel
       title={COPY.animation.preview}
       disclosure={disclosure}
+      collapsedActions={mini}
       bodyClassName="flex flex-col items-center gap-2 p-2"
     >
       <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">

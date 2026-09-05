@@ -612,6 +612,8 @@ describe('game-3d — schema e exemplo', () => {
       'g3d:createPlane',
       'g3d:createTorus',
       'g3d:createModel',
+      'g3d:createModelFile',
+      'g3d:skyPhoto',
       'g3d:addToModel',
       'g3d:setVisible',
       'g3d:removeObject',

@@ -38,7 +38,7 @@ import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import type { ProfileView } from '@/lib/types'
-import { ChildrenDashboard, FamilyAiCredits } from './parent-dashboard'
+import { ChildrenDashboard, FamilyAiCredits, ParentSupportCard } from './parent-dashboard'
 import { PurchasesView } from './purchases-view'
 
 const JSON_HEADERS = { 'content-type': 'application/json' }
@@ -506,6 +506,7 @@ export function PerfisClient({
       {/* IRMÃO do dashboard, não filho: aquele some quando não há filhos, e a
           ajuda de IA é da CONTA — precisa aparecer de qualquer jeito. */}
       {managing ? <FamilyAiCredits /> : null}
+      {managing ? <ParentSupportCard /> : null}
 
       <div className="flex flex-wrap items-end justify-center gap-3">
         {managing ? (

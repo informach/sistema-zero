@@ -1,4 +1,4 @@
-import type { CreationTool } from '../../domain/creations/creation'
+import { CREATION_TOOLS, type CreationTool } from '../../domain/creations/creation'
 
 /**
  * Cache CURTO da posse por (conta, ferramenta): a reserva roda a cada autosave (10 s no
@@ -32,9 +32,10 @@ export function rememberToolOwned(accountId: string, tool: CreationTool, now: nu
  * consultar. Idempotente; contas sem entrada não fazem nada.
  */
 export function invalidateToolOwnership(accountIds: string | readonly string[]): void {
+  // TODAS as ferramentas, derivadas da lista: uma listada à mão ficava de fora e a
+  // matrícula revogada seguia reservando por até 60 s nela.
   for (const accountId of typeof accountIds === 'string' ? [accountIds] : accountIds) {
-    cache.delete(keyOf(accountId, 'studio'))
-    cache.delete(keyOf(accountId, 'pinta'))
+    for (const tool of CREATION_TOOLS) cache.delete(keyOf(accountId, tool))
   }
 }
 

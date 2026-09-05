@@ -6,7 +6,13 @@
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import { getPalette, type PaletteId, TRANSPARENT_INDEX } from '../../../core/palette'
-import { boundsUnion, scaleShape, shapeBounds, translateShape } from '../../../vector/geometry'
+import {
+  type Bounds,
+  boundsUnion,
+  scaleShape,
+  shapeBounds,
+  translateShape,
+} from '../../../vector/geometry'
 import type { Vec2, VectorGradient, VectorShape } from '../../../vector/model'
 import {
   Brush,
@@ -147,6 +153,83 @@ export function vectorPaletteSwatches(choice: VectorPaletteChoice): string[] {
   return choice.colors.filter((hex, index) => index !== TRANSPARENT_INDEX && hex !== '')
 }
 
+/** Deslocamento da cópia (Duplicar e colar): "do lado" do original. */
+const COPY_OFFSET = 12
+
+/**
+ * Deslocamento da cópia que a MANTÉM DENTRO do papel e FORA de cima do que já
+ * está lá. Por eixo, os candidatos em ordem: +12; -12; a folga que sobra até a
+ * borda da frente; a folga até a borda de trás. Os dois últimos existem porque
+ * 12 é uma medida de cenário: num personagem de 32 px é um terço do papel (um
+ * corpo de 16 px no meio não tem ±12 de folga para lado nenhum) e numa peça de
+ * 16 px nem cabe. O primeiro par cujo destino não coincide com a caixa de uma
+ * forma (ou a união de um grupo) existente vence: sem isso, num papel pequeno a
+ * régua oscila entre dois lugares e a SEGUNDA cópia nasce exatamente em cima
+ * da original (a criança duplica e "não acontece nada"). Sem candidato nenhum
+ * (forma do tamanho do papel ou maior), +12: parcialmente fora, mas visível e
+ * fora de cima do original. Duplicar e colar usam a MESMA régua.
+ * ⚠️ A caixa é a do `shapeBounds` (sem rotação e sem o contorno): forma girada
+ * perto da borda ainda pode nascer com uma pontinha fora.
+ */
+export function offsetInsideDoc(
+  bounds: Bounds,
+  doc: { width: number; height: number },
+  occupied: readonly Bounds[] = [],
+): { dx: number; dy: number } {
+  const candidates = (start: number, size: number, limit: number): number[] => {
+    // Papel sem medida (não acontece nos três kinds): a régua de sempre.
+    if (!Number.isFinite(limit)) return [COPY_OFFSET]
+    const room = limit - (start + size)
+    const list: number[] = []
+    if (room >= COPY_OFFSET) list.push(COPY_OFFSET)
+    if (start >= COPY_OFFSET) list.push(-COPY_OFFSET)
+    if (room > 0 && room < COPY_OFFSET) list.push(room)
+    if (start > 0 && start < COPY_OFFSET) list.push(-start)
+    return list.length > 0 ? list : [COPY_OFFSET]
+  }
+  const xs = candidates(bounds.x, bounds.width, doc.width)
+  const ys = candidates(bounds.y, bounds.height, doc.height)
+  const taken = (dx: number, dy: number): boolean =>
+    occupied.some(
+      (b) =>
+        Math.abs(b.x - (bounds.x + dx)) < 0.5 &&
+        Math.abs(b.y - (bounds.y + dy)) < 0.5 &&
+        Math.abs(b.width - bounds.width) < 0.5 &&
+        Math.abs(b.height - bounds.height) < 0.5,
+    )
+  // As diagonais (+12,+12 / -12,-12 / ...) vêm antes das cruzadas: são as que
+  // mais parecem "do lado".
+  const pairs: Array<{ dx: number; dy: number }> = []
+  const push = (dx: number, dy: number): void => {
+    if (!pairs.some((p) => p.dx === dx && p.dy === dy)) pairs.push({ dx, dy })
+  }
+  for (let i = 0; i < Math.min(xs.length, ys.length); i += 1) {
+    push(xs[i] as number, ys[i] as number)
+  }
+  for (const dx of xs) for (const dy of ys) push(dx, dy)
+  return pairs.find((p) => !taken(p.dx, p.dy)) ?? (pairs[0] as { dx: number; dy: number })
+}
+
+/**
+ * As caixas que a cópia evita (`offsetInsideDoc`): cada forma e, por cima, a
+ * UNIÃO de cada grupo (a cópia de um grupo compara a própria união com as que
+ * já existem). Escondida conta: ao reaparecer, a cópia estaria em cima dela.
+ */
+export function occupiedBoundsOf(shapes: readonly VectorShape[]): Bounds[] {
+  const groups = new Map<string, Bounds[]>()
+  const result: Bounds[] = []
+  for (const shape of shapes) {
+    const bounds = shapeBounds(shape)
+    result.push(bounds)
+    if (!shape.groupId) continue
+    const list = groups.get(shape.groupId) ?? []
+    list.push(bounds)
+    groups.set(shape.groupId, list)
+  }
+  for (const list of groups.values()) result.push(boundsUnion(list))
+  return result
+}
+
 /** Expande ids para incluir TODOS os shapes dos mesmos grupos (seleção junta). */
 export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
   const groups = new Set<string>()
@@ -169,8 +252,8 @@ export function expandToGroups(shapes: VectorShape[], ids: string[]): string[] {
  */
 export function cloneShapesWithNewIds(
   shapes: readonly VectorShape[],
-  dx = 12,
-  dy = 12,
+  dx: number,
+  dy: number,
 ): VectorShape[] {
   const groupIds = new Map<string, string>()
   return shapes.map((shape) => {
@@ -187,7 +270,8 @@ export function cloneShapesWithNewIds(
 
 /**
  * Formas coladas de OUTRO documento (área de transferência do app): no mesmo
- * tamanho de documento é o colar de sempre (ids novos, +12,+12 — "do lado");
+ * tamanho de documento é o colar de sempre (ids novos, `offsetInsideDoc` — do
+ * lado, dentro do papel e fora de cima do que já existe, `occupied`);
  * vindo de um documento de outro tamanho, a cópia ENCOLHE se não couber (fator
  * único, sem distorcer; nunca amplia) e CENTRALIZA no destino. Grupos são
  * preservados (cada grupo original vira um grupo novo), diferente do "trazer da
@@ -197,8 +281,12 @@ export function fitPastedShapes(
   shapes: readonly VectorShape[],
   from: { width: number; height: number },
   to: { width: number; height: number },
+  occupied: readonly Bounds[] = [],
 ): VectorShape[] {
-  if (from.width === to.width && from.height === to.height) return cloneShapesWithNewIds(shapes)
+  if (from.width === to.width && from.height === to.height) {
+    const offset = offsetInsideDoc(boundsUnion(shapes.map(shapeBounds)), to, occupied)
+    return cloneShapesWithNewIds(shapes, offset.dx, offset.dy)
+  }
   const clones = cloneShapesWithNewIds(shapes, 0, 0)
   const bounds = boundsUnion(clones.map(shapeBounds))
   const scale = Math.min(

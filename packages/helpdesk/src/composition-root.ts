@@ -6,21 +6,26 @@ import { GmailAccountService } from './application/connection/gmail-account.serv
 import { OAuthService } from './application/connection/oauth.service'
 import { KbService } from './application/kb/kb.service'
 import { SettingsService } from './application/settings/settings.service'
+import { CustomerTicketService } from './application/tickets/customer-ticket.service'
 import { IngestService } from './application/tickets/ingest.service'
 import { ReplyService } from './application/tickets/reply.service'
 import { TicketService } from './application/tickets/ticket.service'
-import { aiConfig, type Env, gmailConfig } from './infrastructure/config/env'
+import { aiConfig, type Env, gmailConfig, portalNotifyConfig } from './infrastructure/config/env'
 import { GoogleGmailClient } from './infrastructure/gateways/google/gmail-client'
 import { GmailOAuthProvider } from './infrastructure/gateways/google/gmail-oauth-provider'
+import { createGatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
 import { OpenRouterClient } from './infrastructure/gateways/openrouter/openrouter-client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleConnectionRepository } from './infrastructure/persistence/drizzle/connection.repository'
+import { DrizzleCustomerTicketRepository } from './infrastructure/persistence/drizzle/customer-ticket.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleKbRepository } from './infrastructure/persistence/drizzle/kb.repository'
 import { DrizzleMessageRepository } from './infrastructure/persistence/drizzle/message.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
+import { DrizzleReplyDeliveryRepository } from './infrastructure/persistence/drizzle/reply-delivery.repository'
 import { DrizzleSettingsRepository } from './infrastructure/persistence/drizzle/settings.repository'
 import { DrizzleTicketRepository } from './infrastructure/persistence/drizzle/ticket.repository'
+import { DrizzleTicketIngestionRepository } from './infrastructure/persistence/drizzle/ticket-ingestion.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
 import { AiWorker } from './infrastructure/workers/ai-worker'
 import { GmailSyncWorker } from './infrastructure/workers/gmail-sync-worker'
@@ -63,7 +68,10 @@ export function createApplication(env: Env): Application {
 
   // Adapters
   const ticketRepo = new DrizzleTicketRepository(connection)
+  const customerTicketRepo = new DrizzleCustomerTicketRepository(db)
   const messageRepo = new DrizzleMessageRepository(db)
+  const replyDeliveryRepo = new DrizzleReplyDeliveryRepository(db)
+  const ticketIngestionRepo = new DrizzleTicketIngestionRepository(db)
   const kbRepo = new DrizzleKbRepository(db)
   const settingsRepo = new DrizzleSettingsRepository(db)
   const connectionRepo = new DrizzleConnectionRepository(connection)
@@ -90,8 +98,34 @@ export function createApplication(env: Env): Application {
     })
   }
 
+  // Aviso de resposta do PORTAL (gateway → messaging), best-effort: sem o grupo, a
+  // resposta segue indo para a conversa; só o e-mail de aviso não sai.
+  const notify = portalNotifyConfig(env)
+  if (!notify) {
+    logger.warn('messaging.not_configured', {
+      hint: 'GATEWAY_URL, HELPDESK_HMAC_SECRET, COMMUNITY_URL ou KIDS_COMMUNITY_URL ausentes — resposta no portal sai sem e-mail de aviso',
+    })
+  }
+  const portalNotifier = notify
+    ? {
+        messaging: createGatewayMessagingClient({
+          gatewayUrl: notify.gatewayUrl,
+          hmacSecret: notify.hmacSecret,
+          timeoutMs: notify.timeoutMs,
+        }),
+        urls: notify.urls,
+      }
+    : null
+
   // Casos de uso
   const ticketService = new TicketService(ticketRepo, messageRepo, now, idGen)
+  const customerTicketService = new CustomerTicketService(
+    customerTicketRepo,
+    messageRepo,
+    { aiEnabled: ai !== null },
+    now,
+    idGen,
+  )
   const kbService = new KbService(kbRepo, now, idGen)
   const settingsService = new SettingsService(settingsRepo, now)
   const revokeDeps = provider && secretBox ? { provider, secretBox } : null
@@ -100,7 +134,12 @@ export function createApplication(env: Env): Application {
     oauthStateRepo,
     connectionRepo,
     gmail && secretBox
-      ? { secretBox, redirectBaseUrl: gmail.redirectBaseUrl, appUrl: gmail.appUrl }
+      ? {
+          secretBox,
+          redirectBaseUrl: gmail.redirectBaseUrl,
+          appUrl: gmail.appUrl,
+          mailboxAddress: gmail.mailboxAddress,
+        }
       : null,
     provider,
     gmailClient,
@@ -116,21 +155,21 @@ export function createApplication(env: Env): Application {
     logger,
   )
   const ingestService = new IngestService(
-    ticketRepo,
-    messageRepo,
+    ticketIngestionRepo,
     { aiEnabled: ai !== null },
     now,
     idGen,
-    logger,
   )
   const replyService = new ReplyService(
     ticketRepo,
     messageRepo,
+    replyDeliveryRepo,
     connectionRepo,
     settingsRepo,
     gmailAccountService,
     gmailClient,
     { fromName: env.HELPDESK_FROM_NAME },
+    portalNotifier,
     now,
     idGen,
     logger,
@@ -185,9 +224,6 @@ export function createApplication(env: Env): Application {
     ? new AiWorker({
         tickets: ticketRepo,
         ticketAi: ticketAiService,
-        // F4: decide + envia a auto-resposta após o pipeline (guard de fase no
-        // ReplyService; sem Gmail conectado, autoReply vira no-op honesto).
-        autoReply: { settings: settingsRepo, sender: replyService },
         now,
         logger,
         config: {
@@ -219,6 +255,10 @@ export function createApplication(env: Env): Application {
       ai: ticketAiService,
       internalToken: env.INTERNAL_API_TOKEN,
       requireStaffEnabled: env.REQUIRE_STAFF,
+    },
+    customerTickets: {
+      tickets: customerTicketService,
+      internalToken: env.INTERNAL_API_TOKEN,
     },
     kb: {
       kb: kbService,

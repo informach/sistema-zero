@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { NextConfig } from 'next'
@@ -5,6 +6,12 @@ import type { NextConfig } from 'next'
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
 // (@sistemazero/ui, sharp hasteado) — sem isso o server.js sai sem dependências.
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+// Molda e o Estúdio usam Three.js no mesmo client bundle. Fixar ambos na cópia
+// do kids evita duas instâncias da biblioteca (e classes/constantes incompatíveis).
+const resolveFromKids = createRequire(
+  path.join(path.dirname(fileURLToPath(import.meta.url)), 'package.json'),
+)
+const threePackageRoot = path.dirname(path.dirname(resolveFromKids.resolve('three')))
 
 const isDev = process.env.NODE_ENV !== 'production'
 
@@ -122,8 +129,18 @@ const nextConfig: NextConfig = {
     '@sistemazero/studio',
     '@sistemazero/pensa',
     '@sistemazero/pinta',
+    '@sistemazero/molda',
     'three',
   ],
+  turbopack: {
+    // Turbopack no Windows ainda não aceita um caminho absoluto `C:\...` no
+    // alias; esta pasta é o link do workspace para a mesma raiz calculada acima.
+    resolveAlias: { three: './node_modules/three' },
+  },
+  webpack(config) {
+    config.resolve.alias = { ...config.resolve.alias, three: threePackageRoot }
+    return config
+  },
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
   // fora do matcher do `proxy.ts`). Fonte única — não duplicar no proxy.
   //

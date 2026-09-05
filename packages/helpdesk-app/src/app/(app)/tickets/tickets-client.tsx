@@ -11,22 +11,32 @@ import { EmptyState } from '@/components/shared/empty-state'
 import {
   TicketCategoryBadge,
   TicketPriorityBadge,
+  TicketSlaBadge,
+  TicketSourceBadge,
   TicketStatusBadge,
 } from '@/components/shared/ticket-badges'
 import { apiGet } from '@/lib/api'
 import { STATUS_LABELS, TICKET_STATUSES } from '@/lib/categories'
 import { cn } from '@/lib/cn'
 import { formatShortSp } from '@/lib/dates'
+import { formatSlaRemaining } from '@/lib/sla'
 import type { HelpdeskPage, TicketStatus, TicketView } from '@/lib/types'
 
 const LIMIT = 50
 const SEARCH_DEBOUNCE_MS = 350
 
 type StatusFilter = TicketStatus | 'all'
+type QueueFilter = 'all' | 'attention' | 'unassigned'
 
 const FILTERS: { value: StatusFilter; label: string }[] = [
   { value: 'all', label: 'Todos' },
   ...TICKET_STATUSES.map((status) => ({ value: status, label: STATUS_LABELS[status] })),
+]
+
+const QUEUE_FILTERS: { value: QueueFilter; label: string }[] = [
+  { value: 'all', label: 'Fila completa' },
+  { value: 'attention', label: 'Precisa de atenção' },
+  { value: 'unassigned', label: 'Sem responsável' },
 ]
 
 function requesterLabel(ticket: TicketView): string {
@@ -37,6 +47,7 @@ function requesterLabel(ticket: TicketView): string {
 
 export function TicketsClient() {
   const [status, setStatus] = useState<StatusFilter>('all')
+  const [queue, setQueue] = useState<QueueFilter>('all')
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
   const [items, setItems] = useState<TicketView[]>([])
@@ -56,6 +67,8 @@ export function TicketsClient() {
   function listPath(offset: number): string {
     const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
     if (status !== 'all') params.set('status', status)
+    if (queue === 'attention') params.set('sla', 'attention')
+    if (queue === 'unassigned') params.set('queue', 'unassigned')
     if (query) params.set('q', query)
     return `/api/helpdesk/tickets?${params.toString()}`
   }
@@ -82,7 +95,7 @@ export function TicketsClient() {
     return () => {
       alive = false
     }
-  }, [status, query, reloadKey])
+  }, [status, queue, query, reloadKey])
 
   async function loadMore() {
     setLoadingMore(true)
@@ -103,24 +116,49 @@ export function TicketsClient() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
-          {FILTERS.map((filter) => (
-            <button
-              key={filter.value}
-              type="button"
-              onClick={() => setStatus(filter.value)}
-              aria-pressed={status === filter.value}
-              className={cn(
-                'rounded-md px-3 py-1.5 text-sm transition-colors',
-                status === filter.value
-                  ? 'bg-muted font-medium text-foreground'
-                  : 'text-muted-foreground hover:text-foreground',
-              )}
-            >
-              {filter.label}
-            </button>
-          ))}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-2">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Priorizar fila
+            </p>
+            <div className="mt-1 inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
+              {QUEUE_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => setQueue(filter.value)}
+                  aria-pressed={queue === filter.value}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-sm transition-colors',
+                    queue === filter.value
+                      ? 'bg-muted font-medium text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter.value}
+                type="button"
+                onClick={() => setStatus(filter.value)}
+                aria-pressed={status === filter.value}
+                className={cn(
+                  'rounded-md px-3 py-1.5 text-sm transition-colors',
+                  status === filter.value
+                    ? 'bg-muted font-medium text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="relative w-full sm:w-64">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -155,7 +193,7 @@ export function TicketsClient() {
         <EmptyState
           icon={Inbox}
           title="Nenhum ticket ainda."
-          description="Quando chegarem e-mails no contato@, eles aparecem aqui."
+          description="Quando chegarem pedidos por e-mail ou pelo portal, eles aparecem aqui."
         />
       ) : (
         <>
@@ -172,10 +210,17 @@ export function TicketsClient() {
                       <TicketStatusBadge status={ticket.status} />
                       <TicketCategoryBadge category={ticket.category} />
                       <TicketPriorityBadge priority={ticket.priority} />
+                      <TicketSlaBadge sla={ticket.sla} />
+                      <TicketSourceBadge source={ticket.source} />
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {requesterLabel(ticket)}
                     </p>
+                    {ticket.sla ? (
+                      <p className="text-xs text-muted-foreground">
+                        {formatSlaRemaining(ticket.sla)}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="shrink-0 text-right text-xs text-muted-foreground">
                     <p>Última mensagem {formatShortSp(ticket.lastMessageAt)}</p>

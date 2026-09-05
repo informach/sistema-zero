@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm'
 import type { SettingsRepository } from '../../../domain/ports/settings-repository.port'
 import { DEFAULT_SETTINGS, type HelpdeskSettings } from '../../../domain/settings/settings'
-import type { TicketCategory } from '../../../domain/ticket/ticket'
 import type { Database } from './db'
 import { settings } from './schema'
 
@@ -16,9 +15,6 @@ export class DrizzleSettingsRepository implements SettingsRepository {
     const [row] = await this.db.select().from(settings).where(eq(settings.id, SETTINGS_ID)).limit(1)
     if (row) {
       return {
-        autoReplyEnabled: row.autoReplyEnabled,
-        autoReplyCategories: row.autoReplyCategories as TicketCategory[],
-        autoReplyConfidenceMin: row.autoReplyConfidenceMin,
         signature: row.signature,
         updatedBy: row.updatedBy,
         updatedAt: row.updatedAt,
@@ -38,9 +34,6 @@ export class DrizzleSettingsRepository implements SettingsRepository {
       .onConflictDoUpdate({
         target: settings.id,
         set: {
-          autoReplyEnabled: value.autoReplyEnabled,
-          autoReplyCategories: value.autoReplyCategories,
-          autoReplyConfidenceMin: value.autoReplyConfidenceMin,
           signature: value.signature,
           updatedBy: value.updatedBy,
           updatedAt: value.updatedAt,

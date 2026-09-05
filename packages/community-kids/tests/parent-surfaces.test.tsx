@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { ChildrenDashboard, FamilyAiCredits } from '../src/app/perfis/parent-dashboard'
+import {
+  ChildrenDashboard,
+  FamilyAiCredits,
+  ParentSupportCard,
+} from '../src/app/perfis/parent-dashboard'
 import { PurchasesView } from '../src/app/perfis/purchases-view'
 import type { ChildDashboardView, MySubscriptionView, PaymentView } from '../src/lib/types'
 
@@ -62,6 +66,14 @@ afterEach(() => {
 })
 
 describe('superfícies extraídas da área dos pais', () => {
+  test('oferece atendimento apenas como destino da Área dos Pais', () => {
+    render(<ParentSupportCard />)
+
+    expect(screen.getByRole('link', { name: 'Abrir atendimento' }).getAttribute('href')).toBe(
+      '/responsavel/ajuda',
+    )
+  })
+
   test('renderiza progresso e créditos e persiste a preferência semanal', async () => {
     const calls: Array<{ path: string; init?: RequestInit }> = []
     globalThis.fetch = Object.assign(

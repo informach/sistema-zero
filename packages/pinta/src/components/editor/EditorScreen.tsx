@@ -70,9 +70,14 @@ import { TileStrip } from './TileStrip'
 import { PIXEL_TOOL_SHORTCUTS, ToolBar } from './ToolBar'
 import { isPintaModalOpen, useActionShortcuts } from './useActionShortcuts'
 import { useMediaQuery } from './useMediaQuery'
+import { useScrollMore } from './useScrollMore'
 import { useStudioResync } from './useStudioResync'
 import { VectorEditorScope } from './vector/VectorEditorScope'
-import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
+import {
+  ScrollMoreHint,
+  VectorPanelsDisclosure,
+  VectorRightColumn,
+} from './vector/VectorRightColumn'
 import { VectorSelectionBar } from './vector/VectorSelectionBar'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
@@ -134,13 +139,30 @@ function VectorLeftColumn(): JSX.Element {
  * se auto-remove nos demais) → CAMADAS → CORES, todos na mesma largura
  * (`w-68`). Os três rolam JUNTOS por dentro da coluna; os detalhes da animação
  * vivem numa modal (engrenagem da prévia).
+ *
+ * ⚠️ "Rolam juntos" só voltou a ser verdade em 04/09/2026: o `overflow-hidden`
+ * do `Panel` deixava os três ENCOLHEREM em vez de a coluna rolar (a Prévia
+ * perdia a fileira Reproduzir/Editar em 768px, medido 204 de 254). Hoje nenhum
+ * painel encolhe (`shrink-0` no `Panel`) e a `.pin-scroll-y` esconde a barra
+ * clássica, que roubaria 17px e cortaria a borda direita dos painéis `w-68`;
+ * o degradê no pé (`useScrollMore`) é a pista de que tem mais embaixo — aqui
+ * não há accordion nem cabeçalho recolhido para dar essa pista.
  */
 function PixelRightColumn(): JSX.Element {
+  const columnRef = useRef<HTMLDivElement>(null)
+  const more = useScrollMore(columnRef)
   return (
-    <div className="flex min-h-0 w-68 shrink-0 flex-col gap-2 overflow-x-hidden overflow-y-auto">
-      <PreviewPlayer />
-      <LayerPanel />
-      <PaletteBar />
+    <div className="relative flex min-h-0 w-68 shrink-0 flex-col">
+      <div
+        ref={columnRef}
+        data-pin-right-column=""
+        className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+      >
+        <PreviewPlayer />
+        <LayerPanel />
+        <PaletteBar />
+      </div>
+      {more ? <ScrollMoreHint /> : null}
     </div>
   )
 }
@@ -168,7 +190,10 @@ function SpritePanelDisclosure(): JSX.Element {
         />
       </button>
       {open ? (
-        <div className="flex gap-2 overflow-x-auto pt-2">
+        // `.pin-scroll-x`: o LayerPanel é `w-68` e não encolhe mais (`shrink-0` no
+        // `Panel`), então em 375px a fileira rola de lado; a barra clássica
+        // somaria 17px de altura acima do palco (a faixa cresce e o palco pula).
+        <div className="pin-scroll-x flex gap-2 overflow-x-auto pt-2">
           <div className="w-44 shrink-0">
             <PreviewPlayer />
           </div>

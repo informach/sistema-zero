@@ -18,6 +18,8 @@ export interface OAuthCoreConfig {
   redirectBaseUrl: string
   /** URL do helpdesk-app (destino dos 302 do callback). */
   appUrl: string
+  /** A única caixa Gmail autorizada a alimentar a fila de atendimento. */
+  mailboxAddress: string
 }
 
 export class OAuthService {
@@ -95,6 +97,10 @@ export class OAuthService {
       const identity = this.provider.identityFromIdToken(tokens.idToken)
       if (!identity) return redirect('error=identity_missing')
       const profile = await this.gmail.getProfile(tokens.accessToken)
+      if (normalizeEmail(profile.emailAddress) !== this.core.mailboxAddress) {
+        this.logger.warn('gmail.connection_rejected', { email: profile.emailAddress })
+        return redirect('error=mailbox_not_authorized')
+      }
       await this.upsertConnection({
         sub: identity.sub,
         emailAddress: profile.emailAddress,
@@ -146,7 +152,7 @@ export class OAuthService {
       existing.lastSyncError = null
       existing.version += 1
       existing.updatedAt = at
-      await this.connections.update(existing)
+      await this.connections.activate(existing)
       this.logger.info('gmail.reconnected', { email: input.emailAddress })
       return
     }
@@ -172,7 +178,11 @@ export class OAuthService {
       createdAt: at,
       updatedAt: at,
     }
-    await this.connections.create(connection)
+    await this.connections.activate(connection)
     this.logger.info('gmail.connected', { email: input.emailAddress })
   }
+}
+
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
 }

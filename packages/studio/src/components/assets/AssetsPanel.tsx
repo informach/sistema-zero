@@ -17,13 +17,16 @@ import {
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
+import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { uniqueAssetName } from './assetNames'
+import { projectHas3DConsumer } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
   fileToAssetDataUrl,
   fileToAudioAssetDataUrl,
 } from './imageProcessing'
+import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 
@@ -54,21 +57,11 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       assets: s.project?.assets ?? EMPTY_ASSETS,
-      // Quem CONSOME .glb/.hdr: as extensões Jogo 3D Avançado e Mundo 3D OU a
-      // categoria de núcleo Canvas 3D (que carrega o modelo por
-      // `loader.load('modelo.glb')`). Sem nenhum deles o upload seria peso morto
-      // na cota (a SEÇÃO de modelos continua sem gate: gerenciar/excluir um
-      // órfão nunca depende disso). O sinal do Canvas 3D é o import do three no
-      // código gerado (ou um bloco `sz_t3d_` no blocksState, para o projeto
-      // novo em Blocos antes da geração).
-      has3DExtension:
-        (s.project?.installedExtensions ?? []).some(
-          (e) => e.id === 'game-3d-advanced' || e.id === 'world-3d',
-        ) ||
-        /from\s+['"]three(['"]|\/)/.test(s.project?.files?.['script.js'] ?? '') ||
-        (s.project?.blocksState
-          ? JSON.stringify(s.project.blocksState).includes('sz_t3d_')
-          : false),
+      // Quem CONSOME .glb/.hdr (Jogo 3D, Jogo 3D Avançado, Mundo 3D ou Canvas 3D —
+      // ver `has3DConsumer.ts`). Sem nenhum deles o upload seria peso morto na cota
+      // (a SEÇÃO de modelos continua sem gate: gerenciar/excluir um órfão nunca
+      // depende disso). A modal do Molda usa a MESMA régua.
+      has3DExtension: projectHas3DConsumer(s.project),
     })),
   )
   const addAsset = useProjectStore((s) => s.addAsset)
@@ -111,6 +104,11 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   // "✏️ editar desenho" de "No projeto" sem esperar o próximo focus).
   const pintaLibrary = useStudioPintaLibrary()
   const [pintaOpen, setPintaOpen] = useState(false)
+  // "Trazer do Molda" (modelos .glb, texturas .png, céus .hdr): mesma mecânica, outra
+  // galeria. O import também grava na biblioteca pessoal (com `kind`), então a
+  // re-listagem abaixo serve aos dois.
+  const moldaLibrary = useStudioMoldaLibrary()
+  const [moldaOpen, setMoldaOpen] = useState(false)
   const [personalTick, setPersonalTick] = useState(0)
   useEffect(() => {
     if (!open || !personalNamespace) return
@@ -145,10 +143,18 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     }
   }, [open, personalNamespace, storeApi, personalTick])
 
+  // Só as IMAGENS do PINTA na biblioteca pessoal são "desenhos" (a lista e o "editar no
+  // Pinta"): um .glb/.hdr trazido do Molda vive lá com o `kind` dele e cairia no
+  // `addFromPersonal` como imagem, ou abriria o Pinta num modelo; e a TEXTURA do Molda é
+  // imagem, mas não é desenho do Pinta (`origin: 'molda'`). A modal do Molda é o caminho delas.
+  const personalImages = useMemo(
+    () => personal.filter((d) => d.kind === 'image' && d.origin !== 'molda'),
+    [personal],
+  )
   /** Desenhos que ainda existem no Pinta — quem pode abrir o editor de lá. */
   const editableDrawingIds = useMemo(
-    () => (onEditDrawing ? new Set(personal.map((d) => d.id)) : null),
-    [personal, onEditDrawing],
+    () => (onEditDrawing ? new Set(personalImages.map((d) => d.id)) : null),
+    [personalImages, onEditDrawing],
   )
 
   const addFromPersonal = (drawing: PersonalAsset) => {
@@ -313,7 +319,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
         <p className="text-sm text-sz-fg-soft">Abra um projeto para gerenciar imagens e sons.</p>
       ) : (
         <div className="flex flex-col gap-4">
-          {allowUpload || pintaLibrary ? (
+          {allowUpload || pintaLibrary || moldaLibrary ? (
             <div className="flex flex-wrap items-center gap-3">
               {allowUpload ? (
                 <>
@@ -366,6 +372,15 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                   {t('pintaImport.button')}
                 </Button>
               ) : null}
+              {moldaLibrary ? (
+                <Button
+                  variant={allowUpload || pintaLibrary ? 'subtle' : 'primary'}
+                  size="sm"
+                  onClick={() => setMoldaOpen(true)}
+                >
+                  {t('moldaImport.button')}
+                </Button>
+              ) : null}
               {allowUpload ? (
                 <>
                   <Button
@@ -381,7 +396,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                       variant="subtle"
                       size="sm"
                       disabled={busy}
-                      title="Modelo 3D (.glb) ou céu 360° (.hdr) para Canvas 3D, Jogo 3D Avançado e Mundo 3D"
+                      title="Modelo 3D (.glb) ou céu 360° (.hdr) para Jogo 3D, Jogo 3D Avançado, Mundo 3D e Canvas 3D"
                       onClick={() => modelRef.current?.click()}
                     >
                       📦 Enviar modelo 3D
@@ -572,7 +587,8 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                 Modelos 3D
               </h3>
               <p className="mb-2 text-xs text-sz-fg-soft">
-                Use o NOME na peça "modelo importado" do molde (ou no "céu de foto", se for .hdr).
+                Use o NOME no bloco "Criar o objeto … com o modelo" (Jogo 3D) ou na peça "modelo
+                importado" do molde; se for .hdr, em "Usar o céu 360°" ou no "céu de foto".
               </p>
               <ul className="flex flex-col gap-2">
                 {models3d.map((asset) => (
@@ -630,13 +646,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-sz-fg-mute">
                 Meus desenhos
               </h3>
-              {personal.length === 0 ? (
+              {personalImages.length === 0 ? (
                 <p className="text-sm text-sz-fg-soft">
                   Desenhe no Pinta e toque em "Usar no Estúdio" — seus desenhos aparecem aqui.
                 </p>
               ) : (
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {personal.map((drawing) => (
+                  {personalImages.map((drawing) => (
                     <li
                       key={drawing.id}
                       className="flex items-center gap-2 rounded-md border border-sz-border bg-sz-panel-soft p-2"
@@ -747,6 +763,12 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       {pintaOpen && pintaLibrary ? (
         <PintaImportDialog
           onClose={() => setPintaOpen(false)}
+          onImported={() => setPersonalTick((tick) => tick + 1)}
+        />
+      ) : null}
+      {moldaOpen && moldaLibrary ? (
+        <MoldaImportDialog
+          onClose={() => setMoldaOpen(false)}
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />
       ) : null}

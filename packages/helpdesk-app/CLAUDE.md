@@ -10,19 +10,22 @@ Guia operacional do **app do help desk** (front da equipe). Leia antes de editar
 ## O que é
 
 Front-end **dedicado e interno** (equipe staff+) do help desk: painel, caixa de entrada (tickets
-do `contato@`), thread + resposta com IA, base de conhecimento e configurações (conexão Gmail +
-auto-resposta). **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é o
+do e-mail e do portal), thread + resposta com IA, base de conhecimento e configurações (conexão
+Gmail + assinatura). **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é o
 **[@sistemazero/helpdesk](../helpdesk)** (porta 3013), consumido SEMPRE via api-gateway. Molde
 arquitetural: **`packages/marketing-app`** (BFF via gateway, cookies HttpOnly, réplica única).
 Porta **3014**. Domínio futuro: `helpdesk.sistemazero.com.br` (ou `atendimento`).
 
-> Estado: **F0–F5 COMPLETAS (08/07/2026)** — todas as telas no ar: **Painel** (6 cards: Novos/
-> Abertos/Aguardando/Resolvidos hoje/Resolvidos 7d/Auto-respondidos 7d + gráfico de volume de 14
-> dias com recharts), **Caixa de entrada** (filtros status/categoria/busca, badges), **Ticket**
+> Estado: **F0–F7 COMPLETAS (01/09/2026)** — todas as telas no ar: **Painel** (exceções de SLA,
+> risco e tickets sem responsável + gráfico de volume de 14 dias), **Caixa de entrada** (atalhos
+> de atenção/atribuição, filtros status/categoria/busca e badges de SLA/canal), **Ticket**
 > (thread com citação colapsada + painel resumo IA + editor prefilled com o rascunho + Enviar/
-> Regenerar/Resumir/Nota; 409 → toast + soft-reload), **Base de conhecimento** (CRUD + toggle
-> Publicado), **Configurações** (conexão Gmail conectar/reconectar + toggles de auto-resposta +
-> assinatura). 18 testes das libs puras; build standalone OK.
+> Regenerar/Resumir/Nota; timeout de envio permite verificar o Gmail antes de liberar uma nova
+> resposta; 409 → toast + soft-reload; chamado do PORTAL: o editor diz "Publicar resposta" e
+> a mensagem vai para a conversa do /ajuda + aviso por e-mail, SEM depender da caixa Gmail —
+> o canal é do ticket, decidido no backend), **Base de conhecimento** (CRUD + toggle
+> Publicado), **Configurações** (conexão Gmail conectar/reconectar + assinatura). IA é somente
+> copiloto: todo rascunho exige revisão e envio humano.
 > Padrões-chave: 409 CONCURRENCY_CONFLICT → toast + soft-reload (preserva o texto digitado);
 > erro de fetch NUNCA vira "0" no painel (fica traço + aviso); o painel busca no client (rotação
 > de cookie só acontece em Route Handler).
@@ -74,9 +77,9 @@ src/
     (app)/                     shell autenticado: layout gate + Topbar + AppSidebar
       page.tsx + painel-client.tsx + volume-chart.tsx   Painel (stats via
                                `/helpdesk/tickets/stats`, agregado no banco; recharts 3.8.1 pinado)
-      tickets/ (page + tickets-client + [id]/*)   caixa de entrada + thread/resposta/notas/controles
+      tickets/ (page + tickets-client + [id]/*)   fila SLA + thread/resposta/notas/controles
       base-conhecimento/ (page + kb-client + article-dialog)   CRUD do KB
-      configuracoes/ (page + configuracoes-client)   conexão Gmail + toggles de auto-resposta
+      configuracoes/ (page + configuracoes-client)   conexão Gmail + assinatura
     api/
       auth/{login,logout}/ · healthz/ · helpdesk/[...path]/   (BFF)
   server/   session.ts · gateway.ts · forward.ts · sentry.ts (ingestão via fetch, sem SDK)
@@ -111,7 +114,9 @@ obrigatório; recusa HS256) · `JWT_ISSUER`/`JWT_AUDIENCE` (obrigatórios em pro
 
 Dockerfile (Node 22 + bun, build package-local, standalone) + railway.json (healthcheck
 `/api/healthz`, watchPatterns helpdesk-app+ui+lock). Falta a usuária **criar o serviço
-`helpdesk-app`** (staging+prod) e fornecer o SVC_ID (destrava o CI); envs nos 2 ambientes:
+`helpdesk-app`** (staging+prod) e registrar seu ID na variável de repositório
+`RAILWAY_HELPDESK_APP_SERVICE_ID` (e o ID da API em `RAILWAY_HELPDESK_SERVICE_ID`; destravam o
+CI); envs nos 2 ambientes:
 `GATEWAY_URL` + `JWT_JWKS_URL` (via gateway interno) + `JWT_ISSUER=sistemazero-auth` +
 `JWT_AUDIENCE=sistemazero`. Réplica única.
 

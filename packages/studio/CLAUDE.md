@@ -1072,6 +1072,77 @@ prove o caminho inválido e o round-trip nos testes.
 - **⚠️ Colisão de nome de bloco**: ANTES de nomear um bloco novo, `grep` o tipo — o lote P9 quase duplicou `sz_js_on_click` (que JÁ existia = `addEventListener('click')`, target por id-string); o `.onclick = () => {}` virou `sz_js_element_onclick`. Um `case` duplicado no `switch` do buildIR não dá erro de TS (o 1º vence, o 2º vira código morto) — a colisão passa silenciosa.
 - **Flag booleana num bloco existente** (ex.: função ou método `async`, lote P9): `field_checkbox` no `message0` (valor `'TRUE'`/`'FALSE'`; buildIR `f(block,'X') === 'TRUE'`, workspaceState `X: v ? 'TRUE' : 'FALSE'`). ⚠️ Se o bloco tem MUTATOR, confira que o mutator só mexe no PRÓPRIO input (o `sz_params_mutator` gerencia só o `PARAMS_INPUT`, então o checkbox do `message0` sobrevive) — um mutator que reconstrói o bloco via `jsonInit` apagaria o campo.
 
+## "Trazer do Molda" + os dois blocos 3D do kit iniciante (lote 7 do Molda, 04/09/2026)
+
+O Molda (`packages/molda`) produz `.glb` (modelo), `.png` (textura) e `.hdr` (céu 360°) e o
+Estúdio JÁ consumia os três formatos, só que via upload manual e só nas extensões avançadas. O
+lote fecha as duas pontas: a criança TRAZ a criação para o projeto e o **kit iniciante Jogo 3D**
+ganha os blocos que a usam.
+
+- **Adapter de host `moldaLibrary?: StudioMoldaLibraryAdapter`** (`studio/molda-library.ts`, molde
+  exato do `pintaLibrary`: latch no `StudioCore`, contexto, tipos ESPELHO — zero import
+  molda↔studio). O host chama o subpath `@sistemazero/molda/studio-library` (`listGalleryForStudio`
+  + `exportAssetForStudio`) e GRAVA em `personal-assets` antes de devolver. O playground liga um
+  `moldaLibraryDemo` com os três tipos codificados de VERDADE pelo Molda
+  (`playground/moldaDemoAssets.json`, gerado das fixtures dele): é o que deixa provar no navegador
+  o parse do GLTFLoader/HDRLoader dentro do preview, sob a CSP.
+- **`MoldaImportDialog`** (clone do `PintaImportDialog`, chaveado pelo TIPO): busca, selo
+  🧊/🧱/🌤️, "✓ no projeto" pelo `libId personal:<id>`, e o `addAsset` leva `kind` +
+  `originalFileName` (o mesmo caminho de validação do upload: MIME × extensão × assinatura).
+  ⚠️ **Modelo e céu só entram com um CONSUMIDOR 3D no projeto** (botão desabilitado + dica de
+  instalar); a textura é imagem e entra sempre. A régua é `components/assets/has3DConsumer.ts`
+  (`projectHas3DConsumer`), a MESMA do botão "Enviar modelo 3D" do painel — e ela passou a contar
+  o **`game-3d`** (antes só Avançado/Mundo 3D/Canvas 3D), porque o kit agora tem quem use.
+- **Biblioteca pessoal com 3D**: `PersonalAsset.kind` virou `'image' | 'model3d' |
+  'environment3d'` (+ `originalFileName`; legado sem `kind` = imagem), validado pelo
+  `isValidAssetDataUrl` com o kind; `maxTotalChars` 24 M → 40 M. ⭐ **`origin: 'molda'`**: a
+  textura do Molda é imagem comum, mas NÃO é desenho do Pinta — sem a marca o painel oferecia
+  "✏️ editar desenho" e abriria o Pinta num id do Molda (visto no QA do playground). "Meus
+  desenhos" e `editableDrawingIds` filtram `kind === 'image' && origin !== 'molda'`; a
+  `personalSync` já só varria imagens.
+- **Blocos novos do Jogo 3D** (`0.29.0 → 0.30.0`): `sz_g3d_create_model_file` ("Criar o objeto ⟨X⟩
+  com o modelo ⟨M⟩ na cena ⟨W⟩ tamanho ⟨S⟩", em 🧊 Formas & modelos, `field_asset_picker`
+  `kind:'3d' filter:'model3d'`, `SIZE` com sombra 1) e `sz_g3d_sky_photo` ("Usar o céu 360° ⟨P⟩ na
+  cena ⟨W⟩", em 💡 Luz & céu, `filter:'environment3d'`). Os dois `start-only-command`.
+  - ⭐ **A IR entra pela porta do Kit Plataforma**: `official-extensions/game-3d/modelAssetsIR.ts`
+    declara os nós e `platformIR.ts` os soma ao `PlatformGameThreeDStatement` + aos schemas zod, e
+    o `platformCodec.ts` faz bloco→IR (`platformGameThreeDBlockToIR`) e código→IR (declaração
+    `createModelFile` e comando `skyPhoto`). Motivo: `ir/schema.ts` (12 793 de 12 800) e
+    `parsers/js.ts` (14 108 de 14 109) estão no teto do `architecture.test.ts`; um import novo na
+    fachada custa 4 linhas. No `parsers/js.ts` só mudou a forma de montar as ferramentas
+    (`createPlatformTools`, uma fábrica do codec chamada com uma linha), porque o var-init do
+    Kit Plataforma passou a precisar de `toExpr`/`isSimpleValue` (o tamanho pode ser variável).
+  - Runtime: `runtimeModelAssets.ts`, fragmento injetado na IIFE pelo marcador
+    `/*__SZ_GAME_3D_MODEL_ASSETS_RUNTIME__*/` (mesmo mecanismo do Kit Plataforma; entra no
+    `templateGuard`). Porte enxuto do `game-3d-advanced/runtimeModelAssets.ts`, sem animação/
+    molde: `loadModel` (fila por nome, `GLTFLoader.parse` de um ArrayBuffer — a rede é morta —,
+    timeout 10 s, orçamento 48 malhas/500 k tris/64 materiais/96 draw calls) e `skyPhoto`
+    (`HDRLoader.parse` → DataTexture half/float com `flipY`, `EquirectangularReflectionMapping`,
+    `scene.background` E `scene.environment`, clone por mundo). ⭐ `runProject` é SÍNCRONO: o
+    objeto nasce como cubo de reserva pelo `addMesh` (já registrado em `_objects`, ligado ao mundo
+    — mover/girar/colidir/pintar funcionam) e o clone do GLB é pendurado nele quando o parse
+    resolve, com o cubo escondido (`material.visible = false`) e a caixa de colisão trocada pela
+    do modelo (lado maior = `size`, centro na origem). Materiais são CLONADOS por objeto ("Pintar
+    de" tinge um só); geometrias e texturas ficam no cache e são marcadas `szCachedModel` — o
+    `disposeGroup` do descarte por mundo as PULA (senão fechar uma cena mataria os objetos da
+    outra) e quem as solta é o `disposeAll`. `setBackground`/`setSky` zeram
+    `scene.environment` quando trocam um céu de foto.
+  - `index.ts` do kit: `esmImports` ganhou `three/addons/loaders/GLTFLoader.js` e
+    `HDRLoader.js` (as MESMAS URLs pinadas `?external=three` do Avançado; mesma origem do three,
+    nada novo na CSP). `runtimeTypecheck` conhece `__SZGAME_ASSETS_3D`; `FieldNamePicker`
+    declara o objeto (`OBJECT3D_DECL_BLOCKS`); contrato (`game3dContract.ts`: declaração,
+    referência, aridade 3/2, start-only); `manifest.docs`/`ai.ts` citam os dois.
+  - QA no playground (Chrome real): "Cubo girando" + os três itens trazidos do Molda + o código
+    da Ponte com `createModelFile`/`skyPhoto`/`setPosition` → a Ponte devolve os blocos (o
+    `nave` aparece nos seletores), o preview mostra o céu HDR do Molda como fundo e o modelo ao
+    lado do cubo, sem erro de CSP/WASM no console.
+- Testes: `components/assets/MoldaImportDialog.test.tsx` (botão, listagem, gate 3D, import dos
+  três tipos, not-found, retry, `projectHas3DConsumer`), `asset-library/personal.test.ts` (3D +
+  `origin`), `game-3d/__tests__/modelAssets.test.ts` (gerador, contratos, Ponte com tamanho em
+  variável, blocos/gavetas/importmap, runtime síncrono), mais o `blockAudit`/`docDrift`/
+  `blocksPedagogy`/`templateGuard`/`runtimeTypecheck` de sempre.
+- ⚠️ Fora do lote, registrado: `export/fileMap.ts` ainda deixa os assets 3D fora do ZIP exportado.
+
 ## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
 
 `src/asset-library/personal.ts` (subpath **`@sistemazero/studio/personal-assets`**) — o Studio é o

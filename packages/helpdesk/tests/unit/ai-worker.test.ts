@@ -79,6 +79,19 @@ describe('AiWorker', () => {
     // nada a asserir além de não lançar; a fila do llm ficou intacta
   })
 
+  it('reclama um lease processing expirado depois de um crash do worker', async () => {
+    const { tickets, messages, llm, worker } = build()
+    const id = await seedPending(tickets, messages, {
+      aiStatus: 'processing',
+      aiNextAttemptAt: new Date(NOW.getTime() - 1000),
+    })
+    llm.queue = [CLS, DRAFT]
+
+    await worker.tick()
+
+    expect((await tickets.byId(id))?.aiStatus).toBe('done')
+  })
+
   it('falha transitória com tentativas < teto → backoff (pending)', async () => {
     const { tickets, messages, llm, worker } = build()
     const id = await seedPending(tickets, messages)

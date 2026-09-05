@@ -244,7 +244,12 @@ describe('LocalDanfseRenderer — PDF A4 do DANFSe v2.0', () => {
       `Treinamento https://exemplo.com/${'x'.repeat(300)}`,
     )
     await renderAndParse(renderInput({ nfseXml: monsterWord }))
-  })
+    // ⚠️ Teto de CASO explícito: este é o único aqui que renderiza TRÊS PDFs
+    // completos, e o padrão do `bun:test` é 5 s. No portão, com os 22 pacotes
+    // disputando CPU, ele estourou em 5062 ms — `this test timed out after
+    // 5000ms`, não uma asserção falhando. Isolado passa (19/0). A asserção é
+    // "sempre 1 página A4"; o relógio não é o que está sob teste.
+  }, 30_000)
 
   test('wrapText quebra DURO palavra mais larga que a linha (nunca estoura a borda)', async () => {
     const doc = await PDFDocument.create()

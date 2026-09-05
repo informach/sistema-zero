@@ -45,7 +45,7 @@ export const TICKET_CATEGORIES = [
   'outro',
 ] as const satisfies readonly TicketCategory[]
 
-/** Rótulos PT por categoria (badges e checkboxes da auto-resposta). */
+/** Rótulos PT por categoria (badges e filtros da fila). */
 export const CATEGORY_LABELS: Record<TicketCategory, string> = {
   curso_acesso: 'Curso e acesso',
   problema_tecnico: 'Problema técnico',

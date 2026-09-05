@@ -26,7 +26,7 @@ export type KbArticlesProvider = () => Promise<{ title: string; content: string 
 export interface AiPipelineResult {
   classification: ClassifyResult
   draft: DraftResult
-  /** Fatos da thread p/ a decisão de auto-resposta do worker (F4). */
+  /** Fatos da thread para classificação, resumo e rascunho do copiloto (F4). */
   lastInbound: TicketMessage | null
   hasOutbound: boolean
 }

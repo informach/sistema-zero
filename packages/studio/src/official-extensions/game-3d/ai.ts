@@ -151,11 +151,13 @@ Formas, materiais e texturas (Fase 6 — montar qualquer visual; criar UMA vez, 
 - noShadow(obj): tira do passe de sombra (continua recebendo). Deixa cenário grande mais leve.
 - setVisible(obj, "show"|"hide"): mostra/esconde e também retira o objeto das consultas de mira enquanto estiver oculto. remove(world, obj): tira da cena e dos registros de física e seleção.
 - createModel(world) -> grupo vazio; addToModel(model, peca): junta peças da mesma cena num modelo (mover o modelo move tudo junto).
+- createModelFile(world, "nomeDoModelo", tamanho) -> objeto com um modelo 3D DE VERDADE (arquivo .glb do projeto, trazido do Molda ou enviado no painel Imagens); nasce como cubo e vira o modelo quando carrega. tamanho = lado maior, em blocos. Vale tudo de objeto (setPosition, moveBy, collides, setColor).
 
 Luz & céu (Fase 7 — atmosfera; criar UMA vez, fora do animate):
 - addAmbientLight(world, "#cor", forca): luz suave geral (sem sombra). addSunLight(world, "#cor", forca): sol (direcional, faz sombra).
 - addPointLight(world, "#cor", forca, x, y, z): uma lâmpada/tocha que brilha de um ponto. (A cena já nasce com luz; estes ADICIONAM clima.)
 - setFog(world, "#cor", perto, longe): neblina (o que está longe some). setSky(world, "#topo", "#horizonte"): fundo em degradê (céu).
+- skyPhoto(world, "nomeDoCeu"): céu 360° de foto (arquivo .hdr do projeto, do Molda ou enviado) como fundo, iluminando e refletindo nos objetos. Uma vez, em Ao iniciar.
 - setShadows(world, "on"|"off"): liga/desliga as sombras da cena (desligar = mais leve).
 
 Enxames & som (Fase 8 — grupos genéricos de cópias + áudio):

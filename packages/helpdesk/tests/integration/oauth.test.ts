@@ -48,6 +48,47 @@ describe('OAuth Gmail', () => {
     expect(conn?.accessTokenEnc).toContain('sealed(') // token selado, nunca em claro
   })
 
+  it('recusa o consentimento de uma caixa diferente da caixa oficial do atendimento', async () => {
+    const { app, repos, gmailClient } = buildTestApp({ gmailEnabled: true })
+    gmailClient.profile = { emailAddress: 'pessoal@sistemazero.com.br', historyId: '42' }
+    const start = await json(await request(app, 'POST', '/helpdesk/oauth/google/start'))
+    const state = new URL(start.authorizeUrl).searchParams.get('state')
+
+    const res = await callback(app, `code=abc&state=${state}`)
+
+    expect(res.headers.get('location')).toBe(
+      'http://app.test/configuracoes?error=mailbox_not_authorized',
+    )
+    expect(repos.connections.rows.size).toBe(0)
+  })
+
+  it('mantém uma única conexão Gmail ativa ao receber um novo consentimento', async () => {
+    const { app, repos, provider } = buildTestApp({ gmailEnabled: true })
+    const firstStart = await json(await request(app, 'POST', '/helpdesk/oauth/google/start'))
+    await callback(
+      app,
+      `code=first&state=${new URL(firstStart.authorizeUrl).searchParams.get('state')}`,
+    )
+
+    provider.identity = { sub: 'google-sub-2', email: 'contato@sistemazero.com.br' }
+    const secondStart = await json(await request(app, 'POST', '/helpdesk/oauth/google/start'))
+    await callback(
+      app,
+      `code=second&state=${new URL(secondStart.authorizeUrl).searchParams.get('state')}`,
+    )
+
+    const connections = [...repos.connections.rows.values()]
+    expect(connections.filter((connection) => connection.status === 'connected')).toHaveLength(1)
+    expect(await repos.connections.current()).toMatchObject({ externalId: 'google-sub-2' })
+    expect(
+      connections.find((connection) => connection.externalId === 'google-sub-1'),
+    ).toMatchObject({
+      status: 'disabled',
+      accessTokenEnc: null,
+      refreshTokenEnc: null,
+    })
+  })
+
   it('callback com state inválido → 302 error=state_invalid', async () => {
     const { app } = buildTestApp({ gmailEnabled: true })
     const res = await callback(app, 'code=abc&state=nao-existe')

@@ -11,5 +11,7 @@ describe('chaves das criações no R2 (compartilhadas entre members e member-she
     expect(
       creationPartStorageKey('u1', 'pinta', 'd', 'b'.repeat(64), 1).startsWith('creations/u1/'),
     ).toBe(true)
+    // O Molda (oficina 3D) é a terceira ferramenta, no mesmo layout.
+    expect(creationStorageKey('u1', 'molda', 'casa', 1)).toBe('creations/u1/molda/casa/1.json.gz')
   })
 })

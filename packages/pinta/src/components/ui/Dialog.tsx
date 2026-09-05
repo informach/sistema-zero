@@ -4,7 +4,7 @@
  * aria-modal + aria-labelledby, trap simples de Tab. Renderiza INLINE (sem
  * portal), então permanece dentro do escopo [data-pinta-theme] do root.
  */
-import type { JSX, ReactNode } from 'react'
+import type { JSX, ReactNode, RefObject } from 'react'
 import { useEffect, useId, useRef } from 'react'
 import { COPY } from '../../core/copy'
 import { X } from './icons'
@@ -96,12 +96,22 @@ export function Dialog({
   title,
   children,
   wide = false,
+  returnFocusTo,
 }: {
   open: boolean
   onClose: () => void
   title: string
   children: ReactNode
   wide?: boolean
+  /**
+   * Quem recebe o foco ao fechar, no lugar de "quem estava focado ao abrir".
+   * Para a janela que REABRE sozinha (a do Degradê depois de uma captura de
+   * cor): quem estava focado nesse momento pode ser o body (toque no palco) ou
+   * o botão de OUTRA modal que fechou no mesmo commit (o "+" do painel de
+   * Cores) — o React roda todos os cleanups antes de todos os efeitos, então o
+   * `activeElement` visto aqui já é o que a outra modal devolveu.
+   */
+  returnFocusTo?: RefObject<HTMLElement | null>
 }): JSX.Element | null {
   const cardRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
@@ -140,9 +150,9 @@ export function Dialog({
       document.removeEventListener('keydown', handleKeyDown)
       document.removeEventListener('focusin', handleFocusIn)
       unregisterDialog(card)
-      previous?.focus()
+      ;(returnFocusTo?.current ?? previous)?.focus()
     }
-  }, [open])
+  }, [open, returnFocusTo])
 
   if (!open) return null
 

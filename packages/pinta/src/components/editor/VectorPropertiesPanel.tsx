@@ -17,7 +17,6 @@ import { COPY } from '../../core/copy'
 import {
   fontFamilyOf,
   isVectorFontFamily,
-  isVectorGradient,
   textAlignOf,
   VECTOR_FONT_FAMILIES,
   VECTOR_FONT_FAMILY_INFO,
@@ -64,7 +63,8 @@ export function VectorPropertiesPanel({
   const singleShape = single ? (selected[0] ?? null) : null
   const selectedRect = singleShape?.type === 'rect' ? singleShape : null
   const selectedText = singleShape?.type === 'text' ? singleShape : null
-  const activeGradient = isVectorGradient(style.fill) ? style.fill : null
+  // Mesma fonte da janela do Degradê: a forma selecionada, ou o estilo sem seleção.
+  const working = currentGradient()
 
   if (disclosure && !disclosure.open) {
     return (
@@ -91,7 +91,7 @@ export function VectorPropertiesPanel({
           <span
             aria-hidden="true"
             className="size-6 shrink-0 rounded-md border-2 border-pin-border"
-            style={{ background: gradientCss(activeGradient ?? currentGradient()) }}
+            style={{ background: gradientCss(working) }}
           />
           {COPY.vector.gradient}
         </Button>

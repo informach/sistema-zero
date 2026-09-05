@@ -526,7 +526,7 @@ export interface OwnPintaSubmissionView {
 }
 
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
-export type CreationToolView = 'studio' | 'pinta'
+export type CreationToolView = 'studio' | 'pinta' | 'molda'
 
 /** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
 export interface CreationSummaryView {

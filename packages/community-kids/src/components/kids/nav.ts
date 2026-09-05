@@ -1,5 +1,6 @@
 import {
   Blocks,
+  Box,
   CircleUserRound,
   GraduationCap,
   Home,
@@ -41,6 +42,8 @@ export const NAV_ITEMS: NavItem[] = [
   // Pinta desenha → Estúdio constrói.
   { href: '/pensa', label: 'Pensa', icon: Lightbulb, match: '/pensa' },
   { href: '/pinta', label: 'Pinta', icon: Palette, match: '/pinta' },
+  // Molda modela (a oficina 3D: modelos, texturas e céus para os jogos 3D).
+  { href: '/molda', label: 'Molda', icon: Box, match: '/molda' },
   { href: '/estudio', label: 'Estúdio', icon: Blocks, match: '/estudio' },
   // O avatar é acessado pelo clique no avatar em /perfil (sem item próprio no menu).
   { href: '/quarto', label: 'Quarto', icon: House },
@@ -62,7 +65,7 @@ export const MOBILE_NAV_ITEMS: NavItem[] = [
     href: '/criar',
     label: 'Criar',
     icon: Sparkles,
-    match: ['/criar', '/pensa', '/pinta', '/estudio', '/quarto', '/clube-dos-criadores'],
+    match: ['/criar', '/pensa', '/pinta', '/molda', '/estudio', '/quarto', '/clube-dos-criadores'],
   },
   { href: '/mural-dos-criadores', label: 'Mural', icon: Images, match: '/mural-dos-criadores' },
   { href: '/perfil', label: 'Perfil', icon: CircleUserRound },

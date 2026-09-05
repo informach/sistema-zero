@@ -43,7 +43,7 @@ export function AppSidebar({
   return (
     <aside
       className={cn(
-        'sticky top-0 hidden h-screen shrink-0 flex-col border-border bg-card py-5 md:flex',
+        'sticky top-0 hidden h-screen min-h-0 shrink-0 flex-col border-border bg-card py-5 md:flex',
         'overflow-hidden transition-[width,padding,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
         navCollapsed
           ? 'w-0 border-r-0 px-0 opacity-0 pointer-events-none'
@@ -59,7 +59,7 @@ export function AppSidebar({
           Next disparava ~7 requisições RSC pesadas (incl. /estudio e /quarto) a CADA página numa
           réplica ÚNICA → tempestade de 502/ERR_HTTP2 e navegação lenta. Navegar passa a buscar sob
           demanda; o `loading.tsx` do grupo dá o esqueleto instantâneo no clique. */}
-      <nav className="mt-8 flex flex-col gap-1.5">
+      <nav className="mt-8 min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1">
         {NAV_ITEMS.map((item) => {
           const active = isNavActive(pathname, item.href, item.match)
           const Icon = item.icon
@@ -85,7 +85,7 @@ export function AppSidebar({
       </nav>
 
       {gamification ? (
-        <div className="mt-auto pb-4">
+        <div className="shrink-0 pt-2 pb-4">
           <StreakWidget gamification={gamification} />
         </div>
       ) : null}
@@ -94,6 +94,7 @@ export function AppSidebar({
         className={cn(
           'flex items-center gap-3 border-border border-t pt-4',
           !gamification && 'mt-auto',
+          'shrink-0',
         )}
       >
         <UserMenu

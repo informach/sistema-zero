@@ -12,7 +12,12 @@
  * deixava o índice apontando metadados novos para o blob velho, e o reconciliador da criança
  * perdia a referência do último estado confirmado.
  */
-export const CREATION_TOOLS = ['studio', 'pinta'] as const
+/**
+ * ⚠️ O enum `creation_tool` do Postgres espelha esta lista (schema + migration): valor NOVO
+ * entra sempre no FIM, com `ADD VALUE IF NOT EXISTS` numa migration própria (`0065`/`0072`).
+ * `molda` (04/09/2026) = a oficina 3D (modelos `.glb`, texturas, céus `.hdr`).
+ */
+export const CREATION_TOOLS = ['studio', 'pinta', 'molda'] as const
 export type CreationTool = (typeof CREATION_TOOLS)[number]
 
 export function isCreationTool(value: unknown): value is CreationTool {
@@ -21,11 +26,29 @@ export function isCreationTool(value: unknown): value is CreationTool {
 
 /**
  * Posse exigida por ferramenta (as mesmas refs do catálogo que gateiam as páginas
- * `/estudio` e `/pinta` do kids e o gate de produto do Pensa).
+ * `/estudio`, `/pinta` e `/molda` do kids e o gate de produto do Pensa).
  */
 export const CREATION_ACCESS_REF: Readonly<Record<CreationTool, string>> = {
   studio: 'estudio-completo',
   pinta: 'pinta',
+  molda: 'molda',
+}
+
+/** Nome da ferramenta nos recados (403 de posse). */
+export const CREATION_TOOL_NAMES: Readonly<Record<CreationTool, string>> = {
+  studio: 'Estúdio Completo',
+  pinta: 'Pinta',
+  molda: 'Molda',
+}
+
+/**
+ * Contagem zerada por ferramenta, DERIVADA da lista: um literal `{ studio: 0, pinta: 0 }`
+ * para de compilar (e de contar) a cada ferramenta nova — o repositório e o fake usam isto.
+ */
+export function emptyCountByTool(): Record<CreationTool, number> {
+  const out = {} as Record<CreationTool, number>
+  for (const tool of CREATION_TOOLS) out[tool] = 0
+  return out
 }
 
 /**

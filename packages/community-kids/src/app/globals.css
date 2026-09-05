@@ -15,6 +15,9 @@
 /* Tokens do Pinta (--color-pin-…) — MESMO gotcha: registra as cores p/ o @source
    gerar as utilitárias pin-*. */
 @import "../../../pinta/src/styles/pinta.css";
+/* Tokens do Molda (--color-mld-…) — MESMO gotcha: registra as cores p/ o @source
+   gerar as utilitárias mld-*. */
+@import "../../../molda/src/styles/molda.css";
 /* Componentes compartilhados (@sistemazero/ui + @sistemazero/member-shell) —
    o scanner do Tailwind v4 precisa VER as classes deles (sem isto renderizam pelados). */
 @source "../../../ui/src";
@@ -26,6 +29,8 @@
 @source "../../../pensa/src";
 /* Editor de assets embarcável (@sistemazero/pinta) — idem. */
 @source "../../../pinta/src";
+/* Oficina 3D embarcável (@sistemazero/molda) — idem. */
+@source "../../../molda/src";
 
 @custom-variant dark (&:is(.dark *));
 

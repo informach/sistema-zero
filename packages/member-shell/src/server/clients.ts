@@ -117,6 +117,13 @@ export const PENSA_ACCESS_REF = 'pensa'
 export const PINTA_ACCESS_REF = 'pinta'
 
 /**
+ * Ref do produto vendável "Molda" (oficina 3D: modelos low poly, texturas e céus
+ * HDR para os jogos 3D do Estúdio). O gate é SÓ na página (dados locais ao
+ * navegador, padrão Pinta). ⚠️ Tem que casar com o slug do produto no catálogo.
+ */
+export const MOLDA_ACCESS_REF = 'molda'
+
+/**
  * Ref do produto "Clube dos Criadores" — junto do Estúdio, é a POSSE do DESAFIO
  * do mês (game jam). ⚠️ Tem que casar com o `CHALLENGE_CLUB_REF` do hub e o slug
  * do produto/servidor no catálogo.
@@ -658,6 +665,32 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     checkPintaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
         query: { refs: `${PINTA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+      })
+    },
+
+    // ── Molda (oficina 3D: modelos, texturas e céus) ────────────────────────
+    /**
+     * "Esta conta tem acesso ao Molda?" — Server Component (sem refresh de
+     * cookie), p/ gatear a página /molda. Mesmo molde do Pinta: a segunda ref
+     * (`estudio-completo`) alimenta o `studioOwned` do adapter (atalho e dica do
+     * "Trazer do Molda" na galeria).
+     */
+    checkMoldaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: `${MOLDA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+      })
+    },
+    /**
+     * As TRÊS ferramentas de criação numa ida só, para a página /estudio decidir de
+     * uma vez o gate (`estudio-completo`) e as bibliotecas "Trazer do Pinta" /
+     * "Trazer do Molda" (produtos vendidos à parte: só com a posse de cada um).
+     */
+    checkCreativeToolsAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
+      return gw.gatewayFetchReadonly('/members/access', {
+        query: {
+          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF}`,
+          audience,
+        },
       })
     },
     /** Projetos ATIVOS do perfil (lista do Pensa). */

@@ -7,7 +7,7 @@ import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import {
   checkChallengeAccessReadonly,
-  checkPintaAccessReadonly,
+  checkCreativeToolsAccessReadonly,
   getAiCreditsReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
@@ -47,10 +47,11 @@ export default async function EstudioPage({
   const desafioPendente = getChallengeReadonly().catch(() => null)
   const creditosPendentes = getAiCreditsReadonly().catch(() => null)
   const [res, session, challengeAccess, gam, unlocksRes] = await Promise.all([
-    // ⚠️ Pede refs `pinta,estudio-completo` numa ida SÓ: o gate segue sendo o
-    // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" no editor
-    // (produtos vendidos à parte — cross-app só com posse dos dois lados).
-    checkPintaAccessReadonly(),
+    // ⚠️ Pede refs `estudio-completo,pinta,molda` numa ida SÓ: o gate segue sendo o
+    // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" e a do MOLDA o
+    // "Trazer do Molda" no editor (produtos vendidos à parte — cross-app só com posse
+    // dos dois lados).
+    checkCreativeToolsAccessReadonly(),
     getSession(),
     checkChallengeAccessReadonly().catch(() => null),
     // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
@@ -65,6 +66,7 @@ export default async function EstudioPage({
   const hasAccess = res.body?.access?.['estudio-completo'] === true
   if (!hasAccess) return <KidsLockedStudio />
   const pintaOwned = res.body?.access?.pinta === true
+  const moldaOwned = res.body?.access?.molda === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <KidsStudioUnavailable />
@@ -113,6 +115,7 @@ export default async function EstudioPage({
       aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
       pintaOwned={pintaOwned}
+      moldaOwned={moldaOwned}
     />
   )
 }

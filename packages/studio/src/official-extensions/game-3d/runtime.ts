@@ -12,6 +12,7 @@
  *
  * É uma STRING template: sem regex, sem ${...}, sem barra-n literal.
  */
+import { gameThreeDModelAssetsRuntimeSource } from './runtimeModelAssets'
 import { gameThreeDPlatformRuntimeSource } from './runtimePlatform'
 
 const gameThreeDRuntimeBase = `import * as THREE from 'three';
@@ -488,6 +489,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     // trocar pela cor sólida — senão a textura vaza na GPU até o dispose do mundo.
     var old = world.scene.background;
     if (old && old.isTexture && old.dispose) try { old.dispose(); } catch (e) {}
+    // Um céu de foto também iluminava a cena: a cor sólida desliga o reflexo dele.
+    if (old && world.scene.environment === old) world.scene.environment = null;
     world.scene.background = new THREE.Color(color);
   }
 
@@ -1171,6 +1174,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     g.fillRect(0, 0, 2, 256);
     var old = world.scene.background;
     if (old && old.isTexture && old.dispose) try { old.dispose(); } catch (e) {}
+    if (old && world.scene.environment === old) world.scene.environment = null;
     world.scene.background = new THREE.CanvasTexture(cv);
   }
   function setShadows(world, on) {
@@ -2268,6 +2272,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       }
       _texCache = null;
     }
+    // Modelos .glb e céus .hdr parseados (cache global, como as texturas).
+    disposeModelAssets();
     disposeAudio();
   }
 
@@ -2289,7 +2295,11 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       o._szResourcesDisposed = true;
       if (o.geometry && o.geometry.dispose && !visited.geometries.has(o.geometry)) {
         visited.geometries.add(o.geometry);
-        disposeOwnedGeometry(o.geometry, !!forceGeometries);
+        // Geometria de modelo .glb é do CACHE (compartilhada por todo objeto do mesmo
+        // arquivo, em qualquer cena): quem a solta é o disposeAll, nunca um mundo.
+        if (!(o.geometry.userData && o.geometry.userData.szCachedModel)) {
+          disposeOwnedGeometry(o.geometry, !!forceGeometries);
+        }
       }
       if (o.material) {
         var materials = o.material.length ? o.material : [o.material];
@@ -2297,7 +2307,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
           var m = materials[i];
           if (!m || visited.materials.has(m)) continue;
           visited.materials.add(m);
-          if (disposeTextures && m.map && m.map.dispose) try { m.map.dispose(); } catch (e2) {}
+          var cachedMap = m.map && m.map.userData && m.map.userData.szCachedModel;
+          if (disposeTextures && m.map && m.map.dispose && !cachedMap) try { m.map.dispose(); } catch (e2) {}
           if (m.dispose) try { m.dispose(); } catch (e3) {}
         }
       }
@@ -3375,6 +3386,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
 
   /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/
 
+  /*__SZ_GAME_3D_MODEL_ASSETS_RUNTIME__*/
+
   window.SZGame3D = {
     createPlatformScene: createPlatformScene,
     setStageTheme: setStageTheme,
@@ -3520,6 +3533,8 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     addPointLight: addPointLight,
     setFog: setFog,
     setSky: setSky,
+    skyPhoto: skyPhoto,
+    createModelFile: createModelFile,
     setShadows: setShadows,
     createSwarm: createSwarm,
     spawnInSwarm: spawnInSwarm,
@@ -3547,7 +3562,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
  * compõe os seus subsistemas: o fragmento roda DENTRO da IIFE e enxerga tudo que
  * o runtime principal já definiu, sem criar outro global nem outro import.
  */
-export const gameThreeDRuntime = gameThreeDRuntimeBase.replace(
-  '  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/',
-  gameThreeDPlatformRuntimeSource,
-)
+export const gameThreeDRuntime = gameThreeDRuntimeBase
+  .replace('  /*__SZ_GAME_3D_PLATFORM_RUNTIME__*/', gameThreeDPlatformRuntimeSource)
+  // Modelos .glb e céu .hdr (lote 7 do Molda): mesmo mecanismo, outro fragmento.
+  .replace('  /*__SZ_GAME_3D_MODEL_ASSETS_RUNTIME__*/', gameThreeDModelAssetsRuntimeSource)

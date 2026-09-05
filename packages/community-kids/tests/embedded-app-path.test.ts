@@ -33,6 +33,6 @@ describe('isEmbeddedAppPath', () => {
   })
 
   test('a lista de prefixos é a fonte única do MainContainer e do modo foco', () => {
-    expect([...EMBEDDED_APP_PREFIXES]).toEqual(['/estudio', '/pensa', '/pinta'])
+    expect([...EMBEDDED_APP_PREFIXES]).toEqual(['/estudio', '/pensa', '/pinta', '/molda'])
   })
 })

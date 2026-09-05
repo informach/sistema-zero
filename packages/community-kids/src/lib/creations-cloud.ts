@@ -33,7 +33,8 @@
 
 import { perfSpanAsync } from './perf'
 
-export type CreationTool = 'studio' | 'pinta'
+/** Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026). */
+export type CreationTool = 'studio' | 'pinta' | 'molda'
 
 /** O `fetch` injetável (testes): só a assinatura de chamada, sem o `preconnect` do Bun. */
 export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>

@@ -1,0 +1,225 @@
+/*
+ * Tokens + estilos do componente <MoldaApp>. Este arquivo é exportado como
+ * `@sistemazero/molda/styles.css` e deve ser importado DENTRO do pipeline
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
+ * `@source` apontando para packages/molda/src.
+ *
+ * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
+ * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
+ * consumidor). Sem regras globais de html/body.
+ *
+ * Prefixo dos tokens: `mld-` (utilitárias `bg-mld-*`, `text-mld-*`…). NÃO usar
+ * `m-`/`mt-`/`p-`/etc. — colidem com as raízes de margem/padding do Tailwind.
+ *
+ * Tema: os valores no @theme valem para o tema CLARO (default do Molda, público
+ * kids). O escuro é ativado por `[data-molda-theme="dark"]` no ROOT do
+ * componente — nunca no <html> do host. Os diálogos permanecem dentro do root.
+ */
+@theme {
+  /* SUPERFÍCIES: o Molda é uma SEÇÃO da comunidade kids, não um app à parte —
+     fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
+     azul-céu da página). O fallback literal é o creme MakeCode, que mantém o
+     playground standalone funcionando igual. */
+  --color-mld-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85));
+  --color-mld-surface: var(--sz-kids-branco, oklch(0.995 0.006 85));
+  --color-mld-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
+  --color-mld-text: var(--sz-kids-tinta, oklch(0.145 0.012 262));
+  --color-mld-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
+  --color-mld-text-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
+  --color-mld-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --color-mld-accent-fg: var(--sz-kids-branco, oklch(0.995 0.006 85));
+  --color-mld-ok: oklch(0.55 0.14 155);
+  --color-mld-warn: oklch(0.6 0.14 65);
+  --color-mld-danger: oklch(0.55 0.19 25);
+  --color-mld-scrim: oklch(0.2 0.02 260 / 0.45); /* fundo do modal */
+
+  /* Uma cor alegre e distinta por TIPO de criação. */
+  --color-mld-kind-model: oklch(0.55 0.15 235); /* azul    · Modelo */
+  --color-mld-kind-texture: oklch(0.66 0.17 55); /* laranja · Textura */
+  --color-mld-kind-sky: oklch(0.55 0.21 300); /* roxo    · Céu */
+}
+
+/* Tema escuro — override por atributo data-molda-theme="dark" no root. */
+[data-molda-theme="dark"] {
+  --color-mld-bg: var(--sz-kids-navy, oklch(0.17 0.014 262));
+  --color-mld-surface: var(--sz-kids-navy-superficie, oklch(0.215 0.015 262));
+  --color-mld-border: var(--sz-kids-navy-linha, oklch(0.32 0.02 262));
+  --color-mld-text: var(--sz-kids-navy-tinta, oklch(0.965 0.005 250));
+  --color-mld-muted: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
+  --color-mld-text-soft: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
+  --color-mld-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --color-mld-accent-fg: var(--sz-kids-navy, oklch(0.17 0.014 262));
+  --color-mld-ok: oklch(0.8 0.16 155);
+  --color-mld-warn: oklch(0.83 0.14 85);
+  --color-mld-danger: oklch(0.72 0.17 25);
+  --color-mld-scrim: oklch(0.08 0.01 262 / 0.6);
+
+  --color-mld-kind-model: oklch(0.76 0.12 235);
+  --color-mld-kind-texture: oklch(0.79 0.14 65);
+  --color-mld-kind-sky: oklch(0.74 0.16 300);
+}
+
+/*
+ * Linguagem visual do kids, standalone-safe: gradiente da marca, fonte display
+ * herdada do HOST via var(--font-display) com fallback local, e as superfícies/
+ * botões "3D" de sombra dura. Nenhuma var do kids é referenciada sem fallback.
+ */
+[data-molda-theme] {
+  --mld-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --mld-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  /* Barra de título dos painéis. ⚠️ Vive AQUI, e não no @theme: o Tailwind v4
+     PODA do @theme os tokens que nenhuma utilitária usa. ⚠️ `in oklab`, NUNCA
+     `in oklch`: oklch é polar e interpola o MATIZ (azul + branco = rosa). */
+  --mld-panel-head: color-mix(in oklab, var(--color-mld-accent) 10%, var(--color-mld-surface));
+}
+[data-molda-theme="dark"] {
+  --mld-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --mld-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --mld-panel-head: color-mix(in oklab, var(--color-mld-accent) 16%, var(--color-mld-surface));
+}
+
+/* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
+[data-molda-theme] .mld-display {
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Faixa de título dos painéis do editor (ver components/ui/Panel.tsx). */
+[data-molda-theme] .mld-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.75rem; /* 44px: a faixa também é alvo de toque quando é botão */
+  padding: 0.125rem 0.25rem 0.125rem 0.5rem;
+  background: var(--mld-panel-head);
+  border-bottom: 2px solid var(--mld-panel-border, var(--color-mld-border));
+}
+
+/* CTA pill com sombra dura (espelho do .sz-btn-gradient do kids). */
+[data-molda-theme] .mld-btn-3d {
+  border-radius: 9999px;
+  background-image: var(--mld-gradient);
+  color: var(--color-mld-accent-fg);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--mld-cta) 60%, black);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
+}
+[data-molda-theme] .mld-btn-3d:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--mld-cta) 60%, black);
+}
+[data-molda-theme] .mld-btn-3d:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--mld-cta) 60%, black);
+}
+/* Estado ativo dos botões de ferramenta: mesma sombra dura, mais rasa. */
+[data-molda-theme] .mld-tool-active {
+  box-shadow: 0 2px 0 color-mix(in oklab, var(--color-mld-accent) 60%, black);
+}
+
+/* Painel/card com borda 2px + sombra dura discreta (espelho do .kids-card).
+   A cor da borda é sobreponível via --mld-panel-border (o AssetCard pinta a
+   borda com a cor do TIPO da criação e a sombra acompanha). */
+[data-molda-theme] .mld-panel {
+  border: 2px solid var(--mld-panel-border, var(--color-mld-border));
+  border-radius: 1rem;
+  background: var(--color-mld-surface);
+  box-shadow: 0 3px 0
+    color-mix(in oklab, var(--mld-panel-border, var(--color-mld-border)) 45%, transparent);
+}
+
+/* Pop de hover dos cards (espelho do .kid-pop). */
+[data-molda-theme] .mld-pop {
+  transition: transform 0.18s ease-out;
+}
+[data-molda-theme] .mld-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-molda-theme] .mld-pop:hover {
+    transform: none;
+  }
+}
+
+/* Xadrez de transparência atrás das miniaturas de textura. */
+[data-molda-theme] .mld-checkerboard {
+  background-color: oklch(0.95 0 0);
+  background-image: conic-gradient(
+    oklch(0.85 0 0) 0 25%,
+    transparent 0 50%,
+    oklch(0.85 0 0) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+[data-molda-theme="dark"] .mld-checkerboard {
+  background-color: oklch(0.21 0 0);
+  background-image: conic-gradient(
+    oklch(0.29 0 0) 0 25%,
+    transparent 0 50%,
+    oklch(0.29 0 0) 0 75%,
+    transparent 0
+  );
+}
+
+/* Canvas de pixel: nunca suavizar o upscale. */
+[data-molda-theme] .mld-pixelated {
+  image-rendering: pixelated;
+}
+
+/* Pop suave do card recém-criado na galeria (uma vez, ao entrar com a classe). */
+@keyframes mld-card-pop {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+[data-molda-theme] .mld-card-pop {
+  animation: mld-card-pop 0.3s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-molda-theme] .mld-card-pop {
+    animation: none;
+  }
+}
+
+/* Faixa que rola de LADO sem crescer em ALTURA (a barra de rolagem clássica do
+   Chrome ocupa layout; ver o mesmo caso no Pinta). */
+[data-molda-theme] .mld-scroll-x {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-molda-theme] .mld-scroll-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Cards da galeria: o navegador só mede/pinta os cards perto da janela. */
+[data-molda-theme] .mld-gallery-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 164px 232px;
+}
+
+/* A viewport 3D ocupa a caixa inteira e não deixa o navegador rolar/zoomar por
+   baixo do gesto de orbitar (um dedo orbita, dois fazem pan/zoom). */
+[data-molda-theme] .mld-viewport {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}

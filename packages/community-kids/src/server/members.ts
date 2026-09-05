@@ -8,6 +8,8 @@ export const {
   checkChallengeAccessReadonly,
   checkPensaAccessReadonly,
   checkPintaAccessReadonly,
+  checkMoldaAccessReadonly,
+  checkCreativeToolsAccessReadonly,
   getProfileAllowanceReadonly,
   getMyCourse,
   getLesson,

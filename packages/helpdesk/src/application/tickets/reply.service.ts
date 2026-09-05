@@ -9,6 +9,12 @@ import {
 import type { ConnectionRepository } from '../../domain/ports/connection-repository.port'
 import { GmailApiError, type GmailClient } from '../../domain/ports/gmail-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
+import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
+import { OAuthProviderError } from '../../domain/ports/oauth-provider.port'
+import type {
+  PendingReplyMessage,
+  ReplyDeliveryRepository,
+} from '../../domain/ports/reply-delivery-repository.port'
 import type { SettingsRepository } from '../../domain/ports/settings-repository.port'
 import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
@@ -17,6 +23,10 @@ import { buildReplyRaw } from '../../infrastructure/gateways/google/rfc2822'
 import type { Actor } from '../actor'
 import type { GmailAccountService } from '../connection/gmail-account.service'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
+import { buildPortalReplyNotification, type PortalUrls } from './portal-reply-notification'
+
+/** Após esse prazo, uma intenção `pending` não é mais considerada envio em curso. */
+const PENDING_DELIVERY_RECOVERY_AFTER_MS = 2 * 60_000
 
 export interface ReplyServiceConfig {
   /** Nome de exibição no From (`From: <nome> <contato@…>`). */
@@ -26,32 +36,35 @@ export interface ReplyServiceConfig {
 export interface ReplyInput {
   body: string
   version: number
-  /** Enviada pela IA (auto-resposta, F4) → sentVia='ai'. Default humano. */
-  viaAi?: boolean
 }
 
-/** Resultado da auto-resposta (F4): sent + motivo quando NÃO enviou. */
-export interface AutoReplyResult {
-  sent: boolean
-  reason?: string
+/** Aviso por e-mail da resposta do PORTAL: cliente do messaging + origens dos apps. */
+export interface PortalReplyNotifier {
+  messaging: MessagingGateway
+  urls: PortalUrls
 }
 
 /**
- * Responde um ticket enviando o e-mail pela Gmail API (mesma thread, remetente
- * contato@). Guard de fase anti-duplo-envio: CLAIM atômico ANTES do send
- * (`version` no humano, `auto_reply_state` na IA) → um e-mail só. Crash entre o
- * send e a persistência → o poller re-ingere a mensagem enviada (dedupe por
- * gmail_message_id), nunca perde nem duplica.
+ * Responde um ticket. Dois canais, decididos pelo ticket:
+ * - **e-mail** (ou portal que já vive numa thread do Gmail): envia pela Gmail API na
+ *   mesma thread, remetente contato@. A intenção é gravada antes do side-effect e
+ *   um timeout é reconciliado pelo Message-ID RFC 822, evitando reenvio cego.
+ * - **portal** (`source: 'portal'` sem `gmailThreadId`): a resposta vira mensagem da
+ *   conversa (visível no /ajuda na hora) e o cliente recebe um AVISO pelo
+ *   messaging, best-effort. Não depende da caixa Gmail estar conectada.
  */
 export class ReplyService {
   constructor(
     private readonly tickets: TicketRepository,
     private readonly messages: MessageRepository,
+    private readonly deliveries: ReplyDeliveryRepository,
     private readonly connections: ConnectionRepository,
     private readonly settings: SettingsRepository,
     private readonly gmailAccount: GmailAccountService,
     private readonly gmail: GmailClient,
     private readonly config: ReplyServiceConfig,
+    /** Null = grupo de env do aviso ausente: a resposta sai, o e-mail não. */
+    private readonly notifier: PortalReplyNotifier | null,
     private readonly now: () => Date,
     private readonly idGen: () => string,
     private readonly logger: Logger,
@@ -65,68 +78,104 @@ export class ReplyService {
   ): Promise<{ ticket: TicketView; message: MessageView }> {
     const ticket = await this.tickets.byId(ticketId)
     if (!ticket) throw new TicketNotFoundError()
+    // Ticket do portal que nunca passou pelo Gmail responde NO portal. Se a
+    // conversa já vive numa thread do Gmail (legado respondido por e-mail, e o
+    // cliente pode ter continuado por lá), segue pelo Gmail — a resposta também
+    // aparece no portal, porque já é `visibility: 'customer'`.
+    if (ticket.source === 'portal' && ticket.gmailThreadId === null) {
+      return this.deliverToPortal(actor, ticket, input)
+    }
     const connection = await this.requireConnection()
     const thread = await this.messages.byTicketId(ticketId)
 
-    // CLAIM (fase 1): reserva o envio ANTES de mandar o e-mail. 0 linhas = corrida.
-    const claimed = await this.tickets.claimForReply(ticketId, input.version, this.now())
-    if (!claimed) throw new ConcurrencyConflictError()
-
     const body = await this.withSignature(input.body)
-    const { ticket: updated, message } = await this.deliver({
+    return this.deliver({
       ticket,
       connection,
       thread,
       body,
-      sentVia: input.viaAi ? 'ai' : 'human',
+      expectedVersion: input.version,
+      sentVia: 'human',
       createdBy: actor.userId,
       createdByName: actor.displayName,
     })
-    return { ticket: toTicketView(updated), message: toMessageView(message) }
   }
 
   /**
-   * AUTO-resposta da IA (F4): guard de fase `auto_reply_state` (none→sending),
-   * NÃO usa `version`. Falha/crash → `aborted` (nunca re-tenta); o rascunho fica
-   * para revisão humana.
+   * Resposta de ticket do PORTAL: sem transporte. Intenção e confirmação são o
+   * mesmo passo (`appendPortalReply`, transacional, CAS em `version`), e o
+   * aviso por e-mail sai DEPOIS do commit, best-effort — quando ele falha, a
+   * resposta já está na conversa.
    */
-  async autoReply(ticketId: string, draftBody: string): Promise<AutoReplyResult> {
-    const ticket = await this.tickets.byId(ticketId)
-    if (!ticket) return { sent: false, reason: 'Ticket não encontrado' }
-    const connection = await this.connections.current()
-    if (connection?.status !== 'connected') {
-      return { sent: false, reason: 'Caixa do Gmail não conectada' }
+  private async deliverToPortal(
+    actor: Actor,
+    ticket: Ticket,
+    input: ReplyInput,
+  ): Promise<{ ticket: TicketView; message: MessageView }> {
+    const body = await this.withSignature(input.body)
+    const createdAt = this.now()
+    const message: TicketMessage = {
+      id: this.idGen(),
+      ticketId: ticket.id,
+      kind: 'portal',
+      visibility: 'customer',
+      gmailMessageId: null,
+      rfc822MessageId: null,
+      // Portal não tem máquina de entrega (igual à mensagem inbound do portal);
+      // `null` também mantém o DeliveryRecovery do app quieto.
+      deliveryState: null,
+      deliveryLastError: null,
+      direction: 'outbound',
+      sentVia: 'human',
+      fromEmail: null,
+      fromName: this.config.fromName,
+      toEmails: [ticket.requesterEmail],
+      ccEmails: [],
+      subject: ticket.subject,
+      bodyText: body,
+      bodyHtml: null,
+      snippet: body.slice(0, 500),
+      attachments: [],
+      isAutoreply: false,
+      gmailInternalDate: null,
+      createdBy: actor.userId,
+      createdByName: actor.displayName,
+      createdAt,
     }
-    // GUARD DE FASE: reserva atômica antes do side-effect. false = já processada.
-    if (!(await this.tickets.claimAutoReply(ticketId, this.now()))) {
-      return { sent: false, reason: 'Auto-resposta já processada' }
+    const result = await this.deliveries.appendPortalReply({
+      ticketId: ticket.id,
+      expectedVersion: input.version,
+      message,
+      at: createdAt,
+    })
+    if (result.status === 'not_found') throw new TicketNotFoundError()
+    if (result.status === 'conflict' || result.status === 'pending') {
+      throw new ConcurrencyConflictError()
     }
-    const thread = await this.messages.byTicketId(ticketId)
-    const body = await this.withSignature(draftBody)
-    try {
-      await this.deliver({
-        ticket,
-        connection,
-        thread,
-        body,
-        sentVia: 'ai',
-        createdBy: null,
-        createdByName: 'IA',
+
+    await this.notifyPortalReply(result.ticket, result.message)
+    return { ticket: toTicketView(result.ticket), message: toMessageView(result.message) }
+  }
+
+  /** Best-effort: nunca falha a resposta, e o log fica sem PII. */
+  private async notifyPortalReply(ticket: Ticket, message: TicketMessage): Promise<void> {
+    if (!this.notifier) {
+      this.logger.info('reply.notify_skipped', {
+        ticketId: ticket.id,
+        reason: 'messaging_not_configured',
       })
-      await this.tickets.finishAutoReply(ticketId, 'sent', null, this.now())
-      return { sent: true }
-    } catch (error) {
-      const reason = error instanceof Error ? error.message : String(error)
-      this.logger.error('auto_reply.send_failed', { ticketId, error: reason })
-      // sending→aborted: retry ambíguo vira falha honesta. Não sabemos se o e-mail
-      // saiu (o poller re-ingere se saiu); NUNCA reenvia. Rascunho fica p/ humano.
-      await this.tickets.finishAutoReply(
-        ticketId,
-        'aborted',
-        'Falha no envio automático',
-        this.now(),
+      return
+    }
+    try {
+      await this.notifier.messaging.sendEmail(
+        buildPortalReplyNotification({ ticket, message, urls: this.notifier.urls }),
       )
-      return { sent: false, reason: 'Falha no envio automático' }
+    } catch (error) {
+      this.logger.warn('reply.notify_failed', {
+        ticketId: ticket.id,
+        messageId: message.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 
@@ -148,10 +197,11 @@ export class ReplyService {
     connection: GmailConnection
     thread: TicketMessage[]
     body: string
-    sentVia: 'human' | 'ai'
+    expectedVersion: number
+    sentVia: 'human'
     createdBy: string | null
     createdByName: string | null
-  }): Promise<{ ticket: Ticket; message: TicketMessage }> {
+  }): Promise<{ ticket: TicketView; message: MessageView }> {
     const { ticket, connection, thread, body, sentVia } = input
     const lastInbound = [...thread].reverse().find((m) => m.direction === 'inbound')
     const toEmail = lastInbound?.fromEmail ?? ticket.requesterEmail
@@ -171,29 +221,16 @@ export class ReplyService {
       messageId,
     })
 
-    // SEND: o token fresco pode marcar needs_reauth (→ ConnectionNotConnected).
-    let sent: { id: string; threadId: string }
-    try {
-      const accessToken = await this.gmailAccount.getFreshAccessToken(connection)
-      sent = await this.gmail.sendMessage(accessToken, { raw, threadId: ticket.gmailThreadId })
-    } catch (error) {
-      if (error instanceof ConnectionNotConnectedError) throw error
-      this.logger.error('reply.send_failed', {
-        ticketId: ticket.id,
-        error: error instanceof Error ? error.message : String(error),
-      })
-      if (error instanceof GmailApiError) throw new GmailSendFailedError()
-      throw error
-    }
-
-    // COMMIT: persiste o outbound (o poller deduplica pelo id) + `waiting`.
-    const at = this.now()
-    const message: TicketMessage = {
+    const createdAt = this.now()
+    const message: PendingReplyMessage = {
       id: this.idGen(),
       ticketId: ticket.id,
       kind: 'email',
-      gmailMessageId: sent.id,
+      visibility: 'customer',
+      gmailMessageId: null,
       rfc822MessageId: messageId,
+      deliveryState: 'pending',
+      deliveryLastError: null,
       direction: 'outbound',
       sentVia,
       fromEmail: connection.emailAddress,
@@ -206,33 +243,146 @@ export class ReplyService {
       snippet: null,
       attachments: [],
       isAutoreply: false,
-      gmailInternalDate: at,
+      gmailInternalDate: null,
       createdBy: input.createdBy,
       createdByName: input.createdByName,
-      createdAt: at,
+      createdAt,
     }
-    await this.messages.create(message)
-    const updated = await this.applyReplyToTicket(ticket.id)
-    return { ticket: updated, message }
+    const intent = await this.deliveries.createIntent({
+      ticketId: ticket.id,
+      expectedVersion: input.expectedVersion,
+      message,
+      at: createdAt,
+    })
+    if (intent.status === 'not_found') throw new TicketNotFoundError()
+    if (intent.status === 'conflict' || intent.status === 'pending') {
+      throw new ConcurrencyConflictError()
+    }
+
+    // O intent já está persistido. Só um erro de transporte sem status é
+    // ambíguo; falhas conhecidas são encerradas para liberar nova resposta.
+    let accessToken: string | null = null
+    try {
+      accessToken = await this.gmailAccount.getFreshAccessToken(connection)
+      const sent = await this.gmail.sendMessage(accessToken, {
+        raw,
+        threadId: ticket.gmailThreadId ?? undefined,
+      })
+      return this.confirmDelivery(message.id, sent.id, sent.threadId, this.now())
+    } catch (error) {
+      const mayHaveBeenAccepted = error instanceof GmailApiError && error.status === 0
+      if (accessToken && mayHaveBeenAccepted) {
+        const recovered = await this.reconcileAcceptedDelivery(accessToken, message, this.now())
+        if (recovered) return recovered
+        await this.deliveries.markUnknown(message.id, 'Envio sem confirmação do Gmail')
+      } else {
+        await this.deliveries.markFailed(
+          message.id,
+          error instanceof GmailApiError
+            ? 'Envio recusado pelo Gmail'
+            : 'Não foi possível obter acesso ao Gmail',
+        )
+      }
+      if (error instanceof ConnectionNotConnectedError) throw error
+      this.logger.error('reply.send_failed', {
+        ticketId: ticket.id,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      if (error instanceof GmailApiError || error instanceof OAuthProviderError) {
+        throw new GmailSendFailedError()
+      }
+      throw error
+    }
   }
 
-  /** Marca `waiting` + contadores; retry contra corrida com o poller. */
-  private async applyReplyToTicket(ticketId: string): Promise<Ticket> {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      const ticket = await this.tickets.byId(ticketId)
-      if (!ticket) throw new TicketNotFoundError()
-      const expected = ticket.version
-      ticket.status = 'waiting'
-      ticket.messageCount += 1
-      ticket.lastMessageAt = this.now()
-      ticket.updatedAt = this.now()
-      if (await this.tickets.update(ticket, expected)) return ticket
-    }
-    // Não deu p/ fechar o bookkeeping (corrida persistente): devolve o estado atual.
-    this.logger.warn('reply.ticket_update_conflict', { ticketId })
+  /**
+   * Reconsulta o Gmail por Message-ID após um timeout. Não reenvia nada: se o
+   * Gmail não confirmar, a entrega continua `unknown` para decisão humana.
+   */
+  async reconcileDelivery(
+    ticketId: string,
+    messageId: string,
+  ): Promise<{ reconciled: boolean; ticket?: TicketView; message: MessageView }> {
     const ticket = await this.tickets.byId(ticketId)
     if (!ticket) throw new TicketNotFoundError()
-    return ticket
+    const message = (await this.messages.byTicketId(ticketId)).find((item) => item.id === messageId)
+    if (!message) throw new ConcurrencyConflictError('A entrega não está aguardando reconciliação')
+    if (!this.canRecoverDelivery(message, this.now()) || !message.rfc822MessageId) {
+      throw new ConcurrencyConflictError('A entrega não está aguardando reconciliação')
+    }
+    const delivery = {
+      id: message.id,
+      ticketId: message.ticketId,
+      rfc822MessageId: message.rfc822MessageId,
+    }
+    const connection = await this.requireConnection()
+    const accessToken = await this.gmailAccount.getFreshAccessToken(connection)
+    const recovered = await this.reconcileAcceptedDelivery(accessToken, delivery, this.now())
+    if (recovered) return { reconciled: true, ...recovered }
+    return { reconciled: false, message: toMessageView(message) }
+  }
+
+  /**
+   * O atendente confirmou que aceita o risco de não haver confirmação e vai
+   * preparar outra resposta. O servidor só libera estado `unknown`.
+   */
+  async markDeliveryFailed(ticketId: string, messageId: string): Promise<{ message: MessageView }> {
+    const ticket = await this.tickets.byId(ticketId)
+    if (!ticket) throw new TicketNotFoundError()
+    const message = (await this.messages.byTicketId(ticketId)).find((item) => item.id === messageId)
+    if (!message || !this.canRecoverDelivery(message, this.now())) {
+      throw new ConcurrencyConflictError('A entrega não está aguardando decisão')
+    }
+    const failed = await this.deliveries.markFailed(
+      messageId,
+      'Envio não confirmado descartado pela equipe',
+    )
+    if (!failed) throw new ConcurrencyConflictError('A entrega mudou antes da decisão')
+    return { message: toMessageView(failed) }
+  }
+
+  private async confirmDelivery(
+    messageId: string,
+    gmailMessageId: string,
+    gmailThreadId: string,
+    at: Date,
+  ): Promise<{ ticket: TicketView; message: MessageView }> {
+    const delivered = await this.deliveries.markSent({
+      messageId,
+      gmailMessageId,
+      gmailThreadId,
+      at,
+    })
+    if (!delivered) throw new TicketNotFoundError()
+    return { ticket: toTicketView(delivered.ticket), message: toMessageView(delivered.message) }
+  }
+
+  private canRecoverDelivery(message: TicketMessage, at: Date): boolean {
+    if (message.deliveryState === 'unknown') return true
+    return (
+      message.deliveryState === 'pending' &&
+      at.getTime() - message.createdAt.getTime() >= PENDING_DELIVERY_RECOVERY_AFTER_MS
+    )
+  }
+
+  private async reconcileAcceptedDelivery(
+    accessToken: string,
+    message: Pick<PendingReplyMessage, 'id' | 'ticketId' | 'rfc822MessageId'>,
+    at: Date,
+  ): Promise<{ ticket: TicketView; message: MessageView } | null> {
+    try {
+      const sent = await this.gmail.findMessageByRfc822MessageId(
+        accessToken,
+        message.rfc822MessageId,
+      )
+      return sent ? await this.confirmDelivery(message.id, sent.id, sent.threadId, at) : null
+    } catch (error) {
+      this.logger.warn('reply.reconciliation_failed', {
+        ticketId: message.ticketId,
+        error: error instanceof Error ? error.message : String(error),
+      })
+      return null
+    }
   }
 }
 

@@ -1469,9 +1469,25 @@ Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `applic
 `DrizzlePensaRepository`, mappers e rotas HTTP. Contrato transversal:
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
-## "Guardado na sua conta" — criações do Estúdio Completo e do Pinta (18/08/2026, migration `0067`)
+## "Guardado na sua conta" — criações do Estúdio Completo, do Pinta e do Molda (18/08/2026, migration `0067`; Molda em 04/09/2026, migration `0072`)
 
-Os editores LIVRES (Estúdio Completo, Pinta) guardavam só no IndexedDB do navegador; a criança
+⭐ **Ferramenta nova = `CREATION_TOOLS` + enum + migration própria (04/09/2026, `molda`).** O
+union vive em `domain/creations/creation.ts` (`CREATION_TOOLS`, `CREATION_ACCESS_REF`,
+`CREATION_TOOL_NAMES`, `emptyCountByTool()`), e o enum `creation_tool` do Postgres o espelha:
+valor novo SEMPRE no FIM + migration só com `ALTER TYPE … ADD VALUE IF NOT EXISTS`
+(`0072_molda_creation_tool.sql`, gerada pelo `db:generate` e editada para o `IF NOT EXISTS` + o
+cabeçalho da `0065`). Espelhos derivados da lista (nunca literais à mão): o cache de posse
+(`invalidateToolOwnership` percorre `CREATION_TOOLS` — listado à mão, uma matrícula revogada
+seguia reservando por 60 s na ferramenta esquecida), a contagem por ferramenta do repositório e
+do fake (`emptyCountByTool()`; o literal `Record<CreationTool, number>` parava de compilar), o
+DTO `CREATION_TOOL` e o DDL de `tests/db` (que também roda o `add value if not exists` no banco
+compartilhado). Fora do members o union está em `@sistemazero/core/creations`
+(`CreationStorageTool`), no member-shell (`z.enum` da rota + `CreationToolView`) e no kids
+(`CreationTool` da fila) — `community-kids/tests/molda-conformance.test.ts` trava os seis
+espelhos + a migration. Deploy: **members (com a migration) ANTES do kids** — sem o valor, a
+reserva `molda` dá `invalid input value for enum` e a fila do navegador retenta.
+
+Os editores LIVRES (Estúdio Completo, Pinta, Molda) guardavam só no IndexedDB do navegador; a criança
 que trocasse de computador (ou cujo navegador apagasse) perdia tudo. Agora cada jogo/desenho SOBE
 sozinho depois do autosave e DESCE sozinho onde falta. O members guarda só o **ÍNDICE**
 (`members.creations`: perfil, ferramenta, `item_id` PRESERVADO — é o vínculo com o IndexedDB e o

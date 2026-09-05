@@ -180,6 +180,14 @@ describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
     expect(stripIds(rebuilt)).toEqual(stripIds(reinoZeroUltraExample.ir))
   })
 
+  // ⚠️ Teto EXPLÍCITO e generoso, pelo mesmo motivo do caso da IR lá em cima — só que
+  // este é o mais caro do arquivo: sozinho e sem carga custa ~7,5 s (carregar o
+  // workspace inteiro do maior exemplo do núcleo, com 80+ funções colapsadas, e
+  // reconstruir a IR de volta). No CI, sob os 22 pacotes em paralelo, ele já foi
+  // medido em 12,9 s passando e estourou 16,0 s reprovando — ou seja, o teto de 15 s
+  // ficava DENTRO da variação normal e virava cara ou coroa. O teto existe para pegar
+  // pendura, não para policiar desempenho: a mesma proporção do irmão (~4 s → 30 s)
+  // dá 60 s aqui.
   it('preserva o motor inteiro no round-trip IR → blocos → IR', () => {
     const workspace = new Blockly.Workspace()
     try {
@@ -198,7 +206,7 @@ describe('Reino Zero Ultra — plataforma profissional sem extensão', () => {
     } finally {
       workspace.dispose()
     }
-  }, 15_000)
+  }, 60_000)
 
   it('mantém catálogo leve em sincronia e resolve a IR só pelo carregador', () => {
     expect(CORE_EXAMPLE_SUMMARIES).toEqual(

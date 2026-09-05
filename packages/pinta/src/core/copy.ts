@@ -523,6 +523,12 @@ export const COPY = {
   panel: {
     expand: (title: string) => `Mostrar ${title}`,
     collapse: (title: string) => `Recolher ${title}`,
+    /**
+     * Leitor de tela: a coluna direita do vetor recolheu painéis SOZINHA para
+     * o que a criança abriu caber ("Recolhi Camadas e Cores para tudo caber na
+     * tela."). Só depois de um abrir dela; ao abrir o desenho fica mudo.
+     */
+    autoCollapsed: (names: string) => `Recolhi ${names} para tudo caber na tela.`,
   },
   tiles: {
     tiles: 'Peças',
@@ -706,8 +712,13 @@ export const COPY = {
      * `getByRole` colidir com o cancelar de um diálogo.
      */
     pickColorBar: 'Pegando uma cor do desenho',
-    pickColorHint: 'Toque numa forma para pegar a cor dela',
+    /** "Cores" é o nome da seção; "paleta" não aparece em lugar nenhum da tela. */
+    pickColorHint: 'Toque numa forma ou numa cor',
     pickColorCancel: 'Voltar sem pegar a cor',
+    /** Rótulo dos quadradinhos de cor ENQUANTO a captura está ligada (o canal não vale). */
+    pickColorTake: 'Pegar esta cor',
+    /** "Sem cor" tocado na captura: não é uma cor, e clique mudo não ensina nada. */
+    pickColorNone: 'Sem cor não vale aqui! Toque numa cor ou numa forma.',
     pickColorNoColor: 'Essa figura tem muitas cores. Toque numa forma de uma cor só.',
     forward: 'Uma camada para a frente',
     backward: 'Uma camada para trás',

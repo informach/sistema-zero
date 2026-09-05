@@ -12,14 +12,14 @@ interface CardDef {
   value: (s: TicketStatsView) => number
 }
 
-// Fila de trabalho + fechamentos + trabalho da IA (a ordem dos cards no painel).
+// Exceções primeiro: o painel aponta para o que a equipe precisa destravar agora.
 const CARDS: CardDef[] = [
+  { key: 'slaBreached', label: 'SLA estourado', value: (s) => s.sla.breached },
+  { key: 'slaAtRisk', label: 'Em risco', value: (s) => s.sla.atRisk },
+  { key: 'slaUnassigned', label: 'Sem responsável', value: (s) => s.sla.unassigned },
   { key: 'new', label: 'Novos', value: (s) => s.counts.new },
   { key: 'open', label: 'Abertos', value: (s) => s.counts.open },
-  { key: 'waiting', label: 'Aguardando', value: (s) => s.counts.waiting },
-  { key: 'resolvedToday', label: 'Resolvidos hoje', value: (s) => s.resolvedToday },
   { key: 'resolved7d', label: 'Resolvidos (7 dias)', value: (s) => s.resolved7d },
-  { key: 'autoReplied7d', label: 'Auto-respondidos (7 dias)', value: (s) => s.autoReplied7d },
 ]
 
 /**
@@ -58,26 +58,34 @@ export function PainelClient() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        {CARDS.map((card) => (
-          <Card key={card.key}>
-            <CardContent className="space-y-1 p-4">
-              <p className="text-sm text-muted-foreground">{card.label}</p>
-              <p className="text-2xl font-bold tabular-nums">
-                {stats === null ? '—' : card.value(stats)}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <section aria-labelledby="attention-title" className="space-y-3">
+        <div>
+          <h2 id="attention-title" className="text-sm font-medium">
+            Atenção da equipe
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Metas internas de primeira resposta, nunca exibidas como promessa ao cliente.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {CARDS.map((card) => (
+            <Card key={card.key}>
+              <CardContent className="space-y-1 p-4">
+                <p className="text-sm text-muted-foreground">{card.label}</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {stats === null ? '—' : card.value(stats)}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
       <Card>
         <CardContent className="space-y-4 p-4">
           <div>
             <p className="text-sm font-medium">Volume de tickets</p>
-            <p className="text-xs text-muted-foreground">
-              Recebidos por dia e quantos a IA respondeu sozinha, nos últimos 14 dias.
-            </p>
+            <p className="text-xs text-muted-foreground">Recebidos por dia, nos últimos 14 dias.</p>
           </div>
           {stats === null ? (
             <div className="h-[280px] animate-pulse rounded-xl bg-muted/40" aria-hidden />

@@ -30,6 +30,7 @@ export const GAME3D_SEMANTIC_DECLARATION_FIELDS: Readonly<Record<string, Game3DR
   'g3d:createPlane': { field: 'varName', kind: 'object' },
   'g3d:createTorus': { field: 'varName', kind: 'object' },
   'g3d:createModel': { field: 'varName', kind: 'object' },
+  'g3d:createModelFile': { field: 'varName', kind: 'object' },
   'g3d:createGroup': { field: 'varName', kind: 'group' },
   'g3d:createSwarm': { field: 'varName', kind: 'swarm' },
 }
@@ -142,6 +143,8 @@ export const GAME3D_SEMANTIC_REFERENCE_FIELDS: Readonly<
   'g3d:createPlane': [world()],
   'g3d:createTorus': [world()],
   'g3d:createModel': [world()],
+  'g3d:createModelFile': [world()],
+  'g3d:skyPhoto': [world()],
   'g3d:setColor': [object()],
   'g3d:setOpacity': [object()],
   'g3d:setMaterial': [object()],
@@ -507,6 +510,8 @@ export const GAME3D_CALL_ARITIES: Readonly<Record<string, number | readonly numb
   createPlane: 2,
   createTorus: 2,
   createModel: 1,
+  createModelFile: 3,
+  skyPhoto: 2,
   addToModel: 2,
   setColor: 2,
   setOpacity: 2,
@@ -580,6 +585,10 @@ export const GAME3D_START_ONLY_STATEMENT_TYPES: ReadonlySet<string> = new Set([
   'g3d:createPlane',
   'g3d:createTorus',
   'g3d:createModel',
+  // O modelo de arquivo e o céu de foto: carregam binário e criam recurso na GPU —
+  // uma vez, no "Ao iniciar", como o setTexture.
+  'g3d:createModelFile',
+  'g3d:skyPhoto',
   'g3d:addToModel',
   'g3d:setMaterial',
   'g3d:setTexture',

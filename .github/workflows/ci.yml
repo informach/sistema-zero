@@ -1,8 +1,7 @@
 # CI do monorepo: roda em TODO PR para a main (check obrigatório no ruleset
 # `protege-main`) e em push na staging (canário — quebra aparece antes do PR).
-# O passo global roda sem Postgres na porta local padrão, então os tests/db dos
-# pacotes continuam auto-pulando. Fiscal e a elegibilidade de ferramentas do
-# Members têm passos explícitos no Postgres dedicado para provar invariantes críticas.
+# O passo global roda sem a variável dos bancos descartáveis, então os tests/db
+# usam passos explícitos no Postgres dedicado para provar invariantes críticas.
 # O Studio executa a suíte Chromium completa em três shards contra build de
 # produção e prova CSP/SRI também no Firefox.
 # Sem `.env` aqui — testes não podem depender de env local (handlers recebem tudo por deps).
@@ -99,6 +98,18 @@ jobs:
         run: cd packages/referrals && bun test tests/db
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
+      - name: Criar banco descartável do Helpdesk
+        run: PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE helpdesk_test"
+
+      - name: Testes DB helpdesk (Postgres real)
+        working-directory: packages/helpdesk
+        run: |
+          bun run db:migrate
+          bun test tests/integration/drizzle-ticket.repository.test.ts tests/integration/drizzle-reply-delivery.test.ts tests/integration/drizzle-ingestion.test.ts tests/integration/drizzle-customer-tickets.test.ts tests/integration/drizzle-connection.test.ts
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
+          HELPDESK_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/helpdesk_test
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
@@ -211,6 +222,8 @@ jobs:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2
       STAGING_ENV_ID: f634cff6-aafb-4804-8b69-172fad4e946e
+      HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
+      HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -240,16 +253,27 @@ jobs:
             [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
             [marketing-app]=95f3752d-95f7-45ab-a52a-19aa126d77ab
             [referrals]=1ad1c5ce-977c-4d7d-95a4-b8b08f2dc258
-            # TODO(helpdesk): preencher ao criar os serviços no Railway e
-            # descomentar os cases packages/helpdesk*/ abaixo (+ incluir
-            # helpdesk na lista do packages/core/* e helpdesk-app na do ui/*).
-            # [helpdesk]=<service-id>
-            # [helpdesk-app]=<service-id>
           )
+          # Os IDs só existem após o provisionamento externo. Variáveis de
+          # repositório permitem ativar o deploy sem editar este workflow.
+          [ -n "${HELPDESK_SERVICE_ID:-}" ] && SVC_ID[helpdesk]="$HELPDESK_SERVICE_ID"
+          [ -n "${HELPDESK_APP_SERVICE_ID:-}" ] && SVC_ID[helpdesk-app]="$HELPDESK_APP_SERVICE_ID"
 
           declare -A WANT=()
           add() { WANT[$1]=1; }
           add_all() { for s in "${!SVC_ID[@]}"; do add "$s"; done; }
+          add_helpdesk() {
+            [ -n "${SVC_ID[helpdesk]:-}" ] || {
+              echo "::error::Configure RAILWAY_HELPDESK_SERVICE_ID antes de deployar packages/helpdesk"; exit 1;
+            }
+            add helpdesk
+          }
+          add_helpdesk_app() {
+            [ -n "${SVC_ID[helpdesk-app]:-}" ] || {
+              echo "::error::Configure RAILWAY_HELPDESK_APP_SERVICE_ID antes de deployar packages/helpdesk-app"; exit 1;
+            }
+            add helpdesk-app
+          }
 
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             if [ "${FORCED:-all}" = "all" ]; then add_all; else
@@ -275,8 +299,8 @@ jobs:
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids; do add "$s"; done ;;
-                  packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app ;;
+                  packages/core/*) for s in api-gateway auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk ;;
+                  packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
                   packages/catalog/*) add catalog ;;
@@ -293,8 +317,8 @@ jobs:
                   packages/marketing/*) add marketing ;; # ferramenta de marketing (API)
                   packages/marketing-app/*) add marketing-app ;; # front da ferramenta de marketing
                   packages/referrals/*) add referrals ;; # indicações e bolsas (API)
-                  # packages/helpdesk/*) add helpdesk ;; # help desk com IA (API) — descomentar c/ SVC_ID
-                  # packages/helpdesk-app/*) add helpdesk-app ;; # front do help desk — descomentar c/ SVC_ID
+                  packages/helpdesk/*) add_helpdesk ;;
+                  packages/helpdesk-app/*) add_helpdesk_app ;;
                   packages/studio/*) add community; add community-kids; add admin ;; # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas, transpilePackages)
                   packages/pensa/*) add community-kids ;; # app de planejamento embarcado (kids v1)
                   # Bloco de aula do Pinta: o renderizador de blocos é COMPARTILHADO (o adulto
@@ -302,6 +326,7 @@ jobs:
                   # e no viewer da entrega; o Members valida o mesmo wire no servidor — todos
                   # precisam acompanhar o pacote para não servir contratos de versões diferentes.
                   packages/pinta/*) add community-kids; add community; add admin; add members ;;
+                  packages/molda/*) add community-kids ;; # oficina 3D embarcada (kids)
                 esac
               done <<< "$CHANGED"
             fi

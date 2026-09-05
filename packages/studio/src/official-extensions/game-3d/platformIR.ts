@@ -1,5 +1,9 @@
 import { z } from 'zod'
 import type { JSExpr, JSStatement } from '../../ir/schema'
+import {
+  type ModelAssetsGameThreeDStatement,
+  modelAssetsGameThreeDStatementSchemas,
+} from './modelAssetsIR'
 
 type IdField = { __id: z.ZodOptional<z.ZodString> }
 
@@ -113,6 +117,9 @@ export type PlatformGameThreeDStatement =
   | StageNode
   | StageFrame
   | OnStage
+  // Modelo .glb e céu .hdr do Molda (lote 7): entram pela MESMA porta da fachada,
+  // porque cada import novo no `ir/schema.ts` custa linhas que ele não tem.
+  | ModelAssetsGameThreeDStatement
 
 interface KeyPressed extends Common {
   type: 'g3d:keyPressed'
@@ -232,5 +239,6 @@ export function platformGameThreeDStatementSchemas(
       body: z.array(statement),
       ...id,
     }),
+    ...modelAssetsGameThreeDStatementSchemas(expr, irText, id),
   ] as const
 }

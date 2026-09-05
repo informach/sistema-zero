@@ -104,6 +104,13 @@ publisher-worker do marketing envia o lembrete WhatsApp de publicação manual v
 (template `marketing-reminder`, idempotência por publicação+fone). `MARKETING_HMAC_SECRET` está em
 `PROD_REQUIRED_SECRETS` (fail-fast em prod).
 
+E o **helpdesk também é consumer HMAC de borda** (09/2026): `HELPDESK_HMAC_SECRET` +
+`HELPDESK_ALLOWED_CIDRS` (condicional, como os demais) — é como o helpdesk envia o aviso por
+e-mail de que a equipe respondeu um chamado do PORTAL via `/messaging/send` (template
+`helpdesk-reply`, idempotência por mensagem). ⚠️ Fora do `PROD_REQUIRED_SECRETS` de propósito
+enquanto o helpdesk não estiver em produção: obrigatório derrubaria o boot do gateway de prod
+antes de o serviço existir lá (o incidente do `HELPDESK_INTERNAL_TOKEN` de 08/07).
+
 E roteia as **indicações e bolsas** (`@sistemazero/referrals`, 08/2026 — upstream `REFERRALS_URL`,
 default `:3012`, healthCheck `/healthz`): **admin** em wildcards por método
 (`referrals-admin-read` GET `/referrals/admin/*` → staff+, 120/min; `referrals-admin-write`

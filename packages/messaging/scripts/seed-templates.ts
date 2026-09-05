@@ -587,6 +587,38 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque uma bolsa foi resgatada com este endereço.',
     }),
   },
+  // Aviso de resposta do HELPDESK a um chamado aberto no PORTAL da Ajuda. Enviado
+  // pelo helpdesk (consumer HMAC `helpdesk`) DEPOIS de a resposta já estar gravada
+  // na conversa. CONTRATO de variáveis com `portal-reply-notification.ts` do
+  // helpdesk: NÃO renomear sem mudar o chamador. Só o link, sem o texto da
+  // resposta: o portal é autenticado e o e-mail não; e o remetente default é a
+  // própria caixa contato@, então responder a este e-mail viraria chamado separado.
+  {
+    key: 'helpdesk-reply',
+    channel: 'email' as const,
+    name: 'Resposta no chamado da Ajuda (e-mail)',
+    subject: 'Respondemos ao seu chamado: {{assunto}}',
+    variables: ['saudacao', 'assunto', 'link'],
+    body: emailLayout({
+      preheader: 'A equipe respondeu ao seu chamado na Ajuda do Sistema Zero.',
+      title: '{{saudacao}} Sua resposta chegou 💬',
+      content: [
+        p(
+          'A equipe do <strong>Sistema Zero</strong> respondeu ao seu chamado <strong>{{assunto}}</strong>.',
+        ),
+        p(
+          'A resposta está na área de Ajuda, no mesmo lugar onde você abriu o chamado. Se precisar continuar a conversa, é por lá também.',
+        ),
+        ctaButton('Ver a resposta', '{{link}}'),
+        divider,
+        small(
+          'Este e-mail é só um aviso. Para falar com a equipe, use a Ajuda pelo botão acima: respostas a este e-mail podem virar um chamado separado.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque abriu um chamado na Ajuda do Sistema Zero.',
+    }),
+  },
 ]
 
 // ── Upsert ────────────────────────────────────────────────────────────────────

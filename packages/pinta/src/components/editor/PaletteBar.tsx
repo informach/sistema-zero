@@ -486,7 +486,7 @@ export function PaletteBar({ layout = 'panel' }: { layout?: 'panel' | 'row' }): 
       {/* 5 por linha → painel mais largo e mais curto; as 16 células base
           (xadrez + 15 cores) cabem em 4 linhas SEM scroll (extras rolam por
           dentro). */}
-      <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5">
+      <div className="grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto p-0.5">
         {swatches}
       </div>
       {paletteMenu}

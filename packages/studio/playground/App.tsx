@@ -1,4 +1,5 @@
 import type {
+  StudioMoldaLibraryAdapter,
   StudioPintaDrawingSummary,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
@@ -11,6 +12,7 @@ import { createEmptyProject, type Project } from '@sistemazero/studio/project'
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import moldaDemoAssets from './moldaDemoAssets.json'
 
 const StudioEditor = lazy(async () => {
   const module = await import('@sistemazero/studio/editor')
@@ -80,6 +82,82 @@ const pintaDrawingsDemo: StudioPintaDrawingSummary[] = [
     thumbDataUrl: null,
   },
 ]
+/**
+ * "Trazer do Molda" com galeria fake: os três tipos (modelo .glb, textura .png, céu
+ * .hdr), codificados de VERDADE pelo Molda (`moldaDemoAssets.json`, gerado das
+ * fixtures dele) — é o que deixa provar no navegador o parse do GLTFLoader/HDRLoader
+ * dentro do preview, sob a CSP. O import grava na biblioteca pessoal, como o host.
+ */
+const moldaLibraryDemo: StudioMoldaLibraryAdapter = {
+  async list() {
+    await new Promise((r) => setTimeout(r, 200))
+    return [
+      {
+        id: 'md-model',
+        name: moldaDemoAssets.model.name,
+        kind: 'model',
+        updatedAt: 3,
+        thumbDataUrl: null,
+      },
+      {
+        id: 'md-texture',
+        name: moldaDemoAssets.texture.name,
+        kind: 'texture',
+        updatedAt: 2,
+        thumbDataUrl: null,
+      },
+      {
+        id: 'md-sky',
+        name: moldaDemoAssets.sky.name,
+        kind: 'sky',
+        updatedAt: 1,
+        thumbDataUrl: null,
+      },
+    ]
+  },
+  async import(creationId) {
+    const entry =
+      creationId === 'md-model'
+        ? { ...moldaDemoAssets.model, kind: 'model3d' as const }
+        : creationId === 'md-sky'
+          ? { ...moldaDemoAssets.sky, kind: 'environment3d' as const }
+          : creationId === 'md-texture'
+            ? { ...moldaDemoAssets.texture, kind: 'image' as const }
+            : null
+    if (!entry) {
+      return {
+        ok: false,
+        error: 'Essa criação não está mais na galeria do Molda.',
+        code: 'not-found',
+      }
+    }
+    const saved = await savePersonalAsset({
+      id: creationId,
+      name: entry.name,
+      kind: entry.kind,
+      origin: 'molda',
+      dataUrl: entry.dataUrl,
+      originalFileName: entry.fileName,
+      ...('width' in entry ? { width: entry.width, height: entry.height } : {}),
+    })
+    if (!saved.ok) {
+      return { ok: false, error: saved.error ?? 'Não consegui trazer essa criação agora.' }
+    }
+    return {
+      ok: true,
+      asset: {
+        id: creationId,
+        name: saved.name ?? entry.name,
+        kind: entry.kind,
+        dataUrl: entry.dataUrl,
+        originalFileName: entry.fileName,
+        ...('width' in entry ? { width: entry.width, height: entry.height } : {}),
+        ...(saved.updatedAt !== undefined ? { libRevision: saved.updatedAt } : {}),
+      },
+    }
+  },
+}
+
 const pintaLibraryDemo: StudioPintaLibraryAdapter = {
   async list() {
     await new Promise((r) => setTimeout(r, 300))
@@ -266,6 +344,8 @@ function EditorScreen({
         onEditDrawing={(drawingId) => console.debug('[host] onEditDrawing', drawingId)}
         // "Trazer do Pinta" com galeria fake (ver pintaLibraryDemo).
         pintaLibrary={pintaLibraryDemo}
+        // "Trazer do Molda" com os três tipos codificados de verdade (ver moldaLibraryDemo).
+        moldaLibrary={moldaLibraryDemo}
       />
     </Suspense>
   )

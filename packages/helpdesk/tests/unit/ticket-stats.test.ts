@@ -50,11 +50,10 @@ describe('densifyVolume', () => {
       ['2026-07-06', 3],
       ['2026-07-08', 1],
     ])
-    const auto = new Map([['2026-07-08', 1]])
-    expect(densifyVolume(days, created, auto)).toEqual([
-      { date: '2026-07-06', created: 3, autoReplied: 0 },
-      { date: '2026-07-07', created: 0, autoReplied: 0 },
-      { date: '2026-07-08', created: 1, autoReplied: 1 },
+    expect(densifyVolume(days, created)).toEqual([
+      { date: '2026-07-06', created: 3 },
+      { date: '2026-07-07', created: 0 },
+      { date: '2026-07-08', created: 1 },
     ])
   })
 })

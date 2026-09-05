@@ -1,7 +1,7 @@
 {
   "name": "@sistemazero/helpdesk",
   "version": "0.1.0",
-  "description": "Help desk com IA: tickets a partir do Gmail (contato@), classificação/resumo/rascunho via OpenRouter e auto-resposta com toggle — DDD + Hexagonal",
+  "description": "Help desk com IA: tickets de e-mail e portal, classificação/resumo/rascunho via OpenRouter com revisão humana — DDD + Hexagonal",
   "type": "module",
   "private": true,
   "module": "src/index.ts",

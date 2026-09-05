@@ -11,6 +11,9 @@ interface Window {
   // Semeado pelo mesmo bridge das imagens, e ausente quando o projeto não tem
   // áudio nenhum — daí ser opcional (o runtime lê com \`|| {}\`).
   __SZGAME_SOUNDS?: Record<string, string>
+  // Binários 3D (modelo .glb / céu .hdr) do "Trazer do Molda" e do upload: canal
+  // PRÓPRIO do bridge, com o \`kind\` junto (o runtime escolhe o loader por ele).
+  __SZGAME_ASSETS_3D?: Record<string, { kind: string; dataUrl: string; fileName?: string }>
   webkitAudioContext?: typeof AudioContext
 }
 `
