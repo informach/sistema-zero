@@ -1,11 +1,16 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { eq, sql } from 'drizzle-orm'
 import type { PendingReplyMessage } from '../../src/domain/ports/reply-delivery-repository.port'
 import type { TicketMessage } from '../../src/domain/ticket/ticket-message'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleReplyDeliveryRepository } from '../../src/infrastructure/persistence/drizzle/reply-delivery.repository'
-import { ticketMessages, tickets } from '../../src/infrastructure/persistence/drizzle/schema'
+import {
+  portalNotificationOutbox,
+  ticketMessages,
+  tickets,
+} from '../../src/infrastructure/persistence/drizzle/schema'
 import { makeMessage, makeTicket } from '../helpers'
 
 const databaseUrl = process.env.HELPDESK_TEST_DATABASE_URL
@@ -18,6 +23,26 @@ if (databaseUrl && !/helpdesk_test/i.test(databaseUrl)) {
 integration('DrizzleReplyDeliveryRepository', () => {
   let connection: DbConnection
   let repository: DrizzleReplyDeliveryRepository
+
+  const notificationFor = (message: TicketMessage, at: Date) => ({
+    id: randomUUID(),
+    ticketId: message.ticketId,
+    messageId: message.id,
+    payload: {
+      templateKey: 'helpdesk-reply',
+      recipient: { name: 'Maria', email: 'maria@example.com' },
+      variables: { saudacao: 'Olá, Maria!', assunto: 'Ajuda', link: 'https://app.test/ajuda' },
+      idempotencyKey: `helpdesk-reply:${message.id}`,
+    },
+    status: 'pending' as const,
+    attempts: 0,
+    nextAttemptAt: at,
+    leaseExpiresAt: null,
+    lastError: null,
+    sentAt: null,
+    createdAt: at,
+    updatedAt: at,
+  })
 
   beforeAll(() => {
     if (!databaseUrl) return
@@ -177,10 +202,12 @@ integration('DrizzleReplyDeliveryRepository', () => {
       })
     const at = new Date(ticket.createdAt.getTime() + 60_000)
 
+    const firstReply = portalReply()
     const created = await repository.appendPortalReply({
       ticketId: ticket.id,
       expectedVersion: 0,
-      message: portalReply(),
+      message: firstReply,
+      notification: notificationFor(firstReply, at),
       at,
     })
     expect(created.status).toBe('created')
@@ -192,10 +219,12 @@ integration('DrizzleReplyDeliveryRepository', () => {
     expect(created.ticket.lastMessageAt).toEqual(at)
     expect(created.ticket.gmailThreadId).toBeNull()
 
+    const staleReply = portalReply()
     const stale = await repository.appendPortalReply({
       ticketId: ticket.id,
       expectedVersion: 0,
-      message: portalReply(),
+      message: staleReply,
+      notification: notificationFor(staleReply, at),
       at,
     })
     expect(stale.status).toBe('conflict')
@@ -204,6 +233,10 @@ integration('DrizzleReplyDeliveryRepository', () => {
       .from(ticketMessages)
       .where(eq(ticketMessages.ticketId, ticket.id))
     expect(Number(count?.count)).toBe(2)
+    const [outboxCount] = await connection.db
+      .select({ count: sql<number>`count(*)` })
+      .from(portalNotificationOutbox)
+    expect(Number(outboxCount?.count)).toBe(1)
     const [row] = await connection.db.select().from(tickets).where(eq(tickets.id, ticket.id))
     expect(row?.version).toBe(1)
   })
@@ -232,17 +265,19 @@ integration('DrizzleReplyDeliveryRepository', () => {
       at: ticket.createdAt,
     })
 
+    const blockedReply = makeMessage(ticket.id, {
+      kind: 'portal',
+      gmailMessageId: null,
+      rfc822MessageId: null,
+      direction: 'outbound',
+      sentVia: 'human',
+      deliveryState: null,
+    })
     const blocked = await repository.appendPortalReply({
       ticketId: ticket.id,
       expectedVersion: 1,
-      message: makeMessage(ticket.id, {
-        kind: 'portal',
-        gmailMessageId: null,
-        rfc822MessageId: null,
-        direction: 'outbound',
-        sentVia: 'human',
-        deliveryState: null,
-      }),
+      message: blockedReply,
+      notification: notificationFor(blockedReply, ticket.createdAt),
       at: ticket.createdAt,
     })
     expect(blocked.status).toBe('pending')

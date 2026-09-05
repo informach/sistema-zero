@@ -57,11 +57,12 @@ export class DrizzleKbRepository implements KbRepository {
     return { items, total: totalRow?.value ?? 0 }
   }
 
-  async listPublished(): Promise<KbArticle[]> {
+  async listPublished(limit: number): Promise<KbArticle[]> {
     return this.db
       .select()
       .from(kbArticles)
       .where(eq(kbArticles.published, true))
-      .orderBy(asc(kbArticles.createdAt))
+      .orderBy(desc(kbArticles.updatedAt), asc(kbArticles.id))
+      .limit(limit)
   }
 }

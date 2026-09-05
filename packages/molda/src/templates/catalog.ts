@@ -5,23 +5,14 @@
  * (peças na grade + arte ASCII das peles). Só modelos na v1: textura e céu já
  * nascem prontos pelos presets do próprio "Criar novo".
  */
-import type { MoldaModelAsset } from '../core/model'
 import { arvoreTemplate } from './data/arvore'
 import { carroTemplate } from './data/carro'
 import { casaTemplate } from './data/casa'
 import { naveTemplate } from './data/nave'
 import { personagemTemplate } from './data/personagem'
+import type { MoldaTemplate } from './types'
 
-export const MOLDA_TEMPLATE_IDS = ['personagem', 'carro', 'arvore', 'casa', 'nave'] as const
-export type MoldaTemplateId = (typeof MOLDA_TEMPLATE_IDS)[number]
-
-export interface MoldaTemplate {
-  id: MoldaTemplateId
-  /** Nome kebab sugerido no passo de nome. */
-  suggestedName: string
-  /** Modelo montado, com ids FRESCOS a cada chamada. */
-  build(): MoldaModelAsset
-}
+export { MOLDA_TEMPLATE_IDS, type MoldaTemplate, type MoldaTemplateId } from './types'
 
 export const MOLDA_TEMPLATES: readonly MoldaTemplate[] = [
   personagemTemplate,

@@ -73,7 +73,7 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
     }
 
     function stamp(asset: MoldaAsset): MoldaAsset {
-      return { ...asset, updatedAt: now() }
+      return { ...asset, updatedAt: Math.max(now(), get().asset.updatedAt + 1) }
     }
 
     function schedule(): void {
@@ -158,8 +158,7 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
         if (current.thumb === thumb) return
         const { thumb: _old, ...rest } = current
         const next = (thumb ? { ...rest, thumb } : rest) as MoldaAsset
-        set({ asset: next, saveState: 'dirty' })
-        schedule()
+        apply(stamp(next))
       },
 
       undo() {

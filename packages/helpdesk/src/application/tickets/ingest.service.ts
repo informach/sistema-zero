@@ -91,6 +91,7 @@ export class IngestService {
       aiDraftAt: null,
       aiDraftEdited: false,
       aiClassification: null,
+      aiGeneration: isFromUs ? 0 : 1,
       aiStatus,
       aiNextAttemptAt: aiStatus === 'pending' ? at : null,
       aiAttempts: 0,

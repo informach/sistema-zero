@@ -9,7 +9,6 @@ import {
 import type { ConnectionRepository } from '../../domain/ports/connection-repository.port'
 import { GmailApiError, type GmailClient } from '../../domain/ports/gmail-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
-import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import { OAuthProviderError } from '../../domain/ports/oauth-provider.port'
 import type {
   PendingReplyMessage,
@@ -38,20 +37,15 @@ export interface ReplyInput {
   version: number
 }
 
-/** Aviso por e-mail da resposta do PORTAL: cliente do messaging + origens dos apps. */
-export interface PortalReplyNotifier {
-  messaging: MessagingGateway
-  urls: PortalUrls
-}
-
 /**
  * Responde um ticket. Dois canais, decididos pelo ticket:
  * - **e-mail** (ou portal que já vive numa thread do Gmail): envia pela Gmail API na
  *   mesma thread, remetente contato@. A intenção é gravada antes do side-effect e
  *   um timeout é reconciliado pelo Message-ID RFC 822, evitando reenvio cego.
  * - **portal** (`source: 'portal'` sem `gmailThreadId`): a resposta vira mensagem da
- *   conversa (visível no /ajuda na hora) e o cliente recebe um AVISO pelo
- *   messaging, best-effort. Não depende da caixa Gmail estar conectada.
+ *   conversa (visível no /ajuda na hora) e o aviso por e-mail entra na outbox na
+ *   mesma transação. Não depende da caixa
+ *   Gmail estar conectada nem da disponibilidade imediata do messaging.
  */
 export class ReplyService {
   constructor(
@@ -63,8 +57,7 @@ export class ReplyService {
     private readonly gmailAccount: GmailAccountService,
     private readonly gmail: GmailClient,
     private readonly config: ReplyServiceConfig,
-    /** Null = grupo de env do aviso ausente: a resposta sai, o e-mail não. */
-    private readonly notifier: PortalReplyNotifier | null,
+    private readonly portalUrls: PortalUrls,
     private readonly now: () => Date,
     private readonly idGen: () => string,
     private readonly logger: Logger,
@@ -104,8 +97,7 @@ export class ReplyService {
   /**
    * Resposta de ticket do PORTAL: sem transporte. Intenção e confirmação são o
    * mesmo passo (`appendPortalReply`, transacional, CAS em `version`), e o
-   * aviso por e-mail sai DEPOIS do commit, best-effort — quando ele falha, a
-   * resposta já está na conversa.
+   * aviso por e-mail entram na mesma transação; um worker entrega a outbox.
    */
   private async deliverToPortal(
     actor: Actor,
@@ -146,37 +138,27 @@ export class ReplyService {
       ticketId: ticket.id,
       expectedVersion: input.version,
       message,
+      notification: {
+        id: this.idGen(),
+        ticketId: ticket.id,
+        messageId: message.id,
+        payload: buildPortalReplyNotification({ ticket, message, urls: this.portalUrls }),
+        status: 'pending',
+        attempts: 0,
+        nextAttemptAt: createdAt,
+        leaseExpiresAt: null,
+        lastError: null,
+        sentAt: null,
+        createdAt,
+        updatedAt: createdAt,
+      },
       at: createdAt,
     })
     if (result.status === 'not_found') throw new TicketNotFoundError()
     if (result.status === 'conflict' || result.status === 'pending') {
       throw new ConcurrencyConflictError()
     }
-
-    await this.notifyPortalReply(result.ticket, result.message)
     return { ticket: toTicketView(result.ticket), message: toMessageView(result.message) }
-  }
-
-  /** Best-effort: nunca falha a resposta, e o log fica sem PII. */
-  private async notifyPortalReply(ticket: Ticket, message: TicketMessage): Promise<void> {
-    if (!this.notifier) {
-      this.logger.info('reply.notify_skipped', {
-        ticketId: ticket.id,
-        reason: 'messaging_not_configured',
-      })
-      return
-    }
-    try {
-      await this.notifier.messaging.sendEmail(
-        buildPortalReplyNotification({ ticket, message, urls: this.notifier.urls }),
-      )
-    } catch (error) {
-      this.logger.warn('reply.notify_failed', {
-        ticketId: ticket.id,
-        messageId: message.id,
-        error: error instanceof Error ? error.message : String(error),
-      })
-    }
   }
 
   private async requireConnection(): Promise<GmailConnection> {

@@ -6,7 +6,7 @@ import type {
 } from '../../../domain/ports/reply-delivery-repository.port'
 import type { TicketMessage } from '../../../domain/ticket/ticket-message'
 import type { Database } from './db'
-import { ticketMessages, tickets } from './schema'
+import { portalNotificationOutbox, ticketMessages, tickets } from './schema'
 
 export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
   constructor(private readonly db: Database) {}
@@ -122,6 +122,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
     ticketId: string
     expectedVersion: number
     message: TicketMessage
+    notification: Parameters<ReplyDeliveryRepository['appendPortalReply']>[0]['notification']
     at: Date
   }): Promise<AppendPortalReplyResult> {
     return this.db.transaction(async (tx) => {
@@ -167,6 +168,7 @@ export class DrizzleReplyDeliveryRepository implements ReplyDeliveryRepository {
       if (!updatedTicket) return { status: 'conflict' }
 
       await tx.insert(ticketMessages).values(input.message)
+      await tx.insert(portalNotificationOutbox).values(input.notification)
       return { status: 'created', ticket: updatedTicket, message: input.message }
     })
   }

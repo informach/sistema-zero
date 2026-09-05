@@ -112,6 +112,8 @@ export interface CreationSummary {
   bytes: number
   thumb: string | null
   syncedAt: Date
+  /** Presente somente no índice quando outro aparelho precisa aplicar esta exclusão. */
+  deletedAt?: Date | null
 }
 
 /** O que a reserva guarda até o commit (a lista NÃO vê nada disto). */
@@ -148,7 +150,7 @@ export interface CreationRecord extends CreationSummary {
  * então devolver o registro "como resumo" vazaria `userId`, `accountId`, `storageRef`…
  */
 export function toCreationSummary(record: CreationSummary): CreationSummary {
-  return {
+  const summary: CreationSummary = {
     tool: record.tool,
     itemId: record.itemId,
     name: record.name,
@@ -159,6 +161,8 @@ export function toCreationSummary(record: CreationSummary): CreationSummary {
     thumb: record.thumb,
     syncedAt: record.syncedAt,
   }
+  if (record.deletedAt) summary.deletedAt = record.deletedAt
+  return summary
 }
 
 /**

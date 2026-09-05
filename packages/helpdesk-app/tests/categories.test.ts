@@ -11,7 +11,7 @@ import {
   TICKET_STATUSES,
 } from '../src/lib/categories'
 
-describe('enums espelhados do backend', () => {
+describe('enums do contrato compartilhado', () => {
   test('os 5 status de ticket, na ordem do ciclo de vida', () => {
     expect(TICKET_STATUSES).toEqual(['new', 'open', 'waiting', 'resolved', 'closed'])
   })

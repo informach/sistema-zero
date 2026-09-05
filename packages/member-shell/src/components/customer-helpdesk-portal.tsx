@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
@@ -8,20 +7,23 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, CircleHelp, MessageCircleMore, Plus, RefreshCw, Send } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowLeft, CircleHelp, Plus, RefreshCw, Send } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { type ApiError, apiGet, apiSend } from '../lib/api'
 import {
   CUSTOMER_TICKET_CATEGORIES,
   CUSTOMER_TICKET_CATEGORY_LABEL,
-  CUSTOMER_TICKET_STATUS_LABEL,
   type CustomerTicketCategory,
   type CustomerTicketDetail,
   type CustomerTicketMessageView,
   type CustomerTicketPage,
-  type CustomerTicketStatus,
   type CustomerTicketView,
 } from '../lib/customer-helpdesk'
+import {
+  CustomerConversationMessage,
+  CustomerTicketList,
+  CustomerTicketStatusBadge,
+} from './customer-helpdesk-content'
 
 const EMPTY_PAGE: CustomerTicketPage = { items: [], total: 0, hasMore: false, nextCursor: null }
 const PORTAL_PAGE_SIZE = 50
@@ -42,25 +44,6 @@ export function mergeCustomerTicketPages(
       ...next.items.filter((ticket) => !currentIds.has(ticket.id)),
     ],
   }
-}
-
-function formatWhen(value: string): string {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return 'Agora'
-  return new Intl.DateTimeFormat('pt-BR', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
-}
-
-function statusVariant(status: CustomerTicketStatus): 'default' | 'muted' | 'success' | 'outline' {
-  if (status === 'resolved' || status === 'closed') return 'success'
-  if (status === 'waiting') return 'default'
-  if (status === 'new') return 'outline'
-  return 'muted'
 }
 
 function messageError(error: unknown): { text: string; parentGateExpired: boolean } {
@@ -115,6 +98,18 @@ export function CustomerHelpdeskPortal({
   const [firstMessage, setFirstMessage] = useState('')
   const [reply, setReply] = useState('')
   const [formErrors, setFormErrors] = useState<Record<string, string>>({})
+
+  // A ação de abrir o formulário é deliberada; só movemos foco em desktop com
+  // ponteiro preciso para não abrir teclado virtual nem deslocar telas pequenas.
+  useEffect(() => {
+    if (mode !== 'new' || !window.matchMedia('(min-width: 768px) and (pointer: fine)').matches) {
+      return
+    }
+    const frame = requestAnimationFrame(() => {
+      document.getElementById('support-subject')?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [mode])
 
   const sortedMessages = useMemo(
     () => [...(detail?.messages ?? [])].sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
@@ -230,7 +225,9 @@ export function CustomerHelpdeskPortal({
       setCategory('')
       setFirstMessage('')
       setMode('detail')
-      setNotice('Chamado enviado. A equipe responderá por aqui e, quando necessário, por e-mail.')
+      setNotice(
+        'Chamado enviado. A equipe responderá por aqui; quando houver resposta, enviaremos um aviso por e-mail, que pode levar alguns instantes.',
+      )
     } catch (reason) {
       registerError(reason)
     } finally {
@@ -332,7 +329,6 @@ export function CustomerHelpdeskPortal({
                   id="support-subject"
                   value={subject}
                   maxLength={300}
-                  autoFocus
                   onChange={(event) => setSubject(event.target.value)}
                   placeholder="Ex.: não consigo acessar meu curso"
                 />
@@ -395,9 +391,7 @@ export function CustomerHelpdeskPortal({
               <h1 id="support-title" className="truncate text-2xl font-bold tracking-tight">
                 {detail.ticket.subject}
               </h1>
-              <Badge variant={statusVariant(detail.ticket.status)}>
-                {CUSTOMER_TICKET_STATUS_LABEL[detail.ticket.status]}
-              </Badge>
+              <CustomerTicketStatusBadge status={detail.ticket.status} />
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {detail.ticket.category
@@ -419,7 +413,7 @@ export function CustomerHelpdeskPortal({
         {feedback}
         <div className="space-y-3" aria-live="polite">
           {sortedMessages.map((message) => (
-            <ConversationMessage key={message.id} message={message} />
+            <CustomerConversationMessage key={message.id} message={message} />
           ))}
         </div>
         <Card>
@@ -484,83 +478,14 @@ export function CustomerHelpdeskPortal({
         </div>
       </header>
       {feedback}
-      {loadingDetail ? (
-        <Card>
-          <CardContent className="flex items-center gap-2 pt-6 text-sm text-muted-foreground">
-            <Spinner className="size-4" /> Abrindo conversa...
-          </CardContent>
-        </Card>
-      ) : page.items.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
-            <MessageCircleMore className="size-8 text-primary" aria-hidden="true" />
-            <div>
-              <p className="font-semibold">Você ainda não tem chamados.</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Quando precisar, a equipe está por aqui.
-              </p>
-            </div>
-            <Button onClick={showNewTicket}>
-              <Plus className="size-4" /> Abrir chamado
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <ul className="space-y-2" aria-label="Seus chamados">
-            {page.items.map((ticket) => (
-              <li key={ticket.id}>
-                <button
-                  type="button"
-                  onClick={() => void openTicket(ticket.id)}
-                  className="w-full rounded-xl border border-border bg-card p-4 text-left shadow-sm transition-colors hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={statusVariant(ticket.status)}>
-                      {CUSTOMER_TICKET_STATUS_LABEL[ticket.status]}
-                    </Badge>
-                    {ticket.category ? (
-                      <span className="text-xs text-muted-foreground">
-                        {CUSTOMER_TICKET_CATEGORY_LABEL[ticket.category]}
-                      </span>
-                    ) : null}
-                    <time className="ml-auto text-xs text-muted-foreground">
-                      {formatWhen(ticket.lastMessageAt)}
-                    </time>
-                  </div>
-                  <p className="mt-2 truncate font-semibold text-foreground">{ticket.subject}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {ticket.messageCount} {ticket.messageCount === 1 ? 'mensagem' : 'mensagens'}
-                  </p>
-                </button>
-              </li>
-            ))}
-          </ul>
-          {page.hasMore ? (
-            <div className="flex justify-center">
-              <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
-                {loadingMore ? <Spinner className="size-4" /> : null}
-                Carregar mais chamados
-              </Button>
-            </div>
-          ) : null}
-        </>
-      )}
+      <CustomerTicketList
+        page={page}
+        loadingDetail={loadingDetail}
+        loadingMore={loadingMore}
+        onOpen={(ticketId) => void openTicket(ticketId)}
+        onLoadMore={() => void loadMore()}
+        onOpenNew={showNewTicket}
+      />
     </section>
-  )
-}
-
-function ConversationMessage({ message }: { message: CustomerTicketMessageView }) {
-  const fromCustomer = message.direction !== 'outbound'
-  return (
-    <article
-      className={`rounded-xl border p-4 shadow-sm ${fromCustomer ? 'border-border bg-card' : 'border-primary/20 bg-primary/5'}`}
-    >
-      <header className="flex flex-wrap items-center gap-2 text-sm">
-        <strong>{fromCustomer ? 'Você' : (message.fromName ?? 'Equipe Sistema Zero')}</strong>
-        <span className="text-muted-foreground">{formatWhen(message.createdAt)}</span>
-      </header>
-      <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.bodyText}</p>
-    </article>
   )
 }

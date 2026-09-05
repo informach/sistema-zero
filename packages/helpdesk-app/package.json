@@ -13,6 +13,7 @@
     "check:fix": "biome check --write ."
   },
   "dependencies": {
+    "@sistemazero/helpdesk-contracts": "workspace:*",
     "@sistemazero/ui": "workspace:*",
     "clsx": "^2.1.1",
     "geist": "^1.6.1",

@@ -246,6 +246,21 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   animation: sz-zoom-in 0.15s ease;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .sz-overlay,
+  .sz-modal {
+    animation: none;
+  }
+
+  button.bg-primary.text-primary-foreground,
+  a.bg-primary.text-primary-foreground,
+  button.bg-primary.text-primary-foreground:hover:not(:disabled),
+  a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Scrollbar discreta */
 .scrollbar-subtle {
   scrollbar-width: thin;

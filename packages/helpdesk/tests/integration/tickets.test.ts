@@ -10,6 +10,60 @@ describe('tickets', () => {
     expect(body.items).toEqual([])
     expect(body.total).toBe(0)
     expect(body.hasMore).toBe(false)
+    expect(body.nextCursor).toBeNull()
+  })
+
+  it('pagina com cursor sem repetir itens quando um ticket novo entra no topo', async () => {
+    const { app, repos } = buildTestApp()
+    const base = new Date('2026-07-08T12:00:00Z')
+    const first = makeTicket({
+      id: '10000000-0000-4000-8000-000000000001',
+      status: 'resolved',
+      firstMessageAt: base,
+      lastMessageAt: new Date(base.getTime() + 3_000),
+    })
+    const second = makeTicket({
+      id: '10000000-0000-4000-8000-000000000002',
+      status: 'resolved',
+      firstMessageAt: base,
+      lastMessageAt: new Date(base.getTime() + 2_000),
+    })
+    const third = makeTicket({
+      id: '10000000-0000-4000-8000-000000000003',
+      status: 'resolved',
+      firstMessageAt: base,
+      lastMessageAt: new Date(base.getTime() + 1_000),
+    })
+    await Promise.all([first, second, third].map((ticket) => repos.tickets.create(ticket)))
+
+    const page1 = await json(await request(app, 'GET', '/helpdesk/tickets?limit=2'))
+    expect(page1.items.map((ticket: { id: string }) => ticket.id)).toEqual([first.id, second.id])
+    expect(page1.nextCursor).toBeString()
+
+    await repos.tickets.create(
+      makeTicket({
+        id: '10000000-0000-4000-8000-000000000004',
+        status: 'resolved',
+        firstMessageAt: base,
+        lastMessageAt: new Date(base.getTime() + 4_000),
+      }),
+    )
+    const page2 = await json(
+      await request(
+        app,
+        'GET',
+        `/helpdesk/tickets?limit=2&cursor=${encodeURIComponent(page1.nextCursor)}`,
+      ),
+    )
+    expect(page2.items.map((ticket: { id: string }) => ticket.id)).toEqual([third.id])
+    expect(page2.nextCursor).toBeNull()
+  })
+
+  it('recusa cursor interno inválido em vez de reiniciar silenciosamente a fila', async () => {
+    const { app } = buildTestApp()
+    const res = await request(app, 'GET', '/helpdesk/tickets?cursor=invalido')
+    expect(res.status).toBe(400)
+    expect((await json(res)).error.code).toBe('TICKET_CURSOR_INVALID')
   })
 
   it('lista com filtros de status/categoria e busca', async () => {

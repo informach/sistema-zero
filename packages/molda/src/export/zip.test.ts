@@ -6,7 +6,13 @@ import { decodePng } from '../testing/pngDecode'
 import { decodeRgbe } from '../testing/rgbeDecode'
 import { MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { importMoldaJson } from './projectJson'
-import { buildGalleryFileMap, README_ENTRY, zipGallery } from './zip'
+import {
+  buildGalleryFileMap,
+  GalleryZipError,
+  README_ENTRY,
+  zipGallery,
+  zipGalleryBlob,
+} from './zip'
 
 /** O céu real sai em 1024×512 (~0,5 s); os testes usam um céu pequeno. */
 const SKY_SIZE = { width: 64, height: 32 }
@@ -93,5 +99,33 @@ describe('"Baixar tudo" (o zip da galeria)', () => {
     expect(
       importMoldaJson(strFromU8(entries[MOLDA_GALLERY_ZIP_ENTRY] as Uint8Array))?.assets,
     ).toHaveLength(2)
+  })
+
+  it('monta incrementalmente, informa progresso e devolve Blob sem mapa duplicado', async () => {
+    const progress: number[] = []
+    const blob = await zipGalleryBlob([makeModel(), makeTexture()], {
+      yieldBetween: null,
+      onProgress: ({ processed }) => progress.push(processed),
+    })
+    const entries = unzipSync(new Uint8Array(await blob.arrayBuffer()))
+    expect(Object.keys(entries)).toContain(MOLDA_GALLERY_ZIP_ENTRY)
+    expect(progress.at(-1)).toBe(2)
+  })
+
+  it('cancela sem resultado parcial e recusa limites de entradas/bytes', async () => {
+    const aborted = new AbortController()
+    aborted.abort()
+    await expect(zipGallery([makeTexture()], { signal: aborted.signal })).rejects.toMatchObject({
+      code: 'aborted',
+    })
+    await expect(
+      zipGallery([makeTexture()], { yieldBetween: null, maxEntries: 2 }),
+    ).rejects.toBeInstanceOf(GalleryZipError)
+    await expect(
+      zipGallery([makeTexture()], { yieldBetween: null, maxReadyBytes: 1 }),
+    ).rejects.toMatchObject({ code: 'ready-bytes' })
+    await expect(
+      zipGallery([makeTexture()], { yieldBetween: null, maxCompressedBytes: 1 }),
+    ).rejects.toMatchObject({ code: 'compressed-bytes' })
   })
 })

@@ -92,7 +92,8 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   molde do leitor do Pinta): aceita o `.zip` OU o `.molda.json` solto; no ZIP lê por FAIXAS
   (diretório central, cabeçalho e só os bytes de `galeria.molda.json`, inflate em stream) e nunca
   carrega os `.glb`/`.hdr`; recusa criptografia, ZIP64, entrada duplicada e JSON acima de
-  `MAX_BACKUP_FILE_BYTES` (32 MB, o teto do Pinta). O `accept` do input inclui `.zip`.
+  `MAX_BACKUP_FILE_BYTES` (2 × `maxGalleryBytes`, para cobrir o base64 do JSON). O leitor aceita
+  toda a contagem do ZIP clássico e limita o diretório central; o `accept` inclui `.zip`.
 - Testes: `templates/catalog.test.ts`, `model/isoThumb.test.ts`, `export/zip.test.ts`,
   `export/backupFile.test.ts` e os dois casos novos de `MoldaApp.test.tsx` (modelo pronto →
   editor; ZIP e JSON de volta). QA no playground (Chrome real): a grade dos 5 modelos, o carro

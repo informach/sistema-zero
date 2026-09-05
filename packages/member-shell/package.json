@@ -27,6 +27,7 @@
     "@react-three/drei": "^10",
     "@react-three/fiber": "^9",
     "@sistemazero/core": "workspace:*",
+    "@sistemazero/helpdesk-contracts": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/ui": "workspace:*",

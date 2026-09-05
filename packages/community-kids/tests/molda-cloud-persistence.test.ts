@@ -75,7 +75,12 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
     string,
     { produce: SnapshotProducer; onUploaded?: UploadedListener; onStale?: StaleListener }
   >()
-  const removed: Array<{ itemId: string; onRemoved?: RemovedListener }> = []
+  const removed: Array<{
+    itemId: string
+    baseRevision: number
+    onRemoved?: RemovedListener
+    onStale?: StaleListener
+  }> = []
   const lists = { count: 0 }
   const cloud: CreationsCloud = {
     tool: 'molda',
@@ -102,8 +107,8 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
     enqueueUpload: (itemId, produce, onUploaded, onStale) => {
       uploads.set(itemId, { produce, onUploaded, onStale })
     },
-    enqueueRemove: (itemId, onRemoved) => {
-      removed.push({ itemId, onRemoved })
+    enqueueRemove: (itemId, baseRevision, onRemoved, onStale) => {
+      removed.push({ itemId, baseRevision, onRemoved, onStale })
     },
     flush: async () => {},
     getState: () => ({ status: 'idle', pending: 0, lastSavedAt: null, lastError: null }),
@@ -268,6 +273,33 @@ describe('createCloudMirroredMoldaPersistence', () => {
     expect(local.rows.size).toBe(0)
     expect(removed.map((r) => r.itemId)).toEqual([casa.id, ceu.id])
     expect(marks.tombstone(ceu.id)?.sent).toBe(false)
+  })
+
+  test('uma lápide da nuvem apaga a criação local sem reenfileirar o mesmo id', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const remote = new Map([
+      [
+        casa.id,
+        {
+          json: '',
+          summary: summaryOf(casa, { revision: 2, deletedAt: 2000 }),
+        },
+      ],
+    ])
+    const { cloud, uploads } = fakeCloud(remote)
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, casa.updatedAt, 1)
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+    })
+
+    expect(await loadSettled(mirrored, local)).toEqual([])
+    expect(uploads.has(casa.id)).toBe(false)
+    expect(marks.tombstone(casa.id)).toEqual({ at: 2000, sent: true, revision: 2 })
   })
 
   test('1ª carga: o que só existe na nuvem desce direto no local (id preservado, nome único); o que só existe aqui sobe', async () => {

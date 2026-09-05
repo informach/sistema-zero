@@ -100,7 +100,10 @@ COMPILADA — o cliente não escolhe; o Zod `.strict()` recusa `portal` no corpo
 o link do aviso de resposta por e-mail (`/ajuda` vs `/responsavel/ajuda`). A UI reutilizável
 `components/customer-helpdesk-portal.tsx` fala apenas com esse BFF e renderiza texto das
 mensagens como texto, nunca HTML; a resposta da equipe chega NO portal e não há polling, então o
-detalhe tem "Atualizar" (recarrega a conversa sem apagar o rascunho). A posse do chamado continua sendo
+detalhe tem "Atualizar" (recarrega a conversa sem apagar o rascunho). O aviso por e-mail é eventual:
+a resposta e o job entram juntos no Helpdesk, e um worker com retry faz a entrega via messaging.
+Os contratos do portal vêm de `@sistemazero/helpdesk-contracts`, sem unions espelhados aqui.
+A posse do chamado continua sendo
 autoritativa no Helpdesk, por `requesterAccountId` e e-mail normalizado legado. O community expõe
 os handlers diretamente; o community-kids DEVE envolver cada handler com
 `requireParentGateAccountOnly`, pois um perfil infantil herda o e-mail da conta e não pode tocar

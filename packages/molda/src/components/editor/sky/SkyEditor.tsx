@@ -99,6 +99,7 @@ function SkySlider({
       </span>
       <input
         type="range"
+        name={label}
         aria-label={label}
         value={value}
         min={min}
@@ -110,7 +111,7 @@ function SkySlider({
         onPointerUp={onEnd}
         onKeyUp={onEnd}
         onBlur={onEnd}
-        className="h-3 w-full cursor-pointer accent-mld-accent"
+        className="h-11 w-full cursor-pointer accent-mld-accent"
       />
     </label>
   )
@@ -134,6 +135,7 @@ function ColorField({
       <span>{label}</span>
       <input
         type="color"
+        name={label}
         aria-label={label}
         value={value}
         onFocus={onBegin}
@@ -142,7 +144,7 @@ function ColorField({
           if (hex) onChange(hex)
         }}
         onBlur={onEnd}
-        className="h-9 w-14 cursor-pointer rounded-lg border-2 border-mld-border bg-mld-surface"
+        className="h-11 w-14 cursor-pointer rounded-lg border-2 border-mld-border bg-mld-surface"
       />
     </label>
   )
@@ -333,7 +335,7 @@ export function SkyEditor({
         title={copy.clouds}
         className="shrink-0"
         actions={
-          <Button variant="ghost" onClick={shuffleClouds} className="min-h-9 px-2 text-xs">
+          <Button variant="ghost" onClick={shuffleClouds} className="min-h-11 px-2 text-xs">
             <Sparkles aria-hidden="true" className="size-4" />
             {copy.shuffle}
           </Button>
@@ -402,7 +404,7 @@ export function SkyEditor({
             onClick={download}
             aria-label={copy.download.hdr}
             title={copy.download.hdr}
-            className="min-h-9 px-3 text-sm"
+            className="min-h-11 px-3 text-sm"
           >
             <Download aria-hidden="true" className="size-4" />
             <span className="hidden md:inline">{copy.download.hdr}</span>

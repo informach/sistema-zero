@@ -1,4 +1,5 @@
 import 'server-only'
+import { TICKET_CATEGORIES, TICKET_STATUSES } from '@sistemazero/helpdesk-contracts'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
@@ -9,15 +10,8 @@ import type { SessionModule } from '../server/session'
 export type HelpdeskRoutes = ReturnType<typeof createHelpdeskRoutes>
 
 const UUID = z.string().uuid()
-const TicketStatus = z.enum(['new', 'open', 'waiting', 'resolved', 'closed'])
-const TicketCategory = z.enum([
-  'curso_acesso',
-  'problema_tecnico',
-  'studio',
-  'pagamento_reembolso',
-  'parceria_comercial',
-  'outro',
-])
+const TicketStatus = z.enum(TICKET_STATUSES)
+const TicketCategory = z.enum(TICKET_CATEGORIES)
 const TicketListQuery = z
   .object({
     status: TicketStatus.optional(),

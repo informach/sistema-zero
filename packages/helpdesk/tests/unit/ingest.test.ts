@@ -82,6 +82,43 @@ describe('IngestService', () => {
     expect(ticket?.messageCount).toBe(2)
   })
 
+  it('preserva a projeção pelo tempo do evento quando o backfill chega em ordem inversa', async () => {
+    const { tickets, ingest } = build(true)
+    const thread = 'thread-backfill-reverso'
+    const outboundAt = new Date('2026-07-08T11:00:00Z')
+    const inboundAt = new Date('2026-07-08T10:00:00Z')
+
+    await ingest.ingest(
+      makeParsedEmail({
+        gmailMessageId: 'gm-outbound-newer',
+        gmailThreadId: thread,
+        fromEmail: MAILBOX,
+        toEmails: ['maria@example.com'],
+        internalDate: outboundAt,
+      }),
+      MAILBOX,
+    )
+    await ingest.ingest(
+      makeParsedEmail({
+        gmailMessageId: 'gm-inbound-older',
+        gmailThreadId: thread,
+        fromEmail: 'maria@example.com',
+        internalDate: inboundAt,
+      }),
+      MAILBOX,
+    )
+
+    const ticket = [...tickets.rows.values()][0]
+    expect(ticket).toMatchObject({
+      status: 'waiting',
+      messageCount: 2,
+      aiStatus: 'idle',
+    })
+    expect(ticket?.firstMessageAt).toEqual(inboundAt)
+    expect(ticket?.lastMessageAt).toEqual(outboundAt)
+    expect(ticket?.lastInboundAt).toEqual(inboundAt)
+  })
+
   it('novo inbound reabre ticket resolvido', async () => {
     const { tickets, ingest } = build()
     await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-1' }), MAILBOX)

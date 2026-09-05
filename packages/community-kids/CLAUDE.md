@@ -173,8 +173,9 @@ incluído (ver "O contador do medalhão" abaixo).
 
 ⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
 ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO (Estúdio+Pinta no
-Construtor(a), Pensa+Zappy no Inventor(a)). Por isso três postos do meio (Explorador(a), Mestre,
-Arquiteto(a)) anunciam só "um posto novo no mapa" — porque é o que eles dão de verdade.
+Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). Por isso
+dois postos do meio (Mestre, Arquiteto(a)) anunciam só "um posto novo no mapa" — porque é o que
+eles dão de verdade.
 `CAREER_REWARD_INFO` (`lib/career-rewards.ts`) é a copy e `tests/career-rewards-conformance.test.ts`
 trava as promessas contra o core E contra as constantes dos portões (inclusive proibindo nome de kit).
 
@@ -437,8 +438,8 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   nuvem só por estar lá — "ninguém editou depois" é por REVISÃO, não por relógio; DELETE não
   enviado é reenviado; volta só se alguém editou depois). A reconciliação é single-flight por
   instância (StrictMode/remontagem não geram duas cópias com o mesmo nome); descidas recusadas
-  saem no console (`[criacoes-nuvem]`). ⚠️ Limitação declarada: apagado noutro aparelho volta a
-  subir (a lápide é local).
+  saem no console (`[criacoes-nuvem]`). A lista da nuvem também traz lápides remotas: item local
+  intacto é apagado; edição concorrente vira cópia com id novo antes da exclusão.
 - **Pinta:** `src/lib/pinta-cloud-persistence.ts` embrulha `createPintaPersistence({namespace})`
   (exportado pelo pacote) e é passado em `<PintaApp persistence>` no `pinta-client.tsx` — a galeria
   e o editor usam o MESMO `PintaPersistence`, então tudo sobe (autosave, criar, renomear, importar,
@@ -1202,8 +1203,8 @@ Estúdio; o `/criar` ganhou o card 3 e o Estúdio virou o 4) → rota `/molda` (
 `checkMoldaAccessReadonly()` (refs `molda,estudio-completo` numa ida — a 2ª vira `studioOwned`,
 atalho e dica do "Trazer do Molda") → 200 sem produto = `KidsLockedMolda`; status ≠ 200 =
 `KidsMoldaUnavailable` (retry); produto + carreira ≥ **`THREE_D_CREATION_MIN_LEVEL`**
-(`hacker`, o Inventor(a): ⚠️ NÃO é o Construtor(a) do Pinta — a oficina 3D abre onde a trilha 3D
-começa; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
+(`explorer`, o Explorador(a) de Mundos desde 05/09 — antes `hacker`: ⚠️ a oficina abre no posto
+que ganha o kit Jogo 3D, consumidor do modelo; `meetsThreeDCreationLevel` no member-shell) = `molda-client.tsx` (`'use client'`, import
 dinâmico no effect, tema do next-themes, `setMoldaStorageNamespace(viewerId)` ANTES de montar,
 deep link `?criacao=`). **Sem backend próprio** (galeria no IndexedDB POR PERFIL), mas COM a nuvem
 desde 04/09: **"Guardado na sua conta" com a tool `molda`** — `src/lib/molda-cloud-persistence.ts`
@@ -1225,14 +1226,15 @@ método; `import(id)` = `exportAssetForStudio` → `savePersonalAsset({kind, ori
 origin: 'molda'})` ANTES de devolver, com o nome salvo). No Estúdio o botão "🧊 Trazer do Molda"
 traz modelo/textura/céu, e o kit Jogo 3D ganhou "Criar o objeto … com o modelo" e "Usar o céu
 360°" (ver `packages/studio/CLAUDE.md`). A
-recompensa do Inventor(a)
-anuncia "Pensa + Zappy + Molda" (`career-rewards.ts`; o `career-rewards-conformance` trava a
-promessa em `THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
+recompensa do Explorador(a) de Mundos anuncia "Molda, a sua oficina 3D" e a do Inventor(a) voltou a
+"Pensa + Zappy" (`career-rewards.ts`; o `career-rewards-conformance` trava a promessa em
+`THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
 do `molda.css` + `@source "../../../molda/src"` no globals.css (MESMO gotcha das `sz-*`/`pz-*`/
 `pin-*`: sem isso as `mld-*` são no-op). Deploy: `packages/molda/**` nos watchPatterns do
 railway.json + case `packages/molda/*` no ci.yml. Produto no catálogo: sku/slug/chave **`molda`**
-(seed idempotente, R$97 placeholder; ⚠️ o seed só CRIA o combo quando não existe — em staging/prod
-o operador adiciona o componente pelo admin E concede `molda` aos assinantes ativos).
+(seed idempotente, R$97 placeholder; o seed também reconcilia o componente num combo existente).
+Assinantes anteriores entram pelo comando do members `entitlements:rollout-molda`: dry-run por
+padrão e escrita somente com `--apply`.
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 

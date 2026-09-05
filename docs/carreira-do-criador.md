@@ -212,8 +212,8 @@ do editor e quais **produtos** abrem. Os perfis de bloco por nível continuam ex
 |---|---|---|---|
 | Faísca (`noob`) | Nenhum | Primeiros Passos | Usa o Estúdio apenas dentro das aulas |
 | Construtor(a) (`coder`) | Posição 1 de Primeiros Passos | Iniciante 2D | **Estúdio livre** (modo Blocos) e **Pinta** |
-| Inventor(a) (`hacker`) | Primeiros Passos + 8 posições do Iniciante 2D | Iniciante 3D | **Pensa** e **Zappy** (os que chamam IA) e o **Molda** (a oficina 3D) |
-| Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
+| Inventor(a) (`hacker`) | Primeiros Passos + 8 posições do Iniciante 2D | Iniciante 3D | **Pensa** e **Zappy** (os que chamam IA) |
+| Explorador(a) de Mundos (`explorer`) | mais 8 posições do Iniciante 3D | Intermediário 2D | O posto, a trilha nova e o **Molda** (a oficina 3D) |
 | Mestre dos Jogos (`elite`) | mais 8 posições do Intermediário 2D | Intermediário 3D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Arquiteto(a) de Mundos (`architect`) | mais 8 posições do Intermediário 3D | Avançado 2D | O posto e a trilha nova (nenhuma ferramenta nova) |
 | Gênio da Criação (`champion`) | mais 8 posições do Avançado 2D | Avançado 3D | **modo Ponte** |
@@ -225,11 +225,13 @@ criação livre (Estúdio Completo e Pinta, sem custo por uso) e `AI_APPS_MIN_LE
 que chama IA (Pensa e Zappy, custo por pergunta — a criança precisa de repertório antes de
 perguntar). Até 14/08 era uma constante só e o Pinta ficava preso junto com a IA.
 
-A terceira barra chegou com o **Molda** (04/09/2026): `THREE_D_CREATION_MIN_LEVEL = 'hacker'`. A
-oficina 3D (modelos `.glb`, texturas `.png` e céus `.hdr` para os jogos 3D do Estúdio) não chama IA,
-mas abre no Inventor(a) porque é ali que a trilha 3D começa: o Iniciante 3D é a etapa que esse posto
-estuda, e um modelo do Molda só tem onde ser usado quando a criança já monta um Jogo 3D. Por isso a
-recompensa anunciada no Mapa da Carreira ao chegar ao Inventor(a) é "Pensa + Zappy + Molda"
+A terceira barra chegou com o **Molda** (04/09/2026) e mudou de posto em **05/09/2026**:
+`THREE_D_CREATION_MIN_LEVEL = 'explorer'`. A oficina 3D (modelos `.glb`, texturas `.png` e céus
+`.hdr` para os jogos 3D do Estúdio) não chama IA e abre no **Explorador(a) de Mundos**: é o posto
+cuja recompensa no Estúdio inclui o kit **Jogo 3D** (perfil `iniciante-3d`), o consumidor do que o
+Molda produz — abri-la um degrau antes, no Inventor(a) (como foi de 04 a 05/09), dava um modelo sem
+lugar para ser usado. Por isso a recompensa anunciada no Mapa da Carreira ao chegar ao Explorador(a)
+é "Molda, a sua oficina 3D", e o Inventor(a) anuncia "Pensa + Zappy"
 (`community-kids/src/lib/career-rewards.ts`, travada pelo `career-rewards-conformance`). O Molda é
 produto próprio no catálogo (`molda`, componente do combo Comunidade dos Criadores) e a régua de
 acesso é `checkMoldaAccessReadonly()` no member-shell (posse do produto E o nível).

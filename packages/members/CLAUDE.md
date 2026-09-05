@@ -1503,8 +1503,9 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   …/commit` `{revision}` (só a revisão RESERVADA confirma: `pending_revision = ?` — dois navegadores
   no mesmo item disputam de forma honesta, o velho perde o commit e reenvia; devolve `{item,
   previousStorageKey}` e o BFF apaga a revisão anterior do R2) → `GET /members/creations/:tool`
-  lista (só vivos e já confirmados) → `GET …/download` devolve a chave corrente → `DELETE` é lixeira
-  lógica (SOLTA o blob: devolve `storageKey` para o BFF apagar do R2 e zera `storage_ref`/`bytes`
+  lista por cursor (vivos confirmados + lápides mínimas com `itemId`, `revision` e `deletedAt`) →
+  `GET …/download` devolve a chave corrente → `DELETE` é lixeira
+  lógica condicionada a `baseRevision` (SOLTA o blob: devolve `storageKey` para o BFF apagar do R2 e zera `storage_ref`/`bytes`
   — apagado não ocupa espaço fora da quota; a linha fica para um restauro futuro do índice; cancela
   a reserva em voo). Listar/baixar/apagar o que é seu NÃO
   exige assinatura ativa (a criança sempre traz de volta o que guardou); ownership mismatch = 404.
@@ -1523,13 +1524,15 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
   batiam na unique com 500); `usage` e o teto de itens contam só o que já commitou; as respostas
   saem por `toCreationSummary` (nunca o `CreationRecord` — vazaria `userId`/`accountId`/
   `storageRef`).
-- **Revisão-base (2ª revisão de 18/08):** a reserva aceita `baseRevision` (a revisão da nuvem
-  que o APARELHO conhece; 0 = nunca viu). Presente e diferente da corrente numa linha VIVA →
+- **Revisão-base (2ª revisão de 18/08; delete otimista em 05/09):** a reserva aceita
+  `baseRevision` (a revisão da nuvem que o APARELHO conhece; 0 = nunca viu). Presente e diferente
+  da corrente, inclusive em lápide ou linha já compactada →
   `CREATION_STALE_BASE` (409, `CreationStaleBaseError` com `currentRevision`): um aparelho
-  atrasado nunca sobrescreve às cegas o que outro subiu depois. Linha apagada (ou inexistente)
-  aceita qualquer base (a edição posterior vence a lixeira); ausente = sem conferência (clientes
-  antigos). O cliente kids resolve o 409 guardando a versão da nuvem como cópia e subindo de novo.
-- **Quota** (`CREATION_LIMITS`): 40 MB comprimidos por item, 1 GB por perfil (as duas
+  atrasado nunca sobrescreve nem apaga às cegas o que outro subiu depois. Linha ausente aceita
+  somente base 0; o `DELETE` exige a base. O cliente kids resolve o 409 preservando/restaurando a
+  revisão autoritativa. Lápides com mais de 90 dias são compactadas em lotes de 500 pelo cron,
+  apoiado no índice parcial `creations_tombstone_cleanup_idx` (migration `0073`).
+- **Quota** (`CREATION_LIMITS`): 40 MB comprimidos por item, 1 GB por perfil (as três
   ferramentas; era 300 MB, subiu em 18/08 — bytes no R2 custam ~US$ 0,015/GB-mês, o teto é
   freio de abuso), 2000 itens vivos por ferramenta (só freio de abuso: nem o Pinta nem o Estúdio
   têm teto de quantidade; o que governa é o de bytes). A quota é conferida na RESERVA e DE NOVO no

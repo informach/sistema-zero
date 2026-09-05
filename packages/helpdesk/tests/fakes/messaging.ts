@@ -3,7 +3,7 @@ import type {
   SendEmailInput,
 } from '../../src/domain/ports/messaging-gateway.port'
 
-/** Captura os avisos enviados; `failNext` faz a próxima chamada lançar (best-effort). */
+/** Captura os avisos enviados; `failNext` simula uma tentativa transitória do worker. */
 export class FakeMessagingGateway implements MessagingGateway {
   readonly sent: SendEmailInput[] = []
   failNext: Error | null = null

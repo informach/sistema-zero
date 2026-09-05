@@ -23,6 +23,7 @@ import {
 } from './application/content-admin/content-admin.service'
 import {
   CommitCreationUploadService,
+  CompactCreationTombstonesService,
   DeleteCreationService,
   GetCreationDownloadService,
   ListCreationsService,
@@ -483,6 +484,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const commitCreationUpload = new CommitCreationUploadService(creationsRepo, clock)
   const getCreationDownload = new GetCreationDownloadService(creationsRepo)
   const deleteCreation = new DeleteCreationService(creationsRepo, clock)
+  const compactCreationTombstones = new CompactCreationTombstonesService(creationsRepo, clock)
 
   // Motor de acesso (webhooks)
   const grant = new GrantEntitlementService({
@@ -632,6 +634,7 @@ export async function createApplication(env: Env): Promise<Application> {
       commitUpload: commitCreationUpload,
       getDownload: getCreationDownload,
       remove: deleteCreation,
+      compactTombstones: compactCreationTombstones,
       internalToken: env.INTERNAL_API_TOKEN,
     },
     webhooks: {

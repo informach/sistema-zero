@@ -64,6 +64,23 @@ describe('galleryStore', () => {
     expect(p.snapshot().find((a) => a.id === 'sky-1')?.name).toBe('novo-ceu')
   })
 
+  test('rename distingue orçamento de falha genérica e preserva a criação', async () => {
+    const p = createMemoryPersistence([makeSky()])
+    const store = createGalleryStore(p)
+    await store.getState().load()
+    p.save = async () => {
+      throw new MoldaStorageBudgetError()
+    }
+    expect(await store.getState().rename('sky-1', 'ceu-novo')).toBe('storage-budget')
+    expect(store.getState().getById('sky-1')?.name).toBe('fim-de-tarde')
+
+    p.save = async () => {
+      throw new Error('disco indisponível')
+    }
+    expect(await store.getState().rename('sky-1', 'ceu-novo')).toBe('save-failed')
+    expect(store.getState().getById('sky-1')?.name).toBe('fim-de-tarde')
+  })
+
   test('duplicate cria ids novos (peças e gêmeos remapeados) com nome -2', async () => {
     // Espelho ligado: a asa (x > 0) ganha um gêmeo no load (syncTwins); o corpo cruza x = 0 e não.
     const model = makeModel({ mirrorX: true })
@@ -90,9 +107,29 @@ describe('galleryStore', () => {
     const p = createMemoryPersistence([makeSky(), makeModel()])
     const store = createGalleryStore(p)
     await store.getState().load()
-    await store.getState().remove('sky-1')
+    expect(await store.getState().remove('sky-1')).toEqual({ ok: true })
     expect(store.getState().assets.map((a) => a.id)).toEqual(['model-1'])
     expect(p.snapshot().map((a) => a.id)).toEqual(['model-1'])
+  })
+
+  test('remove devolve a falha da persistência e mantém a criação na lista', async () => {
+    const p = createMemoryPersistence([makeSky()])
+    const store = createGalleryStore(p)
+    await store.getState().load()
+    p.remove = async () => {
+      throw new MoldaStorageBudgetError()
+    }
+    expect(await store.getState().remove('sky-1')).toEqual({
+      ok: false,
+      reason: 'storage-budget',
+    })
+    expect(store.getState().assets.map((asset) => asset.id)).toEqual(['sky-1'])
+
+    p.remove = async () => {
+      throw new Error('disco indisponível')
+    }
+    expect(await store.getState().remove('sky-1')).toEqual({ ok: false, reason: 'save-failed' })
+    expect(store.getState().assets.map((asset) => asset.id)).toEqual(['sky-1'])
   })
 
   test('importAssets: ids novos, nomes únicos, atômico', async () => {

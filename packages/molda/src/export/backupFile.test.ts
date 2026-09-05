@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { strToU8, Zip, ZipPassThrough, zipSync } from 'fflate'
 import { makeSky, makeTexture } from '../testing/fixtures'
 import { readMoldaBackupFile } from './backupFile'
-import { MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
+import { MAX_BACKUP_FILE_BYTES, MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { galleryToJsonText } from './projectJson'
 import { zipGallery } from './zip'
 
@@ -120,6 +120,21 @@ describe('leitor de backup do Molda ("Trazer de volta")', () => {
     expect(result.ok && result.text).toContain('grama-do-molda')
   })
 
+  it('abre o próprio backup mesmo quando a galeria passa de 4 mil criações pequenas', async () => {
+    const assets = Array.from({ length: 4095 }, (_unused, index) =>
+      makeTexture({ id: `texture-${index}`, name: `textura-${index}` }),
+    )
+    const bytes = await zipGallery(assets, { yieldBetween: null })
+
+    const result = await readMoldaBackupFile(
+      new File([ownedBuffer(bytes)], 'minhas-criacoes-3d-molda.zip', {
+        type: 'application/zip',
+      }),
+    )
+
+    expect(result.ok).toBe(true)
+  }, 20_000)
+
   it('o botão inteligente aceita também um .molda.json solto', async () => {
     const result = await readMoldaBackupFile(
       new File([json], 'galeria.molda.json', { type: 'application/json' }),
@@ -155,7 +170,7 @@ describe('leitor de backup do Molda ("Trazer de volta")', () => {
     // O teto público é grande; o teste altera o tamanho descompactado no diretório
     // central para provar que a recusa acontece ANTES de ler os dados.
     const patched = patchFirstSignature(zip, 0x02014b50, (view, offset) => {
-      view.setUint32(offset + 24, 33 * 1024 * 1024, true)
+      view.setUint32(offset + 24, MAX_BACKUP_FILE_BYTES + 1, true)
     })
     expect(
       await readMoldaBackupFile(

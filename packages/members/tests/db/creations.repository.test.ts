@@ -217,27 +217,33 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
 
     // Lixeira lógica + idempotência; a reserva NÃO ressuscita, o commit sim; o contador segue.
     // A lixeira SOLTA o blob (devolve a chave para o BFF apagar) e zera `storage_ref`.
-    expect(await repo.softDelete(perfil, 'studio', 'proj-1', now)).toEqual({
+    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now)).toEqual({
+      ok: true,
       deleted: true,
       storageRef: key(4),
       partRefs: [],
       revision: 4,
     })
-    expect(await repo.softDelete(perfil, 'studio', 'proj-1', now)).toEqual({
+    expect(await repo.softDelete(perfil, 'studio', 'proj-1', 4, now)).toEqual({
+      ok: true,
       deleted: false,
       storageRef: null,
       partRefs: [],
       revision: 4,
     })
     expect((await repo.get(perfil, 'studio', 'proj-1'))?.storageRef).toBeNull()
-    expect(await repo.list(perfil, 'studio')).toHaveLength(0)
+    expect(await repo.list(perfil, 'studio')).toEqual([
+      expect.objectContaining({ itemId: 'proj-1', revision: 4, deletedAt: now }),
+    ])
     expect((await repo.usage(perfil)).totalBytes).toBe(0)
     const fifth = await repo.reserveUpload({ ...base, bytes: 10 })
     expect(fifth).toEqual({ ok: true, revision: 5, missingParts: [] })
     expect((await repo.get(perfil, 'studio', 'proj-1'))?.deletedAt).not.toBeNull()
     expect((await repo.commit({ ...base, revision: 5, storageRef: key(5) })).ok).toBe(true)
     expect((await repo.get(perfil, 'studio', 'proj-1'))?.deletedAt).toBeNull()
-    expect(await repo.list(perfil, 'studio')).toHaveLength(1)
+    const restored = await repo.list(perfil, 'studio')
+    expect(restored).toHaveLength(1)
+    expect(restored[0]).not.toHaveProperty('deletedAt')
   })
 
   test('quota dentro da transação: total de bytes e itens por ferramenta; reservas concorrentes de item NOVO não dão 500', async () => {
@@ -495,8 +501,9 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     })
     await repo.commit({ ...item, revision: 3, storageRef: key(3), uploadedParts: [H('b')] })
     // 7) lixeira devolve as partes correntes e zera; ressurreição trata tudo como faltante.
-    const del = await repo.softDelete(dono, 'studio', 'jogo', now)
+    const del = await repo.softDelete(dono, 'studio', 'jogo', 3, now)
     expect(del).toEqual({
+      ok: true,
       deleted: true,
       storageRef: key(3),
       partRefs: [{ hash: H('b'), bytes: 200, rev: 3 }],
@@ -508,5 +515,34 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       reason: 'parts-need-bytes',
       hashes: [H('b')],
     })
+  })
+
+  test('paginação é estável e compactação remove somente o lote de lápides anterior ao corte', async () => {
+    const owner = randomUUID()
+    const account = randomUUID()
+    const save = async (itemId: string, itemUpdatedAt: Date) => {
+      const input = { ...base, userId: owner, accountId: account, itemId, itemUpdatedAt }
+      const reserved = await repo.reserveUpload(input)
+      if (!reserved.ok) throw new Error(`reserva recusada: ${reserved.reason}`)
+      await repo.commit({ ...input, revision: reserved.revision, storageRef: `k/${itemId}` })
+    }
+    await save('mais-novo', new Date('2026-03-03T00:00:00.000Z'))
+    await save('mais-antigo', new Date('2026-03-02T00:00:00.000Z'))
+
+    const first = await repo.listPage(owner, 'studio', { limit: 1 })
+    expect(first.items.map((item) => item.itemId)).toEqual(['mais-novo'])
+    expect(first.nextCursor).not.toBeNull()
+    const second = await repo.listPage(owner, 'studio', {
+      limit: 1,
+      cursor: first.nextCursor as NonNullable<typeof first.nextCursor>,
+    })
+    expect(second.items.map((item) => item.itemId)).toEqual(['mais-antigo'])
+    expect(second.nextCursor).toBeNull()
+
+    await repo.softDelete(owner, 'studio', 'mais-novo', 1, new Date('2025-01-01'))
+    await repo.softDelete(owner, 'studio', 'mais-antigo', 1, new Date('2025-01-02'))
+    expect(await repo.compactTombstones(new Date('2025-02-01'), 1)).toBe(1)
+    expect(await repo.get(owner, 'studio', 'mais-novo')).toBeNull()
+    expect(await repo.get(owner, 'studio', 'mais-antigo')).not.toBeNull()
   })
 })

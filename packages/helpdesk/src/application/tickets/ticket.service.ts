@@ -1,4 +1,8 @@
-import { ConcurrencyConflictError, TicketNotFoundError } from '../../domain/helpdesk-errors'
+import {
+  ConcurrencyConflictError,
+  TicketCursorInvalidError,
+  TicketNotFoundError,
+} from '../../domain/helpdesk-errors'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { ListTicketsFilter, TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type {
@@ -12,6 +16,7 @@ import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import type { TicketStats } from '../../domain/ticket/ticket-stats'
 import type { Actor } from '../actor'
 import { type MessageView, type TicketView, toMessageView, toTicketView } from '../views'
+import { decodeTicketCursor, encodeTicketCursor } from './ticket-cursor'
 
 export interface PatchTicketInput {
   status?: TicketStatus
@@ -22,6 +27,10 @@ export interface PatchTicketInput {
   version: number
 }
 
+export interface ListTicketsInput extends Omit<ListTicketsFilter, 'cursor'> {
+  cursor?: string
+}
+
 export class TicketService {
   constructor(
     private readonly tickets: TicketRepository,
@@ -30,10 +39,25 @@ export class TicketService {
     private readonly idGen: () => string,
   ) {}
 
-  async list(filter: ListTicketsFilter): Promise<{ items: TicketView[]; total: number }> {
-    const now = this.now()
-    const { items, total } = await this.tickets.list(filter, now)
-    return { items: items.map((ticket) => toTicketView(ticket, now)), total }
+  async list(filter: ListTicketsInput): Promise<{
+    items: TicketView[]
+    total: number
+    hasMore: boolean
+    nextCursor: string | null
+  }> {
+    const cursor = decodeTicketCursor(filter.cursor)
+    if (filter.cursor !== undefined && !cursor) throw new TicketCursorInvalidError()
+    const snapshotAt = cursor?.snapshotAt ?? this.now()
+    const page = await this.tickets.list({ ...filter, cursor }, snapshotAt)
+    const items = page.items.slice(0, filter.limit)
+    const last = items.at(-1)
+    const hasMore = page.items.length > filter.limit
+    return {
+      items: items.map((ticket) => toTicketView(ticket, snapshotAt)),
+      total: page.total,
+      hasMore,
+      nextCursor: hasMore && last ? encodeTicketCursor(last, snapshotAt) : null,
+    }
   }
 
   /** Agregados do painel (contagens, resolvidos e série de volume). */

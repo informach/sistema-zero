@@ -10,6 +10,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
+import type { SendEmailInput } from '../../../domain/ports/messaging-gateway.port'
 import type { AiClassification } from '../../../domain/ticket/ticket'
 import type { AttachmentMeta } from '../../../domain/ticket/ticket-message'
 
@@ -65,6 +66,11 @@ export const messageDeliveryStateEnum = helpdesk.enum('message_delivery_state', 
   'sent',
   'unknown',
   'failed',
+])
+export const portalNotificationStatusEnum = helpdesk.enum('portal_notification_status', [
+  'pending',
+  'processing',
+  'sent',
 ])
 
 // ── Conexão Gmail (tokens CIFRADOS — AES-256-GCM) ────────────────────────────
@@ -144,6 +150,9 @@ export const tickets = helpdesk.table(
     aiDraftAt: timestamp('ai_draft_at', { withTimezone: true }),
     aiDraftEdited: boolean('ai_draft_edited').notNull().default(false),
     aiClassification: jsonb('ai_classification').$type<AiClassification>(),
+    // CAS lógico: cada inbound atual incrementa; workers antigos não podem
+    // publicar resultados calculados sobre uma conversa que já mudou.
+    aiGeneration: integer('ai_generation').notNull().default(0),
     // Fila de IA embutida (sem tabela de jobs): claim por SKIP LOCKED.
     aiStatus: aiStatusEnum('ai_status').notNull().default('idle'),
     aiNextAttemptAt: timestamp('ai_next_attempt_at', { withTimezone: true }),
@@ -156,7 +165,17 @@ export const tickets = helpdesk.table(
     uniqueIndex('tickets_gmail_thread_uq').on(t.gmailThreadId),
     index('tickets_status_last_msg_idx').on(t.status, t.lastMessageAt),
     index('tickets_resolved_at_idx').on(t.resolvedAt),
-    index('tickets_requester_idx').on(t.requesterEmail),
+    // Ownership legado usa lower(email); o índice simples anterior não servia
+    // essa expressão.
+    index('tickets_requester_email_lower_idx')
+      .on(sql`lower(${t.requesterEmail})`)
+      .where(sql`${t.requesterAccountId} is null`),
+    // Mesma expressão da busca livre com ILIKE; pg_trgm é habilitado pela
+    // migration custom anterior à criação deste índice.
+    index('tickets_search_trgm_idx').using(
+      'gin',
+      sql`(coalesce(${t.subject}, '') || ' ' || coalesce(${t.requesterEmail}, '') || ' ' || coalesce(${t.requesterName}, '')) gin_trgm_ops`,
+    ),
     index('tickets_requester_account_idx').on(t.requesterAccountId, t.lastMessageAt),
     index('tickets_category_idx').on(t.category),
     // Fila do ai-worker (parcial: só o que está aguardando/rodando).
@@ -205,8 +224,44 @@ export const ticketMessages = helpdesk.table(
   },
   (t) => [
     uniqueIndex('ticket_messages_gmail_uq').on(t.gmailMessageId),
+    index('ticket_messages_rfc822_idx')
+      .on(t.rfc822MessageId)
+      .where(sql`${t.rfc822MessageId} is not null and ${t.direction} = 'outbound'`),
     index('ticket_messages_delivery_idx').on(t.ticketId, t.deliveryState, t.createdAt),
     index('ticket_messages_ticket_idx').on(t.ticketId, t.createdAt),
+  ],
+)
+
+// ── Outbox do aviso de resposta no portal ──────────────────────────────────
+export const portalNotificationOutbox = helpdesk.table(
+  'portal_notification_outbox',
+  {
+    id: uuid('id').primaryKey(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => tickets.id, { onDelete: 'cascade' }),
+    messageId: uuid('message_id')
+      .notNull()
+      .references(() => ticketMessages.id, { onDelete: 'cascade' }),
+    payload: jsonb('payload').$type<SendEmailInput>().notNull(),
+    status: portalNotificationStatusEnum('status').notNull().default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    // Retry e lease permanecem separados para diagnóstico operacional.
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull(),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    sentAt: timestamp('sent_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('portal_notification_outbox_message_uq').on(t.messageId),
+    index('portal_notification_outbox_pending_idx')
+      .on(t.nextAttemptAt, t.createdAt)
+      .where(sql`${t.status} = 'pending'`),
+    index('portal_notification_outbox_lease_idx')
+      .on(t.leaseExpiresAt, t.createdAt)
+      .where(sql`${t.status} = 'processing'`),
   ],
 )
 
@@ -254,13 +309,8 @@ export const schema = {
   gmailConnections,
   tickets,
   ticketMessages,
+  portalNotificationOutbox,
   kbArticles,
   settings,
   oauthStates,
 }
-
-export type GmailConnectionRow = typeof gmailConnections.$inferSelect
-export type TicketRow = typeof tickets.$inferSelect
-export type TicketMessageRow = typeof ticketMessages.$inferSelect
-export type KbArticleRow = typeof kbArticles.$inferSelect
-export type SettingsRow = typeof settings.$inferSelect

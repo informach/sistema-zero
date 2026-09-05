@@ -362,3 +362,30 @@ test('Enquadrar mantém um modelo largo inteiro num palco em retrato', async ({ 
     )
     .toMatchObject({ fitsX: true, fitsY: true })
 })
+
+test('a barra do editor mantém todas as ações dentro da tela de celular', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 700 })
+  await page.goto('/')
+  await page.evaluate(async (asset) => window.__molda?.persistence.save(asset), MODEL)
+  await page.goto('/?criacao=e2e-model')
+
+  const header = page.locator('header').first()
+  await expect(header).toBeVisible()
+  await expect
+    .poll(() =>
+      header.evaluate((element) => ({
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+      })),
+    )
+    .toEqual({ clientWidth: 375, scrollWidth: 375 })
+
+  for (const name of ['Voltar para a galeria', 'Desfazer', 'Refazer', 'Baixar .glb']) {
+    const button = page.getByRole('button', { name })
+    const box = await button.boundingBox()
+    expect(box, `${name} precisa estar visível`).not.toBeNull()
+    expect((box?.x ?? -1) + (box?.width ?? 0), `${name} ultrapassou a tela`).toBeLessThanOrEqual(
+      375,
+    )
+  }
+})

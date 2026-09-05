@@ -6,6 +6,7 @@ import {
   ParentSupportCard,
 } from '../src/app/perfis/parent-dashboard'
 import { PurchasesView } from '../src/app/perfis/purchases-view'
+import { PARENT_AREA_HREF, ParentAreaBack } from '../src/components/kids/parent-area-back'
 import type { ChildDashboardView, MySubscriptionView, PaymentView } from '../src/lib/types'
 
 const originalFetch = globalThis.fetch
@@ -72,6 +73,16 @@ describe('superfícies extraídas da área dos pais', () => {
     expect(screen.getByRole('link', { name: 'Abrir atendimento' }).getAttribute('href')).toBe(
       '/responsavel/ajuda',
     )
+  })
+
+  // `/responsavel/ajuda` não tem layout, sidebar nem topo: sem esta seta o pai entrava no
+  // Atendimento e não tinha como voltar. O destino é o MESMO do aviso de portão expirado.
+  test('o Atendimento tem volta para a Área dos Pais, no modo Gerenciar perfis', () => {
+    render(<ParentAreaBack />)
+
+    const back = screen.getByRole('link', { name: 'Voltar à área dos pais' })
+    expect(back.getAttribute('href')).toBe('/perfis?manage=1')
+    expect(PARENT_AREA_HREF).toBe('/perfis?manage=1')
   })
 
   test('renderiza progresso e créditos e persiste a preferência semanal', async () => {

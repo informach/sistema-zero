@@ -307,6 +307,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
         }
       });
     } catch (e) {}
+    applyRememberedModelAppearance(mesh, clone);
     var half = fitModelClone(clone, size);
     mesh.add(clone);
     // O cubo de reserva some (só o material; o Mesh segue sendo o objeto da criança).
@@ -318,7 +319,16 @@ const gameThreeDModelAssetsRuntimeTemplate = `
       mesh.userData.sz.hh = half.hh;
       mesh.userData.sz.hd = half.hd;
       mesh.userData.sz.modelRoot = clone;
+      mesh.userData.sz.modelLoaded = true;
     }
+  }
+
+  /** Uma cópia feita enquanto o GLB carrega entra na mesma fila e recebe seu próprio clone. */
+  function followPendingModel(source, copy, world) {
+    var state = source && source.userData && source.userData.sz;
+    if (!state || !state.modelFile || state.modelLoaded || state.modelRoot) return;
+    var size = positive(state.modelSize, 1, 64);
+    loadModel(state.modelFile, function (hit) { attachModelToObject(copy, world, hit, size); });
   }
 
   /**
@@ -332,7 +342,11 @@ const gameThreeDModelAssetsRuntimeTemplate = `
     var k = String(name || '');
     var mesh = addMesh(world, new THREE.BoxGeometry(s, s, s), '#9ca3af', { hw: s / 2, hh: s / 2, hd: s / 2 });
     if (!mesh) return null;
-    if (mesh.userData && mesh.userData.sz) mesh.userData.sz.modelFile = k;
+    if (mesh.userData && mesh.userData.sz) {
+      mesh.userData.sz.modelFile = k;
+      mesh.userData.sz.modelSize = s;
+      mesh.userData.sz.modelLoaded = false;
+    }
     if (!k) {
       warnOnce('model-file-empty', 'escolha um modelo 3D no bloco "Criar o objeto … com o modelo" (traga um do Molda no painel Imagens).');
       return mesh;
@@ -434,8 +448,7 @@ const gameThreeDModelAssetsRuntimeTemplate = `
       return;
     }
     // Uma carga antiga não vence a escolha mais nova do MESMO mundo.
-    world._skyPhotoRequest = (world._skyPhotoRequest || 0) + 1;
-    var request = world._skyPhotoRequest;
+    var request = beginSkyChange(world);
     loadHdrTexture(k, entry, function (texture) {
       if (!texture) return;
       if (world._disposed || request !== world._skyPhotoRequest) {

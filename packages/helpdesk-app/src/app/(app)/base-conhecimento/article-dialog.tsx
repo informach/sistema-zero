@@ -143,7 +143,9 @@ export function ArticleDialog({
         </Field>
         <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
           <div>
-            <p className="text-sm font-medium">Publicado</p>
+            <label htmlFor="article-published" className="text-sm font-medium">
+              Publicado
+            </label>
             <p className="text-xs text-muted-foreground">
               Artigos publicados entram no prompt da IA. Rascunhos ficam só aqui.
             </p>

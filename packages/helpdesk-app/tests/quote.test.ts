@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { splitQuotedReply } from '../src/lib/quote'
+import { splitQuotedReply } from '@sistemazero/helpdesk-contracts/quote'
 
 describe('splitQuotedReply', () => {
   test('resposta simples sem citação: quoted null, visible intacto', () => {

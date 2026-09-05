@@ -11,12 +11,13 @@ import type { MembersClient } from './clients'
 export { AI_APPS_MIN_LEVEL, FREE_CREATION_MIN_LEVEL, THREE_D_CREATION_MIN_LEVEL }
 
 /**
- * São DOIS portões, não um.
+ * São TRÊS portões, não um.
  *
  * O que chama IA (Pensa, Zappy) abre no Inventor(a) porque cada uso tem custo e a criança
  * precisa de repertório antes de perguntar. O que é criação livre (Estúdio Completo, Pinta)
  * abre no Construtor(a), assim que ela publica o primeiro projeto. Até 14/08 os dois
- * andavam numa constante só e o Pinta ficava preso junto com a IA.
+ * andavam numa constante só e o Pinta ficava preso junto com a IA. A oficina 3D (Molda)
+ * abre no Explorador(a) de Mundos, onde o kit Jogo 3D (consumidor do modelo) é recompensa.
  */
 
 /** Decisão síncrona para páginas que já carregaram a gamificação. */

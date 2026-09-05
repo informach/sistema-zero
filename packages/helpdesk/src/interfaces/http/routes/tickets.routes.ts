@@ -31,9 +31,8 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
       })
       .get(
         '/helpdesk/tickets',
-        async ({ query }) => {
-          const offset = query.offset ?? 0
-          const page = await deps.tickets.list({
+        ({ query }) =>
+          deps.tickets.list({
             status: query.status,
             category: query.category,
             sla: query.sla,
@@ -41,10 +40,8 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
             queue: query.queue,
             q: query.q,
             limit: query.limit ?? 50,
-            offset,
-          })
-          return { ...page, hasMore: offset + page.items.length < page.total }
-        },
+            cursor: query.cursor,
+          }),
         { query: TicketsQuery },
       )
       // ANTES de `/:id` (rota estática vence a paramétrica; o `stats` nunca casa o UUID).

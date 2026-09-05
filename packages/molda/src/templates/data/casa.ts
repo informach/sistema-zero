@@ -1,5 +1,5 @@
 import { buildTemplateModel } from '../builders'
-import type { MoldaTemplate } from '../catalog'
+import type { MoldaTemplate } from '../types'
 
 // Paleta Arcade: 2 vermelho (telhado) · 9 ciano (vidro) · 11 lilás (chaminé) ·
 // 13 bege (paredes) · 14 marrom (porta). A frente da casa é +z.

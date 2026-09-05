@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import {
   createMoldaPersistence,
+  getDefaultMoldaPersistence,
   resetMoldaPersistenceForTests,
   setMoldaStorageNamespace,
 } from '../state/persistence'
@@ -48,5 +49,41 @@ describe('studio-library', () => {
       expect(texture.asset.height).toBe(16)
     }
     expect(await exportAssetForStudio('nope')).toEqual({ ok: false, reason: 'not-found' })
+  })
+
+  test('exporta por carga pontual e reaproveita o resultado enquanto updatedAt não muda', async () => {
+    const persistence = getDefaultMoldaPersistence()
+    await persistence.save(makeModel())
+    const loadAll = spyOn(persistence, 'loadAll')
+    const load = spyOn(persistence, 'load')
+
+    const first = await exportAssetForStudio('model-1')
+    const cached = await exportAssetForStudio('model-1')
+    expect(first.ok).toBe(true)
+    expect(cached).not.toBe(first)
+    expect(cached.ok && first.ok && cached.asset.dataUrl).toBe(first.ok && first.asset.dataUrl)
+    expect(loadAll).toHaveBeenCalledTimes(0)
+    expect(load).toHaveBeenCalledTimes(2)
+
+    await persistence.save(makeModel({ name: 'nave-nova', updatedAt: 2 }))
+    const changed = await exportAssetForStudio('model-1')
+    expect(changed).not.toBe(first)
+    expect(changed.ok && changed.asset.originalFileName).toBe('nave-nova.glb')
+  })
+
+  test('cache reaproveita só o binário e sempre combina nome/miniatura do registro recém-lido', async () => {
+    const persistence = getDefaultMoldaPersistence()
+    await persistence.save(
+      makeModel({ updatedAt: 7, name: 'nave-a', thumb: 'data:image/jpeg;base64,AAAA' }),
+    )
+    const first = await exportAssetForStudio('model-1')
+    await persistence.save(
+      makeModel({ updatedAt: 7, name: 'nave-b', thumb: 'data:image/jpeg;base64,BBBB' }),
+    )
+    const second = await exportAssetForStudio('model-1')
+
+    expect(first.ok && second.ok && second.asset.dataUrl).toBe(first.ok && first.asset.dataUrl)
+    expect(second.ok && second.asset.originalFileName).toBe('nave-b.glb')
+    expect(second.ok && second.asset.thumbDataUrl).toBe('data:image/jpeg;base64,BBBB')
   })
 })

@@ -46,7 +46,7 @@ export function ViewportPane({
             key={view}
             variant="ghost"
             onClick={() => onView(view)}
-            className="min-h-9 px-2 text-sm"
+            className="min-h-11 px-2 text-sm"
             disabled={unsupported}
           >
             {COPY.editor.model.views[view]}
@@ -57,7 +57,7 @@ export function ViewportPane({
           label={COPY.editor.model.views.frame}
           onClick={() => onView('frame')}
           disabled={unsupported}
-          className="min-h-9 min-w-9"
+          className="min-h-11 min-w-11"
         />
         <ToolButton
           icon={Grid3x3}
@@ -65,7 +65,7 @@ export function ViewportPane({
           active={gridVisible}
           onClick={onToggleGrid}
           disabled={unsupported}
-          className="min-h-9 min-w-9"
+          className="min-h-11 min-w-11"
         />
         <span className="ml-auto shrink-0 px-2 text-xs font-bold text-mld-muted" role="status">
           {status}

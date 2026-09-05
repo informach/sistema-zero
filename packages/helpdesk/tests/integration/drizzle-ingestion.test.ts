@@ -135,4 +135,66 @@ integration('DrizzleTicketIngestionRepository', () => {
       messageCount: 2,
     })
   })
+
+  it('preserva a projeção temporal quando o backfill entrega outbound antes do inbound antigo', async () => {
+    const outboundAt = new Date('2026-09-05T11:00:00Z')
+    const inboundAt = new Date('2026-09-05T10:00:00Z')
+    const outboundTicket = makeTicket({
+      status: 'waiting',
+      firstMessageAt: outboundAt,
+      lastMessageAt: outboundAt,
+      lastInboundAt: null,
+      aiGeneration: 0,
+      aiStatus: 'idle',
+      aiNextAttemptAt: null,
+      createdAt: outboundAt,
+      updatedAt: outboundAt,
+    })
+    const outbound = {
+      ...makeMessage(outboundTicket.id, {
+        direction: 'outbound',
+        sentVia: 'gmail',
+        gmailInternalDate: outboundAt,
+        createdAt: outboundAt,
+      }),
+      gmailMessageId: `gmail-${randomUUID()}`,
+    } satisfies IngestedGmailMessage
+    await repository.ingest({
+      ticket: outboundTicket,
+      message: outbound,
+      direction: 'outbound',
+      aiEnabled: true,
+      at: outboundAt,
+    })
+
+    const inboundTicket = makeTicket({ gmailThreadId: outboundTicket.gmailThreadId })
+    const inbound = {
+      ...makeMessage(inboundTicket.id, {
+        gmailInternalDate: inboundAt,
+        createdAt: inboundAt,
+      }),
+      gmailMessageId: `gmail-${randomUUID()}`,
+    } satisfies IngestedGmailMessage
+    await repository.ingest({
+      ticket: inboundTicket,
+      message: inbound,
+      direction: 'inbound',
+      aiEnabled: true,
+      at: inboundAt,
+    })
+
+    const [stored] = await connection.db
+      .select()
+      .from(tickets)
+      .where(eq(tickets.id, outboundTicket.id))
+    expect(stored).toMatchObject({
+      status: 'waiting',
+      firstMessageAt: inboundAt,
+      lastMessageAt: outboundAt,
+      lastInboundAt: inboundAt,
+      aiGeneration: 0,
+      aiStatus: 'idle',
+      messageCount: 2,
+    })
+  })
 })

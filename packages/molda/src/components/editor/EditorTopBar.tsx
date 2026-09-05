@@ -37,7 +37,7 @@ export function SaveBadge({
       )}
     >
       {state === 'saving' ? (
-        <Loader2 aria-hidden="true" className="size-3.5 animate-spin" />
+        <Loader2 aria-hidden="true" className="size-3.5 animate-spin motion-reduce:animate-none" />
       ) : state === 'saved' ? (
         <Check aria-hidden="true" className="size-3.5" />
       ) : null}
@@ -65,7 +65,7 @@ export function EditorTopBar({
   const canUndo = useStore(editor, (state) => state.canUndo)
   const canRedo = useStore(editor, (state) => state.canRedo)
   return (
-    <header className="flex items-center gap-2 border-b-2 border-mld-border bg-mld-surface px-3 py-2">
+    <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-b-2 border-mld-border bg-mld-surface px-3 py-2 sm:flex">
       <Button variant="ghost" onClick={onBack} aria-label={COPY.editor.backToGallery}>
         <ArrowLeft aria-hidden="true" className="size-5" />
         <span className="hidden sm:inline">{COPY.editor.back}</span>
@@ -74,25 +74,27 @@ export function EditorTopBar({
         <h1 className="mld-display truncate text-lg text-mld-text">{asset.name}</h1>
         <KindChip kind={asset.kind} className="hidden sm:inline-flex" />
       </div>
-      {center ? <div className="flex shrink-0 items-center">{center}</div> : null}
-      {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
-      <IconButton
-        aria-label={COPY.editor.undo}
-        title={`${COPY.editor.undo} (Ctrl+Z)`}
-        disabled={!canUndo}
-        onClick={() => editor.getState().undo()}
-      >
-        <Undo2 aria-hidden="true" className="size-5" />
-      </IconButton>
-      <IconButton
-        aria-label={COPY.editor.redo}
-        title={`${COPY.editor.redo} (Ctrl+Y)`}
-        disabled={!canRedo}
-        onClick={() => editor.getState().redo()}
-      >
-        <Redo2 aria-hidden="true" className="size-5" />
-      </IconButton>
-      <SaveBadge state={saveState} error={saveError} />
+      <div className="col-span-2 flex min-w-0 flex-wrap items-center justify-center gap-1 sm:contents">
+        {center ? <div className="flex shrink-0 items-center">{center}</div> : null}
+        {actions ? <div className="flex shrink-0 items-center gap-1">{actions}</div> : null}
+        <IconButton
+          aria-label={COPY.editor.undo}
+          title={`${COPY.editor.undo} (Ctrl+Z)`}
+          disabled={!canUndo}
+          onClick={() => editor.getState().undo()}
+        >
+          <Undo2 aria-hidden="true" className="size-5" />
+        </IconButton>
+        <IconButton
+          aria-label={COPY.editor.redo}
+          title={`${COPY.editor.redo} (Ctrl+Y)`}
+          disabled={!canRedo}
+          onClick={() => editor.getState().redo()}
+        >
+          <Redo2 aria-hidden="true" className="size-5" />
+        </IconButton>
+        <SaveBadge state={saveState} error={saveError} />
+      </div>
     </header>
   )
 }

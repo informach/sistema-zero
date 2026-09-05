@@ -23,6 +23,7 @@ import {
 } from '../src/application/content-admin/content-admin.service'
 import {
   CommitCreationUploadService,
+  CompactCreationTombstonesService,
   DeleteCreationService,
   GetCreationDownloadService,
   ListCreationsService,
@@ -453,6 +454,7 @@ export function buildApp(
       commitUpload: new CommitCreationUploadService(creations, clock),
       getDownload: new GetCreationDownloadService(creations),
       remove: new DeleteCreationService(creations, clock),
+      compactTombstones: new CompactCreationTombstonesService(creations, clock),
       internalToken: opts.internalToken,
     },
     webhooks: {

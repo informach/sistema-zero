@@ -104,8 +104,76 @@ async function assertToolOwned(
 export class ListCreationsService {
   constructor(private readonly creations: CreationsRepository) {}
 
-  async execute(userId: string, tool: CreationTool): Promise<CreationSummary[]> {
-    return this.creations.list(userId, tool)
+  async execute(
+    userId: string,
+    tool: CreationTool,
+    options: { cursor?: string; limit?: number } = {},
+  ): Promise<{
+    items: Array<CreationSummary | { itemId: string; revision: number; deletedAt: Date }>
+    nextCursor: string | null
+  }> {
+    const limit = options.limit ?? CREATION_LIST_PAGE_SIZE
+    if (!Number.isInteger(limit) || limit < 1 || limit > CREATION_LIST_MAX_PAGE_SIZE) {
+      throw new ValidationError('Limite de página inválido')
+    }
+    const cursor = options.cursor ? decodeCreationCursor(options.cursor) : undefined
+    const page = await this.creations.listPage(userId, tool, {
+      limit,
+      ...(cursor ? { cursor } : {}),
+    })
+    return {
+      items: page.items.map((item) =>
+        item.deletedAt
+          ? { itemId: item.itemId, revision: item.revision, deletedAt: item.deletedAt }
+          : item,
+      ),
+      nextCursor: page.nextCursor ? encodeCreationCursor(page.nextCursor) : null,
+    }
+  }
+}
+
+export const CREATION_LIST_PAGE_SIZE = 250
+export const CREATION_LIST_MAX_PAGE_SIZE = 500
+export const CREATION_TOMBSTONE_RETENTION_MS = 90 * 24 * 60 * 60_000
+export const CREATION_TOMBSTONE_COMPACT_BATCH = 500
+
+function encodeCreationCursor(cursor: { itemUpdatedAt: Date; itemId: string }): string {
+  return Buffer.from(
+    JSON.stringify({ at: cursor.itemUpdatedAt.toISOString(), id: cursor.itemId }),
+  ).toString('base64url')
+}
+
+function decodeCreationCursor(value: string): { itemUpdatedAt: Date; itemId: string } {
+  try {
+    const decoded = JSON.parse(Buffer.from(value, 'base64url').toString('utf8')) as {
+      at?: unknown
+      id?: unknown
+    }
+    const itemUpdatedAt = typeof decoded.at === 'string' ? new Date(decoded.at) : new Date(NaN)
+    if (
+      !Number.isFinite(itemUpdatedAt.getTime()) ||
+      typeof decoded.id !== 'string' ||
+      !/^[A-Za-z0-9_-]{1,64}$/.test(decoded.id)
+    ) {
+      throw new Error('cursor inválido')
+    }
+    return { itemUpdatedAt, itemId: decoded.id }
+  } catch {
+    throw new ValidationError('Cursor de página inválido')
+  }
+}
+
+export class CompactCreationTombstonesService {
+  constructor(
+    private readonly creations: CreationsRepository,
+    private readonly clock: () => Date = () => new Date(),
+  ) {}
+
+  execute(): Promise<{ compacted: number }> {
+    const cutoff = new Date(this.clock().getTime() - CREATION_TOMBSTONE_RETENTION_MS)
+    return this.creations
+      .compactTombstones(cutoff, CREATION_TOMBSTONE_COMPACT_BATCH)
+      .then((compacted) => ({ compacted }))
   }
 }
 
@@ -369,6 +437,7 @@ export class DeleteCreationService {
     userId: string,
     tool: CreationTool,
     itemId: string,
+    baseRevision: number,
   ): Promise<{
     deleted: boolean
     storageKey: string | null
@@ -376,7 +445,11 @@ export class DeleteCreationService {
     storageKeys: string[]
     revision: number
   }> {
-    const result = await this.creations.softDelete(userId, tool, itemId, this.clock())
+    if (!Number.isInteger(baseRevision) || baseRevision < 0) {
+      throw new ValidationError('Revisão-base inválida')
+    }
+    const result = await this.creations.softDelete(userId, tool, itemId, baseRevision, this.clock())
+    if (!result.ok) throw new CreationStaleBaseError(result.currentRevision)
     return {
       deleted: result.deleted,
       storageKey: result.storageRef,

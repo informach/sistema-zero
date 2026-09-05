@@ -165,6 +165,10 @@ describe('portal do responsável', () => {
       requesterEmail: 'maria@example.com',
       source: 'portal',
       status: 'waiting',
+      aiSummary: 'Resumo anterior',
+      aiDraft: 'Rascunho anterior',
+      aiGeneration: 1,
+      aiStatus: 'done',
     })
     await repos.tickets.create(ticket)
 
@@ -175,6 +179,11 @@ describe('portal do responsável', () => {
 
     expect(res.status).toBe(200)
     expect((await json(res)).ticket.status).toBe('open')
+    expect(await repos.tickets.byId(ticket.id)).toMatchObject({
+      aiGeneration: 2,
+      aiSummary: null,
+      aiDraft: null,
+    })
     expect((await repos.messages.byTicketId(ticket.id)).at(-1)).toMatchObject({
       kind: 'portal',
       visibility: 'customer',

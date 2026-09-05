@@ -1,4 +1,5 @@
 import {
+  asset3DManifest,
   assetManifest,
   assetMetaManifest,
   isReservedProjectFileName,
@@ -226,13 +227,19 @@ export async function buildClassicFileMap(
   // nada e gastaria tempo mastigando megabytes de base64.
   const manifest = exportManifest
   const soundsExport = soundManifest(project.assets)
+  const models3dExport = asset3DManifest(project.assets)
   let assetsScriptSrc: string | undefined
-  if (Object.keys(manifest).length > 0 || Object.keys(soundsExport).length > 0) {
+  if (
+    Object.keys(manifest).length > 0 ||
+    Object.keys(soundsExport).length > 0 ||
+    Object.keys(models3dExport).length > 0
+  ) {
     assetsScriptSrc = 'sz-assets.js'
     files['public/sz-assets.js'] = buildAssetsRuntime(
       manifest,
       assetMetaManifest(project.assets),
       soundsExport,
+      models3dExport,
     )
     // Cada asset (imagem OU som) TAMBÉM vira arquivo real `public/<nome>`: um
     // `background: url('background.png')` no CSS do aluno resolve RELATIVO no site

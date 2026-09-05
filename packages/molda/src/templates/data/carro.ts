@@ -1,5 +1,5 @@
 import { buildTemplateModel } from '../builders'
-import type { MoldaTemplate } from '../catalog'
+import type { MoldaTemplate } from '../types'
 
 // Paleta Arcade: 2 vermelho · 5 amarelo · 9 ciano (vidro) · 15 preto (rodas).
 // O carro anda no eixo z (a frente é +z). As rodas são cilindros deitados:

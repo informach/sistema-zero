@@ -52,19 +52,24 @@ function freshPartId(taken: Set<string>): string {
 }
 
 /**
- * Completa os pares que cabem no teto. Isso mantém o mesmo invariante tanto
- * nas operações do editor quanto no sanitize de um registro incompleto.
+ * Completa os pares atomicamente. Um registro externo que não comporta todos
+ * os gêmeos tem o espelho desligado e os pares existentes assados: nunca fica
+ * num estado em que algumas fontes derivam e outras não.
  */
 function appendMissingTwins(model: MoldaModelAsset): MoldaModelAsset {
-  if (!model.mirrorX || model.parts.length >= MOLDA_LIMITS.maxParts) return model
+  if (!model.mirrorX) return model
   const taken = new Set(model.parts.map((part) => part.id))
   const pairedSources = new Set(
     model.parts.flatMap((part) => (part.mirrorOf ? [part.mirrorOf] : [])),
   )
+  const missing = model.parts.filter(
+    (source) => !source.mirrorOf && !partCrossesMirror(source) && !pairedSources.has(source.id),
+  )
+  if (model.parts.length + missing.length > MOLDA_LIMITS.maxParts) {
+    return { ...bakeTwins(model), mirrorX: false }
+  }
   const additions: MoldaPart[] = []
-  for (const source of model.parts) {
-    if (source.mirrorOf || partCrossesMirror(source) || pairedSources.has(source.id)) continue
-    if (model.parts.length + additions.length >= MOLDA_LIMITS.maxParts) break
+  for (const source of missing) {
     additions.push(
       mirrorTwinOf(source, {
         id: freshPartId(taken),

@@ -1,3 +1,12 @@
+import type {
+  ConnectionView as SharedConnectionView,
+  CustomerTicketMessageView as SharedCustomerMessageView,
+  CustomerTicketView as SharedCustomerTicketView,
+  KbArticleView as SharedKbArticleView,
+  MessageView as SharedMessageView,
+  SettingsView as SharedSettingsView,
+  TicketView as SharedTicketView,
+} from '@sistemazero/helpdesk-contracts'
 import type { GmailConnection } from '../domain/connection/gmail-connection'
 import type { KbArticle } from '../domain/kb/kb-article'
 import type { HelpdeskSettings } from '../domain/settings/settings'
@@ -7,7 +16,7 @@ import { ticketSla } from '../domain/ticket/ticket-sla'
 
 const iso = (d: Date | null): string | null => (d ? d.toISOString() : null)
 
-export function toTicketView(ticket: Ticket, now?: Date) {
+export function toTicketView(ticket: Ticket, now?: Date): SharedTicketView {
   const sla = now ? ticketSla(ticket, now) : null
   return {
     id: ticket.id,
@@ -32,6 +41,7 @@ export function toTicketView(ticket: Ticket, now?: Date) {
     aiDraftAt: iso(ticket.aiDraftAt),
     aiDraftEdited: ticket.aiDraftEdited,
     aiClassification: ticket.aiClassification,
+    aiGeneration: ticket.aiGeneration,
     aiStatus: ticket.aiStatus,
     sla: sla
       ? {
@@ -46,9 +56,9 @@ export function toTicketView(ticket: Ticket, now?: Date) {
     updatedAt: ticket.updatedAt.toISOString(),
   }
 }
-export type TicketView = ReturnType<typeof toTicketView>
+export type TicketView = SharedTicketView
 
-export function toMessageView(message: TicketMessage) {
+export function toMessageView(message: TicketMessage): SharedMessageView {
   return {
     id: message.id,
     ticketId: message.ticketId,
@@ -73,7 +83,7 @@ export function toMessageView(message: TicketMessage) {
     createdAt: message.createdAt.toISOString(),
   }
 }
-export type MessageView = ReturnType<typeof toMessageView>
+export type MessageView = SharedMessageView
 
 /**
  * Projeção do PORTAL do cliente. Deliberadamente estreita: o `toTicketView` é a
@@ -85,7 +95,7 @@ export type MessageView = ReturnType<typeof toMessageView>
  * nesta função é exatamente o que chega ao navegador do cliente. A forma espelha
  * `CustomerTicketView` do member-shell, que é o contrato do único consumidor.
  */
-export function toCustomerTicketView(ticket: Ticket) {
+export function toCustomerTicketView(ticket: Ticket): SharedCustomerTicketView {
   return {
     id: ticket.id,
     version: ticket.version,
@@ -98,7 +108,7 @@ export function toCustomerTicketView(ticket: Ticket) {
     createdAt: ticket.createdAt.toISOString(),
   }
 }
-export type CustomerTicketView = ReturnType<typeof toCustomerTicketView>
+export type CustomerTicketView = SharedCustomerTicketView
 
 /**
  * Mensagem como o cliente a vê. Fora ficam os campos de bastidor: `sentVia`,
@@ -106,7 +116,10 @@ export type CustomerTicketView = ReturnType<typeof toCustomerTicketView>
  * equipe, os cabeçalhos de e-mail e o `gmailInternalDate`. A visibilidade
  * `internal` já é barrada antes, no service — esta função é a segunda tranca.
  */
-export function toCustomerMessageView(message: TicketMessage) {
+export function toCustomerMessageView(message: TicketMessage): SharedCustomerMessageView {
+  if (message.visibility !== 'customer' || message.kind === 'note') {
+    throw new Error('Mensagem interna não pode ser projetada para o portal')
+  }
   return {
     id: message.id,
     ticketId: message.ticketId,
@@ -118,9 +131,9 @@ export function toCustomerMessageView(message: TicketMessage) {
     createdAt: message.createdAt.toISOString(),
   }
 }
-export type CustomerMessageView = ReturnType<typeof toCustomerMessageView>
+export type CustomerMessageView = SharedCustomerMessageView
 
-export function toKbArticleView(article: KbArticle) {
+export function toKbArticleView(article: KbArticle): SharedKbArticleView {
   return {
     id: article.id,
     version: article.version,
@@ -133,18 +146,18 @@ export function toKbArticleView(article: KbArticle) {
     updatedAt: article.updatedAt.toISOString(),
   }
 }
-export type KbArticleView = ReturnType<typeof toKbArticleView>
+export type KbArticleView = SharedKbArticleView
 
-export function toSettingsView(settings: HelpdeskSettings) {
+export function toSettingsView(settings: HelpdeskSettings): SharedSettingsView {
   return {
     signature: settings.signature,
     updatedAt: iso(settings.updatedAt),
   }
 }
-export type SettingsView = ReturnType<typeof toSettingsView>
+export type SettingsView = SharedSettingsView
 
 /** NUNCA expõe `*_enc` (tokens cifrados ficam no banco e na memória do serviço). */
-export function toConnectionView(connection: GmailConnection | null) {
+export function toConnectionView(connection: GmailConnection | null): SharedConnectionView {
   if (!connection || connection.status === 'revoked' || connection.status === 'disabled') {
     return { connected: false as const }
   }
@@ -157,4 +170,4 @@ export function toConnectionView(connection: GmailConnection | null) {
     connectedAt: connection.createdAt.toISOString(),
   }
 }
-export type ConnectionView = ReturnType<typeof toConnectionView>
+export type ConnectionView = SharedConnectionView

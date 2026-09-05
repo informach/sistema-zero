@@ -114,12 +114,15 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
             version: sql`${tickets.version} + 1`,
             gmailThreadId: sql`coalesce(${tickets.gmailThreadId}, ${input.ticket.gmailThreadId})`,
             status: sql`case
-              when ${tickets.status} in ('new', 'open') then 'waiting'::helpdesk.ticket_status
+              when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+                and ${tickets.status} in ('new', 'open')
+              then 'waiting'::helpdesk.ticket_status
               else ${tickets.status}
             end`,
+            firstMessageAt: sql`least(${tickets.firstMessageAt}, ${atIso}::timestamptz)`,
             lastMessageAt: sql`greatest(${tickets.lastMessageAt}, ${atIso})`,
             messageCount: sql`${tickets.messageCount} + 1`,
-            updatedAt: input.at,
+            updatedAt: sql`greatest(${tickets.updatedAt}, ${atIso}::timestamptz)`,
           })
           .where(eq(tickets.id, existingTicketId))
       } else {
@@ -127,6 +130,7 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
           .update(tickets)
           .set({
             version: sql`${tickets.version} + 1`,
+            firstMessageAt: sql`least(${tickets.firstMessageAt}, ${atIso}::timestamptz)`,
             lastMessageAt: sql`greatest(${tickets.lastMessageAt}, ${atIso})`,
             lastInboundAt: sql`
               case
@@ -138,26 +142,43 @@ export class DrizzleTicketIngestionRepository implements TicketIngestionReposito
             messageCount: sql`${tickets.messageCount} + 1`,
             status: sql`
               case
-                when ${tickets.status} in ('waiting', 'resolved', 'closed')
+                when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+                  and ${tickets.status} in ('waiting', 'resolved', 'closed')
                 then 'open'::helpdesk.ticket_status
                 else ${tickets.status}
               end
             `,
             resolvedAt: sql`
               case
-                when ${tickets.status} in ('resolved', 'closed') then null
+                when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+                  and ${tickets.status} in ('resolved', 'closed')
+                then null
                 else ${tickets.resolvedAt}
               end
             `,
-            ...(input.aiEnabled
-              ? {
-                  aiStatus: 'pending' as const,
-                  aiNextAttemptAt: input.at,
-                  aiAttempts: 0,
-                  aiLastError: null,
-                }
-              : {}),
-            updatedAt: input.at,
+            aiGeneration: sql`case
+              when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+              then ${tickets.aiGeneration} + 1 else ${tickets.aiGeneration}
+            end`,
+            aiSummary: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiSummary} end`,
+            aiSummaryAt: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiSummaryAt} end`,
+            aiDraft: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiDraft} end`,
+            aiDraftAt: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiDraftAt} end`,
+            aiDraftEdited: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then false else ${tickets.aiDraftEdited} end`,
+            aiClassification: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiClassification} end`,
+            aiStatus: sql`case
+              when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+              then ${input.aiEnabled ? sql`'pending'` : sql`'skipped'`}::helpdesk.ai_status
+              else ${tickets.aiStatus}
+            end`,
+            aiNextAttemptAt: sql`case
+              when ${tickets.lastMessageAt} <= ${atIso}::timestamptz
+              then ${input.aiEnabled ? sql`${atIso}::timestamptz` : sql`null`}
+              else ${tickets.aiNextAttemptAt}
+            end`,
+            aiAttempts: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then 0 else ${tickets.aiAttempts} end`,
+            aiLastError: sql`case when ${tickets.lastMessageAt} <= ${atIso}::timestamptz then null else ${tickets.aiLastError} end`,
+            updatedAt: sql`greatest(${tickets.updatedAt}, ${atIso}::timestamptz)`,
           })
           .where(eq(tickets.id, existingTicketId))
       }

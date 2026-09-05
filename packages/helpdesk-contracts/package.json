@@ -1,0 +1,22 @@
+{
+  "name": "@sistemazero/helpdesk-contracts",
+  "version": "0.1.0",
+  "description": "Contratos puros e compartilhados do Helpdesk",
+  "type": "module",
+  "private": true,
+  "module": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./quote": "./src/quote.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}

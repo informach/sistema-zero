@@ -1,5 +1,5 @@
 import { buildTemplateModel } from '../builders'
-import type { MoldaTemplate } from '../catalog'
+import type { MoldaTemplate } from '../types'
 
 // Paleta Arcade: 2 vermelho · 8 azul · 12 roxo escuro · 13 pele · 15 preto.
 // A frente do boneco é +z (a vista "Frente" do palco); o rosto vai na face `pz`

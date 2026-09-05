@@ -30,7 +30,8 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
 > - **F3 (IA):** `OpenRouterClient` (json_object+Zod+1 retry), `prompts.ts` puro, `ticket-ai.service`,
 >   `ai-worker` (claim SKIP LOCKED), rotas summarize/regenerate. Sem API key → `ai_status=skipped`.
 > - **F4 (KB):** KB publicada injetada no prompt do rascunho. A IA opera somente como copiloto;
->   não há mecanismo de auto-resposta no domínio ou nas configurações.
+>   não há mecanismo de auto-resposta no domínio ou nas configurações. Os candidatos e o total de
+>   caracteres são limitados; a seleção lexical descarta artigos sem relação com a conversa.
 > - **F5 (painel):** `GET /helpdesk/tickets/stats` (agregado no banco: contagens por status +
 >   resolvidos hoje/7d + série densa de 14 dias EM SP), `.env.example` e este guia.
 > - **F6 (portal):** tickets iniciados pelo responsável, mensagens do portal com visibilidade
@@ -68,7 +69,9 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
 7. **Categoria/prioridade manual NUNCA são sobrescritas pela IA** (`applyClassification`:
    `category = case when category_manual then category else <novo> end`, `priority = coalesce`).
 8. **Concorrência otimista** em `tickets.version` (update confere → 0 linhas = `CONCURRENCY_CONFLICT`
-   409). A máquina de estado `ai_status` NÃO toca em `version`.
+   409). A máquina de estado `ai_status` NÃO toca em `version`; cada inbound atual incrementa
+   `ai_generation`, limpa artefatos anteriores e todas as escritas assíncronas da IA usam CAS por
+   geração + tentativa do claim.
 9. **Sem FK cross-schema**: `assigned_to`/`connected_by`/`created_by` são snapshots do auth
    (equipe), com `*_name` snapshot.
 10. **Portal é exclusivo do responsável:** o gateway remove headers de identidade forjados e o
@@ -82,8 +85,9 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
     (transação única: CAS em `version` +1, `new/open → waiting`, contadores; mensagem
     `kind='portal'`, `direction='outbound'`, `delivery_state` NULL) e depois um AVISO por
     e-mail via gateway → messaging (consumer HMAC `helpdesk`, template `helpdesk-reply`,
-    idempotência por MENSAGEM, só o link — nunca o texto), best-effort: falha do aviso vira
-    `warn`, a resposta já está na conversa. Ticket de portal COM thread do Gmail (legado
+    idempotência por MENSAGEM, só o link — nunca o texto). Mensagem e job entram na MESMA
+    transação; o `portal-notification-worker` usa claim com lease e retry exponencial sem teto de
+    tentativas. Ticket de portal COM thread do Gmail (legado
     respondido por e-mail) segue pelo Gmail. `tickets.portal` (`adult`|`kids`, migration
     0009) vem do BFF (config compilada do app, o cliente não escolhe) e decide o link
     (`/ajuda` vs `/responsavel/ajuda`); nulo cai no adulto. O guarda de "uma saída em voo"
@@ -95,12 +99,12 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
 src/
 ├── domain/
 │   ├── ticket/{ticket,ticket-message,ticket-sla,ticket-stats}.ts # regras PURAS
-│   ├── mail/quote-strip.ts · settings/settings.ts · kb/kb-article.ts
-│   └── ports/                 # repos + gmail-client + llm-client + oauth-provider + secret-box + messaging-gateway
+│   ├── settings/settings.ts · kb/kb-article.ts
+│   └── ports/                 # repos + gmail/llm/oauth/secret-box/messaging + outbox de aviso
 ├── application/
 │   ├── connection/{gmail-account,oauth,connection}.service.ts
 │   ├── tickets/{ticket,reply,ingest,customer-ticket}.service.ts · tickets/portal-reply-notification.ts (PURO)
-│   ├── ai/{ticket-ai.service,prompts}.ts · kb/kb.service · settings/settings.service
+│   ├── ai/{ticket-ai.service,prompts,kb-context}.ts · kb/kb.service · settings/settings.service
 │   └── views.ts               # NUNCA expõe *_enc
 ├── infrastructure/
 │   ├── config/env.ts          # Zod fail-fast; grupos atômicos (Google, IA, aviso do portal) → null-config
@@ -110,14 +114,17 @@ src/
 │   ├── gateways/openrouter/openrouter-client.ts
 │   ├── gateways/messaging/gateway-messaging-client.ts   # HMAC consumer `helpdesk` → /messaging/send
 │   ├── observability/sentry.ts
-│   └── workers/{gmail-sync-worker,ai-worker}.ts
+│   └── workers/{gmail-sync-worker,ai-worker,portal-notification-worker}.ts
 ├── interfaces/http/{server,error-handler,auth,dtos}.ts
 │   └── routes/{health,tickets,customer-tickets,kb,settings,connection,oauth}.routes.ts
 ├── composition-root.ts (DI + workers + retenção advisory lock 71130324050607093) · index.ts
 tests/  fakes/{in-memory,gmail,ai,messaging}.ts · helpers.ts (monta a app inteira sem banco) · unit/ ·
-        integration/ (via app.handle) — 147 testes (os `drizzle-*` só rodam com
+        integration/ (via app.handle; os `drizzle-*` só rodam com
         `HELPDESK_TEST_DATABASE_URL` apontando p/ um banco `helpdesk_test` migrado)
 ```
+
+Enums, views públicas e o parser puro de citações vivem em
+`@sistemazero/helpdesk-contracts`; backend, console e member-shell importam a mesma fonte.
 
 ## Comandos (de dentro de `packages/helpdesk`)
 
@@ -147,8 +154,7 @@ Saúde: `GET /health` · `GET /readyz` (banco). Negócio (rate limits no gateway
 
 - Tickets: `GET /helpdesk/tickets` (filtros status/category/q + `sla=attention|at_risk|breached`
   + `assignment=assigned|unassigned` e `queue=unassigned` para trabalho ativo sem responsável,
-  offset+`hasMore`; fila ordena estourados/risco antes da
-  recência) ·
+  cursor opaco com snapshot + `hasMore`; fila ordena estourados/risco antes da recência) ·
   **`GET /helpdesk/tickets/stats`** (painel — agregado no banco, registrada ANTES de `/:id` p/ a
   rota estática vencer a paramétrica) · `GET /helpdesk/tickets/:id` (+ messages[]) ·
   `PATCH /helpdesk/tickets/:id` (status/category/priority/assignToMe + `version`→409) ·
@@ -184,10 +190,14 @@ mesma regra para filtro, ordenação e agregados paginados.
    (refresh lazy) → backfill/incremental → parse MIME → `IngestService.ingest` (from==contato@ →
    outbound `sent_via='gmail'`; senão inbound → upsert ticket por `gmail_thread_id`, `ai_status=pending`).
 2. **ai-worker** (~15s): claim `pending` ou lease `processing` vencido (SKIP LOCKED) → `runPipeline`
-   (classifica+resume, rascunha com KB) → `markAiDone`.
+   (classifica+resume, rascunha com KB relevante e limitada) → `markAiDone`, sempre condicionado
+   à geração/tentativa reivindicada.
+3. **portal-notification-worker** (~5s): claim do outbox persistente → gateway/messaging com a
+   mesma chave idempotente; falha volta a `pending` com backoff e crash é recuperado pelo lease.
 
 Retenção (fora do hot path, advisory xact-lock `71130324050607093` — só 1 réplica limpa por ciclo):
-`oauth_states` vencidos. ⚠️ `Date` em SQL cru só via `.toISOString()` (gotcha Bun+postgres.js).
+`oauth_states` vencidos e notificações `sent` antigas (30 dias por padrão). Jobs pendentes nunca
+são apagados. ⚠️ `Date` em SQL cru só via `.toISOString()` (gotcha Bun+postgres.js).
 
 ## Gotchas (mantenha ao editar)
 

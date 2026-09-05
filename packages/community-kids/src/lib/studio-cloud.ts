@@ -344,12 +344,30 @@ export function createStudioCloudSync(options: {
     enqueue(id)
   }
 
+  /** Uma exclusão velha não vence uma edição remota: restaura a revisão corrente no mesmo id. */
+  async function restoreAfterStaleRemove(id: string): Promise<void> {
+    marks.clearTombstone(id)
+    const downloaded = await cloud.download(id)
+    if (!downloaded) return
+    const raw = await resolveCloudProject(downloaded, id)
+    const restored = await studio.restoreProjectFromCloud(raw, {
+      expectedId: id,
+      namespace: options.viewerId,
+    })
+    if (restored.project.id !== id) return
+    marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+  }
+
   function enqueueRemove(id: string): void {
     const at = now()
     const revision = marks.revision(id) ?? null
     marks.setTombstone(id, { at, sent: false, revision })
-    cloud.enqueueRemove(id, ({ revision: confirmedRevision }) =>
-      marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
+    cloud.enqueueRemove(
+      id,
+      revision ?? 0,
+      ({ revision: confirmedRevision }) =>
+        marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
+      ({ itemId }) => restoreAfterStaleRemove(itemId),
     )
   }
 
@@ -508,12 +526,25 @@ export function createStudioCloudSync(options: {
               }),
           }
         },
+        deleteLocal: async (itemId) => {
+          await studio.discardImportedProjectSnapshot(itemId, {
+            namespace: options.viewerId,
+          })
+          return true
+        },
         push: (item) => enqueue(item.id),
-        remove: (itemId) =>
-          cloud.enqueueRemove(itemId, ({ revision }) => {
-            const tombstone = marks.tombstone(itemId)
-            if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
-          }),
+        remove: (itemId) => {
+          const tombstone = marks.tombstone(itemId)
+          cloud.enqueueRemove(
+            itemId,
+            tombstone?.revision ?? marks.revision(itemId) ?? 0,
+            ({ revision }) => {
+              const tombstone = marks.tombstone(itemId)
+              if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
+            },
+            ({ itemId: staleId }) => restoreAfterStaleRemove(staleId),
+          )
+        },
       })
       return report.deferred
     }

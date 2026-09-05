@@ -10,7 +10,11 @@
  */
 import { assetBytes } from '../core/bytes'
 import type { MoldaAssetKind } from '../core/model'
-import { getDefaultMoldaPersistence } from '../state/persistence'
+import {
+  getDefaultMoldaPersistence,
+  getMoldaStorageNamespace,
+  type MoldaPersistence,
+} from '../state/persistence'
 import { exportModelGlb } from './modelGlb'
 import { exportSkyHdr } from './skyHdr'
 import { exportTexturePng } from './texturePng'
@@ -46,6 +50,68 @@ export type ExportForStudioResult =
   | { ok: true; asset: MoldaExportedAsset }
   | { ok: false; reason: 'not-found' | 'encode-failed' | 'asset-too-big' }
 
+const MAX_EXPORT_CACHE_ENTRIES = 16
+type CachedExport =
+  | { ok: false; reason: 'encode-failed' | 'asset-too-big' }
+  | {
+      ok: true
+      encoded: Pick<MoldaExportedAsset, 'kind' | 'dataUrl' | 'bytes' | 'width' | 'height'>
+    }
+const exportCaches = new WeakMap<MoldaPersistence, Map<string, CachedExport>>()
+
+function cacheFor(persistence: MoldaPersistence): Map<string, CachedExport> {
+  let cache = exportCaches.get(persistence)
+  if (!cache) {
+    cache = new Map()
+    exportCaches.set(persistence, cache)
+  }
+  return cache
+}
+
+function readCachedExport(cache: Map<string, CachedExport>, key: string): CachedExport | undefined {
+  const cached = cache.get(key)
+  if (!cached) return undefined
+  cache.delete(key)
+  cache.set(key, cached)
+  return cached
+}
+
+function writeCachedExport(
+  cache: Map<string, CachedExport>,
+  key: string,
+  result: CachedExport,
+): void {
+  cache.set(key, result)
+  while (cache.size > MAX_EXPORT_CACHE_ENTRIES) {
+    const oldest = cache.keys().next().value
+    if (oldest === undefined) return
+    cache.delete(oldest)
+  }
+}
+
+function materializeExport(
+  asset: Awaited<ReturnType<MoldaPersistence['load']>> & {},
+  cached: CachedExport,
+): ExportForStudioResult {
+  if (!cached.ok) return cached
+  const extension =
+    cached.encoded.kind === 'model3d'
+      ? 'glb'
+      : cached.encoded.kind === 'environment3d'
+        ? 'hdr'
+        : 'png'
+  return {
+    ok: true,
+    asset: {
+      id: asset.id,
+      name: asset.name,
+      ...cached.encoded,
+      originalFileName: `${asset.name}.${extension}`,
+      thumbDataUrl: asset.thumb ?? null,
+    },
+  }
+}
+
 /** Do namespace corrente, ordenada da mais recente para a mais antiga. */
 export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
   const assets = await getDefaultMoldaPersistence().loadAll()
@@ -62,57 +128,57 @@ export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
 }
 
 export async function exportAssetForStudio(id: string): Promise<ExportForStudioResult> {
-  const assets = await getDefaultMoldaPersistence().loadAll()
-  const asset = assets.find((item) => item.id === id)
+  const namespace = getMoldaStorageNamespace()
+  const persistence = getDefaultMoldaPersistence()
+  const asset = await persistence.load(id)
   if (!asset) return { ok: false, reason: 'not-found' }
+  const cache = cacheFor(persistence)
+  const cacheKey = `${namespace}\u0000${asset.id}\u0000${asset.updatedAt}`
+  const cached = readCachedExport(cache, cacheKey)
+  if (cached) return materializeExport(asset, cached)
+  const finish = (result: CachedExport): ExportForStudioResult => {
+    writeCachedExport(cache, cacheKey, result)
+    return materializeExport(asset, result)
+  }
   if (asset.kind === 'model') {
     const result = exportModelGlb(asset)
     if (!result.ok) {
-      return { ok: false, reason: result.reason === 'too-big' ? 'asset-too-big' : 'encode-failed' }
+      return finish({
+        ok: false,
+        reason: result.reason === 'too-big' ? 'asset-too-big' : 'encode-failed',
+      })
     }
-    return {
+    return finish({
       ok: true,
-      asset: {
-        id: asset.id,
-        name: asset.name,
+      encoded: {
         kind: 'model3d',
         dataUrl: result.dataUrl,
-        originalFileName: `${asset.name}.glb`,
         bytes: result.bytes.length,
-        thumbDataUrl: asset.thumb ?? null,
       },
-    }
+    })
   }
   if (asset.kind === 'sky') {
     const result = exportSkyHdr(asset)
-    if (!result.ok) return { ok: false, reason: 'asset-too-big' }
-    return {
+    if (!result.ok) return finish({ ok: false, reason: 'asset-too-big' })
+    return finish({
       ok: true,
-      asset: {
-        id: asset.id,
-        name: asset.name,
+      encoded: {
         kind: 'environment3d',
         dataUrl: result.dataUrl,
-        originalFileName: `${asset.name}.hdr`,
         bytes: result.bytes.length,
-        thumbDataUrl: asset.thumb ?? null,
       },
-    }
+    })
   }
   const result = exportTexturePng(asset)
-  if (!result.ok) return { ok: false, reason: 'asset-too-big' }
-  return {
+  if (!result.ok) return finish({ ok: false, reason: 'asset-too-big' })
+  return finish({
     ok: true,
-    asset: {
-      id: asset.id,
-      name: asset.name,
+    encoded: {
       kind: 'image',
       dataUrl: result.dataUrl,
-      originalFileName: `${asset.name}.png`,
       bytes: result.bytes.length,
-      thumbDataUrl: asset.thumb ?? null,
       width: result.width,
       height: result.height,
     },
-  }
+  })
 }

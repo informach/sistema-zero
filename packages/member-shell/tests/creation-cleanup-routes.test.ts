@@ -51,6 +51,7 @@ describe('worker durável de limpeza das criações', () => {
               }
             : { status: 204, body: null }
         }
+        if (path.endsWith('/tombstones/compact')) return { status: 200, body: { compacted: 7 } }
         return { status: 200, body: { completed: true } }
       },
     } as unknown as GatewayModule
@@ -64,7 +65,12 @@ describe('worker durável de limpeza das criações', () => {
     const response = await route.POST(request())
 
     expect(response.status).toBe(200)
-    expect(await response.json()).toEqual({ completed: 1, failed: 0 })
+    expect(await response.json()).toEqual({
+      completed: 1,
+      failed: 0,
+      compacted: 7,
+      tombstoneCompactionFailed: false,
+    })
     expect(calls).toEqual([
       '/members/internal/creation-cleanups/claim',
       'R2 creations/a/,creations/b/',
@@ -72,6 +78,7 @@ describe('worker durável de limpeza das criações', () => {
       '/members/internal/account-deletion/finalize',
       '/members/internal/creation-cleanups/job-1/complete',
       '/members/internal/creation-cleanups/claim',
+      '/members/creations/tombstones/compact',
     ])
   })
 
@@ -110,7 +117,12 @@ describe('worker durável de limpeza das criações', () => {
 
     const response = await route.POST(request())
 
-    expect(await response.json()).toEqual({ completed: 0, failed: 1 })
+    expect(await response.json()).toEqual({
+      completed: 0,
+      failed: 1,
+      compacted: 0,
+      tombstoneCompactionFailed: false,
+    })
     expect(calls[1]).toEqual({
       path: '/members/internal/creation-cleanups/job-2/fail',
       body: { error: 'R2 indisponível', attempts: 3 },

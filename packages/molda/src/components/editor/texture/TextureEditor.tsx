@@ -71,7 +71,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
 
 function chip(active: boolean): string {
   return clsx(
-    'min-h-9 rounded-lg border-2 px-1 text-xs font-bold transition',
+    'min-h-11 rounded-lg border-2 px-1 text-xs font-bold transition',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
     active
       ? 'border-mld-accent bg-mld-accent text-mld-accent-fg'
@@ -284,7 +284,7 @@ export function TextureEditor({
             onClick={download}
             aria-label={copy.download.png}
             title={copy.download.png}
-            className="min-h-9 px-3 text-sm"
+            className="min-h-11 px-3 text-sm"
           >
             <Download aria-hidden="true" className="size-4" />
             <span className="hidden md:inline">{copy.download.png}</span>

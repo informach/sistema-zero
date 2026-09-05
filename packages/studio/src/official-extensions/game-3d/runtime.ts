@@ -483,8 +483,15 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     return world;
   }
 
+  function beginSkyChange(world) {
+    if (!world) return 0;
+    world._skyPhotoRequest = (world._skyPhotoRequest || 0) + 1;
+    return world._skyPhotoRequest;
+  }
+
   function setBackground(world, color) {
     if (!world || !world.scene) return;
+    beginSkyChange(world);
     // Se havia um céu (a CanvasTexture de degradê do setSky), descarta antes de
     // trocar pela cor sólida — senão a textura vaza na GPU até o dispose do mundo.
     var old = world.scene.background;
@@ -611,10 +618,46 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     }
     if (obj.traverse) obj.traverse(visit); else visit(obj);
   }
+  function rememberModelAppearance(obj, key) {
+    var state = obj && obj.userData && obj.userData.sz;
+    if (!state || !state.modelFile) return;
+    if (!state.modelAppearance) state.modelAppearance = {};
+    state.modelAppearance[key] = true;
+  }
+  function applyRememberedModelAppearance(obj, target) {
+    var state = obj && obj.userData && obj.userData.sz;
+    var remembered = state && state.modelAppearance;
+    var source = obj && obj.material && (obj.material.length ? obj.material[0] : obj.material);
+    if (!remembered || !source) return;
+    eachMaterial(target, function (material) {
+      if (remembered.color && source.color && material.color) {
+        if (material.color.copy) material.color.copy(source.color);
+        else if (material.color.set) material.color.set(source.color);
+      }
+      if (remembered.material) {
+        material.wireframe = source.wireframe;
+        if ('metalness' in material && 'metalness' in source) material.metalness = source.metalness;
+        if ('roughness' in material && 'roughness' in source) material.roughness = source.roughness;
+        material.transparent = source.transparent;
+        material.opacity = source.opacity;
+        if (source.emissive && material.emissive) {
+          if (material.emissive.copy) material.emissive.copy(source.emissive);
+          else if (material.emissive.set) material.emissive.set(source.emissive);
+        }
+      }
+      if (remembered.opacity) {
+        material.transparent = source.transparent;
+        material.opacity = source.opacity;
+      }
+      if (remembered.texture) material.map = source.map;
+      material.needsUpdate = true;
+    });
+  }
   function setColor(obj, color) {
     eachMaterial(obj, function (material) {
       if (material.color && material.color.set) material.color.set(color);
     });
+    rememberModelAppearance(obj, 'color');
   }
   function setOpacity(obj, a) {
     var v = clamp(a, 0, 1, 1);
@@ -623,6 +666,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       material.opacity = v;
       material.needsUpdate = true;
     });
+    rememberModelAppearance(obj, 'opacity');
   }
   function setMaterial(obj, kind) {
     eachMaterial(obj, function (m) {
@@ -646,6 +690,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       }
       m.needsUpdate = true;
     });
+    rememberModelAppearance(obj, 'material');
   }
   function setTexture(obj, asset) {
     if (!obj || !THREE.TextureLoader) return;
@@ -672,6 +717,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
       material.map = tex;
       material.needsUpdate = true;
     });
+    rememberModelAppearance(obj, 'texture');
   }
 
   // ---- Estampas procedurais: textura desenhada pelo próprio programa --------
@@ -1154,6 +1200,7 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
   }
   function setSky(world, top, bottom) {
     if (!world || !world.scene) return;
+    beginSkyChange(world);
     // Degradê topo->horizonte via canvas 2D (CSP-safe: sem shader/eval).
     if (typeof document === 'undefined' || !THREE.CanvasTexture) {
       if (THREE.Color) world.scene.background = new THREE.Color(top || '#1e3a8a');
@@ -1227,9 +1274,19 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     // Herda as medidas/física do original p/ a colisão funcionar nas cópias.
     if (original.userData && original.userData.sz) {
       var d = original.userData.sz;
+      var remembered = null;
+      if (d.modelAppearance) {
+        remembered = {};
+        for (var appearanceKey in d.modelAppearance) {
+          if (d.modelAppearance[appearanceKey]) remembered[appearanceKey] = true;
+        }
+      }
       copy.userData = copy.userData || {};
       copy.userData.sz = { hw: d.hw, hh: d.hh, hd: d.hd, vx: 0, vy: 0, vz: 0,
-        grounded: false, gravity: d.gravity };
+        grounded: false, gravity: d.gravity, modelFile: d.modelFile,
+        modelSize: d.modelSize, modelLoaded: !!(d.modelLoaded || d.modelRoot),
+        modelAppearance: remembered };
+      followPendingModel(original, copy, swarm.world);
     }
     if (swarm.world && swarm.world.scene) swarm.world.scene.add(copy);
     attachWorld(copy, swarm.world);
@@ -1256,6 +1313,9 @@ const gameThreeDRuntimeBase = `import * as THREE from 'three';
     unregisterObjectTree(swarm.world, item);
     releaseSharedGeometries(item);
     disposeOwnedMaterials(item);
+    // Também cancela callbacks de GLB ainda na fila: uma cópia removida não pode
+    // ganhar filhos (e recursos) depois de já ter saído da cena.
+    item._szResourcesDisposed = true;
   }
   function pruneSwarm(swarm, axis, min, max) {
     if (!swarm || !swarm.items) return;
