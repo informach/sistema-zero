@@ -181,10 +181,7 @@ export function VectorLayerPanel({
 
   return (
     <Panel title={COPY.layers.title} className="w-68 shrink-0" disclosure={disclosure}>
-      <ul
-        ref={rowsRef}
-        className="flex max-h-48 flex-col gap-1 overflow-y-auto overscroll-contain p-0.5"
-      >
+      <ul ref={rowsRef} className="flex max-h-48 flex-col gap-1 overflow-y-auto p-0.5">
         {rows.map((shape) => {
           const active = selectedIds.includes(shape.id)
           const visible = shape.hidden !== true

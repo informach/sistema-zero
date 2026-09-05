@@ -276,8 +276,8 @@
  * não cabem, e os painéis são `w-68` como a coluna. A barra CLÁSSICA (Windows)
  * roubaria 17px do content box e o `overflow-x-hidden` cortaria a borda direita
  * dos painéis (chevrons, "+"). Mesmo remédio da .pin-scroll-x: some o desenho da
- * barra, a rolagem por roda/toque fica; os cabeçalhos recolhidos e o painel
- * parcialmente visível no fim são a pista de que há mais embaixo.
+ * barra, a rolagem por roda/toque fica; a pista de que há mais embaixo é o degradê
+ * no pé da coluna (`useScrollMore` + `ScrollMoreHint`), nos dois editores.
  */
 [data-pinta-theme] .pin-scroll-y {
   scrollbar-width: none;

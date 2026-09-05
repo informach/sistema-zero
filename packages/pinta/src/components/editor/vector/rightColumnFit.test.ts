@@ -1,5 +1,17 @@
 import { describe, expect, it } from 'bun:test'
-import { pickPanelToCollapse } from './rightColumnFit'
+import { pickPanelToCollapse, touchRecent } from './rightColumnFit'
+
+describe('touchRecent (a lista LRU da coluna direita)', () => {
+  const recent = ['appearance', 'layers', 'preview', 'colors'] as const
+
+  it('abrir manda a chave para o fim, sem repetir', () => {
+    expect(touchRecent(recent, 'layers')).toEqual(['appearance', 'preview', 'colors', 'layers'])
+  })
+
+  it('chave que já é a última devolve a MESMA lista (recolher não passa por aqui)', () => {
+    expect(touchRecent(recent, 'colors')).toBe(recent)
+  })
+})
 
 describe('pickPanelToCollapse (accordion por medida da coluna direita)', () => {
   const recent = ['appearance', 'layers', 'preview', 'colors'] as const

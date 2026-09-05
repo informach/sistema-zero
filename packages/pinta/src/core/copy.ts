@@ -523,6 +523,12 @@ export const COPY = {
   panel: {
     expand: (title: string) => `Mostrar ${title}`,
     collapse: (title: string) => `Recolher ${title}`,
+    /**
+     * Leitor de tela: a coluna direita do vetor recolheu painéis SOZINHA para
+     * o que a criança abriu caber ("Recolhi Camadas e Cores para tudo caber na
+     * tela."). Só depois de um abrir dela; ao abrir o desenho fica mudo.
+     */
+    autoCollapsed: (names: string) => `Recolhi ${names} para tudo caber na tela.`,
   },
   tiles: {
     tiles: 'Peças',

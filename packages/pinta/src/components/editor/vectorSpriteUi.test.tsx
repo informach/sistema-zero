@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
+import { withRightColumnPrototypeStub } from '../../testing/rightColumnStub'
 
 const { PintaApp } = await import('../PintaApp')
 const { persistAsset, setPintaStorageNamespace } = await import('../../state/persistence')
@@ -18,31 +19,6 @@ beforeEach(() => {
   clearIdbMock()
   setPintaStorageNamespace('')
 })
-
-/** O protótipo que de fato define a propriedade (happy-dom a põe em Element ou HTMLElement). */
-function findOwner(property: string): object {
-  let proto: object | null = HTMLElement.prototype
-  while (proto && !Object.getOwnPropertyDescriptor(proto, property)) {
-    proto = Object.getPrototypeOf(proto)
-  }
-  if (!proto) throw new Error(`nenhum protótipo define ${property}`)
-  return proto
-}
-
-/** Altura "medida" da coluna direita: painel aberto = 250, recolhido = 50, vãos de 8. */
-function stubbedColumnHeight(column: HTMLElement): number {
-  const titles = [
-    COPY.animation.preview,
-    COPY.layers.title,
-    COPY.palette.title,
-    COPY.vector.appearance,
-  ]
-  const count = (label: (title: string) => string): number =>
-    titles.filter((title) => column.querySelector(`button[aria-label="${label(title)}"]`)).length
-  const opened = count(COPY.panel.collapse)
-  const closed = count(COPY.panel.expand)
-  return opened * 250 + closed * 50 + Math.max(0, opened + closed - 1) * 8
-}
 
 async function openAsset(name: string): Promise<void> {
   render(<PintaApp />)
@@ -97,33 +73,9 @@ describe('personagem vetorial — paridade com o pixel', () => {
   })
 
   it('ao abrir o desenho, se os painéis não cabem, fecha na ordem Aparência → Prévia e Cores fica', async () => {
-    // A coluna só existe depois do render, então o stub vai no PROTÓTIPO e vale
-    // só para o elemento marcado: aberto = 250px, recolhido = 50px, vãos de 8.
-    // Cada propriedade pode morar num protótipo diferente (Element × HTMLElement).
-    const owners = {
-      scrollHeight: findOwner('scrollHeight'),
-      clientHeight: findOwner('clientHeight'),
-    }
-    const saved = {
-      scrollHeight: Object.getOwnPropertyDescriptor(owners.scrollHeight, 'scrollHeight'),
-      clientHeight: Object.getOwnPropertyDescriptor(owners.clientHeight, 'clientHeight'),
-    }
-    if (!saved.scrollHeight || !saved.clientHeight) throw new Error('descritores esperados')
-    const isColumn = (el: unknown): el is HTMLElement =>
-      el instanceof HTMLElement && el.hasAttribute('data-pin-right-column')
-    Object.defineProperty(owners.clientHeight, 'clientHeight', {
-      configurable: true,
-      get(this: unknown) {
-        return isColumn(this) ? 300 : 0
-      },
-    })
-    Object.defineProperty(owners.scrollHeight, 'scrollHeight', {
-      configurable: true,
-      get(this: unknown) {
-        return isColumn(this) ? stubbedColumnHeight(this) : 0
-      },
-    })
-    try {
+    // A coluna só existe depois do render: o stub vai no protótipo (só para a
+    // coluna marcada; aberto = 250, recolhido = 50, vãos de 8), restaurado no finally.
+    await withRightColumnPrototypeStub(300, async () => {
       await openVectorSprite()
       // 3 painéis presentes (sem forma não há Camadas): 766 → fecha Aparência
       // (566) → fecha Prévia (366) → só Cores aberta: para (nunca fecha a última).
@@ -136,10 +88,12 @@ describe('personagem vetorial — paridade com o pixel', () => {
       expect(
         screen.getByRole('button', { name: COPY.panel.expand(COPY.vector.appearance) }),
       ).toBeTruthy()
-    } finally {
-      Object.defineProperty(owners.scrollHeight, 'scrollHeight', saved.scrollHeight)
-      Object.defineProperty(owners.clientHeight, 'clientHeight', saved.clientHeight)
-    }
+      // O mount é MUDO para o leitor de tela (nada a anunciar antes de ela agir)...
+      expect(screen.queryByText(/para tudo caber na tela/)).toBeNull()
+      // ...e a Prévia recolhida segue VIVA no cabeçalho: a miniatura está lá.
+      const preview = document.querySelector(`section[aria-label="${COPY.animation.preview}"]`)
+      expect(preview?.querySelector('svg')).toBeTruthy()
+    })
   })
 
   it('oculta a expansão quando a timeline compacta já mostra todo o conteúdo', async () => {

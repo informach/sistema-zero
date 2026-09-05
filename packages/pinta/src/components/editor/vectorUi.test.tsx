@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
+import { rightColumn, stubColumn } from '../../testing/rightColumnStub'
 
 const { PintaApp } = await import('../PintaApp')
 const { setPintaStorageNamespace } = await import('../../state/persistence')
@@ -504,8 +505,16 @@ describe('UI vetorial (F5)', () => {
       name: COPY.panel.collapse(COPY.palette.title),
     })
     expect(collapse.getAttribute('aria-expanded')).toBe('true')
+    // `aria-controls` aponta para o corpo MONTADO; recolhido, o corpo desmonta e o atributo some.
+    const bodyId = collapse.getAttribute('aria-controls')
+    expect(bodyId && document.getElementById(bodyId)).toBeTruthy()
     fireEvent.click(collapse)
     expect(screen.queryByRole('button', { name: `${COPY.vector.fill}: vermelho` })).toBeNull()
+    expect(
+      screen
+        .getByRole('button', { name: COPY.panel.expand(COPY.palette.title) })
+        .hasAttribute('aria-controls'),
+    ).toBe(false)
     expect(screen.getByRole('button', { name: COPY.vector.gradient })).toBeTruthy()
 
     const expand = screen.getByRole('button', { name: COPY.panel.expand(COPY.palette.title) })
@@ -2516,35 +2525,6 @@ describe('pegar uma cor do desenho (conta-gotas na janelinha do degradê)', () =
  * um `clientHeight` fixo, para a régua ter o que medir.
  */
 describe('a coluna da direita cabe na tela (accordion por medida)', () => {
-  const titles = [
-    COPY.animation.preview,
-    COPY.layers.title,
-    COPY.palette.title,
-    COPY.vector.appearance,
-  ]
-
-  function rightColumn(): HTMLElement {
-    const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
-    if (!column) throw new Error('coluna direita esperada')
-    return column
-  }
-
-  function stubColumn(column: HTMLElement, clientHeight: number): void {
-    const count = (label: (title: string) => string): number =>
-      titles.filter((title) => column.querySelector(`button[aria-label="${label(title)}"]`)).length
-    Object.defineProperties(column, {
-      clientHeight: { configurable: true, value: clientHeight },
-      scrollHeight: {
-        configurable: true,
-        get: () => {
-          const opened = count(COPY.panel.collapse)
-          const closed = count(COPY.panel.expand)
-          return opened * 250 + closed * 50 + Math.max(0, opened + closed - 1) * 8
-        },
-      },
-    })
-  }
-
   const collapseBtn = (title: string): HTMLElement | null =>
     screen.queryByRole('button', { name: COPY.panel.collapse(title) })
   const expandBtn = (title: string): HTMLElement | null =>
@@ -2573,6 +2553,10 @@ describe('a coluna da direita cabe na tela (accordion por medida)', () => {
     expect(expandBtn(COPY.palette.title)).toBeTruthy()
     expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
     expect(screen.getByRole('button', { name: COPY.vector.gradient })).toBeTruthy()
+    // O leitor de tela ouve quem a régua recolheu (o mount é mudo).
+    expect(
+      screen.getByText(COPY.panel.autoCollapsed(`${COPY.layers.title} e ${COPY.palette.title}`)),
+    ).toBeTruthy()
   })
 
   it('um painel ausente não conta como vítima e nasce ABERTO quando aparece', async () => {
@@ -2610,5 +2594,96 @@ describe('a coluna da direita cabe na tela (accordion por medida)', () => {
     })
     expect(collapseBtn(COPY.palette.title)).toBeTruthy()
     expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
+  })
+  it('o recém-aberto sobrevive a TRÊS passadas, mesmo sendo o último da ordem de sacrifício', async () => {
+    // Personagem com uma forma: os QUATRO painéis na tela.
+    await openVectorEditor(
+      undefined,
+      async (store) => {
+        await store.getState().create({ kind: 'vector-sprite', name: 'heroi', frameSize: 64 })
+      },
+      'heroi',
+    )
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    })
+    stubColumn(rightColumn(), 300)
+    // Recolher e reabrir a Prévia: 1024 → Aparência (824) → Camadas (624) → Cores (424)
+    // → sobrou só a Prévia, a recém-aberta: para. Cores morre porque o recém-aberto é intocável.
+    fireEvent.click(
+      screen.getByRole('button', { name: COPY.panel.collapse(COPY.animation.preview) }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.expand(COPY.animation.preview) }))
+    expect(collapseBtn(COPY.animation.preview)).toBeTruthy()
+    expect(expandBtn(COPY.vector.appearance)).toBeTruthy()
+    expect(expandBtn(COPY.layers.title)).toBeTruthy()
+    expect(expandBtn(COPY.palette.title)).toBeTruthy()
+    expect(
+      screen.getByText(
+        COPY.panel.autoCollapsed(
+          `${COPY.vector.appearance}, ${COPY.layers.title} e ${COPY.palette.title}`,
+        ),
+      ),
+    ).toBeTruthy()
+    // Recolhida, a Prévia continua VIVA no cabeçalho (miniatura) e sem os botões.
+    fireEvent.click(
+      screen.getByRole('button', { name: COPY.panel.collapse(COPY.animation.preview) }),
+    )
+    const preview = rightColumn().querySelector(`section[aria-label="${COPY.animation.preview}"]`)
+    expect(preview?.querySelector('svg')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: COPY.animation.reproduce })).toBeNull()
+  })
+
+  it('redimensionar a janela não fecha nada (a coluna rola)', async () => {
+    await openVectorEditor()
+    stubColumn(rightColumn(), 100) // 508 > 101
+    fireEvent(window, new Event('resize'))
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+    expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
+  })
+
+  it('a faixa do título abre e recolhe; recolhida, a paleta esconde a lixeira e o "+" e diz "Cores"', async () => {
+    await openVectorEditor()
+    // O título inteiro é o botão (alvo grande), com o nome do painel.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.appearance }))
+    expect(screen.queryByRole('button', { name: COPY.vector.gradient })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.appearance }))
+    expect(screen.getByRole('button', { name: COPY.vector.gradient })).toBeTruthy()
+    // Cores recolhida: sem menu da paleta, sem "+", sem lixeira (agiam num corpo desmontado).
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.collapse(COPY.palette.title) }))
+    expect(screen.queryByRole('button', { name: COPY.palette.addColor })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Trocar paleta:/ })).toBeNull()
+    const cores = screen.getByRole('button', { name: COPY.palette.title })
+    expect(cores.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(cores)
+    expect(screen.getByRole('button', { name: /^Trocar paleta:/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: COPY.palette.addColor })).toBeTruthy()
+  })
+
+  it('em captura de cor, a Aparência e as Cores nunca são vítimas', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [64, 64])
+    await waitFor(() => {
+      expect(collapseBtn(COPY.layers.title)).toBeTruthy()
+    })
+    // Entra na captura pela janelinha do Degradê ("Cor do fim").
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.gradient }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.vector.gradientTo }))
+    fireEvent.click(await screen.findByRole('button', { name: COPY.colorPicker.pickFromDrawing }))
+    await waitFor(() => {
+      expect(screen.getByText(COPY.vector.pickColorHint)).toBeTruthy()
+    })
+    stubColumn(rightColumn(), 300)
+    // Reabrir Camadas com 766 > 301: as duas do fluxo ficam de fora, sobra só a recém-aberta: para.
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.collapse(COPY.layers.title) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.panel.expand(COPY.layers.title) }))
+    expect(collapseBtn(COPY.vector.appearance)).toBeTruthy()
+    expect(collapseBtn(COPY.palette.title)).toBeTruthy()
+    expect(collapseBtn(COPY.layers.title)).toBeTruthy()
   })
 })

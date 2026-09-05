@@ -42,13 +42,13 @@ describe('UI de animação (F2)', () => {
     await openSpriteEditor()
     const column = document.querySelector<HTMLElement>('[data-pin-right-column]')
     if (!column) throw new Error('coluna direita esperada')
-    expect(column.className).toContain('overflow-y-auto')
-    expect(column.className).toContain('pin-scroll-y')
-    for (const title of [COPY.animation.preview, COPY.layers.title, COPY.palette.title]) {
-      const section = column.querySelector(`section[aria-label="${title}"]`)
-      if (!section) throw new Error(`painel ${title} esperado`)
-      expect(section.classList.contains('shrink-0')).toBe(true)
+    for (const cls of ['overflow-y-auto', 'min-h-0', 'pin-scroll-y']) {
+      expect(column.className).toContain(cls)
     }
+    // TODO filho da coluna (Prévia, Camadas, Cores, e o que vier) não encolhe.
+    const children = Array.from(column.children)
+    expect(children.length).toBe(3)
+    for (const child of children) expect(child.classList.contains('shrink-0')).toBe(true)
   })
 
   it('novo quadro aparece na faixa e vira o selecionado', async () => {

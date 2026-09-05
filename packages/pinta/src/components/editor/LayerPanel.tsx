@@ -252,10 +252,7 @@ export function LayerPanel(): JSX.Element | null {
         </>
       }
     >
-      <ul
-        ref={rowsRef}
-        className="flex max-h-48 flex-col gap-1 overflow-y-auto overscroll-contain p-0.5"
-      >
+      <ul ref={rowsRef} className="flex max-h-48 flex-col gap-1 overflow-y-auto p-0.5">
         {rows.map(({ layer, index }) => {
           const active = layer.id === activeLayer?.id
           return (

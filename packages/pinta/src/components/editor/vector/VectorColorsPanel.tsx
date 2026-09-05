@@ -168,7 +168,7 @@ export function VectorColorsPanel({
     >
       <div
         className={clsx(
-          'grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto overscroll-contain p-0.5',
+          'grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto p-0.5',
           picking && 'cursor-crosshair rounded-lg ring-2 ring-pin-accent/60',
         )}
       >
