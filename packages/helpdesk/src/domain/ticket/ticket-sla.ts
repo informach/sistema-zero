@@ -23,6 +23,11 @@ export interface TicketSla {
   remainingMinutes: number
 }
 
+export interface TicketQueuePosition {
+  operationalRank: number
+  deadlineAt: Date
+}
+
 function isSlaActive(ticket: Ticket): boolean {
   return ticket.status === 'new' || ticket.status === 'open'
 }
@@ -68,4 +73,14 @@ export function ticketSlaRank(ticket: Ticket, now: Date): number {
   if (sla.state === 'breached') return 0
   if (sla.state === 'at_risk') return 1
   return 2
+}
+
+/** Tupla estável compartilhada pelo cursor e pelo adapter em memória. */
+export function ticketQueuePosition(ticket: Ticket, now: Date): TicketQueuePosition {
+  const priority = ticket.priority ?? 'normal'
+  const startedAt = ticket.lastInboundAt ?? ticket.firstMessageAt
+  return {
+    operationalRank: ticketSlaRank(ticket, now),
+    deadlineAt: new Date(startedAt.getTime() + SLA_TARGET_MINUTES[priority] * 60_000),
+  }
 }

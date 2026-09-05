@@ -1,3 +1,9 @@
+import {
+  TICKET_CATEGORIES,
+  TICKET_PORTALS,
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+} from '@sistemazero/helpdesk-contracts'
 import { t } from 'elysia'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
@@ -10,27 +16,14 @@ export const IdParams = t.Object({ id: UUID })
 const VERSION = t.Integer({ minimum: 0 })
 
 // ── Tickets ──────────────────────────────────────────────────────────────────
-const TICKET_STATUS = t.Union([
-  t.Literal('new'),
-  t.Literal('open'),
-  t.Literal('waiting'),
-  t.Literal('resolved'),
-  t.Literal('closed'),
-])
+const TICKET_STATUS = t.Union(TICKET_STATUSES.map((value) => t.Literal(value)))
 
-const TICKET_CATEGORY = t.Union([
-  t.Literal('curso_acesso'),
-  t.Literal('problema_tecnico'),
-  t.Literal('studio'),
-  t.Literal('pagamento_reembolso'),
-  t.Literal('parceria_comercial'),
-  t.Literal('outro'),
-])
+const TICKET_CATEGORY = t.Union(TICKET_CATEGORIES.map((value) => t.Literal(value)))
 
-const TICKET_PRIORITY = t.Union([t.Literal('baixa'), t.Literal('normal'), t.Literal('alta')])
+const TICKET_PRIORITY = t.Union(TICKET_PRIORITIES.map((value) => t.Literal(value)))
 
 // Área do aluno que abriu o chamado (espelha o `audience` do member-shell).
-const TICKET_PORTAL = t.Union([t.Literal('adult'), t.Literal('kids')])
+const TICKET_PORTAL = t.Union(TICKET_PORTALS.map((value) => t.Literal(value)))
 const TICKET_SLA_FILTER = t.Union([
   t.Literal('attention'),
   t.Literal('at_risk'),
@@ -47,7 +40,7 @@ export const TicketsQuery = t.Object({
   queue: t.Optional(TICKET_QUEUE_FILTER),
   q: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
-  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+  cursor: t.Optional(t.String({ minLength: 1, maxLength: 1024 })),
 })
 
 export const TicketPatchBody = t.Object({

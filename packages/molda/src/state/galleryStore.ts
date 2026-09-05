@@ -20,7 +20,15 @@ export type CreateResult =
       reason: 'invalid-name' | 'storage-budget' | 'save-failed' | 'unknown-template'
     }
 
-export type RenameResult = 'ok' | 'invalid' | 'taken' | 'missing' | 'open'
+export type GalleryPersistenceFailure = 'storage-budget' | 'save-failed'
+export type RenameResult =
+  | 'ok'
+  | 'invalid'
+  | 'taken'
+  | 'missing'
+  | 'open'
+  | GalleryPersistenceFailure
+export type RemoveResult = { ok: true } | { ok: false; reason: GalleryPersistenceFailure }
 
 export interface ImportResult {
   imported: number
@@ -45,7 +53,7 @@ export interface GalleryActions {
   createFromTemplate(input: { templateId: string; name: string }): Promise<CreateResult>
   rename(id: string, name: string): Promise<RenameResult>
   duplicate(id: string): Promise<MoldaAsset | null>
-  remove(id: string): Promise<void>
+  remove(id: string): Promise<RemoveResult>
   /** O editor salvou: atualiza a lista SEM gravar de novo. */
   absorb(asset: MoldaAsset): void
   importAssets(assets: readonly MoldaAsset[]): Promise<ImportResult>
@@ -218,8 +226,8 @@ export function createGalleryStore(
           const renamed: MoldaAsset = { ...current, name, updatedAt: now() }
           try {
             await persistence.save(renamed)
-          } catch {
-            return 'invalid'
+          } catch (error) {
+            return isStorageBudgetError(error) ? 'storage-budget' : 'save-failed'
           }
           set({ assets: upsertSorted(get().assets, renamed) })
           return 'ok'
@@ -244,9 +252,17 @@ export function createGalleryStore(
       },
 
       remove(id) {
-        return enqueue(async () => {
-          await persistence.remove(id)
+        return enqueue(async (): Promise<RemoveResult> => {
+          try {
+            await persistence.remove(id)
+          } catch (error) {
+            return {
+              ok: false,
+              reason: isStorageBudgetError(error) ? 'storage-budget' : 'save-failed',
+            }
+          }
           set({ assets: get().assets.filter((asset) => asset.id !== id) })
+          return { ok: true }
         })
       },
 

@@ -71,12 +71,13 @@ export function ColorsPanel({
       actions={
         <>
           <select
+            name="molda-palette"
             aria-label={COPY.a11y.paletteSelect}
             value={model.paletteId}
             onChange={(event) => {
               if (isPaletteId(event.target.value)) onPalette(event.target.value)
             }}
-            className="min-h-9 rounded-lg border-2 border-mld-border bg-mld-surface px-1 text-xs font-bold text-mld-text"
+            className="min-h-11 rounded-lg border-2 border-mld-border bg-mld-surface px-1 text-xs font-bold text-mld-text"
           >
             {model.paletteId === 'custom' ? (
               <option value="custom">{model.customPalette?.name ?? 'Minha paleta'}</option>
@@ -98,7 +99,7 @@ export function ColorsPanel({
             onClick={() => {
               if (activeIndex !== null) onRemoveColor(activeIndex)
             }}
-            className="min-h-9 min-w-9"
+            className="min-h-11 min-w-11"
           >
             <Trash2 aria-hidden="true" className="size-4" />
           </IconButton>
@@ -107,13 +108,14 @@ export function ColorsPanel({
             title={extrasFull ? COPY.editor.model.colorsFull : COPY.editor.model.addColor}
             disabled={extrasFull}
             onClick={() => inputRef.current?.click()}
-            className="min-h-9 min-w-9"
+            className="min-h-11 min-w-11"
           >
             <Plus aria-hidden="true" className="size-4" />
           </IconButton>
           <input
             ref={inputRef}
             type="color"
+            name="molda-extra-color"
             aria-label={COPY.editor.model.addColor}
             onChange={onColorInput}
             className="sr-only"
@@ -121,7 +123,7 @@ export function ColorsPanel({
           />
         </>
       }
-      bodyClassName="grid grid-cols-8 gap-1 p-2"
+      bodyClassName="grid grid-cols-5 gap-1 p-2"
     >
       {swatches.map(({ index, hex, key }) => {
         const active = activeIndex === index
@@ -134,7 +136,7 @@ export function ColorsPanel({
             disabled={!canPick}
             onClick={() => onPick(index)}
             className={clsx(
-              'aspect-square min-h-6 rounded-md border-2 transition',
+              'aspect-square min-h-11 min-w-11 rounded-md border-2 transition',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
               'disabled:cursor-not-allowed disabled:opacity-40',
               active ? 'scale-110 border-mld-text' : 'border-mld-border/60 hover:border-mld-text',

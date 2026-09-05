@@ -41,7 +41,7 @@ const SIZES: BrushSize[] = [1, 2, 3]
 
 function chip(active: boolean): string {
   return clsx(
-    'min-h-9 rounded-lg border-2 px-1 text-xs font-bold transition',
+    'min-h-11 rounded-lg border-2 px-1 text-xs font-bold transition',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
     active
       ? 'border-mld-accent bg-mld-accent text-mld-accent-fg'

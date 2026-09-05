@@ -13,6 +13,10 @@ import type {
   OAuthStateRepository,
 } from '../../src/domain/ports/oauth-state-repository.port'
 import type {
+  PortalNotificationOutboxItem,
+  PortalNotificationOutboxRepository,
+} from '../../src/domain/ports/portal-notification-outbox.port'
+import type {
   AppendPortalReplyResult,
   CreateReplyIntentResult,
   PendingReplyMessage,
@@ -26,13 +30,19 @@ import type {
 } from '../../src/domain/ports/ticket-ingestion-repository.port'
 import type {
   AiClassificationUpdate,
+  AiWriteGuard,
   ListTicketsFilter,
   TicketRepository,
 } from '../../src/domain/ports/ticket-repository.port'
 import { DEFAULT_SETTINGS, type HelpdeskSettings } from '../../src/domain/settings/settings'
-import { statusOnInbound, type Ticket } from '../../src/domain/ticket/ticket'
+import type { Ticket, TicketStatus } from '../../src/domain/ticket/ticket'
 import type { TicketMessage } from '../../src/domain/ticket/ticket-message'
-import { matchesSlaFilter, ticketSla, ticketSlaRank } from '../../src/domain/ticket/ticket-sla'
+import {
+  matchesSlaFilter,
+  ticketQueuePosition,
+  ticketSla,
+  ticketSlaRank,
+} from '../../src/domain/ticket/ticket-sla'
 import {
   densifyVolume,
   spDayKey,
@@ -41,6 +51,10 @@ import {
 } from '../../src/domain/ticket/ticket-stats'
 
 const clone = <T>(value: T): T => structuredClone(value)
+
+function statusOnInbound(current: TicketStatus): TicketStatus {
+  return current === 'waiting' || current === 'resolved' || current === 'closed' ? 'open' : current
+}
 
 export class InMemoryTicketRepository implements TicketRepository {
   readonly rows = new Map<string, Ticket>()
@@ -65,6 +79,7 @@ export class InMemoryTicketRepository implements TicketRepository {
   async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
     const q = filter.q?.toLowerCase()
     const all = [...this.rows.values()]
+      .filter((ticket) => ticket.createdAt.getTime() <= now.getTime())
       .filter((t) => !filter.status || t.status === filter.status)
       .filter((t) => !filter.category || t.category === filter.category)
       .filter(
@@ -87,8 +102,22 @@ export class InMemoryTicketRepository implements TicketRepository {
           b.lastMessageAt.getTime() - a.lastMessageAt.getTime() ||
           a.id.localeCompare(b.id),
       )
+    const afterCursor = filter.cursor
+      ? all.filter((ticket) => {
+          const position = ticketQueuePosition(ticket, now)
+          return (
+            position.operationalRank > filter.cursor!.operationalRank ||
+            (position.operationalRank === filter.cursor!.operationalRank &&
+              (position.deadlineAt.getTime() > filter.cursor!.deadlineAt.getTime() ||
+                (position.deadlineAt.getTime() === filter.cursor!.deadlineAt.getTime() &&
+                  (ticket.lastMessageAt.getTime() < filter.cursor!.lastMessageAt.getTime() ||
+                    (ticket.lastMessageAt.getTime() === filter.cursor!.lastMessageAt.getTime() &&
+                      ticket.id > filter.cursor!.id)))))
+          )
+        })
+      : all
     return {
-      items: all.slice(filter.offset, filter.offset + filter.limit).map(clone),
+      items: afterCursor.slice(0, filter.limit + 1).map(clone),
       total: all.length,
     }
   }
@@ -150,52 +179,75 @@ export class InMemoryTicketRepository implements TicketRepository {
     return clone(claimed)
   }
 
-  async applyClassification(id: string, update: AiClassificationUpdate): Promise<void> {
+  async applyClassification(
+    id: string,
+    guard: AiWriteGuard,
+    update: AiClassificationUpdate,
+  ): Promise<boolean> {
     const t = this.rows.get(id)
-    if (!t) return
+    if (!t || !this.acceptsAiWrite(t, guard)) return false
     t.aiSummary = update.summary
     t.aiSummaryAt = update.at
     t.aiClassification = update.classification
     if (!t.categoryManual) t.category = update.category
     if (t.priority === null) t.priority = update.priority
     t.updatedAt = update.at
+    return true
   }
 
-  async applyDraft(id: string, draft: string, at: Date): Promise<void> {
+  async applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean> {
     const t = this.rows.get(id)
-    if (!t) return
+    if (!t || !this.acceptsAiWrite(t, guard)) return false
     t.aiDraft = draft
     t.aiDraftAt = at
     t.aiDraftEdited = false
     t.updatedAt = at
+    return true
   }
 
-  async markAiDone(id: string, at: Date): Promise<void> {
+  async markAiDone(id: string, guard: AiWriteGuard, at: Date): Promise<boolean> {
     const t = this.rows.get(id)
-    if (!t) return
+    if (!t || !this.acceptsAiWrite(t, guard)) return false
     t.aiStatus = 'done'
     t.aiLastError = null
     t.aiNextAttemptAt = null
     t.aiAttempts = 0
     t.updatedAt = at
+    return true
   }
 
-  async scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void> {
+  async scheduleAiRetry(
+    id: string,
+    guard: AiWriteGuard,
+    nextAt: Date,
+    error: string,
+    at: Date,
+  ): Promise<boolean> {
     const t = this.rows.get(id)
-    if (!t) return
+    if (!t || !this.acceptsAiWrite(t, guard)) return false
     t.aiStatus = 'pending'
     t.aiNextAttemptAt = nextAt
     t.aiLastError = error
     t.updatedAt = at
+    return true
   }
 
-  async markAiFailed(id: string, error: string, at: Date): Promise<void> {
+  async markAiFailed(id: string, guard: AiWriteGuard, error: string, at: Date): Promise<boolean> {
     const t = this.rows.get(id)
-    if (!t) return
+    if (!t || !this.acceptsAiWrite(t, guard)) return false
     t.aiStatus = 'failed'
     t.aiLastError = error
     t.aiNextAttemptAt = null
     t.updatedAt = at
+    return true
+  }
+
+  private acceptsAiWrite(ticket: Ticket, guard: AiWriteGuard): boolean {
+    return (
+      ticket.aiGeneration === guard.generation &&
+      (guard.processingAttempt === undefined ||
+        (ticket.aiStatus === 'processing' && ticket.aiAttempts === guard.processingAttempt))
+    )
   }
 }
 
@@ -211,6 +263,64 @@ export class InMemoryMessageRepository implements MessageRepository {
       .filter((m) => m.ticketId === ticketId)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map(clone)
+  }
+}
+
+export class InMemoryPortalNotificationOutboxRepository
+  implements PortalNotificationOutboxRepository
+{
+  readonly rows = new Map<string, PortalNotificationOutboxItem>()
+
+  async claimDue(leaseMs: number, at: Date): Promise<PortalNotificationOutboxItem | null> {
+    const due = [...this.rows.values()]
+      .filter(
+        (item) =>
+          (item.status === 'pending' && item.nextAttemptAt.getTime() <= at.getTime()) ||
+          (item.status === 'processing' &&
+            item.leaseExpiresAt !== null &&
+            item.leaseExpiresAt.getTime() <= at.getTime()),
+      )
+      .sort(
+        (a, b) =>
+          (a.status === 'processing' ? a.leaseExpiresAt!.getTime() : a.nextAttemptAt.getTime()) -
+            (b.status === 'processing' ? b.leaseExpiresAt!.getTime() : b.nextAttemptAt.getTime()) ||
+          a.createdAt.getTime() - b.createdAt.getTime() ||
+          a.id.localeCompare(b.id),
+      )[0]
+    if (!due) return null
+    due.status = 'processing'
+    due.attempts += 1
+    due.leaseExpiresAt = new Date(at.getTime() + leaseMs)
+    due.updatedAt = at
+    return clone(due)
+  }
+
+  async markSent(id: string, attempt: number, at: Date): Promise<boolean> {
+    const item = this.rows.get(id)
+    if (item?.status !== 'processing' || item.attempts !== attempt) return false
+    item.status = 'sent'
+    item.leaseExpiresAt = null
+    item.sentAt = at
+    item.lastError = null
+    item.updatedAt = at
+    return true
+  }
+
+  async scheduleRetry(
+    id: string,
+    attempt: number,
+    nextAt: Date,
+    error: string,
+    at: Date,
+  ): Promise<boolean> {
+    const item = this.rows.get(id)
+    if (item?.status !== 'processing' || item.attempts !== attempt) return false
+    item.status = 'pending'
+    item.nextAttemptAt = nextAt
+    item.leaseExpiresAt = null
+    item.lastError = error.slice(0, 500)
+    item.updatedAt = at
+    return true
   }
 }
 
@@ -269,12 +379,17 @@ export class InMemoryCustomerTicketRepository implements CustomerTicketRepositor
     }
     ticket.status = statusOnInbound(ticket.status)
     if (ticket.status === 'open') ticket.resolvedAt = null
-    if (input.aiEnabled) {
-      ticket.aiStatus = 'pending'
-      ticket.aiNextAttemptAt = input.at
-      ticket.aiAttempts = 0
-      ticket.aiLastError = null
-    }
+    ticket.aiGeneration += 1
+    ticket.aiSummary = null
+    ticket.aiSummaryAt = null
+    ticket.aiDraft = null
+    ticket.aiDraftAt = null
+    ticket.aiDraftEdited = false
+    ticket.aiClassification = null
+    ticket.aiStatus = input.aiEnabled ? 'pending' : 'skipped'
+    ticket.aiNextAttemptAt = input.aiEnabled ? input.at : null
+    ticket.aiAttempts = 0
+    ticket.aiLastError = null
     ticket.updatedAt = input.at
     this.messages.rows.push(clone(input.message))
     return { ticket: clone(ticket), message: clone(input.message) }
@@ -335,26 +450,39 @@ export class InMemoryTicketIngestionRepository implements TicketIngestionReposit
     }
     existing.version += 1
     existing.messageCount += 1
+    const isLatest = input.at.getTime() >= existing.lastMessageAt.getTime()
+    if (input.at.getTime() < existing.firstMessageAt.getTime()) {
+      existing.firstMessageAt = input.at
+    }
     if (input.at.getTime() > existing.lastMessageAt.getTime()) {
       existing.lastMessageAt = input.at
     }
     if (input.direction === 'outbound') {
       existing.gmailThreadId ??= input.ticket.gmailThreadId
-      if (existing.status === 'new' || existing.status === 'open') existing.status = 'waiting'
+      if (isLatest && (existing.status === 'new' || existing.status === 'open')) {
+        existing.status = 'waiting'
+      }
     } else {
       if (!existing.lastInboundAt || input.at.getTime() > existing.lastInboundAt.getTime()) {
         existing.lastInboundAt = input.at
       }
-      existing.status = statusOnInbound(existing.status)
-      if (existing.status === 'open') existing.resolvedAt = null
-      if (input.aiEnabled) {
-        existing.aiStatus = 'pending'
-        existing.aiNextAttemptAt = input.at
+      if (isLatest) {
+        existing.status = statusOnInbound(existing.status)
+        if (existing.status === 'open') existing.resolvedAt = null
+        existing.aiGeneration += 1
+        existing.aiSummary = null
+        existing.aiSummaryAt = null
+        existing.aiDraft = null
+        existing.aiDraftAt = null
+        existing.aiDraftEdited = false
+        existing.aiClassification = null
+        existing.aiStatus = input.aiEnabled ? 'pending' : 'skipped'
+        existing.aiNextAttemptAt = input.aiEnabled ? input.at : null
         existing.aiAttempts = 0
         existing.aiLastError = null
       }
     }
-    existing.updatedAt = input.at
+    if (input.at.getTime() > existing.updatedAt.getTime()) existing.updatedAt = input.at
     return { status: 'appended', ticketId: existing.id }
   }
 }
@@ -363,6 +491,7 @@ export class InMemoryReplyDeliveryRepository implements ReplyDeliveryRepository 
   constructor(
     private readonly tickets: InMemoryTicketRepository,
     private readonly messages: InMemoryMessageRepository,
+    private readonly notificationOutbox: InMemoryPortalNotificationOutboxRepository,
   ) {}
 
   async createIntent(input: {
@@ -420,6 +549,7 @@ export class InMemoryReplyDeliveryRepository implements ReplyDeliveryRepository 
     ticketId: string
     expectedVersion: number
     message: TicketMessage
+    notification: Parameters<ReplyDeliveryRepository['appendPortalReply']>[0]['notification']
     at: Date
   }): Promise<AppendPortalReplyResult> {
     const ticket = this.tickets.rows.get(input.ticketId)
@@ -441,6 +571,7 @@ export class InMemoryReplyDeliveryRepository implements ReplyDeliveryRepository 
     if (input.at.getTime() > ticket.lastMessageAt.getTime()) ticket.lastMessageAt = input.at
     ticket.updatedAt = input.at
     this.messages.rows.push(clone(input.message))
+    this.notificationOutbox.rows.set(input.notification.id, clone(input.notification))
     return { status: 'created', ticket: clone(ticket), message: clone(input.message) }
   }
 
@@ -499,10 +630,11 @@ export class InMemoryKbRepository implements KbRepository {
     }
   }
 
-  async listPublished(): Promise<KbArticle[]> {
+  async listPublished(limit: number): Promise<KbArticle[]> {
     return [...this.rows.values()]
       .filter((a) => a.published)
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.id.localeCompare(b.id))
+      .slice(0, limit)
       .map(clone)
   }
 }

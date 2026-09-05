@@ -305,6 +305,8 @@ export function NewAssetDialog({
             <span className="text-sm font-bold text-mld-text">{COPY.newAsset.nameLabel}</span>
             <input
               autoFocus
+              name="molda-new-asset-name"
+              autoComplete="off"
               value={name}
               onChange={(event) => {
                 setName(event.target.value)

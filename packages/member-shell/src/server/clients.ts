@@ -22,7 +22,7 @@ import type {
   CreationCommitResultView,
   CreationDeleteResultView,
   CreationDownloadTicketView,
-  CreationSummaryView,
+  CreationIndexView,
   CreationToolView,
   CreationUploadTicketView,
   EbookDownloadView,
@@ -1127,11 +1127,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     },
 
     // ── "Guardado na sua conta": criações do Estúdio Completo/Pinta (índice; blob no R2) ──
-    /** Índice do perfil numa ferramenta (só itens vivos e já confirmados). */
+    /** Índice do perfil: itens vivos confirmados e lápides para convergir exclusões. */
     listCreations(
       tool: CreationToolView,
-    ): Promise<GatewayResponse<{ items: CreationSummaryView[] }>> {
-      return gw.gatewayFetch(`/members/creations/${enc(tool)}`, { method: 'GET' })
+      options: { cursor?: string; limit?: number } = {},
+    ): Promise<GatewayResponse<{ items: CreationIndexView[]; nextCursor?: string | null }>> {
+      const query = new URLSearchParams()
+      if (options.cursor) query.set('cursor', options.cursor)
+      if (options.limit !== undefined) query.set('limit', String(options.limit))
+      const suffix = query.size > 0 ? `?${query}` : ''
+      return gw.gatewayFetch(`/members/creations/${enc(tool)}${suffix}`, { method: 'GET' })
     },
     /** Reserva a próxima revisão (gate de posse + quota no members) — o BFF assina o PUT. */
     reserveCreationUpload(
@@ -1176,9 +1181,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     deleteCreation(
       tool: CreationToolView,
       itemId: string,
+      body: { baseRevision: number },
     ): Promise<GatewayResponse<CreationDeleteResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}`, {
         method: 'DELETE',
+        body,
       })
     },
 

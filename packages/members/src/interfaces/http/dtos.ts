@@ -1439,6 +1439,16 @@ export const CreationUploadBody = t.Object({
     ),
   ),
 })
+
+/** Exclusões também são condicionais: uma lápide velha não pode apagar uma edição nova. */
+export const CreationDeleteBody = t.Object({
+  baseRevision: t.Integer({ minimum: 0 }),
+})
+
+export const CreationListQuery = t.Object({
+  cursor: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 500 })),
+})
 /**
  * Só a revisão: bytes e metadados são os da RESERVA (o que foi conferido e assinado).
  * `uploadedParts` = hashes das partes que o cliente PUTou (as faltantes da reserva).

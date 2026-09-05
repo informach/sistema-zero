@@ -140,6 +140,11 @@ function buildRoutes(
 
 const post = (body: unknown) =>
   new Request('https://community.test/api', { method: 'POST', body: JSON.stringify(body) })
+const deleteRequest = (baseRevision: number) =>
+  new Request('https://community.test/api', {
+    method: 'DELETE',
+    body: JSON.stringify({ baseRevision }),
+  })
 const item = { params: Promise.resolve({ tool: 'studio', itemId: 'proj-1' }) }
 
 beforeEach(() => {
@@ -495,10 +500,7 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
         }),
       },
     })
-    const res = await routes.creationsDelete.DELETE(
-      new Request('https://community.test/api', { method: 'DELETE' }),
-      item,
-    )
+    const res = await routes.creationsDelete.DELETE(deleteRequest(3), item)
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ deleted: true, revision: 3 })
     await settle()
@@ -536,7 +538,7 @@ describe('BFF das criações — commit', () => {
     // Idem na lixeira.
     r2.hangDelete = true
     const del = await Promise.race([
-      routes.creationsDelete.DELETE(new Request('http://x', { method: 'DELETE' }), item),
+      routes.creationsDelete.DELETE(deleteRequest(2), item),
       new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 300)),
     ])
     expect(del).not.toBe('timeout')
@@ -571,25 +573,45 @@ describe('BFF das criações — commit', () => {
 
 describe('BFF das criações — apagar', () => {
   test('a lixeira apaga o blob que o members soltou (best-effort) e devolve só `{deleted}`', async () => {
-    const { routes } = buildRoutes()
-    const res = await routes.creationsDelete.DELETE(
-      new Request('https://community.test/api', { method: 'DELETE' }),
-      item,
-    )
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsDelete.DELETE(deleteRequest(2), item)
     expect(res.status).toBe(200)
+    expect(calls.deleteCreation?.[0]).toEqual(['studio', 'proj-1', { baseRevision: 2 }])
     expect(await res.json()).toEqual({ deleted: true, revision: 2 })
     expect(r2.deleted).toEqual(['creations/u/studio/proj-1/2.json.gz'])
     // Falha no R2 não vira erro para a criança.
     r2.failDelete = true
-    const again = await routes.creationsDelete.DELETE(
+    const again = await routes.creationsDelete.DELETE(deleteRequest(2), item)
+    expect(again.status).toBe(200)
+  })
+
+  test('recusa DELETE sem revisão-base antes de chamar o members', async () => {
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsDelete.DELETE(
       new Request('https://community.test/api', { method: 'DELETE' }),
       item,
     )
-    expect(again.status).toBe(200)
+    expect(res.status).toBe(400)
+    expect(calls.deleteCreation).toBeUndefined()
   })
 })
 
 describe('BFF das criações — respostas e sessão', () => {
+  test('lista valida e repassa cursor/limite ao members', async () => {
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsList.GET(
+      new Request('https://community.test/api?cursor=abc&limit=25'),
+      { params: Promise.resolve({ tool: 'studio' }) },
+    )
+    expect(res.status).toBe(200)
+    expect(calls.listCreations?.[0]).toEqual(['studio', { cursor: 'abc', limit: 25 }])
+    const invalid = await routes.creationsList.GET(
+      new Request('https://community.test/api?limit=999'),
+      { params: Promise.resolve({ tool: 'studio' }) },
+    )
+    expect(invalid.status).toBe(400)
+  })
+
   test('200 sem corpo vira 502 (o cliente nunca recebe `{ok:true}` no lugar de um ticket)', async () => {
     const { routes } = buildRoutes({
       members: { listCreations: async () => ({ status: 200, body: undefined }) },

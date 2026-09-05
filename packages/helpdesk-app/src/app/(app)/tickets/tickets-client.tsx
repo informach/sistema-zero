@@ -5,7 +5,8 @@ import { Input } from '@sistemazero/ui/input'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Inbox, Search } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { EmptyState } from '@/components/shared/empty-state'
 import {
@@ -20,7 +21,7 @@ import { STATUS_LABELS, TICKET_STATUSES } from '@/lib/categories'
 import { cn } from '@/lib/cn'
 import { formatShortSp } from '@/lib/dates'
 import { formatSlaRemaining } from '@/lib/sla'
-import type { HelpdeskPage, TicketStatus, TicketView } from '@/lib/types'
+import type { CursorPage, TicketStatus, TicketView } from '@/lib/types'
 
 const LIMIT = 50
 const SEARCH_DEBOUNCE_MS = 350
@@ -45,49 +46,89 @@ function requesterLabel(ticket: TicketView): string {
     : ticket.requesterEmail
 }
 
+function isTicketStatus(value: string | null): value is TicketStatus {
+  return value !== null && (TICKET_STATUSES as readonly string[]).includes(value)
+}
+
+function isQueueFilter(value: string | null): value is QueueFilter {
+  return value === 'attention' || value === 'unassigned'
+}
+
+function apiListPath(
+  status: StatusFilter,
+  queue: QueueFilter,
+  query: string,
+  cursor: string | null = null,
+): string {
+  const params = new URLSearchParams({ limit: String(LIMIT) })
+  if (status !== 'all') params.set('status', status)
+  if (queue === 'attention') params.set('sla', 'attention')
+  if (queue === 'unassigned') params.set('queue', 'unassigned')
+  if (query) params.set('q', query)
+  if (cursor) params.set('cursor', cursor)
+  return `/api/helpdesk/tickets?${params.toString()}`
+}
+
 export function TicketsClient() {
-  const [status, setStatus] = useState<StatusFilter>('all')
-  const [queue, setQueue] = useState<QueueFilter>('all')
-  const [search, setSearch] = useState('')
-  const [query, setQuery] = useState('')
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const statusValue = searchParams.get('status')
+  const queueValue = searchParams.get('queue')
+  const status: StatusFilter = isTicketStatus(statusValue) ? statusValue : 'all'
+  const queue: QueueFilter = isQueueFilter(queueValue) ? queueValue : 'all'
+  const query = (searchParams.get('q') ?? '').trim()
+  const [search, setSearch] = useState(query)
   const [items, setItems] = useState<TicketView[]>([])
   const [total, setTotal] = useState(0)
-  const [hasMore, setHasMore] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
+  const filterKey = `${status}\u0000${queue}\u0000${query}`
+  const activeFilterKey = useRef(filterKey)
+  activeFilterKey.current = filterKey
 
-  // Debounce da busca: o `q` só vira filtro depois da pausa de digitação.
+  const replaceFilters = useCallback(
+    (next: { status?: StatusFilter; queue?: QueueFilter; query?: string }) => {
+      const params = new URLSearchParams()
+      const nextStatus = next.status ?? status
+      const nextQueue = next.queue ?? queue
+      const nextQuery = next.query ?? query
+      if (nextStatus !== 'all') params.set('status', nextStatus)
+      if (nextQueue !== 'all') params.set('queue', nextQueue)
+      if (nextQuery) params.set('q', nextQuery)
+      const serialized = params.toString()
+      router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false })
+    },
+    [pathname, query, queue, router, status],
+  )
+
+  useEffect(() => setSearch(query), [query])
+
   useEffect(() => {
-    const handle = setTimeout(() => setQuery(search.trim()), SEARCH_DEBOUNCE_MS)
+    const normalized = search.trim()
+    if (normalized === query) return
+    const handle = setTimeout(() => replaceFilters({ query: normalized }), SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(handle)
-  }, [search])
+  }, [search, query, replaceFilters])
 
-  function listPath(offset: number): string {
-    const params = new URLSearchParams({ limit: String(LIMIT), offset: String(offset) })
-    if (status !== 'all') params.set('status', status)
-    if (queue === 'attention') params.set('sla', 'attention')
-    if (queue === 'unassigned') params.set('queue', 'unassigned')
-    if (query) params.set('q', query)
-    return `/api/helpdesk/tickets?${params.toString()}`
-  }
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é o gatilho explícito do retry.
   useEffect(() => {
     let alive = true
     setLoading(true)
+    setLoadingMore(false)
     setFailed(false)
-    apiGet<HelpdeskPage<TicketView>>(listPath(0))
+    apiGet<CursorPage<TicketView>>(apiListPath(status, queue, query))
       .then((page) => {
         if (!alive) return
         setItems(page.items)
         setTotal(page.total)
-        setHasMore(page.hasMore)
+        setNextCursor(page.nextCursor)
         setLoading(false)
       })
       .catch(() => {
-        // Erro não vira lista vazia (indistinguível de caixa vazia): aviso + tentar de novo.
         if (!alive) return
         setFailed(true)
         setLoading(false)
@@ -98,19 +139,26 @@ export function TicketsClient() {
   }, [status, queue, query, reloadKey])
 
   async function loadMore() {
+    if (!nextCursor) return
+    const requestedFilterKey = filterKey
     setLoadingMore(true)
     try {
-      const page = await apiGet<HelpdeskPage<TicketView>>(listPath(items.length))
-      setItems((cur) => {
-        const seen = new Set(cur.map((it) => it.id))
-        return [...cur, ...page.items.filter((it) => !seen.has(it.id))]
+      const page = await apiGet<CursorPage<TicketView>>(
+        apiListPath(status, queue, query, nextCursor),
+      )
+      if (activeFilterKey.current !== requestedFilterKey) return
+      setItems((current) => {
+        const seen = new Set(current.map((ticket) => ticket.id))
+        return [...current, ...page.items.filter((ticket) => !seen.has(ticket.id))]
       })
       setTotal(page.total)
-      setHasMore(page.hasMore)
+      setNextCursor(page.nextCursor)
     } catch {
-      toast.error('Não foi possível carregar mais tickets. Tente novamente.')
+      if (activeFilterKey.current === requestedFilterKey) {
+        toast.error('Não foi possível carregar mais tickets. Tente novamente.')
+      }
     } finally {
-      setLoadingMore(false)
+      if (activeFilterKey.current === requestedFilterKey) setLoadingMore(false)
     }
   }
 
@@ -118,16 +166,16 @@ export function TicketsClient() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-2">
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <fieldset className="m-0 border-0 p-0">
+            <legend className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Priorizar fila
-            </p>
+            </legend>
             <div className="mt-1 inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
               {QUEUE_FILTERS.map((filter) => (
                 <button
                   key={filter.value}
                   type="button"
-                  onClick={() => setQueue(filter.value)}
+                  onClick={() => replaceFilters({ queue: filter.value })}
                   aria-pressed={queue === filter.value}
                   className={cn(
                     'rounded-md px-3 py-1.5 text-sm transition-colors',
@@ -140,34 +188,45 @@ export function TicketsClient() {
                 </button>
               ))}
             </div>
-          </div>
-          <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
-            {FILTERS.map((filter) => (
-              <button
-                key={filter.value}
-                type="button"
-                onClick={() => setStatus(filter.value)}
-                aria-pressed={status === filter.value}
-                className={cn(
-                  'rounded-md px-3 py-1.5 text-sm transition-colors',
-                  status === filter.value
-                    ? 'bg-muted font-medium text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          </fieldset>
+          <fieldset className="m-0 border-0 p-0">
+            <legend className="sr-only">Filtrar por status</legend>
+            <div className="inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
+              {FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => replaceFilters({ status: filter.value })}
+                  aria-pressed={status === filter.value}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-sm transition-colors',
+                    status === filter.value
+                      ? 'bg-muted font-medium text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
         </div>
         <div className="relative w-full sm:w-64">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <label htmlFor="ticket-search" className="sr-only">
+            Buscar tickets
+          </label>
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
           <Input
+            id="ticket-search"
+            name="ticket-search"
             type="search"
+            autoComplete="off"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por assunto ou e-mail"
-            aria-label="Buscar tickets"
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Buscar por assunto ou e-mail…"
             className="pl-8"
           />
         </div>
@@ -223,7 +282,12 @@ export function TicketsClient() {
                     ) : null}
                   </div>
                   <div className="shrink-0 text-right text-xs text-muted-foreground">
-                    <p>Última mensagem {formatShortSp(ticket.lastMessageAt)}</p>
+                    <p>
+                      Última mensagem{' '}
+                      <time dateTime={ticket.lastMessageAt}>
+                        {formatShortSp(ticket.lastMessageAt)}
+                      </time>
+                    </p>
                     <p className="mt-0.5">
                       {ticket.messageCount} {ticket.messageCount === 1 ? 'mensagem' : 'mensagens'}
                     </p>
@@ -232,7 +296,7 @@ export function TicketsClient() {
               </li>
             ))}
           </ul>
-          {hasMore ? (
+          {nextCursor ? (
             <div className="flex justify-center">
               <Button variant="outline" onClick={loadMore} disabled={loadingMore}>
                 {loadingMore ? 'Carregando…' : `Carregar mais (${items.length} de ${total})`}

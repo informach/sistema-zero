@@ -43,6 +43,7 @@ describe('SkyEditor', () => {
     const slider = screen.getByRole('slider', {
       name: COPY.editor.sky.elevation,
     }) as HTMLInputElement
+    expect(slider.classList.contains('h-11')).toBe(true)
     expect(slider.value).toBe('6')
     fireEvent.pointerDown(slider)
     fireEvent.change(slider, { target: { value: '40' } })

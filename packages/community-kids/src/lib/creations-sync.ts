@@ -14,9 +14,8 @@
  * - LÁPIDE local: apagado neste aparelho não desce de volta. Só volta quando uma
  *   REVISÃO autoritativa prova que alguém editou depois; lápide legada sem revisão
  *   reenvia o DELETE em vez de comparar relógios de dispositivos diferentes.
- *
- * ⚠️ Limitação declarada da v1: um item apagado em OUTRO aparelho e ainda presente
- * neste volta a subir (a lápide é local). Converge: fica em todos até apagar aqui.
+ * - LÁPIDE remota: apaga a cópia local intacta; se ela também mudou, preserva essa
+ *   edição com id novo antes de remover o original.
  *
  * "Última sincronia deste aparelho" = `SyncedMarks` (localStorage por perfil e
  * ferramenta): o `updatedAt` do item na última vez em que ele desceu ou SUBIU COM
@@ -311,7 +310,7 @@ export interface ReconcileReport {
    * item (se houver) cai em base vencida e os dois lados sobrevivem como cópia.
    */
   skipped: number
-  /** Lápides honradas (item da nuvem não desceu porque foi apagado aqui). */
+  /** Lápides honradas, locais ou vindas de outro aparelho. */
   tombstoned: number
 }
 
@@ -338,6 +337,8 @@ export interface ReconcileOptions<T extends LocalCreation, P> {
   push: (item: T) => void
   /** Reenvia o DELETE de uma lápide que ainda não chegou à nuvem. */
   remove?: (itemId: string) => void
+  /** Apaga DIRETO do armazenamento local, sem acordar o espelho da nuvem. */
+  deleteLocal: (itemId: string) => Promise<boolean>
   marks: SyncedMarks
   /** O adaptador ainda tem lugar para mais um item da nuvem? */
   canAccept?: (summary: CloudCreationSummary) => boolean
@@ -431,11 +432,93 @@ export async function reconcileCreations<T extends LocalCreation, P>(
   }
 
   const localById = new Map(options.local.map((item) => [item.id, item]))
-  const cloudById = new Map(options.cloud.map((item) => [item.itemId, item]))
+  const remoteTombstones = options.cloud.filter(
+    (item): item is CloudCreationSummary & { deletedAt: number } =>
+      typeof item.deletedAt === 'number' && Number.isFinite(item.deletedAt),
+  )
+  const remoteDeletedIds = new Set(remoteTombstones.map((item) => item.itemId))
+  const aliveCloud = options.cloud.filter((item) => !remoteDeletedIds.has(item.itemId))
+  const cloudById = new Map(aliveCloud.map((item) => [item.itemId, item]))
 
-  // 1) Só local → sobe. Quando existe dos dois lados, a MARCA confirmada decide
+  // 1) Lápides de OUTRO aparelho vencem antes de decidir qualquer upload. Se este
+  //    aparelho também editou o item, a edição vira uma criação nova e sobrevive.
+  for (let tombstoneIndex = 0; tombstoneIndex < remoteTombstones.length; tombstoneIndex += 1) {
+    if (options.signal?.aborted || now() - startedAt >= budgetMs) {
+      report.deferred += remoteTombstones.length - tombstoneIndex
+      break
+    }
+    const remote = remoteTombstones[tombstoneIndex]
+    if (!remote) continue
+    const local = localById.get(remote.itemId)
+    if (local && options.isBusy?.(remote.itemId)) {
+      report.skipped += 1
+      continue
+    }
+    if (local && options.localUpdatedAt) {
+      const freshUpdatedAt = await options.localUpdatedAt(remote.itemId)
+      if (freshUpdatedAt === null) {
+        localById.delete(remote.itemId)
+      } else if (typeof freshUpdatedAt === 'number' && freshUpdatedAt !== local.updatedAt) {
+        report.skipped += 1
+        continue
+      }
+    }
+
+    const current = localById.get(remote.itemId)
+    let stagedCopy: StagedConflictCopy | undefined
+    let rollbackAttempted = false
+    let deleted = false
+    try {
+      const lastSynced = current ? options.marks.get(current.id) : undefined
+      const localChanged = current !== undefined && current.updatedAt !== lastSynced
+      if (current && localChanged) stagedCopy = await options.keepLocalCopy(current)
+      if (current && options.isBusy?.(remote.itemId)) {
+        rollbackAttempted = true
+        await stagedCopy?.rollback()
+        report.skipped += 1
+        continue
+      }
+      if (current && !(await options.deleteLocal(remote.itemId))) {
+        rollbackAttempted = true
+        await stagedCopy?.rollback()
+        report.failed += 1
+        continue
+      }
+      deleted = current !== undefined
+      stagedCopy?.commit()
+      if (stagedCopy) report.conflicts += 1
+      localById.delete(remote.itemId)
+      options.marks.delete(remote.itemId)
+      options.marks.setTombstone(remote.itemId, {
+        at: remote.deletedAt,
+        sent: true,
+        revision: remote.revision,
+      })
+      report.tombstoned += 1
+    } catch (error) {
+      if (stagedCopy && !deleted && !rollbackAttempted) {
+        try {
+          await stagedCopy.rollback()
+        } catch (rollbackError) {
+          console.warn('[criacoes-nuvem] rollback da cópia após exclusão remota falhou', {
+            itemId: remote.itemId,
+            error: rollbackError,
+          })
+        }
+      }
+      console.warn('[criacoes-nuvem] exclusão remota falhou', {
+        itemId: remote.itemId,
+        error,
+      })
+      report.failed += 1
+    }
+  }
+
+  // 2) Só local → sobe. Quando existe dos dois lados, a MARCA confirmada decide
   //    quem mudou; relógios de aparelhos diferentes não são ordenáveis.
-  for (const item of options.local) {
+  for (const item of localById.values()) {
+    // Uma lápide remota pulada/recusada fica para o próximo passe e nunca vira upload.
+    if (remoteDeletedIds.has(item.id)) continue
     // Um item local com lápide é um id que voltou (recriado): a lápide não vale mais.
     if (options.marks.tombstone(item.id)) options.marks.clearTombstone(item.id)
     const remote = cloudById.get(item.id)
@@ -457,10 +540,10 @@ export async function reconcileCreations<T extends LocalCreation, P>(
     }
   }
 
-  // 2) Só na nuvem, só a nuvem mudou, ou os DOIS lados mudaram → desce. No
+  // 3) Só na nuvem, só a nuvem mudou, ou os DOIS lados mudaram → desce. No
   //    último caso preserva o local como cópia, independentemente do timestamp.
   const pulls: Array<{ remote: CloudCreationSummary; preserveLocal: boolean }> = []
-  for (const remote of options.cloud) {
+  for (const remote of aliveCloud) {
     const local = localById.get(remote.itemId)
     if (local) {
       if (remote.itemUpdatedAt === local.updatedAt) continue

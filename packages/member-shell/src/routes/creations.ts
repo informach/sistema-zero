@@ -97,6 +97,13 @@ const CommitBody = z.strictObject({
   revision: z.number().int().min(1),
   uploadedParts: z.array(PartHash).max(MAX_PARTS).optional(),
 })
+const DeleteBody = z.strictObject({
+  baseRevision: z.number().int().min(0),
+})
+const ListQuery = z.strictObject({
+  cursor: z.string().min(1).max(512).optional(),
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+})
 
 const invalid = () =>
   NextResponse.json(
@@ -245,7 +252,9 @@ export function createCreationsRoutes(deps: {
       if (mismatch) return mismatch
       const tool = Tool.safeParse((await ctx.params).tool)
       if (!tool.success) return invalid()
-      const { status, body } = await members.listCreations(tool.data)
+      const parsed = ListQuery.safeParse(Object.fromEntries(new URL(req.url).searchParams))
+      if (!parsed.success) return invalid()
+      const { status, body } = await members.listCreations(tool.data, parsed.data)
       return response(status, body)
     },
   }
@@ -466,7 +475,9 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
-      const { status, body } = await members.deleteCreation(item.tool, item.itemId)
+      const parsed = DeleteBody.safeParse(await req.json().catch(() => null))
+      if (!parsed.success) return invalid()
+      const { status, body } = await members.deleteCreation(item.tool, item.itemId, parsed.data)
       if (status === 200 && body) {
         // A lixeira soltou o blob (e as partes): apaga do R2 (best-effort, depois da resposta).
         // Apagado não pode ficar fora da quota para sempre; a linha do índice fica para um

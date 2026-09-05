@@ -360,7 +360,11 @@ describe('criações guardadas na conta — HTTP', () => {
       await reserve(ctx, 'studio', 'jogo2', { bytes: 10, parts: [{ hash: A, bytes: 5 }] }),
     )
     await commit(ctx, 'studio', 'jogo2', withParts.revision, { uploadedParts: [A] })
-    const del = await json(await req(ctx.app, 'DELETE', '/members/creations/studio/jogo2'))
+    const del = await json(
+      await req(ctx.app, 'DELETE', '/members/creations/studio/jogo2', {
+        baseRevision: withParts.revision,
+      }),
+    )
     expect(del.deleted).toBe(true)
     expect([...del.storageKeys].sort()).toEqual(
       [withParts.storageKey, `creations/${USER}/studio/jogo2/parts/${A}.1.gz`].sort(),
@@ -420,12 +424,41 @@ describe('criações guardadas na conta — HTTP', () => {
     // Sem `baseRevision` (cliente antigo) não há conferência.
     const legacy = await reserve(ctx, 'studio', 'proj-1')
     expect(legacy.status).toBe(200)
-    // Uma linha APAGADA aceita qualquer base (a edição posterior vence a lixeira).
-    await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1')
-    const revived = await reserve(ctx, 'studio', 'proj-1', { baseRevision: 1 })
+    // A linha apagada também exige a base corrente: uma edição velha não a ressuscita.
+    await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', { baseRevision: 2 })
+    expect((await reserve(ctx, 'studio', 'proj-1', { baseRevision: 1 })).status).toBe(409)
+    const revived = await reserve(ctx, 'studio', 'proj-1', { baseRevision: 2 })
     expect(revived.status).toBe(200)
     // Base inválida é 400.
     expect((await reserve(ctx, 'studio', 'proj-2', { baseRevision: -1 })).status).toBe(400)
+  })
+
+  test('revisão-base: um DELETE atrasado não apaga uma revisão mais nova nem um item já compactado', async () => {
+    const ctx = buildWithTools()
+    await saveItem(ctx, 'studio', 'proj-1', { baseRevision: 0 })
+    await saveItem(ctx, 'studio', 'proj-1', { baseRevision: 1 })
+
+    const stale = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
+      baseRevision: 1,
+    })
+    const staleBody = await json(stale)
+    expect({ status: stale.status, body: staleBody }).toMatchObject({
+      status: 409,
+      body: { error: { code: 'CREATION_STALE_BASE' } },
+    })
+    expect((await listOf(ctx, 'studio')).find((item) => item.itemId === 'proj-1')?.revision).toBe(2)
+
+    const missing = await req(ctx.app, 'DELETE', '/members/creations/studio/compactado', {
+      baseRevision: 4,
+    })
+    expect(missing.status).toBe(409)
+    expect((await json(missing)).error.code).toBe('CREATION_STALE_BASE')
+
+    const current = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
+      baseRevision: 2,
+    })
+    expect(current.status).toBe(200)
+    expect(await json(current)).toMatchObject({ deleted: true, revision: 2 })
   })
 
   test('apagar não faz o contador voltar: depois de apagar e ressuscitar, a chave nova nunca repete a antiga', async () => {
@@ -433,7 +466,7 @@ describe('criações guardadas na conta — HTTP', () => {
     await saveItem(ctx, 'studio', 'proj-1') // rev 1
     const orphan = await json(await reserve(ctx, 'studio', 'proj-1')) // rev 2, PUT em voo
     expect(orphan.revision).toBe(2)
-    await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1') // cancela a reserva
+    await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', { baseRevision: 1 }) // cancela a reserva
     expect((await commit(ctx, 'studio', 'proj-1', orphan.revision)).status).toBe(409)
     // Ressuscita: nunca `1 + 1 = 2` de novo (o PUT órfão pode ter caído em .../2.json.gz).
     const back = await saveItem(ctx, 'studio', 'proj-1')
@@ -477,7 +510,7 @@ describe('criações guardadas na conta — HTTP', () => {
     expect(rejected.status).toBe(409)
     expect((await json(rejected)).error.code).toBe('CREATION_QUOTA_EXCEEDED')
     // A criança abre espaço…
-    await req(ctx.app, 'DELETE', '/members/creations/studio/lote-0')
+    await req(ctx.app, 'DELETE', '/members/creations/studio/lote-0', { baseRevision: 1 })
     // …mas o commit da reserva recusada NÃO promove uma chave que o BFF já apagou: 409 de revisão.
     const late = await commit(ctx, 'studio', `lote-${fits}`, tickets[fits] ?? 0)
     expect(late.status).toBe(409)
@@ -651,7 +684,7 @@ describe('criações guardadas na conta — HTTP', () => {
       ctx.app,
       'DELETE',
       '/members/creations/studio/proj-1',
-      undefined,
+      { baseRevision: 0 },
       otherHeaders,
     )
     expect((await json(del)).deleted).toBe(false)
@@ -659,26 +692,86 @@ describe('criações guardadas na conta — HTTP', () => {
     expect(await listOf(ctx, 'studio')).toHaveLength(1)
   })
 
-  test('apagar é lixeira lógica: some da lista, 404 no download; só o COMMIT ressuscita', async () => {
+  test('apagar publica uma lápide no índice, dá 404 no download; só o COMMIT ressuscita', async () => {
     const ctx = buildWithTools()
     await saveItem(ctx, 'studio', 'proj-1')
-    const del = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1')
+    const del = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
+      baseRevision: 1,
+    })
     expect(await json(del)).toMatchObject({ deleted: true, revision: 1 })
-    expect(await listOf(ctx, 'studio')).toHaveLength(0)
+    const tombstones = await listOf(ctx, 'studio')
+    expect(tombstones).toHaveLength(1)
+    expect(tombstones[0]).toMatchObject({ itemId: 'proj-1', revision: 1 })
+    expect(typeof tombstones[0]?.deletedAt).toBe('string')
     expect((await req(ctx.app, 'GET', '/members/creations/studio/proj-1/download')).status).toBe(
       404,
     )
     // Idempotente.
     expect(
-      (await json(await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1'))).deleted,
+      (
+        await json(
+          await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', { baseRevision: 1 }),
+        )
+      ).deleted,
     ).toBe(false)
     // Uma reserva SEM commit não ressuscita (o blob ainda não existe).
     const reserved = await json(await reserve(ctx, 'studio', 'proj-1'))
-    expect(await listOf(ctx, 'studio')).toHaveLength(0)
+    expect(await listOf(ctx, 'studio')).toHaveLength(1)
     // O commit ressuscita.
     expect((await commit(ctx, 'studio', 'proj-1', reserved.revision)).status).toBe(200)
     expect(reserved.revision).toBe(2)
-    expect(await listOf(ctx, 'studio')).toHaveLength(1)
+    const restored = await listOf(ctx, 'studio')
+    expect(restored).toHaveLength(1)
+    expect(restored[0]).not.toHaveProperty('deletedAt')
+  })
+
+  test('índice pagina por cursor e lápide viaja só com id, revisão e data', async () => {
+    const ctx = buildWithTools()
+    await saveItem(ctx, 'studio', 'apagado', {
+      baseRevision: 0,
+      itemUpdatedAt: '2026-08-18T10:00:00.000Z',
+    })
+    await req(ctx.app, 'DELETE', '/members/creations/studio/apagado', { baseRevision: 1 })
+    await saveItem(ctx, 'studio', 'vivo', {
+      baseRevision: 0,
+      itemUpdatedAt: '2026-08-18T11:00:00.000Z',
+    })
+
+    const first = await json(await req(ctx.app, 'GET', '/members/creations/studio?limit=1'))
+    expect(first.items).toHaveLength(1)
+    expect(first.items[0].itemId).toBe('vivo')
+    expect(typeof first.nextCursor).toBe('string')
+    const second = await json(
+      await req(
+        ctx.app,
+        'GET',
+        `/members/creations/studio?limit=1&cursor=${encodeURIComponent(first.nextCursor)}`,
+      ),
+    )
+    expect(second.nextCursor).toBeNull()
+    expect(second.items[0]).toEqual({
+      itemId: 'apagado',
+      revision: 1,
+      deletedAt: '2026-06-02T12:00:00.000Z',
+    })
+    expect((await req(ctx.app, 'GET', '/members/creations/studio?cursor=invalido')).status).toBe(
+      400,
+    )
+  })
+
+  test('compactação remove só um lote de lápides fora da retenção', async () => {
+    const ctx = buildWithTools()
+    for (const itemId of ['antiga', 'recente']) {
+      await saveItem(ctx, 'studio', itemId)
+      await req(ctx.app, 'DELETE', `/members/creations/studio/${itemId}`, { baseRevision: 1 })
+    }
+    const old = [...ctx.creations.rows.values()].find((row) => row.itemId === 'antiga')
+    if (old) old.deletedAt = new Date('2025-01-01T00:00:00.000Z')
+
+    const compacted = await req(ctx.app, 'POST', '/members/creations/tombstones/compact')
+    expect(compacted.status).toBe(200)
+    expect(await json(compacted)).toEqual({ compacted: 1 })
+    expect([...ctx.creations.rows.values()].map((row) => row.itemId)).toEqual(['recente'])
   })
 
   test('quota: item acima do teto e total acima do teto são 409; reenviar TROCA os bytes, não soma; reserva sem commit não ocupa vaga', async () => {
@@ -699,7 +792,7 @@ describe('criações guardadas na conta — HTTP', () => {
     // Uma reserva que nunca commitou não conta bytes nem vaga: outra reserva pequena passa.
     // (Cada item vale `perItem`, o total está cheio; um item de 1 byte novo tem que caber
     // se um dos itens for apagado.)
-    await req(ctx.app, 'DELETE', '/members/creations/studio/p-1')
+    await req(ctx.app, 'DELETE', '/members/creations/studio/p-1', { baseRevision: 1 })
     expect((await reserve(ctx, 'studio', 'p-novo', { bytes: 1 })).status).toBe(200)
   })
 
@@ -747,7 +840,7 @@ describe('criações guardadas na conta — HTTP', () => {
     // Reenviar um item vivo não conta como novo.
     expect((await reserve(ctx, 'pinta', 'd-0', { bytes: 1 })).status).toBe(200)
     // Apagar abre vaga.
-    await req(ctx.app, 'DELETE', '/members/creations/pinta/d-1')
+    await req(ctx.app, 'DELETE', '/members/creations/pinta/d-1', { baseRevision: 1 })
     expect((await reserve(ctx, 'pinta', 'd-extra', { bytes: 1 })).status).toBe(200)
   })
 
@@ -795,9 +888,9 @@ describe('criações guardadas na conta — HTTP', () => {
 
     // (b) E a biblioteca commitada NÃO ocupa vaga: os 3 slots de desenho
     // continuam livres (sem o filtro, o 3º desenho contaria como 4º item).
-    await ctx.creations.softDelete(USER, 'pinta', 'd-0', now)
-    await ctx.creations.softDelete(USER, 'pinta', 'd-1', now)
-    await ctx.creations.softDelete(USER, 'pinta', 'd-2', now)
+    await ctx.creations.softDelete(USER, 'pinta', 'd-0', 1, now)
+    await ctx.creations.softDelete(USER, 'pinta', 'd-1', 1, now)
+    await ctx.creations.softDelete(USER, 'pinta', 'd-2', 1, now)
     expect((await save('d-a', 'pixel-sprite')).ok).toBe(true)
     expect((await save('d-b', 'pixel-sprite')).ok).toBe(true)
     expect((await save('d-c', 'pixel-sprite')).ok).toBe(true)

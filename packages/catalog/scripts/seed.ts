@@ -2,6 +2,7 @@ import { createLogger, serializeError } from '@sistemazero/core/logging'
 import { CreateOfferService } from '../src/application/create-offer/create-offer.service'
 import { CreateProductService } from '../src/application/create-product/create-product.service'
 import { ResolveOfferEntitlementsService } from '../src/application/resolve-offer-entitlements/resolve-offer-entitlements.service'
+import { appendBundleComponent } from '../src/application/update-product/append-bundle-component'
 import { UpdateProductService } from '../src/application/update-product/update-product.service'
 import { loadEnv } from '../src/infrastructure/config/env'
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
@@ -460,6 +461,26 @@ async function main(): Promise<void> {
   let comunidade = await products.findBySku(COMUNIDADE_SKU)
   if (comunidade) {
     logger.info('seed.product_exists', { id: comunidade.id, sku: comunidade.sku })
+    const snapshot = comunidade.toSnapshot()
+    const components = appendBundleComponent(snapshot.components, molda.id)
+    if (components) {
+      await updateProduct.execute({
+        id: comunidade.id,
+        components,
+      })
+      logger.info('seed.product_component_added', {
+        id: comunidade.id,
+        sku: comunidade.sku,
+        componentProductId: molda.id,
+      })
+      comunidade = await products.findById(comunidade.id)
+    } else {
+      logger.info('seed.product_component_exists', {
+        id: comunidade.id,
+        sku: comunidade.sku,
+        componentProductId: molda.id,
+      })
+    }
   } else {
     const view = await createProduct.execute({
       sku: COMUNIDADE_SKU,
@@ -477,8 +498,6 @@ async function main(): Promise<void> {
         { componentProductId: studio.id, sortOrder: 3 },
         { componentProductId: pensa.id, sortOrder: 4 },
         { componentProductId: pinta.id, sortOrder: 5 },
-        // ⚠️ O seed só CRIA o bundle quando ele não existe: em staging/prod o operador
-        // adiciona o Molda ao combo pelo admin E concede `molda` aos assinantes ativos.
         { componentProductId: molda.id, sortOrder: 6 },
       ],
     })

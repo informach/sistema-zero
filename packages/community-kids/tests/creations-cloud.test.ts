@@ -290,6 +290,12 @@ function fakeServer(
     const deleteMatch = url.match(/^\/api\/creations\/(\w+)\/([^/]+)$/)
     if (deleteMatch && method === 'DELETE') {
       const current = items.get(deleteMatch[2] as string)
+      const baseRevision = (body as { baseRevision?: number } | null)?.baseRevision
+      if (opts.checkBase && baseRevision !== (current?.revision ?? 0)) {
+        return json(409, {
+          error: { code: 'CREATION_STALE_BASE', message: 'Esse item mudou em outro aparelho' },
+        })
+      }
       const existed = items.delete(deleteMatch[2] as string)
       return json(200, { deleted: existed, revision: current?.revision ?? 0 })
     }
@@ -330,6 +336,93 @@ describe('gzip de ida e volta', () => {
 })
 
 describe('createCreationsCloud', () => {
+  test('a lista converte a data de uma lápide remota para milissegundos', async () => {
+    const deletedAt = '2026-08-18T12:00:02.000Z'
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      wait: noWait,
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            items: [
+              {
+                itemId: 'modelo-1',
+                name: 'modelo',
+                kind: 'model',
+                itemUpdatedAt: '2026-08-18T12:00:00.000Z',
+                revision: 3,
+                bytes: 0,
+                thumb: null,
+                syncedAt: '2026-08-18T12:00:01.000Z',
+                deletedAt,
+              },
+            ],
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+    })
+
+    expect(await cloud.list()).toEqual([
+      expect.objectContaining({ itemId: 'modelo-1', deletedAt: Date.parse(deletedAt) }),
+    ])
+    cloud.dispose()
+  })
+
+  test('a lista segue cursores e aceita lápide com payload mínimo', async () => {
+    const urls: string[] = []
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      wait: noWait,
+      fetch: async (input) => {
+        const url = String(input)
+        urls.push(url)
+        const body = url.includes('cursor=pagina-2')
+          ? {
+              items: [
+                {
+                  itemId: 'apagado',
+                  revision: 4,
+                  deletedAt: '2026-08-18T12:00:02.000Z',
+                },
+              ],
+              nextCursor: null,
+            }
+          : {
+              items: [
+                {
+                  itemId: 'vivo',
+                  name: 'Vivo',
+                  kind: 'model',
+                  itemUpdatedAt: '2026-08-18T12:00:00.000Z',
+                  revision: 1,
+                  bytes: 10,
+                  thumb: null,
+                  syncedAt: '2026-08-18T12:00:01.000Z',
+                },
+              ],
+              nextCursor: 'pagina-2',
+            }
+        return new Response(JSON.stringify(body), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        })
+      },
+    })
+
+    const items = await cloud.list()
+    expect(urls).toEqual(['/api/creations/molda', '/api/creations/molda?cursor=pagina-2'])
+    expect(items).toHaveLength(2)
+    expect(items[1]).toMatchObject({
+      itemId: 'apagado',
+      name: 'apagado',
+      kind: 'deleted',
+      revision: 4,
+      bytes: 0,
+      deletedAt: Date.parse('2026-08-18T12:00:02.000Z'),
+    })
+    cloud.dispose()
+  })
+
   test('upload = reserva → PUT no R2 com o content-type assinado → commit; download devolve o JSON', async () => {
     const server = fakeServer()
     const cloud = createCreationsCloud({ tool: 'studio', fetch: server.fetchImpl, wait: noWait })
@@ -451,7 +544,7 @@ describe('createCreationsCloud', () => {
       json: '{}',
       meta: { name: 'x', kind: 'pixel-sprite' },
     }))
-    cloud.enqueueRemove('d-1')
+    cloud.enqueueRemove('d-1', 0)
     await cloud.flush()
     expect(server.calls.map((c) => `${c.method} ${c.url}`)).toEqual([
       'DELETE /api/creations/pinta/d-1',
@@ -477,7 +570,7 @@ describe('createCreationsCloud', () => {
     expect(uploaded).toEqual([])
     await cloud.flush()
     expect(uploaded).toEqual([{ itemId: 'd-1', updatedAt: 777, revision: 1 }])
-    cloud.enqueueRemove('d-1', () => {
+    cloud.enqueueRemove('d-1', 1, () => {
       removed += 1
     })
     await cloud.flush()
@@ -504,7 +597,7 @@ describe('createCreationsCloud', () => {
     })
     const removals: unknown[] = []
 
-    cloud.enqueueRemove('d-1', (...args: unknown[]) => removals.push(args[0]))
+    cloud.enqueueRemove('d-1', 7, (...args: unknown[]) => removals.push(args[0]))
     await cloud.flush()
 
     expect(removals).toEqual([{ revision: 7 }])
@@ -579,7 +672,7 @@ describe('createCreationsCloud', () => {
       json: '{}',
       meta: { name: 'b', kind: 'pixel-sprite' },
     }))
-    cloud.enqueueRemove('c')
+    cloud.enqueueRemove('c', 0)
     // Sem flush explícito, o remove já disparou a fila (debounce 0) e a fila drena a, b e c.
     await new Promise((r) => setTimeout(r, 30))
     await cloud.flush().finally(() => cloud.dispose())
@@ -684,6 +777,43 @@ describe('createCreationsCloud', () => {
     cloud.dispose()
   })
 
+  test('revisão-base: o DELETE leva a revisão conhecida e reconcilia em vez de apagar uma revisão mais nova', async () => {
+    const server = fakeServer({ checkBase: true })
+    server.items.set('d-1', {
+      revision: 2,
+      lastReserved: 2,
+      pendingRevision: null,
+      name: 'Nave nova',
+      bytes: 10,
+      parts: new Map(),
+      pendingParts: null,
+    })
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      fetch: server.fetchImpl,
+      idleMs: 0,
+      wait: noWait,
+    })
+    const stale: string[] = []
+    const removed: number[] = []
+
+    cloud.enqueueRemove(
+      'd-1',
+      1,
+      ({ revision }) => removed.push(revision),
+      ({ itemId }) => {
+        stale.push(itemId)
+      },
+    )
+    await cloud.flush()
+
+    expect(server.calls.at(-1)?.body).toEqual({ baseRevision: 1 })
+    expect(stale).toEqual(['d-1'])
+    expect(removed).toEqual([])
+    expect(server.items.get('d-1')?.revision).toBe(2)
+    cloud.dispose()
+  })
+
   test('apagar ENQUANTO o upload do mesmo item voa: o upload termina, mas `onUploaded` NÃO roda (a lápide manda) e o DELETE sai', async () => {
     const server = fakeServer({ delayMs: 5 })
     const cloud = createCreationsCloud({
@@ -704,7 +834,7 @@ describe('createCreationsCloud', () => {
     const flushing = cloud.flush()
     // A reserva já saiu; o apagar chega no meio do PUT.
     await new Promise((r) => setTimeout(r, 8))
-    cloud.enqueueRemove('d-1', () => {
+    cloud.enqueueRemove('d-1', 0, () => {
       removed += 1
     })
     await flushing
@@ -765,7 +895,7 @@ describe('createCreationsCloud', () => {
       idleMs: 400,
       wait: noWait,
     })
-    cloud.enqueueRemove('b')
+    cloud.enqueueRemove('b', 0)
     cloud.enqueueUpload('a', async () => ({
       json: '{}',
       meta: { name: 'a', kind: 'pixel-sprite' },

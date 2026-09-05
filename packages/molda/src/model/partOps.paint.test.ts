@@ -66,4 +66,26 @@ describe('resolução e cores extras', () => {
     expect(removeExtraColor(model, 2)).toBeNull()
     expect(removeExtraColor(model, 16)).toBeNull()
   })
+
+  test('removeExtraColor remove a pele quando todos os texels voltam para a cor base', () => {
+    const withExtra = addExtraColor(makeModel(), '#123456')
+    if (!withExtra) throw new Error('extra')
+    const model = {
+      ...withExtra.model,
+      parts: withExtra.model.parts.map((part, index) =>
+        index === 0
+          ? {
+              ...part,
+              faces: {
+                px: paintedSkin(4, 4, () => withExtra.index),
+              },
+            }
+          : part,
+      ),
+    }
+
+    const removed = removeExtraColor(model, withExtra.index)
+
+    expect(removed?.parts[0]?.faces.px).toBeUndefined()
+  })
 })

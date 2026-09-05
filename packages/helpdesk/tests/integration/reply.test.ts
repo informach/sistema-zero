@@ -398,8 +398,11 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
     expect(t.gmailClient.sent).toHaveLength(0)
     expect((await t.repos.tickets.byId(ticket.id))?.gmailThreadId).toBeNull()
 
-    // O aviso saiu pelo messaging, com o link do app que abriu o chamado.
-    expect(t.messaging.sent).toEqual([
+    // A resposta HTTP não depende do messaging: o aviso foi persistido na
+    // outbox na mesma operação e ainda não houve I/O externo.
+    expect(t.messaging.sent).toHaveLength(0)
+    const queued = [...t.repos.notificationOutbox.rows.values()]
+    expect(queued.map((item) => item.payload)).toEqual([
       {
         templateKey: 'helpdesk-reply',
         recipient: { name: 'Maria Silva', email: 'maria@example.com' },
@@ -411,6 +414,11 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
         idempotencyKey: `helpdesk-reply:${body.message.id}`,
       },
     ])
+    expect(queued[0]?.status).toBe('pending')
+
+    await t.notificationWorker?.tick()
+    expect(t.messaging.sent).toEqual(queued.map((item) => item.payload))
+    expect(t.repos.notificationOutbox.rows.get(queued[0]!.id)?.status).toBe('sent')
 
     // E a mensagem está na conversa que o cliente vê (visibility customer).
     const stored = await t.repos.messages.byTicketId(ticket.id)
@@ -419,7 +427,7 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
     ).toHaveLength(1)
   })
 
-  it('duplo-clique (mesma version) → 409 e UMA mensagem, UM aviso', async () => {
+  it('duplo-clique (mesma version) → 409 e UMA mensagem, UM job de aviso', async () => {
     const t = buildTestApp()
     const ticket = await seedPortalTicket(t)
 
@@ -437,6 +445,9 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
       (m) => m.direction === 'outbound',
     )
     expect(outbound).toHaveLength(1)
+    expect(t.repos.notificationOutbox.rows.size).toBe(1)
+    expect(t.messaging.sent).toHaveLength(0)
+    await t.notificationWorker?.tick()
     expect(t.messaging.sent).toHaveLength(1)
   })
 
@@ -458,9 +469,10 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
 
     expect(res.status).toBe(409)
     expect(t.messaging.sent).toHaveLength(0)
+    expect(t.repos.notificationOutbox.rows.size).toBe(0)
   })
 
-  it('aviso por e-mail falhando NÃO derruba a resposta: 200 e a mensagem fica na conversa', async () => {
+  it('aviso por e-mail falhando fica persistido e uma tentativa posterior entrega', async () => {
     const t = buildTestApp()
     t.messaging.failNext = new Error('messaging/send falhou: 502')
     const ticket = await seedPortalTicket(t)
@@ -476,9 +488,18 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
     )
     expect(outbound).toHaveLength(1)
     expect((await t.repos.tickets.byId(ticket.id))?.status).toBe('waiting')
+
+    await t.notificationWorker?.tick()
+    const [job] = [...t.repos.notificationOutbox.rows.values()]
+    expect(job).toMatchObject({ status: 'pending', attempts: 1 })
+    if (!job) throw new Error('job do aviso não foi persistido')
+    job.nextAttemptAt = new Date(0)
+    await t.notificationWorker?.tick()
+    expect(t.messaging.sent).toHaveLength(1)
+    expect(t.repos.notificationOutbox.rows.get(job.id)?.status).toBe('sent')
   })
 
-  it('sem o grupo de env do aviso, responde mesmo assim (só não avisa)', async () => {
+  it('sem worker configurado em dev, responde e mantém o aviso pendente para processamento futuro', async () => {
     const t = buildTestApp({ messagingEnabled: false })
     const ticket = await seedPortalTicket(t)
 
@@ -488,6 +509,7 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
 
     expect(res.status).toBe(200)
     expect(t.messaging.sent).toHaveLength(0)
+    expect([...t.repos.notificationOutbox.rows.values()][0]?.status).toBe('pending')
   })
 
   it('ticket sem `portal` (legado) e sem nome: link do adulto e destinatário com fallback', async () => {
@@ -498,8 +520,9 @@ describe('responder ticket do PORTAL (sem Gmail)', () => {
       body: { body: 'Olá!', version: 0 },
     })
 
-    expect(t.messaging.sent[0]?.variables.link).toBe(`${TEST_PORTAL_URLS.adult}/ajuda`)
-    expect(t.messaging.sent[0]?.recipient.name).toBe('Cliente')
-    expect(t.messaging.sent[0]?.variables.saudacao).toBe('Olá!')
+    const payload = [...t.repos.notificationOutbox.rows.values()][0]?.payload
+    expect(payload?.variables.link).toBe(`${TEST_PORTAL_URLS.adult}/ajuda`)
+    expect(payload?.recipient.name).toBe('Cliente')
+    expect(payload?.variables.saudacao).toBe('Olá!')
   })
 })

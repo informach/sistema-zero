@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { PageHeader } from '@/components/shared/page-header'
 import { TicketsClient } from './tickets-client'
 
@@ -8,7 +9,9 @@ export default function TicketsPage() {
         title="Caixa de entrada"
         description="Pedidos por e-mail e pelo portal, priorizados pela meta interna de primeira resposta."
       />
-      <TicketsClient />
+      <Suspense fallback={<p className="text-sm text-muted-foreground">Carregando fila…</p>}>
+        <TicketsClient />
+      </Suspense>
     </div>
   )
 }

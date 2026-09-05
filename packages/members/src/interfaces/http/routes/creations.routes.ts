@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import type {
   CommitCreationUploadService,
+  CompactCreationTombstonesService,
   DeleteCreationService,
   GetCreationDownloadService,
   ListCreationsService,
@@ -9,7 +10,9 @@ import type {
 import { assertInternalCaller, isPrivilegedActor, resolveAccountId, resolveUserId } from '../auth'
 import {
   CreationCommitBody,
+  CreationDeleteBody,
   CreationItemParams,
+  CreationListQuery,
   CreationToolParams,
   CreationUploadBody,
 } from '../dtos'
@@ -20,6 +23,7 @@ export interface CreationsRoutesDeps {
   commitUpload: CommitCreationUploadService
   getDownload: GetCreationDownloadService
   remove: DeleteCreationService
+  compactTombstones: CompactCreationTombstonesService
   /** Token interno do gateway (defesa em profundidade). Vazio em dev → checagem desligada. */
   internalToken?: string
 }
@@ -43,14 +47,18 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
-      // Índice do perfil numa ferramenta (só itens vivos e já confirmados).
+      // Índice do perfil: itens vivos confirmados + lápides para os outros aparelhos.
       .get(
         '/:tool',
-        async ({ headers, params }) => ({
-          items: await deps.list.execute(resolveUserId(headers), params.tool),
-        }),
-        { params: CreationToolParams },
+        async ({ headers, params, query }) =>
+          deps.list.execute(resolveUserId(headers), params.tool, {
+            ...(query.cursor ? { cursor: query.cursor } : {}),
+            ...(query.limit !== undefined ? { limit: query.limit } : {}),
+          }),
+        { params: CreationToolParams, query: CreationListQuery },
       )
+      // Chamado pelo cron autenticado: remove no máximo um lote de lápides fora da retenção.
+      .post('/tombstones/compact', () => deps.compactTombstones.execute())
       // Reserva a próxima revisão (quota + posse) → `{revision, storageKey, bytes}`.
       .post(
         '/:tool/:itemId/upload',
@@ -95,9 +103,14 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
       // Lixeira lógica (idempotente).
       .delete(
         '/:tool/:itemId',
-        async ({ headers, params }) =>
-          deps.remove.execute(resolveUserId(headers), params.tool, params.itemId),
-        { params: CreationItemParams },
+        async ({ headers, params, body }) =>
+          deps.remove.execute(
+            resolveUserId(headers),
+            params.tool,
+            params.itemId,
+            body.baseRevision,
+          ),
+        { params: CreationItemParams, body: CreationDeleteBody },
       )
   )
 }

@@ -1,6 +1,7 @@
-import { and, asc, count, desc, eq, ilike, isNotNull, isNull, or, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, ilike, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 import type {
   AiClassificationUpdate,
+  AiWriteGuard,
   ListTicketsFilter,
   TicketRepository,
 } from '../../../domain/ports/ticket-repository.port'
@@ -56,6 +57,7 @@ export class DrizzleTicketRepository implements TicketRepository {
         aiDraftAt: ticket.aiDraftAt,
         aiDraftEdited: ticket.aiDraftEdited,
         aiClassification: ticket.aiClassification,
+        aiGeneration: ticket.aiGeneration,
         aiStatus: ticket.aiStatus,
         aiNextAttemptAt: ticket.aiNextAttemptAt,
         aiAttempts: ticket.aiAttempts,
@@ -70,18 +72,14 @@ export class DrizzleTicketRepository implements TicketRepository {
   }
 
   async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
-    const conditions = []
+    // O cursor congela a admissão de tickets novos e o relógio usado pelo SLA.
+    const conditions = [lte(tickets.createdAt, now)]
     if (filter.status) conditions.push(eq(tickets.status, filter.status))
     if (filter.category) conditions.push(eq(tickets.category, filter.category))
     if (filter.q) {
       const pattern = `%${escapeLike(filter.q)}%`
-      conditions.push(
-        or(
-          ilike(tickets.subject, pattern),
-          ilike(tickets.requesterEmail, pattern),
-          ilike(sql`coalesce(${tickets.requesterName}, '')`, pattern),
-        ),
-      )
+      const searchText = sql<string>`coalesce(${tickets.subject}, '') || ' ' || coalesce(${tickets.requesterEmail}, '') || ' ' || coalesce(${tickets.requesterName}, '')`
+      conditions.push(ilike(searchText, pattern))
     }
     if (filter.assignment === 'assigned') conditions.push(isNotNull(tickets.assignedTo))
     if (filter.assignment === 'unassigned') conditions.push(isNull(tickets.assignedTo))
@@ -111,18 +109,33 @@ export class DrizzleTicketRepository implements TicketRepository {
       conditions.push(sql`${active} and ${riskAt} <= ${nowIso}::timestamptz`)
     }
 
-    const where = conditions.length > 0 ? and(...conditions) : undefined
     const operationalRank = sql<number>`case
       when ${active} and ${deadlineAt} <= ${nowIso}::timestamptz then 0
       when ${active} and ${riskAt} <= ${nowIso}::timestamptz then 1
       when ${active} then 2
       else 3
     end`
+    const pageConditions = [...conditions]
+    if (filter.cursor) {
+      const deadlineIso = filter.cursor.deadlineAt.toISOString()
+      const lastMessageIso = filter.cursor.lastMessageAt.toISOString()
+      pageConditions.push(sql`(
+        ${operationalRank} > ${filter.cursor.operationalRank}
+        or (${operationalRank} = ${filter.cursor.operationalRank}
+          and (${deadlineAt} > ${deadlineIso}::timestamptz
+            or (${deadlineAt} = ${deadlineIso}::timestamptz
+              and (${tickets.lastMessageAt} < ${lastMessageIso}::timestamptz
+                or (${tickets.lastMessageAt} = ${lastMessageIso}::timestamptz
+                  and ${tickets.id} > ${filter.cursor.id}::uuid)))))
+      )`)
+    }
+    const pageWhere = and(...pageConditions)
+    const countWhere = and(...conditions)
     const [items, [totalRow]] = await Promise.all([
       this.db
         .select()
         .from(tickets)
-        .where(where)
+        .where(pageWhere)
         // A fila põe risco antes de recência; `id` torna a paginação estável.
         .orderBy(
           asc(operationalRank),
@@ -130,9 +143,9 @@ export class DrizzleTicketRepository implements TicketRepository {
           desc(tickets.lastMessageAt),
           asc(tickets.id),
         )
-        .limit(filter.limit)
-        .offset(filter.offset),
-      this.db.select({ value: count() }).from(tickets).where(where),
+        // Uma linha extra informa `hasMore` sem depender do total mutável.
+        .limit(filter.limit + 1),
+      this.db.select({ value: count() }).from(tickets).where(countWhere),
     ])
     return { items, total: totalRow?.value ?? 0 }
   }
@@ -224,54 +237,93 @@ export class DrizzleTicketRepository implements TicketRepository {
     return this.byId(claimedId)
   }
 
-  async applyClassification(id: string, update: AiClassificationUpdate): Promise<void> {
-    const at = update.at.toISOString()
+  async applyClassification(
+    id: string,
+    guard: AiWriteGuard,
+    update: AiClassificationUpdate,
+  ): Promise<boolean> {
     // Categoria só quando não é manual; prioridade só quando ainda é nula.
-    await this.connection.sql`
-      update helpdesk.tickets set
-        ai_summary = ${update.summary},
-        ai_summary_at = ${at},
-        ai_classification = ${JSON.stringify(update.classification)}::jsonb,
-        category = case when category_manual then category else ${update.category}::helpdesk.ticket_category end,
-        priority = coalesce(priority, ${update.priority}::helpdesk.ticket_priority),
-        updated_at = ${at}
-      where id = ${id}
-    `
+    const updated = await this.db
+      .update(tickets)
+      .set({
+        aiSummary: update.summary,
+        aiSummaryAt: update.at,
+        aiClassification: update.classification,
+        category: sql`case when ${tickets.categoryManual} then ${tickets.category} else ${update.category}::helpdesk.ticket_category end`,
+        priority: sql`coalesce(${tickets.priority}, ${update.priority}::helpdesk.ticket_priority)`,
+        updatedAt: update.at,
+      })
+      .where(this.aiWriteWhere(id, guard))
+      .returning({ id: tickets.id })
+    return updated.length > 0
   }
 
-  async applyDraft(id: string, draft: string, at: Date): Promise<void> {
-    const iso = at.toISOString()
-    await this.connection.sql`
-      update helpdesk.tickets set
-        ai_draft = ${draft}, ai_draft_at = ${iso}, ai_draft_edited = false, updated_at = ${iso}
-      where id = ${id}
-    `
+  async applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean> {
+    const updated = await this.db
+      .update(tickets)
+      .set({ aiDraft: draft, aiDraftAt: at, aiDraftEdited: false, updatedAt: at })
+      .where(this.aiWriteWhere(id, guard))
+      .returning({ id: tickets.id })
+    return updated.length > 0
   }
 
-  async markAiDone(id: string, at: Date): Promise<void> {
-    const iso = at.toISOString()
-    await this.connection.sql`
-      update helpdesk.tickets set
-        ai_status = 'done', ai_last_error = null, ai_next_attempt_at = null, ai_attempts = 0, updated_at = ${iso}
-      where id = ${id}
-    `
+  async markAiDone(id: string, guard: AiWriteGuard, at: Date): Promise<boolean> {
+    const updated = await this.db
+      .update(tickets)
+      .set({
+        aiStatus: 'done',
+        aiLastError: null,
+        aiNextAttemptAt: null,
+        aiAttempts: 0,
+        updatedAt: at,
+      })
+      .where(this.aiWriteWhere(id, guard))
+      .returning({ id: tickets.id })
+    return updated.length > 0
   }
 
-  async scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void> {
-    await this.connection.sql`
-      update helpdesk.tickets set
-        ai_status = 'pending', ai_next_attempt_at = ${nextAt.toISOString()},
-        ai_last_error = ${error.slice(0, 500)}, updated_at = ${at.toISOString()}
-      where id = ${id}
-    `
+  async scheduleAiRetry(
+    id: string,
+    guard: AiWriteGuard,
+    nextAt: Date,
+    error: string,
+    at: Date,
+  ): Promise<boolean> {
+    const updated = await this.db
+      .update(tickets)
+      .set({
+        aiStatus: 'pending',
+        aiNextAttemptAt: nextAt,
+        aiLastError: error.slice(0, 500),
+        updatedAt: at,
+      })
+      .where(this.aiWriteWhere(id, guard))
+      .returning({ id: tickets.id })
+    return updated.length > 0
   }
 
-  async markAiFailed(id: string, error: string, at: Date): Promise<void> {
-    const iso = at.toISOString()
-    await this.connection.sql`
-      update helpdesk.tickets set
-        ai_status = 'failed', ai_last_error = ${error.slice(0, 500)}, ai_next_attempt_at = null, updated_at = ${iso}
-      where id = ${id}
-    `
+  async markAiFailed(id: string, guard: AiWriteGuard, error: string, at: Date): Promise<boolean> {
+    const updated = await this.db
+      .update(tickets)
+      .set({
+        aiStatus: 'failed',
+        aiLastError: error.slice(0, 500),
+        aiNextAttemptAt: null,
+        updatedAt: at,
+      })
+      .where(this.aiWriteWhere(id, guard))
+      .returning({ id: tickets.id })
+    return updated.length > 0
+  }
+
+  private aiWriteWhere(id: string, guard: AiWriteGuard) {
+    const conditions = [eq(tickets.id, id), eq(tickets.aiGeneration, guard.generation)]
+    if (guard.processingAttempt !== undefined) {
+      conditions.push(
+        eq(tickets.aiStatus, 'processing'),
+        eq(tickets.aiAttempts, guard.processingAttempt),
+      )
+    }
+    return and(...conditions)
   }
 }

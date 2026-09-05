@@ -1,29 +1,30 @@
 /**
- * Rótulos e cores de status/categoria/prioridade dos tickets. PURO
- * (unit-testado) — ESPELHO dos enums do @sistemazero/helpdesk
- * (`interfaces/http/dtos.ts` e o domínio de ticket); mudou lá, mude aqui.
+ * Rótulos semânticos vêm do contrato compartilhado; somente as cores do
+ * console são definidas aqui. Módulo puro e coberto por testes.
  */
 
-import type { TicketCategory, TicketPriority, TicketStatus } from './types'
+import {
+  CATEGORY_LABELS,
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  TICKET_CATEGORIES,
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+  type TicketCategory,
+  type TicketPriority,
+  type TicketStatus,
+} from '@sistemazero/helpdesk-contracts'
+
+export {
+  CATEGORY_LABELS,
+  PRIORITY_LABELS,
+  STATUS_LABELS,
+  TICKET_CATEGORIES,
+  TICKET_PRIORITIES,
+  TICKET_STATUSES,
+}
 
 // ── Status ──
-
-export const TICKET_STATUSES = [
-  'new',
-  'open',
-  'waiting',
-  'resolved',
-  'closed',
-] as const satisfies readonly TicketStatus[]
-
-/** Rótulos PT por status (chips de filtro e badges da caixa de entrada). */
-export const STATUS_LABELS: Record<TicketStatus, string> = {
-  new: 'Novo',
-  open: 'Aberto',
-  waiting: 'Aguardando resposta',
-  resolved: 'Resolvido',
-  closed: 'Fechado',
-}
 
 /** Classes de cor por status (tokens do tema — mesmo padrão dos badges do marketing-app). */
 export const STATUS_COLORS: Record<TicketStatus, string> = {
@@ -36,25 +37,6 @@ export const STATUS_COLORS: Record<TicketStatus, string> = {
 
 // ── Categorias ──
 
-export const TICKET_CATEGORIES = [
-  'curso_acesso',
-  'problema_tecnico',
-  'studio',
-  'pagamento_reembolso',
-  'parceria_comercial',
-  'outro',
-] as const satisfies readonly TicketCategory[]
-
-/** Rótulos PT por categoria (badges e filtros da fila). */
-export const CATEGORY_LABELS: Record<TicketCategory, string> = {
-  curso_acesso: 'Curso e acesso',
-  problema_tecnico: 'Problema técnico',
-  studio: 'Studio',
-  pagamento_reembolso: 'Pagamento e reembolso',
-  parceria_comercial: 'Parceria e comercial',
-  outro: 'Outro',
-}
-
 /** Classes de cor por categoria (tokens do tema). */
 export const CATEGORY_COLORS: Record<TicketCategory, string> = {
   curso_acesso: 'bg-chart-2/15 text-chart-2',
@@ -66,19 +48,6 @@ export const CATEGORY_COLORS: Record<TicketCategory, string> = {
 }
 
 // ── Prioridades ──
-
-export const TICKET_PRIORITIES = [
-  'baixa',
-  'normal',
-  'alta',
-] as const satisfies readonly TicketPriority[]
-
-/** Rótulos PT por prioridade. */
-export const PRIORITY_LABELS: Record<TicketPriority, string> = {
-  baixa: 'Baixa',
-  normal: 'Normal',
-  alta: 'Alta',
-}
 
 /** Classes de cor por prioridade (alta salta aos olhos; o resto fica discreto). */
 export const PRIORITY_COLORS: Record<TicketPriority, string> = {

@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'bun:test'
 import type { ClassifyResult, DraftResult } from '../../src/application/ai/prompts'
 import { TicketAiService } from '../../src/application/ai/ticket-ai.service'
-import { LlmError } from '../../src/domain/ports/llm-client.port'
+import {
+  type LlmClient,
+  type LlmCompleteInput,
+  LlmError,
+} from '../../src/domain/ports/llm-client.port'
 import { AiWorker } from '../../src/infrastructure/workers/ai-worker'
 import { FakeLlmClient } from '../fakes/ai'
-import { InMemoryMessageRepository, InMemoryTicketRepository } from '../fakes/in-memory'
+import {
+  InMemoryMessageRepository,
+  InMemoryTicketIngestionRepository,
+  InMemoryTicketRepository,
+} from '../fakes/in-memory'
 import { makeMessage, makeTicket } from '../helpers'
 
 const silentLogger = { debug() {}, info() {}, warn() {}, error() {} }
@@ -20,6 +28,39 @@ const CLS: ClassifyResult = {
 }
 const DRAFT: DraftResult = { reply: 'Vamos resolver isso já.', kbCoverage: 'partial' }
 
+class ControlledLlmClient implements LlmClient {
+  private firstResolve: ((value: unknown) => void) | null = null
+  private startedResolve: (() => void) | null = null
+  private calls = 0
+
+  isConfigured(): boolean {
+    return true
+  }
+
+  complete<T>(_input: LlmCompleteInput<T>): Promise<T> {
+    this.calls += 1
+    if (this.calls > 1) return Promise.resolve(DRAFT as T)
+    return new Promise<T>((resolve) => {
+      this.firstResolve = resolve as (value: unknown) => void
+      this.startedResolve?.()
+    })
+  }
+
+  waitForCall(): Promise<void> {
+    if (this.firstResolve) return Promise.resolve()
+    return new Promise<void>((resolve) => {
+      this.startedResolve = resolve
+    })
+  }
+
+  resolveFirst(value: unknown): void {
+    const resolve = this.firstResolve
+    if (!resolve) throw new Error('Nenhuma chamada da IA aguardando resposta')
+    this.firstResolve = null
+    resolve(value)
+  }
+}
+
 function build() {
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
@@ -31,6 +72,7 @@ function build() {
     async () => [],
     {
       maxThreadChars: 24_000,
+      maxKbChars: 12_000,
     },
     () => NOW,
   )
@@ -112,5 +154,62 @@ describe('AiWorker', () => {
     const t = await tickets.byId(id)
     expect(t?.aiStatus).toBe('failed')
     expect(t?.aiLastError).toContain('modelo indisponível')
+  })
+
+  it('não persiste resultado antigo nem fecha a geração criada por um inbound concorrente', async () => {
+    const tickets = new InMemoryTicketRepository()
+    const messages = new InMemoryMessageRepository()
+    const llm = new ControlledLlmClient()
+    const service = new TicketAiService(
+      llm,
+      tickets,
+      messages,
+      async () => [],
+      { maxThreadChars: 24_000, maxKbChars: 12_000 },
+      () => NOW,
+    )
+    const worker = new AiWorker({
+      tickets,
+      ticketAi: service,
+      now: () => NOW,
+      logger: silentLogger,
+      config: { intervalMs: 15_000, leaseMs: 120_000, maxAttempts: 3 },
+    })
+    const ticket = makeTicket({
+      aiStatus: 'pending',
+      aiNextAttemptAt: new Date(NOW.getTime() - 1000),
+    })
+    await tickets.create(ticket)
+    await messages.create(makeMessage(ticket.id))
+
+    const running = worker.tick()
+    await llm.waitForCall()
+
+    const inboundAt = new Date(NOW.getTime() + 60_000)
+    const ingestion = new InMemoryTicketIngestionRepository(tickets, messages)
+    await ingestion.ingest({
+      ticket: makeTicket({ gmailThreadId: ticket.gmailThreadId }),
+      message: {
+        ...makeMessage(ticket.id, {
+          gmailMessageId: 'gm-new-generation',
+          createdAt: inboundAt,
+          gmailInternalDate: inboundAt,
+        }),
+        gmailMessageId: 'gm-new-generation',
+      },
+      direction: 'inbound',
+      aiEnabled: true,
+      at: inboundAt,
+    })
+
+    llm.resolveFirst(CLS)
+    await running
+
+    expect(await tickets.byId(ticket.id)).toMatchObject({
+      aiStatus: 'pending',
+      aiSummary: null,
+      aiDraft: null,
+      aiAttempts: 0,
+    })
   })
 })

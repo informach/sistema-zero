@@ -35,6 +35,7 @@ function harness(options: { failFetch?: Set<string>; failApply?: Set<string> } =
   const rolledBackCopies: string[] = []
   const pushed: string[] = []
   const removed: string[] = []
+  const deletedLocal: string[] = []
   return {
     fetched,
     applied,
@@ -43,6 +44,7 @@ function harness(options: { failFetch?: Set<string>; failApply?: Set<string> } =
     rolledBackCopies,
     pushed,
     removed,
+    deletedLocal,
     fetch: async (s: CloudCreationSummary) => {
       fetched.push(s.itemId)
       return options.failFetch?.has(s.itemId) ? null : { payload: s.itemId }
@@ -67,6 +69,10 @@ function harness(options: { failFetch?: Set<string>; failApply?: Set<string> } =
     },
     remove: (itemId: string) => {
       removed.push(itemId)
+    },
+    deleteLocal: async (itemId: string) => {
+      deletedLocal.push(itemId)
+      return true
     },
   }
 }
@@ -276,6 +282,48 @@ describe('reconcileCreations', () => {
     expect(marks.tombstone('nave')).toBeUndefined()
   })
 
+  test('lápide vinda de outro aparelho apaga a cópia local intacta em vez de reenviá-la', async () => {
+    const h = harness()
+    const marks = createMemorySyncedMarks()
+    marks.set('nave', 100, 4)
+    const deleted = Object.assign(remote({ itemId: 'nave', revision: 5 }), { deletedAt: 500 })
+
+    const report = await reconcileCreations({
+      local: [{ id: 'nave', updatedAt: 100 }],
+      cloud: [deleted],
+      marks,
+      ...h,
+    })
+
+    expect(h.deletedLocal).toEqual(['nave'])
+    expect(h.pushed).toEqual([])
+    expect(h.applied).toEqual([])
+    expect(report).toEqual({ ...empty, tombstoned: 1 })
+    expect(marks.tombstone('nave')).toEqual({ at: 500, sent: true, revision: 5 })
+  })
+
+  test('lápide remota preserva como cópia uma edição local concorrente antes de apagar o id original', async () => {
+    const h = harness()
+    const marks = createMemorySyncedMarks()
+    marks.set('nave', 80, 4)
+    const deleted = Object.assign(remote({ itemId: 'nave', itemUpdatedAt: 80, revision: 5 }), {
+      deletedAt: 500,
+    })
+
+    const report = await reconcileCreations({
+      local: [{ id: 'nave', updatedAt: 90 }],
+      cloud: [deleted],
+      marks,
+      ...h,
+    })
+
+    expect(h.copied).toEqual(['nave'])
+    expect(h.committedCopies).toEqual(['nave'])
+    expect(h.deletedLocal).toEqual(['nave'])
+    expect(h.pushed).toEqual([])
+    expect(report).toEqual({ ...empty, conflicts: 1, tombstoned: 1 })
+  })
+
   test('lápide sem revisão nunca compara relógios: oculta o remoto e reenvia o DELETE', async () => {
     const h = harness()
     const marks = createMemorySyncedMarks()
@@ -329,6 +377,7 @@ describe('reconcileCreations', () => {
       },
       apply: h.apply,
       keepLocalCopy: h.keepLocalCopy,
+      deleteLocal: h.deleteLocal,
       push: h.push,
     })
     expect(h.fetched[0]).toBe('pecas')
@@ -347,6 +396,7 @@ describe('reconcileCreations', () => {
         fetch: () => new Promise<never>(() => {}),
         apply: h.apply,
         keepLocalCopy: h.keepLocalCopy,
+        deleteLocal: h.deleteLocal,
         push: h.push,
       }),
       Bun.sleep(100).then(() => 'hung' as const),
@@ -354,6 +404,29 @@ describe('reconcileCreations', () => {
 
     expect(result).not.toBe('hung')
     if (result !== 'hung') expect(result.deferred).toBe(1)
+  })
+
+  test('o orçamento também adia lápides; ids adiados nunca ressuscitam como upload', async () => {
+    const h = harness()
+    let clock = 0
+    const local = ['a', 'b', 'c'].map((id) => ({ id, updatedAt: 100 }))
+    const report = await reconcileCreations({
+      local,
+      cloud: local.map(({ id }) => remote({ itemId: id, deletedAt: 200, revision: 2 })),
+      marks: createMemorySyncedMarks(),
+      budgetMs: 10,
+      now: () => clock,
+      localUpdatedAt: async () => {
+        clock += 6
+        return 100
+      },
+      ...h,
+    })
+
+    expect(h.deletedLocal).toEqual(['a', 'b'])
+    expect(h.pushed).toEqual([])
+    expect(report.tombstoned).toBe(2)
+    expect(report.deferred).toBe(1)
   })
 
   test('descida que grava mal (`apply` false) conta como falha e não marca sincronia', async () => {

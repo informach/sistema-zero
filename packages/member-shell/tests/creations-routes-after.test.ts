@@ -85,7 +85,10 @@ describe('BFF das criações — o apagar no R2 fica para DEPOIS da resposta', (
 
   test('lixeira: idem (manifesto + partes em lote, depois da resposta)', async () => {
     const res = await routes.creationsDelete.DELETE(
-      new Request('https://x/api', { method: 'DELETE' }),
+      new Request('https://x/api', {
+        method: 'DELETE',
+        body: JSON.stringify({ baseRevision: 2 }),
+      }),
       item,
     )
     expect(res.status).toBe(200)

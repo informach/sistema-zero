@@ -55,7 +55,7 @@ export class GmailSyncWorker {
   start(): void {
     if (this.timer) return
     this.timer = setInterval(() => {
-      this.inFlight = this.tick()
+      if (!this.running) this.inFlight = this.tick()
     }, this.deps.config.intervalMs)
     this.deps.logger.info('gmail_sync.worker.started', { intervalMs: this.deps.config.intervalMs })
   }

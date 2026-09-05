@@ -61,6 +61,16 @@ export interface CreationUsage {
   countByTool: Record<CreationTool, number>
 }
 
+export interface CreationListCursor {
+  itemUpdatedAt: Date
+  itemId: string
+}
+
+export interface CreationListPage {
+  items: CreationSummary[]
+  nextCursor: CreationListCursor | null
+}
+
 /** O que o commit devolve. */
 export type CreationCommitResult =
   /**
@@ -84,9 +94,27 @@ export type CreationCommitResult =
   /** A reserva exigia partes que o cliente não confirmou ter enviado (a reserva fica viva). */
   | { ok: false; reason: 'parts-missing'; hashes: string[] }
 
+export type CreationDeleteResult =
+  | {
+      ok: true
+      deleted: boolean
+      storageRef: string | null
+      partRefs: CreationPartRef[]
+      revision: number
+    }
+  | { ok: false; reason: 'stale-base'; currentRevision: number }
+
 export interface CreationsRepository {
   /** Índice do perfil numa ferramenta — só itens VIVOS e já confirmados, mais novos primeiro. */
   list(userId: string, tool: CreationTool): Promise<CreationSummary[]>
+  /** Página estável do índice; busca `limit + 1` para produzir o próximo cursor. */
+  listPage(
+    userId: string,
+    tool: CreationTool,
+    options: { limit: number; cursor?: CreationListCursor },
+  ): Promise<CreationListPage>
+  /** Remove em lote lápides anteriores à janela de retenção. */
+  compactTombstones(cutoff: Date, limit: number): Promise<number>
   /** Uma linha (inclusive apagada — quem decide é o serviço). `null` = não existe. */
   get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null>
   usage(userId: string): Promise<CreationUsage>
@@ -120,20 +148,15 @@ export interface CreationsRepository {
   /**
    * Lixeira lógica: marca `deleted_at`, cancela a reserva em voo e SOLTA o blob (o
    * `storage_ref` corrente vai no retorno para o BFF apagar do R2 e é zerado na linha —
-   * blob apagado não pode ficar fora da quota para sempre). `deleted: false` = não
-   * existia (ou já apagada). A linha fica (id, nome, datas) para um restauro futuro do
-   * ÍNDICE; o conteúdo, se voltar, vem de um novo commit.
+   * blob apagado não pode ficar fora da quota para sempre). A operação só passa quando
+   * `baseRevision` é a revisão corrente; para uma linha inexistente, apenas a base 0 é
+   * idempotente. A linha fica para propagar a lápide aos outros aparelhos.
    */
   softDelete(
     userId: string,
     tool: CreationTool,
     itemId: string,
+    baseRevision: number,
     now: Date,
-  ): Promise<{
-    deleted: boolean
-    storageRef: string | null
-    /** As partes que a lixeira soltou (para o BFF apagar junto). */
-    partRefs: CreationPartRef[]
-    revision: number
-  }>
+  ): Promise<CreationDeleteResult>
 }

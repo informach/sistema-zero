@@ -12,6 +12,7 @@ import {
 } from '../../src/domain/creations/palette-library'
 import type {
   CreationCommitResult,
+  CreationListPage,
   CreationsRepository,
   CreationUploadInput,
   CreationUploadReservation,
@@ -22,17 +23,21 @@ import { resolveParts } from '../../src/infrastructure/persistence/drizzle/creat
 const key = (userId: string, tool: CreationTool, itemId: string): string =>
   `${userId}|${tool}|${itemId}`
 
-const summaryOf = (row: CreationRecord): CreationSummary => ({
-  tool: row.tool,
-  itemId: row.itemId,
-  name: row.name,
-  kind: row.kind,
-  itemUpdatedAt: row.itemUpdatedAt,
-  revision: row.revision,
-  bytes: row.bytes,
-  thumb: row.thumb,
-  syncedAt: row.syncedAt,
-})
+const summaryOf = (row: CreationRecord): CreationSummary => {
+  const summary: CreationSummary = {
+    tool: row.tool,
+    itemId: row.itemId,
+    name: row.name,
+    kind: row.kind,
+    itemUpdatedAt: row.itemUpdatedAt,
+    revision: row.revision,
+    bytes: row.bytes,
+    thumb: row.thumb,
+    syncedAt: row.syncedAt,
+  }
+  if (row.deletedAt) summary.deletedAt = row.deletedAt
+  return summary
+}
 
 const aliveCommitted = (row: CreationRecord): boolean =>
   row.deletedAt === null && row.storageRef !== null
@@ -48,9 +53,49 @@ export class InMemoryCreationsRepository implements CreationsRepository {
 
   async list(userId: string, tool: CreationTool): Promise<CreationSummary[]> {
     return [...this.rows.values()]
-      .filter((r) => r.userId === userId && r.tool === tool && aliveCommitted(r))
+      .filter(
+        (r) =>
+          r.userId === userId && r.tool === tool && (aliveCommitted(r) || r.deletedAt !== null),
+      )
       .sort((a, b) => b.itemUpdatedAt.getTime() - a.itemUpdatedAt.getTime())
       .map(summaryOf)
+  }
+
+  async listPage(
+    userId: string,
+    tool: CreationTool,
+    options: { limit: number; cursor?: { itemUpdatedAt: Date; itemId: string } },
+  ): Promise<CreationListPage> {
+    const all = (await this.list(userId, tool)).sort(
+      (a, b) =>
+        b.itemUpdatedAt.getTime() - a.itemUpdatedAt.getTime() || b.itemId.localeCompare(a.itemId),
+    )
+    const eligible = options.cursor
+      ? all.filter(
+          (item) =>
+            item.itemUpdatedAt < options.cursor!.itemUpdatedAt ||
+            (item.itemUpdatedAt.getTime() === options.cursor!.itemUpdatedAt.getTime() &&
+              item.itemId < options.cursor!.itemId),
+        )
+      : all
+    const items = eligible.slice(0, options.limit)
+    const last = items.at(-1)
+    return {
+      items,
+      nextCursor:
+        eligible.length > options.limit && last
+          ? { itemUpdatedAt: last.itemUpdatedAt, itemId: last.itemId }
+          : null,
+    }
+  }
+
+  async compactTombstones(cutoff: Date, limit: number): Promise<number> {
+    const doomed = [...this.rows.entries()]
+      .filter(([, row]) => row.deletedAt !== null && row.deletedAt < cutoff)
+      .sort((a, b) => (a[1].deletedAt as Date).getTime() - (b[1].deletedAt as Date).getTime())
+      .slice(0, limit)
+    for (const [rowKey] of doomed) this.rows.delete(rowKey)
+    return doomed.length
   }
 
   async get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null> {
@@ -111,8 +156,9 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     ) {
       return { ok: false, reason: 'items-per-tool' }
     }
-    if (input.baseRevision !== undefined && alive && input.baseRevision !== existing.revision) {
-      return { ok: false, reason: 'stale-base', currentRevision: existing.revision }
+    const currentRevision = existing?.revision ?? 0
+    if (input.baseRevision !== undefined && input.baseRevision !== currentRevision) {
+      return { ok: false, reason: 'stale-base', currentRevision }
     }
     const pending = {
       bytes: totalBytes,
@@ -237,18 +283,27 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     userId: string,
     tool: CreationTool,
     itemId: string,
+    baseRevision: number,
     now: Date,
-  ): Promise<{
-    deleted: boolean
-    storageRef: string | null
-    partRefs: CreationPartRef[]
-    revision: number
-  }> {
+  ): ReturnType<CreationsRepository['softDelete']> {
     const k = key(userId, tool, itemId)
     const existing = this.rows.get(k)
-    if (!existing) return { deleted: false, storageRef: null, partRefs: [], revision: 0 }
+    if (!existing) {
+      return baseRevision === 0
+        ? { ok: true, deleted: false, storageRef: null, partRefs: [], revision: 0 }
+        : { ok: false, reason: 'stale-base', currentRevision: 0 }
+    }
+    if (baseRevision !== existing.revision) {
+      return { ok: false, reason: 'stale-base', currentRevision: existing.revision }
+    }
     if (existing.deletedAt !== null) {
-      return { deleted: false, storageRef: null, partRefs: [], revision: existing.revision }
+      return {
+        ok: true,
+        deleted: false,
+        storageRef: null,
+        partRefs: [],
+        revision: existing.revision,
+      }
     }
     this.rows.set(k, {
       ...existing,
@@ -257,9 +312,11 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       storageRef: null,
       parts: [],
       bytes: 0,
+      thumb: null,
       syncedAt: now,
     })
     return {
+      ok: true,
       deleted: true,
       storageRef: existing.storageRef,
       partRefs: existing.parts,

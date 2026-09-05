@@ -81,3 +81,11 @@ describe('member-shell e catálogo', () => {
     expect(read('packages/catalog/scripts/seed.ts')).toContain("MOLDA_SKU = 'molda'")
   })
 })
+
+describe('documentação executável', () => {
+  test('o plano separa testes unitários do Playwright', () => {
+    const plan = read('docs/plans/2026-09-04-molda-design.md')
+    expect(plan).toContain('bun run typecheck && bun test src && bun run check')
+    expect(plan).not.toContain('bun run typecheck && bun test && bun run check')
+  })
+})

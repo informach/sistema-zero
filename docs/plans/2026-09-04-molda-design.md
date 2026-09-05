@@ -29,6 +29,10 @@ com **Modelo + Céu HDR + Textura de superfície**; peças **cubo + rampa + cili
 no **Inventor(a)** com **dois blocos novos no kit Jogo 3D** para o kit iniciante usar o que ela
 fez; produto próprio `molda` no catálogo, dentro do combo Comunidade dos Criadores.
 
+> **Adendo 05/09/2026:** o portão mudou para o **Explorador(a) de Mundos**
+> (`THREE_D_CREATION_MIN_LEVEL = 'explorer'`), decisão dela: o kit Jogo 3D, consumidor do que a
+> oficina produz, é recompensa desse posto. Motivo e copy em `docs/carreira-do-criador.md`.
+
 ## O que o estudo concluiu
 
 **Blockbench** (github.com/JannisX11/blockbench, GPL-3.0; Electron + web, Vue 2 + three 0.129):
@@ -528,6 +532,6 @@ Gateway e shims `api/creations/[tool]` são genéricos por `:tool`: zero mudanç
   descida noutro navegador; apagar num aparelho não volta no outro; 3 telas de bloqueio; equipe
   passa livre; tema escuro; 1366×768 sem rolagem da janela e janela de ~500 px; mobile: card no
   `/criar`, aba "Criar" acesa em `/molda`.
-- **Comandos**: `bun run typecheck && bun test && bun run check` em molda, core, members
+- **Comandos**: `bun run typecheck && bun test src && bun run check` em molda, core, members
   (+ `TEST_DATABASE_URL=... bun test tests/db`), member-shell (+ community), studio, community-kids
   (+ `bun run build:kids`); `bun run ci` (biome raiz). Um `three.module.js` só no build do kids.

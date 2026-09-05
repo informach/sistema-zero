@@ -19,7 +19,15 @@ export interface ListTicketsFilter {
   /** Busca LITERAL em subject/requester (escapeLike no adapter). */
   q?: string
   limit: number
-  offset: number
+  cursor: TicketQueueCursor | null
+}
+
+export interface TicketQueueCursor {
+  snapshotAt: Date
+  operationalRank: number
+  deadlineAt: Date
+  lastMessageAt: Date
+  id: string
 }
 
 /** Resultado da classificação da IA a persistir (guardas: categoria/prioridade). */
@@ -29,6 +37,13 @@ export interface AiClassificationUpdate {
   classification: AiClassification
   summary: string
   at: Date
+}
+
+/** CAS das escritas assíncronas; `processingAttempt` separa leases da mesma conversa. */
+export interface AiWriteGuard {
+  generation: number
+  /** Presente no worker; ausente nas ações síncronas disparadas pela equipe. */
+  processingAttempt?: number
 }
 
 export interface TicketRepository {
@@ -54,13 +69,23 @@ export interface TicketRepository {
    * quando não foi escolhida à mão (`category_manual`), a PRIORIDADE só quando
    * ainda é nula (preserva a escolha humana). NÃO mexe em `version`.
    */
-  applyClassification(id: string, update: AiClassificationUpdate): Promise<void>
+  applyClassification(
+    id: string,
+    guard: AiWriteGuard,
+    update: AiClassificationUpdate,
+  ): Promise<boolean>
   /** Persiste o rascunho da IA (ai_draft/ai_draft_at, ai_draft_edited=false). */
-  applyDraft(id: string, draft: string, at: Date): Promise<void>
+  applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean>
   /** ai_status='done', zera erro/tentativas. */
-  markAiDone(id: string, at: Date): Promise<void>
+  markAiDone(id: string, guard: AiWriteGuard, at: Date): Promise<boolean>
   /** Falha transitória: volta a `pending` com backoff + erro (attempts já bumpado no claim). */
-  scheduleAiRetry(id: string, nextAt: Date, error: string, at: Date): Promise<void>
+  scheduleAiRetry(
+    id: string,
+    guard: AiWriteGuard,
+    nextAt: Date,
+    error: string,
+    at: Date,
+  ): Promise<boolean>
   /** Teto de tentativas: `failed` (o ticket segue 100% usável sem IA). */
-  markAiFailed(id: string, error: string, at: Date): Promise<void>
+  markAiFailed(id: string, guard: AiWriteGuard, error: string, at: Date): Promise<boolean>
 }

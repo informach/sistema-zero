@@ -86,7 +86,20 @@ export function createCreationCleanupWorkerRoutes(deps: {
             )
           }
         }
-        return NextResponse.json({ completed, failed })
+        let compacted = 0
+        let tombstoneCompactionFailed = false
+        try {
+          const response = await deps.gateway.gatewayFetchHmac<{ compacted?: number }>(
+            '/members/creations/tombstones/compact',
+            { method: 'POST' },
+          )
+          if (response.status >= 400) tombstoneCompactionFailed = true
+          else compacted = response.body?.compacted ?? 0
+        } catch {
+          // A limpeza de contas já concluída não volta para a fila por uma falha independente.
+          tombstoneCompactionFailed = true
+        }
+        return NextResponse.json({ completed, failed, compacted, tombstoneCompactionFailed })
       },
     },
   }

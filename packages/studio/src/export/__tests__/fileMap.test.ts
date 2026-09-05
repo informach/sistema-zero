@@ -109,6 +109,41 @@ describe('buildClassicFileMap', () => {
     expect(warnings).toEqual([])
   })
 
+  it('assets 3D do Molda entram no runtime do site publicado, mesmo sem imagem ou áudio', async () => {
+    const modelDataUrl = 'data:model/gltf-binary;base64,Z2xURgIAAAAMAAAA'
+    const skyDataUrl = 'data:image/vnd.radiance;base64,Iz9SQURJQU5DRQo='
+    const { files } = await buildClassicFileMap(
+      classicProject({
+        assets: [
+          {
+            id: 'modelo-1',
+            name: 'nave',
+            kind: 'model3d',
+            dataUrl: modelDataUrl,
+            originalFileName: 'nave.glb',
+            source: 'upload',
+          },
+          {
+            id: 'ceu-1',
+            name: 'fim-de-tarde',
+            kind: 'environment3d',
+            dataUrl: skyDataUrl,
+            originalFileName: 'fim-de-tarde.hdr',
+            source: 'upload',
+          },
+        ],
+      }),
+      identityMinifiers,
+    )
+
+    const runtime = String(files['public/sz-assets.js'])
+    expect(runtime).toContain('__SZGAME_ASSETS_3D')
+    expect(runtime).toContain(modelDataUrl)
+    expect(runtime).toContain('nave.glb')
+    expect(runtime).toContain(skyDataUrl)
+    expect(runtime).toContain('fim-de-tarde.hdr')
+  })
+
   it('placement inline (css/js vazios): nao emite arquivos externos vazios', async () => {
     const { files } = await buildClassicFileMap(
       classicProject({

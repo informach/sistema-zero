@@ -1,0 +1,1 @@
+CREATE INDEX "creations_tombstone_cleanup_idx" ON "members"."creations" USING btree ("deleted_at") WHERE "members"."creations"."deleted_at" is not null;

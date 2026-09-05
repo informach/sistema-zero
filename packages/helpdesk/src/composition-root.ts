@@ -10,7 +10,13 @@ import { CustomerTicketService } from './application/tickets/customer-ticket.ser
 import { IngestService } from './application/tickets/ingest.service'
 import { ReplyService } from './application/tickets/reply.service'
 import { TicketService } from './application/tickets/ticket.service'
-import { aiConfig, type Env, gmailConfig, portalNotifyConfig } from './infrastructure/config/env'
+import {
+  aiConfig,
+  type Env,
+  gmailConfig,
+  portalNotifyConfig,
+  portalUrls,
+} from './infrastructure/config/env'
 import { GoogleGmailClient } from './infrastructure/gateways/google/gmail-client'
 import { GmailOAuthProvider } from './infrastructure/gateways/google/gmail-oauth-provider'
 import { createGatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
@@ -22,6 +28,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleKbRepository } from './infrastructure/persistence/drizzle/kb.repository'
 import { DrizzleMessageRepository } from './infrastructure/persistence/drizzle/message.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
+import { DrizzlePortalNotificationOutboxRepository } from './infrastructure/persistence/drizzle/portal-notification-outbox.repository'
 import { DrizzleReplyDeliveryRepository } from './infrastructure/persistence/drizzle/reply-delivery.repository'
 import { DrizzleSettingsRepository } from './infrastructure/persistence/drizzle/settings.repository'
 import { DrizzleTicketRepository } from './infrastructure/persistence/drizzle/ticket.repository'
@@ -29,6 +36,7 @@ import { DrizzleTicketIngestionRepository } from './infrastructure/persistence/d
 import { createSecretBox } from './infrastructure/security/secret-box'
 import { AiWorker } from './infrastructure/workers/ai-worker'
 import { GmailSyncWorker } from './infrastructure/workers/gmail-sync-worker'
+import { PortalNotificationWorker } from './infrastructure/workers/portal-notification-worker'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -76,6 +84,7 @@ export function createApplication(env: Env): Application {
   const settingsRepo = new DrizzleSettingsRepository(db)
   const connectionRepo = new DrizzleConnectionRepository(connection)
   const oauthStateRepo = new DrizzleOAuthStateRepository(db)
+  const portalNotificationOutboxRepo = new DrizzlePortalNotificationOutboxRepository(db)
 
   // Grupo Google (F1): ausente = rotas de conexão/OAuth respondem 503, boot ok.
   const gmail = gmailConfig(env)
@@ -98,23 +107,20 @@ export function createApplication(env: Env): Application {
     })
   }
 
-  // Aviso de resposta do PORTAL (gateway → messaging), best-effort: sem o grupo, a
-  // resposta segue indo para a conversa; só o e-mail de aviso não sai.
+  // A resposta e o aviso entram na mesma transação. Sem transporte configurado
+  // em dev, os jobs ficam pendentes; em produção o grupo é obrigatório no boot.
   const notify = portalNotifyConfig(env)
   if (!notify) {
     logger.warn('messaging.not_configured', {
-      hint: 'GATEWAY_URL, HELPDESK_HMAC_SECRET, COMMUNITY_URL ou KIDS_COMMUNITY_URL ausentes — resposta no portal sai sem e-mail de aviso',
+      hint: 'GATEWAY_URL/HELPDESK_HMAC_SECRET ausentes — jobs de aviso ficarão pendentes até o worker ser configurado',
     })
   }
-  const portalNotifier = notify
-    ? {
-        messaging: createGatewayMessagingClient({
-          gatewayUrl: notify.gatewayUrl,
-          hmacSecret: notify.hmacSecret,
-          timeoutMs: notify.timeoutMs,
-        }),
-        urls: notify.urls,
-      }
+  const messaging = notify
+    ? createGatewayMessagingClient({
+        gatewayUrl: notify.gatewayUrl,
+        hmacSecret: notify.hmacSecret,
+        timeoutMs: notify.timeoutMs,
+      })
     : null
 
   // Casos de uso
@@ -169,7 +175,7 @@ export function createApplication(env: Env): Application {
     gmailAccountService,
     gmailClient,
     { fromName: env.HELPDESK_FROM_NAME },
-    portalNotifier,
+    portalUrls(env),
     now,
     idGen,
     logger,
@@ -189,10 +195,16 @@ export function createApplication(env: Env): Application {
     llmClient,
     ticketRepo,
     messageRepo,
-    // F4: artigos PUBLICADOS do KB entram no prompt do rascunho (o buildDraftPrompt
-    // injeta o bloco só quando não-vazio).
-    async () => (await kbRepo.listPublished()).map((a) => ({ title: a.title, content: a.content })),
-    { maxThreadChars: env.AI_MAX_THREAD_CHARS },
+    async () =>
+      (await kbRepo.listPublished(env.AI_KB_MAX_CANDIDATES)).map((article) => ({
+        title: article.title,
+        content: article.content,
+      })),
+    {
+      maxThreadChars: env.AI_MAX_THREAD_CHARS,
+      maxKbChars: env.AI_MAX_KB_CHARS,
+      onKbContextSelected: (stats) => logger.debug('ai.kb_context_selected', stats),
+    },
     now,
   )
 
@@ -230,6 +242,21 @@ export function createApplication(env: Env): Application {
           intervalMs: env.AI_WORKER_INTERVAL_MS,
           leaseMs: Math.max(env.AI_TIMEOUT_MS * 3, 120_000),
           maxAttempts: env.AI_MAX_ATTEMPTS,
+        },
+      })
+    : null
+
+  const portalNotificationWorker = messaging
+    ? new PortalNotificationWorker({
+        outbox: portalNotificationOutboxRepo,
+        messaging,
+        now,
+        logger,
+        config: {
+          intervalMs: env.PORTAL_NOTIFICATION_WORKER_INTERVAL_MS,
+          leaseMs: Math.max(env.PORTAL_NOTIFICATION_LEASE_MS, env.S2S_TIMEOUT_MS * 3),
+          retryBaseMs: env.PORTAL_NOTIFICATION_RETRY_BASE_MS,
+          retryMaxMs: env.PORTAL_NOTIFICATION_RETRY_MAX_MS,
         },
       })
     : null
@@ -284,7 +311,7 @@ export function createApplication(env: Env): Application {
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
 
-  // Retenção (fora do hot path): estados OAuth vencidos.
+  // Retenção (fora do hot path): estados OAuth vencidos e outbox já entregue.
   // Advisory xact-lock → só uma réplica limpa por ciclo (solta no commit/crash).
   const runRetentionCycle = async () => {
     await connection.sql.begin(async (gate) => {
@@ -294,11 +321,22 @@ export function createApplication(env: Env): Application {
       if (!row?.locked) return
       // ⚠️ ISO STRING (não `Date`) como parâmetro: no runtime Bun+postgres.js do
       // container de prod, bindar `Date` estoura (gotcha documentado do monorepo).
+      const retentionNow = now()
       const staleStates = await gate`
-        delete from helpdesk.oauth_states where expires_at < ${new Date().toISOString()}
+        delete from helpdesk.oauth_states where expires_at < ${retentionNow.toISOString()}
       `
-      if (staleStates.count > 0) {
-        logger.info('retention.pruned', { oauthStates: staleStates.count })
+      const sentOutboxBefore = new Date(
+        retentionNow.getTime() - env.RETENTION_SENT_OUTBOX_DAYS * 24 * 60 * 60_000,
+      ).toISOString()
+      const sentNotifications = await gate`
+        delete from helpdesk.portal_notification_outbox
+        where status = 'sent' and sent_at < ${sentOutboxBefore}
+      `
+      if (staleStates.count > 0 || sentNotifications.count > 0) {
+        logger.info('retention.pruned', {
+          oauthStates: staleStates.count,
+          sentPortalNotifications: sentNotifications.count,
+        })
       }
     })
   }
@@ -315,6 +353,7 @@ export function createApplication(env: Env): Application {
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       gmailSyncWorker?.start()
       aiWorker?.start()
+      portalNotificationWorker?.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -322,7 +361,11 @@ export function createApplication(env: Env): Application {
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
       // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
-      await Promise.all([gmailSyncWorker?.stop(), aiWorker?.stop()])
+      await Promise.all([
+        gmailSyncWorker?.stop(),
+        aiWorker?.stop(),
+        portalNotificationWorker?.stop(),
+      ])
       try {
         await server.stop()
       } catch {

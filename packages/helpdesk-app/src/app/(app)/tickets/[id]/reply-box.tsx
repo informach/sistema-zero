@@ -123,7 +123,7 @@ export function ReplyBox({
       </div>
       <p className="text-xs text-muted-foreground">
         {viaPortal
-          ? 'A resposta aparece na Ajuda do cliente na hora, e ele recebe um aviso por e-mail. '
+          ? 'A resposta aparece na Ajuda do cliente na hora; o aviso por e-mail é enfileirado e pode levar alguns instantes. '
           : 'A resposta vai por e-mail, na mesma conversa. '}
         Revise o texto antes de enviar. A IA prepara sugestões, mas nunca responde sozinha.
       </p>

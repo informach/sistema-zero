@@ -15,15 +15,15 @@ export class KbArticleNotFoundError extends DomainError {
 }
 
 // ── Validação (400) ──────────────────────────────────────────────────────────
-export class OAuthStateInvalidError extends DomainError {
-  readonly code = 'OAUTH_STATE_INVALID'
-  constructor(message = 'Autorização inválida ou expirada — comece a conexão de novo') {
-    super(message)
-  }
-}
 export class CustomerTicketCursorInvalidError extends DomainError {
   readonly code = 'CUSTOMER_TICKET_CURSOR_INVALID'
   constructor(message = 'Cursor de paginação inválido; atualize a lista e tente novamente') {
+    super(message)
+  }
+}
+export class TicketCursorInvalidError extends DomainError {
+  readonly code = 'TICKET_CURSOR_INVALID'
+  constructor(message = 'Cursor da fila inválido; atualize a lista e tente novamente') {
     super(message)
   }
 }
@@ -38,12 +38,6 @@ export class ConcurrencyConflictError extends DomainError {
 export class ConnectionNotConnectedError extends DomainError {
   readonly code = 'CONNECTION_NOT_CONNECTED'
   constructor(message = 'A caixa do Gmail não está conectada — conecte em Configurações') {
-    super(message)
-  }
-}
-export class InvalidTicketStateError extends DomainError {
-  readonly code = 'INVALID_TICKET_STATE'
-  constructor(message = 'Ação inválida para o estado atual do ticket') {
     super(message)
   }
 }

@@ -1330,6 +1330,7 @@ export const creations = members.table(
   (t) => [
     uniqueIndex('creations_user_tool_item_uq').on(t.userId, t.tool, t.itemId),
     index('creations_user_tool_idx').on(t.userId, t.tool, t.deletedAt),
+    index('creations_tombstone_cleanup_idx').on(t.deletedAt).where(sql`${t.deletedAt} is not null`),
     // Quota por perfil (`usageWith`: count + sum(bytes) dos vivos já confirmados) a cada
     // reserva E commit, sob o advisory lock do perfil: índice PARCIAL com `bytes` como
     // coluna final → index-only scan, sem heap fetch por linha (até 4.000 linhas/perfil).

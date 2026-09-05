@@ -189,6 +189,33 @@ describe('MoldaApp', () => {
     expect(persistence.snapshot()).toHaveLength(1)
   })
 
+  test('mantém os diálogos abertos e explica quando renomear ou apagar não pode ser salvo', async () => {
+    const persistence = createMemoryPersistence([makeSky(), makeTexture()])
+    render(<MoldaApp persistence={persistence} />)
+    await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+
+    persistence.save = async () => {
+      throw new Error('disco indisponível')
+    }
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.rename} grama` }))
+    const rename = await screen.findByRole('dialog')
+    fireEvent.change(within(rename).getByRole('textbox'), { target: { value: 'Terra' } })
+    fireEvent.click(within(rename).getByRole('button', { name: COPY.rename.save }))
+    expect((await within(rename).findByRole('alert')).textContent).toContain(COPY.toast.saveFailed)
+    expect(persistence.snapshot().find((asset) => asset.id === 'texture-1')?.name).toBe('grama')
+    fireEvent.click(within(rename).getByRole('button', { name: COPY.gallery.cancel }))
+
+    persistence.remove = async () => {
+      throw new Error('disco indisponível')
+    }
+    fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} grama` }))
+    const confirm = await screen.findByRole('dialog')
+    fireEvent.click(within(confirm).getByRole('button', { name: COPY.gallery.removeConfirm }))
+    expect(await screen.findByText(COPY.toast.saveFailed)).toBeDefined()
+    expect(screen.getByRole('dialog')).toBeDefined()
+    expect(persistence.snapshot().some((asset) => asset.id === 'texture-1')).toBe(true)
+  })
+
   test('duplicar cria a cópia -2', async () => {
     const persistence = createMemoryPersistence([makeModel()])
     render(<MoldaApp persistence={persistence} />)

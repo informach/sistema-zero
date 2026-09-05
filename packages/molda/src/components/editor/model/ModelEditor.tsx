@@ -49,26 +49,18 @@ import { prefersReducedMotion } from '../../../viewport/reducedMotion'
 import type { AtlasInfo, DragPatch, ViewName } from '../../../viewport/types'
 import { useViewport } from '../../../viewport/useViewport'
 import { Button } from '../../ui/Button'
-import { isMoldaDialogOpen } from '../../ui/Dialog'
 import { Download } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { EditorTopBar } from '../EditorTopBar'
 import { ApplyTextureDialog } from './ApplyTextureDialog'
 import { ColorsPanel } from './ColorsPanel'
+import { useModelEditorShortcuts, useModelThumbnail } from './modelEditorHooks'
 import { PaintToolbox } from './PaintToolbox'
 import { PartsPanel } from './PartsPanel'
 import { PropertiesPanel } from './PropertiesPanel'
 import { Toolbox } from './Toolbox'
 import { ViewportPane } from './ViewportPane'
-
-const THUMB_DELAY_MS = 700
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
-}
 
 function applyPatch(model: MoldaModelAsset, patch: DragPatch): MoldaModelAsset {
   let next = model
@@ -94,7 +86,7 @@ function ModeTabs({
           aria-pressed={mode === item}
           onClick={() => onMode(item)}
           className={clsx(
-            'min-h-9 rounded-full px-4 text-sm font-bold transition',
+            'min-h-11 rounded-full px-4 text-sm font-bold transition',
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
             mode === item
               ? 'bg-mld-accent text-mld-accent-fg'
@@ -228,39 +220,7 @@ export function ModelEditor({
     if (selectedId && !findPart(asset, selectedId)) session.getState().select(null)
   }, [asset, selectedId, session])
 
-  // Miniatura: foto do palco com atraso depois de cada mudança nas peças.
-  useEffect(() => {
-    if (!viewport) return
-    let timer: ReturnType<typeof setTimeout> | null = null
-    const schedule = (): void => {
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(() => {
-        timer = null
-        if (gestureBefore.current) {
-          schedule()
-          return
-        }
-        const url = viewport.renderThumb()
-        editor.getState().setThumb(url ?? undefined)
-      }, THUMB_DELAY_MS)
-    }
-    const unsubscribe = editor.subscribe((state, previous) => {
-      if (state.asset.kind !== 'model' || previous.asset.kind !== 'model') return
-      if (
-        state.asset.parts !== previous.asset.parts ||
-        state.asset.paletteId !== previous.asset.paletteId ||
-        state.asset.extraColors !== previous.asset.extraColors ||
-        state.asset.customPalette !== previous.asset.customPalette
-      ) {
-        schedule()
-      }
-    })
-    if (!editor.getState().asset.thumb) schedule()
-    return () => {
-      if (timer) clearTimeout(timer)
-      unsubscribe()
-    }
-  }, [viewport, editor])
+  useModelThumbnail(editor, viewport, gestureBefore)
 
   // ── Ações ─────────────────────────────────────────────────────────────────
 
@@ -358,77 +318,7 @@ export function ModelEditor({
     }
   }, [model, showToast])
 
-  // Atalhos (os de desfazer/refazer vivem na casca do editor).
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent): void {
-      if (event.defaultPrevented || isMoldaDialogOpen() || isTypingTarget(event.target)) return
-      const key = event.key.toLowerCase()
-      const state = session.getState()
-      if (key === 'escape' && state.placingShape) {
-        state.setPlacingShape(null)
-        return
-      }
-      if ((event.ctrlKey || event.metaKey) && key === 'd') {
-        event.preventDefault()
-        if (state.mode === 'build') duplicate()
-        return
-      }
-      if (event.ctrlKey || event.metaKey || event.altKey) return
-      if (state.mode === 'paint') {
-        switch (key) {
-          case 'p':
-            state.setPaintTool('pencil')
-            break
-          case 'e':
-            state.setPaintTool('eraser')
-            break
-          case 'g':
-            state.setPaintTool('fillFace')
-            break
-          case 'i':
-            state.setPaintTool('picker')
-            break
-          case 'm':
-            state.toggleMirrorPaint()
-            break
-          case '1':
-          case '2':
-          case '3':
-            state.setBrushSize(Number(key) as BrushSize)
-            break
-          default:
-            return
-        }
-        return
-      }
-      switch (key) {
-        case 'v':
-          state.setTool('move')
-          break
-        case 'r':
-          state.setTool('rotate')
-          break
-        case 't':
-          state.setTool('scale')
-          break
-        case 'b':
-          add('box')
-          break
-        case 'm':
-          toggleMirror()
-          break
-        case 'delete':
-        case 'backspace':
-          event.preventDefault()
-          remove()
-          break
-        default:
-          return
-      }
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [add, duplicate, remove, toggleMirror, session])
+  useModelEditorShortcuts({ session, add, duplicate, remove, toggleMirror })
 
   const selectedPart = selectedId ? (findPart(asset, selectedId) ?? null) : null
   const statusBase = COPY.editor.model.status(
@@ -537,7 +427,7 @@ export function ModelEditor({
             onClick={download}
             aria-label={COPY.editor.model.download.glb}
             title={COPY.editor.model.download.glb}
-            className="min-h-9 px-3 text-sm"
+            className="min-h-11 px-3 text-sm"
           >
             <Download aria-hidden="true" className="size-4" />
             <span className="hidden md:inline">{COPY.editor.model.download.glb}</span>

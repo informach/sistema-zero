@@ -14,110 +14,155 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().positive().default(3013),
-  // `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório para o private
-  // networking do Railway (`helpdesk.railway.internal` resolve IPv6).
-  HOST: z.string().min(1).default('::'),
-  // Corpos de e-mail/rascunhos em texto — 512 KB cobre com folga.
-  MAX_REQUEST_BODY_BYTES: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(512 * 1024),
+const EnvSchema = z
+  .object({
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+    PORT: z.coerce.number().int().positive().default(3013),
+    // `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório para o private
+    // networking do Railway (`helpdesk.railway.internal` resolve IPv6).
+    HOST: z.string().min(1).default('::'),
+    // Corpos de e-mail/rascunhos em texto — 512 KB cobre com folga.
+    MAX_REQUEST_BODY_BYTES: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(512 * 1024),
 
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
-  DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
-  // TLS na conexão (Postgres fora da rede privada). Default false (Railway
-  // private networking dispensa).
-  DATABASE_SSL: optionalBool(false),
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
+    DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
+    // TLS na conexão (Postgres fora da rede privada). Default false (Railway
+    // private networking dispensa).
+    DATABASE_SSL: optionalBool(false),
 
-  // Sentry. Ausente = desligado (dev/local).
-  SENTRY_DSN: z.string().url().optional(),
+    // Sentry. Ausente = desligado (dev/local).
+    SENTRY_DSN: z.string().url().optional(),
 
-  // Defesa em profundidade: o gateway injeta `x-internal-token` com ESTE valor e
-  // o helpdesk o exige em TODAS as rotas de negócio.
-  INTERNAL_API_TOKEN: z.string().min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres'),
+    // Defesa em profundidade: o gateway injeta `x-internal-token` com ESTE valor e
+    // o helpdesk o exige em TODAS as rotas de negócio.
+    INTERNAL_API_TOKEN: z.string().min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres'),
 
-  // RBAC (staff+) conferido nos X-Auth-User-* (o RBAC real é do gateway; defesa
-  // em profundidade). Em dev sem gateway pode-se desligar.
-  REQUIRE_STAFF: optionalBool(true),
+    // RBAC (staff+) conferido nos X-Auth-User-* (o RBAC real é do gateway; defesa
+    // em profundidade). Em dev sem gateway pode-se desligar.
+    REQUIRE_STAFF: optionalBool(true),
 
-  // ── OAuth Google (Gmail) — grupo ATÔMICO: qualquer um ausente → rotas de
-  // conexão/envio respondem 503 GMAIL_NOT_CONFIGURED (boot nunca quebra) ───────
-  // ⚠️ Client OAuth PRÓPRIO (separado do marketing), consent screen INTERNAL na
-  // org Workspace — app External em Testing expira o refresh token em 7 dias.
-  GOOGLE_CLIENT_ID: z.string().optional(),
-  GOOGLE_CLIENT_SECRET: z.string().optional(),
-  // Chave da secret-box (32 bytes em base64) — tokens NUNCA em claro no banco.
-  HELPDESK_TOKEN_ENC_KEY: z
-    .string()
-    .optional()
-    .refine((v) => v === undefined || Buffer.from(v, 'base64').length === 32, {
-      message: 'deve ser 32 bytes em base64',
-    }),
-  // Origem PÚBLICA do gateway (monta a redirect_uri fixa do callback OAuth).
-  OAUTH_PUBLIC_BASE_URL: z.string().url().optional(),
-  // URL do helpdesk-app (destino do 302 pós-callback: /configuracoes?connected=…).
-  HELPDESK_APP_URL: z.string().url().optional(),
-  OAUTH_STATE_TTL_MINUTES: z.coerce.number().int().positive().default(10),
-  // Nome de exibição no From das respostas (`From: <nome> <contato@…>`).
-  HELPDESK_FROM_NAME: z.string().min(1).default('Sistema Zero'),
-  // O serviço atende uma única caixa compartilhada. O callback OAuth confere o
-  // e-mail retornado por `users.getProfile` antes de persistir credenciais.
-  HELPDESK_MAILBOX_ADDRESS: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email('HELPDESK_MAILBOX_ADDRESS deve ser um e-mail válido')
-    .default('contato@sistemazero.com.br'),
+    // ── OAuth Google (Gmail) — grupo ATÔMICO: qualquer um ausente → rotas de
+    // conexão/envio respondem 503 GMAIL_NOT_CONFIGURED (boot nunca quebra) ───────
+    // ⚠️ Client OAuth PRÓPRIO (separado do marketing), consent screen INTERNAL na
+    // org Workspace — app External em Testing expira o refresh token em 7 dias.
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    // Chave da secret-box (32 bytes em base64) — tokens NUNCA em claro no banco.
+    HELPDESK_TOKEN_ENC_KEY: z
+      .string()
+      .optional()
+      .refine((v) => v === undefined || Buffer.from(v, 'base64').length === 32, {
+        message: 'deve ser 32 bytes em base64',
+      }),
+    // Origem PÚBLICA do gateway (monta a redirect_uri fixa do callback OAuth).
+    OAUTH_PUBLIC_BASE_URL: z.string().url().optional(),
+    // URL do helpdesk-app (destino do 302 pós-callback: /configuracoes?connected=…).
+    HELPDESK_APP_URL: z.string().url().optional(),
+    OAUTH_STATE_TTL_MINUTES: z.coerce.number().int().positive().default(10),
+    // Nome de exibição no From das respostas (`From: <nome> <contato@…>`).
+    HELPDESK_FROM_NAME: z.string().min(1).default('Sistema Zero'),
+    // O serviço atende uma única caixa compartilhada. O callback OAuth confere o
+    // e-mail retornado por `users.getProfile` antes de persistir credenciais.
+    HELPDESK_MAILBOX_ADDRESS: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email('HELPDESK_MAILBOX_ADDRESS deve ser um e-mail válido')
+      .default('contato@sistemazero.com.br'),
 
-  // ── Sync do Gmail (gmail-sync-worker) ────────────────────────────────────────
-  GMAIL_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(45_000),
-  GMAIL_SYNC_LEASE_MS: z.coerce.number().int().positive().default(120_000),
-  GMAIL_SYNC_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
-  // Janela do backfill inicial (query do Gmail) — só na 1ª conexão/reset.
-  GMAIL_BACKFILL_QUERY: z.string().min(1).default('newer_than:7d'),
-  GMAIL_FETCH_BATCH_SIZE: z.coerce.number().int().positive().default(25),
-  // Refresh lazy do access token com esta folga (o poller mantém tudo fresco).
-  TOKEN_REFRESH_MARGIN_MS: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(5 * 60_000),
+    // ── Sync do Gmail (gmail-sync-worker) ────────────────────────────────────────
+    GMAIL_POLL_INTERVAL_MS: z.coerce.number().int().positive().default(45_000),
+    GMAIL_SYNC_LEASE_MS: z.coerce.number().int().positive().default(120_000),
+    GMAIL_SYNC_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+    // Janela do backfill inicial (query do Gmail) — só na 1ª conexão/reset.
+    GMAIL_BACKFILL_QUERY: z.string().min(1).default('newer_than:7d'),
+    GMAIL_FETCH_BATCH_SIZE: z.coerce.number().int().positive().default(25),
+    // Refresh lazy do access token com esta folga (o poller mantém tudo fresco).
+    TOKEN_REFRESH_MARGIN_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(5 * 60_000),
 
-  // ── IA via OpenRouter — fail-soft: ausente → tickets sem IA (ai_status
-  // `skipped`), tudo mais funciona ─────────────────────────────────────────────
-  OPENROUTER_API_KEY: z.string().optional(),
-  OPENROUTER_HELPDESK_MODEL: z.string().optional(),
-  OPENROUTER_MODEL: z.string().optional(),
-  OPENROUTER_REFERER: z.string().url().optional(),
-  AI_WORKER_INTERVAL_MS: z.coerce.number().int().positive().default(15_000),
-  AI_MAX_ATTEMPTS: z.coerce.number().int().positive().default(3),
-  AI_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
-  // Clamp da thread no prompt (caracteres) — e-mails longos não estouram contexto.
-  AI_MAX_THREAD_CHARS: z.coerce.number().int().positive().default(24_000),
+    // ── IA via OpenRouter — fail-soft: ausente → tickets sem IA (ai_status
+    // `skipped`), tudo mais funciona ─────────────────────────────────────────────
+    OPENROUTER_API_KEY: z.string().optional(),
+    OPENROUTER_HELPDESK_MODEL: z.string().optional(),
+    OPENROUTER_MODEL: z.string().optional(),
+    OPENROUTER_REFERER: z.string().url().optional(),
+    AI_WORKER_INTERVAL_MS: z.coerce.number().int().positive().default(15_000),
+    AI_MAX_ATTEMPTS: z.coerce.number().int().positive().default(3),
+    AI_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+    // Clamp da thread no prompt (caracteres) — e-mails longos não estouram contexto.
+    AI_MAX_THREAD_CHARS: z.coerce.number().int().positive().default(24_000),
+    // O banco devolve um conjunto finito; a seleção lexical aplica o limite final.
+    AI_KB_MAX_CANDIDATES: z.coerce.number().int().positive().max(500).default(100),
+    AI_MAX_KB_CHARS: z.coerce.number().int().positive().default(12_000),
 
-  // ── Aviso por e-mail da resposta do PORTAL (gateway → messaging, consumer HMAC
-  // `helpdesk`) — grupo ATÔMICO: qualquer um ausente → a resposta no portal segue
-  // funcionando, só o e-mail de aviso não sai (boot loga `messaging.not_configured`)
-  GATEWAY_URL: z.string().url().optional(),
-  // MESMO valor do HELPDESK_HMAC_SECRET do gateway do mesmo ambiente.
-  HELPDESK_HMAC_SECRET: z.string().min(16).optional(),
-  S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
-  // Origens PÚBLICAS das áreas do aluno — montam o link do aviso (mesmos nomes
-  // usados pelo auth e pelo members).
-  COMMUNITY_URL: z.string().url().optional(),
-  KIDS_COMMUNITY_URL: z.string().url().optional(),
+    // ── Aviso por e-mail da resposta do PORTAL (outbox → gateway → messaging,
+    // consumer HMAC `helpdesk`). Produção exige o grupo completo; em dev sem
+    // transporte o job continua persistido.
+    GATEWAY_URL: z.string().url().optional(),
+    // MESMO valor do HELPDESK_HMAC_SECRET do gateway do mesmo ambiente.
+    HELPDESK_HMAC_SECRET: z.string().min(16).optional(),
+    S2S_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+    // Origens PÚBLICAS das áreas do aluno — montam o link do aviso (mesmos nomes
+    // usados pelo auth e pelo members).
+    COMMUNITY_URL: z.string().url().optional(),
+    KIDS_COMMUNITY_URL: z.string().url().optional(),
+    PORTAL_NOTIFICATION_WORKER_INTERVAL_MS: z.coerce.number().int().positive().default(5_000),
+    PORTAL_NOTIFICATION_LEASE_MS: z.coerce.number().int().positive().default(60_000),
+    PORTAL_NOTIFICATION_RETRY_BASE_MS: z.coerce.number().int().positive().default(30_000),
+    PORTAL_NOTIFICATION_RETRY_MAX_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(6 * 60 * 60_000),
 
-  // Retenção e limpeza periódica (oauth_states vencidos).
-  RETENTION_CLEANUP_INTERVAL_MS: z.coerce
-    .number()
-    .int()
-    .positive()
-    .default(6 * 60 * 60 * 1000),
-})
+    // Retenção e limpeza periódica (oauth_states vencidos).
+    RETENTION_CLEANUP_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(6 * 60 * 60 * 1000),
+    RETENTION_SENT_OUTBOX_DAYS: z.coerce.number().int().positive().default(30),
+  })
+  .superRefine((env, ctx) => {
+    if (env.NODE_ENV === 'production') {
+      for (const key of [
+        'GATEWAY_URL',
+        'HELPDESK_HMAC_SECRET',
+        'COMMUNITY_URL',
+        'KIDS_COMMUNITY_URL',
+      ] as const) {
+        if (!env[key]) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'é obrigatória em produção para garantir o aviso persistente do portal',
+          })
+        }
+      }
+    }
+    if (env.PORTAL_NOTIFICATION_LEASE_MS <= env.S2S_TIMEOUT_MS) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['PORTAL_NOTIFICATION_LEASE_MS'],
+        message: 'deve ser maior que S2S_TIMEOUT_MS para evitar claims simultâneos',
+      })
+    }
+    if (env.PORTAL_NOTIFICATION_RETRY_BASE_MS > env.PORTAL_NOTIFICATION_RETRY_MAX_MS) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['PORTAL_NOTIFICATION_RETRY_BASE_MS'],
+        message: 'não pode exceder PORTAL_NOTIFICATION_RETRY_MAX_MS',
+      })
+    }
+  })
 
 export type Env = z.infer<typeof EnvSchema>
 
@@ -167,28 +212,29 @@ export function aiConfig(env: Env): {
 }
 
 /**
- * Config do aviso por e-mail das respostas do portal ou null (grupo atômico —
- * sem ele a resposta continua indo para a conversa; só o e-mail não sai).
+ * Transporte do aviso ou null. A URL do portal tem default local; produção
+ * valida o grupo completo no boot.
  */
 export function portalNotifyConfig(env: Env): {
   gatewayUrl: string
   hmacSecret: string
   timeoutMs: number
-  urls: { adult: string; kids: string }
 } | null {
-  if (
-    !env.GATEWAY_URL ||
-    !env.HELPDESK_HMAC_SECRET ||
-    !env.COMMUNITY_URL ||
-    !env.KIDS_COMMUNITY_URL
-  ) {
+  if (!env.GATEWAY_URL || !env.HELPDESK_HMAC_SECRET) {
     return null
   }
   return {
     gatewayUrl: env.GATEWAY_URL,
     hmacSecret: env.HELPDESK_HMAC_SECRET,
     timeoutMs: env.S2S_TIMEOUT_MS,
-    urls: { adult: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL },
+  }
+}
+
+/** URLs sempre disponíveis para o snapshot da outbox; produção é validada acima. */
+export function portalUrls(env: Env): { adult: string; kids: string } {
+  return {
+    adult: env.COMMUNITY_URL ?? 'http://localhost:3010',
+    kids: env.KIDS_COMMUNITY_URL ?? 'http://localhost:3011',
   }
 }
 

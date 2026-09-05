@@ -4,7 +4,7 @@
  * backup entra por um `<input type="file">` escondido.
  */
 import type { ChangeEvent, JSX } from 'react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../core/copy'
 import {
   EMPTY_GALLERY_FILTERS,
@@ -17,7 +17,7 @@ import { MOLDA_ASSET_KINDS, type MoldaAsset } from '../../core/model'
 import { type MoldaBackupReadFailure, readMoldaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importMoldaJson } from '../../export/projectJson'
-import { GALLERY_ZIP_FILE_NAME, zipGallery } from '../../export/zip'
+import { GALLERY_ZIP_FILE_NAME, GalleryZipError, zipGalleryBlob } from '../../export/zip'
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button, IconButton } from '../ui/Button'
 import { Download, ExternalLink, Loader2, Plus, Search, Upload, X } from '../ui/icons'
@@ -53,29 +53,44 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const [newOpen, setNewOpen] = useState(false)
   const [renameTarget, setRenameTarget] = useState<MoldaAsset | null>(null)
   const [removeTarget, setRemoveTarget] = useState<MoldaAsset | null>(null)
+  const [removing, setRemoving] = useState(false)
   const [packing, setPacking] = useState(false)
+  const [packingProgress, setPackingProgress] = useState(0)
   const [restoring, setRestoring] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const createButtonRef = useRef<HTMLButtonElement>(null)
+  const packingAbortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => () => packingAbortRef.current?.abort(), [])
 
   const visible = useMemo(() => filterGalleryAssets(assets, filters), [assets, filters])
   const filtered = hasActiveGalleryFilters(filters)
 
   async function downloadAll(): Promise<void> {
     if (assets.length === 0 || packing) return
+    const controller = new AbortController()
+    packingAbortRef.current = controller
     setPacking(true)
+    setPackingProgress(0)
     showToast(COPY.gallery.downloadPreparing)
     try {
-      const bytes = await zipGallery(assets)
-      const blob = new Blob([bytes.slice().buffer as ArrayBuffer], { type: 'application/zip' })
+      const blob = await zipGalleryBlob(assets, {
+        signal: controller.signal,
+        onProgress: ({ processed }) => setPackingProgress(processed),
+      })
       showToast(
         triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
           ? COPY.gallery.downloadReady
           : COPY.gallery.downloadFailed,
       )
-    } catch {
-      showToast(COPY.gallery.downloadFailed)
+    } catch (error) {
+      showToast(
+        error instanceof GalleryZipError && error.code === 'aborted'
+          ? COPY.gallery.downloadCancelled
+          : COPY.gallery.downloadFailed,
+      )
     } finally {
+      packingAbortRef.current = null
       setPacking(false)
     }
   }
@@ -116,9 +131,17 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
 
   async function confirmRemove(): Promise<void> {
     const target = removeTarget
+    if (!target || removing) return
+    setRemoving(true)
+    const result = await gallery.getState().remove(target.id)
+    setRemoving(false)
+    if (!result.ok) {
+      showToast(
+        result.reason === 'storage-budget' ? COPY.gallery.storageBudget : COPY.toast.saveFailed,
+      )
+      return
+    }
     setRemoveTarget(null)
-    if (!target) return
-    await gallery.getState().remove(target.id)
     showToast(COPY.toast.removed)
   }
 
@@ -147,7 +170,10 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
             title={COPY.gallery.importHint}
           >
             {restoring ? (
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+              <Loader2
+                aria-hidden="true"
+                className="size-4 animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <Upload aria-hidden="true" className="size-4" />
             )}
@@ -155,15 +181,20 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
           </Button>
           <Button
             variant="outline"
-            onClick={() => void downloadAll()}
-            disabled={assets.length === 0 || packing}
+            onClick={() => (packing ? packingAbortRef.current?.abort() : void downloadAll())}
+            disabled={assets.length === 0 && !packing}
           >
             {packing ? (
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+              <Loader2
+                aria-hidden="true"
+                className="size-4 animate-spin motion-reduce:animate-none"
+              />
             ) : (
               <Download aria-hidden="true" className="size-4" />
             )}
-            {COPY.gallery.downloadAll}
+            {packing
+              ? `${COPY.gallery.cancel} (${packingProgress}/${assets.length})`
+              : COPY.gallery.downloadAll}
           </Button>
           <Button ref={createButtonRef} variant="primary" onClick={() => setNewOpen(true)}>
             <Plus aria-hidden="true" className="size-5" />
@@ -172,6 +203,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
           <input
             ref={fileInputRef}
             type="file"
+            name="molda-backup"
             accept={RESTORE_ACCEPT}
             onChange={importFile}
             aria-label={COPY.gallery.importJson}
@@ -189,6 +221,8 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
           />
           <input
             type="search"
+            name="molda-gallery-search"
+            autoComplete="off"
             value={filters.query}
             onChange={(event) => setFilters({ ...filters, query: event.target.value })}
             placeholder={COPY.gallery.searchPlaceholder}
@@ -232,7 +266,10 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
       <div className="px-4 pb-2 text-sm text-mld-muted" role="status">
         {syncing ? (
           <span className="inline-flex items-center gap-2">
-            <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+            <Loader2
+              aria-hidden="true"
+              className="size-4 animate-spin motion-reduce:animate-none"
+            />
             {COPY.gallery.syncing}
           </span>
         ) : loaded ? (
@@ -301,6 +338,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         title={COPY.gallery.removeConfirmTitle}
         body={COPY.gallery.removeConfirmBody}
         confirmLabel={COPY.gallery.removeConfirm}
+        busy={removing}
         onConfirm={() => void confirmRemove()}
         onClose={() => setRemoveTarget(null)}
       />

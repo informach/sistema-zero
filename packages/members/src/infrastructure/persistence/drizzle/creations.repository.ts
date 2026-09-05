@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm'
+import { and, desc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm'
 import {
   type CreationPartRef,
   type CreationRecord,
@@ -16,6 +16,7 @@ import {
 } from '../../../domain/creations/palette-library'
 import type {
   CreationCommitResult,
+  CreationListPage,
   CreationsRepository,
   CreationUploadInput,
   CreationUploadReservation,
@@ -25,18 +26,35 @@ import type { Database } from './db'
 import { accountDeletionFences, creations } from './schema'
 
 type Row = typeof creations.$inferSelect
+type SummaryRow = Pick<
+  Row,
+  | 'tool'
+  | 'itemId'
+  | 'name'
+  | 'kind'
+  | 'itemUpdatedAt'
+  | 'revision'
+  | 'bytes'
+  | 'thumb'
+  | 'syncedAt'
+  | 'deletedAt'
+>
 
-const toSummary = (row: Row): CreationSummary => ({
-  tool: row.tool,
-  itemId: row.itemId,
-  name: row.name,
-  kind: row.kind,
-  itemUpdatedAt: row.itemUpdatedAt,
-  revision: row.revision,
-  bytes: row.bytes,
-  thumb: row.thumb,
-  syncedAt: row.syncedAt,
-})
+const toSummary = (row: SummaryRow): CreationSummary => {
+  const summary: CreationSummary = {
+    tool: row.tool,
+    itemId: row.itemId,
+    name: row.name,
+    kind: row.kind,
+    itemUpdatedAt: row.itemUpdatedAt,
+    revision: row.revision,
+    bytes: row.bytes,
+    thumb: row.thumb,
+    syncedAt: row.syncedAt,
+  }
+  if (row.deletedAt) summary.deletedAt = row.deletedAt
+  return summary
+}
 
 const toRecord = (row: Row): CreationRecord => ({
   ...toSummary(row),
@@ -90,6 +108,8 @@ const whereItem = (userId: string, tool: CreationTool, itemId: string) =>
 
 /** Só o que já COMMITOU alguma vez e está vivo: reserva sem upload não é uma criação guardada. */
 const whereAliveCommitted = () => and(isNull(creations.deletedAt), isNotNull(creations.storageRef))
+/** Itens vivos confirmados + lápides que precisam convergir nos outros aparelhos. */
+const whereIndexed = () => or(whereAliveCommitted(), isNotNull(creations.deletedAt))
 
 /**
  * Índice das criações "guardadas na conta". Toda operação é keyada por
@@ -113,11 +133,85 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         bytes: creations.bytes,
         thumb: creations.thumb,
         syncedAt: creations.syncedAt,
+        deletedAt: creations.deletedAt,
       })
       .from(creations)
-      .where(and(eq(creations.userId, userId), eq(creations.tool, tool), whereAliveCommitted()))
+      .where(and(eq(creations.userId, userId), eq(creations.tool, tool), whereIndexed()))
       .orderBy(desc(creations.itemUpdatedAt))
-    return rows.map((row) => ({ ...row }))
+    return rows.map((row) => {
+      const summary: CreationSummary = { ...row }
+      if (row.deletedAt === null) delete summary.deletedAt
+      return summary
+    })
+  }
+
+  async listPage(
+    userId: string,
+    tool: CreationTool,
+    options: { limit: number; cursor?: { itemUpdatedAt: Date; itemId: string } },
+  ): Promise<CreationListPage> {
+    const cursorWhere = options.cursor
+      ? or(
+          lt(creations.itemUpdatedAt, options.cursor.itemUpdatedAt),
+          and(
+            eq(creations.itemUpdatedAt, options.cursor.itemUpdatedAt),
+            lt(creations.itemId, options.cursor.itemId),
+          ),
+        )
+      : undefined
+    const rows = await this.db
+      .select({
+        tool: creations.tool,
+        itemId: creations.itemId,
+        name: creations.name,
+        kind: creations.kind,
+        itemUpdatedAt: creations.itemUpdatedAt,
+        revision: creations.revision,
+        bytes: creations.bytes,
+        // A lápide não precisa buscar a miniatura TOAST; o payload público também a omite.
+        thumb: sql<
+          string | null
+        >`case when ${creations.deletedAt} is null then ${creations.thumb} else null end`,
+        syncedAt: creations.syncedAt,
+        deletedAt: creations.deletedAt,
+      })
+      .from(creations)
+      .where(
+        and(eq(creations.userId, userId), eq(creations.tool, tool), whereIndexed(), cursorWhere),
+      )
+      .orderBy(desc(creations.itemUpdatedAt), desc(creations.itemId))
+      .limit(options.limit + 1)
+    const hasNext = rows.length > options.limit
+    const pageRows = hasNext ? rows.slice(0, options.limit) : rows
+    const last = pageRows.at(-1)
+    return {
+      items: pageRows.map(toSummary),
+      nextCursor:
+        hasNext && last ? { itemUpdatedAt: last.itemUpdatedAt, itemId: last.itemId } : null,
+    }
+  }
+
+  async compactTombstones(cutoff: Date, limit: number): Promise<number> {
+    return this.db.transaction(async (tx) => {
+      const doomed = await tx
+        .select({ id: creations.id })
+        .from(creations)
+        .where(and(isNotNull(creations.deletedAt), lt(creations.deletedAt, cutoff)))
+        .orderBy(creations.deletedAt)
+        .limit(limit)
+        .for('update', { skipLocked: true })
+      if (doomed.length === 0) return 0
+      const removed = await tx
+        .delete(creations)
+        .where(
+          inArray(
+            creations.id,
+            doomed.map((row) => row.id),
+          ),
+        )
+        .returning({ id: creations.id })
+      return removed.length
+    })
   }
 
   async get(userId: string, tool: CreationTool, itemId: string): Promise<CreationRecord | null> {
@@ -232,12 +326,11 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       ) {
         return { ok: false, reason: 'items-per-tool' }
       }
-      // Base vencida: o aparelho conhece a revisão N, mas a corrente é outra (alguém subiu
-      // depois). Só para linhas VIVAS — uma linha apagada (ou inexistente) pode ser
-      // ressuscitada por qualquer base: nada vivo é sobrescrito, a edição posterior vence
-      // a lixeira e o outro aparelho baixa de volta.
-      if (input.baseRevision !== undefined && alive && input.baseRevision !== existing.revision) {
-        return { ok: false, reason: 'stale-base', currentRevision: existing.revision }
+      // A base é sempre comparada à revisão autoritativa, inclusive depois da compactação.
+      // Isso impede uma edição velha de ressuscitar uma lápide ou item já removido do índice.
+      const currentRevision = existing?.revision ?? 0
+      if (input.baseRevision !== undefined && input.baseRevision !== currentRevision) {
+        return { ok: false, reason: 'stale-base', currentRevision }
       }
 
       const pending = {
@@ -406,13 +499,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     userId: string,
     tool: CreationTool,
     itemId: string,
+    baseRevision: number,
     now: Date,
-  ): Promise<{
-    deleted: boolean
-    storageRef: string | null
-    partRefs: CreationPartRef[]
-    revision: number
-  }> {
+  ): ReturnType<CreationsRepository['softDelete']> {
     return this.db.transaction(async (tx) => {
       const [row] = await tx
         .select({
@@ -425,9 +514,16 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .where(whereItem(userId, tool, itemId))
         .limit(1)
         .for('update')
-      if (!row) return { deleted: false, storageRef: null, partRefs: [], revision: 0 }
+      if (!row) {
+        return baseRevision === 0
+          ? { ok: true, deleted: false, storageRef: null, partRefs: [], revision: 0 }
+          : { ok: false, reason: 'stale-base', currentRevision: 0 }
+      }
+      if (baseRevision !== row.revision) {
+        return { ok: false, reason: 'stale-base', currentRevision: row.revision }
+      }
       if (row.deletedAt !== null) {
-        return { deleted: false, storageRef: null, partRefs: [], revision: row.revision }
+        return { ok: true, deleted: false, storageRef: null, partRefs: [], revision: row.revision }
       }
       await tx
         .update(creations)
@@ -440,10 +536,12 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           storageRef: null,
           parts: [],
           bytes: 0,
+          thumb: null,
           syncedAt: now,
         })
         .where(whereItem(userId, tool, itemId))
       return {
+        ok: true,
         deleted: true,
         storageRef: row.storageRef,
         partRefs: sanitizeParts(row.parts),

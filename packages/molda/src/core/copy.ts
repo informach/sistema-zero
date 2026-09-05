@@ -5,7 +5,7 @@
  */
 
 import type { SkyPresetChoice } from '../sky/params'
-import type { MoldaTemplateId } from '../templates/catalog'
+import type { MoldaTemplateId } from '../templates/types'
 import type { MoldaAssetKind, ShapeId } from './model'
 
 export const COPY = {
@@ -31,6 +31,7 @@ export const COPY = {
       'Sua galeria chegou ao limite de 96 MB. Apague uma criação grande para continuar salvando.',
     downloadAll: 'Baixar tudo',
     downloadPreparing: 'Preparando o seu pacote... Os céus demoram um pouquinho.',
+    downloadCancelled: 'Parei de preparar o pacote.',
     downloadReady: 'Baixei a sua galeria! Procure o .zip na pasta de downloads.',
     downloadFailed: 'Não consegui montar o pacote agora. Tente de novo daqui a pouco.',
     importJson: 'Trazer de volta',

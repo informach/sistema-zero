@@ -63,8 +63,8 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 4. Primitivos de UI vêm de **`@sistemazero/ui`** (exige `transpilePackages` +
    `@source "../../../ui/src"` no globals.css). Nunca copiar primitivo localmente.
 5. **Copy da UI na voz sistemazero**: sem travessão, sem exclamação, sem jargão de IA.
-6. `lib/categories.ts` e `lib/types.ts` **ESPELHAM o backend** (enums de status/categoria/prioridade
-   e as views) — mudou lá, mude aqui (e vice-versa).
+6. Enums, views e parser de citações vêm de **`@sistemazero/helpdesk-contracts`**. Labels e cores
+   específicas do console permanecem em `lib/categories.ts`; não replique contratos localmente.
 7. **Erro de painel/contagem NUNCA vira 0** (indistinguível de caixa vazia): mostra o traço + aviso.
 
 ## Estrutura
@@ -77,14 +77,14 @@ src/
     (app)/                     shell autenticado: layout gate + Topbar + AppSidebar
       page.tsx + painel-client.tsx + volume-chart.tsx   Painel (stats via
                                `/helpdesk/tickets/stats`, agregado no banco; recharts 3.8.1 pinado)
-      tickets/ (page + tickets-client + [id]/*)   fila SLA + thread/resposta/notas/controles
+      tickets/ (page + tickets-client + [id]/*)   fila SLA por cursor + thread/resposta/notas/controles
       base-conhecimento/ (page + kb-client + article-dialog)   CRUD do KB
       configuracoes/ (page + configuracoes-client)   conexão Gmail + assinatura
     api/
       auth/{login,logout}/ · healthz/ · helpdesk/[...path]/   (BFF)
   server/   session.ts · gateway.ts · forward.ts · sentry.ts (ingestão via fetch, sem SDK)
   lib/      env.ts · cookies.ts · csrf.ts · api.ts · upstream.ts · format.ts · dates.ts (SP) ·
-            paths.ts · quote.ts (colapso de citação) · types.ts · categories.ts (labels PT-BR)
+            paths.ts · types.ts (reexports do contrato) · categories.ts (labels/cores PT-BR)
   components/ layout/* (sidebar/topbar/user-menu/theme/nav) · shared/{empty-state,page-header,
               ticket-badges} · providers
   proxy.ts · instrumentation.ts
@@ -124,5 +124,5 @@ CI); envs nos 2 ambientes:
 
 - [ ] `bun test` verde · `bun run typecheck` limpo · `bun run check` limpo · `bun run build` passa.
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
-- [ ] Endpoint novo no backend? Atualizou `lib/types.ts` (+ allowlist do catch-all se for 1º
-      segmento novo).
+- [ ] Endpoint novo no backend? Atualizou `@sistemazero/helpdesk-contracts` (+ allowlist do
+      catch-all se for 1º segmento novo).

@@ -17,11 +17,12 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
 
 describe('editorStore', () => {
   test('commit registra undo, carimba updatedAt e salva depois do debounce', async () => {
-    const p = createMemoryPersistence([makeSky()])
+    const initial = makeSky({ updatedAt: 100 })
+    const p = createMemoryPersistence([initial])
     const saved: string[] = []
     let clock = 100
     const store = createEditorStore({
-      asset: makeSky(),
+      asset: initial,
       persistence: p,
       autosaveMs: 10,
       now: () => clock,
@@ -36,6 +37,22 @@ describe('editorStore', () => {
     expect(store.getState().saveState).toBe('saved')
     expect(saved).toEqual(['noite'])
     expect(presetOf(p.snapshot()[0])).toBe('noite')
+  })
+
+  test('relógio repetido ainda avança a versão; miniatura também é uma alteração persistida', async () => {
+    const initial = makeSky({ updatedAt: 100 })
+    const p = createMemoryPersistence([initial])
+    const store = createEditorStore({ asset: initial, persistence: p, now: () => 100 })
+
+    store.getState().commit(withPreset(store.getState().asset as MoldaSkyAsset, 'noite'))
+    expect(store.getState().asset.updatedAt).toBe(101)
+    store.getState().setThumb('data:image/jpeg;base64,BBBB')
+    expect(store.getState().asset.updatedAt).toBe(102)
+    await store.getState().flush()
+    expect(p.snapshot()[0]).toMatchObject({
+      updatedAt: 102,
+      thumb: 'data:image/jpeg;base64,BBBB',
+    })
   })
 
   test('undo/redo voltam o conteúdo e também salvam', async () => {

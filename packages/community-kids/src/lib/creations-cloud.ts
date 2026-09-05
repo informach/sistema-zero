@@ -75,6 +75,8 @@ export interface CloudCreationSummary {
   bytes: number
   thumb: string | null
   syncedAt: number
+  /** ms desde a época; presente somente quando o item é uma lápide remota. */
+  deletedAt?: number | null
 }
 
 /**
@@ -131,8 +133,8 @@ export interface CreationsCloud {
    * descomprime e CONFERE o hash (lança `CREATION_PART_CORRUPT` se não bate).
    */
   download(itemId: string, options?: { signal?: AbortSignal }): Promise<CloudDownload | null>
-  /** Lixeira lógica na nuvem (idempotente). */
-  remove(itemId: string): Promise<{ revision: number }>
+  /** Lixeira lógica na nuvem, condicionada à revisão que este aparelho conhece. */
+  remove(itemId: string, baseRevision: number): Promise<{ revision: number }>
   /**
    * Enfileira o item (o produtor roda só na hora de subir; substitui o pendente do
    * mesmo item). `onUploaded` roda DEPOIS do commit confirmado — nunca antes (e não
@@ -146,7 +148,12 @@ export interface CreationsCloud {
     onStale?: StaleListener,
   ): void
   /** Enfileira a remoção SEM debounce (cancela um upload pendente do mesmo item). */
-  enqueueRemove(itemId: string, onRemoved?: RemovedListener): void
+  enqueueRemove(
+    itemId: string,
+    baseRevision: number,
+    onRemoved?: RemovedListener,
+    onStale?: StaleListener,
+  ): void
   /**
    * Dispara o que está pendente agora (sem esperar o debounce) e aguarda a fila esvaziar.
    * `timeoutMs` = teto da espera (sair do editor não pode ficar preso num upload de vários
@@ -350,26 +357,37 @@ async function readError(response: Response): Promise<CloudError> {
   return err
 }
 
-function toSummary(raw: {
+interface RawCloudSummary {
   itemId: string
-  name: string
-  kind: string
-  itemUpdatedAt: string
+  name?: string
+  kind?: string
+  itemUpdatedAt?: string
   revision: number
-  bytes: number
-  thumb: string | null
-  syncedAt: string
-}): CloudCreationSummary {
-  return {
+  bytes?: number
+  thumb?: string | null
+  syncedAt?: string
+  deletedAt?: string | null
+}
+
+interface CloudListPage {
+  items: RawCloudSummary[]
+  nextCursor?: string | null
+}
+
+function toSummary(raw: RawCloudSummary): CloudCreationSummary {
+  const deletedAt = raw.deletedAt ? Date.parse(raw.deletedAt) : undefined
+  const summary: CloudCreationSummary = {
     itemId: raw.itemId,
-    name: raw.name,
-    kind: raw.kind,
-    itemUpdatedAt: Date.parse(raw.itemUpdatedAt),
+    name: raw.name ?? raw.itemId,
+    kind: raw.kind ?? 'deleted',
+    itemUpdatedAt: raw.itemUpdatedAt ? Date.parse(raw.itemUpdatedAt) : (deletedAt ?? 0),
     revision: raw.revision,
-    bytes: raw.bytes,
+    bytes: raw.bytes ?? 0,
     thumb: raw.thumb ?? null,
-    syncedAt: Date.parse(raw.syncedAt),
+    syncedAt: raw.syncedAt ? Date.parse(raw.syncedAt) : (deletedAt ?? 0),
   }
+  if (deletedAt !== undefined) summary.deletedAt = deletedAt
+  return summary
 }
 
 export function createCreationsCloud(options: {
@@ -416,7 +434,13 @@ export function createCreationsCloud(options: {
         onStale?: StaleListener
         failures: number
       }
-    | { kind: 'remove'; onRemoved?: RemovedListener; failures: number }
+    | {
+        kind: 'remove'
+        baseRevision: number
+        onRemoved?: RemovedListener
+        onStale?: StaleListener
+        failures: number
+      }
   const pending = new Map<string, Job>()
   const listeners = new Set<(state: CloudSyncState) => void>()
   let state: CloudSyncState = {
@@ -488,10 +512,20 @@ export function createCreationsCloud(options: {
   }
 
   async function list(options?: { signal?: AbortSignal }): Promise<CloudCreationSummary[]> {
-    const body = await api<{ items: Parameters<typeof toSummary>[0][] }>('', {
-      signal: options?.signal,
-    })
-    return body.items.map(toSummary)
+    const items: CloudCreationSummary[] = []
+    const seen = new Set<string>()
+    let cursor: string | null = null
+    for (let page = 0; page < 100; page += 1) {
+      const path: string = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
+      const body: CloudListPage = await api<CloudListPage>(path, { signal: options?.signal })
+      items.push(...body.items.map(toSummary))
+      const next: string | null = body.nextCursor ?? null
+      if (!next) return items
+      if (seen.has(next)) throw new Error('Cursor repetido na lista de criações')
+      seen.add(next)
+      cursor = next
+    }
+    throw new Error('A lista de criações excedeu o limite de páginas')
   }
 
   interface UploadTicket {
@@ -706,9 +740,10 @@ export function createCreationsCloud(options: {
     }
   }
 
-  async function remove(itemId: string): Promise<{ revision: number }> {
+  async function remove(itemId: string, baseRevision: number): Promise<{ revision: number }> {
     const result = await api<{ revision: number }>(`/${encodeURIComponent(itemId)}`, {
       method: 'DELETE',
+      body: JSON.stringify({ baseRevision }),
     })
     return { revision: result.revision }
   }
@@ -722,7 +757,7 @@ export function createCreationsCloud(options: {
     wakeRequested = false
     try {
       if (job.kind === 'remove') {
-        const result = await remove(itemId)
+        const result = await remove(itemId, job.baseRevision)
         job.onRemoved?.(result)
       } else {
         const snapshot = await perfSpanAsync('kids:cloud:produce', () => job.produce(), {
@@ -742,8 +777,13 @@ export function createCreationsCloud(options: {
           const { revision } = await upload(meta, snapshot.json, snapshot.parts)
           // Um `enqueueRemove` do mesmo item chegou enquanto o upload voava? A lápide manda:
           // avançar a marca e limpá-la aqui faria o item apagado voltar da nuvem.
-          if (pending.get(itemId)?.kind !== 'remove') {
+          const replacement = pending.get(itemId)
+          if (replacement?.kind !== 'remove') {
             job.onUploaded?.({ itemId, updatedAt: meta.updatedAt, revision })
+          } else {
+            // A remoção chegou durante ESTE upload. A revisão recém-confirmada também é nossa:
+            // avance a base da lápide para ela não parecer uma exclusão velha no servidor.
+            replacement.baseRevision = revision
           }
         }
       }
@@ -762,7 +802,7 @@ export function createCreationsCloud(options: {
       // Base vencida (409): outro aparelho subiu este item depois. O item SAI da fila e o
       // adaptador resolve (guarda a versão da nuvem como cópia e sobe de novo com a base
       // certa) — repetir o mesmo envio só daria 409 de novo.
-      if (err.status === 409 && err.code === 'CREATION_STALE_BASE' && job.kind === 'upload') {
+      if (err.status === 409 && err.code === 'CREATION_STALE_BASE') {
         if (pending.get(itemId) === job) pending.delete(itemId)
         if (job.onStale) {
           setState({ status: 'saving', lastError: null })
@@ -898,8 +938,13 @@ export function createCreationsCloud(options: {
     schedule(idleMs)
   }
 
-  function enqueueRemove(itemId: string, onRemoved?: RemovedListener): void {
-    pending.set(itemId, { kind: 'remove', onRemoved, failures: 0 })
+  function enqueueRemove(
+    itemId: string,
+    baseRevision: number,
+    onRemoved?: RemovedListener,
+    onStale?: StaleListener,
+  ): void {
+    pending.set(itemId, { kind: 'remove', baseRevision, onRemoved, onStale, failures: 0 })
     // Apagar não espera o debounce: a criança pode fechar a aba logo depois.
     schedule(0)
   }

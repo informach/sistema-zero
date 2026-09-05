@@ -1,5 +1,5 @@
 import { buildTemplateModel } from '../builders'
-import type { MoldaTemplate } from '../catalog'
+import type { MoldaTemplate } from '../types'
 
 // Paleta Arcade: 2 vermelho (frutas) · 7 verde (copa) · 14 marrom (tronco).
 // Copa = três bolas encavaladas; as frutinhas são bolas de 1 bloco na borda.

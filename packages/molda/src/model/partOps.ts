@@ -18,8 +18,8 @@ import { normalizePartName } from '../core/names'
 import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
 import { normalizeBox, normalizeRotation, resolvePaletteColors } from '../core/sanitize'
 import { faceSkinSize, partSize } from './shapes'
-import { resampleSkin } from './skinOps'
-import { bakeTwins, syncTwins } from './twins'
+import { isSkinBlank, resampleSkin } from './skinOps'
+import { bakeTwins, partCrossesMirror, syncTwins } from './twins'
 
 export const DEFAULT_PART_SIZE: Record<ShapeId, Vec3> = {
   box: [2, 2, 2],
@@ -144,7 +144,7 @@ function addPartInBox(
   shape: ShapeId,
   box: Box,
   options: AddOptions,
-): AddResult {
+): AddResult | null {
   const near = options.nearId
     ? (findPart(model, resolveSourceId(model, options.nearId)) ?? null)
     : null
@@ -157,6 +157,8 @@ function addPartInBox(
     to: box.to,
     color,
   })
+  const slots = model.mirrorX && !partCrossesMirror(part) ? 2 : 1
+  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
   const next = { ...model, parts: [...model.parts, part] }
   return { model: syncTwins(next), partId: part.id }
 }
@@ -244,6 +246,8 @@ export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | n
     copy.origin = [copy.origin[0] + delta[0], copy.origin[1] + delta[1], copy.origin[2] + delta[2]]
   }
   delete copy.mirrorOf
+  const slots = model.mirrorX && !partCrossesMirror(copy) ? 2 : 1
+  if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
   const next = { ...model, parts: [...model.parts, copy] }
   return { model: syncTwins(next), partId: copy.id }
 }
@@ -277,6 +281,15 @@ export function setPartBox(
     sizeBefore[1] === sizeAfter[1] &&
     sizeBefore[2] === sizeAfter[2]
   const next: MoldaPart = { ...part, from: box.from, to: box.to }
+  const hasTwin = model.parts.some((candidate) => candidate.mirrorOf === part.id)
+  if (
+    model.mirrorX &&
+    !hasTwin &&
+    !partCrossesMirror(next) &&
+    model.parts.length >= MOLDA_LIMITS.maxParts
+  ) {
+    return model
+  }
   if (!sameSize) next.faces = resizePartSkins(next, model.texelsPerUnit)
   if (part.origin) {
     if (sameSize) {
@@ -355,11 +368,17 @@ export function updatePart(model: MoldaModelAsset, id: string, patch: PartPatch)
 
 /**
  * Liga/desliga o espelho de modelagem. Ligar cria o gêmeo de toda peça
- * própria que não cruza x = 0 (até o teto de peças); desligar ASSA os gêmeos
- * em peças próprias, com a pele que mostravam.
+ * própria que não cruza x = 0; se não couberem TODOS, mantém o estado atual.
+ * Desligar ASSA os gêmeos em peças próprias, com a pele que mostravam.
  */
 export function setMirrorX(model: MoldaModelAsset, on: boolean): MoldaModelAsset {
   if (!on) return { ...bakeTwins(model), mirrorX: false }
+  if (!model.mirrorX) {
+    const twinsNeeded = model.parts.filter(
+      (part) => !part.mirrorOf && !partCrossesMirror(part),
+    ).length
+    if (model.parts.length + twinsNeeded > MOLDA_LIMITS.maxParts) return model
+  }
   return syncTwins({ ...model, mirrorX: true })
 }
 
@@ -423,7 +442,8 @@ export function removeExtraColor(model: MoldaModelAsset, index: number): MoldaMo
       if (!skin) continue
       const data = new Uint8Array(skin.data.length)
       for (let i = 0; i < data.length; i += 1) data[i] = remap(skin.data[i] ?? 0)
-      faces[face] = { width: skin.width, height: skin.height, data }
+      const remapped = { width: skin.width, height: skin.height, data }
+      if (!isSkinBlank(remapped)) faces[face] = remapped
     }
     const color = part.color === index ? firstPaintableIndex(colors) : remap(part.color)
     return { ...part, color, faces }

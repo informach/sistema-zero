@@ -61,7 +61,13 @@ export function RenameDialog({
       case 'missing':
         onClose()
         return
-      default:
+      case 'storage-budget':
+        setError(COPY.gallery.storageBudget)
+        return
+      case 'save-failed':
+        setError(COPY.toast.saveFailed)
+        return
+      case 'invalid':
         setError(COPY.newAsset.nameInvalid)
     }
   }
@@ -73,6 +79,8 @@ export function RenameDialog({
           <span className="text-sm font-bold text-mld-text">{COPY.rename.label}</span>
           <input
             autoFocus
+            name="molda-asset-name"
+            autoComplete="off"
             value={value}
             onChange={(event) => {
               setValue(event.target.value)

@@ -1,5 +1,5 @@
 import { buildTemplateModel } from '../builders'
-import type { MoldaTemplate } from '../catalog'
+import type { MoldaTemplate } from '../types'
 
 // Paleta Arcade: 1 branco (casco) · 2 vermelho (asas, bico, nadadeira) ·
 // 6 azul-petróleo (motores) · 9 ciano (cabine). O bico aponta para +z.

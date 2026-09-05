@@ -119,6 +119,7 @@ export class CustomerTicketService {
       aiDraftAt: null,
       aiDraftEdited: false,
       aiClassification: null,
+      aiGeneration: 1,
       aiStatus: this.config.aiEnabled ? ('pending' as const) : ('skipped' as const),
       aiNextAttemptAt: this.config.aiEnabled ? at : null,
       aiAttempts: 0,

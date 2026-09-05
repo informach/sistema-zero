@@ -184,7 +184,7 @@ if (!MARKETING_INTERNAL_TOKEN && process.env.NODE_ENV !== 'test') {
 }
 
 // Help desk com IA (@sistemazero/helpdesk): tickets a partir do Gmail (contato@),
-// base de conhecimento e auto-resposta. Ferramenta INTERNA da equipe (staff+).
+// base de conhecimento e rascunhos assistidos por IA. Ferramenta INTERNA da equipe (staff+).
 // O gateway injeta o x-internal-token (defesa em profundidade, igual ao
 // marketing). DEVE bater com o INTERNAL_API_TOKEN do helpdesk.
 const HELPDESK_URL = process.env.HELPDESK_URL ?? 'http://localhost:3013'
@@ -416,7 +416,7 @@ const config: GatewayConfigInput = {
       },
       ...sharedResilience,
     },
-    // Help desk com IA: tickets do Gmail, base de conhecimento e auto-resposta.
+    // Help desk com IA: tickets do Gmail, base de conhecimento e rascunhos para revisão humana.
     helpdesk: {
       name: 'helpdesk',
       upstreamGroups: {
@@ -3347,7 +3347,7 @@ const config: GatewayConfigInput = {
       maxBodyBytes: 512 * 1024,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    // Toggle de AUTO-RESPOSTA (e-mail sai sozinho p/ cliente) é admin+ e
+    // Configuração da assinatura das respostas enviadas pela equipe é admin+ e
     // auditado — a rota explícita vence o wildcard `helpdesk-write`.
     {
       id: 'helpdesk-settings-write',

@@ -1,5 +1,8 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { TicketAiService } from '../../application/ai/ticket-ai.service'
+import {
+  AiGenerationSupersededError,
+  type TicketAiService,
+} from '../../application/ai/ticket-ai.service'
 import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
 
 const MAX_BACKOFF_MS = 30 * 60_000
@@ -36,7 +39,7 @@ export class AiWorker {
   start(): void {
     if (this.timer) return
     this.timer = setInterval(() => {
-      this.inFlight = this.tick()
+      if (!this.running) this.inFlight = this.tick()
     }, this.deps.config.intervalMs)
     this.deps.logger.info('ai.worker.started', { intervalMs: this.deps.config.intervalMs })
   }
@@ -55,15 +58,27 @@ export class AiWorker {
     try {
       const ticket = await this.deps.tickets.claimAiDue(this.deps.config.leaseMs, this.deps.now())
       if (!ticket) return
+      const guard = {
+        generation: ticket.aiGeneration,
+        processingAttempt: ticket.aiAttempts,
+      }
       try {
         await this.deps.ticketAi.runPipeline(ticket)
-        await this.deps.tickets.markAiDone(ticket.id, this.deps.now())
+        const completed = await this.deps.tickets.markAiDone(ticket.id, guard, this.deps.now())
+        if (!completed) {
+          this.deps.logger.info('ai.superseded', { ticketId: ticket.id })
+          return
+        }
         this.deps.logger.info('ai.processed', { ticketId: ticket.id })
       } catch (error) {
+        if (error instanceof AiGenerationSupersededError) {
+          this.deps.logger.info('ai.superseded', { ticketId: ticket.id })
+          return
+        }
         const message = error instanceof Error ? error.message : String(error)
         const at = this.deps.now()
         if (ticket.aiAttempts >= this.deps.config.maxAttempts) {
-          await this.deps.tickets.markAiFailed(ticket.id, message, at)
+          await this.deps.tickets.markAiFailed(ticket.id, guard, message, at)
           this.deps.logger.error('ai.failed', { ticketId: ticket.id, error: message })
         } else {
           const backoff = Math.min(
@@ -72,6 +87,7 @@ export class AiWorker {
           )
           await this.deps.tickets.scheduleAiRetry(
             ticket.id,
+            guard,
             new Date(at.getTime() + backoff),
             message,
             at,

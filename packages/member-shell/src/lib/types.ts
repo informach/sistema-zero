@@ -540,7 +540,17 @@ export interface CreationSummaryView {
   bytes: number
   thumb: string | null
   syncedAt: string
+  /** ISO presente apenas para uma lápide de exclusão. */
+  deletedAt?: string | null
 }
+
+export interface CreationTombstoneView {
+  itemId: string
+  revision: number
+  deletedAt: string
+}
+
+export type CreationIndexView = CreationSummaryView | CreationTombstoneView
 
 /** Uma PARTE (asset do Estúdio endereçado por conteúdo) a assinar/baixar. */
 export interface CreationPartTicketView {

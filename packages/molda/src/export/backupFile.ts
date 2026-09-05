@@ -4,7 +4,11 @@
  * central, cabeçalho da entrada e somente os bytes de `galeria.molda.json`. Os
  * `.glb`, `.png` e `.hdr` nunca entram na memória (molde do leitor do Pinta).
  */
-import { MAX_BACKUP_FILE_BYTES, MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
+import {
+  MAX_BACKUP_FILE_BYTES,
+  MAX_CLASSIC_ZIP_ENTRIES,
+  MOLDA_GALLERY_ZIP_ENTRY,
+} from './backupFormat'
 
 export { MAX_BACKUP_FILE_BYTES, MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 
@@ -35,8 +39,9 @@ const MAX_ZIP_COMMENT_BYTES = 0xffff
 const MAX_EOCD_SEARCH_BYTES = EOCD_FIXED_BYTES + MAX_ZIP_COMMENT_BYTES
 const CENTRAL_HEADER_FIXED_BYTES = 46
 const LOCAL_HEADER_FIXED_BYTES = 30
-const MAX_ZIP_DIRECTORY_BYTES = 4 * 1024 * 1024
-const MAX_ZIP_ENTRIES = 4096
+// O escritor gera no máximo ~110 bytes de diretório por criação; 16 MiB cobrem
+// todo ZIP clássico produzido por ele sem abrir a porta para um diretório ilimitado.
+const MAX_ZIP_DIRECTORY_BYTES = 16 * 1024 * 1024
 const MAX_COMPRESSED_OVERHEAD_BYTES = 1024 * 1024
 const ZIP64_U16 = 0xffff
 const ZIP64_U32 = 0xffffffff
@@ -100,7 +105,7 @@ async function locateGalleryEntry(
   ) {
     return 'invalid-zip'
   }
-  if (entryCount > MAX_ZIP_ENTRIES || directorySize > MAX_ZIP_DIRECTORY_BYTES) {
+  if (entryCount > MAX_CLASSIC_ZIP_ENTRIES || directorySize > MAX_ZIP_DIRECTORY_BYTES) {
     return 'invalid-zip'
   }
   const eocdAbsoluteOffset = tailStart + eocdOffset

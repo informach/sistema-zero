@@ -1,5 +1,6 @@
 import type { Ticket } from '../ticket/ticket'
 import type { TicketMessage } from '../ticket/ticket-message'
+import type { PortalNotificationOutboxItem } from './portal-notification-outbox.port'
 
 export interface PendingReplyMessage extends TicketMessage {
   gmailMessageId: null
@@ -55,6 +56,7 @@ export interface ReplyDeliveryRepository {
     ticketId: string
     expectedVersion: number
     message: TicketMessage
+    notification: PortalNotificationOutboxItem
     at: Date
   }): Promise<AppendPortalReplyResult>
 }

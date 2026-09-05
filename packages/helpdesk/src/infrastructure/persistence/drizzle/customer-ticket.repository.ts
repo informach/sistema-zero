@@ -90,14 +90,17 @@ export class DrizzleCustomerTicketRepository implements CustomerTicketRepository
           messageCount: sql`${tickets.messageCount} + 1`,
           lastMessageAt: sql`greatest(${tickets.lastMessageAt}, ${atIso}::timestamptz)`,
           lastInboundAt: sql`greatest(coalesce(${tickets.lastInboundAt}, ${atIso}::timestamptz), ${atIso}::timestamptz)`,
-          ...(input.aiEnabled
-            ? {
-                aiStatus: 'pending' as const,
-                aiNextAttemptAt: input.at,
-                aiAttempts: 0,
-                aiLastError: null,
-              }
-            : {}),
+          aiGeneration: sql`${tickets.aiGeneration} + 1`,
+          aiSummary: null,
+          aiSummaryAt: null,
+          aiDraft: null,
+          aiDraftAt: null,
+          aiDraftEdited: false,
+          aiClassification: null,
+          aiStatus: input.aiEnabled ? 'pending' : 'skipped',
+          aiNextAttemptAt: input.aiEnabled ? input.at : null,
+          aiAttempts: 0,
+          aiLastError: null,
           updatedAt: input.at,
         })
         .where(and(eq(tickets.id, input.ticketId), this.ownedWhere(input.owner)))

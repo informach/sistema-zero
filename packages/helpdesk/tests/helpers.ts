@@ -11,6 +11,7 @@ import { TicketService } from '../src/application/tickets/ticket.service'
 import type { Ticket } from '../src/domain/ticket/ticket'
 import type { TicketMessage } from '../src/domain/ticket/ticket-message'
 import { loadEnv } from '../src/infrastructure/config/env'
+import { PortalNotificationWorker } from '../src/infrastructure/workers/portal-notification-worker'
 import { createServer } from '../src/interfaces/http/server'
 import { FakeLlmClient } from './fakes/ai'
 import { FakeGmailClient, FakeGmailOAuthProvider, FakeSecretBox } from './fakes/gmail'
@@ -20,6 +21,7 @@ import {
   InMemoryKbRepository,
   InMemoryMessageRepository,
   InMemoryOAuthStateRepository,
+  InMemoryPortalNotificationOutboxRepository,
   InMemoryReplyDeliveryRepository,
   InMemorySettingsRepository,
   InMemoryTicketRepository,
@@ -49,6 +51,7 @@ export interface TestApp {
     settings: InMemorySettingsRepository
     connections: InMemoryConnectionRepository
     oauthStates: InMemoryOAuthStateRepository
+    notificationOutbox: InMemoryPortalNotificationOutboxRepository
   }
   provider: FakeGmailOAuthProvider
   gmailClient: FakeGmailClient
@@ -56,6 +59,7 @@ export interface TestApp {
   llm: FakeLlmClient
   /** Avisos de resposta do portal capturados (gateway → messaging fake). */
   messaging: FakeMessagingGateway
+  notificationWorker: PortalNotificationWorker | null
 }
 
 /** Monta a app HTTP inteira sobre fakes in-memory (sem banco, sem Gmail real). */
@@ -77,7 +81,8 @@ export function buildTestApp(
   const tickets = new InMemoryTicketRepository()
   const messages = new InMemoryMessageRepository()
   const customerTickets = new InMemoryCustomerTicketRepository(tickets, messages)
-  const replyDelivery = new InMemoryReplyDeliveryRepository(tickets, messages)
+  const notificationOutbox = new InMemoryPortalNotificationOutboxRepository()
+  const replyDelivery = new InMemoryReplyDeliveryRepository(tickets, messages, notificationOutbox)
   const kb = new InMemoryKbRepository()
   const settings = new InMemorySettingsRepository()
   const connections = new InMemoryConnectionRepository()
@@ -132,7 +137,7 @@ export function buildTestApp(
     gmailAccountService,
     gmailClient,
     { fromName: 'Sistema Zero' },
-    messagingEnabled ? { messaging, urls: TEST_PORTAL_URLS } : null,
+    TEST_PORTAL_URLS,
     now,
     idGen,
     silentLogger,
@@ -142,9 +147,23 @@ export function buildTestApp(
     tickets,
     messages,
     async () => [],
-    { maxThreadChars: 24_000 },
+    { maxThreadChars: 24_000, maxKbChars: 12_000 },
     now,
   )
+  const notificationWorker = messagingEnabled
+    ? new PortalNotificationWorker({
+        outbox: notificationOutbox,
+        messaging,
+        now,
+        logger: silentLogger,
+        config: {
+          intervalMs: 1_000,
+          leaseMs: 30_000,
+          retryBaseMs: 1_000,
+          retryMaxMs: 60_000,
+        },
+      })
+    : null
 
   const app = createServer({
     env,
@@ -185,12 +204,13 @@ export function buildTestApp(
 
   return {
     app,
-    repos: { tickets, messages, kb, settings, connections, oauthStates },
+    repos: { tickets, messages, kb, settings, connections, oauthStates, notificationOutbox },
     provider,
     gmailClient,
     secretBox,
     llm,
     messaging,
+    notificationWorker,
   }
 }
 
@@ -276,6 +296,7 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     aiDraftAt: null,
     aiDraftEdited: false,
     aiClassification: null,
+    aiGeneration: 1,
     aiStatus: 'idle',
     aiNextAttemptAt: null,
     aiAttempts: 0,

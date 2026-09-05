@@ -7,6 +7,6 @@ export interface KbRepository {
   update(article: KbArticle, expectedVersion: number): Promise<boolean>
   delete(id: string): Promise<boolean>
   list(filter: { limit: number; offset: number }): Promise<{ items: KbArticle[]; total: number }>
-  /** Artigos publicados (contexto do prompt de rascunho da IA). */
-  listPublished(): Promise<KbArticle[]>
+  /** Candidatos publicados e limitados para o contexto do rascunho da IA. */
+  listPublished(limit: number): Promise<KbArticle[]>
 }

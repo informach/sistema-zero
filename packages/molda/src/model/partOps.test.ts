@@ -116,6 +116,56 @@ describe('operações do modelo', () => {
     expect(mirrored.parts.some((p) => p.mirrorOf)).toBe(false)
   })
 
+  test('com 127 peças, o espelho recusa adicionar ou duplicar uma fonte que não caberia com o gêmeo', () => {
+    const parts = Array.from({ length: MOLDA_LIMITS.maxParts - 1 }, (_unused, index) =>
+      createPart({
+        id: `centro-${index}`,
+        name: `centro ${index}`,
+        from: [-1, 0, -1],
+        to: [1, 2, 1],
+        color: 1,
+      }),
+    )
+    const model = {
+      ...createModelAsset({ name: 'cheio', starter: false }),
+      mirrorX: true,
+      parts,
+    }
+
+    expect(addPartAtSurface(model, 'box', [1, 1, 0], [1, 0, 0])).toBeNull()
+    expect(duplicatePart(model, parts[0]?.id ?? '')).toBeNull()
+  })
+
+  test('o espelho só liga quando todos os gêmeos cabem e não deixa mover uma fonte sem vaga para o par', () => {
+    const parts = Array.from({ length: 65 }, (_unused, index) =>
+      createPart({
+        id: `lado-${index}`,
+        name: `lado ${index}`,
+        from: [2, 0, 0],
+        to: [3, 1, 1],
+        color: 1,
+      }),
+    )
+    const disabled = { ...createModelAsset({ name: 'cheio', starter: false }), parts }
+    expect(setMirrorX(disabled, true)).toBe(disabled)
+
+    const crossing = Array.from({ length: MOLDA_LIMITS.maxParts }, (_unused, index) =>
+      createPart({
+        id: `eixo-${index}`,
+        name: `eixo ${index}`,
+        from: [-1, 0, 0],
+        to: [1, 1, 1],
+        color: 1,
+      }),
+    )
+    const active = {
+      ...createModelAsset({ name: 'lotado', starter: false }),
+      mirrorX: true,
+      parts: crossing,
+    }
+    expect(setPartBox(active, crossing[0]?.id ?? '', [2, 0, 0], [3, 1, 1])).toBe(active)
+  })
+
   test('ao sair do eixo com o espelho ligado, a peça ganha o gêmeo que faltava', () => {
     const source = createPart({
       id: 'a',

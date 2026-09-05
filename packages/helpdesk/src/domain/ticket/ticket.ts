@@ -1,44 +1,28 @@
-export type TicketStatus = 'new' | 'open' | 'waiting' | 'resolved' | 'closed'
+import {
+  type AiClassificationView,
+  type AiStatus,
+  TICKET_CATEGORIES as SHARED_TICKET_CATEGORIES,
+  TICKET_STATUSES as SHARED_TICKET_STATUSES,
+  type TicketCategory,
+  type TicketPortal,
+  type TicketPriority,
+  type TicketSource,
+  type TicketStatus,
+} from '@sistemazero/helpdesk-contracts'
 
-/** Canal de origem do chamado. E-mail e portal compartilham a mesma fila da equipe. */
-export type TicketSource = 'email' | 'portal'
-
-/**
- * Qual área do aluno abriu o chamado pelo portal. Espelha o `audience` do
- * member-shell (`adult` = community, `kids` = community-kids) para o BFF passar a
- * config compilada do app sem tabela de tradução. Nulo em ticket de e-mail e no legado.
- */
-export type TicketPortal = 'adult' | 'kids'
-
-/** Categorias fixas do negócio (labels PT-BR ficam no front, em lockstep). */
-export type TicketCategory =
-  | 'curso_acesso'
-  | 'problema_tecnico'
-  | 'studio'
-  | 'pagamento_reembolso'
-  | 'parceria_comercial'
-  | 'outro'
-
-export type TicketPriority = 'baixa' | 'normal' | 'alta'
-
-/**
- * Fila de IA embutida no ticket (sem tabela de jobs): `pending` é claimado pelo
- * ai-worker via SKIP LOCKED; `skipped` = grupo OPENROUTER_* não configurado.
- */
-export type AiStatus = 'idle' | 'pending' | 'processing' | 'done' | 'failed' | 'skipped'
-
-export type Sentiment = 'positivo' | 'neutro' | 'negativo' | 'irritado'
-export type KbCoverage = 'covered' | 'partial' | 'not_covered'
+export type {
+  AiStatus,
+  KbCoverage,
+  Sentiment,
+  TicketCategory,
+  TicketPortal,
+  TicketPriority,
+  TicketSource,
+  TicketStatus,
+} from '@sistemazero/helpdesk-contracts'
 
 /** Saída estruturada da classificação (persistida como jsonb). */
-export interface AiClassification {
-  category: TicketCategory
-  priority: TicketPriority
-  confidence: number
-  sentiment: Sentiment
-  flags: { reembolso: boolean; juridico: boolean }
-  kbCoverage?: KbCoverage
-}
+export type AiClassification = AiClassificationView
 
 export interface Ticket {
   id: string
@@ -76,6 +60,8 @@ export interface Ticket {
   aiDraftAt: Date | null
   aiDraftEdited: boolean
   aiClassification: AiClassification | null
+  /** Revisão da conversa usada como compare-and-set das escritas assíncronas da IA. */
+  aiGeneration: number
   aiStatus: AiStatus
   aiNextAttemptAt: Date | null
   aiAttempts: number
@@ -84,31 +70,8 @@ export interface Ticket {
   updatedAt: Date
 }
 
-export const TICKET_STATUSES: readonly TicketStatus[] = [
-  'new',
-  'open',
-  'waiting',
-  'resolved',
-  'closed',
-]
-
-export const TICKET_CATEGORIES: readonly TicketCategory[] = [
-  'curso_acesso',
-  'problema_tecnico',
-  'studio',
-  'pagamento_reembolso',
-  'parceria_comercial',
-  'outro',
-]
-
-/**
- * Reabertura por mensagem nova do cliente: ticket fechado/resolvido e ticket
- * aguardando o cliente voltam a `open`, pois agora há trabalho para a equipe.
- */
-export function statusOnInbound(current: TicketStatus): TicketStatus {
-  if (current === 'waiting' || current === 'resolved' || current === 'closed') return 'open'
-  return current
-}
+export const TICKET_STATUSES = SHARED_TICKET_STATUSES
+export const TICKET_CATEGORIES = SHARED_TICKET_CATEGORIES
 
 export function isTerminalTicketStatus(status: TicketStatus): boolean {
   return status === 'resolved' || status === 'closed'

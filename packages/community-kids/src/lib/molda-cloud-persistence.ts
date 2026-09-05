@@ -219,12 +219,34 @@ export function createCloudMirroredMoldaPersistence(options: {
     if (current) enqueue(current)
   }
 
+  /** Uma exclusão velha não vence uma edição remota: restaura a revisão corrente no mesmo id. */
+  async function restoreAfterStaleRemove(id: string): Promise<void> {
+    marks.clearTombstone(id)
+    const downloaded = await cloud.download(id)
+    if (!downloaded) return
+    const remote = assetFromCloudJson(downloaded.json, id)
+    if (!remote) return
+    const taken = new Set(
+      (await local.loadAll()).filter((asset) => asset.id !== id).map((asset) => asset.name),
+    )
+    const restored = taken.has(remote.name)
+      ? { ...remote, name: uniqueAssetName(remote.name, taken) }
+      : remote
+    await local.saveMany([restored])
+    marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    emitChangedSoon([id])
+  }
+
   function enqueueRemove(id: string): void {
     const at = now()
     const revision = marks.revision(id) ?? null
     marks.setTombstone(id, { at, sent: false, revision })
-    cloud.enqueueRemove(id, ({ revision: confirmedRevision }) =>
-      marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
+    cloud.enqueueRemove(
+      id,
+      revision ?? 0,
+      ({ revision: confirmedRevision }) =>
+        marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
+      ({ itemId }) => restoreAfterStaleRemove(itemId),
     )
   }
 
@@ -345,12 +367,29 @@ export function createCloudMirroredMoldaPersistence(options: {
           },
         }
       },
+      deleteLocal: async (itemId) => {
+        const item = localAssets.find((asset) => asset.id === itemId)
+        await local.remove(itemId)
+        if (item && nameOwner.get(item.name) === itemId) {
+          nameOwner.delete(item.name)
+          takenNames.delete(item.name)
+        }
+        emitChangedSoon([itemId])
+        return true
+      },
       push: (item) => enqueue(item),
-      remove: (itemId) =>
-        cloud.enqueueRemove(itemId, ({ revision }) => {
-          const tombstone = marks.tombstone(itemId)
-          if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
-        }),
+      remove: (itemId) => {
+        const tombstone = marks.tombstone(itemId)
+        cloud.enqueueRemove(
+          itemId,
+          tombstone?.revision ?? marks.revision(itemId) ?? 0,
+          ({ revision }) => {
+            const tombstone = marks.tombstone(itemId)
+            if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
+          },
+          ({ itemId: staleId }) => restoreAfterStaleRemove(staleId),
+        )
+      },
     })
     return report.deferred
   }

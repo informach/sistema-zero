@@ -76,24 +76,26 @@ export function Stepper({
       <IconButton
         aria-label={COPY.a11y.decrease(label)}
         onClick={() => onChange(clamp(value - step, min, max, wrap))}
-        className="min-h-9 min-w-9"
+        className="min-h-11 min-w-11"
       >
         <Minus aria-hidden="true" className="size-4" />
       </IconButton>
       <input
         type="text"
+        name={label}
+        autoComplete="off"
         inputMode="decimal"
         aria-label={label}
         value={text}
         onChange={(event) => setText(event.target.value)}
         onBlur={commitText}
         onKeyDown={onKeyDown}
-        className="min-h-9 w-14 rounded-lg border-2 border-mld-border bg-mld-bg text-center text-sm font-bold text-mld-text focus-visible:border-mld-accent focus-visible:outline-none"
+        className="min-h-11 w-14 rounded-lg border-2 border-mld-border bg-mld-bg text-center text-sm font-bold text-mld-text focus-visible:border-mld-accent focus-visible:outline-none"
       />
       <IconButton
         aria-label={COPY.a11y.increase(label)}
         onClick={() => onChange(clamp(value + step, min, max, wrap))}
-        className="min-h-9 min-w-9"
+        className="min-h-11 min-w-11"
       >
         <Plus aria-hidden="true" className="size-4" />
       </IconButton>

@@ -116,7 +116,12 @@ function fakeCloud(
     string,
     { produce: SnapshotProducer; onUploaded?: UploadedListener; onStale?: StaleListener }
   >()
-  const removed: Array<{ itemId: string; onRemoved?: RemovedListener }> = []
+  const removed: Array<{
+    itemId: string
+    baseRevision: number
+    onRemoved?: RemovedListener
+    onStale?: StaleListener
+  }> = []
   /** Partes baixadas (hash) por item — para provar o que NÃO desceu de novo. */
   const fetchedParts: string[] = []
   const cloud: CreationsCloud = {
@@ -144,8 +149,8 @@ function fakeCloud(
     enqueueUpload: (itemId, produce, onUploaded, onStale) => {
       uploads.set(itemId, { produce, onUploaded, onStale })
     },
-    enqueueRemove: (itemId, onRemoved) => {
-      removed.push({ itemId, onRemoved })
+    enqueueRemove: (itemId, baseRevision, onRemoved, onStale) => {
+      removed.push({ itemId, baseRevision, onRemoved, onStale })
     },
     flush: async () => {},
     getState: () => ({ status: 'idle', pending: 0, lastSavedAt: null, lastError: null }),

@@ -27,7 +27,6 @@
  */
 import {
   BufferGeometry,
-  Color,
   DirectionalLight,
   DoubleSide,
   EdgesGeometry,
@@ -44,11 +43,9 @@ import {
   PlaneGeometry,
   Raycaster,
   Scene,
-  SRGBColorSpace,
   Vector2,
   Vector3,
   WebGLRenderer,
-  WebGLRenderTarget,
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
@@ -86,6 +83,8 @@ import type { EditorMode, TransformTool } from '../state/sessionStore'
 import { AtlasTexture } from './atlasTexture'
 import { perspectiveFitDistance } from './cameraFit'
 import type { MoldaViewportLike, ViewName, ViewportCallbacks, ViewportOptions } from './types'
+import { deg, geometryHash, rad, roundTo, VIEW_DIRECTIONS } from './viewportMath'
+import { ViewportThumbnail } from './viewportThumbnail'
 
 interface PartEntry {
   mesh: Mesh
@@ -106,49 +105,13 @@ const TWIN_OUTLINE_COLOR = 0x8db8ff
 const GRID_CENTER_COLOR = 0x9fb4d0
 const GRID_COLOR = 0xd2deee
 const DEFAULT_THUMB_BACKGROUND = '#e6f1ff'
-const THUMB_SIZE = 96
 const CLICK_TOLERANCE_PX = 6
 const MIN_SCALE = 0.05
-
-const VIEW_DIRECTIONS: Record<Exclude<ViewName, 'frame'>, Vec3> = {
-  front: [0, 0.18, 1],
-  back: [0, 0.18, -1],
-  left: [-1, 0.18, 0],
-  right: [1, 0.18, 0],
-  // Um fio de +z: com o eixo "para cima" do three em Y, a vista de cima fica
-  // alinhada com a grade (a frente embaixo) em vez de girada 45°.
-  top: [0, 1, 0.001],
-}
 
 const GIZMO_MODE: Record<TransformTool, 'translate' | 'rotate' | 'scale'> = {
   move: 'translate',
   rotate: 'rotate',
   scale: 'scale',
-}
-
-function rad(deg: number): number {
-  return (deg * Math.PI) / 180
-}
-
-function deg(radians: number): number {
-  return (radians * 180) / Math.PI
-}
-
-function roundTo(value: number, step: number): number {
-  return Math.round(value / step) * step
-}
-
-function geometryHash(part: MoldaPart, layoutVersion: number): string {
-  const pivot = partPivot(part)
-  const size = partSize(part)
-  return [
-    part.shape,
-    size.join(','),
-    [part.from[0] - pivot[0], part.from[1] - pivot[1], part.from[2] - pivot[2]].join(','),
-    part.color,
-    part.mirrorOf ?? '',
-    layoutVersion,
-  ].join('|')
 }
 
 export class MoldaViewport implements MoldaViewportLike {
@@ -176,9 +139,7 @@ export class MoldaViewport implements MoldaViewportLike {
   })
   private readonly entries = new Map<string, PartEntry>()
   private readonly resizeObserver: ResizeObserver | null
-  private readonly thumbBackground: string
-  private thumbTarget: WebGLRenderTarget | null = null
-  private thumbCamera: PerspectiveCamera | null = null
+  private readonly thumbnail: ViewportThumbnail
   private model: MoldaModelAsset | null = null
   private layout: AtlasLayout | null = null
   private layoutVersion = 0
@@ -204,7 +165,6 @@ export class MoldaViewport implements MoldaViewportLike {
     private readonly callbacks: ViewportCallbacks,
     options: ViewportOptions = {},
   ) {
-    this.thumbBackground = options.thumbBackground ?? DEFAULT_THUMB_BACKGROUND
     this.renderer = new WebGLRenderer({
       canvas,
       antialias: true,
@@ -213,6 +173,10 @@ export class MoldaViewport implements MoldaViewportLike {
     })
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     this.renderer.setClearColor(0x000000, 0)
+    this.thumbnail = new ViewportThumbnail(
+      this.renderer,
+      options.thumbBackground ?? DEFAULT_THUMB_BACKGROUND,
+    )
 
     this.camera = new PerspectiveCamera(45, 1, 0.1, 500)
     this.camera.position.set(16, 12, 20)
@@ -440,54 +404,15 @@ export class MoldaViewport implements MoldaViewportLike {
     if (typeof document === 'undefined') return null
     const bounds = modelBounds(this.model)
     if (!bounds) return null
-    const { min, max } = bounds
-    const center = new Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2)
-    const radius = Math.max(
-      new Vector3(max[0] - min[0], max[1] - min[1], max[2] - min[2]).length() / 2,
-      1,
-    )
-    const camera = this.thumbCamera ?? new PerspectiveCamera(40, 1, 0.1, 500)
-    this.thumbCamera = camera
-    const distance = (radius / Math.sin(rad(camera.fov) / 2)) * 1.1
-    camera.position.copy(center).addScaledVector(new Vector3(1, 0.75, 1.35).normalize(), distance)
-    camera.lookAt(center)
-    camera.updateProjectionMatrix()
-
-    const target =
-      this.thumbTarget ??
-      new WebGLRenderTarget(THUMB_SIZE, THUMB_SIZE, { colorSpace: SRGBColorSpace })
-    this.thumbTarget = target
-
-    const gridWasVisible = this.grid.visible
-    const helperWasVisible = this.gizmoHelper.visible
-    this.grid.visible = false
-    this.gizmoHelper.visible = false
-    for (const entry of this.entries.values()) if (entry.outline) entry.outline.visible = false
-
-    const previousTarget = this.renderer.getRenderTarget()
-    const previousClear = new Color()
-    this.renderer.getClearColor(previousClear)
-    const previousAlpha = this.renderer.getClearAlpha()
-    let url: string | null = null
     try {
-      this.renderer.setRenderTarget(target)
-      this.renderer.setClearColor(new Color(this.thumbBackground), 1)
-      this.renderer.clear()
-      this.renderer.render(this.scene, camera)
-      const pixels = new Uint8Array(THUMB_SIZE * THUMB_SIZE * 4)
-      this.renderer.readRenderTargetPixels(target, 0, 0, THUMB_SIZE, THUMB_SIZE, pixels)
-      url = encodeThumb(pixels, THUMB_SIZE)
-    } catch {
-      url = null
+      return this.thumbnail.render(this.scene, bounds, [
+        this.grid,
+        this.gizmoHelper,
+        ...[...this.entries.values()].flatMap((entry) => (entry.outline ? [entry.outline] : [])),
+      ])
     } finally {
-      this.renderer.setRenderTarget(previousTarget)
-      this.renderer.setClearColor(previousClear, previousAlpha)
-      this.grid.visible = gridWasVisible
-      this.gizmoHelper.visible = helperWasVisible
-      for (const entry of this.entries.values()) if (entry.outline) entry.outline.visible = true
       this.requestFrame()
     }
-    return url
   }
 
   // ── Ciclo de vida ─────────────────────────────────────────────────────────
@@ -523,7 +448,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.material.dispose()
     this.outlineMaterial.dispose()
     this.twinOutlineMaterial.dispose()
-    this.thumbTarget?.dispose()
+    this.thumbnail.dispose()
     this.renderer.dispose()
   }
 
@@ -952,25 +877,4 @@ export class MoldaViewport implements MoldaViewportLike {
     if (!this.model || !this.selectedId) return null
     return this.model.parts.find((part) => part.id === this.selectedId) ?? null
   }
-}
-
-/** RGBA de baixo para cima (GL) → JPEG data URL dentro do teto do `thumb`. */
-function encodeThumb(pixels: Uint8Array, size: number): string | null {
-  const canvas = document.createElement('canvas')
-  canvas.width = size
-  canvas.height = size
-  const context = canvas.getContext('2d')
-  if (!context) return null
-  const image = context.createImageData(size, size)
-  const row = size * 4
-  for (let y = 0; y < size; y += 1) {
-    const source = (size - 1 - y) * row
-    image.data.set(pixels.subarray(source, source + row), y * row)
-  }
-  context.putImageData(image, 0, 0)
-  for (const quality of [0.72, 0.5, 0.35]) {
-    const url = canvas.toDataURL('image/jpeg', quality)
-    if (url.length <= MOLDA_LIMITS.maxThumbChars) return url
-  }
-  return null
 }

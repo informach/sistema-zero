@@ -27,6 +27,7 @@ function build(llmConfigured = true) {
     async () => [],
     {
       maxThreadChars: 24_000,
+      maxKbChars: 12_000,
     },
     () => new Date(),
   )
@@ -102,5 +103,28 @@ describe('TicketAiService', () => {
     const { tickets, messages, service } = build(false)
     const id = await seed(tickets, messages)
     await expect(service.summarize(id)).rejects.toThrow('IA não configurada')
+  })
+
+  it('summarize devolve conflito se a conversa muda durante a chamada ao modelo', async () => {
+    const { tickets, messages, llm, service } = build()
+    const id = await seed(tickets, messages)
+    let finish!: (value: ClassifyResult) => void
+    llm.queue = [
+      new Promise<ClassifyResult>((resolve) => {
+        finish = resolve
+      }),
+    ]
+
+    const summarizing = service.summarize(id)
+    while (llm.calls.length === 0) await Bun.sleep(0)
+    const current = await tickets.byId(id)
+    if (!current) throw new Error('ticket ausente no teste')
+    current.aiGeneration += 1
+    current.aiStatus = 'pending'
+    await tickets.update(current, current.version)
+    finish(CLS)
+
+    await expect(summarizing).rejects.toThrow('A conversa mudou durante o resumo')
+    expect((await tickets.byId(id))?.aiStatus).toBe('pending')
   })
 })

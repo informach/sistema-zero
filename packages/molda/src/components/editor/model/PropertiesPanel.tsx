@@ -61,11 +61,13 @@ export function PropertiesPanel({
         <label className="flex flex-col gap-1">
           <span className="text-xs font-bold text-mld-muted">{copy.name}</span>
           <input
+            name="molda-part-name"
+            autoComplete="off"
             value={name}
             onChange={(event) => setName(event.target.value)}
             onBlur={submitName}
             maxLength={MOLDA_LIMITS.maxPartNameChars}
-            className="min-h-9 rounded-lg border-2 border-mld-border bg-mld-bg px-2 text-sm font-bold text-mld-text focus-visible:border-mld-accent focus-visible:outline-none"
+            className="min-h-11 rounded-lg border-2 border-mld-border bg-mld-bg px-2 text-sm font-bold text-mld-text focus-visible:border-mld-accent focus-visible:outline-none"
           />
         </label>
         <p className="text-xs text-mld-muted">
