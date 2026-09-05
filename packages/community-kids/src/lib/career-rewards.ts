@@ -15,10 +15,11 @@ export interface CareerRewardInfo {
  * ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança sobe de posto e a
  * caixa não muda.
  *
- * Por isso três postos do meio (Explorador(a), Mestre, Arquiteto(a)) não anunciam ferramenta
- * nenhuma — porque não abrem nenhuma. O que eles dão de verdade é o posto e a trilha nova, e é
- * isso que a copy diz. `tests/career-rewards-conformance.test.ts` trava as promessas contra o
- * core e contra as constantes dos portões.
+ * Por isso dois postos do meio (Mestre, Arquiteto(a)) não anunciam ferramenta nenhuma — porque
+ * não abrem nenhuma. O que eles dão de verdade é o posto e a trilha nova, e é isso que a copy
+ * diz. O Explorador(a) anuncia o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do
+ * modelo, é recompensa — decisão dela, 05/09/2026). `tests/career-rewards-conformance.test.ts`
+ * trava as promessas contra o core e contra as constantes dos portões.
  */
 export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   noob: {
@@ -31,13 +32,14 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
       'Você cria os seus jogos quando quiser, com as ferramentas dos cursos que terminou, e desenha os seus personagens no Pinta.',
   },
   hacker: {
-    title: 'Pensa + Zappy + Molda',
+    title: 'Pensa + Zappy',
     description:
-      'O Pensa te ajuda a planejar a ideia do jogo, o Zappy fica do seu lado dentro do Estúdio, e o Molda abre a sua oficina 3D.',
+      'O Pensa te ajuda a planejar a ideia do jogo e o Zappy fica do seu lado dentro do Estúdio.',
   },
   explorer: {
-    title: 'Um posto novo no mapa',
-    description: 'Uma trilha nova se abre, com jogos que levam você para mundos maiores.',
+    title: 'Molda, a sua oficina 3D',
+    description:
+      'Uma trilha nova se abre, e com ela o Molda: modele peças, pinte texturas e crie céus 360° para os seus jogos 3D.',
   },
   elite: {
     title: 'Um posto novo no mapa',

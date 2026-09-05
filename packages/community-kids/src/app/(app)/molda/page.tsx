@@ -16,12 +16,12 @@ export const dynamic = 'force-dynamic'
  * locais ao navegador (IndexedDB por perfil) — zero backend próprio.
  *
  * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
- * de Inventor(a), e acesso completo. A mesma ida também resolve o Estúdio
+ * do Explorador(a) de Mundos, e acesso completo. A mesma ida também resolve o Estúdio
  * (`studioOwned` do adapter: atalho e dica do "Trazer do Molda").
  *
- * ⚠️ O Molda abre no Inventor(a) (`THREE_D_CREATION_MIN_LEVEL`), o degrau em que a
- * trilha 3D começa — NÃO no Construtor(a) do Pinta: modelar só faz sentido para
- * quem já constrói jogos 3D.
+ * ⚠️ O Molda abre no Explorador(a) de Mundos (`THREE_D_CREATION_MIN_LEVEL`, decisão dela
+ * 05/09/2026): é o posto que ganha o kit Jogo 3D no Estúdio, o consumidor do que a
+ * oficina produz — NÃO no Construtor(a) do Pinta nem no Inventor(a) da IA.
  */
 export default async function MoldaPage() {
   // `session.id` = o PERFIL ativo (kids) → a galeria do Molda usa o MESMO

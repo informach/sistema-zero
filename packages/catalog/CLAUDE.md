@@ -31,8 +31,8 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > **Molda** (kids, R$97 — `kind: 'tool'`, entrega `community` courseRef `molda`, 04/09/2026; a
 > OFICINA 3D (modelos low poly `.glb`, texturas `.png`, céus `.hdr` para os jogos 3D do Estúdio),
 > quarto irmão do fluxo Pensa→Pinta→Molda→Estúdio — a chave casa com o
-> `/members/access?refs=molda` da página `/molda` (portão de carreira no Inventor(a),
-> `THREE_D_CREATION_MIN_LEVEL`); galeria local ao navegador + "Guardado na sua conta" pela tool
+> `/members/access?refs=molda` da página `/molda` (portão de carreira no Explorador(a) de Mundos
+> desde 05/09, `THREE_D_CREATION_MIN_LEVEL`); galeria local ao navegador + "Guardado na sua conta" pela tool
 > `molda` do members; oferta padrão `molda`; componente `sortOrder: 6` do combo abaixo — ⚠️ o seed só
 > CRIA o combo quando não existe: em staging/prod o operador adiciona o componente pelo admin E
 > concede `molda` aos assinantes ativos) ·
