@@ -70,7 +70,11 @@ const EnvSchema = z
     // ── Conversões (bolsista → assinatura) e bônus do embaixador ─────────────
     /** Secret HMAC do consumer `referrals` no payments (seed-consumer imprime). */
     PAYMENTS_WEBHOOK_HMAC_SECRET: z.string().min(16).optional(),
-    /** Rota interna do payments (private networking; enriquece o payment.paid). */
+    /**
+     * Rota interna do payments (private networking; enriquece o payment.paid).
+     * ⚠️ O default é o DEV local; em deploy o payments escuta na PORT do
+     * Railway — `http://payments.railway.internal:8080`, não :3001.
+     */
     PAYMENTS_BASE_URL: z.string().url().default('http://localhost:3001'),
     PAYMENTS_INTERNAL_TOKEN: z.string().min(16).optional(),
     /** Leitura pública do catalog (classifica a oferta da conversão). */

@@ -238,7 +238,9 @@ Envs de prod (fail-fast): `NODE_ENV=production`, `APP_ENV`, `PORT=3012`, `HOST=:
 **Extensão 09/2026** (opcionais em dev; com `PAYMENTS_WEBHOOK_HMAC_SECRET` presente em prod, o
 refine EXIGE `PAYMENTS_INTERNAL_TOKEN` + URLs não-loopback): `PAYMENTS_WEBHOOK_HMAC_SECRET` (do
 seed-consumer no payments — liga o consumer), `PAYMENTS_BASE_URL`
-(`http://payments.railway.internal:3001`), `PAYMENTS_INTERNAL_TOKEN`, `CATALOG_BASE_URL`
+(⚠️ **`http://payments.railway.internal:8080`** — o payments escuta na PORT que o Railway injeta,
+não na 3001 do dev local; conferido no fiscal, que já o consome), `PAYMENTS_INTERNAL_TOKEN`
+(= o `INTERNAL_API_TOKEN` do payments, o MESMO valor que o fiscal usa), `CATALOG_BASE_URL`
 (`http://catalog.railway.internal:3003`), `CONVERSION_OFFER_SLUGS` (csv, default
 `comunidade-dos-criadores-mensal,comunidade-dos-criadores-anual`), `BONUS_AMOUNT_CENTS` (3000),
 `BONUS_MATURE_HOURS` (180 = 7d+12h, régua da NFS-e), `CONVERSION_SWEEP_INTERVAL_MS` (15min),
