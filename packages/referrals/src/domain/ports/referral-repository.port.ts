@@ -128,13 +128,16 @@ export interface ConversionListItem extends ConversionRecord {
   redemptionEmail: string
 }
 
-/** Item do ciclo de notificação (eligible ainda não avisado). */
+/**
+ * Item do ciclo de notificação (eligible ainda não avisado). Só o ID do
+ * embaixador: nome/e-mail/token são RELIDOS na hora do envio (entre listar e
+ * enviar o admin pode desativar ou rotacionar o token, e o mark-after-send
+ * tornaria permanente um e-mail com link morto).
+ */
 export interface ConversionToNotify {
   id: string
   bonusCents: number
-  ambassadorName: string | null
-  ambassadorEmail: string | null
-  ambassadorPageToken: string | null
+  ambassadorId: string | null
 }
 
 export interface ReferralRepository {
@@ -157,13 +160,12 @@ export interface ReferralRepository {
     accountUserId: string,
   ): Promise<(AmbassadorRecord & { code: string | null }) | null>
   /**
-   * Vincula a CONTA a um embaixador externo já cadastrado com o mesmo e-mail
-   * (idempotente p/ a mesma conta; e-mail de OUTRA conta → null).
+   * ⚠️ Consulta SÓ para decidir "já existe cadastro com este e-mail" — NUNCA
+   * para vincular. A plataforma não verifica e-mail (`/auth/register` é público
+   * e nasce `active`), então "mesmo e-mail" não prova identidade: vincular
+   * daria a capability-URL do embaixador a quem registrasse o e-mail dele.
    */
-  linkAmbassadorAccount(
-    email: string,
-    accountUserId: string,
-  ): Promise<(AmbassadorRecord & { code: string | null }) | null>
+  findAmbassadorByEmail(email: string): Promise<(AmbassadorRecord & { code: string | null }) | null>
   /** Chave Pix cadastrada pelo PRÓPRIO embaixador (capability da página). */
   setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean>
   /** Só os 2 counts do painel (sem re-buscar o embaixador que já está em mãos). */

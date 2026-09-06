@@ -225,9 +225,13 @@ assinada ao gateway) — landing nova DEVE entrar nos dois regex. Testes:
 {pixKey, items}` e o `EmbaixadorPainel` ganhou o card **"Seus bônus"** — SÓ aparece com ≥1
 conversão (quem só presenteia não vê nada de dinheiro): lista cada bônus (valor via
 `formatBRLFromCents2` do `lib/money.ts` — invariante 3, nada de formatador local; estado: na
-garantia/liberado/pago), campo de **chave Pix** (salvar → POST `/api/embaixador/pix` →
+garantia/liberado/pago — ⚠️ **"liberado, pagamento a caminho" SÓ com chave cadastrada**, senão diz
+"falta a sua chave Pix": sem ela o Pix fica parado e prometer o contrário faz a pessoa fechar a
+página sem resolver), campo de **chave Pix** (salvar → POST `/api/embaixador/pix` →
 `postAmbassadorPix` → PATCH by-token no referrals, envelope [200/404/429]; ⚠️ o catch distingue
-4xx — chave inválida é DETERMINÍSTICO, a copy não pode dizer "tente em instantes") e o texto dos
+4xx — chave inválida é DETERMINÍSTICO, a copy não pode dizer "tente em instantes"; a mensagem é
+`role="alert"` + `aria-describedby` no input, e EDITAR o campo limpa o "Chave Pix salva!", senão
+quem corrige a chave sai achando que salvou) e o texto dos
 termos (agradecimento único por Pix, sem vínculo; a usuária valida o texto com o contador ANTES
 de divulgar). Client `updateAmbassadorPix` no `gateway-client.ts`; `TOKEN_RE` único no
 `server/referrals.ts` (invite + pix); o `[token].astro` tipa o bônus por

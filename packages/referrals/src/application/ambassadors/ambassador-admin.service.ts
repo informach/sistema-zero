@@ -95,22 +95,35 @@ export class AmbassadorAdminService {
 
   /**
    * Auto-cadastro do pai/responsável (área dos pais): get-or-create pela CONTA.
-   * E-mail que já é embaixador externo (cadastro admin) é VINCULADO em vez de
-   * duplicado; e-mail preso a OUTRA conta → conflito (aflora ao suporte).
+   *
+   * ⚠️⚠️ **NUNCA vincula uma conta a um embaixador existente só porque o e-mail
+   * bate** (achado do 2º full review). A plataforma NÃO verifica e-mail
+   * (`/auth/register` é público e a conta nasce `active`), então "mesmo e-mail"
+   * não prova identidade: quem registrasse a conta com o e-mail de um
+   * embaixador criado pelo admin receberia a capability-URL dele e trocaria a
+   * chave Pix — sequestro silencioso do bônus, sem nenhum aviso ao dono.
+   * O caminho seguro é o e-mail ser o CANAL, não a credencial: reenviamos o
+   * magic-link para o endereço do embaixador (só o dono abre a caixa) e a conta
+   * segue sem vínculo (`email_pending`).
    */
   async selfEnroll(input: {
     accountUserId: string
     email: string
     name: string
   }): Promise<
-    { kind: 'ok'; ambassador: AmbassadorView; created: boolean } | { kind: 'email_conflict' }
+    | { kind: 'ok'; ambassador: AmbassadorView; created: boolean }
+    | { kind: 'email_pending'; emailSent: boolean }
   > {
     const email = normalizeEmail(input.email)
     const byAccount = await this.repo.findAmbassadorByAccount(input.accountUserId)
     if (byAccount) return { kind: 'ok', ambassador: this.toView(byAccount), created: false }
 
-    const linked = await this.repo.linkAmbassadorAccount(email, input.accountUserId)
-    if (linked) return { kind: 'ok', ambassador: this.toView(linked), created: false }
+    const byEmail = await this.repo.findAmbassadorByEmail(email)
+    if (byEmail) {
+      const emailSent = await this.sendLinkEmail(byEmail)
+      this.logger.info('referrals.self_enroll_email_pending', { ambassadorId: byEmail.id })
+      return { kind: 'email_pending', emailSent }
+    }
 
     const created = await this.create({
       name: input.name,
@@ -125,13 +138,17 @@ export class AmbassadorAdminService {
       // UNIQUE parcial — re-buscar pela conta devolve o registro dele.
       const raced = await this.repo.findAmbassadorByAccount(input.accountUserId)
       if (raced) return { kind: 'ok', ambassador: this.toView(raced), created: false }
-      return { kind: 'email_conflict' }
     }
-    // email_exists: corrida com outro request (mesma conta) OU e-mail de outra
-    // conta — o retry do link resolve a corrida; o resto é conflito real.
-    const retry = await this.repo.linkAmbassadorAccount(email, input.accountUserId)
-    if (retry) return { kind: 'ok', ambassador: this.toView(retry), created: false }
-    return { kind: 'email_conflict' }
+    // email_exists: alguém cadastrou este e-mail entre a consulta e o INSERT.
+    const racedByEmail = await this.repo.findAmbassadorByEmail(email)
+    // ⚠️ Se quem venceu a corrida foi a PRÓPRIA conta (dois cliques, duas
+    // abas), o desfecho é retomada — não "pendente por e-mail", que mandaria a
+    // pessoa esperar um link do próprio cadastro que ela acabou de criar.
+    if (racedByEmail?.accountUserId === input.accountUserId) {
+      return { kind: 'ok', ambassador: this.toView(racedByEmail), created: false }
+    }
+    const emailSent = racedByEmail ? await this.sendLinkEmail(racedByEmail) : false
+    return { kind: 'email_pending', emailSent }
   }
 
   /** Reenvia o e-mail do magic-link (não rotaciona o token). */

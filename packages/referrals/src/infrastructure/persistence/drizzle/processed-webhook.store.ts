@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, eq, isNull, lte, or } from 'drizzle-orm'
+import { and, eq, inArray, isNull, lte, or, sql } from 'drizzle-orm'
 import type {
   ProcessedWebhookStore,
   WebhookClaim,
@@ -95,12 +95,48 @@ export class DrizzleProcessedWebhookStore implements ProcessedWebhookStore {
   async pruneProcessedBefore(cutoff: Date): Promise<number> {
     // Retenção (a metade do molde fiscal que o porte tinha largado): o consumer
     // recebe TODO pagamento da plataforma, então sem poda a tabela de dedupe
-    // cresce com as vendas da empresa, não com as bolsas. Só linhas JÁ
-    // processadas — reserva em andamento nunca é podada.
-    const rows = await this.db
-      .delete(processedWebhooks)
-      .where(lte(processedWebhooks.processedAt, cutoff))
-      .returning({ id: processedWebhooks.deliveryId })
-    return rows.length
+    // cresce com as vendas da empresa, não com as bolsas.
+    // ⚠️ Sob advisory xact-lock, como no fiscal: sem ele N réplicas rodam o
+    // MESMO delete e as perdedoras ficam presas em row-lock com transação
+    // aberta. Quem não pega o lock devolve 0 e segue.
+    return await this.db.transaction(async (tx) => {
+      const [locked] = await tx.execute<{ locked: boolean }>(
+        sql`select pg_try_advisory_xact_lock(${WEBHOOK_PRUNE_LOCK_KEY}::bigint) as locked`,
+      )
+      if (!locked?.locked) return 0
+      const expired = or(
+        lte(processedWebhooks.processedAt, cutoff),
+        // Claim ÓRFÃO (morte entre claim e markProcessed): sem esta perna a
+        // linha `processing` fica para sempre — o fiscal também a poda.
+        and(isNull(processedWebhooks.processedAt), lte(processedWebhooks.processingAt, cutoff)),
+      )
+      // ⚠️ LIMITE por ciclo: a tabela recebe TODO pagamento da plataforma, e o
+      // primeiro corte depois de 30 dias apagaria o backlog inteiro num
+      // statement só — estouro do statement_timeout (30s) faria a poda falhar
+      // igual em todo ciclo e nunca podar nada. Em lotes ela converge.
+      const rows = await tx
+        .delete(processedWebhooks)
+        .where(
+          inArray(
+            processedWebhooks.deliveryId,
+            tx
+              .select({ id: processedWebhooks.deliveryId })
+              .from(processedWebhooks)
+              .where(expired)
+              .limit(PRUNE_BATCH_SIZE),
+          ),
+        )
+        .returning({ id: processedWebhooks.deliveryId })
+      return rows.length
+    })
   }
 }
+
+/**
+ * Lock da poda do dedupe — espaço GLOBAL do Postgres compartilhado. Vizinha da
+ * chave do sweep (`7429184620031201`) e distinta dela de propósito: a poda não
+ * pode disputar o lock com a maturação.
+ */
+const WEBHOOK_PRUNE_LOCK_KEY = '7429184620031202'
+/** Teto por ciclo (a cada 15min converge; sem ele o 1º corte estoura o timeout). */
+const PRUNE_BATCH_SIZE = 5_000

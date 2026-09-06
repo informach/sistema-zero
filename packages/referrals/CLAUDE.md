@@ -93,6 +93,12 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   `payment.refunded`: `pending` → `canceled`; o repo devolve o STATUS no `not_pending` e o alerta
   ERROR `referrals.refund_after_bonus_eligible` sai SÓ p/ `eligible|paid` — `self_blocked` (bônus
   nunca existiu) e `canceled` (re-entrega) são mudos, senão o Sentry acusaria "devolver Pix" falso.
+  ⚠️⚠️ **Corrida paid × refunded**: entre o `getPayment` e o INSERT passam 2 S2S, e um estorno que
+  chegue nessa janela não acha conversão para cancelar (é consumido) — a conversão nasceria DEPOIS
+  do estorno e viraria Pix sobre venda devolvida. Por isso, logo após um INSERT que criou linha, o
+  serviço **re-verifica o pagamento** e cancela o que acabou de criar se ele não estiver mais
+  `PAID` (`cancelIfNoLongerPaid`, ERROR alertável). Custo zero no agregado: só o caminho raro de
+  bolsista convertido paga a ida extra. Mesma régua do fiscal, que re-verifica ao emitir.
 - **Sweep** (`SweepConversionsService`, timer no composition-root a cada
   `CONVERSION_SWEEP_INTERVAL_MS` — ⚠️ **SEMPRE ligado, independente do secret do consumer**:
   conversões já gravadas, inclusive as do `mature-now`, precisam promover/avisar mesmo com o
@@ -101,10 +107,16 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   no composition-root ele não guardaria nada); fase 2 `notify()` fora da tx: e-mail
   `referrals-bonus-eligible` {nome, valor, link da página} com mark-after-send em `notified_at` +
   Idempotency-Key `bonus-eligible:<id>` — ⚠️ **só embaixador ATIVO** (`listConversionsToNotify`
-  filtra: página de desativado 404aria o link e a notificação seria queimada; reativou → o
-  próximo ciclo envia); fase 3: `pruneProcessedBefore` poda o dedupe do consumer com 30 dias de
-  retenção (metade do molde fiscal que o porte tinha largado — a tabela crescia com TODAS as
-  vendas da empresa). Links do funil SEMPRE via `domain/links.ts`
+  filtra E o serviço RELÊ o embaixador na hora do envio: entre listar e enviar o admin pode
+  desativar/rotacionar o token, e o mark-after-send tornaria PERMANENTE um e-mail com link morto);
+  ⚠️ **4xx do messaging é PERMANENTE** (template ausente, destinatário suprimido) → marca
+  notificado + ERROR alertável, senão a linha ocupa vaga fixa no lote e bloqueia os avisos novos
+  para sempre (head-of-line); cada item é isolado por try/catch. Fase 3: `pruneProcessedBefore`
+  poda o dedupe do consumer (30 dias, **sob advisory lock próprio `7429184620031202`**, em lotes
+  de 5k e apagando também **claims órfãos** — as três metades que o porte do fiscal largara), num
+  `try` PRÓPRIO: soluço no sweep não pode cancelar a poda (tabela grande é justamente o que faz o
+  sweep começar a falhar). O ciclo tem guarda de reentrância e o timer é `unref()`.
+  Links do funil SEMPRE via `domain/links.ts`
   (`ambassadorPageUrl`/`scholarshipShareUrl` — dono único do shape; eram 5 pontos de construção).
 - **Status**: `CONVERSION_STATUSES` (const no port — fonte única; o admin espelha com teste de
   conformance). O que o EMBAIXADOR enxerga = `AMBASSADOR_VISIBLE_CONVERSION_STATUSES`
@@ -114,18 +126,21 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   `pending`.
 - **Chave Pix**: campo `ambassadors.pix_key` — o embaixador cadastra NA PÁGINA dele (PATCH
   by-token via funil); o admin só COPIA na tela de bônus.
-- **Auto-cadastro do responsável**: `GET|POST /referrals/me/ambassador` (rotas JWT "me"): a
-  identidade é **`x-auth-account-id ?? x-auth-user-id`** (⚠️ sessão de PERFIL kids manda o perfil
-  no user-id e a CONTA no account-id — sem o fallback um perfil prenderia o e-mail da conta a um
-  uuid de perfil e o dono real cairia em 409 p/ sempre); get-or-create pela CONTA; e-mail já
-  existe como embaixador externo → **LINKA** `account_user_id` (não duplica); e-mail de OUTRA
-  conta → 409 `AMBASSADOR_EMAIL_CONFLICT`; corrida de dois selfEnroll → a UNIQUE parcial da conta
-  vira `account_exists` e o perdedor re-busca (nunca 500). Devolve `{enrolled, ambassador:
-  {pageUrl, shareUrl ABSOLUTOS via viewOf do service, pixKeySet, status}, stats
-  (`getAmbassadorStats` — 2 counts numa ida, sem re-buscar pelo token), bonus: {counts,
-  amountCents}}` + `created` no POST (true = o e-mail do link SAIU; vínculo/retomada não manda
-  e-mail e o app não pode prometer um). `bonus.amountCents` = env `BONUS_AMOUNT_CENTS` — a copy
-  dos apps NUNCA hardcoda o valor.
+- **Auto-cadastro do responsável**: `GET|POST /referrals/me/ambassador` (rotas JWT "me").
+  ⚠️⚠️ **NUNCA vincular uma conta a um embaixador existente por "o e-mail bate"** (achado do 2º
+  full review): `/auth/register` é PÚBLICO e a conta nasce `active` **sem verificação de e-mail**,
+  então quem registrasse o e-mail de um embaixador criado pelo admin receberia a capability-URL
+  dele e trocaria a chave Pix — sequestro silencioso do bônus. O e-mail é o CANAL, não a
+  credencial: e-mail já cadastrado → o magic-link é (re)enviado para a caixa do DONO e a resposta
+  é `{enrolled:false, emailPending:true, linkEmailSent}`, sem vínculo e sem link no corpo.
+  ⚠️ Sessão de PERFIL (criança) é **recusada com 403** — a presença de `x-auth-account-id` é o
+  marcador dela; embaixador é assunto da Área dos pais (defesa em profundidade: o shim do kids
+  também gateia, mas o serviço não depende disso). Corrida de dois selfEnroll da MESMA conta:
+  quem perde re-busca (por conta ou por e-mail) e devolve retomada, nunca 500 nem "pendente".
+  Devolve `{enrolled, ambassador: {pageUrl, shareUrl ABSOLUTOS via `viewOf` do service, pixKeySet,
+  status}, stats (`getAmbassadorStats` — 2 counts numa ida, sem re-buscar pelo token), bonus:
+  {counts, amountCents}}` + `created` no POST (true = o e-mail do link SAIU). `bonus.amountCents`
+  = env `BONUS_AMOUNT_CENTS` — a copy dos apps NUNCA hardcoda o valor.
 
 ## Borda HTTP (tudo VIA GATEWAY, exceto o consumer)
 
@@ -135,9 +150,13 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   — a JORNADA do bolsista), POST `:id/resend-link` (Idempotency-Key versionada por
   `link_email_count`), PATCH `:id` {status, rotateToken}, GET `conversions`
   (`?status&limit&offset`; `amountCents` viaja como STRING — bigint), POST
-  `conversions/:id/mark-paid` {note?} (grava `paid_marked_at`/`paid_marked_by` do X-Auth-User) e
-  POST `conversions/:id/mature-now` (antecipa a garantia — staging/exceção).
-  Desativar o embaixador desativa o CÓDIGO junto.
+  `conversions/:id/mark-paid` {note?} (grava `paid_marked_at` + `paid_marked_by` = **nome E id** do
+  ator: o nome sozinho é editável pelo próprio operador e não serve de trilha de quem liberou
+  dinheiro) e POST `conversions/:id/mature-now` (antecipa a garantia — staging/exceção).
+  ⚠️ `GET /referrals/admin/conversions` tem rota PRÓPRIA no gateway
+  (`referrals-admin-conversions-read`, **admin+**; literal vence o wildcard por especificidade): a
+  listagem carrega a CHAVE PIX do embaixador e o e-mail da família bolsista, leitura que não é de
+  staff. Desativar o embaixador desativa o CÓDIGO junto.
 - `/referrals/me/*` — rotas JWT do USUÁRIO logado (gateway `referrals-me-ambassador-{get,post}`,
   `statuses:['active']` sem roles): GET/POST `/referrals/me/ambassador` (auto-cadastro, ver
   §Conversões).

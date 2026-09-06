@@ -206,15 +206,11 @@ export class InMemoryReferralRepository implements ReferralRepository {
     return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
   }
 
-  async linkAmbassadorAccount(
+  async findAmbassadorByEmail(
     email: string,
-    accountUserId: string,
   ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
-    const a = this.ambassadors.find(
-      (x) => x.email === email && (x.accountUserId === null || x.accountUserId === accountUserId),
-    )
+    const a = this.ambassadors.find((x) => x.email === email)
     if (!a) return null
-    a.accountUserId = accountUserId
     return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
   }
 
@@ -500,16 +496,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
         return a?.status === 'active'
       })
       .slice(0, limit)
-      .map((c) => {
-        const a = this.ambassadors.find((x) => x.id === c.ambassadorId)
-        return {
-          id: c.id,
-          bonusCents: c.bonusCents,
-          ambassadorName: a?.name ?? null,
-          ambassadorEmail: a?.email ?? null,
-          ambassadorPageToken: a?.pageToken ?? null,
-        }
-      })
+      .map((c) => ({ id: c.id, bonusCents: c.bonusCents, ambassadorId: c.ambassadorId }))
   }
 
   async markConversionNotified(id: string, when: Date): Promise<void> {

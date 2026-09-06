@@ -63,43 +63,78 @@ function req(path: string, init: RequestInit = {}) {
 
 describe('borda HTTP do referrals', () => {
   describe('rotas me (auto-cadastro do responsável)', () => {
-    test('sessão de PERFIL vincula pela CONTA (x-auth-account-id vence o user-id)', async () => {
+    test('sessão de PERFIL (criança) é RECUSADA: embaixador é da Área dos pais', async () => {
       const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
-      const headers = {
+      // Perfil kids: user-id = perfil; account-id = a CONTA do responsável. A
+      // presença do account-id é o marcador da sessão de perfil.
+      const profileHeaders = {
         'x-internal-token': INTERNAL_TOKEN,
-        // Perfil kids: user-id = perfil; account-id = a CONTA do responsável.
         'x-auth-user-id': '11111111-1111-4111-8111-111111111111',
         'x-auth-account-id': '22222222-2222-4222-8222-222222222222',
         'x-auth-user-email': 'mae@example.com',
-        'x-auth-user-name': encodeURIComponent('Maria José'),
       }
-      const post = await app.handle(req('/referrals/me/ambassador', { method: 'POST', headers }))
-      expect(post.status).toBe(201)
-      const body = (await post.json()) as {
+      const post = await app.handle(
+        req('/referrals/me/ambassador', { method: 'POST', headers: profileHeaders }),
+      )
+      expect(post.status).toBe(403)
+      const get = await app.handle(req('/referrals/me/ambassador', { headers: profileHeaders }))
+      expect(get.status).toBe(403)
+      expect(repo.ambassadors).toHaveLength(0)
+
+      // A sessão da CONTA (sem account-id) cadastra normalmente.
+      const ok = await app.handle(
+        req('/referrals/me/ambassador', {
+          method: 'POST',
+          headers: {
+            'x-internal-token': INTERNAL_TOKEN,
+            'x-auth-user-id': '22222222-2222-4222-8222-222222222222',
+            'x-auth-user-email': 'mae@example.com',
+            'x-auth-user-name': encodeURIComponent('Maria José'),
+          },
+        }),
+      )
+      expect(ok.status).toBe(201)
+      const body = (await ok.json()) as {
         enrolled: boolean
         created: boolean
         bonus: { amountCents: number }
-        ambassador: { pageUrl: string; shareUrl: string | null }
+        ambassador: { pageUrl: string }
       }
       expect(body.enrolled).toBe(true)
       expect(body.created).toBe(true)
       expect(body.bonus.amountCents).toBe(3000)
       expect(body.ambassador.pageUrl.startsWith(`${FUNNEL_URL}/embaixador/`)).toBe(true)
-      // O vínculo durável é a CONTA — nunca o uuid do perfil.
       expect(repo.ambassadors[0]!.accountUserId).toBe('22222222-2222-4222-8222-222222222222')
+    })
 
-      // GET da sessão da CONTA (sem perfil) acha o MESMO cadastro.
-      const get = await app.handle(
+    test('e-mail que já é embaixador NÃO é vinculado: link vai p/ a caixa do dono', async () => {
+      const { app, repo, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+      // Embaixador criado pelo admin (sem conta) — o caso do sequestro.
+      await repo.createAmbassadorWithCode({
+        name: 'Vó Cida',
+        email: 'cida@example.com',
+        pageToken: 'z'.repeat(43),
+        code: 'cida-x7k2',
+      })
+      const before = gateway.callsOf('sendEmail').length
+
+      const res = await app.handle(
         req('/referrals/me/ambassador', {
+          method: 'POST',
           headers: {
             'x-internal-token': INTERNAL_TOKEN,
-            'x-auth-user-id': '22222222-2222-4222-8222-222222222222',
-            'x-auth-user-email': 'mae@example.com',
+            'x-auth-user-id': '33333333-3333-4333-8333-333333333333',
+            'x-auth-user-email': 'cida@example.com',
           },
         }),
       )
-      const view = (await get.json()) as { enrolled: boolean }
-      expect(view.enrolled).toBe(true)
+      expect(res.status).toBe(200)
+      const body = (await res.json()) as { enrolled: boolean; emailPending?: boolean }
+      expect(body.enrolled).toBe(false)
+      expect(body.emailPending).toBe(true)
+      expect(JSON.stringify(body)).not.toContain('/embaixador/')
+      expect(repo.ambassadors[0]!.accountUserId).toBeNull()
+      expect(gateway.callsOf('sendEmail').length).toBe(before + 1)
     })
 
     test('re-POST da mesma conta é retomada: created false e nenhum e-mail novo prometido', async () => {

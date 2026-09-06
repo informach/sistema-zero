@@ -127,14 +127,45 @@ export class RecordConversionService {
         offerSlug: offer.slug,
         selfBlocked,
       })
+      // ⚠️ TOCTOU do estorno: entre o `getPayment` e este INSERT passaram 2 S2S
+      // (payments + catalog). Um `payment.refunded` que chegue nessa janela não
+      // acha conversão nenhuma para cancelar e é consumido — a conversão nasce
+      // DEPOIS do estorno e vira Pix pago sobre venda devolvida. Re-verificamos
+      // o pagamento só aqui (caminho raro: bolsista que assinou de verdade) e
+      // cancelamos o que acabamos de criar. Mesma régua do fiscal, que
+      // re-verifica o pagamento no momento de emitir.
+      await this.cancelIfNoLongerPaid(paymentId)
     }
     return { kind: 'ok' }
+  }
+
+  private async cancelIfNoLongerPaid(paymentId: string): Promise<void> {
+    let fresh: Awaited<ReturnType<PaymentsClient['getPayment']>>
+    try {
+      fresh = await this.payments.getPayment(paymentId)
+    } catch (error) {
+      // Não dá para afirmar que estornou — a conversão fica e o estorno, se
+      // vier, cancela pelo caminho normal (ou aflora no alerta pós-garantia).
+      this.logger.warn('referrals.conversion_recheck_failed', { paymentId, error: msg(error) })
+      return
+    }
+    if (fresh && fresh.status === 'PAID') return
+    const outcome = await this.repo.cancelPendingConversionByPayment(paymentId)
+    this.logger.error('referrals.conversion_canceled_refund_race', {
+      paymentId,
+      paymentStatus: fresh?.status ?? 'not_found',
+      outcome: outcome.kind,
+    })
   }
 
   private async onRefunded(paymentId: string): Promise<HandleResult> {
     const outcome = await this.repo.cancelPendingConversionByPayment(paymentId)
     if (outcome.kind === 'canceled') {
       this.logger.info('referrals.conversion_canceled_on_refund', { paymentId })
+    } else if (outcome.kind === 'not_found') {
+      // O caso comum (estorno de quem não é bolsista) é ruído, mas o silêncio
+      // total escondia a corrida do C1 — fica em debug, com o paymentId.
+      this.logger.debug('referrals.refund_without_conversion', { paymentId })
     } else if (
       outcome.kind === 'not_pending' &&
       (outcome.status === 'eligible' || outcome.status === 'paid')

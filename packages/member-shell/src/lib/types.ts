@@ -1122,8 +1122,15 @@ export interface AmbassadorEnrollmentView {
     /** Valor VIGENTE do bônus (env do referrals) — a copy do app NUNCA o hardcoda. */
     amountCents?: number
   }
-  /** SÓ no POST: true = cadastro novo (o e-mail do link SAIU); false = vínculo/retomada. */
+  /** SÓ no POST: true = cadastro novo (o e-mail do link SAIU); false = retomada. */
   created?: boolean
+  /**
+   * SÓ no POST: já existe embaixador com este e-mail e a plataforma não
+   * verifica e-mail, então o vínculo NÃO é feito — o magic-link vai para a
+   * caixa do dono. `linkEmailSent` diz se o envio saiu.
+   */
+  emailPending?: boolean
+  linkEmailSent?: boolean
 }
 
 /**

@@ -3428,6 +3428,20 @@ const config: GatewayConfigInput = {
     // Admin (painel): LEITURA staff+ / ESCRITA admin+, wildcards no molde do
     // hub-admin. COM `referralsInternalTransforms` (o serviço exige o
     // x-internal-token — X-Auth-User-* só são confiáveis vindos do gateway).
+    // ⚠️ Literal ANTES do wildcard: a listagem de BÔNUS carrega a CHAVE PIX do
+    // embaixador (instrumento financeiro pessoal) e o e-mail da família
+    // bolsista na mesma linha. Leitura disso é admin+, não staff+ — quem paga
+    // é a dona. (O matcher dá precedência ao literal sobre o `*`.)
+    {
+      id: 'referrals-admin-conversions-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/conversions',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'referrals-admin-read',
       methods: ['GET'],

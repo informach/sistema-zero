@@ -125,16 +125,35 @@ export function createApplication(env: Env): Application {
   // gravadas — inclusive as antecipadas pelo `mature-now` do admin — precisam
   // ser promovidas/avisadas mesmo com o webhook desligado/rotacionando.
   let sweepTimer: ReturnType<typeof setInterval> | null = null
+  // Guarda de reentrância: um ciclo lento (messaging degradado × 50 envios)
+  // pode passar do intervalo, e dois ciclos sobrepostos na MESMA réplica
+  // reenviariam o lote inteiro (o dano só ficaria contido pela chave de
+  // idempotência do messaging — proteção de terceiro, não nossa).
+  let sweepRunning = false
   async function runSweepCycle(): Promise<void> {
+    if (sweepRunning) {
+      logger.warn('referrals.conversion_sweep_overlap_skipped', {})
+      return
+    }
+    sweepRunning = true
     try {
       await sweep.mature()
       await sweep.notify()
+    } catch (error) {
+      logger.error('referrals.conversion_sweep_failed', { error: serializeError(error) })
+    }
+    try {
       // Retenção do dedupe do consumer (padrão fiscal): 30 dias, muito acima
-      // do lease + janela de re-entrega do outbox do payments.
+      // do lease + janela de re-entrega do outbox do payments (~63min até DEAD).
+      // ⚠️ try PRÓPRIO: um soluço no sweep não pode cancelar a poda — sem ela a
+      // tabela cresce com TODAS as vendas da empresa, e uma tabela grande é
+      // justamente o que faz o sweep começar a falhar (laço que se alimenta).
       const cutoff = new Date(Date.now() - PROCESSED_WEBHOOK_RETENTION_DAYS * 24 * 3600_000)
       await processedWebhooks.pruneProcessedBefore(cutoff)
     } catch (error) {
-      logger.error('referrals.conversion_sweep_failed', { error: serializeError(error) })
+      logger.error('referrals.webhook_prune_failed', { error: serializeError(error) })
+    } finally {
+      sweepRunning = false
     }
   }
 
@@ -145,6 +164,9 @@ export function createApplication(env: Env): Application {
     async start() {
       server = app.listen({ hostname: env.HOST, port: env.PORT })
       sweepTimer = setInterval(() => void runSweepCycle(), env.CONVERSION_SWEEP_INTERVAL_MS)
+      // Não segura o loop de eventos: um teste que suba a app sem `stop()`
+      // penduraria o `bun test` (armadilha conhecida do monorepo).
+      sweepTimer.unref?.()
       void runSweepCycle()
       logger.info('app.started', { port: env.PORT, appEnv: env.APP_ENV ?? 'dev' })
     },

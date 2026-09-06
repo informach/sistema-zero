@@ -384,27 +384,16 @@ export class DrizzleReferralRepository implements ReferralRepository {
     return { ...toAmbassador(row.ambassador), code: row.code?.code ?? null }
   }
 
-  async linkAmbassadorAccount(
+  async findAmbassadorByEmail(
     email: string,
-    accountUserId: string,
   ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
-    const [updated] = await this.db
-      .update(ambassadors)
-      .set({ accountUserId, updatedAt: sql`now()` })
-      .where(
-        and(
-          eq(ambassadors.email, email),
-          or(isNull(ambassadors.accountUserId), eq(ambassadors.accountUserId, accountUserId)),
-        ),
-      )
-      .returning()
-    if (!updated) return null
-    const [codeRow] = await this.db
-      .select({ code: codes.code })
-      .from(codes)
-      .where(eq(codes.ambassadorId, updated.id))
+    const [row] = await this.db
+      .select({ ambassador: ambassadors, code: codes.code })
+      .from(ambassadors)
+      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .where(eq(ambassadors.email, email))
       .limit(1)
-    return { ...toAmbassador(updated), code: codeRow?.code ?? null }
+    return row ? { ...toAmbassador(row.ambassador), code: row.code ?? null } : null
   }
 
   async setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean> {
@@ -759,9 +748,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .select({
         id: conversions.id,
         bonusCents: conversions.bonusCents,
-        ambassadorName: ambassadors.name,
-        ambassadorEmail: ambassadors.email,
-        ambassadorPageToken: ambassadors.pageToken,
+        ambassadorId: conversions.ambassadorId,
       })
       .from(conversions)
       .leftJoin(ambassadors, eq(ambassadors.id, conversions.ambassadorId))

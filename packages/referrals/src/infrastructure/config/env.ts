@@ -14,6 +14,8 @@ const BOOL_VALUES = new Set(['true', 'false', '1', '0'])
 const REDEMPTION_LEASE_MARGIN_MS = 5_000
 /** Chamadas S2S sequenciais do PIOR caso do resgate: ensure-buyer + grant + token + send. */
 const REDEMPTION_SEQUENTIAL_CALLS = 4
+/** Idem no consumer: enriquecer no payments + resolver a oferta + re-verificar o estorno. */
+const WEBHOOK_SEQUENTIAL_CALLS = 3
 const optionalBool = (def: boolean) =>
   z
     .string()
@@ -126,6 +128,19 @@ const EnvSchema = z
       REDEMPTION_SEQUENTIAL_CALLS * env.S2S_TIMEOUT_MS + REDEMPTION_LEASE_MARGIN_MS,
     {
       message: 'REDEMPTION_LEASE_MS deve cobrir 4× S2S_TIMEOUT_MS + 5s (o pior caso do resgate)',
+    },
+  )
+  // Mesma invariante do resgate, agora p/ o consumer: o pior caso do handler é
+  // payments + catalog + a re-verificação do estorno = 3× S2S. Lease curto
+  // demais deixa DUAS execuções da mesma entrega concorrendo (a perdedora
+  // queima tentativa e o item caminha p/ DEAD sem virar conversão).
+  .refine(
+    (env) =>
+      env.WEBHOOK_PROCESSING_STALE_MS >=
+      WEBHOOK_SEQUENTIAL_CALLS * env.S2S_TIMEOUT_MS + REDEMPTION_LEASE_MARGIN_MS,
+    {
+      message:
+        'WEBHOOK_PROCESSING_STALE_MS deve cobrir 3× S2S_TIMEOUT_MS + 5s (o pior caso do consumer)',
     },
   )
   // URLs entre serviços/públicas não podem ser loopback em deploy.

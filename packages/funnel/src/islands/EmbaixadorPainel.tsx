@@ -26,14 +26,19 @@ export interface EmbaixadorPainelProps {
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
-function bonusLabel(item: BonusItem): string {
+function bonusLabel(item: BonusItem, hasPixKey: boolean): string {
   if (item.status === 'paid') {
     const when = item.paidMarkedAt
       ? ` em ${new Date(item.paidMarkedAt).toLocaleDateString('pt-BR')}`
       : ''
     return `pago${when}`
   }
-  if (item.status === 'eligible') return 'liberado, pagamento a caminho'
+  // ⚠️ Sem chave cadastrada NÃO há "pagamento a caminho": ele fica parado
+  // esperando o próprio embaixador, e prometer o contrário faz a pessoa
+  // fechar a página sem resolver a única coisa que trava o Pix.
+  if (item.status === 'eligible') {
+    return hasPixKey ? 'liberado, pagamento a caminho' : 'liberado, falta a sua chave Pix'
+  }
   return 'aguardando a garantia de 7 dias'
 }
 
@@ -48,6 +53,11 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
   const [pixKey, setPixKey] = useState(bonus?.pixKey ?? '')
   const [savingPix, setSavingPix] = useState(false)
   const [pixMsg, setPixMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  // Chave que o SERVIDOR tem (só muda quando o salvamento confirma) — digitar
+  // no campo não pode fazer o rótulo do bônus dizer que o Pix vai sair.
+  const [savedPixKey, setSavedPixKey] = useState(bonus?.pixKey ?? '')
+  const hasPixKey = savedPixKey.trim().length > 0
+  const needsPixKey = !hasPixKey && Boolean(bonus?.items.some((i) => i.status === 'eligible'))
 
   async function salvarPix() {
     if (savingPix) return
@@ -63,6 +73,7 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
     setPixMsg(null)
     try {
       await apiPost('/api/embaixador/pix', { token, pixKey: key })
+      setSavedPixKey(key)
       setPixMsg({ kind: 'ok', text: 'Chave Pix salva!' })
     } catch (err) {
       // 4xx é DETERMINÍSTICO (chave inválida/página fora do ar): "tente de
@@ -230,7 +241,7 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
                   Assinatura em {new Date(item.subscribedAt).toLocaleDateString('pt-BR')}
                 </span>
                 <span className="font-semibold text-ink">
-                  {formatBRLFromCents2(item.bonusCents)} · {bonusLabel(item)}
+                  {formatBRLFromCents2(item.bonusCents)} · {bonusLabel(item, hasPixKey)}
                 </span>
               </li>
             ))}
@@ -239,13 +250,29 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
             <label htmlFor={`${uid}-pix`} className="mb-1.5 block text-sm font-semibold text-ink">
               Sua chave Pix para receber
             </label>
+            {needsPixKey && (
+              <p id={`${uid}-pix-hint`} className="mb-2 text-sm font-semibold text-ink">
+                Cadastre a sua chave para o dinheiro sair: sem ela o pagamento fica parado.
+              </p>
+            )}
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 id={`${uid}-pix`}
                 type="text"
                 placeholder="CPF, e-mail, telefone ou chave aleatória"
                 value={pixKey}
-                onChange={(e) => setPixKey(e.target.value)}
+                onChange={(e) => {
+                  setPixKey(e.target.value)
+                  // A mensagem antiga ("Chave Pix salva!") não pode sobreviver à
+                  // edição: quem corrigiu a chave sairia achando que salvou.
+                  setPixMsg(null)
+                }}
+                aria-invalid={pixMsg?.kind === 'err' || undefined}
+                aria-describedby={
+                  [pixMsg ? `${uid}-pix-msg` : '', needsPixKey ? `${uid}-pix-hint` : '']
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
                 className="w-full flex-1 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan"
               />
               <button
@@ -258,7 +285,13 @@ export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: Emba
               </button>
             </div>
             {pixMsg && (
-              <p className={`mt-2 text-sm ${pixMsg.kind === 'ok' ? 'text-ink' : 'text-red-400'}`}>
+              // role=alert: a confirmação/recusa é sobre DINHEIRO e precisa ser
+              // anunciada a quem usa leitor de tela.
+              <p
+                id={`${uid}-pix-msg`}
+                role="alert"
+                className={`mt-2 text-sm ${pixMsg.kind === 'ok' ? 'text-ink' : 'font-semibold text-red-600'}`}
+              >
                 {pixMsg.text}
               </p>
             )}

@@ -1008,8 +1008,14 @@ EXAUSTIVOS** (`CONVERSION_STATUS_LABEL`/`CONVERSION_STATUS_BADGE`/`JOURNEY_LABEL
 no referrals reprova a compilação em vez de cair num rótulo errado sobre dinheiro), travados
 contra a fonte por `tests/conversion-status-conformance.test.ts` (import RELATIVO do port puro do
 referrals, precedente do career-tier-conformance). O badge "Pago" carrega no title quem/quando
-marcou + a `note` quando houver; o `load` da BonusSection tem guarda última-vence (trocar o
-filtro rápido não pinta linhas velhas). Tipos `ConversionStatus`/`ConversionAdminView`;
+marcou + a `note` quando houver, e as DATAS (libera em / pago em + operador) saem também em texto
+VISÍVEL — tooltip não existe no toque nem por teclado, e é justamente o que se usa para programar
+os Pix da semana e auditar quem pagou. O `load` da BonusSection tem guarda última-vence (trocar o
+filtro rápido não pinta linhas velhas) e estado de ERRO próprio: falha de carga NUNCA vira
+"nenhum bônus" (numa tela de dinheiro, o vazio falso faz concluir que não se deve nada).
+⚠️ A seção inteira só renderiza para quem PODE ler: o gateway restringe
+`GET /referrals/admin/conversions` a admin+ (chave Pix + e-mail do bolsista), então para staff ela
+nem aparece. Tipos `ConversionStatus`/`ConversionAdminView`;
 adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
 `app/api/admin/referrals/conversions/{route,[id]/mark-paid/route,[id]/mature-now/route}.ts`
 (cabem nos wildcards `referrals-admin-*` do gateway — nenhuma rota nova lá).

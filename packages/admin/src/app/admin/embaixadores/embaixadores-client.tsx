@@ -253,7 +253,10 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         onChange={(next: number) => setOffset(next)}
       />
 
-      <BonusSection canWrite={canWrite} />
+      {/* A listagem de bônus carrega chave Pix + e-mail do bolsista: o gateway
+          restringe a admin+ (`referrals-admin-conversions-read`). Esconder aqui
+          evita oferecer ao staff uma seção que responderia 403. */}
+      {canWrite ? <BonusSection canWrite={canWrite} /> : null}
 
       {createOpen && (
         <CreateAmbassadorDialog
@@ -344,6 +347,10 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
   const [offset, setOffset] = useState(0)
   const [status, setStatus] = useState<'' | ConversionStatus>('')
   const [loading, setLoading] = useState(true)
+  // ⚠️ Falha de carga NÃO pode virar "nenhum bônus" (régua da casa: lista que
+  // FALHOU ≠ lista vazia). Numa tela de dinheiro, o vazio falso faz a operadora
+  // concluir que não deve nada a ninguém.
+  const [failed, setFailed] = useState(false)
   // Última requisição VENCE: trocar o filtro rápido não deixa uma resposta
   // atrasada pintar linhas do filtro anterior sob o dropdown novo.
   const loadSeq = useRef(0)
@@ -360,8 +367,10 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
       if (seq !== loadSeq.current) return
       setItems(data.items)
       setTotal(data.total)
+      setFailed(false)
     } catch (err) {
       if (seq !== loadSeq.current) return
+      setFailed(true)
       toast.error((err as ApiError).message)
     } finally {
       if (seq === loadSeq.current) setLoading(false)
@@ -397,7 +406,9 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
   function matureNow(row: ConversionAdminView) {
     confirm({
       title: 'Antecipar a garantia?',
-      message: `O bônus de ${row.redemptionName} fica liberado AGORA, antes dos 7 dias de garantia. Se a família pedir estorno depois, o pagamento vira ajuste manual. Use para testes ou exceções conscientes.`,
+      // Nomeia o EMBAIXADOR (é quem recebe), com o bolsista como referência —
+      // numa confirmação sobre dinheiro, o nome errado é o que se confere.
+      message: `O bônus de ${row.ambassadorName ?? 'este embaixador'}, pela assinatura de ${row.redemptionName}, fica liberado AGORA, antes dos 7 dias de garantia. Se a família pedir estorno depois, o acerto vira ajuste manual. Use para testes ou exceções conscientes.`,
       confirmText: 'Antecipar',
       confirmVariant: 'destructive',
       onConfirm: async () => {
@@ -462,14 +473,26 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
           <TableBody>
             {loading ? (
               <TableSkeletonRows rows={3} columns={canWrite ? 7 : 6} />
+            ) : failed ? (
+              <TableRow>
+                <TableCell colSpan={canWrite ? 7 : 6} className="py-8 text-center">
+                  <p className="text-sm text-destructive">
+                    Não consegui carregar os bônus agora. Isto não quer dizer que não há nenhum.
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => void load()}>
+                    Tentar de novo
+                  </Button>
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={canWrite ? 7 : 6}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  Nenhum bônus por aqui ainda. Quando um bolsista assinar a Comunidade, ele aparece
-                  nesta lista.
+                  {status
+                    ? 'Nenhum bônus com esse status agora. Tente "Todos" para ver a lista inteira.'
+                    : 'Nenhum bônus por aqui ainda. Quando um bolsista assinar a Comunidade, ele aparece nesta lista.'}
                 </TableCell>
               </TableRow>
             ) : (
@@ -515,6 +538,20 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
                   </TableCell>
                   <TableCell>
                     <ConversionStatusBadge c={row} />
+                    {/* Datas VISÍVEIS (tooltip não existe no toque nem por
+                        teclado, e é justamente o que a operadora usa p/ saber
+                        o que liberar esta semana e p/ auditar o Pix). */}
+                    {row.status === 'pending' ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        libera em {formatDate(row.maturesAt)}
+                      </div>
+                    ) : null}
+                    {row.status === 'paid' && row.paidMarkedAt ? (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {formatDate(row.paidMarkedAt)}
+                        {row.paidMarkedBy ? ` · ${row.paidMarkedBy}` : ''}
+                      </div>
+                    ) : null}
                   </TableCell>
                   {canWrite && (
                     <TableCell>

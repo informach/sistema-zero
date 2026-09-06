@@ -236,4 +236,42 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect([a, b].filter((r) => r.created)).toHaveLength(1)
     expect(a.invite.id).toBe(b.invite.id)
   })
+
+  test('getAmbassadorStats bate com o stats do findAmbassadorByToken (mesma régua)', async () => {
+    // A rota "me" deixou de re-buscar pelo token só p/ ter os counts; os dois
+    // caminhos precisam concordar SEMPRE, senão a Área dos pais e a página do
+    // embaixador mostrariam números diferentes p/ a mesma pessoa.
+    const { ambassador, code } = await seedCode()
+    expect(await repo.getAmbassadorStats(ambassador.id)).toEqual({
+      redemptionsCompleted: 0,
+      invitesSent: 0,
+    })
+
+    const { redemption } = await repo.insertRedemption({
+      codeId: code.id,
+      email: 'paula@example.com',
+      name: 'Paula',
+      phone: null,
+    })
+    await repo.markRedemptionGranted(redemption.id, new Date())
+    // Resgate ainda pending NÃO conta (só `completed`).
+    await repo.insertRedemption({
+      codeId: code.id,
+      email: 'pendente@example.com',
+      name: 'Pendente',
+      phone: null,
+    })
+    const invite = await repo.insertInvite({
+      ambassadorId: ambassador.id,
+      codeId: code.id,
+      inviteeName: 'Convidada',
+      inviteeEmail: 'convidada@example.com',
+    })
+    await repo.markInviteSent(invite.invite.id, new Date())
+
+    const stats = await repo.getAmbassadorStats(ambassador.id)
+    expect(stats).toEqual({ redemptionsCompleted: 1, invitesSent: 1 })
+    const byToken = await repo.findAmbassadorByToken(ambassador.pageToken)
+    expect(byToken?.stats).toEqual(stats)
+  })
 })

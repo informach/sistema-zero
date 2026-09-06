@@ -134,9 +134,14 @@ chama `/auth/internal/{ensure-buyer,password-tokens}`, `/messaging/send` e o nov
 64KB, 60/min) e as rotas JWT "me" `referrals-me-ambassador-{get,post}` (GET/POST
 `/referrals/me/ambassador`, molde do `payments-my`: `authorize: {statuses:['active']}` SEM roles +
 `referralsInternalTransforms`, 120/30 por min) — o gateway injeta `x-auth-user-{id,email,name}` e
-o referrals faz o get-or-create do embaixador pela conta. As rotas admin de CONVERSÕES
-(`GET /referrals/admin/conversions`, `POST …/:id/{mark-paid,mature-now}`) cabem nos wildcards
-`referrals-admin-{read,write}` existentes — nenhuma rota nova.
+o referrals faz o get-or-create do embaixador pela conta (⚠️ a rota aceita QUALQUER conta ativa,
+inclusive sessão de perfil; quem recusa a criança é o serviço, pela presença de
+`x-auth-account-id`). A ESCRITA de conversões cai no wildcard `referrals-admin-write` (admin+), mas
+a LEITURA ganhou rota LITERAL própria — **`referrals-admin-conversions-read`**
+(`GET /referrals/admin/conversions`, **admin+** em vez do staff+ do wildcard): a listagem de bônus
+carrega a chave Pix do embaixador e o e-mail da família bolsista. ⚠️ Literal vence wildcard por
+ESPECIFICIDADE no `route-registry` (estático 3 > param 2 > `*` 1) — a rota precisa continuar
+literal para a restrição valer.
 
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 

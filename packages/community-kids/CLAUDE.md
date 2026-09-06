@@ -300,8 +300,12 @@ os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a se
 Primeiro Jogo com UM clique (os dados já são os da conta): não cadastrado → explicação (bolsa
 100% + agradecimento por Pix quando a família indicada assina, depois da garantia de 7 dias —
 ⚠️ o VALOR vem de `bonus.amountCents` da view, NUNCA cravado na copy: é env do referrals) +
-botão "Quero ser embaixador(a)" (POST → o referrals cria/LINKA; o toast promete o e-mail SÓ
-quando `created: true` — vínculo/retomada não dispara e-mail); cadastrado → contadores + "Copiar
+botão "Quero ser embaixador(a)" + os TERMOS do dinheiro (agradecimento único, não é salário, sem
+vínculo — ficam AQUI, no ponto do compromisso: no funil eles só apareceriam depois do 1º bônus,
+ou seja, quem ainda não converteu nunca leria); o toast promete o e-mail SÓ quando
+`created: true`; ⚠️ **`emailPending`** (e-mail já é embaixador → o referrals NÃO vincula e manda o
+link para a caixa do dono) tem estado PRÓPRIO no card, sem links; cadastrado → contadores +
+aviso "falta a sua chave Pix" quando há bônus liberado e `pixKeySet: false` + "Copiar
 link de bolsa" (falha de clipboard → mostra o link p/ copiar à mão, SEM `window.prompt` — padrão
 que o kids aposentou) + "Abrir minha página" (capability-URL ABSOLUTA que já vem do serviço —
 kids segue sem env do funil); ⚠️ `ambassador.status !== 'active'` → estado PAUSADO (recado

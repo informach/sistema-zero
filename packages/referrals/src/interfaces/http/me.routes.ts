@@ -1,4 +1,4 @@
-import { envelope, UnauthorizedError } from '@sistemazero/core/http'
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
 import type {
   AmbassadorAdminService,
@@ -23,11 +23,15 @@ export interface MeRoutesDeps {
 export function meRoutes(deps: MeRoutesDeps) {
   function identity(headers: Record<string, string | undefined>) {
     assertInternalCaller(headers['x-internal-token'], deps.internalToken)
-    // Sessão de PERFIL (kids) manda o perfil em x-auth-user-id e a CONTA em
-    // x-auth-account-id — o vínculo do embaixador é SEMPRE pela conta (regra
-    // da plataforma; sem o fallback, um perfil prenderia o e-mail da conta a
-    // um uuid de perfil e o dono real cairia em 409 para sempre).
-    const accountUserId = headers['x-auth-account-id'] ?? headers['x-auth-user-id']
+    // ⚠️ `x-auth-account-id` presente = sessão de PERFIL (criança). Embaixador é
+    // assunto da ÁREA DOS PAIS: a criança é recusada aqui, como o auth já faz
+    // nas mutações de conta. Defesa em profundidade — o shim do kids também
+    // gateia com requireParentGateAccountOnly, mas o serviço não depende disso
+    // (um consumidor novo herdaria o furo).
+    if (headers['x-auth-account-id']) {
+      throw new ForbiddenError('Esta área é do responsável, não do perfil da criança')
+    }
+    const accountUserId = headers['x-auth-user-id']
     const email = headers['x-auth-user-email']
     if (!accountUserId || !email) throw new UnauthorizedError('Autenticação necessária')
     const name = decodeIdentityHeader(headers['x-auth-user-name']) ?? ''
@@ -81,16 +85,20 @@ export function meRoutes(deps: MeRoutesDeps) {
         email: id.email,
         name,
       })
-      if (result.kind === 'email_conflict') {
-        set.status = 409
-        return envelope(
-          'AMBASSADOR_EMAIL_CONFLICT',
-          'Este e-mail já é embaixador em outra conta. Fale com a gente para ajustar.',
-        )
+      if (result.kind === 'email_pending') {
+        // Já existe embaixador com este e-mail e a plataforma NÃO verifica
+        // e-mail: em vez de vincular (sequestro), o link vai para a caixa do
+        // dono. O app avisa e não mostra links.
+        return {
+          enrolled: false as const,
+          emailPending: true as const,
+          linkEmailSent: result.emailSent,
+          bonus: { amountCents: deps.bonusAmountCents },
+        }
       }
       if (result.created) set.status = 201
       // `created` diz ao app se o e-mail do link SAIU (só o create envia) —
-      // vínculo/retomada não manda e-mail e o toast não pode prometer um.
+      // retomada não manda e-mail e o toast não pode prometer um.
       const view = await enrolledView(id.accountUserId)
       return { ...view, created: result.created }
     })

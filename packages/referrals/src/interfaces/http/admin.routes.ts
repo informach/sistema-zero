@@ -177,10 +177,12 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/conversions/:id/mark-paid',
         async ({ params, body, headers, set }) => {
           guard(headers, true)
-          const by =
-            decodeIdentityHeader(headers['x-auth-user-name']) ??
-            headers['x-auth-user-id'] ??
-            'admin'
+          // ⚠️ O NOME é editável pelo próprio operador (PATCH /auth/me), então
+          // sozinho não serve de trilha de quem liberou dinheiro. Grava nome +
+          // ID do ator (o id é imutável); o gateway audita à parte.
+          const actorName = decodeIdentityHeader(headers['x-auth-user-name'])
+          const actorId = headers['x-auth-user-id']
+          const by = [actorName, actorId && `#${actorId}`].filter(Boolean).join(' ') || 'admin'
           const marked = await deps.repo.markConversionPaid(
             params.id,
             by.slice(0, 120),

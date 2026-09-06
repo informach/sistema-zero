@@ -181,6 +181,33 @@ describe.skipIf(!testDatabaseUrl)('Conversões — Postgres real', () => {
     expect(await repo.matureConversions(new Date(Date.now() + 1000), 50)).toBe(1)
   })
 
+  test('poda do dedupe: apaga processadas antigas E claims órfãos; preserva as recentes', async () => {
+    const store = new DrizzleProcessedWebhookStore(connection.db)
+    const old = new Date(Date.now() - 40 * 24 * 3600_000)
+    const cutoff = new Date(Date.now() - 30 * 24 * 3600_000)
+
+    // (a) processada ANTIGA → sai. (b) processada de agora → fica.
+    const antiga = await store.claimDelivery('prune-antiga', 60_000)
+    if (antiga.kind !== 'claimed') throw new Error('claim falhou')
+    await store.markProcessed('prune-antiga', antiga.token, { eventName: 'payment.paid' })
+    await connection.sql`update referrals.processed_webhooks set processed_at = ${old.toISOString()} where delivery_id = 'prune-antiga'`
+
+    const nova = await store.claimDelivery('prune-nova', 60_000)
+    if (nova.kind !== 'claimed') throw new Error('claim falhou')
+    await store.markProcessed('prune-nova', nova.token, { eventName: 'payment.paid' })
+
+    // (c) claim ÓRFÃO antigo (morte entre claim e markProcessed) → sai.
+    await store.claimDelivery('prune-orfa', 60_000)
+    await connection.sql`update referrals.processed_webhooks set processing_at = ${old.toISOString()} where delivery_id = 'prune-orfa'`
+
+    const pruned = await store.pruneProcessedBefore(cutoff)
+    expect(pruned).toBe(2)
+    // A recente sobreviveu e SEGUE deduplicando (a poda não reabre replay).
+    expect((await store.claimDelivery('prune-nova', 60_000)).kind).toBe('processed')
+    // A antiga saiu: um id reciclado volta a ser reivindicável.
+    expect((await store.claimDelivery('prune-antiga', 60_000)).kind).toBe('claimed')
+  })
+
   test('processed-webhook store: claim → in_progress → processed; stale reclaim', async () => {
     const store = new DrizzleProcessedWebhookStore(connection.db)
     const first = await store.claimDelivery('d-1', 60_000)

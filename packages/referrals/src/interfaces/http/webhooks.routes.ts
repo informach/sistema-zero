@@ -62,8 +62,13 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         return { error: 'corpo não é JSON' }
       }
       // Dedupe pelo ID do corpo ASSINADO (o header x-delivery-id não é assinado —
-      // um replay trocando só o header forjaria id novo). Header = fallback dev.
-      const headerDeliveryId = (headers['x-delivery-id'] ?? '').slice(0, MAX_DELIVERY_ID)
+      // um replay trocando só o header forjaria id novo).
+      // ⚠️ O header é fallback SÓ em dev/teste: em deploy, um corpo sem `id`
+      // (contrato do payments mudou) tem de FALHAR alto, não cair em silêncio
+      // num dedupe que o replay controla.
+      const headerDeliveryId = deps.requireSignature
+        ? ''
+        : (headers['x-delivery-id'] ?? '').slice(0, MAX_DELIVERY_ID)
       const bodyDeliveryId =
         typeof parsed.id === 'string' ? parsed.id.slice(0, MAX_DELIVERY_ID) : ''
       const deliveryId = bodyDeliveryId || headerDeliveryId
@@ -89,9 +94,11 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         const result: HandleResult = await deps.handle.execute({ deliveryId, eventName, payload })
         if (result.kind === 'retryable') {
           await deps.processedWebhooks.releaseClaim(deliveryId, claim.token)
+          // O motivo fica no LOG (com ids internos e topologia); a resposta
+          // devolve envelope fixo, como o resto da borda.
           deps.logger.warn('referrals.webhook_retryable', { deliveryId, reason: result.reason })
           set.status = 502
-          return { error: result.reason }
+          return { error: 'não foi possível processar agora' }
         }
         const marked = await deps.processedWebhooks.markProcessed(deliveryId, claim.token, {
           paymentId: typeof payload.paymentId === 'string' ? payload.paymentId : undefined,

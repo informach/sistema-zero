@@ -548,8 +548,11 @@ rotas JWT "me" do referrals via gateway (o gateway injeta a identidade; o servi�
 get-or-create/LINK pela conta). Handler `ambassadorMe` (`routes.ambassadorMe.GET/POST`; o POST
 passa por `requireWritableSession`). Tipo `AmbassadorEnrollmentView` em `lib/types.ts`
 (`{enrolled, ambassador?: {code, status, pageUrl, shareUrl, pixKeySet}, stats?, bonus?: {counts +
-amountCents — o VALOR do bônus vigente, a copy do app nunca o hardcoda}, created?}` — URLs
-ABSOLUTAS, o app não conhece a base do funil; `created` só no POST: true = o e-mail do link saiu).
+amountCents — o VALOR do bônus vigente, a copy do app nunca o hardcoda}, created?, emailPending?,
+linkEmailSent?}` — URLs ABSOLUTAS, o app não conhece a base do funil; `created` só no POST: true =
+o e-mail do link saiu. ⚠️ **`emailPending`**: o e-mail já é de um embaixador e a plataforma não
+verifica e-mail, então o referrals NÃO vincula — o magic-link vai para a caixa do dono e a resposta
+vem SEM links; o app precisa ter estado próprio p/ isso, senão vira "não cadastrado" mudo).
 O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais); o community
 adulto não monta a UI hoje.
 
