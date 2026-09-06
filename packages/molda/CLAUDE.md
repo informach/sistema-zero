@@ -239,7 +239,7 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
 - **Sem WebGL** o `WebGLRenderer` lança → `useViewport` devolve `unsupported` e a tela mostra
   o recado. Testes de componente usam o palco FALSO (`testing/fakeViewport.ts` via
   `setMoldaViewportFactory`); o playground embrulha o real e expõe `window.__molda.viewport`.
-- **Atalhos do Montar**: V mover, R girar, T tamanho, B caixa, M espelho, Delete apagar,
+- **Atalhos do Montar**: V mover, R girar, T tamanho, G grudar, B caixa, M espelho, Delete apagar,
   Ctrl+D duplicar (Ctrl+Z/Y na casca). Ignorados em campo de texto e com modal aberto.
 
 ## API pública (`src/index.ts` — TUDO fora dela é interno)
@@ -266,8 +266,9 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
 
 - Três criações numa união por `kind`: **`model`** (`parts: MoldaPart[]`, `texelsPerUnit` 2|4|8,
   `snap` 1|0.5, `mirrorX`), **`texture`** (`size` 16|32|64, `bitmap`), **`sky`** (`params`).
-- `MoldaPart`: `shape` box|wedge|cylinder|sphere, `from/to` (múltiplos do snap, `from < to`, lado ≤
-  32, grade x,z ∈ [-16,16], y ∈ [0,32], chão = y 0), `origin?`, `rotation` (múltiplos de 15),
+- `MoldaPart`: `shape` box|wedge|cylinder|sphere|mesh, `from/to` (posição em múltiplos de 1/16;
+  formas primitivas com lado em múltiplos de 0,5; `from < to`, lado ≤ 32, grade x,z ∈ [-16,16],
+  y ∈ [0,32], chão = y 0), `origin?` (também em 1/16), `rotation` (múltiplos de 15),
   `color` (índice ≥ 1), `faces` (pele opcional por face: `MoldaSkin { width, height, data:
   Uint8Array }`), `mirrorOf?` (gêmeo DERIVADO da fonte; `syncTwins` no fim de todo sanitize).
 - **Índice 0**: na TEXTURA = transparente (regra do Pinta); na PELE de uma face = "usa a cor base
@@ -313,8 +314,9 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   (`--mld-panel-border`), miniaturas: modelo = `thumb` guardado no asset (precisa de WebGL) ou
   emoji; textura = canvas 2D (sem canvas, emoji); céu = gradiente CSS dos parâmetros. "Criar
   novo" em 3 passos (tipo → opções → nome), renomear (bloqueado com a criação ABERTA), duplicar,
-  apagar (confirmação), "Baixar tudo" (`galeria.molda.json`, envelope `molda-gallery` v1) e
-  "Trazer de volta" (`importMoldaJson` nunca lança; aceita criação solta).
+  apagar (confirmação), "Baixar tudo" (`galeria.molda.json`, writer do envelope `molda-gallery`
+  v2; reader aceita v1 e v2) e "Trazer de volta" (`importMoldaJson` nunca lança; aceita criação
+  solta).
 - Copy 100 % em `core/copy.ts`: pt-BR, SEM travessão, sem "etapa"/"curso-base" (os testes do
   kids varrem o `src/` dele; o Molda é `@source`, então as CLASSES entram, as strings não, mas a
   régua vale igual).
@@ -397,11 +399,12 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
 - **Editar malha no palco** (`state/sessionStore.ts`, `model/meshSelection.ts`, `model/meshOps.ts`,
   `viewport/meshEditOverlay.ts`): sub-modo do Montar (botão "Editar malha" / "Transformar em
   malha", atalho E; a 5ª forma "Malha" coloca uma caixa já convertida). A seleção mora na SESSÃO
-  (`meshEditId`, `meshSelectMode` Pontos/Arestas/Faces = 1/2/3, `meshVertices` = a lista mestra;
-  arestas e faces derivam: `selectedEdges`/`selectedFaces`), "Somar à seleção" = o Shift para o
-  toque. Overlay = `Points` + `LineSegments` FILHOS do mesh da peça (sem depth test), picking com
+  (`meshEditId`, `meshSelectMode` Pontos/Arestas/Faces = 1/2/3 e `meshSelection` com os elementos
+  EXATOS; os vértices afetados só são derivados para mover), "Somar à seleção" = o Shift para o
+  toque. Trocar de modo limpa uma seleção de outro tipo. Overlay = `Points` + `LineSegments`
+  FILHOS do mesh da peça (sem depth test), picking com
   tolerância em PIXELS convertida ao mundo na distância do candidato (8 px mouse, 14 px toque),
-  ponto > aresta > face e nada ATRÁS da superfície tocada. A alça é uma âncora (`meshAnchor`) no
+  somente o tipo do modo ativo e nada ATRÁS da superfície tocada. A alça é uma âncora (`meshAnchor`) no
   centro da seleção, só de mover: o arrasto é um gesto sobre a BASE (delta total encaixado, `replace`
   ao vivo, UM `commitGesture`); Delete apaga a seleção (`deleteMeshSelection`: faces que perdem
   vértice caem; malha vazia = a peça sai com toast); Esc = Pronto. As setas movem os pontos escolhidos.
@@ -410,14 +413,19 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
   `extrudeEdges`: cada aresta vira uma aba), **Cortar no meio** (`loopCut`: o anel atravessa os
   quads; vértice do meio memoizado por aresta; pele reprojetada nas duas metades; corte que cai
   fora do encaixe liga o meio bloco no MESMO commit + toast), **Juntar pontos** (`mergeVertices`,
-  derruba faces degeneradas em tris), **Fechar face** (`createFace`, virada para fora), **Virar
-  face** (`flipFaces`, espelha a pele), **Dividir em triângulos** (`splitQuads`, pele reprojetada).
+  derruba faces degeneradas em tris), **Fechar face** (`createFace`, virada para fora; três/quatro
+  pontos sem área são recusados antes do commit), **Conectar
+  pontos** (`connectVertices`: dois cantos opostos dividem um quad pela diagonal escolhida, sem
+  aresta solta), **Encolher dentro** (`insetFace`: uma face reta e convexa vira miolo + anel, 25%
+  ajustável de 10% a 80%), **Virar face** (`flipFaces`, espelha a pele), **Dividir em triângulos**
+  (`splitQuads`, pele reprojetada). A caixa é CONTEXTUAL: Pontos, Arestas ou Faces mostram só as
+  ações daquele modo; `meshCommands.ts` concentra id, requisito, disponibilidade, ação e dica.
   `skinReproject.ts`: `reprojectSkin` (texel a texel pelo ponto do MUNDO) e `rotateSkin90`.
   **Consertar DEPOIS e perguntar**: `meshIssues` depois de cada ferramenta/arrasto; um problema
   NOVO vira `showToast(msg, actions)` com Juntar/Dividir/Virar + Desfazer + Deixar (`Toast` ganhou
-  `actions`; `applyMeshFix`). **Ajustar**: depois de um Puxar, o painel reexecuta a ferramenta
-  sobre o "antes" com outra distância via `editorStore.amend(next)` (aplica sem `history.record`)
-  = um passo só de desfazer; morre quando qualquer outra coisa muda o modelo.
+  `actions`; `applyMeshFix`). **Ajustar**: depois de Puxar ou Encolher dentro, o painel reexecuta a
+  ferramenta sobre o "antes" com outra distância/porcentagem via `editorStore.amend(next)` (aplica
+  sem `history.record`) = um passo só de desfazer; morre quando qualquer outra coisa muda o modelo.
 - **Pintar na malha**: `faceContains` usa o polígono da face (par-ímpar, aceita côncavo), o
   espelho de pintura é pelo PONTO espelhado (`pickTexelAtPoint`, vale para malha e gêmeo), o
   "Vestir com textura" veste todas as faces (`partFaces`). Nova ferramenta **"Girar a pele"** (R):
@@ -437,13 +445,25 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
   o delta preso à grade pelo grupo; peça trancada fica parada sem esconder a alça das livres,
   mesmo quando ela é a principal; `DragPatch.parts` leva caixas ABSOLUTAS por peça; Delete,
   Duplicar e as setas valem para o grupo).
+- **Grudar pontos** (`model/snap.ts`, `viewport/SnapOverlay.ts`, tecla G): fluxo explícito de dois
+  toques inspirado na ideia Vertex Snap do Blockbench, com implementação própria. O primeiro
+  toque escolhe um vértice/pivô da peça principal ou o centro da seleção; o segundo só enxerga as
+  âncoras da peça visível sob o ponteiro. Origem = círculo amarelo, destino = losango verde, com
+  raio de 10 px no mouse e 22 px no toque. Peças somadas viajam juntas; origem trancada bloqueia,
+  alvo trancado vale, e origem/gêmeos/escondidas não valem como alvo. O segundo toque revalida as
+  referências no modelo atual, arredonda o delta a 1/16 e faz UM commit atômico; grade, referência
+  velha ou sincronização do espelho inválida deixam o modelo intacto. Sucesso volta para Mover;
+  G outra vez, Esc, trocar ferramenta/modo, colocar forma ou editar malha cancelam. As âncoras de
+  malha usam cache por identidade; primitivas, cache limitado a 1 024 assinaturas geométricas.
 - Testes: `mesh.test.ts`, `meshFrame.test.ts`, `meshSelection.test.ts`, `meshOps.test.ts`,
   `meshTools.test.ts`, `viewport/meshEditOverlay.test.ts` (Raycaster real), `export/meshGlb.test.ts`
   (20 000 tris + atlas cheio cabem no teto do Estúdio), `ModelEditor.mesh.test.tsx`, os blocos
   "malha" em sanitize/twins/pick/partOps/geometry/atlas/stroke/ops, `sessionStore.test.ts` e o bloco
   "extras de 06/09" em `ModelEditor.test.tsx`; e2e `model-editor.spec.ts` cobre o grupo cuja peça
-  principal está trancada e "malha: toque escolhe a face…" (toque real com folga, Puxar, lápis e
-  Girar a pele).
+  principal está trancada, o Grudar completo em dois toques + um desfazer e "malha: toque escolhe
+  a face…" (toque real com folga, Puxar, lápis e Girar a pele). O Grudar também tem testes puros
+  em `model/snap.test.ts`, projeção em `viewport/SnapOverlay.test.ts`, Raycaster real em
+  `viewport/snapPicking.test.ts` e integração em `ModelEditor.test.tsx`.
 - Desempenho medido em 06/09 (bun, melhor de 5; `scripts/bench-mesh.ts`): malha de 1 024 quads e
   1 089 vértices: `buildPartGeometry` 8 ms, `meshIssues` 31 ms, `meshEdges` 0,7 ms, sanitize do
   modelo 14 ms, `overlay.setMesh` com 100 escolhidos 3 ms, `extrudeFaces` 2 ms, `loopCut`
@@ -470,6 +490,11 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
     respeita o teto de triângulos (`trianglesFull`) e a cópia nasce visível e destrancada; o
     gêmeo herda `locked`/`hidden` de verdade (`twinUpToDate`); triângulo de área zero não vai ao
     `.glb`; `mesh.ts` sem byte NUL (o git tratava o arquivo como binário).
+  - Follow-up do full review: `loopCut` cria os midpoints já em `meshPrecision` e recusa
+    atomicamente quando o arredondamento colide com uma extremidade/outro vértice; o commit ainda
+    confirma que todos os pontos e faces planejados sobreviveram à normalização. `movePartsBy`
+    projeta o grupo inteiro, valida o orçamento sincronizado uma vez e só então atualiza os gêmeos;
+    teto de peças/triângulos devolve o modelo original, sem mover apenas parte da seleção.
   - Palco: trancar/esconder a peça escolhida tira a alça na hora (e o `mouseDown` da alça
     confere); a folga em pixels vale na silhueta (toque sem superfície tocada); a alça da malha
     anda nos eixos da PEÇA (`setSpace('local')`); a miniatura sai sem arestas, overlay e verso,
@@ -497,3 +522,11 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
     `./assets` só exporta o tipo `MeshIssue` da malha (as funções são internas).
   - Bancada: `scripts/bench-mesh.ts` é a medição do bullet acima; o plano do lote está em
     `docs/plans/2026-09-06-molda-malha-lote.md`.
+- **Full review de 06/09 (rodada 3):** `editorStore.contentRevision` separa edição real de
+  `setThumb`; toast e Ajustar recusam qualquer revisão posterior, inclusive troca de paleta que
+  preserva `parts`. A seleção explícita impede duas faces opostas de virarem as seis faces do cubo
+  em Puxar/Delete; normal média nula recusa o Puxar. Resize de malha arredonda e normaliza antes do
+  commit, recusa colapso de topologia e já é idêntico ao round-trip do sanitize. `setPartBoxes`
+  aplica os destinos absolutos do arrasto em uma transação e compartilha o portão atômico de
+  `movePartsBy`. `createFace` recusa face degenerada e confirma que a face nova sobreviveu ao
+  commit. Desenho: `docs/plans/2026-09-06-molda-full-review-round-3-design.md`.

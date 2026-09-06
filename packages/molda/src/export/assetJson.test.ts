@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { assetFromJson, assetToJson } from './assetJson'
-import { GALLERY_FORMAT, galleryToJsonText, importMoldaJson } from './projectJson'
+import { GALLERY_FORMAT, GALLERY_VERSION, galleryToJsonText, importMoldaJson } from './projectJson'
 
 describe('assetJson', () => {
   test('round-trip por JSON.stringify volta igual para os três tipos', () => {
@@ -37,21 +37,25 @@ describe('assetJson', () => {
 })
 
 describe('projectJson', () => {
-  test('envelope molda-gallery v1 vai e volta', () => {
+  test('o writer emite molda-gallery v2 e o reader faz o round-trip', () => {
     const assets = [makeModel(), makeTexture(), makeSky()]
     const text = galleryToJsonText(assets, 123)
     const parsed = JSON.parse(text) as { format: string; version: number; exportedAt: number }
     expect(parsed.format).toBe(GALLERY_FORMAT)
-    expect(parsed.version).toBe(1)
+    expect(parsed.version).toBe(2)
+    expect(parsed.version).toBe(GALLERY_VERSION)
     expect(parsed.exportedAt).toBe(123)
     const result = importMoldaJson(text)
     expect(result?.skipped).toBe(0)
     expect(result?.assets).toEqual(assets)
   })
 
-  test('envelope de versão ausente ou incompatível é recusado', () => {
+  test('o reader aceita v1 e v2, mas recusa versão ausente ou incompatível', () => {
     const envelope = JSON.parse(galleryToJsonText([makeSky()], 123)) as Record<string, unknown>
-    for (const version of [undefined, 0, 2, '1']) {
+    for (const version of [1, 2]) {
+      expect(importMoldaJson(JSON.stringify({ ...envelope, version }))?.assets).toEqual([makeSky()])
+    }
+    for (const version of [undefined, 0, 3, '1']) {
       const candidate = { ...envelope, version }
       expect(importMoldaJson(JSON.stringify(candidate))).toBeNull()
     }
@@ -60,7 +64,7 @@ describe('projectJson', () => {
   test('registro ruim é contado, arquivo ruim é null, criação solta é aceita', () => {
     const text = JSON.stringify({
       format: GALLERY_FORMAT,
-      version: 1,
+      version: 2,
       assets: [assetToJson(makeSky()), { kind: 'model' }, 5],
     })
     const result = importMoldaJson(text)

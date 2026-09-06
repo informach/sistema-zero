@@ -23,7 +23,11 @@ function setup() {
   camera.updateProjectionMatrix()
   const raycaster = new Raycaster()
   /** Lança o raio pelo ponto do MUNDO (na face +z, z = 2) e devolve o pick. */
-  const pickAt = (world: Vector3, face: 'f_pz' | null = 'f_pz') => {
+  const pickAt = (
+    world: Vector3,
+    face: 'f_pz' | null = 'f_pz',
+    mode: 'vertex' | 'edge' | 'face' = 'vertex',
+  ) => {
     const projected = world.clone().project(camera)
     raycaster.setFromCamera(new Vector2(projected.x, projected.y), camera)
     const surfaceDistance = world.distanceTo(camera.position)
@@ -34,6 +38,7 @@ function setup() {
       600,
       surfaceDistance,
       face,
+      mode,
     )
   }
   return { overlay, pickAt, camera, raycaster }
@@ -44,10 +49,13 @@ describe('overlay da malha: picking com tolerância em pixels', () => {
     const { pickAt } = setup()
     // O canto (2, 2, 2) com um desvio de ~2 px (0,02 unidades a 10 de distância ≈ 1,4 px).
     expect(pickAt(new Vector3(1.98, 1.98, 2))).toEqual({ kind: 'vertex', key: 'v_111' })
-    const edge = pickAt(new Vector3(1, 1.99, 2))
+    const edge = pickAt(new Vector3(1, 1.99, 2), 'f_pz', 'edge')
     expect(edge?.kind).toBe('edge')
     if (edge?.kind === 'edge') expect([...edge.keys].sort()).toEqual(['v_011', 'v_111'])
-    expect(pickAt(new Vector3(1, 1, 2))).toEqual({ kind: 'face', key: 'f_pz' })
+    expect(pickAt(new Vector3(1, 1, 2), 'f_pz', 'face')).toEqual({
+      kind: 'face',
+      key: 'f_pz',
+    })
   })
 
   test('nada atrás da superfície: o canto do fundo não rouba o toque na face da frente', () => {
@@ -58,7 +66,7 @@ describe('overlay da malha: picking com tolerância em pixels', () => {
     const pick = pickAt(new Vector3(2, 2, 2))
     expect(pick).toEqual({ kind: 'vertex', key: 'v_111' })
     // Sem face tocada e longe de tudo: nada.
-    expect(pickAt(new Vector3(1, 1, 2), null)).toBeNull()
+    expect(pickAt(new Vector3(1, 1, 2), null, 'face')).toBeNull()
   })
 
   test('a posição no mundo dos vértices segue o pai (o mesh da peça)', () => {
@@ -78,15 +86,14 @@ test('o canto de TRÁS, exatamente atrás da face da frente tocada, não rouba o
   raycaster.setFromCamera(new Vector2(projected.x, projected.y), camera)
   const ray = raycaster.ray
   const surfaceDistance = (2 - ray.origin.z) / ray.direction.z
-  const pick = overlay.pick(ray, camera, 8, 600, surfaceDistance, 'f_pz')
+  const pick = overlay.pick(ray, camera, 8, 600, surfaceDistance, 'f_pz', 'face')
   expect(pick).not.toEqual({ kind: 'vertex', key: 'v_110' })
   expect(pick).toEqual({ kind: 'face', key: 'f_pz' })
   // Sem superfície nenhuma tocada (a silhueta), a folga em pixels continua valendo.
   const corner = new Vector3(2.05, 2.05, 2)
   const p2 = corner.clone().project(camera)
   raycaster.setFromCamera(new Vector2(p2.x, p2.y), camera)
-  expect(overlay.pick(raycaster.ray, camera, 8, 600, Number.POSITIVE_INFINITY, null)).toEqual({
-    kind: 'vertex',
-    key: 'v_111',
-  })
+  expect(
+    overlay.pick(raycaster.ray, camera, 8, 600, Number.POSITIVE_INFINITY, null, 'vertex'),
+  ).toEqual({ kind: 'vertex', key: 'v_111' })
 })

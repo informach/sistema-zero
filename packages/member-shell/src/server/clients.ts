@@ -4,6 +4,7 @@ import { getEnv } from '../lib/env'
 import type {
   AiCreditsView,
   AiUsageConsumeView,
+  AmbassadorEnrollmentView,
   AttachmentDownloadView,
   AvatarConfigInput,
   AvatarEquipResult,
@@ -355,9 +356,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       gw.gatewayFetchReadonly('/members/gamification/league/me', { query: { audience } }),
   )
   const rankingReadonlyCached = cache(
-    (limit: number, offset: number): Promise<GatewayResponse<RankingLeaderboardView>> =>
+    (limit: number): Promise<GatewayResponse<RankingLeaderboardView>> =>
       gw.gatewayFetchReadonly('/members/gamification/ranking', {
-        query: { audience, limit, offset },
+        query: { audience, limit },
       }),
   )
   // Avatar do perfil ativo — dedup por request (layout busca o chrome; a página de
@@ -521,19 +522,16 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       return leagueReadonlyCached()
     },
     /** Primeira página do ranking geral — segura em Server Components. */
-    getRankingReadonly(opts: {
-      limit: number
-      offset: number
-    }): Promise<GatewayResponse<RankingLeaderboardView>> {
-      return rankingReadonlyCached(opts.limit, opts.offset)
+    getRankingReadonly(opts: { limit: number }): Promise<GatewayResponse<RankingLeaderboardView>> {
+      return rankingReadonlyCached(opts.limit)
     },
     /** Página do ranking geral para o Route Handler de paginação. */
     getRanking(opts: {
       limit: number
-      offset: number
+      cursor?: string
     }): Promise<GatewayResponse<RankingLeaderboardView>> {
       return gw.gatewayFetch('/members/gamification/ranking', {
-        query: { audience, limit: opts.limit, offset: opts.offset },
+        query: { audience, limit: opts.limit, cursor: opts.cursor },
       })
     },
     /** Resgata o prêmio de uma missão concluída (idempotente). */
@@ -1018,6 +1016,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Preferência do report SEMANAL dos pais (opt-out) — atrás do portão de senha. */
     getParentReportPrefs(): Promise<GatewayResponse<ParentReportPrefsView>> {
       return gw.gatewayFetch('/members/parents/report-prefs')
+    },
+
+    /** Embaixador da Bolsa (auto-cadastro do responsável) — atrás do portão de senha. */
+    getAmbassadorEnrollment(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
+      return gw.gatewayFetch('/referrals/me/ambassador')
+    },
+    enrollAmbassador(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
+      return gw.gatewayFetch('/referrals/me/ambassador', { method: 'POST', body: {} })
     },
     setParentReportPrefs(disabled: boolean): Promise<GatewayResponse<ParentReportPrefsView>> {
       return gw.gatewayFetch('/members/parents/report-prefs', {

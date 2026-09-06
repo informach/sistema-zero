@@ -16,6 +16,7 @@ import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS, type TexelsPerUnit } from '../../../core/limits'
 import type {
+  MeshFaceKey,
   MoldaMesh,
   MoldaModelAsset,
   MoldaTextureAsset,
@@ -23,26 +24,37 @@ import type {
   Vec3,
 } from '../../../core/model'
 import type { PaletteId } from '../../../core/palette'
-import { firstPaintableIndex } from '../../../core/palette'
+import { firstPaintableIndex, remapActiveColorAfterRemoval } from '../../../core/palette'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { triggerDownload } from '../../../export/download'
 import { exportModelGlb, GLB_MIME } from '../../../export/modelGlb'
+import {
+  type ArrangeResult,
+  alignParts,
+  centerPartsOnStage,
+  putPartsOnFloor,
+  repeatPartsInLine,
+} from '../../../model/arrange'
 import { modelTriangleCount } from '../../../model/geometry'
 import { type MeshIssue, meshIssues } from '../../../model/mesh'
 import { deleteMeshSelection, moveMeshVertices } from '../../../model/meshOps'
 import {
-  mergeMeshSelection,
-  pickVertices,
-  pruneMeshSelection,
+  type MeshPick,
   selectedEdges,
   selectedFaces,
+  selectionNormal,
+  selectionVertices,
 } from '../../../model/meshSelection'
 import {
   applyMeshFix,
+  canConnectVertices,
+  canInsetFace,
+  connectVertices,
   createFace,
   extrudeEdges,
   extrudeFaces,
   flipFaces,
+  insetFace,
   loopCut,
   type MeshToolResult,
   mergeVertices,
@@ -59,14 +71,14 @@ import {
   movePartsBy,
   removeExtraColor,
   removePart,
-  setMirrorX,
-  setPartBox,
   setPartSize,
   setSnap,
   setTexelsPerUnit,
+  trySetMirrorX,
   updateExtraColor,
   updatePart,
 } from '../../../model/partOps'
+import { type FacePaintTarget, facePaintCanvas } from '../../../paint/facePaint'
 import type { BrushSize } from '../../../paint/skinPaint'
 import type { PaintTool } from '../../../paint/stroke'
 import type { EditorStore } from '../../../state/editorStore'
@@ -76,37 +88,39 @@ import {
   type TransformTool,
 } from '../../../state/sessionStore'
 import { type ApplyMode, applyTextureToPart } from '../../../texture/ops'
-import { prefersReducedMotion } from '../../../viewport/reducedMotion'
-import type { AtlasInfo, DragPatch, ViewName } from '../../../viewport/types'
-import { useViewport } from '../../../viewport/useViewport'
-import { Button } from '../../ui/Button'
-import { Download } from '../../ui/icons'
+import type { ViewName } from '../../../viewport/types'
+import { Button, ToolButton } from '../../ui/Button'
+import { CircleHelp, Download } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { EditorTopBar } from '../EditorTopBar'
 import { ApplyTextureDialog } from './ApplyTextureDialog'
+import { ArrangePanel, type RepeatAdjustmentValue } from './ArrangePanel'
 import { ColorsPanel } from './ColorsPanel'
+import { ContextHelpDialog } from './ContextHelpDialog'
+import {
+  contextualModelCommands,
+  MESH_ACTION_COMMAND,
+  type ModelCommandContext,
+  type ModelCommandId,
+  type ModelCommandState as RegistryCommandState,
+} from './commandRegistry'
+import { FacePaintDialog } from './FacePaintDialog'
 import { type MeshAdjust, MeshToolbox } from './MeshToolbox'
+import type { MeshCommandId, MeshCommandState } from './meshCommands'
 import { useModelEditorShortcuts, useModelThumbnail } from './modelEditorHooks'
 import { PaintToolbox } from './PaintToolbox'
 import { PartsPanel } from './PartsPanel'
 import { PropertiesPanel } from './PropertiesPanel'
 import { Toolbox } from './Toolbox'
+import { useModelViewportController } from './useModelViewportController'
+import { useSnapController } from './useSnapController'
 import { ViewportPane } from './ViewportPane'
 
 function issueKey(issue: MeshIssue): string {
   return issue.kind === 'overlap'
     ? `${issue.kind}:${issue.vertices.join(',')}`
     : `${issue.kind}:${issue.face}`
-}
-
-function applyPatch(model: MoldaModelAsset, patch: DragPatch): MoldaModelAsset {
-  let next = model
-  // Grupo: cada peça leva a própria caixa de DESTINO (absoluta: nada acumula entre passos).
-  for (const item of patch.parts ?? []) next = setPartBox(next, item.id, item.from, item.to)
-  if (patch.from && patch.to) next = setPartBox(next, patch.id, patch.from, patch.to)
-  if (patch.rotation) next = updatePart(next, patch.id, { rotation: patch.rotation })
-  return next
 }
 
 function ModeTabs({
@@ -140,6 +154,50 @@ function ModeTabs({
   )
 }
 
+type MeshAdjustment = {
+  before: MoldaModelAsset
+  /** Revisão exata produzida pela última execução desta ferramenta. */
+  afterRevision: number
+  partId: string
+  selection: MeshPick[]
+  kind: 'extrude-faces' | 'extrude-edges' | 'inset'
+  value: number
+  faceKey?: MeshFaceKey
+}
+
+type RepeatAdjustment = {
+  before: MoldaModelAsset
+  afterRevision: number
+  sourceIds: string[]
+  addedIds: string[]
+  value: RepeatAdjustmentValue
+}
+
+function replayMeshAdjustment(adjustment: MeshAdjustment, value: number): MeshToolResult | null {
+  const mesh = findPart(adjustment.before, adjustment.partId)?.mesh
+  if (!mesh) return null
+  switch (adjustment.kind) {
+    case 'extrude-faces':
+      return extrudeFaces(
+        adjustment.before,
+        adjustment.partId,
+        selectedFaces(mesh, adjustment.selection),
+        value,
+      )
+    case 'extrude-edges':
+      return extrudeEdges(
+        adjustment.before,
+        adjustment.partId,
+        selectedEdges(mesh, adjustment.selection),
+        value,
+      )
+    case 'inset':
+      return adjustment.faceKey
+        ? insetFace(adjustment.before, adjustment.partId, adjustment.faceKey, value)
+        : null
+  }
+}
+
 export function ModelEditor({
   editor,
   onBack,
@@ -150,6 +208,7 @@ export function ModelEditor({
   const { showToast } = useToast()
   const [session] = useState(() => createSessionStore())
   const asset = useStore(editor, (state) => state.asset) as MoldaModelAsset
+  const contentRevision = useStore(editor, (state) => state.contentRevision)
   const mode = useStore(session, (state) => state.mode)
   const tool = useStore(session, (state) => state.tool)
   const selectedId = useStore(session, (state) => state.selectedId)
@@ -164,7 +223,12 @@ export function ModelEditor({
   const placingShape = useStore(session, (state) => state.placingShape)
   const meshEditId = useStore(session, (state) => state.meshEditId)
   const meshSelectMode = useStore(session, (state) => state.meshSelectMode)
-  const meshVertices = useStore(session, (state) => state.meshVertices)
+  const meshSelection = useStore(session, (state) => state.meshSelection)
+  const selectedMesh = meshEditId ? findPart(asset, meshEditId)?.mesh : undefined
+  const meshVertices = useMemo(
+    () => (selectedMesh ? selectionVertices(selectedMesh, meshSelection) : []),
+    [selectedMesh, meshSelection],
+  )
   const meshAdditive = useStore(session, (state) => state.meshAdditive)
   const wide = useMediaQuery('(min-width: 768px)')
   const gestureBefore = useRef<MoldaModelAsset | null>(null)
@@ -177,18 +241,14 @@ export function ModelEditor({
     /** Teto batido no meio do gesto: um toast só, e os passos seguintes são ignorados. */
     full: boolean
   } | null>(null)
-  const [atlas, setAtlas] = useState<AtlasInfo | null>(null)
-  const atlasFullWarned = useRef(false)
   const [applyOpen, setApplyOpen] = useState(false)
-  // O "Ajustar" do último Puxar: reexecuta sobre o `before` (um passo só no desfazer).
-  const [meshAdjust, setMeshAdjust] = useState<{
-    before: MoldaModelAsset
-    afterParts: MoldaModelAsset['parts']
-    partId: string
-    selection: string[]
-    byFaces: boolean
-    distance: number
-  } | null>(null)
+  const [helpOpen, setHelpOpen] = useState(false)
+  const [faceTarget, setFaceTarget] = useState<FacePaintTarget | null>(null)
+  // O "Ajustar" reexecuta a última ação contínua sobre o `before` (um passo no desfazer).
+  const [meshAdjust, setMeshAdjust] = useState<MeshAdjustment | null>(null)
+  const [repeatAdjust, setRepeatAdjust] = useState<RepeatAdjustment | null>(null)
+  const repeatAdjustRef = useRef<RepeatAdjustment | null>(null)
+  repeatAdjustRef.current = repeatAdjust
 
   const model = useCallback(
     (): MoldaModelAsset => editor.getState().asset as MoldaModelAsset,
@@ -225,6 +285,15 @@ export function ModelEditor({
     },
     [closeColorGesture, editor, endNudge],
   )
+  const {
+    state: snapState,
+    instruction: snapInstruction,
+    chooseTool,
+    toggle: toggleSnapTool,
+    cancel: cancelSnapTool,
+    chooseSource: chooseSnapSource,
+    chooseTarget: chooseSnapTarget,
+  } = useSnapController({ session, model, commit, showToast })
   // Trocar a largura da janela remonta o painel de cores (e o input do seletor): o gesto
   // fecha aqui, senão a extra ficaria sem commit.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `wide` é o GATILHO (remonta o painel), não leitura
@@ -269,11 +338,10 @@ export function ModelEditor({
           : issue.kind === 'flipped'
             ? copy.fixes.flip
             : copy.fixes.split
-      // As ações valem para o estado que gerou o aviso: se o modelo mudou (a criança
-      // pintou, desfez, mexeu em outra coisa), o botão não mexe em nada e avisa.
-      // O commit carimba `updatedAt` (objeto novo) mas preserva a referência de `parts`.
-      const still = (): boolean =>
-        (editor.getState().asset as MoldaModelAsset).parts === after.parts
+      // As ações valem para a revisão que gerou o aviso. A miniatura não avança a
+      // revisão de conteúdo, mas qualquer edição, desfazer ou refazer avança.
+      const warnedAtRevision = editor.getState().contentRevision
+      const still = (): boolean => editor.getState().contentRevision === warnedAtRevision
       showToast(copy.issues[issue.kind], [
         {
           label: fixLabel,
@@ -285,7 +353,10 @@ export function ModelEditor({
             const result = applyMeshFix(after, partId, issue)
             if (!result) return
             commit(result.model)
-            session.getState().setMeshVertices(result.vertices)
+            const state = session.getState()
+            const nextMode = result.selection[0]?.kind
+            if (nextMode) state.setMeshSelectMode(nextMode)
+            state.setMeshSelection(result.selection)
           },
         },
         {
@@ -314,162 +385,45 @@ export function ModelEditor({
     [commit, model, session, showToast],
   )
 
-  const { canvasRef, viewport, unsupported } = useViewport(
-    {
-      onSelect: (id, additive) => {
-        const state = session.getState()
-        // No Pintar o toque só ESCOLHE a peça (o "Somar à seleção" é do Montar).
-        if (state.mode === 'paint') {
-          state.select(id)
-          return
-        }
-        state.pick(id, additive || state.partsAdditive)
-      },
-      onPlace: placeAtSurface,
-      onDragStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
-      onDragMove: (patch) => {
-        const current = model()
-        const next = applyPatch(current, patch)
-        if (next !== current) editor.getState().replace(next)
-      },
-      onDragEnd: (patch) => {
-        const before = gestureBefore.current
-        gestureBefore.current = null
-        let after = model()
-        if (patch) after = applyPatch(after, patch)
-        if (before && after !== before) editor.getState().commitGesture(before, after)
-      },
-      onPaintStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
-      onPaintEnd: (after) => {
-        const before = gestureBefore.current ?? model()
-        gestureBefore.current = null
-        if (after !== before) editor.getState().commitGesture(before, after)
-      },
-      onPickColor: (index) => session.getState().setPaintColor(index),
-      // "Editar malha": o toque vira vértices (a lista mestra) e o arrasto da alça é um
-      // gesto sobre a BASE (delta total, sem deriva), fechado com um desfazer só.
-      onMeshPick: (pick, additive) => {
-        const state = session.getState()
-        const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
-        if (!part?.mesh) return
-        const picked = pick ? pickVertices(part.mesh, pick) : []
-        state.setMeshVertices(
-          mergeMeshSelection(state.meshVertices, picked, additive || state.meshAdditive),
-        )
-      },
-      onMeshDragStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
-      onMeshDragMove: (delta) => {
-        const before = gestureBefore.current
-        const state = session.getState()
-        if (!before || !state.meshEditId) return
-        const next = moveMeshVertices(
-          before,
-          state.meshEditId,
-          state.meshVertices,
-          delta,
-          before.snap,
-        )
-        // Delta de pelo menos um encaixe que não moveu nada = a grade barrou.
-        const step = before.snap
-        const wanted = delta.some((value) => Math.abs(Math.round(value / step) * step) > 0)
-        if (next === before && wanted) meshDragBlocked.current = true
-        if (next !== model()) editor.getState().replace(next)
-      },
-      onMeshDragEnd: () => {
-        const before = gestureBefore.current
-        gestureBefore.current = null
-        const after = model()
-        const blocked = meshDragBlocked.current
-        meshDragBlocked.current = false
-        if (before && after !== before) {
-          editor.getState().commitGesture(before, after)
-          warnMeshIssues(before, after, session.getState().meshEditId)
-        } else if (before && blocked) {
-          showToast(COPY.editor.model.mesh.cannotMove)
-        }
-      },
-      onAtlas: (info) => {
-        setAtlas(info)
-        if (info.full && !atlasFullWarned.current) {
-          atlasFullWarned.current = true
-          showToast(COPY.editor.model.paint.atlasFull)
-        }
-        if (!info.full) atlasFullWarned.current = false
-      },
+  const { canvasRef, viewport, unsupported, atlas } = useModelViewportController({
+    editor,
+    session,
+    state: {
+      asset,
+      selectedId,
+      extraIds,
+      mode,
+      tool,
+      placingShape,
+      paintTool,
+      paintColor,
+      brushSize,
+      mirrorPaint,
+      gridVisible,
+      edgesVisible,
+      meshEditId,
+      meshSelectMode,
+      meshVertices,
+      snapState,
     },
-    { reducedMotion: prefersReducedMotion() },
-  )
+    model,
+    gestureBefore,
+    closeColorGesture,
+    endNudge,
+    placeAtSurface,
+    openFace: setFaceTarget,
+    warnMeshIssues,
+    showToast,
+    chooseSnapSource,
+    chooseSnapTarget,
+  })
 
-  // Palco ← estado.
+  // Uma edição externa (desfazer, nuvem/Estúdio) pode apagar a peça ou a face de malha.
   useEffect(() => {
-    viewport?.setModel(asset)
-  }, [viewport, asset])
-  useEffect(() => {
-    viewport?.setSelected(selectedId)
-  }, [viewport, selectedId])
-  useEffect(() => {
-    viewport?.setMode(mode)
-  }, [viewport, mode])
-  useEffect(() => {
-    viewport?.setTool(tool)
-  }, [viewport, tool])
-  useEffect(() => {
-    viewport?.setPlacementShape(placingShape)
-  }, [viewport, placingShape])
-  useEffect(() => {
-    viewport?.setPaint({ tool: paintTool, color: paintColor, size: brushSize, mirror: mirrorPaint })
-  }, [viewport, paintTool, paintColor, brushSize, mirrorPaint])
-  useEffect(() => {
-    viewport?.setSnap(asset.snap)
-  }, [viewport, asset.snap])
-  useEffect(() => {
-    viewport?.setGridVisible(gridVisible)
-  }, [viewport, gridVisible])
-
-  useEffect(() => {
-    viewport?.setEdgesVisible(edgesVisible)
-  }, [viewport, edgesVisible])
-  useEffect(() => {
-    viewport?.setExtraSelected(extraIds)
-  }, [viewport, extraIds])
-
-  // Seleção que sumiu (apagada, desfeita) volta a "nada"; as somadas são podadas.
-  useEffect(() => {
-    if (selectedId && !findPart(asset, selectedId)) session.getState().select(null)
-    const alive = extraIds.filter((id) => findPart(asset, id))
-    if (alive.length !== extraIds.length) session.getState().setExtraIds(alive)
-  }, [asset, selectedId, extraIds, session])
-
-  // Palco ← "Editar malha"; e a seleção de vértices acompanha a malha (um desfazer
-  // pode tirar vértices dela; uma peça que deixou de ser malha fecha a edição).
-  useEffect(() => {
-    viewport?.setMeshEdit(
-      meshEditId ? { partId: meshEditId, mode: meshSelectMode, vertices: meshVertices } : null,
-    )
-  }, [viewport, meshEditId, meshSelectMode, meshVertices])
-  useEffect(() => {
-    const state = session.getState()
-    if (!state.meshEditId) return
-    const part = findPart(asset, state.meshEditId)
-    if (!part?.mesh) {
-      state.exitMeshEdit()
-      return
-    }
-    const pruned = pruneMeshSelection(part.mesh, state.meshVertices)
-    if (pruned.length !== state.meshVertices.length) state.setMeshVertices(pruned)
-  }, [asset, session])
+    if (!faceTarget || facePaintCanvas(asset, faceTarget)) return
+    setFaceTarget(null)
+    showToast(COPY.editor.model.paint.faceEditor.stale)
+  }, [asset, faceTarget, showToast])
 
   useModelThumbnail(editor, viewport, gestureBefore)
 
@@ -494,10 +448,11 @@ export function ModelEditor({
         showToast(COPY.editor.model.partsFull)
         return
       }
+      cancelSnapTool()
       session.getState().setPlacingShape(shape)
       showToast(COPY.editor.model.placeHint)
     },
-    [model, session, showToast],
+    [cancelSnapTool, model, session, showToast],
   )
 
   // Duplicar/apagar valem para a seleção INTEIRA (a principal + as somadas).
@@ -536,6 +491,60 @@ export function ModelEditor({
     state.select(null)
   }, [commit, model, session])
 
+  const selectedPartIds = useCallback((): string[] => {
+    const state = session.getState()
+    return state.selectedId ? [state.selectedId, ...state.extraIds] : []
+  }, [session])
+
+  const showArrangeFailure = useCallback(
+    (result: Exclude<ArrangeResult, { ok: true }>) => {
+      showToast(COPY.editor.model.arrange.errors[result.reason])
+    },
+    [showToast],
+  )
+
+  const arrangeSelection = useCallback(
+    (run: (current: MoldaModelAsset, ids: readonly string[]) => ArrangeResult) => {
+      const current = model()
+      const result = run(current, selectedPartIds())
+      if (!result.ok) {
+        showArrangeFailure(result)
+        return
+      }
+      commit(result.model)
+    },
+    [commit, model, selectedPartIds, showArrangeFailure],
+  )
+
+  const repeatSelection = useCallback(
+    (value: RepeatAdjustmentValue) => {
+      const active = repeatAdjustRef.current
+      const adjusting = active && editor.getState().contentRevision === active.afterRevision
+      const before = adjusting ? active.before : model()
+      const sourceIds = adjusting ? active.sourceIds : selectedPartIds()
+      const result = repeatPartsInLine(before, sourceIds, value)
+      if (!result.ok) {
+        showToast(COPY.editor.model.arrange.errors[result.reason])
+        return
+      }
+      if (adjusting) editor.getState().amend(result.model)
+      else commit(result.model)
+      const state = session.getState()
+      state.select(result.addedIds[0] ?? null)
+      state.setExtraIds(result.addedIds.slice(1))
+      const next: RepeatAdjustment = {
+        before,
+        afterRevision: editor.getState().contentRevision,
+        sourceIds,
+        addedIds: result.addedIds,
+        value,
+      }
+      repeatAdjustRef.current = next
+      setRepeatAdjust(next)
+    },
+    [commit, editor, model, selectedPartIds, session, showToast],
+  )
+
   // Setas do teclado: um encaixe por toque (Shift = 5). No Editar malha empurram os
   // PONTOS escolhidos; fora dele, a seleção de peças (as trancadas ficam paradas).
   const nudge = useCallback(
@@ -549,8 +558,11 @@ export function ModelEditor({
       ]
       let next = current
       if (state.meshEditId) {
-        if (state.meshVertices.length === 0) return
-        next = moveMeshVertices(current, state.meshEditId, state.meshVertices, delta, current.snap)
+        const mesh = findPart(current, state.meshEditId)?.mesh
+        if (!mesh) return
+        const vertices = selectionVertices(mesh, state.meshSelection)
+        if (vertices.length === 0) return
+        next = moveMeshVertices(current, state.meshEditId, vertices, delta, current.snap)
       } else {
         if (!state.selectedId) return
         const ids = [state.selectedId, ...state.extraIds]
@@ -577,7 +589,10 @@ export function ModelEditor({
     const state = session.getState()
     const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
     if (!part?.mesh) return
-    state.setMeshVertices(Object.keys(part.mesh.vertices))
+    state.setMeshSelectMode('vertex')
+    state.setMeshSelection(
+      Object.keys(part.mesh.vertices).map((key) => ({ kind: 'vertex' as const, key })),
+    )
   }, [model, session])
 
   const togglePartFlag = useCallback(
@@ -595,8 +610,17 @@ export function ModelEditor({
 
   const toggleMirror = useCallback(() => {
     const current = model()
-    commit(setMirrorX(current, !current.mirrorX))
-  }, [commit, model])
+    const result = trySetMirrorX(current, !current.mirrorX)
+    if (!result.ok) {
+      showToast(
+        result.reason === 'parts-full'
+          ? COPY.editor.model.partsFull
+          : COPY.editor.model.trianglesFull,
+      )
+      return
+    }
+    commit(result.model)
+  }, [commit, model, showToast])
 
   const toggleSnap = useCallback(() => {
     const current = model()
@@ -606,6 +630,7 @@ export function ModelEditor({
   // "Editar malha" / "Transformar em malha": a forma vira malha (um commit, com o aviso
   // das peles que não couberam) e a bancada abre a caixa de pontos/arestas/faces.
   const editMesh = useCallback(() => {
+    cancelSnapTool()
     const state = session.getState()
     const id = state.selectedId
     const part = id ? findPart(model(), id) : undefined
@@ -627,17 +652,19 @@ export function ModelEditor({
         : COPY.editor.model.mesh.converted,
     )
     state.enterMeshEdit(id)
-  }, [commit, model, session, showToast])
+  }, [cancelSnapTool, commit, model, session, showToast])
 
   const deleteSelection = useCallback(() => {
     const state = session.getState()
     const id = state.meshEditId
     if (!id) return
     const before = model()
-    const result = deleteMeshSelection(before, id, state.meshVertices, state.meshSelectMode)
+    const mesh = findPart(before, id)?.mesh
+    if (!mesh) return
+    const result = deleteMeshSelection(before, id, state.meshSelection)
     if (result.kind === 'updated') {
       commit(result.model)
-      state.setMeshVertices([])
+      state.setMeshSelection([])
       warnMeshIssues(before, result.model, id)
     } else if (result.kind === 'empty') {
       state.exitMeshEdit()
@@ -647,25 +674,30 @@ export function ModelEditor({
     }
   }, [commit, model, session, showToast, warnMeshIssues])
 
-  const meshDragBlocked = useRef(false)
   const meshAdjustRef = useRef(meshAdjust)
   meshAdjustRef.current = meshAdjust
   const runMeshTool = useCallback(
     (
-      run: (current: MoldaModelAsset, partId: string, selection: string[]) => MeshToolResult | null,
+      run: (
+        current: MoldaModelAsset,
+        partId: string,
+        selection: MeshPick[],
+      ) => MeshToolResult | null,
       failure: string,
     ) => {
       const state = session.getState()
       const partId = state.meshEditId
       if (!partId) return null
       const before = model()
-      const result = run(before, partId, state.meshVertices)
+      const result = run(before, partId, state.meshSelection)
       if (!result) {
         showToast(failure)
         return null
       }
       commit(result.model)
-      state.setMeshVertices(result.vertices)
+      const nextMode = result.selection[0]?.kind
+      if (nextMode) state.setMeshSelectMode(nextMode)
+      state.setMeshSelection(result.selection)
       warnMeshIssues(before, result.model, partId)
       return { before, result }
     },
@@ -676,42 +708,53 @@ export function ModelEditor({
     const partId = state.meshEditId
     const part = partId ? findPart(model(), partId) : undefined
     if (!partId || !part?.mesh) return
-    const selection = state.meshVertices
-    const byFaces = selectedFaces(part.mesh, selection).length > 0
+    const mesh = part.mesh
+    const selection = state.meshSelection
+    const kind =
+      state.meshSelectMode === 'face'
+        ? 'extrude-faces'
+        : state.meshSelectMode === 'edge'
+          ? 'extrude-edges'
+          : null
+    if (!kind) return
     const distance = model().snap
+    const hasSelection =
+      kind === 'extrude-faces'
+        ? selectedFaces(mesh, selection).length > 0
+        : selectedEdges(mesh, selection).length > 0
+    const hasDirection = selectionNormal(mesh, selection) !== null
     const outcome = runMeshTool(
       (current, id, keys) =>
-        byFaces
-          ? extrudeFaces(current, id, keys, distance)
-          : extrudeEdges(current, id, keys, distance),
-      byFaces || selectedEdges(part.mesh, selection).length > 0
+        kind === 'extrude-faces'
+          ? extrudeFaces(current, id, selectedFaces(mesh, keys), distance)
+          : extrudeEdges(current, id, selectedEdges(mesh, keys), distance),
+      hasSelection && hasDirection
         ? COPY.editor.model.mesh.tooMany
         : COPY.editor.model.mesh.toolHints.extrude,
     )
     if (!outcome) return
     setMeshAdjust({
       before: outcome.before,
-      afterParts: outcome.result.model.parts,
+      afterRevision: editor.getState().contentRevision,
       partId,
       selection,
-      byFaces,
-      distance,
+      kind,
+      value: distance,
     })
-  }, [model, runMeshTool, session])
-  const adjustDistance = useCallback(
-    (distance: number) => {
+  }, [editor, model, runMeshTool, session])
+  const adjustMeshTool = useCallback(
+    (value: number) => {
       const current = meshAdjustRef.current
       if (!current) return
-      const result = (current.byFaces ? extrudeFaces : extrudeEdges)(
-        current.before,
-        current.partId,
-        current.selection,
-        distance,
-      )
+      const result = replayMeshAdjustment(current, value)
       if (!result) return
       editor.getState().amend(result.model)
-      session.getState().setMeshVertices(result.vertices)
-      setMeshAdjust({ ...current, afterParts: result.model.parts, distance })
+      session.getState().setMeshSelection(result.selection)
+      setMeshAdjust({
+        ...current,
+        afterRevision: editor.getState().contentRevision,
+        value,
+      })
       warnMeshIssues(current.before, result.model, current.partId)
     },
     [editor, session, warnMeshIssues],
@@ -737,23 +780,64 @@ export function ModelEditor({
     else if (outcome && offGrid) showToast(COPY.editor.model.mesh.cutOffGrid)
   }, [runMeshTool, showToast])
   const mergeSelection = useCallback(
-    () => runMeshTool(mergeVertices, COPY.editor.model.mesh.toolHints.merge),
+    () =>
+      runMeshTool((current, id, selection) => {
+        const mesh = findPart(current, id)?.mesh
+        return mesh ? mergeVertices(current, id, selectionVertices(mesh, selection)) : null
+      }, COPY.editor.model.mesh.toolHints.merge),
     [runMeshTool],
   )
   const closeFace = useCallback(() => {
     const state = session.getState()
     const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
-    const wanted = new Set(state.meshVertices)
+    const vertices = part?.mesh ? selectionVertices(part.mesh, state.meshSelection) : []
+    const wanted = new Set(vertices)
     const exists = Object.values(part?.mesh?.faces ?? {}).some(
       (face) => face.v.length === wanted.size && face.v.every((vertex) => wanted.has(vertex)),
     )
     runMeshTool(
-      createFace,
+      (current, id) => createFace(current, id, vertices),
       exists
         ? COPY.editor.model.mesh.toolHints.faceExists
         : COPY.editor.model.mesh.toolHints.createFace,
     )
   }, [model, runMeshTool, session])
+  const connectSelection = useCallback(() => {
+    runMeshTool((current, id, selection) => {
+      const mesh = findPart(current, id)?.mesh
+      return mesh ? connectVertices(current, id, selectionVertices(mesh, selection)) : null
+    }, COPY.editor.model.mesh.toolHints.connect)
+  }, [runMeshTool])
+  const insetSelection = useCallback(() => {
+    const state = session.getState()
+    const partId = state.meshEditId
+    const part = partId ? findPart(model(), partId) : undefined
+    if (!partId || !part?.mesh) return
+    const faces = selectedFaces(part.mesh, state.meshSelection)
+    const faceKey = faces.length === 1 ? faces[0] : undefined
+    if (!faceKey) {
+      showToast(COPY.editor.model.mesh.toolHints.inset)
+      return
+    }
+    const value = 25
+    const selection = [...state.meshSelection]
+    const outcome = runMeshTool(
+      (current, id) => insetFace(current, id, faceKey, value),
+      canInsetFace(part.mesh, faceKey)
+        ? COPY.editor.model.mesh.tooMany
+        : COPY.editor.model.mesh.toolHints.inset,
+    )
+    if (!outcome) return
+    setMeshAdjust({
+      before: outcome.before,
+      afterRevision: editor.getState().contentRevision,
+      partId,
+      selection,
+      kind: 'inset',
+      value,
+      faceKey,
+    })
+  }, [editor, model, runMeshTool, session, showToast])
   const flipSelection = useCallback(
     () =>
       runMeshTool((current, id, selection) => {
@@ -772,8 +856,16 @@ export function ModelEditor({
   )
   // O "Ajustar" morre quando qualquer outra coisa muda o modelo (ou a edição fecha).
   useEffect(() => {
-    if (meshAdjust && (!meshEditId || asset.parts !== meshAdjust.afterParts)) setMeshAdjust(null)
-  }, [asset, meshAdjust, meshEditId])
+    if (meshAdjust && (!meshEditId || contentRevision !== meshAdjust.afterRevision)) {
+      setMeshAdjust(null)
+    }
+  }, [contentRevision, meshAdjust, meshEditId])
+  useEffect(() => {
+    if (repeatAdjust && contentRevision !== repeatAdjust.afterRevision) {
+      repeatAdjustRef.current = null
+      setRepeatAdjust(null)
+    }
+  }, [contentRevision, repeatAdjust])
 
   const openApplyTexture = useCallback(() => {
     if (!session.getState().selectedId) {
@@ -826,20 +918,155 @@ export function ModelEditor({
     nudge,
     endNudge,
     selectAllVertices,
+    toggleSnap: toggleSnapTool,
+    cancelSnap: cancelSnapTool,
   })
 
   const selectedPart = selectedId ? (findPart(asset, selectedId) ?? null) : null
   const meshEditPart = meshEditId ? (findPart(asset, meshEditId) ?? null) : null
-  const meshSelectedEdges = meshEditPart?.mesh ? selectedEdges(meshEditPart.mesh, meshVertices) : []
-  const meshSelectedFaces = meshEditPart?.mesh ? selectedFaces(meshEditPart.mesh, meshVertices) : []
+  const meshEditMesh = meshEditPart?.mesh
+  const meshSelectedEdges = meshEditMesh ? selectedEdges(meshEditMesh, meshSelection) : []
+  const meshSelectedFaces = meshEditMesh ? selectedFaces(meshEditMesh, meshSelection) : []
   const meshSelectedCount =
     meshSelectMode === 'vertex'
       ? meshVertices.length
       : meshSelectMode === 'edge'
         ? meshSelectedEdges.length
         : meshSelectedFaces.length
+  const wantedFace = new Set(meshVertices)
+  const meshFaceAlreadyExists = Object.values(meshEditMesh?.faces ?? {}).some(
+    (face) => face.v.length === wantedFace.size && face.v.every((vertex) => wantedFace.has(vertex)),
+  )
+  const meshCommands: Record<MeshCommandId, MeshCommandState> = {
+    merge: {
+      enabled: meshVertices.length >= 2,
+      disabledMessage: COPY.editor.model.mesh.toolHints.merge,
+      run: mergeSelection,
+    },
+    createFace: {
+      enabled: meshVertices.length >= 3 && meshVertices.length <= 4 && !meshFaceAlreadyExists,
+      disabledMessage: meshFaceAlreadyExists
+        ? COPY.editor.model.mesh.toolHints.faceExists
+        : COPY.editor.model.mesh.toolHints.createFace,
+      run: closeFace,
+    },
+    connect: {
+      enabled: meshEditMesh ? canConnectVertices(meshEditMesh, meshVertices) : false,
+      disabledMessage: COPY.editor.model.mesh.toolHints.connect,
+      run: connectSelection,
+    },
+    extrudeEdges: {
+      enabled: meshSelectedEdges.length > 0,
+      disabledMessage: COPY.editor.model.mesh.toolHints.extrudeEdges,
+      run: extrude,
+    },
+    loopCut: {
+      enabled: meshSelectedEdges.length === 1,
+      disabledMessage: COPY.editor.model.mesh.toolHints.loopCut,
+      run: loopCutSelection,
+    },
+    extrudeFaces: {
+      enabled: meshSelectedFaces.length > 0,
+      disabledMessage: COPY.editor.model.mesh.toolHints.extrudeFaces,
+      run: extrude,
+    },
+    inset: {
+      enabled: Boolean(
+        meshEditMesh &&
+          meshSelectedFaces.length === 1 &&
+          canInsetFace(meshEditMesh, meshSelectedFaces[0]),
+      ),
+      disabledMessage: COPY.editor.model.mesh.toolHints.inset,
+      run: insetSelection,
+    },
+    flip: {
+      enabled: meshSelectedFaces.length > 0,
+      disabledMessage: COPY.editor.model.mesh.toolHints.flip,
+      run: flipSelection,
+    },
+    split: {
+      enabled: meshSelectedFaces.some((key) => meshEditMesh?.faces[key]?.v.length === 4),
+      disabledMessage: COPY.editor.model.mesh.toolHints.split,
+      run: splitSelection,
+    },
+  }
+  const helpContext: ModelCommandContext = meshEditId ? `mesh-${meshSelectMode}` : mode
+  const helpStates: Partial<Record<ModelCommandId, RegistryCommandState>> = {}
+  const chosenIds = selectedPartIds()
+  const hasChosenParts = chosenIds.length > 0
+  const chosenPartsLocked = chosenIds.some((id) => findPart(asset, id)?.locked)
+  const noSelectionReason = COPY.editor.model.noSelection
+  const partsFull = asset.parts.length >= MOLDA_LIMITS.maxParts
+  helpStates['part.duplicate'] = {
+    enabled: hasChosenParts && !partsFull,
+    disabledReason: partsFull ? COPY.editor.model.partsFull : noSelectionReason,
+    run: duplicate,
+  }
+  helpStates['part.remove'] = {
+    enabled: hasChosenParts,
+    disabledReason: noSelectionReason,
+    run: remove,
+  }
+  helpStates['part.mesh'] = {
+    enabled: Boolean(selectedPart && !selectedPart.locked && !selectedPart.hidden),
+    disabledReason: selectedPart ? COPY.editor.model.lockedHint : noSelectionReason,
+    run: editMesh,
+  }
+  for (const id of [
+    'arrange.floor',
+    'arrange.center',
+    'arrange.align-x',
+    'arrange.align-y',
+    'arrange.align-z',
+  ] as const) {
+    const isAlign = id.startsWith('arrange.align-')
+    helpStates[id] = {
+      enabled: hasChosenParts && !chosenPartsLocked && (!isAlign || chosenIds.length >= 2),
+      disabledReason: chosenPartsLocked
+        ? COPY.editor.model.arrange.errors.locked
+        : isAlign && hasChosenParts
+          ? COPY.editor.model.arrange.alignSelection
+          : noSelectionReason,
+      run: () => undefined,
+    }
+  }
+  helpStates['arrange.repeat'] = {
+    enabled: hasChosenParts,
+    disabledReason: noSelectionReason,
+    run: () => undefined,
+  }
+  helpStates['mesh.delete'] = {
+    enabled: meshSelectedCount > 0,
+    disabledReason: COPY.editor.model.mesh.nothingSelected,
+    run: deleteSelection,
+  }
+  for (const [id, command] of Object.entries(meshCommands) as [MeshCommandId, MeshCommandState][]) {
+    helpStates[MESH_ACTION_COMMAND[id]] = {
+      enabled: command.enabled,
+      disabledReason: command.disabledMessage,
+      run: command.run,
+    }
+  }
+  const helpCommands = contextualModelCommands(helpContext, helpStates)
   const meshAdjustProps: MeshAdjust | null = meshAdjust
-    ? { distance: meshAdjust.distance, snap: asset.snap, onDistance: adjustDistance }
+    ? meshAdjust.kind === 'inset'
+      ? {
+          label: COPY.editor.model.mesh.insetAmount,
+          short: '%',
+          value: meshAdjust.value,
+          step: 5,
+          min: 10,
+          max: 80,
+          onValue: adjustMeshTool,
+        }
+      : {
+          label: COPY.editor.model.mesh.distance,
+          value: meshAdjust.value,
+          step: asset.snap,
+          min: asset.snap,
+          max: MOLDA_LIMITS.maxPartSize,
+          onValue: adjustMeshTool,
+        }
     : null
   const triangles = modelTriangleCount(asset)
   // Acima de metade do teto de triângulos (a malha é quem chega lá) o status mostra o teto.
@@ -861,8 +1088,14 @@ export function ModelEditor({
           selectedId={selectedId}
           extraIds={extraIds}
           additive={partsAdditive}
-          onSelect={(id) => session.getState().select(id)}
-          onToggle={(id) => session.getState().toggleExtra(id)}
+          onSelect={(id) => {
+            cancelSnapTool()
+            session.getState().select(id)
+          }}
+          onToggle={(id) => {
+            cancelSnapTool()
+            session.getState().toggleExtra(id)
+          }}
           onLock={(id) => togglePartFlag(id, 'locked')}
           onHide={(id) => togglePartFlag(id, 'hidden')}
           className="max-h-64 shrink-0"
@@ -927,7 +1160,12 @@ export function ModelEditor({
               return
             }
             commit(next)
-            if (session.getState().paintColor >= index) session.getState().setPaintColor(1)
+            const active = session.getState().paintColor
+            session
+              .getState()
+              .setPaintColor(
+                remapActiveColorAfterRemoval(active, index, resolvePaletteColors(next)),
+              )
             showToast(COPY.editor.model.paint.removedColor)
           }}
           onPalette={(id: PaletteId) => {
@@ -963,6 +1201,17 @@ export function ModelEditor({
           extraCount={extraIds.length}
           className="shrink-0"
         />
+        {mode === 'build' && selectedPart && !meshEditId ? (
+          <ArrangePanel
+            repeat={repeatAdjust?.value ?? null}
+            selectedCount={chosenIds.length}
+            movementLocked={chosenPartsLocked}
+            onFloor={() => arrangeSelection(putPartsOnFloor)}
+            onCenter={() => arrangeSelection(centerPartsOnStage)}
+            onAlign={(axis) => arrangeSelection((current, ids) => alignParts(current, ids, axis))}
+            onRepeat={repeatSelection}
+          />
+        ) : null}
       </>
     ),
     [
@@ -980,6 +1229,13 @@ export function ModelEditor({
       editor,
       togglePartFlag,
       closeColorGesture,
+      meshEditId,
+      repeatAdjust,
+      cancelSnapTool,
+      arrangeSelection,
+      repeatSelection,
+      chosenIds.length,
+      chosenPartsLocked,
     ],
   )
 
@@ -992,22 +1248,31 @@ export function ModelEditor({
           <ModeTabs
             mode={mode}
             onMode={(next) => {
+              cancelSnapTool()
+              setFaceTarget(null)
               session.getState().setMode(next)
               if (next === 'paint') session.getState().setPlacingShape(null)
             }}
           />
         }
         actions={
-          <Button
-            variant="outline"
-            onClick={download}
-            aria-label={COPY.editor.model.download.glb}
-            title={COPY.editor.model.download.glb}
-            className="min-h-11 px-3 text-sm"
-          >
-            <Download aria-hidden="true" className="size-4" />
-            <span className="hidden md:inline">{COPY.editor.model.download.glb}</span>
-          </Button>
+          <>
+            <ToolButton
+              icon={CircleHelp}
+              label={COPY.editor.model.help.button}
+              onClick={() => setHelpOpen(true)}
+            />
+            <Button
+              variant="outline"
+              onClick={download}
+              aria-label={COPY.editor.model.download.glb}
+              title={COPY.editor.model.download.glb}
+              className="min-h-11 px-3 text-sm"
+            >
+              <Download aria-hidden="true" className="size-4" />
+              <span className="hidden md:inline">{COPY.editor.model.download.glb}</span>
+            </Button>
+          </>
         }
       />
       <div className="flex min-h-0 flex-1">
@@ -1030,20 +1295,7 @@ export function ModelEditor({
             additive={meshAdditive}
             onToggleAdditive={() => session.getState().toggleMeshAdditive()}
             selectedCount={meshSelectedCount}
-            canExtrude={meshSelectedFaces.length > 0 || meshSelectedEdges.length > 0}
-            canLoopCut={meshSelectedEdges.length === 1}
-            canMerge={meshVertices.length >= 2}
-            canCreateFace={meshVertices.length >= 3 && meshVertices.length <= 4}
-            canFlip={meshSelectedFaces.length > 0}
-            canSplit={meshSelectedFaces.some(
-              (key) => meshEditPart?.mesh?.faces[key]?.v.length === 4,
-            )}
-            onExtrude={extrude}
-            onLoopCut={loopCutSelection}
-            onMerge={mergeSelection}
-            onCreateFace={closeFace}
-            onFlip={flipSelection}
-            onSplit={splitSelection}
+            commands={meshCommands}
             adjust={meshAdjustProps}
             onDeleteSelection={deleteSelection}
             onDone={() => session.getState().exitMeshEdit()}
@@ -1053,7 +1305,7 @@ export function ModelEditor({
             tool={tool}
             onTool={(next: TransformTool) => {
               session.getState().setPlacingShape(null)
-              session.getState().setTool(next)
+              chooseTool(next)
             }}
             onAdd={startPlacement}
             placingShape={placingShape}
@@ -1081,6 +1333,7 @@ export function ModelEditor({
             edgesVisible={edgesVisible}
             onToggleEdges={() => session.getState().toggleEdges()}
             status={status}
+            snapInstruction={snapInstruction}
           />
           {!wide ? (
             <details className="max-h-72 shrink-0 overflow-y-auto border-t-2 border-mld-border bg-mld-surface">
@@ -1101,6 +1354,23 @@ export function ModelEditor({
         open={applyOpen}
         onClose={() => setApplyOpen(false)}
         onApply={applyTexture}
+      />
+      <ContextHelpDialog
+        open={helpOpen}
+        context={helpContext}
+        commands={helpCommands}
+        onClose={() => setHelpOpen(false)}
+      />
+      <FacePaintDialog
+        editor={editor}
+        target={faceTarget}
+        color={paintColor}
+        brushSize={brushSize}
+        mirror={mirrorPaint}
+        onColor={(index) => session.getState().setPaintColor(index)}
+        onBrushSize={(size) => session.getState().setBrushSize(size)}
+        onToggleMirror={() => session.getState().toggleMirrorPaint()}
+        onClose={() => setFaceTarget(null)}
       />
     </div>
   )

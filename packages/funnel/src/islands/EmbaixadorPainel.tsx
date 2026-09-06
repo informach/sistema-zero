@@ -1,5 +1,6 @@
 import { useId, useState } from 'react'
 import { ApiError, apiPost } from '../lib/api-fetch'
+import { formatBRLFromCents2 } from '../lib/money'
 
 /**
  * Painel do embaixador (landing /embaixador/<token>, capability URL — sem
@@ -7,16 +8,41 @@ import { ApiError, apiPost } from '../lib/api-fetch'
  * pronta vai no WhatsApp DELE, nunca da plataforma) e convidar por e-mail
  * (secundário — a plataforma envia UM convite, com opt-out, LGPD por desenho).
  */
+export interface BonusItem {
+  id: string
+  status: 'pending' | 'eligible' | 'paid'
+  bonusCents: number
+  subscribedAt: string
+  paidMarkedAt: string | null
+}
+
 export interface EmbaixadorPainelProps {
   token: string
   name: string
   shareUrl: string
   stats: { redemptionsCompleted: number; invitesSent: number }
+  bonus?: { pixKey: string | null; items: BonusItem[] }
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
 
-export default function EmbaixadorPainel({ token, shareUrl, stats }: EmbaixadorPainelProps) {
+function bonusLabel(item: BonusItem, hasPixKey: boolean): string {
+  if (item.status === 'paid') {
+    const when = item.paidMarkedAt
+      ? ` em ${new Date(item.paidMarkedAt).toLocaleDateString('pt-BR')}`
+      : ''
+    return `pago${when}`
+  }
+  // ⚠️ Sem chave cadastrada NÃO há "pagamento a caminho": ele fica parado
+  // esperando o próprio embaixador, e prometer o contrário faz a pessoa
+  // fechar a página sem resolver a única coisa que trava o Pix.
+  if (item.status === 'eligible') {
+    return hasPixKey ? 'liberado, pagamento a caminho' : 'liberado, falta a sua chave Pix'
+  }
+  return 'aguardando a garantia de 7 dias'
+}
+
+export default function EmbaixadorPainel({ token, shareUrl, stats, bonus }: EmbaixadorPainelProps) {
   const uid = useId()
   const [copied, setCopied] = useState<'link' | 'message' | null>(null)
   const [nome, setNome] = useState('')
@@ -24,6 +50,45 @@ export default function EmbaixadorPainel({ token, shareUrl, stats }: EmbaixadorP
   const [sending, setSending] = useState(false)
   const [inviteMsg, setInviteMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
   const [invitesSent, setInvitesSent] = useState(stats.invitesSent)
+  const [pixKey, setPixKey] = useState(bonus?.pixKey ?? '')
+  const [savingPix, setSavingPix] = useState(false)
+  const [pixMsg, setPixMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null)
+  // Chave que o SERVIDOR tem (só muda quando o salvamento confirma) — digitar
+  // no campo não pode fazer o rótulo do bônus dizer que o Pix vai sair.
+  const [savedPixKey, setSavedPixKey] = useState(bonus?.pixKey ?? '')
+  const hasPixKey = savedPixKey.trim().length > 0
+  const needsPixKey = !hasPixKey && Boolean(bonus?.items.some((i) => i.status === 'eligible'))
+
+  async function salvarPix() {
+    if (savingPix) return
+    const key = pixKey.trim()
+    if (key.length < 5 || key.length > 140) {
+      setPixMsg({
+        kind: 'err',
+        text: 'Confira a chave: ela parece incompleta ou longa demais. Vale CPF, e-mail, telefone ou chave aleatória.',
+      })
+      return
+    }
+    setSavingPix(true)
+    setPixMsg(null)
+    try {
+      await apiPost('/api/embaixador/pix', { token, pixKey: key })
+      setSavedPixKey(key)
+      setPixMsg({ kind: 'ok', text: 'Chave Pix salva!' })
+    } catch (err) {
+      // 4xx é DETERMINÍSTICO (chave inválida/página fora do ar): "tente de
+      // novo em instantes" mentiria — re-tentar nunca resolveria.
+      const status = err instanceof ApiError ? err.status : 0
+      setPixMsg({
+        kind: 'err',
+        text:
+          status >= 400 && status < 500
+            ? 'Essa chave não passou. Confira se ela está completa e tente com outra se precisar.'
+            : 'Não foi possível salvar agora. Tente de novo em instantes.',
+      })
+    }
+    setSavingPix(false)
+  }
 
   const shareMessage = [
     `Oi! Eu consegui uma bolsa 100% de um curso em que a criança cria o próprio jogo de computador em 5 dias (a partir de 9 anos) 🎮`,
@@ -157,6 +222,87 @@ export default function EmbaixadorPainel({ token, shareUrl, stats }: EmbaixadorP
           </button>
         </form>
       </div>
+
+      {bonus && bonus.items.length > 0 && (
+        <div className="card rounded-2xl border-line/80 bg-card p-6 sm:p-8">
+          <h2 className="text-lg font-bold text-ink">Seus bônus</h2>
+          <p className="mt-2 text-sm text-muted">
+            Quando uma família que ganhou a bolsa com o seu link assina a Comunidade dos Criadores,
+            você recebe um agradecimento em dinheiro. Ele libera depois do período de garantia de 7
+            dias e a gente paga por Pix.
+          </p>
+          <ul className="mt-4 flex flex-col gap-2">
+            {bonus.items.map((item) => (
+              <li
+                key={item.id}
+                className="flex items-center justify-between rounded-xl border border-line px-4 py-3 text-sm"
+              >
+                <span className="text-muted">
+                  Assinatura em {new Date(item.subscribedAt).toLocaleDateString('pt-BR')}
+                </span>
+                <span className="font-semibold text-ink">
+                  {formatBRLFromCents2(item.bonusCents)} · {bonusLabel(item, hasPixKey)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4">
+            <label htmlFor={`${uid}-pix`} className="mb-1.5 block text-sm font-semibold text-ink">
+              Sua chave Pix para receber
+            </label>
+            {needsPixKey && (
+              <p id={`${uid}-pix-hint`} className="mb-2 text-sm font-semibold text-ink">
+                Cadastre a sua chave para o dinheiro sair: sem ela o pagamento fica parado.
+              </p>
+            )}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                id={`${uid}-pix`}
+                type="text"
+                placeholder="CPF, e-mail, telefone ou chave aleatória"
+                value={pixKey}
+                onChange={(e) => {
+                  setPixKey(e.target.value)
+                  // A mensagem antiga ("Chave Pix salva!") não pode sobreviver à
+                  // edição: quem corrigiu a chave sairia achando que salvou.
+                  setPixMsg(null)
+                }}
+                aria-invalid={pixMsg?.kind === 'err' || undefined}
+                aria-describedby={
+                  [pixMsg ? `${uid}-pix-msg` : '', needsPixKey ? `${uid}-pix-hint` : '']
+                    .filter(Boolean)
+                    .join(' ') || undefined
+                }
+                className="w-full flex-1 rounded-xl border border-line bg-card px-4 py-3 text-sm text-ink outline-none transition placeholder:text-muted/60 focus:border-cyan"
+              />
+              <button
+                type="button"
+                onClick={() => void salvarPix()}
+                disabled={savingPix}
+                className="btn btn-primary shrink-0 disabled:opacity-50"
+              >
+                {savingPix ? 'Salvando…' : 'Salvar chave'}
+              </button>
+            </div>
+            {pixMsg && (
+              // role=alert: a confirmação/recusa é sobre DINHEIRO e precisa ser
+              // anunciada a quem usa leitor de tela.
+              <p
+                id={`${uid}-pix-msg`}
+                role="alert"
+                className={`mt-2 text-sm ${pixMsg.kind === 'ok' ? 'text-ink' : 'font-semibold text-red-600'}`}
+              >
+                {pixMsg.text}
+              </p>
+            )}
+          </div>
+          <p className="mt-4 text-xs text-muted">
+            O bônus é um agradecimento único por indicação que virar assinatura. Não é salário nem
+            renda garantida e não cria vínculo com a plataforma. Pagamos por Pix na chave acima,
+            normalmente em poucos dias depois da liberação.
+          </p>
+        </div>
+      )}
 
       <div className="card rounded-2xl border-line/80 bg-card p-6 text-center sm:p-8">
         <p className="text-sm text-muted">Bolsas resgatadas pelo seu link</p>

@@ -3,54 +3,25 @@
  * balde na face, balde na peça, conta-gotas, espelho de pintura; o tamanho do
  * lápis; e os texels por bloco (a resolução das peles).
  */
-import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS, type TexelsPerUnit } from '../../../core/limits'
 import type { BrushSize } from '../../../paint/skinPaint'
 import type { PaintTool } from '../../../paint/stroke'
 import { ToolButton } from '../../ui/Button'
-import {
-  Eraser,
-  FlipHorizontal2,
-  ImageIcon,
-  type LucideIcon,
-  PaintBucket,
-  Paintbrush,
-  Pencil,
-  Pipette,
-  RotateCw,
-} from '../../ui/icons'
+import { interactiveChipClass } from '../../ui/interaction'
+import { bindModelCommand, modelCommand, PAINT_COMMAND } from './commandRegistry'
 
-const TOOL_ICONS: Record<PaintTool, LucideIcon> = {
-  pencil: Pencil,
-  eraser: Eraser,
-  fillFace: PaintBucket,
-  fillPart: Paintbrush,
-  picker: Pipette,
-  rotateSkin: RotateCw,
-}
-
-const TOOL_SHORTCUTS: Partial<Record<PaintTool, string>> = {
-  pencil: 'P',
-  eraser: 'E',
-  fillFace: 'G',
-  picker: 'I',
-  rotateSkin: 'R',
-}
-
-const TOOLS: PaintTool[] = ['pencil', 'eraser', 'fillFace', 'fillPart', 'picker', 'rotateSkin']
+const TOOLS: PaintTool[] = [
+  'pencil',
+  'eraser',
+  'fillFace',
+  'fillPart',
+  'picker',
+  'rotateSkin',
+  'faceEditor',
+]
 const SIZES: BrushSize[] = [1, 2, 3]
-
-function chip(active: boolean): string {
-  return clsx(
-    'min-h-11 rounded-lg border-2 px-1 text-xs font-bold transition',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
-    active
-      ? 'border-mld-accent bg-mld-accent text-mld-accent-fg'
-      : 'border-mld-border bg-mld-surface text-mld-text hover:border-mld-accent',
-  )
-}
 
 export interface PaintToolboxProps {
   tool: PaintTool
@@ -76,28 +47,37 @@ export function PaintToolbox(props: PaintToolboxProps): JSX.Element {
           {COPY.editor.model.toolbox}
         </legend>
         <div className="grid grid-cols-2 gap-1">
-          {TOOLS.map((tool) => (
-            <ToolButton
-              key={tool}
-              icon={TOOL_ICONS[tool]}
-              label={copy.tools[tool]}
-              shortcut={TOOL_SHORTCUTS[tool]}
-              active={props.tool === tool}
-              onClick={() => props.onTool(tool)}
-            />
-          ))}
+          {TOOLS.map((tool) =>
+            (() => {
+              const command = bindModelCommand(PAINT_COMMAND[tool], {
+                enabled: true,
+                active: props.tool === tool,
+                run: () => props.onTool(tool),
+              })
+              return (
+                <ToolButton
+                  key={tool}
+                  icon={command.icon}
+                  label={command.label}
+                  shortcut={command.shortcut?.display}
+                  active={command.active}
+                  onClick={command.run}
+                />
+              )
+            })(),
+          )}
           <ToolButton
-            icon={FlipHorizontal2}
-            label={copy.mirror}
-            shortcut="M"
+            icon={modelCommand('paint.mirror').icon}
+            label={modelCommand('paint.mirror').label}
+            shortcut={modelCommand('paint.mirror').shortcut?.display}
             active={props.mirror}
             onClick={props.onToggleMirror}
           />
         </div>
       </fieldset>
       <ToolButton
-        icon={ImageIcon}
-        label={copy.apply.button}
+        icon={modelCommand('paint.apply').icon}
+        label={modelCommand('paint.apply').label}
         onClick={props.onApplyTexture}
         className="w-full"
       />
@@ -114,7 +94,7 @@ export function PaintToolbox(props: PaintToolboxProps): JSX.Element {
               aria-label={`${copy.sizeLabel}: ${copy.sizes[size]}`}
               title={`${copy.sizes[size]} (${size})`}
               onClick={() => props.onSize(size)}
-              className={chip(props.size === size)}
+              className={interactiveChipClass(props.size === size)}
             >
               {size}
             </button>
@@ -134,7 +114,7 @@ export function PaintToolbox(props: PaintToolboxProps): JSX.Element {
               aria-label={`${copy.texelsLabel}: ${value}`}
               title={copy.texelsHint}
               onClick={() => props.onTexels(value)}
-              className={chip(props.texelsPerUnit === value)}
+              className={interactiveChipClass(props.texelsPerUnit === value)}
             >
               {value}
             </button>

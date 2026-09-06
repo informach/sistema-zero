@@ -12,7 +12,7 @@ export default async function RankingPage() {
   if (!session.activeProfile) redirect('/perfis')
 
   const [rankingRes, leagueRes] = await Promise.all([
-    getRankingReadonly({ limit: 20, offset: 0 }).catch(() => null),
+    getRankingReadonly({ limit: 20 }).catch(() => null),
     getLeagueReadonly().catch(() => null),
   ])
   const ranking = rankingRes?.status === 200 ? (rankingRes.body ?? null) : null

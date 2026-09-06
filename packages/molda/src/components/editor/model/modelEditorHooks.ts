@@ -1,11 +1,12 @@
 import type { RefObject } from 'react'
 import { useEffect } from 'react'
 import type { MoldaModelAsset, ShapeId, Vec3 } from '../../../core/model'
-import type { BrushSize } from '../../../paint/skinPaint'
 import type { EditorStore } from '../../../state/editorStore'
 import type { MeshSelectMode, SessionStore } from '../../../state/sessionStore'
 import type { MoldaViewportLike } from '../../../viewport/types'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { isTypingTarget } from '../../ui/interaction'
+import { commandForShortcut, type ModelCommandContext } from './commandRegistry'
 
 const THUMB_DELAY_MS = 700
 
@@ -17,12 +18,6 @@ const ARROWS: Record<string, Vec3> = {
   arrowdown: [0, 0, 1],
   pageup: [0, 1, 0],
   pagedown: [0, -1, 0],
-}
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
 }
 
 export function useModelThumbnail(
@@ -78,6 +73,9 @@ export function useModelEditorShortcuts(options: {
   endNudge: () => void
   /** Ctrl+A no Editar malha: todos os pontos (o caminho do teclado para escolher). */
   selectAllVertices: () => void
+  /** G liga; G de novo ou Esc cancela o fluxo de dois toques do “Grudar”. */
+  toggleSnap: () => void
+  cancelSnap: () => void
 }): void {
   const {
     session,
@@ -90,12 +88,18 @@ export function useModelEditorShortcuts(options: {
     nudge,
     endNudge,
     selectAllVertices,
+    toggleSnap,
+    cancelSnap,
   } = options
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
       if (event.defaultPrevented || isMoldaDialogOpen() || isTypingTarget(event.target)) return
       const key = event.key.toLowerCase()
       const state = session.getState()
+      if (key === 'escape' && state.tool === 'snap') {
+        cancelSnap()
+        return
+      }
       if (key === 'escape' && state.placingShape) {
         state.setPlacingShape(null)
         return
@@ -104,7 +108,7 @@ export function useModelEditorShortcuts(options: {
       if (arrow && state.mode === 'build') {
         // Sem nada escolhido a seta é do navegador (rolar a coluna de painéis).
         const hasSelection = state.meshEditId
-          ? state.meshVertices.length > 0
+          ? state.meshSelection.length > 0
           : state.selectedId !== null
         if (!hasSelection) return
         event.preventDefault()
@@ -118,46 +122,59 @@ export function useModelEditorShortcuts(options: {
           selectAllVertices()
           return
         }
-        if (key === 'escape' || key === 'e') {
-          state.exitMeshEdit()
-          return
+      }
+
+      const context: ModelCommandContext = state.meshEditId
+        ? `mesh-${state.meshSelectMode}`
+        : state.mode
+      const command = commandForShortcut(context, event)
+      if (!command) return
+
+      if (state.meshEditId) {
+        const modes: Partial<Record<typeof command, MeshSelectMode>> = {
+          'mesh.mode.vertex': 'vertex',
+          'mesh.mode.edge': 'edge',
+          'mesh.mode.face': 'face',
         }
-        if (key === '1' || key === '2' || key === '3') {
-          const modes: MeshSelectMode[] = ['vertex', 'edge', 'face']
-          state.setMeshSelectMode(modes[Number(key) - 1] ?? 'vertex')
-          return
-        }
-        if (key === 'delete' || key === 'backspace') {
+        const nextMode = modes[command]
+        if (nextMode) state.setMeshSelectMode(nextMode)
+        else if (command === 'mesh.done') state.exitMeshEdit()
+        else if (command === 'mesh.delete') {
           event.preventDefault()
           deleteMeshSelection()
-          return
         }
-      }
-      if ((event.ctrlKey || event.metaKey) && key === 'd') {
-        event.preventDefault()
-        if (state.mode === 'build') duplicate()
         return
       }
-      if (event.ctrlKey || event.metaKey || event.altKey) return
+
       if (state.mode === 'paint') {
-        if (key === 'p') state.setPaintTool('pencil')
-        else if (key === 'e') state.setPaintTool('eraser')
-        else if (key === 'g') state.setPaintTool('fillFace')
-        else if (key === 'i') state.setPaintTool('picker')
-        else if (key === 'r') state.setPaintTool('rotateSkin')
-        else if (key === 'm') state.toggleMirrorPaint()
-        else if (key === '1' || key === '2' || key === '3') {
-          state.setBrushSize(Number(key) as BrushSize)
-        }
+        if (command === 'paint.pencil') state.setPaintTool('pencil')
+        else if (command === 'paint.eraser') state.setPaintTool('eraser')
+        else if (command === 'paint.fill-face') state.setPaintTool('fillFace')
+        else if (command === 'paint.picker') state.setPaintTool('picker')
+        else if (command === 'paint.rotate') state.setPaintTool('rotateSkin')
+        else if (command === 'paint.face-editor') state.setPaintTool('faceEditor')
+        else if (command === 'paint.mirror') state.toggleMirrorPaint()
+        else if (command === 'paint.brush-1') state.setBrushSize(1)
+        else if (command === 'paint.brush-2') state.setBrushSize(2)
+        else if (command === 'paint.brush-3') state.setBrushSize(3)
         return
       }
-      if (key === 'v') state.setTool('move')
-      else if (key === 'r') state.setTool('rotate')
-      else if (key === 't') state.setTool('scale')
-      else if (key === 'b') add('box')
-      else if (key === 'e') editMesh()
-      else if (key === 'm') toggleMirror()
-      else if (key === 'delete' || key === 'backspace') {
+
+      if (command === 'part.duplicate') {
+        event.preventDefault()
+        duplicate()
+      } else if (command === 'tool.move' || command === 'tool.rotate' || command === 'tool.scale') {
+        cancelSnap()
+        state.setTool(
+          command === 'tool.move' ? 'move' : command === 'tool.rotate' ? 'rotate' : 'scale',
+        )
+      } else if (command === 'tool.snap') toggleSnap()
+      else if (command === 'add.box') add('box')
+      else if (command === 'part.mesh') {
+        cancelSnap()
+        editMesh()
+      } else if (command === 'build.mirror') toggleMirror()
+      else if (command === 'part.remove') {
         event.preventDefault()
         remove()
       }
@@ -181,6 +198,8 @@ export function useModelEditorShortcuts(options: {
     nudge,
     endNudge,
     selectAllVertices,
+    toggleSnap,
+    cancelSnap,
     session,
   ])
 }

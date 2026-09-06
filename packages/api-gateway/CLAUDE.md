@@ -129,6 +129,19 @@ chama `/auth/internal/{ensure-buyer,password-tokens}`, `/messaging/send` e o nov
 `allowedConsumers: ['referrals']` + `upstreamAuth: 'resign'`, 120/min — espelho do
 `members-webhook-grant`; concede a oferta da bolsa SEM pagamento). Sem colisões: `/referrals/internal/*` é literal distinto do wildcard
 `/referrals/admin/*`, e `grant-manual` ≠ `grant` (coberto em `route-registry.test.ts`).
+**Extensão 09/2026 (bônus + auto-cadastro):** +3 rotas — `referrals-internal-pix` (PATCH
+`/referrals/internal/ambassadors/by-token/:token/pix`, hmac `allowedConsumers: ['funnel']`, corpo
+64KB, 60/min) e as rotas JWT "me" `referrals-me-ambassador-{get,post}` (GET/POST
+`/referrals/me/ambassador`, molde do `payments-my`: `authorize: {statuses:['active']}` SEM roles +
+`referralsInternalTransforms`, 120/30 por min) — o gateway injeta `x-auth-user-{id,email,name}` e
+o referrals faz o get-or-create do embaixador pela conta (⚠️ a rota aceita QUALQUER conta ativa,
+inclusive sessão de perfil; quem recusa a criança é o serviço, pela presença de
+`x-auth-account-id`). A ESCRITA de conversões cai no wildcard `referrals-admin-write` (admin+), mas
+a LEITURA ganhou rota LITERAL própria — **`referrals-admin-conversions-read`**
+(`GET /referrals/admin/conversions`, **admin+** em vez do staff+ do wildcard): a listagem de bônus
+carrega a chave Pix do embaixador e o e-mail da família bolsista. ⚠️ Literal vence wildcard por
+ESPECIFICIDADE no `route-registry` (estático 3 > param 2 > `*` 1) — a rota precisa continuar
+literal para a restrição valer.
 
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 

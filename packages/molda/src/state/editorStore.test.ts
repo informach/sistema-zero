@@ -46,8 +46,10 @@ describe('editorStore', () => {
 
     store.getState().commit(withPreset(store.getState().asset as MoldaSkyAsset, 'noite'))
     expect(store.getState().asset.updatedAt).toBe(101)
+    expect(store.getState().contentRevision).toBe(1)
     store.getState().setThumb('data:image/jpeg;base64,BBBB')
     expect(store.getState().asset.updatedAt).toBe(102)
+    expect(store.getState().contentRevision).toBe(1)
     await store.getState().flush()
     expect(p.snapshot()[0]).toMatchObject({
       updatedAt: 102,
@@ -83,10 +85,13 @@ describe('editorStore', () => {
     const before = store.getState().asset as MoldaSkyAsset
     store.getState().replace(withPreset(before, 'noite'))
     expect(store.getState().canUndo).toBe(false)
+    expect(store.getState().contentRevision).toBe(1)
     store.getState().commitGesture(before, withPreset(before, 'nublado'))
     expect(store.getState().canUndo).toBe(true)
+    expect(store.getState().contentRevision).toBe(2)
     store.getState().undo()
     expect((store.getState().asset as MoldaSkyAsset).params.preset).toBe('entardecer')
+    expect(store.getState().contentRevision).toBe(3)
     store.getState().dispose()
   })
 

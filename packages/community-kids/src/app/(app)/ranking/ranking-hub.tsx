@@ -25,16 +25,20 @@ export function RankingHub({
 }) {
   const [tab, setTab] = useState<'general' | 'league'>('general')
   const [items, setItems] = useState(initialRanking?.items ?? [])
+  const [nextCursor, setNextCursor] = useState(initialRanking?.nextCursor ?? null)
+  const [total, setTotal] = useState(initialRanking?.total ?? 0)
   const [loadingMore, setLoadingMore] = useState(false)
-  const total = initialRanking?.total ?? 0
 
   async function loadMore() {
+    if (!nextCursor) return
     setLoadingMore(true)
     try {
       const page = await apiGet<RankingLeaderboardView>(
-        `/api/members/gamification/ranking?limit=${PAGE_SIZE}&offset=${items.length}`,
+        `/api/members/gamification/ranking?limit=${PAGE_SIZE}&cursor=${encodeURIComponent(nextCursor)}`,
       )
       setItems((current) => [...current, ...page.items])
+      setNextCursor(page.nextCursor)
+      setTotal(page.total)
     } catch {
       toast.error('Não foi possível carregar mais posições. Tente de novo.')
     } finally {
@@ -79,6 +83,7 @@ export function RankingHub({
           items={items}
           me={initialRanking?.me ?? null}
           total={total}
+          hasMore={nextCursor !== null}
           loadingMore={loadingMore}
           onLoadMore={loadMore}
         />
@@ -96,6 +101,7 @@ function GeneralRanking({
   items,
   me,
   total,
+  hasMore,
   loadingMore,
   onLoadMore,
 }: {
@@ -103,6 +109,7 @@ function GeneralRanking({
   items: RankingEntryView[]
   me: RankingEntryView | null
   total: number
+  hasMore: boolean
   loadingMore: boolean
   onLoadMore: () => void
 }) {
@@ -156,7 +163,7 @@ function GeneralRanking({
         )
       ) : null}
 
-      {items.length < total ? (
+      {hasMore ? (
         <div className="flex justify-center pt-2">
           <Button type="button" variant="outline" onClick={onLoadMore} disabled={loadingMore}>
             {loadingMore ? <Spinner /> : null}

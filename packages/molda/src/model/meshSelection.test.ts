@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { boxMesh } from './mesh'
 import {
+  type MeshPick,
   mergeMeshSelection,
   pickVertices,
   pruneMeshSelection,
@@ -8,12 +9,13 @@ import {
   selectedFaces,
   selectionCenter,
   selectionNormal,
+  selectionVertices,
 } from './meshSelection'
 
 const mesh = boxMesh([0, 0, 0], [2, 2, 2])
 
-describe('seleção da malha (vértices como lista mestra)', () => {
-  test('um toque vira vértices: ponto, aresta e face', () => {
+describe('seleção explícita da malha', () => {
+  test('cada elemento expõe somente os vértices que afeta', () => {
     expect(pickVertices(mesh, { kind: 'vertex', key: 'v_000' })).toEqual(['v_000'])
     expect(pickVertices(mesh, { kind: 'vertex', key: 'v_zzz' })).toEqual([])
     expect(pickVertices(mesh, { kind: 'edge', keys: ['v_000', 'v_001'] })).toEqual([
@@ -28,38 +30,48 @@ describe('seleção da malha (vértices como lista mestra)', () => {
     ])
   })
 
-  test('sem "somar" a seleção vira o toque; com "somar" acrescenta, e tocar de novo tira', () => {
-    expect(mergeMeshSelection(['v_000'], ['v_111'], false)).toEqual(['v_111'])
-    expect(mergeMeshSelection(['v_000'], ['v_111'], true).sort()).toEqual(['v_000', 'v_111'])
-    expect(mergeMeshSelection(['v_000', 'v_111'], ['v_111'], true)).toEqual(['v_000'])
-    // Toque no nada: limpa sem "somar", preserva com "somar".
-    expect(mergeMeshSelection(['v_000'], [], false)).toEqual([])
-    expect(mergeMeshSelection(['v_000'], [], true)).toEqual(['v_000'])
+  test('sem "somar" vira o toque; com "somar" acrescenta e o segundo toque tira', () => {
+    const a: MeshPick = { kind: 'vertex', key: 'v_000' }
+    const b: MeshPick = { kind: 'vertex', key: 'v_111' }
+    expect(mergeMeshSelection([a], b, false)).toEqual([b])
+    expect(mergeMeshSelection([a], b, true)).toEqual([a, b])
+    expect(mergeMeshSelection([a, b], b, true)).toEqual([a])
+    expect(mergeMeshSelection([a], null, false)).toEqual([])
+    expect(mergeMeshSelection([a], null, true)).toEqual([a])
+    // Aresta invertida é o mesmo elemento.
+    const edge: MeshPick = { kind: 'edge', keys: ['v_000', 'v_001'] }
+    expect(mergeMeshSelection([edge], { kind: 'edge', keys: ['v_001', 'v_000'] }, true)).toEqual([])
   })
 
-  test('arestas e faces DERIVAM dos vértices', () => {
-    const top = ['v_010', 'v_011', 'v_111', 'v_110']
-    expect(selectedFaces(mesh, top)).toEqual(['f_py'])
-    expect(selectedEdges(mesh, top)).toHaveLength(4)
-    expect(selectedEdges(mesh, ['v_000', 'v_111'])).toEqual([])
-    expect(selectedFaces(mesh, ['v_000'])).toEqual([])
-    // Duas faces vizinhas selecionadas: a aresta entre elas também.
-    const twoFaces = [...top, 'v_001', 'v_101']
-    expect(selectedFaces(mesh, twoFaces).sort()).toEqual(['f_py', 'f_pz'])
-    expect(selectedEdges(mesh, twoFaces)).toHaveLength(7)
+  test('duas faces opostas continuam exatamente duas, mesmo cobrindo os oito vértices', () => {
+    const selection: MeshPick[] = [
+      { kind: 'face', key: 'f_py' },
+      { kind: 'face', key: 'f_ny' },
+    ]
+    expect(selectionVertices(mesh, selection)).toHaveLength(8)
+    expect(selectedFaces(mesh, selection)).toEqual(['f_py', 'f_ny'])
+    expect(selectedEdges(mesh, selection)).toEqual([])
   })
 
-  test('centro e normal da seleção (a alça e o seu eixo)', () => {
-    const top = ['v_010', 'v_011', 'v_111', 'v_110']
+  test('centro e normal usam os elementos explícitos', () => {
+    const top: MeshPick[] = [{ kind: 'face', key: 'f_py' }]
     expect(selectionCenter(mesh, top)).toEqual([1, 2, 1])
     expect(selectionNormal(mesh, top)).toEqual([0, 1, 0])
     expect(selectionCenter(mesh, [])).toBeNull()
-    // Um vértice só: a média das faces que o tocam (o canto aponta para fora).
-    const corner = selectionNormal(mesh, ['v_111'])
+    const corner = selectionNormal(mesh, [{ kind: 'vertex', key: 'v_111' }])
     expect(corner?.every((n) => n > 0)).toBe(true)
   })
 
-  test('pruneMeshSelection tira o que já não existe', () => {
-    expect(pruneMeshSelection(mesh, ['v_000', 'v_sumiu'])).toEqual(['v_000'])
+  test('pruneMeshSelection tira elementos que já não existem e canoniza arestas', () => {
+    expect(
+      pruneMeshSelection(mesh, [
+        { kind: 'vertex', key: 'v_sumiu' },
+        { kind: 'edge', keys: ['v_001', 'v_000'] },
+        { kind: 'face', key: 'f_py' },
+      ]),
+    ).toEqual([
+      { kind: 'edge', keys: ['v_000', 'v_001'] },
+      { kind: 'face', key: 'f_py' },
+    ])
   })
 })

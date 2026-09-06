@@ -42,10 +42,3 @@ export function srgbToLinear(channel: number): number {
   const c = Math.min(1, Math.max(0, channel / 255))
   return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4
 }
-
-/** Linear (0..1) → canal sRGB (0..255), pela curva exata. */
-export function linearToSrgb(value: number): number {
-  const v = Math.min(1, Math.max(0, value))
-  const c = v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055
-  return Math.round(c * 255)
-}

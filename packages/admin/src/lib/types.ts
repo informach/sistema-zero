@@ -1245,6 +1245,8 @@ export interface AmbassadorListItemView {
   createdAt: string
 }
 
+export type ConversionStatus = 'pending' | 'eligible' | 'paid' | 'canceled' | 'self_blocked'
+
 export interface AmbassadorRedemptionView {
   id: string
   name: string
@@ -1257,6 +1259,32 @@ export interface AmbassadorRedemptionView {
   attemptCount?: number
   createdAt: string
   completedAt: string | null
+  /** Jornada do bolsista: `null` = ficou só no Desafio; presente = assinou a Comunidade. */
+  conversion?: {
+    status: ConversionStatus
+    bonusCents: number
+    subscribedAt: string
+  } | null
+}
+
+/** Bônus do embaixador (bolsista que assinou). `amountCents` é string (bigint, régua do payments). */
+export interface ConversionAdminView {
+  id: string
+  status: ConversionStatus
+  offerSlug: string
+  amountCents: string
+  bonusCents: number
+  subscribedAt: string
+  maturesAt: string
+  eligibleAt: string | null
+  paidMarkedAt: string | null
+  paidMarkedBy: string | null
+  note: string | null
+  ambassadorName: string | null
+  ambassadorEmail: string | null
+  ambassadorPixKey: string | null
+  redemptionName: string
+  redemptionEmail: string
 }
 
 export interface AmbassadorDetailView {

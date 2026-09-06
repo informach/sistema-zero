@@ -1,5 +1,5 @@
 ---
-import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
+import EmbaixadorPainel, { type EmbaixadorPainelProps } from '../../islands/EmbaixadorPainel'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import { getDeps } from '../../server/deps'
 
@@ -18,6 +18,8 @@ interface PageView {
   code: string
   shareUrl: string
   stats: { redemptionsCompleted: number; invitesSent: number }
+  /** O shape é da ILHA (fonte única) — cópia aqui driftaria em silêncio. */
+  bonus?: EmbaixadorPainelProps['bonus']
 }
 
 let view: PageView | null = null
@@ -58,6 +60,7 @@ if (!view && !gatewayDown) Astro.response.status = 404
             name={view.name}
             shareUrl={view.shareUrl}
             stats={view.stats}
+            bonus={view.bonus}
           />
           <p class="mt-6 text-center text-xs text-muted">
             Esta página é a sua chave de acesso, então guarde o endereço dela só para você. Para

@@ -60,7 +60,7 @@ export const GamificationQuery = t.Object({
 export const RankingQuery = t.Object({
   audience: t.Optional(AUDIENCE),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
-  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+  cursor: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
 })
 
 // ── Uso de IA (quota por conta) ──────────────────────────────────────────────

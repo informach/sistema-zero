@@ -23,6 +23,7 @@ import {
   WebGLRenderer,
 } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { DemandRenderLoop } from './demandRenderLoop'
 
 export interface TexturePreviewLike {
   setTexture(rgba: Uint8Array, size: number): void
@@ -44,10 +45,9 @@ export class TexturePreview implements TexturePreviewLike {
   private readonly camera: PerspectiveCamera
   private readonly orbit: OrbitControls
   private readonly material = new MeshStandardMaterial({ roughness: 0.9, metalness: 0 })
-  private readonly resizeObserver: ResizeObserver | null
+  private readonly renderLoop: DemandRenderLoop
   private readonly disposables: Array<{ dispose(): void }> = []
   private texture: DataTexture | null = null
-  private frameHandle: number | null = null
   private disposed = false
 
   constructor(
@@ -87,16 +87,14 @@ export class TexturePreview implements TexturePreviewLike {
     this.scene.add(box, ball)
     this.disposables.push(box.geometry, ball.geometry, this.material)
 
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.resize())
-      this.resizeObserver.observe(canvas.parentElement ?? canvas)
-    } else {
-      this.resizeObserver = null
-    }
     canvas.addEventListener('contextmenu', this.onContextMenu)
     canvas.addEventListener('webglcontextlost', this.onContextLost)
     canvas.addEventListener('webglcontextrestored', this.onContextRestored)
-    this.resize()
+    this.renderLoop = new DemandRenderLoop(canvas, this.renderer, this.camera, () => {
+      const moving = this.orbit.update()
+      this.renderer.render(this.scene, this.camera)
+      return moving
+    })
   }
 
   setTexture(rgba: Uint8Array, size: number): void {
@@ -122,8 +120,7 @@ export class TexturePreview implements TexturePreviewLike {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    if (this.frameHandle !== null) cancelAnimationFrame(this.frameHandle)
-    this.resizeObserver?.disconnect()
+    this.renderLoop.dispose()
     this.canvas.removeEventListener('contextmenu', this.onContextMenu)
     this.canvas.removeEventListener('webglcontextlost', this.onContextLost)
     this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored)
@@ -135,25 +132,7 @@ export class TexturePreview implements TexturePreviewLike {
   }
 
   private requestFrame(): void {
-    if (this.disposed || this.frameHandle !== null) return
-    this.frameHandle = requestAnimationFrame(() => {
-      this.frameHandle = null
-      if (this.disposed) return
-      const moving = this.orbit.update()
-      this.renderer.render(this.scene, this.camera)
-      if (moving) this.requestFrame()
-    })
-  }
-
-  private resize(): void {
-    const parent = this.canvas.parentElement ?? this.canvas
-    const width = parent.clientWidth
-    const height = parent.clientHeight
-    if (width === 0 || height === 0) return
-    this.renderer.setSize(width, height, false)
-    this.camera.aspect = width / height
-    this.camera.updateProjectionMatrix()
-    this.requestFrame()
+    this.renderLoop.request()
   }
 
   private readonly onOrbitChange = (): void => {

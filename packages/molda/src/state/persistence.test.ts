@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import { assetBytes } from '../core/bytes'
+import type { MoldaAsset } from '../core/model'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { clearIdbMock, idbMockDbNames, idbMockStore } from '../testing/idbMock'
 import { createMemoryPersistence } from './memoryPersistence'
@@ -100,6 +101,45 @@ describe('persistência local', () => {
     }
     expect(isStorageBudgetError(batchError)).toBe(true)
     expect((await p.loadAll()).map((a) => a.id)).toEqual(['sky-1'])
+  })
+
+  test('duas instâncias carregadas compartilham a autoridade do orçamento', async () => {
+    const firstAsset = makeTexture()
+    const secondAsset = { ...makeTexture(), id: 'texture-2', name: 'pedra' }
+    const eachBytes = assetBytes(firstAsset)
+    const maxBytes = eachBytes + Math.floor(eachBytes / 2)
+    const first = createMoldaPersistence({ namespace: 't5-shared', maxBytes })
+    const second = createMoldaPersistence({ namespace: 't5-shared', maxBytes })
+    await Promise.all([first.loadAll(), second.loadAll()])
+
+    await first.save(firstAsset)
+    let caught: unknown = null
+    try {
+      await second.save(secondAsset)
+    } catch (error) {
+      caught = error
+    }
+
+    expect(isStorageBudgetError(caught)).toBe(true)
+    expect((await first.loadAll()).map((asset) => asset.id)).toEqual([firstAsset.id])
+  })
+
+  test('duas gravações simultâneas no mesmo banco não ultrapassam o orçamento', async () => {
+    const firstAsset = makeTexture()
+    const secondAsset = { ...makeTexture(), id: 'texture-2', name: 'pedra' }
+    const eachBytes = assetBytes(firstAsset)
+    const maxBytes = eachBytes + Math.floor(eachBytes / 2)
+    const first = createMoldaPersistence({ namespace: 't5-race', maxBytes })
+    const second = createMoldaPersistence({ namespace: 't5-race', maxBytes })
+    await Promise.all([first.loadAll(), second.loadAll()])
+
+    const settled = await Promise.allSettled([first.save(firstAsset), second.save(secondAsset)])
+
+    expect(settled.filter((result) => result.status === 'fulfilled')).toHaveLength(1)
+    expect(settled.filter((result) => result.status === 'rejected')).toHaveLength(1)
+    const stored = await first.loadAll()
+    expect(stored).toHaveLength(1)
+    expect(assetBytes(stored[0] as MoldaAsset)).toBeLessThanOrEqual(maxBytes)
   })
 
   test('saveMany conta ids repetidos uma vez e preserva a última versão', async () => {

@@ -3428,6 +3428,20 @@ const config: GatewayConfigInput = {
     // Admin (painel): LEITURA staff+ / ESCRITA admin+, wildcards no molde do
     // hub-admin. COM `referralsInternalTransforms` (o serviço exige o
     // x-internal-token — X-Auth-User-* só são confiáveis vindos do gateway).
+    // ⚠️ Literal ANTES do wildcard: a listagem de BÔNUS carrega a CHAVE PIX do
+    // embaixador (instrumento financeiro pessoal) e o e-mail da família
+    // bolsista na mesma linha. Leitura disso é admin+, não staff+ — quem paga
+    // é a dona. (O matcher dá precedência ao literal sobre o `*`.)
+    {
+      id: 'referrals-admin-conversions-read',
+      methods: ['GET'],
+      pathPattern: '/referrals/admin/conversions',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'referrals-admin-read',
       methods: ['GET'],
@@ -3518,6 +3532,47 @@ const config: GatewayConfigInput = {
       // cortava o fluxo no meio em upstream frio (o funil espera até 45s).
       timeoutMs: 45_000,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      // Chave Pix do bônus, cadastrada pelo PRÓPRIO embaixador na página
+      // capability (a autorização é o token da URL; o funil repassa).
+      id: 'referrals-internal-pix',
+      methods: ['PATCH'],
+      pathPattern: '/referrals/internal/ambassadors/by-token/:token/pix',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // ── Embaixador "me" (auto-cadastro do pai/responsável na área dos pais) ──
+    // JWT de conta ATIVA sem roles (molde payments-my): o gateway injeta os
+    // x-auth-user-* e o referrals resolve o embaixador pela CONTA.
+    {
+      id: 'referrals-me-ambassador-get',
+      methods: ['GET'],
+      pathPattern: '/referrals/me/ambassador',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-me-ambassador-post',
+      methods: ['POST'],
+      pathPattern: '/referrals/me/ambassador',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
     },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────

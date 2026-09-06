@@ -64,7 +64,7 @@ import {
 } from '../model/atlas'
 import { rasterAtlas, rasterFaceRegion } from '../model/atlasRaster'
 import { buildPartGeometry } from '../model/geometry'
-import { selectionCenter } from '../model/meshSelection'
+import { verticesCenter } from '../model/meshSelection'
 import { updatePart } from '../model/partOps'
 import {
   faceTexelAt,
@@ -74,7 +74,9 @@ import {
   worldToBox,
 } from '../model/pick'
 import { partSize } from '../model/shapes'
+import type { SnapAnchor } from '../model/snap'
 import { modelBounds, partPivot } from '../model/transform'
+import type { FacePaintTarget } from '../paint/facePaint'
 import {
   fillFace,
   finishStroke,
@@ -86,17 +88,21 @@ import {
 import type { EditorMode, TransformTool } from '../state/sessionStore'
 import { AtlasTexture } from './atlasTexture'
 import { perspectiveFitDistance } from './cameraFit'
+import { DemandRenderLoop } from './demandRenderLoop'
 import {
   MESH_PICK_TOLERANCE_MOUSE_PX,
   MESH_PICK_TOLERANCE_TOUCH_PX,
   MeshEditOverlay,
 } from './meshEditOverlay'
+import { SnapOverlay } from './SnapOverlay'
+import { raycastSnapTarget } from './snapPicking'
 import type {
   MeshEditState,
   MoldaViewportLike,
   ViewName,
   ViewportCallbacks,
   ViewportOptions,
+  ViewportSnapState,
 } from './types'
 import { deg, geometryHash, rad, roundTo, VIEW_DIRECTIONS } from './viewportMath'
 import { ViewportThumbnail } from './viewportThumbnail'
@@ -125,7 +131,7 @@ const DEFAULT_THUMB_BACKGROUND = '#e6f1ff'
 const CLICK_TOLERANCE_PX = 6
 const MIN_SCALE = 0.05
 
-const GIZMO_MODE: Record<TransformTool, 'translate' | 'rotate' | 'scale'> = {
+const GIZMO_MODE: Record<Exclude<TransformTool, 'snap'>, 'translate' | 'rotate' | 'scale'> = {
   move: 'translate',
   rotate: 'rotate',
   scale: 'scale',
@@ -155,7 +161,7 @@ export class MoldaViewport implements MoldaViewportLike {
     opacity: 0.8,
   })
   private readonly entries = new Map<string, PartEntry>()
-  private readonly resizeObserver: ResizeObserver | null
+  private readonly renderLoop: DemandRenderLoop
   private readonly thumbnail: ViewportThumbnail
   private model: MoldaModelAsset | null = null
   private layout: AtlasLayout | null = null
@@ -169,7 +175,6 @@ export class MoldaViewport implements MoldaViewportLike {
   private placementShape: ShapeId | null = null
   private paint: PaintSettings = { tool: 'pencil', color: 1, size: 1, mirror: false }
   private snap = 1
-  private frameHandle: number | null = null
   private disposed = false
   private dragging = false
   private dragPart: MoldaPart | null = null
@@ -186,6 +191,8 @@ export class MoldaViewport implements MoldaViewportLike {
   /** Seleção múltipla: as peças SOMADAS à principal; a alça vai para a âncora do grupo. */
   private extraIds: string[] = []
   private readonly groupAnchor = new Object3D()
+  private readonly snapOverlay = new SnapOverlay()
+  private snapState: ViewportSnapState = { phase: 'inactive' }
   private groupDragging = false
   private readonly groupDragStart = new Vector3()
   private groupStart = new Map<string, { from: Vec3; to: Vec3 }>()
@@ -263,6 +270,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.scene.add(this.gizmoHelper)
     this.scene.add(this.meshAnchor)
     this.scene.add(this.groupAnchor)
+    this.scene.add(this.snapOverlay.group)
     this.gizmo.addEventListener('dragging-changed', this.onDraggingChanged)
     this.gizmo.addEventListener('mouseDown', this.onGizmoMouseDown)
     this.gizmo.addEventListener('objectChange', this.onGizmoObjectChange)
@@ -278,13 +286,11 @@ export class MoldaViewport implements MoldaViewportLike {
     canvas.addEventListener('webglcontextlost', this.onContextLost)
     canvas.addEventListener('webglcontextrestored', this.onContextRestored)
 
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.resize())
-      this.resizeObserver.observe(canvas.parentElement ?? canvas)
-    } else {
-      this.resizeObserver = null
-    }
-    this.resize()
+    this.renderLoop = new DemandRenderLoop(canvas, this.renderer, this.camera, () => {
+      const moving = this.orbit.update()
+      this.renderer.render(this.scene, this.camera)
+      return moving
+    })
   }
 
   // ── Modelo ────────────────────────────────────────────────────────────────
@@ -388,6 +394,7 @@ export class MoldaViewport implements MoldaViewportLike {
       if (id === this.selectedId) selectionDirty = true
     }
     this.model = model
+    this.snapOverlay.setState(model, this.snapState)
     if (selectionDirty) this.applySelection()
     // O mesh da peça em edição pode ter sido recriado (malha nova): o overlay segue.
     this.syncMeshEdit()
@@ -418,8 +425,8 @@ export class MoldaViewport implements MoldaViewportLike {
     if (this.backMesh.parent !== entry.mesh) entry.mesh.add(this.backMesh)
     const pivot = partPivot(part)
     this.meshOverlay.setMesh(part.mesh, pivot, state.vertices)
-    const center = selectionCenter(part.mesh, state.vertices)
-    if (!center || this.mode !== 'build' || this.meshDragging) {
+    const center = verticesCenter(part.mesh, state.vertices)
+    if (!center || this.mode !== 'build' || this.tool === 'snap' || this.meshDragging) {
       if (!center && this.gizmo.object === this.meshAnchor) this.gizmo.detach()
       return
     }
@@ -474,13 +481,16 @@ export class MoldaViewport implements MoldaViewportLike {
 
   setTool(tool: TransformTool): void {
     this.tool = tool
-    this.gizmo.setMode(GIZMO_MODE[tool])
+    if (tool === 'snap') this.gizmo.detach()
+    else this.gizmo.setMode(GIZMO_MODE[tool])
+    this.canvas.style.cursor = tool === 'snap' || this.placementShape ? 'crosshair' : ''
+    this.applySelection()
     this.requestFrame()
   }
 
   setPlacementShape(shape: ShapeId | null): void {
     this.placementShape = shape
-    this.canvas.style.cursor = shape ? 'crosshair' : ''
+    this.canvas.style.cursor = shape || this.tool === 'snap' ? 'crosshair' : ''
     this.applySelection()
     this.requestFrame()
   }
@@ -495,6 +505,12 @@ export class MoldaViewport implements MoldaViewportLike {
 
   setGridVisible(visible: boolean): void {
     this.grid.visible = visible
+    this.requestFrame()
+  }
+
+  setSnapState(state: ViewportSnapState): void {
+    this.snapState = state
+    if (this.model) this.snapOverlay.setState(this.model, state)
     this.requestFrame()
   }
 
@@ -537,6 +553,7 @@ export class MoldaViewport implements MoldaViewportLike {
         this.grid,
         this.gizmoHelper,
         this.meshOverlay.group,
+        this.snapOverlay.group,
         ...(this.backMesh ? [this.backMesh] : []),
         ...[...this.entries.values()].flatMap((entry) => [
           ...(entry.outline ? [entry.outline] : []),
@@ -553,8 +570,7 @@ export class MoldaViewport implements MoldaViewportLike {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    if (this.frameHandle !== null) cancelAnimationFrame(this.frameHandle)
-    this.resizeObserver?.disconnect()
+    this.renderLoop.dispose()
     this.canvas.removeEventListener('pointerdown', this.onPointerDownCapture, { capture: true })
     this.canvas.removeEventListener('pointerdown', this.onPointerDown)
     this.canvas.removeEventListener('pointermove', this.onPointerMove)
@@ -572,6 +588,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.gizmo.dispose()
     this.orbit.dispose()
     this.meshOverlay.dispose()
+    this.snapOverlay.dispose()
     for (const entry of this.entries.values()) this.disposeEntry(entry)
     this.entries.clear()
     this.grid.geometry.dispose()
@@ -589,29 +606,7 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   requestFrame(): void {
-    if (this.disposed || this.frameHandle !== null) return
-    this.frameHandle = requestAnimationFrame(() => {
-      this.frameHandle = null
-      this.renderOnce()
-    })
-  }
-
-  private renderOnce(): void {
-    if (this.disposed) return
-    const moving = this.orbit.update()
-    this.renderer.render(this.scene, this.camera)
-    if (moving) this.requestFrame()
-  }
-
-  private resize(): void {
-    const parent = this.canvas.parentElement ?? this.canvas
-    const width = parent.clientWidth
-    const height = parent.clientHeight
-    if (width === 0 || height === 0) return
-    this.renderer.setSize(width, height, false)
-    this.camera.aspect = width / height
-    this.camera.updateProjectionMatrix()
-    this.requestFrame()
+    this.renderLoop.request()
   }
 
   // ── Peças ─────────────────────────────────────────────────────────────────
@@ -746,7 +741,7 @@ export class MoldaViewport implements MoldaViewportLike {
       }
     }
     // No Pintar as alças saem do caminho.
-    if (this.mode === 'paint' || this.placementShape) {
+    if (this.mode === 'paint' || this.tool === 'snap' || this.placementShape) {
       this.gizmo.detach()
       return
     }
@@ -907,7 +902,7 @@ export class MoldaViewport implements MoldaViewportLike {
       ])
       mesh.rotation.set(rad(rotation[0]), rad(rotation[1]), rad(rotation[2]), 'XYZ')
       this.callbacks.onDragMove({ id: part.id, rotation })
-    } else {
+    } else if (this.tool === 'scale') {
       mesh.scale.set(
         Math.max(mesh.scale.x, MIN_SCALE),
         Math.max(mesh.scale.y, MIN_SCALE),
@@ -1002,6 +997,44 @@ export class MoldaViewport implements MoldaViewportLike {
     return this.raycaster.intersectObjects(surfaces, false)[0] ?? null
   }
 
+  /** Alvo do Grudar: visível, pode estar trancado, mas não pode viajar com a origem. */
+  private intersectSnapTarget(event: PointerEvent): Intersection | null {
+    if (this.snapState.phase !== 'target' || !this.model) return null
+    const ndc = this.ndcOf(event)
+    if (!ndc) return null
+    this.raycaster.setFromCamera(ndc, this.camera)
+    return raycastSnapTarget(
+      this.raycaster,
+      this.model,
+      this.snapState.movingIds,
+      (partId) => this.entries.get(partId)?.mesh,
+    )
+  }
+
+  private snapHitRadius(event: PointerEvent): number {
+    return event.pointerType === 'touch' ? 22 : 10
+  }
+
+  /** Atualiza os diamantes só para a peça sob o ponteiro e devolve o mais próximo. */
+  private updateSnapTarget(event: PointerEvent): SnapAnchor | null {
+    const ndc = this.ndcOf(event)
+    if (!ndc) return null
+    const hit = this.intersectSnapTarget(event)
+    const partId = hit?.object.userData.partId as string | undefined
+    this.snapOverlay.setTargetPart(partId ?? null)
+    const rect = this.canvas.getBoundingClientRect()
+    const anchor = this.snapOverlay.pickTarget(
+      ndc,
+      this.camera,
+      rect.width,
+      rect.height,
+      this.snapHitRadius(event),
+    )
+    this.snapOverlay.setHoveredTarget(anchor)
+    this.requestFrame()
+    return anchor
+  }
+
   /** Toque na malha → texel da peça FONTE (gêmeo já resolvido). */
   private texelOf(model: MoldaModelAsset, hit: Intersection): TexelHit | null {
     const partId = hit.object.userData.partId as string | undefined
@@ -1027,7 +1060,26 @@ export class MoldaViewport implements MoldaViewportLike {
     return pickTexelAtPoint(reachable, [-hit.point.x, hit.point.y, hit.point.z])
   }
 
+  private faceTargetOf(
+    model: MoldaModelAsset,
+    hit: Intersection,
+    texel: TexelHit,
+  ): FacePaintTarget {
+    const partId = hit.object.userData.partId as string | undefined
+    const touched = partId ? model.parts.find((part) => part.id === partId) : undefined
+    return { partId: texel.partId, face: texel.face, flipX: Boolean(touched?.mirrorOf) }
+  }
+
   private readonly onPointerDownCapture = (event: PointerEvent): void => {
+    if (this.mode === 'build' && this.tool === 'snap' && event.button === 0) {
+      // O toque é da ferramenta, não da órbita. O pointerup conclui somente se
+      // continuar sendo um toque curto.
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      this.pointerDown = { x: event.clientX, y: event.clientY, onGizmo: false }
+      if (this.snapState.phase === 'target') this.updateSnapTarget(event)
+      return
+    }
     if (this.mode !== 'paint' || event.button !== 0 || !this.model || this.stroke) return
     const hit = this.intersect(event)
     if (!hit) return
@@ -1040,6 +1092,9 @@ export class MoldaViewport implements MoldaViewportLike {
     this.callbacks.onSelect(texel.partId, false)
     const mirror = this.mirrorTexelOf(model, hit)
     switch (this.paint.tool) {
+      case 'faceEditor':
+        this.callbacks.onOpenFace(this.faceTargetOf(model, hit, texel))
+        return
       case 'picker':
         this.callbacks.onPickColor(sampleColor(model, texel))
         return
@@ -1105,6 +1160,10 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private readonly onPointerMove = (event: PointerEvent): void => {
+    if (this.mode === 'build' && this.tool === 'snap' && this.snapState.phase === 'target') {
+      this.updateSnapTarget(event)
+      return
+    }
     const stroke = this.stroke
     if (!stroke || event.pointerId !== stroke.pointerId) return
     const hit = this.intersect(event)
@@ -1140,7 +1199,30 @@ export class MoldaViewport implements MoldaViewportLike {
     const down = this.pointerDown
     this.pointerDown = null
     if (!down || down.onGizmo || event.button !== 0 || this.mode === 'paint') return
-    if (Math.hypot(event.clientX - down.x, event.clientY - down.y) > CLICK_TOLERANCE_PX) return
+    const clickTolerance =
+      this.tool === 'snap' && event.pointerType === 'touch'
+        ? this.snapHitRadius(event)
+        : CLICK_TOLERANCE_PX
+    if (Math.hypot(event.clientX - down.x, event.clientY - down.y) > clickTolerance) return
+    if (this.tool === 'snap') {
+      const ndc = this.ndcOf(event)
+      if (!ndc) return
+      const rect = this.canvas.getBoundingClientRect()
+      if (this.snapState.phase === 'source') {
+        const anchor = this.snapOverlay.pickSource(
+          ndc,
+          this.camera,
+          rect.width,
+          rect.height,
+          this.snapHitRadius(event),
+        )
+        if (anchor) this.callbacks.onSnapSource(anchor)
+      } else if (this.snapState.phase === 'target') {
+        const anchor = this.updateSnapTarget(event)
+        if (anchor) this.callbacks.onSnapTarget(anchor)
+      }
+      return
+    }
     if (this.meshEdit && !this.placementShape) {
       // Editando a malha: o toque escolhe ponto/aresta/face DESTA peça; fora dela limpa.
       const hit = this.intersect(event)
@@ -1162,6 +1244,7 @@ export class MoldaViewport implements MoldaViewportLike {
         this.canvas.clientHeight,
         hit ? hit.distance : Number.POSITIVE_INFINITY,
         face,
+        this.meshEdit.mode,
       )
       this.callbacks.onMeshPick(pick, event.shiftKey)
       return

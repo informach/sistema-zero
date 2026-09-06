@@ -207,28 +207,35 @@ function vec3(raw: unknown): Vec3 | null {
   return [x, y, z]
 }
 
-function roundToSnap(value: number, snap: number): number {
-  return Math.round(value / snap) * snap
+function roundToStep(value: number, step: number): number {
+  return Math.round(value / step) * step
 }
 
 const GRID_MIN: Vec3 = [-MOLDA_LIMITS.gridHalf, 0, -MOLDA_LIMITS.gridHalf]
 const GRID_MAX: Vec3 = [MOLDA_LIMITS.gridHalf, MOLDA_LIMITS.gridHeight, MOLDA_LIMITS.gridHalf]
 
 /**
- * `from`/`to` na grade: arredondados ao snap, dentro da grade, `from < to` por
+ * `from`/`to` na grade: posição em 1/16, tamanho no `sizeStep`, `from < to` por
  * eixo e lado ≤ `maxPartSize`. Uma caixa que não cabe é EMPURRADA para dentro
- * (nunca descartada só por estar na borda).
+ * (nunca descartada só por estar na borda). O `sizeStep` é o encaixe da ação;
+ * o sanitize usa meio bloco, o menor tamanho persistido aceito.
  */
-export function normalizeBox(from: Vec3, to: Vec3, snap: number): { from: Vec3; to: Vec3 } {
+export function normalizeBox(from: Vec3, to: Vec3, sizeStep: number): { from: Vec3; to: Vec3 } {
   const a: Vec3 = [0, 0, 0]
   const b: Vec3 = [0, 0, 0]
   for (let i = 0; i < 3; i += 1) {
     const min = GRID_MIN[i] as number
     const max = GRID_MAX[i] as number
-    let lo = roundToSnap(Math.min(from[i] as number, to[i] as number), snap)
-    let hi = roundToSnap(Math.max(from[i] as number, to[i] as number), snap)
-    if (hi - lo < snap) hi = lo + snap
-    if (hi - lo > MOLDA_LIMITS.maxPartSize) hi = lo + MOLDA_LIMITS.maxPartSize
+    let lo = roundToStep(
+      Math.min(from[i] as number, to[i] as number),
+      MOLDA_LIMITS.positionPrecision,
+    )
+    const rawSize = Math.abs((to[i] as number) - (from[i] as number))
+    const size = Math.min(
+      Math.max(roundToStep(rawSize, sizeStep), sizeStep),
+      MOLDA_LIMITS.maxPartSize,
+    )
+    let hi = lo + size
     if (hi > max) {
       const shift = hi - max
       hi -= shift
@@ -239,7 +246,7 @@ export function normalizeBox(from: Vec3, to: Vec3, snap: number): { from: Vec3; 
       lo += shift
       hi = Math.min(max, hi + shift)
     }
-    if (hi - lo < snap) hi = Math.min(max, lo + snap)
+    if (hi - lo < sizeStep) hi = Math.min(max, lo + sizeStep)
     a[i] = lo
     b[i] = hi
   }
@@ -255,9 +262,9 @@ export function normalizeRotation(raw: Vec3 | null): Vec3 {
 function clampOrigin(raw: Vec3 | null, from: Vec3, to: Vec3): Vec3 | undefined {
   if (!raw) return undefined
   return [
-    Math.min(Math.max(raw[0], from[0]), to[0]),
-    Math.min(Math.max(raw[1], from[1]), to[1]),
-    Math.min(Math.max(raw[2], from[2]), to[2]),
+    Math.min(Math.max(roundToStep(raw[0], MOLDA_LIMITS.positionPrecision), from[0]), to[0]),
+    Math.min(Math.max(roundToStep(raw[1], MOLDA_LIMITS.positionPrecision), from[1]), to[1]),
+    Math.min(Math.max(roundToStep(raw[2], MOLDA_LIMITS.positionPrecision), from[2]), to[2]),
   ]
 }
 
@@ -323,7 +330,6 @@ function fitMeshToGrid(mesh: MoldaMesh): { mesh: MoldaMesh; from: Vec3; to: Vec3
 
 function sanitizePart(
   raw: unknown,
-  snap: number,
   texelsPerUnit: number,
   colors: readonly string[],
   fallbackName: string,
@@ -346,7 +352,7 @@ function sanitizePart(
     const from = vec3(r.from)
     const to = vec3(r.to)
     if (!from || !to) return null
-    box = normalizeBox(from, to, snap)
+    box = normalizeBox(from, to, 0.5)
   }
   const origin = clampOrigin(vec3(r.origin), box.from, box.to)
   const color =
@@ -402,7 +408,7 @@ function sanitizeModel(raw: Record<string, unknown>, base: MoldaAssetBase): Mold
   let triangles = 0
   for (const rawPart of rawParts) {
     if (parts.length >= MOLDA_LIMITS.maxParts) break
-    const part = sanitizePart(rawPart, snap, texelsPerUnit, colors, `peca ${parts.length + 1}`)
+    const part = sanitizePart(rawPart, texelsPerUnit, colors, `peca ${parts.length + 1}`)
     if (!part || seen.has(part.id)) continue
     // Orçamento de TRIÂNGULOS do modelo (a malha é quem pode estourar): a peça que
     // passa do teto cai, as anteriores ficam.

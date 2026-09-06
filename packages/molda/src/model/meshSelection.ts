@@ -1,20 +1,31 @@
 /**
- * A SELEÇÃO dentro de uma malha, pura e fora do asset (no `sessionStore`): os
- * VÉRTICES são a lista mestra; aresta selecionada = as duas pontas selecionadas;
- * face selecionada = todos os vértices dela selecionados. Um toque em Pontos,
- * Arestas ou Faces vira sempre uma lista de vértices (`pickVertices`), e as
- * ferramentas (mover, apagar, puxar) só precisam de UM caminho de transformação.
+ * A seleção dentro de uma malha é explícita e vive fora do asset. Guardar o
+ * elemento escolhido evita a ambiguidade de reconstruir faces/arestas pela união
+ * dos seus vértices (duas faces opostas de um cubo, por exemplo, cobrem os oito
+ * vértices mas não significam que as outras quatro faces foram escolhidas).
  */
 import type { MeshFaceKey, MoldaMesh, Vec3 } from '../core/model'
-import { faceCenter, faceNormal, faceVertices } from './mesh'
+import { faceCenter, faceNormal, faceVertices, meshEdges } from './mesh'
 import { add, length, normalize, scale } from './vec'
+
+export type MeshEdge = [string, string]
 
 export type MeshPick =
   | { kind: 'vertex'; key: string }
-  | { kind: 'edge'; keys: [string, string] }
+  | { kind: 'edge'; keys: MeshEdge }
   | { kind: 'face'; key: MeshFaceKey }
 
-/** Os vértices que um toque representa (só os que existem na malha). */
+function canonicalPick(pick: MeshPick): MeshPick {
+  if (pick.kind !== 'edge' || pick.keys[0] < pick.keys[1]) return pick
+  return { kind: 'edge', keys: [pick.keys[1], pick.keys[0]] }
+}
+
+function pickKey(pick: MeshPick): string {
+  if (pick.kind === 'edge') return `edge:${pick.keys[0]} ${pick.keys[1]}`
+  return `${pick.kind}:${pick.key}`
+}
+
+/** Os vértices afetados por um elemento (somente os que existem). */
 export function pickVertices(mesh: MoldaMesh, pick: MeshPick): string[] {
   switch (pick.kind) {
     case 'vertex':
@@ -26,85 +37,106 @@ export function pickVertices(mesh: MoldaMesh, pick: MeshPick): string[] {
   }
 }
 
+/** União dos vértices afetados pela seleção explícita. */
+export function selectionVertices(mesh: MoldaMesh, selection: readonly MeshPick[]): string[] {
+  return [...new Set(selection.flatMap((pick) => pickVertices(mesh, pick)))]
+}
+
 /**
- * Junta um toque à seleção. Sem "somar": a seleção vira o toque. Com "somar":
- * tocar algo já inteiramente selecionado o TIRA (o segundo toque desfaz o
- * primeiro), senão acrescenta. Vazio limpa (toque no nada).
+ * Junta um toque à seleção. Sem "somar", a seleção vira exatamente o toque.
+ * Com "somar", um segundo toque no mesmo elemento o remove. Seleções de modos
+ * diferentes nunca são misturadas.
  */
 export function mergeMeshSelection(
-  current: readonly string[],
-  picked: readonly string[],
+  current: readonly MeshPick[],
+  picked: MeshPick | null,
   additive: boolean,
-): string[] {
-  if (picked.length === 0) return additive ? [...current] : []
-  if (!additive) return [...new Set(picked)]
-  const set = new Set(current)
-  const allSelected = picked.every((key) => set.has(key))
-  if (allSelected) {
-    for (const key of picked) set.delete(key)
-  } else {
-    for (const key of picked) set.add(key)
-  }
-  return [...set]
+): MeshPick[] {
+  if (!picked) return additive ? [...current] : []
+  const canonical = canonicalPick(picked)
+  if (!additive) return [canonical]
+  const compatible = current.filter((item) => item.kind === canonical.kind).map(canonicalPick)
+  const wanted = pickKey(canonical)
+  const exists = compatible.some((item) => pickKey(item) === wanted)
+  return exists ? compatible.filter((item) => pickKey(item) !== wanted) : [...compatible, canonical]
 }
 
-/** Só os vértices que ainda existem (uma operação pode ter apagado alguns). */
-export function pruneMeshSelection(mesh: MoldaMesh, vertices: readonly string[]): string[] {
-  return vertices.filter((key) => key in mesh.vertices)
-}
-
-export function selectedEdges(
-  mesh: MoldaMesh,
-  vertices: readonly string[],
-): Array<[string, string]> {
-  const set = new Set(vertices)
+/** Só os elementos que ainda existem depois de uma operação/desfazer. */
+export function pruneMeshSelection(mesh: MoldaMesh, selection: readonly MeshPick[]): MeshPick[] {
+  let edges: Set<string> | null = null
   const seen = new Set<string>()
-  const edges: Array<[string, string]> = []
-  for (const face of Object.values(mesh.faces)) {
-    for (let i = 0; i < face.v.length; i += 1) {
-      const a = face.v[i] as string
-      const b = face.v[(i + 1) % face.v.length] as string
-      if (!set.has(a) || !set.has(b)) continue
-      const pair: [string, string] = a < b ? [a, b] : [b, a]
-      const key = `${pair[0]} ${pair[1]}`
-      if (seen.has(key)) continue
-      seen.add(key)
-      edges.push(pair)
+  const result: MeshPick[] = []
+  for (const raw of selection) {
+    const pick = canonicalPick(raw)
+    let valid: boolean
+    if (pick.kind === 'vertex') valid = pick.key in mesh.vertices
+    else if (pick.kind === 'face') valid = pick.key in mesh.faces
+    else {
+      edges ??= new Set(meshEdges(mesh).map(([a, b]) => `${a} ${b}`))
+      valid = edges.has(`${pick.keys[0]} ${pick.keys[1]}`)
     }
+    const key = pickKey(pick)
+    if (!valid || seen.has(key)) continue
+    seen.add(key)
+    result.push(pick)
   }
-  return edges
+  return result
 }
 
-export function selectedFaces(mesh: MoldaMesh, vertices: readonly string[]): MeshFaceKey[] {
-  const set = new Set(vertices)
-  return (Object.keys(mesh.faces) as MeshFaceKey[]).filter((key) =>
-    (mesh.faces[key]?.v ?? []).every((vertex) => set.has(vertex)),
+/** As arestas escolhidas, sem inferência pela seleção de vértices. */
+export function selectedEdges(mesh: MoldaMesh, selection: readonly MeshPick[]): MeshEdge[] {
+  return pruneMeshSelection(mesh, selection).flatMap((pick) =>
+    pick.kind === 'edge' ? [pick.keys] : [],
+  )
+}
+
+/** As faces escolhidas, sem inferência pela seleção de vértices. */
+export function selectedFaces(mesh: MoldaMesh, selection: readonly MeshPick[]): MeshFaceKey[] {
+  return pruneMeshSelection(mesh, selection).flatMap((pick) =>
+    pick.kind === 'face' ? [pick.key] : [],
   )
 }
 
 /** O centro da seleção (onde a alça de mover fica); `null` sem vértice válido. */
-export function selectionCenter(mesh: MoldaMesh, vertices: readonly string[]): Vec3 | null {
+export function selectionCenter(mesh: MoldaMesh, selection: readonly MeshPick[]): Vec3 | null {
+  return verticesCenter(mesh, selectionVertices(mesh, selection))
+}
+
+/** Centro de uma lista já derivada de vértices (contrato interno do viewport). */
+export function verticesCenter(mesh: MoldaMesh, vertices: readonly string[]): Vec3 | null {
   const points = vertices.flatMap((key) => {
-    const v = mesh.vertices[key]
-    return v ? [v] : []
+    const point = mesh.vertices[key]
+    return point ? [point] : []
   })
   return points.length > 0 ? faceCenter(points) : null
 }
 
 /**
- * A normal média das faces selecionadas (a alça alinha-se a ela); sem face
- * inteira selecionada, a média das normais das faces que TOCAM a seleção;
- * `null` quando nada se aplica (a alça fica no eixo do mundo).
+ * Normal média das faces explicitamente escolhidas. Para arestas ou vértices,
+ * usa as faces incidentes; `null` quando as normais se cancelam ou nada se aplica.
  */
-export function selectionNormal(mesh: MoldaMesh, vertices: readonly string[]): Vec3 | null {
-  const whole = selectedFaces(mesh, vertices)
-  const set = new Set(vertices)
+export function selectionNormal(mesh: MoldaMesh, selection: readonly MeshPick[]): Vec3 | null {
+  const explicitFaces = selectedFaces(mesh, selection)
+  const explicitEdges = selectedEdges(mesh, selection)
+  const vertices = new Set(selectionVertices(mesh, selection))
   const touching =
-    whole.length > 0
-      ? whole
-      : (Object.keys(mesh.faces) as MeshFaceKey[]).filter((key) =>
-          (mesh.faces[key]?.v ?? []).some((vertex) => set.has(vertex)),
-        )
+    explicitFaces.length > 0
+      ? explicitFaces
+      : explicitEdges.length > 0
+        ? (Object.keys(mesh.faces) as MeshFaceKey[]).filter((key) => {
+            const cycle = mesh.faces[key]?.v ?? []
+            return explicitEdges.some(([a, b]) => {
+              const at = cycle.indexOf(a)
+              return (
+                at >= 0 &&
+                (cycle[(at + 1) % cycle.length] === b ||
+                  cycle[(at + cycle.length - 1) % cycle.length] === b)
+              )
+            })
+          })
+        : (Object.keys(mesh.faces) as MeshFaceKey[]).filter((key) =>
+            (mesh.faces[key]?.v ?? []).some((vertex) => vertices.has(vertex)),
+          )
   let sum: Vec3 = [0, 0, 0]
   for (const key of touching) {
     const points = faceVertices(mesh, key)

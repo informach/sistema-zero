@@ -12,10 +12,15 @@ import type {
   AmbassadorStats,
   AmbassadorStatus,
   CodeRecord,
+  ConversionListItem,
+  ConversionRecord,
+  ConversionStatus,
+  ConversionToNotify,
   InviteRecord,
   RedemptionRecord,
   ReferralRepository,
 } from '../../src/domain/ports/referral-repository.port'
+import { AMBASSADOR_VISIBLE_CONVERSION_STATUSES } from '../../src/domain/ports/referral-repository.port'
 
 /** Repo em memória — espelho fiel das regras do Drizzle (single-thread). */
 export class InMemoryReferralRepository implements ReferralRepository {
@@ -23,6 +28,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   codes: (CodeRecord & { createdAt: Date })[] = []
   redemptions: RedemptionRecord[] = []
   invites: InviteRecord[] = []
+  conversions: ConversionRecord[] = []
   /** Força UMA colisão de código no próximo createAmbassadorWithCode. */
   failNextCodeInsert = false
 
@@ -31,12 +37,21 @@ export class InMemoryReferralRepository implements ReferralRepository {
     email: string
     pageToken: string
     code: string
+    accountUserId?: string | null
   }): Promise<
     | { kind: 'created'; ambassador: AmbassadorRecord; code: CodeRecord }
     | { kind: 'email_exists' }
+    | { kind: 'account_exists' }
     | { kind: 'code_collision' }
   > {
     if (this.ambassadors.some((a) => a.email === input.email)) return { kind: 'email_exists' }
+    if (
+      input.accountUserId &&
+      this.ambassadors.some((a) => a.accountUserId === input.accountUserId)
+    ) {
+      // Espelha a UNIQUE parcial `ambassadors_account_uq` do Drizzle.
+      return { kind: 'account_exists' }
+    }
     if (this.failNextCodeInsert || this.codes.some((c) => c.code === input.code)) {
       this.failNextCodeInsert = false
       return { kind: 'code_collision' }
@@ -46,6 +61,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
       name: input.name,
       email: input.email,
       pageToken: input.pageToken,
+      accountUserId: input.accountUserId ?? null,
+      pixKey: null,
       status: 'active',
       linkEmailCount: 0,
       linkEmailSentAt: null,
@@ -179,6 +196,62 @@ export class InMemoryReferralRepository implements ReferralRepository {
 
   async findCodeByCode(code: string): Promise<CodeRecord | null> {
     return this.codes.find((c) => c.code === code) ?? null
+  }
+
+  async findAmbassadorByAccount(
+    accountUserId: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    const a = this.ambassadors.find((x) => x.accountUserId === accountUserId)
+    if (!a) return null
+    return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
+  }
+
+  async findAmbassadorByEmail(
+    email: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    const a = this.ambassadors.find((x) => x.email === email)
+    if (!a) return null
+    return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
+  }
+
+  async setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean> {
+    const a = this.ambassadors.find((x) => x.pageToken === pageToken && x.status === 'active')
+    if (!a) return false
+    a.pixKey = pixKey
+    return true
+  }
+
+  async countConversionsForAmbassador(ambassadorId: string): Promise<Record<string, number>> {
+    const out: Record<string, number> = {}
+    for (const c of this.conversions) {
+      if (c.ambassadorId === ambassadorId) out[c.status] = (out[c.status] ?? 0) + 1
+    }
+    return out
+  }
+
+  async getAmbassadorStats(ambassadorId: string): Promise<AmbassadorStats> {
+    const codeIds = new Set(
+      this.codes.filter((c) => c.ambassadorId === ambassadorId).map((c) => c.id),
+    )
+    return {
+      redemptionsCompleted: this.redemptions.filter(
+        (r) => codeIds.has(r.codeId) && r.status === 'completed',
+      ).length,
+      invitesSent: this.invites.filter(
+        (i) => i.ambassadorId === ambassadorId && i.status === 'sent',
+      ).length,
+    }
+  }
+
+  async listAmbassadorVisibleConversions(
+    ambassadorId: string,
+    limit: number,
+  ): Promise<ConversionRecord[]> {
+    const visible: readonly string[] = AMBASSADOR_VISIBLE_CONVERSION_STATUSES
+    return this.conversions
+      .filter((c) => c.ambassadorId === ambassadorId && visible.includes(c.status))
+      .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
+      .slice(0, limit)
   }
 
   async insertRedemption(input: {
@@ -339,6 +412,145 @@ export class InMemoryReferralRepository implements ReferralRepository {
     const out: Record<string, number> = {}
     for (const r of this.redemptions) out[r.status] = (out[r.status] ?? 0) + 1
     return out
+  }
+
+  // ── Conversões ────────────────────────────────────────────────────────────
+
+  async findRedemptionWithCodeByEmail(
+    email: string,
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null> {
+    const redemption = this.redemptions.find((r) => r.email === email)
+    if (!redemption) return null
+    const code = this.codes.find((c) => c.id === redemption.codeId)
+    if (!code) return null
+    return { redemption, code }
+  }
+
+  async insertConversion(input: {
+    redemptionId: string
+    codeId: string
+    ambassadorId: string | null
+    paymentId: string
+    subscriptionId: string | null
+    offerSlug: string
+    amountCents: bigint
+    bonusCents: number
+    status: 'pending' | 'self_blocked'
+    paidAt: Date
+    maturesAt: Date
+  }): Promise<{ created: boolean }> {
+    // Espelha as uniques do Drizzle: redemption é PARCIAL (canceled não ocupa a
+    // vaga — bolsista que estornou e assinou de novo volta a gerar bônus).
+    const conflict = this.conversions.some(
+      (c) =>
+        (c.redemptionId === input.redemptionId && c.status !== 'canceled') ||
+        c.paymentId === input.paymentId,
+    )
+    if (conflict) return { created: false }
+    this.conversions.push({
+      id: randomUUID(),
+      ...input,
+      eligibleAt: null,
+      notifiedAt: null,
+      paidMarkedAt: null,
+      paidMarkedBy: null,
+      note: null,
+      createdAt: new Date(),
+    })
+    return { created: true }
+  }
+
+  async cancelPendingConversionByPayment(
+    paymentId: string,
+  ): Promise<
+    { kind: 'canceled' } | { kind: 'not_found' } | { kind: 'not_pending'; status: ConversionStatus }
+  > {
+    const c = this.conversions.find((x) => x.paymentId === paymentId)
+    if (!c) return { kind: 'not_found' }
+    if (c.status !== 'pending') return { kind: 'not_pending', status: c.status }
+    c.status = 'canceled'
+    return { kind: 'canceled' }
+  }
+
+  async matureConversions(now: Date, limit: number): Promise<number> {
+    let matured = 0
+    for (const c of this.conversions) {
+      if (matured >= limit) break
+      if (c.status === 'pending' && c.maturesAt <= now) {
+        c.status = 'eligible'
+        c.eligibleAt = now
+        matured++
+      }
+    }
+    return matured
+  }
+
+  async listConversionsToNotify(limit: number): Promise<ConversionToNotify[]> {
+    // Espelha o Drizzle: embaixador DESATIVADO fica fora (página 404aria o
+    // link do e-mail); linha sem embaixador segue vindo (o serviço marca).
+    return this.conversions
+      .filter((c) => {
+        if (c.status !== 'eligible' || c.notifiedAt) return false
+        if (!c.ambassadorId) return true
+        const a = this.ambassadors.find((x) => x.id === c.ambassadorId)
+        return a?.status === 'active'
+      })
+      .slice(0, limit)
+      .map((c) => ({ id: c.id, bonusCents: c.bonusCents, ambassadorId: c.ambassadorId }))
+  }
+
+  async markConversionNotified(id: string, when: Date): Promise<void> {
+    const c = this.conversions.find((x) => x.id === id)
+    if (c) c.notifiedAt = when
+  }
+
+  async listConversions(opts: {
+    status?: ConversionStatus
+    limit: number
+    offset: number
+  }): Promise<{ items: ConversionListItem[]; total: number }> {
+    const filtered = this.conversions.filter((c) => !opts.status || c.status === opts.status)
+    const items = filtered
+      .slice()
+      .sort((a, b) => b.paidAt.getTime() - a.paidAt.getTime())
+      .slice(opts.offset, opts.offset + opts.limit)
+      .map((c) => {
+        const a = this.ambassadors.find((x) => x.id === c.ambassadorId)
+        const r = this.redemptions.find((x) => x.id === c.redemptionId)
+        return {
+          ...c,
+          ambassadorName: a?.name ?? null,
+          ambassadorEmail: a?.email ?? null,
+          ambassadorPixKey: a?.pixKey ?? null,
+          redemptionName: r?.name ?? '',
+          redemptionEmail: r?.email ?? '',
+        }
+      })
+    return { items, total: filtered.length }
+  }
+
+  async markConversionPaid(id: string, by: string, note: string | null): Promise<boolean> {
+    const c = this.conversions.find((x) => x.id === id)
+    if (c?.status !== 'eligible') return false
+    c.status = 'paid'
+    c.paidMarkedAt = new Date()
+    c.paidMarkedBy = by
+    if (note !== null) c.note = note
+    return true
+  }
+
+  async setConversionMaturesNow(id: string): Promise<boolean> {
+    const c = this.conversions.find((x) => x.id === id)
+    if (c?.status !== 'pending') return false
+    c.maturesAt = new Date()
+    return true
+  }
+
+  async listConversionsByCode(codeId: string, limit: number): Promise<ConversionRecord[]> {
+    return this.conversions
+      .filter((c) => c.codeId === codeId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, limit)
   }
 }
 

@@ -237,6 +237,42 @@ test('viewport real posiciona, pinta, recupera contexto e exporta GLB aceito pel
     )
     .toBe(true)
 
+  // A ferramenta de perto abre somente a face tocada; o gesto inteiro continua
+  // sendo um passo de desfazer/refazer, igual à pintura direta no palco.
+  await page
+    .getByRole('button', { name: /^Cor 2 / })
+    .first()
+    .click()
+  const countRedTexels = () =>
+    page.evaluate(() => {
+      const viewport = window.__molda?.viewport as unknown as {
+        model?: { parts: Array<{ faces: Record<string, { data: Uint8Array }> }> }
+      }
+      return (viewport.model?.parts ?? []).reduce(
+        (total, part) =>
+          total +
+          Object.values(part.faces).reduce(
+            (partTotal, skin) =>
+              partTotal + Array.from(skin.data).filter((value) => value === 2).length,
+            0,
+          ),
+        0,
+      )
+    })
+  const redBeforeClosePaint = await countRedTexels()
+  await page.getByRole('button', { name: 'Pintar de perto' }).click()
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2)
+  const closeStage = page.getByRole('img', { name: 'Face ampliada para pintar' })
+  await expect(closeStage).toBeVisible()
+  await closeStage.click({ position: { x: 100, y: 100 } })
+  await page.getByRole('button', { name: 'Pronto' }).click()
+  await expect.poll(countRedTexels).toBeGreaterThan(redBeforeClosePaint)
+  const redAfterClosePaint = await countRedTexels()
+  await page.getByRole('button', { name: 'Desfazer' }).click()
+  await expect.poll(countRedTexels).toBe(redBeforeClosePaint)
+  await page.getByRole('button', { name: 'Refazer' }).click()
+  await expect.poll(countRedTexels).toBe(redAfterClosePaint)
+
   const restored = await canvas.evaluate((element) => {
     const gl = (element as HTMLCanvasElement).getContext('webgl2')
     const extension = gl?.getExtension('WEBGL_lose_context')
@@ -298,6 +334,147 @@ test('grupo com principal trancada mantém a alça para as peças livres', async
       }),
     )
     .toBe(true)
+})
+
+test('Arrumar põe no chão e ajusta uma repetição como um único passo persistido', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await page.evaluate(
+    async (asset) =>
+      window.__molda?.persistence.save({
+        ...asset,
+        id: 'e2e-arrange',
+        name: 'e2e-arrange',
+        parts: [{ ...asset.parts[0], from: [1, 3, 0], to: [3, 5, 2] }],
+      }),
+    MODEL,
+  )
+  await page.goto('/?criacao=e2e-arrange')
+  await page.getByRole('button', { name: 'corpo, caixa' }).click()
+
+  const partSummary = () =>
+    page.evaluate(() => {
+      const viewport = window.__molda?.viewport as unknown as {
+        model?: { parts: Array<{ from: [number, number, number] }> }
+      }
+      return {
+        count: viewport.model?.parts.length ?? 0,
+        firstY: viewport.model?.parts[0]?.from[1],
+      }
+    })
+
+  await page.getByRole('button', { name: 'Pôr no chão' }).click()
+  await expect.poll(partSummary).toEqual({ count: 1, firstY: 0 })
+  await page.getByRole('button', { name: 'Repetir em linha: Para a direita' }).click()
+  await expect.poll(partSummary).toEqual({ count: 2, firstY: 0 })
+  await page.getByRole('textbox', { name: 'Quantidade de cópias' }).fill('3')
+  await page.getByRole('textbox', { name: 'Quantidade de cópias' }).press('Enter')
+  await expect.poll(partSummary).toEqual({ count: 4, firstY: 0 })
+
+  await page.getByRole('button', { name: 'Desfazer' }).click()
+  await expect.poll(partSummary).toEqual({ count: 1, firstY: 0 })
+  await page.getByRole('button', { name: 'Refazer' }).click()
+  await expect.poll(partSummary).toEqual({ count: 4, firstY: 0 })
+  await expect
+    .poll(async () => {
+      const assets = await page.evaluate(() => window.__molda?.persistence.loadAll())
+      const saved = assets?.find((asset) => asset.id === 'e2e-arrange')
+      return saved?.kind === 'model' ? saved.parts.length : 0
+    })
+    .toBe(4)
+
+  await page.reload()
+  await expect(page.locator('canvas[aria-label="Palco 3D"]')).toBeVisible()
+  await expect.poll(partSummary).toEqual({ count: 4, firstY: 0 })
+})
+
+test('Grudar une dois pontos do palco com dois toques e um único desfazer', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(async (asset) => {
+    await window.__molda?.persistence.save({
+      ...asset,
+      id: 'e2e-snap',
+      name: 'e2e-snap',
+      parts: [
+        ...asset.parts,
+        {
+          id: 'target',
+          name: 'alvo',
+          shape: 'box',
+          from: [5, 0, -1],
+          to: [7, 4, 1],
+          rotation: [0, 0, 0],
+          color: 4,
+          faces: {},
+          locked: true,
+        },
+      ],
+    })
+  }, MODEL)
+  await page.goto('/?criacao=e2e-snap')
+
+  const canvas = page.locator('canvas[aria-label="Palco 3D"]')
+  await expect(canvas).toBeVisible()
+  await page.getByRole('button', { name: 'corpo, caixa' }).click()
+  await page.getByRole('button', { name: 'Grudar' }).click()
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Toque no ponto da peça que vai grudar.' }),
+  ).toBeVisible()
+
+  type SnapProjector = {
+    camera: unknown
+    gizmo: {
+      worldPosition: {
+        clone(): {
+          set(
+            x: number,
+            y: number,
+            z: number,
+          ): { project(camera: unknown): { x: number; y: number } }
+        }
+      }
+    }
+    model?: { parts: Array<{ id: string; from: [number, number, number] }> }
+  }
+  const screenOf = (x: number, y: number, z: number) =>
+    canvas.evaluate(
+      (element, point) => {
+        const viewport = window.__molda?.viewport as unknown as SnapProjector
+        const rect = element.getBoundingClientRect()
+        const projected = viewport.gizmo.worldPosition
+          .clone()
+          .set(point[0], point[1], point[2])
+          .project(viewport.camera)
+        return {
+          x: rect.left + ((projected.x + 1) * rect.width) / 2,
+          y: rect.top + ((1 - projected.y) * rect.height) / 2,
+        }
+      },
+      [x, y, z] as [number, number, number],
+    )
+  const bodyFromX = () =>
+    page.evaluate(
+      () =>
+        (window.__molda?.viewport as unknown as SnapProjector).model?.parts.find(
+          (part) => part.id === 'body',
+        )?.from[0],
+    )
+
+  const source = await screenOf(0, 2, 0)
+  await page.touchscreen.tap(source.x, source.y)
+  await expect(
+    page.getByRole('status').filter({ hasText: 'Agora toque no ponto de outra peça.' }),
+  ).toBeVisible()
+
+  const target = await screenOf(6, 2, 0)
+  await page.touchscreen.tap(target.x, target.y)
+  await expect.poll(bodyFromX).toBe(4)
+  await expect(page.getByRole('button', { name: 'Mover' })).toHaveAttribute('aria-pressed', 'true')
+
+  await page.getByRole('button', { name: 'Desfazer' }).click()
+  await expect.poll(bodyFromX).toBe(-2)
+  await expect(page.getByRole('button', { name: 'Desfazer' })).toBeDisabled()
 })
 
 test('atlas cheio mantém as 128 peças visíveis pelas cores-base', async ({ page }) => {
@@ -419,7 +596,13 @@ test('a barra do editor mantém todas as ações dentro da tela de celular', asy
     )
     .toEqual({ clientWidth: 375, scrollWidth: 375 })
 
-  for (const name of ['Voltar para a galeria', 'Desfazer', 'Refazer', 'Baixar .glb']) {
+  for (const name of [
+    'Voltar para a galeria',
+    'Ajuda desta tela',
+    'Desfazer',
+    'Refazer',
+    'Baixar .glb',
+  ]) {
     const button = page.getByRole('button', { name })
     const box = await button.boundingBox()
     expect(box, `${name} precisa estar visível`).not.toBeNull()
@@ -431,12 +614,10 @@ test('a barra do editor mantém todas as ações dentro da tela de celular', asy
 
 /**
  * Malha no palco REAL: converter, escolher uma face pelo TOQUE (14 px de folga),
- * Puxar, pintar a face nova com o lápis e girar a pele dela. O ponto do toque é
+ * Encolher dentro, Puxar, pintar a face nova e girar a pele dela. O ponto do toque é
  * projetado pela câmera do palco (o mesmo caminho da alça acima).
  */
-test('malha: toque escolhe a face, Puxar cresce, o lápis pinta e "Girar a pele" gira', async ({
-  page,
-}) => {
+test('malha: toque escolhe, Encolher e Puxar formam relevo, e a pintura gira', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await page.goto('/')
@@ -469,6 +650,7 @@ test('malha: toque escolhe a face, Puxar cresce, o lápis pinta e "Girar a pele"
         id: string
         to: [number, number, number]
         faces: Record<string, { width: number; height: number; data: Uint8Array }>
+        mesh?: { faces: Record<string, { v: string[] }> }
       }>
     }
   }
@@ -493,10 +675,13 @@ test('malha: toque escolhe a face, Puxar cresce, o lápis pinta e "Girar a pele"
       (window.__molda?.viewport as unknown as Projector).model?.parts.find((p) => p.id === 'body'),
     )
 
-  // O centro da face de cima (y = 4), a 10 px do ponto exato: a folga do toque cobre.
+  // A seleção agora é explícita por modo: em Faces, o toque escolhe só a face sob ele.
+  await page.getByRole('button', { name: 'Faces', exact: true }).click()
   const top = await screenOf(0, 4, 0)
   await page.touchscreen.tap(top.x + 6, top.y + 8)
-  await expect(page.getByText('4 pontos', { exact: true })).toBeVisible()
+  await expect(page.getByText('1 face', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Encolher dentro', exact: true }).click()
+  await expect.poll(async () => Object.keys((await partOf())?.mesh?.faces ?? {})).toHaveLength(10)
   await page.getByRole('button', { name: 'Puxar', exact: true }).click()
   await expect.poll(async () => (await partOf())?.to[1]).toBe(5)
   await expect(page.getByRole('region', { name: 'Ajustar' })).toBeVisible()

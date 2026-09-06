@@ -321,8 +321,9 @@ lugar de modal.
 - **D4** seleção no `sessionStore` (`meshEditId`, `meshSelectMode`, `meshSelection {vertices, edges,
   faces}`, `meshAdditive`), vértices como lista mestra, conversão entre modos (`selectionForMode`).
 - **D5** sub-modo "Editar malha" dentro do Montar: Pontos / Arestas / Faces, "Somar à seleção",
-  Puxar (extrude de faces e arestas), Cortar no meio (loop cut), Juntar pontos, Fechar face, Virar
-  face, Apagar seleção, Pronto; alça = só mover. Fora: faca, proporcional, extrude de vértice, seams.
+  Puxar (faces e arestas), Cortar no meio, Juntar pontos, Fechar face, Conectar pontos, Encolher
+  dentro, Virar face, Dividir, Apagar seleção e Pronto; alça = só mover. A caixa é contextual ao
+  modo ativo. Fora: faca, proporcional, extrude de vértice, seams e arestas soltas.
 - **D6** vértices sempre no `snap` e na grade; delta arredondado em coordenadas da caixa; loop cut
   que cai fora do encaixe liga o meio bloco no MESMO commit (toast).
 - **D7** "Transformar em malha" (`boxToMesh`: 8 vértices/6 quads com frames IDÊNTICOS aos da caixa,
@@ -341,11 +342,11 @@ lugar de modal.
 - **D12** `buildPartGeometry` produz o mesmo `PartGeometry`: `build.ts`, `glb.ts`, `isoThumb.ts`,
   `pickModelRay` intactos; `geometryHash` do palco enxerga o `mesh` por identidade (`WeakMap`).
 - **D13** desfazer: clique = `commit`; arrasto = `replace` + `commitGesture`; painel "Ajustar"
-  (distância do Puxar, posição do corte) reexecuta sobre o `before` via `editor.amend(next)` novo
-  (aplica sem `history.record`, agenda autosave) = um passo só.
+  (distância do Puxar ou porcentagem do Encolher) reexecuta sobre o `before` via
+  `editor.amend(next)` (aplica sem `history.record`, agenda autosave) = um passo só.
 - **D14** copy em `COPY.editor.model.mesh` (Pontos/Arestas/Faces, Editar malha, Transformar em
-  malha, Puxar, Cortar no meio, Juntar pontos, Fechar face, Virar face, Pronto, Somar à seleção,
-  Ajustar, avisos), status com triângulos e teto acima de 50%.
+  malha, Puxar, Cortar no meio, Juntar pontos, Fechar face, Conectar pontos, Encolher dentro, Virar
+  face, Pronto, Somar à seleção, Ajustar, avisos), status com triângulos e teto acima de 50%.
 - **Compat**: `sanitize` passa a PRESERVAR peça de forma desconhecida em vez de descartar (uma aba
   velha durante o deploy não pode regravar o asset sem a malha). Fazer ANTES de M1 chegar à nuvem.
 
@@ -369,10 +370,11 @@ lugar de modal.
   steppers do ponto selecionado), `ModelEditor.tsx`, atalhos (1/2/3 modo, Esc = Pronto, Delete =
   seleção). Testes: `meshSelection`, `meshOps`, `meshEditOverlay` (Raycaster real), `ModelEditor.mesh.test.tsx`
   (palco falso); e2e novo em `e2e/model-editor.spec.ts` (projeta o vértice pela câmera e arrasta).
-- **M3 ferramentas**: `meshOps.ts` `extrudeFaces`/`extrudeEdges` (clona ao longo da normal média,
+- **M3 ferramentas**: `meshTools.ts` `extrudeFaces`/`extrudeEdges` (clona ao longo da normal média,
   faces sobem, laterais só nas arestas de BORDA, seleção vira as novas), `loopCut` (vértice central
   memoizado por aresta, pele dividida por `reprojectSkin`), `mergeVertices`, `createFace`, `flipFaces`,
-  `splitQuad`; `skinOps.ts reprojectSkin/rotateSkin90`; `meshIssues` + `applyFix`; `Toast` com
+  `connectVertices`, `insetFace`, `splitQuads`; `skinReproject.ts reprojectSkin`; `meshIssues` +
+  `applyMeshFix`; `Toast` com
   ações; `editorStore.amend`; `AmendPanel` inline. Testes de invariantes (malha fechada continua
   fechada; laterais só na borda; cubo cortado = 10 faces; merge derruba degeneradas; flip espelha a
   pele; cada `applyFix` zera o problema; amend = uma entrada). QA "casa de uma malha só".

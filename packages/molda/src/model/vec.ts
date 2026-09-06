@@ -33,9 +33,3 @@ export function sub(a: Vec3, b: Vec3): Vec3 {
 export function scale(v: Vec3, k: number): Vec3 {
   return [v[0] * k, v[1] * k, v[2] * k]
 }
-
-export function vecEquals(a: Vec3, b: Vec3, eps = 0): boolean {
-  return (
-    Math.abs(a[0] - b[0]) <= eps && Math.abs(a[1] - b[1]) <= eps && Math.abs(a[2] - b[2]) <= eps
-  )
-}

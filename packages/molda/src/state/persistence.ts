@@ -6,9 +6,10 @@
  *   Netflix enxerga só a própria galeria.
  * - Um registro por criação (`molda:asset:<id>`), gravado por structured clone
  *   (o `Uint8Array` das peles atravessa inteiro).
- * - Escritas em FILA por banco (`runSerializedWrite`): duas abas ou dois stores
- *   nunca intercalam um `setMany` com um `del`.
- * - Orçamento em BYTES por inventário em memória (`assetBytes`): estourar lança
+ * - Escritas em FILA por banco e, quando disponível, sob Web Lock: duas abas ou
+ *   dois stores não calculam o orçamento sobre o mesmo estado antigo.
+ * - Orçamento em BYTES por inventário compartilhado por banco (`assetBytes`) e
+ *   relido dentro do lock antes de gravar: estourar lança
  *   `MoldaStorageBudgetError` ANTES de tocar o banco.
  * - `BroadcastChannel` avisa as outras abas (`changed`); a mesma instância
  *   ignora o próprio eco pelo `senderId`.
@@ -103,6 +104,7 @@ function storeFor(dbName: string): UseStore {
 // ── Fila de escrita por banco ───────────────────────────────────────────────
 
 const writeQueues = new Map<string, Promise<unknown>>()
+const WRITE_LOCK_PREFIX = 'molda:persistence:'
 
 function runSerializedWrite<T>(dbName: string, task: () => Promise<T>): Promise<T> {
   const previous = writeQueues.get(dbName) ?? Promise.resolve()
@@ -114,6 +116,31 @@ function runSerializedWrite<T>(dbName: string, task: () => Promise<T>): Promise<
     })
     .catch(() => undefined)
   return next
+}
+
+function runExclusiveWrite<T>(dbName: string, task: () => Promise<T>): Promise<T> {
+  return runSerializedWrite(dbName, async () => {
+    const locks = typeof navigator === 'undefined' ? undefined : navigator.locks
+    if (!locks) return task()
+    return locks.request(`${WRITE_LOCK_PREFIX}${dbName}`, task)
+  })
+}
+
+interface InventoryState {
+  bytesById: Map<string, number>
+  loaded: boolean
+  totalBytes: number
+}
+
+const inventories = new Map<string, InventoryState>()
+
+function inventoryFor(dbName: string): InventoryState {
+  let inventory = inventories.get(dbName)
+  if (!inventory) {
+    inventory = { bytesById: new Map(), loaded: false, totalBytes: 0 }
+    inventories.set(dbName, inventory)
+  }
+  return inventory
 }
 
 function safeSanitize(raw: unknown): MoldaAsset | null {
@@ -201,12 +228,10 @@ export function createMoldaPersistence(
   const receivers = new Set<BroadcastChannel>()
   let disposed = false
 
-  const inventory = new Map<string, number>()
-  let inventoryLoaded = false
-  let totalBytes = 0
+  const inventory = inventoryFor(dbName)
 
   function invalidateInventory(): void {
-    inventoryLoaded = false
+    inventory.loaded = false
   }
 
   async function readAll(): Promise<MoldaAsset[]> {
@@ -214,40 +239,36 @@ export function createMoldaPersistence(
       (key): key is string => typeof key === 'string' && key.startsWith(KEY_PREFIX),
     )
     const values = allKeys.length > 0 ? await getMany(allKeys, store) : []
-    inventory.clear()
-    totalBytes = 0
+    inventory.bytesById.clear()
+    inventory.totalBytes = 0
     const assets: MoldaAsset[] = []
     for (const raw of values) {
       const asset = safeSanitize(raw)
       if (!asset) continue
       const bytes = assetBytes(asset)
-      inventory.set(asset.id, bytes)
-      totalBytes += bytes
+      inventory.bytesById.set(asset.id, bytes)
+      inventory.totalBytes += bytes
       assets.push(asset)
     }
-    inventoryLoaded = true
+    inventory.loaded = true
     return assets
   }
 
-  async function ensureInventory(): Promise<void> {
-    if (!inventoryLoaded) await readAll()
-  }
-
   function assertBudget(incoming: ReadonlyArray<{ id: string; bytes: number }>): void {
-    let projected = totalBytes
+    let projected = inventory.totalBytes
     for (const item of incoming) {
-      projected -= inventory.get(item.id) ?? 0
+      projected -= inventory.bytesById.get(item.id) ?? 0
       projected += item.bytes
     }
     if (projected > maxBytes) throw new MoldaStorageBudgetError()
   }
 
   function account(id: string, bytes: number | null): void {
-    totalBytes -= inventory.get(id) ?? 0
-    if (bytes === null) inventory.delete(id)
+    inventory.totalBytes -= inventory.bytesById.get(id) ?? 0
+    if (bytes === null) inventory.bytesById.delete(id)
     else {
-      inventory.set(id, bytes)
-      totalBytes += bytes
+      inventory.bytesById.set(id, bytes)
+      inventory.totalBytes += bytes
     }
   }
 
@@ -270,8 +291,10 @@ export function createMoldaPersistence(
     },
 
     save(asset) {
-      return runSerializedWrite(dbName, async () => {
-        await ensureInventory()
+      return runExclusiveWrite(dbName, async () => {
+        // Outra aba pode ter gravado sem esta instância assinar o canal. A
+        // releitura dentro do lock é a autoridade do cálculo, não um cache local.
+        await readAll()
         const bytes = assetBytes(asset)
         assertBudget([{ id: asset.id, bytes }])
         await set(keyFor(asset.id), asset, store)
@@ -281,9 +304,9 @@ export function createMoldaPersistence(
     },
 
     saveMany(assets) {
-      return runSerializedWrite(dbName, async () => {
+      return runExclusiveWrite(dbName, async () => {
         if (assets.length === 0) return
-        await ensureInventory()
+        await readAll()
         // O IndexedDB é chaveado por id e `setMany` preserva a última entrada
         // repetida. Consolide o lote com a mesma semântica ANTES do orçamento,
         // da gravação, do inventário e do aviso cross-tab.
@@ -302,7 +325,7 @@ export function createMoldaPersistence(
     },
 
     remove(id) {
-      return runSerializedWrite(dbName, async () => {
+      return runExclusiveWrite(dbName, async () => {
         await del(keyFor(id), store)
         account(id, null)
         broadcast([id])
@@ -310,7 +333,7 @@ export function createMoldaPersistence(
     },
 
     removeMany(ids) {
-      return runSerializedWrite(dbName, async () => {
+      return runExclusiveWrite(dbName, async () => {
         if (ids.length === 0) return
         await delMany(
           ids.map((id) => keyFor(id)),
@@ -375,5 +398,6 @@ export function resetMoldaPersistenceForTests(): void {
   defaults.clear()
   storeHandles.clear()
   writeQueues.clear()
+  inventories.clear()
   openAssets.clear()
 }

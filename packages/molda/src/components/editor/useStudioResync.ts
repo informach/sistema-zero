@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import type { MoldaAsset } from '../../core/model'
 import {
   exportLoadedAssetForStudio,
@@ -10,6 +10,11 @@ import {
 export const RESYNC_IDLE_MS = 1500
 
 export type ResyncToStudio = (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
+
+export interface StudioResyncController {
+  /** Drena a fila; com um snapshot explícito, não depende de um novo render do hook. */
+  flush(savedAsset?: MoldaAsset): Promise<void>
+}
 
 /**
  * A VOLTA da ponte "Trazer do Molda" (porte do `useStudioResync` do Pinta): depois de
@@ -29,7 +34,7 @@ export function useStudioResync(options: {
   /** Falha real da ponte; `not-linked` é o estado normal de uma criação ainda não importada. */
   onFailure?: (message?: string) => void
   idleMs?: number
-}): void {
+}): StudioResyncController {
   const { savedAsset, send, onFailure, idleMs = RESYNC_IDLE_MS } = options
   // O que estava salvo ao MONTAR nunca é reenviado: abrir não é salvar.
   const lastSeenRef = useRef(savedAsset)
@@ -40,16 +45,20 @@ export function useStudioResync(options: {
   const onFailureRef = useRef(onFailure)
   onFailureRef.current = onFailure
 
-  const flushRef = useRef((): void => {})
-  flushRef.current = (): void => {
+  const flushRef = useRef((_savedAsset?: MoldaAsset): Promise<void> => Promise.resolve())
+  flushRef.current = (explicitAsset?: MoldaAsset): Promise<void> => {
+    if (explicitAsset && explicitAsset !== lastSeenRef.current) {
+      lastSeenRef.current = explicitAsset
+      pendingRef.current = explicitAsset
+    }
     const asset = pendingRef.current
     const deliver = sendRef.current
-    if (!asset || !deliver) return
+    if (!asset || !deliver) return chainRef.current
     pendingRef.current = null
     const exported = exportLoadedAssetForStudio(asset)
     // O que não cabe no Estúdio não é reenviado, em SILÊNCIO: a criação pode nem estar
     // ligada a um jogo, e o teto já é avisado no "Baixar" e no "Trazer do Molda".
-    if (!exported.ok) return
+    if (!exported.ok) return chainRef.current
     chainRef.current = chainRef.current.then(async () => {
       try {
         const result = await deliver(exported.asset)
@@ -60,7 +69,10 @@ export function useStudioResync(options: {
         onFailureRef.current?.()
       }
     })
+    return chainRef.current
   }
+
+  const flush = useCallback((asset?: MoldaAsset): Promise<void> => flushRef.current(asset), [])
 
   // O `send` vive no ref de propósito: o host recria o adapter a cada render dele e um
   // `send` novo no meio da folga cancelaria o reenvio agendado (ficaria preso até a aba
@@ -70,24 +82,30 @@ export function useStudioResync(options: {
     if (savedAsset === lastSeenRef.current) return
     lastSeenRef.current = savedAsset
     pendingRef.current = savedAsset
-    const flush = (): void => flushRef.current()
-    const timer = setTimeout(flush, idleMs)
+    const flushPending = (): void => {
+      void flushRef.current()
+    }
+    const timer = setTimeout(flushPending, idleMs)
     const onHidden = (): void => {
       if (!document.hidden) return
       clearTimeout(timer)
-      flush()
+      flushPending()
     }
     document.addEventListener('visibilitychange', onHidden)
-    window.addEventListener('pagehide', flush)
+    window.addEventListener('pagehide', flushPending)
     return () => {
       clearTimeout(timer)
       document.removeEventListener('visibilitychange', onHidden)
-      window.removeEventListener('pagehide', flush)
+      window.removeEventListener('pagehide', flushPending)
     }
   }, [savedAsset, idleMs])
 
   // Desmontar (fechar a criação) com um reenvio pendente: sai agora.
   useEffect(() => {
-    return () => flushRef.current()
+    return () => {
+      void flushRef.current()
+    }
   }, [])
+
+  return { flush }
 }

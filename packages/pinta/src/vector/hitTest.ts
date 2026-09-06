@@ -15,13 +15,14 @@
  *   contorno; o círculo usa a equação da elipse, não a caixa;
  * - forma SÓ de contorno acerta quando a distância do ponto ao contorno cabe na
  *   folga mais metade da espessura: os lados do retângulo, a elipse amostrada em
- *   32 pontos, o segmento da linha, as arestas do polígono e o `d` do traço lido
- *   pelo `parsePathD` como a polilinha dos seus pontos (controles inclusive).
+ *   32 pontos, o segmento da linha, as arestas do polígono e o `d` do traço
+ *   achatado em segmentos com a mesma tolerância usada pela geometria vetorial.
  *
  * O conta-gotas continua com o `hitShapeAt` da caixa (`pickColor.ts`): pegar cor
  * é leitura, trancada conta, e a caixa generosa é o que se quer lá.
  */
-import { parsePathD, shapeBounds } from './geometry'
+import { CHORD_TOLERANCE, flattenPathD } from './flatten'
+import { shapeBounds } from './geometry'
 import type { Vec2, VectorShape } from './model'
 import { boundsContains, inflate, localPoint, paintsSomething } from './pickColor'
 
@@ -84,34 +85,6 @@ function ellipseOutline(shape: Extract<VectorShape, { type: 'ellipse' }>): Vec2[
   return points
 }
 
-/**
- * O `d` do traço como polilinhas (uma por subcaminho `M`): os pontos de controle
- * das cúbicas entram como vértices (aproximação barata, que a folga cobre) e o
- * `Z` fecha o subcaminho voltando ao primeiro ponto. `[]` = `d` fora do nosso
- * formato (o `parsePathD` recusou).
- */
-function pathOutlines(d: string): Vec2[][] {
-  const parsed = parsePathD(d)
-  if (!parsed) return []
-  const outlines: Vec2[][] = []
-  let current: Vec2[] | null = null
-  for (const command of parsed.commands) {
-    if (command.op === 'Z') {
-      const first = current?.[0]
-      if (current && first) current.push(first)
-      continue
-    }
-    if (command.op === 'M' || !current) {
-      current = []
-      outlines.push(current)
-    }
-    for (let i = 0; i + 1 < command.coords.length; i += 2) {
-      current.push({ x: command.coords[i] ?? 0, y: command.coords[i + 1] ?? 0 })
-    }
-  }
-  return outlines
-}
-
 /** O ponto (já no espaço local) cai dentro da elipse alargada por `by` em cada raio? */
 function insideEllipse(
   shape: Extract<VectorShape, { type: 'ellipse' }>,
@@ -159,10 +132,12 @@ export function shapeHitAt(shape: VectorShape, point: Vec2, slack = 0): boolean 
     return shape.type === 'ellipse' ? insideEllipse(shape, local, reach) : true
   }
   if (shape.type === 'path') {
-    const outlines = pathOutlines(shape.d)
+    const outlines = flattenPathD(shape.d, CHORD_TOLERANCE)
     // `d` fora do nosso formato (defensivo): a caixa decide, como antes.
-    if (outlines.length === 0) return true
-    return outlines.some((outline) => distanceToPolyline(local, outline, false) <= reach)
+    if (!outlines || outlines.length === 0) return true
+    return outlines.some(
+      (outline) => distanceToPolyline(local, outline.points, outline.closed) <= reach,
+    )
   }
   if (shape.type === 'text' || shape.type === 'image') return true
   return outlineDistance(shape, local) <= reach

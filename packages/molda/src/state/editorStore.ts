@@ -22,6 +22,11 @@ export type SaveState = 'saved' | 'dirty' | 'saving' | 'error'
 
 export interface EditorState {
   asset: MoldaAsset
+  /**
+   * Versão monotônica do CONTEÚDO editável. Miniaturas e estado de salvamento não
+   * avançam esta revisão; ações adiadas usam-na para não reaplicar snapshots velhos.
+   */
+  contentRevision: number
   /** A última versão que chegou ao disco. */
   savedAsset: MoldaAsset
   saveState: SaveState
@@ -128,13 +133,19 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
       return run
     }
 
-    function apply(next: MoldaAsset): void {
-      set({ asset: next, saveState: 'dirty', ...historyFlags() })
+    function apply(next: MoldaAsset, contentChanged = true): void {
+      set((state) => ({
+        asset: next,
+        contentRevision: state.contentRevision + (contentChanged ? 1 : 0),
+        saveState: 'dirty',
+        ...historyFlags(),
+      }))
       schedule()
     }
 
     return {
       asset: options.asset,
+      contentRevision: 0,
       savedAsset: options.asset,
       saveState: 'saved',
       saveError: null,
@@ -150,7 +161,11 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
 
       replace(next) {
         if (next === get().asset) return
-        set({ asset: next, saveState: 'dirty' })
+        set((state) => ({
+          asset: next,
+          contentRevision: state.contentRevision + 1,
+          saveState: 'dirty',
+        }))
       },
 
       commitGesture(before, after) {
@@ -168,7 +183,7 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
         if (current.thumb === thumb) return
         const { thumb: _old, ...rest } = current
         const next = (thumb ? { ...rest, thumb } : rest) as MoldaAsset
-        apply(stamp(next))
+        apply(stamp(next), false)
       },
 
       undo() {

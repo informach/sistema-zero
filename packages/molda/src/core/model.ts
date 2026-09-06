@@ -86,10 +86,10 @@ export interface MoldaPart {
   /** Texto livre curto (não atravessa o Estúdio). */
   name: string
   shape: ShapeId
-  /** Cantos da caixa, múltiplos do snap; `from < to` em cada eixo. */
+  /** Cantos da caixa, múltiplos de 1/16; `from < to` em cada eixo. */
   from: Vec3
   to: Vec3
-  /** Pivô da rotação, dentro da caixa; ausente = o centro. */
+  /** Pivô da rotação, múltiplo de 1/16 e dentro da caixa; ausente = o centro. */
   origin?: Vec3
   /** Graus, múltiplos de 15, em [0, 360). */
   rotation: Vec3

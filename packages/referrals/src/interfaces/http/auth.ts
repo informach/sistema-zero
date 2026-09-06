@@ -24,6 +24,16 @@ export function requireAdmin(
   if (!allowed.has(role)) throw new ForbiddenError('Permissão insuficiente')
 }
 
+/** `x-auth-user-name` chega URI-encoded quando tem acento (regra do gateway). */
+export function decodeIdentityHeader(value: string | undefined): string | null {
+  if (!value) return null
+  try {
+    return value.includes('%') ? decodeURIComponent(value) : value
+  } catch {
+    return value
+  }
+}
+
 /**
  * Prova de origem do gateway (`x-internal-token`, header-inject) — sem ela,
  * qualquer processo na rede interna forjaria um admin. Sem `expected`

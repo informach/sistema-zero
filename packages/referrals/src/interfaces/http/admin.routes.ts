@@ -2,8 +2,14 @@ import { envelope } from '@sistemazero/core/http'
 import { Elysia, t } from 'elysia'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import { EMAIL_PATTERN } from '../../domain/codes'
-import type { RedemptionRecord } from '../../domain/ports/referral-repository.port'
-import { assertInternalCaller, requireAdmin } from './auth'
+import type {
+  ConversionListItem,
+  ConversionRecord,
+  RedemptionRecord,
+  ReferralRepository,
+} from '../../domain/ports/referral-repository.port'
+import { CONVERSION_STATUSES } from '../../domain/ports/referral-repository.port'
+import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
 
 // String (não RegExp.source): o `pattern` do TypeBox compila SEM flags — um /i
 // perdido rejeitaria uuid maiúsculo com 422.
@@ -11,12 +17,13 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 
 export interface AdminRoutesDeps {
   ambassadors: AmbassadorAdminService
+  repo: ReferralRepository
   requireAdminEnabled: boolean
   internalToken?: string
 }
 
 /** Resgates no detalhe do embaixador (e-mail COMPLETO — visão admin). */
-function toRedemptionView(r: RedemptionRecord) {
+function toRedemptionView(r: RedemptionRecord, conversion?: ConversionRecord) {
   return {
     id: r.id,
     name: r.name,
@@ -27,6 +34,36 @@ function toRedemptionView(r: RedemptionRecord) {
     attemptCount: r.attemptCount,
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt?.toISOString() ?? null,
+    // Jornada do bolsista: ficou só no Desafio (null) ou assinou a Comunidade.
+    conversion: conversion
+      ? {
+          status: conversion.status,
+          bonusCents: conversion.bonusCents,
+          subscribedAt: conversion.paidAt.toISOString(),
+        }
+      : null,
+  }
+}
+
+/** bigint não é JSON — `amountCents` viaja como string (mesma régua do payments). */
+function toConversionView(c: ConversionListItem) {
+  return {
+    id: c.id,
+    status: c.status,
+    offerSlug: c.offerSlug,
+    amountCents: c.amountCents.toString(),
+    bonusCents: c.bonusCents,
+    subscribedAt: c.paidAt.toISOString(),
+    maturesAt: c.maturesAt.toISOString(),
+    eligibleAt: c.eligibleAt?.toISOString() ?? null,
+    paidMarkedAt: c.paidMarkedAt?.toISOString() ?? null,
+    paidMarkedBy: c.paidMarkedBy,
+    note: c.note,
+    ambassadorName: c.ambassadorName,
+    ambassadorEmail: c.ambassadorEmail,
+    ambassadorPixKey: c.ambassadorPixKey,
+    redemptionName: c.redemptionName,
+    redemptionEmail: c.redemptionEmail,
   }
 }
 
@@ -56,7 +93,9 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         async ({ body, headers, set }) => {
           guard(headers, true)
           const result = await deps.ambassadors.create({ name: body.name, email: body.email })
-          if (result.kind === 'email_exists') {
+          if (result.kind !== 'created') {
+            // `account_exists` é inalcançável sem accountUserId (a UNIQUE
+            // parcial ignora NULL) — tratado junto por exaustão do union.
             set.status = 409
             return envelope('AMBASSADOR_EMAIL_EXISTS', 'Já existe embaixador com esse e-mail')
           }
@@ -107,8 +146,72 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           }
           return {
             ambassador: detail.ambassador,
-            redemptions: detail.redemptions.map(toRedemptionView),
+            redemptions: detail.redemptions.map((r) =>
+              toRedemptionView(r, detail.conversionByRedemption.get(r.id)),
+            ),
           }
+        },
+        { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
+      )
+      // ── Bônus (conversões bolsista → assinatura; Pix MANUAL controlado aqui) ──
+      .get(
+        '/conversions',
+        async ({ query, headers }) => {
+          guard(headers)
+          const { items, total } = await deps.repo.listConversions({
+            status: query.status,
+            limit: Math.min(query.limit ?? 25, 100),
+            offset: query.offset ?? 0,
+          })
+          return { items: items.map(toConversionView), total }
+        },
+        {
+          query: t.Object({
+            status: t.Optional(t.Union(CONVERSION_STATUSES.map((s) => t.Literal(s)))),
+            limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+            offset: t.Optional(t.Numeric({ minimum: 0 })),
+          }),
+        },
+      )
+      .post(
+        '/conversions/:id/mark-paid',
+        async ({ params, body, headers, set }) => {
+          guard(headers, true)
+          // ⚠️ O NOME é editável pelo próprio operador (PATCH /auth/me), então
+          // sozinho não serve de trilha de quem liberou dinheiro. Grava nome +
+          // ID do ator (o id é imutável); o gateway audita à parte.
+          const actorName = decodeIdentityHeader(headers['x-auth-user-name'])
+          const actorId = headers['x-auth-user-id']
+          const by = [actorName, actorId && `#${actorId}`].filter(Boolean).join(' ') || 'admin'
+          const marked = await deps.repo.markConversionPaid(
+            params.id,
+            by.slice(0, 120),
+            body.note?.trim() || null,
+          )
+          if (!marked) {
+            // Só `eligible` vira `paid` — repetição/estado errado aflora como 409.
+            set.status = 409
+            return envelope('CONVERSION_NOT_ELIGIBLE', 'Este bônus não está aguardando pagamento')
+          }
+          return { ok: true }
+        },
+        {
+          params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }),
+          body: t.Object({ note: t.Optional(t.String({ maxLength: 500 })) }),
+        },
+      )
+      .post(
+        // Ferramenta de STAGING/e2e: antecipa a garantia de uma conversão pending
+        // (o sweep promove e dispara o e-mail no próximo ciclo/execução).
+        '/conversions/:id/mature-now',
+        async ({ params, headers, set }) => {
+          guard(headers, true)
+          const ok = await deps.repo.setConversionMaturesNow(params.id)
+          if (!ok) {
+            set.status = 409
+            return envelope('CONVERSION_NOT_PENDING', 'Só conversões pendentes podem antecipar')
+          }
+          return { ok: true }
         },
         { params: t.Object({ id: t.String({ pattern: UUID_PATTERN }) }) },
       )

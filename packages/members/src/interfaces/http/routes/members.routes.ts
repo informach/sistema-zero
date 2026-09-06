@@ -549,7 +549,7 @@ export function membersRoutes(deps: MembersRoutesDeps) {
           deps.getRankingLeaderboard.execute(resolveUserId(headers), resolveAccountId(headers), {
             audience: query.audience ?? 'adult',
             limit: query.limit ?? 20,
-            offset: query.offset ?? 0,
+            cursor: query.cursor,
             privileged: isPrivilegedActor(headers),
           }),
         { query: RankingQuery },

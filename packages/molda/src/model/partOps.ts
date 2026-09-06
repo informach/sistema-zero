@@ -17,7 +17,7 @@ import {
 import { normalizePartName } from '../core/names'
 import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
 import { normalizeBox, normalizeRotation, resolvePaletteColors } from '../core/sanitize'
-import { buildPartGeometry, modelTriangleCount, partTriangleCount } from './geometry'
+import { buildPartGeometry } from './geometry'
 import {
   BOX_MESH_FACES,
   boxMesh,
@@ -29,7 +29,7 @@ import {
 } from './mesh'
 import { faceSkinSize, partSize } from './shapes'
 import { isSkinBlank, resampleSkin } from './skinOps'
-import { bakeTwins, partCrossesMirror, syncTwins } from './twins'
+import { bakeTwins, partCrossesMirror, syncedTriangleCount, syncTwins } from './twins'
 
 export const DEFAULT_PART_SIZE: Record<ShapeId, Vec3> = {
   box: [2, 2, 2],
@@ -172,10 +172,11 @@ function addPartInBox(
   const slots = model.mirrorX && !partCrossesMirror(part) ? 2 : 1
   if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
   const next = { ...model, parts: [...model.parts, part] }
+  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) return null
   return { model: syncTwins(next), partId: part.id }
 }
 
-/** `null` = teto de peças. */
+/** `null` = teto de peças ou triângulos. */
 export function addPart(
   model: MoldaModelAsset,
   shape: ShapeId,
@@ -244,10 +245,6 @@ export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | n
   if (!source) return null
   const size = partSize(source)
   const spot = findFreeSpot(model, size, source)
-  // O teto de triângulos vale aqui também (senão o sanitize derrubaria a cópia no reload).
-  if (modelTriangleCount(model) + partTriangleCount(source) > MOLDA_LIMITS.maxTriangles) {
-    return null
-  }
   const copy = structuredClone(source)
   copy.id = newId()
   copy.name = nextPartName(model, source.name.replace(/ \d+$/, ''))
@@ -270,6 +267,7 @@ export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | n
   const slots = model.mirrorX && !partCrossesMirror(copy) ? 2 : 1
   if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
   const next = { ...model, parts: [...model.parts, copy] }
+  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) return null
   return { model: syncTwins(next), partId: copy.id }
 }
 
@@ -319,26 +317,40 @@ export function setPartBox(
     }
     sameSize = true
   } else {
-    const box = normalizeBox(from, to, model.snap)
-    const sizeAfter = partSize(box)
+    const box = normalizeBox(from, to, moveOnly ? MOLDA_LIMITS.positionPrecision : model.snap)
+    next = { ...part, from: box.from, to: box.to }
+    // A representação em memória termina na MESMA forma canônica do sanitize.
+    // Se o arredondamento colapsar um ponto/face, a edição inteira é recusada.
+    if (part.mesh) {
+      const mesh = normalizeMesh(roundMesh(scaleMeshToBox(part.mesh, box)))
+      if (
+        Object.keys(mesh.vertices).length !== Object.keys(part.mesh.vertices).length ||
+        Object.keys(mesh.faces).length !== Object.keys(part.mesh.faces).length
+      ) {
+        return model
+      }
+      const canonicalBox = meshBox(mesh)
+      if (!canonicalBox || !boxInsideGrid(canonicalBox)) return model
+      next.mesh = mesh
+      next.from = canonicalBox.from
+      next.to = canonicalBox.to
+    }
+    const sizeAfter = partSize(next)
     sameSize =
       sizeBefore[0] === sizeAfter[0] &&
       sizeBefore[1] === sizeAfter[1] &&
       sizeBefore[2] === sizeAfter[2]
-    next = { ...part, from: box.from, to: box.to }
-    // Malha mudando de tamanho: os vértices escalam para a caixa nova.
-    if (part.mesh) next.mesh = scaleMeshToBox(part.mesh, box)
     if (part.origin) {
       next.origin = sameSize
         ? [
-            part.origin[0] + (box.from[0] - part.from[0]),
-            part.origin[1] + (box.from[1] - part.from[1]),
-            part.origin[2] + (box.from[2] - part.from[2]),
+            part.origin[0] + (next.from[0] - part.from[0]),
+            part.origin[1] + (next.from[1] - part.from[1]),
+            part.origin[2] + (next.from[2] - part.from[2]),
           ]
         : [
-            Math.min(Math.max(part.origin[0], box.from[0]), box.to[0]),
-            Math.min(Math.max(part.origin[1], box.from[1]), box.to[1]),
-            Math.min(Math.max(part.origin[2], box.from[2]), box.to[2]),
+            Math.min(Math.max(part.origin[0], next.from[0]), next.to[0]),
+            Math.min(Math.max(part.origin[1], next.from[1]), next.to[1]),
+            Math.min(Math.max(part.origin[2], next.from[2]), next.to[2]),
           ]
     }
   }
@@ -352,7 +364,9 @@ export function setPartBox(
     return model
   }
   if (!sameSize) next.faces = resizePartSkins(next, model.texelsPerUnit)
-  return syncTwins(replacePart(model, next))
+  const replaced = replacePart(model, next)
+  if (syncedTriangleCount(replaced) > MOLDA_LIMITS.maxTriangles) return model
+  return syncTwins(replaced)
 }
 
 export function movePartBy(model: MoldaModelAsset, id: string, delta: Vec3): MoldaModelAsset {
@@ -364,6 +378,81 @@ export function movePartBy(model: MoldaModelAsset, id: string, delta: Vec3): Mol
     [part.from[0] + delta[0], part.from[1] + delta[1], part.from[2] + delta[2]],
     [part.to[0] + delta[0], part.to[1] + delta[1], part.to[2] + delta[2]],
   )
+}
+
+/** Translação pura de uma fonte; limites e gêmeos são validados pelo commit chamador. */
+function translatedPart(part: MoldaPart, delta: Vec3): MoldaPart | null {
+  const next: MoldaPart = {
+    ...part,
+    from: [part.from[0] + delta[0], part.from[1] + delta[1], part.from[2] + delta[2]],
+    to: [part.to[0] + delta[0], part.to[1] + delta[1], part.to[2] + delta[2]],
+  }
+  if (part.mesh) {
+    next.mesh = translateMesh(part.mesh, delta)
+    const box = meshBox(next.mesh)
+    if (!box) return null
+    next.from = box.from
+    next.to = box.to
+  }
+  if (part.origin) {
+    next.origin = [part.origin[0] + delta[0], part.origin[1] + delta[1], part.origin[2] + delta[2]]
+  }
+  return next
+}
+
+export interface PartBoxPatch {
+  id: string
+  from: Vec3
+  to: Vec3
+}
+
+/**
+ * Aplica destinos ABSOLUTOS de várias peças como uma transação. É o caminho do
+ * arrasto do grupo: projeta todas as fontes, valida grade/orçamentos e só então
+ * sincroniza gêmeos. Uma falha devolve o modelo original inteiro.
+ */
+export function setPartBoxes(
+  model: MoldaModelAsset,
+  patches: readonly PartBoxPatch[],
+): MoldaModelAsset {
+  const destinations = new Map<string, PartBoxPatch>()
+  for (const patch of patches) if (!destinations.has(patch.id)) destinations.set(patch.id, patch)
+  if (destinations.size === 0) return model
+
+  let changed = false
+  let valid = true
+  const projectedParts = model.parts.map((part) => {
+    const destination = destinations.get(part.id)
+    if (!destination || part.mirrorOf || part.locked) return part
+    const delta: Vec3 = [
+      destination.from[0] - part.from[0],
+      destination.from[1] - part.from[1],
+      destination.from[2] - part.from[2],
+    ]
+    const sameDelta = delta.every(
+      (value, axis) =>
+        Math.abs(value - ((destination.to[axis] as number) - (part.to[axis] as number))) < 1e-9,
+    )
+    if (!sameDelta) {
+      valid = false
+      return part
+    }
+    if (delta.every((value) => value === 0)) return part
+    const moved = translatedPart(part, delta)
+    if (!moved || !boxInsideGrid(moved)) {
+      valid = false
+      return part
+    }
+    changed = true
+    return moved
+  })
+  if (!valid || !changed) return model
+
+  const projected = { ...model, parts: projectedParts }
+  if (syncedTriangleCount(projected) > MOLDA_LIMITS.maxTriangles) return model
+  const committed = syncTwins(projected)
+  if (model.mirrorX && !committed.mirrorX) return model
+  return committed
 }
 
 /**
@@ -391,9 +480,14 @@ export function movePartsBy(
     }
   }
   if (clamped.every((value) => value === 0)) return model
-  let next = model
-  for (const part of parts) next = movePartBy(next, part.id, clamped)
-  return next
+  return setPartBoxes(
+    model,
+    parts.map((part) => ({
+      id: part.id,
+      from: [part.from[0] + clamped[0], part.from[1] + clamped[1], part.from[2] + clamped[2]],
+      to: [part.to[0] + clamped[0], part.to[1] + clamped[1], part.to[2] + clamped[2]],
+    })),
+  )
 }
 
 /** Tamanho novo ancorado em `from` (o canto de trás, embaixo, à esquerda). */
@@ -442,10 +536,14 @@ export function updatePart(model: MoldaModelAsset, id: string, patch: PartPatch)
   }
   if (patch.origin === null) delete next.origin
   else if (patch.origin) {
+    const rounded: Vec3 = patch.origin.map(
+      (value) =>
+        Math.round(value / MOLDA_LIMITS.positionPrecision) * MOLDA_LIMITS.positionPrecision,
+    ) as Vec3
     next.origin = [
-      Math.min(Math.max(patch.origin[0], part.from[0]), part.to[0]),
-      Math.min(Math.max(patch.origin[1], part.from[1]), part.to[1]),
-      Math.min(Math.max(patch.origin[2], part.from[2]), part.to[2]),
+      Math.min(Math.max(rounded[0], part.from[0]), part.to[0]),
+      Math.min(Math.max(rounded[1], part.from[1]), part.to[1]),
+      Math.min(Math.max(rounded[2], part.from[2]), part.to[2]),
     ]
   }
   return syncTwins(replacePart(model, next))
@@ -456,26 +554,35 @@ export function updatePart(model: MoldaModelAsset, id: string, patch: PartPatch)
  * própria que não cruza x = 0; se não couberem TODOS, mantém o estado atual.
  * Desligar ASSA os gêmeos em peças próprias, com a pele que mostravam.
  */
-export function setMirrorX(model: MoldaModelAsset, on: boolean): MoldaModelAsset {
-  if (!on) return { ...bakeTwins(model), mirrorX: false }
+export type SetMirrorXResult =
+  | { ok: true; model: MoldaModelAsset }
+  | { ok: false; reason: 'parts-full' | 'triangles-full' }
+
+export function trySetMirrorX(model: MoldaModelAsset, on: boolean): SetMirrorXResult {
+  if (!on) return { ok: true, model: { ...bakeTwins(model), mirrorX: false } }
   if (!model.mirrorX) {
     const twinsNeeded = model.parts.filter(
       (part) => !part.mirrorOf && !partCrossesMirror(part),
     ).length
-    if (model.parts.length + twinsNeeded > MOLDA_LIMITS.maxParts) return model
+    if (model.parts.length + twinsNeeded > MOLDA_LIMITS.maxParts) {
+      return { ok: false, reason: 'parts-full' }
+    }
   }
-  return syncTwins({ ...model, mirrorX: true })
+  const next = { ...model, mirrorX: true }
+  if (syncedTriangleCount(next) > MOLDA_LIMITS.maxTriangles) {
+    return { ok: false, reason: 'triangles-full' }
+  }
+  return { ok: true, model: syncTwins(next) }
+}
+
+export function setMirrorX(model: MoldaModelAsset, on: boolean): MoldaModelAsset {
+  const result = trySetMirrorX(model, on)
+  return result.ok ? result.model : model
 }
 
 export function setSnap(model: MoldaModelAsset, snap: MoldaModelAsset['snap']): MoldaModelAsset {
   if (snap === model.snap) return model
-  let next: MoldaModelAsset = { ...model, snap }
-  const sourceIds = model.parts.filter((part) => !part.mirrorOf).map((part) => part.id)
-  for (const id of sourceIds) {
-    const part = findPart(next, id)
-    if (part) next = setPartBox(next, id, part.from, part.to)
-  }
-  return next
+  return { ...model, snap }
 }
 
 /** Cor extra nova (índice ≥ 16). `null` = teto ou já existe (devolve o índice existente). */

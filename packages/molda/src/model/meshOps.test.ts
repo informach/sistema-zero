@@ -59,6 +59,18 @@ describe('mover vértices', () => {
     const twin = moved.parts.find((p) => p.mirrorOf === 'm')
     expect(twin?.mesh?.vertices.v_111).toEqual([-4, 2, 2])
   })
+
+  test('peça trancada ou escondida recusa movimento na operação pura', () => {
+    const locked = meshModel()
+    if (!locked.parts[0]) throw new Error('sem peça')
+    locked.parts[0].locked = true
+    const hidden = meshModel()
+    if (!hidden.parts[0]) throw new Error('sem peça')
+    hidden.parts[0].hidden = true
+
+    expect(moveMeshVertices(locked, 'm', ['v_111'], [1, 0, 0], 1)).toBe(locked)
+    expect(moveMeshVertices(hidden, 'm', ['v_111'], [1, 0, 0], 1)).toBe(hidden)
+  })
 })
 
 describe('apagar a seleção', () => {
@@ -69,7 +81,7 @@ describe('apagar a seleção', () => {
     const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
     if (!size) throw new Error('sem pele')
     part.faces.f_py = paintedSkin(size.width, size.height, () => 3)
-    const result = deleteMeshSelection(model, 'm', ['v_111'], 'vertex')
+    const result = deleteMeshSelection(model, 'm', [{ kind: 'vertex', key: 'v_111' }])
     if (result.kind !== 'updated') throw new Error(result.kind)
     const next = result.model.parts[0]
     expect(Object.keys(next?.mesh?.faces ?? {}).sort()).toEqual(['f_nx', 'f_ny', 'f_nz'])
@@ -79,8 +91,7 @@ describe('apagar a seleção', () => {
 
   test('Faces: só a face inteira selecionada sai; os vértices ficam se outra face os usa', () => {
     const model = meshModel()
-    const top = ['v_010', 'v_011', 'v_111', 'v_110']
-    const result = deleteMeshSelection(model, 'm', top, 'face')
+    const result = deleteMeshSelection(model, 'm', [{ kind: 'face', key: 'f_py' }])
     if (result.kind !== 'updated') throw new Error(result.kind)
     const next = result.model.parts[0]
     expect(Object.keys(next?.mesh?.faces ?? {})).toHaveLength(5)
@@ -89,7 +100,7 @@ describe('apagar a seleção', () => {
 
   test('Arestas: as faces que contêm a aresta saem', () => {
     const model = meshModel()
-    const result = deleteMeshSelection(model, 'm', ['v_110', 'v_111'], 'edge')
+    const result = deleteMeshSelection(model, 'm', [{ kind: 'edge', keys: ['v_110', 'v_111'] }])
     if (result.kind !== 'updated') throw new Error(result.kind)
     expect(Object.keys(result.model.parts[0]?.mesh?.faces ?? {}).sort()).toEqual([
       'f_nx',
@@ -101,9 +112,38 @@ describe('apagar a seleção', () => {
 
   test('sem face nenhuma sobrando: `empty` (a peça é apagada por quem chama); nada escolhido: `unchanged`', () => {
     const model = meshModel()
-    const all = Object.keys(model.parts[0]?.mesh?.vertices ?? {})
-    expect(deleteMeshSelection(model, 'm', all, 'vertex')).toEqual({ kind: 'empty' })
-    expect(deleteMeshSelection(model, 'm', [], 'vertex')).toEqual({ kind: 'unchanged' })
-    expect(deleteMeshSelection(model, 'm', ['v_000'], 'face')).toEqual({ kind: 'unchanged' })
+    const all = Object.keys(model.parts[0]?.mesh?.vertices ?? {}).map((key) => ({
+      kind: 'vertex' as const,
+      key,
+    }))
+    expect(deleteMeshSelection(model, 'm', all)).toEqual({ kind: 'empty' })
+    expect(deleteMeshSelection(model, 'm', [])).toEqual({ kind: 'unchanged' })
+  })
+
+  test('duas faces opostas removem somente essas duas', () => {
+    const model = meshModel()
+    const result = deleteMeshSelection(model, 'm', [
+      { kind: 'face', key: 'f_py' },
+      { kind: 'face', key: 'f_ny' },
+    ])
+    if (result.kind !== 'updated') throw new Error(result.kind)
+    expect(Object.keys(result.model.parts[0]?.mesh?.faces ?? {}).sort()).toEqual([
+      'f_nx',
+      'f_nz',
+      'f_px',
+      'f_pz',
+    ])
+  })
+
+  test('peça trancada ou escondida recusa apagar na operação pura', () => {
+    for (const flag of ['locked', 'hidden'] as const) {
+      const model = meshModel()
+      const part = model.parts[0]
+      if (!part) throw new Error('sem peça')
+      part[flag] = true
+      expect(deleteMeshSelection(model, 'm', [{ kind: 'face', key: 'f_py' }])).toEqual({
+        kind: 'unchanged',
+      })
+    }
   })
 })

@@ -133,6 +133,31 @@ describe('MoldaApp', () => {
     await waitFor(() => expect(presetOf(persistence.snapshot()[0])).toBe('nublado'))
   })
 
+  test('Voltar antes do autosave aguarda o salvamento e reenvia a versão nova ao Estúdio', async () => {
+    const persistence = createMemoryPersistence([makeSky()])
+    const synced: string[] = []
+    render(
+      <MoldaApp
+        persistence={persistence}
+        adapter={{
+          initialAssetId: 'sky-1',
+          resyncToStudio: async (asset) => {
+            synced.push(asset.dataUrl)
+            return { updated: true }
+          },
+        }}
+      />,
+    )
+    await screen.findByRole('heading', { level: 1, name: 'fim-de-tarde' })
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
+
+    await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
+    expect(presetOf(persistence.snapshot()[0])).toBe('nublado')
+    expect(synced).toHaveLength(1)
+  })
+
   test('sob StrictMode (montagem dupla) o salvamento automático segue vivo e a criação fica aberta', async () => {
     const persistence = createMemoryPersistence([makeSky()])
     render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'sky-1' }} />, {

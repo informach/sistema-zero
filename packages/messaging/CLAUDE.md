@@ -66,7 +66,10 @@ Porta **3006**. Schema Postgres próprio **`messaging`**.
    `idempotencyKey = ambassador-invite:<inviteId>:<n>`); `referrals-scholarship-welcome`:
    `nome`+`indicador`+`link` (boas-vindas da bolsa com link de definir senha — TTL 14 dias,
    `idempotencyKey = scholarship-welcome:<redemptionId>`). Bolsista com conta PRÉ-EXISTENTE
-   recebe o `new-access` de sempre (sem template novo).
+   recebe o `new-access` de sempre (sem template novo). `referrals-bonus-eligible` (09/2026):
+   `nome`+`valor`+`link` — o bônus de indicação liberou (garantia passou), pede a chave Pix na
+   página do embaixador (`idempotencyKey = bonus-eligible:<conversionId>`; enviado pelo sweep do
+   referrals, mark-after-send).
    `new-access` (e-mail + whatsapp) = aviso de "novo curso liberado" ao comprador
    RECORRENTE (já tem conta) — link p/ `/cursos`, SEM token de senha (≠ do `welcome`, que é 1º acesso).
    NÃO renomeie sem mudar os chamadores. Template novo → re-rode `templates:seed` no deploy.

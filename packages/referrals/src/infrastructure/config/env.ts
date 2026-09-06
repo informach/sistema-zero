@@ -14,6 +14,8 @@ const BOOL_VALUES = new Set(['true', 'false', '1', '0'])
 const REDEMPTION_LEASE_MARGIN_MS = 5_000
 /** Chamadas S2S sequenciais do PIOR caso do resgate: ensure-buyer + grant + token + send. */
 const REDEMPTION_SEQUENTIAL_CALLS = 4
+/** Idem no consumer: enriquecer no payments + resolver a oferta + re-verificar o estorno. */
+const WEBHOOK_SEQUENTIAL_CALLS = 3
 const optionalBool = (def: boolean) =>
   z
     .string()
@@ -65,6 +67,41 @@ const EnvSchema = z
     /** Lease do resgate: cobre as chamadas S2S sequenciais + persistência. */
     REDEMPTION_LEASE_MS: z.coerce.number().int().positive().default(90_000),
 
+    // ── Conversões (bolsista → assinatura) e bônus do embaixador ─────────────
+    /** Secret HMAC do consumer `referrals` no payments (seed-consumer imprime). */
+    PAYMENTS_WEBHOOK_HMAC_SECRET: z.string().min(16).optional(),
+    /**
+     * Rota interna do payments (private networking; enriquece o payment.paid).
+     * ⚠️ O default é o DEV local; em deploy o payments escuta na PORT do
+     * Railway — `http://payments.railway.internal:8080`, não :3001.
+     */
+    PAYMENTS_BASE_URL: z.string().url().default('http://localhost:3001'),
+    PAYMENTS_INTERNAL_TOKEN: z.string().min(16).optional(),
+    /** Leitura pública do catalog (classifica a oferta da conversão). */
+    CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
+    /** Ofertas que contam como "assinou a Comunidade" (csv de slugs). */
+    CONVERSION_OFFER_SLUGS: z
+      .string()
+      .default('comunidade-dos-criadores-mensal,comunidade-dos-criadores-anual')
+      .transform((v) =>
+        v
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0),
+      ),
+    /** Bônus FIXO por assinatura convertida (decisão: R$30, qualquer plano). */
+    BONUS_AMOUNT_CENTS: z.coerce.number().int().positive().default(3000),
+    /** Garantia + buffer até o bônus liberar (7d + 12h — régua da NFS-e). */
+    BONUS_MATURE_HOURS: z.coerce.number().int().positive().default(180),
+    CONVERSION_SWEEP_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(15 * 60_000),
+    WEBHOOK_TOLERANCE_SECONDS: z.coerce.number().int().positive().default(300),
+    /** Lease do processamento da entrega (cobre payments + catalog). */
+    WEBHOOK_PROCESSING_STALE_MS: z.coerce.number().int().positive().default(60_000),
+
     // ── Borda própria ────────────────────────────────────────────────────────
     /** Prova de origem do gateway (header-inject) nas rotas /referrals/*. */
     INTERNAL_API_TOKEN: z.string().min(16).optional(),
@@ -97,6 +134,19 @@ const EnvSchema = z
       message: 'REDEMPTION_LEASE_MS deve cobrir 4× S2S_TIMEOUT_MS + 5s (o pior caso do resgate)',
     },
   )
+  // Mesma invariante do resgate, agora p/ o consumer: o pior caso do handler é
+  // payments + catalog + a re-verificação do estorno = 3× S2S. Lease curto
+  // demais deixa DUAS execuções da mesma entrega concorrendo (a perdedora
+  // queima tentativa e o item caminha p/ DEAD sem virar conversão).
+  .refine(
+    (env) =>
+      env.WEBHOOK_PROCESSING_STALE_MS >=
+      WEBHOOK_SEQUENTIAL_CALLS * env.S2S_TIMEOUT_MS + REDEMPTION_LEASE_MARGIN_MS,
+    {
+      message:
+        'WEBHOOK_PROCESSING_STALE_MS deve cobrir 3× S2S_TIMEOUT_MS + 5s (o pior caso do consumer)',
+    },
+  )
   // URLs entre serviços/públicas não podem ser loopback em deploy.
   .refine(
     (env) => env.NODE_ENV !== 'production' || !env.GATEWAY_URL || !isLoopbackUrl(env.GATEWAY_URL),
@@ -110,6 +160,23 @@ const EnvSchema = z
   .refine((env) => env.NODE_ENV !== 'production' || !isLoopbackUrl(env.KIDS_COMMUNITY_URL), {
     message: 'KIDS_COMMUNITY_URL não pode apontar p/ localhost em produção/staging (vai em e-mail)',
   })
+  // Consumer LIGADO (secret presente) exige o resto do quarteto em deploy — um
+  // consumer que verifica assinatura mas não alcança payments/catalog só
+  // acumularia 502; melhor falhar alto no boot.
+  .refine(
+    (env) =>
+      env.NODE_ENV !== 'production' ||
+      !env.PAYMENTS_WEBHOOK_HMAC_SECRET ||
+      Boolean(
+        env.PAYMENTS_INTERNAL_TOKEN &&
+          !isLoopbackUrl(env.PAYMENTS_BASE_URL) &&
+          !isLoopbackUrl(env.CATALOG_BASE_URL),
+      ),
+    {
+      message:
+        'Com PAYMENTS_WEBHOOK_HMAC_SECRET em deploy são obrigatórios: PAYMENTS_INTERNAL_TOKEN + PAYMENTS_BASE_URL/CATALOG_BASE_URL não-loopback',
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

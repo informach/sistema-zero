@@ -6,10 +6,11 @@
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { ShapeId } from '../core/model'
+import type { MeshPick } from '../model/meshSelection'
 import type { BrushSize } from '../paint/skinPaint'
 import type { PaintTool } from '../paint/stroke'
 
-export type TransformTool = 'move' | 'rotate' | 'scale'
+export type TransformTool = 'move' | 'rotate' | 'scale' | 'snap'
 export type EditorMode = 'build' | 'paint'
 /** O que um toque escolhe dentro da malha: Pontos, Arestas ou Faces. */
 export type MeshSelectMode = 'vertex' | 'edge' | 'face'
@@ -35,12 +36,12 @@ export interface SessionState {
   placingShape: ShapeId | null
   /**
    * "Editar malha": a peça de malha aberta (sub-modo do Montar). A seleção mora
-   * AQUI, fora do asset (ideia do Blockbench): os VÉRTICES são a lista mestra e
-   * arestas/faces derivam deles (`model/meshSelection.ts`).
+   * AQUI, fora do asset (ideia do Blockbench), como os elementos explicitamente
+   * escolhidos. Vértices afetados são derivados só para operações geométricas.
    */
   meshEditId: string | null
   meshSelectMode: MeshSelectMode
-  meshVertices: string[]
+  meshSelection: MeshPick[]
   /** "Somar à seleção" (o Shift do desktop, como botão para o toque). */
   meshAdditive: boolean
 }
@@ -65,7 +66,7 @@ export interface SessionActions {
   enterMeshEdit(id: string): void
   exitMeshEdit(): void
   setMeshSelectMode(mode: MeshSelectMode): void
-  setMeshVertices(keys: string[]): void
+  setMeshSelection(selection: MeshPick[]): void
   toggleMeshAdditive(): void
 }
 
@@ -87,18 +88,18 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
     placingShape: null,
     meshEditId: null,
     meshSelectMode: 'vertex',
-    meshVertices: [],
+    meshSelection: [],
     meshAdditive: false,
     ...initial,
-    // Trocar de modo ou de peça fecha a edição de malha (a seleção de vértices não
-    // sobrevive a outra peça).
+    // Trocar de modo ou de peça fecha a edição de malha (a seleção não sobrevive
+    // a outra peça).
     setMode: (mode) =>
-      set({ mode, meshEditId: null, meshVertices: [], extraIds: [], partsAdditive: false }),
+      set({ mode, meshEditId: null, meshSelection: [], extraIds: [], partsAdditive: false }),
     setTool: (tool) => set({ tool }),
     select: (selectedId) =>
       set((state) =>
         state.meshEditId && state.meshEditId !== selectedId
-          ? { selectedId, meshEditId: null, meshVertices: [], extraIds: [] }
+          ? { selectedId, meshEditId: null, meshSelection: [], extraIds: [] }
           : { selectedId, extraIds: [] },
       ),
     toggleExtra: (id) =>
@@ -112,7 +113,7 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
         const extraIds = state.extraIds.includes(id)
           ? state.extraIds.filter((item) => item !== id)
           : [...state.extraIds, id]
-        return { extraIds, meshEditId: null, meshVertices: [] }
+        return { extraIds, meshEditId: null, meshSelection: [] }
       }),
     pick: (id, additive) => {
       const state = get()
@@ -122,10 +123,16 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
     togglePartsAdditive: () => set((state) => ({ partsAdditive: !state.partsAdditive })),
     setExtraIds: (extraIds) => set({ extraIds }),
     enterMeshEdit: (id) =>
-      set({ selectedId: id, meshEditId: id, meshVertices: [], placingShape: null, extraIds: [] }),
-    exitMeshEdit: () => set({ meshEditId: null, meshVertices: [] }),
-    setMeshSelectMode: (meshSelectMode) => set({ meshSelectMode }),
-    setMeshVertices: (meshVertices) => set({ meshVertices }),
+      set({ selectedId: id, meshEditId: id, meshSelection: [], placingShape: null, extraIds: [] }),
+    exitMeshEdit: () => set({ meshEditId: null, meshSelection: [] }),
+    setMeshSelectMode: (meshSelectMode) =>
+      set((state) => ({
+        meshSelectMode,
+        meshSelection: state.meshSelection.every((pick) => pick.kind === meshSelectMode)
+          ? state.meshSelection
+          : [],
+      })),
+    setMeshSelection: (meshSelection) => set({ meshSelection }),
     toggleMeshAdditive: () => set((state) => ({ meshAdditive: !state.meshAdditive })),
     toggleGrid: () => set((state) => ({ gridVisible: !state.gridVisible })),
     toggleEdges: () => set((state) => ({ edgesVisible: !state.edgesVisible })),

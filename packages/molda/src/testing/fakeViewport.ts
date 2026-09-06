@@ -12,6 +12,7 @@ import type {
   MoldaViewportLike,
   ViewName,
   ViewportCallbacks,
+  ViewportSnapState,
 } from '../viewport/types'
 
 export interface FakeViewport extends MoldaViewportLike {
@@ -30,6 +31,7 @@ export interface FakeViewport extends MoldaViewportLike {
   thumbs: number
   disposed: boolean
   meshEdit: MeshEditState | null
+  snapState: ViewportSnapState
 }
 
 export function installFakeViewport(options: { thumb?: string | null } = {}): {
@@ -54,8 +56,12 @@ export function installFakeViewport(options: { thumb?: string | null } = {}): {
       thumbs: 0,
       disposed: false,
       meshEdit: null,
+      snapState: { phase: 'inactive' },
       setMeshEdit(state) {
         fake.meshEdit = state
+      },
+      setSnapState(state) {
+        fake.snapState = state
       },
       setModel(model) {
         fake.models.push(model)

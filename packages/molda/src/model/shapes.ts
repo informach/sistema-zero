@@ -33,10 +33,6 @@ export function partFaces(part: Pick<MoldaPart, 'shape' | 'mesh'>): readonly Fac
   return FACES_BY_SHAPE[part.shape]
 }
 
-export function shapeHasFace(shape: ShapeId, face: string): face is FaceId {
-  return (FACES_BY_SHAPE[shape] as readonly string[]).includes(face)
-}
-
 /** Tamanho da caixa da peça (sempre positivo depois do sanitize). */
 export function partSize(part: Pick<MoldaPart, 'from' | 'to'>): Vec3 {
   return [part.to[0] - part.from[0], part.to[1] - part.from[1], part.to[2] - part.from[2]]

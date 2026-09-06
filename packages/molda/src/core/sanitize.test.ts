@@ -127,7 +127,7 @@ describe('sanitizeMoldaAsset: peças', () => {
     expect(out.parts).toHaveLength(1)
   })
 
-  test('from/to são arredondados ao snap, ordenados e clampados à grade', () => {
+  test('from/to preservam posição em 1/16, tamanho em meio bloco e ficam na grade', () => {
     const model = makeModel({ snap: 1 })
     const part = createPart({
       id: 'p',
@@ -145,7 +145,29 @@ describe('sanitizeMoldaAsset: peças', () => {
     expect(p.from[2]).toBeLessThan(p.to[2])
     expect(p.from[1]).toBeGreaterThanOrEqual(0)
     expect(p.to[2]).toBeLessThanOrEqual(MOLDA_LIMITS.gridHalf)
-    for (const v of [...p.from, ...p.to]) expect(Number.isInteger(v)).toBe(true)
+    for (const v of [...p.from, ...p.to]) {
+      expect(Number.isInteger(v / MOLDA_LIMITS.positionPrecision)).toBe(true)
+    }
+    for (let axis = 0; axis < 3; axis += 1) {
+      expect(Number.isInteger(((p.to[axis] ?? 0) - (p.from[axis] ?? 0)) / 0.5)).toBe(true)
+    }
+  })
+
+  test('posição fina e pivô sobrevivem ao sanitize sem depender do encaixe escolhido', () => {
+    const model = makeModel({ snap: 1 })
+    const part = createPart({
+      id: 'fine',
+      name: 'fine',
+      from: [1 / 16, 2 / 16, -3 / 16],
+      to: [25 / 16, 18 / 16, 21 / 16],
+      color: 2,
+    })
+    part.origin = [9 / 16, 10 / 16, 7 / 16]
+
+    const once = sanitizeMoldaAsset({ ...model, parts: [part] }) as MoldaModelAsset
+
+    expect(once.parts[0]).toEqual(part)
+    expect(sanitizeMoldaAsset(structuredClone(once))).toEqual(once)
   })
 
   test('lado maior que o teto é cortado', () => {
@@ -462,7 +484,7 @@ describe('malha no sanitize (06/09/2026)', () => {
     expect(out.parts[0]?.mesh?.vertices.v_000).toEqual([0, 0.0625, 0])
   })
 
-  test('orçamento de triângulos do modelo: a peça que estoura cai, as anteriores ficam', () => {
+  test('orçamento de triângulos: corta a peça excedente e não recria excesso ao sincronizar gêmeos', () => {
     const strip = (y: number) => {
       const vertices: Record<string, [number, number, number]> = {}
       const faces: Record<`f_${string}`, { v: string[] }> = {}
@@ -492,6 +514,36 @@ describe('malha no sanitize (06/09/2026)', () => {
     // 19 × 1022 = 19 418 cabem; a 20ª passaria de 20 000.
     expect(out.parts).toHaveLength(19)
     expect(out.parts.map((p) => p.id)).not.toContain('s19')
+
+    const sideParts = Array.from({ length: 10 }, (_unused, index) => {
+      const vertices = {
+        v_a: [1, index, 0] as [number, number, number],
+        v_b: [2, index, 0] as [number, number, number],
+        v_c: [2, index, 1] as [number, number, number],
+        v_d: [1, index, 1] as [number, number, number],
+      }
+      const faces = Object.fromEntries(
+        Array.from({ length: 1_000 }, (_face, face) => [
+          `f_${face}`,
+          { v: ['v_a', 'v_b', 'v_c', 'v_d'] },
+        ]),
+      )
+      return createPart({
+        id: `lado-${index}`,
+        name: `lado-${index}`,
+        shape: 'mesh',
+        from: [1, index, 0],
+        to: [2, index, 1],
+        color: 2,
+        mesh: { vertices, faces },
+      })
+    })
+    expect(meshTris(sideParts[0]?.mesh ?? { vertices: {}, faces: {} })).toBe(2_000)
+    const mirrored = sanitizeMoldaAsset(
+      structuredClone(makeModel({ parts: sideParts, mirrorX: true })),
+    ) as MoldaModelAsset
+    expect(mirrored.mirrorX).toBe(false)
+    expect(mirrored.parts).toHaveLength(10)
   })
 })
 

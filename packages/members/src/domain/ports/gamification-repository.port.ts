@@ -205,6 +205,10 @@ export interface ListGamificationRankingInput {
   now: Date
   limit: number
   offset: number
+  /** Snapshot do ledger usado exclusivamente pela paginação pública. */
+  snapshotAt?: Date
+  /** Keyset público: próxima linha depois de `(xp DESC, userId ASC)`. */
+  after?: { xp: number; userId: string }
   /** Filtro administrativo aplicado DEPOIS de calcular a posição global. */
   userIds?: string[]
   /** Solicita a própria linha fora da paginação, sem inseri-la artificialmente. */

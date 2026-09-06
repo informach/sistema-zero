@@ -2,39 +2,32 @@
  * A caixa de ferramentas do sub-modo EDITAR MALHA (no lugar da do Montar
  * enquanto uma peça de malha está aberta): o que um toque escolhe (Pontos,
  * Arestas, Faces), "Somar à seleção" (o Shift para o toque), as ferramentas de
- * forma (Puxar, Cortar no meio, Juntar pontos, Fechar face, Virar face, Dividir),
- * Apagar seleção e Pronto. Depois de um Puxar, o painel "Ajustar" reexecuta a
- * operação com outra distância sobre o "antes" (um passo só no desfazer).
+ * forma do modo ATIVO, Apagar seleção e Pronto. Depois de uma operação contínua,
+ * o painel "Ajustar" a reexecuta sobre o "antes" (um passo só no desfazer).
  */
 import type { JSX } from 'react'
 import { COPY } from '../../../core/copy'
-import { MOLDA_LIMITS } from '../../../core/limits'
 import type { MeshSelectMode } from '../../../state/sessionStore'
 import { ToolButton } from '../../ui/Button'
-import {
-  ArrowUpFromLine,
-  Check,
-  Circle,
-  FlipVertical2,
-  Merge,
-  Minus,
-  Plus,
-  Scissors,
-  Square,
-  SquarePlus,
-  Trash2,
-  Triangle,
-} from '../../ui/icons'
 import { Stepper } from '../../ui/Stepper'
+import {
+  bindModelCommand,
+  MESH_ACTION_COMMAND,
+  MESH_MODE_COMMAND,
+  modelCommand,
+} from './commandRegistry'
+import { contextualMeshCommands, type MeshCommandId, type MeshCommandState } from './meshCommands'
 
-const MODE_ICONS = { vertex: Circle, edge: Minus, face: Square } as const
-const MODE_SHORTCUTS: Record<MeshSelectMode, string> = { vertex: '1', edge: '2', face: '3' }
 const MODES: MeshSelectMode[] = ['vertex', 'edge', 'face']
 
 export interface MeshAdjust {
-  distance: number
-  snap: number
-  onDistance: (distance: number) => void
+  label: string
+  short?: string
+  value: number
+  step: number
+  min: number
+  max: number
+  onValue: (value: number) => void
 }
 
 export interface MeshToolboxProps {
@@ -44,19 +37,8 @@ export interface MeshToolboxProps {
   onToggleAdditive: () => void
   /** Quantos itens do modo atual estão escolhidos (o rótulo da seleção). */
   selectedCount: number
-  canExtrude: boolean
-  canLoopCut: boolean
-  canMerge: boolean
-  canCreateFace: boolean
-  canFlip: boolean
-  canSplit: boolean
-  onExtrude: () => void
-  onLoopCut: () => void
-  onMerge: () => void
-  onCreateFace: () => void
-  onFlip: () => void
-  onSplit: () => void
-  /** O "Ajustar" do último Puxar (some quando qualquer outra coisa muda). */
+  commands: Record<MeshCommandId, MeshCommandState>
+  /** O "Ajustar" da última ação contínua (some quando qualquer outra coisa muda). */
   adjust: MeshAdjust | null
   onDeleteSelection: () => void
   onDone: () => void
@@ -64,6 +46,7 @@ export interface MeshToolboxProps {
 
 export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
   const copy = COPY.editor.model.mesh
+  const commands = contextualMeshCommands(props.mode, props.commands)
   return (
     <aside
       aria-label={copy.toolbox}
@@ -74,20 +57,29 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
           {copy.toolbox}
         </legend>
         <div className="grid grid-cols-2 gap-1">
-          {MODES.map((mode) => (
-            <ToolButton
-              key={mode}
-              icon={MODE_ICONS[mode]}
-              label={copy.modes[mode]}
-              shortcut={MODE_SHORTCUTS[mode]}
-              active={props.mode === mode}
-              onClick={() => props.onMode(mode)}
-            />
-          ))}
+          {MODES.map((mode) =>
+            (() => {
+              const command = bindModelCommand(MESH_MODE_COMMAND[mode], {
+                enabled: true,
+                active: props.mode === mode,
+                run: () => props.onMode(mode),
+              })
+              return (
+                <ToolButton
+                  key={mode}
+                  icon={command.icon}
+                  label={command.label}
+                  shortcut={command.shortcut?.display}
+                  active={command.active}
+                  onClick={command.run}
+                />
+              )
+            })(),
+          )}
           <ToolButton
-            icon={Plus}
-            label={copy.additive}
-            shortcut="Shift"
+            icon={modelCommand('mesh.additive').icon}
+            label={modelCommand('mesh.additive').label}
+            shortcut={modelCommand('mesh.additive').shortcut?.display}
             active={props.additive}
             onClick={props.onToggleAdditive}
           />
@@ -101,42 +93,26 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
       <fieldset className="flex flex-col gap-1">
         <legend className="sr-only">{copy.toolsLegend}</legend>
         <div className="grid grid-cols-2 gap-1">
-          <ToolButton
-            icon={ArrowUpFromLine}
-            label={copy.tools.extrude}
-            disabled={!props.canExtrude}
-            onClick={props.onExtrude}
-          />
-          <ToolButton
-            icon={Scissors}
-            label={copy.tools.loopCut}
-            disabled={!props.canLoopCut}
-            onClick={props.onLoopCut}
-          />
-          <ToolButton
-            icon={Merge}
-            label={copy.tools.merge}
-            disabled={!props.canMerge}
-            onClick={props.onMerge}
-          />
-          <ToolButton
-            icon={SquarePlus}
-            label={copy.tools.createFace}
-            disabled={!props.canCreateFace}
-            onClick={props.onCreateFace}
-          />
-          <ToolButton
-            icon={FlipVertical2}
-            label={copy.tools.flip}
-            disabled={!props.canFlip}
-            onClick={props.onFlip}
-          />
-          <ToolButton
-            icon={Triangle}
-            label={copy.tools.split}
-            disabled={!props.canSplit}
-            onClick={props.onSplit}
-          />
+          {commands.map((command) =>
+            (() => {
+              const resolved = bindModelCommand(MESH_ACTION_COMMAND[command.id], {
+                enabled: command.enabled,
+                disabledReason: command.disabledMessage,
+                run: command.run,
+              })
+              return (
+                <ToolButton
+                  key={command.id}
+                  icon={resolved.icon}
+                  label={resolved.label}
+                  shortcut={resolved.shortcut?.display}
+                  disabled={!resolved.enabled}
+                  hint={!resolved.enabled ? resolved.disabledReason : undefined}
+                  onClick={resolved.run}
+                />
+              )
+            })(),
+          )}
         </div>
       </fieldset>
       {props.adjust ? (
@@ -148,26 +124,32 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
             {copy.adjust}
           </span>
           <Stepper
-            label={copy.distance}
-            value={props.adjust.distance}
-            step={props.adjust.snap}
-            min={props.adjust.snap}
-            max={MOLDA_LIMITS.maxPartSize}
-            onChange={props.adjust.onDistance}
+            label={props.adjust.label}
+            short={props.adjust.short}
+            value={props.adjust.value}
+            step={props.adjust.step}
+            min={props.adjust.min}
+            max={props.adjust.max}
+            onChange={props.adjust.onValue}
           />
         </section>
       ) : null}
       <div className="grid grid-cols-2 gap-1">
         <ToolButton
-          icon={Trash2}
-          label={copy.deleteSelection}
-          shortcut="Delete"
+          icon={modelCommand('mesh.delete').icon}
+          label={modelCommand('mesh.delete').label}
+          shortcut={modelCommand('mesh.delete').shortcut?.display}
           disabled={props.selectedCount === 0}
           onClick={props.onDeleteSelection}
         />
-        <ToolButton icon={Check} label={copy.done} shortcut="Esc" onClick={props.onDone} />
+        <ToolButton
+          icon={modelCommand('mesh.done').icon}
+          label={modelCommand('mesh.done').label}
+          shortcut={modelCommand('mesh.done').shortcut?.display}
+          onClick={props.onDone}
+        />
       </div>
-      <p className="px-1 text-xs text-mld-text-soft">{copy.hint}</p>
+      <p className="px-1 text-xs text-mld-text-soft">{copy.modeHints[props.mode]}</p>
     </aside>
   )
 }

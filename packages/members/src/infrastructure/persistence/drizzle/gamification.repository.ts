@@ -11,6 +11,7 @@ import {
   isNotNull,
   isNull,
   lt,
+  lte,
   or,
   sql,
   sum,
@@ -1182,34 +1183,63 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           .from(entitlements)
           .leftJoin(courses, joinCourseInAudience)
           .where(grantsActiveAudienceAccess)
-        const cohort = and(
+        const eligibleProfiles = and(
           eq(gamificationProfiles.audience, input.audience),
           eq(gamificationProfiles.privileged, false),
-          gt(gamificationProfiles.xp, 0),
           inArray(gamificationProfiles.accountId, accountsWithEntitlement),
         )
 
-        const [totalRow] = await tx
-          .select({ value: sql<number>`count(*)::int` })
+        const currentRanking = tx
+          .select({
+            userId: gamificationProfiles.userId,
+            accountId: gamificationProfiles.accountId,
+            position: sql<number>`(rank() over (order by ${gamificationProfiles.xp} desc))::int`.as(
+              'position',
+            ),
+            xp: sql<number>`${gamificationProfiles.xp}`.as('xp'),
+            lastActivityDate: gamificationProfiles.lastActivityDate,
+          })
           .from(gamificationProfiles)
-          .where(cohort)
+          .where(and(eligibleProfiles, gt(gamificationProfiles.xp, 0)))
+
+        // A página pública atravessa várias requisições. O ledger imutável permite
+        // reconstruir o XP no instante da primeira página, evitando que um ganho
+        // concorrente salte por cima do cursor e desapareça da navegação.
+        const snapshotXp = sql<number>`coalesce(sum(${xpEvents.amount}), 0)::int`
+        const snapshotRanking = tx
+          .select({
+            userId: gamificationProfiles.userId,
+            accountId: gamificationProfiles.accountId,
+            position: sql<number>`(rank() over (order by ${snapshotXp} desc))::int`.as('position'),
+            xp: snapshotXp.as('xp'),
+            lastActivityDate: gamificationProfiles.lastActivityDate,
+          })
+          .from(gamificationProfiles)
+          .innerJoin(
+            xpEvents,
+            and(
+              eq(xpEvents.userId, gamificationProfiles.userId),
+              eq(xpEvents.audience, input.audience),
+              input.snapshotAt ? lte(xpEvents.createdAt, input.snapshotAt) : undefined,
+            ),
+          )
+          .where(eligibleProfiles)
+          .groupBy(
+            gamificationProfiles.userId,
+            gamificationProfiles.accountId,
+            gamificationProfiles.lastActivityDate,
+          )
+          .having(gt(snapshotXp, 0))
+
+        const ranked = tx
+          .$with('gamification_ranking')
+          .as(input.snapshotAt ? snapshotRanking : currentRanking)
+        const [totalRow] = await tx
+          .with(ranked)
+          .select({ value: sql<number>`count(*)::int` })
+          .from(ranked)
         const totalParticipants = totalRow?.value ?? 0
 
-        const ranked = tx.$with('gamification_ranking').as(
-          tx
-            .select({
-              userId: gamificationProfiles.userId,
-              accountId: gamificationProfiles.accountId,
-              position:
-                sql<number>`(rank() over (order by ${gamificationProfiles.xp} desc))::int`.as(
-                  'position',
-                ),
-              xp: gamificationProfiles.xp,
-              lastActivityDate: gamificationProfiles.lastActivityDate,
-            })
-            .from(gamificationProfiles)
-            .where(cohort),
-        )
         const filterIds = input.userIds === undefined ? undefined : [...new Set(input.userIds)]
         if (filterIds?.length === 0) {
           const meRows = input.viewerUserId
@@ -1238,20 +1268,27 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         }
 
         const filtered = filterIds ? inArray(ranked.userId, filterIds) : undefined
+        const after = input.after
+          ? or(
+              lt(ranked.xp, input.after.xp),
+              and(eq(ranked.xp, input.after.xp), gt(ranked.userId, input.after.userId)),
+            )
+          : undefined
 
         const rows = await tx
           .with(ranked)
           .select()
           .from(ranked)
-          .where(filtered)
-          .orderBy(ranked.position, ranked.userId)
+          .where(and(filtered, after))
+          .orderBy(desc(ranked.xp), ranked.userId)
           .limit(input.limit)
           .offset(input.offset)
         const matchesRow = filterIds
           ? await tx
+              .with(ranked)
               .select({ value: sql<number>`count(*)::int` })
-              .from(gamificationProfiles)
-              .where(and(cohort, inArray(gamificationProfiles.userId, filterIds)))
+              .from(ranked)
+              .where(inArray(ranked.userId, filterIds))
           : [{ value: totalParticipants }]
         const meRows = input.viewerUserId
           ? await tx

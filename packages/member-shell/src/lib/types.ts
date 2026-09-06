@@ -799,7 +799,7 @@ export interface RankingLeaderboardView {
   items: RankingEntryView[]
   total: number
   limit: number
-  offset: number
+  nextCursor: string | null
   /** Própria linha, mesmo quando ela não faz parte da página atual. */
   me: RankingEntryView | null
 }
@@ -1097,6 +1097,40 @@ export interface ChildStatsView {
 /** Preferência do report semanal dos pais (opt-out por CONTA). */
 export interface ParentReportPrefsView {
   disabled: boolean
+}
+
+/**
+ * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro na área dos pais) —
+ * mirror do `GET/POST /referrals/me/ambassador` do @sistemazero/referrals.
+ */
+export interface AmbassadorEnrollmentView {
+  enrolled: boolean
+  ambassador?: {
+    code: string | null
+    status: string
+    /** Página do embaixador (capability-URL absoluta do funil). */
+    pageUrl: string
+    /** Link de bolsa compartilhável (`/bolsa/<code>` no funil). */
+    shareUrl: string | null
+    pixKeySet: boolean
+  }
+  stats?: { redemptionsCompleted: number; invitesSent: number }
+  bonus?: {
+    pendingCount?: number
+    eligibleCount?: number
+    paidCount?: number
+    /** Valor VIGENTE do bônus (env do referrals) — a copy do app NUNCA o hardcoda. */
+    amountCents?: number
+  }
+  /** SÓ no POST: true = cadastro novo (o e-mail do link SAIU); false = retomada. */
+  created?: boolean
+  /**
+   * SÓ no POST: já existe embaixador com este e-mail e a plataforma não
+   * verifica e-mail, então o vínculo NÃO é feito — o magic-link vai para a
+   * caixa do dono. `linkEmailSent` diz se o envio saiu.
+   */
+  emailPending?: boolean
+  linkEmailSent?: boolean
 }
 
 /**

@@ -38,6 +38,7 @@ import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
 import { PROFILE_AGE_ERROR_MESSAGE } from '@/lib/profile-age'
 import { canAddProfile, type ProfileAllowance } from '@/lib/profile-allowance'
 import type { ProfileView } from '@/lib/types'
+import { AmbassadorCard } from './ambassador-card'
 import { ChildrenDashboard, FamilyAiCredits, ParentSupportCard } from './parent-dashboard'
 import { PurchasesView } from './purchases-view'
 
@@ -507,6 +508,7 @@ export function PerfisClient({
           ajuda de IA é da CONTA — precisa aparecer de qualquer jeito. */}
       {managing ? <FamilyAiCredits /> : null}
       {managing ? <ParentSupportCard /> : null}
+      {managing ? <AmbassadorCard /> : null}
 
       <div className="flex flex-wrap items-end justify-center gap-3">
         {managing ? (

@@ -30,7 +30,9 @@ async function award(
 
 describe('Ranking geral paginado', () => {
   test('preserva posições globais, empates e a própria linha fora da página', async () => {
-    const { app, courses, entitlements, gamification, authProfiles } = buildApp()
+    const { app, courses, entitlements, gamification, authProfiles } = buildApp({
+      now: new Date('2026-09-06T12:01:00.000Z'),
+    })
     const course = seedSampleCourse(courses, 'ranking-kids', 'published', 'kids')
     for (const id of [ME, FIRST, TIED_PUBLIC, TIED_PRIVATE, ZERO]) {
       grantLifetime(entitlements, { userId: id, courseRef: course.slug })
@@ -46,13 +48,13 @@ describe('Ranking geral paginado', () => {
     authProfiles.set(TIED_PRIVATE, { firstName: 'Davi', public: false })
 
     const response = await app.handle(
-      new Request('http://localhost/members/gamification/ranking?audience=kids&limit=2&offset=0', {
+      new Request('http://localhost/members/gamification/ranking?audience=kids&limit=2', {
         headers: { 'x-auth-user-id': ME },
       }),
     )
     expect(response.status).toBe(200)
     const body = (await response.json()) as RankingLeaderboardView
-    expect(body).toMatchObject({ total: 4, limit: 2, offset: 0 })
+    expect(body).toMatchObject({ total: 4, limit: 2, nextCursor: expect.any(String) })
     expect(body.items).toEqual([
       {
         position: 1,
@@ -82,6 +84,76 @@ describe('Ranking geral paginado', () => {
     })
     expect(body.items[0]).not.toHaveProperty('userId')
     expect(body.items[0]).not.toHaveProperty('accountId')
+  })
+
+  test('mantém o snapshot entre páginas quando um participante ganha XP', async () => {
+    const { app, courses, entitlements, gamification, authProfiles, clockRef } = buildApp({
+      now: new Date('2026-09-06T12:01:00.000Z'),
+    })
+    const course = seedSampleCourse(courses, 'ranking-snapshot', 'published', 'kids')
+    for (const id of [ME, FIRST, TIED_PUBLIC, TIED_PRIVATE]) {
+      grantLifetime(entitlements, { userId: id, courseRef: course.slug })
+      authProfiles.set(id, { firstName: id, public: false })
+    }
+    await award(gamification, FIRST, 100)
+    await award(gamification, TIED_PUBLIC, 80)
+    await award(gamification, TIED_PRIVATE, 80)
+    await award(gamification, ME, 10)
+
+    const firstResponse = await app.handle(
+      new Request('http://localhost/members/gamification/ranking?audience=kids&limit=2', {
+        headers: { 'x-auth-user-id': ME },
+      }),
+    )
+    const firstPage = (await firstResponse.json()) as RankingLeaderboardView
+    expect(firstPage.items.map((entry) => entry.xp)).toEqual([100, 80])
+    expect(firstPage.nextCursor).toEqual(expect.any(String))
+
+    const replayedByAnotherProfile = await app.handle(
+      new Request(
+        `http://localhost/members/gamification/ranking?audience=kids&limit=2&cursor=${encodeURIComponent(firstPage.nextCursor ?? '')}`,
+        { headers: { 'x-auth-user-id': FIRST } },
+      ),
+    )
+    expect(replayedByAnotherProfile.status).toBe(400)
+
+    clockRef.now = new Date('2026-09-07T12:00:00.000Z')
+    await gamification.award({
+      userId: ME,
+      accountId: ME,
+      audience: 'kids',
+      events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 200, coins: 0 }],
+      today: '2026-09-07',
+      now: clockRef.now,
+      privileged: false,
+    })
+
+    const secondResponse = await app.handle(
+      new Request(
+        `http://localhost/members/gamification/ranking?audience=kids&limit=2&cursor=${encodeURIComponent(firstPage.nextCursor ?? '')}`,
+        { headers: { 'x-auth-user-id': ME } },
+      ),
+    )
+    expect(secondResponse.status).toBe(200)
+    const secondPage = (await secondResponse.json()) as RankingLeaderboardView
+    expect(secondPage.items.map((entry) => entry.xp)).toEqual([80, 10])
+    expect(secondPage.total).toBe(4)
+    expect(secondPage.nextCursor).toBeNull()
+  })
+
+  test('recusa cursor adulterado em vez de reiniciar silenciosamente a lista', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses, 'ranking-invalid-cursor', 'published', 'kids')
+    grantLifetime(entitlements, { userId: ME, courseRef: course.slug })
+
+    const response = await app.handle(
+      new Request('http://localhost/members/gamification/ranking?audience=kids&cursor=adulterado', {
+        headers: { 'x-auth-user-id': ME },
+      }),
+    )
+
+    expect(response.status).toBe(400)
+    expect(await response.json()).toMatchObject({ error: { code: 'VALIDATION_ERROR' } })
   })
 
   test('admin filtra depois do RANK e recebe ids internos sem recalcular posições', async () => {

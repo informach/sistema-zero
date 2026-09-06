@@ -14,8 +14,9 @@ Plano completo do projeto: `~/.claude/plans/ent-o-vamos-implementar-esses-atomic
 consenso de produto: memória `sistema-indicacao-moeda-premium.md` + artifact
 https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
-> Estado: **FASE 1 (Bolsa do Primeiro Jogo)** implementada. Fases futuras: F2 atribuição `?ref`
-> + código do membro; F3 carteira/consumer do payments; F4 gasto de créditos no checkout.
+> Estado: **FASE 1 (Bolsa do Primeiro Jogo)** implementada + **EXTENSÃO (09/2026): auto-cadastro
+> do responsável, rastreio de conversão e bônus Pix manual** (ver §Conversões abaixo). O Programa 1
+> (moeda da família, ledger 20%, gasto no checkout) segue NA GAVETA por decisão da usuária.
 
 ## Conceito central (decisões travadas com a usuária)
 
@@ -63,19 +64,111 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    reemitir mataria o link entregue — o auth consome tokens pendentes) → template
    `referrals-scholarship-welcome`; conta PRÉ-EXISTENTE → **sem token**, template `new-access`.
 
-## Borda HTTP (tudo VIA GATEWAY na F1)
+## Conversões + bônus Pix manual (extensão 09/2026)
+
+Rastreia **bolsista que assinou a Comunidade dos Criadores** e controla o bônus **FIXO de R$30**
+(`BONUS_AMOUNT_CENTS`, qualquer plano — decisão dela) pago **manualmente via Pix** pela empresa.
+O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-pago.
+
+- **Consumer do payments** (`interfaces/http/webhooks.routes.ts`, porte fiel do fiscal): `POST
+  /webhooks/payments` chega DIRETO na rede privada (fan-out multi-consumer; HMAC do corpo cru com
+  `PAYMENTS_WEBHOOK_HMAC_SECRET`, tolerância `WEBHOOK_TOLERANCE_SECONDS`, dedupe por delivery id
+  assinado + claim/lease em `processed_webhooks`; retryable → 502 re-entrega; ⚠️ prod com secret
+  ausente = rota 401 fail-closed). Registrado via `packages/payments/scripts/seed-consumer.ts`
+  (`--id referrals`, eventos `payment.paid,payment.refunded`) — o secret impresso NUNCA é ecoado.
+- **`RecordConversionService`** (`application/conversions/`): `payment.paid` → enriquece no
+  payments (`GET /payments/internal/payments/:id`, `amountInCents` STRING→bigint; fora →
+  retryable; 404 → ERROR + consome) → ⭐ **filtro BARATO primeiro** (full review 06/09): busca
+  `scholarship_redemptions` por e-mail `completed` ANTES do catálogo — o fan-out entrega TODO
+  pagamento da plataforma e quase nenhum é de bolsista, então quem não resgatou é descartado num
+  SELECT local (catalog fora do ar NÃO vira tempestade de retry de entregas irrelevantes) → só
+  então resolve a OFERTA pelo `metadata.offerId` (client cópia do fiscal; ⚠️ **anual à vista NÃO
+  tem subscriptionId** — o critério é o slug ∈ `CONVERSION_OFFER_SLUGS`) → **anti-autoindicação**:
+  e-mail do bolsista == `codes.owner_email` → conversão `self_blocked` com `bonus_cents 0` →
+  senão INSERT `pending` com `matures_at = paidAt + BONUS_MATURE_HOURS` (`onConflictDoNothing`).
+  ⚠️ **UNIQUE(redemption_id) é PARCIAL (`WHERE status <> 'canceled'`)**: "só a primeira cobrança"
+  vale p/ pending/eligible/paid/self_blocked, mas quem ESTORNOU na garantia e assinou de novo
+  meses depois volta a converter (achado do full review — sem o parcial o bônus legítimo se
+  perdia em silêncio p/ sempre); UNIQUE(payment_id) segue o dedupe de re-entrega.
+  `payment.refunded`: `pending` → `canceled`; o repo devolve o STATUS no `not_pending` e o alerta
+  ERROR `referrals.refund_after_bonus_eligible` sai SÓ p/ `eligible|paid` — `self_blocked` (bônus
+  nunca existiu) e `canceled` (re-entrega) são mudos, senão o Sentry acusaria "devolver Pix" falso.
+  ⚠️⚠️ **Corrida paid × refunded**: entre o `getPayment` e o INSERT passam 2 S2S, e um estorno que
+  chegue nessa janela não acha conversão para cancelar (é consumido) — a conversão nasceria DEPOIS
+  do estorno e viraria Pix sobre venda devolvida. Por isso, logo após um INSERT que criou linha, o
+  serviço **re-verifica o pagamento** e cancela o que acabou de criar se ele não estiver mais
+  `PAID` (`cancelIfNoLongerPaid`, ERROR alertável). Custo zero no agregado: só o caminho raro de
+  bolsista convertido paga a ida extra. Mesma régua do fiscal, que re-verifica ao emitir.
+- **Sweep** (`SweepConversionsService`, timer no composition-root a cada
+  `CONVERSION_SWEEP_INTERVAL_MS` — ⚠️ **SEMPRE ligado, independente do secret do consumer**:
+  conversões já gravadas, inclusive as do `mature-now`, precisam promover/avisar mesmo com o
+  webhook desligado): fase 1 `mature()` promove `pending → eligible` — o advisory xact-lock
+  **`7429184620031201`** vive DENTRO do `matureConversions` do repo (mesma tx/conexão do UPDATE;
+  no composition-root ele não guardaria nada); fase 2 `notify()` fora da tx: e-mail
+  `referrals-bonus-eligible` {nome, valor, link da página} com mark-after-send em `notified_at` +
+  Idempotency-Key `bonus-eligible:<id>` — ⚠️ **só embaixador ATIVO** (`listConversionsToNotify`
+  filtra E o serviço RELÊ o embaixador na hora do envio: entre listar e enviar o admin pode
+  desativar/rotacionar o token, e o mark-after-send tornaria PERMANENTE um e-mail com link morto);
+  ⚠️ **4xx do messaging é PERMANENTE** (template ausente, destinatário suprimido) → marca
+  notificado + ERROR alertável, senão a linha ocupa vaga fixa no lote e bloqueia os avisos novos
+  para sempre (head-of-line); cada item é isolado por try/catch. Fase 3: `pruneProcessedBefore`
+  poda o dedupe do consumer (30 dias, **sob advisory lock próprio `7429184620031202`**, em lotes
+  de 5k e apagando também **claims órfãos** — as três metades que o porte do fiscal largara), num
+  `try` PRÓPRIO: soluço no sweep não pode cancelar a poda (tabela grande é justamente o que faz o
+  sweep começar a falhar). O ciclo tem guarda de reentrância e o timer é `unref()`.
+  Links do funil SEMPRE via `domain/links.ts`
+  (`ambassadorPageUrl`/`scholarshipShareUrl` — dono único do shape; eram 5 pontos de construção).
+- **Status**: `CONVERSION_STATUSES` (const no port — fonte única; o admin espelha com teste de
+  conformance). O que o EMBAIXADOR enxerga = `AMBASSADOR_VISIBLE_CONVERSION_STATUSES`
+  (pending/eligible/paid — self_blocked/canceled fora), aplicado NO SQL antes do limit
+  (`listAmbassadorVisibleConversions` — canceladas não empurram bônus reais p/ fora da página).
+  `markConversionPaid` só de `eligible` (409 `CONVERSION_NOT_ELIGIBLE`); `mature-now` só de
+  `pending`.
+- **Chave Pix**: campo `ambassadors.pix_key` — o embaixador cadastra NA PÁGINA dele (PATCH
+  by-token via funil); o admin só COPIA na tela de bônus.
+- **Auto-cadastro do responsável**: `GET|POST /referrals/me/ambassador` (rotas JWT "me").
+  ⚠️⚠️ **NUNCA vincular uma conta a um embaixador existente por "o e-mail bate"** (achado do 2º
+  full review): `/auth/register` é PÚBLICO e a conta nasce `active` **sem verificação de e-mail**,
+  então quem registrasse o e-mail de um embaixador criado pelo admin receberia a capability-URL
+  dele e trocaria a chave Pix — sequestro silencioso do bônus. O e-mail é o CANAL, não a
+  credencial: e-mail já cadastrado → o magic-link é (re)enviado para a caixa do DONO e a resposta
+  é `{enrolled:false, emailPending:true, linkEmailSent}`, sem vínculo e sem link no corpo.
+  ⚠️ Sessão de PERFIL (criança) é **recusada com 403** — a presença de `x-auth-account-id` é o
+  marcador dela; embaixador é assunto da Área dos pais (defesa em profundidade: o shim do kids
+  também gateia, mas o serviço não depende disso). Corrida de dois selfEnroll da MESMA conta:
+  quem perde re-busca (por conta ou por e-mail) e devolve retomada, nunca 500 nem "pendente".
+  Devolve `{enrolled, ambassador: {pageUrl, shareUrl ABSOLUTOS via `viewOf` do service, pixKeySet,
+  status}, stats (`getAmbassadorStats` — 2 counts numa ida, sem re-buscar pelo token), bonus:
+  {counts, amountCents}}` + `created` no POST (true = o e-mail do link SAIU). `bonus.amountCents`
+  = env `BONUS_AMOUNT_CENTS` — a copy dos apps NUNCA hardcoda o valor.
+
+## Borda HTTP (tudo VIA GATEWAY, exceto o consumer)
 
 - `/referrals/admin/*` — JWT/RBAC no gateway (leitura staff+, escrita admin+); aqui defesa em
   profundidade: `assertInternalCaller` (x-internal-token) + `requireAdmin` (X-Auth-User-*,
-  fail-closed). Rotas: POST/GET `ambassadors`, GET `:id`, POST `:id/resend-link`
-  (Idempotency-Key versionada por `link_email_count`), PATCH `:id` {status, rotateToken}.
-  Desativar o embaixador desativa o CÓDIGO junto.
-- `/referrals/internal/*` — consumidas pelo FUNIL (HMAC de borda lá; no gateway as 4 rotas têm
-  `allowedConsumers: ['funnel']`): GET `codes/:code`, GET `ambassadors/by-token/:token`,
+  fail-closed). Rotas: POST/GET `ambassadors`, GET `:id` (o detalhe traz `conversion` por resgate
+  — a JORNADA do bolsista), POST `:id/resend-link` (Idempotency-Key versionada por
+  `link_email_count`), PATCH `:id` {status, rotateToken}, GET `conversions`
+  (`?status&limit&offset`; `amountCents` viaja como STRING — bigint), POST
+  `conversions/:id/mark-paid` {note?} (grava `paid_marked_at` + `paid_marked_by` = **nome E id** do
+  ator: o nome sozinho é editável pelo próprio operador e não serve de trilha de quem liberou
+  dinheiro) e POST `conversions/:id/mature-now` (antecipa a garantia — staging/exceção).
+  ⚠️ `GET /referrals/admin/conversions` tem rota PRÓPRIA no gateway
+  (`referrals-admin-conversions-read`, **admin+**; literal vence o wildcard por especificidade): a
+  listagem carrega a CHAVE PIX do embaixador e o e-mail da família bolsista, leitura que não é de
+  staff. Desativar o embaixador desativa o CÓDIGO junto.
+- `/referrals/me/*` — rotas JWT do USUÁRIO logado (gateway `referrals-me-ambassador-{get,post}`,
+  `statuses:['active']` sem roles): GET/POST `/referrals/me/ambassador` (auto-cadastro, ver
+  §Conversões).
+- `/referrals/internal/*` — consumidas pelo FUNIL (HMAC de borda lá; no gateway as rotas têm
+  `allowedConsumers: ['funnel']`): GET `codes/:code`, GET `ambassadors/by-token/:token` (agora
+  com `bonus: {pixKey, items}` — SÓ status/valor/datas, NUNCA PII do bolsista), PATCH
+  `…/by-token/:token/pix` {pixKey 5..140} (cadastro da chave na página do embaixador),
   POST `…/invites` (202 | 409 INVITE_ALREADY_SENT | 409 EMAIL_ALREADY_REDEEMED — SÓ bolsa
   `completed` barra; pending/failed NÃO (o e-mail com o link é o empurrão da retomada) |
   429 cap diário 50/24h móvel), POST `redemptions` (201 completed | 202 processing | 404 |
   409 SCHOLARSHIP_ALREADY_REDEEMED | 409 SCHOLARSHIP_FAILED | 502).
+- `/webhooks/payments` — DIRETO na rede privada (consumer do fan-out; ver §Conversões).
 - `/healthz` · `/readyz` (probe select 1 — healthcheck do Railway) · `/metrics`
   ({redemptionsByStatus}, token obrigatório em prod).
 - Validação: envelope FIXO no `VALIDATION` (nunca ecoa input). Convites: dados MÍNIMOS
@@ -94,15 +187,27 @@ canônico `canonicalHmacMessage`, timeout NUNCA lança — vira 502/504 por stat
   seed do messaging: `referrals-ambassador-link` {nome, link} ·
   `referrals-scholarship-invite` {nome, indicador, link} · `referrals-scholarship-welcome`
   {nome, indicador, link}. Conta pré-existente reusa `new-access` {nome, link}.
-- **payments**: NADA na F1 (o consumer de `payment.paid`/`payment.refunded` chega na F3 — o
-  serviço nasce SEM seed-consumer de propósito: zero tráfego até lá).
+- **payments** (extensão 09/2026): consumer de `payment.paid`/`payment.refunded` ATIVO (ver
+  §Conversões) + enriquecimento `GET /payments/internal/payments/:id` (direto, x-internal-token,
+  `PAYMENTS_BASE_URL`/`PAYMENTS_INTERNAL_TOKEN`).
+- **catalog** (extensão): `GET /catalog/internal/offers/:id` direto (`CATALOG_BASE_URL`) —
+  resolve o slug da oferta p/ classificar a conversão (client cópia do fiscal).
+- Template novo no seed do messaging: `referrals-bonus-eligible` {nome, valor, link} — avisa que
+  o bônus liberou e pede a chave Pix na página do embaixador.
 
 ## Banco (schema `referrals`)
 
-`ambassadors` (email UNIQUE lower, `page_token` UNIQUE, `link_email_count`) · `codes` (code UNIQUE
-`^[a-z0-9-]{4,32}$`; UNIQUEs parciais por owner; CHECK owner; `owner_email`/`owner_document`/
-`panel_audience` já criados p/ F2-F3) · `scholarship_redemptions` (email UNIQUE global; etapas +
-lease + claim do welcome) · `invites` (UNIQUE ambassador+e-mail; `send_count` versiona reenvio).
+`ambassadors` (email UNIQUE lower, `page_token` UNIQUE, `link_email_count`; extensão 09/2026:
+`account_user_id` UNIQUE parcial — vínculo com a conta do responsável — + `pix_key`) · `codes`
+(code UNIQUE `^[a-z0-9-]{4,32}$`; UNIQUEs parciais por owner; CHECK owner; `owner_email`/
+`owner_document`/`panel_audience` já criados p/ F2-F3) · `scholarship_redemptions` (email UNIQUE
+global; etapas + lease + claim do welcome) · `invites` (UNIQUE ambassador+e-mail; `send_count`
+versiona reenvio) · `conversions` (0001: `redemption_id` UNIQUE **PARCIAL** `WHERE status <>
+'canceled'` — 1 bônus por bolsista, mas estorno + nova assinatura volta a converter —,
+`payment_id` UNIQUE, `offer_slug`, `amount_cents` bigint, `bonus_cents`, status, `matures_at`/
+`eligible_at`/`notified_at`/`paid_marked_at`/`paid_marked_by`/`note`; índices (status,matures_at)
++ (ambassador_id,status) + code_id) · `processed_webhooks` (0001: dedupe/claim do consumer, molde
+fiscal + retenção de 30d no ciclo do sweep).
 Migrations forward-only via drizzle-kit; **journal próprio `referrals_migrations`**.
 ⚠️ Regras herdadas do monorepo: carimbo `when` é RELÓGIO (nunca à mão no futuro — guard
 `tests/unit/migrations-journal.test.ts`); enum novo não se escreve na mesma transação; CHECK novo
@@ -130,6 +235,16 @@ Envs de prod (fail-fast): `NODE_ENV=production`, `APP_ENV`, `PORT=3012`, `HOST=:
 `KIDS_COMMUNITY_URL`, `SENTRY_DSN` (só prod). No GATEWAY: `REFERRALS_URL`,
 `REFERRALS_INTERNAL_TOKEN`, `REFERRALS_HMAC_SECRET`, `REFERRALS_ALLOWED_CIDRS` —
 ⚠️ **prod não sobe sem elas** (PROD_REQUIRED_SECRETS).
+**Extensão 09/2026** (opcionais em dev; com `PAYMENTS_WEBHOOK_HMAC_SECRET` presente em prod, o
+refine EXIGE `PAYMENTS_INTERNAL_TOKEN` + URLs não-loopback): `PAYMENTS_WEBHOOK_HMAC_SECRET` (do
+seed-consumer no payments — liga o consumer), `PAYMENTS_BASE_URL`
+(⚠️ **`http://payments.railway.internal:8080`** — o payments escuta na PORT que o Railway injeta,
+não na 3001 do dev local; conferido no fiscal, que já o consome), `PAYMENTS_INTERNAL_TOKEN`
+(= o `INTERNAL_API_TOKEN` do payments, o MESMO valor que o fiscal usa), `CATALOG_BASE_URL`
+(`http://catalog.railway.internal:3003`), `CONVERSION_OFFER_SLUGS` (csv, default
+`comunidade-dos-criadores-mensal,comunidade-dos-criadores-anual`), `BONUS_AMOUNT_CENTS` (3000),
+`BONUS_MATURE_HOURS` (180 = 7d+12h, régua da NFS-e), `CONVERSION_SWEEP_INTERVAL_MS` (15min),
+`WEBHOOK_TOLERANCE_SECONDS` (300), `WEBHOOK_PROCESSING_STALE_MS` (60s).
 
 ## Testes
 

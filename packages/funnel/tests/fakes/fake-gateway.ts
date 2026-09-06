@@ -51,6 +51,7 @@ export interface FakeGatewayState {
     ambassadorByToken: string[]
     invites: Array<{ token: string; input: { name: string; email: string } }>
     redemptions: Array<{ input: { code: string; name: string; email: string; phone?: string } }>
+    pixUpdates: Array<{ token: string; pixKey: string }>
   }
   /** Tokens válidos do auth falso (use p/ montar os cookies `admin_access`/`admin_refresh`). */
   auth: { access: string; refresh: string; password: string; email: string }
@@ -83,6 +84,8 @@ export interface FakeGatewayState {
   setInviteResult: (status: number, body?: unknown) => void
   /** Resposta de redeemScholarship (default 201 completed). */
   setRedeemResult: (status: number, body?: unknown) => void
+  /** Resposta de updateAmbassadorPix (default 200). */
+  setPixResult: (status: number, body?: unknown) => void
 }
 
 /** Gateway falso em memória (não verifica HMAC; usado nos testes de checkout). */
@@ -118,6 +121,7 @@ export function createFakeGateway(): FakeGatewayState {
     ambassadorByToken: [],
     invites: [],
     redemptions: [],
+    pixUpdates: [],
   }
   let ensureBuyerStatus = 201
   let ensureBuyerBody: unknown = { userId: 'user-1', created: true }
@@ -144,6 +148,7 @@ export function createFakeGateway(): FakeGatewayState {
     status: 201,
     body: { status: 'completed' },
   }
+  let pixResult: { status: number; body: unknown } = { status: 200, body: { ok: true } }
   let offerPriceCents = 3700
   const coupons = new Map<string, number>() // code (UPPER) → discountCents
   const offerConfigs = new Map<string, FakeOfferConfig>() // slug → config (default one_time)
@@ -326,6 +331,10 @@ export function createFakeGateway(): FakeGatewayState {
       calls.redemptions.push({ input })
       return redeemResult
     },
+    async updateAmbassadorPix(token, pixKey): Promise<GatewayResult> {
+      calls.pixUpdates.push({ token, pixKey })
+      return pixResult
+    },
   }
 
   return {
@@ -383,6 +392,9 @@ export function createFakeGateway(): FakeGatewayState {
     },
     setRedeemResult: (status: number, body?: unknown) => {
       redeemResult = { status, body: body ?? null }
+    },
+    setPixResult: (status: number, body?: unknown) => {
+      pixResult = { status, body: body ?? null }
     },
   }
 }

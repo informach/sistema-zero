@@ -5,14 +5,13 @@
  * cores à direita. Um gesto de pintura = UM passo de desfazer. "Sem emenda"
  * faz o traço e o balde atravessarem a borda; "Deslocar meio" é só de vista.
  */
-import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import type { MoldaTextureAsset } from '../../../core/model'
 import type { PaletteId } from '../../../core/palette'
-import { firstPaintableIndex } from '../../../core/palette'
+import { firstPaintableIndex, remapActiveColorAfterRemoval } from '../../../core/palette'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { triggerDownload } from '../../../export/download'
 import { exportTexturePng, PNG_MIME, textureToRgba } from '../../../export/texturePng'
@@ -42,6 +41,7 @@ import {
   Pencil,
   Pipette,
 } from '../../ui/icons'
+import { interactiveChipClass, isTypingTarget } from '../../ui/interaction'
 import { Panel } from '../../ui/Panel'
 import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
@@ -65,22 +65,6 @@ const TOOL_SHORTCUTS: Record<TextureTool, string> = {
 }
 const TOOLS: TextureTool[] = ['pencil', 'eraser', 'fill', 'picker']
 const SIZES: BrushSize[] = [1, 2, 3]
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
-}
-
-function chip(active: boolean): string {
-  return clsx(
-    'min-h-11 rounded-lg border-2 px-1 text-xs font-bold transition',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
-    active
-      ? 'border-mld-accent bg-mld-accent text-mld-accent-fg'
-      : 'border-mld-border bg-mld-surface text-mld-text hover:border-mld-accent',
-  )
-}
 
 function useTexturePreviewCanvas(): {
   canvasRef: React.RefObject<HTMLCanvasElement | null>
@@ -312,7 +296,7 @@ export function TextureEditor({
           return
         }
         commit(next)
-        if (color >= index) setColor(1)
+        setColor(remapActiveColorAfterRemoval(color, index, resolvePaletteColors(next)))
         showToast(COPY.editor.model.paint.removedColor)
       }}
       onPalette={(id: PaletteId) => {
@@ -389,7 +373,7 @@ export function TextureEditor({
                   aria-pressed={brush === item}
                   aria-label={`${COPY.editor.model.paint.sizeLabel}: ${COPY.editor.model.paint.sizes[item]}`}
                   onClick={() => setBrush(item)}
-                  className={chip(brush === item)}
+                  className={interactiveChipClass(brush === item)}
                 >
                   {item}
                 </button>

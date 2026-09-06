@@ -877,8 +877,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     GET: async (req: Request) => {
       const url = new URL(req.url)
       const limit = clampInt(url.searchParams.get('limit'), 20, 1, 100)
-      const offset = clampInt(url.searchParams.get('offset'), 0, 0, 1_000_000)
-      const { status, body } = await members.getRanking({ limit, offset })
+      const cursor = url.searchParams.get('cursor') ?? undefined
+      const { status, body } = await members.getRanking({ limit, cursor })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1182,6 +1182,23 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       }
       const { status, body } = await members.setParentReportPrefs(parsed.data.disabled)
       return NextResponse.json(body ?? { disabled: parsed.data.disabled }, { status })
+    },
+  }
+
+  /**
+   * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro do responsável). Tela
+   * EXCLUSIVA dos pais — o shim do KIDS gateia com `requireParentGateAccountOnly`.
+   */
+  const ambassadorMe = {
+    GET: async () => {
+      const { status, body } = await members.getAmbassadorEnrollment()
+      return NextResponse.json(body ?? { enrolled: false }, { status })
+    },
+    POST: async () => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { status, body } = await members.enrollAmbassador()
+      return NextResponse.json(body ?? { enrolled: false }, { status })
     },
   }
 
@@ -1616,6 +1633,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     vacationSet,
     childrenStats,
     parentReportPrefs,
+    ambassadorMe,
     lessonPosition,
     quizAttempts,
     studioSubmit,

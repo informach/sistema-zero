@@ -993,6 +993,32 @@ landing 404). Escrita gated `superadmin/admin` (UX; o gateway `referrals-admin-w
 serviço re-checam). BFF: adapter `server/referrals.ts` + shims
 `app/api/admin/referrals/ambassadors/{route,[id]/route,[id]/resend-link/route}.ts`; views
 `Ambassador*View` em `lib/types.ts`. Consome via gateway `GET|POST|PATCH /referrals/admin/*`.
+**Bônus de indicação (extensão 09/2026):** a MESMA página ganhou a seção **"Bônus de indicação"**
+(`BonusSection` no `embaixadores-client.tsx`) — cada linha é um bolsista que assinou a Comunidade
+dos Criadores: embaixador, bolsista, assinou em (oferta + valor via `formatCentsStr` — string
+bigint), bônus (`formatCents`), **chave Pix copiável** (`copyToClipboard`; sem chave = "Ainda não
+informou"), status (`Na garantia`/`Aguardando Pix`/`Pago`/`Assinatura estornada`/`Autoindicação`)
+e ações **"Marcar como pago"** (só `eligible`, `useConfirm` — a marcação NÃO envia dinheiro, só
+registra o Pix manual já feito; 409 `CONVERSION_NOT_ELIGIBLE` = recarregue) + **"Antecipar"** (só
+`pending`, confirm DESTRUTIVO — libera antes da garantia de 7 dias; p/ teste/exceção consciente).
+O `AmbassadorDetailDialog` ganhou a coluna **"Jornada"** por resgate (`JourneyBadge`: Só no
+Desafio · Assinou, na garantia · Bônus liberado · Bônus pago · estornada · autoindicação —
+deriva de `AmbassadorRedemptionView.conversion`). ⚠️ **Apresentação por status = Records
+EXAUSTIVOS** (`CONVERSION_STATUS_LABEL`/`CONVERSION_STATUS_BADGE`/`JOURNEY_LABEL` — status novo
+no referrals reprova a compilação em vez de cair num rótulo errado sobre dinheiro), travados
+contra a fonte por `tests/conversion-status-conformance.test.ts` (import RELATIVO do port puro do
+referrals, precedente do career-tier-conformance). O badge "Pago" carrega no title quem/quando
+marcou + a `note` quando houver, e as DATAS (libera em / pago em + operador) saem também em texto
+VISÍVEL — tooltip não existe no toque nem por teclado, e é justamente o que se usa para programar
+os Pix da semana e auditar quem pagou. O `load` da BonusSection tem guarda última-vence (trocar o
+filtro rápido não pinta linhas velhas) e estado de ERRO próprio: falha de carga NUNCA vira
+"nenhum bônus" (numa tela de dinheiro, o vazio falso faz concluir que não se deve nada).
+⚠️ A seção inteira só renderiza para quem PODE ler: o gateway restringe
+`GET /referrals/admin/conversions` a admin+ (chave Pix + e-mail do bolsista), então para staff ela
+nem aparece. Tipos `ConversionStatus`/`ConversionAdminView`;
+adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
+`app/api/admin/referrals/conversions/{route,[id]/mark-paid/route,[id]/mature-now/route}.ts`
+(cabem nos wildcards `referrals-admin-*` do gateway — nenhuma rota nova lá).
 
 ## Checklist antes de finalizar
 
