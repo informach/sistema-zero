@@ -231,7 +231,31 @@ describe('createStudioCloudSync — attach', () => {
     expect(snapshot?.meta?.baseRevision).toBe(3)
   })
 
-  test('apagar grava lápide e enfileira a remoção; a confirmação marca como enviada', () => {
+  test('apagar grava a lápide COM a revisão conhecida e o DELETE leva essa base (nunca 0); a confirmação marca como enviada', () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    const { cloud, removed } = fakeCloud(new Map())
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 5)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    // A marca some, mas a revisão que ela conhecia foi para a LÁPIDE antes (o defeito de
+    // 06/09: apagar a marca primeiro mandava base 0, o members recusava e o jogo voltava).
+    expect(marks.get('p1')).toBeUndefined()
+    expect(marks.revision('p1')).toBeUndefined()
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: 5 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([['p1', 5]])
+    removed[0]?.onRemoved?.({ revision: 5 })
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 5 })
+  })
+
+  test('sem revisão conhecida (nunca subiu daqui) a lápide nasce sem revisão e o DELETE sai com base 0', () => {
     const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
     const { cloud, removed } = fakeCloud(new Map())
     const marks = createMemorySyncedMarks()
@@ -245,11 +269,146 @@ describe('createStudioCloudSync — attach', () => {
     })
     sync.attach()
     fake.mirror()?.onDeleted('p1')
-    expect(marks.get('p1')).toBeUndefined()
     expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: null })
-    expect(removed.map((r) => r.itemId)).toEqual(['p1'])
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([['p1', 0]])
     removed[0]?.onRemoved?.({ revision: 3 })
     expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 3 })
+  })
+
+  test('409 no DELETE com a nuvem na MESMA história (lápide sem revisão, corrente 5): reenvia UMA vez com a 5 e não restaura nada', async () => {
+    const p1 = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([p1])
+    const { cloud, removed } = fakeCloud(remoteOf([p1]))
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    await removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 5 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      ['p1', 0],
+      ['p1', 5],
+    ])
+    expect(fake.restored).toEqual([])
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: 5 })
+    removed[1]?.onRemoved?.({ revision: 5 })
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 5 })
+  })
+
+  test('409 sem `currentRevision` (members antigo): a revisão vem do download e o reenvio a usa', async () => {
+    const p1 = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([p1])
+    const { cloud, removed } = fakeCloud(remoteOf([p1]))
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000)
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    await removed[0]?.onStale?.({ itemId: 'p1' })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      ['p1', 0],
+      ['p1', 1],
+    ])
+    expect(fake.restored).toEqual([])
+  })
+
+  test('409 com revisão MAIOR que a conhecida (alguém editou depois): restaura no mesmo id, a marca conhece a revisão nova e a lápide só sai DEPOIS de gravar', async () => {
+    const mine = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const theirs = { id: 'p1', name: 'Nave v2', updatedAt: 2000 }
+    const fake = fakeStudio([mine])
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(theirs), summary: summaryOf(theirs, { revision: 7 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 5)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: 5 })
+    await removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 7 })
+    expect(fake.restored).toEqual([{ id: 'p1', expectedId: 'p1' }])
+    expect(fake.projects.get('p1')?.name).toBe('Nave v2')
+    expect(marks.revision('p1')).toBe(7)
+    expect(marks.tombstone('p1')).toBeUndefined()
+    // Nenhum DELETE a mais: a exclusão velha perdeu para a edição remota.
+    expect(removed).toHaveLength(1)
+  })
+
+  test('a descida que restauraria falha (rede): a lápide SOBREVIVE e nada volta', async () => {
+    const p1 = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([p1])
+    const { cloud, removed } = fakeCloud(remoteOf([p1]))
+    cloud.download = async () => {
+      throw new Error('rede caiu')
+    }
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 5)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    await expect(removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 7 })).rejects.toThrow(
+      'rede caiu',
+    )
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: 5 })
+    expect(fake.restored).toEqual([])
+  })
+
+  test('409 mas a nuvem já não tem o item (apagado lá também): a lápide vira enviada, nada restaura', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    const { cloud, removed } = fakeCloud(new Map())
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 5)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    await removed[0]?.onStale?.({ itemId: 'p1' })
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 5 })
+    expect(fake.restored).toEqual([])
+    expect(removed).toHaveLength(1)
+  })
+
+  test('a descida reenvia um DELETE não confirmado com a revisão da NUVEM como base (a lápide não a conhecia)', async () => {
+    const p1 = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([])
+    const { cloud, removed } = fakeCloud(
+      new Map([['p1', { json: JSON.stringify(p1), summary: summaryOf(p1, { revision: 3 }) }]]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.setTombstone('p1', { at: 500, sent: false, revision: null })
+    const sync = createStudioCloudSync({ studio: fake.studio, cloud, viewerId: 'v1', marks })
+    sync.attach()
+    await sync.pullMissing()
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([['p1', 3]])
+    expect(fake.restored).toEqual([])
+    expect(marks.tombstone('p1')).toEqual({ at: 500, sent: false, revision: null })
+    removed[0]?.onRemoved?.({ revision: 3 })
+    expect(marks.tombstone('p1')).toEqual({ at: 500, sent: true, revision: 3 })
   })
 
   test('detach de uma fila antiga não remove o mirror instalado pela fila nova', () => {

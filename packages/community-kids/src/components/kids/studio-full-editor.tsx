@@ -28,6 +28,14 @@ function openDrawingInPinta(drawingId: string): void {
 }
 
 /**
+ * "Editar a criação" nos modelos, céus e texturas vindos do Molda: abre o Molda em
+ * aba nova já naquela criação (o `molda-client` lê `?criacao=` no 1º render).
+ */
+function openCreationInMolda(creationId: string): void {
+  window.open(`/molda?criacao=${encodeURIComponent(creationId)}`, '_blank', 'noopener,noreferrer')
+}
+
+/**
  * Erro que o Estúdio CONTEVE sozinho vira telemetria (o mesmo beacon das error
  * boundaries do app → Sentry, com redação de PII). O `kind` distingue a falha
  * de persistência do crash de render segurado por uma boundary de seção.
@@ -181,6 +189,8 @@ export function StudioFullEditor({
       features={{ professional }}
       onPromoteToPro={handlePromoteToPro}
       onEditDrawing={openDrawingInPinta}
+      // Só com posse do Molda (produtos vendidos à parte): sem o adapter, sem botão.
+      {...(moldaLibrary ? { onEditCreation: openCreationInMolda } : {})}
       pintaLibrary={pintaLibrary}
       moldaLibrary={moldaLibrary}
       showExamples={showExamples}

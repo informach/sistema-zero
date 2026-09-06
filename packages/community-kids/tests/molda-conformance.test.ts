@@ -100,3 +100,19 @@ describe('os espelhos fora do members', () => {
     expect(read('catalog/scripts/seed.ts')).toContain("'molda'")
   })
 })
+
+describe('o card do Molda no admin e o read-model de uso (06/09)', () => {
+  test('o port do members usa a lista única (CreationTool) e o admin mapeia o sku molda ao cartão', () => {
+    const port = read('members/src/domain/ports/tool-usage-repository.port.ts')
+    expect(port).toContain('tool: CreationTool')
+    // As ENTREGAS seguem só studio|pinta (o Molda não tem bloco de aula); as CRIAÇÕES não.
+    expect(port).not.toContain("tool: 'studio' | 'pinta'")
+    expect(read('members/src/application/tool-usage/get-member-tool-usage.service.ts')).toContain(
+      "creationsUsageByUsers(learners, 'molda')",
+    )
+    const admin = read('admin/src/lib/tool-usage.ts')
+    expect(admin).toContain("molda: 'molda'")
+    expect(admin).toMatch(/TOOL_CARD_ORDER[\s\S]*'molda'/)
+    expect(read('admin/src/components/members/usage-cards.tsx')).toContain('MoldaUsageCard')
+  })
+})

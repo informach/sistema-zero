@@ -3,9 +3,16 @@
 import { Badge } from '@sistemazero/ui/badge'
 import { Card } from '@sistemazero/ui/card'
 import { Progress } from '@sistemazero/ui/progress'
-import { Gamepad2, Lightbulb, MessagesSquare, Palette, Trophy } from 'lucide-react'
+import { Box, Gamepad2, Lightbulb, MessagesSquare, Palette, Trophy } from 'lucide-react'
 import { relativeDayLabel } from '@/lib/format'
-import type { ClubeUsage, LearnerToolUsageView, MuralUsage, PensaUsage } from '@/lib/tool-usage'
+import type {
+  ClubeUsage,
+  LearnerToolUsageView,
+  MoldaUsage,
+  MuralUsage,
+  PensaUsage,
+  ToolCardKind,
+} from '@/lib/tool-usage'
 import type { MemberCourseProgressView } from '@/lib/types'
 
 /**
@@ -137,6 +144,24 @@ export function EstudioUsageCard({
   )
 }
 
+/** Molda: só criações na nuvem (modelos, texturas e céus); `null` = members sem o campo ainda. */
+export function MoldaUsageCard({ name, usage }: { name: string; usage: MoldaUsage | null }) {
+  return (
+    <UsageCardShell icon={Box} name={name}>
+      {usage === null ? (
+        <Unavailable />
+      ) : (
+        <>
+          <p className="text-sm">
+            {usage.creations} {usage.creations === 1 ? 'criação na nuvem' : 'criações na nuvem'}
+          </p>
+          <LastActivity iso={usage.lastActivityAt} />
+        </>
+      )}
+    </UsageCardShell>
+  )
+}
+
 export function ClubeUsageCard({ name, usage }: { name: string; usage: ClubeUsage | null }) {
   return (
     <UsageCardShell icon={MessagesSquare} name={name}>
@@ -188,7 +213,7 @@ export function ToolUsageGrid({
 }: {
   usage: LearnerToolUsageView
   /** Cartões a mostrar (das matrículas tool/community) com o nome do produto. */
-  owned: { kind: 'pensa' | 'pinta' | 'estudio' | 'clube' | 'mural'; name: string }[]
+  owned: { kind: ToolCardKind; name: string }[]
 }) {
   if (owned.length === 0) return null
   return (
@@ -196,6 +221,8 @@ export function ToolUsageGrid({
       {owned.map(({ kind, name }) => {
         if (kind === 'pensa') return <PensaUsageCard key={kind} name={name} usage={usage.pensa} />
         if (kind === 'pinta') return <PintaUsageCard key={kind} name={name} usage={usage.pinta} />
+        if (kind === 'molda')
+          return <MoldaUsageCard key={kind} name={name} usage={usage.molda ?? null} />
         if (kind === 'estudio')
           return <EstudioUsageCard key={kind} name={name} usage={usage.estudio} />
         if (kind === 'clube') return <ClubeUsageCard key={kind} name={name} usage={usage.clube} />

@@ -152,7 +152,7 @@ describe('ModelEditor (bancada Montar)', () => {
     const callbacks = fake.instances[0]?.callbacks
     if (!callbacks) throw new Error('palco')
     act(() => {
-      callbacks.onSelect('body')
+      callbacks.onSelect('body', false)
       callbacks.onDragStart('body')
       callbacks.onDragMove({ id: 'body', from: [-1, 0, -3], to: [3, 2, 3] })
       callbacks.onDragMove({ id: 'body', from: [0, 0, -3], to: [4, 2, 3] })
@@ -190,6 +190,25 @@ describe('ModelEditor (bancada Montar)', () => {
     expect(lastModel().parts[0]?.color).toBe(16)
   })
 
+  test('"+ Nova cor" é UM gesto: N passos do seletor viram UMA extra e UM desfazer', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const input = screen.getByLabelText(COPY.editor.model.addColor, { selector: 'input' })
+    // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
+    fireEvent.input(input, { target: { value: '#123456' } })
+    fireEvent.input(input, { target: { value: '#234567' } })
+    fireEvent.input(input, { target: { value: '#345678' } })
+    await waitFor(() => expect(lastModel().extraColors).toEqual(['#345678']))
+    expect(lastModel().parts[0]?.color).toBe(16)
+    fireEvent.change(input, { target: { value: '#345678' } })
+    const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
+    await waitFor(() => expect(undo.disabled).toBe(false))
+    fireEvent.click(undo)
+    await waitFor(() => expect(lastModel().extraColors ?? []).toEqual([]))
+    expect(lastModel().parts[0]?.color).not.toBe(16)
+    expect(undo.disabled).toBe(true)
+  })
+
   test('a miniatura é fotografada depois de uma mudança e salva no asset', async () => {
     const persistence = await openModel()
     fireEvent.keyDown(document, { key: 'b' })
@@ -225,5 +244,114 @@ describe('ModelEditor (bancada Montar)', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
     expect(fake.instances[0]?.disposed).toBe(true)
+  })
+})
+
+describe('extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção múltipla', () => {
+  test('setas empurram a peça um encaixe (Shift = 5, PageUp sobe); no Editar malha movem os pontos', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.keyDown(document, { key: 'ArrowRight' })
+    await waitFor(() => expect(lastModel().parts[0]?.from[0]).toBe(-1))
+    fireEvent.keyDown(document, { key: 'ArrowUp', shiftKey: true })
+    await waitFor(() => expect(lastModel().parts[0]?.from[2]).toBe(-8))
+    fireEvent.keyDown(document, { key: 'PageUp' })
+    await waitFor(() => expect(lastModel().parts[0]?.from[1]).toBe(1))
+    // Um desfazer por toque.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts[0]?.from[1]).toBe(0))
+    expect(lastModel().parts[0]?.from[2]).toBe(-8)
+    // Editar malha: a seta move os PONTOS escolhidos, não a peça.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mesh.convert }))
+    await waitFor(() => expect(fake.instances[0]?.meshEdit?.partId).toBe('body'))
+    act(() => fake.instances[0]?.callbacks.onMeshPick({ kind: 'face', key: 'f_py' }, false))
+    await waitFor(() => expect(fake.instances[0]?.meshEdit?.vertices).toHaveLength(4))
+    fireEvent.keyDown(document, { key: 'PageUp' })
+    await waitFor(() => expect(lastModel().parts[0]?.to[1]).toBe(3))
+    expect(lastModel().parts[0]?.from[1]).toBe(0)
+  })
+
+  test('"Ver arestas" chega ao palco', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.edges }))
+    await waitFor(() => expect(fake.instances[0]?.edgesVisible).toBe(true))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.edges }))
+    await waitFor(() => expect(fake.instances[0]?.edgesVisible).toBe(false))
+  })
+
+  test('pivô: os steppers gravam a origem dentro da caixa e "Pivô no centro" apaga', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const label = `${COPY.editor.model.pivot} X`
+    const x = screen.getByRole('textbox', { name: label }) as HTMLInputElement
+    expect(x.value).toBe('0')
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.increase(label) }))
+    await waitFor(() => expect(lastModel().parts[0]?.origin).toEqual([1, 1, 0]))
+    fireEvent.change(x, { target: { value: '9' } })
+    fireEvent.blur(x)
+    // Preso à caixa da peça (x vai até 2).
+    await waitFor(() => expect(lastModel().parts[0]?.origin?.[0]).toBe(2))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.pivotCenter }))
+    await waitFor(() => expect(lastModel().parts[0]?.origin).toBeUndefined())
+  })
+
+  test('trancar e esconder pela lista; a peça trancada não anda com as setas e avisa', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.partLock('corpo', false) }))
+    await waitFor(() => expect(lastModel().parts[0]?.locked).toBe(true))
+    expect(screen.getByText(new RegExp(COPY.editor.model.lockedTag))).toBeDefined()
+    fireEvent.keyDown(document, { key: 'ArrowRight' })
+    expect(await screen.findByText(COPY.editor.model.lockedHint)).toBeDefined()
+    expect(lastModel().parts[0]?.from[0]).toBe(-2)
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.partLock('corpo', true) }))
+    await waitFor(() => expect(lastModel().parts[0]?.locked).toBeUndefined())
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.partHide('corpo', false) }))
+    await waitFor(() => expect(lastModel().parts[0]?.hidden).toBe(true))
+    expect(screen.getByRole('button', { name: COPY.a11y.partHide('corpo', true) })).toBeDefined()
+    // Escondida segue no modelo e no export: o status conta as duas peças.
+    expect(screen.getByText(/2\/128 peças/)).toBeDefined()
+  })
+
+  test('seleção múltipla: Somar à seleção (ou Shift) soma pela lista; o palco recebe as somadas; Delete apaga todas', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.partsAdditive }))
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'asa, rampa' }))
+    await waitFor(() => expect(fake.instances[0]?.extraSelected).toEqual(['wing']))
+    expect(fake.instances[0]?.selected).toBe('body')
+    expect(screen.getByText(COPY.editor.model.selectedParts(2))).toBeDefined()
+    // Tocar de novo tira da seleção; Shift soma sem o botão.
+    fireEvent.click(screen.getByRole('button', { name: 'asa, rampa' }))
+    await waitFor(() => expect(fake.instances[0]?.extraSelected).toEqual([]))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.partsAdditive }))
+    fireEvent.click(screen.getByRole('button', { name: 'asa, rampa' }), { shiftKey: true })
+    await waitFor(() => expect(fake.instances[0]?.extraSelected).toEqual(['wing']))
+    // O toque no palco com Shift também soma (e tira).
+    act(() => fake.instances[0]?.callbacks.onSelect('wing', true))
+    await waitFor(() => expect(fake.instances[0]?.extraSelected).toEqual([]))
+    act(() => fake.instances[0]?.callbacks.onSelect('wing', true))
+    await waitFor(() => expect(fake.instances[0]?.extraSelected).toEqual(['wing']))
+    // As setas movem o grupo inteiro.
+    fireEvent.keyDown(document, { key: 'ArrowRight' })
+    await waitFor(() => expect(lastModel().parts[0]?.from[0]).toBe(-1))
+    expect(lastModel().parts[1]?.from[0]).toBe(3)
+    // O arrasto do grupo chega como caixas absolutas por peça.
+    act(() => {
+      fake.instances[0]?.callbacks.onDragStart('body')
+      fake.instances[0]?.callbacks.onDragMove({
+        id: 'body',
+        parts: [
+          { id: 'body', from: [-1, 0, -2], to: [3, 2, 4] },
+          { id: 'wing', from: [3, 0, 0], to: [6, 1, 2] },
+        ],
+      })
+      fake.instances[0]?.callbacks.onDragEnd(null)
+    })
+    await waitFor(() => expect(lastModel().parts[1]?.from[2]).toBe(0))
+    expect(lastModel().parts[0]?.from[2]).toBe(-2)
+    fireEvent.keyDown(document, { key: 'Delete' })
+    await waitFor(() => expect(lastModel().parts).toHaveLength(0))
+    expect(fake.instances[0]?.extraSelected).toEqual([])
   })
 })

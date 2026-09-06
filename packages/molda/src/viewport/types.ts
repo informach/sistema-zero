@@ -3,8 +3,18 @@
  * testes de componente rodarem com um palco FALSO (happy-dom não tem WebGL).
  */
 import type { MoldaModelAsset, ShapeId, Vec3 } from '../core/model'
+import type { MeshPick } from '../model/meshSelection'
 import type { PaintSettings } from '../paint/stroke'
-import type { EditorMode, TransformTool } from '../state/sessionStore'
+import type { EditorMode, MeshSelectMode, TransformTool } from '../state/sessionStore'
+
+export type { MeshPick }
+
+/** "Editar malha" no palco: a peça aberta, o que um toque escolhe e os vértices escolhidos. */
+export interface MeshEditState {
+  partId: string
+  mode: MeshSelectMode
+  vertices: readonly string[]
+}
 
 export type ViewName = 'front' | 'back' | 'left' | 'right' | 'top' | 'frame'
 
@@ -14,6 +24,8 @@ export interface DragPatch {
   from?: Vec3
   to?: Vec3
   rotation?: Vec3
+  /** Arrasto do GRUPO (seleção múltipla): a caixa de destino de cada peça, absoluta. */
+  parts?: Array<{ id: string; from: Vec3; to: Vec3 }>
 }
 
 export interface AtlasInfo {
@@ -24,7 +36,7 @@ export interface AtlasInfo {
 
 export interface ViewportCallbacks {
   /** Toque numa peça (gêmeo já resolvido para a fonte) ou no vazio. */
-  onSelect(partId: string | null): void
+  onSelect(partId: string | null, additive: boolean): void
   /** Confirma a forma pendente na superfície tocada. */
   onPlace(shape: ShapeId, point: Vec3, normal: Vec3, nearId: string | null): void
   onDragStart(partId: string): void
@@ -39,6 +51,12 @@ export interface ViewportCallbacks {
   /** Conta-gotas: índice de cor. */
   onPickColor(index: number): void
   onAtlas(info: AtlasInfo): void
+  /** Toque na malha em edição (`null` = no vazio); `additive` = Shift/"Somar à seleção". */
+  onMeshPick(pick: MeshPick | null, additive: boolean): void
+  onMeshDragStart(): void
+  /** Delta acumulado desde o início, em coordenadas da CAIXA da peça (sem histórico). */
+  onMeshDragMove(delta: Vec3): void
+  onMeshDragEnd(): void
 }
 
 export interface ViewportOptions {
@@ -51,13 +69,19 @@ export interface ViewportOptions {
 export interface MoldaViewportLike {
   setModel(model: MoldaModelAsset): void
   setSelected(partId: string | null): void
+  /** As peças SOMADAS à seleção (contorno em todas; alça no centro do grupo). */
+  setExtraSelected(ids: readonly string[]): void
   setMode(mode: EditorMode): void
   setTool(tool: TransformTool): void
   setPlacementShape(shape: ShapeId | null): void
   setPaint(settings: PaintSettings): void
   setSnap(snap: number): void
   setGridVisible(visible: boolean): void
+  /** "Ver arestas": contorno de todas as peças. */
+  setEdgesVisible(visible: boolean): void
   setView(view: ViewName): void
+  /** Liga/desliga o sub-modo "Editar malha" (overlay de pontos e arestas + alça no centro da seleção). */
+  setMeshEdit(state: MeshEditState | null): void
   /** Foto do modelo (data URL JPEG dentro do teto) ou `null` sem GL/modelo vazio. */
   renderThumb(): string | null
   dispose(): void

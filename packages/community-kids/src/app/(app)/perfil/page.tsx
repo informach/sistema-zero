@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { CareerTimeline } from '@/components/kids/career-timeline'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
-import { LeagueBoard } from '@/components/kids/league-board'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
@@ -12,7 +11,6 @@ import {
   checkStudioAccessReadonly,
   getAvatarReadonly,
   getGamificationReadonly,
-  getLeagueReadonly,
   getStudioUnlocksReadonly,
   listCatalog,
 } from '@/server/members'
@@ -35,12 +33,11 @@ export default async function ProfilePage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
-  const [profilesRes, gam, avatarRes, leagueRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
+  const [profilesRes, gam, avatarRes, showcaseRes, catalogRes, unlocksRes, studioRes] =
     await Promise.all([
       listReadonly(),
       getGamificationReadonly({ withRanking: true }),
       getAvatarReadonly(),
-      getLeagueReadonly(),
       // Jogos publicados + jogadas (linha da carreira) — best-effort, some no erro.
       shell.hub.myShowcaseStatsReadonly().catch(() => null),
       // Catálogo: define até onde a escada da carreira é desenhada e limita o contador
@@ -56,7 +53,6 @@ export default async function ProfilePage() {
   // Sessão da conta (sem perfil) ou perfil sumido → volta à grade de seleção.
   if (!profile) redirect('/perfis')
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
-  const league = leagueRes.status === 200 ? (leagueRes.body ?? null) : null
   const avatarPhotoUrl =
     avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
@@ -98,7 +94,6 @@ export default async function ProfilePage() {
         />
       ) : null}
       {ownsStudio ? <MyTools drawers={drawers} studioOwned={studioFree} /> : null}
-      {league ? <LeagueBoard league={league} /> : null}
       {gamification ? (
         <StreakProtection
           freezesAvailable={gamification.streak.freezesAvailable ?? 0}

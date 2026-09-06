@@ -1,4 +1,5 @@
 import { and, count, eq, inArray, isNotNull, isNull, max, sql } from 'drizzle-orm'
+import type { CreationTool } from '../../../domain/creations/creation'
 import {
   PALETTE_LIBRARY_ITEM_ID,
   PALETTE_LIBRARY_KIND,
@@ -54,7 +55,7 @@ export class DrizzleToolUsageRepository implements ToolUsageRepository {
 
   async creationsUsageByUsers(
     userIds: string[],
-    tool: 'studio' | 'pinta',
+    tool: CreationTool,
   ): Promise<Map<string, LearnerCreationsUsage>> {
     if (userIds.length === 0) return new Map()
     const rows = await this.db

@@ -223,3 +223,13 @@
   user-select: none;
   -webkit-user-select: none;
 }
+
+/* Colunas roláveis do editor SEM a barra clássica (gêmeo do .pin-scroll-y do Pinta):
+   os painéis são `shrink-0`, então a coluna rola em vez de espremer um painel. */
+[data-molda-theme] .mld-scroll-y {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+[data-molda-theme] .mld-scroll-y::-webkit-scrollbar {
+  display: none;
+}

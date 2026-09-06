@@ -397,6 +397,22 @@ describe('gateway.config.ts (configuração real)', () => {
     }
   })
 
+  test('rankings do aluno e do admin preservam autenticação e token interno', () => {
+    const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
+    expect(byId.get('members-gamification-ranking')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/gamification/ranking',
+      authorize: { statuses: ['active'] },
+    })
+    expect(byId.get('members-admin-gamification-ranking')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/members/admin/gamification/ranking',
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(byId.get('members-gamification-ranking')?.transforms).toBeDefined()
+    expect(byId.get('members-admin-gamification-ranking')?.transforms).toBeDefined()
+  })
+
   test('restauração de entrega tem rota explícita e auditada; review não usa wildcard', () => {
     const byId = new Map(realConfig.routes.map((route) => [route.id, route]))
     const review = byId.get('members-admin-studio-submissions-write')

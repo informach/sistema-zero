@@ -225,3 +225,20 @@ describe('colorAtPoint (qual cor sai da forma)', () => {
     expect(['#111111', '#eeeeee']).toContain(cor as string)
   })
 })
+
+describe('hitShapeAt: traço vazado do pincel', () => {
+  it('acerta pela folga do contorno (o navegador só acertaria no fio)', () => {
+    const traco: VectorShape = {
+      id: 'traco',
+      type: 'path',
+      d: 'M 0 10 L 100 10',
+      fill: 'none',
+      stroke: { color: '#000000', width: 6 },
+      opacity: 1,
+      rotation: 0,
+    }
+    expect(hitShapeAt([traco], { x: 50, y: 12 })).toBe(traco)
+    expect(hitShapeAt([traco], { x: 50, y: 16 }, 3)).toBe(traco)
+    expect(hitShapeAt([traco], { x: 50, y: 20 }, 3)).toBeNull()
+  })
+})

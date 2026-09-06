@@ -5,6 +5,7 @@ import type { GetAiUsageStatsService } from '../../../application/ai-usage/get-a
 import type { GetCourseAnalyticsService } from '../../../application/analytics/get-course-analytics.service'
 import type { ChallengeAdminService } from '../../../application/gamification/challenge-admin.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
+import type { ListRankingService } from '../../../application/gamification/list-ranking.service'
 import type { GetMemberActivityService } from '../../../application/get-member-activity/get-member-activity.service'
 import type { GetMemberDetailService } from '../../../application/get-member-detail/get-member-detail.service'
 import type {
@@ -31,6 +32,7 @@ import {
 import {
   AdminActivityQuery,
   AdminGamificationQuery,
+  AdminRankingQuery,
   AdminTeacherThreadByContextQuery,
   AdminTeacherThreadPageQuery,
   AdminTeacherThreadPostBody,
@@ -51,6 +53,7 @@ import {
   MemberDetailQuery,
   ProfilesOverviewQuery,
   parseProfileIds,
+  parseRankingUserIds,
   parseUserIds,
   TeacherThreadReplyBody,
   UserIdParams,
@@ -73,6 +76,7 @@ export interface AdminRoutesDeps {
   listMemberCertificates: ListMemberCertificatesService
   listMemberRatings: ListMemberRatingsService
   getGamification: GetGamificationService
+  ranking: ListRankingService
   analytics: GetCourseAnalyticsService
   /** Agregados de uso de IA (quota por conta) p/ o painel acompanhar o custo. */
   aiUsageStats: GetAiUsageStatsService
@@ -170,6 +174,19 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           })
         },
         { params: UserIdParams, query: AdminGamificationQuery },
+      )
+      .get(
+        '/gamification/ranking',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.ranking.execute({
+            audience: query.audience ?? 'adult',
+            limit: clampLimit(query.limit),
+            offset: query.offset ?? 0,
+            userIds: parseRankingUserIds(query.userIds),
+          })
+        },
+        { query: AdminRankingQuery },
       )
       // Linha do tempo de atividade do aprendiz (aulas/quizzes/entregas), paginada.
       .get(

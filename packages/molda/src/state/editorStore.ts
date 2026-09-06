@@ -34,6 +34,11 @@ export interface EditorActions {
   commit(next: MoldaAsset): void
   replace(next: MoldaAsset): void
   commitGesture(before: MoldaAsset, after: MoldaAsset): void
+  /**
+   * Troca o estado ATUAL sem novo passo de desfazer (o painel "Ajustar" reexecuta
+   * a última operação sobre o "antes" dela): um passo só no histórico, e salva.
+   */
+  amend(next: MoldaAsset): void
   /** Miniatura pronta (data URL) ou nenhuma: sem histórico, mas salva. */
   setThumb(thumb: string | undefined): void
   undo(): void
@@ -151,6 +156,11 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
       commitGesture(before, after) {
         history.record(before)
         apply(stamp(after))
+      },
+
+      amend(next) {
+        if (next === get().asset) return
+        apply(stamp(next))
       },
 
       setThumb(thumb) {

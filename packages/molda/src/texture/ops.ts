@@ -18,7 +18,7 @@ import type {
 } from '../core/model'
 import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
 import { resolvePaletteColors } from '../core/sanitize'
-import { FACES_BY_SHAPE, faceSkinSize } from '../model/shapes'
+import { faceSkinSize, partFaces } from '../model/shapes'
 import { cloneSkin, createSkin, isSkinBlank } from '../model/skinOps'
 import { syncTwins } from '../model/twins'
 import { type BrushSize, stampTexels, type Texel } from '../paint/skinPaint'
@@ -159,6 +159,22 @@ export function addTextureColor(
   return { asset: { ...asset, extraColors: [...extras, hex] }, index: colors.length }
 }
 
+/** Troca a cor de UMA extra no lugar (o gesto do seletor nativo); ver `updateExtraColor`. */
+export function updateTextureColor(
+  asset: MoldaTextureAsset,
+  index: number,
+  hex: string,
+): MoldaTextureAsset {
+  const extras = asset.extraColors ?? []
+  const at = index - PALETTE_SIZE
+  if (at < 0 || at >= extras.length) return asset
+  if (extras[at] === hex) return asset
+  if (textureColors(asset).includes(hex)) return asset
+  const nextExtras = [...extras]
+  nextExtras[at] = hex
+  return { ...asset, extraColors: nextExtras }
+}
+
 /** Apaga uma cor extra: texels dela viram transparentes, as seguintes descem 1. */
 export function removeTextureColor(
   asset: MoldaTextureAsset,
@@ -274,7 +290,7 @@ export function applyTextureToPart(
 ): MoldaModelAsset {
   const part = model.parts.find((item) => item.id === partId)
   if (!part || part.mirrorOf) return model
-  const targets = faces ?? FACES_BY_SHAPE[part.shape]
+  const targets = faces ?? partFaces(part)
   const sampled: Array<{ face: FaceId; skin: MoldaSkin }> = []
   const usedIndices = new Set<number>()
   for (const face of targets) {

@@ -55,6 +55,12 @@ describe('ModelEditor (Pintar)', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.tools.fillFace }))
     await waitFor(() => expect(fake.instances[0]?.paint?.tool).toBe('fillFace'))
+    // "Girar a pele" é a 6ª ferramenta (R), um toque por face.
+    fireEvent.keyDown(document, { key: 'r' })
+    await waitFor(() => expect(fake.instances[0]?.paint?.tool).toBe('rotateSkin'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.tools.rotateSkin }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.tools.pencil }))
+    await waitFor(() => expect(fake.instances[0]?.paint?.tool).toBe('pencil'))
     // No Pintar as cores escolhem o LÁPIS, não a peça.
     fireEvent.click(screen.getByRole('button', { name: COPY.a11y.colorSwatch(5, '#fff609') }))
     await waitFor(() => expect(fake.instances[0]?.paint?.color).toBe(5))

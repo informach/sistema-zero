@@ -65,8 +65,13 @@ describe('promoteTicket / demoteTicket', () => {
     expect(ticket).toMatchObject({ aiStatus: 'skipped', aiNextAttemptAt: null, aiGeneration: 4 })
   })
 
-  it('rebaixar encerra, marca a hora da triagem e só carimba resolvedAt se ainda não era terminal', () => {
-    const open = makeTicket({ status: 'open', resolvedAt: null, aiStatus: 'pending' })
+  it('rebaixar encerra, invalida a geração da IA e só carimba resolvedAt se ainda não era terminal', () => {
+    const open = makeTicket({
+      status: 'open',
+      resolvedAt: null,
+      aiStatus: 'processing',
+      aiGeneration: 4,
+    })
     demoteTicket(open, { kind: 'system', rule: MANUAL_DEMOTED_RULE, at: now })
     expect(open).toMatchObject({
       triage: 'system',
@@ -75,6 +80,7 @@ describe('promoteTicket / demoteTicket', () => {
       status: 'closed',
       resolvedAt: now,
       aiStatus: 'skipped',
+      aiGeneration: 5,
       aiNextAttemptAt: null,
     })
 

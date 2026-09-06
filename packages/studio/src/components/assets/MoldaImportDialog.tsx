@@ -131,6 +131,8 @@ export function MoldaImportDialog({ onClose, onImported }: MoldaImportDialogProp
         ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
         source: 'library',
         libId: `personal:${result.asset.id}`,
+        // Quem edita esta criação é o Molda (a textura é imagem, mas não é desenho do Pinta).
+        libOrigin: 'molda',
         ...(result.asset.libRevision !== undefined
           ? { libRevision: result.asset.libRevision }
           : {}),

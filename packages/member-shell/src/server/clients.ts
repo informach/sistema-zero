@@ -68,6 +68,7 @@ import type {
   PublicProfileGameView,
   PublicProfileIdentity,
   QuizAttemptResultView,
+  RankingLeaderboardView,
   RoomBuyResult,
   RoomEditorView,
   RoomStateView,
@@ -353,6 +354,12 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     (): Promise<GatewayResponse<LeagueMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/league/me', { query: { audience } }),
   )
+  const rankingReadonlyCached = cache(
+    (limit: number, offset: number): Promise<GatewayResponse<RankingLeaderboardView>> =>
+      gw.gatewayFetchReadonly('/members/gamification/ranking', {
+        query: { audience, limit, offset },
+      }),
+  )
   // Avatar do perfil ativo — dedup por request (layout busca o chrome; a página de
   // perfil também). Sem argumento → uma chave estável.
   const avatarReadonlyCached = cache(
@@ -512,6 +519,22 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Liga semanal do aluno (board + tier) — Server Component (sem refresh). */
     getLeagueReadonly(): Promise<GatewayResponse<LeagueMeView>> {
       return leagueReadonlyCached()
+    },
+    /** Primeira página do ranking geral — segura em Server Components. */
+    getRankingReadonly(opts: {
+      limit: number
+      offset: number
+    }): Promise<GatewayResponse<RankingLeaderboardView>> {
+      return rankingReadonlyCached(opts.limit, opts.offset)
+    },
+    /** Página do ranking geral para o Route Handler de paginação. */
+    getRanking(opts: {
+      limit: number
+      offset: number
+    }): Promise<GatewayResponse<RankingLeaderboardView>> {
+      return gw.gatewayFetch('/members/gamification/ranking', {
+        query: { audience, limit: opts.limit, offset: opts.offset },
+      })
     },
     /** Resgata o prêmio de uma missão concluída (idempotente). */
     claimMission(slug: string): Promise<GatewayResponse<MissionClaimResult>> {

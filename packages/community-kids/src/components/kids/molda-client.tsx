@@ -152,8 +152,41 @@ export function MoldaClient({
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
       ...(initialAssetId ? { initialAssetId } : {}),
+      // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
+      // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do
+      // `getPersonalAsset` é a regra do recurso (igual ao Pinta): sem ela, TODA criação
+      // cairia na biblioteca do Estúdio sozinha e o "Trazer do Molda" deixaria de ser a
+      // decisão explícita que é hoje.
+      resyncToStudio: async (asset) => {
+        const namespace = viewerId ?? ''
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) {
+          return { updated: false, reason: 'not-linked' }
+        }
+        const result = await bridge.savePersonalAsset(
+          {
+            id: asset.id,
+            name: asset.name,
+            kind: asset.kind,
+            origin: 'molda',
+            dataUrl: asset.dataUrl,
+            originalFileName: asset.originalFileName,
+            ...(asset.width !== undefined ? { width: asset.width } : {}),
+            ...(asset.height !== undefined ? { height: asset.height } : {}),
+          },
+          { namespace },
+        )
+        if (!result.ok) {
+          return {
+            updated: false,
+            reason: 'failed',
+            error: result.error ?? 'Não consegui atualizar esta criação no Estúdio.',
+          }
+        }
+        return { updated: true }
+      },
     }),
-    [theme, studioAvailable, router, initialAssetId],
+    [theme, studioAvailable, router, initialAssetId, viewerId],
   )
 
   return (

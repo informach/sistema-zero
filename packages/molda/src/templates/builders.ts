@@ -12,19 +12,24 @@ import {
   createModelAsset,
   createPart,
   type FaceId,
+  type MoldaMesh,
   type MoldaModelAsset,
   type MoldaSnap,
   type ShapeId,
   type Vec3,
 } from '../core/model'
+import { meshBox } from '../model/mesh'
 import { faceSkinSize } from '../model/shapes'
 import { skinFromArt } from './art'
 
 export interface TemplatePartSpec {
   name: string
   shape?: ShapeId
-  from: Vec3
-  to: Vec3
+  /** A caixa; numa peça de MALHA (`mesh`) ela é derivada da malha e pode ficar de fora. */
+  from?: Vec3
+  to?: Vec3
+  /** Só com `shape: 'mesh'`: a malha autorada (chaves estáveis, ciclos CCW vistos de fora). */
+  mesh?: MoldaMesh
   /** Índice de paleta ≥ 1. */
   color: number
   /** Graus, múltiplos de 15. */
@@ -51,13 +56,19 @@ export function buildTemplateModel(spec: TemplateModelSpec): MoldaModelAsset {
     ...(spec.now !== undefined ? { now: spec.now } : {}),
   })
   model.parts = spec.parts.map((partSpec) => {
+    const box = partSpec.mesh ? meshBox(partSpec.mesh) : null
+    const from = box?.from ?? partSpec.from
+    const to = box?.to ?? partSpec.to
+    if (!from || !to)
+      throw new Error(`a peça "${partSpec.name}" precisa de from/to ou de uma malha`)
     const part = createPart({
       name: partSpec.name,
       shape: partSpec.shape ?? 'box',
-      from: partSpec.from,
-      to: partSpec.to,
+      from,
+      to,
       color: partSpec.color,
       ...(partSpec.rotation ? { rotation: partSpec.rotation } : {}),
+      ...(partSpec.mesh ? { mesh: partSpec.mesh } : {}),
     })
     for (const [face, lines] of Object.entries(partSpec.faces ?? {})) {
       if (!lines) continue

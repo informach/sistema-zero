@@ -12,6 +12,57 @@ import type { Database, DbConnection } from './db'
 import { escapeLike } from './pg-errors'
 import { tickets } from './schema'
 
+type TicketUpdateDatabase = Pick<Database, 'update'>
+
+/** Escrita CAS reutilizável dentro de transações maiores (não muta o agregado). */
+export async function updateTicketRow(
+  db: TicketUpdateDatabase,
+  ticket: Ticket,
+  expectedVersion: number,
+): Promise<boolean> {
+  const updated = await db
+    .update(tickets)
+    .set({
+      version: expectedVersion + 1,
+      gmailThreadId: ticket.gmailThreadId,
+      source: ticket.source,
+      // `portal` fica de fora de propósito, como `requesterEmail`: é imutável
+      // depois da criação (o app que abriu o chamado não muda).
+      subject: ticket.subject,
+      status: ticket.status,
+      resolvedAt: ticket.resolvedAt,
+      category: ticket.category,
+      categoryManual: ticket.categoryManual,
+      priority: ticket.priority,
+      requesterName: ticket.requesterName,
+      requesterAccountId: ticket.requesterAccountId,
+      assignedTo: ticket.assignedTo,
+      assignedToName: ticket.assignedToName,
+      firstMessageAt: ticket.firstMessageAt,
+      lastMessageAt: ticket.lastMessageAt,
+      lastInboundAt: ticket.lastInboundAt,
+      messageCount: ticket.messageCount,
+      aiSummary: ticket.aiSummary,
+      aiSummaryAt: ticket.aiSummaryAt,
+      aiDraft: ticket.aiDraft,
+      aiDraftAt: ticket.aiDraftAt,
+      aiDraftEdited: ticket.aiDraftEdited,
+      aiClassification: ticket.aiClassification,
+      aiGeneration: ticket.aiGeneration,
+      aiStatus: ticket.aiStatus,
+      aiNextAttemptAt: ticket.aiNextAttemptAt,
+      aiAttempts: ticket.aiAttempts,
+      aiLastError: ticket.aiLastError,
+      triage: ticket.triage,
+      triageRule: ticket.triageRule,
+      triagedAt: ticket.triagedAt,
+      updatedAt: ticket.updatedAt,
+    })
+    .where(and(eq(tickets.id, ticket.id), eq(tickets.version, expectedVersion)))
+    .returning({ id: tickets.id })
+  return updated.length > 0
+}
+
 export class DrizzleTicketRepository implements TicketRepository {
   private readonly db: Database
 
@@ -29,47 +80,7 @@ export class DrizzleTicketRepository implements TicketRepository {
   }
 
   async update(ticket: Ticket, expectedVersion: number): Promise<boolean> {
-    const updated = await this.db
-      .update(tickets)
-      .set({
-        version: expectedVersion + 1,
-        gmailThreadId: ticket.gmailThreadId,
-        source: ticket.source,
-        // `portal` fica de fora de propósito, como `requesterEmail`: é imutável
-        // depois da criação (o app que abriu o chamado não muda).
-        subject: ticket.subject,
-        status: ticket.status,
-        resolvedAt: ticket.resolvedAt,
-        category: ticket.category,
-        categoryManual: ticket.categoryManual,
-        priority: ticket.priority,
-        requesterName: ticket.requesterName,
-        requesterAccountId: ticket.requesterAccountId,
-        assignedTo: ticket.assignedTo,
-        assignedToName: ticket.assignedToName,
-        firstMessageAt: ticket.firstMessageAt,
-        lastMessageAt: ticket.lastMessageAt,
-        lastInboundAt: ticket.lastInboundAt,
-        messageCount: ticket.messageCount,
-        aiSummary: ticket.aiSummary,
-        aiSummaryAt: ticket.aiSummaryAt,
-        aiDraft: ticket.aiDraft,
-        aiDraftAt: ticket.aiDraftAt,
-        aiDraftEdited: ticket.aiDraftEdited,
-        aiClassification: ticket.aiClassification,
-        aiGeneration: ticket.aiGeneration,
-        aiStatus: ticket.aiStatus,
-        aiNextAttemptAt: ticket.aiNextAttemptAt,
-        aiAttempts: ticket.aiAttempts,
-        aiLastError: ticket.aiLastError,
-        triage: ticket.triage,
-        triageRule: ticket.triageRule,
-        triagedAt: ticket.triagedAt,
-        updatedAt: ticket.updatedAt,
-      })
-      .where(and(eq(tickets.id, ticket.id), eq(tickets.version, expectedVersion)))
-      .returning({ id: tickets.id })
-    const ok = updated.length > 0
+    const ok = await updateTicketRow(this.db, ticket, expectedVersion)
     if (ok) ticket.version = expectedVersion + 1
     return ok
   }

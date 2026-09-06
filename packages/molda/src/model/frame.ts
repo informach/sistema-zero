@@ -9,7 +9,12 @@
  * e vivem em `geometry.ts`.
  */
 import type { FaceId, MoldaPart, Vec3 } from '../core/model'
+import { isMeshFaceKey } from './mesh'
+import { meshFaceFrame } from './meshFrame'
 import { partSize } from './shapes'
+import { add, cross, dot, normalize, scale, sub } from './vec'
+
+export { add, cross, dot, normalize, scale, sub }
 
 export interface FaceFrame {
   face: FaceId
@@ -26,31 +31,6 @@ export interface FaceFrame {
   normal: Vec3
 }
 
-export function cross(a: Vec3, b: Vec3): Vec3 {
-  return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]
-}
-
-export function dot(a: Vec3, b: Vec3): number {
-  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
-}
-
-export function normalize(v: Vec3): Vec3 {
-  const length = Math.hypot(v[0], v[1], v[2]) || 1
-  return [v[0] / length, v[1] / length, v[2] / length]
-}
-
-export function add(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]
-}
-
-export function sub(a: Vec3, b: Vec3): Vec3 {
-  return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
-}
-
-export function scale(v: Vec3, k: number): Vec3 {
-  return [v[0] * k, v[1] * k, v[2] * k]
-}
-
 function frame(face: FaceId, origin: Vec3, s: Vec3, t: Vec3, su: number, tv: number): FaceFrame {
   return { face, origin, s, t, su, tv, normal: cross(t, s) }
 }
@@ -60,9 +40,13 @@ function frame(face: FaceId, origin: Vec3, s: Vec3, t: Vec3, su: number, tv: num
  * `null` para face curva ou que a forma não tem.
  */
 export function planarFaceFrame(
-  part: Pick<MoldaPart, 'shape' | 'from' | 'to'>,
+  part: Pick<MoldaPart, 'shape' | 'from' | 'to' | 'mesh'>,
   face: FaceId,
 ): FaceFrame | null {
+  // Malha: toda face é plana por construção; a base vem do ciclo (ver `meshFrame.ts`).
+  if (part.shape === 'mesh') {
+    return part.mesh && isMeshFaceKey(face) ? meshFaceFrame(part.mesh, face) : null
+  }
   const [x0, y0, z0] = part.from
   const [x1, y1, z1] = part.to
   const [sx, sy, sz] = partSize(part)

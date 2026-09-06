@@ -1,6 +1,13 @@
 import type { MoldaModelAsset } from '../core/model'
 
-export const MOLDA_TEMPLATE_IDS = ['personagem', 'carro', 'arvore', 'casa', 'nave'] as const
+export const MOLDA_TEMPLATE_IDS = [
+  'personagem',
+  'carro',
+  'arvore',
+  'casa',
+  'nave',
+  'cristal',
+] as const
 export type MoldaTemplateId = (typeof MOLDA_TEMPLATE_IDS)[number]
 
 export interface MoldaTemplate {

@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
- * Botão "Editar" nos desenhos vindos do Pinta (as duas seções do painel).
+ * Botão "✏️ Editar" nos assets que vieram do Pinta (desenhos) e do Molda (modelos,
+ * céus e texturas): no card do projeto SEMPRE que o host liga o callback da origem
+ * (o registro na biblioteca pessoal é reparado no clique, não exigido antes).
  *
  * Arquivo à parte do `AssetsPanel.test.tsx` porque precisa do mock de idb-keyval
  * (a biblioteca pessoal vive no IndexedDB) — o registry de module mocks é global,
@@ -10,6 +12,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react'
  */
 type KV = Map<IDBValidKey, unknown>
 const dbs = new Map<string, KV>()
+let failWrites = false
 const kvOf = (store?: { name?: string }): KV => {
   const key = store?.name ?? ''
   let kv = dbs.get(key)
@@ -26,6 +29,7 @@ mock.module('idb-keyval', () => ({
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => kvOf(store).get(key)),
   set: async (key: IDBValidKey, value: unknown, store?: { name?: string }) => {
+    if (failWrites) throw new Error('IndexedDB indisponível')
     kvOf(store).set(key, value)
   },
   setMany: async (pairs: Array<[IDBValidKey, unknown]>, store?: { name?: string }) => {
@@ -49,36 +53,92 @@ mock.module('idb-keyval', () => ({
 }))
 
 const { createEmptyProject } = await import('#core')
-const { savePersonalAsset, setPersonalAssetsNamespace } = await import(
+const { getPersonalAsset, savePersonalAsset, setPersonalAssetsNamespace } = await import(
   '../../asset-library/personal'
 )
 const { releaseDrawingSyncProfile } = await import('../../asset-library/personalSync')
 const { setStorageNamespace } = await import('../../state/persistence')
 const { useProjectStore } = await import('../../state/projectStore')
+const { StudioEditCreationProvider } = await import('../../studio/edit-creation')
 const { StudioEditDrawingProvider } = await import('../../studio/edit-drawing')
+const { StudioMoldaLibraryProvider } = await import('../../studio/molda-library')
+const { StudioPintaLibraryProvider } = await import('../../studio/pinta-library')
 const { AssetsPanel } = await import('./AssetsPanel')
+type ProjectAsset = import('#core').ProjectAsset
+type MoldaLibraryAdapter = import('../../studio/molda-library').StudioMoldaLibraryAdapter
+type PintaLibraryAdapter = import('../../studio/pinta-library').StudioPintaLibraryAdapter
 
 const PNG = 'data:image/png;base64,AAAA'
+// Assinatura GLB v2 ("glTF" + versão 2 + tamanho): o que o `isValidAssetDataUrl` confere.
+const GLB = `data:model/gltf-binary;base64,${btoa(
+  String.fromCharCode(0x67, 0x6c, 0x54, 0x46, 2, 0, 0, 0, 12, 0, 0, 0),
+)}`
 
-/** Asset do projeto ligado ao desenho `d1` da biblioteca pessoal. */
-function seedProjectWithDrawingAsset(libId = 'personal:d1'): void {
+function seedProject(assets: ProjectAsset[]): void {
   const project = createEmptyProject('p1', 'Meu Jogo')
-  project.assets = [
-    { id: 'a1', name: 'heroi', kind: 'image', dataUrl: PNG, source: 'library', libId },
-  ]
+  project.assets = assets
   useProjectStore.setState({ project, isDirty: false, saveError: null })
 }
 
-function renderPanel(onEditDrawing: ((id: string) => void) | null) {
+/** Asset do projeto ligado ao desenho `d1` da biblioteca pessoal. */
+function seedProjectWithDrawingAsset(libId = 'personal:d1', over: Partial<ProjectAsset> = {}) {
+  seedProject([
+    { id: 'a1', name: 'heroi', kind: 'image', dataUrl: PNG, source: 'library', libId, ...over },
+  ])
+}
+
+function moldaModel(): ProjectAsset {
+  return {
+    id: 'a1',
+    name: 'nave',
+    kind: 'model3d',
+    dataUrl: GLB,
+    originalFileName: 'nave.glb',
+    source: 'library',
+    libId: 'personal:m1',
+    libOrigin: 'molda',
+  }
+}
+
+/** "Trazer do Pinta" presente: a seção "Meus desenhos" some. */
+const pintaLibrary: PintaLibraryAdapter = {
+  list: async () => [],
+  import: async () => {
+    throw new Error('não usado')
+  },
+}
+
+function renderPanel(
+  onEditDrawing: ((id: string) => void) | null,
+  options: {
+    onEditCreation?: (id: string) => void
+    withPintaLibrary?: boolean
+    pintaLibrary?: PintaLibraryAdapter | null
+    moldaLibrary?: MoldaLibraryAdapter | null
+  } = {},
+) {
+  const providedPintaLibrary =
+    options.pintaLibrary === undefined
+      ? options.withPintaLibrary
+        ? pintaLibrary
+        : null
+      : options.pintaLibrary
   return render(
-    <StudioEditDrawingProvider value={onEditDrawing}>
-      <AssetsPanel open onClose={() => {}} />
-    </StudioEditDrawingProvider>,
+    <StudioPintaLibraryProvider value={providedPintaLibrary}>
+      <StudioMoldaLibraryProvider value={options.moldaLibrary ?? null}>
+        <StudioEditDrawingProvider value={onEditDrawing}>
+          <StudioEditCreationProvider value={options.onEditCreation ?? null}>
+            <AssetsPanel open onClose={() => {}} />
+          </StudioEditCreationProvider>
+        </StudioEditDrawingProvider>
+      </StudioMoldaLibraryProvider>
+    </StudioPintaLibraryProvider>,
   )
 }
 
 beforeEach(async () => {
   dbs.clear()
+  failWrites = false
   localStorage.clear()
   releaseDrawingSyncProfile('perfil-1')
   setStorageNamespace('perfil-1')
@@ -94,47 +154,178 @@ afterEach(() => {
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })
 
-describe('AssetsPanel — botão "Editar" do desenho', () => {
-  it('aparece nas DUAS seções quando o host liga o callback', async () => {
+describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Molda', () => {
+  it('aparece em "Meus desenhos" E no card do projeto quando o host liga o callback', async () => {
     seedProjectWithDrawingAsset()
     renderPanel(() => {})
-    // "Meus desenhos" (biblioteca) e "No projeto" (a imagem já usada no jogo).
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /^✏️ Editar$/ })).toBeTruthy()
-    })
-    expect(screen.getByRole('button', { name: /editar desenho/i })).toBeTruthy()
+    await waitFor(() => expect(screen.getByRole('button', { name: /^✏️ Editar$/ })).toBeTruthy())
+    expect(screen.getByRole('button', { name: 'Editar heroi no Pinta' })).toBeTruthy()
   })
 
   it('entrega o id do desenho do Pinta (não o id do asset do projeto)', async () => {
     seedProjectWithDrawingAsset()
     const abertos: string[] = []
     renderPanel((id) => abertos.push(id))
-    await waitFor(() => screen.getByRole('button', { name: /editar desenho/i }))
-    screen.getByRole('button', { name: /editar desenho/i }).click()
-    expect(abertos).toEqual(['d1'])
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar heroi no Pinta' }))
+    await waitFor(() => expect(abertos).toEqual(['d1']))
+  })
+
+  it('com o "Trazer do Pinta" presente a seção some, mas o card do projeto CONTINUA com o botão', async () => {
+    seedProjectWithDrawingAsset()
+    renderPanel(() => {}, { withPintaLibrary: true })
+    await screen.findByRole('button', { name: 'Editar heroi no Pinta' })
+    expect(screen.queryByRole('button', { name: /^✏️ Editar$/ })).toBeNull()
   })
 
   it('sem o callback do host (aula/admin) nenhum botão aparece', async () => {
     seedProjectWithDrawingAsset()
     renderPanel(null)
-    // Espera a biblioteca carregar para não passar por render vazio.
     await waitFor(() => expect(screen.getAllByAltText('heroi').length).toBeGreaterThan(0))
     expect(screen.queryByRole('button', { name: /editar/i })).toBeNull()
   })
 
-  it('imagem cujo desenho foi APAGADO no Pinta não oferece editar no card do projeto', async () => {
-    seedProjectWithDrawingAsset('personal:sumiu')
-    renderPanel(() => {})
-    await waitFor(() => screen.getByRole('button', { name: /^✏️ Editar$/ }))
-    expect(screen.queryByRole('button', { name: /editar desenho/i })).toBeNull()
+  it('registro pessoal AUSENTE (outro aparelho): o botão fica e o clique REPARA a biblioteca antes de abrir', async () => {
+    seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })
+    const abertos: string[] = []
+    renderPanel((id) => abertos.push(id))
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar heroi no Pinta' }))
+    await waitFor(() => expect(abertos).toEqual(['sumiu']))
+    const repaired = await getPersonalAsset('sumiu')
+    // O nome pode ganhar sufixo (o `d1` da biblioteca já se chama "heroi"); a revisão
+    // do projeto (`libRevision`) vira o `updatedAt` do registro reparado.
+    expect(repaired).toMatchObject({ id: 'sumiu', kind: 'image', dataUrl: PNG, updatedAt: 77 })
+    expect(repaired?.name).toMatch(/^heroi/)
+  })
+
+  it('não abre o editor quando o reparo da biblioteca falha', async () => {
+    seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })
+    const abertos: string[] = []
+    renderPanel((id) => abertos.push(id))
+    failWrites = true
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar heroi no Pinta' }))
+
+    await screen.findByRole('alert')
+    expect(abertos).toEqual([])
   })
 
   it('imagem enviada do computador nunca oferece editar', async () => {
-    const project = createEmptyProject('p1', 'Meu Jogo')
-    project.assets = [{ id: 'a1', name: 'foto', kind: 'image', dataUrl: PNG, source: 'upload' }]
-    useProjectStore.setState({ project, isDirty: false, saveError: null })
+    seedProject([{ id: 'a1', name: 'foto', kind: 'image', dataUrl: PNG, source: 'upload' }])
     renderPanel(() => {})
     await waitFor(() => screen.getByRole('button', { name: /^✏️ Editar$/ }))
-    expect(screen.queryByRole('button', { name: /editar desenho/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /editar foto/i })).toBeNull()
+  })
+
+  it('textura do Molda (imagem com libOrigin molda) abre o MOLDA, nunca o Pinta', async () => {
+    seedProject([
+      {
+        id: 'a1',
+        name: 'grama',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:t1',
+        libOrigin: 'molda',
+      },
+    ])
+    const desenhos: string[] = []
+    const criacoes: string[] = []
+    renderPanel((id) => desenhos.push(id), { onEditCreation: (id) => criacoes.push(id) })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar grama no Molda' }))
+    await waitFor(() => expect(criacoes).toEqual(['t1']))
+    expect(desenhos).toEqual([])
+    expect(screen.queryByRole('button', { name: /grama no Pinta/ })).toBeNull()
+  })
+
+  it('legado sem libOrigin: a origem vem do registro pessoal (textura gravada antes do campo)', async () => {
+    await savePersonalAsset({ id: 't2', name: 'grama', dataUrl: PNG, origin: 'molda' })
+    seedProject([
+      {
+        id: 'a1',
+        name: 'grama',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:t2',
+      },
+    ])
+    renderPanel(() => {}, { onEditCreation: () => {} })
+    await screen.findByRole('button', { name: 'Editar grama no Molda' })
+  })
+
+  it('legado sem registro local resolve a origem pelo catálogo do Molda e a persiste', async () => {
+    seedProject([
+      {
+        id: 'a1',
+        name: 'grama',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:t-catalogo',
+      },
+    ])
+    const moldaLibrary: MoldaLibraryAdapter = {
+      list: async () => [
+        {
+          id: 't-catalogo',
+          name: 'grama',
+          kind: 'texture',
+          updatedAt: 1,
+          thumbDataUrl: null,
+        },
+      ],
+      import: async () => {
+        throw new Error('não usado')
+      },
+    }
+    renderPanel(() => {}, { onEditCreation: () => {}, moldaLibrary })
+
+    await screen.findByRole('button', { name: 'Editar grama no Molda' })
+    expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBe('molda')
+  })
+
+  it('legado de imagem ainda ambíguo não adivinha Pinta e pede nova importação', async () => {
+    seedProjectWithDrawingAsset('personal:sem-origem')
+    const emptyPinta: PintaLibraryAdapter = {
+      list: async () => [],
+      import: async () => {
+        throw new Error('não usado')
+      },
+    }
+    const emptyMolda: MoldaLibraryAdapter = {
+      list: async () => [],
+      import: async () => {
+        throw new Error('não usado')
+      },
+    }
+    renderPanel(() => {}, {
+      onEditCreation: () => {},
+      pintaLibrary: emptyPinta,
+      moldaLibrary: emptyMolda,
+    })
+
+    await screen.findByText(/importe novamente pelo Pinta ou Molda/i)
+    expect(screen.queryByRole('button', { name: /Editar heroi/ })).toBeNull()
+  })
+
+  it('modelo .glb do Molda: o card de Modelos 3D entrega o id da criação e repara o registro 3D', async () => {
+    seedProject([moldaModel()])
+    const criacoes: string[] = []
+    renderPanel(() => {}, { onEditCreation: (id) => criacoes.push(id) })
+    fireEvent.click(await screen.findByRole('button', { name: 'Editar nave no Molda' }))
+    await waitFor(() => expect(criacoes).toEqual(['m1']))
+    expect(await getPersonalAsset('m1')).toMatchObject({
+      kind: 'model3d',
+      origin: 'molda',
+      originalFileName: 'nave.glb',
+      dataUrl: GLB,
+    })
+  })
+
+  it('sem o callback do Molda, o modelo do Molda fica sem botão (mesmo com o do Pinta ligado)', async () => {
+    seedProject([moldaModel()])
+    renderPanel(() => {})
+    await waitFor(() => screen.getByRole('button', { name: /^✏️ Editar$/ }))
+    expect(screen.queryByRole('button', { name: /Editar nave/ })).toBeNull()
   })
 })

@@ -17,6 +17,12 @@
  * A criança não vê nada disso acontecer: a troca é silenciosa. Só a RECUSA
  * aparece (ver `failures`), senão o jogo ficaria com a arte velha e ela acharia
  * que deu certo.
+ *
+ * Desde 09/2026 a mesma sincronia serve ao MOLDA: um modelo (`.glb`), céu (`.hdr`)
+ * ou textura (`.png`) trazido pelo "Trazer do Molda" também guarda
+ * `libId: 'personal:<id>'` e, salvo lá, regrava a biblioteca pessoal com o `kind`
+ * dele (a volta da ponte, `resyncToStudio` do host). Nos 3D o `originalFileName`
+ * viaja junto: sem ele o load do projeto DESCARTA o asset.
  */
 
 import { ulid } from 'ulid'
@@ -133,7 +139,10 @@ export function personalIdOf(asset: Pick<ProjectAsset, 'libId'>): string | null 
  */
 export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | null): boolean {
   if (!drawing) return false
-  if (asset.kind !== 'image') return false
+  if (asset.kind === 'audio') return false
+  // Tipo cruzado (um registro pessoal reaproveitado por outro tipo) nunca sincroniza:
+  // um `.glb` no lugar de uma imagem quebraria o jogo em silêncio.
+  if (drawing.kind !== asset.kind) return false
   if (asset.dataUrl === drawing.dataUrl) return false
   return true
 }
@@ -158,7 +167,7 @@ export async function reconcileDrawingsFromRestoredProject(
   // UMA leitura em lote da biblioteca (não uma por asset): o restauro roda dentro do
   // orçamento da descida, e 30 projetos × 5 desenhos eram 150 leituras sequenciais.
   const personalIds = nextAssets
-    .filter((asset): asset is ProjectAsset => !!asset && asset.kind === 'image')
+    .filter((asset): asset is ProjectAsset => !!asset && asset.kind !== 'audio')
     .map((asset) => personalIdOf(asset))
     .filter((id): id is string => id !== null)
   const drawings =
@@ -167,10 +176,11 @@ export async function reconcileDrawingsFromRestoredProject(
     const asset = nextAssets[index]
     if (!asset) continue
     const id = personalIdOf(asset)
-    if (!id || asset.kind !== 'image') continue
+    if (!id || asset.kind === 'audio') continue
     try {
       const drawing = drawings.get(id) ?? null
       if (!drawing) continue
+      if (drawing.kind !== asset.kind) continue
       if (drawing.dataUrl === asset.dataUrl) {
         if (asset.libRevision !== drawing.updatedAt) {
           nextAssets[index] = { ...asset, libRevision: drawing.updatedAt }
@@ -187,7 +197,10 @@ export async function reconcileDrawingsFromRestoredProject(
         {
           id: copyId,
           name: asset.name,
+          kind: asset.kind,
+          origin: asset.libOrigin ?? drawing.origin,
           dataUrl: asset.dataUrl,
+          originalFileName: asset.originalFileName,
           width: asset.width,
           height: asset.height,
           sprite: asset.sprite,
@@ -334,7 +347,7 @@ async function sweepUnmeasured(
           pushFailure(
             result,
             context.state,
-            `O desenho "${drawing.name}" cresceu e não cabe mais no jogo "${summary.name}".`,
+            `${drawing.kind === 'image' ? 'O desenho' : 'A criação'} "${drawing.name}" cresceu e não cabe mais no jogo "${summary.name}".`,
           )
           return asset
         }
@@ -380,6 +393,7 @@ async function syncOpenProject(
     if (!drawingNeedsSync(asset, drawing) || !drawing) continue
     const error = storeApi.getState().updateAssetImage(asset.id, {
       dataUrl: drawing.dataUrl,
+      originalFileName: drawing.originalFileName,
       width: drawing.width,
       height: drawing.height,
       sprite: drawing.sprite,
@@ -419,6 +433,8 @@ function mergeDrawingIntoAsset(asset: ProjectAsset, drawing: PersonalAsset): Pro
     ...(width ? { width } : {}),
     ...(height ? { height } : {}),
     libRevision: drawing.updatedAt,
+    // 3D: o nome do arquivo novo (a validação do load cruza extensão × MIME × assinatura).
+    ...(drawing.originalFileName ? { originalFileName: drawing.originalFileName } : {}),
   }
   if (sprite) next.sprite = sprite
   else delete next.sprite

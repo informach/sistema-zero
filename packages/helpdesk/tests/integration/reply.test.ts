@@ -56,6 +56,26 @@ async function seedTicketWithInbound(t: TestApp): Promise<string> {
 }
 
 describe('responder ticket', () => {
+  it('recusa ticket automatizado antes de qualquer envio externo', async () => {
+    const t = buildTestApp({ gmailEnabled: true })
+    seedConnection(t)
+    const ticket = makeTicket({
+      status: 'closed',
+      triage: 'system',
+      triageRule: 'system:sender-local-part',
+      triagedAt: new Date(),
+    })
+    await t.repos.tickets.create(ticket)
+
+    const res = await request(t.app, 'POST', `/helpdesk/tickets/${ticket.id}/reply`, {
+      body: { body: 'Resposta indevida.', version: 0 },
+    })
+
+    expect(res.status).toBe(409)
+    expect(await json(res)).toMatchObject({ error: { code: 'TICKET_NOT_HUMAN' } })
+    expect(t.gmailClient.sent).toHaveLength(0)
+  })
+
   it('envia pela Gmail, persiste outbound e marca waiting', async () => {
     const t = buildTestApp({ gmailEnabled: true })
     seedConnection(t)

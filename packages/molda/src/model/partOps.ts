@@ -17,6 +17,8 @@ import {
 import { normalizePartName } from '../core/names'
 import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
 import { normalizeBox, normalizeRotation, resolvePaletteColors } from '../core/sanitize'
+import { buildPartGeometry } from './geometry'
+import { BOX_MESH_FACES, boxMesh, normalizeMesh, roundMesh, scaleMeshToBox } from './mesh'
 import { faceSkinSize, partSize } from './shapes'
 import { isSkinBlank, resampleSkin } from './skinOps'
 import { bakeTwins, partCrossesMirror, syncTwins } from './twins'
@@ -26,6 +28,8 @@ export const DEFAULT_PART_SIZE: Record<ShapeId, Vec3> = {
   wedge: [2, 1, 2],
   cylinder: [2, 2, 2],
   sphere: [2, 2, 2],
+  // A 5ª forma: uma caixa 2×2×2 já convertida em malha (vértices/arestas/faces editáveis).
+  mesh: [2, 2, 2],
 }
 
 export interface Box {
@@ -281,6 +285,8 @@ export function setPartBox(
     sizeBefore[1] === sizeAfter[1] &&
     sizeBefore[2] === sizeAfter[2]
   const next: MoldaPart = { ...part, from: box.from, to: box.to }
+  // Malha: os vértices acompanham a caixa (mover translada; redimensionar escala).
+  if (part.mesh) next.mesh = scaleMeshToBox(part.mesh, box)
   const hasTwin = model.parts.some((candidate) => candidate.mirrorOf === part.id)
   if (
     model.mirrorX &&
@@ -321,6 +327,36 @@ export function movePartBy(model: MoldaModelAsset, id: string, delta: Vec3): Mol
   )
 }
 
+/**
+ * Move VÁRIAS peças pelo MESMO delta (as setas do teclado e a alça do grupo):
+ * o delta é preso à grade pelo grupo inteiro (se uma peça bate na borda, todas
+ * param juntas, e o grupo não deforma). Gêmeos e peças trancadas ficam de fora.
+ */
+export function movePartsBy(
+  model: MoldaModelAsset,
+  ids: readonly string[],
+  delta: Vec3,
+): MoldaModelAsset {
+  const parts = ids
+    .map((id) => findPart(model, id))
+    .filter((part): part is MoldaPart => !!part && !part.mirrorOf && !part.locked)
+  if (parts.length === 0) return model
+  const gridMin: Vec3 = [-MOLDA_LIMITS.gridHalf, 0, -MOLDA_LIMITS.gridHalf]
+  const gridMax: Vec3 = [MOLDA_LIMITS.gridHalf, MOLDA_LIMITS.gridHeight, MOLDA_LIMITS.gridHalf]
+  const clamped: Vec3 = [delta[0], delta[1], delta[2]]
+  for (let i = 0; i < 3; i += 1) {
+    for (const part of parts) {
+      const lo = (gridMin[i] as number) - (part.from[i] as number)
+      const hi = (gridMax[i] as number) - (part.to[i] as number)
+      clamped[i] = Math.min(Math.max(clamped[i] as number, lo), hi)
+    }
+  }
+  if (clamped.every((value) => value === 0)) return model
+  let next = model
+  for (const part of parts) next = movePartBy(next, part.id, clamped)
+  return next
+}
+
 /** Tamanho novo ancorado em `from` (o canto de trás, embaixo, à esquerda). */
 export function setPartSize(model: MoldaModelAsset, id: string, size: Vec3): MoldaModelAsset {
   const part = findPart(model, id)
@@ -337,6 +373,8 @@ export interface PartPatch {
   color?: number
   rotation?: Vec3
   origin?: Vec3 | null
+  locked?: boolean
+  hidden?: boolean
 }
 
 export function updatePart(model: MoldaModelAsset, id: string, patch: PartPatch): MoldaModelAsset {
@@ -355,6 +393,14 @@ export function updatePart(model: MoldaModelAsset, id: string, patch: PartPatch)
         : part.color
   }
   if (patch.rotation !== undefined) next.rotation = normalizeRotation(patch.rotation)
+  if (patch.locked !== undefined) {
+    if (patch.locked) next.locked = true
+    else delete next.locked
+  }
+  if (patch.hidden !== undefined) {
+    if (patch.hidden) next.hidden = true
+    else delete next.hidden
+  }
   if (patch.origin === null) delete next.origin
   else if (patch.origin) {
     next.origin = [
@@ -407,6 +453,27 @@ export function addExtraColor(
   return { model: next, index: colors.length }
 }
 
+/**
+ * Troca a cor de UMA extra no lugar (o GESTO do seletor nativo: cada passo do arrasto muda a
+ * mesma extra, em vez de criar outra). Mesma referência quando nada muda: índice fora das
+ * extras, hex igual, ou hex que já existe em qualquer índice (o sanitize deduplica e
+ * DESLOCARIA os índices das seguintes, quebrando as peças pintadas com elas).
+ */
+export function updateExtraColor(
+  model: MoldaModelAsset,
+  index: number,
+  hex: string,
+): MoldaModelAsset {
+  const extras = model.extraColors ?? []
+  const at = index - PALETTE_SIZE
+  if (at < 0 || at >= extras.length) return model
+  if (extras[at] === hex) return model
+  if (resolvePaletteColors(model).includes(hex)) return model
+  const nextExtras = [...extras]
+  nextExtras[at] = hex
+  return { ...model, extraColors: nextExtras }
+}
+
 /** Troca a resolução das peles: toda pele é re-amostrada para o tamanho novo. */
 export function setTexelsPerUnit(
   model: MoldaModelAsset,
@@ -449,4 +516,95 @@ export function removeExtraColor(model: MoldaModelAsset, index: number): MoldaMo
     return { ...part, color, faces }
   })
   return syncTwins({ ...base, parts })
+}
+
+/**
+ * "Transformar em malha": a peça vira `shape: 'mesh'` com a MESMA geometria.
+ * Caixa: 8 vértices e 6 quads cujas bases são idênticas às da caixa, então toda
+ * pele migra sem re-amostrar (`f_px` ← `px`, …). Rampa: as 3 faces retangulares
+ * migram; as laterais triangulares perdem a pele (a base de um triângulo não é a
+ * da rampa). Cilindro e bola: a malha vem dos triângulos da geometria (vértices
+ * unidos) e a pele curva se perde. `null` = já é malha ou é gêmeo.
+ */
+export function boxToMesh(
+  model: MoldaModelAsset,
+  id: string,
+): { model: MoldaModelAsset; lostFaces: FaceId[] } | null {
+  const part = findPart(model, id)
+  if (!part || part.mirrorOf || part.shape === 'mesh') return null
+  const lostFaces: FaceId[] = []
+  const faces: MoldaPart['faces'] = {}
+  let mesh: NonNullable<MoldaPart['mesh']>
+  if (part.shape === 'box' || part.shape === 'wedge') {
+    const [x0, y0, z0] = part.from
+    const [x1, y1, z1] = part.to
+    mesh =
+      part.shape === 'box'
+        ? boxMesh(part.from, part.to)
+        : {
+            // A rampa: altura cheia em z = from.z, zero em z = to.z; os mesmos cantos
+            // da caixa, sem os dois de cima em +z.
+            vertices: {
+              v_000: [x0, y0, z0],
+              v_001: [x0, y0, z1],
+              v_010: [x0, y1, z0],
+              v_100: [x1, y0, z0],
+              v_101: [x1, y0, z1],
+              v_110: [x1, y1, z0],
+            },
+            faces: {
+              f_ny: { v: ['v_001', 'v_000', 'v_100', 'v_101'] },
+              f_nz: { v: ['v_110', 'v_100', 'v_000', 'v_010'] },
+              f_slope: { v: ['v_010', 'v_001', 'v_101', 'v_110'] },
+              f_px: { v: ['v_110', 'v_101', 'v_100'] },
+              f_nx: { v: ['v_010', 'v_000', 'v_001'] },
+            },
+          }
+    const kept = part.shape === 'box' ? BOX_MESH_FACES : (['ny', 'nz', 'slope'] as const)
+    for (const face of kept) {
+      const skin = part.faces[face]
+      if (skin) faces[`f_${face}`] = skin
+    }
+    if (part.shape === 'wedge') {
+      for (const face of ['px', 'nx'] as const) if (part.faces[face]) lostFaces.push(face)
+    }
+  } else {
+    const built = buildPartGeometry(part)
+    const vertices: Record<string, Vec3> = {}
+    const keyOf = new Map<string, string>()
+    const meshFaces: NonNullable<MoldaPart['mesh']>['faces'] = {}
+    const precision = MOLDA_LIMITS.meshPrecision
+    const vertexKey = (p: Vec3): string => {
+      const rounded = p.map((n) => Math.round(n / precision))
+      const id = rounded.join(',')
+      let key = keyOf.get(id)
+      if (!key) {
+        key = `v_${Object.keys(vertices).length.toString(36)}`
+        keyOf.set(id, key)
+        vertices[key] = [
+          (rounded[0] as number) * precision,
+          (rounded[1] as number) * precision,
+          (rounded[2] as number) * precision,
+        ]
+      }
+      return key
+    }
+    for (let t = 0; t < built.triangleCount; t += 1) {
+      const p = built.positions
+      const o = t * 9
+      const keys = [
+        vertexKey([p[o] as number, p[o + 1] as number, p[o + 2] as number]),
+        vertexKey([p[o + 3] as number, p[o + 4] as number, p[o + 5] as number]),
+        vertexKey([p[o + 6] as number, p[o + 7] as number, p[o + 8] as number]),
+      ]
+      if (new Set(keys).size < 3) continue
+      meshFaces[`f_${t.toString(36)}`] = { v: keys }
+    }
+    mesh = { vertices, faces: meshFaces }
+    for (const face of Object.keys(part.faces) as FaceId[])
+      if (part.faces[face]) lostFaces.push(face)
+  }
+  const next: MoldaPart = { ...part, shape: 'mesh', mesh: normalizeMesh(roundMesh(mesh)), faces }
+  const parts = model.parts.map((item) => (item.id === id ? next : item))
+  return { model: syncTwins({ ...model, parts }), lostFaces }
 }

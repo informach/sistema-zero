@@ -1098,8 +1098,9 @@ ganha os blocos que a usam.
   `isValidAssetDataUrl` com o kind; `maxTotalChars` 24 M → 40 M. ⭐ **`origin: 'molda'`**: a
   textura do Molda é imagem comum, mas NÃO é desenho do Pinta — sem a marca o painel oferecia
   "✏️ editar desenho" e abriria o Pinta num id do Molda (visto no QA do playground). "Meus
-  desenhos" e `editableDrawingIds` filtram `kind === 'image' && origin !== 'molda'`; a
-  `personalSync` já só varria imagens.
+  desenhos" filtra `kind === 'image' && origin !== 'molda'` (o `editableDrawingIds` saiu em 06/09: o
+  card decide por `libOrigin`/registro/`kind`, ver §"✏️ Editar de verdade"); a `personalSync` varre
+  também os 3D desde 06/09.
 - **Blocos novos do Jogo 3D** (`0.29.0 → 0.30.0`): `sz_g3d_create_model_file` ("Criar o objeto ⟨X⟩
   com o modelo ⟨M⟩ na cena ⟨W⟩ tamanho ⟨S⟩", em 🧊 Formas & modelos, `field_asset_picker`
   `kind:'3d' filter:'model3d'`, `SIZE` com sombra 1) e `sz_g3d_sky_photo` ("Usar o céu 360° ⟨P⟩ na
@@ -1168,8 +1169,8 @@ A ponte deixou de ser mão única. Duas peças:
 **1. Botão "Editar"** — prop de host nova **`onEditDrawing?: (drawingId) => void`**
 (`studio/types.ts` → latch no `StudioCore` → contexto `studio/edit-drawing.ts`, molde exato do
 `onCloudSync`). O `AssetsPanel` mostra `✏️ Editar` em "Meus desenhos" E `✏️ editar desenho` no card
-de "No projeto" (só quando `libId` é `personal:*` **e** o desenho ainda existe na biblioteca — apagado
-no Pinta esconde o botão em vez de abrir editor vazio). Sem a prop, nenhum botão: aula e admin
+de "No projeto" (⚠️ a exigência "o desenho ainda existe na biblioteca" foi REVOGADA em 06/09/2026: o
+botão repara o registro no clique, ver §"✏️ Editar de verdade"). Sem a prop, nenhum botão: aula e admin
 seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
 
 **2. Sincronia de volta** — `src/asset-library/personalSync.ts`
@@ -1202,6 +1203,38 @@ seguem intocados. O host (kids) abre `/pinta?desenho=<id>` em aba nova.
 Testes: `personalSync.test.ts` + `components/assets/AssetsPanelEditDrawing.test.tsx`. O playground
 liga a feature (`setPersonalAssetsNamespace('playground')` + `onEditDrawing`) — QA em navegador real
 feito: jogo aberto, jogo FECHADO, preview e as duas miniaturas.
+
+### "✏️ Editar de verdade", para o Pinta E o Molda (06/09/2026)
+
+Relato dela: "sumiu o Editar do asset que está no projeto". Causas: (1) o botão grande morava em
+"Meus desenhos", que MORRE com o `pintaLibrary`, sobrando um link de 10px no card; (2) o card exigia
+o registro na biblioteca pessoal (`editableDrawingIds`), e ela é LOCAL por aparelho: um jogo que
+desce da nuvem chega com `libId: personal:<id>` e sem registro, e o botão sumia para sempre; (3) o
+Molda não tinha nada (nem botão em "Modelos 3D", nem sincronia de volta). Desenho:
+- **`ProjectAsset.libOrigin?: 'pinta' | 'molda'`** (`core/project.ts`, saneado junto do `libId`;
+  gravado por `PintaImportDialog`, `MoldaImportDialog` e `addFromPersonal`). Legado sem o campo:
+  `creationOriginOf` (`components/assets/creationOrigin.ts`) decide pelo registro pessoal e, na falta
+  dele, pelo `kind` (3D → Molda; imagem → Pinta). A textura do Molda abre o MOLDA, nunca o Pinta.
+- **Prop de host `onEditCreation?: (creationId) => void`** (`studio/edit-creation.ts`, gêmeo do
+  `onEditDrawing`; latch no `StudioCore`). O kids só passa com posse do Molda.
+- **`EditInOriginButton`** (`aria-label` "Editar <nome> no Pinta|Molda", alvo ≥ 32px) no card de "No
+  projeto" E no de "Modelos 3D", sempre que `libId` é `personal:*` e o callback da origem existe.
+  ⭐ NÃO exige o registro pessoal: no clique, `openInOriginApp` REPARA a biblioteca
+  (`savePersonalAsset` a partir dos bytes do projeto, com `kind`/`origin`/`originalFileName` e
+  `updatedAt = libRevision`) e só então abre; sem o reparo a guarda `getPersonalAsset` do
+  `resyncToStudio` do host recusaria a volta. O efeito de carga ganhou `.catch` (a rejeição era muda).
+- **`personalSync` com 3D**: `drawingNeedsSync` aceita `model3d`/`environment3d` e recusa tipo
+  cruzado; `mergeDrawingIntoAsset` e `updateAssetImage` levam o `originalFileName` (sem ele o load
+  DESCARTA o asset 3D); `updateAssetImage` valida 3D por extensão × MIME × assinatura e segue sem
+  tocar em `name`/`id`/`libId`; `reconcileDrawingsFromRestoredProject` adota cópias 3D com
+  `kind`/`origin`/`originalFileName`.
+- A volta do Molda é do pacote dele (`useStudioResync` + `MoldaHostAdapter.resyncToStudio`, ver
+  `packages/molda/CLAUDE.md`); o host regrava a biblioteca com `origin: 'molda'` e esta sincronia faz
+  o resto.
+
+Testes: `AssetsPanelEditDrawing.test.tsx` (10 casos: com `pintaLibrary`, reparo, textura → Molda,
+legado por registro, card 3D, sem callback do Molda), `personalSync.test.ts` §3D,
+`projectAssets.test.ts` (sanitize do `libOrigin`) e os dois `*ImportDialog.test.tsx`.
 
 ### "Trazer do Pinta" — fluxo PULL (08/2026, substitui a seção "Meus desenhos")
 

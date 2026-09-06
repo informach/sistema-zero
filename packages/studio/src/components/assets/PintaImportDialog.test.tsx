@@ -189,6 +189,8 @@ describe('PintaImportDialog', () => {
       name: 'dragao-pintado',
       source: 'library',
       libId: 'personal:d1',
+      // Quem edita este desenho é o Pinta (o "✏️ Editar" abre lá).
+      libOrigin: 'pinta',
     })
     // Modal segue aberta; o card importado perde o botão (só o selinho fica) e
     // o OUTRO desenho continua adicionável.

@@ -30,6 +30,8 @@ export const {
   getRoomReadonly,
   getMissionsReadonly,
   getLeagueReadonly,
+  getRanking,
+  getRankingReadonly,
   listTeacherThreadsReadonly,
   getTeacherThreadsUnreadReadonly,
 } = shell.members

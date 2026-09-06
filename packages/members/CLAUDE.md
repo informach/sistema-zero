@@ -1527,7 +1527,10 @@ pending_kind/pending_item_updated_at/pending_thumb` e o contador `last_reserved_
 - **Revisão-base (2ª revisão de 18/08; delete otimista em 05/09):** a reserva aceita
   `baseRevision` (a revisão da nuvem que o APARELHO conhece; 0 = nunca viu). Presente e diferente
   da corrente, inclusive em lápide ou linha já compactada →
-  `CREATION_STALE_BASE` (409, `CreationStaleBaseError` com `currentRevision`): um aparelho
+  `CREATION_STALE_BASE` (409, `CreationStaleBaseError` com `currentRevision`; desde 06/09/2026 o
+  corpo do 409 traz `details: { currentRevision }` — o `error-handler` o expõe para o cliente
+  decidir entre reenviar o DELETE com a revisão autoritativa e restaurar a versão da nuvem SEM
+  baixar o item): um aparelho
   atrasado nunca sobrescreve nem apaga às cegas o que outro subiu depois. Linha ausente aceita
   somente base 0; o `DELETE` exige a base. O cliente kids resolve o 409 preservando/restaurando a
   revisão autoritativa. Lápides com mais de 90 dias são compactadas em lotes de 500 pelo cron,

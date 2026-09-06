@@ -188,11 +188,17 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
       itemUpdatedAt: '2026-06-08T09:00:00.000Z',
       storageRef: null,
     })
-    // Ferramenta irmã não vaza.
+    // Ferramentas irmãs não vazam (o Molda conta à parte: modelos, texturas e céus).
     await insertCreation({
       userId: USER,
       tool: 'studio',
       itemUpdatedAt: '2026-06-09T09:00:00.000Z',
+    })
+    await insertCreation({
+      userId: USER,
+      tool: 'molda',
+      kind: 'model',
+      itemUpdatedAt: '2026-06-10T09:00:00.000Z',
     })
 
     const pinta = await repo.creationsUsageByUsers([USER], 'pinta')
@@ -200,6 +206,9 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
     expect(pinta.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-05T09:00:00.000Z')
     const studio = await repo.creationsUsageByUsers([USER], 'studio')
     expect(studio.get(USER)?.count).toBe(1)
+    const molda = await repo.creationsUsageByUsers([USER], 'molda')
+    expect(molda.get(USER)?.count).toBe(1)
+    expect(molda.get(USER)?.lastActivityAt?.toISOString()).toBe('2026-06-10T09:00:00.000Z')
   })
 
   test('só a identidade exata da biblioteca não conta como desenho', async () => {

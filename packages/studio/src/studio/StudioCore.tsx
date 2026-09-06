@@ -25,6 +25,7 @@ import {
   resolveStudioConfig,
   StudioConfigProvider,
 } from './config'
+import { StudioEditCreationProvider } from './edit-creation'
 import { StudioEditDrawingProvider } from './edit-drawing'
 import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioI18nProvider } from './i18n'
@@ -99,6 +100,7 @@ function StudioCoreBody({
   shareDisabledReason,
   onCloudSync,
   onEditDrawing,
+  onEditCreation,
   pintaLibrary,
   moldaLibrary,
   showExamples,
@@ -135,6 +137,9 @@ function StudioCoreBody({
   // "Editar o desenho no Pinta" — mesmo latch: o host passa uma referência
   // estável e o painel de Imagens decide se mostra o botão. `null` → sem botão.
   const [editDrawingValue] = useState(() => onEditDrawing ?? null)
+
+  // "Editar a criação no Molda" — o gêmeo do Pinta, mesmo latch. `null` → sem botão.
+  const [editCreationValue] = useState(() => onEditCreation ?? null)
 
   // "Trazer do Pinta" — mesmo latch; o painel de Imagens mostra o botão e a
   // modal quando presente (e esconde a seção "Meus desenhos"). `null` → nada.
@@ -367,88 +372,92 @@ function StudioCoreBody({
         <StudioShareProvider value={shareValue}>
           <StudioCloudSyncProvider value={cloudSyncValue}>
             <StudioEditDrawingProvider value={editDrawingValue}>
-              <StudioPintaLibraryProvider value={pintaLibraryValue}>
-                <StudioMoldaLibraryProvider value={moldaLibraryValue}>
-                  <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-                    <StudioExamplesVisibleProvider value={examplesVisible}>
-                      <StudioActivityProvider value={activityValue}>
-                        <StudioConfigProvider value={config}>
-                          <StudioThemeProvider value={effectiveTheme}>
-                            <div
-                              ref={studioRootRef}
-                              data-sz-theme={effectiveTheme}
-                              className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                              // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
-                              // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
-                              // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
-                              // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
-                              // é PORTALADO pro document.body — fora da cerca, segue intacto.
-                              style={{
-                                fontFamily: 'var(--font-family-sans)',
-                                isolation: 'isolate',
-                                ...style,
-                              }}
-                            >
-                              {sanitized === null ? (
-                                <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                                  <p className="text-sm">
-                                    Projeto inválido — confira o initialProject passado ao Studio.
-                                  </p>
-                                </div>
-                              ) : projectAccessBlocked ? (
-                                <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
-                                  <p className="text-base font-semibold text-sz-fg">
-                                    Este projeto usa ferramentas que você ainda vai conquistar
-                                  </p>
-                                  <p className="max-w-md text-sm">
-                                    Continue avançando na Carreira do Criador. O projeto ficou
-                                    guardado e abrirá normalmente quando essas ferramentas forem
-                                    liberadas.
-                                  </p>
-                                  {onExit ? (
-                                    <button
-                                      type="button"
-                                      className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                                      onClick={onExit}
-                                    >
-                                      Voltar
-                                    </button>
-                                  ) : null}
-                                </div>
-                              ) : hasProject ? (
-                                <ErrorBoundary
-                                  fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                                  resetKeys={[sanitizedId]}
-                                  label="Studio"
-                                >
-                                  <div className="flex h-full min-h-0 flex-col lg:flex-row">
-                                    {taskSession ? <TaskGuidePanel session={taskSession} /> : null}
-                                    <div className="min-h-0 min-w-0 flex-1">
-                                      <Shell
-                                        onExit={onExit}
-                                        onPromoteToPro={onPromoteToPro}
-                                        canToggleTheme={theme === undefined}
-                                        onRenderError={(area, error) =>
-                                          onError?.({
-                                            kind: 'render',
-                                            area,
-                                            message: error.message,
-                                            ...(error.stack ? { stack: error.stack } : {}),
-                                          })
-                                        }
-                                      />
-                                    </div>
+              <StudioEditCreationProvider value={editCreationValue}>
+                <StudioPintaLibraryProvider value={pintaLibraryValue}>
+                  <StudioMoldaLibraryProvider value={moldaLibraryValue}>
+                    <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+                      <StudioExamplesVisibleProvider value={examplesVisible}>
+                        <StudioActivityProvider value={activityValue}>
+                          <StudioConfigProvider value={config}>
+                            <StudioThemeProvider value={effectiveTheme}>
+                              <div
+                                ref={studioRootRef}
+                                data-sz-theme={effectiveTheme}
+                                className={['h-full min-h-0', className].filter(Boolean).join(' ')}
+                                // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                                // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                                // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                                // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                                // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                                style={{
+                                  fontFamily: 'var(--font-family-sans)',
+                                  isolation: 'isolate',
+                                  ...style,
+                                }}
+                              >
+                                {sanitized === null ? (
+                                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                                    <p className="text-sm">
+                                      Projeto inválido — confira o initialProject passado ao Studio.
+                                    </p>
                                   </div>
-                                </ErrorBoundary>
-                              ) : null}
-                            </div>
-                          </StudioThemeProvider>
-                        </StudioConfigProvider>
-                      </StudioActivityProvider>
-                    </StudioExamplesVisibleProvider>
-                  </StudioShareDisabledProvider>
-                </StudioMoldaLibraryProvider>
-              </StudioPintaLibraryProvider>
+                                ) : projectAccessBlocked ? (
+                                  <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                                    <p className="text-base font-semibold text-sz-fg">
+                                      Este projeto usa ferramentas que você ainda vai conquistar
+                                    </p>
+                                    <p className="max-w-md text-sm">
+                                      Continue avançando na Carreira do Criador. O projeto ficou
+                                      guardado e abrirá normalmente quando essas ferramentas forem
+                                      liberadas.
+                                    </p>
+                                    {onExit ? (
+                                      <button
+                                        type="button"
+                                        className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                        onClick={onExit}
+                                      >
+                                        Voltar
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                ) : hasProject ? (
+                                  <ErrorBoundary
+                                    fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
+                                    resetKeys={[sanitizedId]}
+                                    label="Studio"
+                                  >
+                                    <div className="flex h-full min-h-0 flex-col lg:flex-row">
+                                      {taskSession ? (
+                                        <TaskGuidePanel session={taskSession} />
+                                      ) : null}
+                                      <div className="min-h-0 min-w-0 flex-1">
+                                        <Shell
+                                          onExit={onExit}
+                                          onPromoteToPro={onPromoteToPro}
+                                          canToggleTheme={theme === undefined}
+                                          onRenderError={(area, error) =>
+                                            onError?.({
+                                              kind: 'render',
+                                              area,
+                                              message: error.message,
+                                              ...(error.stack ? { stack: error.stack } : {}),
+                                            })
+                                          }
+                                        />
+                                      </div>
+                                    </div>
+                                  </ErrorBoundary>
+                                ) : null}
+                              </div>
+                            </StudioThemeProvider>
+                          </StudioConfigProvider>
+                        </StudioActivityProvider>
+                      </StudioExamplesVisibleProvider>
+                    </StudioShareDisabledProvider>
+                  </StudioMoldaLibraryProvider>
+                </StudioPintaLibraryProvider>
+              </StudioEditCreationProvider>
             </StudioEditDrawingProvider>
           </StudioCloudSyncProvider>
         </StudioShareProvider>

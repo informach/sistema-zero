@@ -104,8 +104,11 @@ import {
   type CourseMilestones,
   type GamificationProfileRecord,
   type GamificationRanking,
+  type GamificationRankingEntry,
+  type GamificationRankingPage,
   type GamificationRepository,
   type LeagueMembershipRecord,
+  type ListGamificationRankingInput,
   MAX_STREAK_FREEZES,
   type SpendCoinsInput,
   type SpendCoinsResult,
@@ -2689,8 +2692,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   /**
    * Mirror do SQL (PR3b): coorte = PERFIS (linhas de gamification_profiles,
    * não-equipe) da audiência cuja CONTA (account_id) tem matrícula na audiência.
-   * `null` se a conta do requester não tem matrícula (sem acesso). Requester sem
-   * perfil (XP 0) ainda é contado.
+   * `null` se a conta do requester não tem matrícula ou se o perfil não pontuou.
    */
   async getRanking(
     userId: string,
@@ -2707,20 +2709,63 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     if (!accountsWithEntitlement.has(accountId)) return null
 
     const cohortXp: number[] = []
-    let requesterCounted = false
     for (const [key, rec] of this.profiles) {
       if (key !== this.profileKey(rec.userId, audience)) continue // só da audiência
       if (this.privilegedUsers.has(rec.userId)) continue // equipe fora
       const acc = this.accountIds.get(key)
       if (!acc || !accountsWithEntitlement.has(acc)) continue
+      if (rec.xp <= 0) continue
       cohortXp.push(rec.xp)
-      if (rec.userId === userId) requesterCounted = true
     }
     const myXp = this.profiles.get(this.profileKey(userId, audience))?.xp ?? 0
+    if (myXp <= 0) return null
     const ahead = cohortXp.filter((xp) => xp > myXp).length
-    // Requester sem perfil (XP 0) ainda conta como aluno (+1).
-    const totalStudents = cohortXp.length + (requesterCounted ? 0 : 1)
-    return { position: ahead + 1, totalStudents }
+    return { position: ahead + 1, totalStudents: cohortXp.length }
+  }
+
+  async listRanking(input: ListGamificationRankingInput): Promise<GamificationRankingPage> {
+    const accountsWithEntitlement = new Set<string>()
+    for (const entitlement of this.sources?.entitlements.byId.values() ?? []) {
+      if (this.accountHasActiveAudienceAccess(entitlement.userId, input.audience, input.now)) {
+        accountsWithEntitlement.add(entitlement.userId)
+      }
+    }
+
+    const participants: Omit<GamificationRankingEntry, 'position'>[] = []
+    for (const [key, profile] of this.profiles) {
+      if (key !== this.profileKey(profile.userId, input.audience)) continue
+      if (this.privilegedUsers.has(profile.userId) || profile.xp <= 0) continue
+      const accountId = this.accountIds.get(key)
+      if (!accountId || !accountsWithEntitlement.has(accountId)) continue
+      participants.push({
+        userId: profile.userId,
+        accountId,
+        xp: profile.xp,
+        lastActivityDate: profile.lastActivityDate,
+      })
+    }
+    participants.sort((a, b) => b.xp - a.xp || a.userId.localeCompare(b.userId))
+
+    let position = 0
+    let previousXp: number | null = null
+    const ranked = participants.map((participant, index): GamificationRankingEntry => {
+      if (previousXp === null || participant.xp !== previousXp) {
+        position = index + 1
+        previousXp = participant.xp
+      }
+      return { ...participant, position }
+    })
+    const allowed = input.userIds === undefined ? null : new Set(input.userIds)
+    const matches = allowed ? ranked.filter((entry) => allowed.has(entry.userId)) : ranked
+
+    return {
+      entries: matches.slice(input.offset, input.offset + input.limit),
+      totalParticipants: ranked.length,
+      totalMatches: matches.length,
+      me: input.viewerUserId
+        ? (ranked.find((entry) => entry.userId === input.viewerUserId) ?? null)
+        : null,
+    }
   }
 
   /** Mirror do `rankProfiles` do Drizzle: coorte resolvida 1×, ranqueia cada perfil em memória. */
@@ -2746,12 +2791,14 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (this.privilegedUsers.has(rec.userId)) continue
       const acc = this.accountIds.get(key)
       if (!acc || !accountsWithEntitlement.has(acc)) continue
+      if (rec.xp <= 0) continue
       cohortXp.push(rec.xp)
       xpByUser.set(rec.userId, rec.xp)
     }
     const out = new Map<string, number>()
     for (const profileId of profileIds) {
-      const myXp = xpByUser.get(profileId) ?? 0
+      const myXp = xpByUser.get(profileId)
+      if (myXp === undefined || myXp <= 0) continue
       out.set(profileId, cohortXp.filter((xp) => xp > myXp).length + 1)
     }
     return out

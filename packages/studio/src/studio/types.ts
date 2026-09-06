@@ -200,6 +200,13 @@ export interface StudioCommonProps {
    */
   onEditDrawing?: (drawingId: string) => void
   /**
+   * Callback OPCIONAL "editar esta criação no Molda": quando presente, os modelos,
+   * céus e texturas trazidos do Molda ganham o botão "Editar" no painel de Imagens.
+   * O HOST abre o Molda, em aba nova, já naquela criação; o Studio só entrega o id.
+   * Ausente (default) → sem botão. Estável por instância (latchado, igual à `share`).
+   */
+  onEditCreation?: (creationId: string) => void
+  /**
    * Adapter OPCIONAL "Trazer do Pinta": quando presente, o painel de Imagens
    * ganha o botão que abre a modal com TODOS os desenhos da galeria do Pinta
    * (busca + importar direto ao projeto), e a seção "Meus desenhos" some

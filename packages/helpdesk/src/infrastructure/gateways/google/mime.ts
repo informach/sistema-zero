@@ -269,7 +269,7 @@ export function parseGmailMessage(raw: GmailRawMessage): ParsedEmail {
     headers: pickTriageHeaders(header),
     autoSubmitted: header('auto-submitted'),
     listUnsubscribe: header('list-unsubscribe'),
-    isAutoreply: header('x-autoreply') !== null || header('x-auto-response-suppress') !== null,
+    isAutoreply: header('x-autoreply') !== null,
   }
 }
 

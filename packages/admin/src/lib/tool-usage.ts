@@ -14,6 +14,11 @@ export interface CreationToolUsage {
   deliveries: number
   lastActivityAt: string | null
 }
+export interface MoldaUsage {
+  /** Criações vivas na nuvem (modelos, texturas e céus). O Molda não tem bloco de aula. */
+  creations: number
+  lastActivityAt: string | null
+}
 export interface ClubeUsage {
   posts: number
   comments: number
@@ -30,6 +35,11 @@ export interface LearnerToolUsageView {
   pensa: PensaUsage
   pinta: { drawings: number; deliveries: number; lastActivityAt: string | null }
   estudio: { creations: number; deliveries: number; lastActivityAt: string | null }
+  /**
+   * OPCIONAL: um members mais velho que o painel não manda o campo, e a ficha não pode
+   * cair por isso (o cartão mostra "Indisponível agora").
+   */
+  molda?: MoldaUsage
   /** `null` = hub indisponível AGORA (≠ de zero participação). */
   clube: ClubeUsage | null
   mural: MuralUsage | null
@@ -40,11 +50,12 @@ export interface MemberToolUsageView {
 }
 
 /** Qual cartão de uso uma matrícula de produto vira (por SKU do snapshot). */
-export type ToolCardKind = 'pensa' | 'pinta' | 'estudio' | 'clube' | 'mural'
+export type ToolCardKind = 'pensa' | 'pinta' | 'molda' | 'estudio' | 'clube' | 'mural'
 
 const SKU_TO_CARD: Record<string, ToolCardKind> = {
   pensa: 'pensa',
   pinta: 'pinta',
+  molda: 'molda',
   'estudio-completo': 'estudio',
   'clube-dos-criadores': 'clube',
   'mural-dos-criadores': 'mural',
@@ -66,8 +77,15 @@ export function toolCardKindFor(entitlement: {
   return ref ? (SKU_TO_CARD[ref] ?? null) : null
 }
 
-/** Ordem estável dos cartões na ficha (jornada: planejar → desenhar → construir → comunidade). */
-export const TOOL_CARD_ORDER: ToolCardKind[] = ['pensa', 'pinta', 'estudio', 'clube', 'mural']
+/** Ordem estável dos cartões na ficha (jornada: planejar → desenhar → modelar → construir → comunidade). */
+export const TOOL_CARD_ORDER: ToolCardKind[] = [
+  'pensa',
+  'pinta',
+  'molda',
+  'estudio',
+  'clube',
+  'mural',
+]
 
 /**
  * Cartões a mostrar na ficha = as matrículas de ferramenta/comunidade da FAMÍLIA

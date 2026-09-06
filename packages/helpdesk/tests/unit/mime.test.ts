@@ -189,6 +189,23 @@ describe('parseGmailMessage', () => {
     expect(parsed.isAutoreply).toBe(true)
   })
 
+  it('não marca X-Auto-Response-Suppress como prova de autoresponder', () => {
+    const parsed = parseGmailMessage(
+      message({
+        payload: {
+          mimeType: 'text/plain',
+          headers: [
+            { name: 'From', value: 'Pessoa <pessoa@example.com>' },
+            { name: 'X-Auto-Response-Suppress', value: 'All' },
+          ],
+          body: { data: b64url('preciso de ajuda') },
+        },
+      }),
+    )
+
+    expect(parsed.isAutoreply).toBe(false)
+  })
+
   it('guarda SÓ os cabeçalhos da allowlist da triagem, em minúsculas e com o primeiro valor', () => {
     const parsed = parseGmailMessage(
       message({

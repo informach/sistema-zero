@@ -34,7 +34,7 @@ function harness(options: { failFetch?: Set<string>; failApply?: Set<string> } =
   const committedCopies: string[] = []
   const rolledBackCopies: string[] = []
   const pushed: string[] = []
-  const removed: string[] = []
+  const removed: Array<{ itemId: string; revision: number }> = []
   const deletedLocal: string[] = []
   return {
     fetched,
@@ -67,8 +67,8 @@ function harness(options: { failFetch?: Set<string>; failApply?: Set<string> } =
     push: (item: { id: string }) => {
       pushed.push(item.id)
     },
-    remove: (itemId: string) => {
-      removed.push(itemId)
+    remove: (itemId: string, revision: number) => {
+      removed.push({ itemId, revision })
     },
     deleteLocal: async (itemId: string) => {
       deletedLocal.push(itemId)
@@ -263,7 +263,8 @@ describe('reconcileCreations', () => {
       ...h,
     })
     expect(h.applied).toEqual([])
-    expect(h.removed).toEqual(['velho'])
+    // O reenvio leva a revisão que a NUVEM listou como base: é a única que o servidor aceita.
+    expect(h.removed).toEqual([{ itemId: 'velho', revision: 1 }])
     expect(report.tombstoned).toBe(2)
   })
 
@@ -337,7 +338,7 @@ describe('reconcileCreations', () => {
     })
 
     expect(h.applied).toEqual([])
-    expect(h.removed).toEqual(['legado'])
+    expect(h.removed).toEqual([{ itemId: 'legado', revision: 8 }])
     expect(report.tombstoned).toBe(1)
     expect(marks.tombstone('legado')).toBeDefined()
   })

@@ -126,15 +126,18 @@ describe('triageEmail — resposta automática', () => {
     })
   })
 
-  it('X-Autoreply, X-Auto-Response-Suppress e Precedence: auto_reply', () => {
+  it('X-Autoreply e Precedence: auto_reply', () => {
     expect(triageEmail(inbound({ headers: { 'x-autoreply': 'yes' } }), rules).kind).toBe(
       'auto_reply',
     )
-    expect(
-      triageEmail(inbound({ headers: { 'x-auto-response-suppress': 'All' } }), rules).kind,
-    ).toBe('auto_reply')
     expect(triageEmail(inbound({ headers: { precedence: 'auto_reply' } }), rules).kind).toBe(
       'auto_reply',
+    )
+  })
+
+  it('não confunde X-Auto-Response-Suppress com uma resposta automática', () => {
+    expect(triageEmail(inbound({ headers: { 'x-auto-response-suppress': 'All' } }), rules)).toEqual(
+      { kind: 'human', rule: 'human', evidence: null },
     )
   })
 })

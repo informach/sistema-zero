@@ -8,6 +8,7 @@
 import { arvoreTemplate } from './data/arvore'
 import { carroTemplate } from './data/carro'
 import { casaTemplate } from './data/casa'
+import { cristalTemplate } from './data/cristal'
 import { naveTemplate } from './data/nave'
 import { personagemTemplate } from './data/personagem'
 import type { MoldaTemplate } from './types'
@@ -20,6 +21,7 @@ export const MOLDA_TEMPLATES: readonly MoldaTemplate[] = [
   arvoreTemplate,
   casaTemplate,
   naveTemplate,
+  cristalTemplate,
 ]
 
 export function findTemplate(id: string): MoldaTemplate | null {

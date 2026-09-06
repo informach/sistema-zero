@@ -28,7 +28,7 @@ externa. Os princípios (travados com a usuária em 06/2026) e onde cada um se m
 | **Teto diário de ganho** (anti-grind/anti-compulsão) | `DAILY_COIN_CAP = 100` (`coins.ts`) limita o GANHO de rotina por dia civil SP — **nunca o saldo**. Marcos raros (streak) são EXEMPTOS. |
 | **Sem loot box / sem aleatoriedade no ganho** | Tudo é determinístico: preço fixo no catálogo, missão sorteada por hash estável (sem `Math.random`), nenhuma "caixa surpresa". |
 | **Nunca envergonhar a quebra de sequência** | Freeze grátis mensal + freeze comprável + **modo férias** (guilt-free). A sequência só QUEBRA quando NEM férias NEM protetores cobrem (`advanceStreak`). |
-| **Ranking/liga amigável e opcional** | A coorte do ranking só existe com matrícula; o board da liga **nunca expõe userId de terceiros** (só posição/XP + `isMe`); abaixo de 5 jogadores a semana é AMISTOSA (ninguém cai). |
+| **Ranking/liga amigável e opcional** | A coorte do ranking geral exige matrícula ativa e XP positivo; os placares públicos **nunca expõem IDs internos** (`profileId` só sai com opt-in); abaixo de 5 jogadores a semana é AMISTOSA (ninguém cai). |
 | **Sem PII no perfil público** | O perfil público só mostra dado de JOGO (XP/ranking/conquistas/avatar/quarto). E-mail, telefone, nascimento e conta **nunca** passam pela rota. O nome só aparece se os pais ligarem o opt-in. |
 
 Princípio de design que sustenta tudo: **o domínio é PURO** (sem I/O, sem `Date.now`) — o
@@ -705,7 +705,45 @@ quebram a sequência**. `from=to=null` limpa. Rota `PUT /members/gamification/va
 
 ---
 
-## 10. Ligas semanais
+## 10. Ranking geral
+
+O ranking geral é a classificação histórica da vitrine: usa o **XP acumulado total** do perfil,
+sem reset semanal. Kids e adultos formam coortes separadas; só entram perfis não privilegiados,
+com **XP > 0** e conta com matrícula ativa na audiência pedida. Por isso ele responde “quem mais
+avançou desde o início?”, enquanto a liga responde “quem mais avançou nesta semana dentro do meu
+tier?”.
+
+As posições são calculadas no PostgreSQL com `RANK() OVER (ORDER BY xp DESC)`: empates compartilham
+a posição e deixam o salto de competição (`1, 2, 2, 4`). O filtro administrativo acontece **depois**
+da CTE ranqueada, então buscar uma pessoa mantém sua colocação global real. A leitura usa transação
+`REPEATABLE READ`, pagina em blocos de até 100 no contrato interno e não precisa de migration nova.
+
+### Experiência Kids
+
+`/ranking` é a central da competição, com as abas **Ranking geral** e **Minha liga**. O ranking geral
+mostra pódio, lista paginada (20 por carregamento) e mantém a própria colocação destacada mesmo se ela
+estiver fora do trecho carregado. O perfil deixa apenas um atalho para essa página; a liga não é
+duplicada ali.
+
+A linha pública traz somente `{position, xp, isMe, firstName, photoUrl, levelSlug}`. Em Kids,
+`profileId` só aparece quando os pais habilitaram o perfil público — apenas nesse caso o nome vira
+link. IDs internos de conta/usuário nunca chegam ao navegador da comunidade.
+
+### Experiência administrativa
+
+`/admin/membros/ranking` oferece a classificação histórica completa, seletor global Kids/Adultos,
+busca por identidade e paginação de 20 linhas. A busca resolve identidades no BFF e envia ao Members
+apenas os IDs correspondentes; a resposta interna inclui `totalParticipants` e `totalMatches` para
+preservar a posição global e paginar o resultado. Identidade, nível, XP, última atividade e atalho
+para a ficha do membro são hidratados somente no contexto protegido do admin.
+
+Implementação compartilhada: `ListRankingService` monta a projeção interna; o endpoint do aluno passa
+por `GetRankingLeaderboardService`, que aplica acesso e redação de privacidade. A consulta única mora
+em `DrizzleGamificationRepository.listRanking`, evitando duas definições divergentes de ranking.
+
+---
+
+## 11. Ligas semanais
 
 Domínio em `packages/members/src/domain/gamification/league.ts`; serviço em
 `application/gamification/get-league.service.ts`. Métrica = **XP GANHO na semana**, derivado do
@@ -736,14 +774,16 @@ disso a semana é **AMISTOSA** (`resolveTier` mantém o tier — ninguém cai co
 
 ### Privacidade do board
 
-O board (`LeagueMeView`) entrega `entries: {position, weeklyXp, isMe}` — **nunca expõe o userId de
-terceiros**. Empate desempata pelo userId internamente (determinístico, sem vazar). A coorte é a
-mesma do ranking (perfis-pares com matrícula na vitrine). Apresentação dos tiers (label+emoji) em
-`community-kids/src/lib/league-info.ts`.
+O board (`LeagueMeView`) entrega posição/XP semanal/`isMe` e hidrata primeiro nome, avatar e nível.
+Ele **nunca expõe o userId interno de terceiros**; `profileId` só sai quando o perfil é público pelo
+opt-in dos pais. Empate desempata pelo userId internamente (determinístico, sem vazar). Liga e
+ranking geral compartilham a segregação por audiência e a exigência de matrícula; a liga usa sua
+coorte por tier e janela semanal, enquanto o geral também exige XP histórico positivo. Apresentação
+dos tiers (label+emoji) em `community-kids/src/lib/league-info.ts`.
 
 ---
 
-## 11. Perfil público + nomes clicáveis
+## 12. Perfil público + nomes clicáveis
 
 Opt-in dos PAIS, OFF por default. Três pacotes cooperam.
 
@@ -779,7 +819,7 @@ renomear/trocar a privacidade depois NÃO reescreve posts antigos (histórico im
 
 ---
 
-## 12. Encanamento ponta-a-ponta
+## 13. Encanamento ponta-a-ponta
 
 Como uma regra de gamificação atravessa os pacotes:
 
@@ -801,6 +841,7 @@ Endpoints do aluno (members, todos JWT + `x-internal-token`, `?audience=` defaul
 | Método | Path (members) | Serviço |
 |---|---|---|
 | GET | `/gamification/me[?ranking=true]` | `GetGamificationService` |
+| GET | `/gamification/ranking?audience=&limit=&offset=` | `GetRankingLeaderboardService` |
 | GET | `/gamification/missions/me` | `GetMissionsService` |
 | POST | `/gamification/missions/:slug/claim` | `ClaimMissionService` |
 | POST | `/gamification/streak-freeze/buy` | `BuyStreakFreezeService` |
@@ -812,6 +853,10 @@ Endpoints do aluno (members, todos JWT + `x-internal-token`, `?audience=` defaul
 | GET / PUT | `/room` | `GetRoomService` / `SaveRoomService` |
 | POST | `/room/items/:itemId/buy` | `BuyRoomItemService` |
 | GET | `/profiles/:profileId/public` | `GetPublicProfileService` |
+
+Endpoint administrativo (staff+, via gateway): `GET
+/members/admin/gamification/ranking?audience=&limit=&offset=&userIds=` → `ListRankingService`.
+`userIds` é um filtro interno, limitado a 100 IDs, aplicado depois do cálculo das posições.
 
 ### Como adicionar uma rota nova
 
@@ -827,7 +872,7 @@ Endpoints do aluno (members, todos JWT + `x-internal-token`, `?audience=` defaul
 
 ---
 
-## 13. Tabela de KNOBS (constantes tunáveis)
+## 14. Tabela de KNOBS (constantes tunáveis)
 
 Todas residem em `packages/members/src/domain/...` salvo indicação contrária. "Default" = valor atual
 no código (06/2026).
@@ -882,7 +927,7 @@ no código (06/2026).
 
 ---
 
-## 14. Migrations da expansão
+## 15. Migrations da expansão
 
 A expansão é segregada por pacote (cada um tem journal próprio). Aplicadas no Postgres
 compartilhado (`sistemazero`, :5433); o `preDeployCommand` de prod roda só `db:migrate`.
@@ -918,7 +963,7 @@ clicáveis). Idempotente (`IF NOT EXISTS`, padrão do hub).
 
 ---
 
-## 15. Testes (o fake in-memory é o oráculo)
+## 16. Testes (o fake in-memory é o oráculo)
 
 Os testes do members são a especificação executável. O **fake in-memory das portas**
 (`packages/members/tests/fakes/in-memory.ts`) é o ORÁCULO do comportamento: implementa
@@ -928,7 +973,8 @@ Os testes do members são a especificação executável. O **fake in-memory das 
 | Subsistema | Testes |
 |---|---|
 | XP/streak/coins/badges (domínio puro) | `tests/unit/gamification.test.ts`, `tests/unit/coins.test.ts` |
-| Award/streak/ranking (integração) | `tests/integration/gamification.test.ts` |
+| Award/streak/ranking resumido (integração) | `tests/integration/gamification.test.ts` |
+| Ranking geral, privacidade e filtro global | `tests/integration/ranking-leaderboard.test.ts`, `tests/db/ranking-sql.test.ts` |
 | Missões | `tests/unit/missions.test.ts`, `tests/integration/gamification.test.ts` (claim + poupador) |
 | Ligas | `tests/unit/league.test.ts`, `tests/integration/league.test.ts` |
 | Avatar | `tests/unit/avatar.test.ts`, `tests/integration/avatar.test.ts` |

@@ -37,6 +37,8 @@ import { GetChallengeService } from './application/gamification/get-challenge.se
 import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetLeagueService } from './application/gamification/get-league.service'
 import { GetMissionsService } from './application/gamification/get-missions.service'
+import { GetRankingLeaderboardService } from './application/gamification/get-ranking-leaderboard.service'
+import { ListRankingService } from './application/gamification/list-ranking.service'
 import { RecordStudioActivityDayService } from './application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from './application/gamification/record-studio-remix.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
@@ -346,6 +348,13 @@ export async function createApplication(env: Env): Promise<Application> {
   const avatarRepo = new DrizzleAvatarRepository(db)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
+  const ranking = new ListRankingService(gamificationRepo, getAvatarsByProfiles, clock)
+  const getRankingLeaderboard = new GetRankingLeaderboardService(
+    gamificationRepo,
+    ranking,
+    clock,
+    authGateway,
+  )
   const buyAvatarPart = new BuyAvatarPartService(
     avatarRepo,
     gamificationRepo,
@@ -589,6 +598,7 @@ export async function createApplication(env: Env): Promise<Application> {
       buyStreakFreeze,
       setVacation,
       getLeague,
+      getRankingLeaderboard,
       childrenStats,
       parentReportPrefs,
       getAvatar,
@@ -661,6 +671,7 @@ export async function createApplication(env: Env): Promise<Application> {
       listMemberCertificates,
       listMemberRatings,
       getGamification,
+      ranking,
       analytics,
       aiUsageStats,
       grantManual,

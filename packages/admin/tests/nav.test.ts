@@ -22,6 +22,7 @@ describe('nav — grupos e helpers de seção', () => {
     expect(activeHref('/admin/membros/cursos')).toBe('/admin/membros/cursos')
     expect(activeHref('/admin/membros/cursos/c-1/aulas/a-1')).toBe('/admin/membros/cursos')
     expect(activeHref('/admin/membros/analises')).toBe('/admin/membros/analises')
+    expect(activeHref('/admin/membros/ranking')).toBe('/admin/membros/ranking')
   })
 
   test('activeHref: comunidade — moderação (item próprio) vence o match do grupo', () => {
@@ -43,6 +44,7 @@ describe('nav — grupos e helpers de seção', () => {
     expect(sectionForPath('/admin/professor/recados')).toBe('professor')
     expect(sectionForPath('/admin/membros/u-123')).toBe('professor')
     expect(sectionForPath('/admin/membros/analises')).toBe('professor')
+    expect(sectionForPath('/admin/membros/ranking')).toBe('professor')
     expect(sectionForPath('/admin/comunidade/moderacao')).toBe('professor')
     expect(sectionForPath('/admin/membros/cursos/c-1')).toBe('config')
     expect(sectionForPath('/admin/comunidade/servidores')).toBe('config')
@@ -91,6 +93,7 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/membros')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros/u-123')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros/crianca/p-1')).toBe(true)
+    expect(pathIsPlatformScoped('/admin/membros/ranking')).toBe(true)
     // Editor de entidade fixa mostra a audiência REAL do curso e não muda de
     // conteúdo quando o seletor global troca.
     expect(pathIsPlatformScoped('/admin/membros/cursos/c-1')).toBe(false)

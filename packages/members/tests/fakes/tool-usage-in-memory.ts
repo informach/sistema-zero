@@ -1,3 +1,4 @@
+import type { CreationTool } from '../../src/domain/creations/creation'
 import { isPintaPaletteLibraryCreation } from '../../src/domain/creations/palette-library'
 import type {
   LearnerCreationsUsage,
@@ -47,7 +48,7 @@ export class InMemoryToolUsageRepository implements ToolUsageRepository {
 
   async creationsUsageByUsers(
     userIds: string[],
-    tool: 'studio' | 'pinta',
+    tool: CreationTool,
   ): Promise<Map<string, LearnerCreationsUsage>> {
     const set = new Set(userIds)
     const out = new Map<string, LearnerCreationsUsage>()

@@ -13,8 +13,10 @@
  * - cylinder: 16 segmentos = 32 (lado) + 16 + 16.
  * - sphere: 12 × 6 = 120 (os polos são triângulos).
  */
-import type { FaceId, MoldaModelAsset, MoldaPart, ShapeId, Vec3 } from '../core/model'
+import type { FaceId, MeshFaceKey, MoldaModelAsset, MoldaPart, ShapeId, Vec3 } from '../core/model'
 import { cross, type FaceFrame, faceUvToPoint, normalize, planarFaceFrame, sub } from './frame'
+import { faceVertices, meshTriangleCount } from './mesh'
+import { faceLocalPolygon, meshFaceFrame } from './meshFrame'
 import { partSize } from './shapes'
 
 export const CYLINDER_SEGMENTS = 16
@@ -49,11 +51,20 @@ export function triangleCountOf(shape: ShapeId): number {
       return CYLINDER_SEGMENTS * 4
     case 'sphere':
       return SPHERE_SEGMENTS_AROUND * (SPHERE_SEGMENTS_DOWN * 2 - 2)
+    case 'mesh':
+      // Depende da peça (ver `partTriangleCount`).
+      return 0
   }
 }
 
+/** Triângulos desta peça: fixo por forma, ou os da malha (quad = 2). */
+export function partTriangleCount(part: Pick<MoldaPart, 'shape' | 'mesh'>): number {
+  if (part.shape === 'mesh') return part.mesh ? meshTriangleCount(part.mesh) : 0
+  return triangleCountOf(part.shape)
+}
+
 export function modelTriangleCount(model: Pick<MoldaModelAsset, 'parts'>): number {
-  return model.parts.reduce((sum, part) => sum + triangleCountOf(part.shape), 0)
+  return model.parts.reduce((sum, part) => sum + partTriangleCount(part), 0)
 }
 
 type Uv = [number, number]
@@ -225,6 +236,33 @@ function buildSphere(part: MoldaPart, out: GeometryBuilder): void {
   }
 }
 
+/**
+ * Malha: cada face vira 1 (triângulo) ou 2 (quad: p0-p1-p2 e p0-p2-p3, o mesmo
+ * leque do `quad()` da caixa) triângulos, com a UV local pela base da face. Face
+ * degenerada (sem base) é pulada no desenho; o `normalizeMesh` a remove no commit.
+ */
+function buildMesh(part: MoldaPart, out: GeometryBuilder): void {
+  const mesh = part.mesh
+  if (!mesh) return
+  for (const key of Object.keys(mesh.faces) as MeshFaceKey[]) {
+    const frame = meshFaceFrame(mesh, key)
+    const points = faceVertices(mesh, key)
+    if (!frame || !points) continue
+    const uvs = faceLocalPolygon(frame, points)
+    for (let i = 1; i + 1 < points.length; i += 1) {
+      out.triangle(
+        key,
+        points[0] as Vec3,
+        points[i] as Vec3,
+        points[i + 1] as Vec3,
+        uvs[0] as Uv,
+        uvs[i] as Uv,
+        uvs[i + 1] as Uv,
+      )
+    }
+  }
+}
+
 /** Geometria da peça em coordenadas da caixa (sem giro, sem pivô). */
 export function buildPartGeometry(part: MoldaPart): PartGeometry {
   const out = new GeometryBuilder()
@@ -240,6 +278,9 @@ export function buildPartGeometry(part: MoldaPart): PartGeometry {
       break
     case 'sphere':
       buildSphere(part, out)
+      break
+    case 'mesh':
+      buildMesh(part, out)
       break
   }
   return out.build()

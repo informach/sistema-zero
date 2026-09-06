@@ -7,12 +7,19 @@ import type { MoldaModelAsset, ShapeId } from '../core/model'
 import type { PaintSettings } from '../paint/stroke'
 import type { EditorMode, TransformTool } from '../state/sessionStore'
 import { setMoldaViewportFactory } from '../viewport/factory'
-import type { MoldaViewportLike, ViewName, ViewportCallbacks } from '../viewport/types'
+import type {
+  MeshEditState,
+  MoldaViewportLike,
+  ViewName,
+  ViewportCallbacks,
+} from '../viewport/types'
 
 export interface FakeViewport extends MoldaViewportLike {
   callbacks: ViewportCallbacks
   models: MoldaModelAsset[]
   selected: string | null
+  extraSelected: string[]
+  edgesVisible: boolean
   mode: EditorMode
   tool: TransformTool
   placementShape: ShapeId | null
@@ -22,6 +29,7 @@ export interface FakeViewport extends MoldaViewportLike {
   views: ViewName[]
   thumbs: number
   disposed: boolean
+  meshEdit: MeshEditState | null
 }
 
 export function installFakeViewport(options: { thumb?: string | null } = {}): {
@@ -34,6 +42,8 @@ export function installFakeViewport(options: { thumb?: string | null } = {}): {
       callbacks,
       models: [],
       selected: null,
+      extraSelected: [],
+      edgesVisible: false,
       mode: 'build',
       tool: 'move',
       placementShape: null,
@@ -43,11 +53,21 @@ export function installFakeViewport(options: { thumb?: string | null } = {}): {
       views: [],
       thumbs: 0,
       disposed: false,
+      meshEdit: null,
+      setMeshEdit(state) {
+        fake.meshEdit = state
+      },
       setModel(model) {
         fake.models.push(model)
       },
       setSelected(id) {
         fake.selected = id
+      },
+      setExtraSelected(ids) {
+        fake.extraSelected = [...ids]
+      },
+      setEdgesVisible(visible) {
+        fake.edgesVisible = visible
       },
       setMode(mode) {
         fake.mode = mode

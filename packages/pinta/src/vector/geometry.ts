@@ -109,16 +109,19 @@ export function shapeBounds(shape: VectorShape): Bounds {
     case 'text': {
       // Aproximação determinística (sem medir no DOM), específica por família;
       // a linha MAIS LARGA manda na caixa.
+      // A ALTURA é a das letras de verdade: ascendente acima da linha de base +
+      // descendente abaixo, mais o entrelinha (1,2 em) das linhas seguintes. Um em
+      // inteiro acima da base (regra antiga) fazia o laço pegar o texto sem encostar.
       const lines = shape.text.split('\n')
       const columns = Math.max(...lines.map((line) => line.length), 1)
-      const factor = VECTOR_FONT_FAMILY_INFO[fontFamilyOf(shape)].widthFactor
-      const width = Math.max(columns * shape.fontSize * factor, shape.fontSize)
-      const height = lines.length * shape.fontSize * 1.2
+      const info = VECTOR_FONT_FAMILY_INFO[fontFamilyOf(shape)]
+      const width = Math.max(columns * shape.fontSize * info.widthFactor, shape.fontSize)
+      const height = shape.fontSize * (info.ascent + info.descent + (lines.length - 1) * 1.2)
       // O `x` é a ÂNCORA: onde fica a borda esquerda depende do alinhamento.
       const align = textAlignOf(shape)
       const left =
         align === 'center' ? shape.x - width / 2 : align === 'right' ? shape.x - width : shape.x
-      return normalize(left, shape.y - shape.fontSize, width, height)
+      return normalize(left, shape.y - shape.fontSize * info.ascent, width, height)
     }
   }
 }
@@ -172,6 +175,15 @@ export function boundsIntersect(a: Bounds, b: Bounds): boolean {
   return (
     a.x <= b.x + b.width && b.x <= a.x + a.width && a.y <= b.y + b.height && b.y <= a.y + a.height
   )
+}
+
+/**
+ * Caixas que se SOBREPÕEM de verdade (área em comum): encostar na borda não conta.
+ * É a régua do LAÇO de seleção: o `boundsIntersect` (com `<=`) pegava a forma
+ * vizinha cuja caixa só tangenciava o laço.
+ */
+export function boundsOverlap(a: Bounds, b: Bounds): boolean {
+  return a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height
 }
 
 /** Borda/centro alvo do alinhamento. */

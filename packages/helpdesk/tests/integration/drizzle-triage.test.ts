@@ -4,10 +4,11 @@ import { eq } from 'drizzle-orm'
 import type { IngestedGmailMessage } from '../../src/domain/ports/ticket-ingestion-repository.port'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
-import { tickets } from '../../src/infrastructure/persistence/drizzle/schema'
+import { ticketMessages, tickets } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleSettingsRepository } from '../../src/infrastructure/persistence/drizzle/settings.repository'
 import { DrizzleTicketRepository } from '../../src/infrastructure/persistence/drizzle/ticket.repository'
 import { DrizzleTicketIngestionRepository } from '../../src/infrastructure/persistence/drizzle/ticket-ingestion.repository'
+import { applyAtomicTriageBackfill } from '../../src/infrastructure/persistence/drizzle/triage-backfill.repository'
 import { makeMessage, makeTicket } from '../helpers'
 
 const databaseUrl = process.env.HELPDESK_TEST_DATABASE_URL
@@ -75,6 +76,46 @@ integration('triagem no Postgres', () => {
       .where(eq(tickets.id, ticket.id))
     return { ticket, inboundAt }
   }
+
+  it('backfill com conflito de versão não altera nenhuma mensagem', async () => {
+    const ticket = makeTicket()
+    const message = makeMessage(ticket.id)
+    await repository.create(ticket)
+    await connection.db.insert(ticketMessages).values(message)
+
+    const concurrent = await repository.byId(ticket.id)
+    if (!concurrent) throw new Error('ticket ausente no teste')
+    concurrent.subject = 'Alterado em paralelo'
+    expect(await repository.update(concurrent, 0)).toBe(true)
+
+    ticket.triage = 'system'
+    ticket.triageRule = 'system:sender-local-part'
+    ticket.status = 'closed'
+    const applied = await applyAtomicTriageBackfill(connection.db, {
+      ticket,
+      expectedVersion: 0,
+      at: new Date(),
+      messages: [
+        {
+          id: message.id,
+          triage: 'system',
+          triageRule: 'system:sender-local-part',
+        },
+      ],
+    })
+
+    expect(applied).toBe(false)
+    const [persistedMessage] = await connection.db
+      .select()
+      .from(ticketMessages)
+      .where(eq(ticketMessages.id, message.id))
+    expect(persistedMessage).toMatchObject({ triage: 'human', triageRule: null })
+    expect(await repository.byId(ticket.id)).toMatchObject({
+      version: 1,
+      subject: 'Alterado em paralelo',
+      triage: 'human',
+    })
+  })
 
   it('automático em thread nova nasce closed/triado (o candidato do service é persistido como veio)', async () => {
     const alertAt = at('2026-09-05T09:00:00Z')

@@ -217,7 +217,7 @@ test('viewport real posiciona, pinta, recupera contexto e exporta GLB aceito pel
   await canvas.click({ position: { x: box.width / 2, y: box.height / 2 } })
   await expect(page.getByText('2/128 peças · 24 triângulos')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Pintar' }).click()
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
   await cdp.send('Input.dispatchTouchEvent', {
     type: 'touchStart',
     touchPoints: [{ x: box.x + box.width / 2, y: box.y + box.height / 2 }],
@@ -388,4 +388,102 @@ test('a barra do editor mantém todas as ações dentro da tela de celular', asy
       375,
     )
   }
+})
+
+/**
+ * Malha no palco REAL: converter, escolher uma face pelo TOQUE (14 px de folga),
+ * Puxar, pintar a face nova com o lápis e girar a pele dela. O ponto do toque é
+ * projetado pela câmera do palco (o mesmo caminho da alça acima).
+ */
+test('malha: toque escolhe a face, Puxar cresce, o lápis pinta e "Girar a pele" gira', async ({
+  page,
+}) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  await page.goto('/')
+  await page.evaluate(async (asset) => {
+    await window.__molda?.persistence.save({ ...asset, id: 'e2e-mesh', name: 'e2e-mesh' })
+  }, MODEL)
+  await page.goto('/?criacao=e2e-mesh')
+  const canvas = page.locator('canvas[aria-label="Palco 3D"]')
+  await expect(canvas).toBeVisible()
+
+  await page.getByRole('button', { name: 'corpo, caixa' }).click()
+  await page.getByRole('button', { name: 'Transformar em malha' }).click()
+  await expect(page.getByRole('complementary', { name: 'Editar malha' })).toBeVisible()
+
+  type Projector = {
+    camera: unknown
+    gizmo: {
+      worldPosition: {
+        clone(): {
+          set(
+            x: number,
+            y: number,
+            z: number,
+          ): { project(camera: unknown): { x: number; y: number } }
+        }
+      }
+    }
+    model?: {
+      parts: Array<{
+        id: string
+        to: [number, number, number]
+        faces: Record<string, { width: number; height: number; data: Uint8Array }>
+      }>
+    }
+  }
+  const screenOf = (x: number, y: number, z: number) =>
+    canvas.evaluate(
+      (element, point) => {
+        const viewport = window.__molda?.viewport as unknown as Projector
+        const rect = element.getBoundingClientRect()
+        const projected = viewport.gizmo.worldPosition
+          .clone()
+          .set(point[0], point[1], point[2])
+          .project(viewport.camera)
+        return {
+          x: rect.left + ((projected.x + 1) * rect.width) / 2,
+          y: rect.top + ((1 - projected.y) * rect.height) / 2,
+        }
+      },
+      [x, y, z] as [number, number, number],
+    )
+  const partOf = () =>
+    page.evaluate(() =>
+      (window.__molda?.viewport as unknown as Projector).model?.parts.find((p) => p.id === 'body'),
+    )
+
+  // O centro da face de cima (y = 4), a 10 px do ponto exato: a folga do toque cobre.
+  const top = await screenOf(0, 4, 0)
+  await page.touchscreen.tap(top.x + 6, top.y + 8)
+  await expect(page.getByRole('status').filter({ hasText: '4 pontos' })).toBeVisible()
+  await page.getByRole('button', { name: 'Puxar', exact: true }).click()
+  await expect.poll(async () => (await partOf())?.to[1]).toBe(5)
+  await expect(page.getByRole('region', { name: 'Ajustar' })).toBeVisible()
+
+  // Pintar a tampa nova e girar a pele dela.
+  await page.getByRole('button', { name: 'Pronto', exact: true }).click()
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+  await page.getByRole('button', { name: 'Lápis', exact: true }).click()
+  const cap = await screenOf(0.6, 5, 0.4)
+  await page.touchscreen.tap(cap.x, cap.y)
+  await expect.poll(async () => Boolean((await partOf())?.faces.f_py)).toBe(true)
+  const before = await page.evaluate(() => {
+    const part = (window.__molda?.viewport as unknown as Projector).model?.parts[0]
+    const skin = part?.faces.f_py
+    return skin ? Array.from(skin.data).findIndex((value) => value > 0) : -1
+  })
+  await page.getByRole('button', { name: 'Girar a pele' }).click()
+  await page.touchscreen.tap(cap.x, cap.y)
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const part = (window.__molda?.viewport as unknown as Projector).model?.parts[0]
+        const skin = part?.faces.f_py
+        return skin ? Array.from(skin.data).findIndex((value) => value > 0) : -1
+      }),
+    )
+    .not.toBe(before)
+  expect(pageErrors).toEqual([])
 })

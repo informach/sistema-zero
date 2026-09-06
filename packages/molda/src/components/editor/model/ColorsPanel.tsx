@@ -4,10 +4,16 @@
  * "+" abre o seletor de cor NATIVO (regra da casa: nada de painel de cor
  * custom) e a cor nova entra nas extras; a lixeira só apaga extras (as 16 são
  * fixas por contrato do bitmap indexado).
+ *
+ * O "+" é um GESTO, não um clique: o seletor nativo dispara `input` a cada passo
+ * do arrasto (o React entrega como `onChange`) e `change` UMA vez, ao fechar. Cada
+ * passo vai em `onAddColor(hex)` (o editor cria a extra no 1º e só a TROCA no lugar
+ * nos seguintes); o fim vai em `onAddColorEnd()` (um desfazer só). Sem isto cada
+ * pixel arrastado virava uma extra e um passo de desfazer (relato dela, 06/09).
  */
 import { clsx } from 'clsx'
 import type { ChangeEvent, JSX } from 'react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS } from '../../../core/limits'
@@ -30,6 +36,7 @@ export function ColorsPanel({
   canPick,
   onPick,
   onAddColor,
+  onAddColorEnd,
   onRemoveColor,
   onPalette,
   className,
@@ -40,13 +47,30 @@ export function ColorsPanel({
   activeIndex: number | null
   canPick: boolean
   onPick: (index: number) => void
+  /** Um passo do seletor nativo (a cada arrasto); o 1º cria a extra, os seguintes a trocam. */
   onAddColor: (hex: string) => void
+  /** O seletor fechou (ou perdeu o foco): fecha o gesto com UM desfazer. Idempotente. */
+  onAddColorEnd: () => void
   /** Só as extras (índice ≥ 16) são apagáveis. */
   onRemoveColor: (index: number) => void
   onPalette: (id: PaletteId) => void
   className?: string
 }): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null)
+  const onAddColorEndRef = useRef(onAddColorEnd)
+  onAddColorEndRef.current = onAddColorEnd
+  // O fim do gesto é o `change` NATIVO (o React não distingue `input` de `change`: os dois
+  // viram `onChange`). O listener fica no elemento, que roda ANTES do handler do React (na
+  // raiz), então o `queueMicrotask` garante que o último passo entra antes do fim.
+  useEffect(() => {
+    const input = inputRef.current
+    if (!input) return
+    const onNativeChange = (): void => {
+      queueMicrotask(() => onAddColorEndRef.current())
+    }
+    input.addEventListener('change', onNativeChange)
+    return () => input.removeEventListener('change', onNativeChange)
+  }, [])
   const colors = resolvePaletteColors(model)
   // Chave estável por COR (as paletas não repetem cor; se repetirem, o sufixo desempata).
   const seen = new Map<string, number>()
@@ -107,7 +131,14 @@ export function ColorsPanel({
             aria-label={COPY.editor.model.addColor}
             title={extrasFull ? COPY.editor.model.colorsFull : COPY.editor.model.addColor}
             disabled={extrasFull}
-            onClick={() => inputRef.current?.click()}
+            onClick={() => {
+              const input = inputRef.current
+              if (!input) return
+              // Foco de verdade no input: o `blur` vira a rede quando o seletor fecha sem
+              // `change` (Esc) e a criança toca em outro lugar.
+              input.focus()
+              input.click()
+            }}
             className="min-h-11 min-w-11"
           >
             <Plus aria-hidden="true" className="size-4" />
@@ -118,6 +149,7 @@ export function ColorsPanel({
             name="molda-extra-color"
             aria-label={COPY.editor.model.addColor}
             onChange={onColorInput}
+            onBlur={() => onAddColorEnd()}
             className="sr-only"
             tabIndex={-1}
           />

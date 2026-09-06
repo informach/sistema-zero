@@ -144,8 +144,16 @@ export interface ProjectAsset {
   width?: number
   height?: number
   source: 'upload' | 'library'
-  /** Quando veio da biblioteca embutida (starter pack). */
+  /** Quando veio da biblioteca embutida (starter pack) ou da pessoal (`personal:<id>`). */
   libId?: string
+  /**
+   * De qual app a criação veio quando `libId` é `personal:<id>`: `pinta` (desenho) ou
+   * `molda` (modelo, céu ou TEXTURA). Decide qual editor o "✏️ Editar" do painel de
+   * Imagens abre: a textura do Molda é uma imagem comum, mas não é um desenho do
+   * Pinta. Legado sem o campo: o painel decide pelo registro da biblioteca pessoal
+   * e, na falta dele, pelo `kind` (3D → Molda; imagem → Pinta).
+   */
+  libOrigin?: 'pinta' | 'molda'
   /** Token de igualdade dos bytes copiados da biblioteca; nunca ordene entre aparelhos. */
   libRevision?: number
   /**
@@ -515,6 +523,7 @@ export function sanitizeProjectAssets(raw: unknown): ProjectAsset[] {
     }
     if (source === 'library' && typeof a.libId === 'string' && a.libId.trim()) {
       asset.libId = a.libId.slice(0, 128)
+      if (a.libOrigin === 'pinta' || a.libOrigin === 'molda') asset.libOrigin = a.libOrigin
       if (
         typeof a.libRevision === 'number' &&
         Number.isFinite(a.libRevision) &&

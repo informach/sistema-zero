@@ -591,6 +591,8 @@ export const COPY = {
      * aparecem juntas, então não há rótulo ambíguo.
      */
     selectionBar: 'O que fazer com as formas selecionadas',
+    selectionBarEmpty: 'Toque numa forma para ver o que dá para fazer com ela.',
+    nodeBarEmpty: 'Toque numa forma para mexer nos pontos dela.',
     selDuplicate: 'Duplicar a seleção',
     selFlipH: 'Espelhar a seleção para o lado',
     selFlipV: 'Espelhar a seleção de cabeça para baixo',

@@ -13,6 +13,7 @@ import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/
 import {
   CreationPartMissingError,
   CreationPartsNeedBytesError,
+  CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
 import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
@@ -103,7 +104,10 @@ export function buildErrorResponse(input: {
   status: number
   body: ErrorEnvelope & {
     retryAvailableAt?: string
-    details?: { gate: string; missing: string[] } | { hashes: string[] }
+    details?:
+      | { gate: string; missing: string[] }
+      | { hashes: string[] }
+      | { currentRevision: number }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -145,6 +149,20 @@ export function buildErrorResponse(input: {
       body: {
         ...envelope(error.code, error.message),
         details: { gate: error.gate, missing: error.missing },
+      },
+    }
+  }
+
+  // Base vencida das criações: expõe `details.currentRevision` ESTRUTURADO — no DELETE, o
+  // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
+  // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
+  // descobrir a revisão (06/09/2026).
+  if (error instanceof CreationStaleBaseError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { currentRevision: error.currentRevision },
       },
     }
   }

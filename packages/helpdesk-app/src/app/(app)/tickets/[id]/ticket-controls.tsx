@@ -128,7 +128,7 @@ export function TicketControls({
             id="ticket-status"
             value={ticket.status}
             onChange={(e) => changeStatus(e.target.value as TicketStatus)}
-            disabled={saving}
+            disabled={saving || triaged}
           >
             {TICKET_STATUSES.map((status) => (
               <option key={status} value={status}>

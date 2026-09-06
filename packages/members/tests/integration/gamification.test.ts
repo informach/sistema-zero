@@ -483,6 +483,7 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     await complete(app, kidsCourse.lessonIds[0], { 'x-auth-user-id': OTHER })
     await complete(app, kidsCourse.lessonIds[1], { 'x-auth-user-id': OTHER })
     await complete(app, kidsCourse.lessonIds[0])
+    await complete(app, adultCourse.lessonIds[0], { 'x-auth-user-id': OTHER })
 
     // Ranking kids: OTHER (20) na frente de USER (10) — 2 alunos na coorte.
     const mine = await readJson(
@@ -551,6 +552,7 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
       now: new Date('2026-06-02T12:00:00.000Z'),
       privileged: false,
     })
+    await complete(app, kidsCourse.lessonIds[0])
 
     const mine = await readJson(
       await app.handle(
@@ -599,7 +601,7 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     expect(mine.ranking).toEqual({ position: 1, totalStudents: 1 })
   })
 
-  test('sem ?ranking → campo ausente; aluno sem XP conta na coorte (último, empatado)', async () => {
+  test('sem ?ranking → campo ausente; aluno sem XP ainda não participa do placar', async () => {
     const { app, courses, entitlements } = buildApp()
     const kidsCourse = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: kidsCourse.slug })
@@ -609,7 +611,7 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
     const noRanking = await readJson(await getMe(app))
     expect(noRanking.ranking).toBeUndefined()
 
-    // USER nunca pontuou: perfil inexistente = XP 0 → atrás de OTHER.
+    // USER nunca pontuou: o diretório de alunos o cobre, mas o placar ainda o omite.
     const ranked = await readJson(
       await app.handle(
         new Request('http://localhost/members/gamification/me?audience=kids&ranking=true', {
@@ -617,7 +619,7 @@ describe('Gamificação — ranking por vitrine (?audience= + ?ranking=true)', (
         }),
       ),
     )
-    expect(ranked.ranking).toEqual({ position: 2, totalStudents: 2 })
+    expect(ranked.ranking).toBeUndefined()
 
     // Valor inválido → 400 na borda (TypeBox).
     const bad = await app.handle(

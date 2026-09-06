@@ -10,11 +10,14 @@ export type { TexelsPerUnit, TextureSize } from '../core/limits'
 export { clampInt, isTexelsPerUnit, isTextureSize, MOLDA_LIMITS } from '../core/limits'
 export type {
   FaceId,
+  MeshFace,
+  MeshFaceKey,
   MoldaAsset,
   MoldaAssetBase,
   MoldaAssetKind,
   MoldaAssetPaletteId,
   MoldaCustomPalette,
+  MoldaMesh,
   MoldaModelAsset,
   MoldaPaletteFields,
   MoldaPart,
@@ -70,7 +73,31 @@ export {
   galleryToJsonText,
   importMoldaJson,
 } from '../export/projectJson'
-export { FACES_BY_SHAPE, faceSkinSize, faceUnits, partCenter, partSize } from '../model/shapes'
+export type { MeshIssue } from '../model/mesh'
+export {
+  boxMesh,
+  faceNormal,
+  faceVertices,
+  isMeshFaceKey,
+  meshBox,
+  meshEdges,
+  meshEquals,
+  meshIssues,
+  meshTriangleCount,
+  mirrorMesh,
+  newFaceKey,
+  newVertexKey,
+  normalizeMesh,
+} from '../model/mesh'
+export { meshFaceFrame } from '../model/meshFrame'
+export {
+  FACES_BY_SHAPE,
+  faceSkinSize,
+  faceUnits,
+  partCenter,
+  partFaces,
+  partSize,
+} from '../model/shapes'
 export { cloneSkin, createSkin, flipSkinH, isSkinBlank, resampleSkin } from '../model/skinOps'
 export { bakeTwins, mirrorTwinOf, syncTwins } from '../model/twins'
 export type { SkyClouds, SkyParams, SkyPresetChoice, SkyPresetId } from '../sky/params'

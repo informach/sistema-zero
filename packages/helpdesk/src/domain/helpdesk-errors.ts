@@ -47,6 +47,12 @@ export class ConnectionNotConnectedError extends DomainError {
     super(message)
   }
 }
+export class TicketNotHumanError extends DomainError {
+  readonly code = 'TICKET_NOT_HUMAN'
+  constructor(message = 'Ação indisponível para ticket automatizado') {
+    super(message)
+  }
+}
 // ── Falha de gateway externo (502) ───────────────────────────────────────────
 export class GmailSendFailedError extends DomainError {
   readonly code = 'GMAIL_SEND_FAILED'

@@ -409,3 +409,111 @@ describe('sanitizeMoldaAsset: textura e céu', () => {
     expect(wild.params.topColor).toMatch(/^#[0-9a-f]{6}$/)
   })
 })
+
+const { meshTriangleCount: meshTris } = await import('../model/mesh')
+type MeshRaw = { parts: Array<{ mesh: import('./model').MoldaMesh; from: number[]; to: number[] }> }
+
+describe('malha no sanitize (06/09/2026)', () => {
+  const meshPart = () =>
+    createPart({ id: 'm', name: 'malha', shape: 'mesh', from: [0, 0, 0], to: [2, 2, 2], color: 2 })
+
+  test('peça de malha volta idêntica (round-trip) e é idempotente', () => {
+    const model = makeModel({ parts: [meshPart()] })
+    const once = sanitizeMoldaAsset(structuredClone(model))
+    expect(once).toEqual(model)
+    expect(sanitizeMoldaAsset(structuredClone(once))).toEqual(once)
+  })
+
+  test('face com vértice que não existe cai sem derrubar a malha; sem face nenhuma a peça cai', () => {
+    const raw = structuredClone(makeModel({ parts: [meshPart()] })) as unknown as MeshRaw
+    const first = raw.parts[0]
+    if (!first) throw new Error('sem peça')
+    first.mesh.faces.f_px = { v: ['v_000', 'v_zzz', 'v_001'] }
+    const out = sanitizeMoldaAsset(raw) as MoldaModelAsset
+    expect(Object.keys(out.parts[0]?.mesh?.faces ?? {})).toHaveLength(5)
+    first.mesh.faces = {}
+    expect((sanitizeMoldaAsset(raw) as MoldaModelAsset).parts).toHaveLength(0)
+  })
+
+  test('a caixa gravada é ignorada: from/to vêm dos vértices; fora da grade a malha é empurrada para dentro', () => {
+    const raw = structuredClone(makeModel({ parts: [meshPart()] })) as unknown as MeshRaw
+    const first = raw.parts[0]
+    if (!first) throw new Error('sem peça')
+    first.from = [-9, -9, -9]
+    first.to = [9, 9, 9]
+    for (const v of Object.values(first.mesh.vertices)) v[0] += MOLDA_LIMITS.gridHalf - 1
+    const out = sanitizeMoldaAsset(raw) as MoldaModelAsset
+    expect(out.parts[0]?.from).toEqual([MOLDA_LIMITS.gridHalf - 2, 0, 0])
+    expect(out.parts[0]?.to).toEqual([MOLDA_LIMITS.gridHalf, 2, 2])
+    expect(out.parts[0]?.mesh?.vertices.v_111?.[0]).toBe(MOLDA_LIMITS.gridHalf)
+  })
+
+  test('malha maior que maxPartSize cai; vértices guardam a precisão de 1/16', () => {
+    const raw = structuredClone(makeModel({ parts: [meshPart()] })) as unknown as MeshRaw
+    const first = raw.parts[0]
+    if (!first) throw new Error('sem peça')
+    first.mesh.vertices.v_111 = [MOLDA_LIMITS.maxPartSize + 8, 2, 2]
+    expect((sanitizeMoldaAsset(raw) as MoldaModelAsset).parts).toHaveLength(0)
+    const fine = structuredClone(makeModel({ parts: [meshPart()] })) as unknown as MeshRaw
+    const part = fine.parts[0]
+    if (!part) throw new Error('sem peça')
+    part.mesh.vertices.v_000 = [0.03, 0.05, 0]
+    const out = sanitizeMoldaAsset(fine) as MoldaModelAsset
+    expect(out.parts[0]?.mesh?.vertices.v_000).toEqual([0, 0.0625, 0])
+  })
+
+  test('orçamento de triângulos do modelo: a peça que estoura cai, as anteriores ficam', () => {
+    const strip = (y: number) => {
+      const vertices: Record<string, [number, number, number]> = {}
+      const faces: Record<`f_${string}`, { v: string[] }> = {}
+      for (let i = 0; i < 512; i += 1) {
+        const x = -16 + (32 * i) / 511
+        vertices[`v_a${i}`] = [x, y, -1]
+        vertices[`v_b${i}`] = [x, y, 1]
+      }
+      for (let i = 0; i + 1 < 512; i += 1) {
+        faces[`f_${i}`] = { v: [`v_b${i}`, `v_a${i}`, `v_a${i + 1}`, `v_b${i + 1}`] }
+      }
+      return { vertices, faces }
+    }
+    const parts = Array.from({ length: 20 }, (_, i) =>
+      createPart({
+        id: `s${i}`,
+        name: `tira-${i}`,
+        shape: 'mesh',
+        from: [-16, i, -1],
+        to: [16, i, 1],
+        color: 2,
+        mesh: strip(i),
+      }),
+    )
+    expect(meshTris(parts[0]?.mesh ?? { vertices: {}, faces: {} })).toBe(1022)
+    const out = sanitizeMoldaAsset(structuredClone(makeModel({ parts }))) as MoldaModelAsset
+    // 19 × 1022 = 19 418 cabem; a 20ª passaria de 20 000.
+    expect(out.parts).toHaveLength(19)
+    expect(out.parts.map((p) => p.id)).not.toContain('s19')
+  })
+})
+
+describe('trancada / escondida (06/09/2026)', () => {
+  test('locked e hidden sobrevivem ao sanitize e só entram como `true`', () => {
+    const model = makeModel()
+    const part = model.parts[0]
+    if (!part) throw new Error('fixture')
+    part.locked = true
+    part.hidden = true
+    const clean = sanitizeMoldaAsset(structuredClone(model))
+    if (clean?.kind !== 'model') throw new Error('não é modelo')
+    expect(clean.parts[0]?.locked).toBe(true)
+    expect(clean.parts[0]?.hidden).toBe(true)
+    const raw = structuredClone(model) as unknown as { parts: Array<Record<string, unknown>> }
+    const first = raw.parts[0]
+    if (!first) throw new Error('fixture')
+    first.locked = 'sim'
+    first.hidden = 1
+    const loose = sanitizeMoldaAsset(raw)
+    if (loose?.kind !== 'model') throw new Error('não é modelo')
+    expect('locked' in (loose.parts[0] ?? {})).toBe(false)
+    expect('hidden' in (loose.parts[0] ?? {})).toBe(false)
+  })
+})

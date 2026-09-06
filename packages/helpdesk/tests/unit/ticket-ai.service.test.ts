@@ -105,6 +105,19 @@ describe('TicketAiService', () => {
     await expect(service.summarize(id)).rejects.toThrow('IA não configurada')
   })
 
+  it('recusa resumo e rascunho de ticket automatizado antes de chamar o modelo', async () => {
+    const { tickets, messages, llm, service } = build()
+    const id = await seed(tickets, messages, {
+      triage: 'system',
+      triageRule: 'system:sender-local-part',
+      status: 'closed',
+    })
+
+    await expect(service.summarize(id)).rejects.toThrow('ticket automatizado')
+    await expect(service.regenerateDraft(id)).rejects.toThrow('ticket automatizado')
+    expect(llm.calls).toHaveLength(0)
+  })
+
   it('summarize devolve conflito se a conversa muda durante a chamada ao modelo', async () => {
     const { tickets, messages, llm, service } = build()
     const id = await seed(tickets, messages)

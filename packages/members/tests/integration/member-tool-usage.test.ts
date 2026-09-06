@@ -28,6 +28,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     expect(account.pensa).toEqual({ projects: 0, cyclesCompleted: 0, lastActivityAt: null })
     expect(account.pinta).toEqual({ drawings: 0, deliveries: 0, lastActivityAt: null })
     expect(account.estudio).toEqual({ creations: 0, deliveries: 0, lastActivityAt: null })
+    expect(account.molda).toEqual({ creations: 0, lastActivityAt: null })
     // Hub indisponível: null (≠ zero — o painel mostra "indisponível agora").
     expect(account.clube).toBeNull()
     expect(account.mural).toBeNull()
@@ -110,6 +111,15 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     creations.rows.set('k4', record({ itemId: 'i4', storageRef: null }))
     // Outra ferramenta não vaza.
     creations.rows.set('k5', record({ itemId: 'i5', tool: 'studio' }))
+    // O Molda tem a sua própria contagem (modelos, texturas e céus), sem vazar para os irmãos.
+    creations.rows.set(
+      'k8',
+      record({ itemId: 'i8', tool: 'molda', kind: 'model', itemUpdatedAt: new Date('2026-06-12') }),
+    )
+    creations.rows.set(
+      'k9',
+      record({ itemId: 'i9', tool: 'molda', kind: 'sky', deletedAt: new Date('2026-06-13') }),
+    )
     // A biblioteca exata não é desenho; usar apenas o kind reservado não concede a isenção.
     creations.rows.set(
       'k6',
@@ -133,6 +143,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
     expect(a.pinta.drawings).toBe(3)
     expect(a.pinta.lastActivityAt).toBe('2026-06-11T00:00:00.000Z')
     expect(a.estudio.creations).toBe(1)
+    expect(a.molda).toEqual({ creations: 1, lastActivityAt: '2026-06-12T00:00:00.000Z' })
   })
 
   test('hub disponível: clube/mural preenchidos por autor; sem atividade = zeros', async () => {

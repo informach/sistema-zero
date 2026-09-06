@@ -2687,3 +2687,131 @@ describe('a coluna da direita cabe na tela (accordion por medida)', () => {
     expect(collapseBtn(COPY.layers.title)).toBeTruthy()
   })
 })
+
+describe('arrastar formas: sem laço acidental e sem palco preso (06/09/2026)', () => {
+  const RECT = 'rect[fill="#78dc52"]'
+
+  /** Um retângulo (20..120) + um texto ao lado: o cenário do relato dela. */
+  async function rectAndText(): Promise<{ stage: HTMLElement; rect: SVGRectElement }> {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [20, 20], [120, 120])
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(1))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.text }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 200, clientY: 60 })
+    const campo = await screen.findByPlaceholderText(COPY.vector.textPlaceholder)
+    fireEvent.change(campo, { target: { value: 'Olá!' } })
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.add }))
+    await waitFor(() => expect(screen.getAllByText('Olá!').length).toBeGreaterThan(0))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    return { stage, rect }
+  }
+
+  it('arrastar o retângulo MOVE só ele: o texto do lado não entra na seleção', async () => {
+    const { stage, rect } = await rectAndText()
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    // Só o retângulo está selecionado: apagar leva ele e deixa o texto.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(0))
+    expect(screen.getAllByText('Olá!').length).toBeGreaterThan(0)
+  })
+
+  it('um novo pointerdown com o mesmo id recupera um gesto cuja captura se perdeu', async () => {
+    const { stage, rect } = await rectAndText()
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+
+    // O pointerup/lostpointercapture anterior se perdeu. O navegador pode reutilizar
+    // o mesmo pointerId no gesto seguinte, mas já não existe captura legítima.
+    ;(stage as unknown as { hasPointerCapture: (id: number) => boolean }).hasPointerCapture = () =>
+      false
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 150, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 160, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('80'))
+  })
+
+  it('o palco que muda de lugar NO MEIO do gesto não teleporta a forma (delta em tela)', async () => {
+    const { stage, rect } = await rectAndText()
+    // Depois do 1º evento o palco "desce" 52px (a faixa da seleção nascendo).
+    let calls = 0
+    ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () => {
+      calls += 1
+      const top = calls > 1 ? 52 : 0
+      return {
+        left: 0,
+        top,
+        width: 480,
+        height: 360,
+        right: 480,
+        bottom: 360 + top,
+        x: 0,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect
+    }
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    expect(rect.getAttribute('y')).toBe('20')
+  })
+
+  it('arrasto que começa no FUNDO, mas dentro da caixa da forma, move a forma (não é laço)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [20, 20], [120, 120])
+    drawRect(stage, [300, 20], [400, 120])
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(2))
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 160, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      const rects = stage.querySelectorAll(RECT)
+      expect(rects[0]?.getAttribute('x')).toBe('120')
+      expect(rects[1]?.getAttribute('x')).toBe('300')
+    })
+    // A segunda NÃO foi laçada: apagar a seleção deixa ela no palco.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.selRemove }))
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(1))
+  })
+
+  it('o gesto termina mesmo soltando FORA do palco, com UMA entrada de undo', async () => {
+    const { stage, rect } = await rectAndText()
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    // Soltou em cima de outro elemento (fora do <svg>): o `document` ouve.
+    fireEvent.pointerUp(document, { pointerId: 1 })
+    // Sem gesto vivo, mexer o mouse não arrasta mais nada.
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 200, clientY: 60 })
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    expect(rect.getAttribute('x')).toBe('70')
+    // E o gesto fechou com UMA entrada de undo.
+    fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('20'))
+  })
+
+  it('um risco FINO no fundo é toque (limpa a seleção), não laço', async () => {
+    const { stage, rect } = await rectAndText()
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(screen.getByRole('button', { name: COPY.vector.selRemove })))
+    // Risco horizontal de altura zero atravessando o retângulo (fora da folga do hit-test).
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 0, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 300, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: COPY.vector.selRemove })).toBeNull(),
+    )
+  })
+})

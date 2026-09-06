@@ -23,6 +23,7 @@ import {
   paintTexture,
   removeTextureColor,
   sampleTexture,
+  updateTextureColor,
 } from '../../../texture/ops'
 import { prefersReducedMotion } from '../../../viewport/reducedMotion'
 import type { TexturePreviewLike } from '../../../viewport/TexturePreview'
@@ -121,6 +122,12 @@ export function TextureEditor({
   const [brush, setBrush] = useState<BrushSize>(1)
   const [color, setColor] = useState(1)
   const [shifted, setShifted] = useState(false)
+  // O gesto do "+ Nova cor" (seletor nativo): o mesmo desenho do `ModelEditor`.
+  const colorGesture = useRef<{
+    before: MoldaTextureAsset
+    index: number | null
+    full: boolean
+  } | null>(null)
   const stroke = useRef<{
     pointerId: number
     before: MoldaTextureAsset
@@ -247,13 +254,35 @@ export function TextureEditor({
       canPick
       onPick={setColor}
       onAddColor={(hex) => {
-        const result = addTextureColor(current(), hex)
+        // GESTO do seletor nativo (ver `ColorsPanel`): 1º passo cria a extra, os seguintes a
+        // trocam no lugar ao vivo; `onAddColorEnd` fecha com UM desfazer.
+        const gesture = colorGesture.current ?? { before: current(), index: null, full: false }
+        colorGesture.current = gesture
+        if (gesture.full) return
+        if (gesture.index !== null) {
+          const next = updateTextureColor(current(), gesture.index, hex)
+          if (next !== current()) editor.getState().replace(next)
+          return
+        }
+        const before = current()
+        const result = addTextureColor(before, hex)
         if (!result) {
+          gesture.full = true
           showToast(COPY.editor.model.colorsFull)
           return
         }
-        commit(result.asset)
+        if (result.asset !== before) {
+          editor.getState().replace(result.asset)
+          gesture.index = result.index
+        }
         setColor(result.index)
+      }}
+      onAddColorEnd={() => {
+        const gesture = colorGesture.current
+        colorGesture.current = null
+        if (!gesture) return
+        const after = current()
+        if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
       }}
       onRemoveColor={(index) => {
         const next = removeTextureColor(current(), index)
@@ -381,7 +410,7 @@ export function TextureEditor({
           {!wide ? <div className="flex flex-col gap-2 p-2">{colors}</div> : null}
         </div>
         {wide ? (
-          <aside className="flex w-68 shrink-0 flex-col gap-2 overflow-y-auto border-l-2 border-mld-border bg-mld-bg p-2">
+          <aside className="mld-scroll-y flex w-68 shrink-0 flex-col gap-2 overflow-y-auto border-l-2 border-mld-border bg-mld-bg p-2">
             {colors}
           </aside>
         ) : null}

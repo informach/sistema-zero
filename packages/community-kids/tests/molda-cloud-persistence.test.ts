@@ -250,12 +250,14 @@ describe('createCloudMirroredMoldaPersistence', () => {
     expect(await job?.produce()).toBeNull()
   })
 
-  test('apagar local grava LÁPIDE (não enviada) e enfileira a remoção; a confirmação marca a lápide como enviada; removeMany idem', async () => {
+  test('apagar local grava LÁPIDE com a revisão conhecida e o DELETE leva essa base (nunca 0); a confirmação marca a lápide como enviada; removeMany idem', async () => {
     const casa = model('casa', 1000)
     const ceu = createSkyAsset({ name: 'ceu', now: 1000 })
     const local = fakeLocal([casa, ceu])
     const { cloud, removed } = fakeCloud(new Map())
     const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000, 5)
+    marks.set(ceu.id, 1000, 2)
     const mirrored = createCloudMirroredMoldaPersistence({
       local,
       cloud,
@@ -265,14 +267,69 @@ describe('createCloudMirroredMoldaPersistence', () => {
     })
     await mirrored.remove(casa.id)
     expect(local.rows.has(casa.id)).toBe(false)
-    expect(removed.map((r) => r.itemId)).toEqual([casa.id])
-    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: null })
-    removed[0]?.onRemoved?.({ revision: 1 })
-    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: true, revision: 1 })
+    // A marca some, mas a revisão foi para a lápide ANTES (o defeito de 06/09 mandava base 0).
+    expect(marks.revision(casa.id)).toBeUndefined()
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([[casa.id, 5]])
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: 5 })
+    removed[0]?.onRemoved?.({ revision: 5 })
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: true, revision: 5 })
     await mirrored.removeMany([ceu.id])
     expect(local.rows.size).toBe(0)
-    expect(removed.map((r) => r.itemId)).toEqual([casa.id, ceu.id])
-    expect(marks.tombstone(ceu.id)?.sent).toBe(false)
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      [casa.id, 5],
+      [ceu.id, 2],
+    ])
+    expect(marks.tombstone(ceu.id)).toEqual({ at: 4242, sent: false, revision: 2 })
+  })
+
+  test('409 no DELETE: lápide sem revisão → reenvia UMA vez com a revisão corrente da nuvem; revisão MAIOR (editou em outro aparelho) → a criação volta e a lápide só sai depois de gravar', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(casa), summary: summaryOf(casa, { revision: 5 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000)
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+    })
+    await mirrored.remove(casa.id)
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 5 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      [casa.id, 0],
+      [casa.id, 5],
+    ])
+    expect(local.rows.has(casa.id)).toBe(false)
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: 5 })
+
+    const theirs: MoldaAsset = { ...casa, updatedAt: 2000 }
+    const local2 = fakeLocal([casa])
+    const { cloud: cloud2, removed: removed2 } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(theirs), summary: summaryOf(theirs, { revision: 7 }) }],
+      ]),
+    )
+    const marks2 = createMemorySyncedMarks()
+    marks2.set(casa.id, 1000, 5)
+    const mirrored2 = createCloudMirroredMoldaPersistence({
+      local: local2,
+      cloud: cloud2,
+      viewerId: 'perfil-1',
+      marks: marks2,
+      now: () => 4242,
+    })
+    await mirrored2.remove(casa.id)
+    await removed2[0]?.onStale?.({ itemId: casa.id, currentRevision: 7 })
+    expect(local2.rows.get(casa.id)?.updatedAt).toBe(2000)
+    expect(marks2.revision(casa.id)).toBe(7)
+    expect(marks2.tombstone(casa.id)).toBeUndefined()
+    expect(removed2).toHaveLength(1)
   })
 
   test('uma lápide da nuvem apaga a criação local sem reenfileirar o mesmo id', async () => {

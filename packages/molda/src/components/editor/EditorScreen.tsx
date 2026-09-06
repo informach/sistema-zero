@@ -15,9 +15,11 @@ import { markMoldaAssetClosed, markMoldaAssetOpen } from '../../state/persistenc
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { isMoldaDialogOpen } from '../ui/Dialog'
+import { useToast } from '../ui/Toast'
 import { ModelEditor } from './model/ModelEditor'
 import { SkyEditor } from './sky/SkyEditor'
 import { TextureEditor } from './texture/TextureEditor'
+import { useStudioResync } from './useStudioResync'
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
@@ -32,7 +34,8 @@ function LoadedEditor({
   initial: MoldaAsset
   onBack: () => void
 }): JSX.Element {
-  const { gallery, persistence } = useMoldaApp()
+  const { adapter, gallery, persistence } = useMoldaApp()
+  const { showToast } = useToast()
   const [editor] = useState(() =>
     createEditorStore({
       asset: initial,
@@ -41,6 +44,13 @@ function LoadedEditor({
     }),
   )
   const asset = useStore(editor, (state) => state.asset)
+  // A volta da ponte com o Estúdio: só depois de SALVAR (o `savedAsset` muda), nunca ao abrir.
+  const savedAsset = useStore(editor, (state) => state.savedAsset)
+  useStudioResync({
+    savedAsset,
+    send: adapter.resyncToStudio,
+    onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
+  })
 
   useEffect(() => {
     markMoldaAssetOpen(initial.id)

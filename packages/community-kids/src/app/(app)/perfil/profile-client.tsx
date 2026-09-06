@@ -7,6 +7,7 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Sparkles, Trophy } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -126,7 +127,10 @@ function IdentityCard({
             ) : null}
             {hint ? <p className="mt-1.5 text-muted-foreground text-sm">{hint}</p> : null}
             {ranking ? (
-              <p className="mt-1.5 flex items-center gap-1.5 text-sm">
+              <Link
+                href="/ranking"
+                className="mt-1.5 flex w-fit items-center gap-1.5 rounded-lg text-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
                 <Trophy className="size-4 shrink-0 text-primary" />
                 <span className="font-bold [font-family:var(--font-display)]">
                   {ranking.position}º lugar
@@ -134,13 +138,16 @@ function IdentityCard({
                 <span className="text-muted-foreground">
                   no ranking{ranking.totalStudents ? ` de ${ranking.totalStudents}` : ''}
                 </span>
-              </p>
+              </Link>
             ) : (
               // Sem colocação ainda (sem XP / vitrine sem ranking) → convite, não vazio.
-              <p className="mt-1.5 flex items-center gap-1.5 text-muted-foreground text-sm">
+              <Link
+                href="/ranking"
+                className="mt-1.5 flex w-fit items-center gap-1.5 rounded-lg text-muted-foreground text-sm hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
                 <Trophy className="size-4 shrink-0" />
                 <span>Continue praticando para entrar no ranking!</span>
-              </p>
+              </Link>
             )}
           </div>
           <div className="flex flex-col gap-2">

@@ -59,8 +59,11 @@ import {
   type CourseMilestones,
   type GamificationProfileRecord,
   type GamificationRanking,
+  type GamificationRankingEntry,
+  type GamificationRankingPage,
   type GamificationRepository,
   type LeagueMembershipRecord,
+  type ListGamificationRankingInput,
   MAX_STREAK_FREEZES,
   type SpendCoinsInput,
   type SpendCoinsResult,
@@ -1131,6 +1134,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const cohort = and(
           eq(gamificationProfiles.audience, audience),
           eq(gamificationProfiles.privileged, false),
+          gt(gamificationProfiles.xp, 0),
           inArray(gamificationProfiles.accountId, accountsWithEntitlement),
         )
 
@@ -1147,27 +1151,132 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           .limit(1)
         const myXp = profile?.xp ?? 0
 
+        // O diretório de Alunos já cobre quem ainda não começou. Ranking é placar:
+        // sem XP positivo, o perfil ainda não participa e não recebe posição sintética.
+        if (myXp <= 0) return null
+
         const [totalRow] = await tx
           .select({ c: countDistinct(gamificationProfiles.userId) })
           .from(gamificationProfiles)
           .where(cohort)
-        // O requester já está contado na coorte (tem perfil que pontuou)?
-        const [inCohortRow] = await tx
-          .select({ u: gamificationProfiles.userId })
-          .from(gamificationProfiles)
-          .where(and(cohort, eq(gamificationProfiles.userId, userId)))
-          .limit(1)
         // Competition ranking ("1224"): só XP ESTRITAMENTE maior conta (empate divide).
         const [aheadRow] = await tx
           .select({ c: countDistinct(gamificationProfiles.userId) })
           .from(gamificationProfiles)
           .where(and(cohort, gt(gamificationProfiles.xp, myXp)))
 
-        // Requester sem perfil (XP 0) ainda é contado como aluno (+1).
-        const totalStudents = (totalRow?.c ?? 0) + (inCohortRow ? 0 : 1)
-        return { position: (aheadRow?.c ?? 0) + 1, totalStudents }
+        return { position: (aheadRow?.c ?? 0) + 1, totalStudents: totalRow?.c ?? 0 }
       },
       { isolationLevel: 'repeatable read' },
+    )
+  }
+
+  async listRanking(input: ListGamificationRankingInput): Promise<GamificationRankingPage> {
+    const joinCourseInAudience = entitlementInAudience(input.audience)
+    const grantsActiveAudienceAccess = activeAudienceAccessPredicate(input.audience, input.now)
+
+    return this.db.transaction(
+      async (tx) => {
+        const accountsWithEntitlement = tx
+          .select({ accountId: entitlements.userId })
+          .from(entitlements)
+          .leftJoin(courses, joinCourseInAudience)
+          .where(grantsActiveAudienceAccess)
+        const cohort = and(
+          eq(gamificationProfiles.audience, input.audience),
+          eq(gamificationProfiles.privileged, false),
+          gt(gamificationProfiles.xp, 0),
+          inArray(gamificationProfiles.accountId, accountsWithEntitlement),
+        )
+
+        const [totalRow] = await tx
+          .select({ value: sql<number>`count(*)::int` })
+          .from(gamificationProfiles)
+          .where(cohort)
+        const totalParticipants = totalRow?.value ?? 0
+
+        const ranked = tx.$with('gamification_ranking').as(
+          tx
+            .select({
+              userId: gamificationProfiles.userId,
+              accountId: gamificationProfiles.accountId,
+              position:
+                sql<number>`(rank() over (order by ${gamificationProfiles.xp} desc))::int`.as(
+                  'position',
+                ),
+              xp: gamificationProfiles.xp,
+              lastActivityDate: gamificationProfiles.lastActivityDate,
+            })
+            .from(gamificationProfiles)
+            .where(cohort),
+        )
+        const filterIds = input.userIds === undefined ? undefined : [...new Set(input.userIds)]
+        if (filterIds?.length === 0) {
+          const meRows = input.viewerUserId
+            ? await tx
+                .with(ranked)
+                .select()
+                .from(ranked)
+                .where(eq(ranked.userId, input.viewerUserId))
+                .limit(1)
+            : []
+          const me = meRows[0]
+          return {
+            entries: [],
+            totalParticipants,
+            totalMatches: 0,
+            me: me
+              ? {
+                  userId: me.userId,
+                  accountId: me.accountId,
+                  position: me.position,
+                  xp: me.xp,
+                  lastActivityDate: me.lastActivityDate,
+                }
+              : null,
+          }
+        }
+
+        const filtered = filterIds ? inArray(ranked.userId, filterIds) : undefined
+
+        const rows = await tx
+          .with(ranked)
+          .select()
+          .from(ranked)
+          .where(filtered)
+          .orderBy(ranked.position, ranked.userId)
+          .limit(input.limit)
+          .offset(input.offset)
+        const matchesRow = filterIds
+          ? await tx
+              .select({ value: sql<number>`count(*)::int` })
+              .from(gamificationProfiles)
+              .where(and(cohort, inArray(gamificationProfiles.userId, filterIds)))
+          : [{ value: totalParticipants }]
+        const meRows = input.viewerUserId
+          ? await tx
+              .with(ranked)
+              .select()
+              .from(ranked)
+              .where(eq(ranked.userId, input.viewerUserId))
+              .limit(1)
+          : []
+
+        const toEntry = (row: (typeof rows)[number]): GamificationRankingEntry => ({
+          userId: row.userId,
+          accountId: row.accountId,
+          position: row.position,
+          xp: row.xp,
+          lastActivityDate: row.lastActivityDate,
+        })
+        return {
+          entries: rows.map(toEntry),
+          totalParticipants,
+          totalMatches: matchesRow[0]?.value ?? 0,
+          me: meRows[0] ? toEntry(meRows[0]) : null,
+        }
+      },
+      { isolationLevel: 'repeatable read', accessMode: 'read only' },
     )
   }
 
@@ -1210,6 +1319,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             and(
               eq(gamificationProfiles.audience, audience),
               eq(gamificationProfiles.privileged, false),
+              gt(gamificationProfiles.xp, 0),
               inArray(gamificationProfiles.accountId, accountsWithEntitlement),
             ),
           )
@@ -1217,7 +1327,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const xpByUser = new Map(rows.map((r) => [r.userId, r.xp]))
         const out = new Map<string, number>()
         for (const profileId of profileIds) {
-          const myXp = xpByUser.get(profileId) ?? 0
+          const myXp = xpByUser.get(profileId)
+          if (myXp === undefined || myXp <= 0) continue
           // Competition ranking ("1224") — mesma regra do `getRanking`.
           const ahead = cohortXp.filter((xp) => xp > myXp).length
           out.set(profileId, ahead + 1)

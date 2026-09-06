@@ -14,6 +14,7 @@ import type { GetChallengeService } from '../../../application/gamification/get-
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
 import type { GetMissionsService } from '../../../application/gamification/get-missions.service'
+import type { GetRankingLeaderboardService } from '../../../application/gamification/get-ranking-leaderboard.service'
 import type { RecordStudioActivityDayService } from '../../../application/gamification/record-studio-activity-day.service'
 import type { RecordStudioRemixService } from '../../../application/gamification/record-studio-remix.service'
 import type { SetVacationService } from '../../../application/gamification/set-vacation.service'
@@ -80,6 +81,7 @@ import {
   parseProfileIds,
   QuizAttemptBody,
   QuizAttemptParams,
+  RankingQuery,
   RoomItemParams,
   RoomStateBody,
   ShowcasePayloadParams,
@@ -142,6 +144,7 @@ export interface MembersRoutesDeps {
   buyStreakFreeze: BuyStreakFreezeService
   setVacation: SetVacationService
   getLeague: GetLeagueService
+  getRankingLeaderboard: GetRankingLeaderboardService
   childrenStats: GetChildrenStatsService
   parentReportPrefs: ParentReportPrefsService
   getAvatar: GetAvatarService
@@ -539,6 +542,17 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { query: AudienceQuery },
+      )
+      .get(
+        '/gamification/ranking',
+        async ({ query, headers }) =>
+          deps.getRankingLeaderboard.execute(resolveUserId(headers), resolveAccountId(headers), {
+            audience: query.audience ?? 'adult',
+            limit: query.limit ?? 20,
+            offset: query.offset ?? 0,
+            privileged: isPrivilegedActor(headers),
+          }),
+        { query: RankingQuery },
       )
       // ── Avatar (guarda-roupa por camadas) — recurso do PRÓPRIO perfil ───────
       // Estado: equipado + catálogo (owned/locked/price) + saldo Zappy (a lojinha).

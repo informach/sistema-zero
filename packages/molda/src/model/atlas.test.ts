@@ -1,7 +1,16 @@
 import { describe, expect, test } from 'bun:test'
 import { hexToRgb } from '../core/color'
 import { MOLDA_LIMITS } from '../core/limits'
-import { createModelAsset, createPart, type FaceId, type MoldaModelAsset } from '../core/model'
+import {
+  createModelAsset,
+  createPart,
+  type FaceId,
+  type MeshFace,
+  type MeshFaceKey,
+  type MoldaMesh,
+  type MoldaModelAsset,
+  type Vec3,
+} from '../core/model'
 import { resolvePaletteColors } from '../core/sanitize'
 import { makeModel, paintedSkin } from '../testing/fixtures'
 import {
@@ -291,5 +300,64 @@ describe('atlas: UV e raster', () => {
       y1: region.y + region.height,
     })
     expect(pixels.length).toBe(layout.size * layout.size * 4)
+  })
+})
+
+describe('atlas: malha', () => {
+  /** Uma malha plana de `cells × cells` quads (normal +y), cada um com `unit` de lado. */
+  function gridMesh(cells: number, unit: number): MoldaMesh {
+    const vertices: Record<string, Vec3> = {}
+    const faces: Record<MeshFaceKey, MeshFace> = {}
+    for (let i = 0; i <= cells; i += 1) {
+      for (let j = 0; j <= cells; j += 1) vertices[`v_${i}_${j}`] = [i * unit, 0, j * unit]
+    }
+    for (let i = 0; i < cells; i += 1) {
+      for (let j = 0; j < cells; j += 1) {
+        faces[`f_${i}_${j}`] = {
+          v: [`v_${i}_${j}`, `v_${i}_${j + 1}`, `v_${i + 1}_${j + 1}`, `v_${i + 1}_${j}`],
+        }
+      }
+    }
+    return { vertices, faces }
+  }
+
+  function paintedMesh(cells: number, unit: number, texelsPerUnit: 2 | 4 | 8): MoldaModelAsset {
+    const mesh = gridMesh(cells, unit)
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [cells * unit, 1, cells * unit],
+      color: 2,
+      mesh,
+    })
+    for (const key of Object.keys(mesh.faces) as MeshFaceKey[]) {
+      const size = faceSkinSize(part, key, texelsPerUnit)
+      if (!size) throw new Error('size')
+      part.faces[key] = paintedSkin(size.width, size.height, (x) => (x % 2) + 1)
+    }
+    return { ...createModelAsset({ name: 'x', starter: false }), texelsPerUnit, parts: [part] }
+  }
+
+  test('484 faces de malha pintadas (4×4 cada) empacotam num atlas de até 256', () => {
+    const result = packAtlas(paintedMesh(22, 1, 4))
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.layout.faces.size).toBe(484)
+    expect(result.layout.size).toBeLessThanOrEqual(256)
+  })
+
+  test('1 024 faces de 32×32 estouram com atlas-full e a reserva mantém a peça (só swatches)', () => {
+    const model = paintedMesh(32, 8, 4)
+    const result = packAtlas(model)
+    expect(result.ok).toBe(false)
+    const fallback = packAtlasFallback(model)
+    expect(fallback.faces.size).toBe(0)
+    expect(fallback.swatches.length).toBeGreaterThan(1)
+    const part = model.parts[0]
+    if (!part) throw new Error('fixture')
+    const uv = mapFaceUv(fallback, part, part, 'f_0_0', 0.25, 0.75)
+    expect(uv.every(Number.isFinite)).toBe(true)
   })
 })

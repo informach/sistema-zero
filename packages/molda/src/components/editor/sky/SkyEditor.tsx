@@ -439,7 +439,7 @@ export function SkyEditor({
           ) : null}
         </div>
         {wide ? (
-          <aside className="flex w-72 shrink-0 flex-col gap-2 overflow-y-auto border-l-2 border-mld-border bg-mld-bg p-2">
+          <aside className="mld-scroll-y flex w-72 shrink-0 flex-col gap-2 overflow-y-auto border-l-2 border-mld-border bg-mld-bg p-2">
             {controls}
           </aside>
         ) : null}

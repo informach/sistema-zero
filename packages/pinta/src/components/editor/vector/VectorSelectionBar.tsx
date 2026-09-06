@@ -45,6 +45,22 @@ const Divider = (): JSX.Element => (
   <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
 )
 
+/**
+ * A faixa SEMPRE ocupa o lugar dela (06/09/2026). Ela nascia só com seleção e, no
+ * MEIO do clique numa forma, empurrava o palco ~52px para baixo: o gesto media o
+ * palco de novo a cada movimento, a forma "teleportava" sob o mouse e o arrasto
+ * seguinte virava laço (e pegava o texto vizinho). Regra da casa: nada que aparece
+ * e some com a seleção pode estar no fluxo do palco. Sem seleção, a faixa vira a
+ * dica de como usá-la, na MESMA altura (`min-h-11` + `py-1`, como os botões).
+ */
+function SelectionBarPlaceholder({ hint }: { hint: string }): JSX.Element {
+  return (
+    <div className="flex shrink-0 items-center border-b-2 border-pin-border bg-pin-surface px-3 py-1">
+      <span className="flex min-h-11 items-center text-pin-muted text-sm">{hint}</span>
+    </div>
+  )
+}
+
 export function VectorSelectionBar(): JSX.Element | null {
   const {
     tool,
@@ -65,7 +81,7 @@ export function VectorSelectionBar(): JSX.Element | null {
   // e na mesma altura: as acoes de forma inteira (alinhar/ordem/agrupar) nao
   // valem para um no, e mostrar as duas coisas juntas so confunde.
   if (tool === 'reshape') {
-    if (!nodeTarget) return null
+    if (!nodeTarget) return <SelectionBarPlaceholder hint={COPY.vector.nodeBarEmpty} />
     return (
       <div
         role="toolbar"
@@ -88,7 +104,7 @@ export function VectorSelectionBar(): JSX.Element | null {
     )
   }
 
-  if (selected.length === 0) return null
+  if (selected.length === 0) return <SelectionBarPlaceholder hint={COPY.vector.selectionBarEmpty} />
 
   return (
     <div

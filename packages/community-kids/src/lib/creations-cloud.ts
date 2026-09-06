@@ -109,12 +109,17 @@ export type UploadedListener = (result: {
 }) => void
 
 /**
- * A nuvem recusou a reserva porque outro aparelho subiu este item depois (409
- * `CREATION_STALE_BASE`). O item SAI da fila; quem resolve é o adaptador (guarda a
- * versão da nuvem como cópia, avança a marca e enfileira de novo). Rejeitar = o selo
- * mostra `staleFailed`.
+ * A nuvem recusou a reserva (ou o DELETE) porque a base enviada não é a revisão corrente
+ * (409 `CREATION_STALE_BASE`). O item SAI da fila; quem resolve é o adaptador (guarda a
+ * versão da nuvem como cópia, avança a marca e enfileira de novo; num DELETE, reenvia com a
+ * revisão autoritativa ou restaura). `currentRevision` é a revisão corrente que o members
+ * pôs em `details` (ausente num serviço antigo: o adaptador baixa o item para descobrir).
+ * Rejeitar = o selo mostra `staleFailed`.
  */
-export type StaleListener = (info: { itemId: string }) => void | Promise<void>
+export type StaleListener = (info: {
+  itemId: string
+  currentRevision?: number | undefined
+}) => void | Promise<void>
 export type RemovedListener = (result: { revision: number }) => void
 
 export interface CreationsCloud {
@@ -182,8 +187,11 @@ interface CloudError extends Error {
   code?: string
   /** `retry-after` do 429 da borda (ms), quando veio. */
   retryAfterMs?: number
-  /** `details` estruturado do members/BFF (partes: quais hashes faltam). */
-  details?: { hashes?: string[] }
+  /**
+   * `details` estruturado do members/BFF: partes (quais hashes faltam) e, no 409 de base
+   * vencida, a revisão corrente do item.
+   */
+  details?: { hashes?: string[]; currentRevision?: number }
 }
 
 /** PUTs de partes em paralelo (briga com banda e com o teto de conexões do navegador). */
@@ -343,7 +351,7 @@ export function parseRetryAfterMs(header: string | null, now = Date.now()): numb
 async function readError(response: Response): Promise<CloudError> {
   const body = (await response.json().catch(() => null)) as {
     error?: { code?: string; message?: string }
-    details?: { hashes?: unknown }
+    details?: { hashes?: unknown; currentRevision?: unknown }
   } | null
   const err = new Error(body?.error?.message ?? `HTTP ${response.status}`) as CloudError
   err.status = response.status
@@ -353,6 +361,10 @@ async function readError(response: Response): Promise<CloudError> {
   const hashes = body?.details?.hashes
   if (Array.isArray(hashes)) {
     err.details = { hashes: hashes.filter((h): h is string => typeof h === 'string') }
+  }
+  const currentRevision = body?.details?.currentRevision
+  if (typeof currentRevision === 'number' && Number.isFinite(currentRevision)) {
+    err.details = { ...err.details, currentRevision }
   }
   return err
 }
@@ -807,8 +819,9 @@ export function createCreationsCloud(options: {
         if (job.onStale) {
           setState({ status: 'saving', lastError: null })
           const onStale = job.onStale
+          const currentRevision = err.details?.currentRevision
           void Promise.resolve()
-            .then(() => onStale({ itemId }))
+            .then(() => onStale({ itemId, currentRevision }))
             .then(() => {
               if (!disposed && pending.size === 0 && !running) setState({ status: 'saved' })
             })

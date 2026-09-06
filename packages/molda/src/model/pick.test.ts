@@ -11,6 +11,7 @@ import {
 import { createModelAsset, createPart, type FaceId, SHAPE_IDS } from '../core/model'
 import { faceUvToPoint, planarFaceFrame } from './frame'
 import { buildPartGeometry } from './geometry'
+import { boxMesh } from './mesh'
 import { setMirrorX } from './partOps'
 import { faceTexelAt, pickModelRay, pickTexelAtPoint, resolveTexelHit, worldToBox } from './pick'
 import { FACES_BY_SHAPE, faceSkinSize } from './shapes'
@@ -226,5 +227,93 @@ describe('picking de texel', () => {
     expect(pickTexelAtPoint(model, [0, 1.8, 1.8])).toBeNull()
     expect(pickTexelAtPoint(model, [2, 0.1, 1.8])?.face).toBe('px')
     expect(pickTexelAtPoint(model, [0, 0.1, 1.8])?.face).toBe('nx')
+  })
+})
+
+const pickMod = await import('./pick')
+const partMod = await import('../core/model')
+
+describe('picking na malha (06/09/2026)', () => {
+  test('o toque numa face da caixa-malha acha o mesmo texel que na caixa', () => {
+    const box = partMod.createPart({
+      id: 'b',
+      name: 'caixa',
+      from: [0, 0, 0],
+      to: [4, 4, 4],
+      color: 2,
+    })
+    const mesh = partMod.createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [4, 4, 4],
+      color: 2,
+    })
+    const point: [number, number, number] = [1, 3, 4]
+    expect(pickMod.pickTexelAtPoint({ parts: [box], texelsPerUnit: 4 as const }, point)).toEqual({
+      partId: 'b',
+      face: 'pz',
+      x: 4,
+      y: 4,
+    })
+    expect(pickMod.pickTexelAtPoint({ parts: [mesh], texelsPerUnit: 4 as const }, point)).toEqual({
+      partId: 'm',
+      face: 'f_pz',
+      x: 4,
+      y: 4,
+    })
+  })
+
+  test('a face é o POLÍGONO: um triângulo não cobre o retângulo da pele', () => {
+    const tri = partMod.createPart({
+      id: 't',
+      name: 'tri',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [2, 2, 0],
+      color: 2,
+      mesh: {
+        vertices: { v_a: [0, 0, 0], v_b: [0, 2, 0], v_c: [2, 2, 0] },
+        faces: { f_t: { v: ['v_a', 'v_b', 'v_c'] } },
+      },
+    })
+    const model = { parts: [tri], texelsPerUnit: 4 as const }
+    expect(pickMod.pickTexelAtPoint(model, [0.5, 1.5, 0])?.face).toBe('f_t')
+    expect(pickMod.pickTexelAtPoint(model, [1.5, 0.5, 0])).toBeNull()
+  })
+})
+
+describe('malha: gêmeo e espelho de pintura', () => {
+  test('o toque no gêmeo de uma malha vira a fonte com a coluna invertida', () => {
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [1, 0, 1],
+      to: [3, 2, 3],
+      color: 2,
+      mesh: boxMesh([1, 0, 1], [3, 2, 3]),
+    })
+    const base = createModelAsset({ name: 'x', starter: false })
+    const model = setMirrorX({ ...base, parts: [part] }, true)
+    expect(model.parts).toHaveLength(2)
+    const direct = pickTexelAtPoint(model, [1.4, 2, 2.3])
+    const mirrored = pickTexelAtPoint(model, [-1.4, 2, 2.3])
+    if (!direct || !mirrored) throw new Error('sem toque')
+    expect(direct.partId).toBe('m')
+    expect(direct.face).toBe('f_py')
+    expect(mirrored.partId).toBe('m')
+    expect(mirrored.face).toBe('f_py')
+    // O gêmeo já MOSTRA a pele da fonte espelhada: o ponto espelhado resolve para o
+    // MESMO texel da fonte (pintar com espelho numa peça com gêmeo não pinta duas vezes).
+    expect(mirrored.x).toBe(direct.x)
+    expect(mirrored.y).toBe(direct.y)
+    // E o texel do próprio gêmeo (antes de resolver) é a coluna invertida.
+    const twin = model.parts.find((item) => item.mirrorOf === 'm')
+    if (!twin) throw new Error('sem gêmeo')
+    const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
+    const own = faceTexelAt(twin, 'f_py', worldToBox(twin, [-1.4, 2, 2.3]), model.texelsPerUnit)
+    expect(own?.x).toBe((size?.width ?? 0) - 1 - direct.x)
   })
 })

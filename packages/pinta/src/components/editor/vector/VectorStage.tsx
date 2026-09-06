@@ -20,7 +20,7 @@ import { PINTA_LIMITS, type PintaAsset } from '../../../core/project'
 import {
   type Bounds,
   boundsCenter,
-  boundsIntersect,
+  boundsOverlap,
   boundsUnion,
   rotateShapesAround,
   scaleShape,
@@ -69,6 +69,7 @@ import {
 } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useEditorStores, useSession } from '../editorContext'
+import { addPointerDragListeners } from '../pointerDrag'
 import { stageCursor } from '../stageCursor'
 import { isPintaModalOpen } from '../useActionShortcuts'
 import { useMediaQuery } from '../useMediaQuery'
@@ -94,7 +95,19 @@ type Gesture =
   // Mover guarda o PONTO inicial + os shapes da BASE: cada move aplica o delta
   // TOTAL (com snap opcional) sobre a base — sem deriva acumulada e com os
   // offsets internos da seleção preservados.
-  | { kind: 'move'; pointerId: number; start: Vec2; base: PintaAsset; baseShapes: VectorShape[] }
+  // ⚠️ Mover/redimensionar/girar medem o delta em coordenadas de TELA
+  // (`startClient` + `docPerPx`), não relendo o retângulo do palco a cada move:
+  // ele muda no meio do gesto (a faixa da seleção nasce logo depois do clique) e a
+  // releitura injetava um delta falso — a forma "teleportava" (ver `gesturePoint`).
+  | {
+      kind: 'move'
+      pointerId: number
+      start: Vec2
+      startClient: Vec2
+      docPerPx: number
+      base: PintaAsset
+      baseShapes: VectorShape[]
+    }
   // Redimensionar vale para 1 OU várias formas: todas escalam em torno da
   // MESMA âncora (o canto oposto da caixa da seleção).
   | {
@@ -103,6 +116,8 @@ type Gesture =
       handle: string
       anchor: Vec2
       start: Vec2
+      startClient: Vec2
+      docPerPx: number
       base: PintaAsset
       baseShapes: VectorShape[]
     }
@@ -114,6 +129,9 @@ type Gesture =
       pointerId: number
       center: Vec2
       startAngle: number
+      start: Vec2
+      startClient: Vec2
+      docPerPx: number
       base: PintaAsset
       baseShapes: VectorShape[]
     }
@@ -153,6 +171,9 @@ const MIN_HANDLE_GAP = 24
 
 /** Pontos do pincel mais próximos que isso (em unidades do documento) são descartados. */
 const BRUSH_MIN_POINT_DISTANCE = 0.35
+
+/** Ferramentas de FORMA: a forma recém-desenhada fica com as alças (ajuste na hora). */
+const SHAPE_TOOLS: ReadonlySet<string> = new Set(['rect', 'ellipse', 'line', 'polygon', 'star'])
 
 const HANDLES: Array<{ id: string; fx: number; fy: number }> = [
   { id: 'nw', fx: 0, fy: 0 },
@@ -231,6 +252,11 @@ export function VectorStage(): JSX.Element {
    */
   const [panning, setPanning] = useState(false)
   const gestureRef = useRef<Gesture | null>(null)
+  // O solto no `document` (para o gesto acabar mesmo FORA do palco) e a versão mais
+  // recente do `endGesture`: o listener nasce num render, e o laço/a prévia mudam depois.
+  const dragCleanupRef = useRef<(() => void) | null>(null)
+  const endGestureRef = useRef<(event?: { pointerId: number }) => void>(() => undefined)
+  useEffect(() => () => dragCleanupRef.current?.(), [])
   // Ctrl/Cmd+Enter salva o texto: o Enter cru pertence à quebra de linha.
   const textFormRef = useRef<HTMLFormElement>(null)
 
@@ -243,6 +269,8 @@ export function VectorStage(): JSX.Element {
     setPenPoints([])
     setPenCursor(null)
     gestureRef.current = null
+    dragCleanupRef.current?.()
+    dragCleanupRef.current = null
     // ⚠️ Este é o único lugar que zera o gesto SEM passar pelo `endGesture`:
     // sem soltar o `panning` aqui, o cursor ficava preso na mão fechada.
     setPanning(false)
@@ -326,6 +354,79 @@ export function VectorStage(): JSX.Element {
     }
   }
 
+  /** Unidades do documento por pixel de TELA (o zoom real do palco, medido agora). */
+  function docPerPxNow(): number {
+    const rect = svgRef.current?.getBoundingClientRect()
+    return rect && rect.width >= 1 ? doc.width / rect.width : 1 / zoom
+  }
+
+  /**
+   * O ponto do gesto (documento) a partir do delta de TELA desde o `pointerdown`.
+   * O retângulo do palco pode mudar no meio do gesto (a faixa da seleção nasce logo
+   * depois do clique e empurra o palco); medi-lo de novo a cada `pointermove`
+   * injetava um delta falso e a forma teleportava para longe do mouse.
+   */
+  function gesturePoint(
+    gesture: { start: Vec2; startClient: Vec2; docPerPx: number },
+    event: { clientX: number; clientY: number },
+  ): Vec2 {
+    return {
+      x: gesture.start.x + (event.clientX - gesture.startClient.x) * gesture.docPerPx,
+      y: gesture.start.y + (event.clientY - gesture.startClient.y) * gesture.docPerPx,
+    }
+  }
+
+  /**
+   * Abre um gesto: captura o ponteiro no palco e, de todo jeito, ouve o solto no
+   * `document`. Sem isto, soltar FORA do `<svg>` (alvo pequeno em zoom baixo) com o
+   * capture perdido deixava o gesto preso e o palco "morto" até recarregar.
+   */
+  function beginGesture(gesture: Gesture): void {
+    dragCleanupRef.current?.()
+    gestureRef.current = gesture
+    if (svgRef.current) safeSetPointerCapture(svgRef.current, gesture.pointerId)
+    dragCleanupRef.current = addPointerDragListeners(document, {
+      onMove: () => undefined,
+      onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId }),
+    })
+  }
+
+  /**
+   * `pointerdown` primário com gesto vivo: se o ponteiro daquele gesto já não está
+   * capturado, o gesto é um resto (um solto que nunca chegou) e é fechado aqui, para
+   * o palco nunca ficar preso. Devolve `true` quando o gesto vivo ainda vale.
+   */
+  function gestureStillActive(): boolean {
+    const gesture = gestureRef.current
+    if (!gesture) return false
+    if (svgRef.current?.hasPointerCapture?.(gesture.pointerId)) return true
+    // Um novo pointerdown já é outro ciclo, mesmo quando o navegador reutiliza o
+    // mesmo pointerId. Sem captura, o gesto anterior é necessariamente órfão.
+    endGestureRef.current({ pointerId: gesture.pointerId })
+    return false
+  }
+
+  /** Começa a MOVER a forma tocada (com o grupo dela e a seleção, como sempre). */
+  function startMoveGesture(shape: VectorShape, event: PointerEvent<Element>, at: Vec2): void {
+    // Clicar num shape agrupado seleciona o grupo inteiro (move junto).
+    const clicked = expandToGroups(currentShapes(), [shape.id])
+    const ids = event.shiftKey
+      ? [...new Set([...selectedIds, ...clicked])]
+      : selectedIds.includes(shape.id)
+        ? selectedIds
+        : clicked
+    setSelectedIds(ids)
+    beginGesture({
+      kind: 'move',
+      pointerId: event.pointerId,
+      start: at,
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
+      base: editor.getState().asset,
+      baseShapes: currentShapes(),
+    })
+  }
+
   function drawPreview(start: Vec2, current: Vec2, points: Vec2[]): VectorShape | null {
     switch (tool) {
       case 'brush':
@@ -350,12 +451,12 @@ export function VectorStage(): JSX.Element {
   function startPan(event: PointerEvent<SVGSVGElement>): void {
     const stage = stageRef.current
     if (!stage) return
-    gestureRef.current = {
+    beginGesture({
       kind: 'pan',
       pointerId: event.pointerId,
       startClient: { x: event.clientX, y: event.clientY },
       startScroll: { x: stage.scrollLeft, y: stage.scrollTop },
-    }
+    })
     setPanning(true)
   }
 
@@ -375,7 +476,7 @@ export function VectorStage(): JSX.Element {
   }
 
   function handleCanvasPointerDown(event: PointerEvent<SVGSVGElement>): void {
-    if (!event.isPrimary || gestureRef.current) return
+    if (!event.isPrimary || gestureStillActive()) return
     safeSetPointerCapture(event.currentTarget, event.pointerId)
     const at = svgPoint(event)
     if (spaceHeld) {
@@ -411,13 +512,22 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (tool === 'select') {
+      // Forma sob o toque (com a folga do toque, que o hit-test do navegador não
+      // dá: um traço vazado do pincel só acerta no fio) = MOVER, nunca laço.
+      // Trancada continua atravessando para o laço. Folga pequena (4px): grande
+      // demais e o laço que começa PERTO de uma forma viraria mover.
+      const hit = hitShapeAt(visibleShapes(currentShapes()), at, 4 / zoom)
+      if (hit && hit.locked !== true) {
+        startMoveGesture(hit, event, at)
+        return
+      }
       // Arrasto no fundo = LAÇO de seleção; um toque parado limpa (no solto).
-      gestureRef.current = {
+      beginGesture({
         kind: 'marquee',
         pointerId: event.pointerId,
         start: at,
         additive: event.shiftKey,
-      }
+      })
       setMarquee({ x: at.x, y: at.y, width: 0, height: 0 })
       return
     }
@@ -473,14 +583,15 @@ export function VectorStage(): JSX.Element {
     }
     // Formas encaixam o PONTO INICIAL na grade; o pincel fica livre.
     const start = tool === 'brush' ? at : maybeSnap(at)
-    gestureRef.current = { kind: 'draw', pointerId: event.pointerId, start, points: [at] }
+    beginGesture({ kind: 'draw', pointerId: event.pointerId, start, points: [at] })
     setPreview(drawPreview(start, start, [at]))
   }
 
   function handleShapePointerDown(shape: VectorShape, event: PointerEvent<SVGElement>): void {
     // Espaço segurado: deixa o evento SUBIR até o palco (vira pan).
     if (spaceHeld) return
-    if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureRef.current) return
+    if ((tool !== 'select' && tool !== 'reshape') || !event.isPrimary || gestureStillActive())
+      return
     // Trancada: o clique ATRAVESSA para o palco (sem stopPropagation) — para o
     // mouse ela não está ali. Selecionar trancada é gesto do PAINEL Camadas.
     if (shape.locked === true) return
@@ -509,22 +620,7 @@ export function VectorStage(): JSX.Element {
       startNodeMarquee(event, svgPoint(event))
       return
     }
-    const at = svgPoint(event)
-    // Clicar num shape agrupado seleciona o grupo inteiro (move junto).
-    const clicked = expandToGroups(currentShapes(), [shape.id])
-    const ids = event.shiftKey
-      ? [...new Set([...selectedIds, ...clicked])]
-      : selectedIds.includes(shape.id)
-        ? selectedIds
-        : clicked
-    setSelectedIds(ids)
-    gestureRef.current = {
-      kind: 'move',
-      pointerId: event.pointerId,
-      start: at,
-      base: editor.getState().asset,
-      baseShapes: currentShapes(),
-    }
+    startMoveGesture(shape, event, svgPoint(event))
   }
 
   function handleResizeDown(
@@ -532,7 +628,9 @@ export function VectorStage(): JSX.Element {
     bounds: Bounds,
     event: PointerEvent<SVGElement>,
   ): void {
-    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureStillActive()) return
+    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
+    if (!handlesActive) return
     event.stopPropagation()
     // Redimensionar escala a seleção INTEIRA em torno da mesma âncora — com
     // trancada dentro, escalar só as livres desmontaria o arranjo. Avisa e sai.
@@ -545,20 +643,24 @@ export function VectorStage(): JSX.Element {
       x: bounds.x + (1 - handle.fx) * bounds.width,
       y: bounds.y + (1 - handle.fy) * bounds.height,
     }
-    gestureRef.current = {
+    beginGesture({
       kind: 'resize',
       pointerId: event.pointerId,
       handle: handle.id,
       anchor,
       start: svgPoint(event),
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
       base: editor.getState().asset,
       // 1 forma OU várias: todas escalam em torno da mesma âncora.
       baseShapes: selected,
-    }
+    })
   }
 
   function handleRotateDown(bounds: Bounds, event: PointerEvent<SVGElement>): void {
-    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || selected.length === 0 || !event.isPrimary || gestureStillActive()) return
+    // Ferramenta sem alças (pincel, caneta, texto, mão): o toque desce ao palco e desenha.
+    if (!handlesActive) return
     event.stopPropagation()
     // Mesma régua do redimensionar: o giro é da seleção inteira.
     if (selected.some((s) => s.locked === true)) {
@@ -568,27 +670,30 @@ export function VectorStage(): JSX.Element {
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const center = boundsCenter(bounds)
     const at = svgPoint(event)
-    gestureRef.current = {
+    beginGesture({
       kind: 'rotate',
       pointerId: event.pointerId,
       center,
       startAngle: Math.atan2(at.y - center.y, at.x - center.x),
+      start: at,
+      startClient: { x: event.clientX, y: event.clientY },
+      docPerPx: docPerPxNow(),
       base: editor.getState().asset,
       // 1 forma OU várias: mesmo espelho do handleResizeDown.
       baseShapes: selected,
-    }
+    })
   }
 
   /** Laco de nos: compartilhado pelo fundo e pelo miolo da forma em edicao. */
   function startNodeMarquee(event: PointerEvent<SVGElement>, at: Vec2): void {
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
-    gestureRef.current = {
+    beginGesture({
       kind: 'nodeMarquee',
       pointerId: event.pointerId,
       start: at,
       additive: event.shiftKey,
-    }
+    })
     setMarquee({ x: at.x, y: at.y, width: 0, height: 0 })
   }
 
@@ -597,11 +702,11 @@ export function VectorStage(): JSX.Element {
     which: 'in' | 'out',
     event: PointerEvent<SVGElement>,
   ): void {
-    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureStillActive()) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     const node = nodePath.nodes[nodeIndex]
-    gestureRef.current = {
+    beginGesture({
       kind: 'handleMove',
       pointerId: event.pointerId,
       nodeIndex,
@@ -610,11 +715,11 @@ export function VectorStage(): JSX.Element {
       basePath: nodePath,
       frame: nodeFrameOf(nodeTarget),
       base: editor.getState().asset,
-    }
+    })
   }
 
   function handleNodeDown(nodeIndex: number, event: PointerEvent<SVGElement>): void {
-    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureRef.current) return
+    if (spaceHeld || !nodeTarget || !nodePath || !event.isPrimary || gestureStillActive()) return
     event.stopPropagation()
     if (svgRef.current) safeSetPointerCapture(svgRef.current, event.pointerId)
     // Tocar num no FORA da escolha passa a escolha para ele; tocar num que ja
@@ -626,7 +731,7 @@ export function VectorStage(): JSX.Element {
         ? selectedNodes
         : [nodeIndex]
     setSelectedNodes(indices)
-    gestureRef.current = {
+    beginGesture({
       kind: 'nodeMove',
       pointerId: event.pointerId,
       shapeId: nodeTarget.id,
@@ -635,7 +740,7 @@ export function VectorStage(): JSX.Element {
       frame: nodeFrameOf(nodeTarget),
       start: svgPoint(event),
       base: editor.getState().asset,
-    }
+    })
   }
 
   /** Duplo clique num TEXTO (com a Selecionar) reabre o diálogo para editar. */
@@ -692,8 +797,9 @@ export function VectorStage(): JSX.Element {
       // Delta TOTAL desde o início, sobre a BASE (sem deriva); com a grade
       // ligada o delta anda em passos do espaçamento — a seleção mantém os
       // offsets internos e "pula" de cruzamento em cruzamento.
-      let dx = at.x - gesture.start.x
-      let dy = at.y - gesture.start.y
+      const point = gesturePoint(gesture, event)
+      let dx = point.x - gesture.start.x
+      let dy = point.y - gesture.start.y
       if (showGrid) {
         dx = snapValue(dx, gridSpacing)
         dy = snapValue(dy, gridSpacing)
@@ -709,7 +815,7 @@ export function VectorStage(): JSX.Element {
     }
     if (gesture.kind === 'resize') {
       const { anchor, start, baseShapes, handle } = gesture
-      const point = maybeSnap(at)
+      const point = maybeSnap(gesturePoint(gesture, event))
       const isCorner = handle.length === 2
       const horizontal = handle === 'e' || handle === 'w'
       const denomX = start.x - anchor.x
@@ -724,7 +830,8 @@ export function VectorStage(): JSX.Element {
       return
     }
     if (gesture.kind === 'rotate') {
-      const angle = Math.atan2(at.y - gesture.center.y, at.x - gesture.center.x)
+      const point = gesturePoint(gesture, event)
+      const angle = Math.atan2(point.y - gesture.center.y, point.x - gesture.center.x)
       // Delta TOTAL sobre a base (nunca acumulado): mesma régua do mover e do
       // redimensionar, e é o que mantém o arredondamento honesto.
       const degrees = ((angle - gesture.startAngle) * 180) / Math.PI
@@ -777,11 +884,13 @@ export function VectorStage(): JSX.Element {
     }
   }
 
-  function endGesture(event?: PointerEvent<SVGSVGElement>): void {
+  function endGesture(event?: { pointerId: number }): void {
     const gesture = gestureRef.current
     if (!gesture) return
     if (event && event.pointerId !== gesture.pointerId) return
     gestureRef.current = null
+    dragCleanupRef.current?.()
+    dragCleanupRef.current = null
     if (gesture.kind === 'pan') {
       setPanning(false)
       return
@@ -789,8 +898,9 @@ export function VectorStage(): JSX.Element {
     if (gesture.kind === 'marquee') {
       const box = marquee
       setMarquee(null)
-      // Toque sem arrasto: clique simples no fundo — limpa (Shift preserva).
-      if (!box || (box.width < 2 && box.height < 2)) {
+      // Toque sem arrasto: clique simples no fundo — limpa (Shift preserva). Um
+      // risco fino (só largura OU só altura) também é toque, não laço.
+      if (!box || box.width < 2 || box.height < 2) {
         if (!gesture.additive) setSelectedIds([])
         return
       }
@@ -799,7 +909,7 @@ export function VectorStage(): JSX.Element {
       // DESTRANCADAS (o laço existe para mover/apagar — trancada fica de fora;
       // quem quer mexer nela usa o painel Camadas).
       const hit = visibleShapes(shapes)
-        .filter((s) => s.locked !== true && boundsIntersect(shapeBounds(s), box))
+        .filter((s) => s.locked !== true && boundsOverlap(shapeBounds(s), box))
         .map((s) => s.id)
       const expanded = expandToGroups(shapes, hit)
       setSelectedIds((current) =>
@@ -836,6 +946,13 @@ export function VectorStage(): JSX.Element {
     // move/resize/rotate: fecha o gesto com 1 entrada de undo.
     editor.getState().commitGesture(gesture.base)
   }
+  endGestureRef.current = endGesture
+
+  // Alças da seleção: com a Selecionar e com as ferramentas de FORMA (ajustar o
+  // que acabou de desenhar sem trocar de ferramenta). Com pincel, caneta, texto e
+  // mão elas roubavam o toque: pressionar perto de uma forma selecionada começava um
+  // resize/giro em vez de desenhar.
+  const handlesActive = tool === 'select' || SHAPE_TOOLS.has(tool)
 
   const singleBounds = single ? shapeBounds(single) : null
   const reshapeNodes = tool === 'reshape' && nodePath ? nodePath.nodes.map((n) => n.p) : []
@@ -954,6 +1071,9 @@ export function VectorStage(): JSX.Element {
             onPointerMove={handlePointerMove}
             onPointerUp={endGesture}
             onPointerCancel={endGesture}
+            // O navegador tirou o capture (aba escondida, gesto do sistema): fecha o gesto
+            // em vez de deixar o palco preso.
+            onLostPointerCapture={(event) => endGesture(event)}
             onDoubleClick={
               tool === 'pen' && penPoints.length > 0 ? () => finishPen(penPoints) : undefined
             }
@@ -1047,7 +1167,7 @@ export function VectorStage(): JSX.Element {
             {/* Sem alças com o CONTA-GOTAS (ferramenta ou captura de cor): as
                 alças não checam a ferramenta, e tocar numa delas com ele
                 começaria um resize/giro em vez de pegar a cor. */}
-            {tool !== 'reshape' && tool !== 'picker' && single && singleBounds ? (
+            {handlesActive && single && singleBounds ? (
               <g
                 transform={
                   single.rotation !== 0
@@ -1207,7 +1327,7 @@ export function VectorStage(): JSX.Element {
                 giradas, girada como um bloco rígido, NÃO é a caixa da união
                 girada — a moldura sairia de cima do desenho. Ela é recalculada
                 a cada quadro, então "respira" enquanto as formas orbitam. */}
-            {selected.length > 1 && tool !== 'picker' ? (
+            {handlesActive && selected.length > 1 ? (
               <>
                 {selected.map((shape) => {
                   const b = shapeBounds(shape)

@@ -38,6 +38,8 @@ import { GetChallengeService } from '../src/application/gamification/get-challen
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
 import { GetMissionsService } from '../src/application/gamification/get-missions.service'
+import { GetRankingLeaderboardService } from '../src/application/gamification/get-ranking-leaderboard.service'
+import { ListRankingService } from '../src/application/gamification/list-ranking.service'
 import { RecordStudioActivityDayService } from '../src/application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
@@ -285,6 +287,15 @@ export function buildApp(
     },
   }
 
+  const avatarsByProfiles = new GetAvatarsByProfilesService(avatar, gamification)
+  const ranking = new ListRankingService(gamification, avatarsByProfiles, clock)
+  const getRankingLeaderboard = new GetRankingLeaderboardService(
+    gamification,
+    ranking,
+    clock,
+    authGateway,
+  )
+
   const env = {
     NODE_ENV: 'test',
     MAX_REQUEST_BODY_BYTES: 64 * 1024,
@@ -397,12 +408,8 @@ export function buildApp(
       recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
-      getLeague: new GetLeagueService(
-        gamification,
-        clock,
-        new GetAvatarsByProfilesService(avatar, gamification),
-        authGateway,
-      ),
+      getLeague: new GetLeagueService(gamification, clock, avatarsByProfiles, authGateway),
+      getRankingLeaderboard,
       childrenStats: new GetChildrenStatsService(
         gamification,
         courses,
@@ -416,7 +423,7 @@ export function buildApp(
       buyAvatarPart: new BuyAvatarPartService(avatar, gamification, awardGamification, clock),
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
-      getAvatarsByProfiles: new GetAvatarsByProfilesService(avatar, gamification),
+      getAvatarsByProfiles: avatarsByProfiles,
       getPublicProfile: new GetPublicProfileService(gamification, avatar, room, hub, clock),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
@@ -496,6 +503,7 @@ export function buildApp(
       listMemberCertificates: new ListMemberCertificatesService(certificates),
       listMemberRatings: new ListMemberRatingsService(ratings),
       getGamification: new GetGamificationService(gamification, clock),
+      ranking,
       analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       aiUsageStats: new GetAiUsageStatsService(aiUsage, clock),
       grantManual: new GrantManualEntitlementService({

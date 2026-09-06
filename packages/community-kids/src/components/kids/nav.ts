@@ -11,6 +11,7 @@ import {
   MessagesSquare,
   Palette,
   Sparkles,
+  Trophy,
 } from 'lucide-react'
 
 export interface NavItem {
@@ -31,6 +32,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home },
   { href: '/cursos', label: 'Cursos', icon: GraduationCap, match: '/cursos' },
+  { href: '/ranking', label: 'Ranking', icon: Trophy, match: '/ranking' },
   {
     href: '/clube-dos-criadores',
     label: 'Clube',
