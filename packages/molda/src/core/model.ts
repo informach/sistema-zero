@@ -12,7 +12,7 @@
  * uma face significa "usa a cor base da peça" (uma face nunca é transparente).
  */
 
-import { boxMesh } from '../model/mesh'
+import { boxMesh, cloneMesh, meshBox } from '../model/mesh'
 import { DEFAULT_SKY_PRESET, type SkyParams, type SkyPresetId, skyPreset } from '../sky/params'
 import { newId } from './id'
 import { MOLDA_LIMITS, type TexelsPerUnit, type TextureSize } from './limits'
@@ -187,7 +187,17 @@ export function createPart(input: {
     color: input.color,
     faces: {},
   }
-  if (shape === 'mesh') part.mesh = input.mesh ?? boxMesh(part.from, part.to)
+  if (shape === 'mesh') {
+    // Cópia própria (duas peças nunca dividem o MESMO objeto de malha: o palco identifica a
+    // geometria por ele) e a caixa DERIVADA dos vértices, como o sanitize faz.
+    const mesh = input.mesh ? cloneMesh(input.mesh) : boxMesh(part.from, part.to)
+    part.mesh = mesh
+    const box = meshBox(mesh)
+    if (box) {
+      part.from = box.from
+      part.to = box.to
+    }
+  }
   return part
 }
 

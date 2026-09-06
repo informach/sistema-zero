@@ -49,6 +49,7 @@ mock.module('idb-keyval', () => ({
 const {
   listPersonalAssets,
   PERSONAL_ASSET_LIMITS,
+  personalAssetsChangedAt,
   removePersonalAsset,
   savePersonalAsset,
   setPersonalAssetsNamespace,
@@ -306,5 +307,22 @@ describe('removePersonalAsset + namespace', () => {
 
     setPersonalAssetsNamespace('perfil-a')
     expect(await listPersonalAssets()).toHaveLength(1)
+  })
+
+  it('remover com namespace EXPLÍCITO apaga só daquele perfil e carimba só ele, sem tocar no singleton', async () => {
+    await savePersonalAsset({ id: 'a1', name: 'do-a', dataUrl: PNG }, { namespace: 'perfil-a' })
+    await savePersonalAsset({ id: 'a1', name: 'do-b', dataUrl: PNG }, { namespace: 'perfil-b' })
+    await savePersonalAsset({ id: 'a1', name: 'do-default', dataUrl: PNG })
+    localStorage.clear()
+
+    expect(await removePersonalAsset('a1', { namespace: 'perfil-a' })).toEqual({ ok: true })
+
+    expect(await listPersonalAssets({ namespace: 'perfil-a' })).toHaveLength(0)
+    expect(await listPersonalAssets({ namespace: 'perfil-b' })).toHaveLength(1)
+    expect(await listPersonalAssets()).toHaveLength(1)
+    // O marcador de "mudou" (portão da sincronia) é o do perfil pedido, não o do singleton.
+    expect(personalAssetsChangedAt('perfil-a')).toBeGreaterThan(0)
+    expect(personalAssetsChangedAt('perfil-b')).toBe(0)
+    expect(personalAssetsChangedAt()).toBe(0)
   })
 })

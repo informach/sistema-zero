@@ -34,17 +34,31 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
   )
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const showToast = useCallback((next: string, actions: readonly ToastAction[] = []) => {
-    setToast({ message: next, actions })
+  const durationRef = useRef(TOAST_DURATION_MS)
+  const arm = useCallback((duration: number) => {
     if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(
-      () => {
-        timerRef.current = null
-        setToast(null)
-      },
-      actions.length > 0 ? TOAST_WITH_ACTIONS_MS : TOAST_DURATION_MS,
-    )
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null
+      setToast(null)
+    }, duration)
   }, [])
+  const showToast = useCallback(
+    (next: string, actions: readonly ToastAction[] = []) => {
+      setToast({ message: next, actions })
+      durationRef.current = actions.length > 0 ? TOAST_WITH_ACTIONS_MS : TOAST_DURATION_MS
+      arm(durationRef.current)
+    },
+    [arm],
+  )
+  // Com o foco (ou o mouse) dentro do toast ele não some: quem está lendo ou escolhendo
+  // um botão não pode ver o botão sumir debaixo do dedo.
+  const hold = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    timerRef.current = null
+  }, [])
+  const release = useCallback(() => {
+    if (!timerRef.current) arm(durationRef.current)
+  }, [arm])
 
   useEffect(
     () => () => {
@@ -56,17 +70,20 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div
-        aria-live="polite"
-        className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center"
-      >
+      <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
         {toast ? (
           <div className="pointer-events-auto flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface px-5 py-3 text-base font-bold text-mld-text shadow-lg">
-            <span>{toast.message}</span>
+            {/* Só a MENSAGEM é região viva: botão dentro de aria-live é reanunciado a cada
+                render e confunde o leitor de tela. A região existe sempre (ver abaixo). */}
+            <span aria-live="polite">{toast.message}</span>
             {toast.actions.map((action) => (
               <button
                 key={action.label}
                 type="button"
+                onFocus={hold}
+                onBlur={release}
+                onMouseEnter={hold}
+                onMouseLeave={release}
                 onClick={() => {
                   if (timerRef.current) clearTimeout(timerRef.current)
                   timerRef.current = null
@@ -79,7 +96,9 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
               </button>
             ))}
           </div>
-        ) : null}
+        ) : (
+          <span aria-live="polite" className="sr-only" />
+        )}
       </div>
     </ToastContext.Provider>
   )

@@ -396,8 +396,9 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   antes) tira o item da fila e chama `onStale` do adaptador — que guarda a versão da NUVEM como
   cópia ("(de outro aparelho)" no Estúdio, `-copia` no Pinta), avança a marca para a revisão dela e
   sobe de novo o item daqui (o aberto no editor continua sendo o item; nada se perde);
-  `onUploaded` só depois do commit confirmado — e NÃO roda se um `enqueueRemove` do mesmo item
-  chegou com o upload em voo (a lápide manda) —, `onRemoved` idem; apagar não espera o debounce e
+  callbacks de um trabalho substituído NÃO rodam: `onUploaded` e `onStale` de um upload em voo
+  perdem a autoridade quando chega `enqueueRemove` do mesmo item (a lápide manda); `onRemoved`
+  também só roda na confirmação; apagar não espera o debounce e
   um upload enfileirado depois não empurra o DELETE (`dueAt` mais cedo vence); commit/DELETE com
   `keepalive` (a reserva também); o selo só é avisado quando algo VISÍVEL muda (10 autosaves
   seguidos = 1 "guardando"); `pagehide`/`visibilitychange` disparam o pendente; ao desmontar o host faz
@@ -535,6 +536,33 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   dá `flush` na fila (3 s) antes de ler a lista, para um DELETE em voo subir primeiro. Autocura
   dos dados já em produção: lápides `{revision: null}` reenviam com a revisão da nuvem; itens
   que já quicaram voltaram com a revisão marcada, então a próxima exclusão pega.
+- **Review de 06/09 (depois do incidente), nos três adaptadores:** (a) **apagar com um upload EM
+  VOO:** a confirmação do commit (revisão nova) NÃO limpa uma lápide que nasceu DEPOIS de o envio
+  começar (o wrapper guarda `sendingAt` por item, carimbado no produtor ANTES de ler o disco, e a
+  confirmação o compara ao `at` da lápide); a lápide FICA e é promovida à revisão confirmada, que
+  é a base que o DELETE pendente (ou o reenvio do 409) leva. Sem isso a lápide sumia com o DELETE
+  ainda pendente e a reconciliação trazia o item de volta; e, mesmo mantida com a revisão velha, a
+  reconciliação lia a revisão nova como "editado em outro aparelho" e restaurava o que a criança
+  apagou. Apagar e DEPOIS salvar de novo o mesmo id continua limpando a lápide (o id voltou). A
+  fila costuma segurar essa confirmação quando o DELETE chega em voo; o adaptador não depende
+  disso; (b) **`flush` antes da descida:** Pinta e Molda dão `cloud.flush({timeoutMs: 3000})`
+  (`FLUSH_BEFORE_PULL_MS`) no começo do `reconcile()`, como o `pullMissing` do Estúdio já fazia:
+  um DELETE em voo sobe ANTES de a lista da nuvem ser lida (a fila falhando não bloqueia a
+  descida); (c) **restauro com o item ABERTO:** o `resolveStaleRemove` do Pinta e do Molda não
+  grava por baixo de um desenho/criação aberto no editor (`isAssetOpen`): a lápide fica como está
+  e a próxima reconciliação decide; (d) testes do caminho `retried` (o 2º 409 do DELETE com a
+  corrente maior restaura e a lápide só sai DEPOIS de gravar; sem `currentRevision` e nuvem sem o
+  item = lápide enviada) e da lápide legada `{revision: null}` (a descida reenvia com a revisão da
+  nuvem e nada restaura) nos três wrappers, e o members assere `details.currentRevision: 0` no 409
+  de uma linha inexistente.
+- **Hosts (06/09):** o `studio-full-editor` só passa `onEditDrawing` (abre `/pinta?desenho=`) COM
+  o `pintaLibrary` (posse do Pinta), espelhando o `onEditCreation` do Molda: sem o produto não há
+  botão que leve a uma tela bloqueada (`tests/studio-full-editor.test.tsx`). O `resyncToStudio` do
+  `pinta-client` devolve `{updated: false, reason: 'not-linked'}` quando o desenho nunca foi levado
+  ao Estúdio e `{updated: false, reason: 'failed', error}` quando o `savePersonalAsset` recusa
+  (antes a recusa morria num `updated: false` mudo), como o `molda-client` já fazia; o tipo local
+  `PintaResyncResult` espelha o contrato do Pinta, alargado em lockstep com `reason` opcional
+  (`tests/pinta-client.test.tsx`).
 - Testes: `tests/creations-cloud.test.ts` (inclui partes), `tests/creations-sync.test.ts`,
   `tests/pinta-cloud-persistence.test.ts`, `tests/studio-cloud.test.ts` (inclui manifesto/descida
   em partes/`downloadProject` e os oito casos do 409 no DELETE). **Pende QA em staging** (CORS PUT `application/gzip` no bucket UGC;

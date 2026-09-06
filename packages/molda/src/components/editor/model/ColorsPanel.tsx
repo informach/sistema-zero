@@ -13,7 +13,7 @@
  */
 import { clsx } from 'clsx'
 import type { ChangeEvent, JSX } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { normalizeHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS } from '../../../core/limits'
@@ -57,8 +57,11 @@ export function ColorsPanel({
   className?: string
 }): JSX.Element {
   const inputRef = useRef<HTMLInputElement>(null)
+  const addButtonRef = useRef<HTMLButtonElement>(null)
   const onAddColorEndRef = useRef(onAddColorEnd)
-  onAddColorEndRef.current = onAddColorEnd
+  useLayoutEffect(() => {
+    onAddColorEndRef.current = onAddColorEnd
+  })
   // O fim do gesto é o `change` NATIVO (o React não distingue `input` de `change`: os dois
   // viram `onChange`). O listener fica no elemento, que roda ANTES do handler do React (na
   // raiz), então o `queueMicrotask` garante que o último passo entra antes do fim.
@@ -66,7 +69,11 @@ export function ColorsPanel({
     const input = inputRef.current
     if (!input) return
     const onNativeChange = (): void => {
-      queueMicrotask(() => onAddColorEndRef.current())
+      queueMicrotask(() => {
+        onAddColorEndRef.current()
+        // O seletor fechou: o foco volta ao "+" (o input é invisível e fora do Tab).
+        addButtonRef.current?.focus()
+      })
     }
     input.addEventListener('change', onNativeChange)
     return () => input.removeEventListener('change', onNativeChange)
@@ -128,9 +135,16 @@ export function ColorsPanel({
             <Trash2 aria-hidden="true" className="size-4" />
           </IconButton>
           <IconButton
+            ref={addButtonRef}
             aria-label={COPY.editor.model.addColor}
-            title={extrasFull ? COPY.editor.model.colorsFull : COPY.editor.model.addColor}
-            disabled={extrasFull}
+            title={
+              extrasFull
+                ? COPY.editor.model.colorsFull
+                : canPick
+                  ? COPY.editor.model.addColor
+                  : COPY.editor.model.addColorSelectPart
+            }
+            disabled={extrasFull || !canPick}
             onClick={() => {
               const input = inputRef.current
               if (!input) return
@@ -147,7 +161,7 @@ export function ColorsPanel({
             ref={inputRef}
             type="color"
             name="molda-extra-color"
-            aria-label={COPY.editor.model.addColor}
+            aria-hidden="true"
             onChange={onColorInput}
             onBlur={() => onAddColorEnd()}
             className="sr-only"

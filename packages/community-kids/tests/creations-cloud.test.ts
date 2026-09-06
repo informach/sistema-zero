@@ -852,6 +852,55 @@ describe('createCreationsCloud', () => {
     cloud.dispose()
   })
 
+  test('apagar substitui também o `onStale` de um upload em voo: só a remoção resolve o conflito', async () => {
+    const server = fakeServer({ checkBase: true })
+    server.items.set('d-1', {
+      revision: 2,
+      lastReserved: 2,
+      pendingRevision: null,
+      name: 'Nave remota',
+      bytes: 10,
+      parts: new Map(),
+      pendingParts: null,
+    })
+    const uploadStarted = Promise.withResolvers<void>()
+    const releaseUpload = Promise.withResolvers<void>()
+    const fetchImpl: FetchLike = async (input, init) => {
+      if (String(input).endsWith('/upload')) {
+        uploadStarted.resolve()
+        await releaseUpload.promise
+      }
+      return server.fetchImpl(input, init)
+    }
+    const cloud = createCreationsCloud({ tool: 'pinta', fetch: fetchImpl, idleMs: 0, wait: noWait })
+    let uploadStale = 0
+    let removed = 0
+    cloud.enqueueUpload(
+      'd-1',
+      async () => ({
+        json: '{}',
+        meta: { name: 'Nave local', kind: 'pixel-sprite', baseRevision: 1 },
+      }),
+      undefined,
+      () => {
+        uploadStale += 1
+      },
+    )
+
+    const flushing = cloud.flush()
+    await uploadStarted.promise
+    cloud.enqueueRemove('d-1', 2, () => {
+      removed += 1
+    })
+    releaseUpload.resolve()
+    await flushing
+
+    expect(uploadStale).toBe(0)
+    expect(removed).toBe(1)
+    expect(server.items.has('d-1')).toBe(false)
+    cloud.dispose()
+  })
+
   test('PUT no R2 falhou (403, URL vencida): não é "sem posse" — tenta de novo com reserva (URL) nova e termina', async () => {
     const server = fakeServer({ putFailTimes: 1 })
     const cloud = createCreationsCloud({

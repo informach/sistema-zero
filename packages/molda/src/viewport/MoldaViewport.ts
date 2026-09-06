@@ -350,8 +350,20 @@ export class MoldaViewport implements MoldaViewportLike {
     // 3. Meshes.
     const seen = new Set<string>()
     let selectionDirty = false
+    const previousById = new Map((this.model?.parts ?? []).map((part) => [part.id, part]))
+    const groupIds = new Set([this.selectedId, ...this.extraIds])
     for (const part of model.parts) {
       seen.add(part.id)
+      // Trancar/esconder não muda geometria, mas muda a alça: a seleção é refeita.
+      const previous = previousById.get(part.id)
+      if (
+        previous &&
+        (groupIds.has(part.id) || (part.mirrorOf !== undefined && groupIds.has(part.mirrorOf))) &&
+        (Boolean(previous.locked) !== Boolean(part.locked) ||
+          Boolean(previous.hidden) !== Boolean(part.hidden))
+      ) {
+        selectionDirty = true
+      }
       const source =
         (part.mirrorOf ? model.parts.find((p) => p.id === part.mirrorOf) : undefined) ?? part
       const hash = geometryHash(part, this.layoutVersion)
@@ -419,8 +431,11 @@ export class MoldaViewport implements MoldaViewportLike {
     this.meshAnchor.quaternion.copy(entry.mesh.quaternion)
     this.meshAnchor.updateMatrixWorld(true)
     if (this.gizmo.object !== this.meshAnchor) this.gizmo.attach(this.meshAnchor)
-    // Na malha a alça é SÓ de mover (girar/escalar uma seleção fica para depois).
+    // Na malha a alça é SÓ de mover (girar/escalar uma seleção fica para depois) e anda
+    // nos eixos da PEÇA (o delta encaixa por eixo da caixa; em espaço de mundo, numa
+    // peça girada, a seta X andava na diagonal da malha, em escada).
     this.gizmo.setMode('translate')
+    this.gizmo.setSpace('local')
   }
 
   setExtraSelected(ids: readonly string[]): void {
@@ -512,13 +527,21 @@ export class MoldaViewport implements MoldaViewportLike {
   renderThumb(): string | null {
     if (this.disposed || !this.model || this.model.parts.length === 0) return null
     if (typeof document === 'undefined') return null
-    const bounds = modelBounds(this.model)
+    // Enquadra pelo que a foto MOSTRA (peça escondida fica fora do quadro e da foto).
+    const visibleParts = this.model.parts.filter((part) => !part.hidden)
+    const bounds =
+      visibleParts.length > 0 ? modelBounds({ ...this.model, parts: visibleParts }) : null
     if (!bounds) return null
     try {
       return this.thumbnail.render(this.scene, bounds, [
         this.grid,
         this.gizmoHelper,
-        ...[...this.entries.values()].flatMap((entry) => (entry.outline ? [entry.outline] : [])),
+        this.meshOverlay.group,
+        ...(this.backMesh ? [this.backMesh] : []),
+        ...[...this.entries.values()].flatMap((entry) => [
+          ...(entry.outline ? [entry.outline] : []),
+          ...(entry.edges ? [entry.edges] : []),
+        ]),
       ])
     } finally {
       this.requestFrame()
@@ -691,6 +714,10 @@ export class MoldaViewport implements MoldaViewportLike {
     return Boolean(id) && Boolean(this.model?.parts.find((part) => part.id === id)?.locked)
   }
 
+  private isHidden(id: string | null): boolean {
+    return Boolean(id) && Boolean(this.model?.parts.find((part) => part.id === id)?.hidden)
+  }
+
   private addOutline(entry: PartEntry, material: LineBasicMaterial): void {
     this.removeOutline(entry)
     const outline = new LineSegments(new EdgesGeometry(entry.mesh.geometry, 15), material)
@@ -728,13 +755,13 @@ export class MoldaViewport implements MoldaViewportLike {
       if (this.gizmo.object === selected.mesh) this.gizmo.detach()
       return
     }
-    // Peça trancada: sem alça (a lista destranca).
-    if (this.isLocked(this.selectedId)) {
-      this.gizmo.detach()
-      return
-    }
-    // Grupo: a alça no centro das peças escolhidas, só de mover.
+    // Grupo: a peça principal pode estar trancada; a alça continua disponível para
+    // as demais. Só um grupo inteiramente trancado fica sem transformação.
     if (this.extraIds.length > 0) {
+      if (group.every((id) => this.isLocked(id))) {
+        this.gizmo.detach()
+        return
+      }
       const center = new Vector3()
       let count = 0
       for (const id of group) {
@@ -749,11 +776,18 @@ export class MoldaViewport implements MoldaViewportLike {
       this.groupAnchor.updateMatrixWorld(true)
       if (this.gizmo.object !== this.groupAnchor) this.gizmo.attach(this.groupAnchor)
       this.gizmo.setMode('translate')
+      this.gizmo.setSpace('world')
+      return
+    }
+    // Peça trancada ou escondida: sem alça (a lista destranca/mostra).
+    if (this.isLocked(this.selectedId) || this.isHidden(this.selectedId)) {
+      this.gizmo.detach()
       return
     }
     if (this.gizmo.object === this.groupAnchor) this.gizmo.detach()
     this.gizmo.attach(selected.mesh)
     this.gizmo.setMode(GIZMO_MODE[this.tool])
+    this.gizmo.setSpace('world')
   }
 
   // ── Alças ─────────────────────────────────────────────────────────────────
@@ -782,7 +816,7 @@ export class MoldaViewport implements MoldaViewportLike {
     }
     const part = this.selectedPart()
     const entry = this.selectedId ? this.entries.get(this.selectedId) : undefined
-    if (!part || !entry) return
+    if (!part || !entry || part.locked || part.hidden) return
     this.dragging = true
     this.dragPart = part
     this.dragStartPivot.copy(entry.mesh.position)
@@ -984,7 +1018,13 @@ export class MoldaViewport implements MoldaViewportLike {
 
   private mirrorTexelOf(model: MoldaModelAsset, hit: Intersection): TexelHit | null {
     if (!this.paint.mirror) return null
-    return pickTexelAtPoint(model, [-hit.point.x, hit.point.y, hit.point.z])
+    // O toque direto passa pelo `intersect` (que pula escondida e trancada); o ponto
+    // espelhado tem de respeitar a mesma régua.
+    const reachable = {
+      ...model,
+      parts: model.parts.filter((part) => !part.hidden && !part.locked),
+    }
+    return pickTexelAtPoint(reachable, [-hit.point.x, hit.point.y, hit.point.z])
   }
 
   private readonly onPointerDownCapture = (event: PointerEvent): void => {
@@ -1014,7 +1054,14 @@ export class MoldaViewport implements MoldaViewportLike {
         return
       }
       case 'rotateSkin': {
-        const next = rotateFaceSkin(model, texel.partId, texel.face)
+        let next = rotateFaceSkin(model, texel.partId, texel.face)
+        // Espelho de pintura: a face espelhada gira no sentido oposto (3 × 90°), como o
+        // lápis e o balde fazem do outro lado.
+        if (mirror && (mirror.partId !== texel.partId || mirror.face !== texel.face)) {
+          for (let turn = 0; turn < 3; turn += 1) {
+            next = rotateFaceSkin(next, mirror.partId, mirror.face)
+          }
+        }
         if (next === model) return
         this.callbacks.onPaintStart()
         this.applyModel(next)
@@ -1098,28 +1145,25 @@ export class MoldaViewport implements MoldaViewportLike {
       // Editando a malha: o toque escolhe ponto/aresta/face DESTA peça; fora dela limpa.
       const hit = this.intersect(event)
       const partId = hit?.object.userData.partId as string | undefined
-      if (hit && partId === this.meshEdit.partId) {
-        const entry = this.entries.get(partId)
-        const face =
-          hit.faceIndex !== undefined && hit.faceIndex !== null
-            ? (entry?.faceOfTriangle[hit.faceIndex] ?? null)
-            : null
-        const tolerance =
-          event.pointerType === 'touch'
-            ? MESH_PICK_TOLERANCE_TOUCH_PX
-            : MESH_PICK_TOLERANCE_MOUSE_PX
-        const pick = this.meshOverlay.pick(
-          this.raycaster.ray,
-          this.camera,
-          tolerance,
-          this.canvas.clientHeight,
-          hit.distance,
-          face,
-        )
-        this.callbacks.onMeshPick(pick, event.shiftKey)
-      } else {
-        this.callbacks.onMeshPick(null, event.shiftKey)
-      }
+      const onPart = hit !== null && partId === this.meshEdit.partId
+      const entry = this.entries.get(this.meshEdit.partId)
+      const face =
+        onPart && hit.faceIndex !== undefined && hit.faceIndex !== null
+          ? (entry?.faceOfTriangle[hit.faceIndex] ?? null)
+          : null
+      const tolerance =
+        event.pointerType === 'touch' ? MESH_PICK_TOLERANCE_TOUCH_PX : MESH_PICK_TOLERANCE_MOUSE_PX
+      // Sem superfície da peça sob o toque (a silhueta, um ponto puxado para fora) a folga
+      // em pixels ainda vale: só o que estiver mais perto que a superfície tocada conta.
+      const pick = this.meshOverlay.pick(
+        this.raycaster.ray,
+        this.camera,
+        tolerance,
+        this.canvas.clientHeight,
+        hit ? hit.distance : Number.POSITIVE_INFINITY,
+        face,
+      )
+      this.callbacks.onMeshPick(pick, event.shiftKey)
       return
     }
     if (this.placementShape) {

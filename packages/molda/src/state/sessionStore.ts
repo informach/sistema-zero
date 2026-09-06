@@ -92,7 +92,8 @@ export function createSessionStore(initial: Partial<SessionState> = {}): Session
     ...initial,
     // Trocar de modo ou de peça fecha a edição de malha (a seleção de vértices não
     // sobrevive a outra peça).
-    setMode: (mode) => set({ mode, meshEditId: null, meshVertices: [], extraIds: [] }),
+    setMode: (mode) =>
+      set({ mode, meshEditId: null, meshVertices: [], extraIds: [], partsAdditive: false }),
     setTool: (tool) => set({ tool }),
     select: (selectedId) =>
       set((state) =>

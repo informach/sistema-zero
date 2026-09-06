@@ -774,3 +774,151 @@ describe('createStudioCloudSync — projeto aberto, edição no meio, restauro a
     expect(await sync.restoreProject('nao-existe')).toBe(false)
   })
 })
+
+describe('createStudioCloudSync, review 06/09: apagar com um upload em voo e o 2º 409 do DELETE', () => {
+  test('a lápide que nasce DEPOIS de o envio começar sobrevive à confirmação (revisão nova) e é promovida a ela; a descida não restaura e o DELETE reenvia com essa base', async () => {
+    const p1 = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const fake = fakeStudio([p1])
+    const { cloud, uploads, removed } = fakeCloud(
+      new Map([['p1', { json: JSON.stringify(p1), summary: summaryOf(p1, { revision: 4 }) }]]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 900, 3)
+    let clock = 100
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => clock,
+    })
+    sync.attach()
+    fake.mirror()?.onChanged('p1')
+    const job = uploads.get('p1')
+    // O produtor lê o disco: o envio começa em 100, com a base 3.
+    expect((await job?.produce())?.meta?.baseRevision).toBe(3)
+    // A criança apaga com o upload em voo: a lápide nasce em 101, com a revisão 3.
+    clock = 101
+    fake.projects.delete('p1')
+    fake.mirror()?.onDeleted('p1')
+    expect(marks.tombstone('p1')).toEqual({ at: 101, sent: false, revision: 3 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([['p1', 3]])
+    // O commit confirma a revisão 4: a lápide FICA (não enviada) e passa a conhecer a 4.
+    job?.onUploaded?.({ itemId: 'p1', updatedAt: 1000, revision: 4 })
+    expect(marks.tombstone('p1')).toEqual({ at: 101, sent: false, revision: 4 })
+    // A descida vê a nuvem na 4 = a revisão da lápide: nada de "editado em outro aparelho";
+    // reenvia a remoção com a base que a nuvem listou e NÃO restaura.
+    await sync.pullMissing()
+    expect(fake.restored).toEqual([])
+    expect(fake.projects.has('p1')).toBe(false)
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      ['p1', 3],
+      ['p1', 4],
+    ])
+    expect(marks.tombstone('p1')).toEqual({ at: 101, sent: false, revision: 4 })
+    // O DELETE original (base 3) leva 409 com a corrente 4: mesma história, reenvia com a 4.
+    await removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 4 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      ['p1', 3],
+      ['p1', 4],
+      ['p1', 4],
+    ])
+    expect(fake.restored).toEqual([])
+    removed[2]?.onRemoved?.({ revision: 4 })
+    expect(marks.tombstone('p1')).toEqual({ at: 101, sent: true, revision: 4 })
+  })
+
+  test('caso normal: apagar e DEPOIS salvar de novo o mesmo id limpa a lápide na confirmação', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    const { cloud, uploads } = fakeCloud(new Map())
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000, 3)
+    let clock = 100
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => clock,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    expect(marks.tombstone('p1')).toEqual({ at: 100, sent: false, revision: 3 })
+    // O id voltou (recriado) e sobe DEPOIS da exclusão: a confirmação limpa a lápide.
+    clock = 101
+    fake.projects.set('p1', { id: 'p1', name: 'Nave de novo', updatedAt: 2000 })
+    fake.mirror()?.onChanged('p1')
+    const job = uploads.get('p1')
+    expect((await job?.produce())?.meta?.updatedAt).toBe(2000)
+    job?.onUploaded?.({ itemId: 'p1', updatedAt: 2000, revision: 4 })
+    expect(marks.tombstone('p1')).toBeUndefined()
+    expect(marks.get('p1')).toBe(2000)
+    expect(marks.revision('p1')).toBe(4)
+  })
+
+  test('2º 409 no DELETE (`retried`): a corrente cresceu de novo → restaura no mesmo id, a marca conhece a revisão da nuvem e a lápide só sai DEPOIS de gravar', async () => {
+    const mine = { id: 'p1', name: 'Nave', updatedAt: 1000 }
+    const theirs = { id: 'p1', name: 'Nave v3', updatedAt: 3000 }
+    const fake = fakeStudio([mine])
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        ['p1', { json: JSON.stringify(theirs), summary: summaryOf(theirs, { revision: 9 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000) // sem revisão: a lápide nasce sem revisão e o DELETE sai com base 0
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    // 1º 409: mesma história (lápide sem revisão), reenvia UMA vez com a 5.
+    await removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 5 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      ['p1', 0],
+      ['p1', 5],
+    ])
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: false, revision: 5 })
+    // A lápide ainda existe na hora de GRAVAR o restauro (só sai depois).
+    const tombstoneAtRestore: unknown[] = []
+    const restore = fake.studio.restoreProjectFromCloud
+    fake.studio.restoreProjectFromCloud = async (raw, opts) => {
+      tombstoneAtRestore.push(marks.tombstone('p1'))
+      return restore(raw, opts)
+    }
+    // 2º 409 (`retried`): a corrente é 9 > 5, alguém editou entre os dois envios → restaura.
+    await removed[1]?.onStale?.({ itemId: 'p1', currentRevision: 9 })
+    expect(fake.restored).toEqual([{ id: 'p1', expectedId: 'p1' }])
+    expect(fake.projects.get('p1')?.name).toBe('Nave v3')
+    expect(marks.revision('p1')).toBe(9)
+    expect(tombstoneAtRestore).toEqual([{ at: 77, sent: false, revision: 5 }])
+    expect(marks.tombstone('p1')).toBeUndefined()
+    // Nenhum 3º DELETE: o reenvio é UMA vez só.
+    expect(removed).toHaveLength(2)
+  })
+
+  test('2º 409 sem `currentRevision` com a nuvem já sem o item: a lápide vira enviada, nada restaura', async () => {
+    const fake = fakeStudio([{ id: 'p1', name: 'Nave', updatedAt: 1000 }])
+    const { cloud, removed } = fakeCloud(new Map()) // download → null
+    const marks = createMemorySyncedMarks()
+    marks.set('p1', 1000)
+    const sync = createStudioCloudSync({
+      studio: fake.studio,
+      cloud,
+      viewerId: 'v1',
+      marks,
+      now: () => 77,
+    })
+    sync.attach()
+    fake.mirror()?.onDeleted('p1')
+    await removed[0]?.onStale?.({ itemId: 'p1', currentRevision: 5 })
+    await removed[1]?.onStale?.({ itemId: 'p1' })
+    expect(marks.tombstone('p1')).toEqual({ at: 77, sent: true, revision: 5 })
+    expect(fake.restored).toEqual([])
+    expect(removed).toHaveLength(2)
+  })
+})

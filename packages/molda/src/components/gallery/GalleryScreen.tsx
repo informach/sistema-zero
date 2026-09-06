@@ -149,8 +149,10 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
       {/* Cabeçalho de SEÇÃO da comunidade (a mesma escala da galeria do Pinta e da lista do
           Estúdio): sem faixa própria (fundo/borda) e DENTRO da raiz rolável, cujo padding de
-          cima é a folga do `.mld-pop` do 1º card (o hover cresce ~4px para cima; com a grade
-          colada na borda do overflow, o topo do card era cortado). */}
+          cima é a folga do `.mld-pop` do 1º card no TOPO da lista (o hover cresce ~4px para
+          cima; com a grade colada na borda do overflow, o topo do card era cortado). Com a
+          lista rolada, uma fileira encostada na borda ainda corta o hover, mas aí o card já
+          está saindo de tela. */}
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
           <h1 className="mld-display text-3xl text-mld-text md:text-4xl">{COPY.gallery.title}</h1>
@@ -216,7 +218,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         </div>
       </header>
 
-      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="sticky top-0 z-10 -mx-4 mb-3 flex flex-col gap-2 bg-mld-bg px-4 py-2 sm:-mx-6 sm:flex-row sm:items-center sm:px-6">
         <label className="relative flex min-w-0 flex-1 items-center">
           <span className="sr-only">{COPY.gallery.search}</span>
           <Search

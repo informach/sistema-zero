@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { MOLDA_LIMITS } from '../core/limits'
-import { createModelAsset, createPart } from '../core/model'
+import { createModelAsset, createPart, type MoldaMesh, type Vec3 } from '../core/model'
 import { sanitizeMoldaAsset } from '../core/sanitize'
 import { makeModel } from '../testing/fixtures'
+import { modelTriangleCount, partTriangleCount } from './geometry'
+import { boxMesh, meshBox } from './mesh'
 import {
   addExtraColor,
   addPart,
@@ -455,5 +457,92 @@ describe('movePartsBy + trancar/esconder (06/09/2026)', () => {
     const hidden = updatePart(model, 'body', { hidden: true })
     expect(hidden.parts[0]?.hidden).toBe(true)
     expect('hidden' in (updatePart(hidden, 'body', { hidden: false }).parts[0] ?? {})).toBe(false)
+  })
+})
+
+describe('review 06/09: duplicar malha, teto de triângulos e mover sem deformar', () => {
+  test('duplicar uma peça de malha leva os vértices junto com a caixa e nasce visível e destrancada', () => {
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [2, 2, 2],
+      color: 2,
+      mesh: boxMesh([0, 0, 0], [2, 2, 2]),
+    })
+    part.locked = true
+    part.hidden = true
+    const model = makeModel({ parts: [part], mirrorX: false })
+    const result = duplicatePart(model, 'm')
+    if (!result) throw new Error('sem cópia')
+    const copy = result.model.parts.find((item) => item.id === result.partId)
+    if (!copy?.mesh) throw new Error('cópia sem malha')
+    expect(meshBox(copy.mesh)).toEqual({ from: copy.from, to: copy.to })
+    expect(copy.from).not.toEqual(part.from)
+    expect('locked' in copy).toBe(false)
+    expect('hidden' in copy).toBe(false)
+  })
+
+  test('duplicar respeita o teto de triângulos do modelo', () => {
+    // Uma grade de 22×22 quads (968 triângulos): ~20 cópias enchem o teto antes das 128 peças.
+    const vertices: Record<string, Vec3> = {}
+    const faces: MoldaMesh['faces'] = {}
+    for (let i = 0; i <= 22; i += 1) {
+      for (let j = 0; j <= 22; j += 1) vertices[`v_${i}x${j}`] = [i * 0.25, 0, j * 0.25]
+    }
+    for (let i = 0; i < 22; i += 1) {
+      for (let j = 0; j < 22; j += 1) {
+        faces[`f_${i}x${j}`] = {
+          v: [`v_${i}x${j}`, `v_${i}x${j + 1}`, `v_${i + 1}x${j + 1}`, `v_${i + 1}x${j}`],
+        }
+      }
+    }
+    const big = createPart({
+      id: 'b',
+      name: 'grande',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [5.5, 0, 5.5],
+      color: 2,
+      mesh: { vertices, faces },
+    })
+    const model = makeModel({ parts: [big], mirrorX: false })
+    const budget = MOLDA_LIMITS.maxTriangles
+    const perCopy = partTriangleCount(big)
+    let filler = model
+    while (modelTriangleCount(filler) + perCopy <= budget) {
+      const copy = duplicatePart(filler, 'b')
+      if (!copy) break
+      filler = copy.model
+    }
+    expect(filler.parts.length).toBeLessThan(MOLDA_LIMITS.maxParts)
+    expect(modelTriangleCount(filler) + perCopy).toBeGreaterThan(budget)
+    expect(duplicatePart(filler, 'b')).toBeNull()
+  })
+
+  test('mover uma malha cuja caixa não está no encaixe é uma translação exata', () => {
+    const mesh = boxMesh([0, 0, 0], [2, 2, 2])
+    mesh.vertices.v_111 = [2.6875, 2.6875, 2.6875]
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [3, 3, 3],
+      color: 2,
+      mesh,
+    })
+    const model = makeModel({ parts: [part], mirrorX: false })
+    const moved = movePartBy(model, 'm', [1, 0, 0])
+    const next = moved.parts[0]
+    if (!next?.mesh) throw new Error('sem malha')
+    for (const [key, v] of Object.entries(mesh.vertices)) {
+      expect(next.mesh.vertices[key]).toEqual([v[0] + 1, v[1], v[2]])
+    }
+    expect(next.from).toEqual([1, 0, 0])
+    expect(next.to).toEqual([3.6875, 2.6875, 2.6875])
+    // Mesma caixa = mesma referência (nada a fazer).
+    expect(setPartBox(moved, 'm', next.from, next.to)).toBe(moved)
   })
 })

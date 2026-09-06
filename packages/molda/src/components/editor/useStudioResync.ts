@@ -47,10 +47,9 @@ export function useStudioResync(options: {
     if (!asset || !deliver) return
     pendingRef.current = null
     const exported = exportLoadedAssetForStudio(asset)
-    if (!exported.ok) {
-      onFailureRef.current?.()
-      return
-    }
+    // O que não cabe no Estúdio não é reenviado, em SILÊNCIO: a criação pode nem estar
+    // ligada a um jogo, e o teto já é avisado no "Baixar" e no "Trazer do Molda".
+    if (!exported.ok) return
     chainRef.current = chainRef.current.then(async () => {
       try {
         const result = await deliver(exported.asset)
@@ -63,8 +62,11 @@ export function useStudioResync(options: {
     })
   }
 
+  // O `send` vive no ref de propósito: o host recria o adapter a cada render dele e um
+  // `send` novo no meio da folga cancelaria o reenvio agendado (ficaria preso até a aba
+  // esconder). Só o salvamento agenda.
   useEffect(() => {
-    if (!send) return
+    if (!sendRef.current) return
     if (savedAsset === lastSeenRef.current) return
     lastSeenRef.current = savedAsset
     pendingRef.current = savedAsset
@@ -82,7 +84,7 @@ export function useStudioResync(options: {
       document.removeEventListener('visibilitychange', onHidden)
       window.removeEventListener('pagehide', flush)
     }
-  }, [savedAsset, send, idleMs])
+  }, [savedAsset, idleMs])
 
   // Desmontar (fechar a criação) com um reenvio pendente: sai agora.
   useEffect(() => {

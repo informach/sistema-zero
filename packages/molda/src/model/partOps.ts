@@ -17,8 +17,16 @@ import {
 import { normalizePartName } from '../core/names'
 import { firstPaintableIndex, PALETTE_SIZE } from '../core/palette'
 import { normalizeBox, normalizeRotation, resolvePaletteColors } from '../core/sanitize'
-import { buildPartGeometry } from './geometry'
-import { BOX_MESH_FACES, boxMesh, normalizeMesh, roundMesh, scaleMeshToBox } from './mesh'
+import { buildPartGeometry, modelTriangleCount, partTriangleCount } from './geometry'
+import {
+  BOX_MESH_FACES,
+  boxMesh,
+  meshBox,
+  normalizeMesh,
+  roundMesh,
+  scaleMeshToBox,
+  translateMesh,
+} from './mesh'
 import { faceSkinSize, partSize } from './shapes'
 import { isSkinBlank, resampleSkin } from './skinOps'
 import { bakeTwins, partCrossesMirror, syncTwins } from './twins'
@@ -236,20 +244,29 @@ export function duplicatePart(model: MoldaModelAsset, id: string): AddResult | n
   if (!source) return null
   const size = partSize(source)
   const spot = findFreeSpot(model, size, source)
+  // O teto de triângulos vale aqui também (senão o sanitize derrubaria a cópia no reload).
+  if (modelTriangleCount(model) + partTriangleCount(source) > MOLDA_LIMITS.maxTriangles) {
+    return null
+  }
   const copy = structuredClone(source)
   copy.id = newId()
   copy.name = nextPartName(model, source.name.replace(/ \d+$/, ''))
   copy.from = spot.from
   copy.to = spot.to
+  const delta: Vec3 = [
+    spot.from[0] - source.from[0],
+    spot.from[1] - source.from[1],
+    spot.from[2] - source.from[2],
+  ]
   if (copy.origin) {
-    const delta: Vec3 = [
-      spot.from[0] - source.from[0],
-      spot.from[1] - source.from[1],
-      spot.from[2] - source.from[2],
-    ]
     copy.origin = [copy.origin[0] + delta[0], copy.origin[1] + delta[1], copy.origin[2] + delta[2]]
   }
+  // Malha: os vértices vão junto com a caixa (senão a cópia ficava desenhada em cima da original).
+  if (copy.mesh) copy.mesh = translateMesh(copy.mesh, delta)
   delete copy.mirrorOf
+  // A cópia nasce visível e destrancada: é uma peça nova, para pegar na hora.
+  delete copy.locked
+  delete copy.hidden
   const slots = model.mirrorX && !partCrossesMirror(copy) ? 2 : 1
   if (model.parts.length + slots > MOLDA_LIMITS.maxParts) return null
   const next = { ...model, parts: [...model.parts, copy] }
@@ -277,16 +294,54 @@ export function setPartBox(
 ): MoldaModelAsset {
   const part = findPart(model, id)
   if (!part || part.mirrorOf) return model
-  const box = normalizeBox(from, to, model.snap)
   const sizeBefore = partSize(part)
-  const sizeAfter = partSize(box)
-  const sameSize =
-    sizeBefore[0] === sizeAfter[0] &&
-    sizeBefore[1] === sizeAfter[1] &&
-    sizeBefore[2] === sizeAfter[2]
-  const next: MoldaPart = { ...part, from: box.from, to: box.to }
-  // Malha: os vértices acompanham a caixa (mover translada; redimensionar escala).
-  if (part.mesh) next.mesh = scaleMeshToBox(part.mesh, box)
+  const wanted = partSize({ from, to })
+  const moveOnly =
+    wanted[0] === sizeBefore[0] && wanted[1] === sizeBefore[1] && wanted[2] === sizeBefore[2]
+  let next: MoldaPart
+  let sameSize: boolean
+  if (part.mesh && moveOnly) {
+    // Malha: a caixa é DERIVADA dos vértices (precisão de 1/16, não o encaixe). Mover é
+    // uma TRANSLAÇÃO exata: arredondar a caixa ao encaixe e escalar os vértices para ela
+    // (a régua das formas) deformava a malha depois de um Puxar na diagonal.
+    const delta: Vec3 = [from[0] - part.from[0], from[1] - part.from[1], from[2] - part.from[2]]
+    if (delta.every((value) => value === 0)) return model
+    const mesh = translateMesh(part.mesh, delta)
+    const box = meshBox(mesh)
+    if (!box) return model
+    next = { ...part, from: box.from, to: box.to, mesh }
+    if (part.origin) {
+      next.origin = [
+        part.origin[0] + delta[0],
+        part.origin[1] + delta[1],
+        part.origin[2] + delta[2],
+      ]
+    }
+    sameSize = true
+  } else {
+    const box = normalizeBox(from, to, model.snap)
+    const sizeAfter = partSize(box)
+    sameSize =
+      sizeBefore[0] === sizeAfter[0] &&
+      sizeBefore[1] === sizeAfter[1] &&
+      sizeBefore[2] === sizeAfter[2]
+    next = { ...part, from: box.from, to: box.to }
+    // Malha mudando de tamanho: os vértices escalam para a caixa nova.
+    if (part.mesh) next.mesh = scaleMeshToBox(part.mesh, box)
+    if (part.origin) {
+      next.origin = sameSize
+        ? [
+            part.origin[0] + (box.from[0] - part.from[0]),
+            part.origin[1] + (box.from[1] - part.from[1]),
+            part.origin[2] + (box.from[2] - part.from[2]),
+          ]
+        : [
+            Math.min(Math.max(part.origin[0], box.from[0]), box.to[0]),
+            Math.min(Math.max(part.origin[1], box.from[1]), box.to[1]),
+            Math.min(Math.max(part.origin[2], box.from[2]), box.to[2]),
+          ]
+    }
+  }
   const hasTwin = model.parts.some((candidate) => candidate.mirrorOf === part.id)
   if (
     model.mirrorX &&
@@ -297,22 +352,6 @@ export function setPartBox(
     return model
   }
   if (!sameSize) next.faces = resizePartSkins(next, model.texelsPerUnit)
-  if (part.origin) {
-    if (sameSize) {
-      // Moveu: o pivô vai junto.
-      next.origin = [
-        part.origin[0] + (box.from[0] - part.from[0]),
-        part.origin[1] + (box.from[1] - part.from[1]),
-        part.origin[2] + (box.from[2] - part.from[2]),
-      ]
-    } else {
-      next.origin = [
-        Math.min(Math.max(part.origin[0], box.from[0]), box.to[0]),
-        Math.min(Math.max(part.origin[1], box.from[1]), box.to[1]),
-        Math.min(Math.max(part.origin[2], box.from[2]), box.to[2]),
-      ]
-    }
-  }
   return syncTwins(replacePart(model, next))
 }
 

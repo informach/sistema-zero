@@ -371,7 +371,7 @@ Estudo do Blockbench (GPL: só IDEIAS): malha = `vertices` e `faces` em MAPAS po
 índices), normais calculadas, quads e tris, seleção FORA do elemento com os vértices como lista
 mestra, picking em pixels com viés de profundidade, alça no centro da seleção, "consertar DEPOIS
 e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal. Plano do lote:
-`~/.claude/plans/n-s-j-temos-o-moonlit-peach.md` (F1..F7 + M1..M5 + extras).
+`docs/plans/2026-09-06-molda-malha-lote.md` (F1..F7 + M1..M5 + extras).
 
 - **Dado** (`core/model.ts`): `shape: 'mesh'` numa PEÇA comum com `mesh: { vertices: Record<v_…,
   Vec3>, faces: Record<f_…, { v: string[] }> }` (3 ou 4 chaves por face, CCW visto de fora);
@@ -385,14 +385,14 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
   `v_xyz` em bits, 6 quads `f_px..f_nz` com frames IDÊNTICOS aos da caixa: a pele migra sem
   re-amostrar), `meshBox`, `normalizeMesh` (idempotente; `orderQuad`), `faceNormal` (Newell),
   `meshEdges`, `meshTriangleCount`, `meshIssues` (quad côncavo/não plano, vértices sobrepostos,
-  face virada), `mirrorMesh` (x → -x + ciclo invertido a partir de p1: o gêmeo mostra a pele da
+  face virada), `mirrorMesh` (x → -x + cada ciclo INVERTIDO, `reverse()`: o gêmeo mostra a pele da
   fonte com `1 - u`, o mesmo `flipSkinH`/`width-1-x` das caixas). `meshFaceFrame` devolve um
-  `FaceFrame` plano (`s = p1 - p0`, normal de Newell, `t = cross(s, normal)`, invariante
+  `FaceFrame` plano (`s` = do primeiro ao ÚLTIMO ponto do ciclo, normal de Newell, `t = cross(s, normal)`, invariante
   `cross(s, t) == -normal`): para atlas, pele, pintura e picking a face de malha É uma "face de
   cubo" (`faceSkinSize` = `skinDim(su) × skinDim(tv)`; tri = a rampa: pele retangular, só o
   polígono conta). `partFaces(part)` substitui `FACES_BY_SHAPE[shape]` em sanitize, pick e ops.
 - **Sanitize** (`core/sanitize.ts` `sanitizeMesh` + `fitMeshToGrid`): chaves `v_`/`f_`, ciclos
-  de 3..4 chaves existentes, vértices arredondados ao encaixe e presos à grade, teto de
+  de 3..4 chaves existentes, vértices arredondados à precisão de 1/16 (`meshPrecision`, não ao encaixe) e presos à grade, teto de
   triângulos (a peça que estoura cai SEM derrubar o modelo), caixa gravada ignorada (derivada).
 - **Editar malha no palco** (`state/sessionStore.ts`, `model/meshSelection.ts`, `model/meshOps.ts`,
   `viewport/meshEditOverlay.ts`): sub-modo do Montar (botão "Editar malha" / "Transformar em
@@ -434,15 +434,17 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
   (`EdgesGeometry` a 30° em todas as peças), **pivô** (steppers "Pivô X/Y/Z" presos à caixa +
   "Pivô no centro"; `origin` já existia no dado), **seleção múltipla** (`extraIds` + "Somar à
   seleção"/Shift no palco e na lista; contorno em todas, alça na âncora do GRUPO só de mover com
-  o delta preso à grade pelo grupo; `DragPatch.parts` leva caixas ABSOLUTAS por peça; Delete,
+  o delta preso à grade pelo grupo; peça trancada fica parada sem esconder a alça das livres,
+  mesmo quando ela é a principal; `DragPatch.parts` leva caixas ABSOLUTAS por peça; Delete,
   Duplicar e as setas valem para o grupo).
 - Testes: `mesh.test.ts`, `meshFrame.test.ts`, `meshSelection.test.ts`, `meshOps.test.ts`,
   `meshTools.test.ts`, `viewport/meshEditOverlay.test.ts` (Raycaster real), `export/meshGlb.test.ts`
   (20 000 tris + atlas cheio cabem no teto do Estúdio), `ModelEditor.mesh.test.tsx`, os blocos
   "malha" em sanitize/twins/pick/partOps/geometry/atlas/stroke/ops, `sessionStore.test.ts` e o bloco
-  "extras de 06/09" em `ModelEditor.test.tsx`; e2e `model-editor.spec.ts` "malha: toque escolhe a
-  face…" (toque real com folga, Puxar, lápis e Girar a pele).
-- Desempenho medido em 06/09 (bun, melhor de 5; script fora do repo): malha de 1 024 quads e
+  "extras de 06/09" em `ModelEditor.test.tsx`; e2e `model-editor.spec.ts` cobre o grupo cuja peça
+  principal está trancada e "malha: toque escolhe a face…" (toque real com folga, Puxar, lápis e
+  Girar a pele).
+- Desempenho medido em 06/09 (bun, melhor de 5; `scripts/bench-mesh.ts`): malha de 1 024 quads e
   1 089 vértices: `buildPartGeometry` 8 ms, `meshIssues` 31 ms, `meshEdges` 0,7 ms, sanitize do
   modelo 14 ms, `overlay.setMesh` com 100 escolhidos 3 ms, `extrudeFaces` 2 ms, `loopCut`
   atravessando 32 quads 9 ms; 128 caixas: geometria de todas 3 ms, `packAtlas` 0,1 ms, sanitize
@@ -451,3 +453,47 @@ e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal
   desconhecida; uma aba com código antigo que abra um modelo com malha regrava o asset sem ela.
   Como a malha já está no código, a janela é só o deploy; se um dia entrar outra forma, fazer o
   sanitize PRESERVAR a peça desconhecida antes.
+- **Full review de 06/09 (tarde), o que mudou no pacote** (achados confirmados por script ou teste
+  antes de corrigir; cada item tem regressão):
+  - Malha pura: `orderQuad` SÓ desfaz a "gravata" (um dardo côncavo é uma face válida e ficava
+    virando pipa); "face virada" virou regra LOCAL (a aresta dividida com a vizinha percorrida
+    no mesmo sentido; a antiga, pelo centro, acusava as faces internas de um L ou U); limitações
+    conhecidas: duas vizinhas viradas juntas e uma face solta não são apontadas. Puxar só para
+    FORA (distância zero/negativa fazia paredes coplanares e viradas; o Ajustar começa em um
+    encaixe) e o deslocamento anda pelo ENCAIXE eixo a eixo (`snapOffset`); a aba do Puxar de
+    aresta nasce com o ciclo certo; Dividir corta pela diagonal que passa pelo dente; Juntar
+    pontos não deixa duas faces com o mesmo conjunto; Fechar face orienta pelas VIZINHAS (o
+    centro só vale para face solta); `normalizeMesh` derruba face sem área; `createPart` clona a
+    malha e deriva a caixa dela; mover pontos REPROJETA a pele das faces que mudaram de forma
+    (re-amostrar a cada commit apagava um xadrez em dois toques de seta); mover uma malha cuja
+    caixa está fora do encaixe é translação exata (`setPartBox`); duplicar translada a malha,
+    respeita o teto de triângulos (`trianglesFull`) e a cópia nasce visível e destrancada; o
+    gêmeo herda `locked`/`hidden` de verdade (`twinUpToDate`); triângulo de área zero não vai ao
+    `.glb`; `mesh.ts` sem byte NUL (o git tratava o arquivo como binário).
+  - Palco: trancar/esconder a peça escolhida tira a alça na hora (e o `mouseDown` da alça
+    confere); a folga em pixels vale na silhueta (toque sem superfície tocada); a alça da malha
+    anda nos eixos da PEÇA (`setSpace('local')`); a miniatura sai sem arestas, overlay e verso,
+    enquadrada pelo que se vê; o espelho de pintura não alcança escondida nem trancada; "Girar a
+    pele" com espelho gira a face espelhada no sentido oposto.
+  - Editor: o gesto do "+ Nova cor" fecha ANTES de qualquer outro commit ou gesto do palco (Esc
+    no seletor não manda `change` e o `pointerdown` de pintura não tira o foco: o `before` velho
+    entrava no histórico depois e o Desfazer andava para trás e para frente); um passo do
+    seletor sobre uma cor que já existe tira a extra e aponta para ela; o lápis volta à 1ª cor
+    quando a extra some (desfazer); foco volta ao "+" ao fechar o seletor; o input do seletor
+    fica fora da árvore de acessibilidade; "+" desabilitado sem peça no Montar. Setas: toque ou
+    tecla segurada = UM gesto (`replace` no keydown, `commitGesture` no keyup/blur/próximo
+    commit), só com algo escolhido (senão a seta é do navegador); Ctrl+A escolhe todos os
+    pontos; E dentro do Editar malha FECHA; peça trancada ou escondida não entra no Editar malha
+    (toast) e trancá-la durante a edição fecha; o Pintar ignora o "Somar à seleção" (e trocar de
+    modo o desliga); o toast com ações só age sobre o estado que gerou o aviso (`fixes.stale`),
+    o aviso roda também no Ajustar e no apagar, `meshIssues` memoizada por identidade; corte
+    fora do encaixe avisa (`cutOffGrid`); arrasto barrado pela grade avisa (`cannotMove`);
+    dicas certas para Dividir, corte sem quad e face repetida; `canSplit` próprio.
+  - Acessibilidade e UI: `Toast` com a mensagem na região viva e os botões FORA dela, relógio
+    parado com foco ou mouse num botão; `MeshToolbox` com legenda "Ferramentas de malha" e a
+    contagem sem live region (o palco já tem a dele); `PartsPanel` com rótulos FIXOS + `aria-pressed`
+    e os selos falados por `aria-describedby`; galeria com a busca e os chips presos no topo ao
+    rolar; coluna rolável com a barra FINA (a criança de mouse precisa ver que há mais painel);
+    `./assets` só exporta o tipo `MeshIssue` da malha (as funções são internas).
+  - Bancada: `scripts/bench-mesh.ts` é a medição do bullet acima; o plano do lote está em
+    `docs/plans/2026-09-06-molda-malha-lote.md`.

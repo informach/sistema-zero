@@ -576,8 +576,10 @@ describe('createCloudMirroredMoldaPersistence', () => {
     releaseDownload()
     await firstPassEnded
 
-    expect(lists.count).toBe(2)
+    // O 2º passe começa no fim do 1º, mas só lê a lista DEPOIS do `flush` da fila (review 06/09):
+    // a contagem de listagens é conferida quando ele termina.
     await secondPassEnded
+    expect(lists.count).toBe(2)
     expect((await local.load(mine.id))?.updatedAt).toBe(3000)
     mirrored.dispose?.()
   })
@@ -634,5 +636,251 @@ describe('createCloudMirroredMoldaPersistence', () => {
     await mirrored.loadAll()
     await mirrored.loadAll()
     expect(lists.count).toBe(1)
+  })
+})
+
+describe('review 06/09: upload em voo × exclusão, flush antes da descida, criação aberta, 2º 409', () => {
+  test('a lápide que nasce DEPOIS de o envio começar sobrevive à confirmação (revisão nova) e é promovida a ela; a descida não restaura e o DELETE reenvia com essa base', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const { cloud, uploads, removed } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(casa), summary: summaryOf(casa, { revision: 4 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 900, 3)
+    let clock = 100
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => clock,
+    })
+    await mirrored.save(casa)
+    const job = uploads.get(casa.id)
+    // O produtor lê o disco: o envio começa em 100, com a base 3.
+    expect((await job?.produce())?.meta?.baseRevision).toBe(3)
+    // A criança apaga com o upload em voo: a lápide nasce em 101, com a revisão 3.
+    clock = 101
+    await mirrored.remove(casa.id)
+    expect(marks.tombstone(casa.id)).toEqual({ at: 101, sent: false, revision: 3 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([[casa.id, 3]])
+    // O commit confirma a revisão 4: a lápide FICA (não enviada) e passa a conhecer a 4.
+    job?.onUploaded?.({ itemId: casa.id, updatedAt: 1000, revision: 4 })
+    expect(marks.tombstone(casa.id)).toEqual({ at: 101, sent: false, revision: 4 })
+    // A descida vê a nuvem na 4 = a revisão da lápide: nada de "editado em outro aparelho";
+    // reenvia a remoção com a base que a nuvem listou e NÃO restaura.
+    expect(await loadSettled(mirrored, local)).toEqual([])
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      [casa.id, 3],
+      [casa.id, 4],
+    ])
+    expect(marks.tombstone(casa.id)).toEqual({ at: 101, sent: false, revision: 4 })
+    // O DELETE original (base 3) leva 409 com a corrente 4: mesma história, reenvia com a 4.
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 4 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      [casa.id, 3],
+      [casa.id, 4],
+      [casa.id, 4],
+    ])
+    expect(local.rows.has(casa.id)).toBe(false)
+    removed[2]?.onRemoved?.({ revision: 4 })
+    expect(marks.tombstone(casa.id)).toEqual({ at: 101, sent: true, revision: 4 })
+  })
+
+  test('caso normal: apagar e DEPOIS salvar de novo o mesmo id limpa a lápide na confirmação', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const { cloud, uploads } = fakeCloud(new Map())
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000, 3)
+    let clock = 100
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => clock,
+    })
+    await mirrored.remove(casa.id)
+    expect(marks.tombstone(casa.id)).toEqual({ at: 100, sent: false, revision: 3 })
+    // O id voltou (recriado) e sobe DEPOIS da exclusão: a confirmação limpa a lápide.
+    clock = 101
+    await mirrored.save({ ...casa, updatedAt: 2000 })
+    const job = uploads.get(casa.id)
+    expect((await job?.produce())?.meta?.updatedAt).toBe(2000)
+    job?.onUploaded?.({ itemId: casa.id, updatedAt: 2000, revision: 4 })
+    expect(marks.tombstone(casa.id)).toBeUndefined()
+    expect(marks.revision(casa.id)).toBe(4)
+  })
+
+  test('a reconciliação dá `flush` na fila (com teto) ANTES de ler a lista: um DELETE em voo sobe primeiro; a fila falhando não bloqueia a descida', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const { cloud, removed } = fakeCloud(remoteOf([casa]))
+    const calls: string[] = []
+    const flushOptions: Array<{ timeoutMs?: number } | undefined> = []
+    cloud.flush = async (options) => {
+      flushOptions.push(options)
+      calls.push('flush')
+      // A fila de verdade manda o que está pendente antes de devolver: aqui, o DELETE.
+      for (const job of removed.splice(0)) {
+        calls.push(`delete:${job.itemId}`)
+        job.onRemoved?.({ revision: 1 })
+      }
+    }
+    const originalList = cloud.list
+    cloud.list = async (options) => {
+      calls.push('list')
+      return originalList(options)
+    }
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000, 1)
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+      reconcileMinIntervalMs: 0,
+    })
+    await mirrored.remove(casa.id)
+    expect(removed).toHaveLength(1)
+    expect(await loadSettled(mirrored, local)).toEqual([])
+    expect(calls).toEqual(['flush', `delete:${casa.id}`, 'list'])
+    expect(flushOptions).toEqual([{ timeoutMs: 3000 }])
+    // O DELETE já confirmado: a lista ainda mostra o item, mas a lápide enviada segura a descida.
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: true, revision: 1 })
+    expect(removed).toHaveLength(0)
+    // A fila fora do ar não segura a galeria: a lista continua sendo lida.
+    cloud.flush = async () => {
+      calls.push('flush-falhou')
+      throw new Error('fila caiu')
+    }
+    expect(await loadSettled(mirrored, local)).toEqual([])
+    expect(calls.slice(3)).toEqual(['flush-falhou', 'list'])
+  })
+
+  test('restauro do 409 com a criação ABERTA no editor: nada é gravado e a lápide sobrevive; fechada, o mesmo 409 restaura', async () => {
+    const casa = model('casa', 1000)
+    const theirs: MoldaAsset = { ...casa, updatedAt: 2000 }
+    const local = fakeLocal([casa])
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(theirs), summary: summaryOf(theirs, { revision: 7 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000, 5)
+    let open = true
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+      isAssetOpen: (id) => open && id === casa.id,
+    })
+    await mirrored.remove(casa.id)
+    // Alguém editou depois (7 > 5), mas a criação está aberta: o restauro espera.
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 7 })
+    expect(local.rows.has(casa.id)).toBe(false)
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: 5 })
+    expect(marks.revision(casa.id)).toBeUndefined()
+    // Fechou: o mesmo 409 agora restaura, e a lápide só sai depois de gravar.
+    open = false
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 7 })
+    expect(local.rows.get(casa.id)?.updatedAt).toBe(2000)
+    expect(marks.tombstone(casa.id)).toBeUndefined()
+    expect(marks.revision(casa.id)).toBe(7)
+  })
+
+  test('2º 409 no DELETE (`retried`): a corrente cresceu de novo → a criação volta no mesmo id, a marca conhece a revisão da nuvem e a lápide só sai DEPOIS de gravar', async () => {
+    const casa = model('casa', 1000)
+    const theirs: MoldaAsset = { ...casa, updatedAt: 3000 }
+    const local = fakeLocal([casa])
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(theirs), summary: summaryOf(theirs, { revision: 9 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000) // sem revisão: a lápide nasce sem revisão e o DELETE sai com base 0
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+    })
+    await mirrored.remove(casa.id)
+    // 1º 409: mesma história (lápide sem revisão), reenvia UMA vez com a 5.
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 5 })
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([
+      [casa.id, 0],
+      [casa.id, 5],
+    ])
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: 5 })
+    // A lápide ainda existe na hora de GRAVAR o restauro (só sai depois).
+    const tombstoneAtWrite: unknown[] = []
+    const saveMany = local.saveMany
+    local.saveMany = async (assets) => {
+      tombstoneAtWrite.push(marks.tombstone(casa.id))
+      return saveMany(assets)
+    }
+    // 2º 409 (`retried`): a corrente é 9 > 5, alguém editou entre os dois envios → restaura.
+    await removed[1]?.onStale?.({ itemId: casa.id, currentRevision: 9 })
+    expect(local.rows.get(casa.id)?.updatedAt).toBe(3000)
+    expect(marks.revision(casa.id)).toBe(9)
+    expect(tombstoneAtWrite).toEqual([{ at: 4242, sent: false, revision: 5 }])
+    expect(marks.tombstone(casa.id)).toBeUndefined()
+    // Nenhum 3º DELETE: o reenvio é UMA vez só.
+    expect(removed).toHaveLength(2)
+  })
+
+  test('2º 409 sem `currentRevision` com a nuvem já sem a criação: a lápide vira enviada, nada restaura', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal([casa])
+    const { cloud, removed } = fakeCloud(new Map()) // download → null
+    const marks = createMemorySyncedMarks()
+    marks.set(casa.id, 1000)
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+      now: () => 4242,
+    })
+    await mirrored.remove(casa.id)
+    await removed[0]?.onStale?.({ itemId: casa.id, currentRevision: 5 })
+    await removed[1]?.onStale?.({ itemId: casa.id })
+    expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: true, revision: 5 })
+    expect(local.rows.has(casa.id)).toBe(false)
+    expect(removed).toHaveLength(2)
+  })
+
+  test('lápide legada `{revision: null}` (dado já em produção): a descida reenvia o DELETE com a revisão da NUVEM e nada é restaurado', async () => {
+    const casa = model('casa', 1000)
+    const local = fakeLocal()
+    const { cloud, removed } = fakeCloud(
+      new Map([
+        [casa.id, { json: assetToCloudJson(casa), summary: summaryOf(casa, { revision: 3 }) }],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    marks.setTombstone(casa.id, { at: 500, sent: false, revision: null })
+    const mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      cloud,
+      viewerId: 'perfil-1',
+      marks,
+    })
+    expect(await loadSettled(mirrored, local)).toEqual([])
+    expect(removed.map((r) => [r.itemId, r.baseRevision])).toEqual([[casa.id, 3]])
+    expect(marks.tombstone(casa.id)).toEqual({ at: 500, sent: false, revision: null })
+    removed[0]?.onRemoved?.({ revision: 3 })
+    expect(marks.tombstone(casa.id)).toEqual({ at: 500, sent: true, revision: 3 })
   })
 })

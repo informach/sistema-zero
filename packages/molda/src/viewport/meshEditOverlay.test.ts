@@ -36,7 +36,7 @@ function setup() {
       face,
     )
   }
-  return { overlay, pickAt }
+  return { overlay, pickAt, camera, raycaster }
 }
 
 describe('overlay da malha: picking com tolerância em pixels', () => {
@@ -53,7 +53,7 @@ describe('overlay da malha: picking com tolerância em pixels', () => {
   test('nada atrás da superfície: o canto do fundo não rouba o toque na face da frente', () => {
     const { pickAt } = setup()
     // (2, 2, 2) está na frente; o raio que passa por ele também passa perto de (2, 2, 0)?
-    // Não: a câmera olha de frente, então o ponto do fundo fica exatamente atrás — e só
+    // Não: a câmera olha de frente, então o ponto do fundo fica exatamente atrás e e só
     // o da frente conta. Um raio pela quina de trás, vindo de frente, acerta a face antes.
     const pick = pickAt(new Vector3(2, 2, 2))
     expect(pick).toEqual({ kind: 'vertex', key: 'v_111' })
@@ -66,5 +66,27 @@ describe('overlay da malha: picking com tolerância em pixels', () => {
     const world = overlay.worldPosition('v_111')
     expect(world?.toArray()).toEqual([2, 2, 2])
     expect(overlay.worldPosition('v_zzz')).toBeNull()
+  })
+})
+
+test('o canto de TRÁS, exatamente atrás da face da frente tocada, não rouba o toque', () => {
+  const { overlay, camera, raycaster } = setup()
+  // O raio passa pelo canto de trás (2, 2, 0); a superfície tocada é a face da frente
+  // (z = 2), então o que fica além dela não conta, mesmo estando a 0 px do raio.
+  const back = new Vector3(2, 2, 0)
+  const projected = back.clone().project(camera)
+  raycaster.setFromCamera(new Vector2(projected.x, projected.y), camera)
+  const ray = raycaster.ray
+  const surfaceDistance = (2 - ray.origin.z) / ray.direction.z
+  const pick = overlay.pick(ray, camera, 8, 600, surfaceDistance, 'f_pz')
+  expect(pick).not.toEqual({ kind: 'vertex', key: 'v_110' })
+  expect(pick).toEqual({ kind: 'face', key: 'f_pz' })
+  // Sem superfície nenhuma tocada (a silhueta), a folga em pixels continua valendo.
+  const corner = new Vector3(2.05, 2.05, 2)
+  const p2 = corner.clone().project(camera)
+  raycaster.setFromCamera(new Vector2(p2.x, p2.y), camera)
+  expect(overlay.pick(raycaster.ray, camera, 8, 600, Number.POSITIVE_INFINITY, null)).toEqual({
+    kind: 'vertex',
+    key: 'v_111',
   })
 })

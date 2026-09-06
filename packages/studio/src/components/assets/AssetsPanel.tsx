@@ -23,7 +23,13 @@ import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { uniqueAssetName } from './assetNames'
-import { type CreationOrigin, creationOriginOf, type EditTarget } from './creationOrigin'
+import {
+  type CreationOrigin,
+  creationOriginOf,
+  type EditTarget,
+  evidencedOriginOf,
+  personalKindOf,
+} from './creationOrigin'
 import { EditInOriginButton } from './EditInOriginButton'
 import { projectHas3DConsumer } from './has3DConsumer'
 import {
@@ -105,6 +111,10 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const [catalogOrigins, setCatalogOrigins] = useState<Map<string, CreationOrigin | null>>(
     () => new Map(),
   )
+  // Só vira `true` com os DOIS adapters presentes E as duas listas resolvidas: "não
+  // consultei" (aula, admin, `list()` rejeitado) e "consultei e ninguém conhece" são
+  // respostas diferentes, e só a segunda pode pedir reimportação à criança.
+  const [catalogsComplete, setCatalogsComplete] = useState(false)
   const storeApi = useProjectStoreApi()
   const onEditDrawing = useStudioEditDrawing()
   // "Trazer do Pinta" (fluxo pull): com o adapter presente, o botão abre a
@@ -202,44 +212,64 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     }
 
     let cancelled = false
-    void Promise.all([
-      pintaLibrary ? pintaLibrary.list().catch(() => null) : Promise.resolve(null),
-      moldaLibrary ? moldaLibrary.list().catch(() => null) : Promise.resolve(null),
-    ]).then(([pintaItems, moldaItems]) => {
-      if (cancelled) return
-      const pintaIds = new Set(pintaItems?.map((item) => item.id) ?? [])
-      const moldaIds = new Set(moldaItems?.map((item) => item.id) ?? [])
-      setCatalogOrigins(
-        new Map(
-          ids.map((id) => {
-            const inPinta = pintaIds.has(id)
-            const inMolda = moldaIds.has(id)
-            const origin: CreationOrigin | null =
-              inPinta === inMolda ? null : inPinta ? 'pinta' : 'molda'
-            return [id, origin]
-          }),
-        ),
-      )
-    })
+    // `null` = catálogo não consultado (sem adapter) ou indisponível (rejeitou). A
+    // rejeição é logada em vez de engolida: antes ela era indistinguível de "lista vazia".
+    const listCatalog = (library: { list: () => Promise<{ id: string }[]> } | null) =>
+      library
+        ? library.list().catch((cause: unknown) => {
+            console.warn('[estudio] catálogo indisponível', cause)
+            return null
+          })
+        : Promise.resolve(null)
+    void Promise.all([listCatalog(pintaLibrary), listCatalog(moldaLibrary)]).then(
+      ([pintaItems, moldaItems]) => {
+        if (cancelled) return
+        const pintaIds = new Set(pintaItems?.map((item) => item.id) ?? [])
+        const moldaIds = new Set(moldaItems?.map((item) => item.id) ?? [])
+        setCatalogOrigins(
+          new Map(
+            ids.map((id) => {
+              const inPinta = pintaIds.has(id)
+              const inMolda = moldaIds.has(id)
+              const origin: CreationOrigin | null =
+                inPinta === inMolda ? null : inPinta ? 'pinta' : 'molda'
+              return [id, origin]
+            }),
+          ),
+        )
+        setCatalogsComplete(pintaItems !== null && moldaItems !== null)
+      },
+    )
     return () => {
       cancelled = true
     }
   }, [assets, moldaLibrary, open, personalById, personalReady, pintaLibrary])
 
-  // Assim que uma evidência resolve o legado, grava no próprio projeto. A próxima
-  // abertura (inclusive em outro aparelho) já não depende da biblioteca local.
+  // Assim que uma EVIDÊNCIA (registro pessoal ou catálogo) resolve o legado, grava no
+  // próprio projeto: a próxima abertura (inclusive em outro aparelho) já não depende da
+  // biblioteca local. Nunca pelo palpite do `kind`, e nunca num embed sem namespace
+  // pessoal (aula, admin): ali não há biblioteca, e gravar sujaria o projeto (autosave +
+  // subida para a nuvem) só de abrir o painel.
   useEffect(() => {
-    if (!open || !personalReady) return
+    if (!open || !personalReady || !personalNamespace) return
     for (const asset of assets) {
       if (asset.libOrigin !== undefined) continue
       const id = personalIdOf(asset)
       if (!id) continue
-      const origin = creationOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
+      const origin = evidencedOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
       if (!origin) continue
       const originError = setAssetLibraryOrigin(asset.id, origin)
       if (originError) setError(originError)
     }
-  }, [assets, catalogOrigins, open, personalById, personalReady, setAssetLibraryOrigin])
+  }, [
+    assets,
+    catalogOrigins,
+    open,
+    personalById,
+    personalNamespace,
+    personalReady,
+    setAssetLibraryOrigin,
+  ])
 
   /**
    * O "✏️ Editar" de um asset do projeto. NÃO exige o registro na biblioteca pessoal:
@@ -256,43 +286,52 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     return open ? { id, origin, open } : null
   }
 
-  const openInOriginApp = async (asset: ProjectAsset, target: EditTarget) => {
-    if (asset.kind === 'audio') return
+  /**
+   * Abre o app de origem PRIMEIRO, de forma síncrona dentro do clique: o host faz
+   * `window.open`, e o WebKit (iPad) bloqueia um popup aberto depois de um `await`; com
+   * o IndexedDB na frente, o botão ficava morto. O reparo da biblioteca roda em segundo
+   * plano e nunca segura a abertura.
+   */
+  const openInOriginApp = (asset: ProjectAsset, target: EditTarget) => {
     setError(null)
-    // Reparo: sem o registro pessoal, a VOLTA (salvar no app regrava a biblioteca)
-    // esbarraria na guarda `getPersonalAsset` do host e o jogo nunca se atualizaria.
-    // Regrava a partir dos bytes que o projeto tem. Sem o elo local, abrir o app
-    // produziria uma edição que não voltaria ao jogo; por isso a falha bloqueia.
-    try {
-      if (!(await getPersonalAsset(target.id, { namespace: personalNamespace }))) {
-        const result = await savePersonalAsset(
-          {
-            id: target.id,
-            name: asset.name,
-            kind: asset.kind,
-            origin: target.origin,
-            dataUrl: asset.dataUrl,
-            originalFileName: asset.originalFileName,
-            width: asset.width,
-            height: asset.height,
-            sprite: asset.sprite,
-            tileset: asset.tileset,
-            tilemap: asset.tilemap,
-            updatedAt: asset.libRevision,
-          },
-          { namespace: personalNamespace },
-        )
-        if (result.ok) setPersonalTick((tick) => tick + 1)
-        else {
-          setError(result.error ?? 'Não deu para guardar esta criação na biblioteca.')
-          return
-        }
-      }
-    } catch {
-      setError('Não consegui preparar esta criação para edição. Tente novamente.')
+    target.open(target.id)
+    void repairPersonalRecord(asset, target)
+  }
+
+  /**
+   * Reparo: sem o registro pessoal, a VOLTA (salvar no app regrava a biblioteca)
+   * esbarraria na guarda `getPersonalAsset` do host e o jogo nunca se atualizaria.
+   * Regrava a partir dos bytes que o projeto tem. A falha não impede a edição (o app já
+   * abriu), mas precisa aparecer: sem o elo local, o que ela salvar lá não volta ao jogo.
+   * `getPersonalAsset`/`savePersonalAsset` são fail-soft (nunca lançam).
+   */
+  const repairPersonalRecord = async (asset: ProjectAsset, target: EditTarget) => {
+    if (await getPersonalAsset(target.id, { namespace: personalNamespace })) return
+    const result = await savePersonalAsset(
+      {
+        id: target.id,
+        name: asset.name,
+        kind: personalKindOf(asset),
+        origin: target.origin,
+        dataUrl: asset.dataUrl,
+        originalFileName: asset.originalFileName,
+        width: asset.width,
+        height: asset.height,
+        sprite: asset.sprite,
+        tileset: asset.tileset,
+        tilemap: asset.tilemap,
+        updatedAt: asset.libRevision,
+      },
+      { namespace: personalNamespace },
+    )
+    if (result.ok) {
+      setPersonalTick((tick) => tick + 1)
       return
     }
-    target.open(target.id)
+    const app = target.origin === 'pinta' ? 'Pinta' : 'Molda'
+    setError(
+      `${result.error ?? 'Não deu para guardar esta criação na biblioteca.'} Até isso dar certo, o jogo não vai se atualizar sozinho quando você salvar no ${app}.`,
+    )
   }
 
   const addFromPersonal = (drawing: PersonalAsset) => {
@@ -325,7 +364,8 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     }
 
     setDeleting(true)
-    const result = await removePersonalAsset(pendingDeletion.id)
+    // O namespace capturado no render: o perfil que a criança está vendo, não o singleton.
+    const result = await removePersonalAsset(pendingDeletion.id, { namespace: personalNamespace })
     if (result.ok) {
       setPersonal((current) => current.filter((asset) => asset.id !== pendingDeletion.id))
     } else {
@@ -585,10 +625,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                   // Quem edita esta imagem: o Pinta (desenho) ou o Molda (textura).
                   const editTarget = editTargetOf(asset)
                   const personalId = personalIdOf(asset)
+                  // Só pede reimportação quando os DOIS catálogos responderam e nenhum
+                  // conhece o id; catálogo ausente ou indisponível não é ambiguidade.
                   const unresolvedLegacyOrigin =
                     asset.libOrigin === undefined &&
                     personalId !== null &&
                     !personalById.has(personalId) &&
+                    catalogsComplete &&
                     catalogOrigins.has(personalId) &&
                     catalogOrigins.get(personalId) === null
                   return (
@@ -647,12 +690,13 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                             <EditInOriginButton
                               assetName={asset.name}
                               origin={editTarget.origin}
-                              onClick={() => void openInOriginApp(asset, editTarget)}
+                              onClick={() => openInOriginApp(asset, editTarget)}
                             />
                           ) : null}
                           {unresolvedLegacyOrigin ? (
-                            <span className="text-[10px] text-amber-400">
-                              Origem desconhecida; importe novamente pelo Pinta ou Molda.
+                            <span className="text-xs text-sz-warn">
+                              Não sei de onde veio este desenho. Traga ele de novo pelo Pinta ou
+                              pelo Molda.
                             </span>
                           ) : null}
                           <button
@@ -771,7 +815,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                         <EditInOriginButton
                           assetName={asset.name}
                           origin={editTarget.origin}
-                          onClick={() => void openInOriginApp(asset, editTarget)}
+                          onClick={() => openInOriginApp(asset, editTarget)}
                         />
                       ) : null
                     })()}

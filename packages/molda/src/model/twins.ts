@@ -99,6 +99,8 @@ function twinUpToDate(twin: MoldaPart, derived: MoldaPart): boolean {
     sameVec(twin.rotation, derived.rotation) &&
     sameVec(twin.origin, derived.origin) &&
     twin.color === derived.color &&
+    twin.locked === derived.locked &&
+    twin.hidden === derived.hidden &&
     Object.keys(twin.faces).length === 0 &&
     // Por VALOR: `mirrorMesh` cria um objeto novo a cada sync, e comparar por
     // referência faria todo commit parecer uma mudança (histórico e autosave à toa).

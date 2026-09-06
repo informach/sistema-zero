@@ -12,7 +12,7 @@
  * render — mesmo padrão do componente original (sem closures velhas).
  */
 import type { Dispatch, JSX, ReactNode, RefObject, SetStateAction } from 'react'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
   type ActiveFrameRef,
   type ActiveShapesDoc,
@@ -496,7 +496,13 @@ export function VectorEditorScope({ children }: { children: ReactNode }): JSX.El
   ])
 
   const ref: ActiveFrameRef = { animationId, frameIndex }
-  const doc = activeShapesOf(asset, ref)
+  // Memoizado pela identidade do asset e do quadro: o `activeShapesOf` monta um
+  // objeto novo a cada chamada, e um `doc` novo por render fazia o efeito das
+  // fontes rodar de novo e o contexto inteiro mudar sem nada ter mudado.
+  const doc = useMemo(
+    () => activeShapesOf(asset, { animationId, frameIndex }),
+    [asset, animationId, frameIndex],
+  )
 
   useEffect(() => {
     void ensureVectorFontLoaded(fontFamily)

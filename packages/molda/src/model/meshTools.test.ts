@@ -240,3 +240,153 @@ describe('Juntar, Fechar, Virar, Dividir', () => {
     expect(fixed && meshIssues(meshOf(fixed.model))).toEqual([])
   })
 })
+
+describe('review 06/09: Puxar só para fora e Dividir pelo dente', () => {
+  test('Puxar com distância zero ou negativa não se aplica (paredes coplanares/viradas)', () => {
+    const model = cubeModel()
+    expect(extrudeFaces(model, 'm', TOP, 0)).toBeNull()
+    expect(extrudeFaces(model, 'm', TOP, -1)).toBeNull()
+    expect(extrudeEdges(model, 'm', ['v_010', 'v_011'], -1)).toBeNull()
+  })
+
+  test('Dividir um quad côncavo escolhe a diagonal que passa pelo dente (nenhum triângulo vira)', () => {
+    // Dardo com o dente em p1: a diagonal p0-p2 ficaria FORA do polígono.
+    const dart: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [3, 0, 1], v_c: [6, 0, 0], v_d: [3, 0, 5] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [6, 0, 5],
+      color: 2,
+      mesh: dart,
+    })
+    const model = makeModel({ parts: [part] })
+    const normal = faceNormal(faceVertices(dart, 'f_q') as Vec3[])
+    expect(meshIssues(dart).some((issue) => issue.kind === 'concave')).toBe(true)
+    const result = splitQuads(model, 'm', ['f_q'])
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    const faces = Object.values(mesh.faces)
+    expect(faces).toHaveLength(2)
+    for (const face of faces) {
+      const points = faceVertices(mesh, face) as Vec3[]
+      const area = faceNormal(points)
+      // Cada metade continua virada para o mesmo lado da face original (área positiva).
+      expect(area[0] * normal[0] + area[1] * normal[1] + area[2] * normal[2]).toBeGreaterThan(0)
+      expect(face.v).toContain('v_b')
+    }
+    expect(meshIssues(mesh)).toEqual([])
+  })
+})
+
+describe('review 06/09 (2): abas, encaixe, faces duplicadas e orientação pelas vizinhas', () => {
+  test('Puxar uma aresta de BORDA de um plano aberto cria a aba virada para o mesmo lado da face', () => {
+    const plane: MoldaMesh = {
+      vertices: { v_a: [0, 1, 0], v_b: [2, 1, 0], v_c: [2, 1, 2], v_d: [0, 1, 2] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 1, 0],
+      to: [2, 1, 2],
+      color: 2,
+      mesh: plane,
+    })
+    const model = makeModel({ parts: [part] })
+    const result = extrudeEdges(model, 'm', ['v_a', 'v_b'], 1)
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    expect(Object.keys(mesh.faces)).toHaveLength(2)
+    expect(meshIssues(mesh).filter((issue) => issue.kind === 'flipped')).toEqual([])
+  })
+
+  test('Puxar duas faces com normais diferentes anda pelo ENCAIXE (os pontos novos ficam na grade)', () => {
+    const model = cubeModel()
+    const result = extrudeFaces(model, 'm', [...TOP, 'v_001', 'v_101'], 1)
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    for (const key of result.vertices) {
+      for (const value of mesh.vertices[key] as Vec3) expect(value).toBe(Math.round(value))
+    }
+    expect(isClosedMesh(mesh)).toBe(true)
+  })
+
+  test('Juntar pontos que fazem duas faces colapsarem no mesmo conjunto deixa UMA face', () => {
+    // Dois triângulos que dividem a diagonal v_a-v_c; juntar v_b com v_d faz os dois
+    // virarem o MESMO triângulo (com área: o ponto do meio fica fora da diagonal).
+    const strip: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [1, 0, 1], v_c: [2, 0, 0], v_d: [1, 0, -3] },
+      faces: {
+        f_1: { v: ['v_a', 'v_b', 'v_c'] },
+        f_2: { v: ['v_a', 'v_c', 'v_d'] },
+      },
+    }
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, -3],
+      to: [2, 0, 1],
+      color: 2,
+      mesh: strip,
+    })
+    const model = makeModel({ parts: [part] })
+    const result = mergeVertices(model, 'm', ['v_b', 'v_d'])
+    if (!result) throw new Error('sem resultado')
+    expect(Object.keys(meshOf(result.model).faces)).toHaveLength(1)
+  })
+
+  test('Fechar face num anel plano nasce virada como as vizinhas, seja qual for a ordem do toque', () => {
+    const ring: MoldaMesh = {
+      vertices: {
+        v_00: [0, 0, 0],
+        v_10: [2, 0, 0],
+        v_20: [4, 0, 0],
+        v_01: [0, 0, 2],
+        v_11: [2, 0, 2],
+        v_21: [4, 0, 2],
+      },
+      faces: {
+        f_l: { v: ['v_00', 'v_01', 'v_11', 'v_10'] },
+      },
+    }
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [4, 0, 2],
+      color: 2,
+      mesh: ring,
+    })
+    const model = makeModel({ parts: [part] })
+    const left = faceNormal(faceVertices(ring, 'f_l') as Vec3[])
+    for (const order of [
+      ['v_10', 'v_11', 'v_21', 'v_20'],
+      ['v_20', 'v_21', 'v_11', 'v_10'],
+      ['v_21', 'v_20', 'v_10', 'v_11'],
+    ]) {
+      const result = createFace(model, 'm', order)
+      if (!result) throw new Error('sem resultado')
+      const mesh = meshOf(result.model)
+      const created = Object.keys(mesh.faces).find((key) => key !== 'f_l') as MeshFaceKey
+      const normal = faceNormal(faceVertices(mesh, created) as Vec3[])
+      expect(normal[0] * left[0] + normal[1] * left[1] + normal[2] * left[2]).toBeGreaterThan(0.99)
+      expect(meshIssues(mesh)).toEqual([])
+    }
+  })
+
+  test('Cortar no meio avisa quando o ponto cai fora do encaixe mesmo com o meio bloco', () => {
+    const model = cubeModel(boxMesh([0, 0, 0], [0.5, 0.5, 0.5]), 0.5)
+    const result = loopCut(model, 'm', ['v_010', 'v_011'])
+    if (!result) throw new Error('sem resultado')
+    expect(result.snapChanged).toBe(false)
+    expect(result.offGrid).toBe(true)
+  })
+})

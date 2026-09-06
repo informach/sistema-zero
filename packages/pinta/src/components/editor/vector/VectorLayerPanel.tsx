@@ -15,8 +15,12 @@
  * A faixa colorida à esquerda da linha é o aviso de que ela não anda sozinha.
  */
 import { clsx } from 'clsx'
-import type { JSX, PointerEvent as ReactPointerEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import type {
+  JSX,
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from 'react'
+import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { VectorShape } from '../../../vector/model'
 import { dropShapesOrder } from '../../../vector/order'
@@ -29,8 +33,12 @@ import { addPointerDragListeners } from '../pointerDrag'
 import { useVectorEditor } from './VectorEditorScope'
 import { expandToGroups } from './vectorTools'
 
-/** Miniatura da forma no enquadramento do documento (mostra até as escondidas). */
-function ShapeThumb({
+/**
+ * Miniatura da forma no enquadramento do documento (mostra até as escondidas).
+ * Memoizada: as formas NÃO tocadas mantêm a referência (structural sharing), então
+ * arrastar uma forma no palco não redesenha as miniaturas das outras.
+ */
+const ShapeThumb = memo(function ShapeThumb({
   shape,
   width,
   height,
@@ -55,7 +63,7 @@ function ShapeThumb({
       </svg>
     </span>
   )
-}
+})
 
 /**
  * Nome amigável da forma. Texto mostra "Texto: <conteúdo>" (o conteúdo cru
@@ -65,6 +73,116 @@ function shapeLabel(shape: VectorShape): string {
   if (shape.type === 'text') return `${COPY.vector.shapeNames.text}: ${shape.text}`
   return COPY.vector.shapeNames[shape.type] ?? shape.type
 }
+
+/** As ações de uma linha, na versão mais recente do painel (lidas por ref, ver abaixo). */
+interface RowActions {
+  select(shape: VectorShape): void
+  toggleHidden(shape: VectorShape): void
+  toggleLocked(shape: VectorShape): void
+  moveFromHandle(shape: VectorShape, delta: 1 | -1): void
+  dragStart(shape: VectorShape, event: ReactPointerEvent<HTMLElement>): void
+}
+
+/**
+ * UMA linha do painel, memoizada: só re-renderiza quando a PRÓPRIA forma, o seu
+ * estado (selecionada/em arrasto) ou o tamanho do documento mudam. As callbacks
+ * chegam ESTÁVEIS (o painel as cria uma vez e despacha para a versão mais recente
+ * das ações por ref), senão a memoização morreria a cada render do painel. Um
+ * `pointermove` do palco troca uma forma só, e as outras linhas ficam quietas.
+ */
+const LayerRow = memo(function LayerRow({
+  shape,
+  active,
+  moving,
+  docWidth,
+  docHeight,
+  onSelect,
+  onToggleHidden,
+  onToggleLocked,
+  onMoveFromHandle,
+  onDragStart,
+}: {
+  shape: VectorShape
+  active: boolean
+  moving: boolean
+  docWidth: number
+  docHeight: number
+  onSelect: RowActions['select']
+  onToggleHidden: RowActions['toggleHidden']
+  onToggleLocked: RowActions['toggleLocked']
+  onMoveFromHandle: RowActions['moveFromHandle']
+  onDragStart: RowActions['dragStart']
+}): JSX.Element {
+  const visible = shape.hidden !== true
+  const label = shapeLabel(shape)
+  const grouped = shape.groupId !== undefined
+  return (
+    <li
+      data-shape={shape.id}
+      className={clsx(
+        'flex items-center gap-1 rounded-xl border-2 pr-1 transition',
+        active ? 'border-pin-accent' : 'border-transparent',
+        moving && 'opacity-60',
+      )}
+    >
+      {grouped ? (
+        <span
+          aria-hidden="true"
+          className="my-1.5 ml-0.5 w-1 shrink-0 self-stretch rounded-full bg-pin-accent/50"
+        />
+      ) : null}
+      <ToolButton
+        icon={visible ? Eye : EyeOff}
+        label={`${visible ? COPY.layers.hide : COPY.layers.show}: ${label}`}
+        onClick={() => onToggleHidden(shape)}
+      />
+      <ToolButton
+        icon={shape.locked === true ? Lock : LockOpen}
+        label={`${shape.locked === true ? COPY.layers.unlock : COPY.layers.lock}: ${label}`}
+        onClick={() => onToggleLocked(shape)}
+      />
+      <button
+        type="button"
+        aria-pressed={active}
+        // "Selecionar: Retângulo", distinto do botão de FERRAMENTA
+        // "Retângulo" da caixa (leitor de tela e testes agradecem).
+        aria-label={`${COPY.vector.select}: ${label}`}
+        onClick={() => onSelect(shape)}
+        title={label}
+        className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left transition hover:bg-pin-border/40"
+      >
+        <ShapeThumb shape={shape} width={docWidth} height={docHeight} />
+        <span
+          className={clsx(
+            'min-w-0 flex-1 truncate text-sm font-bold',
+            visible ? 'text-pin-text' : 'text-pin-muted',
+          )}
+        >
+          {label}
+        </span>
+      </button>
+      <button
+        type="button"
+        aria-label={`${grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}: ${label}`}
+        title={grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}
+        onPointerDown={(event) => onDragStart(shape, event)}
+        onKeyDown={(event: ReactKeyboardEvent<HTMLButtonElement>) => {
+          // Teclado é a via acessível do arrastar.
+          if (event.key === 'ArrowUp') {
+            event.preventDefault()
+            onMoveFromHandle(shape, 1)
+          } else if (event.key === 'ArrowDown') {
+            event.preventDefault()
+            onMoveFromHandle(shape, -1)
+          }
+        }}
+        className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-pin-muted transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
+      >
+        <GripVertical aria-hidden="true" className="size-5" />
+      </button>
+    </li>
+  )
+})
 
 export function VectorLayerPanel({
   disclosure,
@@ -77,6 +195,43 @@ export function VectorLayerPanel({
   const [dragging, setDragging] = useState<string | null>(null)
   const rowsRef = useRef<HTMLUListElement | null>(null)
   const dragCleanupRef = useRef<(() => void) | null>(null)
+  // As ações mudam a cada render (leem `selectedIds`/`doc` do render); as linhas
+  // recebem despachantes ESTÁVEIS que caem sempre na versão mais recente daqui.
+  // As funções abaixo são declarações içadas, por isso o ref já as enxerga.
+  const actionsRef = useRef<RowActions>({
+    select: selectShape,
+    toggleHidden,
+    toggleLocked,
+    moveFromHandle,
+    dragStart: handleDragStart,
+  })
+  actionsRef.current = {
+    select: selectShape,
+    toggleHidden,
+    toggleLocked,
+    moveFromHandle,
+    dragStart: handleDragStart,
+  }
+  const onSelect = useCallback<RowActions['select']>(
+    (shape) => actionsRef.current.select(shape),
+    [],
+  )
+  const onToggleHidden = useCallback<RowActions['toggleHidden']>(
+    (shape) => actionsRef.current.toggleHidden(shape),
+    [],
+  )
+  const onToggleLocked = useCallback<RowActions['toggleLocked']>(
+    (shape) => actionsRef.current.toggleLocked(shape),
+    [],
+  )
+  const onMoveFromHandle = useCallback<RowActions['moveFromHandle']>(
+    (shape, delta) => actionsRef.current.moveFromHandle(shape, delta),
+    [],
+  )
+  const onDragStart = useCallback<RowActions['dragStart']>(
+    (shape, event) => actionsRef.current.dragStart(shape, event),
+    [],
+  )
 
   useEffect(() => () => dragCleanupRef.current?.(), [])
 
@@ -176,89 +331,36 @@ export function VectorLayerPanel({
       // No-op quando nada cruzou (commitGesture ignora base === atual).
       editor.getState().commitGesture(base)
     }
-    dragCleanupRef.current = addPointerDragListeners(document, { onMove, onEnd: onUp })
+    dragCleanupRef.current = addPointerDragListeners(document, {
+      pointerId: event.pointerId,
+      onMove,
+      onEnd: onUp,
+    })
   }
 
   return (
     <Panel title={COPY.layers.title} className="w-68 shrink-0" disclosure={disclosure}>
       <ul ref={rowsRef} className="flex max-h-48 flex-col gap-1 overflow-y-auto p-0.5">
-        {rows.map((shape) => {
-          const active = selectedIds.includes(shape.id)
-          const visible = shape.hidden !== true
-          const label = shapeLabel(shape)
-          const grouped = shape.groupId !== undefined
-          // O grupo inteiro se acende para antecipar o movimento ao cruzar para fora.
-          const moving =
-            dragging !== null &&
-            (shape.id === dragging || (grouped && shape.groupId === draggingGroup))
-          return (
-            <li
-              key={shape.id}
-              data-shape={shape.id}
-              className={clsx(
-                'flex items-center gap-1 rounded-xl border-2 pr-1 transition',
-                active ? 'border-pin-accent' : 'border-transparent',
-                moving && 'opacity-60',
-              )}
-            >
-              {grouped ? (
-                <span
-                  aria-hidden="true"
-                  className="my-1.5 ml-0.5 w-1 shrink-0 self-stretch rounded-full bg-pin-accent/50"
-                />
-              ) : null}
-              <ToolButton
-                icon={visible ? Eye : EyeOff}
-                label={`${visible ? COPY.layers.hide : COPY.layers.show}: ${label}`}
-                onClick={() => toggleHidden(shape)}
-              />
-              <ToolButton
-                icon={shape.locked === true ? Lock : LockOpen}
-                label={`${shape.locked === true ? COPY.layers.unlock : COPY.layers.lock}: ${label}`}
-                onClick={() => toggleLocked(shape)}
-              />
-              <button
-                type="button"
-                aria-pressed={active}
-                // "Selecionar: Retângulo" — distinto do botão de FERRAMENTA
-                // "Retângulo" da caixa (leitor de tela e testes agradecem).
-                aria-label={`${COPY.vector.select}: ${label}`}
-                onClick={() => selectShape(shape)}
-                title={label}
-                className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg px-1 text-left transition hover:bg-pin-border/40"
-              >
-                <ShapeThumb shape={shape} width={doc.width} height={doc.height} />
-                <span
-                  className={clsx(
-                    'min-w-0 flex-1 truncate text-sm font-bold',
-                    visible ? 'text-pin-text' : 'text-pin-muted',
-                  )}
-                >
-                  {label}
-                </span>
-              </button>
-              <button
-                type="button"
-                aria-label={`${grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}: ${label}`}
-                title={grouped ? COPY.layers.reorderGroup : COPY.layers.reorderShape}
-                onPointerDown={(event) => handleDragStart(shape, event)}
-                onKeyDown={(event) => {
-                  // Teclado é a via acessível do arrastar.
-                  if (event.key === 'ArrowUp') {
-                    event.preventDefault()
-                    moveFromHandle(shape, 1)
-                  } else if (event.key === 'ArrowDown') {
-                    event.preventDefault()
-                    moveFromHandle(shape, -1)
-                  }
-                }}
-                className="flex size-11 shrink-0 cursor-grab touch-none items-center justify-center rounded-lg text-pin-muted transition hover:bg-pin-border/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-              >
-                <GripVertical aria-hidden="true" className="size-5" />
-              </button>
-            </li>
-          )
-        })}
+        {rows.map((shape) => (
+          <LayerRow
+            key={shape.id}
+            shape={shape}
+            active={selectedIds.includes(shape.id)}
+            // O grupo inteiro se acende para antecipar o movimento ao cruzar para fora.
+            moving={
+              dragging !== null &&
+              (shape.id === dragging ||
+                (shape.groupId !== undefined && shape.groupId === draggingGroup))
+            }
+            docWidth={doc.width}
+            docHeight={doc.height}
+            onSelect={onSelect}
+            onToggleHidden={onToggleHidden}
+            onToggleLocked={onToggleLocked}
+            onMoveFromHandle={onMoveFromHandle}
+            onDragStart={onDragStart}
+          />
+        ))}
       </ul>
     </Panel>
   )

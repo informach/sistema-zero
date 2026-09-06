@@ -73,10 +73,24 @@ export function useModelEditorShortcuts(options: {
   editMesh: () => void
   deleteMeshSelection: () => void
   /** Setas: empurram a peça (ou os pontos, no Editar malha) em ENCAIXES; Shift = 5. */
-  nudge: (steps: Vec3) => void
+  nudge: (steps: Vec3, repeat: boolean) => void
+  /** Soltar a seta fecha o gesto da tecla segurada (um desfazer só). */
+  endNudge: () => void
+  /** Ctrl+A no Editar malha: todos os pontos (o caminho do teclado para escolher). */
+  selectAllVertices: () => void
 }): void {
-  const { session, add, duplicate, remove, toggleMirror, editMesh, deleteMeshSelection, nudge } =
-    options
+  const {
+    session,
+    add,
+    duplicate,
+    remove,
+    toggleMirror,
+    editMesh,
+    deleteMeshSelection,
+    nudge,
+    endNudge,
+    selectAllVertices,
+  } = options
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
       if (event.defaultPrevented || isMoldaDialogOpen() || isTypingTarget(event.target)) return
@@ -88,13 +102,23 @@ export function useModelEditorShortcuts(options: {
       }
       const arrow = ARROWS[key]
       if (arrow && state.mode === 'build') {
+        // Sem nada escolhido a seta é do navegador (rolar a coluna de painéis).
+        const hasSelection = state.meshEditId
+          ? state.meshVertices.length > 0
+          : state.selectedId !== null
+        if (!hasSelection) return
         event.preventDefault()
         const k = event.shiftKey ? 5 : 1
-        nudge([arrow[0] * k, arrow[1] * k, arrow[2] * k])
+        nudge([arrow[0] * k, arrow[1] * k, arrow[2] * k], event.repeat)
         return
       }
       if (state.meshEditId) {
-        if (key === 'escape') {
+        if ((event.ctrlKey || event.metaKey) && key === 'a') {
+          event.preventDefault()
+          selectAllVertices()
+          return
+        }
+        if (key === 'escape' || key === 'e') {
           state.exitMeshEdit()
           return
         }
@@ -138,7 +162,25 @@ export function useModelEditorShortcuts(options: {
         remove()
       }
     }
+    function onKeyUp(event: KeyboardEvent): void {
+      if (ARROWS[event.key.toLowerCase()]) endNudge()
+    }
     document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [add, duplicate, remove, toggleMirror, editMesh, deleteMeshSelection, nudge, session])
+    document.addEventListener('keyup', onKeyUp)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('keyup', onKeyUp)
+    }
+  }, [
+    add,
+    duplicate,
+    remove,
+    toggleMirror,
+    editMesh,
+    deleteMeshSelection,
+    nudge,
+    endNudge,
+    selectAllVertices,
+    session,
+  ])
 }

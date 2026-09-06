@@ -93,7 +93,7 @@ function UsageCardShell({
 }
 
 function Unavailable() {
-  return <p className="text-muted-foreground text-xs">Indisponível agora — tente recarregar.</p>
+  return <p className="text-muted-foreground text-xs">Indisponível agora, tente recarregar.</p>
 }
 
 export function PensaUsageCard({ name, usage }: { name: string; usage: PensaUsage }) {

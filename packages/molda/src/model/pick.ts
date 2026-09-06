@@ -280,8 +280,11 @@ export function pickTexelAtPoint(
   for (const part of model.parts) {
     const local = worldToBox(part, point)
     const faces = partFaces(part)
-    const planar = faces.filter((face) => planarFaceFrame(part, face) !== null)
-    const curved = faces.filter((face) => planarFaceFrame(part, face) === null)
+    // Malha: toda face é plana (poupa duas bases por face no espelho de pintura).
+    const planar =
+      part.shape === 'mesh' ? faces : faces.filter((face) => planarFaceFrame(part, face) !== null)
+    const curved =
+      part.shape === 'mesh' ? [] : faces.filter((face) => planarFaceFrame(part, face) === null)
     for (const face of [...planar, ...curved]) {
       if (!faceContains(part, face, local, eps)) continue
       const texel = faceTexelAt(part, face, local, model.texelsPerUnit)

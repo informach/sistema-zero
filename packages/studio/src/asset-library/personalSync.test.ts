@@ -69,8 +69,8 @@ const { loadProjectAssetsById, persistProject, setStorageNamespace, writeProject
 const { useProjectStore } = await import('../state/projectStore')
 const { getProjectStorageScope } = await import('../state/projectStorageRuntime')
 const {
-  adoptDrawingsFromRestoredProject,
   drawingNeedsSync,
+  mergeDrawingIntoAsset,
   personalIdOf,
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
@@ -161,9 +161,27 @@ describe('personalIdOf / drawingNeedsSync', () => {
     expect(drawingNeedsSync(asset, { ...igual, dataUrl: PNG_NOVO })).toBe(true)
     expect(drawingNeedsSync(asset, null)).toBe(false)
   })
+
+  it('ORIGEM cruzada (registro do Molda no id de um desenho do Pinta) nunca sincroniza; sem as duas marcas, seguem os bytes', () => {
+    const doMolda = {
+      id: 'd1',
+      name: 'grama',
+      kind: 'image' as const,
+      origin: 'molda' as const,
+      dataUrl: PNG_NOVO,
+      updatedAt: 1,
+    }
+    expect(drawingNeedsSync(drawingAsset({ libOrigin: 'pinta' }), doMolda)).toBe(false)
+    expect(drawingNeedsSync(drawingAsset({ libOrigin: 'molda' }), doMolda)).toBe(true)
+    // Legado sem `libOrigin`, ou registro sem `origin`: não há prova de cruzamento.
+    expect(drawingNeedsSync(drawingAsset({}), doMolda)).toBe(true)
+    expect(
+      drawingNeedsSync(drawingAsset({ libOrigin: 'pinta' }), { ...doMolda, origin: undefined }),
+    ).toBe(true)
+  })
 })
 
-describe('adoptDrawingsFromRestoredProject (jogo que desceu da nuvem)', () => {
+describe('reconcileDrawingsFromRestoredProject (jogo que desceu da nuvem)', () => {
   it('relógio remoto aparentemente maior não decide o vencedor: preserva os dois lados', async () => {
     // O relógio deste aparelho não é comparável ao do computador que enviou o jogo.
     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
@@ -192,7 +210,6 @@ describe('adoptDrawingsFromRestoredProject (jogo que desceu da nuvem)', () => {
     const result = await syncDrawingsIntoProjects(useProjectStore)
     expect(result.updatedInOtherProjects).toBe(0)
     expect((await loadProjectAssetsById('01J00000000000000000000CLD'))[0]?.dataUrl).toBe(PNG_NOVO)
-    expect(await adoptDrawingsFromRestoredProject({ assets: [restoredAsset!] })).toBe(0)
   })
 
   it('relógio remoto aparentemente menor também não decide o vencedor', async () => {
@@ -409,6 +426,27 @@ describe('syncDrawingsIntoProjects', () => {
     expect(assets).toHaveLength(QUASE_CHEIO + 1)
   })
 
+  it('bytes que o load descartaria NÃO vão ao jogo fechado: recusa registrada e projeto intocado', async () => {
+    // A biblioteca valida imagem SEM `kind`, então um registro `image` com bytes de ÁUDIO
+    // passa por ela; o `sanitizeProjectAssets` do load o descartaria em silêncio.
+    const AUDIO = 'data:audio/mpeg;base64,AAAA'
+    await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG })
+    const fechado = createEmptyProject('fechado', 'Outro Jogo')
+    fechado.assets = [drawingAsset({ id: 'asset-2' })]
+    await persistProject(fechado)
+    seedOpenProject([])
+    expect((await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: AUDIO })).ok).toBe(true)
+
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect(result.failures).toHaveLength(1)
+    expect(result.failures[0]).toContain('"heroi"')
+    expect(result.failures[0]).toContain('Outro Jogo')
+    expect(takeDrawingSyncFailures()).toHaveLength(1)
+    expect((await loadProjectAssetsById('fechado'))[0]?.dataUrl).toBe(PNG)
+  })
+
   it('duas chamadas ao mesmo tempo viram UMA varredura', async () => {
     await savePersonalAsset({ id: 'd1', name: 'heroi', dataUrl: PNG_NOVO })
     seedOpenProject([drawingAsset({})])
@@ -598,6 +636,52 @@ describe('criações 3D do Molda (model3d/environment3d)', () => {
     expect(takeDrawingSyncFailures()).toHaveLength(1)
     const assets = await loadProjectAssetsById('fechado')
     expect(assets.find((a) => a.id === 'asset-2')?.dataUrl).toBe(GLB_A)
+  })
+
+  it('mergeDrawingIntoAsset (jogo FECHADO) valida pelo mesmo portão: bytes de imagem, extensão errada ou GLB torto viram null', () => {
+    const base = { id: 'm1', name: 'nave', kind: 'model3d' as const, updatedAt: 1 }
+    expect(mergeDrawingIntoAsset(modelAsset(), { ...base, dataUrl: PNG })).toBeNull()
+    expect(
+      mergeDrawingIntoAsset(modelAsset(), {
+        ...base,
+        dataUrl: GLB_B,
+        originalFileName: 'nave.hdr',
+      }),
+    ).toBeNull()
+    expect(
+      mergeDrawingIntoAsset(modelAsset(), {
+        ...base,
+        dataUrl: 'data:model/gltf-binary;base64,AAAA',
+        originalFileName: 'nave.glb',
+      }),
+    ).toBeNull()
+    // Válido: o nome novo entra; sem nome novo, vale o que o asset já tinha.
+    expect(
+      mergeDrawingIntoAsset(modelAsset(), {
+        ...base,
+        dataUrl: GLB_B,
+        originalFileName: 'nave-v2.glb',
+      }),
+    ).toMatchObject({ dataUrl: GLB_B, originalFileName: 'nave-v2.glb', libRevision: 1 })
+    expect(mergeDrawingIntoAsset(modelAsset(), { ...base, dataUrl: GLB_B })).toMatchObject({
+      dataUrl: GLB_B,
+      originalFileName: 'nave.glb',
+    })
+    // Imagem: o mesmo `isValidAssetDataUrl(dataUrl, 'image')` do `updateAssetImage`.
+    const desenho = { id: 'd1', name: 'heroi', kind: 'image' as const, updatedAt: 1 }
+    expect(
+      mergeDrawingIntoAsset(drawingAsset({}), {
+        ...desenho,
+        dataUrl: 'data:audio/mpeg;base64,AAAA',
+      }),
+    ).toBeNull()
+    expect(
+      mergeDrawingIntoAsset(drawingAsset({}), { ...desenho, dataUrl: PNG_NOVO }),
+    ).toMatchObject({
+      dataUrl: PNG_NOVO,
+      name: 'heroi',
+      libId: 'personal:d1',
+    })
   })
 
   it('updateAssetImage valida MIME × extensão × assinatura e recusa imagem num model3d', () => {

@@ -12,7 +12,7 @@
  * "a área de desenho não aparece".
  */
 import type { JSX, PointerEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { isInteractiveControlTarget } from '../../../core/dom'
 import { safeSetPointerCapture } from '../../../core/pointer'
@@ -28,6 +28,7 @@ import {
   translateShape,
 } from '../../../vector/geometry'
 import { gridSpacingFor, snapPoint, snapValue } from '../../../vector/grid'
+import { hitMovableShapeAt } from '../../../vector/hitTest'
 import {
   MAX_TEXT_CHARS,
   normalizeTextContent,
@@ -98,7 +99,7 @@ type Gesture =
   // ⚠️ Mover/redimensionar/girar medem o delta em coordenadas de TELA
   // (`startClient` + `docPerPx`), não relendo o retângulo do palco a cada move:
   // ele muda no meio do gesto (a faixa da seleção nasce logo depois do clique) e a
-  // releitura injetava um delta falso — a forma "teleportava" (ver `gesturePoint`).
+  // releitura injetava um delta falso: a forma "teleportava" (ver `gesturePoint`).
   | {
       kind: 'move'
       pointerId: number
@@ -162,6 +163,24 @@ type Gesture =
       base: PintaAsset
     }
   | { kind: 'pan'; pointerId: number; startClient: Vec2; startScroll: Vec2 }
+
+/**
+ * O que o movimento do palco lê de um pointer event. É um objeto simples de
+ * propósito: o `onPointerMove` do React (sintético) e o `pointermove` NATIVO do
+ * `document` (a rede sem capture, ver `beginGesture`) servem os dois.
+ */
+interface StagePointer {
+  clientX: number
+  clientY: number
+  pointerId: number
+  shiftKey: boolean
+  altKey: boolean
+  ctrlKey: boolean
+  metaKey: boolean
+}
+
+/** Um laço mais fino que isto, em px de TELA, é toque parado (limpa), não laço. */
+const MARQUEE_MIN_SCREEN_PX = 3
 
 /**
  * Distância mínima, em px de TELA, entre o nó e a alça para a alça aparecer.
@@ -256,6 +275,9 @@ export function VectorStage(): JSX.Element {
   // recente do `endGesture`: o listener nasce num render, e o laço/a prévia mudam depois.
   const dragCleanupRef = useRef<(() => void) | null>(null)
   const endGestureRef = useRef<(event?: { pointerId: number }) => void>(() => undefined)
+  // A versão mais recente do movimento, para o `document` alimentar o gesto quando
+  // o capture do ponteiro não existe (mesmo motivo do `endGestureRef`).
+  const pointerMoveRef = useRef<(event: StagePointer) => void>(() => undefined)
   useEffect(() => () => dragCleanupRef.current?.(), [])
   // Ctrl/Cmd+Enter salva o texto: o Enter cru pertence à quebra de linha.
   const textFormRef = useRef<HTMLFormElement>(null)
@@ -264,17 +286,36 @@ export function VectorStage(): JSX.Element {
   // (A seleção é resetada pelo VectorEditorScope, dono dela.)
   // biome-ignore lint/correctness/useExhaustiveDependencies: as deps são o GATILHO (mudou o quadro/tile ativo), não leituras
   useEffect(() => {
+    // Gesto vivo atravessando a troca (atalho `.`/`,` com o mouse pressionado):
+    // FECHA pelo `endGesture`, que commita o que já foi arrastado com a entrada de
+    // undo dele. Zerar o ref por fora deixava a forma movida SEM desfazer. A única
+    // exceção é o desenho em andamento: a prévia pertence ao documento que saiu, e
+    // o commit cairia no quadro novo, então ela é descartada como sempre foi.
+    if (gestureRef.current?.kind === 'draw') {
+      gestureRef.current = null
+      dragCleanupRef.current?.()
+      dragCleanupRef.current = null
+    } else {
+      endGestureRef.current()
+    }
     setPreview(null)
     setMarquee(null)
     setPenPoints([])
     setPenCursor(null)
-    gestureRef.current = null
-    dragCleanupRef.current?.()
-    dragCleanupRef.current = null
-    // ⚠️ Este é o único lugar que zera o gesto SEM passar pelo `endGesture`:
-    // sem soltar o `panning` aqui, o cursor ficava preso na mão fechada.
+    // O `endGesture` já solta o `panning` do pan; aqui é a rede para o descarte do
+    // desenho, senão o cursor ficava preso na mão fechada.
     setPanning(false)
   }, [animationId, frameIndex])
+
+  // Zoom no MEIO de um gesto (rolagem do mouse, Ctrl+=): o `docPerPx` e o
+  // `startClient` capturados no `pointerdown` deixam de valer e a forma fugiria do
+  // cursor. Fecha o gesto antes de qualquer movimento ser lido no zoom novo (o que
+  // já foi arrastado fica, com a entrada de undo dele). Layout effect de
+  // propósito: nenhum `pointermove` entra entre a pintura e ele.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (mudou o zoom), não leitura
+  useLayoutEffect(() => {
+    if (gestureRef.current) endGestureRef.current()
+  }, [zoom])
 
   // Trocar de ferramenta descarta os pontos pendentes da Caneta.
   // biome-ignore lint/correctness/useExhaustiveDependencies: a dep é o GATILHO (trocou de ferramenta), não leitura
@@ -342,7 +383,7 @@ export function VectorStage(): JSX.Element {
     return showGrid ? snapPoint(point, gridSpacing) : point
   }
 
-  function svgPoint(event: PointerEvent<Element>): Vec2 {
+  function svgPoint(event: { clientX: number; clientY: number }): Vec2 {
     const svg = svgRef.current
     const rect = svg?.getBoundingClientRect()
     // Guarda anti-NaN: com o palco sem medida (happy-dom, layout ainda não
@@ -384,9 +425,22 @@ export function VectorStage(): JSX.Element {
   function beginGesture(gesture: Gesture): void {
     dragCleanupRef.current?.()
     gestureRef.current = gesture
-    if (svgRef.current) safeSetPointerCapture(svgRef.current, gesture.pointerId)
+    const captured = svgRef.current
+      ? safeSetPointerCapture(svgRef.current, gesture.pointerId)
+      : false
     dragCleanupRef.current = addPointerDragListeners(document, {
-      onMove: () => undefined,
+      pointerId: gesture.pointerId,
+      // Com o capture, o `<svg>` recebe TODO movimento e o document só ouve o
+      // solto. Sem ele (capture recusado ou inexistente), quem vê o ponteiro fora
+      // do palco é o document: sem esta rede, arrastar para fora do `<svg>`
+      // congelava a forma. Dentro do palco o `onPointerMove` do React já tratou o
+      // mesmo evento, daí o filtro pelo alvo (senão o movimento seria lido 2x).
+      onMove: captured
+        ? () => undefined
+        : (event) => {
+            if (svgRef.current?.contains(event.target as Node | null)) return
+            pointerMoveRef.current(event)
+          },
       onEnd: (event) => endGestureRef.current({ pointerId: event.pointerId }),
     })
   }
@@ -513,11 +567,13 @@ export function VectorStage(): JSX.Element {
     }
     if (tool === 'select') {
       // Forma sob o toque (com a folga do toque, que o hit-test do navegador não
-      // dá: um traço vazado do pincel só acerta no fio) = MOVER, nunca laço.
-      // Trancada continua atravessando para o laço. Folga pequena (4px): grande
-      // demais e o laço que começa PERTO de uma forma viraria mover.
-      const hit = hitShapeAt(visibleShapes(currentShapes()), at, 4 / zoom)
-      if (hit && hit.locked !== true) {
+      // dá: um traço vazado do pincel só acerta no fio) = MOVER, nunca laço. A
+      // régua olha a GEOMETRIA (`hitTest.ts`), não a caixa: o miolo vazio de um
+      // traço, de um círculo sem cor ou de uma polilinha abre o laço, e a
+      // trancada nunca bloqueia a forma livre embaixo dela. Folga pequena (4px):
+      // grande demais e o laço que começa PERTO de uma forma viraria mover.
+      const hit = hitMovableShapeAt(visibleShapes(currentShapes()), at, 4 / zoom)
+      if (hit) {
         startMoveGesture(hit, event, at)
         return
       }
@@ -751,7 +807,7 @@ export function VectorStage(): JSX.Element {
     setTextValue(shape.text)
   }
 
-  function handlePointerMove(event: PointerEvent<SVGSVGElement>): void {
+  function handlePointerMove(event: StagePointer): void {
     // Linha elástica da Caneta (sem gesto ativo).
     if (tool === 'pen' && penPoints.length > 0 && !gestureRef.current) {
       setPenCursor(svgPoint(event))
@@ -804,6 +860,12 @@ export function VectorStage(): JSX.Element {
         dx = snapValue(dx, gridSpacing)
         dy = snapValue(dy, gridSpacing)
       }
+      // Delta zero com nada pintado ainda (toque parado, ou a grade engoliu o
+      // passo): sai sem trocar o asset. Trocar aqui criava objetos novos a cada
+      // move (o `d` de um traço re-serializado) e, no solto, o `commitGesture`
+      // gravava uma entrada de undo VAZIA, porque compara por identidade. Depois
+      // de um passo pintado o delta zero segue em frente: é a volta à base.
+      if (dx === 0 && dy === 0 && editor.getState().asset === gesture.base) return
       commitShapes(
         gesture.baseShapes.map((s) =>
           // Seleção mista arrasta só as LIVRES (a trancada fica plantada).
@@ -822,6 +884,8 @@ export function VectorStage(): JSX.Element {
       const denomY = start.y - anchor.y
       const fx = isCorner || horizontal ? (denomX === 0 ? 1 : (point.x - anchor.x) / denomX) : 1
       const fy = isCorner || !horizontal ? (denomY === 0 ? 1 : (point.y - anchor.y) / denomY) : 1
+      // Mesma régua do mover: fator 1 com nada pintado é ficar como está.
+      if (fx === 1 && fy === 1 && editor.getState().asset === gesture.base) return
       const resized = new Map(baseShapes.map((s) => [s.id, scaleShape(s, anchor, fx, fy)]))
       commitShapes(
         currentShapes().map((s) => resized.get(s.id) ?? s),
@@ -835,6 +899,8 @@ export function VectorStage(): JSX.Element {
       // Delta TOTAL sobre a base (nunca acumulado): mesma régua do mover e do
       // redimensionar, e é o que mantém o arredondamento honesto.
       const degrees = ((angle - gesture.startAngle) * 180) / Math.PI
+      // Mesma régua do mover: giro zero com nada pintado é ficar como está.
+      if (degrees === 0 && editor.getState().asset === gesture.base) return
       const rotated = new Map(
         rotateShapesAround(
           gesture.baseShapes,
@@ -898,9 +964,11 @@ export function VectorStage(): JSX.Element {
     if (gesture.kind === 'marquee') {
       const box = marquee
       setMarquee(null)
-      // Toque sem arrasto: clique simples no fundo — limpa (Shift preserva). Um
-      // risco fino (só largura OU só altura) também é toque, não laço.
-      if (!box || box.width < 2 || box.height < 2) {
+      // Toque sem arrasto: clique simples no fundo, limpa (Shift preserva). Um
+      // risco fino (só largura OU só altura) também é toque, não laço. A régua é
+      // em px de TELA: em unidades do documento, um laço legítimo de 30px em zoom
+      // 16 tem menos de 2 unidades e era lido como toque (a seleção sumia).
+      if (!box || isTapBox(box)) {
         if (!gesture.additive) setSelectedIds([])
         return
       }
@@ -920,8 +988,9 @@ export function VectorStage(): JSX.Element {
     if (gesture.kind === 'nodeMarquee') {
       const box = marquee
       setMarquee(null)
-      // Toque sem arrasto: clique simples, larga os nós (Shift preserva).
-      if (!box || (box.width < 2 && box.height < 2)) {
+      // Toque sem arrasto: clique simples, larga os nós (Shift preserva). A
+      // MESMA régua do laço de formas (em px de tela, risco fino é toque).
+      if (!box || isTapBox(box)) {
         if (!gesture.additive) setSelectedNodes([])
         return
       }
@@ -947,6 +1016,12 @@ export function VectorStage(): JSX.Element {
     editor.getState().commitGesture(gesture.base)
   }
   endGestureRef.current = endGesture
+  pointerMoveRef.current = handlePointerMove
+
+  /** Laço degenerado (toque parado ou risco fino), medido em px de TELA. */
+  function isTapBox(box: Bounds): boolean {
+    return box.width * zoom < MARQUEE_MIN_SCREEN_PX || box.height * zoom < MARQUEE_MIN_SCREEN_PX
+  }
 
   // Alças da seleção: com a Selecionar e com as ferramentas de FORMA (ajustar o
   // que acabou de desenhar sem trocar de ferramenta). Com pincel, caneta, texto e

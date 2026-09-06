@@ -49,6 +49,7 @@ export interface MeshToolboxProps {
   canMerge: boolean
   canCreateFace: boolean
   canFlip: boolean
+  canSplit: boolean
   onExtrude: () => void
   onLoopCut: () => void
   onMerge: () => void
@@ -92,13 +93,13 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
           />
         </div>
       </fieldset>
-      <p role="status" className="px-1 text-xs font-bold text-mld-muted">
+      <p className="px-1 text-xs font-bold text-mld-muted">
         {props.selectedCount > 0
           ? copy.selected(props.selectedCount, props.mode)
           : copy.nothingSelected}
       </p>
       <fieldset className="flex flex-col gap-1">
-        <legend className="sr-only">{copy.tools.extrude}</legend>
+        <legend className="sr-only">{copy.toolsLegend}</legend>
         <div className="grid grid-cols-2 gap-1">
           <ToolButton
             icon={ArrowUpFromLine}
@@ -133,7 +134,7 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
           <ToolButton
             icon={Triangle}
             label={copy.tools.split}
-            disabled={!props.canFlip}
+            disabled={!props.canSplit}
             onClick={props.onSplit}
           />
         </div>
@@ -150,7 +151,7 @@ export function MeshToolbox(props: MeshToolboxProps): JSX.Element {
             label={copy.distance}
             value={props.adjust.distance}
             step={props.adjust.snap}
-            min={-MOLDA_LIMITS.maxPartSize}
+            min={props.adjust.snap}
             max={MOLDA_LIMITS.maxPartSize}
             onChange={props.adjust.onDistance}
           />

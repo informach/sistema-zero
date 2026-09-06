@@ -152,3 +152,26 @@ describe('editorStore', () => {
     store.getState().dispose()
   })
 })
+
+describe('amend (o "Ajustar" da malha)', () => {
+  test('amend troca o asset SEM entrada de desfazer, carimba updatedAt e agenda o autosave', async () => {
+    const persistence = createMemoryPersistence()
+    const initial = makeSky({ updatedAt: 100 })
+    const store = createEditorStore({ asset: initial, persistence })
+    store.getState().commit(withPreset(initial, 'noite'))
+    expect(store.getState().canUndo).toBe(true)
+    const committed = store.getState().asset
+    store.getState().amend(withPreset(committed as MoldaSkyAsset, 'nublado'))
+    expect(presetOf(store.getState().asset)).toBe('nublado')
+    expect(store.getState().asset.updatedAt).toBeGreaterThan(committed.updatedAt)
+    // Um desfazer volta ao ANTES do commit (o amend não criou passo)...
+    store.getState().undo()
+    expect(presetOf(store.getState().asset)).toBe(presetOf(initial))
+    // ...e o refazer devolve a versão AJUSTADA, não a pré-ajuste.
+    store.getState().redo()
+    expect(presetOf(store.getState().asset)).toBe('nublado')
+    await new Promise((resolve) => setTimeout(resolve, 900))
+    expect(presetOf(persistence.snapshot()[0])).toBe('nublado')
+    store.getState().dispose()
+  })
+})
