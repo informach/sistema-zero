@@ -11,8 +11,10 @@ import {
   TicketSlaBadge,
   TicketSourceBadge,
   TicketStatusBadge,
+  TicketTriageBadge,
 } from '@/components/shared/ticket-badges'
 import { apiGet } from '@/lib/api'
+import { triageRuleDescription } from '@/lib/categories'
 import { formatSlaRemaining } from '@/lib/sla'
 import type { TicketDetailResponse, TicketView } from '@/lib/types'
 import { AiSummaryPanel } from './ai-summary-panel'
@@ -109,6 +111,7 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           <TicketPriorityBadge priority={ticket.priority} />
           <TicketSlaBadge sla={ticket.sla} />
           <TicketSourceBadge source={ticket.source} />
+          <TicketTriageBadge triage={ticket.triage} />
         </div>
         <p className="text-sm text-muted-foreground">
           {ticket.requesterName
@@ -119,6 +122,14 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
           {ticket.assignedToName ? ` · Responsável: ${ticket.assignedToName}` : ''}
         </p>
         {slaRemaining ? <p className="text-xs text-muted-foreground">{slaRemaining}</p> : null}
+        {ticket.triage !== 'human' ? (
+          <p className="text-xs text-muted-foreground">
+            Fora da fila de atendimento.
+            {triageRuleDescription(ticket.triageRule)
+              ? ` ${triageRuleDescription(ticket.triageRule)}`
+              : ''}
+          </p>
+        ) : null}
         {ticket.aiStatus !== 'skipped' || ticket.aiSummary ? (
           <AiSummaryPanel ticket={ticket} onSummarized={handleTicketUpdated} />
         ) : null}

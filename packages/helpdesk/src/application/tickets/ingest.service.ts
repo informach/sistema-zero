@@ -1,3 +1,10 @@
+import type { TriageKind } from '@sistemazero/helpdesk-contracts'
+import {
+  DEFAULT_TRIAGE_RULES,
+  type TriageRules,
+  type TriageVerdict,
+  triageEmail,
+} from '../../domain/mail/triage'
 import type { ParsedEmail } from '../../domain/ports/gmail-client.port'
 import type {
   IngestedGmailMessage,
@@ -10,6 +17,9 @@ export interface IngestResult {
   status: IngestStatus
   ticketId?: string
   direction?: 'inbound' | 'outbound'
+  /** Veredito da mensagem (ausente em `duplicate`). */
+  triage?: TriageKind
+  triageRule?: string
 }
 
 export interface IngestConfig {
@@ -29,6 +39,11 @@ function cleanSubject(subject: string): string {
  * Transforma um e-mail parseado em ticket/mensagem. Idempotente por
  * `gmail_message_id` (dedupe forte). Agrupa por `gmail_thread_id`. E-mail vindo
  * da PRÓPRIA caixa = outbound (`sent_via='gmail'`, resposta dada no Gmail).
+ *
+ * Triagem (`domain/mail/triage.ts`) na chegada: e-mail que não é atendimento
+ * (auto-reply, devolução, newsletter, sistema, interno) abre o ticket JÁ
+ * `closed` e triado, fora da fila/SLA/IA; em thread existente só contabiliza.
+ * O repositório decide o ramo pela combinação direção × veredito.
  */
 export class IngestService {
   constructor(
@@ -38,32 +53,55 @@ export class IngestService {
     private readonly idGen: () => string,
   ) {}
 
-  async ingest(parsed: ParsedEmail, connectionEmail: string): Promise<IngestResult> {
+  async ingest(
+    parsed: ParsedEmail,
+    connectionEmail: string,
+    rules: TriageRules = DEFAULT_TRIAGE_RULES,
+  ): Promise<IngestResult> {
     const fromUs = normalizeEmail(parsed.fromEmail)
     const isFromUs = fromUs !== null && fromUs === normalizeEmail(connectionEmail)
     const at = parsed.internalDate ?? this.now()
     const direction = isFromUs ? 'outbound' : 'inbound'
+    const verdict = triageEmail(
+      {
+        direction,
+        fromEmail: parsed.fromEmail,
+        toEmails: parsed.toEmails,
+        ccEmails: parsed.ccEmails,
+        headers: parsed.headers,
+        labelIds: parsed.labelIds,
+      },
+      rules,
+    )
 
-    const ticket = this.buildTicket(parsed, isFromUs, at)
+    const ticket = this.buildTicket(parsed, isFromUs, at, verdict)
     const result = await this.ingestion.ingest({
       ticket,
-      message: this.buildMessage(ticket.id, parsed, isFromUs, at),
+      message: this.buildMessage(ticket.id, parsed, isFromUs, at, verdict),
       direction,
       aiEnabled: this.config.aiEnabled,
       at,
     })
-    return { ...result, direction: result.status === 'duplicate' ? undefined : direction }
+    if (result.status === 'duplicate') return result
+    return { ...result, direction, triage: verdict.kind, triageRule: verdict.rule }
   }
 
-  private buildTicket(parsed: ParsedEmail, isFromUs: boolean, at: Date): Ticket {
+  private buildTicket(
+    parsed: ParsedEmail,
+    isFromUs: boolean,
+    at: Date,
+    verdict: TriageVerdict,
+  ): Ticket {
     const requesterEmail = isFromUs
       ? (parsed.toEmails[0] ?? parsed.fromEmail ?? 'desconhecido')
       : (parsed.fromEmail ?? 'desconhecido')
-    const aiStatus = !this.config.aiEnabled
-      ? 'skipped'
-      : isFromUs
-        ? 'idle' // criado a partir de outbound: nada a classificar ainda
-        : 'pending'
+    const triaged = verdict.kind !== 'human'
+    const aiStatus =
+      !this.config.aiEnabled || triaged
+        ? 'skipped'
+        : isFromUs
+          ? 'idle' // criado a partir de outbound: nada a classificar ainda
+          : 'pending'
     return {
       id: this.idGen(),
       version: 0,
@@ -71,8 +109,9 @@ export class IngestService {
       source: 'email',
       portal: null,
       subject: cleanSubject(parsed.subject) || '(sem assunto)',
-      status: isFromUs ? 'waiting' : 'new',
-      resolvedAt: null,
+      // Triado nasce encerrado: fora da fila, SLA inerte por construção.
+      status: triaged ? 'closed' : isFromUs ? 'waiting' : 'new',
+      resolvedAt: triaged ? at : null,
       category: null,
       categoryManual: false,
       priority: null,
@@ -83,7 +122,8 @@ export class IngestService {
       assignedToName: null,
       firstMessageAt: at,
       lastMessageAt: at,
-      lastInboundAt: isFromUs ? null : at,
+      // Só inbound HUMANO arma o relógio do SLA.
+      lastInboundAt: isFromUs || triaged ? null : at,
       messageCount: 1,
       aiSummary: null,
       aiSummaryAt: null,
@@ -91,11 +131,14 @@ export class IngestService {
       aiDraftAt: null,
       aiDraftEdited: false,
       aiClassification: null,
-      aiGeneration: isFromUs ? 0 : 1,
+      aiGeneration: aiStatus === 'pending' ? 1 : 0,
       aiStatus,
       aiNextAttemptAt: aiStatus === 'pending' ? at : null,
       aiAttempts: 0,
       aiLastError: null,
+      triage: verdict.kind,
+      triageRule: triaged ? verdict.rule : null,
+      triagedAt: triaged ? at : null,
       createdAt: at,
       updatedAt: at,
     }
@@ -106,6 +149,7 @@ export class IngestService {
     parsed: ParsedEmail,
     isFromUs: boolean,
     at: Date,
+    verdict: TriageVerdict,
   ): IngestedGmailMessage {
     return {
       id: this.idGen(),
@@ -128,12 +172,10 @@ export class IngestService {
       bodyHtml: parsed.bodyHtml,
       snippet: parsed.snippet,
       attachments: parsed.attachments,
-      // Autoresponder/newsletter? (Auto-Submitted≠no / X-Autoreply / List-Unsubscribe)
-      // — metadado exibido à equipe; não existe auto-resposta neste produto.
-      isAutoreply:
-        parsed.isAutoreply ||
-        (parsed.autoSubmitted !== null && parsed.autoSubmitted.toLowerCase() !== 'no') ||
-        parsed.listUnsubscribe !== null,
+      // Legado espelhando a triagem (leitores antigos); a decisão mora em `triage`.
+      isAutoreply: verdict.kind !== 'human',
+      triage: verdict.kind,
+      triageRule: verdict.kind === 'human' ? null : verdict.rule,
       gmailInternalDate: parsed.internalDate,
       createdBy: null,
       createdByName: null,

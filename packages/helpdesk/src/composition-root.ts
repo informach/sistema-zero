@@ -124,7 +124,13 @@ export function createApplication(env: Env): Application {
     : null
 
   // Casos de uso
-  const ticketService = new TicketService(ticketRepo, messageRepo, now, idGen)
+  const ticketService = new TicketService(
+    ticketRepo,
+    messageRepo,
+    { aiEnabled: ai !== null },
+    now,
+    idGen,
+  )
   const customerTicketService = new CustomerTicketService(
     customerTicketRepo,
     messageRepo,
@@ -216,6 +222,7 @@ export function createApplication(env: Env): Application {
           gmailAccount: gmailAccountService,
           gmail: gmailClient,
           ingest: ingestService,
+          settings: settingsRepo,
           now,
           logger,
           config: {

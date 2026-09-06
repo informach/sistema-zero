@@ -1,3 +1,4 @@
+import type { TriageFilter } from '@sistemazero/helpdesk-contracts'
 import type {
   AiClassification,
   Ticket,
@@ -11,6 +12,11 @@ import type { TicketStats } from '../ticket/ticket-stats'
 export interface ListTicketsFilter {
   status?: TicketStatus
   category?: TicketCategory
+  /**
+   * `human` (AUSENTE = human) esconde os tickets triados; `automated` mostra só
+   * eles. A fila padrão nunca mistura atendimento com ruído.
+   */
+  triage?: TriageFilter
   /** Situação operacional calculada a partir da última mensagem do cliente. */
   sla?: TicketSlaFilter
   assignment?: 'assigned' | 'unassigned'

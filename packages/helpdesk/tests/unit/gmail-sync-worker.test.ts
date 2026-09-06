@@ -13,6 +13,7 @@ import {
 import {
   InMemoryConnectionRepository,
   InMemoryMessageRepository,
+  InMemorySettingsRepository,
   InMemoryTicketIngestionRepository,
   InMemoryTicketRepository,
 } from '../fakes/in-memory'
@@ -29,6 +30,7 @@ function build() {
   const gmail = new FakeGmailClient()
   const provider = new FakeGmailOAuthProvider()
   const secretBox = new FakeSecretBox()
+  const settings = new InMemorySettingsRepository()
   const now = () => NOW
   const gmailAccount = new GmailAccountService(
     connections,
@@ -42,6 +44,7 @@ function build() {
     gmailAccount,
     gmail,
     ingest,
+    settings,
     now,
     logger: silentLogger,
     config: {
@@ -54,7 +57,7 @@ function build() {
       tokenRefreshMarginMs: 300_000,
     },
   })
-  return { connections, tickets, messages, gmail, secretBox, worker }
+  return { connections, tickets, messages, gmail, secretBox, settings, worker }
 }
 
 function seedConnection(
@@ -157,6 +160,41 @@ describe('GmailSyncWorker', () => {
     await worker.tick()
 
     expect(tickets.rows.size).toBe(1)
+  })
+
+  it('as regras de triagem das Configurações chegam à ingestão (uma leitura por sync)', async () => {
+    const { connections, tickets, gmail, secretBox, settings, worker } = build()
+    seedConnection(connections, secretBox, { lastHistoryId: null })
+    settings.value.triageRules = {
+      ignoredSenders: ['@evolution.example'],
+      internalDomains: ['sistemazero.com.br'],
+    }
+    gmail.profile = { emailAddress: MAILBOX, historyId: '10' }
+    gmail.listPages = [{ ids: ['evo-1', 'maria-1'], nextPageToken: null }]
+    gmail.messagesById.set(
+      'evo-1',
+      makeParsedEmail({
+        gmailMessageId: 'evo-1',
+        gmailThreadId: 't-evo',
+        fromEmail: 'instancia@evolution.example',
+      }),
+    )
+    gmail.messagesById.set(
+      'maria-1',
+      makeParsedEmail({ gmailMessageId: 'maria-1', gmailThreadId: 't-maria' }),
+    )
+
+    await worker.tick()
+
+    const byThread = new Map(
+      [...tickets.rows.values()].map((ticket) => [ticket.gmailThreadId, ticket]),
+    )
+    expect(byThread.get('t-evo')).toMatchObject({
+      status: 'closed',
+      triage: 'system',
+      triageRule: 'system:ignored-sender',
+    })
+    expect(byThread.get('t-maria')).toMatchObject({ status: 'new', triage: 'human' })
   })
 
   it('reconexão/re-backfill não duplica (dedupe por gmail_message_id)', async () => {

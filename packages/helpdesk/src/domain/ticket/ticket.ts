@@ -8,6 +8,7 @@ import {
   type TicketPriority,
   type TicketSource,
   type TicketStatus,
+  type TriageKind,
 } from '@sistemazero/helpdesk-contracts'
 
 export type {
@@ -19,6 +20,7 @@ export type {
   TicketPriority,
   TicketSource,
   TicketStatus,
+  TriageKind,
 } from '@sistemazero/helpdesk-contracts'
 
 /** Saída estruturada da classificação (persistida como jsonb). */
@@ -66,6 +68,16 @@ export interface Ticket {
   aiNextAttemptAt: Date | null
   aiAttempts: number
   aiLastError: string | null
+  /**
+   * `human` = atendimento (fila, SLA, IA, painel). Qualquer outro valor = ticket
+   * triado na chegada ou rebaixado pela equipe: nasce/fica `closed`, sem SLA nem
+   * IA, visível só no filtro "Automáticos". Ver `ticket-triage.ts`.
+   */
+  triage: TriageKind
+  /** Regra que decidiu; `manual:*` é decisão humana e nunca é re-triada. */
+  triageRule: string | null
+  /** Instante da triagem para fora da fila; null em atendimento. */
+  triagedAt: Date | null
   createdAt: Date
   updatedAt: Date
 }
@@ -75,4 +87,17 @@ export const TICKET_CATEGORIES = SHARED_TICKET_CATEGORIES
 
 export function isTerminalTicketStatus(status: TicketStatus): boolean {
   return status === 'resolved' || status === 'closed'
+}
+
+/**
+ * Mensagem HUMANA do cliente num ticket de atendimento: aguardando/encerrado
+ * volta a aberto. Fonte única da regra que o SQL da ingestão e do portal replica.
+ */
+export function statusOnInbound(current: TicketStatus): TicketStatus {
+  return current === 'waiting' || current === 'resolved' || current === 'closed' ? 'open' : current
+}
+
+/** Resposta da equipe: novo/aberto passam a aguardar o cliente. */
+export function statusOnOutbound(current: TicketStatus): TicketStatus {
+  return current === 'new' || current === 'open' ? 'waiting' : current
 }

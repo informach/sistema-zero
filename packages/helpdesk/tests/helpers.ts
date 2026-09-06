@@ -92,7 +92,7 @@ export function buildTestApp(
   const secretBox = new FakeSecretBox()
   const llm = new FakeLlmClient()
 
-  const ticketService = new TicketService(tickets, messages, now, idGen)
+  const ticketService = new TicketService(tickets, messages, { aiEnabled: false }, now, idGen)
   const customerTicketService = new CustomerTicketService(
     customerTickets,
     messages,
@@ -301,6 +301,9 @@ export function makeTicket(overrides: Partial<Ticket> = {}): Ticket {
     aiNextAttemptAt: null,
     aiAttempts: 0,
     aiLastError: null,
+    triage: 'human',
+    triageRule: null,
+    triagedAt: null,
     createdAt: at,
     updatedAt: at,
     ...overrides,
@@ -334,6 +337,8 @@ export function makeMessage(
     snippet: 'Olá, comprei o curso e não consigo acessar.',
     attachments: [],
     isAutoreply: false,
+    triage: 'human',
+    triageRule: null,
     gmailInternalDate: at,
     createdBy: null,
     createdByName: null,

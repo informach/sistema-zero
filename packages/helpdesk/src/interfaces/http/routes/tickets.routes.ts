@@ -35,6 +35,7 @@ export function ticketsRoutes(deps: TicketsRoutesDeps) {
           deps.tickets.list({
             status: query.status,
             category: query.category,
+            triage: query.triage,
             sla: query.sla,
             assignment: query.assignment,
             queue: query.queue,

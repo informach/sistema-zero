@@ -15,13 +15,14 @@ import {
   TicketSlaBadge,
   TicketSourceBadge,
   TicketStatusBadge,
+  TicketTriageBadge,
 } from '@/components/shared/ticket-badges'
 import { apiGet } from '@/lib/api'
 import { STATUS_LABELS, TICKET_STATUSES } from '@/lib/categories'
 import { cn } from '@/lib/cn'
 import { formatShortSp } from '@/lib/dates'
 import { formatSlaRemaining } from '@/lib/sla'
-import type { CursorPage, TicketStatus, TicketView } from '@/lib/types'
+import type { CursorPage, TicketStatus, TicketView, TriageFilter } from '@/lib/types'
 
 const LIMIT = 50
 const SEARCH_DEBOUNCE_MS = 350
@@ -38,6 +39,13 @@ const QUEUE_FILTERS: { value: QueueFilter; label: string }[] = [
   { value: 'all', label: 'Fila completa' },
   { value: 'attention', label: 'Precisa de atenção' },
   { value: 'unassigned', label: 'Sem responsável' },
+]
+
+// A fila padrão é só atendimento; "Automáticos" mostra o que a triagem deixou
+// fora (resposta automática, devolução, newsletter, sistema, interno).
+const TRIAGE_FILTERS: { value: TriageFilter; label: string }[] = [
+  { value: 'human', label: 'Atendimento' },
+  { value: 'automated', label: 'Automáticos' },
 ]
 
 function requesterLabel(ticket: TicketView): string {
@@ -57,6 +65,7 @@ function isQueueFilter(value: string | null): value is QueueFilter {
 function apiListPath(
   status: StatusFilter,
   queue: QueueFilter,
+  triage: TriageFilter,
   query: string,
   cursor: string | null = null,
 ): string {
@@ -64,6 +73,8 @@ function apiListPath(
   if (status !== 'all') params.set('status', status)
   if (queue === 'attention') params.set('sla', 'attention')
   if (queue === 'unassigned') params.set('queue', 'unassigned')
+  // Ausente = atendimento (padrão do backend); só o "Automáticos" viaja na URL.
+  if (triage === 'automated') params.set('triage', 'automated')
   if (query) params.set('q', query)
   if (cursor) params.set('cursor', cursor)
   return `/api/helpdesk/tickets?${params.toString()}`
@@ -77,6 +88,7 @@ export function TicketsClient() {
   const queueValue = searchParams.get('queue')
   const status: StatusFilter = isTicketStatus(statusValue) ? statusValue : 'all'
   const queue: QueueFilter = isQueueFilter(queueValue) ? queueValue : 'all'
+  const triage: TriageFilter = searchParams.get('triage') === 'automated' ? 'automated' : 'human'
   const query = (searchParams.get('q') ?? '').trim()
   const [search, setSearch] = useState(query)
   const [items, setItems] = useState<TicketView[]>([])
@@ -86,23 +98,30 @@ export function TicketsClient() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [failed, setFailed] = useState(false)
   const [reloadKey, setReloadKey] = useState(0)
-  const filterKey = `${status}\u0000${queue}\u0000${query}`
+  const filterKey = `${status}\u0000${queue}\u0000${triage}\u0000${query}`
   const activeFilterKey = useRef(filterKey)
   activeFilterKey.current = filterKey
 
   const replaceFilters = useCallback(
-    (next: { status?: StatusFilter; queue?: QueueFilter; query?: string }) => {
+    (next: {
+      status?: StatusFilter
+      queue?: QueueFilter
+      triage?: TriageFilter
+      query?: string
+    }) => {
       const params = new URLSearchParams()
       const nextStatus = next.status ?? status
       const nextQueue = next.queue ?? queue
+      const nextTriage = next.triage ?? triage
       const nextQuery = next.query ?? query
       if (nextStatus !== 'all') params.set('status', nextStatus)
       if (nextQueue !== 'all') params.set('queue', nextQueue)
+      if (nextTriage === 'automated') params.set('triage', 'automated')
       if (nextQuery) params.set('q', nextQuery)
       const serialized = params.toString()
       router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false })
     },
-    [pathname, query, queue, router, status],
+    [pathname, query, queue, router, status, triage],
   )
 
   useEffect(() => setSearch(query), [query])
@@ -120,7 +139,7 @@ export function TicketsClient() {
     setLoading(true)
     setLoadingMore(false)
     setFailed(false)
-    apiGet<CursorPage<TicketView>>(apiListPath(status, queue, query))
+    apiGet<CursorPage<TicketView>>(apiListPath(status, queue, triage, query))
       .then((page) => {
         if (!alive) return
         setItems(page.items)
@@ -136,7 +155,7 @@ export function TicketsClient() {
     return () => {
       alive = false
     }
-  }, [status, queue, query, reloadKey])
+  }, [status, queue, triage, query, reloadKey])
 
   async function loadMore() {
     if (!nextCursor) return
@@ -144,7 +163,7 @@ export function TicketsClient() {
     setLoadingMore(true)
     try {
       const page = await apiGet<CursorPage<TicketView>>(
-        apiListPath(status, queue, query, nextCursor),
+        apiListPath(status, queue, triage, query, nextCursor),
       )
       if (activeFilterKey.current !== requestedFilterKey) return
       setItems((current) => {
@@ -210,6 +229,29 @@ export function TicketsClient() {
               ))}
             </div>
           </fieldset>
+          <fieldset className="m-0 border-0 p-0">
+            <legend className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Triagem
+            </legend>
+            <div className="mt-1 inline-flex flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
+              {TRIAGE_FILTERS.map((filter) => (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => replaceFilters({ triage: filter.value })}
+                  aria-pressed={triage === filter.value}
+                  className={cn(
+                    'rounded-md px-3 py-1.5 text-sm transition-colors',
+                    triage === filter.value
+                      ? 'bg-muted font-medium text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </fieldset>
         </div>
         <div className="relative w-full sm:w-64">
           <label htmlFor="ticket-search" className="sr-only">
@@ -249,11 +291,19 @@ export function TicketsClient() {
           ))}
         </div>
       ) : items.length === 0 ? (
-        <EmptyState
-          icon={Inbox}
-          title="Nenhum ticket ainda."
-          description="Quando chegarem pedidos por e-mail ou pelo portal, eles aparecem aqui."
-        />
+        triage === 'automated' ? (
+          <EmptyState
+            icon={Inbox}
+            title="Nenhum e-mail automático."
+            description="Respostas automáticas, devoluções, newsletters, avisos de sistema e e-mails internos ficam aqui, fora da fila de atendimento."
+          />
+        ) : (
+          <EmptyState
+            icon={Inbox}
+            title="Nenhum ticket ainda."
+            description="Quando chegarem pedidos por e-mail ou pelo portal, eles aparecem aqui."
+          />
+        )
       ) : (
         <>
           <ul className="divide-y divide-border rounded-xl border border-border bg-card">
@@ -271,6 +321,7 @@ export function TicketsClient() {
                       <TicketPriorityBadge priority={ticket.priority} />
                       <TicketSlaBadge sla={ticket.sla} />
                       <TicketSourceBadge source={ticket.source} />
+                      <TicketTriageBadge triage={ticket.triage} />
                     </div>
                     <p className="truncate text-xs text-muted-foreground">
                       {requesterLabel(ticket)}

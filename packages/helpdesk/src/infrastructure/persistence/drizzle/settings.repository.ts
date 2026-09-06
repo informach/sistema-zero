@@ -16,6 +16,12 @@ export class DrizzleSettingsRepository implements SettingsRepository {
     if (row) {
       return {
         signature: row.signature,
+        triageRules: {
+          ignoredSenders: [...(row.triageRules?.ignoredSenders ?? [])],
+          internalDomains: [
+            ...(row.triageRules?.internalDomains ?? DEFAULT_SETTINGS.triageRules.internalDomains),
+          ],
+        },
         updatedBy: row.updatedBy,
         updatedAt: row.updatedAt,
       }
@@ -35,6 +41,7 @@ export class DrizzleSettingsRepository implements SettingsRepository {
         target: settings.id,
         set: {
           signature: value.signature,
+          triageRules: value.triageRules,
           updatedBy: value.updatedBy,
           updatedAt: value.updatedAt,
         },

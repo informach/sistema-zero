@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, ilike, isNotNull, isNull, lte, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, ilike, isNotNull, isNull, lte, ne, sql } from 'drizzle-orm'
 import type {
   AiClassificationUpdate,
   AiWriteGuard,
@@ -62,6 +62,9 @@ export class DrizzleTicketRepository implements TicketRepository {
         aiNextAttemptAt: ticket.aiNextAttemptAt,
         aiAttempts: ticket.aiAttempts,
         aiLastError: ticket.aiLastError,
+        triage: ticket.triage,
+        triageRule: ticket.triageRule,
+        triagedAt: ticket.triagedAt,
         updatedAt: ticket.updatedAt,
       })
       .where(and(eq(tickets.id, ticket.id), eq(tickets.version, expectedVersion)))
@@ -74,6 +77,10 @@ export class DrizzleTicketRepository implements TicketRepository {
   async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
     // O cursor congela a admissão de tickets novos e o relógio usado pelo SLA.
     const conditions = [lte(tickets.createdAt, now)]
+    // A fila nunca mistura atendimento com ruído: ausente = só `human`.
+    conditions.push(
+      filter.triage === 'automated' ? ne(tickets.triage, 'human') : eq(tickets.triage, 'human'),
+    )
     if (filter.status) conditions.push(eq(tickets.status, filter.status))
     if (filter.category) conditions.push(eq(tickets.category, filter.category))
     if (filter.q) {
@@ -176,6 +183,9 @@ export class DrizzleTicketRepository implements TicketRepository {
               end * ${SLA_RISK_START_RATIO}::double precision * interval '1 minute'
             ) as sla_risk_at
           from helpdesk.tickets
+          -- O painel nunca conta ruído: ticket triado nasce closed com resolved_at
+          -- e, sem esta exclusão, inflaria os resolvidos.
+          where triage = 'human'
         )
         select
           count(*) filter (where status = 'new') as new_count,
@@ -191,7 +201,7 @@ export class DrizzleTicketRepository implements TicketRepository {
       this.connection.sql`
         select to_char(created_at - interval '3 hours', 'YYYY-MM-DD') as day, count(*) as n
         from helpdesk.tickets
-        where created_at >= ${w.seriesStartIso}
+        where created_at >= ${w.seriesStartIso} and triage = 'human'
         group by day
       `,
     ])

@@ -28,6 +28,30 @@ describe('buildThreadText', () => {
     expect(text).not.toContain('nota interna') // nota não vai p/ a IA
   })
 
+  it('ignora inbound não-humano (o modelo lia o autoresponder como "Cliente")', () => {
+    const ticket = makeTicket({ subject: 'Ajuda' })
+    const inbound = makeMessage(ticket.id, {
+      direction: 'inbound',
+      bodyText: 'Não consigo acessar.',
+    })
+    const vacation = makeMessage(ticket.id, {
+      direction: 'inbound',
+      triage: 'auto_reply',
+      triageRule: 'auto_reply:auto-submitted',
+      bodyText: 'Estou de férias até dia 20.',
+    })
+    const bounce = makeMessage(ticket.id, {
+      direction: 'inbound',
+      triage: 'bounce',
+      triageRule: 'bounce:return-path-empty',
+      bodyText: 'Delivery Status Notification (Failure)',
+    })
+    const text = buildThreadText(ticket.subject, [inbound, vacation, bounce], 24_000)
+    expect(text).toContain('Cliente: Não consigo acessar.')
+    expect(text).not.toContain('férias')
+    expect(text).not.toContain('Delivery Status')
+  })
+
   it('clampa mantendo a cauda quando passa do limite', () => {
     const ticket = makeTicket({ subject: 'x' })
     const long = makeMessage(ticket.id, { bodyText: 'a'.repeat(500) })

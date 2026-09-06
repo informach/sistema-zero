@@ -32,6 +32,9 @@ export type {
   TicketStatsView,
   TicketStatus,
   TicketView,
+  TriageFilter,
+  TriageKind,
+  TriageRulesView,
 } from '@sistemazero/helpdesk-contracts'
 
 /** Compatibilidade das telas de KB, que ainda usam paginação por offset. */

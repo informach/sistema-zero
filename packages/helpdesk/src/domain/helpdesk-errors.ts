@@ -27,6 +27,12 @@ export class TicketCursorInvalidError extends DomainError {
     super(message)
   }
 }
+export class TriageRulesInvalidError extends DomainError {
+  readonly code = 'TRIAGE_RULES_INVALID'
+  constructor(message = 'Regras de triagem inválidas') {
+    super(message)
+  }
+}
 
 // ── Conflito (409) ───────────────────────────────────────────────────────────
 export class ConcurrencyConflictError extends DomainError {

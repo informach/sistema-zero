@@ -147,6 +147,7 @@ export function makeParsedEmail(overrides: Partial<ParsedEmail> = {}): ParsedEma
     attachments: [],
     internalDate: new Date('2026-07-08T12:00:00Z'),
     labelIds: ['INBOX'],
+    headers: {},
     autoSubmitted: null,
     listUnsubscribe: null,
     isAutoreply: false,

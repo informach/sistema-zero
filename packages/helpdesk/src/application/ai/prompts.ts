@@ -39,7 +39,7 @@ const CATEGORIES = `- curso_acesso: acesso à plataforma, login, senha, primeiro
 - parceria_comercial: propostas de parceria, imprensa, vendas para escolas/empresas, afiliados.
 - outro: qualquer coisa que não se encaixe acima.`
 
-// ── Montagem do texto da thread (só e-mails; inbound sem citação; clampado) ──
+// ── Montagem do texto da thread (só e-mails HUMANOS; inbound sem citação; clampado) ──
 export function buildThreadText(
   subject: string,
   messages: TicketMessage[],
@@ -48,6 +48,9 @@ export function buildThreadText(
   const parts: string[] = [`Assunto: ${subject || '(sem assunto)'}`]
   for (const message of messages) {
     if (message.kind !== 'email') continue // notas internas não vão p/ a IA
+    // Auto-reply/bounce/newsletter não são fala do cliente: o modelo lia o
+    // autoresponder como "Cliente" e resumia férias em vez do pedido.
+    if (message.triage !== 'human') continue
     const who = message.direction === 'outbound' ? 'Equipe' : 'Cliente'
     const body =
       message.direction === 'inbound'
