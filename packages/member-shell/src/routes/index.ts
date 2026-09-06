@@ -872,6 +872,17 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  /** Ranking geral acumulado — paginação validada no BFF, identidade já redigida no members. */
+  const gamificationRanking = {
+    GET: async (req: Request) => {
+      const url = new URL(req.url)
+      const limit = clampInt(url.searchParams.get('limit'), 20, 1, 100)
+      const offset = clampInt(url.searchParams.get('offset'), 0, 0, 1_000_000)
+      const { status, body } = await members.getRanking({ limit, offset })
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
   /**
    * Saldo de IA da CONTA (o medidor "quantas ideias ainda tenho").
    *
@@ -1588,6 +1599,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     courseRating,
     lessonComplete,
     gamificationMe,
+    gamificationRanking,
     aiCredits,
     avatarGet,
     avatarBuy,

@@ -208,6 +208,48 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/** Linha pública do ranking geral. Nunca carrega ids internos de conta. */
+export interface RankingEntryView {
+  position: number
+  xp: number
+  isMe: boolean
+  firstName: string | null
+  photoUrl: string | null
+  levelSlug: StudentLevelSlug
+  /** Só existe quando o perfil kids aceitou ser público. */
+  profileId?: string
+}
+
+/** Página pública do ranking geral, com a própria linha disponível fora da página. */
+export interface RankingLeaderboardView {
+  items: RankingEntryView[]
+  total: number
+  limit: number
+  offset: number
+  me: RankingEntryView | null
+}
+
+/** Linha interna do ranking, consumida exclusivamente pelo BFF administrativo. */
+export interface AdminRankingEntryView {
+  userId: string
+  accountId: string
+  position: number
+  xp: number
+  lastActivityDate: string | null
+  photoUrl: string | null
+  levelSlug: StudentLevelSlug
+}
+
+/** Página interna; `totalMatches` permite paginar buscas sem alterar a posição global. */
+export interface AdminRankingPageView {
+  items: AdminRankingEntryView[]
+  totalParticipants: number
+  totalMatches: number
+  limit: number
+  offset: number
+  me: AdminRankingEntryView | null
+}
+
 /** Uma peça do catálogo de avatar 3D na visão do aluno (lojinha/configurador). */
 export interface AvatarPartView {
   id: string

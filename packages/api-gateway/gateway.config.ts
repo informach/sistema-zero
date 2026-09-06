@@ -1543,6 +1543,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    {
+      // Ranking geral acumulado, paginado. A resposta pública já vem redigida do
+      // Members (sem ids de conta/perfil privado).
+      id: 'members-gamification-ranking',
+      methods: ['GET'],
+      pathPattern: '/members/gamification/ranking',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Avatar (guarda-roupa por camadas) — recurso do PRÓPRIO perfil (kids). Estado +
     // lojinha (GET), compra de peça com moedas (POST) e salvar a config equipada (PUT).
     // `/members/avatar` (2 segmentos) não colide com `/members/courses…` nem com o
@@ -2268,6 +2280,18 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      // Ranking geral Kids/Adultos para o painel. O filtro opcional de ids é
+      // aplicado pelo Members depois de calcular a posição global.
+      id: 'members-admin-gamification-ranking',
+      methods: ['GET'],
+      pathPattern: '/members/admin/gamification/ranking',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
     {
       // Uso das ferramentas (Pensa/Pinta/Estúdio + Clube/Mural via hub best-effort)

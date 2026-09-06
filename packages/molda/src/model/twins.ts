@@ -12,6 +12,7 @@
 import { newId } from '../core/id'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { FaceId, MoldaModelAsset, MoldaPart, MoldaSkin, Vec3 } from '../core/model'
+import { meshEquals, mirrorMesh } from './mesh'
 import { flipSkinH } from './skinOps'
 
 function mirrorVec(v: Vec3): Vec3 {
@@ -36,6 +37,10 @@ export function mirrorTwinOf(source: MoldaPart, twin: Pick<MoldaPart, 'id' | 'na
     mirrorOf: source.id,
   }
   if (source.origin) derived.origin = mirrorVec(source.origin)
+  if (source.locked) derived.locked = true
+  if (source.hidden) derived.hidden = true
+  // Malha: `x → -x` e ciclos invertidos (a caixa espelhada acima É a caixa dela).
+  if (source.mesh) derived.mesh = mirrorMesh(source.mesh)
   return derived
 }
 
@@ -94,7 +99,10 @@ function twinUpToDate(twin: MoldaPart, derived: MoldaPart): boolean {
     sameVec(twin.rotation, derived.rotation) &&
     sameVec(twin.origin, derived.origin) &&
     twin.color === derived.color &&
-    Object.keys(twin.faces).length === 0
+    Object.keys(twin.faces).length === 0 &&
+    // Por VALOR: `mirrorMesh` cria um objeto novo a cada sync, e comparar por
+    // referência faria todo commit parecer uma mudança (histórico e autosave à toa).
+    meshEquals(twin.mesh, derived.mesh)
   )
 }
 

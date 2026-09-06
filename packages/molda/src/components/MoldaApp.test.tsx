@@ -333,3 +333,22 @@ describe('MoldaApp', () => {
     expect(persistence.snapshot().some((asset) => asset.name === 'nave')).toBe(true)
   })
 })
+
+describe('galeria: cabeçalho de seção (06/09)', () => {
+  test('o cabeçalho é de SEÇÃO (sem faixa própria) e mora na raiz rolável, junto da grade', async () => {
+    render(<MoldaApp persistence={createMemoryPersistence([makeModel()])} />)
+    const heading = await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
+    const header = heading.closest('header')
+    if (!header) throw new Error('sem header')
+    expect(header.className).not.toContain('bg-mld-surface')
+    expect(header.className).not.toContain('border-b')
+    const scrollRoot = header.parentElement
+    if (!scrollRoot) throw new Error('sem raiz')
+    expect(scrollRoot.className).toContain('overflow-y-auto')
+    // A folga de cima é a do `p-4`: o hover (`.mld-pop`) do 1º card cresce para cima sem cortar.
+    expect(scrollRoot.className).toContain('p-4')
+    const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+    expect(grid.parentElement).toBe(scrollRoot)
+    expect(screen.queryByRole('main')).toBeNull()
+  })
+})

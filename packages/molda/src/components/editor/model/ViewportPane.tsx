@@ -6,7 +6,7 @@ import type { JSX, RefObject } from 'react'
 import { COPY } from '../../../core/copy'
 import type { ViewName } from '../../../viewport/types'
 import { Button, ToolButton } from '../../ui/Button'
-import { Focus, Grid3x3 } from '../../ui/icons'
+import { Focus, Frame, Grid3x3 } from '../../ui/icons'
 
 const VIEWS: Exclude<ViewName, 'frame'>[] = ['front', 'back', 'left', 'right', 'top']
 
@@ -16,6 +16,8 @@ export function ViewportPane({
   onView,
   gridVisible,
   onToggleGrid,
+  edgesVisible,
+  onToggleEdges,
   status,
 }: {
   canvasRef: RefObject<HTMLCanvasElement | null>
@@ -23,6 +25,8 @@ export function ViewportPane({
   onView: (view: ViewName) => void
   gridVisible: boolean
   onToggleGrid: () => void
+  edgesVisible: boolean
+  onToggleEdges: () => void
   status: string
 }): JSX.Element {
   return (
@@ -64,6 +68,14 @@ export function ViewportPane({
           label={COPY.editor.model.grid}
           active={gridVisible}
           onClick={onToggleGrid}
+          disabled={unsupported}
+          className="min-h-11 min-w-11"
+        />
+        <ToolButton
+          icon={Frame}
+          label={COPY.editor.model.edges}
+          active={edgesVisible}
+          onClick={onToggleEdges}
           disabled={unsupported}
           className="min-h-11 min-w-11"
         />

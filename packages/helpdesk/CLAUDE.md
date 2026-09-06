@@ -96,7 +96,7 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
     `domain/mail/triage.ts` (PURO, sem I/O) decide por mensagem, em ORDEM, primeira regra que
     casa vence: `bounce` (Return-Path vazio, mailer-daemon@/postmaster@, multipart/report
     delivery-status, X-Failed-Recipients) → `auto_reply` (Auto-Submitted: auto-replied,
-    X-Autoreply, X-Auto-Response-Suppress, Precedence: auto_reply) → `system` (Auto-Submitted
+    X-Autoreply, Precedence: auto_reply) → `system` (Auto-Submitted
     ≠ no, local-part `no-reply|noreply|notifications?|alerts?|mailer|newsletter|bounces?` por
     SEGMENTO, remetente em `ignoredSenders`) → `bulk` (List-Id, List-Post, Precedence list/junk)
     → sinais FRACOS só em dupla (List-Unsubscribe, Feedback-ID, Precedence: bulk, categorias

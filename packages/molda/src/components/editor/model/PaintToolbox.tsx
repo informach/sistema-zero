@@ -19,6 +19,7 @@ import {
   Paintbrush,
   Pencil,
   Pipette,
+  RotateCw,
 } from '../../ui/icons'
 
 const TOOL_ICONS: Record<PaintTool, LucideIcon> = {
@@ -27,6 +28,7 @@ const TOOL_ICONS: Record<PaintTool, LucideIcon> = {
   fillFace: PaintBucket,
   fillPart: Paintbrush,
   picker: Pipette,
+  rotateSkin: RotateCw,
 }
 
 const TOOL_SHORTCUTS: Partial<Record<PaintTool, string>> = {
@@ -34,9 +36,10 @@ const TOOL_SHORTCUTS: Partial<Record<PaintTool, string>> = {
   eraser: 'E',
   fillFace: 'G',
   picker: 'I',
+  rotateSkin: 'R',
 }
 
-const TOOLS: PaintTool[] = ['pencil', 'eraser', 'fillFace', 'fillPart', 'picker']
+const TOOLS: PaintTool[] = ['pencil', 'eraser', 'fillFace', 'fillPart', 'picker', 'rotateSkin']
 const SIZES: BrushSize[] = [1, 2, 3]
 
 function chip(active: boolean): string {

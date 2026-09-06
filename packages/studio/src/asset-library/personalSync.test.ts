@@ -489,3 +489,152 @@ describe('syncDrawingsIntoProjects', () => {
     expect(takeDrawingSyncFailures()).toHaveLength(0)
   })
 })
+
+/** GLB v2 válido ("glTF", versão 2, tamanho coerente) com `extra` bytes de carga. */
+function glb(extra: number): string {
+  const len = 12 + extra
+  const header = String.fromCharCode(
+    0x67,
+    0x6c,
+    0x54,
+    0x46,
+    2,
+    0,
+    0,
+    0,
+    len & 255,
+    (len >> 8) & 255,
+    (len >> 16) & 255,
+    (len >> 24) & 255,
+  )
+  return `data:model/gltf-binary;base64,${btoa(header + String.fromCharCode(0).repeat(extra))}`
+}
+const GLB_A = glb(0)
+const GLB_B = glb(4)
+/** ~293k chars: junto dos fillers no teto, estoura o orçamento do jogo. */
+const GLB_GRANDE = glb(220_000)
+
+/** Modelo do Molda no projeto (o elo é o mesmo `libId`; a origem diz quem edita). */
+function modelAsset(over: Partial<ProjectAsset> = {}): ProjectAsset {
+  return {
+    id: 'asset-1',
+    name: 'nave',
+    kind: 'model3d',
+    dataUrl: GLB_A,
+    originalFileName: 'nave.glb',
+    source: 'library',
+    libId: 'personal:m1',
+    libOrigin: 'molda',
+    ...over,
+  }
+}
+
+const moldaRecord = (dataUrl: string, originalFileName = 'nave.glb') =>
+  savePersonalAsset({
+    id: 'm1',
+    name: 'nave',
+    kind: 'model3d' as const,
+    origin: 'molda' as const,
+    dataUrl,
+    originalFileName,
+  })
+
+const { reconcileDrawingsFromRestoredProject } = await import('./personalSync')
+type UpdateAssetImageInput = import('../state/projectStore').UpdateAssetImageInput
+
+describe('criações 3D do Molda (model3d/environment3d)', () => {
+  it('bytes iguais = nada a fazer; tipo cruzado NUNCA sincroniza', () => {
+    const asset = modelAsset()
+    const same = { id: 'm1', name: 'nave', kind: 'model3d' as const, dataUrl: GLB_A, updatedAt: 1 }
+    expect(drawingNeedsSync(asset, same)).toBe(false)
+    expect(drawingNeedsSync(asset, { ...same, dataUrl: GLB_B })).toBe(true)
+    expect(drawingNeedsSync(asset, { ...same, kind: 'image', dataUrl: PNG })).toBe(false)
+    expect(drawingNeedsSync(drawingAsset({}), { ...same, dataUrl: GLB_B })).toBe(false)
+  })
+
+  it('o .glb novo chega ao projeto ABERTO com o nome do arquivo novo, sem tocar em nome/libId', async () => {
+    await moldaRecord(GLB_A)
+    seedOpenProject([modelAsset()])
+    await moldaRecord(GLB_B, 'nave-v2.glb')
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOpenProject).toBe(1)
+    expect(useProjectStore.getState().project?.assets?.[0]).toMatchObject({
+      name: 'nave',
+      kind: 'model3d',
+      dataUrl: GLB_B,
+      originalFileName: 'nave-v2.glb',
+      libId: 'personal:m1',
+      libOrigin: 'molda',
+    })
+  })
+
+  it('chega ao jogo FECHADO com o nome do arquivo (o sanitize do load exige o .glb)', async () => {
+    await moldaRecord(GLB_A)
+    const fechado = createEmptyProject('fechado', 'Outro Jogo')
+    fechado.assets = [modelAsset({ id: 'asset-2' })]
+    await persistProject(fechado)
+    seedOpenProject([])
+    await moldaRecord(GLB_B, 'nave-v2.glb')
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOtherProjects).toBe(1)
+    expect((await loadProjectAssetsById('fechado'))[0]).toMatchObject({
+      kind: 'model3d',
+      dataUrl: GLB_B,
+      originalFileName: 'nave-v2.glb',
+      libOrigin: 'molda',
+    })
+  })
+
+  it('.glb que cresceu e não cabe no jogo fechado vira recusa, sem tocar no asset', async () => {
+    await moldaRecord(GLB_A)
+    const fechado = createEmptyProject('fechado', 'Jogo Cheio')
+    fechado.assets = [...fillerAssets(), modelAsset({ id: 'asset-2' })]
+    await persistProject(fechado)
+    seedOpenProject([])
+    await moldaRecord(GLB_GRANDE)
+    const result = await syncDrawingsIntoProjects(useProjectStore)
+    expect(result.updatedInOtherProjects).toBe(0)
+    expect(result.failures[0]).toContain('A criação "nave" cresceu')
+    expect(takeDrawingSyncFailures()).toHaveLength(1)
+    const assets = await loadProjectAssetsById('fechado')
+    expect(assets.find((a) => a.id === 'asset-2')?.dataUrl).toBe(GLB_A)
+  })
+
+  it('updateAssetImage valida MIME × extensão × assinatura e recusa imagem num model3d', () => {
+    seedOpenProject([modelAsset()])
+    const update = (input: UpdateAssetImageInput) =>
+      useProjectStore.getState().updateAssetImage('asset-1', input)
+    expect(
+      update({ dataUrl: 'data:model/gltf-binary;base64,AAAA', originalFileName: 'nave.glb' }),
+    ).toBeTruthy()
+    expect(update({ dataUrl: GLB_B, originalFileName: 'nave.hdr' })).toBeTruthy()
+    expect(update({ dataUrl: PNG })).toBeTruthy()
+    expect(useProjectStore.getState().project?.assets?.[0]?.dataUrl).toBe(GLB_A)
+    expect(update({ dataUrl: GLB_B, originalFileName: 'nave-v2.glb' })).toBeNull()
+    expect(useProjectStore.getState().project?.assets?.[0]).toMatchObject({
+      dataUrl: GLB_B,
+      originalFileName: 'nave-v2.glb',
+    })
+  })
+
+  it('jogo que desce da nuvem com o .glb divergente: a cópia adotada guarda kind, origem e nome do arquivo', async () => {
+    await moldaRecord(GLB_A)
+    const project = { assets: [modelAsset({ dataUrl: GLB_B })] }
+    const { projectChanged } = await reconcileDrawingsFromRestoredProject(project)
+    expect(projectChanged).toBe(true)
+    const relinked = project.assets[0]
+    if (!relinked) throw new Error('sem asset')
+    expect(relinked.libId).not.toBe('personal:m1')
+    expect(relinked.libOrigin).toBe('molda')
+    const copyId = personalIdOf(relinked)
+    expect(copyId).toBeTruthy()
+    expect(await getPersonalAsset(copyId ?? '')).toMatchObject({
+      kind: 'model3d',
+      origin: 'molda',
+      originalFileName: 'nave.glb',
+      dataUrl: GLB_B,
+    })
+    // O registro original fica intocado (os dois lados preservados).
+    expect((await getPersonalAsset('m1'))?.dataUrl).toBe(GLB_A)
+  })
+})

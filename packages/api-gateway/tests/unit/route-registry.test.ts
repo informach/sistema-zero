@@ -49,6 +49,7 @@ const registry = new RouteRegistry([
   }),
   r({ id: 'vacation', methods: ['PUT'], pathPattern: '/members/gamification/vacation' }),
   r({ id: 'league-me', methods: ['GET'], pathPattern: '/members/gamification/league/me' }),
+  r({ id: 'ranking', methods: ['GET'], pathPattern: '/members/gamification/ranking' }),
   r({
     id: 'members-profile-public',
     methods: ['GET'],
@@ -75,6 +76,11 @@ const registry = new RouteRegistry([
     pathPattern: '/members/admin/members/:userId',
   }),
   r({ id: 'members-purge', methods: ['DELETE'], pathPattern: '/members/admin/users/:id/data' }),
+  r({
+    id: 'ranking-admin',
+    methods: ['GET'],
+    pathPattern: '/members/admin/gamification/ranking',
+  }),
   r({ id: 'hub-admin-write', methods: ['POST', 'PATCH', 'DELETE'], pathPattern: '/hub/admin/*' }),
   r({ id: 'hub-purge', methods: ['DELETE'], pathPattern: '/hub/admin/users/:id/data' }),
   // Recados (professor↔aluno): rotas do aluno (literais + :id) e wildcards do admin.
@@ -335,6 +341,11 @@ describe('RouteRegistry', () => {
     expect(registry.resolve('GET', '/members/gamification/league/me', 'v1')?.route.id).toBe(
       'league-me',
     )
+    expect(registry.resolve('GET', '/members/gamification/ranking', 'v1')?.route.id).toBe('ranking')
+    expect(registry.resolve('GET', '/members/admin/gamification/ranking', 'v1')?.route.id).toBe(
+      'ranking-admin',
+    )
+    expect(registry.resolve('POST', '/members/gamification/ranking', 'v1')).toBeUndefined()
   })
 
   test('recados do aluno: literal unread-count vence :id; reply/read por sufixo', () => {

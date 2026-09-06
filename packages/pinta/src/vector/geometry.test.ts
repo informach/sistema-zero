@@ -306,15 +306,30 @@ describe('caixa do texto: várias linhas e âncora', () => {
     ...over,
   })
 
-  it('uma linha em Nunito usa o fator determinístico da família', () => {
+  it('uma linha em Nunito usa o fator determinístico da família e a altura das letras', () => {
     const b = shapeBounds(t({ text: 'abcd' }))
-    expect(b).toEqual({ x: 100, y: 30, width: 4 * 20 * 0.56, height: 20 * 1.2 })
+    expect(b.x).toBe(100)
+    expect(b.width).toBe(4 * 20 * 0.56)
+    // Topo = ascendente (0,78 em) acima da base, não um em inteiro; altura = asc + desc.
+    expect(b.y).toBeCloseTo(50 - 20 * 0.78, 6)
+    expect(b.height).toBeCloseTo(20 * (0.78 + 0.22), 6)
+    expect(b.y).toBeGreaterThan(50 - 20)
   })
 
-  it('a linha mais LARGA manda na largura e a altura conta as linhas', () => {
+  it('a linha mais LARGA manda na largura e a altura conta o entrelinha das seguintes', () => {
     const b = shapeBounds(t({ text: 'ab\nabcdef\nabc' }))
     expect(b.width).toBe(6 * 20 * 0.56)
-    expect(b.height).toBe(3 * 20 * 1.2)
+    expect(b.height).toBeCloseTo(20 * (0.78 + 0.22 + 2 * 1.2), 6)
+  })
+
+  it('boundsOverlap exige área em comum: encostar na borda não conta (é a régua do laço)', async () => {
+    const { boundsOverlap, boundsIntersect } = await import('./geometry')
+    const a = { x: 0, y: 0, width: 10, height: 10 }
+    const touching = { x: 10, y: 0, width: 10, height: 10 }
+    const crossing = { x: 9, y: 9, width: 10, height: 10 }
+    expect(boundsIntersect(a, touching)).toBe(true)
+    expect(boundsOverlap(a, touching)).toBe(false)
+    expect(boundsOverlap(a, crossing)).toBe(true)
   })
 
   it('a âncora desloca a caixa: esquerda, meio e direita', () => {

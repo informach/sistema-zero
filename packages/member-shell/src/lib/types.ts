@@ -783,6 +783,27 @@ export interface GamificationMeView {
   ranking?: { position: number; totalStudents: number }
 }
 
+/** Linha pública/redigida do ranking geral acumulado. */
+export interface RankingEntryView {
+  position: number
+  xp: number
+  isMe: boolean
+  firstName: string | null
+  photoUrl: string | null
+  levelSlug: StudentLevelSlug
+  /** Presente somente quando o perfil kids é público por opt-in dos pais. */
+  profileId?: string
+}
+
+export interface RankingLeaderboardView {
+  items: RankingEntryView[]
+  total: number
+  limit: number
+  offset: number
+  /** Própria linha, mesmo quando ela não faz parte da página atual. */
+  me: RankingEntryView | null
+}
+
 // ── Missões + proteção de sequência — espelham as views do members ──────────
 export interface MissionView {
   slug: string

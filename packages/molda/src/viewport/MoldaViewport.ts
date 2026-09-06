@@ -26,6 +26,7 @@
  * - Perda de contexto WebGL: `preventDefault` no lost, redesenha no restored.
  */
 import {
+  BackSide,
   BufferGeometry,
   DirectionalLight,
   DoubleSide,
@@ -39,6 +40,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
   PlaneGeometry,
   Raycaster,
@@ -62,6 +64,7 @@ import {
 } from '../model/atlas'
 import { rasterAtlas, rasterFaceRegion } from '../model/atlasRaster'
 import { buildPartGeometry } from '../model/geometry'
+import { selectionCenter } from '../model/meshSelection'
 import { updatePart } from '../model/partOps'
 import {
   faceTexelAt,
@@ -77,12 +80,24 @@ import {
   finishStroke,
   type PaintSettings,
   paintSegment,
+  rotateFaceSkin,
   sampleColor,
 } from '../paint/stroke'
 import type { EditorMode, TransformTool } from '../state/sessionStore'
 import { AtlasTexture } from './atlasTexture'
 import { perspectiveFitDistance } from './cameraFit'
-import type { MoldaViewportLike, ViewName, ViewportCallbacks, ViewportOptions } from './types'
+import {
+  MESH_PICK_TOLERANCE_MOUSE_PX,
+  MESH_PICK_TOLERANCE_TOUCH_PX,
+  MeshEditOverlay,
+} from './meshEditOverlay'
+import type {
+  MeshEditState,
+  MoldaViewportLike,
+  ViewName,
+  ViewportCallbacks,
+  ViewportOptions,
+} from './types'
 import { deg, geometryHash, rad, roundTo, VIEW_DIRECTIONS } from './viewportMath'
 import { ViewportThumbnail } from './viewportThumbnail'
 
@@ -90,6 +105,8 @@ interface PartEntry {
   mesh: Mesh
   geometryHash: string
   outline: LineSegments | null
+  /** "Ver arestas": o contorno da peça (arestas com dobra ≥ 30°). */
+  edges: LineSegments | null
   faceOfTriangle: FaceId[]
 }
 
@@ -159,6 +176,32 @@ export class MoldaViewport implements MoldaViewportLike {
   private dragStartPivot = new Vector3()
   private pointerDown: { x: number; y: number; onGizmo: boolean } | null = null
   private stroke: Stroke | null = null
+  // "Editar malha": o overlay é filho do mesh da peça; a alça de mover pega uma
+  // ÂNCORA no centro da seleção (a `TransformControls` só sabe mover um Object3D).
+  private meshEdit: MeshEditState | null = null
+  private readonly meshOverlay = new MeshEditOverlay()
+  private readonly meshAnchor = new Object3D()
+  private readonly meshDragStart = new Vector3()
+  private meshDragging = false
+  /** Seleção múltipla: as peças SOMADAS à principal; a alça vai para a âncora do grupo. */
+  private extraIds: string[] = []
+  private readonly groupAnchor = new Object3D()
+  private groupDragging = false
+  private readonly groupDragStart = new Vector3()
+  private groupStart = new Map<string, { from: Vec3; to: Vec3 }>()
+  /** "Ver arestas" em todas as peças. */
+  private edgesVisible = false
+  private readonly edgesMaterial = new LineBasicMaterial({
+    color: 0x1b2a41,
+    transparent: true,
+    opacity: 0.55,
+  })
+  /**
+   * O VERSO da peça em edição de malha, escuro: uma face virada aparece (e aparece
+   * errada, em vez de sumir) e um buraco não vira janela para dentro.
+   */
+  private readonly backMaterial = new MeshBasicMaterial({ color: 0x2f2f2f, side: BackSide })
+  private backMesh: Mesh | null = null
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -218,6 +261,8 @@ export class MoldaViewport implements MoldaViewportLike {
     this.gizmo.setRotationSnap(rad(15))
     this.gizmoHelper = this.gizmo.getHelper()
     this.scene.add(this.gizmoHelper)
+    this.scene.add(this.meshAnchor)
+    this.scene.add(this.groupAnchor)
     this.gizmo.addEventListener('dragging-changed', this.onDraggingChanged)
     this.gizmo.addEventListener('mouseDown', this.onGizmoMouseDown)
     this.gizmo.addEventListener('objectChange', this.onGizmoObjectChange)
@@ -318,9 +363,11 @@ export class MoldaViewport implements MoldaViewportLike {
       if (!entry) {
         entry = this.createEntry(part, source, layout, hash)
         this.entries.set(part.id, entry)
+        if (this.edgesVisible) this.addEdges(entry)
         if (part.id === this.selectedId || part.mirrorOf === this.selectedId) selectionDirty = true
       }
       this.syncTransform(entry, part)
+      entry.mesh.visible = !part.hidden
     }
     for (const [id, entry] of this.entries) {
       if (seen.has(id)) continue
@@ -330,6 +377,69 @@ export class MoldaViewport implements MoldaViewportLike {
     }
     this.model = model
     if (selectionDirty) this.applySelection()
+    // O mesh da peça em edição pode ter sido recriado (malha nova): o overlay segue.
+    this.syncMeshEdit()
+    this.requestFrame()
+  }
+
+  setMeshEdit(state: MeshEditState | null): void {
+    this.meshEdit = state
+    this.applySelection()
+    this.syncMeshEdit()
+    this.requestFrame()
+  }
+
+  /** Overlay preso ao mesh da peça em edição e a âncora da alça no centro da seleção. */
+  private syncMeshEdit(): void {
+    const state = this.meshEdit
+    const part = state ? this.model?.parts.find((item) => item.id === state.partId) : undefined
+    const entry = state ? this.entries.get(state.partId) : undefined
+    if (!state || !part?.mesh || !entry) {
+      this.meshOverlay.group.removeFromParent()
+      this.backMesh?.removeFromParent()
+      if (this.gizmo.object === this.meshAnchor) this.gizmo.detach()
+      return
+    }
+    if (this.meshOverlay.group.parent !== entry.mesh) entry.mesh.add(this.meshOverlay.group)
+    if (!this.backMesh) this.backMesh = new Mesh(entry.mesh.geometry, this.backMaterial)
+    this.backMesh.geometry = entry.mesh.geometry
+    if (this.backMesh.parent !== entry.mesh) entry.mesh.add(this.backMesh)
+    const pivot = partPivot(part)
+    this.meshOverlay.setMesh(part.mesh, pivot, state.vertices)
+    const center = selectionCenter(part.mesh, state.vertices)
+    if (!center || this.mode !== 'build' || this.meshDragging) {
+      if (!center && this.gizmo.object === this.meshAnchor) this.gizmo.detach()
+      return
+    }
+    entry.mesh.updateMatrixWorld(true)
+    const world = entry.mesh.localToWorld(
+      new Vector3(center[0] - pivot[0], center[1] - pivot[1], center[2] - pivot[2]),
+    )
+    this.meshAnchor.position.copy(world)
+    this.meshAnchor.quaternion.copy(entry.mesh.quaternion)
+    this.meshAnchor.updateMatrixWorld(true)
+    if (this.gizmo.object !== this.meshAnchor) this.gizmo.attach(this.meshAnchor)
+    // Na malha a alça é SÓ de mover (girar/escalar uma seleção fica para depois).
+    this.gizmo.setMode('translate')
+  }
+
+  setExtraSelected(ids: readonly string[]): void {
+    const next = ids.filter((id) => id !== this.selectedId)
+    if (next.length === this.extraIds.length && next.every((id, i) => id === this.extraIds[i])) {
+      return
+    }
+    this.extraIds = next
+    this.applySelection()
+    this.requestFrame()
+  }
+
+  setEdgesVisible(visible: boolean): void {
+    if (this.edgesVisible === visible) return
+    this.edgesVisible = visible
+    for (const entry of this.entries.values()) {
+      if (visible) this.addEdges(entry)
+      else this.removeEdges(entry)
+    }
     this.requestFrame()
   }
 
@@ -438,6 +548,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.gizmo.detach()
     this.gizmo.dispose()
     this.orbit.dispose()
+    this.meshOverlay.dispose()
     for (const entry of this.entries.values()) this.disposeEntry(entry)
     this.entries.clear()
     this.grid.geometry.dispose()
@@ -448,6 +559,8 @@ export class MoldaViewport implements MoldaViewportLike {
     this.material.dispose()
     this.outlineMaterial.dispose()
     this.twinOutlineMaterial.dispose()
+    this.edgesMaterial.dispose()
+    this.backMaterial.dispose()
     this.thumbnail.dispose()
     this.renderer.dispose()
   }
@@ -519,7 +632,13 @@ export class MoldaViewport implements MoldaViewportLike {
     const mesh = new Mesh(geometry, this.material)
     mesh.userData.partId = part.id
     this.scene.add(mesh)
-    return { mesh, geometryHash: hash, outline: null, faceOfTriangle: built.faceOfTriangle }
+    return {
+      mesh,
+      geometryHash: hash,
+      outline: null,
+      edges: null,
+      faceOfTriangle: built.faceOfTriangle,
+    }
   }
 
   private syncTransform(entry: PartEntry, part: MoldaPart): void {
@@ -539,6 +658,8 @@ export class MoldaViewport implements MoldaViewportLike {
 
   private disposeEntry(entry: PartEntry): void {
     this.removeOutline(entry)
+    this.removeEdges(entry)
+    if (this.backMesh?.parent === entry.mesh) this.backMesh.removeFromParent()
     if (this.gizmo.object === entry.mesh) this.gizmo.detach()
     this.scene.remove(entry.mesh)
     entry.mesh.geometry.dispose()
@@ -549,6 +670,25 @@ export class MoldaViewport implements MoldaViewportLike {
     entry.mesh.remove(entry.outline)
     entry.outline.geometry.dispose()
     entry.outline = null
+  }
+
+  private addEdges(entry: PartEntry): void {
+    this.removeEdges(entry)
+    const edges = new LineSegments(new EdgesGeometry(entry.mesh.geometry, 30), this.edgesMaterial)
+    edges.renderOrder = 1
+    entry.mesh.add(edges)
+    entry.edges = edges
+  }
+
+  private removeEdges(entry: PartEntry): void {
+    if (!entry.edges) return
+    entry.mesh.remove(entry.edges)
+    entry.edges.geometry.dispose()
+    entry.edges = null
+  }
+
+  private isLocked(id: string | null): boolean {
+    return Boolean(id) && Boolean(this.model?.parts.find((part) => part.id === id)?.locked)
   }
 
   private addOutline(entry: PartEntry, material: LineBasicMaterial): void {
@@ -562,14 +702,18 @@ export class MoldaViewport implements MoldaViewportLike {
   private applySelection(): void {
     for (const entry of this.entries.values()) this.removeOutline(entry)
     const selected = this.selectedId ? this.entries.get(this.selectedId) : undefined
-    if (!selected) {
+    if (!selected || !this.selectedId) {
       this.gizmo.detach()
       return
     }
-    this.addOutline(selected, this.outlineMaterial)
+    const group = [this.selectedId, ...this.extraIds]
+    for (const id of group) {
+      const entry = this.entries.get(id)
+      if (entry) this.addOutline(entry, this.outlineMaterial)
+    }
     if (this.model) {
       for (const part of this.model.parts) {
-        if (part.mirrorOf !== this.selectedId) continue
+        if (!part.mirrorOf || !group.includes(part.mirrorOf)) continue
         const twin = this.entries.get(part.id)
         if (twin) this.addOutline(twin, this.twinOutlineMaterial)
       }
@@ -579,6 +723,35 @@ export class MoldaViewport implements MoldaViewportLike {
       this.gizmo.detach()
       return
     }
+    // Editando a malha desta peça: a alça é da SELEÇÃO (âncora), não da peça.
+    if (this.meshEdit?.partId === this.selectedId) {
+      if (this.gizmo.object === selected.mesh) this.gizmo.detach()
+      return
+    }
+    // Peça trancada: sem alça (a lista destranca).
+    if (this.isLocked(this.selectedId)) {
+      this.gizmo.detach()
+      return
+    }
+    // Grupo: a alça no centro das peças escolhidas, só de mover.
+    if (this.extraIds.length > 0) {
+      const center = new Vector3()
+      let count = 0
+      for (const id of group) {
+        const entry = this.entries.get(id)
+        if (!entry) continue
+        center.add(entry.mesh.position)
+        count += 1
+      }
+      if (count > 0) center.divideScalar(count)
+      this.groupAnchor.position.copy(center)
+      this.groupAnchor.quaternion.identity()
+      this.groupAnchor.updateMatrixWorld(true)
+      if (this.gizmo.object !== this.groupAnchor) this.gizmo.attach(this.groupAnchor)
+      this.gizmo.setMode('translate')
+      return
+    }
+    if (this.gizmo.object === this.groupAnchor) this.gizmo.detach()
     this.gizmo.attach(selected.mesh)
     this.gizmo.setMode(GIZMO_MODE[this.tool])
   }
@@ -590,6 +763,23 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private readonly onGizmoMouseDown = (): void => {
+    if (this.meshEdit && this.gizmo.object === this.meshAnchor) {
+      this.meshDragging = true
+      this.meshDragStart.copy(this.meshAnchor.position)
+      this.callbacks.onMeshDragStart()
+      return
+    }
+    if (this.gizmo.object === this.groupAnchor && this.model && this.selectedId) {
+      this.groupDragging = true
+      this.groupDragStart.copy(this.groupAnchor.position)
+      this.groupStart = new Map()
+      for (const id of [this.selectedId, ...this.extraIds]) {
+        const item = this.model.parts.find((candidate) => candidate.id === id)
+        if (item && !item.locked) this.groupStart.set(id, { from: item.from, to: item.to })
+      }
+      this.callbacks.onDragStart(this.selectedId)
+      return
+    }
     const part = this.selectedPart()
     const entry = this.selectedId ? this.entries.get(this.selectedId) : undefined
     if (!part || !entry) return
@@ -600,6 +790,53 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private readonly onGizmoObjectChange = (): void => {
+    if (this.meshDragging && this.meshEdit) {
+      const entry = this.entries.get(this.meshEdit.partId)
+      if (!entry) return
+      // Delta em coordenadas da CAIXA: o espaço local do mesh é a caixa menos o
+      // pivô (só translação), então desfazer o giro da peça basta.
+      const start = entry.mesh.worldToLocal(this.meshDragStart.clone())
+      const now = entry.mesh.worldToLocal(this.meshAnchor.position.clone())
+      this.callbacks.onMeshDragMove([now.x - start.x, now.y - start.y, now.z - start.z])
+      this.requestFrame()
+      return
+    }
+    if (this.groupDragging) {
+      // O delta é UM só, encaixado e preso à grade pelo grupo inteiro; cada peça
+      // recebe a caixa ABSOLUTA de destino (o editor não acumula nada).
+      const delta = this.groupAnchor.position.clone().sub(this.groupDragStart)
+      const snapped: Vec3 = [
+        roundTo(delta.x, this.snap),
+        roundTo(delta.y, this.snap),
+        roundTo(delta.z, this.snap),
+      ]
+      const gridMin: Vec3 = [-MOLDA_LIMITS.gridHalf, 0, -MOLDA_LIMITS.gridHalf]
+      const gridMax: Vec3 = [MOLDA_LIMITS.gridHalf, MOLDA_LIMITS.gridHeight, MOLDA_LIMITS.gridHalf]
+      for (const box of this.groupStart.values()) {
+        for (let i = 0; i < 3; i += 1) {
+          const lo = (gridMin[i] as number) - (box.from[i] as number)
+          const hi = (gridMax[i] as number) - (box.to[i] as number)
+          snapped[i] = Math.min(Math.max(snapped[i] as number, lo), hi)
+        }
+      }
+      this.groupAnchor.position.set(
+        this.groupDragStart.x + snapped[0],
+        this.groupDragStart.y + snapped[1],
+        this.groupDragStart.z + snapped[2],
+      )
+      const parts = [...this.groupStart.entries()].map(([id, box]) => ({
+        id,
+        from: [
+          box.from[0] + snapped[0],
+          box.from[1] + snapped[1],
+          box.from[2] + snapped[2],
+        ] as Vec3,
+        to: [box.to[0] + snapped[0], box.to[1] + snapped[1], box.to[2] + snapped[2]] as Vec3,
+      }))
+      this.callbacks.onDragMove({ id: this.selectedId ?? '', parts })
+      this.requestFrame()
+      return
+    }
     const part = this.dragPart
     const entry = part ? this.entries.get(part.id) : undefined
     if (!part || !entry || !this.dragging) return
@@ -647,6 +884,23 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private readonly onGizmoMouseUp = (): void => {
+    if (this.meshDragging) {
+      this.meshDragging = false
+      this.callbacks.onMeshDragEnd()
+      // A âncora volta ao centro da seleção (os vértices encaixaram na grade).
+      this.syncMeshEdit()
+      this.requestFrame()
+      return
+    }
+    if (this.groupDragging) {
+      this.groupDragging = false
+      this.groupStart = new Map()
+      this.callbacks.onDragEnd(null)
+      // A âncora volta ao centro do grupo (as peças encaixaram na grade).
+      this.applySelection()
+      this.requestFrame()
+      return
+    }
     const part = this.dragPart
     const entry = part ? this.entries.get(part.id) : undefined
     this.dragging = false
@@ -696,7 +950,10 @@ export class MoldaViewport implements MoldaViewportLike {
     const ndc = this.ndcOf(event)
     if (!ndc) return null
     this.raycaster.setFromCamera(ndc, this.camera)
-    const meshes = [...this.entries.values()].map((entry) => entry.mesh)
+    // Escondida não existe para o toque; trancada deixa o toque passar (escolhe o que há atrás).
+    const meshes = [...this.entries.entries()]
+      .filter(([id, entry]) => entry.mesh.visible && !this.isLocked(id))
+      .map(([, entry]) => entry.mesh)
     return this.raycaster.intersectObjects(meshes, false)[0] ?? null
   }
 
@@ -704,7 +961,9 @@ export class MoldaViewport implements MoldaViewportLike {
     const ndc = this.ndcOf(event)
     if (!ndc) return null
     this.raycaster.setFromCamera(ndc, this.camera)
-    const surfaces = [...this.entries.values()].map((entry) => entry.mesh)
+    const surfaces = [...this.entries.values()]
+      .filter((entry) => entry.mesh.visible)
+      .map((entry) => entry.mesh)
     surfaces.push(this.floor)
     return this.raycaster.intersectObjects(surfaces, false)[0] ?? null
   }
@@ -738,7 +997,7 @@ export class MoldaViewport implements MoldaViewportLike {
     // O gesto é nosso: a órbita não vê este toque.
     event.stopImmediatePropagation()
     event.preventDefault()
-    this.callbacks.onSelect(texel.partId)
+    this.callbacks.onSelect(texel.partId, false)
     const mirror = this.mirrorTexelOf(model, hit)
     switch (this.paint.tool) {
       case 'picker':
@@ -750,6 +1009,14 @@ export class MoldaViewport implements MoldaViewportLike {
         if (mirror && mirror.partId !== texel.partId) {
           next = updatePart(next, mirror.partId, { color: this.paint.color })
         }
+        this.applyModel(next)
+        this.callbacks.onPaintEnd(next)
+        return
+      }
+      case 'rotateSkin': {
+        const next = rotateFaceSkin(model, texel.partId, texel.face)
+        if (next === model) return
+        this.callbacks.onPaintStart()
         this.applyModel(next)
         this.callbacks.onPaintEnd(next)
         return
@@ -827,6 +1094,34 @@ export class MoldaViewport implements MoldaViewportLike {
     this.pointerDown = null
     if (!down || down.onGizmo || event.button !== 0 || this.mode === 'paint') return
     if (Math.hypot(event.clientX - down.x, event.clientY - down.y) > CLICK_TOLERANCE_PX) return
+    if (this.meshEdit && !this.placementShape) {
+      // Editando a malha: o toque escolhe ponto/aresta/face DESTA peça; fora dela limpa.
+      const hit = this.intersect(event)
+      const partId = hit?.object.userData.partId as string | undefined
+      if (hit && partId === this.meshEdit.partId) {
+        const entry = this.entries.get(partId)
+        const face =
+          hit.faceIndex !== undefined && hit.faceIndex !== null
+            ? (entry?.faceOfTriangle[hit.faceIndex] ?? null)
+            : null
+        const tolerance =
+          event.pointerType === 'touch'
+            ? MESH_PICK_TOLERANCE_TOUCH_PX
+            : MESH_PICK_TOLERANCE_MOUSE_PX
+        const pick = this.meshOverlay.pick(
+          this.raycaster.ray,
+          this.camera,
+          tolerance,
+          this.canvas.clientHeight,
+          hit.distance,
+          face,
+        )
+        this.callbacks.onMeshPick(pick, event.shiftKey)
+      } else {
+        this.callbacks.onMeshPick(null, event.shiftKey)
+      }
+      return
+    }
     if (this.placementShape) {
       const hit = this.intersectSurface(event)
       if (!hit) return
@@ -847,13 +1142,13 @@ export class MoldaViewport implements MoldaViewportLike {
     }
     const hit = this.intersect(event)
     if (!hit) {
-      this.callbacks.onSelect(null)
+      this.callbacks.onSelect(null, event.shiftKey)
       return
     }
     const partId = hit.object.userData.partId as string | undefined
     if (!partId) return
     const part = this.model?.parts.find((item) => item.id === partId)
-    this.callbacks.onSelect(part?.mirrorOf ?? partId)
+    this.callbacks.onSelect(part?.mirrorOf ?? partId, event.shiftKey)
   }
 
   private readonly onContextMenu = (event: Event): void => {

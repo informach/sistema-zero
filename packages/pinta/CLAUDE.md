@@ -2462,6 +2462,47 @@ no Cancelar).
 O desenho desta rodada está em
 `docs/plans/2026-08-27-pinta-members-full-review-corrections-design.md`.
 
+## Arrastar no vetor: sem laço acidental e sem palco preso (06/09/2026)
+
+Relato dela: "seleciono a forma e arrasto, aí seleciona o texto também e, se quero arrastar de
+volta, trava". Quatro causas no `VectorStage`, todas corrigidas com teste:
+
+- ⭐⭐ **A faixa da seleção (`VectorSelectionBar`) nascia no MEIO do clique e empurrava o palco
+  54px** (ela estava no fluxo, só existia com seleção). O gesto de mover relia
+  `getBoundingClientRect()` a cada `pointermove`, então o 1º movimento ganhava um delta falso de
+  54px e a forma "teleportava" para longe do mouse; a criança pressionava onde a forma estava,
+  acertava o FUNDO e o arrasto virava LAÇO, que pegava o texto vizinho. Dois remédios, os dois
+  necessários: (1) **mover/redimensionar/girar medem o delta em coordenadas de TELA**
+  (`startClient` + `docPerPx` capturados no `pointerdown`, `gesturePoint()`), imunes a qualquer
+  salto de layout; (2) **a faixa SEMPRE ocupa o lugar dela** (`SelectionBarPlaceholder`: sem
+  seleção vira a dica "Toque numa forma…", na MESMA altura de 54px; com a ferramenta de pontos e
+  sem alvo, "Toque numa forma para mexer nos pontos dela."). Regra da casa, agora sem exceção:
+  nada que aparece e some com a seleção fica no fluxo do palco.
+- ⭐ **Gesto que nunca terminava = palco morto.** `endGesture` só rodava no `pointerup` do
+  `<svg>`: soltar FORA dele com o capture perdido deixava o `gestureRef` preso e todo `pointerdown`
+  seguinte era ignorado até recarregar. Agora `beginGesture()` (único caminho para abrir gesto)
+  captura o ponteiro E instala `addPointerDragListeners(document)` para o solto; o `<svg>` ouve
+  `onLostPointerCapture`; `endGesture` é idempotente e limpa os listeners; e um `pointerdown` com
+  gesto vivo cujo ponteiro já não está capturado FECHA o resto (`gestureStillActive`).
+  `safeSetPointerCapture` passou a devolver `boolean`.
+- **Laço guloso.** Com a Selecionar, o `pointerdown` no fundo agora faz `hitShapeAt` (folga 4px +
+  metade do contorno) ANTES de abrir o laço: forma sob o toque = MOVER (é o que salva o traço
+  vazado do pincel, que o navegador só acerta no fio); trancada continua atravessando. Caixa
+  degenerada é toque se `w < 2 || h < 2` (era `&&`: um risco fino era laço); o laço usa
+  `boundsOverlap` (área em comum, estrito) em vez do `boundsIntersect` (`<=`, que pegava a caixa
+  vizinha só tangenciando).
+- **Caixa do texto mais justa**: `VECTOR_FONT_FAMILY_INFO` ganhou `ascent`/`descent` por família
+  (0,78/0,22; caixa-alta 0,8/0,05) e `shapeBounds` do texto usa o topo em `y - ascent·fs` e a
+  altura `asc + desc + (linhas-1)·1,2` (era um em inteiro acima da base + 1,2 por linha).
+- **Alças só onde fazem sentido**: com a Selecionar e com as ferramentas de FORMA
+  (`SHAPE_TOOLS`: ajustar o que acabou de desenhar); pincel/caneta/texto/mão não mostram alças, e
+  `handleResizeDown`/`handleRotateDown` deixam o toque descer ao palco nesses casos.
+
+Testes: `vectorUi.test.tsx` §"arrastar formas" (o texto não entra; palco que muda de lugar no
+meio do gesto; arrasto que começa no fundo dentro da caixa move; solto no `document` fecha com um
+undo; risco fino é toque), `geometry.test.ts` (caixa do texto; `boundsOverlap`),
+`pickColor.test.ts` (traço vazado pela folga).
+
 ## Regras não-negociáveis
 
 1. **NUNCA `fetch('data:')`** — bloqueado pelo `connect-src` da CSP do kids. Conversão data

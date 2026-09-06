@@ -205,6 +205,24 @@ describe('fila e triagem', () => {
     expect(forbidden.status).toBe(400)
   })
 
+  it('PATCH não reabre um ticket automatizado por status explícito no mesmo corpo', async () => {
+    const { app, repos } = buildTestApp()
+    const ticket = makeTicket({ status: 'open', aiGeneration: 7 })
+    await repos.tickets.create(ticket)
+
+    const res = await request(app, 'PATCH', `/helpdesk/tickets/${ticket.id}`, {
+      body: { triage: 'system', status: 'open', version: 0 },
+    })
+
+    expect(res.status).toBe(200)
+    expect(await json(res)).toMatchObject({
+      triage: 'system',
+      status: 'closed',
+      aiGeneration: 8,
+      aiStatus: 'skipped',
+    })
+  })
+
   it('PATCH de triagem respeita o CAS de version (409)', async () => {
     const { app, repos } = buildTestApp()
     const ticket = makeTriagedTicket({ version: 3 })

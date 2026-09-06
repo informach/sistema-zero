@@ -121,9 +121,6 @@ export function triageEmail(input: TriageInput, rules: TriageRules): TriageVerdi
   if (headers['x-autoreply'] !== undefined) {
     return verdict('auto_reply', 'auto_reply:header', 'X-Autoreply')
   }
-  if (headers['x-auto-response-suppress'] !== undefined) {
-    return verdict('auto_reply', 'auto_reply:header', 'X-Auto-Response-Suppress')
-  }
   if (precedence === 'auto_reply') {
     return verdict('auto_reply', 'auto_reply:header', 'Precedence: auto_reply')
   }

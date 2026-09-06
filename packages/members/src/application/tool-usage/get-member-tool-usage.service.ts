@@ -15,6 +15,8 @@ export interface LearnerToolUsageView {
   pinta: { drawings: number; deliveries: number; lastActivityAt: string | null }
   /** Jogos vivos na nuvem + entregas de bloco `studio`; lastActivity = max dos dois. */
   estudio: { creations: number; deliveries: number; lastActivityAt: string | null }
+  /** Criações VIVAS do Molda na nuvem (modelos, texturas e céus). Sem bloco de aula → sem entregas. */
+  molda: { creations: number; lastActivityAt: string | null }
   /** Participação APROVADA no Clube. `null` = hub indisponível (não é "zero"). */
   clube: { posts: number; comments: number; lastActivityAt: string | null } | null
   /** Jogos publicados no Mural + jogadas. `null` = hub indisponível. */
@@ -39,15 +41,23 @@ export class GetMemberToolUsageService {
 
   async execute(userId: string, profileIds: string[] = []): Promise<MemberToolUsageView> {
     const learners = [...new Set([userId, ...profileIds])]
-    const [pensa, pintaCreations, studioCreations, pintaSubs, studioSubs, hubActivity] =
-      await Promise.all([
-        this.toolUsage.pensaUsageByUsers(learners),
-        this.toolUsage.creationsUsageByUsers(learners, 'pinta'),
-        this.toolUsage.creationsUsageByUsers(learners, 'studio'),
-        this.toolUsage.submissionsUsageByUsers(learners, 'pinta'),
-        this.toolUsage.submissionsUsageByUsers(learners, 'studio'),
-        this.hub.listActivityByAuthors(learners),
-      ])
+    const [
+      pensa,
+      pintaCreations,
+      studioCreations,
+      moldaCreations,
+      pintaSubs,
+      studioSubs,
+      hubActivity,
+    ] = await Promise.all([
+      this.toolUsage.pensaUsageByUsers(learners),
+      this.toolUsage.creationsUsageByUsers(learners, 'pinta'),
+      this.toolUsage.creationsUsageByUsers(learners, 'studio'),
+      this.toolUsage.creationsUsageByUsers(learners, 'molda'),
+      this.toolUsage.submissionsUsageByUsers(learners, 'pinta'),
+      this.toolUsage.submissionsUsageByUsers(learners, 'studio'),
+      this.hub.listActivityByAuthors(learners),
+    ])
     const hubBy = hubActivity ? new Map(hubActivity.map((a) => [a.authorId, a])) : null
 
     return {
@@ -55,6 +65,7 @@ export class GetMemberToolUsageService {
         const p = pensa.get(learnerId)
         const pinta = combineTool(pintaCreations.get(learnerId), pintaSubs.get(learnerId))
         const estudio = combineTool(studioCreations.get(learnerId), studioSubs.get(learnerId))
+        const molda = combineTool(moldaCreations.get(learnerId), undefined)
         const hub = hubBy?.get(learnerId) ?? null
         return {
           userId: learnerId,
@@ -69,6 +80,7 @@ export class GetMemberToolUsageService {
             deliveries: estudio.delivered,
             lastActivityAt: estudio.at,
           },
+          molda: { creations: molda.created, lastActivityAt: molda.at },
           // hub best-effort: null quando a FONTE caiu (hubBy null) OU o autor não
           // veio na resposta (o hub devolve TODO id pedido — ausência = defensivo).
           clube:

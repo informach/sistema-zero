@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import { createTextureAsset } from '../core/model'
+import { createPart, createTextureAsset, type FaceId } from '../core/model'
 import { resolvePaletteColors } from '../core/sanitize'
 import { exportTexturePng, textureToRgba } from '../export/texturePng'
+import { boxMesh } from '../model/mesh'
 import { faceSkinSize } from '../model/shapes'
 import { makeModel, makeTexture, paintedSkin } from '../testing/fixtures'
 import { decodePng } from '../testing/pngDecode'
@@ -14,6 +15,7 @@ import {
   paintTexture,
   removeTextureColor,
   sampleTexture,
+  updateTextureColor,
 } from './ops'
 
 describe('textura: pintura', () => {
@@ -67,6 +69,18 @@ describe('textura: pintura', () => {
     expect(removed && sampleTexture(removed, 0, 0)).toBe(0)
     expect(removed && 'extraColors' in removed).toBe(false)
     expect(removeTextureColor(asset, 3)).toBeNull()
+  })
+
+  test('updateTextureColor troca UMA extra no lugar; nunca duplica nem mexe nas fixas', () => {
+    const asset = makeTexture()
+    const added = addTextureColor(asset, '#123456')
+    if (!added) throw new Error('sem extra')
+    const updated = updateTextureColor(added.asset, 16, '#654321')
+    expect(updated.extraColors).toEqual(['#654321'])
+    expect(updateTextureColor(updated, 16, '#654321')).toBe(updated)
+    expect(updateTextureColor(updated, 16, '#ffffff')).toBe(updated)
+    expect(updateTextureColor(updated, 1, '#abcdef')).toBe(updated)
+    expect(updateTextureColor(updated, 17, '#abcdef')).toBe(updated)
   })
 })
 
@@ -180,5 +194,31 @@ describe('vestir a peça', () => {
 
     expect(applied.extraColors).toBeUndefined()
     expect(applied.parts[0]?.faces).toEqual({})
+  })
+})
+
+describe('vestir uma peça de malha', () => {
+  test('veste TODAS as faces da malha, cada pele no tamanho da face', () => {
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [2, 2, 2],
+      color: 2,
+      mesh: boxMesh([0, 0, 0], [2, 2, 2]),
+    })
+    const model = makeModel({ parts: [part] })
+    const dressed = applyTextureToPart(model, 'm', makeTexture(), 'tile')
+    const next = dressed.parts[0]
+    if (!next) throw new Error('part')
+    const keys = Object.keys(part.mesh?.faces ?? {}) as FaceId[]
+    expect(keys).toHaveLength(6)
+    for (const key of keys) {
+      const size = faceSkinSize(next, key, model.texelsPerUnit)
+      expect(next.faces[key]?.width).toBe(size?.width ?? -1)
+      expect(next.faces[key]?.height).toBe(size?.height ?? -1)
+      expect(next.faces[key]?.data.some((value) => value > 0)).toBe(true)
+    }
   })
 })

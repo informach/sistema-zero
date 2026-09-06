@@ -219,11 +219,49 @@ export function createCloudMirroredMoldaPersistence(options: {
     if (current) enqueue(current)
   }
 
-  /** Uma exclusão velha não vence uma edição remota: restaura a revisão corrente no mesmo id. */
-  async function restoreAfterStaleRemove(id: string): Promise<void> {
-    marks.clearTombstone(id)
-    const downloaded = await cloud.download(id)
-    if (!downloaded) return
+  /**
+   * A nuvem recusou o DELETE (409: a base enviada não é a revisão corrente). Decidido por
+   * REVISÃO, nunca por relógio (a régua do reconcile em `creations-sync.ts`): alguém EDITOU
+   * depois (revisão corrente MAIOR que a conhecida pela lápide) → uma exclusão velha não vence
+   * uma edição remota, a revisão corrente volta no mesmo id e a lápide só sai DEPOIS de gravar;
+   * senão a exclusão é NOSSA e só a base estava errada → reenvia UMA vez com a revisão
+   * autoritativa. ⚠️ Antes de 06/09 todo DELETE saía com base 0, caía aqui e a criação
+   * "voltava". Sem `currentRevision` (serviço antigo) a revisão vem do próprio download; nuvem
+   * sem o item = lápide enviada.
+   */
+  async function resolveStaleRemove(
+    id: string,
+    info: { currentRevision?: number | undefined; retried?: boolean },
+  ): Promise<void> {
+    const tombstone = marks.tombstone(id)
+    if (!tombstone) return
+    let current = info.currentRevision
+    let downloaded: Awaited<ReturnType<typeof cloud.download>> = null
+    if (current === undefined) {
+      downloaded = await cloud.download(id)
+      if (!downloaded) {
+        marks.setTombstone(id, { ...tombstone, sent: true })
+        return
+      }
+      current = downloaded.summary.revision
+    }
+    const editedElsewhere = typeof tombstone.revision === 'number' && current > tombstone.revision
+    if (!editedElsewhere && !info.retried) {
+      marks.setTombstone(id, { ...tombstone, revision: current })
+      cloud.enqueueRemove(
+        id,
+        current,
+        ({ revision }) => marks.setTombstone(id, { at: tombstone.at, sent: true, revision }),
+        ({ itemId, currentRevision }) =>
+          resolveStaleRemove(itemId, { currentRevision, retried: true }),
+      )
+      return
+    }
+    downloaded ??= await cloud.download(id)
+    if (!downloaded) {
+      marks.setTombstone(id, { ...tombstone, sent: true })
+      return
+    }
     const remote = assetFromCloudJson(downloaded.json, id)
     if (!remote) return
     const taken = new Set(
@@ -234,11 +272,17 @@ export function createCloudMirroredMoldaPersistence(options: {
       : remote
     await local.saveMany([restored])
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    marks.clearTombstone(id)
     emitChangedSoon([id])
+    console.warn('[molda-nuvem] exclusão desfeita: a criação mudou em outro aparelho', {
+      itemId: id,
+    })
   }
 
   function enqueueRemove(id: string): void {
     const at = now()
+    // A revisão que ESTE aparelho conhece é a base do DELETE (a nuvem recusa base vencida).
+    // Lida ANTES de a marca ser apagada: era o defeito de 06/09 (base 0 → 409 → restauro).
     const revision = marks.revision(id) ?? null
     marks.setTombstone(id, { at, sent: false, revision })
     cloud.enqueueRemove(
@@ -246,7 +290,7 @@ export function createCloudMirroredMoldaPersistence(options: {
       revision ?? 0,
       ({ revision: confirmedRevision }) =>
         marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
-      ({ itemId }) => restoreAfterStaleRemove(itemId),
+      ({ itemId, currentRevision }) => resolveStaleRemove(itemId, { currentRevision }),
     )
   }
 
@@ -378,16 +422,17 @@ export function createCloudMirroredMoldaPersistence(options: {
         return true
       },
       push: (item) => enqueue(item),
-      remove: (itemId) => {
-        const tombstone = marks.tombstone(itemId)
+      remove: (itemId, cloudRevision) => {
+        // A base é a revisão que a nuvem acabou de listar: a única que o servidor aceita.
         cloud.enqueueRemove(
           itemId,
-          tombstone?.revision ?? marks.revision(itemId) ?? 0,
+          cloudRevision,
           ({ revision }) => {
             const tombstone = marks.tombstone(itemId)
             if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
           },
-          ({ itemId: staleId }) => restoreAfterStaleRemove(staleId),
+          ({ itemId: staleId, currentRevision }) =>
+            resolveStaleRemove(staleId, { currentRevision }),
         )
       },
     })
@@ -453,14 +498,15 @@ export function createCloudMirroredMoldaPersistence(options: {
     },
     async remove(id) {
       await local.remove(id)
-      marks.delete(id)
+      // A lápide (com a revisão conhecida) ANTES de apagar a marca.
       enqueueRemove(id)
+      marks.delete(id)
     },
     async removeMany(ids) {
       await local.removeMany(ids)
       for (const id of ids) {
-        marks.delete(id)
         enqueueRemove(id)
+        marks.delete(id)
       }
     },
     subscribe(listener) {

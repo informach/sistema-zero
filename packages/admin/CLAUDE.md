@@ -110,9 +110,12 @@ chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CoursePro
 `lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
 não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
 (`components/members/usage-cards.tsx`, PUROS — a futura ficha da criança reusa): Pensa
-(planos/lançamentos), Pinta (desenhos na nuvem/entregas), Estúdio (jogos na nuvem/entregas),
-Clube (conversas/comentários) e Mural (jogos publicados/jogadas); Clube/Mural `null` = hub
-indisponível → "Indisponível agora" (≠ zeros). Quais cartões aparecem = `ownedToolCards` em
+(planos/lançamentos), Pinta (desenhos na nuvem/entregas), **Molda (criações na nuvem: modelos,
+texturas e céus; sem entregas porque não há bloco de aula — 06/09/2026, sku `molda`, entre Pinta e
+Estúdio na ordem da jornada; `LearnerToolUsageView.molda` é OPCIONAL: members antigo sem o campo
+→ "Indisponível agora", testado em `tests/usage-cards.test.tsx`)**, Estúdio (jogos na
+nuvem/entregas), Clube (conversas/comentários) e Mural (jogos publicados/jogadas); Clube/Mural
+`null` = hub indisponível → "Indisponível agora" (≠ zeros). Quais cartões aparecem = `ownedToolCards` em
 `lib/tool-usage.ts` (matrículas `productKind` tool/community da família, identidade pelo `sku`
 do snapshot, dedupe + ordem da jornada; puro/testado em `tests/tool-usage.test.ts` junto do
 `relativeDayLabel` de `lib/format.ts` — dia civil SP). Dados: BFF novo

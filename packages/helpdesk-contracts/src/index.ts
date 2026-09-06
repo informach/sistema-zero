@@ -85,7 +85,7 @@ export const TRIAGE_HEADER_RULES: { kind: TriageKind; rule: string; description:
   {
     kind: 'auto_reply',
     rule: 'auto_reply:header',
-    description: 'X-Autoreply, X-Auto-Response-Suppress ou Precedence: auto_reply.',
+    description: 'X-Autoreply ou Precedence: auto_reply.',
   },
   {
     kind: 'system',

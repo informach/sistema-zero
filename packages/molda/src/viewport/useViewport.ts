@@ -33,7 +33,7 @@ export function useViewport(
       instance = createMoldaViewport(
         canvas,
         {
-          onSelect: (id) => callbacksRef.current.onSelect(id),
+          onSelect: (id, additive) => callbacksRef.current.onSelect(id, additive),
           onPlace: (shape, point, normal, nearId) =>
             callbacksRef.current.onPlace(shape, point, normal, nearId),
           onDragStart: (id) => callbacksRef.current.onDragStart(id),
@@ -43,6 +43,10 @@ export function useViewport(
           onPaintEnd: (model) => callbacksRef.current.onPaintEnd(model),
           onPickColor: (index) => callbacksRef.current.onPickColor(index),
           onAtlas: (info) => callbacksRef.current.onAtlas(info),
+          onMeshPick: (pick, additive) => callbacksRef.current.onMeshPick(pick, additive),
+          onMeshDragStart: () => callbacksRef.current.onMeshDragStart(),
+          onMeshDragMove: (delta) => callbacksRef.current.onMeshDragMove(delta),
+          onMeshDragEnd: () => callbacksRef.current.onMeshDragEnd(),
         },
         optionsRef.current,
       )

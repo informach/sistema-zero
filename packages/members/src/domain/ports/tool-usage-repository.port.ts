@@ -3,6 +3,8 @@
  * "última atividade" em LOTE (GROUP BY user), nunca N+1. `userId` é o aprendiz
  * (a conta no adulto; o PERFIL da criança no kids), como em todo dado de uso.
  */
+import type { CreationTool } from '../creations/creation'
+
 export interface LearnerPensaUsage {
   /** Projetos do Pensa (qualquer status — criou é criou). */
   projects: number
@@ -28,9 +30,10 @@ export interface LearnerDeliveriesUsage {
 
 export interface ToolUsageRepository {
   pensaUsageByUsers(userIds: string[]): Promise<Map<string, LearnerPensaUsage>>
+  /** Qualquer ferramenta da nuvem (`CreationTool`, a lista única do domínio: studio, pinta, molda). */
   creationsUsageByUsers(
     userIds: string[],
-    tool: 'studio' | 'pinta',
+    tool: CreationTool,
   ): Promise<Map<string, LearnerCreationsUsage>>
   submissionsUsageByUsers(
     userIds: string[],

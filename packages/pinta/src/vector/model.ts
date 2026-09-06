@@ -132,14 +132,21 @@ export interface VectorFontFamilyInfo {
   label: string
   /** Aproximação de largura para bounds/hit testing sem depender do DOM. */
   widthFactor: number
+  /**
+   * Quanto as letras sobem ACIMA da linha de base (em `em`): o topo da caixa do
+   * texto. Um `em` inteiro superestimava e o laço "pegava" o texto sem encostar.
+   */
+  ascent: number
+  /** Quanto descem ABAIXO da linha de base (em `em`); fontes só de caixa-alta quase nada. */
+  descent: number
 }
 
 export const VECTOR_FONT_FAMILY_INFO: Record<VectorFontFamily, VectorFontFamilyInfo> = {
-  'baloo-2': { label: 'Baloo 2', widthFactor: 0.58 },
-  nunito: { label: 'Nunito', widthFactor: 0.56 },
-  'press-start-2p': { label: 'Press Start 2P', widthFactor: 0.8 },
-  bungee: { label: 'Bungee', widthFactor: 0.64 },
-  fredoka: { label: 'Fredoka One', widthFactor: 0.6 },
+  'baloo-2': { label: 'Baloo 2', widthFactor: 0.58, ascent: 0.78, descent: 0.22 },
+  nunito: { label: 'Nunito', widthFactor: 0.56, ascent: 0.78, descent: 0.22 },
+  'press-start-2p': { label: 'Press Start 2P', widthFactor: 0.8, ascent: 0.8, descent: 0.05 },
+  bungee: { label: 'Bungee', widthFactor: 0.64, ascent: 0.8, descent: 0.05 },
+  fredoka: { label: 'Fredoka One', widthFactor: 0.6, ascent: 0.78, descent: 0.22 },
 }
 
 export function isVectorFontFamily(value: unknown): value is VectorFontFamily {

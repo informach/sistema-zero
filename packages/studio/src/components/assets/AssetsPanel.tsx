@@ -4,10 +4,12 @@ import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import { ASSET_LIBRARY, type LibraryAsset } from '../../asset-library/catalog'
 import {
+  getPersonalAsset,
   getPersonalAssetsNamespace,
   listPersonalAssets,
   type PersonalAsset,
   removePersonalAsset,
+  savePersonalAsset,
 } from '../../asset-library/personal'
 import {
   personalIdOf,
@@ -15,11 +17,14 @@ import {
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useStudioEditCreation } from '../../studio/edit-creation'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { uniqueAssetName } from './assetNames'
+import { type CreationOrigin, creationOriginOf, type EditTarget } from './creationOrigin'
+import { EditInOriginButton } from './EditInOriginButton'
 import { projectHas3DConsumer } from './has3DConsumer'
 import {
   fileTo3DAssetDataUrl,
@@ -67,6 +72,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   const addAsset = useProjectStore((s) => s.addAsset)
   const removeAsset = useProjectStore((s) => s.removeAsset)
   const renameAsset = useProjectStore((s) => s.renameAsset)
+  const setAssetLibraryOrigin = useProjectStore((s) => s.setAssetLibraryOrigin)
 
   const fileInputId = useId()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -95,6 +101,10 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   // ao ABRIR o painel (a criança pode ter desenhado no Pinta em outra aba).
   const personalNamespace = getPersonalAssetsNamespace()
   const [personal, setPersonal] = useState<PersonalAsset[]>([])
+  const [personalReady, setPersonalReady] = useState(!personalNamespace)
+  const [catalogOrigins, setCatalogOrigins] = useState<Map<string, CreationOrigin | null>>(
+    () => new Map(),
+  )
   const storeApi = useProjectStoreApi()
   const onEditDrawing = useStudioEditDrawing()
   // "Trazer do Pinta" (fluxo pull): com o adapter presente, o botão abre a
@@ -109,9 +119,17 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
   // re-listagem abaixo serve aos dois.
   const moldaLibrary = useStudioMoldaLibrary()
   const [moldaOpen, setMoldaOpen] = useState(false)
+  // "Editar a criação no Molda" (o gêmeo do `onEditDrawing`).
+  const onEditCreation = useStudioEditCreation()
   const [personalTick, setPersonalTick] = useState(0)
   useEffect(() => {
-    if (!open || !personalNamespace) return
+    if (!open) return
+    if (!personalNamespace) {
+      setPersonal([])
+      setPersonalReady(true)
+      return
+    }
+    setPersonalReady(false)
     // `personalTick` re-dispara a listagem após um import da modal do Pinta.
     void personalTick
     let cancelled = false
@@ -120,15 +138,24 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     // portão da sincronia deixa isso barato quando nada mudou.
     const refresh = () => {
       void syncDrawingsIntoProjects(storeApi)
-        .then(() => listPersonalAssets())
+        .then(() => listPersonalAssets({ namespace: personalNamespace }))
         .then((assets) => {
           if (cancelled) return
           setPersonal(assets)
+          setPersonalReady(true)
           // A troca é silenciosa; a RECUSA não pode ser (o jogo ficaria com a
           // arte velha sem ninguém saber). Inclui as falhas da sincronia em
           // segundo plano, que aconteceram com o painel fechado.
           const failures = takeDrawingSyncFailures()
           if (failures.length > 0) setError(failures.join(' '))
+        })
+        .catch((cause: unknown) => {
+          // Biblioteca indisponível (IndexedDB bloqueado, quota): mantém a lista que
+          // tinha e loga. Sem isto a rejeição ficava muda e `personal` vazio parecia
+          // "nenhum desenho".
+          if (cancelled) return
+          setPersonalReady(true)
+          console.warn('[estudio] biblioteca pessoal indisponível', cause)
         })
     }
     refresh()
@@ -151,11 +178,122 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
     () => personal.filter((d) => d.kind === 'image' && d.origin !== 'molda'),
     [personal],
   )
-  /** Desenhos que ainda existem no Pinta — quem pode abrir o editor de lá. */
-  const editableDrawingIds = useMemo(
-    () => (onEditDrawing ? new Set(personalImages.map((d) => d.id)) : null),
-    [personalImages, onEditDrawing],
-  )
+  const personalById = useMemo(() => new Map(personal.map((d) => [d.id, d])), [personal])
+
+  // Migração preguiçosa dos projetos anteriores a `libOrigin`: consulta as duas
+  // galerias autoritativas. Exatamente um catálogo reconhecer o id resolve a
+  // origem; nenhum ou ambos reconhecê-lo mantém a imagem ambígua.
+  useEffect(() => {
+    if (!open || !personalReady) return
+    const unresolved = assets
+      .filter(
+        (asset) =>
+          asset.kind === 'image' &&
+          asset.libOrigin === undefined &&
+          personalIdOf(asset) !== null &&
+          !personalById.has(personalIdOf(asset) ?? ''),
+      )
+      .map((asset) => personalIdOf(asset))
+      .filter((id): id is string => id !== null)
+    const ids = [...new Set(unresolved)]
+    if (ids.length === 0) {
+      setCatalogOrigins((current) => (current.size === 0 ? current : new Map()))
+      return
+    }
+
+    let cancelled = false
+    void Promise.all([
+      pintaLibrary ? pintaLibrary.list().catch(() => null) : Promise.resolve(null),
+      moldaLibrary ? moldaLibrary.list().catch(() => null) : Promise.resolve(null),
+    ]).then(([pintaItems, moldaItems]) => {
+      if (cancelled) return
+      const pintaIds = new Set(pintaItems?.map((item) => item.id) ?? [])
+      const moldaIds = new Set(moldaItems?.map((item) => item.id) ?? [])
+      setCatalogOrigins(
+        new Map(
+          ids.map((id) => {
+            const inPinta = pintaIds.has(id)
+            const inMolda = moldaIds.has(id)
+            const origin: CreationOrigin | null =
+              inPinta === inMolda ? null : inPinta ? 'pinta' : 'molda'
+            return [id, origin]
+          }),
+        ),
+      )
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [assets, moldaLibrary, open, personalById, personalReady, pintaLibrary])
+
+  // Assim que uma evidência resolve o legado, grava no próprio projeto. A próxima
+  // abertura (inclusive em outro aparelho) já não depende da biblioteca local.
+  useEffect(() => {
+    if (!open || !personalReady) return
+    for (const asset of assets) {
+      if (asset.libOrigin !== undefined) continue
+      const id = personalIdOf(asset)
+      if (!id) continue
+      const origin = creationOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
+      if (!origin) continue
+      const originError = setAssetLibraryOrigin(asset.id, origin)
+      if (originError) setError(originError)
+    }
+  }, [assets, catalogOrigins, open, personalById, personalReady, setAssetLibraryOrigin])
+
+  /**
+   * O "✏️ Editar" de um asset do projeto. NÃO exige o registro na biblioteca pessoal:
+   * ela é LOCAL por aparelho e o projeto pode ter descido da nuvem só com o `libId`
+   * (o clique repara, ver `openInOriginApp`). Só exige o callback do host para a
+   * origem certa: a textura do Molda abre o Molda, nunca o Pinta.
+   */
+  const editTargetOf = (asset: ProjectAsset): EditTarget | null => {
+    const id = personalIdOf(asset)
+    if (!id) return null
+    const origin = creationOriginOf(asset, personalById.get(id), catalogOrigins.get(id))
+    if (!origin) return null
+    const open = origin === 'pinta' ? onEditDrawing : onEditCreation
+    return open ? { id, origin, open } : null
+  }
+
+  const openInOriginApp = async (asset: ProjectAsset, target: EditTarget) => {
+    if (asset.kind === 'audio') return
+    setError(null)
+    // Reparo: sem o registro pessoal, a VOLTA (salvar no app regrava a biblioteca)
+    // esbarraria na guarda `getPersonalAsset` do host e o jogo nunca se atualizaria.
+    // Regrava a partir dos bytes que o projeto tem. Sem o elo local, abrir o app
+    // produziria uma edição que não voltaria ao jogo; por isso a falha bloqueia.
+    try {
+      if (!(await getPersonalAsset(target.id, { namespace: personalNamespace }))) {
+        const result = await savePersonalAsset(
+          {
+            id: target.id,
+            name: asset.name,
+            kind: asset.kind,
+            origin: target.origin,
+            dataUrl: asset.dataUrl,
+            originalFileName: asset.originalFileName,
+            width: asset.width,
+            height: asset.height,
+            sprite: asset.sprite,
+            tileset: asset.tileset,
+            tilemap: asset.tilemap,
+            updatedAt: asset.libRevision,
+          },
+          { namespace: personalNamespace },
+        )
+        if (result.ok) setPersonalTick((tick) => tick + 1)
+        else {
+          setError(result.error ?? 'Não deu para guardar esta criação na biblioteca.')
+          return
+        }
+      }
+    } catch {
+      setError('Não consegui preparar esta criação para edição. Tente novamente.')
+      return
+    }
+    target.open(target.id)
+  }
 
   const addFromPersonal = (drawing: PersonalAsset) => {
     setError(null)
@@ -167,6 +305,7 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
       height: drawing.height,
       source: 'library',
       libId: `personal:${drawing.id}`,
+      libOrigin: drawing.origin ?? 'pinta',
       libRevision: drawing.updatedAt,
       // Leva as animações/tiles/mapa do Pinta ao projeto → seletor por nome e
       // o bloco "Criar mapa do meu desenho" funcionam.
@@ -443,12 +582,15 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
             ) : (
               <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {images.map((asset) => {
-                  // O desenho de origem no Pinta, quando esta imagem veio de
-                  // "Meus desenhos" E o desenho ainda existe lá (apagado no
-                  // Pinta → sem botão, em vez de abrir um editor vazio).
-                  const drawingId = personalIdOf(asset)
-                  const editableId =
-                    drawingId && editableDrawingIds?.has(drawingId) ? drawingId : null
+                  // Quem edita esta imagem: o Pinta (desenho) ou o Molda (textura).
+                  const editTarget = editTargetOf(asset)
+                  const personalId = personalIdOf(asset)
+                  const unresolvedLegacyOrigin =
+                    asset.libOrigin === undefined &&
+                    personalId !== null &&
+                    !personalById.has(personalId) &&
+                    catalogOrigins.has(personalId) &&
+                    catalogOrigins.get(personalId) === null
                   return (
                     <li
                       key={asset.id}
@@ -501,15 +643,17 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                           >
                             🗺️ fatiar
                           </button>
-                          {editableId && onEditDrawing ? (
-                            <button
-                              type="button"
-                              title="Abrir este desenho no Pinta (ele se atualiza aqui sozinho)"
-                              className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                              onClick={() => onEditDrawing(editableId)}
-                            >
-                              ✏️ editar desenho
-                            </button>
+                          {editTarget ? (
+                            <EditInOriginButton
+                              assetName={asset.name}
+                              origin={editTarget.origin}
+                              onClick={() => void openInOriginApp(asset, editTarget)}
+                            />
+                          ) : null}
+                          {unresolvedLegacyOrigin ? (
+                            <span className="text-[10px] text-amber-400">
+                              Origem desconhecida; importe novamente pelo Pinta ou Molda.
+                            </span>
                           ) : null}
                           <button
                             type="button"
@@ -621,6 +765,16 @@ export function AssetsPanel({ open, onClose, allowUpload = true }: AssetsPanelPr
                     >
                       {asset.originalFileName}
                     </span>
+                    {(() => {
+                      const editTarget = editTargetOf(asset)
+                      return editTarget ? (
+                        <EditInOriginButton
+                          assetName={asset.name}
+                          origin={editTarget.origin}
+                          onClick={() => void openInOriginApp(asset, editTarget)}
+                        />
+                      ) : null
+                    })()}
                     <button
                       type="button"
                       className="text-xs text-red-400 hover:underline"

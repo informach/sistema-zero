@@ -7,7 +7,16 @@
  *
  * ⚠️ Toda migração de formato mora AQUI (lazy, no load), nunca em massa.
  */
-import { FACES_BY_SHAPE, faceSkinSize } from '../model/shapes'
+import { partTriangleCount } from '../model/geometry'
+import {
+  isMeshFaceKey,
+  isMeshVertexKey,
+  meshBox,
+  normalizeMesh,
+  roundMesh,
+  translateMesh,
+} from '../model/mesh'
+import { faceSkinSize, partFaces } from '../model/shapes'
 import { clampSkinIndices, isSkinBlank, resampleSkin } from '../model/skinOps'
 import { bakeTwins, syncTwins } from '../model/twins'
 import { DEFAULT_SKY_PRESET, sanitizeSkyParams, skyPreset } from '../sky/params'
@@ -22,6 +31,7 @@ import {
   type MoldaAssetBase,
   type MoldaAssetPaletteId,
   type MoldaCustomPalette,
+  type MoldaMesh,
   type MoldaModelAsset,
   type MoldaPaletteFields,
   type MoldaPart,
@@ -251,6 +261,66 @@ function clampOrigin(raw: Vec3 | null, from: Vec3, to: Vec3): Vec3 | undefined {
   ]
 }
 
+/**
+ * A malha vinda de fora: vértices finitos (na precisão do disco), faces de 3 ou 4
+ * chaves que existem, chaves no padrão; a face quebrada cai sem derrubar a malha e
+ * os tetos por peça valem. `null` sem face nenhuma.
+ */
+export function sanitizeMesh(raw: unknown): MoldaMesh | null {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  if (!r.vertices || typeof r.vertices !== 'object' || !r.faces || typeof r.faces !== 'object') {
+    return null
+  }
+  const vertices: Record<string, Vec3> = {}
+  let vertexCount = 0
+  for (const [key, value] of Object.entries(r.vertices as Record<string, unknown>)) {
+    if (vertexCount >= MOLDA_LIMITS.maxMeshVertices) break
+    if (!isMeshVertexKey(key)) continue
+    const v = vec3(value)
+    if (!v) continue
+    vertices[key] = v
+    vertexCount += 1
+  }
+  const faces: MoldaMesh['faces'] = {}
+  let faceCount = 0
+  for (const [key, value] of Object.entries(r.faces as Record<string, unknown>)) {
+    if (faceCount >= MOLDA_LIMITS.maxMeshFaces) break
+    if (!isMeshFaceKey(key) || !value || typeof value !== 'object') continue
+    const cycle = (value as { v?: unknown }).v
+    if (!Array.isArray(cycle) || cycle.length < 3 || cycle.length > 4) continue
+    if (!cycle.every((k) => typeof k === 'string' && k in vertices)) continue
+    faces[key] = { v: cycle as string[] }
+    faceCount += 1
+  }
+  const mesh = normalizeMesh(roundMesh({ vertices, faces }))
+  return Object.keys(mesh.faces).length > 0 ? mesh : null
+}
+
+/**
+ * Cabe na grade? A malha é EMPURRADA para dentro quando dá (como a caixa em
+ * `normalizeBox`); maior que a grade ou que `maxPartSize` num eixo, cai.
+ */
+function fitMeshToGrid(mesh: MoldaMesh): { mesh: MoldaMesh; from: Vec3; to: Vec3 } | null {
+  const box = meshBox(mesh)
+  if (!box) return null
+  const shift: Vec3 = [0, 0, 0]
+  for (let i = 0; i < 3; i += 1) {
+    const size = (box.to[i] as number) - (box.from[i] as number)
+    const min = GRID_MIN[i] as number
+    const max = GRID_MAX[i] as number
+    if (size > MOLDA_LIMITS.maxPartSize || size > max - min) return null
+    if ((box.to[i] as number) > max) shift[i] = max - (box.to[i] as number)
+    if ((box.from[i] as number) + (shift[i] as number) < min) {
+      shift[i] = min - (box.from[i] as number)
+    }
+  }
+  const moved = shift.some((value) => value !== 0) ? translateMesh(mesh, shift) : mesh
+  const fitted = meshBox(moved)
+  if (!fitted) return null
+  return { mesh: moved, from: fitted.from, to: fitted.to }
+}
+
 function sanitizePart(
   raw: unknown,
   snap: number,
@@ -262,10 +332,22 @@ function sanitizePart(
   const r = raw as Record<string, unknown>
   if (typeof r.id !== 'string' || !ID_PATTERN.test(r.id)) return null
   if (!isShapeId(r.shape)) return null
-  const from = vec3(r.from)
-  const to = vec3(r.to)
-  if (!from || !to) return null
-  const box = normalizeBox(from, to, snap)
+  let box: { from: Vec3; to: Vec3 }
+  let mesh: MoldaMesh | undefined
+  if (r.shape === 'mesh') {
+    // `from`/`to` são derivados da malha: a caixa gravada é ignorada de propósito.
+    const sanitized = sanitizeMesh(r.mesh)
+    if (!sanitized) return null
+    const fitted = fitMeshToGrid(sanitized)
+    if (!fitted) return null
+    mesh = fitted.mesh
+    box = { from: fitted.from, to: fitted.to }
+  } else {
+    const from = vec3(r.from)
+    const to = vec3(r.to)
+    if (!from || !to) return null
+    box = normalizeBox(from, to, snap)
+  }
   const origin = clampOrigin(vec3(r.origin), box.from, box.to)
   const color =
     typeof r.color === 'number' &&
@@ -286,12 +368,15 @@ function sanitizePart(
     faces: {},
   }
   if (origin) part.origin = origin
+  if (mesh) part.mesh = mesh
+  if (r.locked === true) part.locked = true
+  if (r.hidden === true) part.hidden = true
   if (typeof r.mirrorOf === 'string' && ID_PATTERN.test(r.mirrorOf) && r.mirrorOf !== r.id) {
     part.mirrorOf = r.mirrorOf
   }
   const rawFaces =
     r.faces && typeof r.faces === 'object' ? (r.faces as Record<string, unknown>) : {}
-  for (const face of FACES_BY_SHAPE[part.shape]) {
+  for (const face of partFaces(part)) {
     if (!(face in rawFaces)) continue
     let skin = sanitizeSkin(rawFaces[face])
     if (!skin) continue
@@ -314,10 +399,16 @@ function sanitizeModel(raw: Record<string, unknown>, base: MoldaAssetBase): Mold
   const seen = new Set<string>()
   const parts: MoldaPart[] = []
   const rawParts = Array.isArray(raw.parts) ? raw.parts : []
+  let triangles = 0
   for (const rawPart of rawParts) {
     if (parts.length >= MOLDA_LIMITS.maxParts) break
     const part = sanitizePart(rawPart, snap, texelsPerUnit, colors, `peca ${parts.length + 1}`)
     if (!part || seen.has(part.id)) continue
+    // Orçamento de TRIÂNGULOS do modelo (a malha é quem pode estourar): a peça que
+    // passa do teto cai, as anteriores ficam.
+    const count = partTriangleCount(part)
+    if (triangles + count > MOLDA_LIMITS.maxTriangles) continue
+    triangles += count
     seen.add(part.id)
     parts.push(part)
   }

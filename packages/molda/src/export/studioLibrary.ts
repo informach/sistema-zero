@@ -3,13 +3,14 @@
  * Zero React: o host kids importa este módulo dinamicamente, nunca a raiz.
  *
  * - `listGalleryForStudio()`: resumos + miniatura.
- * - `exportAssetForStudio(id)`: o payload da ponte "Trazer do Molda" já
+ * - `exportAssetForStudio(id)` / `exportLoadedAssetForStudio(asset)`: o payload da
+ *   ponte "Trazer do Molda" (e da volta dela, ao salvar no editor) já
  *   validado pelos tetos do Estúdio (`isValidAssetDataUrl` de lá: MIME, extensão
  *   e assinatura): modelo (`.glb`, `model3d`), céu (`.hdr`, `environment3d`)
  *   e textura (`.png`, `image`).
  */
 import { assetBytes } from '../core/bytes'
-import type { MoldaAssetKind } from '../core/model'
+import type { MoldaAsset, MoldaAssetKind } from '../core/model'
 import {
   getDefaultMoldaPersistence,
   getMoldaStorageNamespace,
@@ -45,6 +46,11 @@ export interface MoldaExportedAsset {
   width?: number
   height?: number
 }
+
+/** Resultado da volta automática ao Estúdio depois de salvar no Molda. */
+export type MoldaStudioResyncResult =
+  | { updated: true }
+  | { updated: false; reason: 'not-linked' | 'failed'; error?: string }
 
 export type ExportForStudioResult =
   | { ok: true; asset: MoldaExportedAsset }
@@ -89,10 +95,7 @@ function writeCachedExport(
   }
 }
 
-function materializeExport(
-  asset: Awaited<ReturnType<MoldaPersistence['load']>> & {},
-  cached: CachedExport,
-): ExportForStudioResult {
+function materializeExport(asset: MoldaAsset, cached: CachedExport): ExportForStudioResult {
   if (!cached.ok) return cached
   const extension =
     cached.encoded.kind === 'model3d'
@@ -127,13 +130,22 @@ export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
     .sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
-export async function exportAssetForStudio(id: string): Promise<ExportForStudioResult> {
-  const namespace = getMoldaStorageNamespace()
-  const persistence = getDefaultMoldaPersistence()
-  const asset = await persistence.load(id)
-  if (!asset) return { ok: false, reason: 'not-found' }
+/** Separador das chaves do cache (`id` e `updatedAt` nunca o contêm). */
+const CACHE_KEY_SEPARATOR = String.fromCharCode(0)
+
+/**
+ * A exportação a partir de uma criação JÁ carregada: o editor, ao salvar, reenvia ao
+ * Estúdio sem reler o armazenamento (`useStudioResync`). Cache por id + `updatedAt`
+ * compartilhado com `exportAssetForStudio` (a mesma persistência é a dona do cache).
+ */
+export function exportLoadedAssetForStudio(
+  asset: MoldaAsset,
+  options: { persistence?: MoldaPersistence; namespace?: string } = {},
+): ExportForStudioResult {
+  const namespace = options.namespace ?? getMoldaStorageNamespace()
+  const persistence = options.persistence ?? getDefaultMoldaPersistence()
   const cache = cacheFor(persistence)
-  const cacheKey = `${namespace}\u0000${asset.id}\u0000${asset.updatedAt}`
+  const cacheKey = [namespace, asset.id, String(asset.updatedAt)].join(CACHE_KEY_SEPARATOR)
   const cached = readCachedExport(cache, cacheKey)
   if (cached) return materializeExport(asset, cached)
   const finish = (result: CachedExport): ExportForStudioResult => {
@@ -150,11 +162,7 @@ export async function exportAssetForStudio(id: string): Promise<ExportForStudioR
     }
     return finish({
       ok: true,
-      encoded: {
-        kind: 'model3d',
-        dataUrl: result.dataUrl,
-        bytes: result.bytes.length,
-      },
+      encoded: { kind: 'model3d', dataUrl: result.dataUrl, bytes: result.bytes.length },
     })
   }
   if (asset.kind === 'sky') {
@@ -162,11 +170,7 @@ export async function exportAssetForStudio(id: string): Promise<ExportForStudioR
     if (!result.ok) return finish({ ok: false, reason: 'asset-too-big' })
     return finish({
       ok: true,
-      encoded: {
-        kind: 'environment3d',
-        dataUrl: result.dataUrl,
-        bytes: result.bytes.length,
-      },
+      encoded: { kind: 'environment3d', dataUrl: result.dataUrl, bytes: result.bytes.length },
     })
   }
   const result = exportTexturePng(asset)
@@ -181,4 +185,12 @@ export async function exportAssetForStudio(id: string): Promise<ExportForStudioR
       height: result.height,
     },
   })
+}
+
+export async function exportAssetForStudio(id: string): Promise<ExportForStudioResult> {
+  const namespace = getMoldaStorageNamespace()
+  const persistence = getDefaultMoldaPersistence()
+  const asset = await persistence.load(id)
+  if (!asset) return { ok: false, reason: 'not-found' }
+  return exportLoadedAssetForStudio(asset, { persistence, namespace })
 }

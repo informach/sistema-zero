@@ -42,6 +42,44 @@ export interface ListMembersParams {
   offset?: number
 }
 
+export interface AdminRankingEntryRaw {
+  userId: string
+  accountId: string
+  position: number
+  xp: number
+  lastActivityDate: string | null
+  photoUrl: string | null
+  levelSlug: string
+}
+
+export interface AdminRankingPageRaw {
+  items: AdminRankingEntryRaw[]
+  totalParticipants: number
+  totalMatches: number
+  limit: number
+  offset: number
+  me: AdminRankingEntryRaw | null
+}
+
+/** Ranking geral acumulado; o filtro de ids preserva as posições da coorte completa. */
+export function getAdminRanking(p: {
+  audience: 'adult' | 'kids'
+  limit?: number
+  offset?: number
+  userIds?: string[]
+}): Promise<GatewayResponse<AdminRankingPageRaw>> {
+  return gatewayFetch('/members/admin/gamification/ranking', {
+    query: {
+      audience: p.audience,
+      limit: p.limit,
+      offset: p.offset,
+      // `-` chega ao Members e vira filtro vazio. Omitir a query significaria
+      // "sem filtro" e uma busca Auth sem resultados mostraria todos os alunos.
+      userIds: p.userIds === undefined ? undefined : p.userIds.join(',') || '-',
+    },
+  })
+}
+
 /** Lista membros (admin) via gateway: `GET /members/admin/members` (JWT + RBAC). */
 export function listMembers(
   p: ListMembersParams,

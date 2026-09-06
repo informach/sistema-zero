@@ -4,6 +4,7 @@
  */
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
+import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
 import type { MoldaPersistence } from '../state/persistence'
 
@@ -15,6 +16,13 @@ export interface MoldaHostAdapter {
   onOpenStudio?: () => void
   /** Abre esta criação assim que a galeria carregar (deep link `?criacao=`). */
   initialAssetId?: string
+  /**
+   * A VOLTA da ponte "Trazer do Molda": depois de SALVAR, o editor reenvia a criação já
+   * no formato do Estúdio (`.glb`/`.hdr`/`.png`) e o host atualiza a biblioteca pessoal
+   * de lá, de onde ela entra sozinha nos jogos. `updated: false` quando a criação nunca
+   * foi levada ao Estúdio (o host decide pela guarda dele). Nunca chamado ao abrir.
+   */
+  resyncToStudio?: (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
 }

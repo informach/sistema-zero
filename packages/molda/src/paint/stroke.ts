@@ -12,11 +12,12 @@
 import type { FaceId, MoldaModelAsset, MoldaPart } from '../core/model'
 import type { TexelHit } from '../model/pick'
 import { faceSkinSize } from '../model/shapes'
-import { createSkin, isSkinBlank } from '../model/skinOps'
+import { createSkin, isSkinBlank, resampleSkin } from '../model/skinOps'
+import { rotateSkin90 } from '../model/skinReproject'
 import { syncTwins } from '../model/twins'
 import { type BrushSize, floodFillSkin, lineTexels, paintSkin, type Texel } from './skinPaint'
 
-export type PaintTool = 'pencil' | 'eraser' | 'fillFace' | 'fillPart' | 'picker'
+export type PaintTool = 'pencil' | 'eraser' | 'fillFace' | 'fillPart' | 'picker' | 'rotateSkin'
 
 export interface PaintSettings {
   tool: PaintTool
@@ -87,6 +88,29 @@ export function sampleColor(model: Pick<MoldaModelAsset, 'parts'>, hit: TexelHit
   const skin = part.faces[hit.face]
   const index = skin ? (skin.data[hit.y * skin.width + hit.x] ?? 0) : 0
   return index === 0 ? part.color : index
+}
+
+/**
+ * "Girar a pele": a pele da face tocada gira 90° no sentido horário (olhando de
+ * fora). Face sem pele não muda. Numa face que não é quadrada a pele girada volta
+ * ao tamanho da face por vizinho mais próximo (o tamanho da pele é lei da face).
+ */
+export function rotateFaceSkin(
+  model: MoldaModelAsset,
+  partId: string,
+  face: FaceId,
+): MoldaModelAsset {
+  const part = model.parts.find((item) => item.id === partId)
+  const skin = part?.faces[face]
+  if (!part || part.mirrorOf || !skin) return model
+  const size = faceSkinSize(part, face, model.texelsPerUnit)
+  if (!size) return model
+  const rotated = rotateSkin90(skin)
+  const fitted =
+    rotated.width === size.width && rotated.height === size.height
+      ? rotated
+      : resampleSkin(rotated, size.width, size.height)
+  return replacePart(model, withFace(part, face, fitted))
 }
 
 /** Fim do gesto: peles todas 0 saem (voltam a ser "só a cor base"). */

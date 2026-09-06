@@ -8,6 +8,7 @@ import type { MessageRepository } from '../../domain/ports/message-repository.po
 import type { AiWriteGuard, TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
+import { assertHumanTicket } from '../../domain/ticket/ticket-triage'
 import type { TicketView } from '../views'
 import { toTicketView } from '../views'
 import { selectRelevantKbArticles } from './kb-context'
@@ -64,6 +65,7 @@ export class TicketAiService {
 
   /** Pipeline completo (worker): classifica+resume e rascunha. NÃO mexe em ai_status. */
   async runPipeline(ticket: Ticket): Promise<AiPipelineResult> {
+    assertHumanTicket(ticket)
     const guard = {
       generation: ticket.aiGeneration,
       ...(ticket.aiStatus === 'processing' ? { processingAttempt: ticket.aiAttempts } : {}),
@@ -81,6 +83,7 @@ export class TicketAiService {
   /** On-demand: só classificar+resumir (rota summarize). Fecha com markAiDone. */
   async summarize(ticketId: string): Promise<TicketView> {
     const ticket = await this.requireTicket(ticketId)
+    assertHumanTicket(ticket)
     const messages = await this.messages.byTicketId(ticketId)
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const guard = { generation: ticket.aiGeneration }
@@ -100,6 +103,7 @@ export class TicketAiService {
   /** On-demand: só rascunho (rota regenerate). Fecha com markAiDone. */
   async regenerateDraft(ticketId: string): Promise<TicketView> {
     const ticket = await this.requireTicket(ticketId)
+    assertHumanTicket(ticket)
     const messages = await this.messages.byTicketId(ticketId)
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const guard = { generation: ticket.aiGeneration }

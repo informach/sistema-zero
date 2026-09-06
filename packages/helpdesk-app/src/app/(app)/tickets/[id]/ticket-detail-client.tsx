@@ -130,7 +130,7 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
               : ''}
           </p>
         ) : null}
-        {ticket.aiStatus !== 'skipped' || ticket.aiSummary ? (
+        {ticket.triage === 'human' && (ticket.aiStatus !== 'skipped' || ticket.aiSummary) ? (
           <AiSummaryPanel ticket={ticket} onSummarized={handleTicketUpdated} />
         ) : null}
       </div>
@@ -147,19 +147,21 @@ export function TicketDetailClient({ ticketId }: { ticketId: string }) {
             ))}
           </ul>
 
-          <ReplyBox
-            ticketId={ticketId}
-            version={ticket.version}
-            source={ticket.source}
-            initialDraft={
-              ticket.aiStatus === 'pending' || ticket.aiStatus === 'processing'
-                ? ''
-                : (ticket.aiDraft ?? '')
-            }
-            onSent={softReload}
-            onStale={softReload}
-            onTicketUpdated={handleTicketUpdated}
-          />
+          {ticket.triage === 'human' ? (
+            <ReplyBox
+              ticketId={ticketId}
+              version={ticket.version}
+              source={ticket.source}
+              initialDraft={
+                ticket.aiStatus === 'pending' || ticket.aiStatus === 'processing'
+                  ? ''
+                  : (ticket.aiDraft ?? '')
+              }
+              onSent={softReload}
+              onStale={softReload}
+              onTicketUpdated={handleTicketUpdated}
+            />
+          ) : null}
         </div>
 
         <aside className="space-y-6">

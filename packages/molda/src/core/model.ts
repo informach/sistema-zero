@@ -12,6 +12,7 @@
  * uma face significa "usa a cor base da peça" (uma face nunca é transparente).
  */
 
+import { boxMesh } from '../model/mesh'
 import { DEFAULT_SKY_PRESET, type SkyParams, type SkyPresetId, skyPreset } from '../sky/params'
 import { newId } from './id'
 import { MOLDA_LIMITS, type TexelsPerUnit, type TextureSize } from './limits'
@@ -33,7 +34,7 @@ export interface MoldaSkin {
   data: Uint8Array
 }
 
-export const SHAPE_IDS = ['box', 'wedge', 'cylinder', 'sphere'] as const
+export const SHAPE_IDS = ['box', 'wedge', 'cylinder', 'sphere', 'mesh'] as const
 export type ShapeId = (typeof SHAPE_IDS)[number]
 
 export function isShapeId(value: unknown): value is ShapeId {
@@ -53,7 +54,25 @@ export const FACE_IDS = [
   'bottom',
   'around',
 ] as const
-export type FaceId = (typeof FACE_IDS)[number]
+/** As faces das FORMAS (caixa, rampa, cilindro, bola). */
+export type ShapeFaceId = (typeof FACE_IDS)[number]
+/** A chave de uma face de MALHA (`f_` + [a-z0-9]{1,16}); a pele dela mora em `part.faces[chave]`. */
+export type MeshFaceKey = `f_${string}`
+export type FaceId = ShapeFaceId | MeshFaceKey
+
+/** Uma face de malha: 3 ou 4 chaves de vértice, CCW vista de fora (ver `model/mesh.ts`). */
+export interface MeshFace {
+  v: readonly string[]
+}
+
+/**
+ * A malha de uma peça `shape: 'mesh'`: vértices e faces em MAPAS por chave (nunca por
+ * índice), em coordenadas da CAIXA da peça. `from`/`to` da peça são a caixa envolvente.
+ */
+export interface MoldaMesh {
+  vertices: Record<string, Vec3>
+  faces: Record<MeshFaceKey, MeshFace>
+}
 
 export const SNAPS = [1, 0.5] as const
 export type MoldaSnap = (typeof SNAPS)[number]
@@ -80,6 +99,12 @@ export interface MoldaPart {
   faces: Partial<Record<FaceId, MoldaSkin>>
   /** Gêmeo do espelho de modelagem: geometria e pele DERIVADAS da peça fonte. */
   mirrorOf?: string
+  /** Só em `shape: 'mesh'`: a malha; `from`/`to` são DERIVADOS dela (`meshBox`). */
+  mesh?: MoldaMesh
+  /** Trancada: o toque no palco não a escolhe nem a arrasta (a lista e os steppers, sim). */
+  locked?: true
+  /** Escondida no palco (continua no modelo, no export e na lista). */
+  hidden?: true
 }
 
 export type MoldaAssetPaletteId = PaletteId | 'custom'
@@ -148,17 +173,22 @@ export function createPart(input: {
   color: number
   rotation?: Vec3
   id?: string
+  /** Só para `shape: 'mesh'`; ausente = a caixa `from`/`to` já convertida (`boxMesh`). */
+  mesh?: MoldaMesh
 }): MoldaPart {
-  return {
+  const shape = input.shape ?? 'box'
+  const part: MoldaPart = {
     id: input.id ?? newId(),
     name: input.name,
-    shape: input.shape ?? 'box',
+    shape,
     from: [...input.from],
     to: [...input.to],
     rotation: input.rotation ? [...input.rotation] : [0, 0, 0],
     color: input.color,
     faces: {},
   }
+  if (shape === 'mesh') part.mesh = input.mesh ?? boxMesh(part.from, part.to)
+  return part
 }
 
 /** Índice da cor de fábrica da primeira peça (o azul da arcade). */

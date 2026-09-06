@@ -41,22 +41,22 @@ export const AssetCard = memo(function AssetCard({
   const kindTitle = COPY.kinds[asset.kind].title
   const style = { '--mld-panel-border': KIND_BORDER_VAR[asset.kind] } as CSSProperties
   return (
-    <li className="mld-gallery-card mld-panel mld-pop flex flex-col overflow-hidden" style={style}>
+    <li className="mld-gallery-card mld-panel mld-pop flex flex-col gap-1 p-2" style={style}>
       <button
         type="button"
         onClick={() => onOpen(asset.id)}
         aria-label={COPY.a11y.assetCard(asset.name, kindTitle)}
         className="flex flex-1 flex-col text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-mld-accent"
       >
-        <div className="aspect-[4/3] w-full overflow-hidden bg-mld-bg">
+        <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-mld-bg">
           <Thumb asset={asset} />
         </div>
-        <div className="flex flex-col items-start gap-1 px-3 pt-2 pb-1">
+        <div className="flex flex-col items-start gap-1 px-1 pt-1">
           <span className="w-full truncate text-base font-bold text-mld-text">{asset.name}</span>
           <KindChip kind={asset.kind} />
         </div>
       </button>
-      <div className="flex items-center justify-end gap-0.5 px-1 pb-1">
+      <div className="flex items-center justify-end gap-0.5">
         <IconButton
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
           onClick={() => onRename(asset)}

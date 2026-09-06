@@ -335,8 +335,12 @@ export interface ReconcileOptions<T extends LocalCreation, P> {
   keepLocalCopy: (item: T) => Promise<StagedConflictCopy>
   /** Enfileira a subida do item local (a fila do `creations-cloud` sobe o mais recente). */
   push: (item: T) => void
-  /** Reenvia o DELETE de uma lápide que ainda não chegou à nuvem. */
-  remove?: (itemId: string) => void
+  /**
+   * Reenvia o DELETE de uma lápide que ainda não chegou à nuvem. `cloudRevision` é a
+   * revisão que a nuvem acabou de LISTAR: é a única base que o servidor aceita (a lápide
+   * pode não conhecer revisão, ou conhecer uma velha; base 0 era 409 e o item voltava).
+   */
+  remove?: (itemId: string, cloudRevision: number) => void
   /** Apaga DIRETO do armazenamento local, sem acordar o espelho da nuvem. */
   deleteLocal: (itemId: string) => Promise<boolean>
   marks: SyncedMarks
@@ -574,7 +578,7 @@ export async function reconcileCreations<T extends LocalCreation, P>(
         // autoritativa do servidor.
         report.tombstoned += 1
         if (!tombstone.sent || typeof tombstone.revision !== 'number') {
-          options.remove?.(remote.itemId)
+          options.remove?.(remote.itemId, remote.revision)
         }
         continue
       }

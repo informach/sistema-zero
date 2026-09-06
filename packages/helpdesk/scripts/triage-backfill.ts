@@ -14,7 +14,7 @@
  * Idempotente: re-run = 0 mudanças.
  */
 import { createLogger } from '@sistemazero/core/logging'
-import { and, asc, eq, inArray } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import { GmailAccountService } from '../src/application/connection/gmail-account.service'
 import {
   type DEFAULT_TRIAGE_RULES,
@@ -37,7 +37,7 @@ import { DrizzleConnectionRepository } from '../src/infrastructure/persistence/d
 import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
 import { ticketMessages, tickets } from '../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleSettingsRepository } from '../src/infrastructure/persistence/drizzle/settings.repository'
-import { DrizzleTicketRepository } from '../src/infrastructure/persistence/drizzle/ticket.repository'
+import { applyAtomicTriageBackfill } from '../src/infrastructure/persistence/drizzle/triage-backfill.repository'
 import { createSecretBox } from '../src/infrastructure/security/secret-box'
 
 const apply = process.argv.includes('--apply')
@@ -154,7 +154,6 @@ async function decideTicket(
 
 async function main(): Promise<void> {
   const rules = (await new DrizzleSettingsRepository(db).get()).triageRules
-  const ticketRepo = new DrizzleTicketRepository(connection)
   const readGmail = gmailReader()
   const aiEnabled = aiConfig(env) !== null
   const counters = { gmailFetched: 0, gmailMissing: 0 }
@@ -216,28 +215,11 @@ async function main(): Promise<void> {
   if (apply) {
     for (const d of decisions) {
       const at = now()
-      // Mensagens primeiro (idempotente por comparação); depois o ticket com CAS.
       const changedMessages = d.messages.filter(
         (m) =>
           m.message.triage !== m.verdict.kind ||
           (m.message.triageRule ?? null) !== (m.verdict.kind === 'human' ? null : m.verdict.rule),
       )
-      if (changedMessages.length > 0) {
-        await db.transaction(async (tx) => {
-          for (const m of changedMessages) {
-            await tx
-              .update(ticketMessages)
-              .set({
-                triage: m.verdict.kind,
-                triageRule: m.verdict.kind === 'human' ? null : m.verdict.rule,
-                isAutoreply: m.verdict.kind !== 'human',
-              })
-              .where(eq(ticketMessages.id, m.message.id))
-          }
-        })
-        messagesChanged += changedMessages.length
-      }
-      if (d.change === 'none') continue
       const ticket = d.ticket
       if (d.change === 'promote') {
         const lastHuman = [...d.messages]
@@ -251,34 +233,50 @@ async function main(): Promise<void> {
             : null,
           aiEnabled,
         })
-      } else if (d.change === 'demote') {
+      } else if (d.target.kind !== 'human' && d.change !== 'none') {
         demoteTicket(ticket, {
           kind: d.target.kind as Exclude<TriageVerdict['kind'], 'human'>,
           rule: d.target.rule,
           at,
         })
         ticket.lastInboundAt = null // nunca houve inbound humano: SLA não arma
-      } else {
-        ticket.triage = d.target.kind
-        ticket.triageRule = d.target.rule
-        ticket.updatedAt = at
       }
-      const ok = await ticketRepo.update(ticket, ticket.version)
-      if (ok) applied += 1
-      else conflicts += 1
-    }
-    // Garante que nenhum ticket triado ficou com IA armada (defesa em profundidade).
-    const triagedIds = decisions.filter((d) => d.target.kind !== 'human').map((d) => d.ticket.id)
-    if (triagedIds.length > 0) {
-      await db
-        .update(tickets)
-        .set({ aiStatus: 'skipped', aiNextAttemptAt: null })
-        .where(
-          and(
-            inArray(tickets.id, triagedIds),
-            inArray(tickets.aiStatus, ['pending', 'processing']),
-          ),
-        )
+
+      // Corrige também candidatos já triados que carreguem estado operacional
+      // legado. A decisão usa o estado lido; a gravação continua protegida por CAS.
+      const needsInvariantRepair =
+        d.target.kind !== 'human' &&
+        (ticket.status !== 'closed' ||
+          ticket.aiStatus !== 'skipped' ||
+          ticket.aiNextAttemptAt !== null)
+      if (needsInvariantRepair) {
+        demoteTicket(ticket, {
+          kind: d.target.kind as Exclude<TriageVerdict['kind'], 'human'>,
+          rule: d.target.rule,
+          at,
+        })
+        ticket.lastInboundAt = null
+      }
+
+      if (d.change === 'none' && !needsInvariantRepair && changedMessages.length === 0) continue
+
+      const expectedVersion = ticket.version
+      const ok = await applyAtomicTriageBackfill(db, {
+        ticket,
+        expectedVersion,
+        at,
+        messages: changedMessages.map((message) => ({
+          id: message.message.id,
+          triage: message.verdict.kind,
+          triageRule: message.verdict.kind === 'human' ? null : message.verdict.rule,
+        })),
+      })
+      if (!ok) {
+        conflicts += 1
+        continue
+      }
+      if (d.change !== 'none') applied += 1
+      messagesChanged += changedMessages.length
     }
   }
 

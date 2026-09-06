@@ -92,7 +92,7 @@ export class TicketService {
   async patch(actor: Actor, id: string, input: PatchTicketInput): Promise<TicketView> {
     const ticket = await this.requireTicket(id)
     const now = this.now()
-    // Triagem primeiro: promover põe `new`; um `status` explícito no mesmo corpo vence.
+    // Triagem primeiro: só um atendimento humano aceita estado operacional.
     if (input.triage === 'human' && ticket.triage !== 'human') {
       promoteTicket(ticket, {
         rule: MANUAL_PROMOTED_RULE,
@@ -104,7 +104,7 @@ export class TicketService {
       // Vale também em ticket já triado: a decisão vira `manual:*` e fica sticky.
       demoteTicket(ticket, { kind: 'system', rule: MANUAL_DEMOTED_RULE, at: now })
     }
-    if (input.status !== undefined) {
+    if (input.status !== undefined && ticket.triage === 'human') {
       ticket.status = input.status
       if (isTerminalTicketStatus(input.status)) {
         // Preserva o instante original ao editar outro campo de um ticket já
@@ -113,6 +113,10 @@ export class TicketService {
       } else {
         ticket.resolvedAt = null
       }
+    }
+    if (ticket.triage !== 'human') {
+      ticket.status = 'closed'
+      ticket.resolvedAt ??= now
     }
     if (input.category !== undefined) {
       ticket.category = input.category

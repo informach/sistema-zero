@@ -28,7 +28,8 @@ export function Panel({
   return (
     <section
       aria-label={ariaLabel ?? title}
-      className={clsx('mld-panel flex min-h-0 flex-col overflow-hidden', className)}
+      // `shrink-0`: um painel nunca é ESPREMIDO pela coluna (a coluna rola; ver `.mld-scroll-y`).
+      className={clsx('mld-panel flex min-h-0 shrink-0 flex-col overflow-hidden', className)}
     >
       <div className="mld-panel-head">
         <span className="mld-display min-w-0 flex-1 truncate text-left text-xs uppercase tracking-wide text-mld-text">

@@ -146,11 +146,15 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <header className="flex flex-col gap-3 border-b-2 border-mld-border bg-mld-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6">
+      {/* Cabeçalho de SEÇÃO da comunidade (a mesma escala da galeria do Pinta e da lista do
+          Estúdio): sem faixa própria (fundo/borda) e DENTRO da raiz rolável, cujo padding de
+          cima é a folga do `.mld-pop` do 1º card (o hover cresce ~4px para cima; com a grade
+          colada na borda do overflow, o topo do card era cortado). */}
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="mld-display text-2xl text-mld-text">{COPY.gallery.title}</h1>
-          <p className="text-sm text-mld-text-soft">{COPY.gallery.subtitle}</p>
+          <h1 className="mld-display text-3xl text-mld-text md:text-4xl">{COPY.gallery.title}</h1>
+          <p className="mt-1 text-sm text-mld-text-soft md:text-base">{COPY.gallery.subtitle}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {adapter.studioOwned && adapter.onOpenStudio ? (
@@ -212,7 +216,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         </div>
       </header>
 
-      <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center">
+      <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
         <label className="relative flex min-w-0 flex-1 items-center">
           <span className="sr-only">{COPY.gallery.search}</span>
           <Search
@@ -263,7 +267,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         </fieldset>
       </div>
 
-      <div className="px-4 pb-2 text-sm text-mld-muted" role="status">
+      <div className="mb-2 text-sm text-mld-muted" role="status">
         {syncing ? (
           <span className="inline-flex items-center gap-2">
             <Loader2
@@ -279,50 +283,49 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         ) : null}
       </div>
 
-      <main className="min-h-0 flex-1 overflow-y-auto px-4 pb-6">
-        {error ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-base text-mld-text">{error}</p>
-            <Button variant="outline" onClick={() => void gallery.getState().load()}>
-              {COPY.gallery.retry}
-            </Button>
-          </div>
-        ) : loaded && assets.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-12 text-center">
-            <span aria-hidden="true" className="text-5xl">
-              {COPY.kinds.model.emoji}
-            </span>
-            <p className="max-w-md text-base text-mld-text-soft">{COPY.gallery.empty}</p>
-            <Button variant="primary" onClick={() => setNewOpen(true)}>
-              <Plus aria-hidden="true" className="size-5" />
-              {COPY.gallery.emptyCta}
-            </Button>
-          </div>
-        ) : loaded && visible.length === 0 && filtered ? (
-          <div className="flex flex-col items-center gap-3 py-12 text-center">
-            <p className="text-base text-mld-text-soft">{COPY.gallery.searchEmpty}</p>
-            <Button variant="outline" onClick={() => setFilters(EMPTY_GALLERY_FILTERS)}>
-              {COPY.gallery.searchClearAll}
-            </Button>
-          </div>
-        ) : (
-          <ul
-            aria-label={COPY.a11y.galleryGrid}
-            className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3"
-          >
-            {visible.map((asset) => (
-              <AssetCard
-                key={asset.id}
-                asset={asset}
-                onOpen={onOpen}
-                onRename={setRenameTarget}
-                onDuplicate={(item) => void duplicate(item)}
-                onRemove={setRemoveTarget}
-              />
-            ))}
-          </ul>
-        )}
-      </main>
+      {/* Sem `<main>` próprio: o host já tem o dele; a grade rola com o cabeçalho. */}
+      {error ? (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="text-base text-mld-text">{error}</p>
+          <Button variant="outline" onClick={() => void gallery.getState().load()}>
+            {COPY.gallery.retry}
+          </Button>
+        </div>
+      ) : loaded && assets.length === 0 ? (
+        <div className="flex flex-col items-center gap-4 py-12 text-center">
+          <span aria-hidden="true" className="text-5xl">
+            {COPY.kinds.model.emoji}
+          </span>
+          <p className="max-w-md text-base text-mld-text-soft">{COPY.gallery.empty}</p>
+          <Button variant="primary" onClick={() => setNewOpen(true)}>
+            <Plus aria-hidden="true" className="size-5" />
+            {COPY.gallery.emptyCta}
+          </Button>
+        </div>
+      ) : loaded && visible.length === 0 && filtered ? (
+        <div className="flex flex-col items-center gap-3 py-12 text-center">
+          <p className="text-base text-mld-text-soft">{COPY.gallery.searchEmpty}</p>
+          <Button variant="outline" onClick={() => setFilters(EMPTY_GALLERY_FILTERS)}>
+            {COPY.gallery.searchClearAll}
+          </Button>
+        </div>
+      ) : (
+        <ul
+          aria-label={COPY.a11y.galleryGrid}
+          className="grid grid-cols-[repeat(auto-fill,minmax(164px,1fr))] gap-3"
+        >
+          {visible.map((asset) => (
+            <AssetCard
+              key={asset.id}
+              asset={asset}
+              onOpen={onOpen}
+              onRename={setRenameTarget}
+              onDuplicate={(item) => void duplicate(item)}
+              onRemove={setRemoveTarget}
+            />
+          ))}
+        </ul>
+      )}
 
       <NewAssetDialog
         open={newOpen}

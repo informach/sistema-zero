@@ -192,3 +192,25 @@ describe('vestir a peça (editor do modelo)', () => {
     }
   })
 })
+
+test('"+ Nova cor" é UM gesto na textura: N passos viram UMA extra, o lápis a escolhe, UM desfazer apaga', async () => {
+  const persistence = await openTexture()
+  const input = screen.getByLabelText(COPY.editor.model.addColor, { selector: 'input' })
+  // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
+  fireEvent.input(input, { target: { value: '#123456' } })
+  fireEvent.input(input, { target: { value: '#234567' } })
+  fireEvent.change(input, { target: { value: '#234567' } })
+  await waitFor(
+    () => expect(textureOf(persistence.snapshot()[0]).extraColors).toEqual(['#234567']),
+    { timeout: 3000 },
+  )
+  const swatch = screen.getByRole('button', { name: COPY.a11y.colorSwatch(16, '#234567') })
+  expect(swatch.getAttribute('aria-pressed')).toBe('true')
+  const undo = screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement
+  await waitFor(() => expect(undo.disabled).toBe(false))
+  fireEvent.click(undo)
+  await waitFor(() =>
+    expect(screen.queryByRole('button', { name: COPY.a11y.colorSwatch(16, '#234567') })).toBeNull(),
+  )
+  expect(undo.disabled).toBe(true)
+})

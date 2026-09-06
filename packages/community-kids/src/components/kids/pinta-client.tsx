@@ -200,9 +200,9 @@ export function PintaClient({
       ...(studioAvailable
         ? {
             sendToStudio: async (asset) => {
+              const namespace = viewerId ?? ''
               const bridge = await import('@sistemazero/studio/personal-assets')
-              bridge.setPersonalAssetsNamespace(viewerId ?? '')
-              return bridge.savePersonalAsset(asset)
+              return bridge.savePersonalAsset(asset, { namespace })
             },
           }
         : {}),
@@ -212,10 +212,10 @@ export function PintaClient({
       // rascunho do Pinta cairia na biblioteca do Estúdio sozinho e o "Usar no
       // Estúdio" deixaria de ser a decisão explícita que é hoje.
       resyncToStudio: async (asset) => {
+        const namespace = viewerId ?? ''
         const bridge = await import('@sistemazero/studio/personal-assets')
-        bridge.setPersonalAssetsNamespace(viewerId ?? '')
-        if (!(await bridge.getPersonalAsset(asset.id))) return { updated: false }
-        const result = await bridge.savePersonalAsset(asset)
+        if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) return { updated: false }
+        const result = await bridge.savePersonalAsset(asset, { namespace })
         return { updated: result.ok }
       },
       // "Jogar meu mapa": o Estúdio monta um JOGO pronto a partir do mapa e a

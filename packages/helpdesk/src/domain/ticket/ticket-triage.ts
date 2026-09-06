@@ -1,4 +1,5 @@
 import type { TriageKind } from '@sistemazero/helpdesk-contracts'
+import { TicketNotHumanError } from '../helpdesk-errors'
 import { isTerminalTicketStatus, type Ticket } from './ticket'
 
 /**
@@ -23,6 +24,11 @@ export function isManualTriageRule(rule: string | null): boolean {
 /** A ingestão e o backfill só re-triam o que não foi decidido à mão. */
 export function canRetriage(ticket: Pick<Ticket, 'triageRule'>): boolean {
   return !isManualTriageRule(ticket.triageRule)
+}
+
+/** Barreira comum para ações que só fazem sentido em atendimento real. */
+export function assertHumanTicket(ticket: Pick<Ticket, 'triage'>): void {
+  if (ticket.triage !== 'human') throw new TicketNotHumanError()
 }
 
 export interface PromoteTicketInput {
@@ -75,6 +81,8 @@ export function demoteTicket(ticket: Ticket, input: DemoteTicketInput): void {
   ticket.triagedAt = input.at
   if (!isTerminalTicketStatus(ticket.status)) ticket.resolvedAt = input.at
   ticket.status = 'closed'
+  // Invalida qualquer escrita de IA iniciada antes da decisão de triagem.
+  ticket.aiGeneration += 1
   ticket.aiStatus = 'skipped'
   ticket.aiNextAttemptAt = null
   ticket.updatedAt = input.at

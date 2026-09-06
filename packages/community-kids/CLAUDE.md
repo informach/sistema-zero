@@ -517,9 +517,27 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `localStorage['sz:perf']='1'` ou `?szperf=1`; `[sz:perf]` no console + User Timing): spans
   `kids:cloud:produce|gzip|gzip-parts|reserve|put|commit`, `kids:pinta:reconcile`,
   `kids:studio:pull|hash|parts`. `tests/creations-cloud.perf.test.ts` registra tempo sem assertar.
+- 🚨 **INCIDENTE 06/09/2026: "apaguei o jogo e ele voltou" (Estúdio, Pinta e Molda).** Nos três
+  adaptadores o `onDeleted`/`deleteAsset`/`remove` chamava `marks.delete(id)` (que apaga a
+  REVISÃO conhecida) ANTES de `enqueueRemove(id)` ler `marks.revision(id)`: todo DELETE saía com
+  `baseRevision: 0`, o members recusava com 409 `CREATION_STALE_BASE` (a base tem de ser a
+  corrente, inclusive para apagar) e o `onStale` de então ("uma exclusão velha não vence uma
+  edição remota") baixava e RESTAURAVA o item no mesmo id. Os testes consagravam o defeito
+  (asseriam `revision: null` e nunca olhavam a base enviada). Regras que ficaram:
+  (1) a lápide nasce COM a revisão conhecida e `marks.delete` vem DEPOIS de `enqueueRemove`;
+  (2) o 409 no DELETE é resolvido por REVISÃO (`resolveStaleRemove`, nunca por relógio): nuvem na
+  MESMA história (lápide sem revisão, ou revisão igual à corrente) = a exclusão é nossa → reenvia
+  UMA vez com o `currentRevision` que o members põe em `details` (sem ele, a revisão vem do
+  download); revisão corrente MAIOR que a conhecida = alguém editou depois → restaura, e a lápide
+  só sai DEPOIS de gravar (descida que falha mantém o item apagado; nuvem sem o item = lápide
+  enviada); (3) o reenvio do reconcile usa a revisão que a NUVEM listou como base
+  (`remove(itemId, cloudRevision)`), a única que o servidor aceita; (4) `pullMissing` do Estúdio
+  dá `flush` na fila (3 s) antes de ler a lista, para um DELETE em voo subir primeiro. Autocura
+  dos dados já em produção: lápides `{revision: null}` reenviam com a revisão da nuvem; itens
+  que já quicaram voltaram com a revisão marcada, então a próxima exclusão pega.
 - Testes: `tests/creations-cloud.test.ts` (inclui partes), `tests/creations-sync.test.ts`,
   `tests/pinta-cloud-persistence.test.ts`, `tests/studio-cloud.test.ts` (inclui manifesto/descida
-  em partes/`downloadProject`). **Pende QA em staging** (CORS PUT `application/gzip` no bucket UGC;
+  em partes/`downloadProject` e os oito casos do 409 no DELETE). **Pende QA em staging** (CORS PUT `application/gzip` no bucket UGC;
   roteiro no doc do plano — inclui o de partes).
 
 ## `/jogar`: o palco segue o JOGO, e gira no celular em pé (20/08/2026)
@@ -1235,6 +1253,13 @@ railway.json + case `packages/molda/*` no ci.yml. Produto no catálogo: sku/slug
 (seed idempotente, R$97 placeholder; o seed também reconcilia o componente num combo existente).
 Assinantes anteriores entram pelo comando do members `entitlements:rollout-molda`: dry-run por
 padrão e escrita somente com `--apply`.
+**"Editar" e a volta do Molda (06/09):** o `studio-full-editor` passa `onEditCreation` =
+`window.open('/molda?criacao=<id>')` SÓ com o `moldaLibrary` (posse do Molda); o `molda-client`
+implementa `resyncToStudio` com a MESMA guarda do Pinta (`getPersonalAsset(id)`: só regrava o que já
+foi trazido, com `kind`/`origin: 'molda'`/`originalFileName`), e o Estúdio leva os bytes novos aos
+jogos (a `personalSync` do Studio cobre `.glb`/`.hdr` desde 06/09). O botão do Estúdio repara o
+registro pessoal no clique (a biblioteca é local por aparelho), então "Editar" funciona também num
+jogo que desceu da nuvem. Teste: `tests/molda-client.test.tsx` (guarda do `resyncToStudio`).
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 

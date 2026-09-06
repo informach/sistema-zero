@@ -9,6 +9,10 @@ const PART_BASE_BYTES = 160
 export function partBytes(part: MoldaPart): number {
   let bytes = PART_BASE_BYTES
   for (const skin of Object.values(part.faces)) if (skin) bytes += skin.data.byteLength + 16
+  if (part.mesh) {
+    // Vértice = chave + 3 números; face = chave + até 4 chaves.
+    bytes += Object.keys(part.mesh.vertices).length * 40 + Object.keys(part.mesh.faces).length * 48
+  }
   return bytes
 }
 

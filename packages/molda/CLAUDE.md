@@ -53,14 +53,15 @@ casca do editor, a bancada do modelo com MONTAR e PINTAR + "Vestir com textura" 
 o céu com presets/sol/cores/nuvens/estrelas/exposição + "Baixar .hdr"; a textura com a folha de
 pixels, prévia 3×3, prévia 3D + "Baixar .png").
 
-O que fica FORA da v1 (deliberado, decisão da dona em 04/09; ver `docs/plans/2026-09-04-molda-design.md`):
-malhas com vértices, animação, UV manual, importar `.glb`/`.bbmodel`, PBR (normal/rough/metal),
-física, bloco de aula, rota no adulto e a mão dupla (editar no Molda e o jogo atualizar sozinho).
+O que fica FORA (deliberado, decisão da dona em 04/09; ver `docs/plans/2026-09-04-molda-design.md`):
+animação, UV manual, importar `.glb`/`.bbmodel`, PBR (normal/rough/metal), física, bloco de aula e
+rota no adulto. Entraram DEPOIS, em 06/09: a MALHA com vértices, arestas e faces (seção "Malha"
+no fim deste arquivo) e a mão dupla com o Estúdio (`resyncToStudio`).
 O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da nuvem em staging.
 
 ## Modelos prontos + "Baixar tudo" em ZIP (L8)
 
-- **Modelos prontos** (`src/templates/`): o catálogo `MOLDA_TEMPLATES` (personagem, carro,
+- **Modelos prontos** (`src/templates/`): o catálogo `MOLDA_TEMPLATES` (personagem, carro, cristais,
   árvore, casa, nave), no molde do Pinta: cada template tem `suggestedName` e um `build()` que
   devolve o modelo JÁ montado com ids frescos (`builders.ts buildTemplateModel`: peças autoradas
   na grade via `createPart`; a pele de uma face vem em arte ASCII pelo `art.ts` e TEM de vir no
@@ -251,10 +252,15 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   enxergam o mesmo inventário de bytes).
 - **`MoldaHostAdapter`**: `theme?` ('light' default | 'dark' → `data-molda-theme` no root),
   `studioOwned?` + `onOpenStudio?` (atalho "Abrir o Estúdio" + dica do "Trazer do Molda"; SÓ
-  fluxo PULL, não há "Usar no Estúdio"), `initialAssetId?` (deep link `?criacao=`), `onChange?`.
+  fluxo PULL, não há "Usar no Estúdio"), `initialAssetId?` (deep link `?criacao=`), `onChange?`,
+  ⭐ `resyncToStudio?(asset: MoldaExportedAsset)` (06/09: a VOLTA da ponte, porte do Pinta; o
+  `useStudioResync` do `EditorScreen` chama só depois de SALVAR, debounced 1,5 s, envios em ORDEM,
+  na hora ao esconder a aba/desmontar, NUNCA ao abrir; o host decide pela guarda dele o que regravar).
 - Subpaths: **`./assets`** (dado puro, zero React/zustand/three/IndexedDB — o `purity.test.ts`
   anda o grafo e reprova) e **`./studio-library`** (zero React; `listGalleryForStudio()`; o
-  `exportAssetForStudio(id)` chega com os codificadores). `./styles.css` = `src/styles/molda.css`.
+  `exportAssetForStudio(id)` chega com os codificadores; `exportLoadedAssetForStudio(asset)` é a
+  variante pura a partir da criação já carregada, mesmo cache por id + `updatedAt`). `./styles.css`
+  = `src/styles/molda.css`.
 
 ## Modelo de dados (`src/core/model.ts`) e o portão único (`src/core/sanitize.ts`)
 
@@ -325,3 +331,123 @@ globals.css do kids, rota/proxy/nav, member-shell, seed do catálogo). Playgroun
 
 `bun run typecheck && bun test src && bun run check` (biome). Consumidores: `bun run
 typecheck:kids` + `bun run test:kids` na raiz.
+
+## Lote 06/09/2026: cores sem inundar, galeria como seção, volta ao Estúdio
+
+- **"+ Nova cor" é um GESTO** (relato dela: "um monte de cor repetida"). Causa: o `<input
+  type="color">` escondido do `ColorsPanel` dispara `input` a cada passo do arrasto no seletor do
+  sistema (o React entrega como `onChange`), e cada passo fazia `addExtraColor` + `commit`: uma
+  extra e um desfazer por pixel arrastado, até o teto de 48. Regra da casa mantida: seletor
+  NATIVO (painel custom foi rejeitado). Fix: `ColorsPanel` expõe `onAddColor(hex)` (cada passo)
+  + `onAddColorEnd()` (o `change` NATIVO, ouvido no elemento com `queueMicrotask` porque ele roda
+  ANTES do handler do React na raiz; `blur` como rede, e o "+" faz `focus()` + `click()` para o
+  blur ser real). `ModelEditor`/`TextureEditor` guardam `colorGesture = { before, index, full }`
+  PRÓPRIO (o `gestureBefore` do palco não serve: um `pointerdown` no canvas chega antes do blur):
+  1º passo cria a extra (`addExtraColor` + `replace`), os seguintes só `updateExtraColor` /
+  `updateTextureColor` (troca NO LUGAR; mesma referência se o hex já existe em qualquer índice,
+  senão o sanitize deduplicaria e deslocaria índices), fim = UM `commitGesture`. Cor que já
+  existia não vira alvo do gesto (não se troca a extra de outra peça por tabela); teto no meio do
+  gesto = um toast e os passos seguintes ignorados; Esc (sem `change`) deixa a extra e o commit
+  sai no blur. QA real no Chrome (06/09): 3 passos → 16 swatches (era 15) e um desfazer volta a 15.
+  Testes: `partOps.test.ts`/`ops.test.ts` (`update*Color`), `ModelEditor.test.tsx` e
+  `TextureEditor.test.tsx` ("N passos viram UMA extra e UM desfazer").
+- **Galeria = cabeçalho de SEÇÃO** (a "faixa branca" que destoava do Pinta/Estúdio): o `<header>`
+  perdeu fundo/borda e virou `mb-5 flex flex-wrap items-end justify-between gap-3` com `h1
+  text-3xl md:text-4xl`, DENTRO da raiz rolável `flex min-h-0 flex-1 flex-col overflow-y-auto p-4
+  sm:p-6` (a mesma do Pinta); o `<main>` próprio saiu (o host tem o dele). O **hover cortado** era
+  o `.mld-pop` (translate -2px + scale 1.02) crescendo acima da borda de um `overflow-y-auto` sem
+  padding no topo: agora o `p-4` da raiz é a folga. `AssetCard` = `mld-panel mld-pop flex flex-col
+  gap-1 p-2` com miniatura `rounded-lg` (o molde do Pinta); grade `minmax(164px,1fr)`.
+  `Panel.tsx` ganhou `shrink-0` e as colunas direitas dos 3 editores `.mld-scroll-y` (gêmeo do
+  `.pin-scroll-y`). Teste estrutural em `MoldaApp.test.tsx` (header sem `bg-mld-surface`, dentro
+  da raiz rolável, sem `<main>`).
+- **Volta ao Estúdio**: `MoldaHostAdapter.resyncToStudio` + `useStudioResync` (ver a seção da
+  API pública) + `exportLoadedAssetForStudio`; o lado do Estúdio está em
+  `packages/studio/CLAUDE.md` §"✏️ Editar de verdade".
+
+## Malha: vértices, arestas e faces (M1 a M5, 06/09/2026)
+
+Estudo do Blockbench (GPL: só IDEIAS): malha = `vertices` e `faces` em MAPAS por chave (nunca
+índices), normais calculadas, quads e tris, seleção FORA do elemento com os vértices como lista
+mestra, picking em pixels com viés de profundidade, alça no centro da seleção, "consertar DEPOIS
+e perguntar" em vez de impedir, e o "Ajustar" depois da ação no lugar de modal. Plano do lote:
+`~/.claude/plans/n-s-j-temos-o-moonlit-peach.md` (F1..F7 + M1..M5 + extras).
+
+- **Dado** (`core/model.ts`): `shape: 'mesh'` numa PEÇA comum com `mesh: { vertices: Record<v_…,
+  Vec3>, faces: Record<f_…, { v: string[] }> }` (3 ou 4 chaves por face, CCW visto de fora);
+  `from`/`to` são DERIVADOS da caixa dos vértices (`meshBox`), então `partMatrix`, `partBounds`,
+  gêmeos, painéis, histórico e o JSON valem sem mexer; asset antigo não muda um byte. A pele de
+  uma face de malha mora em `part.faces['f_…']` como a de um cubo. Limites em `MOLDA_LIMITS`:
+  `maxMeshVertices 1_024`, `maxMeshFaces 1_024` e o orçamento por TRIÂNGULOS `maxTriangles
+  20_000` (quad = 2 tris; caixa 12, rampa 8, cilindro 64, bola 120). O status mostra
+  `T/20000 triângulos` quando passa da metade.
+- **Núcleo puro** (`model/mesh.ts`, `model/meshFrame.ts`, `model/vec.ts`): `boxMesh` (8 vértices
+  `v_xyz` em bits, 6 quads `f_px..f_nz` com frames IDÊNTICOS aos da caixa: a pele migra sem
+  re-amostrar), `meshBox`, `normalizeMesh` (idempotente; `orderQuad`), `faceNormal` (Newell),
+  `meshEdges`, `meshTriangleCount`, `meshIssues` (quad côncavo/não plano, vértices sobrepostos,
+  face virada), `mirrorMesh` (x → -x + ciclo invertido a partir de p1: o gêmeo mostra a pele da
+  fonte com `1 - u`, o mesmo `flipSkinH`/`width-1-x` das caixas). `meshFaceFrame` devolve um
+  `FaceFrame` plano (`s = p1 - p0`, normal de Newell, `t = cross(s, normal)`, invariante
+  `cross(s, t) == -normal`): para atlas, pele, pintura e picking a face de malha É uma "face de
+  cubo" (`faceSkinSize` = `skinDim(su) × skinDim(tv)`; tri = a rampa: pele retangular, só o
+  polígono conta). `partFaces(part)` substitui `FACES_BY_SHAPE[shape]` em sanitize, pick e ops.
+- **Sanitize** (`core/sanitize.ts` `sanitizeMesh` + `fitMeshToGrid`): chaves `v_`/`f_`, ciclos
+  de 3..4 chaves existentes, vértices arredondados ao encaixe e presos à grade, teto de
+  triângulos (a peça que estoura cai SEM derrubar o modelo), caixa gravada ignorada (derivada).
+- **Editar malha no palco** (`state/sessionStore.ts`, `model/meshSelection.ts`, `model/meshOps.ts`,
+  `viewport/meshEditOverlay.ts`): sub-modo do Montar (botão "Editar malha" / "Transformar em
+  malha", atalho E; a 5ª forma "Malha" coloca uma caixa já convertida). A seleção mora na SESSÃO
+  (`meshEditId`, `meshSelectMode` Pontos/Arestas/Faces = 1/2/3, `meshVertices` = a lista mestra;
+  arestas e faces derivam: `selectedEdges`/`selectedFaces`), "Somar à seleção" = o Shift para o
+  toque. Overlay = `Points` + `LineSegments` FILHOS do mesh da peça (sem depth test), picking com
+  tolerância em PIXELS convertida ao mundo na distância do candidato (8 px mouse, 14 px toque),
+  ponto > aresta > face e nada ATRÁS da superfície tocada. A alça é uma âncora (`meshAnchor`) no
+  centro da seleção, só de mover: o arrasto é um gesto sobre a BASE (delta total encaixado, `replace`
+  ao vivo, UM `commitGesture`); Delete apaga a seleção (`deleteMeshSelection`: faces que perdem
+  vértice caem; malha vazia = a peça sai com toast); Esc = Pronto. As setas movem os pontos escolhidos.
+- **Ferramentas** (`model/meshTools.ts`, puras, `null` = não dá): **Puxar** (`extrudeFaces`: a
+  região sobe pela normal média, paredes SÓ nas arestas de borda, a pele da tampa migra;
+  `extrudeEdges`: cada aresta vira uma aba), **Cortar no meio** (`loopCut`: o anel atravessa os
+  quads; vértice do meio memoizado por aresta; pele reprojetada nas duas metades; corte que cai
+  fora do encaixe liga o meio bloco no MESMO commit + toast), **Juntar pontos** (`mergeVertices`,
+  derruba faces degeneradas em tris), **Fechar face** (`createFace`, virada para fora), **Virar
+  face** (`flipFaces`, espelha a pele), **Dividir em triângulos** (`splitQuads`, pele reprojetada).
+  `skinReproject.ts`: `reprojectSkin` (texel a texel pelo ponto do MUNDO) e `rotateSkin90`.
+  **Consertar DEPOIS e perguntar**: `meshIssues` depois de cada ferramenta/arrasto; um problema
+  NOVO vira `showToast(msg, actions)` com Juntar/Dividir/Virar + Desfazer + Deixar (`Toast` ganhou
+  `actions`; `applyMeshFix`). **Ajustar**: depois de um Puxar, o painel reexecuta a ferramenta
+  sobre o "antes" com outra distância via `editorStore.amend(next)` (aplica sem `history.record`)
+  = um passo só de desfazer; morre quando qualquer outra coisa muda o modelo.
+- **Pintar na malha**: `faceContains` usa o polígono da face (par-ímpar, aceita côncavo), o
+  espelho de pintura é pelo PONTO espelhado (`pickTexelAtPoint`, vale para malha e gêmeo), o
+  "Vestir com textura" veste todas as faces (`partFaces`). Nova ferramenta **"Girar a pele"** (R):
+  um toque gira a pele da face 90° (`rotateFaceSkin`; face retangular volta ao tamanho por
+  vizinho mais próximo). A peça em edição ganha um VERSO escuro (`backMaterial`, `BackSide`): face
+  virada aparece (errada) em vez de sumir.
+- **Modelo pronto "Cristais"** (`templates/data/cristal.ts`): três bipirâmides de malha numa
+  pedra (`TemplatePartSpec.mesh`, caixa derivada). O `catalog.test.ts` exige round-trip exato pelo
+  sanitize: chaves estáveis, `normalizeMesh` no builder, ciclos orientados para FORA (`outward`).
+- **Extras do lote**: **setas** (←→ X, ↑↓ Z, PageUp/Down Y, Shift = 5 encaixes; `movePartsBy`
+  prende o GRUPO à grade), **trancar/esconder** (`locked?`/`hidden?` só como `true`, o gêmeo
+  herda; trancada: o toque no palco passa por ela e a alça some, a lista e os steppers seguem;
+  escondida: `mesh.visible = false`, fora do toque, DENTRO do modelo e do export), **Ver arestas**
+  (`EdgesGeometry` a 30° em todas as peças), **pivô** (steppers "Pivô X/Y/Z" presos à caixa +
+  "Pivô no centro"; `origin` já existia no dado), **seleção múltipla** (`extraIds` + "Somar à
+  seleção"/Shift no palco e na lista; contorno em todas, alça na âncora do GRUPO só de mover com
+  o delta preso à grade pelo grupo; `DragPatch.parts` leva caixas ABSOLUTAS por peça; Delete,
+  Duplicar e as setas valem para o grupo).
+- Testes: `mesh.test.ts`, `meshFrame.test.ts`, `meshSelection.test.ts`, `meshOps.test.ts`,
+  `meshTools.test.ts`, `viewport/meshEditOverlay.test.ts` (Raycaster real), `export/meshGlb.test.ts`
+  (20 000 tris + atlas cheio cabem no teto do Estúdio), `ModelEditor.mesh.test.tsx`, os blocos
+  "malha" em sanitize/twins/pick/partOps/geometry/atlas/stroke/ops, `sessionStore.test.ts` e o bloco
+  "extras de 06/09" em `ModelEditor.test.tsx`; e2e `model-editor.spec.ts` "malha: toque escolhe a
+  face…" (toque real com folga, Puxar, lápis e Girar a pele).
+- Desempenho medido em 06/09 (bun, melhor de 5; script fora do repo): malha de 1 024 quads e
+  1 089 vértices: `buildPartGeometry` 8 ms, `meshIssues` 31 ms, `meshEdges` 0,7 ms, sanitize do
+  modelo 14 ms, `overlay.setMesh` com 100 escolhidos 3 ms, `extrudeFaces` 2 ms, `loopCut`
+  atravessando 32 quads 9 ms; 128 caixas: geometria de todas 3 ms, `packAtlas` 0,1 ms, sanitize
+  1,4 ms. Nada disso pesa num toque; o `meshIssues` roda só depois de ferramenta/arrasto.
+- ⚠️ Compat pendente (decisão do plano, NÃO feita): o sanitize ainda DESCARTA peça de forma
+  desconhecida; uma aba com código antigo que abra um modelo com malha regrava o asset sem ela.
+  Como a malha já está no código, a janela é só o deploy; se um dia entrar outra forma, fazer o
+  sanitize PRESERVAR a peça desconhecida antes.

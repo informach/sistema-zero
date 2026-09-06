@@ -8,6 +8,8 @@ import { flipSkinH, isSkinBlank, resampleSkin } from './skinOps'
 describe('formas', () => {
   test('toda forma tem faces e toda face tem tamanho de pele', () => {
     for (const shape of SHAPE_IDS) {
+      // A malha tem faces por PEÇA (`partFaces`), não por forma.
+      if (shape === 'mesh') continue
       const faces = FACES_BY_SHAPE[shape]
       expect(faces.length).toBeGreaterThan(0)
       const part = createPart({ name: 'p', shape, from: [0, 0, 0], to: [2, 3, 4], color: 1 })

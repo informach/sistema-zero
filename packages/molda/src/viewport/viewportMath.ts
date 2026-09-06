@@ -23,11 +23,30 @@ export function roundTo(value: number, step: number): number {
   return Math.round(value / step) * step
 }
 
+/**
+ * A malha entra no hash por IDENTIDADE (um número por objeto): comparar 1 000
+ * vértices a cada quadro custaria mais que reconstruir o mesh; toda operação da
+ * malha devolve um objeto novo, então identidade nova = geometria nova.
+ */
+const meshIdentities = new WeakMap<object, number>()
+let nextMeshIdentity = 1
+function meshIdentity(mesh: object | undefined): string {
+  if (!mesh) return ''
+  let id = meshIdentities.get(mesh)
+  if (id === undefined) {
+    id = nextMeshIdentity
+    nextMeshIdentity += 1
+    meshIdentities.set(mesh, id)
+  }
+  return String(id)
+}
+
 export function geometryHash(part: MoldaPart, layoutVersion: number): string {
   const pivot = partPivot(part)
   const size = partSize(part)
   return [
     part.shape,
+    meshIdentity(part.mesh),
     size.join(','),
     [part.from[0] - pivot[0], part.from[1] - pivot[1], part.from[2] - pivot[2]].join(','),
     part.color,

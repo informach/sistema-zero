@@ -540,8 +540,7 @@ export function StudioFullClient({
           }
         }
         const bridge = await import('@sistemazero/studio/personal-assets')
-        bridge.setPersonalAssetsNamespace(viewerId ?? '')
-        const saved = await bridge.savePersonalAsset(result.asset)
+        const saved = await bridge.savePersonalAsset(result.asset, { namespace: viewerId ?? '' })
         if (!saved.ok) {
           return {
             ok: false,
@@ -609,19 +608,21 @@ export function StudioFullClient({
           }
         }
         const bridge = await import('@sistemazero/studio/personal-assets')
-        bridge.setPersonalAssetsNamespace(viewerId ?? '')
-        const saved = await bridge.savePersonalAsset({
-          id: result.asset.id,
-          name: result.asset.name,
-          kind: result.asset.kind,
-          // A textura é imagem, mas NÃO é desenho do Pinta: sem a origem o painel
-          // ofereceria "editar desenho" e abriria o Pinta num id do Molda.
-          origin: 'molda',
-          dataUrl: result.asset.dataUrl,
-          originalFileName: result.asset.originalFileName,
-          ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
-          ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
-        })
+        const saved = await bridge.savePersonalAsset(
+          {
+            id: result.asset.id,
+            name: result.asset.name,
+            kind: result.asset.kind,
+            // A textura é imagem, mas NÃO é desenho do Pinta: sem a origem o painel
+            // ofereceria "editar desenho" e abriria o Pinta num id do Molda.
+            origin: 'molda',
+            dataUrl: result.asset.dataUrl,
+            originalFileName: result.asset.originalFileName,
+            ...(result.asset.width !== undefined ? { width: result.asset.width } : {}),
+            ...(result.asset.height !== undefined ? { height: result.asset.height } : {}),
+          },
+          { namespace: viewerId ?? '' },
+        )
         if (!saved.ok) {
           return {
             ok: false,

@@ -10,8 +10,8 @@ import {
 import { createPart, type MoldaPart, SHAPE_IDS, type ShapeId } from '../core/model'
 import { makeModel } from '../testing/fixtures'
 import { planarFaceFrame } from './frame'
-import { buildPartGeometry, modelTriangleCount, triangleCountOf } from './geometry'
-import { FACES_BY_SHAPE, partCenter } from './shapes'
+import { buildPartGeometry, modelTriangleCount, partTriangleCount } from './geometry'
+import { partCenter, partFaces } from './shapes'
 
 function partOf(shape: ShapeId): MoldaPart {
   return createPart({ name: 'p', shape, from: [-1, 0, -2], to: [2, 3, 1], color: 1 })
@@ -30,7 +30,7 @@ describe('geometria das peças', () => {
   test('contagem de triângulos por forma e por modelo', () => {
     for (const shape of SHAPE_IDS) {
       const built = buildPartGeometry(partOf(shape))
-      expect(built.triangleCount).toBe(triangleCountOf(shape))
+      expect(built.triangleCount).toBe(partTriangleCount(partOf(shape)))
       expect(built.positions.length).toBe(built.triangleCount * 9)
       expect(built.normals.length).toBe(built.triangleCount * 9)
       expect(built.uvs.length).toBe(built.triangleCount * 6)
@@ -38,7 +38,7 @@ describe('geometria das peças', () => {
       const covered = Object.values(built.faceRanges).reduce((sum, r) => sum + (r?.count ?? 0), 0)
       expect(covered).toBe(built.triangleCount)
       for (const face of Object.keys(built.faceRanges)) {
-        expect(FACES_BY_SHAPE[shape] as readonly string[]).toContain(face)
+        expect(partFaces(partOf(shape)) as readonly string[]).toContain(face)
       }
     }
     expect(modelTriangleCount(makeModel())).toBe(12 + 8)
@@ -167,5 +167,33 @@ describe('geometria das peças', () => {
     expect(built.positions[i + 2]).toBe(1)
     expect(built.uvs[range.start * 6]).toBe(0)
     expect(built.uvs[range.start * 6 + 1]).toBe(0)
+  })
+})
+
+const geo = await import('./geometry')
+const model3 = await import('../core/model')
+
+describe('geometria da malha (06/09/2026)', () => {
+  test('a caixa-malha gera os mesmos 12 triângulos que a caixa (posições, normais e UVs)', () => {
+    const box = model3.createPart({ name: 'c', from: [-1, 0, -2], to: [2, 3, 1], color: 1 })
+    const mesh = model3.createPart({
+      name: 'm',
+      shape: 'mesh',
+      from: [-1, 0, -2],
+      to: [2, 3, 1],
+      color: 1,
+    })
+    const a = geo.buildPartGeometry(box)
+    const b = geo.buildPartGeometry(mesh)
+    expect(b.triangleCount).toBe(12)
+    for (const key of ['positions', 'normals', 'uvs'] as const) {
+      expect(b[key].length).toBe(a[key].length)
+      for (let i = 0; i < a[key].length; i += 1) {
+        expect(Math.abs((b[key][i] as number) - (a[key][i] as number))).toBeLessThan(1e-6)
+      }
+    }
+    expect(b.faceOfTriangle.map(String)).toEqual(
+      ['px', 'nx', 'py', 'ny', 'pz', 'nz'].flatMap((face) => [`f_${face}`, `f_${face}`]),
+    )
   })
 })

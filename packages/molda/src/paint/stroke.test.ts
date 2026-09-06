@@ -1,9 +1,19 @@
 import { describe, expect, test } from 'bun:test'
+import { createPart } from '../core/model'
+import { boxMesh } from '../model/mesh'
+import { setMirrorX } from '../model/partOps'
 import { faceSkinSize } from '../model/shapes'
 import { createSkin } from '../model/skinOps'
 import { makeModel, paintedSkin } from '../testing/fixtures'
 import { floodFillSkin, lineTexels, paintSkin, stampTexels } from './skinPaint'
-import { ensureFaceSkin, fillFace, finishStroke, paintSegment, sampleColor } from './stroke'
+import {
+  ensureFaceSkin,
+  fillFace,
+  finishStroke,
+  paintSegment,
+  rotateFaceSkin,
+  sampleColor,
+} from './stroke'
 
 describe('pintura na pele', () => {
   test('carimbos de 1, 2 e 3', () => {
@@ -113,5 +123,68 @@ describe('pintura no modelo', () => {
     const finished = finishStroke(erased)
     expect(finished.parts[0]?.faces.nx).toBeUndefined()
     expect(finishStroke(finished)).toBe(finished)
+  })
+})
+
+describe('Girar a pele', () => {
+  test('gira 90° no sentido horário; quatro giros voltam; face sem pele não muda; o gêmeo acompanha', () => {
+    const cube = createPart({ id: 'c', name: 'cubo', from: [1, 0, 0], to: [3, 2, 2], color: 2 })
+    const base = makeModel({ parts: [cube], mirrorX: false })
+    const size = faceSkinSize(cube, 'py', base.texelsPerUnit)
+    if (!size) throw new Error('size')
+    expect(size.width).toBe(size.height)
+    cube.faces.py = paintedSkin(size.width, size.height, (x) => (x === 0 ? 3 : 0))
+    const model = setMirrorX(base, true)
+    const rotated = rotateFaceSkin(model, 'c', 'py')
+    const skin = rotated.parts[0]?.faces.py
+    if (!skin) throw new Error('skin')
+    // A coluna da esquerda virou a linha de CIMA.
+    for (let x = 0; x < skin.width; x += 1) expect(skin.data[x]).toBe(3)
+    expect(skin.data[skin.width]).toBe(0)
+    // O gêmeo não tem pele própria (mostra a da fonte espelhada) e continua lá.
+    const twin = rotated.parts.find((part) => part.mirrorOf === 'c')
+    expect(twin).toBeDefined()
+    expect(twin?.faces.py).toBeUndefined()
+    let back = rotated
+    for (let i = 0; i < 3; i += 1) back = rotateFaceSkin(back, 'c', 'py')
+    expect(back.parts[0]?.faces.py?.data).toEqual(cube.faces.py.data)
+    expect(rotateFaceSkin(model, 'c', 'nz')).toBe(model)
+  })
+
+  test('face retangular: a pele girada volta ao tamanho da face', () => {
+    const slab = createPart({ id: 's', name: 'laje', from: [0, 0, 0], to: [4, 1, 2], color: 2 })
+    const model = makeModel({ parts: [slab], mirrorX: false })
+    const size = faceSkinSize(slab, 'py', model.texelsPerUnit)
+    if (!size) throw new Error('size')
+    expect(size.width).not.toBe(size.height)
+    slab.faces.py = paintedSkin(size.width, size.height, (x) => (x < size.width / 2 ? 3 : 5))
+    const rotated = rotateFaceSkin(model, 's', 'py')
+    const skin = rotated.parts[0]?.faces.py
+    expect(skin?.width).toBe(size.width)
+    expect(skin?.height).toBe(size.height)
+    // A metade da esquerda (3) virou a metade de CIMA.
+    expect(skin?.data[0]).toBe(3)
+    expect(skin?.data[(size.height - 1) * size.width]).toBe(5)
+  })
+
+  test('numa face de malha funciona igual (a pele mora na base plana da face)', () => {
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [2, 2, 2],
+      color: 2,
+      mesh: boxMesh([0, 0, 0], [2, 2, 2]),
+    })
+    const model = makeModel({ parts: [part], mirrorX: false })
+    const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
+    if (!size) throw new Error('size')
+    part.faces.f_py = paintedSkin(size.width, size.height, (x) => (x === 0 ? 3 : 0))
+    const rotated = rotateFaceSkin(model, 'm', 'f_py')
+    const skin = rotated.parts[0]?.faces.f_py
+    if (!skin) throw new Error('skin')
+    for (let x = 0; x < skin.width; x += 1) expect(skin.data[x]).toBe(3)
+    expect(skin.data[skin.width]).toBe(0)
   })
 })

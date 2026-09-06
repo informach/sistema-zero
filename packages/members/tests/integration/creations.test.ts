@@ -413,7 +413,10 @@ describe('criações guardadas na conta — HTTP', () => {
     // Aparelho A ainda acha que a corrente é a 1 → 409 (a versão de B não é sobrescrita).
     const stale = await reserve(ctx, 'studio', 'proj-1', { baseRevision: 1 })
     expect(stale.status).toBe(409)
-    expect((await json(stale)).error.code).toBe('CREATION_STALE_BASE')
+    const staleBody = await json(stale)
+    expect(staleBody.error.code).toBe('CREATION_STALE_BASE')
+    // A revisão corrente vai no corpo: o cliente decide sem baixar o item (06/09/2026).
+    expect(staleBody.details).toEqual({ currentRevision: 2 })
     // Aparelho que nunca viu o item (base 0) mas o item já existe: também 409 — vira conflito
     // do lado dele (guarda a versão da nuvem como cópia), nunca sobrescrita.
     const fresh = await reserve(ctx, 'studio', 'proj-1', { baseRevision: 0 })
@@ -438,13 +441,21 @@ describe('criações guardadas na conta — HTTP', () => {
     await saveItem(ctx, 'studio', 'proj-1', { baseRevision: 0 })
     await saveItem(ctx, 'studio', 'proj-1', { baseRevision: 1 })
 
+    // O defeito de 06/09/2026 no kids: a marca era apagada ANTES de a revisão ser lida e todo
+    // DELETE saía com base 0. Num item já commitado isso é 409 — e o corpo diz a corrente.
+    const zero = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
+      baseRevision: 0,
+    })
+    expect(zero.status).toBe(409)
+    expect((await json(zero)).details).toEqual({ currentRevision: 2 })
+
     const stale = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
       baseRevision: 1,
     })
     const staleBody = await json(stale)
     expect({ status: stale.status, body: staleBody }).toMatchObject({
       status: 409,
-      body: { error: { code: 'CREATION_STALE_BASE' } },
+      body: { error: { code: 'CREATION_STALE_BASE' }, details: { currentRevision: 2 } },
     })
     expect((await listOf(ctx, 'studio')).find((item) => item.itemId === 'proj-1')?.revision).toBe(2)
 

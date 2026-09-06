@@ -212,6 +212,8 @@ describe('MoldaImportDialog', () => {
       const asset = useProjectStore.getState().project?.assets?.[0]
       expect(asset?.kind).toBe('image')
       expect(asset?.libId).toBe('personal:t1')
+      // A textura é imagem, mas quem a edita é o Molda (o "✏️ Editar" abre lá).
+      expect(asset?.libOrigin).toBe('molda')
       expect(asset?.name).toBe('grama-do-molda')
     })
     expect(await screen.findByText('✓ no projeto')).not.toBeNull()
@@ -233,6 +235,7 @@ describe('MoldaImportDialog', () => {
       expect(asset?.kind).toBe('model3d')
       expect(asset?.originalFileName).toBe('nave-cristal.glb')
       expect(asset?.libId).toBe('personal:m1')
+      expect(asset?.libOrigin).toBe('molda')
       expect(asset?.libRevision).toBe(7)
     })
     // Fica aberta (multi-import): o céu entra na sequência.

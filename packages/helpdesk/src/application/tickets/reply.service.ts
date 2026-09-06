@@ -18,6 +18,7 @@ import type { SettingsRepository } from '../../domain/ports/settings-repository.
 import type { TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
 import type { TicketMessage } from '../../domain/ticket/ticket-message'
+import { assertHumanTicket } from '../../domain/ticket/ticket-triage'
 import { buildReplyRaw } from '../../infrastructure/gateways/google/rfc2822'
 import type { Actor } from '../actor'
 import type { GmailAccountService } from '../connection/gmail-account.service'
@@ -71,6 +72,7 @@ export class ReplyService {
   ): Promise<{ ticket: TicketView; message: MessageView }> {
     const ticket = await this.tickets.byId(ticketId)
     if (!ticket) throw new TicketNotFoundError()
+    assertHumanTicket(ticket)
     // Ticket do portal que nunca passou pelo Gmail responde NO portal. Se a
     // conversa já vive numa thread do Gmail (legado respondido por e-mail, e o
     // cliente pode ter continuado por lá), segue pelo Gmail — a resposta também

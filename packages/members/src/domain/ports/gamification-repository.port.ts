@@ -174,8 +174,41 @@ export interface AwardResult {
 export interface GamificationRanking {
   /** Competition ranking: nº de alunos da coorte com XP ESTRITAMENTE maior + 1 (empate divide). */
   position: number
-  /** Tamanho da coorte (alunos com matrícula em curso da audiência, mesmo sem XP). */
+  /** Tamanho da coorte (alunos elegíveis com XP positivo). */
   totalStudents: number
+}
+
+/** Linha interna do ranking geral — ids ficam restritos ao Members/Admin. */
+export interface GamificationRankingEntry {
+  userId: string
+  accountId: string
+  /** Competition ranking: empates dividem a posição. */
+  position: number
+  xp: number
+  /** Data civil SP (`YYYY-MM-DD`) da última atividade que rendeu XP. */
+  lastActivityDate: string | null
+}
+
+/** Página consistente do ranking geral, sempre calculada sobre a coorte completa. */
+export interface GamificationRankingPage {
+  entries: GamificationRankingEntry[]
+  /** Total de participantes elegíveis com XP positivo. */
+  totalParticipants: number
+  /** Total depois do filtro opcional de ids; sem filtro, igual a `totalParticipants`. */
+  totalMatches: number
+  /** Linha do solicitante mesmo quando está fora da página; `null` sem XP/coorte. */
+  me: GamificationRankingEntry | null
+}
+
+export interface ListGamificationRankingInput {
+  audience: CourseAudience
+  now: Date
+  limit: number
+  offset: number
+  /** Filtro administrativo aplicado DEPOIS de calcular a posição global. */
+  userIds?: string[]
+  /** Solicita a própria linha fora da paginação, sem inseri-la artificialmente. */
+  viewerUserId?: string
 }
 
 /**
@@ -282,8 +315,8 @@ export interface GamificationRepository {
    * PERFIS (linhas de `gamification_profiles`, `privileged=false`) cuja CONTA
    * (`account_id`) tem ≥1 matrícula em curso da audiência. O `userId` é o perfil
    * (XP do perfil); o `accountId` decide a pertinência à coorte (acesso da conta).
-   * **`null` quando a conta NÃO tem matrícula na audiência** (sem acesso) — o
-   * service omite o `ranking`. O requester sem perfil (XP 0) ainda é contado.
+   * **`null` quando a conta NÃO tem matrícula na audiência OU o perfil ainda não
+   * tem XP positivo** — o service omite o `ranking`.
    */
   getRanking(
     userId: string,
@@ -291,6 +324,11 @@ export interface GamificationRepository {
     audience: CourseAudience,
     now: Date,
   ): Promise<GamificationRanking | null>
+  /**
+   * Leaderboard paginado de XP acumulado. A coorte contém somente clientes com
+   * acesso ativo à audiência e XP positivo. O filtro de ids não recalcula posições.
+   */
+  listRanking(input: ListGamificationRankingInput): Promise<GamificationRankingPage>
   /**
    * Colocação no ranking da vitrine para VÁRIOS perfis da MESMA conta numa só passada
    * (área dos pais). A coorte/total da audiência é idêntica p/ todos os irmãos — só a

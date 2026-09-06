@@ -25,6 +25,16 @@ export const MOLDA_LIMITS = {
   textureSizes: [16, 32, 64] as const,
   maxExtraColors: 48,
   maxNameChars: 48,
+  /**
+   * Malha (peça `shape: 'mesh'`): o orçamento é em TRIÂNGULOS por modelo (20 000 ×
+   * ~136 chars no .glb + atlas ficam abaixo dos 7 M chars do Estúdio; 60 000 vértices
+   * desenhados cabem em índices uint16), com tetos por peça de vértices e faces.
+   */
+  maxTriangles: 20_000,
+  maxMeshVertices: 1_024,
+  maxMeshFaces: 1_024,
+  /** Precisão dos vértices no disco (1/16): a edição encaixa na grade, a conversão não. */
+  meshPrecision: 1 / 16,
   maxPartNameChars: 24,
   /** Miniatura guardada no asset (data URL): o teto do `thumb` das creations do members. */
   maxThumbChars: 12_000,

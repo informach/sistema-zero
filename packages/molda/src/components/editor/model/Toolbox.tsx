@@ -14,6 +14,8 @@ import {
   Copy,
   Cylinder,
   FlipHorizontal2,
+  Hexagon,
+  Layers,
   type LucideIcon,
   Magnet,
   Move,
@@ -28,6 +30,7 @@ const SHAPE_ICONS: Record<ShapeId, LucideIcon> = {
   wedge: Triangle,
   cylinder: Cylinder,
   sphere: Circle,
+  mesh: Hexagon,
 }
 
 const SHAPE_SHORTCUTS: Partial<Record<ShapeId, string>> = { box: 'B' }
@@ -53,10 +56,16 @@ export interface ToolboxProps {
   onToggleMirror: () => void
   snapHalf: boolean
   onToggleSnap: () => void
+  /** A peça selecionada já é malha ("Editar malha") ou é uma forma ("Transformar em malha"). */
+  selectedIsMesh: boolean
+  onEditMesh: () => void
+  /** Seleção múltipla: o próximo toque SOMA a peça (o Shift do desktop, como botão). */
+  partsAdditive: boolean
+  onTogglePartsAdditive: () => void
 }
 
 export function Toolbox(props: ToolboxProps): JSX.Element {
-  const shapes: ShapeId[] = ['box', 'wedge', 'cylinder', 'sphere']
+  const shapes: ShapeId[] = ['box', 'wedge', 'cylinder', 'sphere', 'mesh']
   const tools: TransformTool[] = ['move', 'rotate', 'scale']
   return (
     <aside
@@ -112,6 +121,14 @@ export function Toolbox(props: ToolboxProps): JSX.Element {
           />
         </div>
       </fieldset>
+      <ToolButton
+        icon={Hexagon}
+        label={props.selectedIsMesh ? COPY.editor.model.mesh.edit : COPY.editor.model.mesh.convert}
+        shortcut="E"
+        disabled={!props.hasSelection}
+        onClick={props.onEditMesh}
+        className="w-full"
+      />
       <div className="grid grid-cols-2 gap-1">
         <ToolButton
           icon={FlipHorizontal2}
@@ -125,6 +142,13 @@ export function Toolbox(props: ToolboxProps): JSX.Element {
           label={COPY.editor.model.snapHalf}
           active={props.snapHalf}
           onClick={props.onToggleSnap}
+        />
+        <ToolButton
+          icon={Layers}
+          label={COPY.editor.model.partsAdditive}
+          shortcut="Shift"
+          active={props.partsAdditive}
+          onClick={props.onTogglePartsAdditive}
         />
       </div>
     </aside>

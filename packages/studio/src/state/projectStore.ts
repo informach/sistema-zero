@@ -186,6 +186,8 @@ interface ProjectStore {
    * "editei o desenho no Pinta, o jogo se atualiza sozinho". Devolve erro ou null.
    */
   updateAssetImage: (id: string, image: UpdateAssetImageInput) => string | null
+  /** Persiste a origem descoberta de um asset pessoal legado. */
+  setAssetLibraryOrigin: (id: string, origin: 'pinta' | 'molda') => string | null
   // --- Modo profissional (project.kind === 'pro') ---
   /** Cria arquivo na árvore pro. Devolve mensagem de erro ou null se ok. */
   addProFile: (path: string) => string | null
@@ -222,6 +224,8 @@ export interface NewAssetInput {
   source?: 'upload' | 'library'
   libId?: string
   libRevision?: number
+  /** Origem da criação quando `libId` é `personal:<id>` (ver `ProjectAsset.libOrigin`). */
+  libOrigin?: 'pinta' | 'molda'
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
@@ -229,12 +233,18 @@ export interface NewAssetInput {
 }
 
 /**
- * Entrada de `updateAssetImage`: os PIXELS novos (e o que o desenho traz junto).
- * Sem `name`/`id`/`libId` de propósito — trocar a imagem nunca muda a identidade
- * do asset (ver o comentário da ação).
+ * Entrada de `updateAssetImage`: os BYTES novos (e o que a criação traz junto).
+ * Vale para imagens (o desenho do Pinta) e para os binários 3D do Molda (`.glb`/
+ * `.hdr`). Sem `name`/`id`/`libId` de propósito — trocar os bytes nunca muda a
+ * identidade do asset (ver o comentário da ação).
  */
 export interface UpdateAssetImageInput {
   dataUrl: string
+  /**
+   * Só nos 3D: o nome do arquivo novo (`nave.glb`). A validação cruza extensão × MIME ×
+   * assinatura; ausente, vale o que o asset já tinha.
+   */
+  originalFileName?: string
   width?: number
   height?: number
   /** Metadados do desenho de origem; ausentes seguem a regra da geometria. */
@@ -2585,6 +2595,11 @@ export function createProjectStore(
           : {}),
         ...(input.source === 'library' && input.libId ? { libId: input.libId } : {}),
         ...(input.source === 'library' &&
+        input.libId &&
+        (input.libOrigin === 'pinta' || input.libOrigin === 'molda')
+          ? { libOrigin: input.libOrigin }
+          : {}),
+        ...(input.source === 'library' &&
         typeof input.libRevision === 'number' &&
         Number.isFinite(input.libRevision) &&
         input.libRevision > 0
@@ -2634,7 +2649,15 @@ export function createProjectStore(
       if (!p?.assets) return 'Sem imagens no projeto.'
       const target = p.assets.find((a) => a.id === id)
       if (!target) return 'Imagem não encontrada.'
-      if (target.kind !== 'image') return 'Esse arquivo não é uma imagem.'
+      if (target.kind === 'audio') return 'Esse arquivo não é uma imagem.'
+      const is3D = target.kind === 'model3d' || target.kind === 'environment3d'
+      // 3D: a validação cruza extensão × MIME × assinatura, então o nome do arquivo faz
+      // parte do contrato (o da criação nova, senão o que o asset já tinha).
+      const originalFileName = is3D
+        ? typeof image.originalFileName === 'string' && image.originalFileName.trim()
+          ? image.originalFileName.trim().slice(0, 128)
+          : target.originalFileName
+        : undefined
       // Mesmos bytes = nada a fazer. Sem esta guarda, um chamador distraído
       // marcaria o projeto como sujo e dispararia autosave à toa.
       const libRevision =
@@ -2649,7 +2672,13 @@ export function createProjectStore(
       ) {
         return null
       }
-      if (!isValidAssetDataUrl(image.dataUrl)) return 'Imagem inválida ou grande demais.'
+      if (is3D) {
+        if (!isValidAssetDataUrl(image.dataUrl, target.kind, originalFileName)) {
+          return 'Esse arquivo 3D não é válido ou é grande demais.'
+        }
+      } else if (!isValidAssetDataUrl(image.dataUrl, 'image')) {
+        return 'Imagem inválida ou grande demais.'
+      }
       // Orçamento do projeto contando o asset NOVO no lugar do velho (o
       // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
       // ficado bem maior).
@@ -2658,7 +2687,7 @@ export function createProjectStore(
         0,
       )
       if (othersChars + image.dataUrl.length > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
-        return `O desenho "${target.name}" cresceu e não cabe mais neste jogo.`
+        return `${is3D ? 'A criação' : 'O desenho'} "${target.name}" cresceu e não cabe mais neste jogo.`
       }
 
       const width = typeof image.width === 'number' && image.width > 0 ? image.width : undefined
@@ -2690,6 +2719,7 @@ export function createProjectStore(
         ...(height ? { height } : {}),
       }
       if (libRevision !== undefined) next.libRevision = libRevision
+      if (originalFileName) next.originalFileName = originalFileName
       if (sprite) next.sprite = sprite
       else delete next.sprite
       if (tileset) next.tileset = tileset
@@ -2702,6 +2732,21 @@ export function createProjectStore(
         isDirty: true,
         saveError: null,
       })
+      return null
+    },
+    setAssetLibraryOrigin: (id, origin) => {
+      const p = get().project
+      if (!p?.assets) return 'Sem imagens no projeto.'
+      const target = p.assets.find((asset) => asset.id === id)
+      if (!target) return 'Imagem não encontrada.'
+      if (target.source !== 'library' || !target.libId?.startsWith('personal:')) {
+        return 'Este asset não veio de uma biblioteca de criação.'
+      }
+      if (target.libOrigin === origin) return null
+      const assets = p.assets.map((asset) =>
+        asset.id === id ? { ...asset, libOrigin: origin } : asset,
+      )
+      set({ project: bump({ ...p, assets }), isDirty: true, saveError: null })
       return null
     },
     renameAsset: (id, newName) => {

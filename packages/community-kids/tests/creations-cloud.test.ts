@@ -162,6 +162,8 @@ function fakeServer(
       ) {
         return json(409, {
           error: { code: 'CREATION_STALE_BASE', message: 'Esse item mudou em outro aparelho' },
+          // Como o members: a revisão corrente vai no corpo (06/09/2026).
+          details: { currentRevision: current?.revision ?? 0 },
         })
       }
       // PARTES (como o members): faltantes = as que o item ainda não tem; faltante SEM bytes
@@ -294,6 +296,8 @@ function fakeServer(
       if (opts.checkBase && baseRevision !== (current?.revision ?? 0)) {
         return json(409, {
           error: { code: 'CREATION_STALE_BASE', message: 'Esse item mudou em outro aparelho' },
+          // Como o members: a revisão corrente vai no corpo (06/09/2026).
+          details: { currentRevision: current?.revision ?? 0 },
         })
       }
       const existed = items.delete(deleteMatch[2] as string)
@@ -794,21 +798,22 @@ describe('createCreationsCloud', () => {
       idleMs: 0,
       wait: noWait,
     })
-    const stale: string[] = []
+    const stale: Array<{ itemId: string; currentRevision?: number | undefined }> = []
     const removed: number[] = []
 
     cloud.enqueueRemove(
       'd-1',
       1,
       ({ revision }) => removed.push(revision),
-      ({ itemId }) => {
-        stale.push(itemId)
+      (info) => {
+        stale.push(info)
       },
     )
     await cloud.flush()
 
     expect(server.calls.at(-1)?.body).toEqual({ baseRevision: 1 })
-    expect(stale).toEqual(['d-1'])
+    // O `currentRevision` do 409 chega ao adaptador: é com ele que o DELETE é reenviado.
+    expect(stale).toEqual([{ itemId: 'd-1', currentRevision: 2 }])
     expect(removed).toEqual([])
     expect(server.items.get('d-1')?.revision).toBe(2)
     cloud.dispose()

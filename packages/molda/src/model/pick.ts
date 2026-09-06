@@ -10,7 +10,9 @@
 import type { FaceId, MoldaModelAsset, MoldaPart, Vec3 } from '../core/model'
 import { cross, dot, planarFaceFrame, pointToFaceUv, sub } from './frame'
 import { buildPartGeometry } from './geometry'
-import { FACES_BY_SHAPE, faceSkinSize, partSize } from './shapes'
+import { faceVertices, isMeshFaceKey } from './mesh'
+import { faceLocalPolygon, polygonContains } from './meshFrame'
+import { faceSkinSize, partFaces, partSize } from './shapes'
 import { partPivot, rotationMatrixXYZ } from './transform'
 import { MIRRORED_FACE } from './twins'
 
@@ -228,12 +230,20 @@ function radial2(part: MoldaPart, local: Vec3): number {
   return Math.hypot((local[0] - cx) / (sx / 2), (local[2] - cz) / (sz / 2))
 }
 
-function faceContains(part: MoldaPart, face: FaceId, local: Vec3, eps: number): boolean {
+export function faceContains(part: MoldaPart, face: FaceId, local: Vec3, eps: number): boolean {
   const frame = planarFaceFrame(part, face)
   if (frame) {
     const distance = Math.abs(dot(sub(local, frame.origin), frame.normal))
     if (distance > eps) return false
     const [u, v] = pointToFaceUv(frame, local)
+    // Malha: a pele é o retângulo da base, mas a FACE é o polígono (tri, quad, até
+    // côncavo): par-ímpar no plano da base, com a folga do toque.
+    if (part.shape === 'mesh') {
+      if (!part.mesh || !isMeshFaceKey(face)) return false
+      const points = faceVertices(part.mesh, face)
+      if (!points) return false
+      return polygonContains(faceLocalPolygon(frame, points), [u, v], UV_TOLERANCE)
+    }
     if (u < -UV_TOLERANCE || u > 1 + UV_TOLERANCE || v < -UV_TOLERANCE || v > 1 + UV_TOLERANCE) {
       return false
     }
@@ -269,7 +279,7 @@ export function pickTexelAtPoint(
 ): TexelHit | null {
   for (const part of model.parts) {
     const local = worldToBox(part, point)
-    const faces = FACES_BY_SHAPE[part.shape]
+    const faces = partFaces(part)
     const planar = faces.filter((face) => planarFaceFrame(part, face) !== null)
     const curved = faces.filter((face) => planarFaceFrame(part, face) === null)
     for (const face of [...planar, ...curved]) {

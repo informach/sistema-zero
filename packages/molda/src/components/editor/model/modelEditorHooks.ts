@@ -1,13 +1,23 @@
 import type { RefObject } from 'react'
 import { useEffect } from 'react'
-import type { MoldaModelAsset, ShapeId } from '../../../core/model'
+import type { MoldaModelAsset, ShapeId, Vec3 } from '../../../core/model'
 import type { BrushSize } from '../../../paint/skinPaint'
 import type { EditorStore } from '../../../state/editorStore'
-import type { SessionStore } from '../../../state/sessionStore'
+import type { MeshSelectMode, SessionStore } from '../../../state/sessionStore'
 import type { MoldaViewportLike } from '../../../viewport/types'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 
 const THUMB_DELAY_MS = 700
+
+/** ←→ no X, ↑↓ no Z (↑ = para o fundo), PageUp/PageDown no Y. */
+const ARROWS: Record<string, Vec3> = {
+  arrowleft: [-1, 0, 0],
+  arrowright: [1, 0, 0],
+  arrowup: [0, 0, -1],
+  arrowdown: [0, 0, 1],
+  pageup: [0, 1, 0],
+  pagedown: [0, -1, 0],
+}
 
 function isTypingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false
@@ -59,8 +69,14 @@ export function useModelEditorShortcuts(options: {
   duplicate: () => void
   remove: () => void
   toggleMirror: () => void
+  /** "Editar malha": abrir/fechar, o que o toque escolhe (1/2/3) e apagar a seleção. */
+  editMesh: () => void
+  deleteMeshSelection: () => void
+  /** Setas: empurram a peça (ou os pontos, no Editar malha) em ENCAIXES; Shift = 5. */
+  nudge: (steps: Vec3) => void
 }): void {
-  const { session, add, duplicate, remove, toggleMirror } = options
+  const { session, add, duplicate, remove, toggleMirror, editMesh, deleteMeshSelection, nudge } =
+    options
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
       if (event.defaultPrevented || isMoldaDialogOpen() || isTypingTarget(event.target)) return
@@ -69,6 +85,29 @@ export function useModelEditorShortcuts(options: {
       if (key === 'escape' && state.placingShape) {
         state.setPlacingShape(null)
         return
+      }
+      const arrow = ARROWS[key]
+      if (arrow && state.mode === 'build') {
+        event.preventDefault()
+        const k = event.shiftKey ? 5 : 1
+        nudge([arrow[0] * k, arrow[1] * k, arrow[2] * k])
+        return
+      }
+      if (state.meshEditId) {
+        if (key === 'escape') {
+          state.exitMeshEdit()
+          return
+        }
+        if (key === '1' || key === '2' || key === '3') {
+          const modes: MeshSelectMode[] = ['vertex', 'edge', 'face']
+          state.setMeshSelectMode(modes[Number(key) - 1] ?? 'vertex')
+          return
+        }
+        if (key === 'delete' || key === 'backspace') {
+          event.preventDefault()
+          deleteMeshSelection()
+          return
+        }
       }
       if ((event.ctrlKey || event.metaKey) && key === 'd') {
         event.preventDefault()
@@ -81,6 +120,7 @@ export function useModelEditorShortcuts(options: {
         else if (key === 'e') state.setPaintTool('eraser')
         else if (key === 'g') state.setPaintTool('fillFace')
         else if (key === 'i') state.setPaintTool('picker')
+        else if (key === 'r') state.setPaintTool('rotateSkin')
         else if (key === 'm') state.toggleMirrorPaint()
         else if (key === '1' || key === '2' || key === '3') {
           state.setBrushSize(Number(key) as BrushSize)
@@ -91,6 +131,7 @@ export function useModelEditorShortcuts(options: {
       else if (key === 'r') state.setTool('rotate')
       else if (key === 't') state.setTool('scale')
       else if (key === 'b') add('box')
+      else if (key === 'e') editMesh()
       else if (key === 'm') toggleMirror()
       else if (key === 'delete' || key === 'backspace') {
         event.preventDefault()
@@ -99,5 +140,5 @@ export function useModelEditorShortcuts(options: {
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [add, duplicate, remove, toggleMirror, session])
+  }, [add, duplicate, remove, toggleMirror, editMesh, deleteMeshSelection, nudge, session])
 }

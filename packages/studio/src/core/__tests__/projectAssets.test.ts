@@ -148,6 +148,38 @@ describe('sanitizeProjectAssets', () => {
     expect(som.dataUrl).toBe(MP3)
   })
 
+  it('preserva `libOrigin` (pinta/molda) só nos assets da biblioteca e descarta valor inválido', () => {
+    const out = sanitizeProjectAssets([
+      {
+        kind: 'image',
+        name: 'grama',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:t1',
+        libOrigin: 'molda',
+      },
+      {
+        kind: 'image',
+        name: 'heroi',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:d1',
+        libOrigin: 'pinta',
+      },
+      {
+        kind: 'image',
+        name: 'lixo',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:x',
+        libOrigin: 'zappy',
+      },
+      // Upload nunca tem origem (o campo só faz sentido junto do `libId`).
+      { kind: 'image', name: 'foto', dataUrl: PNG, source: 'upload', libOrigin: 'molda' },
+    ])
+    expect(out.map((a) => a.libOrigin)).toEqual(['molda', 'pinta', undefined, undefined])
+  })
+
   it('respeita o orçamento total (descarta o que estoura)', () => {
     // Dinâmico sobre os tetos: cada imagem ~metade do limite por-imagem (válida),
     // e quantidade suficiente para a SOMA estourar o orçamento total — sem encostar

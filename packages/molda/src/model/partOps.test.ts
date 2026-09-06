@@ -11,12 +11,14 @@ import {
   duplicatePart,
   findFreeSpot,
   movePartBy,
+  movePartsBy,
   nextPartName,
   removePart,
   setMirrorX,
   setPartBox,
   setPartSize,
   setSnap,
+  updateExtraColor,
   updatePart,
 } from './partOps'
 import { faceSkinSize, partSize } from './shapes'
@@ -321,6 +323,20 @@ describe('operações do modelo', () => {
     expect(addExtraColor(full, '#abcdef')).toBeNull()
   })
 
+  test('updateExtraColor troca UMA extra no lugar; nunca duplica nem mexe nas fixas', () => {
+    const model = makeModel()
+    const added = addExtraColor(model, '#123456')
+    if (!added) throw new Error('sem extra')
+    const updated = updateExtraColor(added.model, 16, '#654321')
+    expect(updated.extraColors).toEqual(['#654321'])
+    // Mesma referência quando nada muda: hex igual, cor que já existe (o sanitize deduplicaria e
+    // DESLOCARIA os índices), índice fixo ou fora das extras.
+    expect(updateExtraColor(updated, 16, '#654321')).toBe(updated)
+    expect(updateExtraColor(updated, 16, '#ffffff')).toBe(updated)
+    expect(updateExtraColor(updated, 1, '#abcdef')).toBe(updated)
+    expect(updateExtraColor(updated, 17, '#abcdef')).toBe(updated)
+  })
+
   test('nextPartName respeita o teto de chars', () => {
     const model = {
       parts: [createPart({ name: 'a'.repeat(24), from: [0, 0, 0], to: [1, 1, 1], color: 1 })],
@@ -328,5 +344,116 @@ describe('operações do modelo', () => {
     const name = nextPartName(model, 'a'.repeat(24))
     expect(name).toHaveLength(24)
     expect(name.endsWith(' 2')).toBe(true)
+  })
+})
+
+const opsMod = await import('./partOps')
+const fixturesMod = await import('../testing/fixtures')
+const geometryMod = await import('./geometry')
+
+describe('malha nas operações (06/09/2026)', () => {
+  test('boxToMesh: a caixa vira malha com as peles migradas por face, sem re-amostrar', () => {
+    const model = fixturesMod.makeModel()
+    const body = model.parts[0]
+    if (!body?.faces.py) throw new Error('fixture sem pele')
+    const result = opsMod.boxToMesh(model, 'body')
+    if (!result) throw new Error('sem conversão')
+    const part = result.model.parts.find((p) => p.id === 'body')
+    expect(part?.shape).toBe('mesh')
+    expect(part?.faces.f_py).toBe(body.faces.py)
+    expect(result.lostFaces).toEqual([])
+    expect(faceSkinSize(part ?? body, 'f_py', model.texelsPerUnit)).toEqual(
+      faceSkinSize(body, 'py', model.texelsPerUnit),
+    )
+    expect(geometryMod.partTriangleCount(part ?? body)).toBe(12)
+    const clean = sanitizeMoldaAsset(structuredClone(result.model))
+    expect(clean?.kind === 'model' && clean.parts[0]?.faces.f_py).toEqual(body.faces.py)
+    expect(opsMod.boxToMesh(result.model, 'body')).toBeNull()
+  })
+
+  test('boxToMesh na rampa migra as retangulares e avisa as laterais pintadas', () => {
+    const model = fixturesMod.makeModel()
+    const wing = model.parts[1]
+    if (!wing?.faces.slope) throw new Error('fixture sem rampa')
+    const side = faceSkinSize(wing, 'px', model.texelsPerUnit)
+    if (!side) throw new Error('sem lateral')
+    wing.faces.px = fixturesMod.paintedSkin(side.width, side.height, () => 3)
+    const result = opsMod.boxToMesh(model, 'wing')
+    if (!result) throw new Error('sem conversão')
+    const part = result.model.parts.find((p) => p.id === 'wing')
+    expect(part?.faces.f_slope).toBe(wing.faces.slope)
+    expect(part?.faces.f_px).toBeUndefined()
+    expect(result.lostFaces).toEqual(['px'])
+    expect(Object.keys(part?.mesh?.faces ?? {})).toHaveLength(5)
+    expect(geometryMod.partTriangleCount(part ?? wing)).toBe(8)
+  })
+
+  test('boxToMesh na bola vira triângulos com vértices unidos', () => {
+    const model = fixturesMod.makeModel({
+      parts: [
+        createPart({
+          id: 'ball',
+          name: 'bola',
+          shape: 'sphere',
+          from: [0, 0, 0],
+          to: [4, 4, 4],
+          color: 2,
+        }),
+      ],
+    })
+    const result = opsMod.boxToMesh(model, 'ball')
+    if (!result) throw new Error('sem conversão')
+    const part = result.model.parts[0]
+    expect(part?.shape).toBe('mesh')
+    expect(geometryMod.partTriangleCount(part ?? model.parts[0]!)).toBe(120)
+    expect(Object.keys(part?.mesh?.vertices ?? {}).length).toBeLessThan(120 * 3)
+  })
+
+  test('setPartBox numa malha escala os vértices junto', () => {
+    const model = fixturesMod.makeModel({
+      parts: [
+        createPart({
+          id: 'm',
+          name: 'malha',
+          shape: 'mesh',
+          from: [0, 0, 0],
+          to: [2, 2, 2],
+          color: 2,
+        }),
+      ],
+    })
+    const moved = setPartBox(model, 'm', [1, 0, 1], [5, 2, 3])
+    const part = moved.parts[0]
+    expect(part?.from).toEqual([1, 0, 1])
+    expect(part?.mesh?.vertices.v_111).toEqual([5, 2, 3])
+    expect(part?.mesh?.vertices.v_000).toEqual([1, 0, 1])
+  })
+})
+
+describe('movePartsBy + trancar/esconder (06/09/2026)', () => {
+  test('o grupo anda pelo mesmo delta, preso à grade pelo grupo inteiro', () => {
+    const model = makeModel()
+    // corpo x ∈ [-2, 2], asa x ∈ [2, 5]: 20 para a direita vira 11 (a asa bate em 16).
+    const moved = movePartsBy(model, ['body', 'wing'], [20, 0, 0])
+    expect(moved.parts[0]?.from[0]).toBe(9)
+    expect(moved.parts[1]?.to[0]).toBe(16)
+    // Delta zero depois do clamp = mesma referência.
+    expect(movePartsBy(moved, ['body', 'wing'], [1, 0, 0])).toBe(moved)
+    expect(movePartsBy(model, [], [1, 0, 0])).toBe(model)
+  })
+
+  test('peça trancada fica parada; updatePart liga/desliga locked e hidden sem deixar `false`', () => {
+    const model = makeModel()
+    const locked = updatePart(model, 'body', { locked: true })
+    expect(locked.parts[0]?.locked).toBe(true)
+    const moved = movePartsBy(locked, ['body', 'wing'], [1, 0, 0])
+    expect(moved.parts[0]?.from[0]).toBe(-2)
+    expect(moved.parts[1]?.from[0]).toBe(3)
+    expect(movePartsBy(locked, ['body'], [1, 0, 0])).toBe(locked)
+    const unlocked = updatePart(locked, 'body', { locked: false })
+    expect('locked' in (unlocked.parts[0] ?? {})).toBe(false)
+    const hidden = updatePart(model, 'body', { hidden: true })
+    expect(hidden.parts[0]?.hidden).toBe(true)
+    expect('hidden' in (updatePart(hidden, 'body', { hidden: false }).parts[0] ?? {})).toBe(false)
   })
 })

@@ -10,9 +10,10 @@ describe('tool-usage — qual cartão cada matrícula vira', () => {
     ...over,
   })
 
-  test('mapeia os 5 produtos pelo sku', () => {
+  test('mapeia os 6 produtos pelo sku', () => {
     expect(toolCardKindFor(ent({ sku: 'pensa' }))).toBe('pensa')
     expect(toolCardKindFor(ent({ sku: 'pinta' }))).toBe('pinta')
+    expect(toolCardKindFor(ent({ sku: 'molda' }))).toBe('molda')
     expect(toolCardKindFor(ent({ sku: 'estudio-completo' }))).toBe('estudio')
     expect(toolCardKindFor(ent({ productKind: 'community', sku: 'clube-dos-criadores' }))).toBe(
       'clube',
@@ -52,10 +53,13 @@ describe('tool-usage — qual cartão cada matrícula vira', () => {
       { productKind: 'tool', sku: 'pinta', courseRef: 'pinta', name: 'Pinta (duplicada)' },
       { productKind: 'course', sku: 'curso-x', courseRef: 'curso-x', name: 'Curso X' },
       { productKind: 'tool', sku: 'pensa', courseRef: 'pensa', name: 'Pensa' },
+      { productKind: 'tool', sku: 'molda', courseRef: 'molda', name: 'Molda' },
     ])
+    // O Molda entra entre desenhar (Pinta) e construir (Estúdio): a ordem da jornada do kids.
     expect(cards).toEqual([
       { kind: 'pensa', name: 'Pensa' },
       { kind: 'pinta', name: 'Pinta' },
+      { kind: 'molda', name: 'Molda' },
       { kind: 'mural', name: 'Mural dos Criadores' },
     ])
   })

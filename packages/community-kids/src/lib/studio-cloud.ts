@@ -344,11 +344,51 @@ export function createStudioCloudSync(options: {
     enqueue(id)
   }
 
-  /** Uma exclusão velha não vence uma edição remota: restaura a revisão corrente no mesmo id. */
-  async function restoreAfterStaleRemove(id: string): Promise<void> {
-    marks.clearTombstone(id)
-    const downloaded = await cloud.download(id)
-    if (!downloaded) return
+  /**
+   * A nuvem recusou o DELETE (409: a base enviada não é a revisão corrente). Decidido por
+   * REVISÃO, nunca por relógio (a régua do reconcile em `creations-sync.ts`):
+   * - alguém EDITOU depois (revisão corrente MAIOR que a que a lápide conhecia): uma exclusão
+   *   velha não vence uma edição remota; a revisão corrente é restaurada no mesmo id, e a
+   *   lápide só sai DEPOIS de gravar (se a descida falhar, o item continua apagado aqui);
+   * - senão a exclusão é NOSSA e só a base estava errada (lápide sem revisão, ou a mesma da
+   *   nuvem): reenvia UMA vez com a revisão autoritativa. ⚠️ Antes de 06/09 todo DELETE saía
+   *   com base 0 e caía aqui, e a "restauração" era o defeito "apaguei e o jogo voltou".
+   * Sem `currentRevision` (serviço antigo), a revisão vem do próprio download; nuvem sem o
+   * item (já apagado lá) = lápide enviada.
+   */
+  async function resolveStaleRemove(
+    id: string,
+    info: { currentRevision?: number | undefined; retried?: boolean },
+  ): Promise<void> {
+    const tombstone = marks.tombstone(id)
+    if (!tombstone) return
+    let current = info.currentRevision
+    let downloaded: Awaited<ReturnType<typeof cloud.download>> = null
+    if (current === undefined) {
+      downloaded = await cloud.download(id)
+      if (!downloaded) {
+        marks.setTombstone(id, { ...tombstone, sent: true })
+        return
+      }
+      current = downloaded.summary.revision
+    }
+    const editedElsewhere = typeof tombstone.revision === 'number' && current > tombstone.revision
+    if (!editedElsewhere && !info.retried) {
+      marks.setTombstone(id, { ...tombstone, revision: current })
+      cloud.enqueueRemove(
+        id,
+        current,
+        ({ revision }) => marks.setTombstone(id, { at: tombstone.at, sent: true, revision }),
+        ({ itemId, currentRevision }) =>
+          resolveStaleRemove(itemId, { currentRevision, retried: true }),
+      )
+      return
+    }
+    downloaded ??= await cloud.download(id)
+    if (!downloaded) {
+      marks.setTombstone(id, { ...tombstone, sent: true })
+      return
+    }
     const raw = await resolveCloudProject(downloaded, id)
     const restored = await studio.restoreProjectFromCloud(raw, {
       expectedId: id,
@@ -356,10 +396,17 @@ export function createStudioCloudSync(options: {
     })
     if (restored.project.id !== id) return
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
+    marks.clearTombstone(id)
+    console.warn('[estudio-nuvem] exclusão desfeita: o jogo mudou em outro aparelho', {
+      itemId: id,
+    })
   }
 
   function enqueueRemove(id: string): void {
     const at = now()
+    // A revisão que ESTE aparelho conhece é a base do DELETE (a nuvem recusa base vencida).
+    // Lida ANTES de a marca ser apagada: era o defeito de 06/09 (marca apagada → base 0 →
+    // 409 → restauro → o jogo voltava).
     const revision = marks.revision(id) ?? null
     marks.setTombstone(id, { at, sent: false, revision })
     cloud.enqueueRemove(
@@ -367,20 +414,23 @@ export function createStudioCloudSync(options: {
       revision ?? 0,
       ({ revision: confirmedRevision }) =>
         marks.setTombstone(id, { at, sent: true, revision: confirmedRevision }),
-      ({ itemId }) => restoreAfterStaleRemove(itemId),
+      ({ itemId, currentRevision }) => resolveStaleRemove(itemId, { currentRevision }),
     )
   }
 
   let pullInFlight: Promise<void> | null = null
   const pullAbort = new AbortController()
+  /** Teto da espera pela fila antes de uma descida (um DELETE em voo sobe primeiro). */
+  const FLUSH_BEFORE_PULL_MS = 3_000
 
   return {
     attach() {
       const mirror: Exclude<StudioMirror, null> = {
         onChanged: (id) => enqueue(id),
         onDeleted: (id) => {
-          marks.delete(id)
+          // A lápide (com a revisão conhecida) ANTES de apagar a marca.
           enqueueRemove(id)
+          marks.delete(id)
         },
       }
       activeMirrors.set(studio, mirror)
@@ -394,7 +444,14 @@ export function createStudioCloudSync(options: {
     pullMissing() {
       if (pullAbort.signal.aborted) return Promise.resolve()
       if (!pullInFlight) {
-        pullInFlight = perfSpanAsync('kids:studio:pull', () => pullMissingOnce()).finally(() => {
+        // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser
+        // lida: senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa.
+        pullInFlight = perfSpanAsync('kids:studio:pull', () =>
+          cloud
+            .flush({ timeoutMs: FLUSH_BEFORE_PULL_MS })
+            .catch(() => undefined)
+            .then(() => pullMissingOnce()),
+        ).finally(() => {
           pullInFlight = null
         })
       }
@@ -533,16 +590,18 @@ export function createStudioCloudSync(options: {
           return true
         },
         push: (item) => enqueue(item.id),
-        remove: (itemId) => {
-          const tombstone = marks.tombstone(itemId)
+        remove: (itemId, cloudRevision) => {
+          // A base é a revisão que a nuvem acabou de listar (a lápide pode não conhecer
+          // revisão): a única que o servidor aceita.
           cloud.enqueueRemove(
             itemId,
-            tombstone?.revision ?? marks.revision(itemId) ?? 0,
+            cloudRevision,
             ({ revision }) => {
               const tombstone = marks.tombstone(itemId)
               if (tombstone) marks.setTombstone(itemId, { ...tombstone, sent: true, revision })
             },
-            ({ itemId: staleId }) => restoreAfterStaleRemove(staleId),
+            ({ itemId: staleId, currentRevision }) =>
+              resolveStaleRemove(staleId, { currentRevision }),
           )
         },
       })

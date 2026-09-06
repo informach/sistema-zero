@@ -56,6 +56,13 @@ export const GamificationQuery = t.Object({
   ranking: t.Optional(t.Literal('true')),
 })
 
+/** Página pública do ranking geral. Números de query são coagidos pelo TypeBox/Elysia. */
+export const RankingQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+
 // ── Uso de IA (quota por conta) ──────────────────────────────────────────────
 /**
  * `feature` identifica o RECURSO que consome IA (`pensa-chat`/`pensa-synthesis`/
@@ -803,6 +810,14 @@ export const ListMembersQuery = t.Object({
  */
 export const AdminGamificationQuery = t.Object({ audience: t.Optional(AUDIENCE) })
 
+/** Ranking geral administrativo; ids filtram a coorte depois do cálculo da posição global. */
+export const AdminRankingQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
+  userIds: t.Optional(t.String({ maxLength: 4000 })),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
+  offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
+})
+
 /** Query de `GET /members/admin/members/:userId/activity` — paginação da linha do tempo. */
 export const AdminActivityQuery = t.Object({
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
@@ -1343,6 +1358,20 @@ export function parseUserIds(csv: string | undefined): string[] | undefined {
     .filter((s) => UUID_RE.test(s))
     .slice(0, 20)
   return ids.length > 0 ? ids : undefined
+}
+
+/** CSV de ids da busca do ranking → uuids válidos, únicos e limitados ao lote do Auth. */
+export function parseRankingUserIds(csv: string | undefined): string[] | undefined {
+  if (csv === undefined) return undefined
+  const ids = [
+    ...new Set(
+      csv
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => UUID_RE.test(value)),
+    ),
+  ].slice(0, 100)
+  return ids
 }
 /**
  * Corpo de `POST /members/admin/teacher-threads` — o professor ABRE/CONTINUA uma

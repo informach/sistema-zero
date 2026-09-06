@@ -120,6 +120,7 @@ export const COPY = {
     wedge: 'Rampa',
     cylinder: 'Cilindro',
     sphere: 'Bola',
+    mesh: 'Malha',
   } satisfies Record<ShapeId, string>,
   skyPresets: {
     dia: 'Dia',
@@ -173,6 +174,10 @@ export const COPY = {
       arvore: { title: 'Árvore', description: 'Tronco, copa de bolas e frutinhas.' },
       casa: { title: 'Casa', description: 'Paredes, telhado de duas águas, porta e janelas.' },
       nave: { title: 'Nave espacial', description: 'Asas, motores e uma cabine de vidro.' },
+      cristal: {
+        title: 'Cristais',
+        description: 'Três cristais de malha numa pedra: pontas, arestas e faces para mexer.',
+      },
     } satisfies Record<MoldaTemplateId, { title: string; description: string }>,
   },
   rename: {
@@ -191,6 +196,8 @@ export const COPY = {
     saving: 'Salvando...',
     dirty: 'Mudanças por salvar',
     saveError: 'Não consegui salvar. Sua galeria pode ter chegado ao limite.',
+    studioSyncFailed:
+      'Salvei no Molda, mas não consegui atualizar no Estúdio. Tente salvar de novo.',
     download: 'Baixar',
     modelSummary: (parts: number) => (parts === 1 ? '1 peça' : `${parts} peças`),
     textureSummary: (size: number) => `${size} × ${size} pixels`,
@@ -205,6 +212,7 @@ export const COPY = {
         wedge: 'Rampa',
         cylinder: 'Cilindro',
         sphere: 'Bola',
+        mesh: 'Malha',
       } satisfies Record<ShapeId, string>,
       tools: { move: 'Mover', rotate: 'Girar', scale: 'Tamanho' },
       duplicate: 'Duplicar',
@@ -240,6 +248,21 @@ export const COPY = {
         frame: 'Enquadrar',
       },
       grid: 'Grade',
+      edges: 'Ver arestas',
+      /** Trancar/esconder uma peça (lista de peças). */
+      lock: 'Trancar',
+      unlock: 'Destrancar',
+      hide: 'Esconder',
+      show: 'Mostrar',
+      lockedTag: 'trancada',
+      hiddenTag: 'escondida',
+      lockedHint: 'Essa peça está trancada. Destranque na lista de peças para mexer nela.',
+      /** O pivô (o ponto em volta do qual a peça gira). */
+      pivot: 'Pivô',
+      pivotCenter: 'Pivô no centro',
+      /** Seleção múltipla de peças. */
+      partsAdditive: 'Somar à seleção',
+      selectedParts: (count: number) => `${count} peças escolhidas`,
       status: (parts: number, max: number, triangles: number) =>
         `${parts}/${max} peças · ${triangles} triângulos`,
       unsupported:
@@ -247,6 +270,75 @@ export const COPY = {
       panelsToggle: 'Peças e propriedades',
       thumbPending: 'Preparando a miniatura...',
       statusAtlas: (size: number) => `atlas ${size}×${size}`,
+      statusTriangles: (triangles: number, max: number) => `${triangles}/${max} triângulos`,
+      /** O sub-modo EDITAR MALHA (pontos, arestas e faces de uma peça de malha). */
+      mesh: {
+        edit: 'Editar malha',
+        convert: 'Transformar em malha',
+        converted: 'Virou malha: agora dá para mexer nos pontos, nas arestas e nas faces.',
+        convertedLostSkins: (count: number) =>
+          count === 1
+            ? 'Virou malha. A pintura de 1 face não coube na forma nova e saiu.'
+            : `Virou malha. A pintura de ${count} faces não coube na forma nova e saiu.`,
+        toolbox: 'Editar malha',
+        modes: { vertex: 'Pontos', edge: 'Arestas', face: 'Faces' },
+        additive: 'Somar à seleção',
+        deleteSelection: 'Apagar seleção',
+        done: 'Pronto',
+        hint: 'Toque num ponto, numa aresta ou numa face. Arraste a alça para mover.',
+        counts: (vertices: number, faces: number, triangles: number) =>
+          `${vertices} pontos · ${faces} faces · ${triangles} triângulos`,
+        selected: (count: number, mode: 'vertex' | 'edge' | 'face') => {
+          const noun =
+            mode === 'vertex'
+              ? count === 1
+                ? 'ponto'
+                : 'pontos'
+              : mode === 'edge'
+                ? count === 1
+                  ? 'aresta'
+                  : 'arestas'
+                : count === 1
+                  ? 'face'
+                  : 'faces'
+          return `${count} ${noun}`
+        },
+        nothingSelected: 'Nada escolhido.',
+        emptied: 'A malha ficou sem faces: a peça foi apagada.',
+        cannotMove: 'Não dá para mover para fora da grade.',
+        tools: {
+          extrude: 'Puxar',
+          loopCut: 'Cortar no meio',
+          merge: 'Juntar pontos',
+          createFace: 'Fechar face',
+          flip: 'Virar face',
+          split: 'Dividir em triângulos',
+        },
+        toolHints: {
+          extrude: 'Escolha faces (ou arestas) e toque em Puxar.',
+          loopCut: 'Escolha UMA aresta e toque em Cortar no meio.',
+          merge: 'Escolha dois pontos ou mais para juntar.',
+          createFace: 'Escolha 3 ou 4 pontos para fechar uma face.',
+          flip: 'Escolha faces para virar.',
+        },
+        adjust: 'Ajustar',
+        distance: 'Distância',
+        tooMany: 'A malha ficou grande demais: apague alguma coisa antes.',
+        snapHalfOn: 'O corte caiu no meio de um bloco: liguei o encaixe de meio bloco.',
+        issues: {
+          overlap: 'Dois pontos ficaram no mesmo lugar.',
+          'non-planar': 'Uma face ficou torta.',
+          concave: 'Uma face ficou com um buraco para dentro.',
+          flipped: 'Uma face ficou virada para dentro.',
+        },
+        fixes: {
+          merge: 'Juntar',
+          split: 'Dividir',
+          flip: 'Virar',
+          undo: 'Desfazer',
+          keep: 'Deixar',
+        },
+      },
       /** O modo PINTAR. */
       paint: {
         tools: {
@@ -255,6 +347,7 @@ export const COPY = {
           fillFace: 'Balde na face',
           fillPart: 'Balde na peça',
           picker: 'Conta-gotas',
+          rotateSkin: 'Girar a pele',
         },
         mirror: 'Espelho de pintura',
         sizeLabel: 'Tamanho do lápis',
@@ -368,6 +461,8 @@ export const COPY = {
     editorStatus: 'Estado do salvamento',
     viewport: 'Palco 3D',
     partItem: (name: string, shape: string) => `${name}, ${shape.toLowerCase()}`,
+    partLock: (name: string, locked: boolean) => `${locked ? 'Destrancar' : 'Trancar'} ${name}`,
+    partHide: (name: string, hidden: boolean) => `${hidden ? 'Mostrar' : 'Esconder'} ${name}`,
     colorSwatch: (index: number, hex: string) => `Cor ${index} ${hex}`,
     decrease: (label: string) => `Diminuir ${label.toLowerCase()}`,
     increase: (label: string) => `Aumentar ${label.toLowerCase()}`,

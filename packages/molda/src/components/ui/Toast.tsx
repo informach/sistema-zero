@@ -6,8 +6,14 @@
 import type { JSX, ReactNode } from 'react'
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 
+/** Um botão dentro do toast ("Dividir", "Desfazer"…): consertar DEPOIS e perguntar, em vez de impedir. */
+export interface ToastAction {
+  label: string
+  onClick: () => void
+}
+
 interface ToastContextValue {
-  showToast(message: string): void
+  showToast(message: string, actions?: readonly ToastAction[]): void
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null)
@@ -19,18 +25,25 @@ export function useToast(): ToastContextValue {
 }
 
 const TOAST_DURATION_MS = 3500
+/** Com botões o toast fica mais (a criança precisa ler e escolher). */
+const TOAST_WITH_ACTIONS_MS = 8000
 
 export function ToastProvider({ children }: { children: ReactNode }): JSX.Element {
-  const [message, setMessage] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; actions: readonly ToastAction[] } | null>(
+    null,
+  )
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const showToast = useCallback((next: string) => {
-    setMessage(next)
+  const showToast = useCallback((next: string, actions: readonly ToastAction[] = []) => {
+    setToast({ message: next, actions })
     if (timerRef.current) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => {
-      timerRef.current = null
-      setMessage(null)
-    }, TOAST_DURATION_MS)
+    timerRef.current = setTimeout(
+      () => {
+        timerRef.current = null
+        setToast(null)
+      },
+      actions.length > 0 ? TOAST_WITH_ACTIONS_MS : TOAST_DURATION_MS,
+    )
   }, [])
 
   useEffect(
@@ -47,9 +60,24 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
         aria-live="polite"
         className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center"
       >
-        {message ? (
-          <div className="rounded-2xl border-2 border-mld-border bg-mld-surface px-5 py-3 text-base font-bold text-mld-text shadow-lg">
-            {message}
+        {toast ? (
+          <div className="pointer-events-auto flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface px-5 py-3 text-base font-bold text-mld-text shadow-lg">
+            <span>{toast.message}</span>
+            {toast.actions.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={() => {
+                  if (timerRef.current) clearTimeout(timerRef.current)
+                  timerRef.current = null
+                  setToast(null)
+                  action.onClick()
+                }}
+                className="min-h-11 rounded-full border-2 border-mld-accent px-4 text-sm font-bold text-mld-accent hover:bg-mld-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+              >
+                {action.label}
+              </button>
+            ))}
           </div>
         ) : null}
       </div>
