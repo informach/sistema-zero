@@ -112,3 +112,13 @@ export function firstPaintableIndex(colors: readonly string[]): number {
   }
   return RESERVED_INDEX + 1
 }
+
+/** Mantém a mesma cor física escolhida quando uma extra anterior é removida. */
+export function remapActiveColorAfterRemoval(
+  activeIndex: number,
+  removedIndex: number,
+  remainingColors: readonly string[],
+): number {
+  if (activeIndex === removedIndex) return firstPaintableIndex(remainingColors)
+  return activeIndex > removedIndex ? activeIndex - 1 : activeIndex
+}

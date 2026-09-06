@@ -1,14 +1,17 @@
 import { describe, expect, test } from 'bun:test'
+import { MOLDA_LIMITS } from '../core/limits'
 import { createPart, type MeshFaceKey, type MoldaMesh, type Vec3 } from '../core/model'
 import { makeModel, paintedSkin } from '../testing/fixtures'
 import { partTriangleCount } from './geometry'
 import { boxMesh, faceNormal, faceVertices, meshIssues } from './mesh'
 import {
   applyMeshFix,
+  connectVertices,
   createFace,
   extrudeEdges,
   extrudeFaces,
   flipFaces,
+  insetFace,
   isClosedMesh,
   loopCut,
   mergeVertices,
@@ -17,6 +20,7 @@ import {
 import { faceSkinSize } from './shapes'
 
 const TOP = ['v_010', 'v_011', 'v_111', 'v_110']
+const TOP_FACE: MeshFaceKey[] = ['f_py']
 
 function cubeModel(mesh: MoldaMesh = boxMesh([0, 0, 0], [2, 2, 2]), snap: 1 | 0.5 = 1) {
   return makeModel({
@@ -44,7 +48,7 @@ function meshOf(model: ReturnType<typeof cubeModel>): MoldaMesh {
 describe('Puxar', () => {
   test('uma face: a tampa sobe, 4 paredes nascem, a malha segue fechada e sem face virada', () => {
     const model = cubeModel()
-    const result = extrudeFaces(model, 'm', TOP, 1)
+    const result = extrudeFaces(model, 'm', TOP_FACE, 1)
     if (!result) throw new Error('sem resultado')
     const mesh = meshOf(result.model)
     expect(Object.keys(mesh.faces)).toHaveLength(10)
@@ -62,7 +66,7 @@ describe('Puxar', () => {
 
   test('duas faces vizinhas: paredes só na BORDA da região (a aresta interna não ganha parede)', () => {
     const model = cubeModel()
-    const selection = [...TOP, 'v_101', 'v_100']
+    const selection: MeshFaceKey[] = ['f_py', 'f_px']
     const result = extrudeFaces(model, 'm', selection, 1)
     if (!result) throw new Error('sem resultado')
     const mesh = meshOf(result.model)
@@ -77,13 +81,21 @@ describe('Puxar', () => {
     const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
     if (!size) throw new Error('sem pele')
     part.faces.f_py = paintedSkin(size.width, size.height, () => 3)
-    const result = extrudeFaces(model, 'm', TOP, 2)
+    const result = extrudeFaces(model, 'm', TOP_FACE, 2)
     expect(result?.model.parts[0]?.faces.f_py).toBe(part.faces.f_py)
   })
 
   test('arestas: cada uma vira uma aba; vértice compartilhado sobe uma vez', () => {
     const model = cubeModel()
-    const result = extrudeEdges(model, 'm', ['v_010', 'v_011', 'v_111'], 1)
+    const result = extrudeEdges(
+      model,
+      'm',
+      [
+        ['v_010', 'v_011'],
+        ['v_011', 'v_111'],
+      ],
+      1,
+    )
     if (!result) throw new Error('sem resultado')
     const mesh = meshOf(result.model)
     expect(Object.keys(mesh.faces)).toHaveLength(8)
@@ -92,9 +104,14 @@ describe('Puxar', () => {
 
   test('sem face nem aresta na seleção, ou peça que não é malha: null', () => {
     const model = cubeModel()
-    expect(extrudeFaces(model, 'm', ['v_000'], 1)).toBeNull()
-    expect(extrudeEdges(model, 'm', ['v_000'], 1)).toBeNull()
-    expect(extrudeFaces(makeModel(), 'body', TOP, 1)).toBeNull()
+    expect(extrudeFaces(model, 'm', [], 1)).toBeNull()
+    expect(extrudeEdges(model, 'm', [], 1)).toBeNull()
+    expect(extrudeFaces(makeModel(), 'body', TOP_FACE, 1)).toBeNull()
+  })
+
+  test('duas faces opostas não viram as seis faces nem movem o cubo inteiro', () => {
+    const model = cubeModel()
+    expect(extrudeFaces(model, 'm', ['f_py', 'f_ny'], 1)).toBeNull()
   })
 })
 
@@ -149,6 +166,64 @@ describe('Cortar no meio', () => {
   test('aresta que não existe: null', () => {
     expect(loopCut(cubeModel(), 'm', ['v_010', 'v_zzz'])).toBeNull()
   })
+
+  test('recusa uma aresta na precisão mínima em vez de derrubar faces ao normalizar', () => {
+    const precision = MOLDA_LIMITS.meshPrecision
+    const model = cubeModel(boxMesh([0, 0, 0], [precision, precision, precision]), 0.5)
+
+    expect(loopCut(model, 'm', ['v_010', 'v_011'])).toBeNull()
+    expect(isClosedMesh(meshOf(model))).toBe(true)
+  })
+
+  test('divide um triângulo atingido por dois midpoints sem deixar T-junction', () => {
+    const model = cubeModel({
+      vertices: {
+        a: [0, 0, 0],
+        b: [0, 2, 0],
+        c: [2, 2, 0],
+        d: [2, 0, 0],
+        g: [3, 1, 0],
+      },
+      faces: {
+        f_q1: { v: ['a', 'b', 'c', 'd'] },
+        f_q2: { v: ['b', 'a', 'd', 'g'] },
+        f_t: { v: ['c', 'd', 'g'] },
+      },
+    })
+
+    const result = loopCut(model, 'm', ['a', 'b'])
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    const midpoint = Object.entries(mesh.vertices).find(
+      ([, point]) => point[0] === 2.5 && point[1] === 0.5 && point[2] === 0,
+    )?.[0]
+    if (!midpoint) throw new Error('sem midpoint de d-g')
+    const terminalFaces = Object.values(mesh.faces).filter((face) => face.v.includes('c'))
+
+    expect(terminalFaces.some((face) => face.v.includes(midpoint))).toBe(true)
+    expect(
+      Object.values(mesh.faces).some((face) =>
+        face.v.some(
+          (vertex, index) =>
+            (vertex === 'd' && face.v[(index + 1) % face.v.length] === 'g') ||
+            (vertex === 'g' && face.v[(index + 1) % face.v.length] === 'd'),
+        ),
+      ),
+    ).toBe(false)
+  })
+})
+
+describe('guardas das ferramentas de malha', () => {
+  test('peça trancada ou escondida não aceita ferramenta pura', () => {
+    const locked = cubeModel()
+    const hidden = cubeModel()
+    if (!locked.parts[0] || !hidden.parts[0]) throw new Error('sem peça')
+    locked.parts[0].locked = true
+    hidden.parts[0].hidden = true
+
+    expect(extrudeFaces(locked, 'm', TOP_FACE, 1)).toBeNull()
+    expect(loopCut(hidden, 'm', ['v_010', 'v_011'])).toBeNull()
+  })
 })
 
 describe('Juntar, Fechar, Virar, Dividir', () => {
@@ -179,6 +254,26 @@ describe('Juntar, Fechar, Virar, Dividir', () => {
     // Já existe uma face com esses vértices: nada a fazer.
     expect(createFace(result.model, 'm', TOP)).toBeNull()
     expect(createFace(model, 'm', ['v_000', 'v_111'])).toBeNull()
+  })
+
+  test('fechar face recusa três pontos colineares sem produzir commit vazio', () => {
+    const open: MoldaMesh = {
+      vertices: {
+        v_a: [0, 0, 0],
+        v_b: [1, 0, 0],
+        v_c: [2, 0, 0],
+        v_d: [0, 1, 0],
+        v_e: [2, 1, 0],
+      },
+      faces: {
+        f_left: { v: ['v_a', 'v_b', 'v_d'] },
+        f_right: { v: ['v_b', 'v_c', 'v_e'] },
+      },
+    }
+    const model = cubeModel(open)
+
+    expect(createFace(model, 'm', ['v_a', 'v_b', 'v_c'])).toBeNull()
+    expect(Object.keys(meshOf(model).faces)).toHaveLength(2)
   })
 
   test('virar face inverte a normal e espelha a pele (que fica no lugar); virar de novo desfaz', () => {
@@ -241,12 +336,97 @@ describe('Juntar, Fechar, Virar, Dividir', () => {
   })
 })
 
+describe('Encolher dentro e Conectar pontos', () => {
+  test('Encolher uma face cria o miolo e o anel, mantém a malha fechada e reprojeta a pele', () => {
+    const model = cubeModel()
+    const part = model.parts[0]
+    if (!part) throw new Error('sem peça')
+    const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
+    if (!size) throw new Error('sem pele')
+    part.faces.f_py = paintedSkin(size.width, size.height, (x) => (x < size.width / 2 ? 3 : 5))
+
+    const result = insetFace(model, 'm', 'f_py', 25)
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    expect(Object.keys(mesh.vertices)).toHaveLength(12)
+    expect(Object.keys(mesh.faces)).toHaveLength(10)
+    expect(result.vertices).toHaveLength(4)
+    expect(isClosedMesh(mesh)).toBe(true)
+    expect(meshIssues(mesh)).toEqual([])
+    for (const key of result.vertices) {
+      const point = mesh.vertices[key] as Vec3
+      expect(point[1]).toBe(2)
+      for (const value of point) expect(value * 16).toBe(Math.round(value * 16))
+    }
+    expect(Object.keys(result.model.parts[0]?.faces ?? {})).toHaveLength(5)
+  })
+
+  test('Encolher aceita triângulo, reexecuta percentuais sobre a origem e recusa face ruim', () => {
+    const triangle: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [4, 0, 0], v_c: [0, 0, 4] },
+      faces: { f_t: { v: ['v_a', 'v_c', 'v_b'] } },
+    }
+    const model = cubeModel(triangle)
+    const small = insetFace(model, 'm', 'f_t', 25)
+    const large = insetFace(model, 'm', 'f_t', 50)
+    expect(small && Object.keys(meshOf(small.model).faces)).toHaveLength(4)
+    expect(large && Object.keys(meshOf(large.model).faces)).toHaveLength(4)
+    expect(insetFace(model, 'm', 'f_t', 5)).toBeNull()
+
+    const bent = boxMesh([0, 0, 0], [2, 2, 2])
+    bent.vertices.v_111 = [2, 2.5, 2]
+    expect(insetFace(cubeModel(bent), 'm', 'f_py', 25)).toBeNull()
+    const dart: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [3, 0, 1], v_c: [6, 0, 0], v_d: [3, 0, 5] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    expect(insetFace(cubeModel(dart), 'm', 'f_q', 25)).toBeNull()
+  })
+
+  test('Conectar dois pontos opostos divide o quad pela diagonal escolhida e reprojeta a pele', () => {
+    const model = cubeModel()
+    const part = model.parts[0]
+    if (!part) throw new Error('sem peça')
+    const size = faceSkinSize(part, 'f_py', model.texelsPerUnit)
+    if (!size) throw new Error('sem pele')
+    part.faces.f_py = paintedSkin(size.width, size.height, () => 4)
+
+    // A outra diagonal, diferente da escolha padrão de Dividir, também vale num quad convexo.
+    const result = connectVertices(model, 'm', ['v_011', 'v_110'])
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    expect(Object.keys(mesh.faces)).toHaveLength(7)
+    expect(result.vertices).toEqual(['v_011', 'v_110'])
+    expect(isClosedMesh(mesh)).toBe(true)
+    expect(meshIssues(mesh)).toEqual([])
+    const halves = Object.values(mesh.faces).filter(
+      (face) => face.v.includes('v_011') && face.v.includes('v_110'),
+    )
+    expect(halves).toHaveLength(2)
+    expect(Object.keys(result.model.parts[0]?.faces ?? {})).toHaveLength(2)
+    // Pontos vizinhos já têm uma aresta; não criamos arestas soltas nem duplicadas.
+    expect(connectVertices(model, 'm', ['v_010', 'v_011'])).toBeNull()
+  })
+
+  test('Conectar num quad côncavo aceita apenas a diagonal segura que passa pelo dente', () => {
+    const dart: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [3, 0, 1], v_c: [6, 0, 0], v_d: [3, 0, 5] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    const model = cubeModel(dart)
+    expect(connectVertices(model, 'm', ['v_a', 'v_c'])).toBeNull()
+    const result = connectVertices(model, 'm', ['v_b', 'v_d'])
+    expect(result?.vertices).toEqual(['v_b', 'v_d'])
+    expect(result && meshIssues(meshOf(result.model))).toEqual([])
+  })
+})
+
 describe('review 06/09: Puxar só para fora e Dividir pelo dente', () => {
   test('Puxar com distância zero ou negativa não se aplica (paredes coplanares/viradas)', () => {
     const model = cubeModel()
-    expect(extrudeFaces(model, 'm', TOP, 0)).toBeNull()
-    expect(extrudeFaces(model, 'm', TOP, -1)).toBeNull()
-    expect(extrudeEdges(model, 'm', ['v_010', 'v_011'], -1)).toBeNull()
+    expect(extrudeFaces(model, 'm', TOP_FACE, 0)).toBeNull()
+    expect(extrudeFaces(model, 'm', TOP_FACE, -1)).toBeNull()
+    expect(extrudeEdges(model, 'm', [['v_010', 'v_011']], -1)).toBeNull()
   })
 
   test('Dividir um quad côncavo escolhe a diagonal que passa pelo dente (nenhum triângulo vira)', () => {
@@ -299,7 +479,7 @@ describe('review 06/09 (2): abas, encaixe, faces duplicadas e orientação pelas
       mesh: plane,
     })
     const model = makeModel({ parts: [part] })
-    const result = extrudeEdges(model, 'm', ['v_a', 'v_b'], 1)
+    const result = extrudeEdges(model, 'm', [['v_a', 'v_b']], 1)
     if (!result) throw new Error('sem resultado')
     const mesh = meshOf(result.model)
     expect(Object.keys(mesh.faces)).toHaveLength(2)
@@ -308,7 +488,7 @@ describe('review 06/09 (2): abas, encaixe, faces duplicadas e orientação pelas
 
   test('Puxar duas faces com normais diferentes anda pelo ENCAIXE (os pontos novos ficam na grade)', () => {
     const model = cubeModel()
-    const result = extrudeFaces(model, 'm', [...TOP, 'v_001', 'v_101'], 1)
+    const result = extrudeFaces(model, 'm', ['f_py', 'f_px'], 1)
     if (!result) throw new Error('sem resultado')
     const mesh = meshOf(result.model)
     for (const key of result.vertices) {

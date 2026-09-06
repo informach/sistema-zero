@@ -33,6 +33,8 @@ export const MOLDA_LIMITS = {
   maxTriangles: 20_000,
   maxMeshVertices: 1_024,
   maxMeshFaces: 1_024,
+  /** Precisão das posições e pivôs no disco; o encaixe escolhido só guia ações futuras. */
+  positionPrecision: 1 / 16,
   /** Precisão dos vértices no disco (1/16): a edição encaixa na grade, a conversão não. */
   meshPrecision: 1 / 16,
   maxPartNameChars: 24,

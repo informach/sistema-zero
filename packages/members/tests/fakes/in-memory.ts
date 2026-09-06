@@ -2737,10 +2737,21 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (this.privilegedUsers.has(profile.userId) || profile.xp <= 0) continue
       const accountId = this.accountIds.get(key)
       if (!accountId || !accountsWithEntitlement.has(accountId)) continue
+      const snapshotXp = input.snapshotAt
+        ? this.events
+            .filter(
+              (event) =>
+                event.userId === profile.userId &&
+                event.audience === input.audience &&
+                event.createdAt <= input.snapshotAt!,
+            )
+            .reduce((total, event) => total + event.amount, 0)
+        : profile.xp
+      if (snapshotXp <= 0) continue
       participants.push({
         userId: profile.userId,
         accountId,
-        xp: profile.xp,
+        xp: snapshotXp,
         lastActivityDate: profile.lastActivityDate,
       })
     }
@@ -2757,9 +2768,15 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     })
     const allowed = input.userIds === undefined ? null : new Set(input.userIds)
     const matches = allowed ? ranked.filter((entry) => allowed.has(entry.userId)) : ranked
+    const after = input.after
+    const page = after
+      ? matches.filter(
+          (entry) => entry.xp < after.xp || (entry.xp === after.xp && entry.userId > after.userId),
+        )
+      : matches
 
     return {
-      entries: matches.slice(input.offset, input.offset + input.limit),
+      entries: page.slice(input.offset, input.offset + input.limit),
       totalParticipants: ranked.length,
       totalMatches: matches.length,
       me: input.viewerUserId

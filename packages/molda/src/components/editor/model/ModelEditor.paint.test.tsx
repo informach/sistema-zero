@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import type { MoldaAsset, MoldaModelAsset } from '../../../core/model'
 import { paintSegment } from '../../../paint/stroke'
@@ -98,6 +98,52 @@ describe('ModelEditor (Pintar)', () => {
     )
     act(() => callbacks.onPickColor(7))
     await waitFor(() => expect(fake.instances[0]?.paint?.color).toBe(7))
+  })
+
+  test('Pintar de perto abre a face, respeita atalhos do modal e fecha o traço em um desfazer', async () => {
+    await openPaint()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.tools.faceEditor }))
+    await waitFor(() => expect(fake.instances[0]?.paint?.tool).toBe('faceEditor'))
+    act(() => fake.instances[0]?.callbacks.onOpenFace({ partId: 'body', face: 'px', flipX: false }))
+
+    const dialog = await screen.findByRole('dialog', {
+      name: COPY.editor.model.paint.faceEditor.title,
+    })
+    fireEvent.keyDown(document, { key: 'e' })
+    expect(
+      within(dialog)
+        .getByRole('button', { name: COPY.editor.model.paint.tools.eraser })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+    // O atalho é do diálogo: a ferramenta do palco continua sendo "Pintar de perto".
+    expect(fake.instances[0]?.paint?.tool).toBe('faceEditor')
+    fireEvent.keyDown(document, { key: 'p' })
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: COPY.a11y.colorSwatch(5, '#fff609') }),
+    )
+    const stage = within(dialog).getByRole('img', {
+      name: COPY.editor.model.paint.faceEditor.stage,
+    })
+    fireEvent.pointerDown(stage, { clientX: 1, clientY: 1, button: 0, pointerId: 20 })
+    fireEvent.pointerMove(stage, { clientX: 3, clientY: 1, pointerId: 20 })
+    fireEvent.pointerUp(stage, { pointerId: 20 })
+    await waitFor(() => expect(lastModel().parts[0]?.faces.px?.data[27]).toBe(5))
+
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: COPY.editor.model.paint.faceEditor.done }),
+    )
+    expect(screen.queryByRole('dialog')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts[0]?.faces.px).toBeUndefined())
+  })
+
+  test('Pintar de perto fecha com aviso quando o alvo já não existe', async () => {
+    await openPaint()
+    act(() =>
+      fake.instances[0]?.callbacks.onOpenFace({ partId: 'apagada', face: 'px', flipX: false }),
+    )
+    expect(await screen.findByText(COPY.editor.model.paint.faceEditor.stale)).toBeDefined()
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   test('texels por bloco re-amostram as peles; atlas cheio avisa uma vez; status mostra o atlas', async () => {

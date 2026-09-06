@@ -12,6 +12,7 @@
 import { newId } from '../core/id'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { FaceId, MoldaModelAsset, MoldaPart, MoldaSkin, Vec3 } from '../core/model'
+import { modelTriangleCount, partTriangleCount } from './geometry'
 import { meshEquals, mirrorMesh } from './mesh'
 import { flipSkinH } from './skinOps'
 
@@ -49,6 +50,20 @@ export function partCrossesMirror(part: Pick<MoldaPart, 'from' | 'to'>): boolean
   return part.from[0] < 0 && part.to[0] > 0
 }
 
+/**
+ * Quantos triângulos o modelo terá depois de sincronizar todos os gêmeos.
+ * Gêmeos gravados são ignorados: a fonte é a autoridade, e cada fonte fora do
+ * eixo aparecerá duas vezes no estado canônico.
+ */
+export function syncedTriangleCount(model: MoldaModelAsset): number {
+  if (!model.mirrorX) return modelTriangleCount(model)
+  return model.parts.reduce((total, part) => {
+    if (part.mirrorOf) return total
+    const count = partTriangleCount(part)
+    return total + (partCrossesMirror(part) ? count : count * 2)
+  }, 0)
+}
+
 function freshPartId(taken: Set<string>): string {
   let id = newId()
   while (taken.has(id)) id = newId()
@@ -70,7 +85,10 @@ function appendMissingTwins(model: MoldaModelAsset): MoldaModelAsset {
   const missing = model.parts.filter(
     (source) => !source.mirrorOf && !partCrossesMirror(source) && !pairedSources.has(source.id),
   )
-  if (model.parts.length + missing.length > MOLDA_LIMITS.maxParts) {
+  if (
+    model.parts.length + missing.length > MOLDA_LIMITS.maxParts ||
+    syncedTriangleCount(model) > MOLDA_LIMITS.maxTriangles
+  ) {
     return { ...bakeTwins(model), mirrorX: false }
   }
   const additions: MoldaPart[] = []

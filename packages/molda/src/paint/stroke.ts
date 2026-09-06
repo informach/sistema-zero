@@ -17,7 +17,14 @@ import { rotateSkin90 } from '../model/skinReproject'
 import { syncTwins } from '../model/twins'
 import { type BrushSize, floodFillSkin, lineTexels, paintSkin, type Texel } from './skinPaint'
 
-export type PaintTool = 'pencil' | 'eraser' | 'fillFace' | 'fillPart' | 'picker' | 'rotateSkin'
+export type PaintTool =
+  | 'pencil'
+  | 'eraser'
+  | 'fillFace'
+  | 'fillPart'
+  | 'picker'
+  | 'rotateSkin'
+  | 'faceEditor'
 
 export interface PaintSettings {
   tool: PaintTool

@@ -799,7 +799,7 @@ export interface RankingLeaderboardView {
   items: RankingEntryView[]
   total: number
   limit: number
-  offset: number
+  nextCursor: string | null
   /** Própria linha, mesmo quando ela não faz parte da página atual. */
   me: RankingEntryView | null
 }

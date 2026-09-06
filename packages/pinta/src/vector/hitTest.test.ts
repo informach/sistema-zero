@@ -67,15 +67,17 @@ describe('hitMovableShapeAt: forma vazada (só contorno)', () => {
     expect(hitMovableShapeAt([zigzag], { x: 50, y: 60 }, 4)).toBeNull()
   })
 
-  it('os pontos de controle da cúbica e o Z entram no contorno', () => {
+  it('a cúbica segue a curva renderizada e o Z fecha somente o subcaminho fechado', () => {
     const closed = stroke('c', 'M 0 0 C 0 100 100 100 100 0 Z')
-    // Sobre o primeiro trecho (âncora -> controle) e sobre o fechamento do Z.
-    expect(shapeHitAt(closed, { x: 0, y: 50 })).toBe(true)
+    // No meio, a Bézier passa por (50,75), não pelos controles em y=100.
+    expect(shapeHitAt(closed, { x: 50, y: 75 })).toBe(true)
+    expect(shapeHitAt(closed, { x: 0, y: 50 })).toBe(false)
+    expect(shapeHitAt(closed, { x: 50, y: 100 })).toBe(false)
     expect(shapeHitAt(closed, { x: 50, y: 0 })).toBe(true)
     // Sem o Z o trecho de volta não existe.
     const open = stroke('o', 'M 0 0 C 0 100 100 100 100 0')
     expect(shapeHitAt(open, { x: 50, y: 0 })).toBe(false)
-    expect(shapeHitAt(open, { x: 50, y: 100 })).toBe(true)
+    expect(shapeHitAt(open, { x: 50, y: 75 })).toBe(true)
   })
 
   it('círculo "sem cor" por dentro: o miolo não acerta, a borda acerta', () => {

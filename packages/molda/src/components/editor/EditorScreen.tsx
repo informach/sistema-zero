@@ -6,7 +6,7 @@
  * folha de pintar chegar.
  */
 import type { JSX } from 'react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import type { MoldaAsset } from '../../core/model'
@@ -15,17 +15,12 @@ import { markMoldaAssetClosed, markMoldaAssetOpen } from '../../state/persistenc
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { isMoldaDialogOpen } from '../ui/Dialog'
+import { isTypingTarget } from '../ui/interaction'
 import { useToast } from '../ui/Toast'
 import { ModelEditor } from './model/ModelEditor'
 import { SkyEditor } from './sky/SkyEditor'
 import { TextureEditor } from './texture/TextureEditor'
 import { useStudioResync } from './useStudioResync'
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof HTMLElement)) return false
-  const tag = target.tagName
-  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
-}
 
 function LoadedEditor({
   initial,
@@ -46,11 +41,27 @@ function LoadedEditor({
   const asset = useStore(editor, (state) => state.asset)
   // A volta da ponte com o Estúdio: só depois de SALVAR (o `savedAsset` muda), nunca ao abrir.
   const savedAsset = useStore(editor, (state) => state.savedAsset)
-  useStudioResync({
+  const { flush: flushStudioResync } = useStudioResync({
     savedAsset,
     send: adapter.resyncToStudio,
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
+  const closingRef = useRef(false)
+  const handleBack = useCallback(() => {
+    if (closingRef.current) return
+    closingRef.current = true
+    void (async () => {
+      await editor.getState().flush()
+      const state = editor.getState()
+      if (state.savedAsset !== state.asset) {
+        closingRef.current = false
+        showToast(state.saveError ?? COPY.editor.saveError)
+        return
+      }
+      await flushStudioResync(state.savedAsset)
+      onBack()
+    })()
+  }, [editor, flushStudioResync, onBack, showToast])
 
   useEffect(() => {
     markMoldaAssetOpen(initial.id)
@@ -82,9 +93,9 @@ function LoadedEditor({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [editor])
 
-  if (asset.kind === 'model') return <ModelEditor editor={editor} onBack={onBack} />
-  if (asset.kind === 'sky') return <SkyEditor editor={editor} onBack={onBack} />
-  return <TextureEditor editor={editor} onBack={onBack} />
+  if (asset.kind === 'model') return <ModelEditor editor={editor} onBack={handleBack} />
+  if (asset.kind === 'sky') return <SkyEditor editor={editor} onBack={handleBack} />
+  return <TextureEditor editor={editor} onBack={handleBack} />
 }
 
 export function EditorScreen({

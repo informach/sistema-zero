@@ -10,6 +10,8 @@ export interface ListRankingInput {
   audience: CourseAudience
   limit: number
   offset: number
+  snapshotAt?: Date
+  after?: { xp: number; userId: string }
   userIds?: string[]
   viewerUserId?: string
 }

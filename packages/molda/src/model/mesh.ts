@@ -358,6 +358,37 @@ export type MeshIssue =
 const OVERLAP_EPS = 1e-6
 const PLANAR_EPS = 0.05
 
+export type MeshFaceGeometryIssue = 'degenerate' | 'non-planar' | 'concave'
+
+/**
+ * Problema da forma de UMA face. Ferramentas que exigem uma superfície reta e
+ * convexa usam a mesma régua de `meshIssues`, sem percorrer a malha inteira.
+ */
+export function faceGeometryIssue(
+  mesh: MoldaMesh,
+  face: MeshFaceKey,
+): MeshFaceGeometryIssue | null {
+  const points = faceVertices(mesh, face)
+  if (!points || points.length < 3) return 'degenerate'
+  const normal = faceNormal(points)
+  if (length(normal) < 1e-9) return 'degenerate'
+  if (points.length !== 4) return null
+  const middle = faceCenter(points)
+  const offPlane = Math.max(...points.map((point) => Math.abs(dot(sub(point, middle), normal))))
+  if (offPlane > PLANAR_EPS) return 'non-planar'
+  let sign = 0
+  for (let i = 0; i < 4; i += 1) {
+    const a = points[i] as Vec3
+    const b = points[(i + 1) % 4] as Vec3
+    const c = points[(i + 2) % 4] as Vec3
+    const turn = dot(cross(sub(b, a), sub(c, b)), normal)
+    if (Math.abs(turn) < 1e-9) return 'degenerate'
+    if (sign === 0) sign = Math.sign(turn)
+    else if (Math.sign(turn) !== sign) return 'concave'
+  }
+  return null
+}
+
 /**
  * O que pode dar errado numa malha editada à mão (consertar DEPOIS e avisar, em
  * vez de impedir): vértices sobrepostos, quad torto (fora do plano), quad côncavo
@@ -391,27 +422,9 @@ export function meshIssues(mesh: MoldaMesh): MeshIssue[] {
   for (const [key, face] of faces) {
     const points = faceVertices(mesh, face)
     if (!points) continue
-    const normal = faceNormal(points)
-    if (length(normal) < 1e-9) continue
-    if (points.length === 4) {
-      const middle = faceCenter(points)
-      const offPlane = Math.max(...points.map((p) => Math.abs(dot(sub(p, middle), normal))))
-      if (offPlane > PLANAR_EPS) issues.push({ kind: 'non-planar', face: key })
-      else {
-        let sign = 0
-        let concave = false
-        for (let i = 0; i < 4; i += 1) {
-          const a = points[i] as Vec3
-          const b = points[(i + 1) % 4] as Vec3
-          const c = points[(i + 2) % 4] as Vec3
-          const turn = dot(cross(sub(b, a), sub(c, b)), normal)
-          if (Math.abs(turn) < 1e-9) continue
-          if (sign === 0) sign = Math.sign(turn)
-          else if (Math.sign(turn) !== sign) concave = true
-        }
-        if (concave) issues.push({ kind: 'concave', face: key })
-      }
-    }
+    const geometryIssue = faceGeometryIssue(mesh, key)
+    if (geometryIssue === 'non-planar') issues.push({ kind: 'non-planar', face: key })
+    else if (geometryIssue === 'concave') issues.push({ kind: 'concave', face: key })
     // Face virada: TODA aresta que ela divide com UMA vizinha (aresta de dobra, não
     // uma borda nem uma aba de três faces) é percorrida no mesmo sentido pelas duas.
     // A vizinha de uma face virada conflita numa aresta só, então não é apontada.

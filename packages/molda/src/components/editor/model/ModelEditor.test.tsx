@@ -1,8 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
-import type { MoldaAsset, MoldaModelAsset } from '../../../core/model'
+import { MOLDA_LIMITS } from '../../../core/limits'
+import { createPart, type MoldaAsset, type MoldaModelAsset } from '../../../core/model'
 import { getPalette } from '../../../core/palette'
+import { applySnapMove, snapSourceAnchors, snapTargetAnchors } from '../../../model/snap'
+import { mirrorTwinOf } from '../../../model/twins'
 import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
 import { installFailingViewport, installFakeViewport } from '../../../testing/fakeViewport'
@@ -38,7 +41,7 @@ async function openModel(
   const persistence = createMemoryPersistence([asset])
   render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'model-1' }} />)
   await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
-  await waitFor(() => expect(lastModel().parts).toHaveLength(2))
+  await waitFor(() => expect(lastModel().parts).toHaveLength(asset.parts.length))
   return persistence
 }
 
@@ -64,6 +67,24 @@ describe('ModelEditor (bancada Montar)', () => {
     screen.getByText(COPY.editor.model.status(2, 128, 20))
     screen.getByRole('button', { name: 'corpo, caixa' })
     screen.getByText(COPY.editor.model.noSelection)
+  })
+
+  test('a ajuda mostra apenas os comandos e gestos do contexto atual', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.help.button }))
+    let dialog = screen.getByRole('dialog', { name: COPY.editor.model.help.title })
+    expect(within(dialog).getByText(COPY.editor.model.help.contexts.build)).toBeDefined()
+    expect(within(dialog).getByText(COPY.editor.model.tools.move)).toBeDefined()
+    expect(within(dialog).getByText('Ctrl+D')).toBeDefined()
+    expect(within(dialog).queryByText(COPY.editor.model.paint.tools.pencil)).toBeNull()
+
+    fireEvent.click(within(dialog).getByRole('button', { name: COPY.a11y.closeDialog }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.help.button }))
+    dialog = screen.getByRole('dialog', { name: COPY.editor.model.help.title })
+    expect(within(dialog).getByText(COPY.editor.model.help.contexts.paint)).toBeDefined()
+    expect(within(dialog).getByText(COPY.editor.model.paint.tools.pencil)).toBeDefined()
+    expect(within(dialog).queryByText(COPY.editor.model.tools.move)).toBeNull()
   })
 
   test('adicionar caixa entra no modo de colocar; toque na superfície cria e desfazer volta', async () => {
@@ -128,6 +149,24 @@ describe('ModelEditor (bancada Montar)', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.snapHalf }))
     await waitFor(() => expect(lastModel().snap).toBe(0.5))
     expect(fake.instances[0]?.snap).toBe(0.5)
+  })
+
+  test('espelhar no teto de peças explica por que não pode ligar', async () => {
+    const parts = Array.from({ length: MOLDA_LIMITS.maxParts }, (_unused, index) =>
+      createPart({
+        id: `p-${index}`,
+        name: `peca-${index}`,
+        from: [2, 0, 0],
+        to: [3, 1, 1],
+        color: 1,
+      }),
+    )
+    await openModel(makeModel({ mirrorX: false, parts }))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mirror }))
+
+    await screen.findByText(COPY.editor.model.partsFull)
+    expect(lastModel().mirrorX).toBe(false)
   })
 
   test('atalhos trocam a ferramenta e adicionam caixa; vistas e grade chegam ao palco', async () => {
@@ -267,6 +306,7 @@ describe('extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção m�
     // Editar malha: a seta move os PONTOS escolhidos, não a peça.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mesh.convert }))
     await waitFor(() => expect(fake.instances[0]?.meshEdit?.partId).toBe('body'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mesh.modes.face }))
     act(() => fake.instances[0]?.callbacks.onMeshPick({ kind: 'face', key: 'f_py' }, false))
     await waitFor(() => expect(fake.instances[0]?.meshEdit?.vertices).toHaveLength(4))
     fireEvent.keyDown(document, { key: 'PageUp' })
@@ -361,6 +401,87 @@ describe('extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção m�
     await waitFor(() => expect(lastModel().parts).toHaveLength(0))
     expect(fake.instances[0]?.extraSelected).toEqual([])
   })
+
+  test('Arrumar move o grupo atomicamente e Repetir mantém um único passo de desfazer ao ajustar', async () => {
+    const low = createPart({ id: 'low', name: 'baixo', from: [4, 3, 4], to: [6, 5, 6], color: 1 })
+    const high = createPart({ id: 'high', name: 'alto', from: [6, 5, 4], to: [8, 7, 6], color: 2 })
+    await openModel(makeModel({ parts: [low, high] }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.partsAdditive }))
+    fireEvent.click(screen.getByRole('button', { name: 'baixo, caixa' }))
+    const alignX = screen.getByRole('button', { name: COPY.editor.model.arrange.alignAxis('X') })
+    expect((alignX as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'alto, caixa' }))
+    expect((alignX as HTMLButtonElement).disabled).toBe(false)
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.arrange.floor }))
+    await waitFor(() => expect(lastModel().parts[0]?.from[1]).toBe(0))
+    expect(lastModel().parts[1]?.from[1]).toBe(2)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts[0]?.from[1]).toBe(3))
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: COPY.editor.model.arrange.repeatDirection(COPY.editor.model.arrange.directions['+x']),
+      }),
+    )
+    await waitFor(() => expect(lastModel().parts).toHaveLength(4))
+    fireEvent.click(
+      screen.getByRole('button', { name: COPY.a11y.increase(COPY.editor.model.arrange.count) }),
+    )
+    await waitFor(() => expect(lastModel().parts).toHaveLength(6))
+    expect(fake.instances[0]?.extraSelected).toHaveLength(3)
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts).toHaveLength(2))
+  })
+
+  test('arrasto do grupo é atômico quando um novo gêmeo não cabe', async () => {
+    const crossing = createPart({
+      id: 'a',
+      name: 'a',
+      from: [-1, 0, 0],
+      to: [1, 1, 1],
+      color: 1,
+    })
+    const otherCrossing = createPart({
+      id: 'c',
+      name: 'c',
+      from: [-1, 2, 0],
+      to: [1, 3, 1],
+      color: 1,
+    })
+    const pairs = Array.from({ length: 63 }, (_unused, index) => {
+      const source = createPart({
+        id: `s${index}`,
+        name: `s${index}`,
+        from: [4, 4, 0],
+        to: [5, 5, 1],
+        color: 1,
+      })
+      return [source, mirrorTwinOf(source, { id: `t${index}`, name: `t${index}` })]
+    }).flat()
+    const model = makeModel({ mirrorX: true, parts: [crossing, otherCrossing, ...pairs] })
+    expect(model.parts).toHaveLength(MOLDA_LIMITS.maxParts)
+    await openModel(model)
+    const callbacks = fake.instances[0]?.callbacks
+    if (!callbacks) throw new Error('sem palco')
+    act(() => {
+      callbacks.onSelect('a', false)
+      callbacks.onSelect('s0', true)
+      callbacks.onDragStart('a')
+      callbacks.onDragMove({
+        id: 'a',
+        parts: [
+          { id: 'a', from: [1, 0, 0], to: [3, 1, 1] },
+          { id: 's0', from: [6, 4, 0], to: [7, 5, 1] },
+        ],
+      })
+      callbacks.onDragEnd(null)
+    })
+
+    expect(lastModel().parts.find((part) => part.id === 'a')?.from).toEqual([-1, 0, 0])
+    expect(lastModel().parts.find((part) => part.id === 's0')?.from).toEqual([4, 4, 0])
+  })
 })
 
 describe('review 06/09: gesto de cor, setas seguradas, Pintar sem somar', () => {
@@ -452,5 +573,118 @@ describe('review 06/09: gesto de cor, setas seguradas, Pintar sem somar', () => 
     await screen.findByText(COPY.editor.model.lockedHint)
     expect(fake.instances[0]?.meshEdit).toBeNull()
     expect(lastModel().parts[0]?.shape).toBe('box')
+  })
+
+  test('apagar a extra anterior preserva a mesma cor física do lápis', async () => {
+    const model = makeModel({ extraColors: ['#111111', '#222222'] })
+    const body = model.parts[0]
+    if (!body) throw new Error('sem corpo')
+    body.color = 16
+    await openModel(model)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.colorSwatch(17, '#222222') }))
+    await waitFor(() => expect(fake.instances[0]?.paint?.color).toBe(17))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.build }))
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.removeColor }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))
+
+    await waitFor(() => expect(fake.instances[0]?.paint?.color).toBe(16))
+    expect(lastModel().extraColors).toEqual(['#222222'])
+  })
+})
+
+describe('Grudar pontos', () => {
+  test('dois toques movem a peça em um único commit e voltam para Mover', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const before = structuredClone(lastModel())
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.tools.snap }))
+    await waitFor(() => expect(fake.instances[0]?.snapState.phase).toBe('source'))
+    screen.getByText(COPY.editor.model.snap.source)
+
+    const sources = snapSourceAnchors(lastModel(), 'body', ['body'])
+    const targets = snapTargetAnchors(lastModel(), 'wing', ['body'])
+    const pair = sources
+      .flatMap((source) => targets.map((target) => ({ source, target })))
+      .find(({ source, target }) => applySnapMove(lastModel(), ['body'], source.ref, target.ref).ok)
+    if (!pair) throw new Error('sem par válido')
+    const { source, target } = pair
+    act(() => fake.instances[0]?.callbacks.onSnapSource(source))
+    await waitFor(() => expect(fake.instances[0]?.snapState.phase).toBe('target'))
+    screen.getByText(COPY.editor.model.snap.target)
+
+    act(() => fake.instances[0]?.callbacks.onSnapTarget(target))
+
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('move'))
+    expect(fake.instances[0]?.snapState).toEqual({ phase: 'inactive' })
+    expect(lastModel().parts.find((part) => part.id === 'body')?.from).not.toEqual(
+      before.parts.find((part) => part.id === 'body')?.from,
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts).toEqual(before.parts))
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('G ativa; Esc, novo clique e troca de modo cancelam; peça trancada não entra', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.keyDown(document, { key: 'g' })
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('snap'))
+    fireEvent.keyDown(document, { key: 'Escape' })
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('move'))
+    expect(fake.instances[0]?.snapState.phase).toBe('inactive')
+
+    fireEvent.keyDown(document, { key: 'g' })
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('snap'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.tools.snap }))
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('move'))
+
+    fireEvent.keyDown(document, { key: 'g' })
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('snap'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))
+    await waitFor(() => expect(fake.instances[0]?.mode).toBe('paint'))
+    expect(fake.instances[0]?.snapState.phase).toBe('inactive')
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.build }))
+
+    fireEvent.keyDown(document, { key: 'g' })
+    await waitFor(() => expect(fake.instances[0]?.tool).toBe('snap'))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mesh.convert }))
+    await waitFor(() => expect(fake.instances[0]?.meshEdit).not.toBeNull())
+    expect(fake.instances[0]?.tool).toBe('move')
+    expect(fake.instances[0]?.snapState.phase).toBe('inactive')
+    fireEvent.keyDown(document, { key: 'g' })
+    expect(fake.instances[0]?.tool).toBe('move')
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mesh.done }))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.partLock('corpo') }))
+    await waitFor(() => expect(lastModel().parts[0]?.locked).toBe(true))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.tools.snap }))
+    await screen.findByText(COPY.editor.model.snap.locked)
+    expect(fake.instances[0]?.snapState.phase).toBe('inactive')
+  })
+
+  test('trocar a seleção pela lista cancela Grudar e não move o grupo antigo', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const before = structuredClone(lastModel())
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.tools.snap }))
+    await waitFor(() => expect(fake.instances[0]?.snapState.phase).toBe('source'))
+    const source = snapSourceAnchors(lastModel(), 'body', ['body'])[0]
+    const target = snapTargetAnchors(lastModel(), 'wing', ['body'])[0]
+    if (!source || !target) throw new Error('sem âncoras')
+    act(() => fake.instances[0]?.callbacks.onSnapSource(source))
+    await waitFor(() => expect(fake.instances[0]?.snapState.phase).toBe('target'))
+
+    fireEvent.click(screen.getByRole('button', { name: 'asa, rampa' }))
+
+    await waitFor(() => expect(fake.instances[0]?.snapState.phase).toBe('inactive'))
+    expect(fake.instances[0]?.tool).toBe('move')
+    act(() => fake.instances[0]?.callbacks.onSnapTarget(target))
+    expect(lastModel().parts).toEqual(before.parts)
+    expect(fake.instances[0]?.selected).toBe('wing')
   })
 })

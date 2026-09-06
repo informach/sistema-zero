@@ -113,6 +113,7 @@ import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
+import { EncryptedRankingCursorCodec } from '../src/infrastructure/security/ranking-cursor.codec'
 import { createServer } from '../src/interfaces/http/server'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
@@ -294,6 +295,7 @@ export function buildApp(
     ranking,
     clock,
     authGateway,
+    new EncryptedRankingCursorCodec(WEBHOOK_SECRET),
   )
 
   const env = {

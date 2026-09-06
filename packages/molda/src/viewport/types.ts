@@ -4,10 +4,22 @@
  */
 import type { MoldaModelAsset, ShapeId, Vec3 } from '../core/model'
 import type { MeshPick } from '../model/meshSelection'
+import type { SnapAnchor } from '../model/snap'
+import type { FacePaintTarget } from '../paint/facePaint'
 import type { PaintSettings } from '../paint/stroke'
 import type { EditorMode, MeshSelectMode, TransformTool } from '../state/sessionStore'
 
 export type { MeshPick }
+
+export type ViewportSnapState =
+  | { phase: 'inactive' }
+  | { phase: 'source'; primaryId: string; movingIds: readonly string[] }
+  | {
+      phase: 'target'
+      primaryId: string
+      movingIds: readonly string[]
+      source: SnapAnchor
+    }
 
 /** "Editar malha" no palco: a peça aberta, o que um toque escolhe e os vértices escolhidos. */
 export interface MeshEditState {
@@ -50,6 +62,8 @@ export interface ViewportCallbacks {
   onPaintEnd(model: MoldaModelAsset): void
   /** Conta-gotas: índice de cor. */
   onPickColor(index: number): void
+  /** Abre a face tocada no editor ampliado; o gêmeo já virou fonte + orientação. */
+  onOpenFace(target: FacePaintTarget): void
   onAtlas(info: AtlasInfo): void
   /** Toque na malha em edição (`null` = no vazio); `additive` = Shift/"Somar à seleção". */
   onMeshPick(pick: MeshPick | null, additive: boolean): void
@@ -57,6 +71,9 @@ export interface ViewportCallbacks {
   /** Delta acumulado desde o início, em coordenadas da CAIXA da peça (sem histórico). */
   onMeshDragMove(delta: Vec3): void
   onMeshDragEnd(): void
+  /** Primeiro e segundo toque da ferramenta “Grudar”. */
+  onSnapSource(anchor: SnapAnchor): void
+  onSnapTarget(anchor: SnapAnchor): void
 }
 
 export interface ViewportOptions {
@@ -82,6 +99,8 @@ export interface MoldaViewportLike {
   setView(view: ViewName): void
   /** Liga/desliga o sub-modo "Editar malha" (overlay de pontos e arestas + alça no centro da seleção). */
   setMeshEdit(state: MeshEditState | null): void
+  /** Estado transitório da ferramenta “Grudar”; não entra no asset nem no histórico. */
+  setSnapState(state: ViewportSnapState): void
   /** Foto do modelo (data URL JPEG dentro do teto) ou `null` sem GL/modelo vazio. */
   renderThumb(): string | null
   dispose(): void

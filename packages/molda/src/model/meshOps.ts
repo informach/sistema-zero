@@ -1,7 +1,7 @@
 /**
  * As OPERAÇÕES de edição de malha, puras (uma malha nova por chamada, nunca
  * mutação; `syncTwins` no fim, como em `partOps.ts`). Cada uma trabalha sobre
- * a lista de VÉRTICES selecionados (a lista mestra da seleção) e devolve o modelo
+ * os elementos explicitamente selecionados e devolve o modelo
  * com a peça atualizada; `from`/`to` da peça acompanham a caixa dos vértices e as
  * peles cujas faces mudaram de tamanho são re-amostradas (a mesma régua do
  * `setPartBox`).
@@ -17,6 +17,7 @@ import type {
   Vec3,
 } from '../core/model'
 import { isMeshFaceKey, meshBox, normalizeMesh, roundMesh } from './mesh'
+import { type MeshPick, selectedEdges, selectedFaces } from './meshSelection'
 import { faceSkinSize } from './shapes'
 import { isSkinBlank, resampleSkin } from './skinOps'
 import { reprojectSkin } from './skinReproject'
@@ -24,7 +25,14 @@ import { syncTwins } from './twins'
 
 function findSourcePart(model: MoldaModelAsset, id: string): MoldaPart | null {
   const part = model.parts.find((item) => item.id === id)
-  return part && !part.mirrorOf && part.shape === 'mesh' && part.mesh ? part : null
+  return part &&
+    !part.mirrorOf &&
+    !part.locked &&
+    !part.hidden &&
+    part.shape === 'mesh' &&
+    part.mesh
+    ? part
+    : null
 }
 
 /**
@@ -139,28 +147,33 @@ export type DeleteMeshResult =
 export function deleteMeshSelection(
   model: MoldaModelAsset,
   partId: string,
-  vertices: readonly string[],
-  mode: 'vertex' | 'edge' | 'face',
+  selection: readonly MeshPick[],
 ): DeleteMeshResult {
   const part = findSourcePart(model, partId)
   if (!part?.mesh) return { kind: 'unchanged' }
   const mesh = part.mesh
-  const set = new Set(vertices.filter((key) => key in mesh.vertices))
-  if (set.size === 0) return { kind: 'unchanged' }
+  const vertices = new Set(
+    selection.flatMap((pick) =>
+      pick.kind === 'vertex' && pick.key in mesh.vertices ? [pick.key] : [],
+    ),
+  )
+  const edges = new Set(selectedEdges(mesh, selection).map(([a, b]) => `${a} ${b}`))
+  const faceKeys = new Set(selectedFaces(mesh, selection))
+  if (vertices.size === 0 && edges.size === 0 && faceKeys.size === 0) {
+    return { kind: 'unchanged' }
+  }
   const faces: MoldaMesh['faces'] = {}
   for (const [key, face] of Object.entries(mesh.faces) as Array<
     [MeshFaceKey, MoldaMesh['faces'][MeshFaceKey]]
   >) {
     if (!face) continue
-    const selectedCount = face.v.filter((vertex) => set.has(vertex)).length
-    let removed = false
-    if (mode === 'vertex') removed = selectedCount > 0
-    else if (mode === 'face') removed = selectedCount === face.v.length
-    else {
+    let removed = faceKeys.has(key) || face.v.some((vertex) => vertices.has(vertex))
+    if (!removed && edges.size > 0) {
       for (let i = 0; i < face.v.length && !removed; i += 1) {
         const a = face.v[i] as string
         const b = face.v[(i + 1) % face.v.length] as string
-        if (set.has(a) && set.has(b)) removed = true
+        const edge = a < b ? `${a} ${b}` : `${b} ${a}`
+        if (edges.has(edge)) removed = true
       }
     }
     if (!removed) faces[key] = face

@@ -28,6 +28,11 @@ export type FlattenRefusal = 'no-area' | 'unsupported-shape' | 'bad-path'
 
 export type FlattenResult = { ok: true; poly: Poly } | { ok: false; reason: FlattenRefusal }
 
+export interface FlattenedPath {
+  points: Vec2[]
+  closed: boolean
+}
+
 /**
  * Quantos segmentos um arco precisa para a SAGITA caber na tolerância.
  *
@@ -137,17 +142,17 @@ function ellipseRing(shape: Extract<VectorShape, { type: 'ellipse' }>, tolerance
 }
 
 /**
- * Anéis de um `d` do nosso dialeto. Vários `M` são NORMAIS aqui: é assim que um
- * resultado de mistura (com furo) volta a ser operando.
+ * Subcaminhos achatados de um `d` do nosso dialeto. Vários `M` são NORMAIS
+ * aqui: é assim que um resultado de mistura (com furo) volta a ser operando.
  *
- * Caminho ABERTO é fechado implicitamente, que é exatamente o que o SVG faz ao
- * PINTAR um path aberto: a área considerada é a mesma que a criança vê.
+ * `closed` preserva a presença do `Z` para consumidores de contorno. Quem pinta
+ * uma área pode fechar os pontos implicitamente, como o SVG faz com paths abertos.
  */
-function pathRings(d: string, tolerance: number): Vec2[][] | null {
+export function flattenPathD(d: string, tolerance = CHORD_TOLERANCE): FlattenedPath[] | null {
   const parsed = parsePathD(d)
   if (!parsed) return null
-  const rings: Vec2[][] = []
-  let current: Vec2[] | null = null
+  const paths: FlattenedPath[] = []
+  let current: FlattenedPath | null = null
   let cursor: Vec2 = { x: 0, y: 0 }
 
   for (const command of parsed.commands) {
@@ -155,19 +160,19 @@ function pathRings(d: string, tolerance: number): Vec2[][] | null {
     const c = command.coords
     if (op === 'M') {
       if (c.length < 2) return null
-      if (current && current.length > 0) rings.push(current)
+      if (current && current.points.length > 0) paths.push(current)
       cursor = { x: c[0] ?? 0, y: c[1] ?? 0 }
-      current = [cursor]
+      current = { points: [cursor], closed: false }
       // Um `M` com pares extras vale como `L` implícito (o SVG manda assim).
       for (let i = 2; i + 1 < c.length; i += 2) {
         cursor = { x: c[i] ?? 0, y: c[i + 1] ?? 0 }
-        current.push(cursor)
+        current.points.push(cursor)
       }
     } else if (op === 'L') {
       if (!current) return null
       for (let i = 0; i + 1 < c.length; i += 2) {
         cursor = { x: c[i] ?? 0, y: c[i + 1] ?? 0 }
-        current.push(cursor)
+        current.points.push(cursor)
       }
     } else if (op === 'C') {
       if (!current) return null
@@ -176,20 +181,23 @@ function pathRings(d: string, tolerance: number): Vec2[][] | null {
         const p2 = { x: c[i + 2] ?? 0, y: c[i + 3] ?? 0 }
         const p3 = { x: c[i + 4] ?? 0, y: c[i + 5] ?? 0 }
         const steps = cubicSegments(cursor, p1, p2, p3, tolerance)
-        for (let s = 1; s <= steps; s += 1) current.push(cubicAt(cursor, p1, p2, p3, s / steps))
+        for (let s = 1; s <= steps; s += 1) {
+          current.points.push(cubicAt(cursor, p1, p2, p3, s / steps))
+        }
         cursor = p3
       }
     } else if (op === 'Z') {
-      if (current && current.length > 0) {
-        rings.push(current)
-        const first = current[0]
+      if (current && current.points.length > 0) {
+        current.closed = true
+        paths.push(current)
+        const first = current.points[0]
         if (first) cursor = first
       }
       current = null
     }
   }
-  if (current && current.length > 0) rings.push(current)
-  return rings
+  if (current && current.points.length > 0) paths.push(current)
+  return paths
 }
 
 /**
@@ -214,9 +222,9 @@ export function shapeToPoly(shape: VectorShape, tolerance = CHORD_TOLERANCE): Fl
       bruto = [shape.points.map((p) => ({ x: p.x, y: p.y }))]
       break
     case 'path': {
-      const rings = pathRings(shape.d, tolerance)
-      if (!rings) return { ok: false, reason: 'bad-path' }
-      bruto = rings
+      const paths = flattenPathD(shape.d, tolerance)
+      if (!paths) return { ok: false, reason: 'bad-path' }
+      bruto = paths.map((path) => path.points)
       break
     }
     case 'line':

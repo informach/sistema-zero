@@ -1446,6 +1446,13 @@ juntos; requester sem perfil (XP 0) ainda é contado. Migration `0015`: `account
 (`audience, privileged, xp`) e `_account_idx` (`account_id`) — sem eles o cálculo do
 ranking varria a tabela inteira da vitrine.
 
+**Ranking geral paginado (full review 06/09/2026):** o endpoint público usa `cursor` opaco no
+lugar de `offset`. O cursor AES-GCM é vinculado ao perfil e à audiência e guarda o instante da
+primeira página + a keyset `(xp DESC, userId ASC)` sem expor ids internos. Nas páginas seguintes,
+`listRanking` recompõe o XP naquele instante pelo ledger `xp_events`; assim um prêmio concorrente
+não duplica nem faz um participante saltar para fora da travessia. A própria linha e o total vêm do
+mesmo snapshot. Cursor inválido/adulterado é 400; o endpoint administrativo continua com offset.
+
 ## Pensa (planejador de jogos — 08/2026)
 
 O members persiste o plano; Pinta e Estúdio persistem seus próprios resultados. Projeto → ciclos

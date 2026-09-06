@@ -43,7 +43,7 @@ const ranking: RankingLeaderboardView = {
   ],
   total: 5,
   limit: 20,
-  offset: 0,
+  nextCursor: 'cursor-1',
   me: {
     position: 5,
     xp: 400,
@@ -81,11 +81,11 @@ describe('central de ranking kids', () => {
 
   test('alterna para a liga e carrega a próxima página do geral', async () => {
     const fetchMock = mock(async (input: RequestInfo | URL) => {
-      expect(String(input)).toBe('/api/members/gamification/ranking?limit=20&offset=4')
+      expect(String(input)).toBe('/api/members/gamification/ranking?limit=20&cursor=cursor-1')
       return Response.json({
         ...ranking,
         items: [ranking.me],
-        offset: 4,
+        nextCursor: null,
       })
     })
     globalThis.fetch = Object.assign(fetchMock, originalFetch)

@@ -1,47 +1,14 @@
 /**
  * A caixa de ferramentas do Montar (coluna da esquerda, 2 colunas de botões
- * de 44 px): as quatro formas, as três alças, duplicar/apagar e os dois
- * interruptores (espelho, encaixe de meio bloco).
+ * de 44 px): as cinco formas, as quatro ferramentas, duplicar/apagar e os
+ * interruptores de espelho, encaixe e seleção múltipla.
  */
 import type { JSX } from 'react'
 import { COPY } from '../../../core/copy'
 import type { ShapeId } from '../../../core/model'
 import type { TransformTool } from '../../../state/sessionStore'
 import { ToolButton } from '../../ui/Button'
-import {
-  Box,
-  Circle,
-  Copy,
-  Cylinder,
-  FlipHorizontal2,
-  Hexagon,
-  Layers,
-  type LucideIcon,
-  Magnet,
-  Move,
-  RotateCw,
-  Scaling,
-  Trash2,
-  Triangle,
-} from '../../ui/icons'
-
-const SHAPE_ICONS: Record<ShapeId, LucideIcon> = {
-  box: Box,
-  wedge: Triangle,
-  cylinder: Cylinder,
-  sphere: Circle,
-  mesh: Hexagon,
-}
-
-const SHAPE_SHORTCUTS: Partial<Record<ShapeId, string>> = { box: 'B' }
-
-const TOOL_ICONS: Record<TransformTool, LucideIcon> = {
-  move: Move,
-  rotate: RotateCw,
-  scale: Scaling,
-}
-
-const TOOL_SHORTCUTS: Record<TransformTool, string> = { move: 'V', rotate: 'R', scale: 'T' }
+import { bindModelCommand, modelCommand, SHAPE_COMMAND, TRANSFORM_COMMAND } from './commandRegistry'
 
 export interface ToolboxProps {
   tool: TransformTool
@@ -66,7 +33,7 @@ export interface ToolboxProps {
 
 export function Toolbox(props: ToolboxProps): JSX.Element {
   const shapes: ShapeId[] = ['box', 'wedge', 'cylinder', 'sphere', 'mesh']
-  const tools: TransformTool[] = ['move', 'rotate', 'scale']
+  const tools: TransformTool[] = ['move', 'rotate', 'scale', 'snap']
   return (
     <aside
       aria-label={COPY.editor.model.toolbox}
@@ -77,17 +44,26 @@ export function Toolbox(props: ToolboxProps): JSX.Element {
           {COPY.editor.model.addGroup}
         </legend>
         <div className="grid grid-cols-2 gap-1">
-          {shapes.map((shape) => (
-            <ToolButton
-              key={shape}
-              icon={SHAPE_ICONS[shape]}
-              label={`${COPY.editor.model.addGroup} ${COPY.editor.model.add[shape].toLowerCase()}`}
-              shortcut={SHAPE_SHORTCUTS[shape]}
-              active={props.placingShape === shape}
-              disabled={props.partsFull}
-              onClick={() => props.onAdd(shape)}
-            />
-          ))}
+          {shapes.map((shape) =>
+            (() => {
+              const command = bindModelCommand(SHAPE_COMMAND[shape], {
+                enabled: !props.partsFull,
+                active: props.placingShape === shape,
+                run: () => props.onAdd(shape),
+              })
+              return (
+                <ToolButton
+                  key={shape}
+                  icon={command.icon}
+                  label={command.label}
+                  shortcut={command.shortcut?.display}
+                  active={command.active}
+                  disabled={!command.enabled}
+                  onClick={command.run}
+                />
+              )
+            })(),
+          )}
         </div>
       </fieldset>
       <fieldset className="flex flex-col gap-1">
@@ -95,58 +71,67 @@ export function Toolbox(props: ToolboxProps): JSX.Element {
           {COPY.editor.model.toolbox}
         </legend>
         <div className="grid grid-cols-2 gap-1">
-          {tools.map((tool) => (
-            <ToolButton
-              key={tool}
-              icon={TOOL_ICONS[tool]}
-              label={COPY.editor.model.tools[tool]}
-              shortcut={TOOL_SHORTCUTS[tool]}
-              active={props.tool === tool}
-              onClick={() => props.onTool(tool)}
-            />
-          ))}
+          {tools.map((tool) =>
+            (() => {
+              const command = bindModelCommand(TRANSFORM_COMMAND[tool], {
+                enabled: true,
+                active: props.tool === tool,
+                run: () => props.onTool(tool),
+              })
+              return (
+                <ToolButton
+                  key={tool}
+                  icon={command.icon}
+                  label={command.label}
+                  shortcut={command.shortcut?.display}
+                  active={command.active}
+                  onClick={command.run}
+                />
+              )
+            })(),
+          )}
           <ToolButton
-            icon={Copy}
-            label={COPY.editor.model.duplicate}
-            shortcut="Ctrl+D"
+            icon={modelCommand('part.duplicate').icon}
+            label={modelCommand('part.duplicate').label}
+            shortcut={modelCommand('part.duplicate').shortcut?.display}
             disabled={!props.hasSelection || props.partsFull}
             onClick={props.onDuplicate}
           />
           <ToolButton
-            icon={Trash2}
-            label={COPY.editor.model.remove}
-            shortcut="Delete"
+            icon={modelCommand('part.remove').icon}
+            label={modelCommand('part.remove').label}
+            shortcut={modelCommand('part.remove').shortcut?.display}
             disabled={!props.hasSelection}
             onClick={props.onRemove}
           />
         </div>
       </fieldset>
       <ToolButton
-        icon={Hexagon}
+        icon={modelCommand('part.mesh').icon}
         label={props.selectedIsMesh ? COPY.editor.model.mesh.edit : COPY.editor.model.mesh.convert}
-        shortcut="E"
+        shortcut={modelCommand('part.mesh').shortcut?.display}
         disabled={!props.hasSelection}
         onClick={props.onEditMesh}
         className="w-full"
       />
       <div className="grid grid-cols-2 gap-1">
         <ToolButton
-          icon={FlipHorizontal2}
-          label={COPY.editor.model.mirror}
-          shortcut="M"
+          icon={modelCommand('build.mirror').icon}
+          label={modelCommand('build.mirror').label}
+          shortcut={modelCommand('build.mirror').shortcut?.display}
           active={props.mirrorX}
           onClick={props.onToggleMirror}
         />
         <ToolButton
-          icon={Magnet}
-          label={COPY.editor.model.snapHalf}
+          icon={modelCommand('build.snap-half').icon}
+          label={modelCommand('build.snap-half').label}
           active={props.snapHalf}
           onClick={props.onToggleSnap}
         />
         <ToolButton
-          icon={Layers}
-          label={COPY.editor.model.partsAdditive}
-          shortcut="Shift"
+          icon={modelCommand('build.additive').icon}
+          label={modelCommand('build.additive').label}
+          shortcut={modelCommand('build.additive').shortcut?.display}
           active={props.partsAdditive}
           onClick={props.onTogglePartsAdditive}
         />

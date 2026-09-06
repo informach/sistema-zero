@@ -215,7 +215,7 @@ export const COPY = {
         sphere: 'Bola',
         mesh: 'Malha',
       } satisfies Record<ShapeId, string>,
-      tools: { move: 'Mover', rotate: 'Girar', scale: 'Tamanho' },
+      tools: { move: 'Mover', rotate: 'Girar', scale: 'Tamanho', snap: 'Grudar' },
       duplicate: 'Duplicar',
       remove: 'Apagar',
       mirror: 'Espelhar no X',
@@ -228,6 +228,23 @@ export const COPY = {
       trianglesFull:
         'O modelo chegou ao limite de triângulos. Simplifique alguma malha antes de duplicar.',
       placeHint: 'Agora toque no chão ou numa peça para colocar a forma.',
+      snap: {
+        source: 'Toque no ponto da peça que vai grudar.',
+        target: 'Agora toque no ponto de outra peça.',
+        selectPart: 'Escolha uma peça antes de usar Grudar.',
+        locked: 'Destranque todas as peças escolhidas antes de usar Grudar.',
+        hidden: 'Mostre a peça principal antes de usar Grudar.',
+        unavailable: 'Não encontrei um ponto para grudar nessa peça.',
+        errors: {
+          'invalid-source': 'A peça de origem mudou. Comece o Grudar de novo.',
+          'locked-source': 'Uma das peças escolhidas está trancada. Destranque e tente de novo.',
+          'invalid-target': 'Toque em um ponto de outra peça visível.',
+          'stale-anchor': 'Uma das peças mudou. Comece o Grudar de novo.',
+          'outside-grid': 'Esse encaixe levaria a peça para fora da grade.',
+          'mirror-failure': 'Não há espaço para mover a peça e o espelho juntos.',
+          'no-move': 'Esses pontos já estão juntos.',
+        },
+      },
       colors: 'Cores',
       addColor: 'Nova cor',
       addColorSelectPart: 'Toque numa peça primeiro para dar uma cor nova a ela.',
@@ -267,6 +284,63 @@ export const COPY = {
       /** Seleção múltipla de peças. */
       partsAdditive: 'Somar à seleção',
       selectedParts: (count: number) => `${count} peças escolhidas`,
+      arrange: {
+        title: 'Arrumar',
+        floor: 'Pôr no chão',
+        center: 'Centralizar no palco',
+        align: 'Alinhar pelo centro',
+        alignAxis: (axis: 'X' | 'Y' | 'Z') => `Alinhar no ${axis}`,
+        alignSelection: 'Escolha pelo menos duas peças para alinhar.',
+        repeat: 'Repetir em linha',
+        direction: 'Direção',
+        repeatDirection: (direction: string) => `Repetir em linha: ${direction}`,
+        directions: {
+          '+x': 'Para a direita',
+          '-x': 'Para a esquerda',
+          '+y': 'Para cima',
+          '-y': 'Para baixo',
+          '+z': 'Para a frente',
+          '-z': 'Para trás',
+        },
+        count: 'Quantidade de cópias',
+        gap: 'Espaço em encaixes',
+        errors: {
+          'invalid-selection': 'Escolha uma ou mais peças para arrumar.',
+          'invalid-repeat': 'Escolha de 1 a 8 cópias e um espaço de 0 a 16.',
+          locked: 'Destranque todas as peças escolhidas antes de arrumar.',
+          'outside-grid': 'Esse arranjo levaria uma peça para fora da grade.',
+          'parts-full': 'Não cabem todas essas cópias no limite de peças.',
+          'triangles-full': 'Não cabem todas essas cópias no limite de triângulos.',
+        },
+      },
+      help: {
+        button: 'Ajuda desta tela',
+        title: 'Ajuda desta tela',
+        actions: 'Ações disponíveis',
+        shortcut: 'Atalho',
+        unavailable: (reason: string) => `Agora não: ${reason}`,
+        contexts: {
+          build: 'Montar',
+          paint: 'Pintar',
+          'mesh-vertex': 'Editar pontos',
+          'mesh-edge': 'Editar arestas',
+          'mesh-face': 'Editar faces',
+          'face-paint': 'Pintar de perto',
+        },
+        gestures: {
+          build:
+            'Toque numa peça para escolher. Use Somar à seleção ou segure Shift para escolher várias; arraste as alças para transformar.',
+          paint:
+            'Escolha uma ferramenta e toque numa face. Pintar de perto amplia somente a face que você tocar.',
+          'mesh-vertex':
+            'Toque nos pontos. Use Somar à seleção ou segure Shift para manter os pontos já escolhidos.',
+          'mesh-edge':
+            'Toque nas arestas. Use Somar à seleção ou segure Shift para manter as arestas já escolhidas.',
+          'mesh-face':
+            'Toque nas faces. Use Somar à seleção ou segure Shift para manter as faces já escolhidas.',
+          'face-paint': 'Pinte dentro da área da face ampliada; a área cinza fica protegida.',
+        },
+      },
       status: (parts: number, max: number, triangles: number) =>
         `${parts}/${max} peças · ${triangles} triângulos`,
       unsupported:
@@ -279,6 +353,7 @@ export const COPY = {
       mesh: {
         edit: 'Editar malha',
         convert: 'Transformar em malha',
+        open: 'Editar ou transformar em malha',
         converted: 'Virou malha: agora dá para mexer nos pontos, nas arestas e nas faces.',
         convertedLostSkins: (count: number) =>
           count === 1
@@ -315,14 +390,20 @@ export const COPY = {
           loopCut: 'Cortar no meio',
           merge: 'Juntar pontos',
           createFace: 'Fechar face',
+          connect: 'Conectar pontos',
+          inset: 'Encolher dentro',
           flip: 'Virar face',
           split: 'Dividir em triângulos',
         },
         toolHints: {
           extrude: 'Escolha faces (ou arestas) e toque em Puxar.',
+          extrudeEdges: 'Escolha uma ou mais arestas para puxar.',
+          extrudeFaces: 'Escolha uma ou mais faces para puxar.',
           loopCut: 'Escolha UMA aresta e toque em Cortar no meio.',
           merge: 'Escolha dois pontos ou mais para juntar.',
           createFace: 'Escolha 3 ou 4 pontos para fechar uma face.',
+          connect: 'Escolha dois pontos opostos da mesma face de 4 pontos.',
+          inset: 'Escolha uma face reta para encolher dentro.',
           flip: 'Escolha faces para virar.',
           split: 'Escolha faces de 4 pontos para dividir em triângulos.',
           loopCutQuad: 'Cortar no meio só atravessa faces de 4 pontos.',
@@ -330,9 +411,15 @@ export const COPY = {
         },
         cutOffGrid: 'O corte caiu fora do encaixe: os pontos novos não estão na grade.',
         toolsLegend: 'Ferramentas de malha',
+        modeHints: {
+          vertex: 'Escolha pontos para juntar, fechar ou conectar.',
+          edge: 'Escolha arestas para puxar ou cortar.',
+          face: 'Escolha faces para puxar, encolher, virar ou dividir.',
+        },
         selectAll: 'Escolher todos os pontos',
         adjust: 'Ajustar',
         distance: 'Distância',
+        insetAmount: 'Quanto encolher, em porcentagem',
         tooMany: 'A malha ficou grande demais: apague alguma coisa antes.',
         snapHalfOn: 'O corte caiu no meio de um bloco: liguei o encaixe de meio bloco.',
         issues: {
@@ -359,6 +446,15 @@ export const COPY = {
           fillPart: 'Balde na peça',
           picker: 'Conta-gotas',
           rotateSkin: 'Girar a pele',
+          faceEditor: 'Pintar de perto',
+        },
+        faceEditor: {
+          title: 'Pintar de perto',
+          hint: 'Toque na face que você quer ampliar.',
+          stage: 'Face ampliada para pintar',
+          outside: 'A área cinza fica fora da face e não recebe tinta.',
+          done: 'Pronto',
+          stale: 'Essa face mudou ou foi apagada. Escolha outra para pintar.',
         },
         mirror: 'Espelho de pintura',
         sizeLabel: 'Tamanho do lápis',

@@ -132,6 +132,7 @@ export class MeshEditOverlay {
     viewportHeightPx: number,
     surfaceDistance: number,
     hitFace: FaceId | null,
+    mode: MeshPick['kind'],
   ): MeshPick | null {
     const toleranceAt = (point: Vector3): number => {
       if (!(camera instanceof PerspectiveCamera) || viewportHeightPx <= 0) return 0.25
@@ -153,7 +154,9 @@ export class MeshEditOverlay {
         bestVertex = { key: this.keys[i] as string, distance }
       }
     }
-    if (bestVertex) return { kind: 'vertex', key: bestVertex.key }
+    if (mode === 'vertex') {
+      return bestVertex ? { kind: 'vertex', key: bestVertex.key } : null
+    }
     let bestEdge: { keys: [string, string]; distance: number } | null = null
     const onRay = new Vector3()
     const onSegment = new Vector3()
@@ -168,7 +171,7 @@ export class MeshEditOverlay {
       if (along > surfaceDistance + tolerance) continue
       if (!bestEdge || distance < bestEdge.distance) bestEdge = { keys: pair, distance }
     }
-    if (bestEdge) return { kind: 'edge', keys: bestEdge.keys }
+    if (mode === 'edge') return bestEdge ? { kind: 'edge', keys: bestEdge.keys } : null
     if (hitFace && isMeshFaceKey(hitFace)) return { kind: 'face', key: hitFace as MeshFaceKey }
     return null
   }

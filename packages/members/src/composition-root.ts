@@ -138,6 +138,7 @@ import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/dri
 import { DrizzleVideoPositionRepository } from './infrastructure/persistence/drizzle/video-position.repository'
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
+import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -354,6 +355,7 @@ export async function createApplication(env: Env): Promise<Application> {
     ranking,
     clock,
     authGateway,
+    new EncryptedRankingCursorCodec(env.GATEWAY_HMAC_SECRET),
   )
   const buyAvatarPart = new BuyAvatarPartService(
     avatarRepo,

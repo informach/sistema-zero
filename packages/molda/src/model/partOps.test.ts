@@ -18,17 +18,46 @@ import {
   removePart,
   setMirrorX,
   setPartBox,
+  setPartBoxes,
   setPartSize,
   setSnap,
+  trySetMirrorX,
   updateExtraColor,
   updatePart,
 } from './partOps'
 import { faceSkinSize, partSize } from './shapes'
+import { mirrorTwinOf } from './twins'
 
 function overlapsAny(model: ReturnType<typeof makeModel>, id: string): boolean {
   const part = model.parts.find((p) => p.id === id)
   if (!part) throw new Error(id)
   return model.parts.some((other) => other.id !== id && boxesOverlap(other, part))
+}
+
+/** Malha válida de 500 quads = 1 000 triângulos, dentro dos tetos por peça. */
+function denseMeshPart(id: string, y: number, crossesMirror = false) {
+  const vertices: Record<string, Vec3> = {}
+  const faces: MoldaMesh['faces'] = {}
+  const fromX = crossesMirror ? -1 : 1
+  const toX = crossesMirror ? 1 : 2
+  const columns = 501
+  for (let i = 0; i < columns; i += 1) {
+    const x = fromX + ((toX - fromX) * i) / (columns - 1)
+    vertices[`v_a${i}`] = [x, y, -1]
+    vertices[`v_b${i}`] = [x, y, 1]
+  }
+  for (let i = 0; i + 1 < columns; i += 1) {
+    faces[`f_${i}`] = { v: [`v_b${i}`, `v_a${i}`, `v_a${i + 1}`, `v_b${i + 1}`] }
+  }
+  return createPart({
+    id,
+    name: id,
+    shape: 'mesh',
+    from: [fromX, y, -1],
+    to: [toX, y, 1],
+    color: 2,
+    mesh: { vertices, faces },
+  })
 }
 
 describe('operações do modelo', () => {
@@ -247,7 +276,7 @@ describe('operações do modelo', () => {
     expect(partSize(sized.parts[0] ?? { from: [0, 0, 0], to: [0, 0, 0] })).toEqual([1, 1, 1])
   })
 
-  test('setSnap normaliza as peças agora e não deixa o arquivo mudar ao reabrir', () => {
+  test('setSnap muda só o encaixe das próximas ações e preserva as peças existentes', () => {
     const part = createPart({
       id: 'half',
       name: 'half',
@@ -264,10 +293,31 @@ describe('operações do modelo', () => {
 
     const snapped = setSnap(model, 1)
 
-    expect(snapped.parts[0]?.from).toEqual([1, 0, -1])
-    expect(snapped.parts[0]?.to).toEqual([3, 2, 1])
+    expect(snapped.parts).toBe(model.parts)
+    expect(snapped.parts[0]?.from).toEqual([0.5, 0, -1.5])
+    expect(snapped.parts[0]?.to).toEqual([2.5, 1.5, 0.5])
     expect(snapped.parts[0]?.origin).toEqual([1.5, 0.5, -0.5])
     expect(sanitizeMoldaAsset(structuredClone(snapped))).toEqual(snapped)
+  })
+
+  test('mover preserva tamanho de meio bloco mesmo com encaixe de um bloco', () => {
+    const part = createPart({
+      id: 'fine',
+      name: 'fine',
+      from: [1 / 16, 0, 1 / 16],
+      to: [25 / 16, 1.5, 17 / 16],
+      color: 2,
+    })
+    const model = {
+      ...createModelAsset({ name: 'x', starter: false }),
+      snap: 1 as const,
+      parts: [part],
+    }
+
+    const moved = movePartBy(model, part.id, [1 / 16, 0, 0])
+
+    expect(moved.parts[0]?.from).toEqual([2 / 16, 0, 1 / 16])
+    expect(moved.parts[0]?.to).toEqual([26 / 16, 1.5, 17 / 16])
   })
 
   test('o pivô próprio acompanha o movimento e é clampado no redimensionar', () => {
@@ -430,6 +480,46 @@ describe('malha nas operações (06/09/2026)', () => {
     expect(part?.mesh?.vertices.v_111).toEqual([5, 2, 3])
     expect(part?.mesh?.vertices.v_000).toEqual([1, 0, 1])
   })
+
+  test('resize de malha já fica canônico e não muda ao salvar e abrir', () => {
+    const mesh: MoldaMesh = {
+      vertices: {
+        v_a: [0, 0, 0],
+        v_b: [1.5, 0, 0],
+        v_c: [0, 1, 0],
+        v_d: [0.5, 0, 1],
+      },
+      faces: {
+        f_0: { v: ['v_a', 'v_b', 'v_c'] },
+        f_1: { v: ['v_a', 'v_d', 'v_b'] },
+        f_2: { v: ['v_b', 'v_d', 'v_c'] },
+        f_3: { v: ['v_c', 'v_d', 'v_a'] },
+      },
+    }
+    const part = createPart({
+      id: 'm',
+      name: 'malha',
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [1.5, 1, 1],
+      color: 2,
+      mesh,
+    })
+    const model = makeModel({ parts: [part] })
+
+    const resized = setPartBox(model, 'm', [0, 0, 0], [2, 1, 1])
+    const resizedMesh = resized.parts[0]?.mesh
+    if (!resizedMesh) throw new Error('sem malha')
+    expect(resizedMesh.vertices.v_d?.[0]).toBe(11 / 16)
+    for (const point of Object.values(resizedMesh.vertices)) {
+      for (const value of point) {
+        expect(value / MOLDA_LIMITS.meshPrecision).toBe(
+          Math.round(value / MOLDA_LIMITS.meshPrecision),
+        )
+      }
+    }
+    expect(sanitizeMoldaAsset(structuredClone(resized))).toEqual(resized)
+  })
 })
 
 describe('movePartsBy + trancar/esconder (06/09/2026)', () => {
@@ -457,6 +547,52 @@ describe('movePartsBy + trancar/esconder (06/09/2026)', () => {
     const hidden = updatePart(model, 'body', { hidden: true })
     expect(hidden.parts[0]?.hidden).toBe(true)
     expect('hidden' in (updatePart(hidden, 'body', { hidden: false }).parts[0] ?? {})).toBe(false)
+  })
+
+  test('recusa o grupo inteiro quando um novo gêmeo não cabe no teto de peças', () => {
+    const crossing = createPart({
+      id: 'a',
+      name: 'a',
+      from: [-1, 0, 0],
+      to: [1, 1, 1],
+      color: 1,
+    })
+    const otherCrossing = createPart({
+      id: 'c',
+      name: 'c',
+      from: [-1, 2, 0],
+      to: [1, 3, 1],
+      color: 1,
+    })
+    const pairs = Array.from({ length: 63 }, (_unused, index) => {
+      const source = createPart({
+        id: `s${index}`,
+        name: `s${index}`,
+        from: [4, 4, 0],
+        to: [5, 5, 1],
+        color: 1,
+      })
+      return [source, mirrorTwinOf(source, { id: `t${index}`, name: `t${index}` })]
+    }).flat()
+    const model = {
+      ...createModelAsset({ name: 'lotado', starter: false }),
+      mirrorX: true,
+      parts: [crossing, otherCrossing, ...pairs],
+    }
+    expect(model.parts).toHaveLength(MOLDA_LIMITS.maxParts)
+
+    const moved = movePartsBy(model, ['a', 's0'], [2, 0, 0])
+
+    expect(moved).toBe(model)
+    expect(moved.parts.find((part) => part.id === 'a')?.from).toEqual([-1, 0, 0])
+    expect(moved.parts.find((part) => part.id === 's0')?.from).toEqual([4, 4, 0])
+
+    const dragged = setPartBoxes(model, [
+      { id: 'a', from: [1, 0, 0], to: [3, 1, 1] },
+      { id: 's0', from: [6, 4, 0], to: [7, 5, 1] },
+    ])
+    expect(dragged).toBe(model)
+    expect(dragged.parts.find((part) => part.id === 's0')?.from).toEqual([4, 4, 0])
   })
 })
 
@@ -519,6 +655,66 @@ describe('review 06/09: duplicar malha, teto de triângulos e mover sem deformar
     expect(filler.parts.length).toBeLessThan(MOLDA_LIMITS.maxParts)
     expect(modelTriangleCount(filler) + perCopy).toBeGreaterThan(budget)
     expect(duplicatePart(filler, 'b')).toBeNull()
+  })
+
+  test('ligar o espelho recusa atomicamente quando os gêmeos dobrariam o teto de triângulos', () => {
+    const model = {
+      ...createModelAsset({ name: 'cheio', starter: false }),
+      parts: Array.from({ length: 20 }, (_unused, index) => denseMeshPart(`lado-${index}`, index)),
+    }
+    expect(modelTriangleCount(model)).toBe(MOLDA_LIMITS.maxTriangles)
+    expect(setMirrorX(model, true)).toBe(model)
+    expect(trySetMirrorX(model, true)).toEqual({ ok: false, reason: 'triangles-full' })
+  })
+
+  test('com o espelho ligado, adicionar e duplicar contam também o gêmeo projetado', () => {
+    const full = setMirrorX(
+      {
+        ...createModelAsset({ name: 'cheio', starter: false }),
+        parts: Array.from({ length: 10 }, (_unused, index) =>
+          denseMeshPart(`lado-${index}`, index),
+        ),
+      },
+      true,
+    )
+    expect(modelTriangleCount(full)).toBe(MOLDA_LIMITS.maxTriangles)
+    expect(addPart(full, 'box')).toBeNull()
+
+    const almostFull = setMirrorX(
+      {
+        ...createModelAsset({ name: 'quase-cheio', starter: false }),
+        parts: Array.from({ length: 9 }, (_unused, index) =>
+          denseMeshPart(`fonte-${index}`, index),
+        ),
+      },
+      true,
+    )
+    almostFull.parts.push(denseMeshPart('eixo', 20, true))
+    expect(modelTriangleCount(almostFull)).toBe(19_000)
+    expect(duplicatePart(almostFull, 'fonte-0')).toBeNull()
+  })
+
+  test('mover uma fonte para fora do eixo recusa o gêmeo que estouraria o teto', () => {
+    const model = setMirrorX(
+      {
+        ...createModelAsset({ name: 'quase-cheio', starter: false }),
+        parts: Array.from({ length: 9 }, (_unused, index) =>
+          denseMeshPart(`fonte-${index}`, index),
+        ),
+      },
+      true,
+    )
+    const axis = denseMeshPart('eixo', 20, true)
+    const box = createPart({
+      id: 'caixa',
+      name: 'caixa',
+      from: [-1, 30, 4],
+      to: [1, 31, 5],
+      color: 2,
+    })
+    model.parts.push(axis, box)
+    expect(modelTriangleCount(model)).toBe(19_012)
+    expect(setPartBox(model, axis.id, [3, 20, -1], [5, 20, 1])).toBe(model)
   })
 
   test('mover uma malha cuja caixa não está no encaixe é uma translação exata', () => {

@@ -1,5 +1,5 @@
 /**
- * Backup da galeria inteira: o envelope `molda-gallery` v1 do "Baixar tudo" e
+ * Backup da galeria inteira: o envelope `molda-gallery` v2 do "Baixar tudo" e
  * a leitura do "Trazer de volta". `importMoldaJson` NUNCA lança: devolve
  * `null` para arquivo ilegível e conta os registros que não passaram no
  * sanitize. Também aceita uma criação solta (JSON de um asset só).
@@ -12,13 +12,15 @@ import { MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 export { MAX_BACKUP_FILE_BYTES } from './backupFormat'
 
 export const GALLERY_FORMAT = 'molda-gallery'
-export const GALLERY_VERSION = 1
+export const GALLERY_VERSION = 2
+export const GALLERY_READABLE_VERSIONS = [1, GALLERY_VERSION] as const
+export type MoldaGalleryVersion = (typeof GALLERY_READABLE_VERSIONS)[number]
 /** O mesmo nome dentro do ZIP do "Baixar tudo" (`backupFormat.ts`). */
 export const GALLERY_FILE_NAME = MOLDA_GALLERY_ZIP_ENTRY
 
 export interface MoldaGalleryJson {
   format: typeof GALLERY_FORMAT
-  version: typeof GALLERY_VERSION
+  version: MoldaGalleryVersion
   exportedAt: number
   assets: MoldaAssetJson[]
 }
@@ -53,7 +55,12 @@ export function importMoldaJson(text: string): MoldaImportResult | null {
   const record = parsed as Record<string, unknown>
   let rawAssets: unknown[]
   if (record.format === GALLERY_FORMAT) {
-    if (record.version !== GALLERY_VERSION || !Array.isArray(record.assets)) return null
+    if (
+      !GALLERY_READABLE_VERSIONS.some((version) => record.version === version) ||
+      !Array.isArray(record.assets)
+    ) {
+      return null
+    }
     rawAssets = record.assets
   } else if (isMoldaAssetLike(parsed)) {
     rawAssets = [parsed]

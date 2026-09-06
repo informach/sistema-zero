@@ -877,8 +877,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     GET: async (req: Request) => {
       const url = new URL(req.url)
       const limit = clampInt(url.searchParams.get('limit'), 20, 1, 100)
-      const offset = clampInt(url.searchParams.get('offset'), 0, 0, 1_000_000)
-      const { status, body } = await members.getRanking({ limit, offset })
+      const cursor = url.searchParams.get('cursor') ?? undefined
+      const { status, body } = await members.getRanking({ limit, cursor })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }

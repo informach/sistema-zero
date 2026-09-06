@@ -79,19 +79,23 @@ export function ToolButton({
   label,
   active,
   shortcut,
+  hint,
   ...props
 }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'aria-label' | 'title'> & {
   icon: LucideIcon
   label: string
   active?: boolean
   shortcut?: string
+  /** Explicação curta, usada principalmente quando uma ação está desabilitada. */
+  hint?: string
 }): JSX.Element {
+  const title = `${label}${shortcut ? ` (${shortcut})` : ''}${hint ? `. ${hint}` : ''}`
   return (
     <IconButton
       active={active ?? false}
       aria-label={label}
       aria-pressed={active}
-      title={shortcut ? `${label} (${shortcut})` : label}
+      title={title}
       {...props}
     >
       <Icon aria-hidden="true" className="size-5" />

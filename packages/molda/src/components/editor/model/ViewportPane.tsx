@@ -19,6 +19,7 @@ export function ViewportPane({
   edgesVisible,
   onToggleEdges,
   status,
+  snapInstruction,
 }: {
   canvasRef: RefObject<HTMLCanvasElement | null>
   unsupported: boolean
@@ -28,10 +29,20 @@ export function ViewportPane({
   edgesVisible: boolean
   onToggleEdges: () => void
   status: string
+  snapInstruction?: string
 }): JSX.Element {
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_50%_30%,color-mix(in_oklab,var(--color-mld-surface)_70%,var(--color-mld-bg)),var(--color-mld-bg))]">
+        {snapInstruction ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="pointer-events-none absolute top-3 left-1/2 z-10 -translate-x-1/2 rounded-full border-2 border-mld-border bg-mld-surface/95 px-4 py-2 text-center text-sm font-bold text-mld-text shadow-sm"
+          >
+            {snapInstruction}
+          </p>
+        ) : null}
         {unsupported ? (
           <div className="flex h-full items-center justify-center p-6 text-center">
             <p className="max-w-sm text-base text-mld-text">{COPY.editor.model.unsupported}</p>

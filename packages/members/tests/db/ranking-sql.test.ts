@@ -70,10 +70,19 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
           (${randomUUID()}, ${userId}, ${userId}, 'kids', ${xpByUser.get(userId) ?? 0}, 1, 1,
            '2026-09-06', ${userId === privileged}, 0, 0, 0, 0, ${now}, ${now})`
     }
+    for (const [userId, xp] of xpByUser) {
+      if (xp <= 0) continue
+      await conn.sql`
+        insert into members.xp_events
+          (id, user_id, audience, source_type, source_id, amount, created_at)
+        values
+          (${randomUUID()}, ${userId}, 'kids', 'lesson_complete', ${randomUUID()}, ${xp}, ${now})`
+    }
   })
 
   afterAll(async () => {
     if (!conn) return
+    await conn.sql`delete from members.xp_events where user_id in ${conn.sql(users)}`
     await conn.sql`delete from members.gamification_profiles where user_id in ${conn.sql(users)}`
     await conn.sql`delete from members.entitlements where user_id in ${conn.sql(users)}`
     await conn.sql`delete from members.courses where id = ${courseId}`
@@ -110,6 +119,39 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
     })
     expect(page.entries.map((entry) => entry.position)).toEqual([2, 2])
     expect(page.entries.map((entry) => entry.userId)).toEqual([tiedA, tiedB].sort())
+  })
+
+  test('o keyset conserva o snapshot do ledger entre páginas', async () => {
+    const snapshotAt = new Date('2026-09-06T12:00:00.000Z')
+    const firstPage = await repo.listRanking({
+      audience: 'kids',
+      now: snapshotAt,
+      snapshotAt,
+      limit: 2,
+      offset: 0,
+    })
+    const boundary = firstPage.entries.at(-1)
+    if (!boundary) throw new Error('primeira página vazia')
+
+    await conn.sql`
+      insert into members.xp_events
+        (id, user_id, audience, source_type, source_id, amount, created_at)
+      values
+        (${randomUUID()}, ${me}, 'kids', 'lesson_complete', ${randomUUID()}, 200,
+         '2026-09-07T12:00:00.000Z')`
+
+    const secondPage = await repo.listRanking({
+      audience: 'kids',
+      now: new Date('2026-09-07T12:00:00.000Z'),
+      snapshotAt,
+      after: { xp: boundary.xp, userId: boundary.userId },
+      limit: 2,
+      offset: 0,
+    })
+
+    expect(firstPage.entries.map((entry) => entry.xp)).toEqual([100, 80])
+    expect(secondPage.entries.map((entry) => entry.xp)).toEqual([80, 10])
+    expect(secondPage.totalParticipants).toBe(4)
   })
 })
 

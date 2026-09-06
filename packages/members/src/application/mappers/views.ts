@@ -225,7 +225,7 @@ export interface RankingLeaderboardView {
   items: RankingEntryView[]
   total: number
   limit: number
-  offset: number
+  nextCursor: string | null
   me: RankingEntryView | null
 }
 
