@@ -52,6 +52,9 @@ export function toTicketView(ticket: Ticket, now?: Date): SharedTicketView {
           remainingMinutes: sla.remainingMinutes,
         }
       : null,
+    triage: ticket.triage,
+    triageRule: ticket.triageRule,
+    triagedAt: iso(ticket.triagedAt),
     createdAt: ticket.createdAt.toISOString(),
     updatedAt: ticket.updatedAt.toISOString(),
   }
@@ -65,6 +68,8 @@ export function toMessageView(message: TicketMessage): SharedMessageView {
     kind: message.kind,
     visibility: message.visibility,
     direction: message.direction,
+    triage: message.triage,
+    triageRule: message.triageRule,
     sentVia: message.sentVia,
     deliveryState: message.deliveryState,
     deliveryLastError: message.deliveryLastError,
@@ -151,6 +156,10 @@ export type KbArticleView = SharedKbArticleView
 export function toSettingsView(settings: HelpdeskSettings): SharedSettingsView {
   return {
     signature: settings.signature,
+    triageRules: {
+      ignoredSenders: [...settings.triageRules.ignoredSenders],
+      internalDomains: [...settings.triageRules.internalDomains],
+    },
     updatedAt: iso(settings.updatedAt),
   }
 }

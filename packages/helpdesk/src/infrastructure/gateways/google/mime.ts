@@ -133,6 +133,36 @@ function parseAddressList(value: string | null): string[] {
 }
 
 // ── Headers ──────────────────────────────────────────────────────────────────
+/**
+ * Cabeçalhos que a triagem (`domain/mail/triage.ts`) lê. `format=full` já os
+ * entrega de graça; guardamos SÓ estes (minúsculas, primeiro valor) para o
+ * `ParsedEmail` não virar um despejo do MIME inteiro.
+ */
+export const TRIAGE_HEADER_ALLOWLIST = [
+  'auto-submitted',
+  'precedence',
+  'list-id',
+  'list-unsubscribe',
+  'list-post',
+  'return-path',
+  'feedback-id',
+  'x-autoreply',
+  'x-auto-response-suppress',
+  'x-failed-recipients',
+  'content-type',
+  'sender',
+  'reply-to',
+] as const
+
+function pickTriageHeaders(header: (name: string) => string | null): Record<string, string> {
+  const picked: Record<string, string> = {}
+  for (const name of TRIAGE_HEADER_ALLOWLIST) {
+    const value = header(name)
+    if (value !== null) picked[name] = value.trim()
+  }
+  return picked
+}
+
 function headerLookup(headers: GmailRawHeader[] | undefined): (name: string) => string | null {
   const map = new Map<string, string>()
   for (const h of headers ?? []) {
@@ -236,6 +266,7 @@ export function parseGmailMessage(raw: GmailRawMessage): ParsedEmail {
     attachments: acc.attachments,
     internalDate,
     labelIds: raw.labelIds ?? [],
+    headers: pickTriageHeaders(header),
     autoSubmitted: header('auto-submitted'),
     listUnsubscribe: header('list-unsubscribe'),
     isAutoreply: header('x-autoreply') !== null || header('x-auto-response-suppress') !== null,

@@ -189,6 +189,46 @@ describe('parseGmailMessage', () => {
     expect(parsed.isAutoreply).toBe(true)
   })
 
+  it('guarda SÓ os cabeçalhos da allowlist da triagem, em minúsculas e com o primeiro valor', () => {
+    const parsed = parseGmailMessage(
+      message({
+        payload: {
+          mimeType: 'multipart/report',
+          headers: [
+            { name: 'From', value: 'Mail Delivery Subsystem <mailer-daemon@googlemail.com>' },
+            { name: 'Return-Path', value: '<>' },
+            {
+              name: 'Content-Type',
+              value: 'multipart/report; report-type=delivery-status; boundary="b"',
+            },
+            { name: 'Precedence', value: 'bulk' },
+            { name: 'List-Id', value: '<news.loja.example>' },
+            { name: 'Feedback-ID', value: 'abc:loja' },
+            { name: 'Received', value: 'from a' },
+            { name: 'Received', value: 'from b' },
+            { name: 'X-Google-Smtp-Source', value: 'AGHT...' },
+            { name: 'Subject', value: 'Delivery Status Notification' },
+          ],
+        },
+      }),
+    )
+    expect(parsed.headers).toEqual({
+      'return-path': '<>',
+      'content-type': 'multipart/report; report-type=delivery-status; boundary="b"',
+      precedence: 'bulk',
+      'list-id': '<news.loja.example>',
+      'feedback-id': 'abc:loja',
+    })
+    // Fora da allowlist não entra (Received, X-Google-*, Subject…).
+    expect(Object.keys(parsed.headers)).not.toContain('received')
+    expect(Object.keys(parsed.headers)).not.toContain('subject')
+  })
+
+  it('mensagem sem cabeçalho de triagem devolve `headers` vazio (nunca undefined)', () => {
+    const parsed = parseGmailMessage(message({ payload: { mimeType: 'text/plain' } }))
+    expect(parsed.headers).toEqual({})
+  })
+
   it('mensagem sem corpo cai no snippet, nunca lança', () => {
     const parsed = parseGmailMessage(
       message({

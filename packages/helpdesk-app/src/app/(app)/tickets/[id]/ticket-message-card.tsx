@@ -7,6 +7,7 @@ import { StickyNote } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { apiSend } from '@/lib/api'
+import { TRIAGE_LABELS } from '@/lib/categories'
 import { cn } from '@/lib/cn'
 import { formatDate } from '@/lib/format'
 import type { MessageView } from '@/lib/types'
@@ -17,12 +18,17 @@ function senderLabel(message: MessageView): string {
   return message.fromEmail ?? message.createdByName ?? 'Sem remetente'
 }
 
+/** Sufixo da triagem: "· resposta automática", "· devolução"…; nada em atendimento. */
+function triageSuffix(message: MessageView): string {
+  return message.triage === 'human' ? '' : ` · ${TRIAGE_LABELS[message.triage].toLowerCase()}`
+}
+
 function directionLabel(message: MessageView): string {
   if (message.kind === 'note') return `Nota interna · ${message.createdByName ?? 'Equipe'}`
-  if (message.direction === 'inbound') return 'Recebido'
+  if (message.direction === 'inbound') return `Recebido${triageSuffix(message)}`
   if (message.direction === 'outbound') {
     if (message.sentVia === 'ai') return 'Registro histórico de resposta automática'
-    if (message.sentVia === 'gmail') return 'Respondido pelo Gmail'
+    if (message.sentVia === 'gmail') return `Enviado pelo Gmail${triageSuffix(message)}`
     if (message.kind === 'portal') {
       return `Publicado na Ajuda por ${message.createdByName ?? 'Equipe'}`
     }

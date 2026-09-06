@@ -1,3 +1,5 @@
+import type { TriageKind } from '@sistemazero/helpdesk-contracts'
+
 export type MessageKind = 'email' | 'note' | 'portal'
 export type MessageDirection = 'inbound' | 'outbound'
 /** Notas são exclusivas da equipe; e-mails e mensagens do portal são do cliente. */
@@ -43,8 +45,14 @@ export interface TicketMessage {
   bodyHtml: string | null
   snippet: string | null
   attachments: AttachmentMeta[]
-  /** Inbound parece resposta automática (autoresponder/newsletter), para contexto da equipe. */
+  /**
+   * Legado (= `triage !== 'human'`), mantido para leitores antigos. A fonte da
+   * decisão é `triage`/`triageRule`.
+   */
   isAutoreply: boolean
+  /** Veredito da triagem desta mensagem (`domain/mail/triage.ts`); notas e portal são `human`. */
+  triage: TriageKind
+  triageRule: string | null
   gmailInternalDate: Date | null
   createdBy: string | null
   createdByName: string | null

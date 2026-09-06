@@ -43,7 +43,7 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
 
 1. **Ingestão por POLLING da Gmail API** (não SendGrid Inbound Parse) — 1 consent OAuth, sem
    mexer em DNS/MX. O `gmail-sync-worker` claima a linha da conexão, faz backfill (`last_history_id`
-   null → `threads.list(q=GMAIL_BACKFILL_QUERY)`) ou incremental (`history.list`); **404 do
+   null → `messages.list(q=GMAIL_BACKFILL_QUERY)`) ou incremental (`history.list`); **404 do
    history (expira ~1 semana) → zera `last_history_id` → full-resync** com dedupe por
    `gmail_message_id` (idempotente). Restart retoma do `last_history_id`.
 2. **OAuth Google com consent screen INTERNAL** (org Workspace de sistemazero.com.br), escopo
@@ -92,13 +92,44 @@ ticket que já vive numa thread do Gmail segue por e-mail. Runtime: **Bun**. Fra
     0009) vem do BFF (config compilada do app, o cliente não escolhe) e decide o link
     (`/ajuda` vs `/responsavel/ajuda`); nulo cai no adulto. O guarda de "uma saída em voo"
     (`pending`/`unknown`) vale nos dois canais.
+12. **Triagem determinística na chegada (09/2026): o que NÃO é atendimento não entra na fila.**
+    `domain/mail/triage.ts` (PURO, sem I/O) decide por mensagem, em ORDEM, primeira regra que
+    casa vence: `bounce` (Return-Path vazio, mailer-daemon@/postmaster@, multipart/report
+    delivery-status, X-Failed-Recipients) → `auto_reply` (Auto-Submitted: auto-replied,
+    X-Autoreply, X-Auto-Response-Suppress, Precedence: auto_reply) → `system` (Auto-Submitted
+    ≠ no, local-part `no-reply|noreply|notifications?|alerts?|mailer|newsletter|bounces?` por
+    SEGMENTO, remetente em `ignoredSenders`) → `bulk` (List-Id, List-Post, Precedence list/junk)
+    → sinais FRACOS só em dupla (List-Unsubscribe, Feedback-ID, Precedence: bulk, categorias
+    Promoções/Social/Fóruns; Atualizações + 1 fraco = `system`) → `internal` (SÓ mensagem
+    enviada por nós cujos To/CC são TODOS de `internalDomains`) → `human`. Um sinal fraco
+    sozinho é atendimento (CRMs põem List-Unsubscribe em 1:1 de gente).
+    **Ticket:** `triage='human'` é atendimento (fila, SLA, IA, painel). Thread nova + não-humano
+    → nasce `closed`, `triage`/`triage_rule`/`triaged_at`, `ai_status='skipped'`,
+    `last_inbound_at` NULL. Thread existente + não-humano → só contabiliza (contadores,
+    `last_message_at`), sem SLA nem IA; **`bounce` em ticket humano reabre** (nossa resposta não
+    chegou). Inbound HUMANO em ticket triado automaticamente → **promoção** (`promoted:inbound`,
+    `new`, SLA do inbound humano, `ai_generation + 1`), **independente do gate temporal**
+    (backfill vem do mais novo p/ o mais antigo). **Decisão humana vence:** `PATCH
+    {triage:'human'|'system'}` grava `manual:promoted`/`manual:demoted` e a ingestão/backfill
+    nunca re-triam; outbound humano NÃO promove. Transições puras em
+    `domain/ticket/ticket-triage.ts` (`promoteTicket`/`demoteTicket`) e `statusOnInbound`/
+    `statusOnOutbound` em `ticket.ts` — o SQL da ingestão (`ticket-ingestion.repository.ts`) e o
+    fake in-memory ESPELHAM essas funções (mudou um, muda o outro; o teste `drizzle-triage` é o
+    que alcança o SQL). Fila padrão = `triage='human'` (`?triage=automated` mostra o resto);
+    stats/SLA/série excluem triados; `ReplyService.deliver()` responde ao último inbound HUMANO;
+    `buildThreadText` ignora não-humano. Regras editáveis em `settings.triage_rules` (jsonb:
+    `ignoredSenders` endereço ou `@dominio` incl. subdomínios; `internalDomains`), lidas UMA vez
+    por sync do worker. Enum `triage_kind` é construído de `TRIAGE_KINDS` do contrato (teste de
+    conformidade). Tickets anteriores à 0012: `bun run triage:backfill [--apply]` no container.
+    Rótulo/arquivamento no Gmail: lote seguinte.
 
 ## Arquitetura (DDD + Hexagonal — espelha marketing/hub/messaging)
 
 ```
 src/
 ├── domain/
-│   ├── ticket/{ticket,ticket-message,ticket-sla,ticket-stats}.ts # regras PURAS
+│   ├── ticket/{ticket,ticket-message,ticket-sla,ticket-stats,ticket-triage}.ts # regras PURAS
+│   ├── mail/triage.ts         # triagem PURA do e-mail (decisão 12) + normalizeTriageRules
 │   ├── settings/settings.ts · kb/kb-article.ts
 │   └── ports/                 # repos + gmail/llm/oauth/secret-box/messaging + outbox de aviso
 ├── application/
@@ -118,9 +149,12 @@ src/
 ├── interfaces/http/{server,error-handler,auth,dtos}.ts
 │   └── routes/{health,tickets,customer-tickets,kb,settings,connection,oauth}.routes.ts
 ├── composition-root.ts (DI + workers + retenção advisory lock 71130324050607093) · index.ts
+scripts/triage-backfill.ts  # vai na imagem (só tests/ fica fora): `bun run triage:backfill [--apply]`
 tests/  fakes/{in-memory,gmail,ai,messaging}.ts · helpers.ts (monta a app inteira sem banco) · unit/ ·
         integration/ (via app.handle; os `drizzle-*` só rodam com
-        `HELPDESK_TEST_DATABASE_URL` apontando p/ um banco `helpdesk_test` migrado)
+        `HELPDESK_TEST_DATABASE_URL` apontando p/ um banco `helpdesk_test` migrado — local:
+        `postgres://postgres:postgres@localhost:5433/helpdesk_test`, migre com `DATABASE_URL`
+        apontando p/ ele e `bun run db:migrate`; sem a env eles PULAM em silêncio)
 ```
 
 Enums, views públicas e o parser puro de citações vivem em
@@ -135,6 +169,7 @@ Enums, views públicas e o parser puro de citações vivem em
 | Typecheck | `bun run typecheck` |
 | Migrations | `bun run db:generate` / `db:migrate` |
 | Lint | `bun run check` / `check:fix` |
+| Backfill da triagem (no container) | `bun run triage:backfill` (dry-run) / `--apply` |
 
 Da raiz: `dev:helpdesk`, `test:helpdesk`, `db:helpdesk:generate/migrate`.
 
@@ -154,10 +189,13 @@ Saúde: `GET /health` · `GET /readyz` (banco). Negócio (rate limits no gateway
 
 - Tickets: `GET /helpdesk/tickets` (filtros status/category/q + `sla=attention|at_risk|breached`
   + `assignment=assigned|unassigned` e `queue=unassigned` para trabalho ativo sem responsável,
+  + **`triage=human|automated`** (AUSENTE = human: a fila padrão esconde os triados),
   cursor opaco com snapshot + `hasMore`; fila ordena estourados/risco antes da recência) ·
-  **`GET /helpdesk/tickets/stats`** (painel — agregado no banco, registrada ANTES de `/:id` p/ a
-  rota estática vencer a paramétrica) · `GET /helpdesk/tickets/:id` (+ messages[]) ·
-  `PATCH /helpdesk/tickets/:id` (status/category/priority/assignToMe + `version`→409) ·
+  **`GET /helpdesk/tickets/stats`** (painel — agregado no banco, SÓ `triage='human'`, registrada
+  ANTES de `/:id` p/ a rota estática vencer a paramétrica) · `GET /helpdesk/tickets/:id`
+  (+ messages[]; ticket e mensagens trazem `triage`/`triageRule`) ·
+  `PATCH /helpdesk/tickets/:id` (status/category/priority/assignToMe + **`triage: 'human' |
+  'system'`** = "É atendimento"/"Não é atendimento", só esses dois de fora; + `version`→409) ·
   `POST …/:id/reply` `{body, version}` (portal → mensagem na conversa + aviso pelo messaging;
   e-mail → Gmail na mesma thread) ·
   `POST …/:id/deliveries/:messageId/reconcile` (consulta o Gmail, sem reenviar) ·
@@ -165,7 +203,9 @@ Saúde: `GET /health` · `GET /readyz` (banco). Negócio (rate limits no gateway
   (decisão humana explícita após revisar o risco) · `POST …/:id/notes` `{body}` ·
   `POST …/:id/summarize` · `POST …/:id/draft/regenerate` (IA on-demand, síncrona).
 - KB CRUD: `GET|POST /helpdesk/kb` · `GET|PATCH|DELETE /helpdesk/kb/:id` (PATCH exige `version`).
-- Config: `GET|PATCH /helpdesk/settings` (assinatura das respostas humanas; PATCH admin+).
+- Config: `GET|PATCH /helpdesk/settings` (assinatura das respostas humanas + `triageRules`
+  `{ignoredSenders[], internalDomains[]}`, normalizadas/validadas → 400 `TRIAGE_RULES_INVALID`;
+  PATCH admin+ e auditado no gateway).
 - Conexão: `GET|DELETE /helpdesk/connection` (admin+ na escrita).
 - OAuth: `POST /helpdesk/oauth/google/start` (admin+) · `GET /helpdesk/oauth/google/callback`
   (PÚBLICA — o serviço valida o state single-use; sempre 302 p/ `HELPDESK_APP_URL/configuracoes?…`).
@@ -187,8 +227,11 @@ mesma regra para filtro, ordenação e agregados paginados.
 ## Workers (processo único, iniciados no composition-root — molde messaging)
 
 1. **gmail-sync-worker** (~45s): claim da linha da conexão (`sync_next_at` + lease) → token fresco
-   (refresh lazy) → backfill/incremental → parse MIME → `IngestService.ingest` (from==contato@ →
-   outbound `sent_via='gmail'`; senão inbound → upsert ticket por `gmail_thread_id`, `ai_status=pending`).
+   (refresh lazy) → lê as regras de triagem das settings (UMA vez por sync) → backfill
+   (`messages.list(q=GMAIL_BACKFILL_QUERY)`)/incremental (`history.list`) → parse MIME (o parser
+   guarda os cabeçalhos da allowlist da triagem) → `IngestService.ingest` (from==contato@ →
+   outbound `sent_via='gmail'`; senão inbound; veredito da triagem decide se o ticket nasce na
+   fila com `ai_status=pending` ou já `closed`/triado — decisão 12).
 2. **ai-worker** (~15s): claim `pending` ou lease `processing` vencido (SKIP LOCKED) → `runPipeline`
    (classifica+resume, rascunha com KB relevante e limitada) → `markAiDone`, sempre condicionado
    à geração/tentativa reivindicada.
@@ -230,6 +273,14 @@ são apagados. ⚠️ `Date` em SQL cru só via `.toISOString()` (gotcha Bun+pos
    gateway, que cadastra o consumer `helpdesk`), `COMMUNITY_URL`, `KIDS_COMMUNITY_URL`; e rodar
    `bun run templates:seed` no messaging de cada ambiente (template `helpdesk-reply` — chave
    ausente = 404 no aviso, a resposta continua indo).
+6. ⚠️⚠️ **Staging NUNCA conecta a caixa real `contato@`**: o escopo `gmail.modify` mandaria
+   resposta de teste a cliente de verdade e os dois ambientes brigariam pela mesma thread. Para
+   testar com e-mail real, criar uma caixa de teste no Workspace e apontar
+   `HELPDESK_MAILBOX_ADDRESS` de staging para ela. Sem caixa, a triagem se prova por fixture
+   (unit + `drizzle-triage`); a produção é onde o backfill roda (`triage:backfill --dry-run` →
+   ler → `--apply`, dentro do container, depois do deploy do `helpdesk` e ANTES do `helpdesk-app`
+   — o `SettingsPatchBody` é fechado, então o app novo contra o backend velho tomaria 400 ao
+   salvar as regras).
 
 ## Checklist antes de finalizar
 

@@ -3,6 +3,7 @@ import {
   TICKET_PORTALS,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
+  TRIAGE_FILTERS,
 } from '@sistemazero/helpdesk-contracts'
 import { t } from 'elysia'
 
@@ -31,10 +32,15 @@ const TICKET_SLA_FILTER = t.Union([
 ])
 const TICKET_ASSIGNMENT_FILTER = t.Union([t.Literal('assigned'), t.Literal('unassigned')])
 const TICKET_QUEUE_FILTER = t.Literal('unassigned')
+// Ausente = `human` (a fila padrão esconde os triados); `automated` mostra só eles.
+const TICKET_TRIAGE_FILTER = t.Union(TRIAGE_FILTERS.map((value) => t.Literal(value)))
+// Só as duas decisões humanas entram de fora (nunca `bounce`/`bulk`/… à mão).
+const TICKET_TRIAGE_DECISION = t.Union([t.Literal('human'), t.Literal('system')])
 
 export const TicketsQuery = t.Object({
   status: t.Optional(TICKET_STATUS),
   category: t.Optional(TICKET_CATEGORY),
+  triage: t.Optional(TICKET_TRIAGE_FILTER),
   sla: t.Optional(TICKET_SLA_FILTER),
   assignment: t.Optional(TICKET_ASSIGNMENT_FILTER),
   queue: t.Optional(TICKET_QUEUE_FILTER),
@@ -48,6 +54,7 @@ export const TicketPatchBody = t.Object({
   category: t.Optional(t.Union([TICKET_CATEGORY, t.Null()])),
   priority: t.Optional(t.Union([TICKET_PRIORITY, t.Null()])),
   assignToMe: t.Optional(t.Boolean()),
+  triage: t.Optional(TICKET_TRIAGE_DECISION),
   version: VERSION,
 })
 
@@ -123,9 +130,20 @@ export const OAuthCallbackQuery = t.Object(
 )
 
 // ── Configurações ────────────────────────────────────────────────────────────
+// Forma na borda; a semântica (endereço ou `@dominio`, minúsculas, duplicatas,
+// domínio interno obrigatório) é do service (`normalizeTriageRules` → 400).
+const TriageRulesBody = t.Object(
+  {
+    ignoredSenders: t.Array(t.String({ maxLength: 254 }), { maxItems: 500 }),
+    internalDomains: t.Array(t.String({ maxLength: 254 }), { maxItems: 100 }),
+  },
+  { additionalProperties: false },
+)
+
 export const SettingsPatchBody = t.Object(
   {
     signature: t.Optional(t.String({ maxLength: 2000 })),
+    triageRules: t.Optional(TriageRulesBody),
   },
   { additionalProperties: false },
 )

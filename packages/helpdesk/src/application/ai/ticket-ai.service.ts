@@ -72,7 +72,8 @@ export class TicketAiService {
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const classification = await this.classifyAndPersist(ticket.id, guard, threadText)
     const draft = await this.draftAndPersist(ticket.id, guard, threadText, classification.summary)
-    const lastInbound = [...messages].reverse().find((m) => m.direction === 'inbound') ?? null
+    const lastInbound =
+      [...messages].reverse().find((m) => m.direction === 'inbound' && m.triage === 'human') ?? null
     const hasOutbound = messages.some((m) => m.direction === 'outbound')
     return { classification, draft, lastInbound, hasOutbound }
   }

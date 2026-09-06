@@ -1,3 +1,4 @@
+import { TRIAGE_KINDS } from '@sistemazero/helpdesk-contracts'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
@@ -10,6 +11,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core'
+import { DEFAULT_TRIAGE_RULES, type TriageRules } from '../../../domain/mail/triage'
 import type { SendEmailInput } from '../../../domain/ports/messaging-gateway.port'
 import type { AiClassification } from '../../../domain/ticket/ticket'
 import type { AttachmentMeta } from '../../../domain/ticket/ticket-message'
@@ -72,6 +74,10 @@ export const portalNotificationStatusEnum = helpdesk.enum('portal_notification_s
   'processing',
   'sent',
 ])
+// Construído a partir do contrato (não literal duplicado): o teste de conformidade
+// confere `enumValues` == TRIAGE_KINDS. Adicionar valor = migration `ADD VALUE`
+// (⚠️ nunca escrever o valor novo na mesma transação que o cria).
+export const triageKindEnum = helpdesk.enum('triage_kind', TRIAGE_KINDS)
 
 // ── Conexão Gmail (tokens CIFRADOS — AES-256-GCM) ────────────────────────────
 export const gmailConnections = helpdesk.table(
@@ -158,11 +164,19 @@ export const tickets = helpdesk.table(
     aiNextAttemptAt: timestamp('ai_next_attempt_at', { withTimezone: true }),
     aiAttempts: integer('ai_attempts').notNull().default(0),
     aiLastError: text('ai_last_error'),
+    // Triagem: `human` é atendimento; o resto fica fora da fila/SLA/IA/painel
+    // (nasce `closed`). `triage_rule` diz por quê; `manual:*` é decisão humana.
+    triage: triageKindEnum('triage').notNull().default('human'),
+    triageRule: text('triage_rule'),
+    triagedAt: timestamp('triaged_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [
     uniqueIndex('tickets_gmail_thread_uq').on(t.gmailThreadId),
+    // Filtro "Automáticos" (parcial: a fila padrão é `triage = 'human'`, que é a
+    // maioria e já entra pelos índices de status).
+    index('tickets_triage_idx').on(t.triage).where(sql`${t.triage} <> 'human'`),
     index('tickets_status_last_msg_idx').on(t.status, t.lastMessageAt),
     index('tickets_resolved_at_idx').on(t.resolvedAt),
     // Ownership legado usa lower(email); o índice simples anterior não servia
@@ -214,9 +228,12 @@ export const ticketMessages = helpdesk.table(
     snippet: text('snippet'),
     // SÓ metadados (filename/mime/size/gmail_attachment_id) — bytes no Gmail.
     attachments: jsonb('attachments').$type<AttachmentMeta[]>().notNull().default([]),
-    // Inbound de autoresponder/newsletter (Auto-Submitted/X-Autoreply/List-Unsubscribe)
-    // preservado como contexto operacional; nunca aciona resposta automática.
+    // Legado (= triage <> 'human'), mantido para leitores antigos; a decisão
+    // mora em `triage`/`triage_rule`. Nunca aciona resposta automática.
     isAutoreply: boolean('is_autoreply').notNull().default(false),
+    // Veredito da triagem desta mensagem (`domain/mail/triage.ts`).
+    triage: triageKindEnum('triage').notNull().default('human'),
+    triageRule: text('triage_rule'),
     gmailInternalDate: timestamp('gmail_internal_date', { withTimezone: true }),
     createdBy: uuid('created_by'),
     createdByName: text('created_by_name'),
@@ -286,6 +303,8 @@ export const kbArticles = helpdesk.table(
 export const settings = helpdesk.table('settings', {
   id: text('id').primaryKey(),
   signature: text('signature').notNull().default(''),
+  // Regras editáveis da triagem (remetentes ignorados + domínios internos).
+  triageRules: jsonb('triage_rules').$type<TriageRules>().notNull().default(DEFAULT_TRIAGE_RULES),
   updatedBy: uuid('updated_by'),
   updatedAt: timestamp('updated_at', { withTimezone: true }),
 })

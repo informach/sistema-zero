@@ -5,6 +5,8 @@ import {
   PRIORITY_LABELS,
   STATUS_COLORS,
   STATUS_LABELS,
+  TRIAGE_COLORS,
+  TRIAGE_LABELS,
 } from '@/lib/categories'
 import { cn } from '@/lib/cn'
 import { SLA_STATE_COLORS, SLA_STATE_LABELS } from '@/lib/sla'
@@ -14,6 +16,7 @@ import type {
   TicketSlaView,
   TicketSource,
   TicketStatus,
+  TriageKind,
 } from '@/lib/types'
 
 const BASE =
@@ -76,6 +79,18 @@ export function TicketSlaBadge({
       {SLA_STATE_LABELS[sla.state]}
     </span>
   )
+}
+
+/** Veredito da triagem; `human` (atendimento) não ganha chip, só o que está fora da fila. */
+export function TicketTriageBadge({
+  triage,
+  className,
+}: {
+  triage: TriageKind
+  className?: string
+}) {
+  if (triage === 'human') return null
+  return <span className={cn(BASE, TRIAGE_COLORS[triage], className)}>{TRIAGE_LABELS[triage]}</span>
 }
 
 /** Canal de entrada visível para a equipe, sem diferenciar o tratamento da fila. */

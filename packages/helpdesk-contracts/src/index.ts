@@ -25,6 +25,106 @@ export type TicketPriority = (typeof TICKET_PRIORITIES)[number]
 export const AI_STATUSES = ['idle', 'pending', 'processing', 'done', 'failed', 'skipped'] as const
 export type AiStatus = (typeof AI_STATUSES)[number]
 
+/**
+ * Triagem do e-mail na chegada: só `human` é atendimento. O resto (resposta
+ * automática, devolução de entrega, newsletter/lista, notificação de sistema,
+ * e-mail interno da equipe) nasce fora da fila e é reversível pela equipe.
+ * Fonte única: o enum do banco é construído a partir desta lista.
+ */
+export const TRIAGE_KINDS = ['human', 'auto_reply', 'bounce', 'bulk', 'system', 'internal'] as const
+export type TriageKind = (typeof TRIAGE_KINDS)[number]
+
+/** Filtro da fila: `human` (padrão) esconde os triados; `automated` mostra só eles. */
+export const TRIAGE_FILTERS = ['human', 'automated'] as const
+export type TriageFilter = (typeof TRIAGE_FILTERS)[number]
+
+export const TRIAGE_LABELS: Record<TriageKind, string> = {
+  human: 'Atendimento',
+  auto_reply: 'Resposta automática',
+  bounce: 'Devolução',
+  bulk: 'Newsletter ou lista',
+  system: 'Sistema',
+  internal: 'Interno',
+}
+
+/** Regras editáveis da triagem (Configurações). Endereços e domínios em minúsculas. */
+export interface TriageRulesView {
+  /** `endereco@dominio` (exato) ou `@dominio` (o domínio e seus subdomínios). */
+  ignoredSenders: string[]
+  /** E-mail enviado por nós SÓ para estes domínios nunca vira ticket. */
+  internalDomains: string[]
+}
+
+/** As regras fixas de cabeçalho, para a equipe entender o porquê de cada veredito. */
+export const TRIAGE_HEADER_RULES: { kind: TriageKind; rule: string; description: string }[] = [
+  {
+    kind: 'bounce',
+    rule: 'bounce:return-path-empty',
+    description: 'Return-Path vazio, típico de devolução de entrega.',
+  },
+  {
+    kind: 'bounce',
+    rule: 'bounce:mailer-daemon',
+    description: 'Remetente mailer-daemon@ ou postmaster@.',
+  },
+  {
+    kind: 'bounce',
+    rule: 'bounce:delivery-status',
+    description: 'Relatório de entrega (multipart/report com delivery-status).',
+  },
+  {
+    kind: 'bounce',
+    rule: 'bounce:failed-recipients',
+    description: 'Cabeçalho X-Failed-Recipients.',
+  },
+  {
+    kind: 'auto_reply',
+    rule: 'auto_reply:auto-submitted',
+    description: 'Auto-Submitted: auto-replied (resposta de férias e similares).',
+  },
+  {
+    kind: 'auto_reply',
+    rule: 'auto_reply:header',
+    description: 'X-Autoreply, X-Auto-Response-Suppress ou Precedence: auto_reply.',
+  },
+  {
+    kind: 'system',
+    rule: 'system:auto-submitted',
+    description: 'Auto-Submitted: auto-generated (gerado por máquina).',
+  },
+  {
+    kind: 'system',
+    rule: 'system:sender-local-part',
+    description: 'Remetente no-reply, noreply, notifications, alerts, newsletter, bounces.',
+  },
+  {
+    kind: 'system',
+    rule: 'system:ignored-sender',
+    description: 'Remetente ou domínio na lista de ignorados.',
+  },
+  {
+    kind: 'system',
+    rule: 'system:weak-signals',
+    description: 'Categoria Atualizações do Gmail junto de um sinal de envio em massa.',
+  },
+  {
+    kind: 'bulk',
+    rule: 'bulk:list-header',
+    description: 'List-Id, List-Post ou Precedence: list/junk (lista de e-mail).',
+  },
+  {
+    kind: 'bulk',
+    rule: 'bulk:weak-signals',
+    description:
+      'Dois sinais de envio em massa juntos (List-Unsubscribe, Feedback-ID, Precedence: bulk, categoria Promoções/Social/Fóruns). Um sinal sozinho não decide.',
+  },
+  {
+    kind: 'internal',
+    rule: 'internal:all-recipients-internal',
+    description: 'Enviado pela caixa contato@ só para endereços dos domínios internos.',
+  },
+]
+
 export type Sentiment = 'positivo' | 'neutro' | 'negativo' | 'irritado'
 export type KbCoverage = 'covered' | 'partial' | 'not_covered'
 
@@ -124,6 +224,11 @@ export interface TicketView {
   aiGeneration: number
   aiStatus: AiStatus
   sla: TicketSlaView | null
+  /** `human` é atendimento; qualquer outro valor fica fora da fila e do painel. */
+  triage: TriageKind
+  /** Regra que decidiu (`system:sender-local-part`, `manual:promoted`…); null em atendimento nato. */
+  triageRule: string | null
+  triagedAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -134,6 +239,8 @@ export interface MessageView {
   kind: 'email' | 'note' | 'portal'
   visibility: 'customer' | 'internal'
   direction: 'inbound' | 'outbound' | null
+  triage: TriageKind
+  triageRule: string | null
   sentVia: 'customer' | 'human' | 'ai' | 'gmail' | null
   deliveryState: 'pending' | 'sent' | 'unknown' | 'failed' | null
   deliveryLastError: string | null
@@ -189,6 +296,7 @@ export interface KbArticleView {
 
 export interface SettingsView {
   signature: string
+  triageRules: TriageRulesView
   updatedAt: string | null
 }
 

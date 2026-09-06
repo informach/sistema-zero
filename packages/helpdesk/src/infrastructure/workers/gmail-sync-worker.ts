@@ -3,8 +3,10 @@ import type { GmailAccountService } from '../../application/connection/gmail-acc
 import type { IngestService } from '../../application/tickets/ingest.service'
 import type { GmailConnection } from '../../domain/connection/gmail-connection'
 import { ConnectionNotConnectedError } from '../../domain/helpdesk-errors'
+import type { TriageRules } from '../../domain/mail/triage'
 import type { ConnectionRepository } from '../../domain/ports/connection-repository.port'
 import type { GmailClient } from '../../domain/ports/gmail-client.port'
+import type { SettingsRepository } from '../../domain/ports/settings-repository.port'
 
 /** Labels de sistema que NÃO viram ticket. */
 const SKIP_LABELS = new Set(['SPAM', 'TRASH', 'DRAFT', 'CHAT'])
@@ -33,6 +35,8 @@ export interface GmailSyncWorkerDeps {
   gmailAccount: GmailAccountService
   gmail: GmailClient
   ingest: IngestService
+  /** Regras da triagem, lidas UMA vez por sync (não por mensagem). */
+  settings: SettingsRepository
   now: () => Date
   logger: Logger
   config: GmailSyncWorkerConfig
@@ -104,10 +108,11 @@ export class GmailSyncWorker {
     }
 
     try {
+      const rules = (await this.deps.settings.get()).triageRules
       const newHistoryId =
         connection.lastHistoryId === null
-          ? await this.backfill(connection, accessToken)
-          : await this.incremental(connection, accessToken, connection.lastHistoryId)
+          ? await this.backfill(connection, accessToken, rules)
+          : await this.incremental(connection, accessToken, connection.lastHistoryId, rules)
       const at = this.deps.now()
       connection.lastHistoryId = newHistoryId
       connection.lastSyncAt = at
@@ -122,7 +127,11 @@ export class GmailSyncWorker {
   }
 
   /** Backfill inicial: importa a janela recente e semeia o lastHistoryId. */
-  private async backfill(connection: GmailConnection, accessToken: string): Promise<string> {
+  private async backfill(
+    connection: GmailConnection,
+    accessToken: string,
+    rules: TriageRules,
+  ): Promise<string> {
     // historyId ANTES de importar: mensagens que chegarem durante o backfill
     // caem no próximo incremental (dedupe torna a sobreposição inofensiva).
     const profile = await this.deps.gmail.getProfile(accessToken)
@@ -135,7 +144,7 @@ export class GmailSyncWorker {
         maxResults: this.deps.config.fetchBatchSize,
       })
       for (const id of page.ids) {
-        await this.ingestId(connection, accessToken, id)
+        await this.ingestId(connection, accessToken, id, rules)
         processed += 1
       }
       pageToken = page.nextPageToken ?? undefined
@@ -152,6 +161,7 @@ export class GmailSyncWorker {
     connection: GmailConnection,
     accessToken: string,
     startHistoryId: string,
+    rules: TriageRules,
   ): Promise<string | null> {
     let pageToken: string | undefined
     let latestHistoryId = startHistoryId
@@ -167,7 +177,7 @@ export class GmailSyncWorker {
         return null // próximo tick faz o full-resync
       }
       for (const id of new Set(page.messageIds)) {
-        await this.ingestId(connection, accessToken, id)
+        await this.ingestId(connection, accessToken, id, rules)
         processed += 1
       }
       if (page.historyId) latestHistoryId = page.historyId
@@ -186,15 +196,18 @@ export class GmailSyncWorker {
     connection: GmailConnection,
     accessToken: string,
     messageId: string,
+    rules: TriageRules,
   ): Promise<void> {
     const parsed = await this.deps.gmail.getMessage(accessToken, messageId)
     if (!parsed) return // 404: apagada entre o history e o get
     if (parsed.labelIds.some((label) => SKIP_LABELS.has(label))) return
-    const result = await this.deps.ingest.ingest(parsed, connection.emailAddress)
+    const result = await this.deps.ingest.ingest(parsed, connection.emailAddress, rules)
     if (result.status === 'created') {
       this.deps.logger.info('gmail_sync.ticket_created', {
         ticketId: result.ticketId,
         direction: result.direction,
+        triage: result.triage,
+        triageRule: result.triageRule,
       })
     }
   }

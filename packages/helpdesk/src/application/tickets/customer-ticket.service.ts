@@ -124,6 +124,10 @@ export class CustomerTicketService {
       aiNextAttemptAt: this.config.aiEnabled ? at : null,
       aiAttempts: 0,
       aiLastError: null,
+      // Portal é sempre atendimento: pessoa autenticada escrevendo para a equipe.
+      triage: 'human' as const,
+      triageRule: null,
+      triagedAt: null,
       createdAt: at,
       updatedAt: at,
     }
@@ -194,6 +198,8 @@ export class CustomerTicketService {
       snippet: input.body.slice(0, 500),
       attachments: [],
       isAutoreply: false,
+      triage: 'human',
+      triageRule: null,
       gmailInternalDate: null,
       createdBy: null,
       createdByName: null,

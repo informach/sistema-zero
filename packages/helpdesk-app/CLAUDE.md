@@ -24,8 +24,19 @@ Porta **3014**. Domínio futuro: `helpdesk.sistemazero.com.br` (ou `atendimento`
 > resposta; 409 → toast + soft-reload; chamado do PORTAL: o editor diz "Publicar resposta" e
 > a mensagem vai para a conversa do /ajuda + aviso por e-mail, SEM depender da caixa Gmail —
 > o canal é do ticket, decidido no backend), **Base de conhecimento** (CRUD + toggle
-> Publicado), **Configurações** (conexão Gmail conectar/reconectar + assinatura). IA é somente
-> copiloto: todo rascunho exige revisão e envio humano.
+> Publicado), **Configurações** (conexão Gmail conectar/reconectar + assinatura + **regras de
+> triagem**). IA é somente copiloto: todo rascunho exige revisão e envio humano.
+> **Triagem (09/2026):** a fila padrão é só atendimento; o chip "Triagem" (`Atendimento` |
+> `Automáticos`, param `?triage=automated`) mostra o que a triagem deixou fora, com o
+> `TicketTriageBadge` (nulo em `human`) na linha e no cabeçalho do detalhe; a mensagem diz
+> "Recebido · resposta automática/devolução/…"; o painel "Detalhes" tem a seção **Triagem**
+> com "É atendimento" (em triado) / "Não é atendimento" (em humano, com `ConfirmDialog`) via
+> `PATCH {triage}`, mais o link "Ignorar sempre este remetente" → `/configuracoes?ignorar=<email>`
+> (a lista é admin+ e auditada no gateway; staff rebaixa, admin cadastra). O card "Triagem de
+> e-mails" edita remetentes ignorados/domínios internos (um por linha) e lista as regras fixas de
+> cabeçalho (`TRIAGE_HEADER_RULES` do contrato, só leitura). Labels/cores em
+> `lib/categories.ts` (`TRIAGE_LABELS`/`TRIAGE_COLORS`/`triageRuleDescription`), testados em
+> `tests/triage.test.ts`.
 > Padrões-chave: 409 CONCURRENCY_CONFLICT → toast + soft-reload (preserva o texto digitado);
 > erro de fetch NUNCA vira "0" no painel (fica traço + aviso); o painel busca no client (rotação
 > de cookie só acontece em Route Handler).

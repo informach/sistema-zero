@@ -46,7 +46,14 @@ export interface ParsedEmail {
   attachments: AttachmentMeta[]
   internalDate: Date | null
   labelIds: string[]
-  /** Headers de autoresponder/newsletter preservados como contexto da mensagem. */
+  /**
+   * Cabeçalhos que a triagem lê (allowlist do parser, nomes em minúsculas, primeiro
+   * valor): auto-submitted, precedence, list-id, list-unsubscribe, list-post,
+   * return-path, feedback-id, x-autoreply, x-auto-response-suppress,
+   * x-failed-recipients, content-type (raiz), sender, reply-to.
+   */
+  headers: Record<string, string>
+  /** Atalhos legados dos mesmos cabeçalhos (a triagem usa `headers`). */
   autoSubmitted: string | null
   listUnsubscribe: string | null
   isAutoreply: boolean

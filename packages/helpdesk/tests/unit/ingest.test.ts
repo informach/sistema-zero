@@ -145,6 +145,284 @@ describe('IngestService', () => {
     expect([...tickets.rows.values()][0]?.status).toBe('open')
   })
 
+  describe('triagem na chegada', () => {
+    const at = (iso: string) => new Date(iso)
+
+    it('automático em thread nova nasce closed, triado, sem SLA e sem IA (e o mesmo e-mail humano nasce new)', async () => {
+      const { tickets, messages, ingest } = build(true)
+      const alertAt = at('2026-07-08T09:00:00Z')
+      const alert = makeParsedEmail({
+        gmailThreadId: 'thread-google-alert',
+        fromEmail: 'no-reply@accounts.google.com',
+        fromName: 'Google',
+        subject: 'Alerta de segurança',
+        internalDate: alertAt,
+      })
+      const result = await ingest.ingest(alert, MAILBOX)
+      expect(result).toMatchObject({
+        status: 'created',
+        direction: 'inbound',
+        triage: 'system',
+        triageRule: 'system:sender-local-part',
+      })
+      const ticket = [...tickets.rows.values()][0]
+      expect(ticket).toMatchObject({
+        status: 'closed',
+        triage: 'system',
+        triageRule: 'system:sender-local-part',
+        aiStatus: 'skipped',
+        aiNextAttemptAt: null,
+        lastInboundAt: null,
+        messageCount: 1,
+      })
+      expect(ticket?.resolvedAt).toEqual(alertAt)
+      expect(ticket?.triagedAt).toEqual(alertAt)
+      expect(messages.rows[0]).toMatchObject({
+        triage: 'system',
+        triageRule: 'system:sender-local-part',
+        isAutoreply: true,
+      })
+
+      // ⭐ Anti-vácuo: o MESMO e-mail vindo de gente é a fila normal.
+      const human = build(true)
+      await human.ingest.ingest(
+        makeParsedEmail({ gmailThreadId: 'thread-humano', fromEmail: 'maria@example.com' }),
+        MAILBOX,
+      )
+      expect([...human.tickets.rows.values()][0]).toMatchObject({
+        status: 'new',
+        triage: 'human',
+        triageRule: null,
+        aiStatus: 'pending',
+      })
+      expect([...human.tickets.rows.values()][0]?.lastInboundAt).not.toBeNull()
+    })
+
+    it('e-mail interno enviado por nós nasce closed/internal; para o cliente nasce waiting como hoje', async () => {
+      const { tickets, ingest } = build()
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailThreadId: 'thread-interno',
+          fromEmail: MAILBOX,
+          toEmails: ['helena@sistemazero.com.br'],
+        }),
+        MAILBOX,
+      )
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailMessageId: 'gm-cliente',
+          gmailThreadId: 'thread-cliente',
+          rfc822MessageId: '<msg-cliente@sistemazero.com.br>',
+          fromEmail: MAILBOX,
+          toEmails: ['cliente@example.com'],
+        }),
+        MAILBOX,
+      )
+      const byThread = new Map(
+        [...tickets.rows.values()].map((ticket) => [ticket.gmailThreadId, ticket]),
+      )
+      expect(byThread.get('thread-interno')).toMatchObject({
+        status: 'closed',
+        triage: 'internal',
+        triageRule: 'internal:all-recipients-internal',
+        requesterEmail: 'helena@sistemazero.com.br',
+      })
+      expect(byThread.get('thread-cliente')).toMatchObject({ status: 'waiting', triage: 'human' })
+    })
+
+    it('auto-reply em ticket waiting NÃO reabre, não arma SLA nem IA; só conta e avança a última mensagem', async () => {
+      const { tickets, ingest } = build(true)
+      await ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-1', internalDate: at('2026-07-08T10:00:00Z') }),
+        MAILBOX,
+      )
+      const ticket = [...tickets.rows.values()][0]!
+      ticket.status = 'waiting'
+      ticket.aiStatus = 'done'
+      await tickets.update(ticket, ticket.version)
+      const before = await tickets.byId(ticket.id)
+
+      const vacationAt = at('2026-07-08T11:00:00Z')
+      const vacation = makeParsedEmail({
+        gmailMessageId: 'gm-ooo',
+        internalDate: vacationAt,
+        headers: { 'auto-submitted': 'auto-replied' },
+      })
+      expect(await ingest.ingest(vacation, MAILBOX)).toMatchObject({
+        status: 'appended',
+        triage: 'auto_reply',
+      })
+      const after = await tickets.byId(ticket.id)
+      expect(after).toMatchObject({
+        status: 'waiting',
+        triage: 'human',
+        messageCount: 2,
+        aiStatus: 'done',
+        aiGeneration: before?.aiGeneration,
+      })
+      expect(after?.lastInboundAt).toEqual(before?.lastInboundAt)
+      expect(after?.lastMessageAt).toEqual(vacationAt)
+
+      // ⭐ Anti-vácuo: a mesma mensagem SEM o cabeçalho reabre e re-arma.
+      const plain = build(true)
+      await plain.ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-1', internalDate: at('2026-07-08T10:00:00Z') }),
+        MAILBOX,
+      )
+      const plainTicket = [...plain.tickets.rows.values()][0]!
+      plainTicket.status = 'waiting'
+      plainTicket.aiStatus = 'done'
+      await plain.tickets.update(plainTicket, plainTicket.version)
+      await plain.ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-2', internalDate: at('2026-07-08T11:00:00Z') }),
+        MAILBOX,
+      )
+      expect(await plain.tickets.byId(plainTicket.id)).toMatchObject({
+        status: 'open',
+        aiStatus: 'pending',
+        aiGeneration: 2,
+      })
+    })
+
+    it('bounce em ticket waiting reabre (nossa resposta não chegou), sem IA nem SLA novo', async () => {
+      const { tickets, ingest } = build(true)
+      await ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-1', internalDate: at('2026-07-08T10:00:00Z') }),
+        MAILBOX,
+      )
+      const ticket = [...tickets.rows.values()][0]!
+      ticket.status = 'waiting'
+      ticket.aiStatus = 'done'
+      await tickets.update(ticket, ticket.version)
+      const before = await tickets.byId(ticket.id)
+
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailMessageId: 'gm-bounce',
+          internalDate: at('2026-07-08T11:00:00Z'),
+          fromEmail: 'mailer-daemon@googlemail.com',
+          headers: { 'return-path': '<>' },
+        }),
+        MAILBOX,
+      )
+      const after = await tickets.byId(ticket.id)
+      expect(after).toMatchObject({ status: 'open', triage: 'human', aiStatus: 'done' })
+      expect(after?.lastInboundAt).toEqual(before?.lastInboundAt)
+    })
+
+    it('bounce em ticket TRIADO (interno) não reabre', async () => {
+      const { tickets, ingest } = build()
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailThreadId: 'thread-interno',
+          fromEmail: MAILBOX,
+          toEmails: ['helena@sistemazero.com.br'],
+          internalDate: at('2026-07-08T10:00:00Z'),
+        }),
+        MAILBOX,
+      )
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailMessageId: 'gm-bounce',
+          gmailThreadId: 'thread-interno',
+          fromEmail: 'mailer-daemon@googlemail.com',
+          headers: { 'return-path': '<>' },
+          internalDate: at('2026-07-08T11:00:00Z'),
+        }),
+        MAILBOX,
+      )
+      expect([...tickets.rows.values()][0]).toMatchObject({
+        status: 'closed',
+        triage: 'internal',
+        messageCount: 2,
+      })
+    })
+
+    it('humano em thread triada promove MESMO chegando fora de ordem (backfill do mais novo p/ o mais antigo)', async () => {
+      const { tickets, ingest } = build(true)
+      const thread = 'thread-ooo-primeiro'
+      // O backfill entrega o auto-reply (mais novo) antes do humano (mais antigo).
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailMessageId: 'gm-ooo-newer',
+          gmailThreadId: thread,
+          fromEmail: 'maria@example.com',
+          headers: { 'auto-submitted': 'auto-replied' },
+          internalDate: at('2026-07-08T11:00:00Z'),
+        }),
+        MAILBOX,
+      )
+      expect([...tickets.rows.values()][0]).toMatchObject({
+        status: 'closed',
+        triage: 'auto_reply',
+      })
+
+      const humanAt = at('2026-07-08T10:00:00Z')
+      await ingest.ingest(
+        makeParsedEmail({
+          gmailMessageId: 'gm-human-older',
+          gmailThreadId: thread,
+          fromEmail: 'maria@example.com',
+          internalDate: humanAt,
+        }),
+        MAILBOX,
+      )
+      const ticket = [...tickets.rows.values()][0]
+      expect(ticket).toMatchObject({
+        status: 'new',
+        triage: 'human',
+        triageRule: 'promoted:inbound',
+        triagedAt: null,
+        resolvedAt: null,
+        aiStatus: 'pending',
+        aiGeneration: 1,
+        messageCount: 2,
+      })
+      expect(ticket?.lastInboundAt).toEqual(humanAt)
+      // A "última mensagem" continua sendo o auto-reply, que é o mais novo.
+      expect(ticket?.lastMessageAt).toEqual(at('2026-07-08T11:00:00Z'))
+    })
+
+    it('decisão manual vence: ticket rebaixado à mão não é promovido por inbound humano', async () => {
+      const { tickets, ingest } = build(true)
+      await ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-1', internalDate: at('2026-07-08T10:00:00Z') }),
+        MAILBOX,
+      )
+      const ticket = [...tickets.rows.values()][0]!
+      ticket.triage = 'system'
+      ticket.triageRule = 'manual:demoted'
+      ticket.status = 'closed'
+      ticket.resolvedAt = at('2026-07-08T10:30:00Z')
+      ticket.aiStatus = 'skipped'
+      await tickets.update(ticket, ticket.version)
+
+      await ingest.ingest(
+        makeParsedEmail({ gmailMessageId: 'gm-2', internalDate: at('2026-07-08T11:00:00Z') }),
+        MAILBOX,
+      )
+      expect(await tickets.byId(ticket.id)).toMatchObject({
+        status: 'closed',
+        triage: 'system',
+        triageRule: 'manual:demoted',
+        aiStatus: 'skipped',
+        messageCount: 2,
+      })
+    })
+
+    it('regras das settings (remetente ignorado) chegam à triagem', async () => {
+      const { tickets, ingest } = build()
+      await ingest.ingest(makeParsedEmail({ fromEmail: 'avisos@evolution.example' }), MAILBOX, {
+        ignoredSenders: ['@evolution.example'],
+        internalDomains: ['sistemazero.com.br'],
+      })
+      expect([...tickets.rows.values()][0]).toMatchObject({
+        triage: 'system',
+        triageRule: 'system:ignored-sender',
+      })
+    })
+  })
+
   it('dedupe: mesma gmailMessageId duas vezes → segunda é duplicate', async () => {
     const { messages, ingest } = build()
     await ingest.ingest(makeParsedEmail({ gmailMessageId: 'gm-dup' }), MAILBOX)
@@ -175,6 +453,7 @@ describe('IngestService', () => {
         gmailThreadId: ticket.gmailThreadId!,
         rfc822MessageId: '<reply-pending@sistemazero.com.br>',
         fromEmail: MAILBOX,
+        toEmails: ['maria@example.com'],
       }),
       MAILBOX,
     )
@@ -212,6 +491,7 @@ describe('IngestService', () => {
         gmailThreadId: 'gmail-thread-after-first-reply',
         rfc822MessageId: '<portal-first-reply@sistemazero.com.br>',
         fromEmail: MAILBOX,
+        toEmails: ['maria@example.com'],
       }),
       MAILBOX,
     )
@@ -244,6 +524,7 @@ describe('IngestService', () => {
         gmailThreadId: 'gmail-thread-after-failure',
         rfc822MessageId: '<portal-failed-reply@sistemazero.com.br>',
         fromEmail: MAILBOX,
+        toEmails: ['maria@example.com'],
       }),
       MAILBOX,
     )

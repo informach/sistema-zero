@@ -7,9 +7,18 @@ export interface IngestedGmailMessage extends TicketMessage {
 }
 
 export interface TicketIngestionInput {
-  /** Ticket candidato; é criado somente quando a thread ainda não existe. */
+  /**
+   * Ticket candidato; é criado somente quando a thread ainda não existe. Se a
+   * mensagem foi triada (`message.triage !== 'human'`), o candidato já nasce
+   * `closed` e triado (o service decide; o adapter só persiste).
+   */
   ticket: Ticket
-  /** Mensagem Gmail já parseada. O adapter troca ticketId quando a thread existe. */
+  /**
+   * Mensagem Gmail já parseada e triada. O adapter troca ticketId quando a
+   * thread existe e escolhe o ramo pela combinação `direction` × `message.triage`:
+   * humano segue as transições normais (+ promoção de ticket triado); não-humano
+   * só conta, exceto `bounce` em ticket humano, que reabre.
+   */
   message: IngestedGmailMessage
   /** Direção determinada pela caixa conectada, nunca por dado do cliente. */
   direction: 'inbound' | 'outbound'

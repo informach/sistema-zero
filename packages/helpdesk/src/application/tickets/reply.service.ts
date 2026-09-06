@@ -129,6 +129,8 @@ export class ReplyService {
       snippet: body.slice(0, 500),
       attachments: [],
       isAutoreply: false,
+      triage: 'human',
+      triageRule: null,
       gmailInternalDate: null,
       createdBy: actor.userId,
       createdByName: actor.displayName,
@@ -185,7 +187,11 @@ export class ReplyService {
     createdByName: string | null
   }): Promise<{ ticket: TicketView; message: MessageView }> {
     const { ticket, connection, thread, body, sentVia } = input
-    const lastInbound = [...thread].reverse().find((m) => m.direction === 'inbound')
+    // Último inbound HUMANO: depois de um bounce ou auto-reply, a resposta iria
+    // para mailer-daemon@ (e o In-Reply-To apontaria para o robô).
+    const lastInbound = [...thread]
+      .reverse()
+      .find((m) => m.direction === 'inbound' && m.triage === 'human')
     const toEmail = lastInbound?.fromEmail ?? ticket.requesterEmail
     const toName = lastInbound?.fromName ?? ticket.requesterName
     const domain = connection.emailAddress.split('@')[1] ?? 'sistemazero.com.br'
@@ -225,6 +231,8 @@ export class ReplyService {
       snippet: null,
       attachments: [],
       isAutoreply: false,
+      triage: 'human',
+      triageRule: null,
       gmailInternalDate: null,
       createdBy: input.createdBy,
       createdByName: input.createdByName,

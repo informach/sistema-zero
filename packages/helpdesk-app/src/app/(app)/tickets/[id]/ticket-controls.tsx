@@ -2,8 +2,10 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@sistemazero/ui/card'
+import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
+import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { type ApiError, apiSend } from '@/lib/api'
@@ -14,6 +16,8 @@ import {
   TICKET_CATEGORIES,
   TICKET_PRIORITIES,
   TICKET_STATUSES,
+  TRIAGE_LABELS,
+  triageRuleDescription,
 } from '@/lib/categories'
 import type { TicketCategory, TicketPriority, TicketStatus, TicketView } from '@/lib/types'
 
@@ -23,6 +27,8 @@ type PatchBody = {
   category?: TicketCategory | null
   priority?: TicketPriority | null
   assignToMe?: boolean
+  /** Decisão humana de triagem: só `human` (é atendimento) e `system` (não é). */
+  triage?: 'human' | 'system'
   version: number
 }
 
@@ -39,6 +45,7 @@ export function TicketControls({
   onStale: () => void
 }) {
   const [saving, setSaving] = useState(false)
+  const [confirmDemote, setConfirmDemote] = useState(false)
 
   async function patch(changes: Omit<PatchBody, 'version'>, action: string) {
     setSaving(true)
@@ -92,7 +99,23 @@ export function TicketControls({
     if (ok) toast.success(assigned ? 'Atribuição removida.' : 'Ticket atribuído a você.')
   }
 
+  async function promote() {
+    const ok = await patch({ triage: 'human' }, 'trazer o ticket para a fila')
+    if (ok) toast.success('Ticket de volta na fila de atendimento.')
+  }
+
+  async function demote() {
+    const ok = await patch({ triage: 'system' }, 'tirar o ticket da fila')
+    if (ok) {
+      setConfirmDemote(false)
+      toast.success('Ticket marcado como automático e fora da fila.')
+    }
+  }
+
   const assigned = ticket.assignedTo !== null
+  const triaged = ticket.triage !== 'human'
+  const ruleDescription = triageRuleDescription(ticket.triageRule)
+  const ignoreHref = `/configuracoes?ignorar=${encodeURIComponent(ticket.requesterEmail)}`
 
   return (
     <Card>
@@ -163,6 +186,48 @@ export function TicketControls({
           </Button>
         </div>
 
+        <div className="space-y-2 border-t border-border pt-4">
+          <p className="text-sm font-medium">Triagem</p>
+          {triaged ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                {TRIAGE_LABELS[ticket.triage]}, fora da fila.
+                {ruleDescription ? ` ${ruleDescription}` : ''}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={promote}
+                disabled={saving}
+              >
+                É atendimento
+              </Button>
+              {ticket.source === 'email' ? (
+                <Link href={ignoreHref} className="block text-xs text-link hover:text-link-hover">
+                  Ignorar sempre este remetente
+                </Link>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Atendimento.
+                {ruleDescription ? ` ${ruleDescription}` : ''}
+              </p>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full"
+                onClick={() => setConfirmDemote(true)}
+                disabled={saving}
+              >
+                Não é atendimento
+              </Button>
+            </>
+          )}
+        </div>
+
         <div className="space-y-1 border-t border-border pt-4 text-xs text-muted-foreground">
           <p className="break-all">{ticket.requesterEmail}</p>
           <p>
@@ -170,6 +235,14 @@ export function TicketControls({
           </p>
         </div>
       </CardContent>
+      <ConfirmDialog
+        open={confirmDemote}
+        onClose={() => setConfirmDemote(false)}
+        title="Tirar este ticket da fila?"
+        message="Ele fica fechado e marcado como automático, fora do painel e da meta de resposta. Dá para voltar atrás com o botão É atendimento. Para nunca mais abrir ticket deste remetente, cadastre o endereço em Configurações."
+        confirmText="Não é atendimento"
+        onConfirm={demote}
+      />
     </Card>
   )
 }

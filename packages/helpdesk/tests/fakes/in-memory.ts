@@ -35,7 +35,7 @@ import type {
   TicketRepository,
 } from '../../src/domain/ports/ticket-repository.port'
 import { DEFAULT_SETTINGS, type HelpdeskSettings } from '../../src/domain/settings/settings'
-import type { Ticket, TicketStatus } from '../../src/domain/ticket/ticket'
+import { statusOnInbound, statusOnOutbound, type Ticket } from '../../src/domain/ticket/ticket'
 import type { TicketMessage } from '../../src/domain/ticket/ticket-message'
 import {
   matchesSlaFilter,
@@ -49,12 +49,13 @@ import {
   statsWindows,
   type TicketStats,
 } from '../../src/domain/ticket/ticket-stats'
+import {
+  canRetriage,
+  PROMOTED_BY_INBOUND_RULE,
+  promoteTicket,
+} from '../../src/domain/ticket/ticket-triage'
 
 const clone = <T>(value: T): T => structuredClone(value)
-
-function statusOnInbound(current: TicketStatus): TicketStatus {
-  return current === 'waiting' || current === 'resolved' || current === 'closed' ? 'open' : current
-}
 
 export class InMemoryTicketRepository implements TicketRepository {
   readonly rows = new Map<string, Ticket>()
@@ -80,6 +81,8 @@ export class InMemoryTicketRepository implements TicketRepository {
     const q = filter.q?.toLowerCase()
     const all = [...this.rows.values()]
       .filter((ticket) => ticket.createdAt.getTime() <= now.getTime())
+      // A fila nunca mistura atendimento com ruído: ausente = só `human`.
+      .filter((t) => (filter.triage === 'automated' ? t.triage !== 'human' : t.triage === 'human'))
       .filter((t) => !filter.status || t.status === filter.status)
       .filter((t) => !filter.category || t.category === filter.category)
       .filter(
@@ -127,7 +130,8 @@ export class InMemoryTicketRepository implements TicketRepository {
     const seriesStart = new Date(w.seriesStartIso).getTime()
     const todayStart = new Date(w.todayStartIso).getTime()
     const weekStart = new Date(w.weekStartIso).getTime()
-    const all = [...this.rows.values()]
+    // O painel nunca conta ruído (espelha o `where triage = 'human'` do SQL).
+    const all = [...this.rows.values()].filter((t) => t.triage === 'human')
     const createdByDay = new Map<string, number>()
     let slaAtRisk = 0
     let slaBreached = 0
@@ -457,32 +461,64 @@ export class InMemoryTicketIngestionRepository implements TicketIngestionReposit
     if (input.at.getTime() > existing.lastMessageAt.getTime()) {
       existing.lastMessageAt = input.at
     }
-    if (input.direction === 'outbound') {
-      existing.gmailThreadId ??= input.ticket.gmailThreadId
-      if (isLatest && (existing.status === 'new' || existing.status === 'open')) {
-        existing.status = 'waiting'
-      }
-    } else {
-      if (!existing.lastInboundAt || input.at.getTime() > existing.lastInboundAt.getTime()) {
-        existing.lastInboundAt = input.at
-      }
-      if (isLatest) {
-        existing.status = statusOnInbound(existing.status)
-        if (existing.status === 'open') existing.resolvedAt = null
-        existing.aiGeneration += 1
-        existing.aiSummary = null
-        existing.aiSummaryAt = null
-        existing.aiDraft = null
-        existing.aiDraftAt = null
-        existing.aiDraftEdited = false
-        existing.aiClassification = null
-        existing.aiStatus = input.aiEnabled ? 'pending' : 'skipped'
-        existing.aiNextAttemptAt = input.aiEnabled ? input.at : null
-        existing.aiAttempts = 0
-        existing.aiLastError = null
-      }
-    }
     if (input.at.getTime() > existing.updatedAt.getTime()) existing.updatedAt = input.at
+    // Qualquer e-mail que NÓS mandamos vincula a thread do Gmail, triado ou não.
+    if (input.direction === 'outbound') existing.gmailThreadId ??= input.ticket.gmailThreadId
+    const humanTicket = existing.triage === 'human'
+
+    // Espelha os ramos do DrizzleTicketIngestionRepository (mudou lá, muda aqui).
+    if (input.message.triage !== 'human') {
+      // Triado: só contabiliza. `bounce` em ticket humano reabre.
+      if (
+        input.message.triage === 'bounce' &&
+        humanTicket &&
+        isLatest &&
+        (existing.status === 'waiting' ||
+          existing.status === 'resolved' ||
+          existing.status === 'closed')
+      ) {
+        existing.status = 'open'
+        existing.resolvedAt = null
+      }
+      return { status: 'appended', ticketId: existing.id }
+    }
+
+    if (input.direction === 'outbound') {
+      if (humanTicket && isLatest) existing.status = statusOnOutbound(existing.status)
+      return { status: 'appended', ticketId: existing.id }
+    }
+
+    // Inbound humano.
+    if (!existing.lastInboundAt || input.at.getTime() > existing.lastInboundAt.getTime()) {
+      existing.lastInboundAt = input.at
+    }
+    if (!humanTicket && canRetriage(existing)) {
+      // Promoção independe do gate temporal (backfill chega do mais novo p/ o mais antigo).
+      const updatedAt = existing.updatedAt
+      promoteTicket(existing, {
+        rule: PROMOTED_BY_INBOUND_RULE,
+        at: input.at,
+        lastHumanInboundAt: existing.lastInboundAt,
+        aiEnabled: input.aiEnabled,
+      })
+      if (updatedAt.getTime() > existing.updatedAt.getTime()) existing.updatedAt = updatedAt
+      return { status: 'appended', ticketId: existing.id }
+    }
+    if (humanTicket && isLatest) {
+      existing.status = statusOnInbound(existing.status)
+      if (existing.status === 'open') existing.resolvedAt = null
+      existing.aiGeneration += 1
+      existing.aiSummary = null
+      existing.aiSummaryAt = null
+      existing.aiDraft = null
+      existing.aiDraftAt = null
+      existing.aiDraftEdited = false
+      existing.aiClassification = null
+      existing.aiStatus = input.aiEnabled ? 'pending' : 'skipped'
+      existing.aiNextAttemptAt = input.aiEnabled ? input.at : null
+      existing.aiAttempts = 0
+      existing.aiLastError = null
+    }
     return { status: 'appended', ticketId: existing.id }
   }
 }
