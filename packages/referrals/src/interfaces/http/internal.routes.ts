@@ -55,14 +55,48 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           set.status = 404
           return envelope('AMBASSADOR_NOT_FOUND', 'Página não encontrada')
         }
+        // Bônus SEM PII do bolsista (LGPD): o embaixador vê valor/data/estado,
+        // nunca quem assinou. A régua do que é visível vive no repo/domínio
+        // (filtro no SQL, ANTES do limit — canceladas não empurram bônus reais
+        // para fora da página).
+        const visible = await deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50)
         return {
           name: ambassador.name,
           code: ambassador.code,
           shareUrl: `${base}/bolsa/${ambassador.code}`,
           stats: ambassador.stats,
+          bonus: {
+            pixKey: ambassador.pixKey,
+            items: visible.map((c) => ({
+              id: c.id,
+              status: c.status,
+              bonusCents: c.bonusCents,
+              subscribedAt: c.paidAt.toISOString(),
+              paidMarkedAt: c.paidMarkedAt?.toISOString() ?? null,
+            })),
+          },
         }
       },
       { params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }) },
+    )
+    .patch(
+      // Chave Pix do bônus — cadastrada pelo PRÓPRIO embaixador (a capability
+      // da página é a autorização; validação leve: CPF/e-mail/fone/EVP cabem).
+      '/ambassadors/by-token/:token/pix',
+      async ({ params, body, headers, set }) => {
+        guard(headers)
+        const pixKey = body.pixKey.trim()
+        const ok = await deps.repo.setAmbassadorPixByToken(params.token, pixKey)
+        if (!ok) {
+          set.status = 404
+          return envelope('AMBASSADOR_NOT_FOUND', 'Página não encontrada')
+        }
+        return { ok: true }
+      },
+      {
+        params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }),
+        body: t.Object({ pixKey: t.String({ minLength: 5, maxLength: 140 }) }),
+      },
     )
     .post(
       '/ambassadors/by-token/:token/invites',

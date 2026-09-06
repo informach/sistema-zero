@@ -1186,6 +1186,23 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
+   * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro do responsável). Tela
+   * EXCLUSIVA dos pais — o shim do KIDS gateia com `requireParentGateAccountOnly`.
+   */
+  const ambassadorMe = {
+    GET: async () => {
+      const { status, body } = await members.getAmbassadorEnrollment()
+      return NextResponse.json(body ?? { enrolled: false }, { status })
+    },
+    POST: async () => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { status, body } = await members.enrollAmbassador()
+      return NextResponse.json(body ?? { enrolled: false }, { status })
+    },
+  }
+
+  /**
    * Persiste a posição do vídeo (throttled no client). Aceita também o corpo do
    * `navigator.sendBeacon` (que pode chegar como text/plain) — por isso o parse é
    * tolerante a content-type. POST (beacon não faz PUT); o BFF repassa como PUT.
@@ -1616,6 +1633,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     vacationSet,
     childrenStats,
     parentReportPrefs,
+    ambassadorMe,
     lessonPosition,
     quizAttempts,
     studioSubmit,

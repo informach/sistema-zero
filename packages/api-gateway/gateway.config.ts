@@ -3519,6 +3519,47 @@ const config: GatewayConfigInput = {
       timeoutMs: 45_000,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    {
+      // Chave Pix do bônus, cadastrada pelo PRÓPRIO embaixador na página
+      // capability (a autorização é o token da URL; o funil repassa).
+      id: 'referrals-internal-pix',
+      methods: ['PATCH'],
+      pathPattern: '/referrals/internal/ambassadors/by-token/:token/pix',
+      service: 'referrals',
+      auth: {
+        required: true,
+        mode: 'any',
+        strategies: ['hmac'],
+        allowedConsumers: ['funnel'],
+      },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    // ── Embaixador "me" (auto-cadastro do pai/responsável na área dos pais) ──
+    // JWT de conta ATIVA sem roles (molde payments-my): o gateway injeta os
+    // x-auth-user-* e o referrals resolve o embaixador pela CONTA.
+    {
+      id: 'referrals-me-ambassador-get',
+      methods: ['GET'],
+      pathPattern: '/referrals/me/ambassador',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'referrals-me-ambassador-post',
+      methods: ['POST'],
+      pathPattern: '/referrals/me/ambassador',
+      service: 'referrals',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: referralsInternalTransforms,
+      maxBodyBytes: SMALL_JSON_BODY_BYTES,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+    },
 
     // ── Exemplo: rota de negócio protegida por JWT + RBAC ────────────────────
     // O gateway VERIFICA o token do auth (configure JWT_HS256_SECRET — mesmo segredo

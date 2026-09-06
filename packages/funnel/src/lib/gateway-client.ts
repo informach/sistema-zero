@@ -468,6 +468,17 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       )
     },
 
+    /** PATCH …/by-token/:token/pix — chave Pix do bônus, cadastrada pelo próprio embaixador. */
+    async updateAmbassadorPix(token: string, pixKey: string): Promise<GatewayResult> {
+      const rawBody = JSON.stringify({ pixKey })
+      const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}/pix`
+      return requestJson(
+        `${opts.baseUrl}${path}`,
+        { method: 'PATCH', headers: buildHeaders('PATCH', path, rawBody), body: rawBody },
+        timeoutMs,
+      )
+    },
+
     /**
      * POST /referrals/internal/redemptions — resgate da bolsa (cria conta +
      * concede o curso + boas-vindas, tudo no referrals; retomável por etapas).

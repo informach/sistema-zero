@@ -1,5 +1,11 @@
 import 'server-only'
-import type { AmbassadorDetailView, AmbassadorListItemView, AmbassadorView } from '@/lib/types'
+import type {
+  AmbassadorDetailView,
+  AmbassadorListItemView,
+  AmbassadorView,
+  ConversionAdminView,
+  ConversionStatus,
+} from '@/lib/types'
 import { type GatewayResponse, gatewayFetch } from './gateway'
 
 export interface ListAmbassadorsParams {
@@ -49,5 +55,38 @@ export function patchAmbassador(
   return gatewayFetch(`/referrals/admin/ambassadors/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body,
+  })
+}
+
+export interface ListConversionsParams {
+  status?: ConversionStatus
+  limit?: number
+  offset?: number
+}
+
+/** Bônus (conversões bolsista → assinatura): `GET /referrals/admin/conversions`. */
+export function listConversions(
+  p: ListConversionsParams,
+): Promise<GatewayResponse<{ items: ConversionAdminView[]; total: number }>> {
+  return gatewayFetch('/referrals/admin/conversions', {
+    query: { status: p.status, limit: p.limit, offset: p.offset },
+  })
+}
+
+/** Marca o bônus como pago (Pix manual já feito). Só de `eligible`; repetição → 409. */
+export function markConversionPaid(
+  id: string,
+  body: unknown,
+): Promise<GatewayResponse<{ ok: true }>> {
+  return gatewayFetch(`/referrals/admin/conversions/${encodeURIComponent(id)}/mark-paid`, {
+    method: 'POST',
+    body,
+  })
+}
+
+/** Antecipa a garantia de uma conversão pendente (teste/exceção; o sweep promove em seguida). */
+export function matureConversionNow(id: string): Promise<GatewayResponse<{ ok: true }>> {
+  return gatewayFetch(`/referrals/admin/conversions/${encodeURIComponent(id)}/mature-now`, {
+    method: 'POST',
   })
 }

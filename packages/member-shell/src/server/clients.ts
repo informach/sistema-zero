@@ -4,6 +4,7 @@ import { getEnv } from '../lib/env'
 import type {
   AiCreditsView,
   AiUsageConsumeView,
+  AmbassadorEnrollmentView,
   AttachmentDownloadView,
   AvatarConfigInput,
   AvatarEquipResult,
@@ -1018,6 +1019,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Preferência do report SEMANAL dos pais (opt-out) — atrás do portão de senha. */
     getParentReportPrefs(): Promise<GatewayResponse<ParentReportPrefsView>> {
       return gw.gatewayFetch('/members/parents/report-prefs')
+    },
+
+    /** Embaixador da Bolsa (auto-cadastro do responsável) — atrás do portão de senha. */
+    getAmbassadorEnrollment(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
+      return gw.gatewayFetch('/referrals/me/ambassador')
+    },
+    enrollAmbassador(): Promise<GatewayResponse<AmbassadorEnrollmentView>> {
+      return gw.gatewayFetch('/referrals/me/ambassador', { method: 'POST', body: {} })
     },
     setParentReportPrefs(disabled: boolean): Promise<GatewayResponse<ParentReportPrefsView>> {
       return gw.gatewayFetch('/members/parents/report-prefs', {

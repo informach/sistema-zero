@@ -8,6 +8,13 @@
       "when": 1788082350632,
       "tag": "0000_nasty_salo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788721852338,
+      "tag": "0001_brown_forgotten_one",
+      "breakpoints": true
     }
   ]
 }

@@ -1100,6 +1100,33 @@ export interface ParentReportPrefsView {
 }
 
 /**
+ * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro na área dos pais) —
+ * mirror do `GET/POST /referrals/me/ambassador` do @sistemazero/referrals.
+ */
+export interface AmbassadorEnrollmentView {
+  enrolled: boolean
+  ambassador?: {
+    code: string | null
+    status: string
+    /** Página do embaixador (capability-URL absoluta do funil). */
+    pageUrl: string
+    /** Link de bolsa compartilhável (`/bolsa/<code>` no funil). */
+    shareUrl: string | null
+    pixKeySet: boolean
+  }
+  stats?: { redemptionsCompleted: number; invitesSent: number }
+  bonus?: {
+    pendingCount?: number
+    eligibleCount?: number
+    paidCount?: number
+    /** Valor VIGENTE do bônus (env do referrals) — a copy do app NUNCA o hardcoda. */
+    amountCents?: number
+  }
+  /** SÓ no POST: true = cadastro novo (o e-mail do link SAIU); false = vínculo/retomada. */
+  created?: boolean
+}
+
+/**
  * Resultado do consumo de 1 crédito de IA da CONTA (mirror do members).
  * `allowed:false` + `scope` = teto diário/mensal atingido (recusa é domínio, não
  * erro); `unlimited` = equipe (nunca recusada, uso gravado só p/ telemetria).

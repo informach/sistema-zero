@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import { isRateLimitedGetPath } from '../../src/lib/rate-limit-paths'
-import { postAmbassadorInvite, postRedeemScholarship } from '../../src/server/referrals'
+import {
+  postAmbassadorInvite,
+  postAmbassadorPix,
+  postRedeemScholarship,
+} from '../../src/server/referrals'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 const TOKEN = 't'.repeat(43)
@@ -140,5 +144,46 @@ describe('rate limit das landings novas', () => {
     expect(isRateLimitedGetPath(`/embaixador/${TOKEN}`)).toBe(true)
     expect(isRateLimitedGetPath('/kids/desafio-primeiro-jogo/oferta')).toBe(true) // regressão
     expect(isRateLimitedGetPath('/')).toBe(false)
+  })
+})
+
+describe('postAmbassadorPix (/api/embaixador/pix)', () => {
+  const valid = { token: 't'.repeat(43), pixKey: 'tochaeluz@gmail.com' }
+
+  test('feliz: 200 e a chave chega ao gateway', async () => {
+    const fake = createFakeGateway()
+    const res = await postAmbassadorPix(post('/api/embaixador/pix', valid), {
+      gateway: fake.gateway,
+    })
+    expect(res.status).toBe(200)
+    expect(fake.calls.pixUpdates[0]).toEqual({
+      token: valid.token,
+      pixKey: 'tochaeluz@gmail.com',
+    })
+  })
+
+  test('token/chave inválidos → 400 sem chamar o gateway', async () => {
+    const fake = createFakeGateway()
+    const short = await postAmbassadorPix(
+      post('/api/embaixador/pix', { token: valid.token, pixKey: 'abc' }),
+      { gateway: fake.gateway },
+    )
+    expect(short.status).toBe(400)
+    expect(fake.calls.pixUpdates).toHaveLength(0)
+  })
+
+  test('404 do referrals repassa; 5xx vira 502 legível', async () => {
+    const fake = createFakeGateway()
+    fake.setPixResult(404, { error: { code: 'AMBASSADOR_NOT_FOUND', message: 'x' } })
+    const notFound = await postAmbassadorPix(post('/api/embaixador/pix', valid), {
+      gateway: fake.gateway,
+    })
+    expect(notFound.status).toBe(404)
+
+    fake.setPixResult(503, {})
+    const down = await postAmbassadorPix(post('/api/embaixador/pix', valid), {
+      gateway: fake.gateway,
+    })
+    expect(down.status).toBe(502)
   })
 })

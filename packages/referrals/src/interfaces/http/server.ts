@@ -9,6 +9,8 @@ import type { RedeemScholarshipService } from '../../application/redeem-scholars
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 import { adminRoutes } from './admin.routes'
 import { internalRoutes } from './internal.routes'
+import { meRoutes } from './me.routes'
+import { type WebhooksRoutesDeps, webhooksRoutes } from './webhooks.routes'
 
 export interface HttpDeps {
   logger: Logger
@@ -17,6 +19,10 @@ export interface HttpDeps {
   invite: CreateInviteService
   ambassadors: AmbassadorAdminService
   funnelPublicUrl: string
+  /** Snapshot da env BONUS_AMOUNT_CENTS — exposto na view "me" (copy nunca hardcoda). */
+  bonusAmountCents: number
+  /** Consumer do payments (ausente em teste/dev sem banco = rota fora). */
+  webhooks?: Omit<WebhooksRoutesDeps, 'logger'>
   requireAdminEnabled?: boolean
   internalToken?: string
   /** Token do `/metrics` (header `x-metrics-token`/Bearer; obrigatório em prod). */
@@ -28,10 +34,10 @@ export interface HttpDeps {
 }
 
 /**
- * Borda HTTP do referrals. Fase 1: tudo chega VIA GATEWAY (`/referrals/admin/*`
- * com JWT/RBAC lá; `/referrals/internal/*` com HMAC de borda do funil) — a prova
- * de origem aqui é o `x-internal-token`. O consumer do payments (webhook direto)
- * chega na fase 3.
+ * Borda HTTP do referrals: `/referrals/admin/*` e `/referrals/internal/*`
+ * chegam VIA GATEWAY (JWT/RBAC e HMAC de borda lá; a prova de origem aqui é o
+ * `x-internal-token`); `/webhooks/payments` chega DIRETO na rede privada
+ * (consumer do fan-out do payments, HMAC do corpo cru).
  */
 export function createServer(deps: HttpDeps) {
   return (
@@ -62,6 +68,7 @@ export function createServer(deps: HttpDeps) {
       .use(
         adminRoutes({
           ambassadors: deps.ambassadors,
+          repo: deps.repo,
           requireAdminEnabled: deps.requireAdminEnabled ?? true,
           internalToken: deps.internalToken,
         }),
@@ -75,6 +82,15 @@ export function createServer(deps: HttpDeps) {
           internalToken: deps.internalToken,
         }),
       )
+      .use(
+        meRoutes({
+          ambassadors: deps.ambassadors,
+          repo: deps.repo,
+          bonusAmountCents: deps.bonusAmountCents,
+          internalToken: deps.internalToken,
+        }),
+      )
+      .use(deps.webhooks ? webhooksRoutes({ ...deps.webhooks, logger: deps.logger }) : new Elysia())
       .get('/healthz', () => ({ status: 'ok' }))
       .get('/readyz', async ({ set }) => {
         try {

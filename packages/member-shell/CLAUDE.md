@@ -542,6 +542,17 @@ cobrança DERIVADA: última cobrança ?? criação + intervalo; null fora de ACT
 O community monta a seção em `/compras`; o kids gateia os DOIS shims com
 `requireParentGateAccountOnly` (área dos pais).
 
+**Embaixador da Bolsa (auto-cadastro do responsável, 09/2026):** client members ganhou
+`getAmbassadorEnrollment()` (`GET /referrals/me/ambassador`) + `enrollAmbassador()` (POST) —
+rotas JWT "me" do referrals via gateway (o gateway injeta a identidade; o serviço faz
+get-or-create/LINK pela conta). Handler `ambassadorMe` (`routes.ambassadorMe.GET/POST`; o POST
+passa por `requireWritableSession`). Tipo `AmbassadorEnrollmentView` em `lib/types.ts`
+(`{enrolled, ambassador?: {code, status, pageUrl, shareUrl, pixKeySet}, stats?, bonus?: {counts +
+amountCents — o VALOR do bônus vigente, a copy do app nunca o hardcoda}, created?}` — URLs
+ABSOLUTAS, o app não conhece a base do funil; `created` só no POST: true = o e-mail do link saiu).
+O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais); o community
+adulto não monta a UI hoje.
+
 **Quota de IA por conta (07/2026):** `server/ai-quota.ts` — `consumeAiQuota(members, feature)`
 (features `pensa-chat`/`pensa-synthesis`/`studio-describe`) consome ANTES do OpenRouter via
 `POST /members/ai-usage/consume` (client `members.aiUsageConsume`); **FAIL-OPEN** (members
@@ -793,6 +804,11 @@ enviou. O `hubUploadImage` escolhe o ramo pelo MIME; o resto da rota não mudou.
 7. **Exports map: subpaths de componente levam EXTENSÃO** (`"./components/ebook/*":
    "./src/components/ebook/*.tsx"`) — padrão sem extensão resolve no Turbopack mas NÃO no `tsc`
    (o typecheck do consumidor quebra com "Cannot find module").
+
+**Ranking geral (full review 06/09/2026):** o BFF valida `limit`, encaminha `cursor` sem
+interpretá-lo e espelha `nextCursor` no contrato compartilhado. A primeira página server-side não
+envia cursor; as seguintes usam o token opaco do members. O offset permanece apenas no ranking
+administrativo.
 
 ## Comandos
 

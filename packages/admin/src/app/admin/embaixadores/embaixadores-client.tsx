@@ -7,6 +7,7 @@ import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
+import { Select } from '@sistemazero/ui/select'
 import {
   Table,
   TableBody,
@@ -16,15 +17,22 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { Copy, Eye, Gift, Mail, Plus, Search } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { formatDate } from '@/lib/format'
-import type { AmbassadorDetailView, AmbassadorListItemView, AmbassadorView } from '@/lib/types'
+import { formatCents, formatCentsStr, formatDate } from '@/lib/format'
+import type {
+  AmbassadorDetailView,
+  AmbassadorListItemView,
+  AmbassadorRedemptionView,
+  AmbassadorView,
+  ConversionAdminView,
+  ConversionStatus,
+} from '@/lib/types'
 
 const PAGE_SIZE = 25
 const WRITE_ROLES = new Set(['superadmin', 'admin'])
@@ -245,6 +253,8 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         onChange={(next: number) => setOffset(next)}
       />
 
+      <BonusSection canWrite={canWrite} />
+
       {createOpen && (
         <CreateAmbassadorDialog
           onClose={() => setCreateOpen(false)}
@@ -272,6 +282,277 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
 
       {confirmDialog}
     </div>
+  )
+}
+
+/** Exportado p/ o teste de conformance admin×referrals (union espelhado à mão). */
+export const CONVERSION_STATUS_LABEL: Record<ConversionStatus, string> = {
+  pending: 'Na garantia',
+  eligible: 'Aguardando Pix',
+  paid: 'Pago',
+  canceled: 'Assinatura estornada',
+  self_blocked: 'Autoindicação',
+}
+
+const SELF_BLOCKED_HINT = 'Sem bônus: quem assinou é o próprio embaixador'
+
+/**
+ * Apresentação por status numa TABELA só (Record EXAUSTIVO: um status novo no
+ * referrals reprova a compilação aqui em vez de cair num rótulo errado).
+ */
+const CONVERSION_STATUS_BADGE: Record<
+  ConversionStatus,
+  { variant?: 'muted' | 'outline'; className?: string; title?: (c: ConversionAdminView) => string }
+> = {
+  pending: { variant: 'muted', title: (c) => `A garantia libera em ${formatDate(c.maturesAt)}` },
+  eligible: {},
+  paid: {
+    className: 'bg-success/15 text-success-foreground',
+    title: (c) =>
+      [
+        c.paidMarkedAt
+          ? `Pago em ${formatDate(c.paidMarkedAt)} por ${c.paidMarkedBy ?? 'admin'}`
+          : '',
+        c.note ? `Nota: ${c.note}` : '',
+      ]
+        .filter(Boolean)
+        .join(' · '),
+  },
+  canceled: { variant: 'muted' },
+  self_blocked: { variant: 'muted', title: () => SELF_BLOCKED_HINT },
+}
+
+function ConversionStatusBadge({ c }: { c: ConversionAdminView }) {
+  const p = CONVERSION_STATUS_BADGE[c.status]
+  const title = p.title?.(c)
+  return (
+    <Badge variant={p.variant} className={p.className} title={title || undefined}>
+      {CONVERSION_STATUS_LABEL[c.status]}
+    </Badge>
+  )
+}
+
+/**
+ * Bônus de indicação: cada linha é um bolsista que assinou a Comunidade dos
+ * Criadores. Passada a garantia de 7 dias o bônus fica "Aguardando Pix": você
+ * paga por fora (Pix manual, sem saldo no produto) e marca como pago aqui.
+ */
+function BonusSection({ canWrite }: { canWrite: boolean }) {
+  const { confirm, confirmDialog } = useConfirm()
+  const [items, setItems] = useState<ConversionAdminView[]>([])
+  const [total, setTotal] = useState(0)
+  const [offset, setOffset] = useState(0)
+  const [status, setStatus] = useState<'' | ConversionStatus>('')
+  const [loading, setLoading] = useState(true)
+  // Última requisição VENCE: trocar o filtro rápido não deixa uma resposta
+  // atrasada pintar linhas do filtro anterior sob o dropdown novo.
+  const loadSeq = useRef(0)
+
+  const load = useCallback(async () => {
+    const seq = ++loadSeq.current
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({ limit: String(PAGE_SIZE), offset: String(offset) })
+      if (status) params.set('status', status)
+      const data = await apiGet<{ items: ConversionAdminView[]; total: number }>(
+        `/api/admin/referrals/conversions?${params.toString()}`,
+      )
+      if (seq !== loadSeq.current) return
+      setItems(data.items)
+      setTotal(data.total)
+    } catch (err) {
+      if (seq !== loadSeq.current) return
+      toast.error((err as ApiError).message)
+    } finally {
+      if (seq === loadSeq.current) setLoading(false)
+    }
+  }, [offset, status])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  function markPaid(row: ConversionAdminView) {
+    confirm({
+      title: 'Marcar bônus como pago?',
+      message: `Confirme que você já fez o Pix de ${formatCents(row.bonusCents)} para ${row.ambassadorName ?? 'o embaixador'}${row.ambassadorPixKey ? ` (chave ${row.ambassadorPixKey})` : ''}. Essa marcação não envia dinheiro, só registra o controle.`,
+      confirmText: 'Já paguei, marcar',
+      onConfirm: async () => {
+        try {
+          await apiSend(`/api/admin/referrals/conversions/${row.id}/mark-paid`, 'POST', {})
+          toast.success('Bônus marcado como pago.')
+          void load()
+        } catch (err) {
+          const apiErr = err as ApiError
+          toast.error(
+            apiErr.code === 'CONVERSION_NOT_ELIGIBLE'
+              ? 'Este bônus não está aguardando pagamento. Recarregue a lista.'
+              : apiErr.message,
+          )
+        }
+      },
+    })
+  }
+
+  function matureNow(row: ConversionAdminView) {
+    confirm({
+      title: 'Antecipar a garantia?',
+      message: `O bônus de ${row.redemptionName} fica liberado AGORA, antes dos 7 dias de garantia. Se a família pedir estorno depois, o pagamento vira ajuste manual. Use para testes ou exceções conscientes.`,
+      confirmText: 'Antecipar',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        try {
+          await apiSend(`/api/admin/referrals/conversions/${row.id}/mature-now`, 'POST')
+          toast.success('Garantia antecipada. O bônus libera no próximo ciclo do serviço.')
+          void load()
+        } catch (err) {
+          const apiErr = err as ApiError
+          toast.error(
+            apiErr.code === 'CONVERSION_NOT_PENDING'
+              ? 'Só conversões na garantia podem antecipar. Recarregue a lista.'
+              : apiErr.message,
+          )
+        }
+      },
+    })
+  }
+
+  return (
+    <section className="space-y-3 pt-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-lg font-semibold">Bônus de indicação</h2>
+          <p className="text-sm text-muted-foreground">
+            Bolsistas que assinaram a Comunidade dos Criadores. Depois da garantia de 7 dias, o
+            bônus fica aguardando o seu Pix manual.
+          </p>
+        </div>
+        <div className="w-44">
+          <Select
+            value={status}
+            onChange={(e) => {
+              setOffset(0)
+              setStatus(e.target.value as '' | ConversionStatus)
+            }}
+            aria-label="Filtrar bônus por status"
+          >
+            <option value="">Todos</option>
+            {(Object.keys(CONVERSION_STATUS_LABEL) as ConversionStatus[]).map((s) => (
+              <option key={s} value={s}>
+                {CONVERSION_STATUS_LABEL[s]}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </div>
+
+      <Card className="overflow-x-auto p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Embaixador(a)</TableHead>
+              <TableHead>Bolsista que assinou</TableHead>
+              <TableHead>Assinou em</TableHead>
+              <TableHead className="text-right">Bônus</TableHead>
+              <TableHead>Chave Pix</TableHead>
+              <TableHead>Status</TableHead>
+              {canWrite && <TableHead className="text-right">Ações</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableSkeletonRows rows={3} columns={canWrite ? 7 : 6} />
+            ) : items.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={canWrite ? 7 : 6}
+                  className="py-8 text-center text-muted-foreground"
+                >
+                  Nenhum bônus por aqui ainda. Quando um bolsista assinar a Comunidade, ele aparece
+                  nesta lista.
+                </TableCell>
+              </TableRow>
+            ) : (
+              items.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>
+                    <div className="text-sm font-medium">{row.ambassadorName ?? '—'}</div>
+                    <div className="text-xs text-muted-foreground">{row.ambassadorEmail ?? ''}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">{row.redemptionName}</div>
+                    <div className="text-xs text-muted-foreground">{row.redemptionEmail}</div>
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    <div>{formatDate(row.subscribedAt)}</div>
+                    <div className="text-xs">
+                      {row.offerSlug} · {formatCentsStr(row.amountCents)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums font-medium">
+                    {formatCents(row.bonusCents)}
+                  </TableCell>
+                  <TableCell>
+                    {row.ambassadorPixKey ? (
+                      <div className="flex items-center gap-1">
+                        <code className="max-w-40 truncate rounded bg-muted px-2 py-1 text-xs">
+                          {row.ambassadorPixKey}
+                        </code>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Copiar a chave Pix"
+                          onClick={() =>
+                            void copyToClipboard(row.ambassadorPixKey ?? '', 'Chave Pix')
+                          }
+                        >
+                          <Copy className="size-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Ainda não informou</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <ConversionStatusBadge c={row} />
+                  </TableCell>
+                  {canWrite && (
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        {row.status === 'eligible' && (
+                          <Button variant="ghost" size="sm" onClick={() => markPaid(row)}>
+                            Marcar como pago
+                          </Button>
+                        )}
+                        {row.status === 'pending' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Libera o bônus antes da garantia de 7 dias"
+                            onClick={() => matureNow(row)}
+                          >
+                            Antecipar
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Card>
+
+      <Pagination
+        total={total}
+        limit={PAGE_SIZE}
+        offset={offset}
+        onChange={(next: number) => setOffset(next)}
+      />
+
+      {confirmDialog}
+    </section>
   )
 }
 
@@ -396,6 +677,7 @@ function AmbassadorDetailDialog({
                   <TableRow>
                     <TableHead>Responsável</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Jornada</TableHead>
                     <TableHead>Quando</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -426,6 +708,9 @@ function AmbassadorDetailDialog({
                           </div>
                         )}
                       </TableCell>
+                      <TableCell>
+                        <JourneyBadge r={r} />
+                      </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {formatDate(r.completedAt ?? r.createdAt)}
                       </TableCell>
@@ -444,6 +729,38 @@ function AmbassadorDetailDialog({
         </div>
       </div>
     </Dialog>
+  )
+}
+
+/** Rótulos da JORNADA (fraseado próprio; Record EXAUSTIVO como o do badge). */
+const JOURNEY_LABEL: Record<ConversionStatus, string> = {
+  pending: 'Assinou, na garantia',
+  eligible: 'Bônus liberado',
+  paid: 'Bônus pago',
+  canceled: CONVERSION_STATUS_LABEL.canceled,
+  self_blocked: CONVERSION_STATUS_LABEL.self_blocked,
+}
+
+/**
+ * Jornada do bolsista dentro do detalhe: ficou só no Desafio ou virou
+ * assinatura (e em que pé o bônus está). Deriva de `redemption.conversion`;
+ * variante/tooltip vêm da MESMA tabela do badge da lista (uma fonte só).
+ */
+function JourneyBadge({ r }: { r: AmbassadorRedemptionView }) {
+  if (r.status !== 'completed') return <span className="text-xs text-muted-foreground">—</span>
+  const c = r.conversion
+  if (!c) return <Badge variant="outline">Só no Desafio</Badge>
+  const p = CONVERSION_STATUS_BADGE[c.status]
+  const title =
+    c.status === 'pending'
+      ? `Assinou em ${formatDate(c.subscribedAt)}`
+      : c.status === 'self_blocked'
+        ? SELF_BLOCKED_HINT
+        : undefined
+  return (
+    <Badge variant={p.variant} className={p.className} title={title}>
+      {JOURNEY_LABEL[c.status]}
+    </Badge>
   )
 }
 

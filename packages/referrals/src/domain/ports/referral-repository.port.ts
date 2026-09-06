@@ -8,6 +8,10 @@ export interface AmbassadorRecord {
   name: string
   email: string
   pageToken: string
+  /** Conta do auth quando o embaixador é um pai/responsável (auto-cadastro). */
+  accountUserId: string | null
+  /** Chave Pix p/ o bônus (cadastrada pelo próprio embaixador). */
+  pixKey: string | null
   status: AmbassadorStatus
   linkEmailCount: number
   linkEmailSentAt: Date | null
@@ -73,6 +77,66 @@ export interface AmbassadorStats {
   invitesSent: number
 }
 
+/** Fonte ÚNICA do union (o admin espelha por teste de conformance). */
+export const CONVERSION_STATUSES = [
+  'pending',
+  'eligible',
+  'paid',
+  'canceled',
+  'self_blocked',
+] as const
+export type ConversionStatus = (typeof CONVERSION_STATUSES)[number]
+
+/**
+ * O que o EMBAIXADOR enxerga (página + card dos pais): `self_blocked` e
+ * `canceled` ficam de fora — só confundem quem espera dinheiro. Dono único da
+ * regra; repo e rotas derivam daqui.
+ */
+export const AMBASSADOR_VISIBLE_CONVERSION_STATUSES = ['pending', 'eligible', 'paid'] as const
+
+/**
+ * Conversão: bolsista que ASSINOU a Comunidade. O bônus nunca é saldo — o
+ * status sinaliza elegibilidade e o Pix é pago manualmente (admin marca pago).
+ */
+export interface ConversionRecord {
+  id: string
+  redemptionId: string
+  codeId: string
+  ambassadorId: string | null
+  paymentId: string
+  subscriptionId: string | null
+  offerSlug: string
+  amountCents: bigint
+  bonusCents: number
+  status: ConversionStatus
+  paidAt: Date
+  maturesAt: Date
+  eligibleAt: Date | null
+  notifiedAt: Date | null
+  paidMarkedAt: Date | null
+  paidMarkedBy: string | null
+  note: string | null
+  createdAt: Date
+}
+
+/** Linha da listagem admin (joins de exibição). */
+export interface ConversionListItem extends ConversionRecord {
+  ambassadorName: string | null
+  ambassadorEmail: string | null
+  ambassadorPixKey: string | null
+  redemptionName: string
+  redemptionEmail: string
+}
+
+/** Item do ciclo de notificação (eligible ainda não avisado). */
+export interface ConversionToNotify {
+  id: string
+  bonusCents: number
+  ambassadorName: string | null
+  ambassadorEmail: string | null
+  ambassadorPageToken: string | null
+}
+
 export interface ReferralRepository {
   // ── Embaixadores ──────────────────────────────────────────────────────────
   /** Cria embaixador + código na MESMA transação. `email_exists` = UNIQUE do e-mail. */
@@ -81,11 +145,32 @@ export interface ReferralRepository {
     email: string
     pageToken: string
     code: string
+    /** Conta do auth no auto-cadastro (pai/responsável) — null no fluxo admin. */
+    accountUserId?: string | null
   }): Promise<
     | { kind: 'created'; ambassador: AmbassadorRecord; code: CodeRecord }
     | { kind: 'email_exists' }
+    | { kind: 'account_exists' }
     | { kind: 'code_collision' }
   >
+  findAmbassadorByAccount(
+    accountUserId: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null>
+  /**
+   * Vincula a CONTA a um embaixador externo já cadastrado com o mesmo e-mail
+   * (idempotente p/ a mesma conta; e-mail de OUTRA conta → null).
+   */
+  linkAmbassadorAccount(
+    email: string,
+    accountUserId: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null>
+  /** Chave Pix cadastrada pelo PRÓPRIO embaixador (capability da página). */
+  setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean>
+  /** Só os 2 counts do painel (sem re-buscar o embaixador que já está em mãos). */
+  getAmbassadorStats(ambassadorId: string): Promise<AmbassadorStats>
+  countConversionsForAmbassador(ambassadorId: string): Promise<Record<string, number>>
+  /** SÓ os status visíveis ao embaixador (filtro no SQL, ANTES do limit). */
+  listAmbassadorVisibleConversions(ambassadorId: string, limit: number): Promise<ConversionRecord[]>
   listAmbassadors(opts: {
     q?: string
     limit: number
@@ -157,6 +242,55 @@ export interface ReferralRepository {
   bumpInviteSend(id: string): Promise<number>
   markInviteSent(id: string, when: Date): Promise<void>
   markInviteFailed(id: string): Promise<void>
+
+  // ── Conversões (bolsista → assinatura da Comunidade) ─────────────────────
+  /** Resgate + o CODE dele (owner_email alimenta o anti-autoindicação). */
+  findRedemptionWithCodeByEmail(
+    email: string,
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null>
+  /**
+   * `ON CONFLICT DO NOTHING` nas DUAS uniques (redemption_id = "só a primeira
+   * cobrança"; payment_id = re-entrega) — conflito devolve `created: false`.
+   */
+  insertConversion(input: {
+    redemptionId: string
+    codeId: string
+    ambassadorId: string | null
+    paymentId: string
+    subscriptionId: string | null
+    offerSlug: string
+    amountCents: bigint
+    bonusCents: number
+    status: 'pending' | 'self_blocked'
+    paidAt: Date
+    maturesAt: Date
+  }): Promise<{ created: boolean }>
+  /**
+   * Estorno na garantia: só `pending` cancela. `not_pending` devolve o STATUS
+   * corrente — self_blocked/canceled são benignos; eligible/paid afloram ao
+   * humano (bônus já prometido/pago de assinatura estornada).
+   */
+  cancelPendingConversionByPayment(
+    paymentId: string,
+  ): Promise<
+    { kind: 'canceled' } | { kind: 'not_found' } | { kind: 'not_pending'; status: ConversionStatus }
+  >
+  /** Sweep: `pending → eligible` quando `matures_at <= now` (lote). */
+  matureConversions(now: Date, limit: number): Promise<number>
+  /** Elegíveis ainda não avisadas, SÓ de embaixador ATIVO (página viva). */
+  listConversionsToNotify(limit: number): Promise<ConversionToNotify[]>
+  markConversionNotified(id: string, when: Date): Promise<void>
+  listConversions(opts: {
+    status?: ConversionStatus
+    limit: number
+    offset: number
+  }): Promise<{ items: ConversionListItem[]; total: number }>
+  /** Controle do Pix manual: só `eligible` vira `paid` (idempotente por guard). */
+  markConversionPaid(id: string, by: string, note: string | null): Promise<boolean>
+  /** Staging/e2e: antecipa a maturação (`pending` → matures_at = now). */
+  setConversionMaturesNow(id: string): Promise<boolean>
+  /** Conversões dos resgates de um código (estágio da jornada no admin). */
+  listConversionsByCode(codeId: string, limit: number): Promise<ConversionRecord[]>
 
   // ── Métricas ──────────────────────────────────────────────────────────────
   countRedemptionsByStatus(): Promise<Record<string, number>>

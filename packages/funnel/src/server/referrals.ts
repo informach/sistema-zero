@@ -9,11 +9,16 @@ import { json, jsonError, safeJson } from '../lib/http'
  * convites e contagens vivem no referrals.
  */
 export interface ReferralsDeps {
-  gateway: Pick<GatewayClient, 'redeemScholarship' | 'createAmbassadorInvite'>
+  gateway: Pick<
+    GatewayClient,
+    'redeemScholarship' | 'createAmbassadorInvite' | 'updateAmbassadorPix'
+  >
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+/** Shape do page_token do referrals (43 chars base64url hoje; margem 16..64). */
+const TOKEN_RE = /^[A-Za-z0-9_-]{16,64}$/
 
 // Campos em PT (mesma língua dos forms do funil); o telefone é OPCIONAL — não
 // reusar o ContactSchema, que o exige.
@@ -29,9 +34,14 @@ const RedeemBody = z.object({
 })
 
 const InviteBody = z.object({
-  token: z.string().regex(/^[A-Za-z0-9_-]{16,64}$/),
+  token: z.string().regex(TOKEN_RE),
   nome: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().regex(EMAIL_RE).max(254),
+})
+
+const PixBody = z.object({
+  token: z.string().regex(TOKEN_RE),
+  pixKey: z.string().trim().min(5).max(140),
 })
 
 /** Repassa o envelope de erro do referrals quando reconhecido; senão 502. */
@@ -83,4 +93,13 @@ export async function postAmbassadorInvite(
   if (res.status === 202) return json({ ok: true }, 202)
   // 404 token · 409 já-convidado/já-resgatou · 429 cap diário/teto do gateway.
   return passthrough(res, [404, 409, 429], deps.log, 'invite')
+}
+
+/** POST /api/embaixador/pix — chave Pix do bônus (o embaixador cadastra na própria página). */
+export async function postAmbassadorPix(request: Request, deps: ReferralsDeps): Promise<Response> {
+  const parsed = PixBody.safeParse(await safeJson(request))
+  if (!parsed.success) return jsonError('Confira a chave e tente novamente.', 400, 'BAD_REQUEST')
+
+  const res = await deps.gateway.updateAmbassadorPix(parsed.data.token, parsed.data.pixKey)
+  return passthrough(res, [200, 404, 429], deps.log, 'pix')
 }

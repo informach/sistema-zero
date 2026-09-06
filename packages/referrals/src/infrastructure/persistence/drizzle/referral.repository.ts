@@ -1,24 +1,37 @@
-import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, or, sql } from 'drizzle-orm'
+import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import type {
   AmbassadorListItem,
   AmbassadorRecord,
   AmbassadorStats,
   AmbassadorStatus,
   CodeRecord,
+  ConversionListItem,
+  ConversionRecord,
+  ConversionStatus,
+  ConversionToNotify,
   InviteRecord,
   InviteStatus,
   RedemptionRecord,
   RedemptionStatus,
   ReferralRepository,
 } from '../../../domain/ports/referral-repository.port'
+import { AMBASSADOR_VISIBLE_CONVERSION_STATUSES } from '../../../domain/ports/referral-repository.port'
 import type { Database } from './db'
-import { escapeLike, isUniqueViolation } from './pg-errors'
-import { ambassadors, codes, invites, scholarshipRedemptions } from './schema'
+import { escapeLike, isUniqueViolation, uniqueConstraintName } from './pg-errors'
+import { ambassadors, codes, conversions, invites, scholarshipRedemptions } from './schema'
+
+/**
+ * Advisory lock do sweep de conversões — espaço GLOBAL do Postgres compartilhado
+ * (não colide com members 30792292938117747-49, payments 8103081227979411315,
+ * fiscal 5821743099124577, funnel 47713920114417).
+ */
+const CONVERSION_SWEEP_LOCK_KEY = '7429184620031201'
 
 type AmbassadorRow = typeof ambassadors.$inferSelect
 type CodeRow = typeof codes.$inferSelect
 type RedemptionRow = typeof scholarshipRedemptions.$inferSelect
 type InviteRow = typeof invites.$inferSelect
+type ConversionRow = typeof conversions.$inferSelect
 
 function toAmbassador(row: AmbassadorRow): AmbassadorRecord {
   return {
@@ -26,9 +39,34 @@ function toAmbassador(row: AmbassadorRow): AmbassadorRecord {
     name: row.name,
     email: row.email,
     pageToken: row.pageToken,
+    accountUserId: row.accountUserId,
+    pixKey: row.pixKey,
     status: row.status as AmbassadorStatus,
     linkEmailCount: row.linkEmailCount,
     linkEmailSentAt: row.linkEmailSentAt,
+    createdAt: row.createdAt,
+  }
+}
+
+function toConversion(row: ConversionRow): ConversionRecord {
+  return {
+    id: row.id,
+    redemptionId: row.redemptionId,
+    codeId: row.codeId,
+    ambassadorId: row.ambassadorId,
+    paymentId: row.paymentId,
+    subscriptionId: row.subscriptionId,
+    offerSlug: row.offerSlug,
+    amountCents: row.amountCents,
+    bonusCents: row.bonusCents,
+    status: row.status as ConversionStatus,
+    paidAt: row.paidAt,
+    maturesAt: row.maturesAt,
+    eligibleAt: row.eligibleAt,
+    notifiedAt: row.notifiedAt,
+    paidMarkedAt: row.paidMarkedAt,
+    paidMarkedBy: row.paidMarkedBy,
+    note: row.note,
     createdAt: row.createdAt,
   }
 }
@@ -90,16 +128,23 @@ export class DrizzleReferralRepository implements ReferralRepository {
     email: string
     pageToken: string
     code: string
+    accountUserId?: string | null
   }): Promise<
     | { kind: 'created'; ambassador: AmbassadorRecord; code: CodeRecord }
     | { kind: 'email_exists' }
+    | { kind: 'account_exists' }
     | { kind: 'code_collision' }
   > {
     try {
       return await this.db.transaction(async (tx) => {
         const [ambassador] = await tx
           .insert(ambassadors)
-          .values({ name: input.name, email: input.email, pageToken: input.pageToken })
+          .values({
+            name: input.name,
+            email: input.email,
+            pageToken: input.pageToken,
+            accountUserId: input.accountUserId ?? null,
+          })
           .onConflictDoNothing({ target: ambassadors.email })
           .returning()
         if (!ambassador) return { kind: 'email_exists' as const }
@@ -121,9 +166,15 @@ export class DrizzleReferralRepository implements ReferralRepository {
         }
       })
     } catch (error) {
-      // A UNIQUE do e-mail é tratada pelo onConflictDoNothing acima — um 23505
-      // aqui só pode ser a UNIQUE do código (colisão de sufixo; re-sorteia).
-      if (isUniqueViolation(error)) return { kind: 'code_collision' }
+      // A UNIQUE do e-mail é tratada pelo onConflictDoNothing acima. Um 23505
+      // aqui é a UNIQUE do código (colisão de sufixo; re-sorteia) OU a UNIQUE
+      // parcial da CONTA (dois selfEnroll em corrida) — sem distinguir, a
+      // corrida de conta viraria 5 re-sorteios inúteis e um 500.
+      if (isUniqueViolation(error)) {
+        return uniqueConstraintName(error) === 'ambassadors_account_uq'
+          ? { kind: 'account_exists' }
+          : { kind: 'code_collision' }
+      }
       throw error
     }
   }
@@ -320,6 +371,100 @@ export class DrizzleReferralRepository implements ReferralRepository {
     })
   }
 
+  async findAmbassadorByAccount(
+    accountUserId: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    const [row] = await this.db
+      .select({ ambassador: ambassadors, code: codes })
+      .from(ambassadors)
+      .leftJoin(codes, eq(codes.ambassadorId, ambassadors.id))
+      .where(eq(ambassadors.accountUserId, accountUserId))
+      .limit(1)
+    if (!row) return null
+    return { ...toAmbassador(row.ambassador), code: row.code?.code ?? null }
+  }
+
+  async linkAmbassadorAccount(
+    email: string,
+    accountUserId: string,
+  ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
+    const [updated] = await this.db
+      .update(ambassadors)
+      .set({ accountUserId, updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(ambassadors.email, email),
+          or(isNull(ambassadors.accountUserId), eq(ambassadors.accountUserId, accountUserId)),
+        ),
+      )
+      .returning()
+    if (!updated) return null
+    const [codeRow] = await this.db
+      .select({ code: codes.code })
+      .from(codes)
+      .where(eq(codes.ambassadorId, updated.id))
+      .limit(1)
+    return { ...toAmbassador(updated), code: codeRow?.code ?? null }
+  }
+
+  async setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean> {
+    const rows = await this.db
+      .update(ambassadors)
+      .set({ pixKey, updatedAt: sql`now()` })
+      .where(and(eq(ambassadors.pageToken, pageToken), eq(ambassadors.status, 'active')))
+      .returning({ id: ambassadors.id })
+    return rows.length > 0
+  }
+
+  async getAmbassadorStats(ambassadorId: string): Promise<AmbassadorStats> {
+    // Os 2 counts do painel numa ida só (o código é resolvido no próprio SQL).
+    const [row] = await this.db
+      .select({
+        redemptionsCompleted: sql<number>`(
+          select count(*)::int from ${scholarshipRedemptions} r
+          join ${codes} c on c.id = r.code_id
+          where c.ambassador_id = ${ambassadorId} and r.status = 'completed'
+        )`,
+        invitesSent: sql<number>`(
+          select count(*)::int from ${invites} i
+          where i.ambassador_id = ${ambassadorId} and i.status = 'sent'
+        )`,
+      })
+      .from(sql`(select 1) as one`)
+    return row ?? { redemptionsCompleted: 0, invitesSent: 0 }
+  }
+
+  async countConversionsForAmbassador(ambassadorId: string): Promise<Record<string, number>> {
+    const rows = await this.db
+      .select({ status: conversions.status, value: count() })
+      .from(conversions)
+      .where(eq(conversions.ambassadorId, ambassadorId))
+      .groupBy(conversions.status)
+    const out: Record<string, number> = {}
+    for (const r of rows) out[r.status] = r.value
+    return out
+  }
+
+  async listAmbassadorVisibleConversions(
+    ambassadorId: string,
+    limit: number,
+  ): Promise<ConversionRecord[]> {
+    // Filtro ANTES do limit (no SQL): canceladas/autoindicação não empurram
+    // bônus visíveis para fora da página do embaixador.
+    const rows = await this.db
+      .select()
+      .from(conversions)
+      .where(
+        and(
+          eq(conversions.ambassadorId, ambassadorId),
+          inArray(conversions.status, [...AMBASSADOR_VISIBLE_CONVERSION_STATUSES]),
+        ),
+      )
+      .orderBy(desc(conversions.paidAt))
+      .limit(limit)
+    return rows.map(toConversion)
+  }
+
   // ── Códigos ───────────────────────────────────────────────────────────────
 
   async findCodeByCode(code: string): Promise<CodeRecord | null> {
@@ -511,6 +656,204 @@ export class DrizzleReferralRepository implements ReferralRepository {
 
   async markInviteFailed(id: string): Promise<void> {
     await this.db.update(invites).set({ status: 'failed' }).where(eq(invites.id, id))
+  }
+
+  // ── Conversões ────────────────────────────────────────────────────────────
+
+  async findRedemptionWithCodeByEmail(
+    email: string,
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null> {
+    const [row] = await this.db
+      .select({ redemption: scholarshipRedemptions, code: codes })
+      .from(scholarshipRedemptions)
+      .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
+      .where(eq(scholarshipRedemptions.email, email))
+      .limit(1)
+    if (!row) return null
+    return { redemption: toRedemption(row.redemption), code: toCode(row.code) }
+  }
+
+  async insertConversion(input: {
+    redemptionId: string
+    codeId: string
+    ambassadorId: string | null
+    paymentId: string
+    subscriptionId: string | null
+    offerSlug: string
+    amountCents: bigint
+    bonusCents: number
+    status: 'pending' | 'self_blocked'
+    paidAt: Date
+    maturesAt: Date
+  }): Promise<{ created: boolean }> {
+    // As DUAS uniques (redemption_id e payment_id) protegem: `onConflictDoNothing`
+    // SEM target cobre qualquer uma (ciclo de renovação OU re-entrega → no-op).
+    const rows = await this.db
+      .insert(conversions)
+      .values(input)
+      .onConflictDoNothing()
+      .returning({ id: conversions.id })
+    return { created: rows.length > 0 }
+  }
+
+  async cancelPendingConversionByPayment(
+    paymentId: string,
+  ): Promise<
+    { kind: 'canceled' } | { kind: 'not_found' } | { kind: 'not_pending'; status: ConversionStatus }
+  > {
+    const rows = await this.db
+      .update(conversions)
+      .set({ status: 'canceled', updatedAt: sql`now()` })
+      .where(and(eq(conversions.paymentId, paymentId), eq(conversions.status, 'pending')))
+      .returning({ id: conversions.id })
+    if (rows.length > 0) return { kind: 'canceled' }
+    // O STATUS decide o desfecho no serviço: self_blocked/canceled são
+    // benignos; eligible/paid viram alerta de "estorno após bônus".
+    const [existing] = await this.db
+      .select({ status: conversions.status })
+      .from(conversions)
+      .where(eq(conversions.paymentId, paymentId))
+      .limit(1)
+    if (!existing) return { kind: 'not_found' }
+    return { kind: 'not_pending', status: existing.status as ConversionStatus }
+  }
+
+  async matureConversions(now: Date, limit: number): Promise<number> {
+    // Transação COM advisory xact-lock: o lock e o UPDATE precisam viver na
+    // MESMA conexão (lock fora da tx do trabalho não guardaria nada) — uma
+    // réplica por ciclo; as demais devolvem 0 sem esperar.
+    return await this.db.transaction(async (tx) => {
+      const [row] = await tx.execute<{ locked: boolean }>(
+        sql`select pg_try_advisory_xact_lock(${CONVERSION_SWEEP_LOCK_KEY}::bigint) as locked`,
+      )
+      if (!row?.locked) return 0
+      const rows = await tx
+        .update(conversions)
+        .set({ status: 'eligible', eligibleAt: now, updatedAt: sql`now()` })
+        .where(
+          and(
+            eq(conversions.status, 'pending'),
+            lte(conversions.maturesAt, now),
+            inArray(
+              conversions.id,
+              tx
+                .select({ id: conversions.id })
+                .from(conversions)
+                .where(and(eq(conversions.status, 'pending'), lte(conversions.maturesAt, now)))
+                .limit(limit),
+            ),
+          ),
+        )
+        .returning({ id: conversions.id })
+      return rows.length
+    })
+  }
+
+  async listConversionsToNotify(limit: number): Promise<ConversionToNotify[]> {
+    // SÓ embaixador ATIVO: a capability-page de desativado responde 404, e um
+    // e-mail "seu bônus liberou" com link morto queimaria a notificação
+    // (mark-after-send) sem o embaixador nunca a ver. Desativado fica sem
+    // aviso; reativou → o próximo ciclo envia. Linhas SEM embaixador (código
+    // de conta, fase futura) seguem vindo — o serviço as marca notificadas.
+    const rows = await this.db
+      .select({
+        id: conversions.id,
+        bonusCents: conversions.bonusCents,
+        ambassadorName: ambassadors.name,
+        ambassadorEmail: ambassadors.email,
+        ambassadorPageToken: ambassadors.pageToken,
+      })
+      .from(conversions)
+      .leftJoin(ambassadors, eq(ambassadors.id, conversions.ambassadorId))
+      .where(
+        and(
+          eq(conversions.status, 'eligible'),
+          isNull(conversions.notifiedAt),
+          or(isNull(conversions.ambassadorId), eq(ambassadors.status, 'active')),
+        ),
+      )
+      .orderBy(conversions.eligibleAt)
+      .limit(limit)
+    return rows
+  }
+
+  async markConversionNotified(id: string, when: Date): Promise<void> {
+    await this.db
+      .update(conversions)
+      .set({ notifiedAt: when, updatedAt: sql`now()` })
+      .where(eq(conversions.id, id))
+  }
+
+  async listConversions(opts: {
+    status?: ConversionStatus
+    limit: number
+    offset: number
+  }): Promise<{ items: ConversionListItem[]; total: number }> {
+    const where = opts.status ? eq(conversions.status, opts.status) : undefined
+    const [rows, [{ value: total } = { value: 0 }]] = await Promise.all([
+      this.db
+        .select({
+          conversion: conversions,
+          ambassadorName: ambassadors.name,
+          ambassadorEmail: ambassadors.email,
+          ambassadorPixKey: ambassadors.pixKey,
+          redemptionName: scholarshipRedemptions.name,
+          redemptionEmail: scholarshipRedemptions.email,
+        })
+        .from(conversions)
+        .leftJoin(ambassadors, eq(ambassadors.id, conversions.ambassadorId))
+        .innerJoin(scholarshipRedemptions, eq(scholarshipRedemptions.id, conversions.redemptionId))
+        .where(where)
+        .orderBy(desc(conversions.paidAt))
+        .limit(opts.limit)
+        .offset(opts.offset),
+      this.db.select({ value: count() }).from(conversions).where(where),
+    ])
+    return {
+      items: rows.map((r) => ({
+        ...toConversion(r.conversion),
+        ambassadorName: r.ambassadorName,
+        ambassadorEmail: r.ambassadorEmail,
+        ambassadorPixKey: r.ambassadorPixKey,
+        redemptionName: r.redemptionName,
+        redemptionEmail: r.redemptionEmail,
+      })),
+      total,
+    }
+  }
+
+  async markConversionPaid(id: string, by: string, note: string | null): Promise<boolean> {
+    const rows = await this.db
+      .update(conversions)
+      .set({
+        status: 'paid',
+        paidMarkedAt: sql`now()`,
+        paidMarkedBy: by,
+        ...(note !== null ? { note } : {}),
+        updatedAt: sql`now()`,
+      })
+      .where(and(eq(conversions.id, id), eq(conversions.status, 'eligible')))
+      .returning({ id: conversions.id })
+    return rows.length > 0
+  }
+
+  async setConversionMaturesNow(id: string): Promise<boolean> {
+    const rows = await this.db
+      .update(conversions)
+      .set({ maturesAt: sql`now()`, updatedAt: sql`now()` })
+      .where(and(eq(conversions.id, id), eq(conversions.status, 'pending')))
+      .returning({ id: conversions.id })
+    return rows.length > 0
+  }
+
+  async listConversionsByCode(codeId: string, limit: number): Promise<ConversionRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(conversions)
+      .where(eq(conversions.codeId, codeId))
+      .orderBy(desc(conversions.createdAt))
+      .limit(limit)
+    return rows.map(toConversion)
   }
 
   // ── Métricas ──────────────────────────────────────────────────────────────

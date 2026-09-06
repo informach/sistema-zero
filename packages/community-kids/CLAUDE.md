@@ -295,6 +295,22 @@ dos pais ficava PRESO na grade (não dá p/ criar perfil nem sair). Casa com a t
 senha"). O limite de perfis é do plano (criar acima → 409 no
 toast). Toda a lógica do BFF vive no **member-shell** (`shell.routes.profile*` + `shell.profiles`);
 os `route.ts` são shims de 1-3 linhas. `getSession().activeProfile` indica a sessão de perfil ativa.
+**Card "Indique e ganhe" (embaixador, 09/2026):** a Área dos pais (modo gestão) mostra o
+`AmbassadorCard` (`app/perfis/ambassador-card.tsx`) — o responsável vira embaixador da Bolsa do
+Primeiro Jogo com UM clique (os dados já são os da conta): não cadastrado → explicação (bolsa
+100% + agradecimento por Pix quando a família indicada assina, depois da garantia de 7 dias —
+⚠️ o VALOR vem de `bonus.amountCents` da view, NUNCA cravado na copy: é env do referrals) +
+botão "Quero ser embaixador(a)" (POST → o referrals cria/LINKA; o toast promete o e-mail SÓ
+quando `created: true` — vínculo/retomada não dispara e-mail); cadastrado → contadores + "Copiar
+link de bolsa" (falha de clipboard → mostra o link p/ copiar à mão, SEM `window.prompt` — padrão
+que o kids aposentou) + "Abrir minha página" (capability-URL ABSOLUTA que já vem do serviço —
+kids segue sem env do funil); ⚠️ `ambassador.status !== 'active'` → estado PAUSADO (recado
+apontando o Atendimento, SEM os botões — links de desativado dão 404 e o card não pode fingir
+sucesso). Best-effort: serviço fora → o card SOME (a Área dos pais nunca quebra por causa dele).
+Shim `app/api/parents/embaixador/route.ts` = `requireParentGateAccountOnly(shell.routes.
+ambassadorMe.GET/POST)` — mesma régua estrita do children-stats (sessão de perfil é RECUSADA).
+Tipos no member-shell (`AmbassadorEnrollmentView`); gestão completa (bônus, Pix, jornada) vive no
+ADMIN e na página do embaixador no funil.
 A Área dos Pais também mostra o card **Atendimento**, que leva a `/responsavel/ajuda` (FORA do
 layout e da navegação infantil). Essa página exige sessão da CONTA e `isParentVerifiedFor` no RSC;
 os três BFFs `/api/helpdesk/portal/*` repetem a proteção com
@@ -1619,6 +1635,10 @@ A `<Canvas>` precisa de
   público (opt-in dos pais) — espelha o Clube/Mural. Os dados (`photoUrl`/`levelSlug`/`firstName`/
   `profileId`) vêm ENRIQUECIDOS do members (`GetLeagueService` hidrata em lote; ver members). Chave
   da lista = índice (posição empata no competition ranking; `biome-ignore noArrayIndexKey`).
+- **Ranking geral — `ranking-hub.tsx` (full review 06/09/2026):** “Ver mais posições” usa o
+  `nextCursor` opaco devolvido pelo members, atualiza o total com cada página e encerra somente
+  quando o cursor vira `null`. O snapshot é congelado na primeira página, portanto XP ganho por
+  outra criança durante a navegação não duplica nem omite linhas.
 - **Perfil = "Meu perfil" da CRIANÇA (full review F1, 06/2026):** a página edita o PRÓPRIO
   PERFIL (não a conta). 1 card de identidade — avatar CLICÁVEL (leva ao configurador
   `/meu-avatar`, ÚNICO caminho de troca da imagem desde 24/07), nome + telefone do perfil +

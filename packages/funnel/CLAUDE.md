@@ -221,6 +221,18 @@ conhecidos [404/409/429], 5xx/timeout viram 502 `GATEWAY_ERROR`), rotas finas
 `RATE_LIMITED_WRITE` da middleware e os GETs SSR no `rate-limit-paths.ts` (cada hit = 1 chamada
 assinada ao gateway) — landing nova DEVE entrar nos dois regex. Testes:
 `tests/unit/referrals-handlers.test.ts` (+ fake-gateway com os 4 métodos).
+**Bônus na página do embaixador (extensão 09/2026):** o `GET by-token` passou a trazer `bonus:
+{pixKey, items}` e o `EmbaixadorPainel` ganhou o card **"Seus bônus"** — SÓ aparece com ≥1
+conversão (quem só presenteia não vê nada de dinheiro): lista cada bônus (valor via
+`formatBRLFromCents2` do `lib/money.ts` — invariante 3, nada de formatador local; estado: na
+garantia/liberado/pago), campo de **chave Pix** (salvar → POST `/api/embaixador/pix` →
+`postAmbassadorPix` → PATCH by-token no referrals, envelope [200/404/429]; ⚠️ o catch distingue
+4xx — chave inválida é DETERMINÍSTICO, a copy não pode dizer "tente em instantes") e o texto dos
+termos (agradecimento único por Pix, sem vínculo; a usuária valida o texto com o contador ANTES
+de divulgar). Client `updateAmbassadorPix` no `gateway-client.ts`; `TOKEN_RE` único no
+`server/referrals.ts` (invite + pix); o `[token].astro` tipa o bônus por
+`EmbaixadorPainelProps['bonus']` (shape da ilha, sem cópia); a rota de escrita já caía no regex
+`/embaixador/` do `RATE_LIMITED_WRITE`.
 
 **Pendência (decidida):**
 - **Upsell/downsell:** rotas + flags + cadeia de `successPath` prontas (scaffolding; **404 até** um

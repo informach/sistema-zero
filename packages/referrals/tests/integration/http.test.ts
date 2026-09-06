@@ -41,6 +41,7 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
     invite,
     ambassadors,
     funnelPublicUrl: FUNNEL_URL,
+    bonusAmountCents: 3000,
     requireAdminEnabled: true,
     internalToken: opts.internalToken,
     metricsToken: opts.metricsToken,
@@ -61,6 +62,63 @@ function req(path: string, init: RequestInit = {}) {
 }
 
 describe('borda HTTP do referrals', () => {
+  describe('rotas me (auto-cadastro do responsável)', () => {
+    test('sessão de PERFIL vincula pela CONTA (x-auth-account-id vence o user-id)', async () => {
+      const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
+      const headers = {
+        'x-internal-token': INTERNAL_TOKEN,
+        // Perfil kids: user-id = perfil; account-id = a CONTA do responsável.
+        'x-auth-user-id': '11111111-1111-4111-8111-111111111111',
+        'x-auth-account-id': '22222222-2222-4222-8222-222222222222',
+        'x-auth-user-email': 'mae@example.com',
+        'x-auth-user-name': encodeURIComponent('Maria José'),
+      }
+      const post = await app.handle(req('/referrals/me/ambassador', { method: 'POST', headers }))
+      expect(post.status).toBe(201)
+      const body = (await post.json()) as {
+        enrolled: boolean
+        created: boolean
+        bonus: { amountCents: number }
+        ambassador: { pageUrl: string; shareUrl: string | null }
+      }
+      expect(body.enrolled).toBe(true)
+      expect(body.created).toBe(true)
+      expect(body.bonus.amountCents).toBe(3000)
+      expect(body.ambassador.pageUrl.startsWith(`${FUNNEL_URL}/embaixador/`)).toBe(true)
+      // O vínculo durável é a CONTA — nunca o uuid do perfil.
+      expect(repo.ambassadors[0]!.accountUserId).toBe('22222222-2222-4222-8222-222222222222')
+
+      // GET da sessão da CONTA (sem perfil) acha o MESMO cadastro.
+      const get = await app.handle(
+        req('/referrals/me/ambassador', {
+          headers: {
+            'x-internal-token': INTERNAL_TOKEN,
+            'x-auth-user-id': '22222222-2222-4222-8222-222222222222',
+            'x-auth-user-email': 'mae@example.com',
+          },
+        }),
+      )
+      const view = (await get.json()) as { enrolled: boolean }
+      expect(view.enrolled).toBe(true)
+    })
+
+    test('re-POST da mesma conta é retomada: created false e nenhum e-mail novo prometido', async () => {
+      const { app, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+      const headers = {
+        'x-internal-token': INTERNAL_TOKEN,
+        'x-auth-user-id': '33333333-3333-4333-8333-333333333333',
+        'x-auth-user-email': 'pai@example.com',
+      }
+      await app.handle(req('/referrals/me/ambassador', { method: 'POST', headers }))
+      const emailsAfterCreate = gateway.callsOf('sendEmail').length
+      const again = await app.handle(req('/referrals/me/ambassador', { method: 'POST', headers }))
+      expect(again.status).toBe(200)
+      const body = (await again.json()) as { created: boolean }
+      expect(body.created).toBe(false)
+      expect(gateway.callsOf('sendEmail').length).toBe(emailsAfterCreate)
+    })
+  })
+
   test('healthz e readyz respondem', async () => {
     const { app } = buildApp()
     expect((await app.handle(req('/healthz'))).status).toBe(200)

@@ -587,6 +587,33 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque uma bolsa foi resgatada com este endereço.',
     }),
   },
+  {
+    key: 'referrals-bonus-eligible',
+    channel: 'email' as const,
+    name: 'Bônus do embaixador liberado (e-mail)',
+    subject: 'Boa notícia, {{nome}}: seu bônus de embaixador liberou! 🎉',
+    variables: ['nome', 'valor', 'link'],
+    body: emailLayout({
+      preheader: 'Uma família que você indicou assinou a Comunidade dos Criadores.',
+      title: 'Seu bônus liberou, {{nome}} 🎉',
+      content: [
+        p(
+          'Uma família que ganhou a bolsa com o seu link deu o próximo passo e assinou a <strong>Comunidade dos Criadores</strong>. O período de garantia passou e o seu bônus de <strong>{{valor}}</strong> está liberado.',
+        ),
+        p(
+          'Para receber, é só cadastrar (ou conferir) a sua chave Pix na sua página de embaixador:',
+        ),
+        ctaButton('Abrir minha página', '{{link}}'),
+        divider,
+        small(
+          'O bônus é um agradecimento único por indicação que virar assinatura. A gente paga por Pix, direto na chave que você cadastrar, normalmente em poucos dias. Não é salário nem renda garantida, e não cria vínculo com a plataforma.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque é embaixador(a) do Sistema Zero e tem um bônus a receber.',
+    }),
+  },
   // Aviso de resposta do HELPDESK a um chamado aberto no PORTAL da Ajuda. Enviado
   // pelo helpdesk (consumer HMAC `helpdesk`) DEPOIS de a resposta já estar gravada
   // na conversa. CONTRATO de variáveis com `portal-reply-notification.ts` do
