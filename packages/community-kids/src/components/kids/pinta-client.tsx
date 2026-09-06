@@ -22,6 +22,15 @@ import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 type PintaModule = typeof import('@sistemazero/pinta')
 
 /**
+ * O resultado da volta da ponte, COM o motivo (o mesmo contrato do Molda; o do Pinta está sendo
+ * alargado em lockstep e deixa o `reason` opcional para o host continuar válido nas duas
+ * versões). Anotado aqui para o objeto devolvido não ser um literal checado contra o contrato antigo.
+ */
+type PintaResyncResult =
+  | { updated: true }
+  | { updated: false; reason?: 'not-linked' | 'failed'; error?: string }
+
+/**
  * Pinta embarcado na comunidade kids (produto vendável). O pacote traz a UI inteira
  * (galeria + editores); este host injeta o tema da comunidade e a PONTE "Usar no
  * Estúdio": salva o desenho na biblioteca pessoal do Studio (IndexedDB do MESMO
@@ -211,12 +220,23 @@ export function PintaClient({
       // ⚠️ A guarda do `getPersonalAsset` é a regra do recurso: sem ela, TODO
       // rascunho do Pinta cairia na biblioteca do Estúdio sozinho e o "Usar no
       // Estúdio" deixaria de ser a decisão explícita que é hoje.
-      resyncToStudio: async (asset) => {
+      resyncToStudio: async (asset): Promise<PintaResyncResult> => {
         const namespace = viewerId ?? ''
         const bridge = await import('@sistemazero/studio/personal-assets')
-        if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) return { updated: false }
+        if (!(await bridge.getPersonalAsset(asset.id, { namespace }))) {
+          return { updated: false, reason: 'not-linked' }
+        }
         const result = await bridge.savePersonalAsset(asset, { namespace })
-        return { updated: result.ok }
+        if (!result.ok) {
+          // O motivo VIAJA (o pacote mostra o recado): antes a recusa da biblioteca morria num
+          // `updated: false` mudo, igual ao "nunca foi levado", e a criança não sabia por quê.
+          return {
+            updated: false,
+            reason: 'failed',
+            error: result.error ?? 'Não consegui atualizar este desenho no Estúdio.',
+          }
+        }
+        return { updated: true }
       },
       // "Jogar meu mapa": o Estúdio monta um JOGO pronto a partir do mapa e a
       // criança vai direto pra lá. SÓ com o Estúdio Completo (senão cairia na

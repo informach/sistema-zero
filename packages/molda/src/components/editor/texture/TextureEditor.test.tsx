@@ -195,7 +195,7 @@ describe('vestir a peça (editor do modelo)', () => {
 
 test('"+ Nova cor" é UM gesto na textura: N passos viram UMA extra, o lápis a escolhe, UM desfazer apaga', async () => {
   const persistence = await openTexture()
-  const input = screen.getByLabelText(COPY.editor.model.addColor, { selector: 'input' })
+  const input = document.querySelector('input[type="color"]') as HTMLInputElement
   // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
   fireEvent.input(input, { target: { value: '#123456' } })
   fireEvent.input(input, { target: { value: '#234567' } })

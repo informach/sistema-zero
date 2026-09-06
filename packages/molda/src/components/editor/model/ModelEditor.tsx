@@ -15,8 +15,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS, type TexelsPerUnit } from '../../../core/limits'
-import type { MoldaModelAsset, MoldaTextureAsset, ShapeId, Vec3 } from '../../../core/model'
+import type {
+  MoldaMesh,
+  MoldaModelAsset,
+  MoldaTextureAsset,
+  ShapeId,
+  Vec3,
+} from '../../../core/model'
 import type { PaletteId } from '../../../core/palette'
+import { firstPaintableIndex } from '../../../core/palette'
+import { resolvePaletteColors } from '../../../core/sanitize'
 import { triggerDownload } from '../../../export/download'
 import { exportModelGlb, GLB_MIME } from '../../../export/modelGlb'
 import { modelTriangleCount } from '../../../model/geometry'
@@ -186,22 +194,73 @@ export function ModelEditor({
     (): MoldaModelAsset => editor.getState().asset as MoldaModelAsset,
     [editor],
   )
+  /**
+   * Fecha o gesto do "+ Nova cor" (UM `commitGesture` sobre o `before` dele). Chamado no
+   * fim natural (`change`/`blur`) e, de forma DEFENSIVA, antes de qualquer outro commit ou
+   * gesto do palco: o Esc no seletor não manda `change`, e um `pointerdown` de pintura
+   * (com `preventDefault`) não tira o foco do input, então sem isto o `before` velho
+   * entrava no histórico DEPOIS da pintura e o Desfazer andava para trás e para frente.
+   */
+  const closeColorGesture = useCallback(() => {
+    const gesture = colorGesture.current
+    colorGesture.current = null
+    if (!gesture) return
+    const after = editor.getState().asset as MoldaModelAsset
+    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
+  }, [editor])
+  // As setas seguradas são UM gesto (`replace` a cada repetição, `commitGesture` no soltar).
+  const nudgeGesture = useRef<{ before: MoldaModelAsset } | null>(null)
+  const endNudge = useCallback(() => {
+    const gesture = nudgeGesture.current
+    nudgeGesture.current = null
+    if (!gesture) return
+    const after = editor.getState().asset as MoldaModelAsset
+    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
+  }, [editor])
   const commit = useCallback(
     (next: MoldaModelAsset) => {
+      closeColorGesture()
+      endNudge()
       if (next !== editor.getState().asset) editor.getState().commit(next)
     },
-    [editor],
+    [closeColorGesture, editor, endNudge],
   )
+  // Trocar a largura da janela remonta o painel de cores (e o input do seletor): o gesto
+  // fecha aqui, senão a extra ficaria sem commit.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `wide` é o GATILHO (remonta o painel), não leitura
+  useEffect(() => () => closeColorGesture(), [wide, closeColorGesture])
+  useEffect(() => {
+    window.addEventListener('blur', endNudge)
+    return () => window.removeEventListener('blur', endNudge)
+  }, [endNudge])
+  // Desfazer/refazer podem apagar a cor extra que o lápis usa: o lápis volta à 1ª cor.
+  useEffect(() => {
+    const colors = resolvePaletteColors(asset)
+    const active = session.getState().paintColor
+    if (active >= colors.length || !colors[active]) {
+      session.getState().setPaintColor(firstPaintableIndex(colors))
+    }
+  }, [asset, session])
   // Consertar DEPOIS e perguntar: um problema NOVO na malha (face virada, quad torto,
   // pontos sobrepostos) vira um toast com o conserto, Desfazer e Deixar.
+  // `meshIssues` custa ~30 ms numa malha grande e o "antes" de uma ferramenta é o "depois"
+  // da anterior: a resposta fica guardada por IDENTIDADE da malha.
+  const issueCache = useRef(new WeakMap<MoldaMesh, MeshIssue[]>())
+  const issuesOf = useCallback((mesh: MoldaMesh): MeshIssue[] => {
+    const cached = issueCache.current.get(mesh)
+    if (cached) return cached
+    const computed = meshIssues(mesh)
+    issueCache.current.set(mesh, computed)
+    return computed
+  }, [])
   const warnMeshIssues = useCallback(
     (before: MoldaModelAsset, after: MoldaModelAsset, partId: string | null) => {
       if (!partId) return
       const previous = findPart(before, partId)?.mesh
       const mesh = findPart(after, partId)?.mesh
       if (!mesh) return
-      const known = new Set(previous ? meshIssues(previous).map(issueKey) : [])
-      const issue = meshIssues(mesh).find((item) => !known.has(issueKey(item)))
+      const known = new Set(previous ? issuesOf(previous).map(issueKey) : [])
+      const issue = issuesOf(mesh).find((item) => !known.has(issueKey(item)))
       if (!issue) return
       const copy = COPY.editor.model.mesh
       const fixLabel =
@@ -210,21 +269,36 @@ export function ModelEditor({
           : issue.kind === 'flipped'
             ? copy.fixes.flip
             : copy.fixes.split
+      // As ações valem para o estado que gerou o aviso: se o modelo mudou (a criança
+      // pintou, desfez, mexeu em outra coisa), o botão não mexe em nada e avisa.
+      // O commit carimba `updatedAt` (objeto novo) mas preserva a referência de `parts`.
+      const still = (): boolean =>
+        (editor.getState().asset as MoldaModelAsset).parts === after.parts
       showToast(copy.issues[issue.kind], [
         {
           label: fixLabel,
           onClick: () => {
-            const result = applyMeshFix(model(), partId, issue)
+            if (!still()) {
+              showToast(copy.fixes.stale)
+              return
+            }
+            const result = applyMeshFix(after, partId, issue)
             if (!result) return
             commit(result.model)
             session.getState().setMeshVertices(result.vertices)
           },
         },
-        { label: copy.fixes.undo, onClick: () => editor.getState().undo() },
+        {
+          label: copy.fixes.undo,
+          onClick: () => {
+            if (still()) editor.getState().undo()
+            else showToast(copy.fixes.stale)
+          },
+        },
         { label: copy.fixes.keep, onClick: () => undefined },
       ])
     },
-    [commit, editor, model, session, showToast],
+    [commit, editor, issuesOf, session, showToast],
   )
   const placeAtSurface = useCallback(
     (shape: ShapeId, point: Vec3, normal: Vec3, nearId: string | null) => {
@@ -244,10 +318,17 @@ export function ModelEditor({
     {
       onSelect: (id, additive) => {
         const state = session.getState()
+        // No Pintar o toque só ESCOLHE a peça (o "Somar à seleção" é do Montar).
+        if (state.mode === 'paint') {
+          state.select(id)
+          return
+        }
         state.pick(id, additive || state.partsAdditive)
       },
       onPlace: placeAtSurface,
       onDragStart: () => {
+        closeColorGesture()
+        endNudge()
         gestureBefore.current = model()
       },
       onDragMove: (patch) => {
@@ -263,6 +344,8 @@ export function ModelEditor({
         if (before && after !== before) editor.getState().commitGesture(before, after)
       },
       onPaintStart: () => {
+        closeColorGesture()
+        endNudge()
         gestureBefore.current = model()
       },
       onPaintEnd: (after) => {
@@ -283,6 +366,8 @@ export function ModelEditor({
         )
       },
       onMeshDragStart: () => {
+        closeColorGesture()
+        endNudge()
         gestureBefore.current = model()
       },
       onMeshDragMove: (delta) => {
@@ -296,15 +381,23 @@ export function ModelEditor({
           delta,
           before.snap,
         )
+        // Delta de pelo menos um encaixe que não moveu nada = a grade barrou.
+        const step = before.snap
+        const wanted = delta.some((value) => Math.abs(Math.round(value / step) * step) > 0)
+        if (next === before && wanted) meshDragBlocked.current = true
         if (next !== model()) editor.getState().replace(next)
       },
       onMeshDragEnd: () => {
         const before = gestureBefore.current
         gestureBefore.current = null
         const after = model()
+        const blocked = meshDragBlocked.current
+        meshDragBlocked.current = false
         if (before && after !== before) {
           editor.getState().commitGesture(before, after)
           warnMeshIssues(before, after, session.getState().meshEditId)
+        } else if (before && blocked) {
+          showToast(COPY.editor.model.mesh.cannotMove)
         }
       },
       onAtlas: (info) => {
@@ -420,7 +513,13 @@ export function ModelEditor({
       next = result.model
       created.push(result.partId)
     }
-    if (created.length < ids.length) showToast(COPY.editor.model.partsFull)
+    if (created.length < ids.length) {
+      showToast(
+        next.parts.length >= MOLDA_LIMITS.maxParts
+          ? COPY.editor.model.partsFull
+          : COPY.editor.model.trianglesFull,
+      )
+    }
     if (created.length === 0) return
     commit(next)
     state.select(created[0] as string)
@@ -440,7 +539,7 @@ export function ModelEditor({
   // Setas do teclado: um encaixe por toque (Shift = 5). No Editar malha empurram os
   // PONTOS escolhidos; fora dele, a seleção de peças (as trancadas ficam paradas).
   const nudge = useCallback(
-    (steps: Vec3) => {
+    (steps: Vec3, repeat: boolean) => {
       const state = session.getState()
       const current = model()
       const delta: Vec3 = [
@@ -448,39 +547,50 @@ export function ModelEditor({
         steps[1] * current.snap,
         steps[2] * current.snap,
       ]
+      let next = current
       if (state.meshEditId) {
         if (state.meshVertices.length === 0) return
-        const next = moveMeshVertices(
-          current,
-          state.meshEditId,
-          state.meshVertices,
-          delta,
-          current.snap,
-        )
-        if (next !== current) commit(next)
-        return
-      }
-      if (!state.selectedId) return
-      const ids = [state.selectedId, ...state.extraIds]
-      const next = movePartsBy(current, ids, delta)
-      if (next === current) {
-        if (ids.every((id) => findPart(current, id)?.locked)) {
+        next = moveMeshVertices(current, state.meshEditId, state.meshVertices, delta, current.snap)
+      } else {
+        if (!state.selectedId) return
+        const ids = [state.selectedId, ...state.extraIds]
+        next = movePartsBy(current, ids, delta)
+        if (next === current && ids.every((id) => findPart(current, id)?.locked)) {
           showToast(COPY.editor.model.lockedHint)
         }
-        return
       }
-      commit(next)
+      if (next === current) return
+      // Toque ou tecla SEGURADA = um gesto só, do 1º keydown ao keyup (senão cada
+      // repetição do teclado era um passo de desfazer e uma segurada de 2 s enchia o
+      // histórico). Um toque novo depois de soltar abre outro gesto.
+      if (!repeat) endNudge()
+      if (!nudgeGesture.current) {
+        closeColorGesture()
+        nudgeGesture.current = { before: current }
+      }
+      editor.getState().replace(next)
     },
-    [commit, model, session, showToast],
+    [closeColorGesture, editor, endNudge, model, session, showToast],
   )
+
+  const selectAllVertices = useCallback(() => {
+    const state = session.getState()
+    const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
+    if (!part?.mesh) return
+    state.setMeshVertices(Object.keys(part.mesh.vertices))
+  }, [model, session])
 
   const togglePartFlag = useCallback(
     (id: string, flag: 'locked' | 'hidden') => {
       const part = findPart(model(), id)
       if (!part) return
-      commit(updatePart(model(), id, { [flag]: !part[flag] }))
+      const on = !part[flag]
+      // Trancar/esconder a peça que está no Editar malha fecha a edição (o palco deixa de
+      // enxergar a peça: seria um beco sem saída).
+      if (on && session.getState().meshEditId === id) session.getState().exitMeshEdit()
+      commit(updatePart(model(), id, { [flag]: on }))
     },
-    [commit, model],
+    [commit, model, session],
   )
 
   const toggleMirror = useCallback(() => {
@@ -500,6 +610,10 @@ export function ModelEditor({
     const id = state.selectedId
     const part = id ? findPart(model(), id) : undefined
     if (!id || !part || part.mirrorOf || state.mode !== 'build') return
+    if (part.locked || part.hidden) {
+      showToast(COPY.editor.model.lockedHint)
+      return
+    }
     if (part.shape === 'mesh') {
       state.enterMeshEdit(id)
       return
@@ -519,18 +633,21 @@ export function ModelEditor({
     const state = session.getState()
     const id = state.meshEditId
     if (!id) return
-    const result = deleteMeshSelection(model(), id, state.meshVertices, state.meshSelectMode)
+    const before = model()
+    const result = deleteMeshSelection(before, id, state.meshVertices, state.meshSelectMode)
     if (result.kind === 'updated') {
       commit(result.model)
       state.setMeshVertices([])
+      warnMeshIssues(before, result.model, id)
     } else if (result.kind === 'empty') {
       state.exitMeshEdit()
       commit(removePart(model(), id))
       state.select(null)
       showToast(COPY.editor.model.mesh.emptied)
     }
-  }, [commit, model, session, showToast])
+  }, [commit, model, session, showToast, warnMeshIssues])
 
+  const meshDragBlocked = useRef(false)
   const meshAdjustRef = useRef(meshAdjust)
   meshAdjustRef.current = meshAdjust
   const runMeshTool = useCallback(
@@ -595,30 +712,48 @@ export function ModelEditor({
       editor.getState().amend(result.model)
       session.getState().setMeshVertices(result.vertices)
       setMeshAdjust({ ...current, afterParts: result.model.parts, distance })
+      warnMeshIssues(current.before, result.model, current.partId)
     },
-    [editor, session],
+    [editor, session, warnMeshIssues],
   )
   const loopCutSelection = useCallback(() => {
     let snapChanged = false
+    let offGrid = false
+    let hadEdge = false
     const outcome = runMeshTool((current, id, selection) => {
       const part = findPart(current, id)
       const edges = part?.mesh ? selectedEdges(part.mesh, selection) : []
       const edge = edges.length === 1 ? edges[0] : undefined
       if (!edge) return null
+      hadEdge = true
       const result = loopCut(current, id, edge)
       snapChanged = result?.snapChanged ?? false
+      offGrid = result?.offGrid ?? false
       return result
     }, COPY.editor.model.mesh.toolHints.loopCut)
+    // Com UMA aresta escolhida e nada cortado, a razão é outra: não havia quad para atravessar.
+    if (!outcome && hadEdge) showToast(COPY.editor.model.mesh.toolHints.loopCutQuad)
     if (outcome && snapChanged) showToast(COPY.editor.model.mesh.snapHalfOn)
+    else if (outcome && offGrid) showToast(COPY.editor.model.mesh.cutOffGrid)
   }, [runMeshTool, showToast])
   const mergeSelection = useCallback(
     () => runMeshTool(mergeVertices, COPY.editor.model.mesh.toolHints.merge),
     [runMeshTool],
   )
-  const closeFace = useCallback(
-    () => runMeshTool(createFace, COPY.editor.model.mesh.toolHints.createFace),
-    [runMeshTool],
-  )
+  const closeFace = useCallback(() => {
+    const state = session.getState()
+    const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
+    const wanted = new Set(state.meshVertices)
+    const exists = Object.values(part?.mesh?.faces ?? {}).some(
+      (face) => face.v.length === wanted.size && face.v.every((vertex) => wanted.has(vertex)),
+    )
+    runMeshTool(
+      createFace,
+      exists
+        ? COPY.editor.model.mesh.toolHints.faceExists
+        : COPY.editor.model.mesh.toolHints.createFace,
+    )
+  }, [model, runMeshTool, session])
   const flipSelection = useCallback(
     () =>
       runMeshTool((current, id, selection) => {
@@ -632,7 +767,7 @@ export function ModelEditor({
       runMeshTool((current, id, selection) => {
         const part = findPart(current, id)
         return splitQuads(current, id, part?.mesh ? selectedFaces(part.mesh, selection) : [])
-      }, COPY.editor.model.mesh.toolHints.flip),
+      }, COPY.editor.model.mesh.toolHints.split),
     [runMeshTool],
   )
   // O "Ajustar" morre quando qualquer outra coisa muda o modelo (ou a edição fecha).
@@ -689,6 +824,8 @@ export function ModelEditor({
     editMesh,
     deleteMeshSelection: deleteSelection,
     nudge,
+    endNudge,
+    selectAllVertices,
   })
 
   const selectedPart = selectedId ? (findPart(asset, selectedId) ?? null) : null
@@ -749,6 +886,20 @@ export function ModelEditor({
             colorGesture.current = gesture
             if (gesture.full) return
             if (gesture.index !== null) {
+              const existing = resolvePaletteColors(model()).indexOf(hex)
+              if (existing >= 0 && existing !== gesture.index) {
+                // A cor escolhida JÁ existe (fixa ou outra extra): a extra deste gesto sai e a
+                // peça/lápis passa a apontar para a existente (a mesma decisão do 1º passo).
+                // Ignorar o passo deixava a extra com a cor ANTERIOR à escolhida.
+                let next = removeExtraColor(model(), gesture.index) ?? model()
+                if (mode === 'paint') session.getState().setPaintColor(existing)
+                else if (selectedPart) {
+                  next = updatePart(next, selectedPart.id, { color: existing })
+                }
+                if (next !== model()) editor.getState().replace(next)
+                gesture.index = null
+                return
+              }
               const next = updateExtraColor(model(), gesture.index, hex)
               if (next !== model()) editor.getState().replace(next)
               return
@@ -768,13 +919,7 @@ export function ModelEditor({
             // outra peça) não pode ser trocada por tabela.
             if (result.model !== current) gesture.index = result.index
           }}
-          onAddColorEnd={() => {
-            const gesture = colorGesture.current
-            colorGesture.current = null
-            if (!gesture) return
-            const after = model()
-            if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
-          }}
+          onAddColorEnd={closeColorGesture}
           onRemoveColor={(index) => {
             const next = removeExtraColor(model(), index)
             if (!next) {
@@ -834,6 +979,7 @@ export function ModelEditor({
       paintColor,
       editor,
       togglePartFlag,
+      closeColorGesture,
     ],
   )
 
@@ -889,6 +1035,9 @@ export function ModelEditor({
             canMerge={meshVertices.length >= 2}
             canCreateFace={meshVertices.length >= 3 && meshVertices.length <= 4}
             canFlip={meshSelectedFaces.length > 0}
+            canSplit={meshSelectedFaces.some(
+              (key) => meshEditPart?.mesh?.faces[key]?.v.length === 4,
+            )}
             onExtrude={extrude}
             onLoopCut={loopCutSelection}
             onMerge={mergeSelection}

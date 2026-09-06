@@ -138,7 +138,7 @@ function StudioCoreBody({
   // estável e o painel de Imagens decide se mostra o botão. `null` → sem botão.
   const [editDrawingValue] = useState(() => onEditDrawing ?? null)
 
-  // "Editar a criação no Molda" — o gêmeo do Pinta, mesmo latch. `null` → sem botão.
+  // "Editar a criação no Molda": o gêmeo do Pinta, mesmo latch. `null` → sem botão.
   const [editCreationValue] = useState(() => onEditCreation ?? null)
 
   // "Trazer do Pinta" — mesmo latch; o painel de Imagens mostra o botão e a

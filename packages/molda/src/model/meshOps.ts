@@ -13,11 +13,13 @@ import type {
   MoldaMesh,
   MoldaModelAsset,
   MoldaPart,
+  MoldaSkin,
   Vec3,
 } from '../core/model'
-import { meshBox, normalizeMesh, roundMesh } from './mesh'
+import { isMeshFaceKey, meshBox, normalizeMesh, roundMesh } from './mesh'
 import { faceSkinSize } from './shapes'
 import { isSkinBlank, resampleSkin } from './skinOps'
+import { reprojectSkin } from './skinReproject'
 import { syncTwins } from './twins'
 
 function findSourcePart(model: MoldaModelAsset, id: string): MoldaPart | null {
@@ -95,7 +97,8 @@ export function moveMeshVertices(
     const v = part.mesh.vertices[key] as Vec3
     moved[key] = [v[0] + snapped[0], v[1] + snapped[1], v[2] + snapped[2]]
   }
-  const box = meshBox({ vertices: moved, faces: part.mesh.faces })
+  const nextMesh: MoldaMesh = { vertices: moved, faces: part.mesh.faces }
+  const box = meshBox(nextMesh)
   if (!box) return model
   for (let i = 0; i < 3; i += 1) {
     const size = (box.to[i] as number) - (box.from[i] as number)
@@ -103,7 +106,23 @@ export function moveMeshVertices(
     if ((box.from[i] as number) < (GRID_MIN[i] as number)) return model
     if ((box.to[i] as number) > (GRID_MAX[i] as number)) return model
   }
-  return withMesh(model, part, { vertices: moved, faces: part.mesh.faces })
+  // A pele das faces que mudaram de forma é REPROJETADA pelo ponto do mundo (o que
+  // estava pintado fica onde estava). Re-amostrar por vizinho a cada commit, como o
+  // `withMesh` faz por padrão, destruía um xadrez em dois toques de seta (ida e volta).
+  const movedSet = new Set(keys)
+  const skins: MoldaPart['faces'] = { ...part.faces }
+  for (const [face, skin] of Object.entries(part.faces) as Array<[FaceId, MoldaSkin | undefined]>) {
+    if (!skin || !isMeshFaceKey(face)) continue
+    const cycle = part.mesh.faces[face]
+    const movedCount = cycle ? cycle.v.filter((vertex) => movedSet.has(vertex)).length : 0
+    // Face parada, ou face inteira que só transladou: a pele é a mesma (mesma referência).
+    if (!cycle || movedCount === 0 || movedCount === cycle.v.length) continue
+    const size = faceSkinSize({ ...part, mesh: nextMesh }, face, model.texelsPerUnit)
+    const projected = size ? reprojectSkin(part.mesh, face, skin, nextMesh, face, size) : undefined
+    if (projected) skins[face] = projected
+    else delete skins[face]
+  }
+  return withMesh(model, part, nextMesh, skins)
 }
 
 export type DeleteMeshResult =

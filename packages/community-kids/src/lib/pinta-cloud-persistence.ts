@@ -102,6 +102,8 @@ const LIST_TIMEOUT_MS = 4000
  * mais tarde (volta à aba depois de um tempo).
  */
 const RECONCILE_MIN_INTERVAL_MS = 60_000
+/** Teto da espera pela fila antes de uma reconciliação (um DELETE em voo sobe primeiro; igual ao Estúdio). */
+const FLUSH_BEFORE_PULL_MS = 3_000
 const MAX_NAME = PINTA_LIMITS.maxNameChars
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
@@ -171,18 +173,33 @@ export function createCloudMirroredPintaPersistence(options: {
   const passDelayMs = options.passDelayMs ?? DEFERRED_PASS_DELAY_MS
   const marks =
     options.marks ?? createStoredSyncedMarks(`sz:creations-synced:pinta:${options.viewerId}`)
+  /**
+   * Quando o envio de cada desenho COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
+   * commit compara esse instante com o `at` da lápide: uma exclusão que nasceu DEPOIS de o envio
+   * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
+   */
+  const sendingAt = new Map<string, number>()
 
   function enqueue(asset: PintaAsset): void {
     cloud.enqueueUpload(
       asset.id,
       async () => {
+        // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
+        // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
+        sendingAt.set(asset.id, now())
         // Sempre o estado MAIS RECENTE do disco (a fila pode rodar depois de mais edições).
         const current = await local.loadAssetById(asset.id)
-        if (!current) return null
+        if (!current) {
+          sendingAt.delete(asset.id)
+          return null
+        }
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é este `updatedAt`): não
         // sobe — zero HTTP. É o que segura o editor, que persiste `[salvo, ...ligados]` e
         // reenfileirava peças/mapas intocados a cada autosave.
-        if (marks.get(asset.id) === current.updatedAt) return null
+        if (marks.get(asset.id) === current.updatedAt) {
+          sendingAt.delete(asset.id)
+          return null
+        }
         return {
           json: assetToJson(current),
           meta: {
@@ -196,7 +213,22 @@ export function createCloudMirroredPintaPersistence(options: {
       },
       // A marca avança SÓ com o commit confirmado, com o `updatedAt` do que subiu.
       ({ itemId, updatedAt, revision }) => {
+        const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
+        sendingAt.delete(itemId)
         marks.set(itemId, updatedAt, revision)
+        // A criança apagou o desenho com este upload EM VOO (a lápide nasceu depois de o envio
+        // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
+        // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
+        // deixava o DELETE pendente sem ela e a próxima reconciliação trazia o desenho de volta;
+        // mantê-la com a revisão velha fazia a reconciliação ler a revisão nova como "editado em
+        // outro aparelho" e restaurar o que a criança apagou. A fila costuma segurar esta
+        // confirmação quando o DELETE chega em voo, mas o adaptador não depende disso.
+        const tombstone = marks.tombstone(itemId)
+        if (tombstone && !tombstone.sent && tombstone.at >= startedAt) {
+          marks.setTombstone(itemId, { ...tombstone, revision })
+          return
+        }
+        // Apagou e DEPOIS salvou de novo o mesmo id (o id voltou): a lápide não vale mais.
         marks.clearTombstone(itemId)
       },
       ({ itemId }) => resolveStale(itemId),
@@ -282,6 +314,10 @@ export function createCloudMirroredPintaPersistence(options: {
       marks.setTombstone(id, { ...tombstone, sent: true })
       return
     }
+    // ABERTO no editor agora? Não grava por baixo: o editor segura a versão antiga em memória e
+    // o próximo autosave sobrescreveria o restauro. A lápide fica como está e a próxima
+    // reconciliação, já com o desenho fechado, decide de novo.
+    if (options.isAssetOpen?.(id)) return
     const parsed = assetFromJson(downloaded.json)
     const remote = parsed.asset ? sanitizePintaAsset(parsed.asset) : null
     if (!remote || remote.id !== id) return
@@ -447,6 +483,11 @@ export function createCloudMirroredPintaPersistence(options: {
 
   async function reconcile(localAssets: PintaAsset[]): Promise<PintaAsset[]> {
     if (!cloud.supported) return localAssets
+    // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser lida:
+    // senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa (ou, com a
+    // revisão nova já confirmada, trazia o item de volta). Com teto, para a galeria não ficar
+    // presa numa fila offline; a fila falhando não bloqueia a descida.
+    await cloud.flush({ timeoutMs: FLUSH_BEFORE_PULL_MS }).catch(() => undefined)
     // O que não coube no orçamento (`deferred`) volta em passes seguidos, com folga.
     let current = localAssets
     for (let pass = 0; pass < MAX_DEFERRED_PASSES; pass += 1) {

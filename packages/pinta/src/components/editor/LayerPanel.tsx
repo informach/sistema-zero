@@ -224,7 +224,11 @@ export function LayerPanel(): JSX.Element | null {
       setDragging(null)
       dragCleanupRef.current = null
     }
-    dragCleanupRef.current = addPointerDragListeners(document, { onMove, onEnd: onUp })
+    dragCleanupRef.current = addPointerDragListeners(document, {
+      pointerId: event.pointerId,
+      onMove,
+      onEnd: onUp,
+    })
   }
 
   return (

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { MoldaMesh, Vec3 } from '../core/model'
+import type { MeshFace, MoldaMesh, Vec3 } from '../core/model'
 import {
   boxMesh,
   faceNormal,
@@ -163,5 +163,71 @@ describe('malha: o que pode dar errado', () => {
       faces: { f_c: { v: ['v_d', 'v_a', 'v_b', 'v_c'] } },
     }
     expect(meshIssues(concave).some((issue) => issue.kind === 'concave')).toBe(true)
+  })
+})
+
+describe('review 06/09: quad côncavo e face virada', () => {
+  test('normalizeMesh preserva um dardo (quad côncavo simples) e só desfaz a gravata', () => {
+    const dart: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [6, 0, 0], v_c: [3, 0, 1], v_d: [3, 0, 5] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    expect(normalizeMesh(dart).faces.f_q?.v).toEqual(['v_a', 'v_b', 'v_c', 'v_d'])
+    expect(meshIssues(dart).some((issue) => issue.kind === 'concave')).toBe(true)
+    const bowtie: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 2], v_c: [2, 0, 0], v_d: [0, 0, 2] },
+      faces: { f_q: { v: ['v_a', 'v_b', 'v_c', 'v_d'] } },
+    }
+    const untangled = normalizeMesh(bowtie)
+    expect(untangled.faces.f_q?.v).toEqual(['v_a', 'v_c', 'v_b', 'v_d'])
+    expect(normalizeMesh(untangled)).toEqual(untangled)
+  })
+
+  test('"face virada" é regra LOCAL: um L não acusa nada; uma aba de três faces não conta', () => {
+    // Um L: caixa 2×1×2 com uma torre em cima e um braço para +x, montado à mão.
+    const base = boxMesh([0, 0, 0], [2, 1, 2])
+    const l: MoldaMesh = structuredClone(base)
+    // Torre: levanta a tampa e fecha as 4 paredes (o mesmo que `extrudeFaces`).
+    for (const key of ['v_010', 'v_011', 'v_111', 'v_110'] as const) {
+      const v = l.vertices[key] as Vec3
+      l.vertices[`${key}t`] = [v[0], 5, v[2]]
+    }
+    const cap = l.faces.f_py as MeshFace
+    l.faces.f_py = { v: cap.v.map((key) => `${key}t`) }
+    for (let i = 0; i < 4; i += 1) {
+      const a = cap.v[i] as string
+      const b = cap.v[(i + 1) % 4] as string
+      l.faces[`f_w${i}`] = { v: [a, b, `${b}t`, `${a}t`] }
+    }
+    expect(meshIssues(l)).toEqual([])
+    // Braço: puxa a face +x da base (só ela) para x = 6.
+    const side = l.faces.f_px as MeshFace
+    for (const key of side.v) {
+      const v = l.vertices[key] as Vec3
+      l.vertices[`${key}a`] = [6, v[1], v[2]]
+    }
+    l.faces.f_px = { v: side.v.map((key) => `${key}a`) }
+    for (let i = 0; i < 4; i += 1) {
+      const a = side.v[i] as string
+      const b = side.v[(i + 1) % 4] as string
+      l.faces[`f_a${i}`] = { v: [a, b, `${b}a`, `${a}a`] }
+    }
+    // A antiga régua pelo centro acusava a parede da torre voltada para o braço.
+    expect(meshIssues(l).filter((issue) => issue.kind === 'flipped')).toEqual([])
+    // Uma face de fato virada continua apontada.
+    const flipped: MoldaMesh = {
+      ...l,
+      faces: { ...l.faces, f_w0: { v: [...(l.faces.f_w0 as MeshFace).v].reverse() } },
+    }
+    expect(meshIssues(flipped).filter((issue) => issue.kind === 'flipped')).toEqual([
+      { kind: 'flipped', face: 'f_w0' },
+    ])
+    // Aba (aresta com três faces) não vira acusação.
+    const flap: MoldaMesh = {
+      ...base,
+      vertices: { ...base.vertices, v_f1: [0, 2, 2], v_f2: [2, 2, 2] },
+      faces: { ...base.faces, f_flap: { v: ['v_010', 'v_011', 'v_f1', 'v_f2'] } },
+    }
+    expect(meshIssues(flap).filter((issue) => issue.kind === 'flipped')).toEqual([])
   })
 })

@@ -373,11 +373,18 @@ export async function savePersonalAsset(
 
 export type RemovePersonalAssetResult = { ok: true } | { ok: false; error: string }
 
-/** Remove um desenho da biblioteca sem esconder falhas de persistência. */
-export async function removePersonalAsset(id: string): Promise<RemovePersonalAssetResult> {
+/**
+ * Remove um desenho da biblioteca sem esconder falhas de persistência. O namespace
+ * explícito espelha o de `getPersonalAsset`: quem capturou o perfil no render (o
+ * painel) apaga daquele perfil, mesmo que o singleton tenha trocado no meio.
+ */
+export async function removePersonalAsset(
+  id: string,
+  options?: { namespace?: string },
+): Promise<RemovePersonalAssetResult> {
   try {
-    await del(assetKey(id), getStoreHandle())
-    markPersonalAssetsChanged()
+    await del(assetKey(id), getStoreHandle(options?.namespace))
+    markPersonalAssetsChanged(options?.namespace)
     return { ok: true }
   } catch {
     return { ok: false, error: 'Não consegui excluir agora. Tente de novo daqui a pouco.' }

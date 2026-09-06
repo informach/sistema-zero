@@ -106,6 +106,16 @@ export interface PintaSendResult {
 }
 
 /**
+ * Resultado do REENVIO automático ao Estúdio (`resyncToStudio`), espelho do
+ * `MoldaStudioResyncResult`. `reason` é OPCIONAL de propósito: o host que só
+ * devolve `{updated: false}` (o desenho não está na biblioteca) continua valendo;
+ * só `'failed'` (com `error` opcional) vira aviso para a criança.
+ */
+export type PintaStudioResyncResult =
+  | { updated: true }
+  | { updated: false; reason?: 'not-linked' | 'failed'; error?: string }
+
+/**
  * Intent inicial vindo do PENSA (07/2026): abre o "Criar novo" pré-configurado
  * com o vínculo de projeto (agrupamento + paleta). `artKind` sugere o TIPO
  * (personagem/cenário/peças); a criança ainda escolhe o estilo (pixel/vetor).
@@ -195,8 +205,10 @@ export interface PintaHostAdapter {
    * `{updated:false}` quando o desenho não está na biblioteca do Estúdio. Sem
    * essa regra, todo rascunho cairia lá sozinho e o "Usar no Estúdio" deixaria
    * de ser a decisão explícita que é hoje. Ausente = nada acontece.
+   * `{updated:false, reason:'failed'}` (ou a promise rejeitada) = a ponte
+   * FALHOU de verdade: o Pinta avisa a criança para salvar de novo.
    */
-  resyncToStudio?: (asset: PintaExportedAsset) => Promise<{ updated: boolean }>
+  resyncToStudio?: (asset: PintaExportedAsset) => Promise<PintaStudioResyncResult>
 
   /**
    * "Jogar meu mapa" (só mapas): o host cria um PROJETO-JOGO completo e jogável

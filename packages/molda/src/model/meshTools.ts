@@ -36,7 +36,7 @@ import { selectedEdges, selectedFaces, selectionNormal } from './meshSelection'
 import { faceSkinSize } from './shapes'
 import { flipSkinH } from './skinOps'
 import { reprojectSkin } from './skinReproject'
-import { add, dot, scale, sub } from './vec'
+import { add, cross, dot, scale, sub } from './vec'
 
 export interface MeshToolResult {
   model: MoldaModelAsset
@@ -56,6 +56,27 @@ function sourceMesh(
 
 function pairKey(a: string, b: string): string {
   return a < b ? `${a} ${b}` : `${b} ${a}`
+}
+
+/**
+ * O deslocamento do Puxar anda pelo ENCAIXE, eixo a eixo (os pontos novos ficam na grade,
+ * como toda edição): numa normal diagonal a distância pedida vira o vetor arredondado; se
+ * o arredondamento zerar tudo, vale o eixo dominante da normal com um encaixe inteiro.
+ */
+function snapOffset(offset: Vec3, snap: number): Vec3 {
+  const step = snap > 0 ? snap : 1
+  const snapped: Vec3 = [
+    Math.round(offset[0] / step) * step,
+    Math.round(offset[1] / step) * step,
+    Math.round(offset[2] / step) * step,
+  ]
+  if (snapped.some((value) => value !== 0)) return snapped
+  let axis = 0
+  for (let i = 1; i < 3; i += 1)
+    if (Math.abs(offset[i] as number) > Math.abs(offset[axis] as number)) axis = i
+  const along = offset[axis] as number
+  snapped[axis] = (along < 0 ? -1 : 1) * Math.max(step, Math.round(Math.abs(along) / step) * step)
+  return snapped
 }
 
 /**
@@ -97,9 +118,11 @@ export function extrudeFaces(
   if (!source) return null
   const { part, mesh } = source
   const faces = selectedFaces(mesh, selection)
-  if (faces.length === 0) return null
+  // Só para FORA: distância zero duplicaria os pontos e negativa faria paredes
+  // coplanares com as faces vizinhas (e viradas).
+  if (faces.length === 0 || !(distance > 0)) return null
   const normal = selectionNormal(mesh, selection) ?? [0, 1, 0]
-  const offset = scale(normal, distance)
+  const offset = snapOffset(scale(normal, distance), model.snap)
   const taken = new Set(Object.keys(mesh.vertices))
   const faceTaken = new Set(Object.keys(mesh.faces))
   const lifted = new Map<string, string>()
@@ -150,9 +173,9 @@ export function extrudeEdges(
   if (!source) return null
   const { part, mesh } = source
   const edges = selectedEdges(mesh, selection)
-  if (edges.length === 0) return null
+  if (edges.length === 0 || !(distance > 0)) return null
   const normal = selectionNormal(mesh, selection) ?? [0, 1, 0]
-  const offset = scale(normal, distance)
+  const offset = snapOffset(scale(normal, distance), model.snap)
   const taken = new Set(Object.keys(mesh.vertices))
   const faceTaken = new Set(Object.keys(mesh.faces))
   const lifted = new Map<string, string>()
@@ -184,7 +207,9 @@ export function extrudeEdges(
     }
     const key = newFaceKey(faceTaken)
     faceTaken.add(key)
-    nextFaces[key] = { v: [a, b, lift(b), lift(a)] }
+    // A vizinha percorre a aresta como `a → b`; a aba tem de percorrê-la ao CONTRÁRIO
+    // (duas faces coerentes atravessam a aresta que dividem em sentidos opostos).
+    nextFaces[key] = { v: [b, a, lift(a), lift(b)] }
   }
   return finish(model, part, { vertices, faces: nextFaces }, [...lifted.values()])
 }
@@ -192,6 +217,8 @@ export function extrudeEdges(
 export interface LoopCutResult extends MeshToolResult {
   /** O corte caiu no meio de um bloco: o encaixe de meio bloco foi ligado no MESMO commit. */
   snapChanged: boolean
+  /** Mesmo com o meio bloco os pontos do corte ficaram fora do encaixe (aresta de 0,5). */
+  offGrid: boolean
 }
 
 /**
@@ -293,8 +320,13 @@ export function loopCut(
   )
   const snapChanged = model.snap === 1 && offGrid
   const base = snapChanged ? { ...model, snap: 0.5 as const } : model
+  const offGridAfter = midKeys.some((key) =>
+    (vertices[key] as Vec3).some(
+      (value) => Math.abs(value / base.snap - Math.round(value / base.snap)) > 1e-9,
+    ),
+  )
   const result = finish(base, part, nextMesh, midKeys, skins)
-  return result ? { ...result, snapChanged } : null
+  return result ? { ...result, snapChanged, offGrid: offGridAfter } : null
 }
 
 /** JUNTAR PONTOS: os vértices escolhidos viram UM (no centro deles); face que degenera cai. */
@@ -313,13 +345,20 @@ export function mergeVertices(
   const vertices: Record<string, Vec3> = { ...mesh.vertices }
   vertices[survivor] = faceCenter(keys.map((key) => mesh.vertices[key] as Vec3))
   const faces: Record<MeshFaceKey, MeshFace> = {}
+  // Duas faces que colapsam no MESMO conjunto de pontos viram uma só (senão ficavam duas
+  // faces coincidentes, uma de costas para a outra, brigando no palco).
+  const emitted = new Set<string>()
   for (const [key, face] of Object.entries(mesh.faces) as Array<[MeshFaceKey, MeshFace]>) {
     const cycle: string[] = []
     for (const vertex of face.v) {
       const mapped = merged.has(vertex) ? survivor : vertex
       if (!cycle.includes(mapped)) cycle.push(mapped)
     }
-    if (cycle.length >= 3) faces[key] = { v: cycle }
+    if (cycle.length < 3) continue
+    const setKey = [...cycle].sort().join(' ')
+    if (emitted.has(setKey)) continue
+    emitted.add(setKey)
+    faces[key] = { v: cycle }
   }
   return finish(model, part, { vertices, faces }, [survivor])
 }
@@ -344,9 +383,26 @@ export function createFace(
   }
   const points = keys.map((key) => mesh.vertices[key] as Vec3)
   let cycle = orderQuad(points).map((index) => keys[index] as string)
-  const ordered = cycle.map((key) => mesh.vertices[key] as Vec3)
-  const normal = faceNormal(ordered)
-  if (dot(normal, sub(faceCenter(ordered), meshCenter(mesh))) < 0) cycle = [...cycle].reverse()
+  // Orientação pelas VIZINHAS: uma face coerente percorre a aresta que divide com a
+  // vizinha ao contrário dela. Sem vizinha (face solta), vale o centro da malha.
+  let same = 0
+  let opposite = 0
+  for (let i = 0; i < cycle.length; i += 1) {
+    const a = cycle[i] as string
+    const b = cycle[(i + 1) % cycle.length] as string
+    for (const face of Object.values(mesh.faces)) {
+      const at = face.v.indexOf(a)
+      if (at < 0) continue
+      if (face.v[(at + 1) % face.v.length] === b) same += 1
+      else if (face.v[(at + face.v.length - 1) % face.v.length] === b) opposite += 1
+    }
+  }
+  if (same > opposite) cycle = [...cycle].reverse()
+  else if (same === 0 && opposite === 0) {
+    const ordered = cycle.map((key) => mesh.vertices[key] as Vec3)
+    const normal = faceNormal(ordered)
+    if (dot(normal, sub(faceCenter(ordered), meshCenter(mesh))) < 0) cycle = [...cycle].reverse()
+  }
   const key = newFaceKey(Object.keys(mesh.faces))
   return finish(
     model,
@@ -378,7 +434,7 @@ export function flipFaces(
   return finish(model, part, { vertices: mesh.vertices, faces }, vertices, skins)
 }
 
-/** DIVIDIR quads em triângulos (pela diagonal p0-p2); a pele é reprojetada nos dois. */
+/** DIVIDIR quads em triângulos (pela diagonal que passa pelo dente, se houver); a pele é reprojetada nos dois. */
 export function splitQuads(
   model: MoldaModelAsset,
   partId: string,
@@ -394,10 +450,21 @@ export function splitQuads(
   const halves: Array<[MeshFaceKey, MeshFaceKey]> = []
   for (const key of targets) {
     const [p0, p1, p2, p3] = (mesh.faces[key] as MeshFace).v as [string, string, string, string]
-    faces[key] = { v: [p0, p1, p2] }
+    // Num quad côncavo a diagonal tem de passar pelo "dente" (o canto reflexo), senão
+    // um dos triângulos cai fora do polígono e nasce virado.
+    const points = faceVertices(mesh, key) ?? []
+    const normal = faceNormal(points)
+    const turnAt = (index: number): number => {
+      const a = points[(index + 3) % 4] as Vec3
+      const b = points[index] as Vec3
+      const c = points[(index + 1) % 4] as Vec3
+      return dot(cross(sub(b, a), sub(c, b)), normal)
+    }
+    const throughOdd = points.length === 4 && (turnAt(1) < -1e-9 || turnAt(3) < -1e-9)
+    faces[key] = { v: throughOdd ? [p1, p2, p3] : [p0, p1, p2] }
     const other = newFaceKey(faceTaken)
     faceTaken.add(other)
-    faces[other] = { v: [p0, p2, p3] }
+    faces[other] = { v: throughOdd ? [p3, p0, p1] : [p0, p2, p3] }
     halves.push([key, other])
   }
   const nextMesh = { vertices: mesh.vertices, faces }

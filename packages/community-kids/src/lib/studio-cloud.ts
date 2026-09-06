@@ -243,6 +243,12 @@ export function createStudioCloudSync(options: {
     ((itemId: string, warnings: string[]) => {
       console.warn('[estudio-nuvem] descida com partes descartadas', { itemId, warnings })
     })
+  /**
+   * Quando o envio de cada item COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
+   * commit compara esse instante com o `at` da lápide: uma exclusão que nasceu DEPOIS de o envio
+   * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
+   */
+  const sendingAt = new Map<string, number>()
 
   /**
    * Resolve o que desceu num `Project` completo: manifesto → monta `program + assets` (as
@@ -292,14 +298,23 @@ export function createStudioCloudSync(options: {
     cloud.enqueueUpload(
       id,
       async () => {
+        // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
+        // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
+        sendingAt.set(id, now())
         const project = await studio.loadProjectSnapshotForCloud(id, {
           namespace: options.viewerId,
         })
-        if (!project) return null
+        if (!project) {
+          sendingAt.delete(id)
+          return null
+        }
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é o `updatedAt` deste
         // disco): não sobe de novo — zero HTTP. Só pula quando a marca é igual; uma edição
         // nunca enviada tem `updatedAt` diferente da marca e sobe.
-        if (marks.get(id) === project.updatedAt) return null
+        if (marks.get(id) === project.updatedAt) {
+          sendingAt.delete(id)
+          return null
+        }
         return {
           ...(await buildStudioCloudSnapshot(project)),
           meta: {
@@ -312,7 +327,22 @@ export function createStudioCloudSync(options: {
         }
       },
       ({ itemId, updatedAt, revision }) => {
+        const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
+        sendingAt.delete(itemId)
         marks.set(itemId, updatedAt, revision)
+        // A criança apagou o jogo com este upload EM VOO (a lápide nasceu depois de o envio
+        // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
+        // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
+        // deixava o DELETE pendente sem ela e a próxima reconciliação trazia o jogo de volta;
+        // mantê-la com a revisão velha fazia a reconciliação ler a revisão nova como "editado em
+        // outro aparelho" e restaurar o que a criança apagou. A fila costuma segurar esta
+        // confirmação quando o DELETE chega em voo, mas o adaptador não depende disso.
+        const tombstone = marks.tombstone(itemId)
+        if (tombstone && !tombstone.sent && tombstone.at >= startedAt) {
+          marks.setTombstone(itemId, { ...tombstone, revision })
+          return
+        }
+        // Apagou e DEPOIS salvou de novo o mesmo id (o id voltou): a lápide não vale mais.
         marks.clearTombstone(itemId)
       },
       ({ itemId }) => resolveStale(itemId),

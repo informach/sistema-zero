@@ -3,9 +3,11 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../core/copy'
 import { clearIdbMock } from '../../testing/idbMock'
 import { rightColumn, stubColumn } from '../../testing/rightColumnStub'
+import type { VectorShape } from '../../vector/model'
+import { DEFAULT_STYLE, makeRect } from '../../vector/shapes'
 
 const { PintaApp } = await import('../PintaApp')
-const { setPintaStorageNamespace } = await import('../../state/persistence')
+const { persistAsset, setPintaStorageNamespace } = await import('../../state/persistence')
 const { createGalleryStore } = await import('../../state/galleryStore')
 
 beforeEach(() => {
@@ -51,22 +53,42 @@ async function openVectorEditor(
   })
 }
 
-/** happy-dom não faz layout: dá medida REAL ao palco p/ converter cliques. */
-function measureStage(): HTMLElement {
+/**
+ * happy-dom não faz layout: dá medida REAL ao palco p/ converter cliques.
+ * `scale` é o zoom que a medida finge (documento × zoom, como o `<svg>` real):
+ * com ele os `clientX/Y` dos testes são px de TELA de verdade.
+ */
+function measureStage(scale = 1, doc = { width: 480, height: 360 }): HTMLElement {
   const stage = screen.getByRole('img', { name: 'Área de desenho' })
+  const width = doc.width * scale
+  const height = doc.height * scale
   ;(stage as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect = () =>
     ({
       left: 0,
       top: 0,
-      width: 480,
-      height: 360,
-      right: 480,
-      bottom: 360,
+      width,
+      height,
+      right: width,
+      bottom: height,
       x: 0,
       y: 0,
       toJSON: () => ({}),
     }) as DOMRect
   return stage
+}
+
+/**
+ * Abre o cenário 'livre' JÁ com formas no disco (sem entrada de undo): o
+ * "Desfazer" nasce apagado, então os testes de "nenhuma entrada de undo" têm o
+ * que afirmar. Devolve o palco já medido.
+ */
+async function openWithShapes(shapes: VectorShape[]): Promise<HTMLElement> {
+  await openVectorEditor(undefined, async (store) => {
+    const asset = store.getState().assets.find((a) => a.name === 'livre')
+    if (asset?.kind !== 'vector-background') throw new Error('cenário vetorial esperado')
+    await persistAsset({ ...asset, shapes })
+  })
+  return measureStage()
 }
 
 /** Desenha um retângulo pelo gesto (a ferramenta Retângulo precisa estar ativa). */
@@ -2792,9 +2814,12 @@ describe('arrastar formas: sem laço acidental e sem palco preso (06/09/2026)', 
     await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
     // Soltou em cima de outro elemento (fora do <svg>): o `document` ouve.
     fireEvent.pointerUp(document, { pointerId: 1 })
-    // Sem gesto vivo, mexer o mouse não arrasta mais nada.
+    // Sem gesto vivo, mexer o mouse não arrasta mais nada. O `fireEvent` já
+    // roda dentro de `act`, então um `replace` indevido estaria no DOM ao
+    // voltar; os dois microtasks só drenam o que um efeito deixasse pendente.
     fireEvent.pointerMove(stage, { pointerId: 1, clientX: 200, clientY: 60 })
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await Promise.resolve()
+    await Promise.resolve()
     expect(rect.getAttribute('x')).toBe('70')
     // E o gesto fechou com UMA entrada de undo.
     fireEvent.click(screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLElement)
@@ -2813,5 +2838,291 @@ describe('arrastar formas: sem laço acidental e sem palco preso (06/09/2026)', 
     await waitFor(() =>
       expect(screen.queryByRole('button', { name: COPY.vector.selRemove })).toBeNull(),
     )
+  })
+})
+
+/**
+ * Revisão do lote de 06/09/2026: o hit-test que decide mover × laço olha a
+ * GEOMETRIA, a régua do toque é em px de tela, zoom e troca de quadro fecham o
+ * gesto vivo, delta zero não grava desfazer e o `document` alimenta o gesto sem
+ * capture.
+ */
+describe('arrastar formas: a revisão do lote (06/09/2026)', () => {
+  const RECT = 'rect[fill="#78dc52"]'
+  const STROKE = 'path[stroke="#000000"]'
+
+  /** Retângulo (20..120) já no disco, como o `rectAndText` desenha. */
+  const greenRect = (): VectorShape => makeRect({ x: 20, y: 20 }, { x: 120, y: 120 }, DEFAULT_STYLE)
+
+  /** Traço vazado (o que o pincel cria): só contorno, de (20,20) a (120,120) e de volta a (220,20). */
+  const ZIGZAG: VectorShape = {
+    id: 'zig',
+    type: 'path',
+    d: 'M 20 20 L 120 120 L 220 20',
+    fill: 'none',
+    stroke: { color: '#000000', width: 4 },
+    opacity: 1,
+    rotation: 0,
+  }
+
+  function undoButton(): HTMLButtonElement {
+    return screen.getAllByRole('button', { name: /^Desfazer/ })[0] as HTMLButtonElement
+  }
+
+  function selectTool(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.select }))
+  }
+
+  it('pressionar no miolo VAZIO de um traço vazado abre o laço: o traço não anda', async () => {
+    const stage = await openWithShapes([ZIGZAG])
+    selectTool()
+    const path = stage.querySelector(STROKE) as SVGPathElement
+    expect(path).toBeTruthy()
+    // (120,30) está dentro da caixa (20..220 x 20..120), a ~63 dos dois trechos.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 120, clientY: 30 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 200, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    // Foi laço: o traço entrou na seleção (a caixa dele cruza o laço)...
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selRemove })).toBeTruthy()
+    })
+    // ...e ficou onde estava, sem entrada de undo.
+    expect(path.getAttribute('d')).toBe('M 20 20 L 120 120 L 220 20')
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('pressionar EM CIMA do fio (dentro da folga do toque) move o traço', async () => {
+    const stage = await openWithShapes([ZIGZAG])
+    selectTool()
+    const path = stage.querySelector(STROKE) as SVGPathElement
+    // (70,72) fica a 1,4 do trecho (20,20)-(120,120): cabe na folga de 4 + metade do contorno.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 70, clientY: 72 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 120, clientY: 72 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(path.getAttribute('d')).toBe('M 70 20 L 170 120 L 270 20'))
+    expect(undoButton().disabled).toBe(false)
+  })
+
+  it('traço vazado TRANCADO por cima não bloqueia: a forma livre embaixo move', async () => {
+    const tampa: VectorShape = {
+      id: 'tampa',
+      type: 'path',
+      d: 'M 0 60 L 200 60',
+      fill: 'none',
+      stroke: { color: '#000000', width: 6 },
+      opacity: 1,
+      rotation: 0,
+      locked: true,
+    }
+    const stage = await openWithShapes([greenRect(), tampa])
+    selectTool()
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    // (60,60) está em cima do traço trancado E dentro do retângulo livre.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    // A trancada ficou plantada.
+    expect(stage.querySelector(STROKE)?.getAttribute('d')).toBe('M 0 60 L 200 60')
+  })
+
+  it('em zoom alto um laço FINO (230x30 px de tela) ainda seleciona: a régua do toque é em px de tela', async () => {
+    await openWithShapes([greenRect()])
+    // 1 -> 2 -> 4 -> 8 -> 12 -> 16, pelos degraus da sessão (VECTOR_ZOOM_LEVELS).
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    }
+    const stage = measureStage(16)
+    await waitFor(() => expect(stage.getAttribute('width')).toBe(String(480 * 16)))
+    selectTool()
+    // De (250,500) a (480,530) na tela = 14,4 x 1,9 unidades do documento, cruzando
+    // o retângulo. Em unidades do documento a altura era "toque" (< 2) e a
+    // seleção sumia; em px de tela são 30, um laço legítimo.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 250, clientY: 500 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 480, clientY: 530 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.vector.selRemove })).toBeTruthy()
+    })
+  })
+
+  it('zoom no MEIO do arrasto fecha o gesto: a forma não foge do mouse e o que andou tem UM undo', async () => {
+    const stage = await openWithShapes([greenRect()])
+    selectTool()
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    // O zoom da sessão muda (o mesmo `zoomIn` da rolagem do mouse) com o ponteiro
+    // ainda pressionado: o `docPerPx` capturado no pointerdown já não vale.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.zoomIn }))
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 200, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(rect.getAttribute('x')).toBe('70')
+    // O trecho já arrastado ficou, com a entrada de undo dele (e só ela).
+    expect(undoButton().disabled).toBe(false)
+    fireEvent.click(undoButton())
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('20'))
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('com a grade ligada, um arrasto de 3px (delta encaixado em zero) não grava desfazer', async () => {
+    const stage = await openWithShapes([greenRect()])
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.grid }))
+    selectTool()
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    expect(undoButton().disabled).toBe(true)
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 63, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await Promise.resolve()
+    await Promise.resolve()
+    expect(rect.getAttribute('x')).toBe('20')
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('trocar de quadro no MEIO do arrasto commita o que andou (UM undo) e o palco aceita o próximo gesto', async () => {
+    await openVectorEditor(
+      undefined,
+      async (seed) => {
+        await seed.getState().create({ kind: 'vector-sprite', name: 'heroi-v', frameSize: 64 })
+      },
+      'heroi-v',
+    )
+    // Quadro de 64 em zoom 8: os clientX/Y abaixo são px de tela (documento x 8).
+    const stage = measureStage(8, { width: 64, height: 64 })
+    // O quadro 2 nasce ANTES do gesto; o desenho é feito no 1.
+    fireEvent.click(screen.getByRole('button', { name: COPY.animation.addFrame }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'parado: quadro 2' })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'parado: quadro 1' }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [80, 80], [320, 320])
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(1))
+    selectTool()
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 160, clientY: 160 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 240, clientY: 160 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('20'))
+    // Troca de quadro pela sessão com o ponteiro ainda pressionado.
+    fireEvent.click(screen.getByRole('button', { name: 'parado: quadro 2' }))
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(0))
+    // O palco aceita um gesto novo no quadro 2...
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [80, 80], [160, 160])
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(1))
+    // ...e o histórico ficou [quadro novo, retângulo 1, MOVER, retângulo 2]: dois
+    // desfazeres devolvem o retângulo 1 ao lugar de origem (sem o commit do mover,
+    // o segundo desfazer apagaria o retângulo 1 inteiro).
+    fireEvent.click(undoButton())
+    await waitFor(() => expect(stage.querySelectorAll(RECT).length).toBe(0))
+    fireEvent.click(undoButton())
+    fireEvent.click(screen.getByRole('button', { name: 'parado: quadro 1' }))
+    await waitFor(() => expect(stage.querySelector(RECT)?.getAttribute('x')).toBe('10'))
+  })
+
+  it('sem capture do ponteiro, o movimento no `document` continua alimentando o gesto', async () => {
+    const stage = await openWithShapes([greenRect()])
+    selectTool()
+    // O navegador não dá capture (happy-dom, ou o `setPointerCapture` recusou).
+    Object.defineProperty(stage, 'setPointerCapture', { configurable: true, value: undefined })
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    // O ponteiro saiu do <svg>: só o document vê o movimento.
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 110, clientY: 60 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    fireEvent.pointerUp(document, { pointerId: 1 })
+    expect(undoButton().disabled).toBe(false)
+    fireEvent.click(undoButton())
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('20'))
+    expect(undoButton().disabled).toBe(true)
+  })
+
+  it('um segundo pointerdown com o gesto ainda CAPTURADO não encerra o arrasto', async () => {
+    const stage = await openWithShapes([greenRect()])
+    selectTool()
+    Object.defineProperty(stage, 'setPointerCapture', {
+      configurable: true,
+      value: () => undefined,
+    })
+    Object.defineProperty(stage, 'hasPointerCapture', { configurable: true, value: () => true })
+    const rect = stage.querySelector(RECT) as SVGRectElement
+    fireEvent.pointerDown(rect, { isPrimary: true, pointerId: 1, clientX: 60, clientY: 60 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 110, clientY: 60 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('70'))
+    // Um pointerdown "primário" no fundo (palma, ou o navegador reaproveitando o
+    // id) com a captura de pé: o gesto vivo vale, e nada de laço no lugar dele.
+    fireEvent.pointerDown(stage, { isPrimary: true, pointerId: 1, clientX: 300, clientY: 300 })
+    fireEvent.pointerMove(stage, { pointerId: 1, clientX: 160, clientY: 60 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('120'))
+    // UM undo para o arrasto inteiro.
+    fireEvent.click(undoButton())
+    await waitFor(() => expect(rect.getAttribute('x')).toBe('20'))
+    expect(undoButton().disabled).toBe(true)
+  })
+})
+
+/**
+ * A faixa da seleção mede o MESMO em todos os ramos (54px: `py-1` + `border-b-2`
+ * na moldura, `min-h-11` no miolo). O ramo dos pontos tinha o `min-h-11` no
+ * contêiner (44px com border-box) e o palco pulava 10px ao escolher uma forma
+ * sem pontos editáveis.
+ */
+describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
+  function frame(): { outer: HTMLElement; inner: HTMLElement } {
+    const outer = document.querySelector<HTMLElement>('[data-pin-selection-bar]')
+    if (!outer) throw new Error('faixa da seleção esperada')
+    const inner = outer.firstElementChild as HTMLElement | null
+    if (!inner) throw new Error('miolo da faixa esperado')
+    return { outer, inner }
+  }
+
+  /** A altura mora no MIOLO; a moldura só soma o respiro e a borda. */
+  function expectSameFrame(): void {
+    const { outer, inner } = frame()
+    expect(outer.classList.contains('py-1')).toBe(true)
+    expect(outer.classList.contains('border-b-2')).toBe(true)
+    expect(outer.classList.contains('min-h-11')).toBe(false)
+    expect(inner.classList.contains('min-h-11')).toBe(true)
+    expect(inner.classList.contains('flex')).toBe(true)
+    expect(inner.classList.contains('items-center')).toBe(true)
+    expect(document.querySelectorAll('[data-pin-selection-bar]').length).toBe(1)
+  }
+
+  it('sem seleção: a dica de como usar, na moldura', async () => {
+    await openVectorEditor()
+    expect(screen.getByText(COPY.vector.selectionBarEmpty)).toBeTruthy()
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.selectionBar })).toBeNull()
+    expectSameFrame()
+  })
+
+  it('ferramenta de pontos sem alvo: a dica dos pontos, na mesma moldura', async () => {
+    await openVectorEditor()
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
+    await waitFor(() => expect(screen.getByText(COPY.vector.nodeBarEmpty)).toBeTruthy())
+    expect(screen.queryByRole('toolbar', { name: COPY.vector.nodeBar })).toBeNull()
+    expectSameFrame()
+  })
+
+  it('com seleção: a toolbar, na mesma moldura (e a forma sem pontos editáveis idem)', async () => {
+    await openVectorEditor()
+    const stage = measureStage()
+    fireEvent.click(screen.getByRole('button', { name: COPY.tools.rect }))
+    drawRect(stage, [16, 16], [80, 80])
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.selectionBar })).toBeTruthy()
+    })
+    expectSameFrame()
+    // Ferramenta de pontos com um retângulo escolhido: a faixa explica, na mesma altura.
+    fireEvent.click(screen.getByRole('button', { name: COPY.vector.reshape }))
+    await waitFor(() => {
+      expect(screen.getByRole('toolbar', { name: COPY.vector.nodeBar })).toBeTruthy()
+    })
+    expect(screen.getByText(COPY.vector.nodeUneditable)).toBeTruthy()
+    expectSameFrame()
   })
 })

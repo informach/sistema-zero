@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
  * Botão "✏️ Editar" nos assets que vieram do Pinta (desenhos) e do Molda (modelos,
@@ -100,6 +100,25 @@ function moldaModel(): ProjectAsset {
   }
 }
 
+/** Deixa os efeitos assíncronos do painel (catálogos, persistência) assentarem. */
+const flushEffects = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 30))
+  })
+
+const throwingImport = async () => {
+  throw new Error('não usado')
+}
+const emptyPinta: PintaLibraryAdapter = { list: async () => [], import: throwingImport }
+const emptyMolda: MoldaLibraryAdapter = { list: async () => [], import: throwingImport }
+/** Catálogo do Molda que conhece a textura `t-catalogo`. */
+const moldaKnowingTexture: MoldaLibraryAdapter = {
+  list: async () => [
+    { id: 't-catalogo', name: 'grama', kind: 'texture', updatedAt: 1, thumbDataUrl: null },
+  ],
+  import: throwingImport,
+}
+
 /** "Trazer do Pinta" presente: a seção "Meus desenhos" some. */
 const pintaLibrary: PintaLibraryAdapter = {
   list: async () => [],
@@ -184,20 +203,37 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
     expect(screen.queryByRole('button', { name: /editar/i })).toBeNull()
   })
 
-  it('registro pessoal AUSENTE (outro aparelho): o botão fica e o clique REPARA a biblioteca antes de abrir', async () => {
+  it('registro pessoal AUSENTE (outro aparelho): o botão fica, o clique abre e REPARA a biblioteca em segundo plano', async () => {
     seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })
     const abertos: string[] = []
     renderPanel((id) => abertos.push(id))
     fireEvent.click(await screen.findByRole('button', { name: 'Editar heroi no Pinta' }))
-    await waitFor(() => expect(abertos).toEqual(['sumiu']))
-    const repaired = await getPersonalAsset('sumiu')
-    // O nome pode ganhar sufixo (o `d1` da biblioteca já se chama "heroi"); a revisão
-    // do projeto (`libRevision`) vira o `updatedAt` do registro reparado.
-    expect(repaired).toMatchObject({ id: 'sumiu', kind: 'image', dataUrl: PNG, updatedAt: 77 })
-    expect(repaired?.name).toMatch(/^heroi/)
+    expect(abertos).toEqual(['sumiu'])
+    await waitFor(async () => {
+      const repaired = await getPersonalAsset('sumiu')
+      // O nome pode ganhar sufixo (o `d1` da biblioteca já se chama "heroi"); a revisão
+      // do projeto (`libRevision`) vira o `updatedAt` do registro reparado.
+      expect(repaired).toMatchObject({ id: 'sumiu', kind: 'image', dataUrl: PNG, updatedAt: 77 })
+      expect(repaired?.name).toMatch(/^heroi/)
+    })
   })
 
-  it('não abre o editor quando o reparo da biblioteca falha', async () => {
+  it('abre o app de forma SÍNCRONA dentro do clique (o WebKit bloqueia popup aberto depois de um await)', async () => {
+    seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })
+    const abertos: string[] = []
+    renderPanel((id) => abertos.push(id))
+    const button = await screen.findByRole('button', { name: 'Editar heroi no Pinta' })
+
+    fireEvent.click(button)
+
+    // Nenhum `await` entre o clique e a asserção: o `open` tem que ter acontecido ANTES de
+    // qualquer microtask (o IndexedDB do reparo fica atrás dele, nunca na frente).
+    expect(abertos).toEqual(['sumiu'])
+    // Só para o reparo em segundo plano assentar dentro de `act` antes de desmontar.
+    await flushEffects()
+  })
+
+  it('quando o reparo da biblioteca falha, o app abre MESMO assim e o aviso diz que o jogo não se atualiza sozinho', async () => {
     seedProjectWithDrawingAsset('personal:sumiu', { libOrigin: 'pinta', libRevision: 77 })
     const abertos: string[] = []
     renderPanel((id) => abertos.push(id))
@@ -205,8 +241,11 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
 
     fireEvent.click(await screen.findByRole('button', { name: 'Editar heroi no Pinta' }))
 
-    await screen.findByRole('alert')
-    expect(abertos).toEqual([])
+    expect(abertos).toEqual(['sumiu'])
+    const alert = await screen.findByRole('alert')
+    expect(alert.textContent).toMatch(/não vai se atualizar sozinho/)
+    expect(alert.textContent).toContain('Pinta')
+    expect(await getPersonalAsset('sumiu')).toBeNull()
   })
 
   it('imagem enviada do computador nunca oferece editar', async () => {
@@ -264,48 +303,93 @@ describe('AssetsPanel — "✏️ Editar" nos assets que vieram do Pinta e do Mo
         libId: 'personal:t-catalogo',
       },
     ])
-    const moldaLibrary: MoldaLibraryAdapter = {
-      list: async () => [
-        {
-          id: 't-catalogo',
-          name: 'grama',
-          kind: 'texture',
-          updatedAt: 1,
-          thumbDataUrl: null,
-        },
-      ],
-      import: async () => {
-        throw new Error('não usado')
-      },
-    }
-    renderPanel(() => {}, { onEditCreation: () => {}, moldaLibrary })
+    renderPanel(() => {}, { onEditCreation: () => {}, moldaLibrary: moldaKnowingTexture })
 
     await screen.findByRole('button', { name: 'Editar grama no Molda' })
-    expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBe('molda')
+    await waitFor(() =>
+      expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBe('molda'),
+    )
   })
 
-  it('legado de imagem ainda ambíguo não adivinha Pinta e pede nova importação', async () => {
+  it('legado de imagem ainda ambíguo (os DOIS catálogos responderam e nenhum a conhece) não adivinha Pinta e pede nova importação', async () => {
     seedProjectWithDrawingAsset('personal:sem-origem')
-    const emptyPinta: PintaLibraryAdapter = {
-      list: async () => [],
-      import: async () => {
-        throw new Error('não usado')
-      },
-    }
-    const emptyMolda: MoldaLibraryAdapter = {
-      list: async () => [],
-      import: async () => {
-        throw new Error('não usado')
-      },
-    }
     renderPanel(() => {}, {
       onEditCreation: () => {},
       pintaLibrary: emptyPinta,
       moldaLibrary: emptyMolda,
     })
 
-    await screen.findByText(/importe novamente pelo Pinta ou Molda/i)
+    const aviso = await screen.findByText(/Traga ele de novo pelo Pinta ou pelo Molda/)
+    expect(aviso.className).toContain('text-sz-warn')
+    expect(aviso.className).toContain('text-xs')
     expect(screen.queryByRole('button', { name: /Editar heroi/ })).toBeNull()
+  })
+
+  it('sem biblioteca nenhuma (bloco de aula, admin) o legado ambíguo fica SEM aviso: ninguém consultou catálogo', async () => {
+    seedProjectWithDrawingAsset('personal:sem-origem')
+    renderPanel(() => {}, { onEditCreation: () => {} })
+
+    await waitFor(() => expect(screen.getAllByAltText('heroi').length).toBeGreaterThan(0))
+    await flushEffects()
+    expect(screen.queryByText(/Traga ele de novo/)).toBeNull()
+    expect(screen.queryByRole('button', { name: /Editar heroi/ })).toBeNull()
+  })
+
+  it('catálogo que REJEITA não vira "ambíguo": sem aviso, e a causa vai para o console.warn', async () => {
+    seedProjectWithDrawingAsset('personal:sem-origem')
+    const offlinePinta: PintaLibraryAdapter = {
+      list: async () => {
+        throw new Error('galeria fora do ar')
+      },
+      import: throwingImport,
+    }
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      renderPanel(() => {}, {
+        onEditCreation: () => {},
+        pintaLibrary: offlinePinta,
+        moldaLibrary: emptyMolda,
+      })
+
+      await waitFor(() =>
+        expect(warn).toHaveBeenCalledWith('[estudio] catálogo indisponível', expect.any(Error)),
+      )
+      await flushEffects()
+      expect(screen.queryByText(/Traga ele de novo/)).toBeNull()
+      expect(screen.queryByRole('button', { name: /Editar heroi/ })).toBeNull()
+    } finally {
+      warn.mockRestore()
+    }
+  })
+
+  it('sem namespace pessoal (embed sem biblioteca) o painel mostra o botão pelo catálogo mas NÃO grava libOrigin nem suja o projeto', async () => {
+    setPersonalAssetsNamespace('')
+    seedProject([
+      {
+        id: 'a1',
+        name: 'grama',
+        kind: 'image',
+        dataUrl: PNG,
+        source: 'library',
+        libId: 'personal:t-catalogo',
+      },
+    ])
+    renderPanel(() => {}, { onEditCreation: () => {}, moldaLibrary: moldaKnowingTexture })
+
+    await screen.findByRole('button', { name: 'Editar grama no Molda' })
+    await flushEffects()
+    expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBeUndefined()
+    expect(useProjectStore.getState().isDirty).toBe(false)
+  })
+
+  it('o palpite pelo kind (3D sem registro nem catálogo) serve ao botão, mas NUNCA é gravado no projeto', async () => {
+    seedProject([{ ...moldaModel(), libOrigin: undefined }])
+    renderPanel(() => {}, { onEditCreation: () => {} })
+
+    await screen.findByRole('button', { name: 'Editar nave no Molda' })
+    await flushEffects()
+    expect(useProjectStore.getState().project?.assets?.[0]?.libOrigin).toBeUndefined()
+    expect(useProjectStore.getState().isDirty).toBe(false)
   })
 
   it('modelo .glb do Molda: o card de Modelos 3D entrega o id da criação e repara o registro 3D', async () => {

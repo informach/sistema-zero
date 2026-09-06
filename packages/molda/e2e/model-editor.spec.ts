@@ -261,6 +261,45 @@ test('viewport real posiciona, pinta, recupera contexto e exporta GLB aceito pel
   expect(pageErrors).toEqual([])
 })
 
+test('grupo com principal trancada mantém a alça para as peças livres', async ({ page }) => {
+  await page.goto('/')
+  await page.evaluate(
+    async (asset) =>
+      window.__molda?.persistence.save({
+        ...asset,
+        id: 'locked-group',
+        name: 'locked-group',
+        parts: [
+          { ...asset.parts[0], locked: true },
+          {
+            ...asset.parts[0],
+            id: 'wing',
+            name: 'asa',
+            shape: 'wedge',
+            from: [3, 0, 0],
+            to: [6, 1, 2],
+          },
+        ],
+      }),
+    MODEL,
+  )
+  await page.goto('/?criacao=locked-group')
+
+  await page.getByRole('button', { name: 'corpo, caixa' }).click()
+  await page.getByRole('button', { name: 'Somar à seleção' }).click()
+  await page.getByRole('button', { name: 'asa, rampa' }).click()
+
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const viewport = window.__molda?.viewport
+        if (!viewport) return false
+        return Reflect.get(viewport, 'gizmo').object === Reflect.get(viewport, 'groupAnchor')
+      }),
+    )
+    .toBe(true)
+})
+
 test('atlas cheio mantém as 128 peças visíveis pelas cores-base', async ({ page }) => {
   const skin = { width: 32, height: 32, data: Array.from({ length: 32 * 32 }, () => 2) }
   const parts = Array.from({ length: 128 }, (_, index) => ({
@@ -457,7 +496,7 @@ test('malha: toque escolhe a face, Puxar cresce, o lápis pinta e "Girar a pele"
   // O centro da face de cima (y = 4), a 10 px do ponto exato: a folga do toque cobre.
   const top = await screenOf(0, 4, 0)
   await page.touchscreen.tap(top.x + 6, top.y + 8)
-  await expect(page.getByRole('status').filter({ hasText: '4 pontos' })).toBeVisible()
+  await expect(page.getByText('4 pontos', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Puxar', exact: true }).click()
   await expect.poll(async () => (await partOf())?.to[1]).toBe(5)
   await expect(page.getByRole('region', { name: 'Ajustar' })).toBeVisible()

@@ -12,7 +12,6 @@ export {
   ChevronRight,
   Circle,
   Copy,
-  Crosshair,
   Cylinder,
   Download,
   Eraser,

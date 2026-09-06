@@ -224,12 +224,17 @@
   -webkit-user-select: none;
 }
 
-/* Colunas roláveis do editor SEM a barra clássica (gêmeo do .pin-scroll-y do Pinta):
+/* Colunas roláveis do editor com a barra FINA (o .pin-scroll-y do Pinta a esconde e avisa
+   com um degradê; aqui a barra fina é o aviso de que há mais painel embaixo):
    os painéis são `shrink-0`, então a coluna rola em vez de espremer um painel. */
 [data-molda-theme] .mld-scroll-y {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-mld-border) transparent;
 }
 [data-molda-theme] .mld-scroll-y::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+[data-molda-theme] .mld-scroll-y::-webkit-scrollbar-thumb {
+  background: var(--color-mld-border);
+  border-radius: 999px;
 }

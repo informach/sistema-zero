@@ -44,7 +44,6 @@ describe('malha no .glb', () => {
     if (!result.ok) return
     expect(result.triangles).toBe(MOLDA_LIMITS.maxTriangles)
     expect(result.chars).toBeLessThanOrEqual(MOLDA_LIMITS.studioMax3DChars)
-    console.log(`[molda] malha 20 000 tris: ${result.chars} chars no .glb`)
   })
 
   test('uma caixa-malha exporta como a caixa (12 triângulos)', () => {

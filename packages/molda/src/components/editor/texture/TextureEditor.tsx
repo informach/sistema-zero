@@ -12,6 +12,8 @@ import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import type { MoldaTextureAsset } from '../../../core/model'
 import type { PaletteId } from '../../../core/palette'
+import { firstPaintableIndex } from '../../../core/palette'
+import { resolvePaletteColors } from '../../../core/sanitize'
 import { triggerDownload } from '../../../export/download'
 import { exportTexturePng, PNG_MIME, textureToRgba } from '../../../export/texturePng'
 import type { BrushSize } from '../../../paint/skinPaint'
@@ -138,12 +140,27 @@ export function TextureEditor({
   const offset: [number, number] = shifted ? [size / 2, size / 2] : [0, 0]
 
   const current = useCallback(() => editor.getState().asset as MoldaTextureAsset, [editor])
+  // O gesto do "+" fecha antes de qualquer outro commit ou traço (ver `ModelEditor`).
+  const closeColorGesture = useCallback(() => {
+    const gesture = colorGesture.current
+    colorGesture.current = null
+    if (!gesture) return
+    const after = editor.getState().asset as MoldaTextureAsset
+    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
+  }, [editor])
   const commit = useCallback(
     (next: MoldaTextureAsset) => {
+      closeColorGesture()
       if (next !== editor.getState().asset) editor.getState().commit(next)
     },
-    [editor],
+    [closeColorGesture, editor],
   )
+  useEffect(() => () => closeColorGesture(), [closeColorGesture])
+  // Desfazer pode apagar a cor extra do lápis: volta à 1ª cor.
+  useEffect(() => {
+    const colors = resolvePaletteColors(asset)
+    if (color >= colors.length || !colors[color]) setColor(firstPaintableIndex(colors))
+  }, [asset, color])
 
   useEffect(() => {
     if (!preview) return
@@ -177,7 +194,8 @@ export function TextureEditor({
         commit(floodFillTexture(now, x, y, color, now.seamless))
         return
       default:
-        stroke.current = { pointerId, before: now, last: null }
+        closeColorGesture()
+        stroke.current = { pointerId, before: current(), last: null }
         paintAt(x, y)
     }
   }
@@ -260,6 +278,15 @@ export function TextureEditor({
         colorGesture.current = gesture
         if (gesture.full) return
         if (gesture.index !== null) {
+          const existing = resolvePaletteColors(current()).indexOf(hex)
+          if (existing >= 0 && existing !== gesture.index) {
+            // A cor escolhida já existe: a extra do gesto sai e o lápis aponta para ela.
+            const next = removeTextureColor(current(), gesture.index) ?? current()
+            if (next !== current()) editor.getState().replace(next)
+            setColor(existing)
+            gesture.index = null
+            return
+          }
           const next = updateTextureColor(current(), gesture.index, hex)
           if (next !== current()) editor.getState().replace(next)
           return
@@ -277,13 +304,7 @@ export function TextureEditor({
         }
         setColor(result.index)
       }}
-      onAddColorEnd={() => {
-        const gesture = colorGesture.current
-        colorGesture.current = null
-        if (!gesture) return
-        const after = current()
-        if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
-      }}
+      onAddColorEnd={closeColorGesture}
       onRemoveColor={(index) => {
         const next = removeTextureColor(current(), index)
         if (!next) {

@@ -270,6 +270,9 @@ export const COPY = {
     taskLinkError: 'Não consegui vincular o desenho à tarefa. Confira a internet e tente de novo.',
     taskStudioProgressError:
       'O desenho chegou ao Estúdio, mas não consegui atualizar a tarefa. Confira a internet e tente usar no Estúdio de novo.',
+    /** O reenvio automático ao Estúdio falhou de verdade (não é o "ainda não está lá"). */
+    studioSyncFailed:
+      'Salvei no Pinta, mas não consegui atualizar no Estúdio. Tente salvar de novo.',
     download: 'Baixar',
     sendToStudio: 'Usar no Estúdio',
     zoomIn: 'Aproximar',

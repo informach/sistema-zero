@@ -1213,28 +1213,55 @@ desce da nuvem chega com `libId: personal:<id>` e sem registro, e o botão sumia
 Molda não tinha nada (nem botão em "Modelos 3D", nem sincronia de volta). Desenho:
 - **`ProjectAsset.libOrigin?: 'pinta' | 'molda'`** (`core/project.ts`, saneado junto do `libId`;
   gravado por `PintaImportDialog`, `MoldaImportDialog` e `addFromPersonal`). Legado sem o campo:
-  `creationOriginOf` (`components/assets/creationOrigin.ts`) decide pelo registro pessoal e, na falta
-  dele, pelo `kind` (3D → Molda; imagem → Pinta). A textura do Molda abre o MOLDA, nunca o Pinta.
+  `creationOriginOf` (`components/assets/creationOrigin.ts`) decide NESTA ordem: `libOrigin` →
+  `origin` do registro pessoal → catálogos (`pintaLibrary.list()` / `moldaLibrary.list()`) →
+  registro pessoal de IMAGEM sem `origin` (o Pinta antigo não gravava o campo) → só o `kind` 3D cai
+  em Molda. **Imagem sem evidência nenhuma fica SEM botão** (pode ser textura do Molda; nunca
+  presumimos Pinta). A textura do Molda abre o MOLDA, nunca o Pinta.
+- ⭐ **`catalogsComplete`**: o card só mostra "Não sei de onde veio este desenho. Traga ele de novo
+  pelo Pinta ou pelo Molda." (`text-xs text-sz-warn`) quando os DOIS adapters existem E as duas
+  listas resolveram e nenhuma conhece o id. Sem biblioteca (bloco de aula, admin) ou com um `list()`
+  rejeitado (vira `console.warn('[estudio] catálogo indisponível', cause)`) o card fica só sem botão:
+  "não consultei" e "consultei e ninguém conhece" são respostas diferentes, e a primeira não pode
+  pedir reimportação.
+- ⭐ **`libOrigin` só é PERSISTIDO com evidência e com namespace pessoal** (`evidencedOriginOf`:
+  registro pessoal ou catálogo). O palpite pelo `kind` 3D serve ao botão, nunca ao projeto; e num
+  embed sem namespace (`getPersonalAssetsNamespace() === ''`) o efeito nem roda. Antes, abrir o
+  painel sujava o projeto (autosave + subida para a nuvem) só de olhar.
 - **Prop de host `onEditCreation?: (creationId) => void`** (`studio/edit-creation.ts`, gêmeo do
   `onEditDrawing`; latch no `StudioCore`). O kids só passa com posse do Molda.
-- **`EditInOriginButton`** (`aria-label` "Editar <nome> no Pinta|Molda", alvo ≥ 32px) no card de "No
-  projeto" E no de "Modelos 3D", sempre que `libId` é `personal:*` e o callback da origem existe.
-  ⭐ NÃO exige o registro pessoal: no clique, `openInOriginApp` REPARA a biblioteca
-  (`savePersonalAsset` a partir dos bytes do projeto, com `kind`/`origin`/`originalFileName` e
-  `updatedAt = libRevision`) e só então abre; sem o reparo a guarda `getPersonalAsset` do
-  `resyncToStudio` do host recusaria a volta. O efeito de carga ganhou `.catch` (a rejeição era muda).
-- **`personalSync` com 3D**: `drawingNeedsSync` aceita `model3d`/`environment3d` e recusa tipo
-  cruzado; `mergeDrawingIntoAsset` e `updateAssetImage` levam o `originalFileName` (sem ele o load
-  DESCARTA o asset 3D); `updateAssetImage` valida 3D por extensão × MIME × assinatura e segue sem
-  tocar em `name`/`id`/`libId`; `reconcileDrawingsFromRestoredProject` adota cópias 3D com
-  `kind`/`origin`/`originalFileName`.
+- **`EditInOriginButton`** (`aria-label` "Editar <nome> no Pinta|Molda", alvo `min-h-11` = 44px, a
+  régua do host kids) no card de "No projeto" E no de "Modelos 3D", sempre que `libId` é
+  `personal:*` e o callback da origem existe. ⭐ NÃO exige o registro pessoal e **ABRE PRIMEIRO, de
+  forma SÍNCRONA no clique**: `target.open(id)` faz `window.open` no host, e o WebKit/iOS bloqueia
+  popup aberto depois de um `await` (o botão ficava morto no iPad). O reparo da biblioteca
+  (`repairPersonalRecord`: `savePersonalAsset` a partir dos bytes do projeto, com
+  `kind`/`origin`/`originalFileName` e `updatedAt = libRevision`) roda em SEGUNDO PLANO; sem ele a
+  guarda `getPersonalAsset` do `resyncToStudio` do host recusaria a volta, então a falha do reparo
+  não impede abrir, mas aparece no `role="alert"` dizendo que o jogo não vai se atualizar sozinho
+  até dar certo. O efeito de carga tem `.catch` (a rejeição era muda).
+- **`removePersonalAsset(id, { namespace })`** espelha `getPersonalAsset`: o painel passa o
+  `personalNamespace` capturado no render (era a única operação da biblioteca presa ao singleton).
+- **`personalSync` com 3D**: `drawingNeedsSync` aceita `model3d`/`environment3d`, recusa tipo cruzado
+  e recusa ORIGEM cruzada (`drawing.origin` e `asset.libOrigin` presentes e diferentes);
+  `mergeDrawingIntoAsset` (jogo FECHADO) valida os bytes pelo MESMO `isValidAssetDataUrl(dataUrl,
+  kind, originalFileName)` do `updateAssetImage` e devolve `null` na recusa, que entra em
+  `pendingFailures` nomeando o jogo. Antes gravava bytes que o load descartaria em silêncio: a
+  biblioteca valida imagem SEM `kind`, então um registro `image` com `data:audio/` passa por ela.
+  `mergeDrawingIntoAsset` e `updateAssetImage` levam o `originalFileName` (sem ele o load DESCARTA o
+  asset 3D); `reconcileDrawingsFromRestoredProject` adota cópias 3D com `kind`/`origin`/
+  `originalFileName` e devolve só `{ projectChanged }` (o `adopted`, que era sempre 0, e a compat
+  `adoptDrawingsFromRestoredProject` saíram).
 - A volta do Molda é do pacote dele (`useStudioResync` + `MoldaHostAdapter.resyncToStudio`, ver
   `packages/molda/CLAUDE.md`); o host regrava a biblioteca com `origin: 'molda'` e esta sincronia faz
   o resto.
 
-Testes: `AssetsPanelEditDrawing.test.tsx` (10 casos: com `pintaLibrary`, reparo, textura → Molda,
-legado por registro, card 3D, sem callback do Molda), `personalSync.test.ts` §3D,
-`projectAssets.test.ts` (sanitize do `libOrigin`) e os dois `*ImportDialog.test.tsx`.
+Testes: `AssetsPanelEditDrawing.test.tsx` (com `pintaLibrary`, abertura síncrona, reparo em segundo
+plano e a falha dele, textura → Molda, legado por registro, catálogos incompletos × ambíguos,
+persistência só com evidência e namespace, card 3D, sem callback do Molda),
+`creationOrigin.test.ts` (a ordem da régua), `personalSync.test.ts` §3D + bytes inválidos + origem
+cruzada, `personal.test.ts` (remoção por namespace), `projectAssets.test.ts` (sanitize do
+`libOrigin`) e os dois `*ImportDialog.test.tsx`.
 
 ### "Trazer do Pinta" — fluxo PULL (08/2026, substitui a seção "Meus desenhos")
 

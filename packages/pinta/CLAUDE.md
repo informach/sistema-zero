@@ -157,8 +157,9 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   botão Ajustar + ferramenta Mão 🖐️ (pan — touch tem touch-action:none; SEGURAR ESPAÇO vira a Mão
   em qualquer ferramenta). Onion skin vetorial via
   `previousShapesOf`. Alças de seleção dimensionadas em px de TELA (÷zoom). Teclado: Delete/setas
-  na seleção (listener no window, ignora inputs). Todo gesto guarda `pointerId` (multi-touch não
-  corrompe). Pincel usa `smoothStrokeToPathCapped` — o `d` criado SEMPRE cabe no `MAX_PATH_CHARS`
+  na seleção (listener no window, ignora inputs). Todo gesto guarda `pointerId`; os listeners no
+  document filtram movimento e término por esse id, então outro dedo não move nem encerra o gesto
+  principal. Pincel usa `smoothStrokeToPathCapped` — o `d` criado SEMPRE cabe no `MAX_PATH_CHARS`
   do sanitize (senão o traço sumiria no reload); acima de 1500 pontos crus decima O(n)
   ANTES do RDP (O(n²) no pior caso — rabisco zigue-zague longo travava o soltar do
   pincel por segundos e estourava o timeout de 5s do teste no CI). Ver a seção
@@ -2485,12 +2486,14 @@ volta, trava". Quatro causas no `VectorStage`, todas corrigidas com teste:
   `onLostPointerCapture`; `endGesture` é idempotente e limpa os listeners; e um `pointerdown` com
   gesto vivo cujo ponteiro já não está capturado FECHA o resto (`gestureStillActive`).
   `safeSetPointerCapture` passou a devolver `boolean`.
-- **Laço guloso.** Com a Selecionar, o `pointerdown` no fundo agora faz `hitShapeAt` (folga 4px +
+- **Laço guloso.** Com a Selecionar, o `pointerdown` no fundo faz um hit-test (folga 4px +
   metade do contorno) ANTES de abrir o laço: forma sob o toque = MOVER (é o que salva o traço
-  vazado do pincel, que o navegador só acerta no fio); trancada continua atravessando. Caixa
-  degenerada é toque se `w < 2 || h < 2` (era `&&`: um risco fino era laço); o laço usa
-  `boundsOverlap` (área em comum, estrito) em vez do `boundsIntersect` (`<=`, que pegava a caixa
-  vizinha só tangenciando).
+  vazado do pincel, que o navegador só acerta no fio); trancada continua atravessando. Desde a
+  revisão do lote (abaixo) o hit-test é o `hitMovableShapeAt` de `vector/hitTest.ts`, que olha a
+  GEOMETRIA (a caixa do `hitShapeAt` fazia o miolo vazio de um traço virar mover). Caixa degenerada
+  é toque se largura OU altura ficam abaixo de 3px de TELA (era `&&`, e em unidades do documento);
+  o laço usa `boundsOverlap` (área em comum, estrito) em vez do `boundsIntersect` (`<=`, que pegava
+  a caixa vizinha só tangenciando).
 - **Caixa do texto mais justa**: `VECTOR_FONT_FAMILY_INFO` ganhou `ascent`/`descent` por família
   (0,78/0,22; caixa-alta 0,8/0,05) e `shapeBounds` do texto usa o topo em `y - ascent·fs` e a
   altura `asc + desc + (linhas-1)·1,2` (era um em inteiro acima da base + 1,2 por linha).
@@ -2502,6 +2505,59 @@ Testes: `vectorUi.test.tsx` §"arrastar formas" (o texto não entra; palco que m
 meio do gesto; arrasto que começa no fundo dentro da caixa move; solto no `document` fecha com um
 undo; risco fino é toque), `geometry.test.ts` (caixa do texto; `boundsOverlap`),
 `pickColor.test.ts` (traço vazado pela folga).
+
+### Revisão do lote (06/09/2026, à tarde): as regras que ficaram
+
+Um review do conserto acima achou um ALTO e sete médios/baixos, todos com regressão em teste:
+
+- ⭐ **Mover antes do laço olha a GEOMETRIA, não a caixa** (`vector/hitTest.ts`,
+  `hitMovableShapeAt`): forma com preenchimento (cor/degradê; figura e texto sempre) acerta pela
+  caixa girada alargada pela folga + metade do contorno, e o círculo pela equação da elipse; forma
+  SÓ de contorno acerta pela distância ao contorno (lados do retângulo, elipse amostrada em 32
+  pontos, o segmento da linha, as arestas do polígono, o `d` do traço lido pelo `parsePathD` como
+  polilinha dos seus pontos, controles inclusive, `Z` fecha). Pressionar no miolo vazio de um traço
+  do pincel, de um círculo "sem cor" ou de uma polilinha abre o LAÇO. **Trancada nunca bloqueia**:
+  a varredura pula escondida e trancada e a forma livre embaixo continua tocável (antes o código
+  desistia na primeira trancada). O `hitShapeAt` da caixa segue sendo o do CONTA-GOTAS.
+- **Toque × laço é em px de TELA, nos DOIS laços** (formas e nós): `w·zoom < 3 || h·zoom < 3` é
+  toque. Em unidades do documento, um laço de 30px em zoom 16 media 1,9 e limpava a seleção.
+- **Zoom no meio do gesto FECHA o gesto** (`useLayoutEffect` no `zoom`, via `endGestureRef`): o
+  `docPerPx`/`startClient` do `pointerdown` deixam de valer com a rolagem do mouse ou Ctrl+=, e a
+  forma fugia do cursor. O que já andou fica, com o undo dele; o resto do arrasto é ignorado.
+- **Delta zero nunca grava desfazer**: mover com `dx = dy = 0` (toque parado, ou a grade que
+  engoliu um passo de 3px), redimensionar com `fx = fy = 1` e girar com 0 graus saem SEM tocar o
+  asset enquanto ele ainda é a base do gesto. Antes cada `pointermove` criava objetos novos (o `d`
+  do traço re-serializado) e o `commitGesture`, que compara por identidade, gravava uma entrada
+  VAZIA. Depois de um passo pintado o delta zero segue em frente (é a volta à base).
+- **Trocar de quadro/tile com gesto vivo COMMITA** (`endGestureRef.current()` no efeito de
+  `animationId`/`frameIndex`): a forma movida ganha a entrada de undo dela. A única exceção é o
+  desenho em andamento, que é descartado como sempre foi (a prévia pertence ao documento que saiu
+  e o commit cairia no quadro novo).
+- **A faixa da seleção mede 54px em TODOS os ramos**: uma moldura só (`SelectionBarFrame`,
+  `data-pin-selection-bar`, `px-3 py-1 border-b-2` sem `min-h`) e a altura no MIOLO (`min-h-11
+  flex items-center`). O ramo dos pontos tinha o `min-h-11` no contêiner (44px com border-box) e
+  o palco pulava 10px ao escolher uma forma sem pontos editáveis.
+- **Sem capture, o `document` alimenta o gesto**: `beginGesture` lê o `boolean` do
+  `safeSetPointerCapture` e, quando é `false`, o `onMove` do document encaminha o `pointermove`
+  nativo ao `handlePointerMove` (que aceita um `StagePointer` simples, sintético ou nativo),
+  filtrando os alvos dentro do `<svg>` para não ler o mesmo movimento duas vezes. Antes arrastar
+  para fora do palco sem capture congelava a forma.
+- **A ponte avisa quando FALHA**: `resyncToStudio` devolve `PintaStudioResyncResult`
+  (`{updated:true}` | `{updated:false, reason?: 'not-linked' | 'failed', error?}`; `reason`
+  opcional para o host de hoje seguir compilando), `useStudioResync` ganhou `onFailure` (chamado SÓ
+  com `reason: 'failed'` ou promise rejeitada; tetos e raster ficam em silêncio) e o `EditorScreen`
+  mostra `COPY.editor.studioSyncFailed`. Espelho do Molda.
+- Também neste lote: `LayerRow` e `ShapeThumb` memoizados no painel Camadas (callbacks estáveis
+  despachando por ref para a versão mais recente das ações) e o `doc` do `VectorEditorScope` em
+  `useMemo` por asset + quadro (o objeto novo por render refazia o efeito das fontes e o contexto).
+
+Testes: `vector/hitTest.test.ts` (geometria por tipo, trancada e escondida, `d` estranho),
+`vectorUi.test.tsx` §"arrastar formas: a revisão do lote" (miolo vazio abre o laço; fio move;
+trancada por cima não bloqueia; laço fino em zoom 16; zoom no meio do arrasto; grade com delta
+zero sem undo; troca de quadro commita; movimento no `document` sem capture; segundo pointerdown
+com captura de pé) e §"a faixa da seleção: uma moldura só" (os três ramos com a mesma estrutura),
+`useStudioResync.test.tsx` (`failed` avisa, `not-linked` cala, rejeição avisa, raster falho cala;
+o canvas é dublado no protótipo e restaurado).
 
 ## Regras não-negociáveis
 

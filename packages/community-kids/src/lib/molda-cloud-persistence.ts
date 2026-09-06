@@ -64,6 +64,8 @@ const MAX_DEFERRED_PASSES = 5
 const LIST_TIMEOUT_MS = 4000
 /** Intervalo mínimo entre reconciliações de uma mesma instância (ver o Pinta: senão vira laço). */
 const RECONCILE_MIN_INTERVAL_MS = 60_000
+/** Teto da espera pela fila antes de uma reconciliação (um DELETE em voo sobe primeiro; igual ao Estúdio). */
+const FLUSH_BEFORE_PULL_MS = 3_000
 
 function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
   return new Promise((resolve) => {
@@ -152,17 +154,32 @@ export function createCloudMirroredMoldaPersistence(options: {
   const passDelayMs = options.passDelayMs ?? DEFERRED_PASS_DELAY_MS
   const marks =
     options.marks ?? createStoredSyncedMarks(`sz:creations-synced:molda:${options.viewerId}`)
+  /**
+   * Quando o envio de cada criação COMEÇOU (o produtor foi ler o disco), por id. A confirmação do
+   * commit compara esse instante com o `at` da lápide: uma exclusão que nasceu DEPOIS de o envio
+   * começar não pode ser desfeita pela confirmação de um upload que já estava em voo.
+   */
+  const sendingAt = new Map<string, number>()
 
   function enqueue(asset: MoldaAsset): void {
     cloud.enqueueUpload(
       asset.id,
       async () => {
+        // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
+        // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
+        sendingAt.set(asset.id, now())
         // Sempre o estado MAIS RECENTE do disco (a fila pode rodar depois de mais edições).
         const current = await local.load(asset.id)
-        if (!current) return null
+        if (!current) {
+          sendingAt.delete(asset.id)
+          return null
+        }
         // Nada mudou desde a última sincronia confirmada (a marca JÁ é este `updatedAt`):
         // não sobe — zero HTTP.
-        if (marks.get(asset.id) === current.updatedAt) return null
+        if (marks.get(asset.id) === current.updatedAt) {
+          sendingAt.delete(asset.id)
+          return null
+        }
         return {
           json: assetToCloudJson(current),
           meta: {
@@ -177,7 +194,22 @@ export function createCloudMirroredMoldaPersistence(options: {
       },
       // A marca avança SÓ com o commit confirmado, com o `updatedAt` do que subiu.
       ({ itemId, updatedAt, revision }) => {
+        const startedAt = sendingAt.get(itemId) ?? Number.POSITIVE_INFINITY
+        sendingAt.delete(itemId)
         marks.set(itemId, updatedAt, revision)
+        // A criança apagou a criação com este upload EM VOO (a lápide nasceu depois de o envio
+        // começar)? Então a exclusão manda: a lápide FICA e passa a conhecer a revisão que o
+        // commit acabou de confirmar, a base que o DELETE precisa levar. Limpar a lápide aqui
+        // deixava o DELETE pendente sem ela e a próxima reconciliação trazia a criação de volta;
+        // mantê-la com a revisão velha fazia a reconciliação ler a revisão nova como "editado em
+        // outro aparelho" e restaurar o que a criança apagou. A fila costuma segurar esta
+        // confirmação quando o DELETE chega em voo, mas o adaptador não depende disso.
+        const tombstone = marks.tombstone(itemId)
+        if (tombstone && !tombstone.sent && tombstone.at >= startedAt) {
+          marks.setTombstone(itemId, { ...tombstone, revision })
+          return
+        }
+        // Apagou e DEPOIS salvou de novo o mesmo id (o id voltou): a lápide não vale mais.
         marks.clearTombstone(itemId)
       },
       ({ itemId }) => resolveStale(itemId),
@@ -262,6 +294,10 @@ export function createCloudMirroredMoldaPersistence(options: {
       marks.setTombstone(id, { ...tombstone, sent: true })
       return
     }
+    // ABERTA no editor agora? Não grava por baixo: o editor segura a versão antiga em memória e
+    // o próximo autosave sobrescreveria o restauro. A lápide fica como está e a próxima
+    // reconciliação, já com a criação fechada, decide de novo.
+    if (options.isAssetOpen?.(id)) return
     const remote = assetFromCloudJson(downloaded.json, id)
     if (!remote) return
     const taken = new Set(
@@ -332,6 +368,11 @@ export function createCloudMirroredMoldaPersistence(options: {
 
   async function reconcile(localAssets: MoldaAsset[]): Promise<MoldaAsset[]> {
     if (!cloud.supported) return localAssets
+    // O que está na fila (um DELETE, o último autosave) sobe ANTES de a lista da nuvem ser lida:
+    // senão a descida via o item apagado ainda vivo lá e reenviava a remoção à toa (ou, com a
+    // revisão nova já confirmada, trazia o item de volta). Com teto, para a galeria não ficar
+    // presa numa fila offline; a fila falhando não bloqueia a descida.
+    await cloud.flush({ timeoutMs: FLUSH_BEFORE_PULL_MS }).catch(() => undefined)
     // O que não coube no orçamento (`deferred`) volta em passes seguidos, com folga.
     let current = localAssets
     for (let pass = 0; pass < MAX_DEFERRED_PASSES; pass += 1) {

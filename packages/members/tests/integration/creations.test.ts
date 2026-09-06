@@ -463,7 +463,11 @@ describe('criações guardadas na conta — HTTP', () => {
       baseRevision: 4,
     })
     expect(missing.status).toBe(409)
-    expect((await json(missing)).error.code).toBe('CREATION_STALE_BASE')
+    const missingBody = await json(missing)
+    expect(missingBody.error.code).toBe('CREATION_STALE_BASE')
+    // Linha inexistente = revisão corrente 0 no corpo: o cliente resolve pela revisão (reenvia
+    // com a 0 ou dá a lápide por enviada) em vez de ler a ausência como "editado em outro aparelho".
+    expect(missingBody.details).toEqual({ currentRevision: 0 })
 
     const current = await req(ctx.app, 'DELETE', '/members/creations/studio/proj-1', {
       baseRevision: 2,

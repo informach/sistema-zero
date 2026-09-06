@@ -78,6 +78,7 @@ export function PartsPanel({
                   }}
                   aria-pressed={active}
                   aria-label={COPY.a11y.partItem(part.name, COPY.shapes[part.shape])}
+                  aria-describedby={`molda-part-tags-${part.id}`}
                   className={clsx(
                     'flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border-2 px-2 text-left text-sm transition',
                     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
@@ -95,12 +96,17 @@ export function PartsPanel({
                   <span className="min-w-0 flex-1 truncate font-bold text-mld-text">
                     {part.name}
                   </span>
-                  <span className="shrink-0 text-xs text-mld-muted">{tags}</span>
+                  <span
+                    id={`molda-part-tags-${part.id}`}
+                    className="shrink-0 text-xs text-mld-muted"
+                  >
+                    {tags}
+                  </span>
                 </button>
                 {!part.mirrorOf && onLock && onHide ? (
                   <>
                     <IconButton
-                      aria-label={COPY.a11y.partLock(part.name, Boolean(part.locked))}
+                      aria-label={COPY.a11y.partLock(part.name)}
                       aria-pressed={Boolean(part.locked)}
                       active={Boolean(part.locked)}
                       onClick={() => onLock(part.id)}
@@ -113,7 +119,7 @@ export function PartsPanel({
                       )}
                     </IconButton>
                     <IconButton
-                      aria-label={COPY.a11y.partHide(part.name, Boolean(part.hidden))}
+                      aria-label={COPY.a11y.partHide(part.name)}
                       aria-pressed={Boolean(part.hidden)}
                       active={Boolean(part.hidden)}
                       onClick={() => onHide(part.id)}

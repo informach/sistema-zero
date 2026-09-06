@@ -117,7 +117,7 @@ describe('ModelEditor (Pintar)', () => {
 
   test('apagar uma cor extra remapeia e a lixeira não mexe nas 16 fixas', async () => {
     await openPaint()
-    const input = screen.getByLabelText(COPY.editor.model.addColor, { selector: 'input' })
+    const input = document.querySelector('input[type="color"]') as HTMLInputElement
     fireEvent.change(input, { target: { value: '#123456' } })
     await waitFor(() => expect(lastModel().extraColors).toEqual(['#123456']))
     expect(fake.instances[0]?.paint?.color).toBe(16)

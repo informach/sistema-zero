@@ -130,7 +130,7 @@ export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
     .sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
-/** Separador das chaves do cache (`id` e `updatedAt` nunca o contêm). */
+/** Separador das chaves do cache: `namespace` (o viewerId do host, um UUID), `id` e `updatedAt` nunca o contêm. */
 const CACHE_KEY_SEPARATOR = String.fromCharCode(0)
 
 /**

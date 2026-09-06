@@ -4,6 +4,7 @@ import { normalizeAssetName } from '../core/names'
 import { sanitizeMoldaAsset } from '../core/sanitize'
 import { exportModelGlb } from '../export/modelGlb'
 import { projectModelThumb } from '../model/isoThumb'
+import { meshIssues } from '../model/mesh'
 import { findTemplate, MOLDA_TEMPLATE_IDS, MOLDA_TEMPLATES } from './catalog'
 
 describe('catálogo de modelos prontos', () => {
@@ -21,6 +22,12 @@ describe('catálogo de modelos prontos', () => {
         expect(built.parts.length).toBeGreaterThanOrEqual(3)
         expect(built.parts.length).toBeLessThanOrEqual(MOLDA_LIMITS.maxParts)
         expect(sanitizeMoldaAsset(structuredClone(built))).toEqual(built)
+      })
+
+      it('toda peça de malha nasce sem face virada, torta ou sobreposta', () => {
+        for (const part of template.build().parts) {
+          if (part.mesh) expect(meshIssues(part.mesh)).toEqual([])
+        }
       })
 
       it('o nome sugerido já é kebab-case e é o nome do modelo montado', () => {

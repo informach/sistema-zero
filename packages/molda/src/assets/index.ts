@@ -75,22 +75,6 @@ export {
 } from '../export/projectJson'
 export type { MeshIssue } from '../model/mesh'
 export {
-  boxMesh,
-  faceNormal,
-  faceVertices,
-  isMeshFaceKey,
-  meshBox,
-  meshEdges,
-  meshEquals,
-  meshIssues,
-  meshTriangleCount,
-  mirrorMesh,
-  newFaceKey,
-  newVertexKey,
-  normalizeMesh,
-} from '../model/mesh'
-export { meshFaceFrame } from '../model/meshFrame'
-export {
   FACES_BY_SHAPE,
   faceSkinSize,
   faceUnits,

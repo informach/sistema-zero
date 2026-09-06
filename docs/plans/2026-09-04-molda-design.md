@@ -539,7 +539,7 @@ Gateway e shims `api/creations/[tool]` são genéricos por `:tool`: zero mudanç
 ## Adendo de 06/09/2026: a malha entrou (M1 a M5) e os extras
 
 A v1 deixava "malhas com vértices" de fora. O lote de 06/09 (plano em
-`~/.claude/plans/n-s-j-temos-o-moonlit-peach.md`, decisões D1 a D14) trouxe `shape: 'mesh'` numa
+`docs/plans/2026-09-06-molda-malha-lote.md`, decisões D1 a D14) trouxe `shape: 'mesh'` numa
 peça comum (`mesh: { vertices, faces }` em mapas por chave, caixa DERIVADA), o sub-modo "Editar
 malha" no Montar (Pontos/Arestas/Faces, overlay com picking em pixels, alça no centro da seleção),
 as ferramentas Puxar, Cortar no meio, Juntar pontos, Fechar face, Virar face e Dividir (com

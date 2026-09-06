@@ -188,8 +188,9 @@ export function StudioFullEditor({
       allowLevelReveal={tier.allowLevelReveal}
       features={{ professional }}
       onPromoteToPro={handlePromoteToPro}
-      onEditDrawing={openDrawingInPinta}
-      // Só com posse do Molda (produtos vendidos à parte): sem o adapter, sem botão.
+      // Só com posse do Pinta e do Molda (produtos vendidos à parte): sem o adapter, sem botão.
+      // Antes o "Editar o desenho" ia sempre e levava quem não tem o Pinta a uma tela bloqueada.
+      {...(pintaLibrary ? { onEditDrawing: openDrawingInPinta } : {})}
       {...(moldaLibrary ? { onEditCreation: openCreationInMolda } : {})}
       pintaLibrary={pintaLibrary}
       moldaLibrary={moldaLibrary}

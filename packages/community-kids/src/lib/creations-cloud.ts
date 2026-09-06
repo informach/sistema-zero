@@ -815,7 +815,10 @@ export function createCreationsCloud(options: {
       // adaptador resolve (guarda a versão da nuvem como cópia e sobe de novo com a base
       // certa) — repetir o mesmo envio só daria 409 de novo.
       if (err.status === 409 && err.code === 'CREATION_STALE_BASE') {
-        if (pending.get(itemId) === job) pending.delete(itemId)
+        // Um trabalho substituído não decide mais nada sobre o item. Em especial, o
+        // `onStale` de um upload antigo não pode disputar com a lápide que chegou em voo.
+        if (pending.get(itemId) !== job) return 'done'
+        pending.delete(itemId)
         if (job.onStale) {
           setState({ status: 'saving', lastError: null })
           const onStale = job.onStale

@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MoldaUsageCard, ToolUsageGrid } from '../src/components/members/usage-cards'
+import { relativeDayLabel } from '../src/lib/format'
 import type { LearnerToolUsageView } from '../src/lib/tool-usage'
 
 /**
@@ -23,14 +24,17 @@ describe('cartão do Molda na ficha do aluno', () => {
     )
     expect(one).toContain('1 criação na nuvem')
     expect(one).toContain('Nunca abriu')
+    // Data FIXA e explícita (nunca `new Date()`): o rótulo vem do `relativeDayLabel` e o cartão
+    // põe "em" antes de uma data curta, então a asserção compara com a saída do próprio helper
+    // em vez de depender do dia em que o teste roda ("hoje" é coberto em `tool-usage.test.ts`).
+    const lastActivityAt = '2026-06-10T12:00:00.000Z'
+    const label = relativeDayLabel(lastActivityAt)
+    expect(label).toMatch(/^\d{2}\/\d{2}\/\d{4}$/)
     const many = renderToStaticMarkup(
-      <MoldaUsageCard
-        name="Molda"
-        usage={{ creations: 3, lastActivityAt: new Date().toISOString() }}
-      />,
+      <MoldaUsageCard name="Molda" usage={{ creations: 3, lastActivityAt }} />,
     )
     expect(many).toContain('3 criações na nuvem')
-    expect(many).toContain('última atividade hoje')
+    expect(many).toContain(`última atividade em ${label}`)
   })
 
   test('members sem o campo `molda` (versão antiga): "Indisponível agora", e a grade não cai', () => {

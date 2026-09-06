@@ -1,4 +1,5 @@
 interface PointerDragListeners {
+  pointerId: number
   onMove(event: PointerEvent): void
   onEnd(event: PointerEvent): void
 }
@@ -12,15 +13,19 @@ export function addPointerDragListeners(
   const cleanup = (): void => {
     if (!active) return
     active = false
-    target.removeEventListener('pointermove', listeners.onMove)
+    target.removeEventListener('pointermove', move)
     target.removeEventListener('pointerup', finish)
     target.removeEventListener('pointercancel', finish)
   }
+  const move = (event: PointerEvent): void => {
+    if (event.pointerId === listeners.pointerId) listeners.onMove(event)
+  }
   const finish = (event: PointerEvent): void => {
+    if (event.pointerId !== listeners.pointerId) return
     cleanup()
     listeners.onEnd(event)
   }
-  target.addEventListener('pointermove', listeners.onMove)
+  target.addEventListener('pointermove', move)
   target.addEventListener('pointerup', finish)
   target.addEventListener('pointercancel', finish)
   return cleanup

@@ -150,8 +150,12 @@ export interface ProjectAsset {
    * De qual app a criação veio quando `libId` é `personal:<id>`: `pinta` (desenho) ou
    * `molda` (modelo, céu ou TEXTURA). Decide qual editor o "✏️ Editar" do painel de
    * Imagens abre: a textura do Molda é uma imagem comum, mas não é um desenho do
-   * Pinta. Legado sem o campo: o painel decide pelo registro da biblioteca pessoal
-   * e, na falta dele, pelo `kind` (3D → Molda; imagem → Pinta).
+   * Pinta. Legado sem o campo: o painel decide pelo registro da biblioteca pessoal,
+   * depois pelos catálogos do Pinta e do Molda, e só o `kind` 3D cai em Molda; uma
+   * imagem sem evidência fica SEM botão (e, quando os dois catálogos responderam sem
+   * conhecê-la, o card pede nova importação). O painel só grava este campo com
+   * evidência (registro ou catálogo) e com namespace pessoal, nunca pelo palpite do
+   * `kind` (`components/assets/creationOrigin.ts`).
    */
   libOrigin?: 'pinta' | 'molda'
   /** Token de igualdade dos bytes copiados da biblioteca; nunca ordene entre aparelhos. */

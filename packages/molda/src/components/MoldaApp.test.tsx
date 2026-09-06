@@ -352,3 +352,14 @@ describe('galeria: cabeçalho de seção (06/09)', () => {
     expect(screen.queryByRole('main')).toBeNull()
   })
 })
+
+test('deep link para uma criação que não existe abre a galeria e AVISA', async () => {
+  render(
+    <MoldaApp
+      persistence={createMemoryPersistence([makeModel()])}
+      adapter={{ initialAssetId: 'nao-existe' }}
+    />,
+  )
+  await screen.findByText(COPY.gallery.creationGone)
+  screen.getByRole('heading', { level: 1, name: COPY.gallery.title })
+})

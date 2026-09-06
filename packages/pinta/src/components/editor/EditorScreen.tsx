@@ -343,6 +343,9 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
     frameIndex,
     gallery,
     send: adapter.resyncToStudio,
+    // Só a falha REAL da ponte avisa (o "ainda não está no Estúdio" é silêncio):
+    // sem o toast a criança seguia desenhando achando que o jogo se atualizou.
+    onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
 
   const kind = COPY.kinds[asset.kind]

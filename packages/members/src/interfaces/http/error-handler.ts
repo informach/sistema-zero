@@ -153,7 +153,7 @@ export function buildErrorResponse(input: {
     }
   }
 
-  // Base vencida das criações: expõe `details.currentRevision` ESTRUTURADO — no DELETE, o
+  // Base vencida das criações: expõe `details.currentRevision` ESTRUTURADO: no DELETE, o
   // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
   // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
   // descobrir a revisão (06/09/2026).

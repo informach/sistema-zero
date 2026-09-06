@@ -13,7 +13,7 @@
  * palco (VectorStage) — as duas nunca coexistem, por isso compartilham o mesmo
  * `aria-label` e os mesmos rótulos `sel*`.
  */
-import type { JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
 import { ToolButton } from '../../ui/Button'
 import {
@@ -51,13 +51,40 @@ const Divider = (): JSX.Element => (
  * palco de novo a cada movimento, a forma "teleportava" sob o mouse e o arrasto
  * seguinte virava laço (e pegava o texto vizinho). Regra da casa: nada que aparece
  * e some com a seleção pode estar no fluxo do palco. Sem seleção, a faixa vira a
- * dica de como usá-la, na MESMA altura (`min-h-11` + `py-1`, como os botões).
+ * dica de como usá-la, na MESMA altura.
+ *
+ * ⚠️ UMA moldura para TODOS os ramos, e a altura mora no MIOLO (`min-h-11`), nunca
+ * no contêiner: a moldura soma `py-1` + `border-b-2` (54px em qualquer ramo). O
+ * ramo dos pontos tinha o `min-h-11` no contêiner (44px com border-box) e o palco
+ * pulava 10px ao escolher uma forma sem pontos editáveis. `data-pin-selection-bar`
+ * é o gancho do teste que mede a estrutura dos ramos.
  */
+function SelectionBarFrame({
+  children,
+  toolbar,
+}: {
+  children: ReactNode
+  /** Com rótulo a moldura vira a `toolbar` (as ações); sem, é só a dica. */
+  toolbar?: string
+}): JSX.Element {
+  return (
+    <div
+      data-pin-selection-bar=""
+      {...(toolbar ? { role: 'toolbar', 'aria-label': toolbar } : {})}
+      className="shrink-0 border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+    >
+      <div className="flex min-h-11 items-center gap-1 pin-scroll-x overflow-x-auto">
+        {children}
+      </div>
+    </div>
+  )
+}
+
 function SelectionBarPlaceholder({ hint }: { hint: string }): JSX.Element {
   return (
-    <div className="flex shrink-0 items-center border-b-2 border-pin-border bg-pin-surface px-3 py-1">
-      <span className="flex min-h-11 items-center text-pin-muted text-sm">{hint}</span>
-    </div>
+    <SelectionBarFrame>
+      <span className="shrink-0 text-pin-muted text-sm">{hint}</span>
+    </SelectionBarFrame>
   )
 }
 
@@ -83,35 +110,26 @@ export function VectorSelectionBar(): JSX.Element | null {
   if (tool === 'reshape') {
     if (!nodeTarget) return <SelectionBarPlaceholder hint={COPY.vector.nodeBarEmpty} />
     return (
-      <div
-        role="toolbar"
-        aria-label={COPY.vector.nodeBar}
-        className="flex min-h-11 shrink-0 items-center gap-1 pin-scroll-x overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
-      >
+      <SelectionBarFrame toolbar={COPY.vector.nodeBar}>
         {/* ⚠️ Sem pontos editáveis (retângulo, círculo, texto, figura, ou uma
             mistura que virou mais de um pedaço) a faixa DIZ isso. Sumir sem
             explicação lia como "quebrou", e depois do Misturar isso deixou de
             ser raro: um resultado com furo tem dois sub-caminhos, e o
-            `toEditablePath` recusa vários `M` de propósito.
-            O `min-h-11` é load-bearing: sem ele o ramo da frase mede ~30px, a
-            faixa encolhe e o palco pula. */}
+            `toEditablePath` recusa vários `M` de propósito. A altura da frase é
+            a da moldura (o `min-h-11` do miolo), então o palco não pula. */}
         {nodePath ? (
           <VectorNodeActions showHint />
         ) : (
           <span className="shrink-0 text-pin-muted text-sm">{COPY.vector.nodeUneditable}</span>
         )}
-      </div>
+      </SelectionBarFrame>
     )
   }
 
   if (selected.length === 0) return <SelectionBarPlaceholder hint={COPY.vector.selectionBarEmpty} />
 
   return (
-    <div
-      role="toolbar"
-      aria-label={COPY.vector.selectionBar}
-      className="flex shrink-0 items-center gap-1 pin-scroll-x overflow-x-auto border-b-2 border-pin-border bg-pin-surface px-3 py-1"
-    >
+    <SelectionBarFrame toolbar={COPY.vector.selectionBar}>
       {/* Alinhar: 2+ formas alinham entre si; 1 forma alinha na TELA. */}
       <span className="mr-1 shrink-0 text-sm font-bold text-pin-muted">
         {COPY.vector.alignTitle}
@@ -221,6 +239,6 @@ export function VectorSelectionBar(): JSX.Element | null {
       ) : null}
       <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
       <ToolButton icon={Trash2} label={COPY.vector.selRemove} onClick={removeSelected} />
-    </div>
+    </SelectionBarFrame>
   )
 }

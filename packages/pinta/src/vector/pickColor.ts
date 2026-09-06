@@ -19,14 +19,14 @@ export function boundsContains(b: Bounds, p: Vec2): boolean {
   return p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height
 }
 
-/** A caixa crescida para todos os lados (o centro não se move). */
-function inflate(b: Bounds, by: number): Bounds {
+/** A caixa crescida para todos os lados (o centro não se move). Exportado: o `hitTest.ts` usa. */
+export function inflate(b: Bounds, by: number): Bounds {
   if (by <= 0) return b
   return { x: b.x - by, y: b.y - by, width: b.width + by * 2, height: b.height + by * 2 }
 }
 
-/** O ponto no espaço LOCAL da forma (desfaz a rotação em torno do centro da caixa). */
-function localPoint(shape: VectorShape, bounds: Bounds, point: Vec2): Vec2 {
+/** O ponto no espaço LOCAL da forma (desfaz a rotação em torno do centro da caixa). Exportado: o `hitTest.ts` usa. */
+export function localPoint(shape: VectorShape, bounds: Bounds, point: Vec2): Vec2 {
   return shape.rotation === 0 ? point : rotatePoint(point, boundsCenter(bounds), -shape.rotation)
 }
 

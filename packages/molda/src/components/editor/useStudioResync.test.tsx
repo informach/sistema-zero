@@ -12,7 +12,7 @@ afterEach(cleanup)
 
 const wait = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
-function harness(idleMs = 20) {
+function harness(idleMs = 60) {
   const sent: MoldaExportedAsset[] = []
   const send = mock(async (asset: MoldaExportedAsset) => {
     sent.push(asset)
@@ -35,7 +35,7 @@ describe('useStudioResync', () => {
     rerender({ savedAsset: { ...first, updatedAt: 2 } })
     await wait(5)
     expect(sent).toHaveLength(0)
-    await wait(50)
+    await wait(140)
     expect(sent).toHaveLength(1)
     expect(sent[0]).toMatchObject({ id: first.id, kind: 'image', originalFileName: 'grama.png' })
     expect(sent[0]?.dataUrl.startsWith('data:image/png;base64,')).toBe(true)
@@ -47,7 +47,7 @@ describe('useStudioResync', () => {
     rerender({ savedAsset: { ...first, updatedAt: 2 } })
     await wait(5)
     rerender({ savedAsset: { ...first, name: 'grama-2', updatedAt: 3 } })
-    await wait(60)
+    await wait(160)
     expect(sent).toHaveLength(1)
     expect(sent[0]?.originalFileName).toBe('grama-2.png')
   })
@@ -136,5 +136,29 @@ describe('useStudioResync', () => {
     view.rerender({ savedAsset: { ...first, updatedAt: 2 } })
     await wait(20)
     expect(failures).toEqual([])
+  })
+})
+
+describe('useStudioResync: o host recria o adapter', () => {
+  it('trocar a identidade do `send` no meio da folga NÃO cancela o reenvio agendado', async () => {
+    const sent: MoldaExportedAsset[] = []
+    const first = createTextureAsset({ name: 'grama', size: 16, now: 1 })
+    const makeSend = () =>
+      mock(async (asset: MoldaExportedAsset) => {
+        sent.push(asset)
+        return { updated: true as const }
+      })
+    const view = renderHook(
+      ({ savedAsset, send }: { savedAsset: MoldaAsset; send: ReturnType<typeof makeSend> }) =>
+        useStudioResync({ savedAsset, send, idleMs: 60 }),
+      { initialProps: { savedAsset: first, send: makeSend() } },
+    )
+    view.rerender({ savedAsset: { ...first, updatedAt: 2 }, send: makeSend() })
+    await wait(10)
+    // Um render do host com outro `send` (mesmo asset salvo).
+    view.rerender({ savedAsset: { ...first, updatedAt: 2 }, send: makeSend() })
+    await wait(140)
+    expect(sent).toHaveLength(1)
+    view.unmount()
   })
 })

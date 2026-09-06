@@ -26,7 +26,7 @@
  */
 
 import { ulid } from 'ulid'
-import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
+import { isValidAssetDataUrl, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { perfSpanAsync } from '../core/perf'
 import {
   listProjectSummariesLight,
@@ -143,6 +143,10 @@ export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | n
   // Tipo cruzado (um registro pessoal reaproveitado por outro tipo) nunca sincroniza:
   // um `.glb` no lugar de uma imagem quebraria o jogo em silêncio.
   if (drawing.kind !== asset.kind) return false
+  // Origem cruzada idem: um registro do Molda no id de um desenho do Pinta (ou o
+  // inverso) não é "o mesmo desenho, mais novo". Só recusa com as DUAS marcas presentes;
+  // legado sem `libOrigin` ou registro sem `origin` segue pelos bytes.
+  if (drawing.origin && asset.libOrigin && drawing.origin !== asset.libOrigin) return false
   if (asset.dataUrl === drawing.dataUrl) return false
   return true
 }
@@ -160,8 +164,7 @@ export function drawingNeedsSync(asset: ProjectAsset, drawing: PersonalAsset | n
 export async function reconcileDrawingsFromRestoredProject(
   project: { assets?: ProjectAsset[]; updatedAt?: number },
   options?: { namespace?: string },
-): Promise<{ adopted: number; projectChanged: boolean }> {
-  const adopted = 0
+): Promise<{ projectChanged: boolean }> {
   let projectChanged = false
   const nextAssets = [...(project.assets ?? [])]
   // UMA leitura em lote da biblioteca (não uma por asset): o restauro roda dentro do
@@ -226,14 +229,7 @@ export async function reconcileDrawingsFromRestoredProject(
       project.updatedAt = Math.max(Date.now(), project.updatedAt + 1)
     }
   }
-  return { adopted, projectChanged }
-}
-
-/** Compatibilidade para chamadores que só precisam do número adotado na biblioteca. */
-export async function adoptDrawingsFromRestoredProject(project: {
-  assets?: ProjectAsset[]
-}): Promise<number> {
-  return (await reconcileDrawingsFromRestoredProject(project)).adopted
+  return { projectChanged }
 }
 
 /** Busca os desenhos de origem dos assets de UM projeto, sem repetir leitura. */
@@ -342,6 +338,19 @@ async function sweepUnmeasured(
         const id = personalIdOf(asset)
         const drawing = id ? (drawings.get(id) ?? null) : null
         if (!drawingNeedsSync(asset, drawing) || !drawing) return asset
+        // Bytes que o load descartaria não vão ao disco: gravá-los faria o jogo abrir sem
+        // a imagem na próxima vez, em silêncio. A recusa aparece como a da cota.
+        const merged = mergeDrawingIntoAsset(asset, drawing)
+        if (!merged) {
+          pushFailure(
+            result,
+            context.state,
+            drawing.kind === 'image'
+              ? `O desenho "${drawing.name}" é inválido ou grande demais e não entrou no jogo "${summary.name}".`
+              : `A criação "${drawing.name}" não é um arquivo 3D válido, ou é grande demais, e não entrou no jogo "${summary.name}".`,
+          )
+          return asset
+        }
         const projected = total - asset.dataUrl.length + drawing.dataUrl.length
         if (projected > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
           pushFailure(
@@ -353,7 +362,7 @@ async function sweepUnmeasured(
         }
         total = projected
         changed = true
-        return mergeDrawingIntoAsset(asset, drawing)
+        return merged
       })
       if (!changed) continue
       await persistProjectAssets(summary.id, next, context.storageScope)
@@ -414,10 +423,33 @@ function pushFailure(result: DrawingSyncResult, state: DrawingSyncState, message
 
 /**
  * Aplica o desenho novo a um asset de projeto FECHADO. Espelha a regra do
- * `updateAssetImage` da store (mesma decisão sobre geometria e metadados); o
- * orçamento do projeto é checado por quem chama, que conhece o total do arquivo.
+ * `updateAssetImage` da store (mesma validação dos bytes, mesma decisão sobre
+ * geometria e metadados); o orçamento do projeto é checado por quem chama, que conhece
+ * o total do arquivo. Devolve `null` quando os bytes não passam no portão do load
+ * (`isValidAssetDataUrl` com o `kind` e, nos 3D, o nome do arquivo): a biblioteca
+ * pessoal valida imagem SEM `kind`, então um registro `image` com `data:audio/` passa
+ * por ela e só aqui seria pego. Sem esta guarda o asset ia ao disco e o
+ * `sanitizeProjectAssets` da próxima abertura o descartava sem aviso.
  */
-function mergeDrawingIntoAsset(asset: ProjectAsset, drawing: PersonalAsset): ProjectAsset {
+export function mergeDrawingIntoAsset(
+  asset: ProjectAsset,
+  drawing: PersonalAsset,
+): ProjectAsset | null {
+  const is3D = asset.kind === 'model3d' || asset.kind === 'environment3d'
+  // 3D: o nome do arquivo faz parte da validação (extensão × MIME × assinatura), então
+  // vale o da criação nova e, sem ele, o que o asset já tinha.
+  const originalFileName = is3D
+    ? typeof drawing.originalFileName === 'string' && drawing.originalFileName.trim()
+      ? drawing.originalFileName.trim().slice(0, 128)
+      : asset.originalFileName
+    : undefined
+  if (
+    is3D
+      ? !isValidAssetDataUrl(drawing.dataUrl, asset.kind, originalFileName)
+      : !isValidAssetDataUrl(drawing.dataUrl, 'image')
+  ) {
+    return null
+  }
   const width = typeof drawing.width === 'number' && drawing.width > 0 ? drawing.width : undefined
   const height =
     typeof drawing.height === 'number' && drawing.height > 0 ? drawing.height : undefined
@@ -433,8 +465,8 @@ function mergeDrawingIntoAsset(asset: ProjectAsset, drawing: PersonalAsset): Pro
     ...(width ? { width } : {}),
     ...(height ? { height } : {}),
     libRevision: drawing.updatedAt,
-    // 3D: o nome do arquivo novo (a validação do load cruza extensão × MIME × assinatura).
-    ...(drawing.originalFileName ? { originalFileName: drawing.originalFileName } : {}),
+    // 3D: o nome do arquivo que acabou de passar na validação (o novo ou o que já havia).
+    ...(originalFileName ? { originalFileName } : {}),
   }
   if (sprite) next.sprite = sprite
   else delete next.sprite

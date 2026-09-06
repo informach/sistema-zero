@@ -18,6 +18,7 @@ import { cross, type FaceFrame, faceUvToPoint, normalize, planarFaceFrame, sub }
 import { faceVertices, meshTriangleCount } from './mesh'
 import { faceLocalPolygon, meshFaceFrame } from './meshFrame'
 import { partSize } from './shapes'
+import { length } from './vec'
 
 export const CYLINDER_SEGMENTS = 16
 export const SPHERE_SEGMENTS_AROUND = 12
@@ -77,7 +78,10 @@ class GeometryBuilder {
   readonly faceRanges: Partial<Record<FaceId, FaceRange>> = {}
 
   triangle(face: FaceId, a: Vec3, b: Vec3, c: Vec3, uva: Uv, uvb: Uv, uvc: Uv): void {
-    const normal = normalize(cross(sub(b, a), sub(c, a)))
+    const raw = cross(sub(b, a), sub(c, a))
+    // Área zero: sem triângulo (uma normal nula no .glb é inválida e não desenha nada).
+    if (length(raw) < 1e-12) return
+    const normal = normalize(raw)
     for (const point of [a, b, c]) this.positions.push(point[0], point[1], point[2])
     for (let i = 0; i < 3; i += 1) this.normals.push(normal[0], normal[1], normal[2])
     for (const uv of [uva, uvb, uvc]) this.uvs.push(uv[0], uv[1])
