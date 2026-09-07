@@ -28,6 +28,9 @@
   --sz-tool-radius-control: 0.75rem; /* = rounded-xl */
   --sz-tool-radius-card: 1rem; /* = rounded-2xl, o --radius do kids */
   --sz-tool-radius-pill: 9999px;
+  /* Respiro esquerdo da barra que hospeda o botão do menu: cada barra o declara (é o padding
+     dela) e a aba usa a margem negativa para encostar na linha da barra lateral. */
+  --sz-tool-inset: 0px;
   /* Fontes do HOST: o next/font expõe --font-baloo/--font-nunito no <html> com nome hasheado.
      `sz-none` é família válida que não casa com nada: fora do kids o navegador PULA para o
      próximo item. NÃO usar var(--font-sans, ...): é token default do Tailwind v4. */
@@ -161,6 +164,17 @@
   .sz-tool-btn--icon > svg,
   .sz-tool-btn-menu > svg {
     flex: none;
+  }
+  /* O botão do MENU é uma ABA da barra lateral, não uma ação da ferramenta (decisão dela,
+     07/09): cantos quadrados do lado esquerdo, sem borda esquerda, ENCOSTADO na linha da
+     sidebar pela margem negativa igual ao respiro da barra (`--sz-tool-inset`, que cada barra
+     declara). Com o menu escondido a aba fica colada na borda da tela, do lado por onde o menu
+     volta. Os 44px ficam. */
+  .sz-tool-btn-menu {
+    margin-inline-start: calc(-1 * var(--sz-tool-inset));
+    border-inline-start: 0;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
   }
   /* Pressionado = menu ESCONDIDO: borda e tinta suave do acento. Nunca o preenchimento forte,
      que leria como ferramenta selecionada. (0,2,0) perderia para o :hover (0,3,0); por isso o

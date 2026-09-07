@@ -33,7 +33,9 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    escuro DEPOIS, sob `.dark`, `[data-sz-theme="dark"]`, `[data-pinta-theme="dark"]`,
    `[data-molda-theme="dark"]`, `.pensa-theme-dark`; derivados re-declarados nos dois; FORA do
    bloco de tema do Tailwind, que poda) e as RECEITAS em `@layer components` (`.sz-tool-btn-menu`
-   = o botão do menu do host, `.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-chips`/
+   = o botão do menu do host como uma ABA colada na linha da barra lateral: cantos quadrados à
+   esquerda, sem borda esquerda, margem negativa `--sz-tool-inset` que cada barra declara com o
+   próprio padding esquerdo; `.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-chips`/
    `.sz-tool-chip`, `.sz-tool-search(-wrap)`/`.sz-tool-select`, `.sz-tool-panel`/`.sz-tool-pop`,
    `.sz-tool-status(--ok|--warn|--danger)`, `.sz-tool-header(__lead|__title|__actions)`,
    `.sz-tool-toolbar(__start|__end)`). Quem importa: o community-kids (`globals.css`, DEPOIS do

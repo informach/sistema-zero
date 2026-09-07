@@ -173,6 +173,9 @@
    sob demanda, ou a grade). */
 .pensa-home-header {
   margin-bottom: 16px;
+  /* O respiro lateral da home (24px; 16px no contêiner estreito): a ABA do menu o desconta para
+     encostar na linha da sidebar. */
+  --sz-tool-inset: 24px;
 }
 .pensa-home-header h1 {
   margin: 0;
@@ -437,6 +440,7 @@
   align-items: center;
   gap: 14px;
   padding: 16px 0 12px;
+  --sz-tool-inset: 24px;
 }
 /* O menu do host e o "voltar" são a receita COMPARTILHADA (`.sz-tool-btn-menu` e
    `.sz-tool-btn.sz-tool-btn--icon` de `@sistemazero/ui/tool-chrome.css`, 07/09/2026): o
@@ -1392,6 +1396,10 @@ button.pensa-map-node:hover {
   }
   .pensa-home-header {
     align-items: flex-start;
+  }
+  .pensa-home-header,
+  .pensa-project-header {
+    --sz-tool-inset: 16px;
   }
   .pensa-create div {
     flex-direction: column;

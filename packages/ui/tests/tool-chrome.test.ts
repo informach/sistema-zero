@@ -103,6 +103,13 @@ describe('tool-chrome.css: receitas', () => {
   it('a legend dos chips flutua (inline com os chips, não numa linha acima)', () => {
     expect(bloco('.sz-tool-chips > legend {').corpo).toContain('float: left')
   })
+
+  it('o botão do menu é uma ABA colada na linha da sidebar (margem negativa do respiro da barra)', () => {
+    expect(bloco(':root {').corpo).toContain('--sz-tool-inset: 0px')
+    expect(semComentarios).toContain('margin-inline-start: calc(-1 * var(--sz-tool-inset))')
+    expect(semComentarios).toContain('border-start-start-radius: 0')
+    expect(semComentarios).toContain('border-end-start-radius: 0')
+  })
 })
 
 describe('quem embarca ferramentas importa a folha na ordem certa', () => {

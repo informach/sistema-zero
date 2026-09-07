@@ -32,6 +32,9 @@ describe('galeria: cabeçalho de duas linhas', () => {
     const header = screen.getByRole('heading', { name: COPY.gallery.title }).closest('header')
     expect(header).not.toBeNull()
     expect(header?.className).toContain('sz-tool-header')
+    // A ABA do menu desconta o padding da raiz (`p-4 sm:p-6`) para encostar na linha da sidebar.
+    expect(header?.className).toContain('[--sz-tool-inset:1rem]')
+    expect(header?.className).toContain('sm:[--sz-tool-inset:1.5rem]')
 
     const secundarios = [
       COPY.gallery.restore,

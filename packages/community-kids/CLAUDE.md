@@ -1042,10 +1042,15 @@ linha do selo no Pinta); em 1280px o Estúdio volta a caber em SPLIT com o menu 
 ferramentas pelo contrato `hostChrome.menu` (`useHostChrome` → `menu: {hidden, label, onToggle}`,
 `null` sem `navAvailable`) e cada uma o desenha como PRIMEIRO item da barra do editor e do
 cabeçalho da galeria/lista. ⭐⭐ **Desde o lote seguinte (mesmo dia) o botão é UM só nos três:** a
-receita compartilhada `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, cantos
-xl, borda 2px, fundo de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+receita compartilhada `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda
+2px, fundo de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
 `[aria-pressed="true"]`, nunca o preenchimento forte de ferramenta ativa) — ela reclamou que
-Pinta (44 sem borda), Estúdio (36) e Pensa (círculo de 46) tinham saído diferentes. A folha entra
+Pinta (44 sem borda), Estúdio (36) e Pensa (círculo de 46) tinham saído diferentes. E na 3ª
+rodada do dia ele virou uma **ABA da barra lateral** (pedido dela: "semanticamente ela está ligada
+ao menu da esquerda, não às ferramentas"): cantos quadrados à esquerda, sem borda esquerda,
+ENCOSTADA na linha da sidebar (o `border-r` do `<aside>`) por uma margem negativa igual ao padding
+da barra (`--sz-tool-inset`, declarado por cada barra), 44px mantidos; com o menu escondido a aba
+fica colada na borda da tela. A folha entra
 no `globals.css` DEPOIS do `theme-kids` e ANTES dos CSS dos pacotes (ver `packages/ui/CLAUDE.md`
 regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacotes passaram a ler e as
 receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`

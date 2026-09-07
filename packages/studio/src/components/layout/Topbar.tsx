@@ -387,9 +387,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       <header
         className={cn(
           // `min-h-13` (52px) + `py-1`: a barra mede o MESMO com e sem o botão do menu do
-          // host (44px); com `py-2` ela cresceria para 60px só dentro do kids.
+          // host (44px); com `py-2` ela cresceria para 60px só dentro do kids. O `--sz-tool-inset`
+          // é o padding esquerdo: a ABA do menu o desconta para encostar na linha da sidebar.
           'flex min-h-13 items-center border-sz-border border-b-2 bg-sz-panel text-sm',
-          isCompact ? 'gap-1.5 px-2 py-1' : 'gap-3 px-4 py-1',
+          isCompact
+            ? 'gap-1.5 px-2 py-1 [--sz-tool-inset:0.5rem]'
+            : 'gap-3 px-4 py-1 [--sz-tool-inset:1rem]',
         )}
       >
         {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais

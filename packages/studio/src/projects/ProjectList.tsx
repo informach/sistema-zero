@@ -380,8 +380,9 @@ export function ProjectList({
             "+ Novo projeto" à direita; linha 2 (no <main>) = filtros + jogos prontos à esquerda,
             busca + ordenação à direita. As receitas `sz-tool-*` vêm de
             `@sistemazero/ui/tool-chrome.css` (o host importa; ver docs/embedding.md). */}
-        <header className="sz-tool-header px-6 pt-4 pb-3">
-          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1. */}
+        <header className="sz-tool-header px-6 pt-4 pb-3 [--sz-tool-inset:1.5rem]">
+          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1, e é
+              uma ABA colada na linha da sidebar (o `--sz-tool-inset` = o `px-6` daqui). */}
           <div className="sz-tool-header__lead">
             {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
             <div className="sz-tool-header__title">

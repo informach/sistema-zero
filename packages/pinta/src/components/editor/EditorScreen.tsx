@@ -469,7 +469,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   }
 
   return (
-    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
+    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2 [--sz-tool-inset:0.75rem]">
       {/* Numa aula não há para onde voltar (nem menu da comunidade a esconder): o desenho é
           a tela inteira do bloco. Fora dela, o botão do menu do HOST vem primeiro — é o
           canto mais perto do painel que ele controla. */}

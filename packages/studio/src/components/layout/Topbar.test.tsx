@@ -73,6 +73,9 @@ describe('Topbar × chrome do host', () => {
     expect(primeiro?.getAttribute('aria-label')).toBe('Esconder menu')
     expect(primeiro?.getAttribute('aria-pressed')).toBe('false')
     expect(primeiro?.getAttribute('title')).toBeNull()
+    // A ABA desconta o padding da barra para encostar na linha da sidebar.
+    expect(primeiro?.className).toBe('sz-tool-btn-menu')
+    expect(header?.className).toContain('[--sz-tool-inset:1rem]')
     fireEvent.click(primeiro as HTMLButtonElement)
     expect(onToggle).toHaveBeenCalledTimes(1)
 

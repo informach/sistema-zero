@@ -314,11 +314,14 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
 (playground, bloco de aula, admin, adulto).
 
 - O botão do menu é `components/layout/HostMenuButton.tsx` = a receita COMPARTILHADA
-  `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, cantos xl, borda 2px,
-  fundo de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+  `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de
+  painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
   `[aria-pressed="true"]`; sem `title`: com `aria-label`, `title` vira descrição e o leitor
   repete — regra do kids), a MESMA do Pinta e do Pensa (lote do mesmo dia: ela reclamou que os
-  três tinham saído diferentes). Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
+  três tinham saído diferentes). É uma **ABA colada na linha da sidebar** (cantos quadrados à
+  esquerda, sem borda esquerda, margem negativa `--sz-tool-inset`): a Topbar declara
+  `[--sz-tool-inset:1rem]` (`0.5rem` no compact) e a `ProjectList` `[--sz-tool-inset:1.5rem]`,
+  o padding esquerdo de cada uma. Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
   contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO filho do `<header>`
   (antes da marca); a barra ficou `min-h-13` + `py-1` (52px com e sem o botão de 44). O status vem
   logo após o bloco do "Salvo": `Badge` no tier wide e **BOLINHA** (`h-2.5 w-2.5`, texto no
