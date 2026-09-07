@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { retryAfterMs } from '../../lib/retry-after'
 
 /** Densidade da tela (cap 2×) — retina revela o detalhe, então renderizamos mais alto. */
 const DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
@@ -92,6 +93,51 @@ function pagesForWindow(center: number, w: number, total: number): number[] {
 /** As 2 páginas VISÍVEIS quando a folha `center` está aberta (esquerda 2·c, direita 2·c+1). */
 function visiblePages(center: number, total: number): number[] {
   return [2 * center, 2 * center + 1].filter((p) => p >= 1 && p <= total)
+}
+
+/** Espera `ms` respeitando o abort (unmount no meio da espera não deixa timer órfão). */
+function sleepAbortable(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const onAbort = () => {
+      clearTimeout(timer)
+      reject(new DOMException('Download cancelado.', 'AbortError'))
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
+}
+
+/** Recado do BFF num erro JSON (`{error:{message}}`), quando houver. */
+async function errorMessageOf(res: Response): Promise<string | null> {
+  try {
+    const body = (await res.clone().json()) as { error?: { message?: unknown } }
+    const message = body?.error?.message
+    return typeof message === 'string' && message.trim() ? message : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Baixa o PDF pela rota do BFF. Um 503 é a fila da marca d'água cheia (incidente
+ * 07/09: antes o servidor segurava a conexão até o 524 do Cloudflare e o livro
+ * ficava em "preparando" para sempre) — o BFF manda `Retry-After`, esperamos e
+ * tentamos UMA vez mais; se seguir cheia, o recado do servidor vira a mensagem.
+ */
+async function fetchPdf(url: string, signal: AbortSignal): Promise<Response> {
+  let res = await fetch(url, { signal })
+  if (res.status === 503) {
+    await sleepAbortable(retryAfterMs(res.headers.get('retry-after')), signal)
+    res = await fetch(url, { signal })
+  }
+  if (!res.ok) {
+    const message = res.status === 503 ? await errorMessageOf(res) : null
+    throw new Error(message ?? `Falha ao baixar o e-book (${res.status})`)
+  }
+  return res
 }
 
 /**
@@ -236,11 +282,7 @@ export function usePdfPages(pdfUrl: string, opts?: { hiRes?: boolean }): PdfPage
 
     async function load() {
       try {
-        const [pdfjs, res] = await Promise.all([
-          loadPdfjs(),
-          fetch(pdfUrl, { signal: aborter.signal }),
-        ])
-        if (!res.ok) throw new Error(`Falha ao baixar o e-book (${res.status})`)
+        const [pdfjs, res] = await Promise.all([loadPdfjs(), fetchPdf(pdfUrl, aborter.signal)])
         const data = new Uint8Array(await res.arrayBuffer())
         const task = pdfjs.getDocument({ data })
         taskRef.current = task

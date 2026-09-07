@@ -34,6 +34,7 @@ type SummaryRow = Pick<
   | 'kind'
   | 'itemUpdatedAt'
   | 'revision'
+  | 'formatVersion'
   | 'bytes'
   | 'thumb'
   | 'syncedAt'
@@ -48,6 +49,7 @@ const toSummary = (row: SummaryRow): CreationSummary => {
     kind: row.kind,
     itemUpdatedAt: row.itemUpdatedAt,
     revision: row.revision,
+    formatVersion: row.formatVersion,
     bytes: row.bytes,
     thumb: row.thumb,
     syncedAt: row.syncedAt,
@@ -69,6 +71,7 @@ const toRecord = (row: Row): CreationRecord => ({
     row.pendingItemUpdatedAt !== null
       ? {
           revision: row.pendingRevision,
+          formatVersion: row.pendingFormatVersion ?? 1,
           bytes: row.pendingBytes,
           name: row.pendingName,
           kind: row.pendingKind,
@@ -130,6 +133,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         kind: creations.kind,
         itemUpdatedAt: creations.itemUpdatedAt,
         revision: creations.revision,
+        formatVersion: creations.formatVersion,
         bytes: creations.bytes,
         thumb: creations.thumb,
         syncedAt: creations.syncedAt,
@@ -169,6 +173,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         revision: creations.revision,
         bytes: creations.bytes,
         // A lápide não precisa buscar a miniatura TOAST; o payload público também a omite.
+        formatVersion: creations.formatVersion,
         thumb: sql<
           string | null
         >`case when ${creations.deletedAt} is null then ${creations.thumb} else null end`,
@@ -250,6 +255,8 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       const [existing] = await tx
         .select({
           revision: creations.revision,
+          formatVersion: creations.formatVersion,
+          pendingFormatVersion: creations.pendingFormatVersion,
           lastReservedRevision: creations.lastReservedRevision,
           bytes: creations.bytes,
           storageRef: creations.storageRef,
@@ -262,6 +269,15 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .limit(1)
         .for('update')
 
+      const formatVersion = input.formatVersion ?? 1
+      // Sob o mesmo lock da reserva: uma aba velha não cancela um upload novo em voo.
+      const requiredVersion = Math.max(
+        existing?.formatVersion ?? 1,
+        existing?.pendingFormatVersion ?? 1,
+      )
+      if (formatVersion < requiredVersion) {
+        return { ok: false, reason: 'client-outdated', requiredVersion }
+      }
       const nextIdentity = classifyPintaPaletteLibraryCreation(input)
       if (nextIdentity === 'invalid-partial') {
         return { ok: false, reason: 'palette-library-identity' }
@@ -335,6 +351,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
 
       const pending = {
         pendingRevision: 0,
+        pendingFormatVersion: formatVersion,
         pendingBytes: totalBytes,
         pendingName: input.name,
         pendingKind: input.kind,
@@ -459,6 +476,15 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       // PARTES: as que a reserva exigia e o item ainda não tinha precisam ter sido PUTadas
       // (o cliente confirma em `uploadedParts`; o BFF confere no R2 best-effort). A reserva
       // NÃO morre: um retry honesto pode passar.
+      const formatVersion = row.pendingFormatVersion ?? 1
+      // Defesa contra reservas legadas de um deploy misto; o corpo do commit não escolhe formato.
+      if (formatVersion < row.formatVersion) {
+        await tx
+          .update(creations)
+          .set(clearPending())
+          .where(whereItem(input.userId, input.tool, input.itemId))
+        return { ok: false, reason: 'client-outdated', requiredVersion: row.formatVersion }
+      }
       const committed = row.deletedAt === null && row.storageRef ? sanitizeParts(row.parts) : []
       const committedSet = new Set(committed.map((part) => part.hash))
       const pendingParts = sanitizeParts(row.pendingParts)
@@ -471,6 +497,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .update(creations)
         .set({
           revision: input.revision,
+          formatVersion,
           storageRef: input.storageRef,
           bytes: row.pendingBytes,
           name: row.pendingName,
@@ -590,6 +617,7 @@ function clearPending() {
   return {
     pendingParts: null,
     pendingRevision: null,
+    pendingFormatVersion: null,
     pendingBytes: null,
     pendingName: null,
     pendingKind: null,

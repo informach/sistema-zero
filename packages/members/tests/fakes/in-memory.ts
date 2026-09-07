@@ -96,6 +96,7 @@ import type {
 import {
   type AwardInput,
   type AwardResult,
+  type AwardXpEventInput,
   type BuyStreakFreezeInput,
   type BuyStreakFreezeResult,
   type CareerCourseState,
@@ -2175,7 +2176,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   async award(input: AwardInput): Promise<AwardResult> {
     if (this.failAlways) throw new Error('gamification indisponível (fake)')
 
-    const newEvents: XpEventInput[] = []
+    const newEvents: AwardXpEventInput[] = []
     for (const e of input.events) {
       // UNIQUE continua (user, sourceType, sourceId) — um source pertence a UM curso.
       const dup = this.events.some(
@@ -2724,6 +2725,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   async listRanking(input: ListGamificationRankingInput): Promise<GamificationRankingPage> {
+    const capturedEventCount = this.events.length
+    const snapshot = input.snapshot
+      ? input.snapshot.kind === 'capture'
+        ? `${capturedEventCount + 1}:${capturedEventCount + 1}:`
+        : input.snapshot.value
+      : null
+    const snapshotEventCount = input.snapshot
+      ? input.snapshot.kind === 'capture'
+        ? capturedEventCount
+        : this.inMemoryRankingSnapshotEventCount(input.snapshot.value)
+      : null
     const accountsWithEntitlement = new Set<string>()
     for (const entitlement of this.sources?.entitlements.byId.values() ?? []) {
       if (this.accountHasActiveAudienceAccess(entitlement.userId, input.audience, input.now)) {
@@ -2737,16 +2749,19 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (this.privilegedUsers.has(profile.userId) || profile.xp <= 0) continue
       const accountId = this.accountIds.get(key)
       if (!accountId || !accountsWithEntitlement.has(accountId)) continue
-      const snapshotXp = input.snapshotAt
-        ? this.events
-            .filter(
-              (event) =>
+      const snapshotXp =
+        snapshotEventCount !== null
+          ? profile.xp -
+            this.events.reduce(
+              (total, event, index) =>
+                index >= snapshotEventCount &&
                 event.userId === profile.userId &&
-                event.audience === input.audience &&
-                event.createdAt <= input.snapshotAt!,
+                event.audience === input.audience
+                  ? total + event.amount
+                  : total,
+              0,
             )
-            .reduce((total, event) => total + event.amount, 0)
-        : profile.xp
+          : profile.xp
       if (snapshotXp <= 0) continue
       participants.push({
         userId: profile.userId,
@@ -2782,7 +2797,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       me: input.viewerUserId
         ? (ranked.find((entry) => entry.userId === input.viewerUserId) ?? null)
         : null,
+      snapshot,
     }
+  }
+
+  private inMemoryRankingSnapshotEventCount(snapshot: string): number {
+    const match = /^(\d+):\1:$/.exec(snapshot)
+    const nextEvent = match ? Number(match[1]) : Number.NaN
+    if (!Number.isSafeInteger(nextEvent) || nextEvent < 1) {
+      throw new Error('Snapshot de ranking incompatível com o repositório em memória')
+    }
+    return nextEvent - 1
   }
 
   /** Mirror do `rankProfiles` do Drizzle: coorte resolvida 1×, ranqueia cada perfil em memória. */
@@ -2873,6 +2898,17 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     }
     claims.add(entry)
     this.missionClaims.set(key, claims)
+
+    if (input.rewardXp > 0) {
+      this.events.push({
+        userId: input.userId,
+        audience: input.audience,
+        sourceType: 'mission_reward',
+        sourceId: randomUUID(),
+        amount: input.rewardXp,
+        createdAt: input.now,
+      })
+    }
 
     const wallet = this.wallets.get(key) ?? { earnedToday: 0, earnedDate: null, lifetime: 0 }
     const earnedTodayBase = wallet.earnedDate === input.today ? wallet.earnedToday : 0

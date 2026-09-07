@@ -23,6 +23,7 @@ import {
   toCreationSummary,
 } from '../../domain/creations/creation'
 import {
+  CreationClientOutdatedError,
   CreationNotFoundError,
   CreationPartMissingError,
   CreationPartsNeedBytesError,
@@ -197,6 +198,7 @@ export class ReserveCreationUploadService {
     thumb?: string | null
     /** A revisão que o aparelho conhece (0 = nova); ausente = sem conferência. */
     baseRevision?: number
+    formatVersion?: number
     /** Partes referenciadas (hash de conteúdo; `bytes` só para as que o item não tem). */
     parts?: ReadonlyArray<{ hash: string; bytes?: number }>
   }): Promise<CreationUploadTicket> {
@@ -212,6 +214,10 @@ export class ReserveCreationUploadService {
       (!Number.isInteger(input.baseRevision) || input.baseRevision < 0)
     ) {
       throw new ValidationError('Revisão-base inválida')
+    }
+    const formatVersion = input.formatVersion ?? 1
+    if (!Number.isInteger(formatVersion) || formatVersion < 1 || formatVersion > 65_535) {
+      throw new ValidationError('Versão de formato inválida')
     }
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
@@ -274,6 +280,7 @@ export class ReserveCreationUploadService {
       kind,
       itemUpdatedAt: input.itemUpdatedAt,
       bytes: input.bytes,
+      formatVersion,
       thumb,
       ...(input.baseRevision !== undefined ? { baseRevision: input.baseRevision } : {}),
       ...(parts.length > 0 ? { parts } : {}),
@@ -284,6 +291,9 @@ export class ReserveCreationUploadService {
         maxItemsPerTool: CREATION_LIMITS.maxItemsPerTool,
       },
     })
+    if (!reservation.ok && reservation.reason === 'client-outdated') {
+      throw new CreationClientOutdatedError(reservation.requiredVersion)
+    }
     if (!reservation.ok && reservation.reason === 'stale-base') {
       throw new CreationStaleBaseError(reservation.currentRevision)
     }
@@ -369,6 +379,9 @@ export class CommitCreationUploadService {
       },
     })
     if (!result.ok) {
+      if (result.reason === 'client-outdated') {
+        throw new CreationClientOutdatedError(result.requiredVersion)
+      }
       if (result.reason === 'parts-missing') throw new CreationPartMissingError(result.hashes)
       if (result.reason === 'palette-library-identity') {
         throw new ValidationError('Identidade reservada da biblioteca de paletas inválida')

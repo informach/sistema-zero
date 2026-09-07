@@ -111,4 +111,27 @@ describe('watermarkCacheKey', () => {
     // O userId segue saneado (não-hex) — só [a-z0-9-] na parte do usuário.
     expect(watermarkCacheKey('x.pdf', 'u u')).toMatch(/\/u_u\.pdf$/)
   })
+
+  test('com o ETag da origem, a VERSÃO entra na key (regravar na mesma key não serve o PDF velho)', async () => {
+    const { watermarkCacheKey } = await import('../src/lib/download-mime')
+    const src = 'admin/attachments/366b917b-9a65-4621-8739-86a3f60dd64c.pdf'
+    const v1 = watermarkCacheKey(src, 'user-1', '7385eb79713a707c4eb518981aa01794')
+    const v2 = watermarkCacheKey(src, 'user-1', '533f0073aaaaaaaaaaaaaaaaaaaaaaaa')
+    // Formato: watermarked/<sha256 hex 64>/<etag>/<user>.pdf
+    expect(v1).toMatch(/^watermarked\/[0-9a-f]{64}\/7385eb79713a707c4eb518981aa01794\/user-1\.pdf$/)
+    // Incidente 07/09: o admin trocou o caderno do Corridino SOB A MESMA KEY —
+    // sem a versão, o aluno seguiria recebendo a marca da versão antiga.
+    expect(v2).not.toBe(v1)
+    // Mesma origem, mesma versão, mesmo aluno → mesma key (determinística).
+    expect(watermarkCacheKey(src, 'user-1', '7385eb79713a707c4eb518981aa01794')).toBe(v1)
+    // O prefixo da origem é o mesmo com ou sem versão (lifecycle do bucket cobre os dois).
+    expect(v1.split('/').slice(0, 2)).toEqual(
+      watermarkCacheKey(src, 'user-1').split('/').slice(0, 2),
+    )
+    // ETag com caracteres fora de [a-zA-Z0-9-] é saneado (aspas/`-N` de multipart não viram path torto).
+    expect(watermarkCacheKey(src, 'user-1', '"abc"-2')).toMatch(/\/_abc_-2\/user-1\.pdf$/)
+    // null/vazio = legado: forma antiga, sem o segmento.
+    expect(watermarkCacheKey(src, 'user-1', null)).toBe(watermarkCacheKey(src, 'user-1'))
+    expect(watermarkCacheKey(src, 'user-1', '')).toBe(watermarkCacheKey(src, 'user-1'))
+  })
 })

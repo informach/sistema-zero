@@ -1178,6 +1178,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         bytes: number
         thumb?: string | null
         baseRevision?: number
+        formatVersion?: number
         parts?: Array<{ hash: string; bytes?: number }>
       },
     ): Promise<GatewayResponse<CreationUploadTicketView>> {

@@ -53,6 +53,7 @@ type ToolName = z.infer<typeof Tool>
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
 const UploadBody = z.strictObject({
+  formatVersion: z.number().int().min(1).max(65_535).optional(),
   // Corte por CARACTERE (não por UTF-16): um emoji na borda não vira meio par substituto.
   name: z
     .string()

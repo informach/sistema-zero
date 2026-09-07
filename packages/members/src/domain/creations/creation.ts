@@ -109,6 +109,8 @@ export interface CreationSummary {
   /** `updatedAt` do item, no relógio do editor; comparado à marca confirmada deste aparelho. */
   itemUpdatedAt: Date
   revision: number
+  /** Versão do documento, independente da revisão de upload. Legado = 1. */
+  formatVersion: number
   bytes: number
   thumb: string | null
   syncedAt: Date
@@ -119,6 +121,7 @@ export interface CreationSummary {
 /** O que a reserva guarda até o commit (a lista NÃO vê nada disto). */
 export interface CreationPendingUpload {
   revision: number
+  formatVersion: number
   /** TOTAL reservado: manifesto + Σ partes referenciadas. */
   bytes: number
   name: string
@@ -157,6 +160,7 @@ export function toCreationSummary(record: CreationSummary): CreationSummary {
     kind: record.kind,
     itemUpdatedAt: record.itemUpdatedAt,
     revision: record.revision,
+    formatVersion: record.formatVersion,
     bytes: record.bytes,
     thumb: record.thumb,
     syncedAt: record.syncedAt,

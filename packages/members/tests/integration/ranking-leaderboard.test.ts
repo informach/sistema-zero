@@ -86,7 +86,42 @@ describe('Ranking geral paginado', () => {
     expect(body.items[0]).not.toHaveProperty('accountId')
   })
 
-  test('mantém o snapshot entre páginas quando um participante ganha XP', async () => {
+  test('mostra no ranking público o mesmo XP total do admin após prêmio de missão', async () => {
+    const now = new Date('2026-09-06T12:01:00.000Z')
+    const { app, courses, entitlements, gamification } = buildApp({ now })
+    const course = seedSampleCourse(courses, 'ranking-mission-xp', 'published', 'kids')
+    grantLifetime(entitlements, { userId: ME, courseRef: course.slug })
+    await award(gamification, ME, 10)
+    await gamification.claimMission({
+      userId: ME,
+      audience: 'kids',
+      missionSlug: 'daily-quiz',
+      periodKey: '2026-09-06',
+      rewardXp: 15,
+      rewardCoins: 0,
+      today: '2026-09-06',
+      now,
+    })
+
+    const publicResponse = await app.handle(
+      new Request('http://localhost/members/gamification/ranking?audience=kids', {
+        headers: { 'x-auth-user-id': ME },
+      }),
+    )
+    const adminResponse = await app.handle(
+      new Request('http://localhost/members/admin/gamification/ranking?audience=kids'),
+    )
+    const publicRanking = (await publicResponse.json()) as RankingLeaderboardView
+    const adminRanking = (await adminResponse.json()) as AdminRankingPageView
+
+    expect(publicResponse.status).toBe(200)
+    expect(adminResponse.status).toBe(200)
+    expect(adminRanking.items[0]?.xp).toBe(25)
+    expect(publicRanking.items[0]?.xp).toBe(25)
+    expect(publicRanking.me?.xp).toBe(25)
+  })
+
+  test('mantém o snapshot entre páginas quando um participante resgata XP de missão', async () => {
     const { app, courses, entitlements, gamification, authProfiles, clockRef } = buildApp({
       now: new Date('2026-09-06T12:01:00.000Z'),
     })
@@ -118,14 +153,15 @@ describe('Ranking geral paginado', () => {
     expect(replayedByAnotherProfile.status).toBe(400)
 
     clockRef.now = new Date('2026-09-07T12:00:00.000Z')
-    await gamification.award({
+    await gamification.claimMission({
       userId: ME,
-      accountId: ME,
       audience: 'kids',
-      events: [{ sourceType: 'lesson_complete', sourceId: randomUUID(), amount: 200, coins: 0 }],
+      missionSlug: 'monthly-aulas-20',
+      periodKey: 'm:2026-09',
+      rewardXp: 200,
+      rewardCoins: 0,
       today: '2026-09-07',
       now: clockRef.now,
-      privileged: false,
     })
 
     const secondResponse = await app.handle(

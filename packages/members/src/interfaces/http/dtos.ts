@@ -1435,6 +1435,7 @@ export const CreationItemParams = t.Object({
  * segurança de quem chegar por outro caminho.
  */
 export const CreationUploadBody = t.Object({
+  formatVersion: t.Optional(t.Integer({ minimum: 1, maximum: 65_535 })),
   name: t.String({ minLength: 1, maxLength: 120 }),
   kind: t.String({ minLength: 1, maxLength: 40 }),
   /** `updatedAt` do item no relógio do editor (ISO). */

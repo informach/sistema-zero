@@ -50,18 +50,18 @@ export class GetRankingLeaderboardService {
     ) {
       throw new ValidationError('Cursor do ranking inválido')
     }
-    const snapshotAt = cursor?.snapshotAt ?? now
-
-    const page = await this.ranking.execute({
+    const result = await this.ranking.executeWithSnapshot({
       audience: input.audience,
       // Uma linha extra decide `nextCursor` sem confiar num total que possa mudar
       // por eventos alheios ao XP (por exemplo, expiração de matrícula).
       limit: input.limit + 1,
       offset: 0,
-      snapshotAt,
+      snapshot: cursor ? { kind: 'replay', value: cursor.snapshot } : { kind: 'capture' },
       after: cursor ? { xp: cursor.xp, userId: cursor.userId } : undefined,
       viewerUserId: userId,
     })
+    const { page } = result
+    if (!result.snapshot) throw new Error('Ranking público não devolveu snapshot')
     const hasMore = page.items.length > input.limit
     const visibleItems = page.items.slice(0, input.limit)
     const all = [...visibleItems, ...(page.me ? [page.me] : [])]
@@ -90,7 +90,7 @@ export class GetRankingLeaderboardService {
           ? this.cursors.encode({
               audience: input.audience,
               viewerUserId: userId,
-              snapshotAt,
+              snapshot: result.snapshot,
               xp: visibleItems.at(-1)?.xp ?? 0,
               userId: visibleItems.at(-1)?.userId ?? '',
             })

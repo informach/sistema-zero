@@ -1,5 +1,8 @@
 import type { CourseAudience } from '../../domain/course/course'
-import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type {
+  GamificationRepository,
+  RankingSnapshotInput,
+} from '../../domain/ports/gamification-repository.port'
 import type {
   GetAvatarsByProfilesService,
   ProfileAvatarView,
@@ -10,10 +13,15 @@ export interface ListRankingInput {
   audience: CourseAudience
   limit: number
   offset: number
-  snapshotAt?: Date
+  snapshot?: RankingSnapshotInput
   after?: { xp: number; userId: string }
   userIds?: string[]
   viewerUserId?: string
+}
+
+export interface ListRankingResult {
+  page: AdminRankingPageView
+  snapshot: string | null
 }
 
 /**
@@ -29,6 +37,10 @@ export class ListRankingService {
   ) {}
 
   async execute(input: ListRankingInput): Promise<AdminRankingPageView> {
+    return (await this.executeWithSnapshot(input)).page
+  }
+
+  async executeWithSnapshot(input: ListRankingInput): Promise<ListRankingResult> {
     const page = await this.repo.listRanking({ ...input, now: this.clock() })
     const ids = [...page.entries.map((entry) => entry.userId), ...(page.me ? [page.me.userId] : [])]
     // Foto/nível são enriquecimento: indisponibilidade não pode derrubar o placar.
@@ -46,12 +58,15 @@ export class ListRankingService {
     })
 
     return {
-      items: page.entries.map(toView),
-      totalParticipants: page.totalParticipants,
-      totalMatches: page.totalMatches,
-      limit: input.limit,
-      offset: input.offset,
-      me: page.me ? toView(page.me) : null,
+      snapshot: page.snapshot,
+      page: {
+        items: page.entries.map(toView),
+        totalParticipants: page.totalParticipants,
+        totalMatches: page.totalMatches,
+        limit: input.limit,
+        offset: input.offset,
+        me: page.me ? toView(page.me) : null,
+      },
     }
   }
 }

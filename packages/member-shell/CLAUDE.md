@@ -608,6 +608,13 @@ PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../membe
 
 ## "Guardado na sua conta" — BFF das criações (18/08/2026)
 
+**Versão do documento (06/09/2026):** reserva aceita `formatVersion` opcional,
+inteiro 1..65535 sem coerção; ausência continua compatível com clientes legados.
+Encaminhar ao members sem confundir com `baseRevision`. `CREATION_CLIENT_OUTDATED`
+409 e `details.requiredVersion` atravessam o BFF, sem assinar PUT. Resumo pode trazer
+`formatVersion`; tipo opcional permite transição com servidores antigos. Backend
+com migration 0075 e guard completo deve preceder escritores de formatos novos.
+
 ⚠️ A `Tool` da rota (`z.enum(['studio', 'pinta', 'molda'])`) e o `CreationToolView` de
 `lib/types.ts` são ESPELHOS de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026):
 ferramenta nova entra nos dois, senão o BFF responde 400 antes de o members ser consultado
@@ -754,6 +761,42 @@ enviou. O `hubUploadImage` escolhe o ramo pelo MIME; o resto da rota não mudou.
   (import relativo — ele é interno ao pacote), então as duas pontas ficam casadas: o arquivo que a
   criança BAIXA é o que ela ANEXA. Junto vai o anti-vácuo que **prova que o caminho WebP mataria a
   animação** (`pages: 1`) — é a razão de o ramo existir, escrita como teste em vez de comentário.
+
+## Livro 3D e anexos com marca d'água: cache por aluno + fila com prazo (incidente 07/09/2026)
+
+Sintoma em produção: "Preparando seu e-book…" para sempre e depois **524 do Cloudflare** em
+TODOS os cursos; staging (mesmo código) funcionava. Não era o PDF (10 MB) nem o R2 (HEAD/GET em
+~200 ms de dentro do container): era o caminho **inline** (≤20 MB, o do livro 3D) re-marcando o
+PDF a CADA abertura (6–15 s de pdf-lib) atrás do `watermarkGate()` (concorrência 1) **sem prazo
+e sem enxergar o cliente ir embora** — só o caminho >20 MB cacheava. Cada recarga da criança
+enfileirava OUTRO trabalho e o antigo seguia na fila: a fila passou dos 100 s do Cloudflare e,
+dali em diante, toda abertura só a alimentava (estado metaestável; um `railway redeploy` limpou
+na hora, mas voltaria). O que mudou, e é contrato:
+
+- **`watermarkedPdfInline()`** (`server/private-delivery.ts`) é a entrega do PDF ≤20 MB nos DOIS
+  handlers (`ebookDownload` e o anexo PDF): HEAD no cache por (arquivo, **versão**, aluno) →
+  hit serve o stream do R2 **sem gate nem pdf-lib**; miss marca UMA vez dentro do gate e grava em
+  `watermarked/<sha256(key)>/<etag>/<user>.pdf`. Falha ao gravar o cache NÃO falha a entrega;
+  falha de marcação serve o original **sem cachear**. As portas são injetáveis
+  (`InlineWatermarkIo`) e o contrato está em `tests/private-delivery-inline.test.ts`.
+- ⚠️ **A versão (ETag da origem) ENTRA na key do cache** (`watermarkCacheKey(src, user, etag)`;
+  `R2PrivateHead.etag`). O admin substitui um material **sob a mesma key** (foi o caderno do
+  Corridino): sem a versão, o aluno seguiria recebendo a marca da versão antiga — o caminho
+  >20 MB (`presignWatermarkedPdf`) tinha esse bug latente e passou a receber `srcEtag` também.
+  Sem ETag (legado) cai na forma antiga da key.
+- **`ConcurrencyGate.run(fn, { signal, waitTimeoutMs })`**: quem espera sai da fila quando a
+  request é abortada (`req.signal`, aba fechada/recarga) e desiste após
+  `WATERMARK_WAIT_TIMEOUT_MS` (30 s) com `WatermarkQueueBusyError`. ⚠️ `wakeNext` pula esperador
+  morto — sem isso o wake-up morria com ele e a vaga ficava presa com a fila cheia (teste
+  "esperador morto não prende a vaga"). Concorrência segue 1 (pico de RAM é o mesmo; a vazão
+  veio do cache).
+- **`mediaErrorResponse`**: `WatermarkQueueBusyError` → **503 `WATERMARK_BUSY` + `Retry-After`**
+  (`WATERMARK_RETRY_AFTER_SECONDS`, sem Sentry: é carga, não defeito); `WatermarkQueueAbortedError`
+  → 503 mudo. O cliente do livro 3D (`use-pdf-pages.ts`) respeita o `Retry-After`
+  (`lib/retry-after.ts`, teto 20 s) e tenta UMA vez mais; se seguir cheio, mostra o recado do
+  servidor em vez de "Falha ao baixar o e-book (524)".
+- ⚠️ Prefixo `watermarked/` tem lifecycle no bucket: cache expira sozinho e re-gerar é barato.
+  Trocar o PDF gera etag novo → cache novo; o antigo morre pelo lifecycle.
 
 ## Invariantes (NÃO quebrar)
 

@@ -50,10 +50,23 @@ export const DIRECT_DELIVERY_MIN_BYTES = 20 * 1024 * 1024 // 20MB
  * nova → hash novo → cache antigo nunca é servido por engano. O prefixo
  * `watermarked/` tem regra de lifecycle no bucket (expira sozinho — re-gerar é barato).
  */
-export function watermarkCacheKey(srcKey: string, userId: string): string {
+export function watermarkCacheKey(
+  srcKey: string,
+  userId: string,
+  /**
+   * ETag da ORIGEM (HEAD do R2). O admin regrava um material substituído na
+   * MESMA key (incidente 07/09: o caderno do Corridino trocado em
+   * `admin/attachments/<mesmo uuid>.pdf`); sem a versão na key de cache, o aluno
+   * continuaria recebendo o PDF marcado da versão antiga. Ausente = legado.
+   */
+  srcEtag?: string | null,
+): string {
   const srcHash = createHash('sha256').update(srcKey).digest('hex')
   const safeUser = userId.replace(/[^a-zA-Z0-9-]+/g, '_')
-  return `watermarked/${srcHash}/${safeUser}.pdf`
+  const version = srcEtag ? srcEtag.replace(/[^a-zA-Z0-9-]+/g, '_') : null
+  return version
+    ? `watermarked/${srcHash}/${version}/${safeUser}.pdf`
+    : `watermarked/${srcHash}/${safeUser}.pdf`
 }
 
 const WATERMARKABLE_IMAGE_MIMES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif'])

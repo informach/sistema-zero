@@ -71,6 +71,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             itemId: params.itemId,
             name: body.name,
             kind: body.kind,
+            formatVersion: body.formatVersion ?? 1,
             itemUpdatedAt: new Date(body.itemUpdatedAt),
             bytes: body.bytes,
             thumb: body.thumb ?? null,

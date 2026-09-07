@@ -32,6 +32,9 @@ export type XpSourceType =
   // id do conteúdo → idempotente; premiar só na aprovação bloqueia farm/rejeitado).
   | 'clube_thread'
   | 'clube_comment'
+  // Prêmio de missão já creditado diretamente no perfil. A linha no ledger permite
+  // reconstruir o ranking e compõe métricas semanais; o claim NÃO move o streak.
+  | 'mission_reward'
   // MARCOS de missão (amount 0 — só contam p/ o progresso da missão; o prêmio vem do
   // claim). Idempotentes pelo sourceId natural (anti-farm): `studio_submitted` (bloco —
   // entregar ao professor), `course_rated` (curso — classificar), `room_item_buy`/
@@ -67,7 +70,7 @@ export type XpSourceType =
 
 export interface XpEventInput {
   sourceType: XpSourceType
-  /** lessonId | blockId | moduleId | courseId | cycleId — snapshot, sem FK (XP é histórico). */
+  /** lessonId | blockId | moduleId | courseId | cycleId | claimId — snapshot, sem FK. */
   sourceId: string
   amount: number
   /**
@@ -77,6 +80,16 @@ export interface XpEventInput {
    * o `coin_event` reusa o MESMO `(sourceType, sourceId)` (idempotência alinhada ao XP).
    */
   coins?: number
+}
+
+/**
+ * Fontes que podem entrar no motor de award. `mission_reward` é deliberadamente
+ * excluído: o claim registra o ledger sem mover streak nem conceder moedas outra vez.
+ */
+export type AwardXpSourceType = Exclude<XpSourceType, 'mission_reward'>
+
+export interface AwardXpEventInput extends Omit<XpEventInput, 'sourceType'> {
+  sourceType: AwardXpSourceType
 }
 
 export interface GamificationProfileRecord {
@@ -144,7 +157,7 @@ export interface AwardInput {
    */
   audience: CourseAudience
   /** Eventos CANDIDATOS — o ledger dedupa por (userId, sourceType, sourceId). */
-  events: XpEventInput[]
+  events: AwardXpEventInput[]
   /** Data civil SP do instante da ação (o service calcula com o clock). */
   today: string
   now: Date
@@ -198,15 +211,19 @@ export interface GamificationRankingPage {
   totalMatches: number
   /** Linha do solicitante mesmo quando está fora da página; `null` sem XP/coorte. */
   me: GamificationRankingEntry | null
+  /** Snapshot opaco capturado/reutilizado pela paginação pública; `null` no admin. */
+  snapshot: string | null
 }
+
+export type RankingSnapshotInput = { kind: 'capture' } | { kind: 'replay'; value: string }
 
 export interface ListGamificationRankingInput {
   audience: CourseAudience
   now: Date
   limit: number
   offset: number
-  /** Snapshot do ledger usado exclusivamente pela paginação pública. */
-  snapshotAt?: Date
+  /** Snapshot MVCC do PostgreSQL usado exclusivamente pela paginação pública. */
+  snapshot?: RankingSnapshotInput
   /** Keyset público: próxima linha depois de `(xp DESC, userId ASC)`. */
   after?: { xp: number; userId: string }
   /** Filtro administrativo aplicado DEPOIS de calcular a posição global. */

@@ -3,7 +3,8 @@ import type { CourseAudience } from '../course/course'
 export interface RankingCursorPayload {
   audience: CourseAudience
   viewerUserId: string
-  snapshotAt: Date
+  /** Snapshot MVCC opaco devolvido pelo repositório na primeira página. */
+  snapshot: string
   xp: number
   userId: string
 }

@@ -24,6 +24,7 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
   const zero = randomUUID()
   const expired = randomUUID()
   const privileged = randomUUID()
+  const missionUser = randomUUID()
   const users = [first, tiedA, tiedB, me, zero, expired, privileged]
 
   beforeAll(async () => {
@@ -51,8 +52,10 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
            ${`ranking-${courseId}-${index}`}, ${now}, ${now})`
     }
 
-    const xpByUser = new Map([
-      [first, 100],
+    const profileXpByUser = new Map([
+      // Os 15 XP além do ledger simulam um prêmio de missão histórico, que antes
+      // era gravado apenas no perfil.
+      [first, 115],
       [tiedA, 80],
       [tiedB, 80],
       [me, 10],
@@ -67,10 +70,12 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
            last_activity_date, privileged, coin_balance, coins_earned_today,
            lifetime_coins_earned, streak_freezes, created_at, updated_at)
         values
-          (${randomUUID()}, ${userId}, ${userId}, 'kids', ${xpByUser.get(userId) ?? 0}, 1, 1,
+          (${randomUUID()}, ${userId}, ${userId}, 'kids', ${profileXpByUser.get(userId) ?? 0}, 1, 1,
            '2026-09-06', ${userId === privileged}, 0, 0, 0, 0, ${now}, ${now})`
     }
-    for (const [userId, xp] of xpByUser) {
+    const ledgerXpByUser = new Map(profileXpByUser)
+    ledgerXpByUser.set(first, 100)
+    for (const [userId, xp] of ledgerXpByUser) {
       if (xp <= 0) continue
       await conn.sql`
         insert into members.xp_events
@@ -82,8 +87,10 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
 
   afterAll(async () => {
     if (!conn) return
-    await conn.sql`delete from members.xp_events where user_id in ${conn.sql(users)}`
-    await conn.sql`delete from members.gamification_profiles where user_id in ${conn.sql(users)}`
+    const testUsers = [...users, missionUser]
+    await conn.sql`delete from members.xp_events where user_id in ${conn.sql(testUsers)}`
+    await conn.sql`delete from members.mission_claims where user_id in ${conn.sql(testUsers)}`
+    await conn.sql`delete from members.gamification_profiles where user_id in ${conn.sql(testUsers)}`
     await conn.sql`delete from members.entitlements where user_id in ${conn.sql(users)}`
     await conn.sql`delete from members.courses where id = ${courseId}`
     await conn.close()
@@ -122,14 +129,15 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
   })
 
   test('o keyset conserva o snapshot do ledger entre páginas', async () => {
-    const snapshotAt = new Date('2026-09-06T12:00:00.000Z')
+    const firstPageAt = new Date('2026-09-06T12:00:00.000Z')
     const firstPage = await repo.listRanking({
       audience: 'kids',
-      now: snapshotAt,
-      snapshotAt,
+      now: firstPageAt,
+      snapshot: { kind: 'capture' },
       limit: 2,
       offset: 0,
     })
+    if (!firstPage.snapshot) throw new Error('snapshot da primeira página ausente')
     const boundary = firstPage.entries.at(-1)
     if (!boundary) throw new Error('primeira página vazia')
 
@@ -139,19 +147,125 @@ describe.skipIf(!testDatabaseUrl)('ranking geral (SQL real)', () => {
       values
         (${randomUUID()}, ${me}, 'kids', 'lesson_complete', ${randomUUID()}, 200,
          '2026-09-07T12:00:00.000Z')`
+    await conn.sql`
+      update members.gamification_profiles
+      set xp = xp + 200, updated_at = '2026-09-07T12:00:00.000Z'
+      where user_id = ${me} and audience = 'kids'`
 
     const secondPage = await repo.listRanking({
       audience: 'kids',
       now: new Date('2026-09-07T12:00:00.000Z'),
-      snapshotAt,
+      snapshot: { kind: 'replay', value: firstPage.snapshot },
       after: { xp: boundary.xp, userId: boundary.userId },
       limit: 2,
       offset: 0,
     })
 
-    expect(firstPage.entries.map((entry) => entry.xp)).toEqual([100, 80])
+    expect(firstPage.entries.map((entry) => entry.xp)).toEqual([115, 80])
     expect(secondPage.entries.map((entry) => entry.xp)).toEqual([80, 10])
     expect(secondPage.totalParticipants).toBe(4)
+  })
+
+  test('o snapshot não incorpora uma transação iniciada antes dele e confirmada depois', async () => {
+    let transactionReady!: () => void
+    let releaseTransaction!: () => void
+    const ready = new Promise<void>((resolve) => {
+      transactionReady = resolve
+    })
+    const release = new Promise<void>((resolve) => {
+      releaseTransaction = resolve
+    })
+    const concurrentAward = conn.sql.begin(async (sql) => {
+      await sql`
+        insert into members.xp_events
+          (id, user_id, audience, source_type, source_id, amount, created_at)
+        values
+          (${randomUUID()}, ${me}, 'kids', 'lesson_complete', ${randomUUID()}, 300,
+           '2026-09-06T11:59:59.000Z')`
+      await sql`
+        update members.gamification_profiles
+        set xp = xp + 300, updated_at = '2026-09-06T11:59:59.000Z'
+        where user_id = ${me} and audience = 'kids'`
+      transactionReady()
+      await release
+    })
+
+    await ready
+    try {
+      const whileInFlight = await repo.listRanking({
+        audience: 'kids',
+        now: new Date('2026-09-06T12:00:00.000Z'),
+        snapshot: { kind: 'capture' },
+        viewerUserId: me,
+        limit: 2,
+        offset: 0,
+      })
+      const xpBefore = whileInFlight.me?.xp
+      if (xpBefore === undefined) throw new Error('perfil do viewer ausente')
+      if (!whileInFlight.snapshot) throw new Error('snapshot da primeira página ausente')
+
+      releaseTransaction()
+      await concurrentAward
+
+      const afterCommit = await repo.listRanking({
+        audience: 'kids',
+        now: new Date('2026-09-07T12:00:00.000Z'),
+        snapshot: { kind: 'replay', value: whileInFlight.snapshot },
+        viewerUserId: me,
+        limit: 2,
+        offset: 0,
+      })
+      expect(afterCommit.me?.xp).toBe(xpBefore)
+    } finally {
+      releaseTransaction()
+      await concurrentAward
+    }
+  })
+
+  test('claim de missão persiste XP no perfil e no ledger sem mover o streak', async () => {
+    const now = new Date('2026-09-06T15:00:00.000Z')
+    const nowIso = now.toISOString()
+    await conn.sql`
+      insert into members.gamification_profiles
+        (id, user_id, account_id, audience, xp, streak_current, streak_best,
+         last_activity_date, privileged, coin_balance, coins_earned_today,
+         coins_earned_date, lifetime_coins_earned, streak_freezes, created_at, updated_at)
+      values
+        (${randomUUID()}, ${missionUser}, ${missionUser}, 'kids', 20, 4, 7,
+         '2026-09-05', true, 0, 0, '2026-09-06', 0, 0, ${nowIso}, ${nowIso})`
+
+    const input = {
+      userId: missionUser,
+      audience: 'kids' as const,
+      missionSlug: 'missao-ledger',
+      periodKey: '2026-09-06',
+      rewardXp: 15,
+      rewardCoins: 0,
+      today: '2026-09-06',
+      now,
+    }
+    expect(await repo.claimMission(input)).toMatchObject({ claimed: true, xpAwarded: 15 })
+    expect(await repo.claimMission(input)).toMatchObject({ claimed: false, xpAwarded: 0 })
+
+    const [profile] = await conn.sql`
+      select xp, streak_current, streak_best, last_activity_date::text
+      from members.gamification_profiles
+      where user_id = ${missionUser} and audience = 'kids'`
+    expect(profile).toMatchObject({
+      xp: 35,
+      streak_current: 4,
+      streak_best: 7,
+      last_activity_date: '2026-09-05',
+    })
+
+    const events = await conn.sql`
+      select e.source_type::text, e.amount, e.transaction_id::text
+      from members.xp_events e
+      join members.mission_claims c on c.id = e.source_id
+      where e.user_id = ${missionUser} and e.source_type::text = 'mission_reward'`
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ source_type: 'mission_reward', amount: 15 })
+    expect(events[0]?.transaction_id).toMatch(/^\d+$/)
   })
 })
 
@@ -207,6 +321,7 @@ async function ensureTables(conn: DbConnection) {
     'privileged boolean not null default false',
     'coin_balance integer not null default 0',
     'coins_earned_today integer not null default 0',
+    'coins_earned_date date',
     'lifetime_coins_earned integer not null default 0',
     'streak_freezes integer not null default 0',
     'created_at timestamptz not null default now()',
@@ -216,4 +331,41 @@ async function ensureTables(conn: DbConnection) {
       `alter table members.gamification_profiles add column if not exists ${column}`,
     )
   }
+
+  await conn.sql.unsafe('create table if not exists members.xp_events (id uuid primary key)')
+  for (const column of [
+    'user_id uuid not null',
+    "audience text not null default 'adult'",
+    "source_type text not null default 'lesson_complete'",
+    'source_id uuid not null',
+    'amount integer not null default 0',
+    'source_level text',
+    'source_track text',
+    'source_career_slot smallint',
+    'transaction_id xid8 not null default pg_current_xact_id()',
+    'created_at timestamptz not null default now()',
+  ]) {
+    await conn.sql.unsafe(`alter table members.xp_events add column if not exists ${column}`)
+  }
+  await conn.sql.unsafe(
+    'create unique index if not exists xp_events_user_source_uq on members.xp_events (user_id, source_type, source_id)',
+  )
+  await conn.sql.unsafe(
+    'create index if not exists xp_events_ranking_snapshot_idx on members.xp_events (audience, transaction_id, user_id)',
+  )
+
+  await conn.sql.unsafe('create table if not exists members.mission_claims (id uuid primary key)')
+  for (const column of [
+    'id uuid',
+    'user_id uuid not null',
+    "audience text not null default 'kids'",
+    "mission_slug text not null default ''",
+    "period_key text not null default ''",
+    'claimed_at timestamptz not null default now()',
+  ]) {
+    await conn.sql.unsafe(`alter table members.mission_claims add column if not exists ${column}`)
+  }
+  await conn.sql.unsafe(
+    'create unique index if not exists mission_claims_user_mission_period_uq on members.mission_claims (user_id, audience, mission_slug, period_key)',
+  )
 }

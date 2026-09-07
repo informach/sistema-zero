@@ -1,5 +1,13 @@
 import { DomainError } from '../shared/errors'
 
+/** O editor não entende o formato já guardado/reservado. Não deve refazer o upload. */
+export class CreationClientOutdatedError extends DomainError {
+  readonly code = 'CREATION_CLIENT_OUTDATED'
+  constructor(readonly requiredVersion: number) {
+    super('Atualize a página para editar esta criação; ela usa um formato mais novo')
+  }
+}
+
 /** Item inexistente OU de outro dono (nunca vaza existência). → 404. */
 export class CreationNotFoundError extends DomainError {
   readonly code = 'CREATION_NOT_FOUND'

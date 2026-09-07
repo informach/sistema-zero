@@ -29,6 +29,8 @@ export interface CreationUploadInput {
    * `stale-base` e resolve o conflito do lado dele. `undefined` = sem conferência.
    */
   baseRevision?: number
+  /** Ausente = formato legado (1); nunca pode rebaixar o formato corrente ou reservado. */
+  formatVersion?: number
   now: Date
   /** Tetos conferidos DENTRO da mesma transação da reserva (atômico com o lock da linha). */
   limits: {
@@ -54,6 +56,7 @@ export type CreationUploadReservation =
   | { ok: false; reason: 'account-deleting' }
   /** A `baseRevision` do aparelho não é a corrente (outro aparelho subiu depois): 409. */
   | { ok: false; reason: 'stale-base'; currentRevision: number }
+  | { ok: false; reason: 'client-outdated'; requiredVersion: number }
 
 /** Uso do perfil, para a quota (só itens vivos JÁ CONFIRMADOS). */
 export interface CreationUsage {
@@ -73,6 +76,7 @@ export interface CreationListPage {
 
 /** O que o commit devolve. */
 export type CreationCommitResult =
+  | { ok: false; reason: 'client-outdated'; requiredVersion: number }
   /**
    * Promoveu a revisão reservada. `previousStorageRef` = blob principal que ela substituiu;
    * `releasedPartRefs` = partes da revisão anterior que a nova NÃO referencia mais (o BFF

@@ -650,8 +650,10 @@ segunda**, `sinceMonday=(dow+6)%7`); `weekBoundsUtc` = `[segunda T03:00Z, +7 dia
   **Sem hook no award** — puramente derivado da leitura.
 - **Resgate** (`ClaimMissionService` → `claimMission`): REVALIDA no servidor (reconta `count >= target`;
   o cliente nunca decide). Idempotente por `(userId, audience, missionSlug, periodKey)` em
-  `mission_claims`. Credita **XP direto no perfil** (`xp += rewardXp`; a idempotência é o claim único,
-  não há ledger de XP para o prêmio) + **moedas com teto diário** (`applyDailyCap` →
+  `mission_claims`. Credita **XP direto no perfil** (`xp += rewardXp`; a idempotência é o claim único)
+  e registra `xp_events.source_type='mission_reward'` com o `claimId` (sem passar pelo motor de
+  award). Esse XP entra no snapshot do ranking, na liga e no relatório semanal dos pais +
+  **moedas com teto diário** (`applyDailyCap` →
   `coin_events.source_type='mission_reward'`). Se as moedas efetivamente concedidas cruzarem
   `lifetime_coins_earned >= 300/1000`, também destrava as badges de poupador. **NÃO move o streak**
   (resgatar missão não estende sequência — deliberado).
@@ -716,7 +718,13 @@ tier?”.
 As posições são calculadas no PostgreSQL com `RANK() OVER (ORDER BY xp DESC)`: empates compartilham
 a posição e deixam o salto de competição (`1, 2, 2, 4`). O filtro administrativo acontece **depois**
 da CTE ranqueada, então buscar uma pessoa mantém sua colocação global real. A leitura usa transação
-`REPEATABLE READ`, pagina em blocos de até 100 no contrato interno e não precisa de migration nova.
+`REPEATABLE READ` e pagina em blocos de até 100 no contrato interno. A primeira página captura um
+snapshot MVCC do PostgreSQL (`pg_current_snapshot()`); o cursor público o preserva e as páginas
+seguintes partem do XP total do perfil, subtraindo eventos cujo `transaction_id xid8` não era visível
+nesse snapshot. Isso cobre inclusive uma transação iniciada antes da primeira página e confirmada
+depois. Página, totais e linha do aluno vêm de uma única SQL/CTE materializada; o índice
+`xp_events(audience, transaction_id, user_id)` limita o replay aos XIDs relevantes. Prêmios de missão
+anteriores à migration continuam corretos por já estarem no XP materializado; os novos possuem ledger.
 
 ### Experiência Kids
 
@@ -747,7 +755,9 @@ em `DrizzleGamificationRepository.listRanking`, evitando duas definições diver
 
 Domínio em `packages/members/src/domain/gamification/league.ts`; serviço em
 `application/gamification/get-league.service.ts`. Métrica = **XP GANHO na semana**, derivado do
-ledger (como as missões — sem coluna acumulada nem hook no award).
+ledger (como as missões — sem coluna acumulada nem hook no award). Como o resgate é XP efetivamente
+ganho, eventos `mission_reward` resgatados na janela também entram na liga e no relatório semanal;
+eles apenas não movem o streak.
 
 ### Tiers & métrica
 
@@ -943,6 +953,7 @@ compartilhado (`sistemazero`, :5433); o `preDeployCommand` de prod roda só `db:
 | `0021_add_missions_and_freeze` | tabela `mission_claims` (UNIQUE `user_id,audience,mission_slug,period_key` + índice por período) + colunas `streak_freezes`/`freeze_granted_month`/`vacation_from`/`vacation_to` em `gamification_profiles` |
 | `0022_add_league` | tabela `league_membership` (UNIQUE `user_id,audience,week_key` + índice de coorte `audience,week_key,tier`) |
 | `0036` (Clube dos Criadores, 07/2026 — EM PRODUÇÃO) | `ALTER TYPE xp_source_type ADD VALUE 'clube_thread'` + `'clube_comment'` (XP puro do Clube; **não** mexe em `coin_source_type`) |
+| `0074_mission-reward-xp-snapshot` | adiciona `xp_source_type='mission_reward'` e `xp_events.transaction_id xid8` (default `pg_current_xact_id()`, NOT NULL) + índice `(audience,transaction_id,user_id)`; novos resgates entram no ledger e o ranking público pode reproduzir o snapshot MVCC sem alterar streak |
 
 > Pré-requisitos já no banco (fatia de gamificação anterior): `0009` (enum `xp_source_type` +
 > `gamification_profiles`/`xp_events`/`user_badges`), `0010`/`0011` (marcos `course_complete`/

@@ -77,6 +77,26 @@ describe('Liga — board e resolução de tier', () => {
     expect(body.entries[0]).toMatchObject({ position: 1, weeklyXp: 40, isMe: true })
   })
 
+  test('prêmio de missão resgatado na semana conta como XP da liga', async () => {
+    const ctx = buildApp()
+    const { app, gamification } = ctx
+    seedKidsAccess(ctx)
+    seedXp(gamification, USER, 40, '2026-06-02T10:00:00.000Z')
+    await gamification.claimMission({
+      userId: USER,
+      audience: 'kids',
+      missionSlug: 'missao-da-semana',
+      periodKey: 'w:2026-06-01',
+      rewardXp: 15,
+      rewardCoins: 0,
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00.000Z'),
+    })
+
+    const body = await readJson(await getLeague(app))
+    expect(body.entries[0]).toMatchObject({ position: 1, weeklyXp: 55, isMe: true })
+  })
+
   test('fechamento LAZY: 1º numa coorte cheia da semana anterior → sobe p/ prata', async () => {
     const ctx = buildApp() // semana corrente w:2026-06-01
     const { app, gamification } = ctx

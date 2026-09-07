@@ -11,6 +11,7 @@ import {
 import { type Logger, serializeError } from '@sistemazero/core/logging'
 import { CourseCareerLockedError, QuizCooldownError } from '../../domain/course/course.errors'
 import {
+  CreationClientOutdatedError,
   CreationPartMissingError,
   CreationPartsNeedBytesError,
   CreationStaleBaseError,
@@ -108,6 +109,7 @@ export function buildErrorResponse(input: {
       | { gate: string; missing: string[] }
       | { hashes: string[] }
       | { currentRevision: number }
+      | { requiredVersion: number }
     careerLock?: {
       reason: 'future-tier' | 'foundation-first' | 'tier-reward'
       requiredLevel?: string
@@ -157,6 +159,15 @@ export function buildErrorResponse(input: {
   // cliente decide entre reenviar com a revisão autoritativa (exclusão dele, base velha) e
   // restaurar a versão da nuvem (alguém editou depois) SEM precisar baixar o item para
   // descobrir a revisão (06/09/2026).
+  if (error instanceof CreationClientOutdatedError) {
+    return {
+      status: 409,
+      body: {
+        ...envelope(error.code, error.message),
+        details: { requiredVersion: error.requiredVersion },
+      },
+    }
+  }
   if (error instanceof CreationStaleBaseError) {
     return {
       status: 409,

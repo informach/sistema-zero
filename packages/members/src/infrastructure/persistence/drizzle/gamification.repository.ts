@@ -11,7 +11,6 @@ import {
   isNotNull,
   isNull,
   lt,
-  lte,
   or,
   sql,
   sum,
@@ -1178,6 +1177,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
 
     return this.db.transaction(
       async (tx) => {
+        const rankingSnapshot =
+          input.snapshot?.kind === 'capture'
+            ? await (async () => {
+                const [row] = await tx
+                  .select({ value: sql<string>`pg_current_snapshot()::text` })
+                  .from(sql`(values (1))`)
+                  .limit(1)
+                if (!row) throw new Error('PostgreSQL não devolveu o snapshot do ranking')
+                return row.value
+              })()
+            : (input.snapshot?.value ?? null)
         const accountsWithEntitlement = tx
           .select({ accountId: entitlements.userId })
           .from(entitlements)
@@ -1202,72 +1212,61 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           .from(gamificationProfiles)
           .where(and(eligibleProfiles, gt(gamificationProfiles.xp, 0)))
 
-        // A página pública atravessa várias requisições. O ledger imutável permite
-        // reconstruir o XP no instante da primeira página, evitando que um ganho
-        // concorrente salte por cima do cursor e desapareça da navegação.
-        const snapshotXp = sql<number>`coalesce(sum(${xpEvents.amount}), 0)::int`
-        const snapshotRanking = tx
-          .select({
-            userId: gamificationProfiles.userId,
-            accountId: gamificationProfiles.accountId,
-            position: sql<number>`(rank() over (order by ${snapshotXp} desc))::int`.as('position'),
-            xp: snapshotXp.as('xp'),
-            lastActivityDate: gamificationProfiles.lastActivityDate,
-          })
-          .from(gamificationProfiles)
-          .innerJoin(
-            xpEvents,
-            and(
-              eq(xpEvents.userId, gamificationProfiles.userId),
-              eq(xpEvents.audience, input.audience),
-              input.snapshotAt ? lte(xpEvents.createdAt, input.snapshotAt) : undefined,
-            ),
-          )
-          .where(eligibleProfiles)
-          .groupBy(
-            gamificationProfiles.userId,
-            gamificationProfiles.accountId,
-            gamificationProfiles.lastActivityDate,
-          )
-          .having(gt(snapshotXp, 0))
+        // O perfil é a fonte da verdade do XP total (inclui prêmios de missão). No
+        // replay, remove eventos cuja TRANSAÇÃO não era visível no snapshot MVCC da
+        // primeira página. `created_at` não serve: uma transação pode começar antes
+        // do cursor e confirmar depois. O corte por xmin mantém o índice seletivo.
+        const replaySnapshot = input.snapshot?.kind === 'replay' ? input.snapshot.value : null
+        const xpAfterSnapshot = replaySnapshot
+          ? tx
+              .select({
+                userId: xpEvents.userId,
+                amount: sql<number>`coalesce(sum(${xpEvents.amount}), 0)::int`.as('amount'),
+              })
+              .from(xpEvents)
+              .where(
+                and(
+                  eq(xpEvents.audience, input.audience),
+                  gte(
+                    xpEvents.transactionId,
+                    sql<string>`pg_snapshot_xmin(${replaySnapshot}::pg_snapshot)`,
+                  ),
+                  sql<boolean>`not pg_visible_in_snapshot(
+                    ${xpEvents.transactionId},
+                    ${replaySnapshot}::pg_snapshot
+                  )`,
+                ),
+              )
+              .groupBy(xpEvents.userId)
+              .as('xp_after_ranking_snapshot')
+          : null
+        const snapshotXp = xpAfterSnapshot
+          ? sql<number>`(${gamificationProfiles.xp} - coalesce(${xpAfterSnapshot.amount}, 0))::int`
+          : sql<number>`${gamificationProfiles.xp}`
+        const snapshotRanking = xpAfterSnapshot
+          ? tx
+              .select({
+                userId: gamificationProfiles.userId,
+                accountId: gamificationProfiles.accountId,
+                position: sql<number>`(rank() over (order by ${snapshotXp} desc))::int`.as(
+                  'position',
+                ),
+                xp: snapshotXp.as('xp'),
+                lastActivityDate: gamificationProfiles.lastActivityDate,
+              })
+              .from(gamificationProfiles)
+              .leftJoin(xpAfterSnapshot, eq(xpAfterSnapshot.userId, gamificationProfiles.userId))
+              .where(and(eligibleProfiles, gt(snapshotXp, 0)))
+          : currentRanking
 
-        const ranked = tx
-          .$with('gamification_ranking')
-          .as(input.snapshotAt ? snapshotRanking : currentRanking)
-        const [totalRow] = await tx
-          .with(ranked)
-          .select({ value: sql<number>`count(*)::int` })
-          .from(ranked)
-        const totalParticipants = totalRow?.value ?? 0
-
+        const ranked = tx.$with('gamification_ranking').as(snapshotRanking)
         const filterIds = input.userIds === undefined ? undefined : [...new Set(input.userIds)]
-        if (filterIds?.length === 0) {
-          const meRows = input.viewerUserId
-            ? await tx
-                .with(ranked)
-                .select()
-                .from(ranked)
-                .where(eq(ranked.userId, input.viewerUserId))
-                .limit(1)
-            : []
-          const me = meRows[0]
-          return {
-            entries: [],
-            totalParticipants,
-            totalMatches: 0,
-            me: me
-              ? {
-                  userId: me.userId,
-                  accountId: me.accountId,
-                  position: me.position,
-                  xp: me.xp,
-                  lastActivityDate: me.lastActivityDate,
-                }
-              : null,
-          }
-        }
-
-        const filtered = filterIds ? inArray(ranked.userId, filterIds) : undefined
+        const filtered =
+          filterIds === undefined
+            ? undefined
+            : filterIds.length === 0
+              ? sql<boolean>`false`
+              : inArray(ranked.userId, filterIds)
         const after = input.after
           ? or(
               lt(ranked.xp, input.after.xp),
@@ -1275,42 +1274,108 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             )
           : undefined
 
-        const rows = await tx
-          .with(ranked)
-          .select()
-          .from(ranked)
-          .where(and(filtered, after))
-          .orderBy(desc(ranked.xp), ranked.userId)
-          .limit(input.limit)
-          .offset(input.offset)
-        const matchesRow = filterIds
-          ? await tx
-              .with(ranked)
-              .select({ value: sql<number>`count(*)::int` })
-              .from(ranked)
-              .where(inArray(ranked.userId, filterIds))
-          : [{ value: totalParticipants }]
-        const meRows = input.viewerUserId
-          ? await tx
-              .with(ranked)
-              .select()
-              .from(ranked)
-              .where(eq(ranked.userId, input.viewerUserId))
-              .limit(1)
-          : []
+        const rankingPage = tx.$with('gamification_ranking_page').as(
+          tx
+            .select({
+              entryUserId: sql<string>`${ranked.userId}`.as('entry_user_id'),
+              entryAccountId: sql<string>`${ranked.accountId}`.as('entry_account_id'),
+              entryPosition: sql<number>`${ranked.position}`.as('entry_position'),
+              entryXp: sql<number>`${ranked.xp}`.as('entry_xp'),
+              entryLastActivityDate: sql<string | null>`${ranked.lastActivityDate}`.as(
+                'entry_last_activity_date',
+              ),
+            })
+            .from(ranked)
+            .where(and(filtered, after))
+            .orderBy(desc(ranked.xp), ranked.userId)
+            .limit(input.limit)
+            .offset(input.offset),
+        )
+        const rankingStats = tx.$with('gamification_ranking_stats').as(
+          tx
+            .select({
+              totalParticipants: sql<number>`count(*)::int`.as('total_participants'),
+              totalMatches: filtered
+                ? sql<number>`count(*) filter (where ${filtered})::int`.as('total_matches')
+                : sql<number>`count(*)::int`.as('total_matches'),
+            })
+            .from(ranked),
+        )
+        const viewerRanking = tx.$with('gamification_viewer_ranking').as(
+          tx
+            .select({
+              viewerUserId: sql<string>`${ranked.userId}`.as('viewer_user_id'),
+              viewerAccountId: sql<string>`${ranked.accountId}`.as('viewer_account_id'),
+              viewerPosition: sql<number>`${ranked.position}`.as('viewer_position'),
+              viewerXp: sql<number>`${ranked.xp}`.as('viewer_xp'),
+              viewerLastActivityDate: sql<string | null>`${ranked.lastActivityDate}`.as(
+                'viewer_last_activity_date',
+              ),
+            })
+            .from(ranked)
+            .where(input.viewerUserId ? eq(ranked.userId, input.viewerUserId) : sql<boolean>`false`)
+            .limit(1),
+        )
 
-        const toEntry = (row: (typeof rows)[number]): GamificationRankingEntry => ({
-          userId: row.userId,
-          accountId: row.accountId,
-          position: row.position,
-          xp: row.xp,
-          lastActivityDate: row.lastActivityDate,
-        })
+        // Um único statement referencia `ranked` três vezes; o PostgreSQL materializa
+        // o CTE uma vez e reutiliza o mesmo ranking em página, totais e linha do viewer.
+        const rows = await tx
+          .with(ranked, rankingPage, rankingStats, viewerRanking)
+          .select({
+            totalParticipants: rankingStats.totalParticipants,
+            totalMatches: rankingStats.totalMatches,
+            entryUserId: rankingPage.entryUserId,
+            entryAccountId: rankingPage.entryAccountId,
+            entryPosition: rankingPage.entryPosition,
+            entryXp: rankingPage.entryXp,
+            entryLastActivityDate: rankingPage.entryLastActivityDate,
+            viewerUserId: viewerRanking.viewerUserId,
+            viewerAccountId: viewerRanking.viewerAccountId,
+            viewerPosition: viewerRanking.viewerPosition,
+            viewerXp: viewerRanking.viewerXp,
+            viewerLastActivityDate: viewerRanking.viewerLastActivityDate,
+          })
+          .from(rankingStats)
+          .leftJoin(rankingPage, sql<boolean>`true`)
+          .leftJoin(viewerRanking, sql<boolean>`true`)
+          .orderBy(desc(rankingPage.entryXp), rankingPage.entryUserId)
+
+        const first = rows[0]
+        if (!first) throw new Error('PostgreSQL não devolveu as estatísticas do ranking')
+        const entries: GamificationRankingEntry[] = rows.flatMap((row) =>
+          row.entryUserId &&
+          row.entryAccountId &&
+          row.entryPosition !== null &&
+          row.entryXp !== null
+            ? [
+                {
+                  userId: row.entryUserId,
+                  accountId: row.entryAccountId,
+                  position: row.entryPosition,
+                  xp: row.entryXp,
+                  lastActivityDate: row.entryLastActivityDate,
+                },
+              ]
+            : [],
+        )
         return {
-          entries: rows.map(toEntry),
-          totalParticipants,
-          totalMatches: matchesRow[0]?.value ?? 0,
-          me: meRows[0] ? toEntry(meRows[0]) : null,
+          entries,
+          totalParticipants: first.totalParticipants,
+          totalMatches: first.totalMatches,
+          me:
+            first.viewerUserId &&
+            first.viewerAccountId &&
+            first.viewerPosition !== null &&
+            first.viewerXp !== null
+              ? {
+                  userId: first.viewerUserId,
+                  accountId: first.viewerAccountId,
+                  position: first.viewerPosition,
+                  xp: first.viewerXp,
+                  lastActivityDate: first.viewerLastActivityDate,
+                }
+              : null,
+          snapshot: rankingSnapshot,
         }
       },
       { isolationLevel: 'repeatable read', accessMode: 'read only' },
@@ -1474,8 +1539,23 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         )
         .limit(1)
       const balance = profile?.coinBalance ?? 0
-      if (claimed.length === 0) {
+      const claim = claimed[0]
+      if (!claim) {
         return { claimed: false, xpAwarded: 0, coinsAwarded: 0, coinBalance: balance }
+      }
+
+      // O prêmio continua sem passar pelo motor de award (não move streak), mas
+      // entra no ledger para snapshots do ranking e métricas semanais de XP ganho.
+      if (input.rewardXp > 0) {
+        await tx.insert(xpEvents).values({
+          id: randomUUID(),
+          userId: input.userId,
+          audience: input.audience,
+          sourceType: 'mission_reward',
+          sourceId: claim.id,
+          amount: input.rewardXp,
+          createdAt: input.now,
+        })
       }
 
       // Moedas do prêmio CONTAM no teto diário (anti-bypass ético).

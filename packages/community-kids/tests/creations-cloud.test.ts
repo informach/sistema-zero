@@ -340,6 +340,45 @@ describe('gzip de ida e volta', () => {
 })
 
 describe('createCreationsCloud', () => {
+  test('fila envia versão do documento e recusa de editor antigo não dispara PUT, retry ou confirmação', async () => {
+    const calls: string[] = []
+    let sent: unknown
+    let confirmed = false
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      idleMs: 0,
+      wait: noWait,
+      fetch: async (input, init) => {
+        calls.push(String(input))
+        sent = JSON.parse(String(init?.body))
+        return new Response(
+          JSON.stringify({
+            error: { code: 'CREATION_CLIENT_OUTDATED', message: 'raw' },
+            details: { requiredVersion: 2 },
+          }),
+          { status: 409 },
+        )
+      },
+    })
+    cloud.enqueueUpload(
+      'model-1',
+      async () => ({ json: '{}', meta: { formatVersion: 1, kind: 'model' } }),
+      () => {
+        confirmed = true
+      },
+    )
+    await cloud.flush()
+    expect(calls).toEqual(['/api/creations/molda/model-1/upload'])
+    expect(sent).toMatchObject({ formatVersion: 1 })
+    expect(confirmed).toBe(false)
+    expect(cloud.getState()).toMatchObject({
+      status: 'error',
+      pending: 0,
+      lastError: CLOUD_MESSAGES.clientOutdated,
+    })
+    cloud.dispose()
+  })
+
   test('a lista converte a data de uma lápide remota para milissegundos', async () => {
     const deletedAt = '2026-08-18T12:00:02.000Z'
     const cloud = createCreationsCloud({

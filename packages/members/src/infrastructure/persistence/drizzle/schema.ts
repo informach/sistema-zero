@@ -3,6 +3,7 @@ import {
   type AnyPgColumn,
   boolean,
   check,
+  customType,
   date,
   index,
   integer,
@@ -34,6 +35,10 @@ import type { RoomState } from '../../../domain/room/room-catalog'
 // Sem FK cross-schema: `user_id`/`product_id`/`offer_id`/`subscription_id` são
 // snapshots de outros serviços (auth/catalog/payments).
 export const members = pgSchema('members')
+
+const xid8 = customType<{ data: string; driverData: string }>({
+  dataType: () => 'xid8',
+})
 
 export const courseStatusEnum = members.enum('course_status', ['draft', 'published', 'archived'])
 // Audiência do curso: segmenta a VITRINE entre as plataformas (adulto = community,
@@ -445,6 +450,9 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // id do conteúdo → 1 marco por conteúdo; premiar só na aprovação bloqueia farm).
   'clube_thread',
   'clube_comment',
+  // Prêmio resgatado de missão. Registra o XP histórico para snapshots do ranking e
+  // métricas semanais; o claim atualiza o perfil diretamente e não move o streak.
+  'mission_reward',
   // MARCOS de missão (amount 0 — só contam p/ o progresso da missão; o prêmio vem
   // do claim). Idempotentes pelo sourceId natural (anti-farm): bloco (entregar ao
   // professor) / curso (classificar) / item (comprar cosmético) / comentário (Mural).
@@ -580,11 +588,16 @@ export const xpEvents = members.table(
     // Snapshot do slot da carreira nos marcos de curso. Linhas anteriores ficam
     // NULL e usam `courses.career_slot` como fallback até o primeiro snapshot.
     sourceCareerSlot: smallint('source_career_slot'),
+    // XID 64-bit da transação que criou o evento. Diferente de `created_at`,
+    // preserva a visibilidade MVCC mesmo quando uma transação confirma fora de ordem.
+    transactionId: xid8('transaction_id').default(sql`pg_current_xact_id()`).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [
     uniqueIndex('xp_events_user_source_uq').on(t.userId, t.sourceType, t.sourceId),
     index('xp_events_user_created_idx').on(t.userId, t.createdAt),
+    // Replay do ranking: audiência + XIDs que não eram visíveis no snapshot original.
+    index('xp_events_ranking_snapshot_idx').on(t.audience, t.transactionId, t.userId),
   ],
 )
 
@@ -1294,6 +1307,8 @@ export const creations = members.table(
     itemUpdatedAt: timestamp('item_updated_at', { withTimezone: true }).notNull(),
     /** Revisão corrente (a que `storage_ref` aponta). Cresce a cada commit. */
     revision: integer('revision').notNull().default(0),
+    /** Documento legado = 1. Promovido somente no commit, nunca rebaixado. */
+    formatVersion: integer('format_version').notNull().default(1),
     /**
      * Maior revisão JÁ RESERVADA — contador monotônico (nunca volta, nem no delete):
      * é o que garante chave nova no R2 para toda reserva, mesmo concorrente.
@@ -1301,6 +1316,7 @@ export const creations = members.table(
     lastReservedRevision: integer('last_reserved_revision').notNull().default(0),
     /** Reserva em voo (a chave já foi assinada). `null` = nada reservado. */
     pendingRevision: integer('pending_revision'),
+    pendingFormatVersion: integer('pending_format_version'),
     /** Bytes reservados (o BFF assina exatamente esse Content-Length; o commit promove). */
     pendingBytes: integer('pending_bytes'),
     /** Nome/kind/updatedAt/thumb que o commit vai promover — a lista NÃO vê. */

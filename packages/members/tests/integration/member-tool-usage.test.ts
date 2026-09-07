@@ -93,6 +93,7 @@ describe('admin tool-usage — uso por ferramenta na ficha', () => {
       kind: 'pixel-sprite',
       itemUpdatedAt: new Date('2026-06-02T09:00:00.000Z'),
       revision: 1,
+      formatVersion: 1,
       bytes: 100,
       thumb: null,
       syncedAt: new Date('2026-06-02T09:00:01.000Z'),

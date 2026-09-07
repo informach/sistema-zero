@@ -22,7 +22,7 @@ import {
   removeStaleAvatars,
   removeStoredAvatar,
 } from '../server/media'
-import { presignWatermarkedPdf } from '../server/private-delivery'
+import { presignWatermarkedPdf, watermarkedPdfInline } from '../server/private-delivery'
 import {
   bufferFromStream,
   r2GetObjectPrivate,
@@ -30,8 +30,8 @@ import {
   r2PresignGetPrivate,
 } from '../server/r2'
 import type { SessionModule } from '../server/session'
-import { watermarkImage, watermarkPdf } from '../server/watermark'
-import { watermarkGate } from '../server/watermark-queue'
+import { watermarkImage } from '../server/watermark'
+import { WATERMARK_WAIT_TIMEOUT_MS, watermarkGate } from '../server/watermark-queue'
 
 const R2_PRIVATE_PREFIX = 'r2priv:'
 
@@ -672,9 +672,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           if (dlMedia.watermark === 'pdf' && len <= WATERMARK_MAX_BYTES) {
             const url = await presignWatermarkedPdf({
               srcKey: key,
+              srcEtag: head.etag,
               email: user.email,
               userId: user.id,
               responseContentDisposition: disposition,
+              signal: req.signal,
             })
             return NextResponse.redirect(url, 302)
           }
@@ -690,7 +692,6 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           return NextResponse.redirect(url, 302)
         }
 
-        const obj = await r2GetObjectPrivate(key)
         const headers = {
           'content-type': dlMedia.mime,
           'content-disposition': disposition,
@@ -698,27 +699,44 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           'cache-control': 'private, no-store',
         }
 
+        // PDF ≤20MB: mesma entrega com cache por aluno do e-book (incidente 07/09).
+        if (dlMedia.watermark === 'pdf') {
+          const pdf = await watermarkedPdfInline({
+            srcKey: key,
+            srcEtag: head.etag,
+            email: user.email,
+            userId: user.id,
+            signal: req.signal,
+          })
+          return new Response(
+            pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body,
+            { headers },
+          )
+        }
+
+        const obj = await r2GetObjectPrivate(key)
+
         // Sem marca (office/zip/áudio/…) → STREAM direto, sem bufferizar.
         if (dlMedia.watermark === null) {
           return new Response(obj.body, { headers })
         }
 
-        // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤20MB +
-        // cópias do pdf-lib/sharp — sem teto, N downloads simultâneos = OOM.
-        return await watermarkGate().run(async () => {
-          const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
-          let out: Uint8Array = original
-          try {
-            out =
-              dlMedia.watermark === 'pdf'
-                ? await watermarkPdf(original, user.email)
-                : await watermarkImage(original, dlMedia.mime, user.email)
-          } catch (error) {
-            // PDF cifrado/imagem corrompida: melhor servir o original do que falhar.
-            console.warn('[anexos] watermark falhou — servindo original', { key, error })
-          }
-          return new Response(new Uint8Array(out), { headers })
-        })
+        // Imagem: bufferizar+marcar dentro do GATE de concorrência (materializa
+        // ≤20MB + cópias do sharp). Espera com prazo e some se o cliente for embora.
+        return await watermarkGate().run(
+          async () => {
+            const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
+            let out: Uint8Array = original
+            try {
+              out = await watermarkImage(original, dlMedia.mime, user.email)
+            } catch (error) {
+              // Imagem corrompida: melhor servir o original do que falhar.
+              console.warn('[anexos] watermark falhou — servindo original', { key, error })
+            }
+            return new Response(new Uint8Array(out), { headers })
+          },
+          { signal: req.signal, waitTimeoutMs: WATERMARK_WAIT_TIMEOUT_MS },
+        )
       } catch (error) {
         return mediaErrorResponse(error)
       }
@@ -790,14 +808,15 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           }
           const url = await presignWatermarkedPdf({
             srcKey: key,
+            srcEtag: head.etag,
             email: user.email,
             userId: user.id,
             responseContentDisposition: 'inline',
+            signal: req.signal,
           })
           return NextResponse.redirect(url, 302)
         }
 
-        const obj = await r2GetObjectPrivate(key)
         const headers = {
           'content-type': 'application/pdf',
           // INLINE: é consumido pelo pdf.js do livro 3D, não baixado pelo usuário.
@@ -808,21 +827,22 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
 
         // Sem sinal de PDF (legado raro) → serve cru em stream, como antes.
         if (dlMedia.watermark !== 'pdf') {
+          const obj = await r2GetObjectPrivate(key)
           return new Response(obj.body, { headers })
         }
 
-        // Bufferizar+marcar dentro do GATE de concorrência: materializa ≤20MB +
-        // cópias do pdf-lib — sem teto, N livros abertos ao mesmo tempo = OOM.
-        return await watermarkGate().run(async () => {
-          const original = await bufferFromStream(obj.body, WATERMARK_MAX_BYTES)
-          let out: Uint8Array = original
-          try {
-            out = await watermarkPdf(original, user.email)
-          } catch (error) {
-            // PDF cifrado/corrompido: melhor servir o original do que quebrar o livro.
-            console.warn('[ebook] watermark de PDF falhou — servindo original', { key, error })
-          }
-          return new Response(new Uint8Array(out), { headers })
+        // Marca d'água por aluno com CACHE (incidente 07/09: re-marcar a cada
+        // abertura, atrás de um gate de concorrência 1 sem prazo, travava todos
+        // os e-books quando uma turma abria cadernos). Fila cheia → 503 tratado.
+        const pdf = await watermarkedPdfInline({
+          srcKey: key,
+          srcEtag: head.etag,
+          email: user.email,
+          userId: user.id,
+          signal: req.signal,
+        })
+        return new Response(pdf.body instanceof Uint8Array ? new Uint8Array(pdf.body) : pdf.body, {
+          headers,
         })
       } catch (error) {
         return mediaErrorResponse(error)

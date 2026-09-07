@@ -51,6 +51,8 @@ export interface CloudSyncState {
 }
 
 export interface CreationMeta {
+  /** Versão do formato nativo; ausente = 1 para clientes legados. */
+  formatVersion?: number
   itemId: string
   name: string
   kind: string
@@ -66,6 +68,7 @@ export interface CreationMeta {
 }
 
 export interface CloudCreationSummary {
+  formatVersion?: number
   itemId: string
   name: string
   kind: string
@@ -238,6 +241,8 @@ export function anySignal(a: AbortSignal, b: AbortSignal): AbortSignal {
 
 /** Recados do selo, na linguagem da criança. */
 export const CLOUD_MESSAGES = {
+  clientOutdated:
+    'Esta criação usa uma versão mais nova. Atualize a página; seu trabalho continua guardado neste aparelho.',
   quota: 'Sua conta está sem espaço para guardar mais. Apague o que não usa mais.',
   tooBig: 'Esse jogo ou desenho é grande demais para guardar na conta.',
   forbidden: 'Sua conta não tem essa ferramenta liberada para guardar na nuvem.',
@@ -332,6 +337,7 @@ export function messageForError(error: unknown): string {
   }
   if (err?.code === 'VIEWER_MISMATCH') return CLOUD_MESSAGES.viewer
   if (err?.code === 'CREATION_STALE_BASE') return CLOUD_MESSAGES.staleFailed
+  if (err?.code === 'CREATION_CLIENT_OUTDATED') return CLOUD_MESSAGES.clientOutdated
   // O PUT no R2 falhou (URL vencida numa conexão lenta, relógio…): não é "sem posse".
   if (err?.code === 'STORAGE_PUT_FAILED') return CLOUD_MESSAGES.generic
   if (err?.status === 403) return CLOUD_MESSAGES.forbidden
@@ -370,6 +376,7 @@ async function readError(response: Response): Promise<CloudError> {
 }
 
 interface RawCloudSummary {
+  formatVersion?: number
   itemId: string
   name?: string
   kind?: string
@@ -399,6 +406,7 @@ function toSummary(raw: RawCloudSummary): CloudCreationSummary {
     syncedAt: raw.syncedAt ? Date.parse(raw.syncedAt) : (deletedAt ?? 0),
   }
   if (deletedAt !== undefined) summary.deletedAt = deletedAt
+  if (raw.formatVersion !== undefined) summary.formatVersion = raw.formatVersion
   return summary
 }
 
@@ -593,6 +601,7 @@ export function createCreationsCloud(options: {
         itemUpdatedAt: new Date(meta.updatedAt).toISOString(),
         bytes: bytes.byteLength,
         thumb: meta.thumb ?? null,
+        ...(meta.formatVersion !== undefined ? { formatVersion: meta.formatVersion } : {}),
         ...(meta.baseRevision !== undefined ? { baseRevision: meta.baseRevision } : {}),
         ...(byHash.size > 0
           ? {
@@ -782,6 +791,9 @@ export function createCreationsCloud(options: {
             kind: snapshot.meta?.kind ?? 'unknown',
             updatedAt: snapshot.meta?.updatedAt ?? now(),
             thumb: snapshot.meta?.thumb ?? null,
+            ...(snapshot.meta?.formatVersion !== undefined
+              ? { formatVersion: snapshot.meta.formatVersion }
+              : {}),
             ...(snapshot.meta?.baseRevision !== undefined
               ? { baseRevision: snapshot.meta.baseRevision }
               : {}),

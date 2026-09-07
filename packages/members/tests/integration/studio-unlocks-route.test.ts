@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { XpEventInput } from '../../src/domain/ports/gamification-repository.port'
+import type { AwardXpEventInput } from '../../src/domain/ports/gamification-repository.port'
 import { buildApp, seedSampleCourse } from '../helpers'
 
 const USER = '77777777-7777-4777-8777-777777777777'
@@ -19,7 +19,7 @@ async function markCourse(
   opts: { completed?: boolean; showcased?: boolean },
   userId = USER,
 ) {
-  const events: XpEventInput[] = []
+  const events: AwardXpEventInput[] = []
   if (opts.completed !== false) {
     events.push({ sourceType: 'course_complete', sourceId: courseId, amount: 0 })
   }
