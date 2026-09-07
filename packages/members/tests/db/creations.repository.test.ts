@@ -60,8 +60,10 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
       kind varchar(40) not null,
       item_updated_at timestamptz not null,
       revision integer not null default 0,
+      format_version integer not null default 1,
       last_reserved_revision integer not null default 0,
       pending_revision integer,
+      pending_format_version integer,
       pending_bytes integer,
       pending_name varchar(120),
       pending_kind varchar(40),
@@ -125,6 +127,42 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
     ).toEqual({ ok: false, reason: 'account-deleting' })
   })
   const key = (rev: number) => `creations/${perfil}/studio/proj-1/${rev}.json.gz`
+
+  test('formatos são monotônicos em reservas concorrentes e commits, inclusive reserva legada', async () => {
+    const input = { ...base, userId: randomUUID(), itemId: 'formatos' }
+    const old = await repo.reserveUpload(input)
+    expect(old.ok).toBe(true)
+    const next = await repo.reserveUpload({ ...input, formatVersion: 2 })
+    expect(next.ok).toBe(true)
+    if (!old.ok || !next.ok) throw new Error('Reserva deveria ter sido aceita')
+    const attempts = await Promise.all(Array.from({ length: 4 }, () => repo.reserveUpload(input)))
+    for (const attempt of attempts) {
+      expect(attempt).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    }
+    expect((await repo.get(input.userId, input.tool, input.itemId))?.formatVersion).toBe(1)
+    expect(await repo.commit({ ...input, revision: old.revision, storageRef: 'old' })).toEqual({
+      ok: false,
+    })
+    expect((await repo.commit({ ...input, revision: next.revision, storageRef: 'new' })).ok).toBe(
+      true,
+    )
+    expect(
+      (await repo.listPage(input.userId, input.tool, { limit: 10 })).items[0]?.formatVersion,
+    ).toBe(2)
+    // Simula uma reserva feita pelo backend anterior durante um deploy misto.
+    await conn.sql`update members.creations set pending_revision = 3, pending_format_version = null,
+      pending_bytes = 100, pending_name = 'velho', pending_kind = 'classic', pending_item_updated_at = ${now.toISOString()}
+      where user_id = ${input.userId} and item_id = ${input.itemId}`
+    expect(await repo.commit({ ...input, revision: 3, storageRef: 'legacy' })).toEqual({
+      ok: false,
+      reason: 'client-outdated',
+      requiredVersion: 2,
+    })
+    const record = await repo.get(input.userId, input.tool, input.itemId)
+    expect(record?.storageRef).toBe('new')
+    expect(record?.formatVersion).toBe(2)
+    expect(record?.pending).toBeNull()
+  })
 
   test('reserva → commit promove os pendentes; commit errado recusado; lixeira; contador nunca volta; idempotência', async () => {
     const first = await repo.reserveUpload(base)

@@ -12,8 +12,8 @@ import {
 import { pensaStageSourceId } from '../../domain/pensa/gamification'
 import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
+  AwardXpEventInput,
   GamificationRepository,
-  XpEventInput,
 } from '../../domain/ports/gamification-repository.port'
 import { type GamificationDeltaView, toGamificationDeltaView } from '../mappers/views'
 
@@ -46,7 +46,7 @@ export class AwardGamificationService {
     courseCompleted: boolean
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    const events: XpEventInput[] = [
+    const events: AwardXpEventInput[] = [
       {
         sourceType: 'lesson_complete',
         sourceId: input.lessonId,
@@ -80,7 +80,7 @@ export class AwardGamificationService {
     audience: CourseAudience
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    const events: XpEventInput[] = [
+    const events: AwardXpEventInput[] = [
       {
         sourceType: 'quiz_passed',
         sourceId: input.blockId,
@@ -108,7 +108,7 @@ export class AwardGamificationService {
   }): Promise<GamificationDeltaView | null> {
     // Mesma régua do quiz aprovado (base + bônus por nota); fonte distinta no
     // ledger (`studio_passed`) → idempotente por bloco, independente do quiz.
-    const events: XpEventInput[] = [
+    const events: AwardXpEventInput[] = [
       {
         sourceType: 'studio_passed',
         sourceId: input.blockId,
@@ -236,7 +236,7 @@ export class AwardGamificationService {
     audience: CourseAudience
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    const events: XpEventInput[] =
+    const events: AwardXpEventInput[] =
       input.from === 'o'
         ? [
             {
@@ -465,7 +465,7 @@ export class AwardGamificationService {
     userId: string,
     accountId: string,
     audience: CourseAudience,
-    events: XpEventInput[],
+    events: AwardXpEventInput[],
     privileged: boolean,
   ): Promise<GamificationDeltaView | null> {
     const now = this.clock()

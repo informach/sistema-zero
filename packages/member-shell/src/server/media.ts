@@ -10,6 +10,14 @@ import { optimizeImage } from './image-optimizer'
 import { MediaNotConfiguredError, r2DeleteObjects, r2ListKeys, r2PutObject } from './r2'
 import { captureServerException } from './sentry'
 import type { AccessVerdict, SessionModule } from './session'
+import { WatermarkQueueAbortedError, WatermarkQueueBusyError } from './watermark-queue'
+
+/**
+ * Quanto o cliente deve esperar antes de tentar de novo quando a fila da marca
+ * d'água está cheia (503 + `Retry-After`). Uma marcação leva 6–15 s; com
+ * concorrência 1, ~10 s é o tempo de uma vaga abrir.
+ */
+export const WATERMARK_RETRY_AFTER_SECONDS = 10
 
 // ── Limites/validações (mesma régua do projeto de referência: 5MB png/jpg/webp) ─
 
@@ -96,6 +104,24 @@ export function createMediaModule(deps: { session: SessionModule; gateway: Gatew
 /** Erro → resposta `{ error: { code, message } }` (503 quando falta config). */
 export function mediaErrorResponse(error: unknown): NextResponse {
   if (error instanceof MediaNotConfiguredError) {
+    return NextResponse.json(
+      { error: { code: error.code, message: error.message } },
+      { status: 503 },
+    )
+  }
+  // Fila da marca d'água cheia (incidente 07/09): resposta RÁPIDA e retentável em
+  // vez de segurar a conexão até o 524 do Cloudflare. É carga, não defeito → sem
+  // Sentry; o warn fica como sinal de que a fila encostou no prazo.
+  if (error instanceof WatermarkQueueBusyError) {
+    console.warn("[media] fila da marca d'água cheia — 503 com Retry-After")
+    return NextResponse.json(
+      { error: { code: error.code, message: error.message } },
+      { status: 503, headers: { 'retry-after': String(WATERMARK_RETRY_AFTER_SECONDS) } },
+    )
+  }
+  // O cliente foi embora enquanto esperava (aba fechada/recarga): ninguém lê esta
+  // resposta — sem log de erro, sem Sentry.
+  if (error instanceof WatermarkQueueAbortedError) {
     return NextResponse.json(
       { error: { code: error.code, message: error.message } },
       { status: 503 },

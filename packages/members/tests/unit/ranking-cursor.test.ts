@@ -9,7 +9,7 @@ describe('cursor cifrado do ranking', () => {
     const payload = {
       audience: 'kids' as const,
       viewerUserId: '11111111-1111-1111-1111-111111111111',
-      snapshotAt: new Date('2026-09-06T12:00:00.000Z'),
+      snapshot: '31337:31342:31338,31340',
       xp: 80,
       userId: '22222222-2222-2222-2222-222222222222',
     }
@@ -28,7 +28,7 @@ describe('cursor cifrado do ranking', () => {
     const token = codec.encode({
       audience: 'adult',
       viewerUserId: 'viewer',
-      snapshotAt: new Date('2026-09-06T12:00:00.000Z'),
+      snapshot: '31337:31337:',
       xp: 10,
       userId: 'last',
     })

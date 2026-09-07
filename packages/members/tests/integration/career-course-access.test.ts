@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import type { XpEventInput } from '../../src/domain/ports/gamification-repository.port'
+import type { AwardXpEventInput } from '../../src/domain/ports/gamification-repository.port'
 import { buildApp, grantAllKidsCourses, seedSampleCourse } from '../helpers'
 
 const USER = '77777777-7777-4777-8777-777777777777'
@@ -15,7 +15,7 @@ async function qualify(
   courseId: string,
   userId = USER,
 ) {
-  const events: XpEventInput[] = [
+  const events: AwardXpEventInput[] = [
     { sourceType: 'course_complete', sourceId: courseId, amount: 0 },
     { sourceType: 'course_showcased', sourceId: courseId, amount: 0 },
   ]

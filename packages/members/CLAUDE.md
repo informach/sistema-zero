@@ -1224,7 +1224,9 @@ estender o streak). Atividade ANTERIOR às migrations não tem marco retroativo
     `RecordStudioRemixService` SEM o playId/hub. O beacon vem do AUTOSAVE do editor (member-shell/kids,
     best-effort, 1×/sessão) — o dedupe do dia cuida do resto.
 - **Ligas semanais** (migration `0022`, `league_membership`): coorte competitiva semanal por
-  audiência. (Detalhes de tiers/promoção/rebaixamento em `docs/gamificacao.md`.) **Board ENRIQUECIDO
+  audiência. O XP efetivamente ganho ao resgatar missão (`mission_reward`) conta na liga e no
+  relatório semanal, mas não move streak. (Detalhes de tiers/promoção/rebaixamento em
+  `docs/gamificacao.md`.) **Board ENRIQUECIDO
   na vitrine kids (07/2026):** o `GetLeagueService` recebe o `GetAvatarsByProfilesService` + um
   `AuthGateway | null` e, best-effort, hidrata cada `LeagueEntryView` com `photoUrl`/`levelSlug`
   (avatar 3D + rank, dos repos LOCAIS) + `firstName` (auth S2S) + `profileId` — este SÓ p/ perfil
@@ -1447,11 +1449,17 @@ juntos; requester sem perfil (XP 0) ainda é contado. Migration `0015`: `account
 ranking varria a tabela inteira da vitrine.
 
 **Ranking geral paginado (full review 06/09/2026):** o endpoint público usa `cursor` opaco no
-lugar de `offset`. O cursor AES-GCM é vinculado ao perfil e à audiência e guarda o instante da
-primeira página + a keyset `(xp DESC, userId ASC)` sem expor ids internos. Nas páginas seguintes,
-`listRanking` recompõe o XP naquele instante pelo ledger `xp_events`; assim um prêmio concorrente
-não duplica nem faz um participante saltar para fora da travessia. A própria linha e o total vêm do
-mesmo snapshot. Cursor inválido/adulterado é 400; o endpoint administrativo continua com offset.
+lugar de `offset`. O cursor AES-GCM é vinculado ao perfil e à audiência e guarda o snapshot MVCC
+`pg_snapshot` da primeira página + a keyset `(xp DESC, userId ASC)` sem expor ids internos. Nas
+páginas seguintes, `listRanking` parte do XP total materializado no perfil e subtrai os `xp_events`
+cujo `transaction_id xid8` não era visível naquele snapshot; isso cobre até transação iniciada antes
+da captura e confirmada depois, sem duplicar ou saltar participante durante a travessia. Página,
+totais e linha própria saem de um único statement com CTE ranqueado materializado uma vez; o índice
+`xp_events(audience, transaction_id, user_id)` torna o replay seletivo. Desde a migration
+`0074_mission-reward-xp-snapshot`, cada novo claim registra `mission_reward` com o id do claim,
+sem passar pelo motor de award nem mover streak (mas contando como XP ganho em liga/report semanal).
+Prêmios históricos sem ledger seguem corretos por já estarem no perfil. Cursor inválido/adulterado
+é 400; o endpoint administrativo continua com offset e não captura snapshot.
 
 ## Pensa (planejador de jogos — 08/2026)
 
@@ -1477,6 +1485,17 @@ Camadas: `domain/pensa/*`, port `pensa-repository.port.ts`, use cases em `applic
 [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
 ## "Guardado na sua conta" — criações do Estúdio Completo, do Pinta e do Molda (18/08/2026, migration `0067`; Molda em 04/09/2026, migration `0072`)
+
+**Guard de formato (06/09/2026, migration gerada `0075_creation-format-version`):**
+`formatVersion` opcional na reserva, inteiro 1..65535, default legado 1. É diferente
+da revisão de upload. `format_version` é visível só após commit;
+`pending_format_version` fica na reserva. Sob o lock existente, reserva recusa
+formato menor que o confirmado OU pendente. Commit revalida formato e mata reserva
+legada incompatível sem tocar no blob corrente. Erro HTTP 409
+`CREATION_CLIENT_OUTDATED`, `details.requiredVersion`; retry não resolve.
+Listas/download/commit expõem o formato do documento confirmado. Aplicar migration
+antes do backend e terminar o rollout dos guards antes de novos escritores;
+rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
 
 ⭐ **Ferramenta nova = `CREATION_TOOLS` + enum + migration própria (04/09/2026, `molda`).** O
 union vive em `domain/creations/creation.ts` (`CREATION_TOOLS`, `CREATION_ACCESS_REF`,

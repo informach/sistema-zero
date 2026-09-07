@@ -530,6 +530,8 @@ export type CreationToolView = 'studio' | 'pinta' | 'molda'
 
 /** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
 export interface CreationSummaryView {
+  /** Ausente nas respostas de servidores anteriores ao guard de formato. */
+  formatVersion?: number
   tool: CreationToolView
   itemId: string
   name: string

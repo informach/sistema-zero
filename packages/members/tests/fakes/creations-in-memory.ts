@@ -31,6 +31,7 @@ const summaryOf = (row: CreationRecord): CreationSummary => {
     kind: row.kind,
     itemUpdatedAt: row.itemUpdatedAt,
     revision: row.revision,
+    formatVersion: row.formatVersion,
     bytes: row.bytes,
     thumb: row.thumb,
     syncedAt: row.syncedAt,
@@ -118,6 +119,14 @@ export class InMemoryCreationsRepository implements CreationsRepository {
   async reserveUpload(input: CreationUploadInput): Promise<CreationUploadReservation> {
     const k = key(input.userId, input.tool, input.itemId)
     const existing = this.rows.get(k)
+    const formatVersion = input.formatVersion ?? 1
+    const requiredVersion = Math.max(
+      existing?.formatVersion ?? 1,
+      existing?.pending?.formatVersion ?? 1,
+    )
+    if (formatVersion < requiredVersion) {
+      return { ok: false, reason: 'client-outdated', requiredVersion }
+    }
     const nextIdentity = classifyPintaPaletteLibraryCreation(input)
     if (nextIdentity === 'invalid-partial') {
       return { ok: false, reason: 'palette-library-identity' }
@@ -161,6 +170,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       return { ok: false, reason: 'stale-base', currentRevision }
     }
     const pending = {
+      formatVersion,
       bytes: totalBytes,
       name: input.name,
       kind: input.kind,
@@ -179,6 +189,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
         kind: input.kind,
         itemUpdatedAt: input.itemUpdatedAt,
         revision: 0,
+        formatVersion: 1,
         lastReservedRevision: 1,
         pending: { revision: 1, ...pending },
         bytes: 0,
@@ -217,6 +228,10 @@ export class InMemoryCreationsRepository implements CreationsRepository {
       return { ok: true, alreadyCommitted: true, previousStorageRef: null, releasedPartRefs: [] }
     }
     if (!existing.pending || existing.pending.revision !== input.revision) return { ok: false }
+    if (existing.pending.formatVersion < existing.formatVersion) {
+      this.rows.set(k, { ...existing, pending: null })
+      return { ok: false, reason: 'client-outdated', requiredVersion: existing.formatVersion }
+    }
     const usage = await this.usage(input.userId)
     const committedAlive = existing.deletedAt === null && existing.storageRef !== null
     const currentBytes = committedAlive ? existing.bytes : 0
@@ -260,6 +275,7 @@ export class InMemoryCreationsRepository implements CreationsRepository {
     this.rows.set(k, {
       ...existing,
       revision: input.revision,
+      formatVersion: existing.pending.formatVersion,
       storageRef: input.storageRef,
       bytes: existing.pending.bytes,
       name: existing.pending.name,

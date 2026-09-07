@@ -96,12 +96,58 @@ const PUBLIC_FIELDS = [
   'kind',
   'itemUpdatedAt',
   'revision',
+  'formatVersion',
   'bytes',
   'thumb',
   'syncedAt',
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('formato legado é 1; promoção só no commit e editor antigo recebe erro recuperável', async () => {
+    const ctx = buildWithTools()
+    grantLifetime(ctx.entitlements, { userId: ACCOUNT, courseRef: 'molda' })
+    const { item } = await saveItem(ctx, 'molda', 'modelo', { kind: 'model' })
+    expect(item.formatVersion).toBe(1)
+    const ticket = await json(
+      await reserve(ctx, 'molda', 'modelo', { kind: 'model', formatVersion: 2 }),
+    )
+    expect((await listOf(ctx, 'molda'))[0].formatVersion).toBe(1)
+    // Uma aba antiga não substitui a reserva nova, mesmo com a base correta.
+    const old = await reserve(ctx, 'molda', 'modelo', { baseRevision: item.revision })
+    expect(old.status).toBe(409)
+    expect(await json(old)).toMatchObject({
+      error: { code: 'CREATION_CLIENT_OUTDATED' },
+      details: { requiredVersion: 2 },
+    })
+    const promoted = await commit(ctx, 'molda', 'modelo', ticket.revision)
+    expect(promoted.status).toBe(200)
+    expect((await json(promoted)).item.formatVersion).toBe(2)
+    expect((await reserve(ctx, 'molda', 'modelo')).status).toBe(409)
+    expect((await commit(ctx, 'molda', 'modelo', ticket.revision)).status).toBe(200)
+    expect((await listOf(ctx, 'molda'))[0].formatVersion).toBe(2)
+  })
+
+  test('reserva nova invalida upload antigo sem permitir que ele volte por cima', async () => {
+    const ctx = buildWithTools()
+    const old = await json(await reserve(ctx, 'studio', 'concorrente'))
+    const next = await json(await reserve(ctx, 'studio', 'concorrente', { formatVersion: 2 }))
+    expect((await commit(ctx, 'studio', 'concorrente', old.revision)).status).toBe(409)
+    expect((await commit(ctx, 'studio', 'concorrente', next.revision)).status).toBe(200)
+    expect((await reserve(ctx, 'studio', 'concorrente', { formatVersion: 1 })).status).toBe(409)
+    expect((await listOf(ctx, 'studio'))[0].formatVersion).toBe(2)
+  })
+
+  test('versão de formato precisa ser inteiro positivo limitado', async () => {
+    const ctx = buildWithTools()
+    for (const formatVersion of [0, -1, 1.5, 65_536, 'dois', null]) {
+      expect(
+        (await reserve(ctx, 'studio', 'invalido', { formatVersion })).status,
+        JSON.stringify(formatVersion),
+      ).toBe(400)
+    }
+    expect(await listOf(ctx, 'studio')).toEqual([])
+  })
+
   test('JWT antigo da conta excluída não consegue recriar dados', async () => {
     const ctx = buildWithTools({ deletedAccountIds: [ACCOUNT] })
 

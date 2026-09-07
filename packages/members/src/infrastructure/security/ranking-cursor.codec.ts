@@ -6,13 +6,13 @@ import type {
 
 const IV_BYTES = 12
 const TAG_BYTES = 16
-const AAD = Buffer.from('members:ranking-cursor:v1')
+const AAD = Buffer.from('members:ranking-cursor:v2')
 
 interface EncodedRankingCursor {
-  v: 1
+  v: 2
   a: 'adult' | 'kids'
   p: string
-  s: number
+  s: string
   x: number
   u: string
 }
@@ -21,14 +21,14 @@ function validPayload(value: unknown): value is EncodedRankingCursor {
   if (!value || typeof value !== 'object') return false
   const payload = value as Partial<EncodedRankingCursor>
   return (
-    payload.v === 1 &&
+    payload.v === 2 &&
     (payload.a === 'adult' || payload.a === 'kids') &&
     typeof payload.p === 'string' &&
     payload.p.length > 0 &&
     typeof payload.u === 'string' &&
     payload.u.length > 0 &&
-    Number.isSafeInteger(payload.s) &&
-    (payload.s ?? 0) > 0 &&
+    typeof payload.s === 'string' &&
+    /^\d+:\d+:(?:\d+(?:,\d+)*)?$/.test(payload.s) &&
     Number.isSafeInteger(payload.x) &&
     (payload.x ?? 0) > 0
   )
@@ -44,10 +44,10 @@ export class EncryptedRankingCursorCodec implements RankingCursorCodec {
 
   encode(payload: RankingCursorPayload): string {
     const compact: EncodedRankingCursor = {
-      v: 1,
+      v: 2,
       a: payload.audience,
       p: payload.viewerUserId,
-      s: payload.snapshotAt.getTime(),
+      s: payload.snapshot,
       x: payload.xp,
       u: payload.userId,
     }
@@ -78,7 +78,7 @@ export class EncryptedRankingCursorCodec implements RankingCursorCodec {
       return {
         audience: decoded.a,
         viewerUserId: decoded.p,
-        snapshotAt: new Date(decoded.s),
+        snapshot: decoded.s,
         xp: decoded.x,
         userId: decoded.u,
       }

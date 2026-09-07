@@ -229,6 +229,12 @@ export async function bufferFromStream(
 export interface R2PrivateHead {
   contentType: string | null
   contentLength: number | null
+  /**
+   * ETag do objeto (sem aspas). Identifica a VERSÃO do arquivo: o admin regrava
+   * um material substituído na MESMA key, então qualquer cache derivado (PDF
+   * marcado por aluno) precisa entrar com o ETag, senão serve a versão antiga.
+   */
+  etag: string | null
 }
 
 /** HEAD no bucket privado — null se o objeto não existe (decide cache/caminho). */
@@ -242,6 +248,7 @@ export async function r2HeadObjectPrivate(key: string): Promise<R2PrivateHead | 
     return {
       contentType: res.ContentType ?? null,
       contentLength: typeof res.ContentLength === 'number' ? res.ContentLength : null,
+      etag: typeof res.ETag === 'string' ? res.ETag.replace(/^"|"$/g, '') || null : null,
     }
   } catch (error) {
     const name = (error as { name?: string }).name

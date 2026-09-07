@@ -163,6 +163,42 @@ beforeEach(() => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20))
 
 describe('BFF das criações — reserva', () => {
+  test('encaminha formato numérico sem coerção', async () => {
+    const { routes, calls } = buildRoutes()
+    const body = {
+      name: 'Modelo',
+      kind: 'model',
+      itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+      bytes: 100,
+      formatVersion: 2,
+    }
+    expect((await routes.creationsUploadUrl.POST(post(body), item)).status).toBe(200)
+    expect((calls.reserveCreationUpload?.[0] as unknown[])[2]).toMatchObject({ formatVersion: 2 })
+    for (const formatVersion of [0, 1.5, 65_536, '2', null]) {
+      expect(
+        (await routes.creationsUploadUrl.POST(post({ ...body, formatVersion }), item)).status,
+      ).toBe(400)
+    }
+    expect(calls.reserveCreationUpload).toHaveLength(1)
+  })
+
+  test('recusa de formato atravessa o BFF com a versão exigida, sem assinar upload', async () => {
+    const body = {
+      error: { code: 'CREATION_CLIENT_OUTDATED', message: 'Atualize a página' },
+      details: { requiredVersion: 2 },
+    }
+    const { routes } = buildRoutes({
+      members: { reserveCreationUpload: async () => ({ status: 409, body }) },
+    })
+    const response = await routes.creationsUploadUrl.POST(
+      post({ name: 'Modelo', kind: 'model', itemUpdatedAt: '2026-09-06T12:00:00.000Z', bytes: 10 }),
+      item,
+    )
+    expect(response.status).toBe(409)
+    expect(await response.json()).toEqual(body)
+    expect(r2.presignPut).toEqual([])
+  })
+
   test('corta o nome no teto (120) e descarta miniatura grande, em vez de recusar; assina o PUT com o Content-Length ecoado pelo members', async () => {
     const { routes, calls } = buildRoutes()
     const res = await routes.creationsUploadUrl.POST(
