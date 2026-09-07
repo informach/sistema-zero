@@ -172,7 +172,9 @@
    compartilhada (07/09/2026); aqui fica só o respiro até a linha seguinte (o campo de criar
    sob demanda, ou a grade). */
 .pensa-home-header {
-  margin-bottom: 16px;
+  /* 20px até a linha seguinte (o campo de criar ou a grade), o mesmo ritmo do Estúdio e do Pinta
+     (pedido dela, 07/09: "não tão embolado"). */
+  margin-bottom: 20px;
   /* O respiro lateral da home (24px; 16px no contêiner estreito): a ABA do menu o desconta para
      encostar na linha da sidebar. */
   --sz-tool-inset: 24px;
@@ -209,7 +211,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 0 0 20px;
+  /* 24px até a grade: o mesmo respiro "filtros → cards" dos irmãos. */
+  margin: 0 0 24px;
   max-width: 680px;
   padding: 0;
 }

@@ -3593,11 +3593,13 @@ isso, `setHitboxScale` é a válvula.
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
 
 ⭐⭐ **07/09/2026 — cabeçalho de DUAS linhas (imagem-modelo dela; "o cabeçalho ocupa espaço
-demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-3">`): menu do host + h1 "Meus
+demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-5">`): menu do host + h1 "Meus
 Jogos" + subtítulo à esquerda; à direita o selo do host (`.sz-tool-status`), o `ThemeToggle`
 (`sz-tool-btn sz-tool-btn--icon`, nome "Mudar tema" intacto), "Importar" (`ImportButton` =
 `<button class="sz-tool-btn">` com `IconUpload`) e "+ Novo projeto" (`.sz-tool-btn-3d`). Linha 2
-(`.sz-tool-toolbar mb-4`, no `<main class="px-6 pb-6">`): à esquerda o `fieldset.sz-tool-chips`
+(`.sz-tool-toolbar mb-6`, no `<main class="px-6 pb-6">`; o ritmo vertical é 20px do cabeçalho
+aos filtros e 24px dos filtros à grade, pedido dela "não tão embolado", o mesmo no Pinta e no
+Pensa): à esquerda o `fieldset.sz-tool-chips`
 (legend "Modo" `sr-only`; segue nomeando o `role="group"` do teste) com os chips Todos/Blocos/
 Código e o botão "Ver os jogos prontos" (`aria-expanded` + `aria-controls="sz-kits-panel"`, só
 com `showExamples` e projetos); à direita a busca (`label.sz-tool-search-wrap` + `IconSearch` +
@@ -3607,7 +3609,7 @@ segue dinâmico). O h2 "Meus projetos" virou **`sr-only`** (o teste exige o head
 título redundante). Rodapé: "Mostrando N de M projetos" (`projects.searchCount(One)`) como `<p>`
 permanente e **`role="status"` SÓ ao filtrar** (a régua de `ProjectList.test.tsx`: um status ao
 filtrar, nenhum sem filtro) + "Precisa de ajuda para começar?" (`projects.help`, só com
-`showExamples`; abre os kits e rola até eles). Ganho: 276-344px → ~156px até a 1ª fileira. As
+`showExamples`; abre os kits e rola até eles). Ganho: 276-344px → ~172px até a 1ª fileira. As
 receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css`; `.sz-home-btn-ghost` foi
 APOSENTADA (o `.sz-home-btn3d` fica: é o "Abrir" do card). ⚠️ `project-list-accessibility.spec.ts`
 casa `span.rounded-full.uppercase.tracking-wide` (o selo do CARD): nada novo na lista pode ser um

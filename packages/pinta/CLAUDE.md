@@ -97,14 +97,15 @@ subtítulo à esquerda; à direita o selo do host e os **cinco botões** ("Traze
 foto", "Selecionar", "Baixar tudo" como `Button variant="tool"` = `.sz-tool-btn`, e "Criar novo"
 como `variant="tool3d"` = `.sz-tool-btn-3d`), com rótulo SEMPRE visível (decisão dela: a 1366px
 com a sidebar aberta o cluster cai para a 2ª linha, e ela aceitou). **Linha 2**
-(`.sz-tool-toolbar mb-3`) = os dois trilhos de chips (`FilterChips` = `fieldset.sz-tool-chips` com
+(`.sz-tool-toolbar mb-6`; o header tem `mb-5`: 20px do cabeçalho aos filtros e 24px dos filtros
+aos cards, pedido dela "não tão embolado") = os dois trilhos de chips (`FilterChips` = `fieldset.sz-tool-chips` com
 a legend VISÍVEL e inline, "Estilo"/"Tipo": dois "Todos" precisam de nome) à esquerda; o contador
 (só ao buscar; o ÚNICO `role="status"`) e a busca (`label.sz-tool-search-wrap` + lupa +
 `input.sz-tool-search pr-11` + X) à direita. Copy encurtada: `importImage: 'Trazer foto'`,
 `restoring: 'Trazendo…'` (os testes leem as constantes). O topo da raiz encolheu (`sm:pt-4`; o
 `p-4 sm:p-6` e o `pb-0` do modo seleção ficam) e os vazios foram de `py-12` para `py-8`. Nada muda
 na grade (164px), nas seções por jogo, no espaçador `mt-auto` (filho DIRETO do scroll root) nem na
-barra sticky. Ganho: 232-288px → ~152px (1920) / ~204px (1366 com sidebar) até a 1ª fileira.
+barra sticky. Ganho: 232-288px → ~172px (1920) / ~224px (1366 com sidebar) até a 1ª fileira.
 
 ## Modelo de dados (`src/core/project.ts` + `projectConfig.ts` — NÃO em types.ts)
 
