@@ -28,6 +28,16 @@ No CSS global do consumer (ex.: `src/app/globals.css`):
 
 O `styles.css` do studio NÃO traz `@import "tailwindcss"` nem `@custom-variant dark` — não colide com o preflight nem com a variant dark do app. Os tokens são namespaced (`--color-sz-*`) e o tema é escopado por `[data-sz-theme]` no root do componente (nunca no `<html>` do host).
 
+**Se o host monta a `ProjectList`** (a home "Meus Jogos": hoje só o community-kids e o playground), ele TAMBÉM importa o chrome compartilhado das ferramentas, DEPOIS dos primitivos kids e ANTES do `styles.css` do studio:
+
+```css
+@import "@sistemazero/ui/theme-kids.css";
+@import "@sistemazero/ui/tool-chrome.css"; /* tokens --sz-tool-* + receitas sz-tool-* (cabeçalho, botão do menu do host) */
+@import "@sistemazero/studio/styles.css";
+```
+
+Sem a folha as classes `sz-tool-*` não existem (a lista sai sem estilo). O EDITOR não depende dela: admin e community adulto não a importam, os tokens `--color-sz-*` caem nos fallbacks e nada muda lá.
+
 ## 2b. Sons dos blocos (opcional, recomendado)
 
 O Blockly toca um somzinho ao ENCAIXAR/DESCONECTAR/DESCARTAR bloco. Por padrão ele os baixaria de um servidor demo externo (`blockly-demo.appspot.com`), que a CSP dos apps bloqueia (spam no console). Por isso o studio injeta com `sounds:false` e **recarrega os sons a partir do PRÓPRIO app** (mesma origem, passa na CSP `media-src 'self'`).

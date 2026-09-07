@@ -202,3 +202,21 @@ export interface PensaHostAdapter {
   mascotImages?: Partial<Record<PensaMascotPose, string>>
   onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
 }
+
+/**
+ * Chrome do HOST nos cabeçalhos do Pensa (07/09/2026): o botão de esconder o menu lateral
+ * da comunidade. Espelho ESTRUTURAL do `HostChrome` do community-kids (zero import entre
+ * pacotes) — só dados; o Pensa desenha com o círculo dele. Sem selo de nuvem: o plano vive
+ * no servidor. Chega pelo `PensaHostChromeProvider`; sem Provider é `null`.
+ */
+export interface PensaHostChromeMenu {
+  /** Menu escondido = `aria-pressed` do botão. */
+  hidden: boolean
+  /** `aria-label` ('Esconder menu' | 'Mostrar menu'). Nunca vira `title`. */
+  label: string
+  onToggle: () => void
+}
+
+export interface PensaHostChrome {
+  menu: PensaHostChromeMenu | null
+}

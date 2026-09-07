@@ -9,8 +9,16 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Button } from '#ui'
+import {
+  IconAlert,
+  IconCloud,
+  IconCloudDownload,
+  IconCloudOff,
+  IconCloudUpload,
+  IconSearch,
+} from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
+import { HostMenuButton } from '../components/layout/HostMenuButton'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
 import { ImportButton } from '../components/projects/ImportButton'
 import {
@@ -28,6 +36,7 @@ import {
   type ProjectSummary,
 } from '../state/persistence'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
+import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'
 import { useT } from '../studio/i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 import {
@@ -97,6 +106,35 @@ export interface ProjectListProps {
 const COLLATOR = new Intl.Collator('pt-BR')
 
 const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]'
+
+/** Ícone do selo de nuvem do host por estado (o vocabulário do `lib/host-chrome.ts` do kids). */
+const HOST_STATUS_ICON: Record<StudioHostChromeStatus['icon'], typeof IconCloud> = {
+  upload: IconCloudUpload,
+  download: IconCloudDownload,
+  cloud: IconCloud,
+  offline: IconCloudOff,
+  alert: IconAlert,
+}
+
+/**
+ * "Guardado na sua conta" do host como a PÍLULA compartilhada (`.sz-tool-status`, a mesma do
+ * Pinta). O `title` é o que dá NOME ao status para o leitor de tela; quem anuncia offline/erro
+ * é a região viva do host (`aria-live="off"` aqui).
+ */
+function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Element {
+  const Icon = HOST_STATUS_ICON[status.icon]
+  return (
+    <span
+      role="status"
+      aria-live="off"
+      title={status.text}
+      className={`sz-tool-status sz-tool-status--${status.tone}`}
+    >
+      <Icon />
+      {status.text}
+    </span>
+  )
+}
 
 export function ProjectList({
   onOpenProject,
@@ -308,6 +346,28 @@ export function ProjectList({
     onOpenProject(id)
   }
 
+  // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
+  const hostChrome = useStudioHostChrome()
+  const hasProjects = Boolean(projects && projects.length > 0)
+  // O painel dos kits abre entre a linha de ferramentas e a grade; "Precisa de ajuda para
+  // começar?" (rodapé) abre e rola até ele.
+  const kitsRef = useRef<HTMLDivElement | null>(null)
+  const openKits = () => {
+    setKitsOpen(true)
+    requestAnimationFrame(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      kitsRef.current?.scrollIntoView?.({ block: 'start', behavior: reduce ? 'auto' : 'smooth' })
+    })
+  }
+  // "Mostrando N de M projetos": permanente como frase no rodapé; `role="status"` SÓ quando
+  // filtra (a régua dos testes: um status ao filtrar, nenhum sem filtro).
+  const countText =
+    filtered && projects
+      ? filtered.length === 1
+        ? t('projects.searchCountOne', { total: projects.length })
+        : t('projects.searchCount', { shown: filtered.length, total: projects.length })
+      : ''
+
   return (
     <StudioThemeProvider value={theme}>
       <div
@@ -315,108 +375,130 @@ export function ProjectList({
         className="flex h-full flex-col bg-sz-bg text-sz-fg"
         style={{ fontFamily: 'var(--font-family-sans)' }}
       >
-        {/* Cabeçalho de SEÇÃO da comunidade no padrão do Pinta ("Meus desenhos"):
-            título display + subtítulo apagado à esquerda, ações à direita
-            terminando na ÚNICA pílula 3D primária. */}
-        <header className="flex flex-wrap items-end gap-3 px-6 pt-6 pb-4">
-          <div className="flex flex-col">
-            <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
-            <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
+        {/* Cabeçalho de DUAS linhas (07/09/2026, imagem-modelo dela), o MESMO do Pinta e do
+            Pensa: linha 1 = menu do host + título/subtítulo à esquerda, selo/tema/Importar/
+            "+ Novo projeto" à direita; linha 2 (no <main>) = filtros + jogos prontos à esquerda,
+            busca + ordenação à direita. As receitas `sz-tool-*` vêm de
+            `@sistemazero/ui/tool-chrome.css` (o host importa; ver docs/embedding.md). */}
+        {/* Respiro vertical = o da galeria do Molda, que ela aprovou (07/09, "não tão
+            embolado"): 28px do cabeçalho para a linha dos filtros (`pb-7`) e 48px dos filtros para
+            a grade (`mb-12`), o mesmo ritmo do Pinta e do Pensa. */}
+        <header className="sz-tool-header px-6 pt-4 pb-7 [--sz-tool-inset:1.5rem]">
+          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1, e é
+              uma ABA colada na linha da sidebar (o `--sz-tool-inset` = o `px-6` daqui). */}
+          <div className="sz-tool-header__lead">
+            {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+            <div className="sz-tool-header__title">
+              <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
+              <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
+            </div>
           </div>
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            {themeProp === undefined && <ThemeToggle />}
+          <div className="sz-tool-header__actions">
+            {hostChrome?.status ? <HostStatusPill status={hostChrome.status} /> : null}
+            {themeProp === undefined && <ThemeToggle className="sz-tool-btn sz-tool-btn--icon" />}
             <ImportButton onImported={handleImported} allowedExtensions={allowedExtensions} />
-            <Button
-              variant="primary"
-              size="sm"
-              className="sz-home-btn3d"
-              onClick={() => setModalOpen(true)}
-            >
+            <button type="button" className="sz-tool-btn-3d" onClick={() => setModalOpen(true)}>
               + {t('projects.new')}
-            </Button>
+            </button>
           </div>
         </header>
 
         {/* Largura TOTAL, como a galeria do Pinta (sem teto de max-w). */}
-        <main className="flex-1 overflow-auto px-6 py-6">
+        <main className="flex-1 overflow-auto px-6 pb-6">
           <div>
-            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <h2 className="sz-ui-display text-lg">{t('projects.title')}</h2>
-              {/* Receita de input do Pinta: 44px, canto xl, borda 2, fundo
-                  RECUADO (bg) — cartões ficam em cima (panel). */}
-              <div className="flex flex-wrap items-center gap-2">
+            {/* O heading da seção segue no DOM para o leitor de tela; visualmente o título da
+                página já diz tudo (um "Meus projetos" a 20px de "Meus Jogos" era o cabeçalho
+                ocupando espaço). */}
+            <h2 className="sr-only">{t('projects.title')}</h2>
+            <div className="sz-tool-toolbar mb-12">
+              <div className="sz-tool-toolbar__start">
+                {/* Filtro de modo (só com projetos). A legend fica para o leitor de tela
+                    (o `role="group"` "Modo"); o trilho de chips é autoexplicativo. */}
+                {hasProjects ? (
+                  <fieldset className="sz-tool-chips">
+                    <legend className="sr-only">{t('projects.filterMode')}</legend>
+                    {(
+                      [
+                        { value: 'all', label: t('projects.filterAll') },
+                        { value: 'blocks', label: t('projects.filterBlocks'), emoji: '🧩' },
+                        { value: 'code', label: t('projects.filterCode'), emoji: '💻' },
+                      ] as ReadonlyArray<{
+                        value: ProjectModeFilter
+                        label: string
+                        emoji?: string
+                      }>
+                    ).map((option) => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        aria-pressed={option.value === modeFilter}
+                        onClick={() => setModeFilter(option.value)}
+                        className="sz-tool-chip"
+                      >
+                        {option.emoji ? <span aria-hidden>{option.emoji}</span> : null}
+                        {option.label}
+                      </button>
+                    ))}
+                  </fieldset>
+                ) : null}
+                {showExamples && hasProjects ? (
+                  <button
+                    type="button"
+                    className="sz-tool-btn"
+                    aria-expanded={kitsOpen}
+                    aria-controls="sz-kits-panel"
+                    onClick={() => setKitsOpen((value) => !value)}
+                  >
+                    <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
+                  </button>
+                ) : null}
+              </div>
+              <div className="sz-tool-toolbar__end">
+                <label className="sz-tool-search-wrap">
+                  <IconSearch />
+                  <input
+                    name="project-search"
+                    type="search"
+                    aria-label={t('projects.search')}
+                    autoComplete="off"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape' && search) {
+                        e.preventDefault()
+                        setSearch('')
+                      }
+                    }}
+                    placeholder={t('projects.search')}
+                    className="sz-tool-search"
+                  />
+                </label>
                 <select
                   name="project-sort"
                   aria-label={t('projects.sort')}
                   value={projectSort}
                   onChange={(e) => void setProjectSort(e.target.value as ProjectSortOrder)}
-                  className="min-h-11 rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-base text-sz-fg outline-none focus:border-sz-accent"
+                  className="sz-tool-select"
                 >
                   <option value="recent">{t('projects.sortRecent')}</option>
                   <option value="name">{t('projects.sortName')}</option>
                 </select>
-                <input
-                  name="project-search"
-                  type="search"
-                  aria-label={t('projects.search')}
-                  autoComplete="off"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Escape' && search) {
-                      e.preventDefault()
-                      setSearch('')
-                    }
-                  }}
-                  placeholder={t('projects.search')}
-                  className="min-h-11 w-72 rounded-xl border-2 border-sz-border bg-sz-bg px-4 text-base text-sz-fg outline-none focus:border-sz-accent focus-visible:ring-2 focus-visible:ring-sz-accent/60"
-                />
               </div>
             </div>
 
-            {/* Filtro de modo + contador (só com projetos; a busca vazia não mostra contador). */}
-            {projects && projects.length > 0 ? (
-              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <fieldset className="m-0 flex min-w-0 flex-wrap items-center gap-1.5 border-0 p-0">
-                  <legend className="mr-1 text-sz-fg-soft text-xs uppercase tracking-wide">
-                    {t('projects.filterMode')}
-                  </legend>
-                  {(
-                    [
-                      { value: 'all', label: t('projects.filterAll') },
-                      { value: 'blocks', label: t('projects.filterBlocks'), emoji: '🧩' },
-                      { value: 'code', label: t('projects.filterCode'), emoji: '💻' },
-                    ] as ReadonlyArray<{ value: ProjectModeFilter; label: string; emoji?: string }>
-                  ).map((option) => {
-                    const active = option.value === modeFilter
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={active}
-                        onClick={() => setModeFilter(option.value)}
-                        className={`inline-flex min-h-9 items-center gap-1 rounded-full border-2 px-3 font-bold text-sm transition-colors ${
-                          active
-                            ? 'border-sz-accent bg-sz-accent text-white'
-                            : 'border-sz-border bg-sz-panel text-sz-fg hover:border-sz-accent'
-                        }`}
-                      >
-                        {option.emoji ? <span aria-hidden>{option.emoji}</span> : null}
-                        {option.label}
-                      </button>
-                    )
-                  })}
-                </fieldset>
-                {filtering && filtered ? (
-                  <p role="status" className="text-sm text-sz-fg-soft">
-                    {filtered.length === 1
-                      ? t('projects.searchCountOne', { total: projects.length })
-                      : t('projects.searchCount', {
-                          shown: filtered.length,
-                          total: projects.length,
-                        })}
-                  </p>
-                ) : null}
+            {/* Os jogos prontos abrem ENTRE a linha de ferramentas e a grade (dentro do
+                rolável). No primeiro uso a galeria já vem aberta no painel do estado vazio. */}
+            {showExamples && hasProjects && kitsOpen ? (
+              <div id="sz-kits-panel" ref={kitsRef} className="sz-tool-panel mb-6 p-4">
+                <Suspense
+                  fallback={
+                    <p role="status" className="text-sm text-sz-fg-soft">
+                      {t('kits.loading')}
+                    </p>
+                  }
+                >
+                  <LazyKitGallery onOpenProject={onOpenProject} />
+                </Suspense>
               </div>
             ) : null}
 
@@ -451,69 +533,52 @@ export function ProjectList({
                   </Suspense>
                 ) : null}
                 <div>
-                  <Button
-                    variant={showExamples ? 'ghost' : 'primary'}
-                    size="sm"
-                    className={showExamples ? 'sz-home-btn-ghost' : 'sz-home-btn3d'}
+                  <button
+                    type="button"
+                    className={showExamples ? 'sz-tool-btn' : 'sz-tool-btn-3d'}
                     onClick={() => setModalOpen(true)}
                   >
                     + {showExamples ? t('kits.scratch') : t('projects.new')}
-                  </Button>
+                  </button>
                 </div>
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-start gap-3">
                 <p className="text-base text-sz-fg-soft">{t('projects.emptySearch')}</p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="sz-home-btn-ghost"
-                  onClick={clearFilters}
-                >
+                <button type="button" className="sz-tool-btn" onClick={clearFilters}>
                   {t('projects.searchClearAll')}
-                </Button>
+                </button>
               </div>
             ) : (
-              <div className="flex flex-col gap-6">
-                {showExamples ? (
-                  <div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="sz-home-btn-ghost"
-                      aria-expanded={kitsOpen}
-                      onClick={() => setKitsOpen((value) => !value)}
-                    >
-                      <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
-                    </Button>
-                    {kitsOpen ? (
-                      <div className="mt-4 rounded-2xl border-2 border-sz-border bg-sz-panel/40 p-4">
-                        <Suspense
-                          fallback={
-                            <p role="status" className="text-sm text-sz-fg-soft">
-                              {t('kits.loading')}
-                            </p>
-                          }
-                        >
-                          <LazyKitGallery onOpenProject={onOpenProject} />
-                        </Suspense>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-                <div className={PROJECT_GRID_CLASS}>
-                  {filtered.map((summary) => (
-                    <ProjectCard
-                      key={summary.id}
-                      summary={summary}
-                      takenNames={takenNames}
-                      onChanged={refreshProject}
-                      onOpen={onOpenProject}
-                    />
-                  ))}
-                </div>
+              <div className={PROJECT_GRID_CLASS}>
+                {filtered.map((summary) => (
+                  <ProjectCard
+                    key={summary.id}
+                    summary={summary}
+                    takenNames={takenNames}
+                    onChanged={refreshProject}
+                    onOpen={onOpenProject}
+                  />
+                ))}
               </div>
             )}
+
+            {/* Rodapé: o contador (frase permanente; `role="status"` só ao filtrar) e a
+                ajuda, que abre os jogos prontos (só quando eles existem). */}
+            {hasProjects && filtered ? (
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-sm text-sz-fg-soft">
+                {filtering ? <p role="status">{countText}</p> : <p>{countText}</p>}
+                {showExamples ? (
+                  <button
+                    type="button"
+                    className="font-bold text-sz-accent hover:underline"
+                    onClick={openKits}
+                  >
+                    {t('projects.help')}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </main>
 

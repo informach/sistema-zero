@@ -17,11 +17,11 @@ import { useFocusMode } from './focus-mode'
  * Duas roupas para o MESMO controle (mesmo rótulo, mesmo ícone, mesmo estado):
  * - **`header`** (padrão): círculo do cabeçalho da aula, no estilo 3D do
  *   `KidsBackButton`, ao lado do "voltar" e do progresso.
- * - **`edge`**: PUXADOR colado na borda esquerda, para as telas dos apps de criação
- *   (Estúdio/Pensa/Pinta), que não têm cabeçalho nenhum onde pendurar o círculo.
- *   ⚠️ Ele mora na CALHA de padding que o `MainContainer` reserva nessas rotas — não
- *   pode flutuar por cima do app: no Estúdio a borda esquerda é a caixa de blocos do
- *   Blockly, e o puxador cobriria uma categoria.
+ * - **`edge`**: PUXADOR colado na borda esquerda. ⚠️ INTERINO (07/09/2026): só o
+ *   `/molda` ainda o usa, na calha que o `MainContainer` reserva para ele. Estúdio,
+ *   Pensa e Pinta ganharam o botão do menu DENTRO da própria barra (contrato
+ *   `hostChrome`, `use-host-chrome.tsx`); o Molda segue quando o pacote sair da obra
+ *   da outra sessão (lote 6b), e aí esta roupa some.
  */
 export function FocusModeToggle({
   target,

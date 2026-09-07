@@ -73,25 +73,65 @@
     monospace;
 }
 
+/*
+ * 07/09/2026: os tokens SEMÂNTICOS `--sz-tool-*` de `@sistemazero/ui/tool-chrome.css` (um valor
+ * só para Pinta, Estúdio e Pensa, opt-in do host: kids e playgrounds). A cadeia é de DOIS
+ * degraus: com a folha manda o `--sz-tool-*`; só com os primitivos, o `--sz-kids-*`; sem nada
+ * (admin, community adulta), o literal de sempre. ⚠️ O `@theme` acima fica INTOCADO: ele é o
+ * escuro-default em `:root`, e apontar `:root` para tokens claros inverteria o default fora do
+ * escopo (a scrollbar do playground lê `--color-sz-bg-soft` no documento). Por isso o escuro
+ * ganha um bloco EXPLÍCITO aqui: o root do Studio sempre carrega `data-sz-theme`.
+ * Os derivados (color-mix / alias) são RE-DECLARADOS nos dois blocos (regra do bloco claro).
+ */
+[data-sz-theme="dark"] {
+  --color-sz-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.103 0.01 265)));
+  --color-sz-bg-soft: color-mix(in oklab, var(--color-sz-bg) 85%, var(--color-sz-panel));
+  --color-sz-panel: var(--sz-tool-surface, var(--sz-kids-navy-superficie, oklch(0.14 0.01 265)));
+  --color-sz-panel-soft: var(
+    --sz-tool-surface-2,
+    var(--sz-kids-navy-superficie-2, oklch(0.185 0.01 265))
+  );
+  --color-sz-border: var(--sz-tool-line, var(--sz-kids-navy-linha, oklch(0.21 0.01 265)));
+  --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 70%, var(--color-sz-bg));
+  --color-sz-surface: var(--color-sz-panel);
+  --color-sz-fg: var(--sz-tool-ink, var(--sz-kids-navy-tinta, oklch(0.975 0.003 255)));
+  --color-sz-fg-soft: var(--sz-tool-muted, var(--sz-kids-navy-tinta-suave, oklch(0.75 0.008 245)));
+  --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 80%, var(--color-sz-bg));
+  --color-sz-accent: var(--sz-tool-accent, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
+  --color-sz-cyan: var(--sz-tool-accent, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
+}
+
 /* Tema claro — override por atributo data-sz-theme="light" no root do Studio. */
 [data-sz-theme="light"] {
   /* ⚠️ TODOS os derivados (color-mix / alias) são RE-DECLARADOS aqui de
      propósito: um custom property que referencia outro é substituído no
      elemento onde é DECLARADO — herdados do :root, ficariam presos nas cores
      do tema escuro. */
-  --color-sz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)); /* azul-céu do app kids */
-  --color-sz-bg-soft: var(--sz-kids-branco-suave, oklch(0.955 0.012 85));
-  --color-sz-panel: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* card */
-  --color-sz-panel-soft: var(--sz-kids-branco-suave, oklch(0.945 0.012 85)); /* secondary/muted */
-  --color-sz-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
+  --color-sz-bg: var(
+    --sz-tool-bg,
+    var(--sz-kids-ceu-suave, oklch(0.975 0.012 85))
+  ); /* azul-céu do app kids */
+  --color-sz-bg-soft: var(--sz-tool-surface-2, var(--sz-kids-branco-suave, oklch(0.955 0.012 85)));
+  --color-sz-panel: var(--sz-tool-surface, var(--sz-kids-branco, oklch(0.995 0.006 85))); /* card */
+  --color-sz-panel-soft: var(
+    --sz-tool-surface-2,
+    var(--sz-kids-branco-suave, oklch(0.945 0.012 85))
+  ); /* secondary/muted */
+  --color-sz-border: var(--sz-tool-line, var(--sz-kids-linha, oklch(0.89 0.018 80)));
   --color-sz-border-soft: color-mix(in oklab, var(--color-sz-border) 55%, var(--color-sz-panel));
   --color-sz-surface: var(--color-sz-panel);
-  --color-sz-fg: var(--sz-kids-tinta, oklch(0.105 0.01 265));
-  --color-sz-fg-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255)); /* muted-foreground */
+  --color-sz-fg: var(--sz-tool-ink, var(--sz-kids-tinta, oklch(0.105 0.01 265)));
+  --color-sz-fg-soft: var(
+    --sz-tool-muted,
+    var(--sz-kids-tinta-suave, oklch(0.5 0.01 255))
+  ); /* muted-foreground */
   --color-sz-fg-mute: color-mix(in oklab, var(--color-sz-fg-soft) 85%, var(--color-sz-panel));
-  --color-sz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* primary = azul (AA) */
+  --color-sz-accent: var(
+    --sz-tool-accent,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* primary = azul (AA) */
   --color-sz-accent-soft: oklch(0.46 0.14 255); /* link */
-  --color-sz-cyan: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --color-sz-cyan: var(--sz-tool-accent, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
   --color-sz-warn: #b45309;
   --color-sz-error: oklch(0.55 0.22 27); /* destructive */
   --color-sz-success: #047857;
@@ -182,30 +222,35 @@
  */
 [data-sz-theme] {
   --sz-home-gradient: var(
-    --sz-kids-grad-cta-azul-suave,
-    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    --sz-tool-cta-gradient,
+    var(
+      --sz-kids-grad-cta-azul-suave,
+      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    )
   );
-  --sz-home-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
 }
 [data-sz-theme="light"] {
   --sz-home-gradient: var(
-    --sz-kids-grad-cta-azul,
-    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+    --sz-tool-cta-gradient,
+    var(--sz-kids-grad-cta-azul, linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255)))
   );
-  --sz-home-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
 }
 
-/* Pílula "3D" (espelho do .pin-btn-3d do Pinta, em tokens sz; alvo 44px). */
+/* Pílula "3D" do CARD "Abrir" (espelho do .pin-btn-3d do Pinta e da `.sz-tool-btn-3d`
+   compartilhada, que o cabeçalho da lista usa desde 07/09/2026; alvo 44px).
+   ⚠️ `color-mix` SEMPRE `in oklab`: em oklch a mistura gira o matiz e passa pelo magenta. */
 [data-sz-theme] .sz-home-btn3d {
-  min-height: 2.75rem;
+  min-height: var(--sz-tool-control, 2.75rem);
   border: 0;
-  border-radius: 9999px;
+  border-radius: var(--sz-tool-radius-pill, 9999px);
   padding-inline: 1.25rem;
   font-size: 1rem;
   font-weight: 700;
   background-image: var(--sz-home-gradient);
-  color: var(--color-sz-bg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+  color: var(--sz-tool-on-cta, var(--color-sz-bg));
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -214,48 +259,22 @@
 [data-sz-theme] .sz-home-btn3d:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
 }
 [data-sz-theme] .sz-home-btn3d:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-home-cta) 60%, black);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
 }
 
-/* Fantasma 44px do Pinta (o ghost do Button é 32px com borda — este não tem). */
-/* ⚠️ Secundário, mas AINDA um botão. Com `border: 0` + fundo transparente,
-   "Importar" e "Ver os jogos prontos" liam como texto solto na página — só o
-   hover revelava que eram clicáveis, e a criança não passa o mouse em tudo.
-   Agora usam a mesma receita do `.sz-home-panel` em escala de botão (borda 2px +
-   sombra dura da borda a 45%), que é o que diferencia "secundário" de "não é
-   botão". O primário segue sendo a ÚNICA pílula 3D (`.sz-home-btn3d`). */
-[data-sz-theme] .sz-home-btn-ghost {
-  min-height: 2.75rem;
-  border: 2px solid var(--color-sz-border);
-  border-radius: 0.75rem;
-  padding-inline: 1rem;
-  font-size: 1rem;
-  font-weight: 700;
-  background: var(--color-sz-panel);
-  color: var(--color-sz-fg);
-  box-shadow: 0 2px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
-}
-[data-sz-theme] .sz-home-btn-ghost:hover:not(:disabled) {
-  border-color: var(--color-sz-accent);
-  background: color-mix(in oklch, var(--color-sz-border) 25%, var(--color-sz-panel));
-  color: var(--color-sz-fg);
-}
-/* Afunda no clique, como a pílula 3D — o botão responde ao dedo. */
-[data-sz-theme] .sz-home-btn-ghost:active:not(:disabled) {
-  transform: translateY(2px);
-  box-shadow: none;
-}
+/* O secundário da home (`.sz-home-btn-ghost`) foi APOSENTADO em 07/09/2026: "Importar",
+   "Ver os jogos prontos" e os botões dos estados vazios usam a `.sz-tool-btn` compartilhada. */
 
 /* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */
 [data-sz-theme] .sz-home-panel {
-  border: 2px solid var(--color-sz-border);
-  border-radius: 1rem;
+  border: var(--sz-tool-border, 2px) solid var(--color-sz-border);
+  border-radius: var(--sz-tool-radius-card, 1rem);
   background: var(--color-sz-panel);
-  box-shadow: 0 3px 0 color-mix(in oklch, var(--color-sz-border) 45%, transparent);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--color-sz-border) 45%, transparent);
 }
 
 /* Hover pop dos cards (espelho do .pin-pop). */

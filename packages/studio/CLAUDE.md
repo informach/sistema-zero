@@ -299,6 +299,44 @@ por `features.download:false`; o Salvar agora também fica no ⋯).
   HOST (member-shell) puxa a entrega do servidor e troca o projeto via `StudioHandle.replaceProject`.
   i18n `topbar.cloudSync`; ícone `IconRefresh` (novo em `ui-internal/icons.tsx`).
 
+## Chrome do HOST na Topbar e na lista (07/09/2026)
+
+O kids parou de sobrepor o selo "Guardado na sua conta" ao Estúdio (overlay no canto da lista e
+do PRO; o editor nem tinha) e de reservar uma calha ao lado para o puxador do menu: os dois
+entraram na `Topbar` e no cabeçalho da `ProjectList`, desenhados AQUI. O contrato é
+`StudioHostChrome` (`src/studio/host-chrome.ts`, espelho estrutural do `HostChrome` do
+community-kids — **só dados, nunca `ReactNode`**: `menu: {hidden, label, onToggle} | null` e
+`status: {tone, icon, label, text} | null`), num contexto PRÓPRIO e VOLÁTIL como o
+`StudioShareDisabledContext` (muda a cada saving↔saved; fora do `StudioCore` para não
+re-renderizar o editor): **`StudioHostChromeProvider`** + `useStudioHostChrome()`, exportados no
+index. O host embrulha `<ProjectList>` + `<StudioEditor>` (e o `StudioProEditor` do member-shell —
+mesma instância do módulo no bundle do kids) num único Provider. Default `null` = nada aparece
+(playground, bloco de aula, admin, adulto).
+
+- O botão do menu é `components/layout/HostMenuButton.tsx` = a receita COMPARTILHADA
+  `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de
+  painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+  `[aria-pressed="true"]`; sem `title`: com `aria-label`, `title` vira descrição e o leitor
+  repete — regra do kids), a MESMA do Pinta e do Pensa (lote do mesmo dia: ela reclamou que os
+  três tinham saído diferentes). É uma **ABA colada na linha da sidebar** (cantos quadrados à
+  esquerda, sem borda esquerda, margem negativa `--sz-tool-inset`): a Topbar declara
+  `[--sz-tool-inset:1rem]` (`0.5rem` no compact) e a `ProjectList` `[--sz-tool-inset:1.5rem]`,
+  o padding esquerdo de cada uma. Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
+  contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO filho do `<header>`
+  (antes da marca); a barra ficou `min-h-13` + `py-1` (52px com e sem o botão de 44). O status vem
+  logo após o bloco do "Salvo": `Badge` no tier wide e **BOLINHA** (`h-2.5 w-2.5`, texto no
+  `aria-label`/`title`) em narrow E compact — a Topbar não tem wrap, e o chip do host cede antes
+  do "Salvo" (`HOST_STATUS_BADGE_TONE`/`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`). Ícones
+  `IconPanelLeftClose/Open`.
+- `ProjectList`: menu antes do bloco do h1 (`.sz-tool-header__lead`), status como 1º item das
+  ações na PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira (o `title` é o nome).
+- ⚠️ Nenhum texto do host contém "Salvo": `e2e/smoke.spec.ts` usa `getByText('Salvo')` estrito.
+- ⚠️ A `ProjectList` DEPENDE do `tool-chrome.css` no host (kids e playground importam; ver
+  `docs/embedding.md`); o editor NÃO (admin/adulto não importam, e lá o menu do host não existe).
+- Testes: `components/layout/Topbar.test.tsx` (o primeiro teste da Topbar: wide/narrow/compact,
+  sem Provider), `projects/ProjectList.hostChrome.test.tsx` e `styles/tokens.test.ts` (a ponte
+  `--color-sz-*` → `--sz-tool-*` nos dois blocos de tema; o `@theme` intocado).
+
 ## Compartilhar (publicar no Mural dos Criadores)
 
 Botão **"Compartilhar"** na Topbar (solto, ao lado do ⋯) que publica o projeto no **Mural dos
@@ -3553,6 +3591,29 @@ isso, `setHitboxScale` é a válvula.
 - O CI roda Chromium em 3 shards e o projeto Firefox completo definido em `playwright.config.ts`.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
+
+⭐⭐ **07/09/2026 — cabeçalho de DUAS linhas (imagem-modelo dela; "o cabeçalho ocupa espaço
+demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
+Jogos" + subtítulo à esquerda; à direita o selo do host (`.sz-tool-status`), o `ThemeToggle`
+(`sz-tool-btn sz-tool-btn--icon`, nome "Mudar tema" intacto), "Importar" (`ImportButton` =
+`<button class="sz-tool-btn">` com `IconUpload`) e "+ Novo projeto" (`.sz-tool-btn-3d`). Linha 2
+(`.sz-tool-toolbar mb-12`, no `<main class="px-6 pb-6">`; o ritmo vertical é o da galeria do
+MOLDA, que ela aprovou: 28px do cabeçalho aos filtros e 48px dos filtros à grade, medidos lá em
+1280px; o mesmo no Pinta e no Pensa): à esquerda o `fieldset.sz-tool-chips`
+(legend "Modo" `sr-only`; segue nomeando o `role="group"` do teste) com os chips Todos/Blocos/
+Código e o botão "Ver os jogos prontos" (`aria-expanded` + `aria-controls="sz-kits-panel"`, só
+com `showExamples` e projetos); à direita a busca (`label.sz-tool-search-wrap` + `IconSearch` +
+`input.sz-tool-search`) e o `select.sz-tool-select`. O painel dos kits (`#sz-kits-panel`,
+`.sz-tool-panel`) abre ENTRE a toolbar e a grade, dentro do rolável (o `import('./KitGallery')`
+segue dinâmico). O h2 "Meus projetos" virou **`sr-only`** (o teste exige o heading; visível era o
+título redundante). Rodapé: "Mostrando N de M projetos" (`projects.searchCount(One)`) como `<p>`
+permanente e **`role="status"` SÓ ao filtrar** (a régua de `ProjectList.test.tsx`: um status ao
+filtrar, nenhum sem filtro) + "Precisa de ajuda para começar?" (`projects.help`, só com
+`showExamples`; abre os kits e rola até eles). Ganho: 276-344px → ~204px até a 1ª fileira. As
+receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css`; `.sz-home-btn-ghost` foi
+APOSENTADA (o `.sz-home-btn3d` fica: é o "Abrir" do card). ⚠️ `project-list-accessibility.spec.ts`
+casa `span.rounded-full.uppercase.tracking-wide` (o selo do CARD): nada novo na lista pode ser um
+`<span>` com essas três utilitárias. Testes: `describe('ProjectList — cabeçalho de duas linhas')`.
 
 A `ProjectList` virou cabeçalho de SEÇÃO da comunidade, espelhando a galeria "Meus desenhos" do
 Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('projects.subtitle')`

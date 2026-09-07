@@ -1,0 +1,455 @@
+/*
+ * CHROME COMPARTILHADO das ferramentas embarcadas (Pinta, Estúdio, Pensa; Molda no lote 6b).
+ * Export `@sistemazero/ui/tool-chrome.css`. OPT-IN: o community-kids e os playgrounds importam;
+ * admin/community/funnel NÃO (os pacotes caem nos fallbacks e ficam como sempre foram).
+ *
+ * 1. TOKENS `--sz-tool-*`: claro em :root e nos escopos claros de cada ferramenta; escuro sob
+ *    TODOS os escopos escuros que os pacotes usam. Derivam dos primitivos --sz-kids-* com
+ *    fallback literal. Ficam FORA do bloco de tema do Tailwind de propósito: lá o v4 poda o que
+ *    nenhuma utilitária usa; custom property em :root nunca é podada.
+ * 2. RECEITAS na camada `components`: PERDEM para as utilitárias (a camada `utilities` vem
+ *    depois), então `cn('sz-tool-btn', 'w-full')` funciona. CSS SEM camada vence qualquer
+ *    camada: nunca tirar as receitas daqui (memória da casa: "CSS sem layer mata as utilitárias").
+ *
+ * `color-mix` SEMPRE `in oklab`: o branco dos primitivos é `oklch(1 0 0)` com matiz EXPLÍCITO;
+ * em oklch a mistura interpola o matiz 252° -> 0° e passa pelo magenta (o rosa do QA do Pinta).
+ * oklab é retangular, não tem matiz para girar. O teste de contrato proíbe `in oklch` aqui.
+ *
+ * Derivados (color-mix) são substituídos no elemento onde são DECLARADOS: por isso o bloco
+ * escuro re-declara TODOS, inclusive os derivados, com o mesmo texto. O teste exige igualdade
+ * entre os conjuntos de tokens do claro e do escuro.
+ */
+
+/* == geometria == (não muda com o tema) */
+:root {
+  --sz-tool-control: 2.75rem; /* 44px: alvo de toque de mão pequena */
+  --sz-tool-chip: 2.25rem; /* 36px: chip de filtro numa fileira densa */
+  --sz-tool-border: 2px;
+  --sz-tool-radius-control: 0.75rem; /* = rounded-xl */
+  --sz-tool-radius-card: 1rem; /* = rounded-2xl, o --radius do kids */
+  --sz-tool-radius-pill: 9999px;
+  /* Respiro esquerdo da barra que hospeda o botão do menu: cada barra o declara (é o padding
+     dela) e a aba usa a margem negativa para encostar na linha da barra lateral. */
+  --sz-tool-inset: 0px;
+  /* Fontes do HOST: o next/font expõe --font-baloo/--font-nunito no <html> com nome hasheado.
+     `sz-none` é família válida que não casa com nada: fora do kids o navegador PULA para o
+     próximo item. NÃO usar var(--font-sans, ...): é token default do Tailwind v4. */
+  --sz-tool-font-display:
+    var(--font-baloo, sz-none), "Baloo 2", "Nunito", ui-rounded, ui-sans-serif, system-ui,
+    sans-serif;
+  --sz-tool-font-sans: var(--font-nunito, sz-none), "Nunito", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* == claro == (:root + o root de toda ferramenta que se declara clara; .pensa-theme-light por
+   ÚLTIMO: é a âncora do teste de contrato) */
+:root,
+[data-sz-theme="light"],
+[data-pinta-theme="light"],
+[data-molda-theme="light"],
+.pensa-theme-light {
+  --sz-tool-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245)); /* = --background */
+  --sz-tool-surface: var(--sz-kids-branco, oklch(1 0 0)); /* = --card */
+  --sz-tool-surface-2: var(--sz-kids-branco-suave, oklch(0.955 0.006 250)); /* = --muted */
+  --sz-tool-line: var(--sz-kids-linha, oklch(0.9 0.01 250)); /* = --border */
+  --sz-tool-ink: var(--sz-kids-tinta, #26314a);
+  --sz-tool-muted: var(--sz-kids-tinta-suave, #5c6b85);
+  --sz-tool-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --primary */
+  --sz-tool-on-accent: oklch(1 0 0); /* = --primary-foreground */
+  --sz-tool-cta-gradient: var(
+    --sz-kids-grad-cta-azul,
+    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+  );
+  --sz-tool-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --sz-cta */
+  --sz-tool-on-cta: oklch(1 0 0); /* = --sz-primary-fg */
+  /* Tons de status como TEXTO (14px, bold): precisam de AA sobre branco. Ancorados nos que o
+     Estúdio já mede (#047857 / #b45309); os verdes/laranjas de fundo do kids não passam. */
+  --sz-tool-ok: oklch(0.5 0.13 160);
+  --sz-tool-warn: oklch(0.52 0.14 58);
+  --sz-tool-danger: oklch(0.55 0.22 27); /* = --destructive */
+  /* derivados */
+  --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
+  --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
+  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
+  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
+  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
+  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
+  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
+}
+
+/* == escuro == DEPOIS do claro de propósito: no <html class="dark"> os dois seletores (:root e
+   .dark) têm a MESMA especificidade e vence a ordem. */
+.dark,
+[data-sz-theme="dark"],
+[data-pinta-theme="dark"],
+[data-molda-theme="dark"],
+.pensa-theme-dark {
+  --sz-tool-bg: var(--sz-kids-navy, oklch(0.235 0.05 262));
+  --sz-tool-surface: var(--sz-kids-navy-superficie, oklch(0.28 0.05 260));
+  --sz-tool-surface-2: var(--sz-kids-navy-superficie-2, oklch(0.33 0.05 260));
+  --sz-tool-line: var(--sz-kids-navy-linha, oklch(0.34 0.05 260));
+  --sz-tool-ink: var(--sz-kids-navy-tinta, oklch(0.975 0.005 250));
+  --sz-tool-muted: var(--sz-kids-navy-tinta-suave, oklch(0.7 0.03 250));
+  --sz-tool-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --sz-tool-on-accent: oklch(0.22 0.05 262); /* navy sobre o azul claro */
+  --sz-tool-cta-gradient: var(
+    --sz-kids-grad-cta-azul-suave,
+    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+  );
+  --sz-tool-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --sz-tool-on-cta: oklch(0.22 0.05 262);
+  --sz-tool-ok: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
+  --sz-tool-warn: oklch(0.83 0.14 85);
+  --sz-tool-danger: oklch(0.64 0.215 27);
+  --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
+  --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
+  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
+  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
+  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
+  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
+  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
+}
+
+/* == receitas == */
+@layer components {
+  /* Botão SECUNDÁRIO (a receita do "Importar" do Estúdio) e o botão do MENU do host. */
+  .sz-tool-btn,
+  .sz-tool-btn-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--sz-tool-control);
+    padding-inline: 1rem;
+    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: var(--sz-tool-shadow-control);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      border-color 0.12s ease,
+      background-color 0.12s ease;
+  }
+  .sz-tool-btn:hover:not(:disabled),
+  .sz-tool-btn-menu:hover:not(:disabled) {
+    border-color: var(--sz-tool-accent);
+    background: color-mix(in oklab, var(--sz-tool-line) 25%, var(--sz-tool-surface));
+  }
+  /* Afunda no clique, como a pílula 3D. */
+  .sz-tool-btn:active:not(:disabled),
+  .sz-tool-btn-menu:active:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: none;
+  }
+  .sz-tool-btn:disabled,
+  .sz-tool-btn-menu:disabled,
+  .sz-tool-btn-3d:disabled,
+  .sz-tool-chip:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  /* Quadrado, só ícone (o menu do host, o "voltar"). */
+  .sz-tool-btn--icon,
+  .sz-tool-btn-menu {
+    min-width: var(--sz-tool-control);
+    padding-inline: 0;
+    flex-shrink: 0;
+  }
+  .sz-tool-btn--icon > svg,
+  .sz-tool-btn-menu > svg {
+    flex: none;
+  }
+  /* O botão do MENU é uma ABA da barra lateral, não uma ação da ferramenta (decisão dela,
+     07/09): cantos quadrados do lado esquerdo, sem borda esquerda, ENCOSTADO na linha da
+     sidebar pela margem negativa igual ao respiro da barra (`--sz-tool-inset`, que cada barra
+     declara). Com o menu escondido a aba fica colada na borda da tela, do lado por onde o menu
+     volta. Os 44px ficam. */
+  .sz-tool-btn-menu {
+    margin-inline-start: calc(-1 * var(--sz-tool-inset));
+    border-inline-start: 0;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+  /* Pressionado = menu ESCONDIDO: borda e tinta suave do acento. Nunca o preenchimento forte,
+     que leria como ferramenta selecionada. (0,2,0) perderia para o :hover (0,3,0); por isso o
+     hover do pressionado tem regra própria (0,4,0). */
+  .sz-tool-btn-menu[aria-pressed="true"] {
+    border-color: var(--sz-tool-accent-line);
+    background: var(--sz-tool-accent-tint);
+    color: var(--sz-tool-accent);
+  }
+  .sz-tool-btn-menu[aria-pressed="true"]:hover:not(:disabled) {
+    border-color: var(--sz-tool-accent);
+    background: color-mix(in oklab, var(--sz-tool-accent) 25%, transparent);
+  }
+
+  /* Pílula 3D PRIMÁRIA (= .sz-btn-gradient do kids, .pin-btn-3d, .sz-home-btn3d). */
+  .sz-tool-btn-3d {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--sz-tool-control);
+    padding-inline: 1.25rem;
+    border: 0;
+    border-radius: var(--sz-tool-radius-pill);
+    background-image: var(--sz-tool-cta-gradient);
+    color: var(--sz-tool-on-cta);
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    box-shadow: var(--sz-tool-shadow-cta);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease,
+      filter 0.12s ease;
+  }
+  .sz-tool-btn-3d:hover:not(:disabled) {
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 5px 0 var(--sz-tool-cta-shade);
+  }
+  .sz-tool-btn-3d:active:not(:disabled) {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--sz-tool-cta-shade);
+  }
+  .sz-tool-btn-3d > svg {
+    flex: none;
+    stroke: currentColor;
+  }
+
+  /* Chips exclusivos de filtro (fieldset + legend), 36px. A legend NÃO é "rendered legend":
+     com float ela entra no fluxo flex e fica INLINE com os chips (sem o float, o navegador a
+     desenha numa linha ACIMA, que é o que custava altura). */
+  .sz-tool-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+    min-inline-size: auto;
+  }
+  .sz-tool-chips > legend {
+    float: left;
+    padding: 0;
+    margin-inline-end: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sz-tool-muted);
+  }
+  .sz-tool-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: var(--sz-tool-chip);
+    padding-inline: 0.75rem;
+    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      border-color 0.12s ease,
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .sz-tool-chip:hover:not(:disabled) {
+    border-color: var(--sz-tool-accent);
+  }
+  /* Ativo: fundo do acento + texto on-accent (navy no escuro; o `text-white` do Estúdio
+     falhava AA sobre o azul-vivo). */
+  .sz-tool-chip[aria-pressed="true"] {
+    border-color: var(--sz-tool-accent);
+    background: var(--sz-tool-accent);
+    color: var(--sz-tool-on-accent);
+  }
+
+  /* Busca e seletor: 44px, xl, borda 2, fundo RECUADO (bg): os cartões ficam por cima. */
+  .sz-tool-search,
+  .sz-tool-select {
+    min-height: var(--sz-tool-control);
+    width: 100%;
+    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-bg);
+    color: var(--sz-tool-ink);
+    font-size: 1rem;
+    padding-inline: 1rem;
+  }
+  .sz-tool-select {
+    width: auto;
+    padding-inline: 0.75rem;
+  }
+  .sz-tool-search:focus,
+  .sz-tool-select:focus {
+    border-color: var(--sz-tool-accent);
+    outline: none;
+  }
+  .sz-tool-search::-webkit-search-cancel-button {
+    appearance: none;
+  }
+  /* O embrulho do campo com a lupa: `relative` + o ícone absoluto à esquerda. */
+  .sz-tool-search-wrap {
+    position: relative;
+    display: flex;
+    flex: 1 1 14rem;
+    min-width: 0;
+    align-items: center;
+  }
+  .sz-tool-search-wrap > svg {
+    position: absolute;
+    left: 0.75rem;
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+    color: var(--sz-tool-muted);
+  }
+  .sz-tool-search-wrap > .sz-tool-search {
+    padding-inline-start: 2.5rem;
+  }
+
+  /* Card/painel (= .pin-panel / .sz-home-panel / .pensa-project-card) e o pop de hover. */
+  .sz-tool-panel {
+    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-card);
+    background: var(--sz-tool-surface);
+    box-shadow: var(--sz-tool-shadow-card);
+  }
+  .sz-tool-pop {
+    transition: transform 0.18s ease-out;
+  }
+  .sz-tool-pop:hover {
+    transform: translateY(-2px) scale(1.02);
+  }
+
+  /* Selo de nuvem em pílula ("Guardado na sua conta"). Tom por modificador. */
+  .sz-tool-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    min-height: 2rem;
+    padding-inline: 0.625rem;
+    border: var(--sz-tool-border) solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-muted);
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+  .sz-tool-status > svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+  }
+  .sz-tool-status--ok {
+    color: var(--sz-tool-ok);
+    border-color: color-mix(in oklab, var(--sz-tool-ok) 35%, var(--sz-tool-line));
+    background: color-mix(in oklab, var(--sz-tool-ok) 10%, var(--sz-tool-surface));
+  }
+  .sz-tool-status--warn {
+    color: var(--sz-tool-warn);
+    border-color: color-mix(in oklab, var(--sz-tool-warn) 45%, var(--sz-tool-line));
+    background: color-mix(in oklab, var(--sz-tool-warn) 10%, var(--sz-tool-surface));
+  }
+  .sz-tool-status--danger {
+    color: var(--sz-tool-danger);
+    border-color: color-mix(in oklab, var(--sz-tool-danger) 45%, var(--sz-tool-line));
+    background: color-mix(in oklab, var(--sz-tool-danger) 8%, var(--sz-tool-surface));
+  }
+
+  /* Cabeçalho compacto de DUAS linhas (só layout; a tipografia é de cada pacote:
+     .pin-display / .sz-ui-display / .pensa-display). Linha 1 = .sz-tool-header:
+     [menu][título+subtítulo] ... [status][ações][3D]. Linha 2 = .sz-tool-toolbar:
+     [chips] ... [busca][ordenar]. Abaixo de md as pontas direitas descem para a própria linha.
+     Sem container queries de propósito: containment de layout re-ancoraria os overlays
+     `fixed` sem portal (o Dialog do Pinta). */
+  .sz-tool-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .sz-tool-header__lead {
+    display: flex;
+    flex: 1 1 16rem;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .sz-tool-header__title {
+    min-width: 0;
+  }
+  .sz-tool-header__actions,
+  .sz-tool-toolbar__end {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+  }
+  .sz-tool-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+  .sz-tool-toolbar__start {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+  @media (max-width: 47.99rem) {
+    .sz-tool-header__actions,
+    .sz-tool-toolbar__end {
+      width: 100%;
+      margin-inline-start: 0;
+    }
+  }
+
+  /* Foco: anel único de todo o chrome. Depois do :focus da busca (mesma especificidade). */
+  .sz-tool-btn:focus-visible,
+  .sz-tool-btn-menu:focus-visible,
+  .sz-tool-btn-3d:focus-visible,
+  .sz-tool-chip:focus-visible,
+  .sz-tool-search:focus-visible,
+  .sz-tool-select:focus-visible {
+    outline: 2px solid var(--sz-tool-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sz-tool-btn,
+    .sz-tool-btn-menu,
+    .sz-tool-btn-3d,
+    .sz-tool-chip,
+    .sz-tool-pop {
+      transition: none;
+    }
+    .sz-tool-pop:hover {
+      transform: none;
+    }
+  }
+}

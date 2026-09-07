@@ -1,6 +1,6 @@
 import type { JSX } from 'react'
 import { useRef, useState } from 'react'
-import { Button, Modal } from '#ui'
+import { Button, IconUpload, Modal } from '#ui'
 import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
 import { useT } from '../../studio/i18n'
 
@@ -102,14 +102,12 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
           if (file) void handleFile(file)
         }}
       />
-      <Button
-        variant="ghost"
-        size="sm"
-        className="sz-home-btn-ghost"
-        onClick={() => inputRef.current?.click()}
-      >
+      {/* O secundário COMPARTILHADO das ferramentas (`.sz-tool-btn`, 07/09/2026): 44px,
+          cantos xl, borda 2px, sombra dura. O nome acessível segue "Importar". */}
+      <button type="button" className="sz-tool-btn" onClick={() => inputRef.current?.click()}>
+        <IconUpload />
         {t('projects.import')}
-      </Button>
+      </button>
       <Modal
         open={open}
         onClose={dismiss}

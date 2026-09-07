@@ -42,6 +42,7 @@ import {
 import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
+import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button, IconButton, ToolButton } from '../ui/Button'
 import {
   ArrowLeft,
@@ -313,6 +314,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
 
 function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolean }): JSX.Element {
   const { adapter, gallery, lesson } = usePintaApp()
+  const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
   const asset = useEditor((state) => state.asset)
   const savedAsset = useEditor((state) => state.savedAsset)
@@ -467,16 +469,21 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   }
 
   return (
-    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
-      {/* Numa aula não há para onde voltar: o desenho é a tela inteira do bloco. */}
+    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2 [--sz-tool-inset:0.75rem]">
+      {/* Numa aula não há para onde voltar (nem menu da comunidade a esconder): o desenho é
+          a tela inteira do bloco. Fora dela, o botão do menu do HOST vem primeiro — é o
+          canto mais perto do painel que ele controla. */}
       {lesson ? null : (
-        <ToolButton
-          icon={ArrowLeft}
-          label={COPY.editor.back}
-          disabled={closing}
-          aria-busy={closing}
-          onClick={onBack}
-        />
+        <div className="flex shrink-0 items-center gap-1">
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <ToolButton
+            icon={ArrowLeft}
+            label={COPY.editor.back}
+            disabled={closing}
+            aria-busy={closing}
+            onClick={onBack}
+          />
+        </div>
       )}
       <span aria-hidden="true" className="text-xl">
         {kind.emoji}
@@ -507,6 +514,10 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         <Redo2 aria-hidden="true" className="size-5" />
       </IconButton>
       <SaveBadge />
+      {/* "Guardado na sua conta" do host, ao lado do "Salvo" local (07/09/2026). */}
+      {!lesson && hostChrome?.status ? (
+        <HostCloudStatus status={hostChrome.status} variant="bar" />
+      ) : null}
       {resynced ? (
         <span className="text-pin-text-soft text-xs" role="status">
           {COPY.sendToStudio.resynced}

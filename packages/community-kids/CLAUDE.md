@@ -528,10 +528,22 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `molda`), molde do Pinta sem o item especial; os nomes únicos/`-copia` dos dois wrappers vêm de
   `src/lib/creation-names.ts` (`uniqueCreationName`/`conflictCopyName`, teto por pacote). Ver a
   seção "Molda" abaixo.
-- **Selo:** `components/kids/cloud-save-badge.tsx`: guardando · guardado · sem internet · não
-  consegui (recados de `CLOUD_MESSAGES`, nunca a mensagem crua do servidor). `idle`/`unsupported`
-  não mostram nada. Uma região viva (`sr-only`, sempre presente) anuncia só offline/erro. No Pinta e no Molda é irmão do app; no Estúdio é uma CAMADA absoluta por cima da lista e
-  do editor PRO (a moldura é bloco e os filhos são `h-full` — no fluxo empurraria a lista).
+- **Selo (07/09/2026: DENTRO da barra da ferramenta):** a copy e os estados vivem na função
+  pura `lib/cloud-status.ts` (`cloudStatusView`: guardando · buscando · guardado · sem internet ·
+  não consegui, com recados de `CLOUD_MESSAGES`, nunca a mensagem crua; `idle`/`unsupported` =
+  `null`; só offline/erro anunciam). O hook `components/kids/use-host-chrome.tsx`
+  (`useHostChrome({cloud, syncing})`) monta o contrato **`HostChrome {menu, status}`**
+  (`lib/host-chrome.ts`, só DADOS, nunca `ReactNode`) e cada client embrulha o app no Provider
+  que o PRÓPRIO pacote exporta (`mod.PintaHostChromeProvider`, `mod.StudioHostChromeProvider`,
+  `mod.PensaHostChromeProvider`) — Pinta, Estúdio (lista, editor E o PRO, que antes não tinha
+  selo) e Pensa (só o menu) desenham no idioma deles; nas galerias o selo é a PÍLULA compartilhada
+  `.sz-tool-status(--ok|--warn|--danger)` do `tool-chrome.css` (a mesma no Pinta e no Estúdio), e
+  na Topbar do Estúdio segue Badge/bolinha. A região viva (`HostChromeAnnouncer`,
+  `sr-only`, sempre montada) fica no HOST, irmã do app. ⚠️ O Provider TEM que vir do MESMO
+  módulo do `import()` que montou o app, senão são duas instâncias de contexto e nada aparece.
+  ⚠️ Nenhum texto do selo contém "Salvo" (o e2e do Studio usa `getByText('Salvo')` estrito).
+  **INTERINO:** `cloud-save-badge.tsx` (a camada acima do app) só existe para o `/molda`, até o
+  pacote sair da obra da outra sessão (lote 6b); ele lê a mesma função pura.
 - Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
   Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
 - **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com
@@ -828,7 +840,8 @@ consertou dois defeitos pré-existentes: a ProjectList do Estúdio com muitos pr
 altura à página (o `overflow-auto` interno dela nunca engatava), e o puxador do modo foco
 (`absolute top-1/2`) centrava no MEIO do main crescido — fora da tela.
 ⚠️⚠️ **Par obrigatório do travamento: `md:min-h-[36rem]` (full review 26/08)** = o piso
-`min-h-[34rem]` dos frames (`embedded-app-loading.tsx`) + 2rem de `md:py-4`. Sem ele, janela
+`min-h-[34rem]` dos frames (`embedded-app-loading.tsx`) + 2rem de `md:py-4` — **desde 07/09/2026 o
+padding é ZERO e o par virou `md:min-h-[34rem]` (só o `/molda` interino segue em 36rem)**. Sem ele, janela
 desktop mais BAIXA que ~560px (snap de meia tela, zoom 175-200% — quem mais usa zoom é quem
 menos pode perder o controle) fazia o piso do frame estourar contra o `overflow-hidden` e o PÉ
 do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medido: 2px visíveis a
@@ -1017,6 +1030,34 @@ o pontinho + atalho p/ `/recados`. Shims em `app/api/members/teacher-threads/*` 
 member-shell (ver o CLAUDE.md de lá) + members (portão/posse); aqui é só apresentação.
 
 ## Modo foco: esconder o menu lateral (aula + apps de criação, 08/2026)
+
+⭐⭐ **07/09/2026 — as ferramentas ficaram de BORDA A BORDA e o botão do menu entrou na barra
+delas.** Pedido dela: "estamos perdendo muito espaço com espaçamento, com o selo lá em cima e com
+a alça na lateral". O ramo embarcado do `MainContainer` perdeu `px-2 pt-4 md:py-4 md:pr-4 md:pl-9`,
+a calha e o `<FocusModeToggle variant="edge">`; virou `flex h-[calc(100dvh-3.5rem)] min-h-0 w-full
+flex-col overflow-hidden pb-24 md:h-dvh md:min-h-[34rem] md:flex-none md:pb-0` (o `pb-24` do
+mobile fica: a tab bar é `fixed`). Ganho no desktop: +52px de largura e +32px de altura (+32px da
+linha do selo no Pinta); em 1280px o Estúdio volta a caber em SPLIT com o menu aberto (root 988 →
+1040 ≥ 1024). O botão (`PanelLeftClose`/`PanelLeftOpen`, `aria-pressed`, sem `title`) chega às
+ferramentas pelo contrato `hostChrome.menu` (`useHostChrome` → `menu: {hidden, label, onToggle}`,
+`null` sem `navAvailable`) e cada uma o desenha como PRIMEIRO item da barra do editor e do
+cabeçalho da galeria/lista. ⭐⭐ **Desde o lote seguinte (mesmo dia) o botão é UM só nos três:** a
+receita compartilhada `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda
+2px, fundo de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+`[aria-pressed="true"]`, nunca o preenchimento forte de ferramenta ativa) — ela reclamou que
+Pinta (44 sem borda), Estúdio (36) e Pensa (círculo de 46) tinham saído diferentes. E na 3ª
+rodada do dia ele virou uma **ABA da barra lateral** (pedido dela: "semanticamente ela está ligada
+ao menu da esquerda, não às ferramentas"): cantos quadrados à esquerda, sem borda esquerda,
+ENCOSTADA na linha da sidebar (o `border-r` do `<aside>`) por uma margem negativa igual ao padding
+da barra (`--sz-tool-inset`, declarado por cada barra), 44px mantidos; com o menu escondido a aba
+fica colada na borda da tela. A folha entra
+no `globals.css` DEPOIS do `theme-kids` e ANTES dos CSS dos pacotes (ver `packages/ui/CLAUDE.md`
+regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacotes passaram a ler e as
+receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`
++ `aria-hidden` (antes os 9 links ficavam no tab order invisíveis). Os fundos das quatro
+ferramentas e o `--background` do kids são os MESMOS primitivos, então sem padding não há emenda.
+⚠️ INTERINO: o `/molda` mantém calha + puxador `edge` + o selo acima (pacote em obra na outra
+sessão); some no lote 6b. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
 
 `focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS preferências
 independentes por PERFIL no localStorage — esconder o MENU esquerdo (`sz:kids:hide-nav:<perfil>`) e

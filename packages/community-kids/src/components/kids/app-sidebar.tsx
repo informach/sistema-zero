@@ -42,6 +42,10 @@ export function AppSidebar({
 
   return (
     <aside
+      // Colapsada ela fica INERTE: `opacity-0 pointer-events-none` não tira os links do
+      // tab order nem do leitor de tela — sem isto o Tab passeava por 9 itens invisíveis.
+      inert={navCollapsed}
+      aria-hidden={navCollapsed}
       className={cn(
         'sticky top-0 hidden h-screen min-h-0 shrink-0 flex-col border-border bg-card py-5 md:flex',
         'overflow-hidden transition-[width,padding,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',

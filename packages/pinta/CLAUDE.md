@@ -52,6 +52,61 @@ seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatóri
 vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
 progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
+## Chrome do HOST na barra (07/09/2026)
+
+O kids parou de pôr o selo "Guardado na sua conta" numa linha ACIMA do Pinta e o puxador do menu
+numa calha ao lado: os dois entraram na barra do editor e no cabeçalho da galeria, desenhados
+AQUI, com os botões e tons do Pinta. O contrato é `PintaHostChrome` (`core/types.ts`, espelho
+estrutural do `HostChrome` do community-kids — **só dados, nunca `ReactNode`**: `menu:
+{hidden, label, onToggle} | null` e `status: {tone, icon, label, text} | null`) e chega pelo
+**`PintaHostChromeProvider`** (exportado no index, junto de `usePintaHostChrome`), que o host
+renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLesson>`) o contexto é
+`null` e nada aparece — o editor ainda guarda `!lesson` nos dois pontos.
+
+- `components/hostChrome.tsx`: `HostMenuButton` = a receita COMPARTILHADA `.sz-tool-btn-menu` de
+  **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de painel, sombra dura; "menu
+  escondido" = borda e tinta suaves do acento via `[aria-pressed="true"]`, NÃO o
+  `pin-tool-active`, que leria como ferramenta selecionada; sem `title`) — a MESMA do Estúdio e
+  do Pensa (lote do mesmo dia: ela reclamou que os três tinham saído diferentes). Ela é uma **ABA
+  colada na linha da sidebar** (cantos quadrados à esquerda, sem borda esquerda, margem negativa
+  `--sz-tool-inset`): a barra do editor declara `[--sz-tool-inset:0.75rem]` (o `px-3` dela) e o
+  cabeçalho da galeria `[--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]` (o `p-4 sm:p-6` da
+  raiz). `HostCloudStatus`:
+  na barra (`variant="bar"`) o idioma do `SaveBadge` (texto forte + ícone lucide; rótulo curto e,
+  abaixo de `lg`, só o ícone; offline/erro mostram texto sempre); no cabeçalho (`variant="header"`)
+  a PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem
+  anuncia é o host.
+- Editor: menu ANTES do Voltar (agrupados num `flex shrink-0 items-center gap-1`); status logo
+  depois do `<SaveBadge />`. Galeria: cabeçalho de DUAS linhas (`.sz-tool-header` + `__lead` com o
+  menu e o bloco do título + `__actions` com o status 1º e os CINCO botões); a linha
+  `COPY.gallery.syncing` só aparece SEM status do host (senão "Buscando…" 2×).
+- ⚠️ O host tem que importar o `tool-chrome.css` (o kids e o playground importam); sem ele as
+  classes `sz-tool-*` não existem — por isso os diálogos e as barras do editor, que rodam também no
+  admin/adulto, seguem nas variantes `pin-*` do `Button`.
+- ⚠️ `core/types.ts` é alcançável do barril `/assets` (`purity.test.ts`): o contrato não pode
+  importar React — por isso é dado, não elemento.
+- Testes: `components/hostChromeUi.test.tsx` (galeria, editor, sem Provider, nulls),
+  `lesson/pintaLessonHostChrome.test.tsx` (a aula embrulhada no Provider não mostra nada),
+  `components/gallery/galleryHeaderUi.test.tsx` (as duas linhas) e `styles/tokens.test.ts` (a
+  ponte `--color-pin-*` → `--sz-tool-*` nos dois temas).
+
+## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
+
+Pedido dela, com a imagem-modelo do Estúdio: **linha 1** = menu do host + h1 "Meus desenhos" +
+subtítulo à esquerda; à direita o selo do host e os **cinco botões** ("Trazer de volta", "Trazer
+foto", "Selecionar", "Baixar tudo" como `Button variant="tool"` = `.sz-tool-btn`, e "Criar novo"
+como `variant="tool3d"` = `.sz-tool-btn-3d`), com rótulo SEMPRE visível (decisão dela: a 1366px
+com a sidebar aberta o cluster cai para a 2ª linha, e ela aceitou). **Linha 2**
+(`.sz-tool-toolbar mb-12`; o header tem `mb-7`: 28px do cabeçalho aos filtros e 48px dos filtros
+aos cards, o ritmo da galeria do MOLDA que ela aprovou) = os dois trilhos de chips (`FilterChips` = `fieldset.sz-tool-chips` com
+a legend VISÍVEL e inline, "Estilo"/"Tipo": dois "Todos" precisam de nome) à esquerda; o contador
+(só ao buscar; o ÚNICO `role="status"`) e a busca (`label.sz-tool-search-wrap` + lupa +
+`input.sz-tool-search pr-11` + X) à direita. Copy encurtada: `importImage: 'Trazer foto'`,
+`restoring: 'Trazendo…'` (os testes leem as constantes). O topo da raiz encolheu (`sm:pt-4`; o
+`p-4 sm:p-6` e o `pb-0` do modo seleção ficam) e os vazios foram de `py-12` para `py-8`. Nada muda
+na grade (164px), nas seções por jogo, no espaçador `mt-auto` (filho DIRETO do scroll root) nem na
+barra sticky. Ganho: 232-288px → ~204px (1920) / ~256px (1366 com sidebar) até a 1ª fileira.
+
 ## Modelo de dados (`src/core/project.ts` + `projectConfig.ts` — NÃO em types.ts)
 
 - **Não há "projeto"**: a galeria é a lista de ASSETS do perfil; cada asset é um registro

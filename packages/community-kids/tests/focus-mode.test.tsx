@@ -59,9 +59,60 @@ beforeEach(() => {
 
 afterEach(cleanup)
 
+const { useFocusMode } = await import('../src/components/kids/focus-mode')
+
+/** Sonda do que as FERRAMENTAS leem (desde 07/09 o botão vive na barra delas). */
+function Probe() {
+  const { navAvailable, outlineAvailable } = useFocusMode()
+  return <output data-nav={String(navAvailable)} data-outline={String(outlineAvailable)} />
+}
+
+describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
+  it('é oferecido nos QUATRO apps de criação e no Estúdio Pro, a partir de 768px', () => {
+    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
+      pathname = route
+      const { container, unmount } = render(
+        <FocusModeProvider viewerId="perfil-1">
+          <Probe />
+        </FocusModeProvider>,
+      )
+      const probe = container.querySelector('output')
+      expect(probe?.getAttribute('data-nav')).toBe('true')
+      // A lista de aulas segue EXCLUSIVA da aula.
+      expect(probe?.getAttribute('data-outline')).toBe('false')
+      unmount()
+    }
+  })
+
+  it('não é oferecido abaixo de 768px nem fora das telas (mesmo com a preferência salva)', () => {
+    pathname = '/estudio'
+    setViewportWidth(500)
+    const narrow = render(
+      <FocusModeProvider viewerId="perfil-1">
+        <Probe />
+      </FocusModeProvider>,
+    )
+    expect(narrow.container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
+    narrow.unmount()
+
+    setViewportWidth(1280)
+    localStorage.setItem('sz:kids:hide-nav:perfil-1', '1')
+    for (const route of ['/cursos', '/perfil', '/']) {
+      pathname = route
+      const { container, unmount } = render(
+        <FocusModeProvider viewerId="perfil-1">
+          <Probe />
+        </FocusModeProvider>,
+      )
+      expect(container.querySelector('output')?.getAttribute('data-nav')).toBe('false')
+      unmount()
+    }
+  })
+})
+
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('aparece nos três apps de criação (e no Estúdio Pro)', () => {
-    for (const route of ['/estudio', '/pensa', '/pinta', '/estudio/pro/abc123']) {
+  it('aparece nos apps de criação (e no Estúdio Pro) — interino do Molda inclusive', () => {
+    for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
       pathname = route
       const { unmount } = renderNav()
       expect(screen.getByRole('button', { name: 'Esconder menu' })).toBeDefined()

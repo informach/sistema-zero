@@ -97,8 +97,10 @@ export const ptBR: Record<string, string> = {
   'projects.emptySearch': 'Nenhum projeto encontrado para essa busca.',
   'projects.searchClear': 'Limpar busca',
   'projects.searchClearAll': 'Limpar busca e filtros',
-  'projects.searchCount': '{shown} de {total} projetos',
-  'projects.searchCountOne': '1 de {total} projetos',
+  // Rodapé da lista (07/09/2026): permanente como frase, `role="status"` só quando filtra.
+  'projects.searchCount': 'Mostrando {shown} de {total} projetos',
+  'projects.searchCountOne': 'Mostrando 1 de {total} projetos',
+  'projects.help': 'Precisa de ajuda para começar?',
   'projects.filterMode': 'Modo',
   'projects.filterAll': 'Todos',
   'projects.filterBlocks': 'Blocos',

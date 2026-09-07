@@ -13,8 +13,8 @@ import {
   createCloudMirroredPintaPersistence,
   type PintaPersistenceLike,
 } from '@/lib/pinta-cloud-persistence'
-import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { usePintaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/canvas/IndexedDB); carregamos DENTRO de um
@@ -283,6 +283,10 @@ export function PintaClient({
     initialAssetId,
   ])
 
+  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da barra do
+  // Pinta (contrato `hostChrome`, 07/09/2026) — antes o selo era uma linha acima do app.
+  const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
+
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
     // `embedded-app-loading.tsx`): sem card, porque o Pinta é uma SEÇÃO da
@@ -326,12 +330,13 @@ export function PintaClient({
         <EmbeddedAppLoadingBody label="Carregando o Pinta…" />
       ) : (
         <>
-          <div className="flex justify-end">
-            <CloudSaveBadge cloud={cloud} syncing={syncing} />
-          </div>
-          {/* O selo é irmão do app: o wrapper dá ao `h-full` do Pinta uma altura definida. */}
+          {/* A região viva do selo fica no HOST (sempre montada; só offline/erro falam). */}
+          <HostChromeAnnouncer text={announcement} />
+          {/* O wrapper dá ao `h-full` do Pinta uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.PintaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+            <mod.PintaHostChromeProvider value={hostChrome}>
+              <mod.PintaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+            </mod.PintaHostChromeProvider>
           </div>
         </>
       )}

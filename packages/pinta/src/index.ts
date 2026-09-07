@@ -6,6 +6,10 @@
  *    perfil no IndexedDB — mesmo contrato do studio).
  * 2. `<PintaApp adapter={...} />` — uncontrolled, navegação por estado.
  */
+
+// Chrome do HOST na barra (07/09/2026): o kids embrulha o `<PintaApp>` neste Provider com
+// o botão do menu lateral + o selo "Guardado na sua conta"; o Pinta desenha no idioma dele.
+export { PintaHostChromeProvider, usePintaHostChrome } from './components/hostChrome'
 export { PintaApp } from './components/PintaApp'
 export type { PintaProjectRef } from './core/project'
 /**
@@ -16,6 +20,9 @@ export { PINTA_TOOL_PRESETS, type PintaToolPreset } from './core/toolCuration'
 export type {
   PintaExportedAsset,
   PintaHostAdapter,
+  PintaHostChrome,
+  PintaHostChromeMenu,
+  PintaHostChromeStatus,
   PintaInitialIntent,
   PintaSendResult,
   PintaTaskSession,

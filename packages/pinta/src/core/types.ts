@@ -244,3 +244,32 @@ export interface PintaHostAdapter {
    */
   allowTools?: readonly string[]
 }
+
+/**
+ * Chrome do HOST dentro da barra do Pinta (07/09/2026): o botão de esconder o menu lateral
+ * da comunidade e o selo "Guardado na sua conta". Espelho ESTRUTURAL do `HostChrome` do
+ * community-kids (zero import entre pacotes) — só dados, nunca elemento React: o Pinta
+ * desenha com os próprios botões e tons. Chega pelo `PintaHostChromeProvider` (exportado),
+ * que o host renderiza em volta do `<PintaApp>`; sem Provider (aula, playground) é `null`.
+ */
+export interface PintaHostChromeMenu {
+  /** Menu escondido = `aria-pressed` do botão. */
+  hidden: boolean
+  /** `aria-label` ('Esconder menu' | 'Mostrar menu'). Nunca vira `title`. */
+  label: string
+  onToggle: () => void
+}
+
+export interface PintaHostChromeStatus {
+  tone: 'muted' | 'ok' | 'warn' | 'danger'
+  icon: 'upload' | 'download' | 'cloud' | 'offline' | 'alert'
+  /** Curto, para a barra do editor. */
+  label: string
+  /** A frase inteira (cabeçalho da galeria e `title`). */
+  text: string
+}
+
+export interface PintaHostChrome {
+  menu: PintaHostChromeMenu | null
+  status: PintaHostChromeStatus | null
+}

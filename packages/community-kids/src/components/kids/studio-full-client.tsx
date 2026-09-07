@@ -24,9 +24,9 @@ import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-c
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
-import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { StudioFullEditor } from './studio-full-editor'
+import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useStudioTaskHandoff } from './use-pensa-task-handoff'
 
 // O package do Estúdio é pesado (Monaco/Blockly/IndexedDB) e NÃO roda no SSR — por
@@ -667,11 +667,16 @@ export function StudioFullClient({
     else backToList()
   }, [backToList, taskId])
 
+  // Botão do menu lateral + selo "Guardado na sua conta", desenhados DENTRO da Topbar do
+  // editor e do cabeçalho da lista (contrato `hostChrome`, 07/09/2026). UM provider cobre
+  // as duas raízes (lista e editor) — e o editor passa a ter o selo, que antes não tinha.
+  const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
+
   // O editor PREENCHE o espaço disponível: `flex-1` dentro do <main> do MainContainer
   // (no /estudio o main é `flex flex-col` de largura+altura totais). `min-h-[34rem]`
   // mantém a usabilidade em telas baixas (a página rola se não couber — quem
-  // garante isso TAMBÉM no desktop é o `md:min-h-[36rem]` do MainContainer,
-  // par deste piso + 2rem de py; mexeu num, mexa no outro).
+  // garante isso TAMBÉM no desktop é o `md:min-h-[34rem]` do MainContainer,
+  // par deste piso + zero de padding; mexeu num, mexa no outro).
   // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
   // `embedded-app-loading.tsx`): sem card, porque o Estúdio é uma SEÇÃO da
   // comunidade, e idêntica à da espera anterior — é o que faz a troca ser
@@ -742,38 +747,38 @@ export function StudioFullClient({
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.
       taskHandoffStatus === 'loading' || mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Estúdio…" />
-      ) : view.name === 'list' ? (
-        // O selo é uma CAMADA por cima (absoluto): a moldura é BLOCO e a lista se
-        // dimensiona por `h-full` — um selo no fluxo empurrava a lista para fora do
-        // `overflow-hidden`. `relative` só neste ramo, para não mexer no editor.
-        <div className="relative h-full">
-          <div className="pointer-events-none absolute top-1 right-2 z-10">
-            <CloudSaveBadge cloud={cloud} syncing={syncing} />
-          </div>
-          <mod.ProjectList
-            onOpenProject={openProject}
-            theme={studioTheme}
-            professional={proAvailable}
-            initialExtensions={tier.initialExtensions}
-            allowedExtensions={tier.allowedExtensions}
-            showExamples={showExamples}
-          />
-        </div>
       ) : (
-        <StudioFullEditor
-          mod={mod}
-          projectId={view.projectId}
-          onExit={exitEditor}
-          share={share}
-          tutor={tutor}
-          theme={studioTheme}
-          tier={tier}
-          showExamples={showExamples}
-          professional={proAvailable && tier.canPromoteToPro}
-          taskSession={taskSession}
-          pintaLibrary={pintaLibrary}
-          moldaLibrary={moldaLibrary}
-        />
+        // A moldura é BLOCO e a lista/o editor se dimensionam por `h-full`; o Provider
+        // não é elemento DOM, então nada entra no fluxo. A região viva do selo fica no
+        // host (sr-only, absoluta: também fora do fluxo).
+        <mod.StudioHostChromeProvider value={hostChrome}>
+          <HostChromeAnnouncer text={announcement} />
+          {view.name === 'list' ? (
+            <mod.ProjectList
+              onOpenProject={openProject}
+              theme={studioTheme}
+              professional={proAvailable}
+              initialExtensions={tier.initialExtensions}
+              allowedExtensions={tier.allowedExtensions}
+              showExamples={showExamples}
+            />
+          ) : (
+            <StudioFullEditor
+              mod={mod}
+              projectId={view.projectId}
+              onExit={exitEditor}
+              share={share}
+              tutor={tutor}
+              theme={studioTheme}
+              tier={tier}
+              showExamples={showExamples}
+              professional={proAvailable && tier.canPromoteToPro}
+              taskSession={taskSession}
+              pintaLibrary={pintaLibrary}
+              moldaLibrary={moldaLibrary}
+            />
+          )}
+        </mod.StudioHostChromeProvider>
       )}
     </div>
   )
