@@ -154,10 +154,10 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   planos" 1.125rem + contador, `margin: 40px 0 24px`) MORREU: o h2 virou `.pensa-sr-only` e o
   contador foi para o rodapé `.pensa-home-footer` "Mostrando N planos" (par do "Mostrando N de M"
   do Estúdio); (d) `.pensa-home` passou a `padding: 16px 0 32px` e `.pensa-home-header` a
-  `margin-bottom: 20px` (o layout da linha vem da `.sz-tool-header` compartilhada; o header leva
-  as duas classes; `.pensa-create` tem `margin-bottom: 24px`: o ritmo 20/24 dos irmãos, pedido
-  dela "não tão embolado"); (e) `.pensa-project-header` a `padding: 16px 0 12px`. Ganho: 324px →
-  ~110px até a grade. Os tokens `--pz-*` passaram a ler os `--sz-tool-*` de `@sistemazero/ui/tool-chrome.css`
+  `margin-bottom: 28px` (o layout da linha vem da `.sz-tool-header` compartilhada; o header leva
+  as duas classes; `.pensa-create` tem `margin-bottom: 48px`: o ritmo 28/48 da galeria do MOLDA,
+  que ela aprovou); (e) `.pensa-project-header` a `padding: 16px 0 12px`. Ganho: 324px → ~118px
+  até a grade. Os tokens `--pz-*` passaram a ler os `--sz-tool-*` de `@sistemazero/ui/tool-chrome.css`
   (cadeia `var(--sz-tool-x, fallback)`), e `color-mix` virou `in oklab` no arquivo inteiro (o
   `in oklch` dava um rosa sutil em `.is-current`/`.is-viewing`/chips). Testes:
   `components/PensaApp.create.test.tsx`, `styles/tokens.test.ts`.

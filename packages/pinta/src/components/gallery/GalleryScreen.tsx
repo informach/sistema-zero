@@ -374,7 +374,7 @@ export function GalleryScreen(): JSX.Element {
           2ª linha); linha 2 = filtros à esquerda, busca à direita. Este é o título da página
           quando o Pinta está embarcado, por isso mora aqui e some ao abrir o editor. As
           receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o host importa). */}
-      <header className="sz-tool-header mb-5 [--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]">
+      <header className="sz-tool-header mb-7 [--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]">
         {/* O `--sz-tool-inset` é o padding da raiz (`p-4 sm:p-6`): a ABA do menu o desconta para
             encostar na linha da sidebar. */}
         <div className="sz-tool-header__lead">
@@ -485,9 +485,9 @@ export function GalleryScreen(): JSX.Element {
       {loaded && !loadError && assets.length > 0 ? (
         // Linha 2: os dois trilhos de chips à esquerda (com a legend VISÍVEL: dois "Todos"
         // precisam de nome), o contador (só ao buscar; o ÚNICO `role="status"` da tela) e a
-        // busca à direita. Respiro (pedido dela, 07/09: "não tão embolado"): 20px do cabeçalho
-        // até aqui (`mb-5` do header) e 24px daqui até os cards (`mb-6`), como no Estúdio.
-        <div className="sz-tool-toolbar mb-6">
+        // busca à direita. Respiro = o da galeria do Molda, que ela aprovou (07/09): 28px do
+        // cabeçalho até aqui (`mb-7` do header) e 48px daqui até os cards (`mb-12`), como no Estúdio.
+        <div className="sz-tool-toolbar mb-12">
           <div className="sz-tool-toolbar__start">
             <FilterChips<GalleryStyleFilter>
               label={COPY.gallery.filterStyle}

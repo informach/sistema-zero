@@ -380,10 +380,10 @@ export function ProjectList({
             "+ Novo projeto" à direita; linha 2 (no <main>) = filtros + jogos prontos à esquerda,
             busca + ordenação à direita. As receitas `sz-tool-*` vêm de
             `@sistemazero/ui/tool-chrome.css` (o host importa; ver docs/embedding.md). */}
-        {/* Respiro vertical (pedido dela, 07/09: "não tão embolado"): 20px do cabeçalho para a
-            linha dos filtros (`pb-5`) e 24px dos filtros para a grade (`mb-6`), o mesmo ritmo
-            do Pinta e do Pensa. */}
-        <header className="sz-tool-header px-6 pt-4 pb-5 [--sz-tool-inset:1.5rem]">
+        {/* Respiro vertical = o da galeria do Molda, que ela aprovou (07/09, "não tão
+            embolado"): 28px do cabeçalho para a linha dos filtros (`pb-7`) e 48px dos filtros para
+            a grade (`mb-12`), o mesmo ritmo do Pinta e do Pensa. */}
+        <header className="sz-tool-header px-6 pt-4 pb-7 [--sz-tool-inset:1.5rem]">
           {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1, e é
               uma ABA colada na linha da sidebar (o `--sz-tool-inset` = o `px-6` daqui). */}
           <div className="sz-tool-header__lead">
@@ -410,7 +410,7 @@ export function ProjectList({
                 página já diz tudo (um "Meus projetos" a 20px de "Meus Jogos" era o cabeçalho
                 ocupando espaço). */}
             <h2 className="sr-only">{t('projects.title')}</h2>
-            <div className="sz-tool-toolbar mb-6">
+            <div className="sz-tool-toolbar mb-12">
               <div className="sz-tool-toolbar__start">
                 {/* Filtro de modo (só com projetos). A legend fica para o leitor de tela
                     (o `role="group"` "Modo"); o trilho de chips é autoexplicativo. */}
