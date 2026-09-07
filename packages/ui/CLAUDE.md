@@ -22,12 +22,28 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    `button.bg-primary.text-primary-foreground` no globals.css de cada app.
 3. **Sem CSS próprio nos COMPONENTES**: os componentes usam tokens dos apps (`--primary`,
    `--success`, `--ring`…). Token novo num componente → defina-o nos DOIS globals.css (admin e
-   community) nos DOIS temas (light/dark). **Exceção única (07/2026):**
-   `src/styles/theme-kids.css` (export `@sistemazero/ui/theme-kids.css`) — arquivo OPT-IN de
+   community) nos DOIS temas (light/dark). **Duas exceções, as duas OPT-IN por `@import`:**
+   (a) `src/styles/theme-kids.css` (export `@sistemazero/ui/theme-kids.css`, 07/2026) —
    PRIMITIVOS de marca da linha kids (`--sz-kids-*`, só constantes; nenhuma classe, nenhum token
    semântico). Importado pelo funnel e pelo community-kids, que apontam seus tokens semânticos
-   para os primitivos; studio/pensa/pinta referenciam com fallback literal (sem dep). Nenhum
-   componente deste pacote referencia `--sz-kids-*` — admin/community adulto não são afetados.
+   para os primitivos; studio/pensa/pinta/molda referenciam com fallback literal (sem dep).
+   (b) **`src/styles/tool-chrome.css`** (export `@sistemazero/ui/tool-chrome.css`, 07/09/2026) —
+   o CHROME COMPARTILHADO das ferramentas embarcadas (Pinta, Estúdio, Pensa; Molda no lote 6b):
+   tokens SEMÂNTICOS `--sz-tool-*` (claro em `:root` + nos escopos claros de cada ferramenta;
+   escuro DEPOIS, sob `.dark`, `[data-sz-theme="dark"]`, `[data-pinta-theme="dark"]`,
+   `[data-molda-theme="dark"]`, `.pensa-theme-dark`; derivados re-declarados nos dois; FORA do
+   bloco de tema do Tailwind, que poda) e as RECEITAS em `@layer components` (`.sz-tool-btn-menu`
+   = o botão do menu do host, `.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-chips`/
+   `.sz-tool-chip`, `.sz-tool-search(-wrap)`/`.sz-tool-select`, `.sz-tool-panel`/`.sz-tool-pop`,
+   `.sz-tool-status(--ok|--warn|--danger)`, `.sz-tool-header(__lead|__title|__actions)`,
+   `.sz-tool-toolbar(__start|__end)`). Quem importa: o community-kids (`globals.css`, DEPOIS do
+   `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda; admin e
+   community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
+   pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`
+   em cadeia de dois degraus (`var(--sz-tool-x, var(--sz-kids-y, literal))`). ⚠️ `color-mix`
+   SEMPRE `in oklab` (o branco `oklch(1 0 0)` tem matiz explícito; em oklch a mistura gira e dá
+   rosa). Contrato em `tests/tool-chrome.test.ts` (lê a folha e os `@import` dos hosts como texto;
+   `bun test tests`). Nenhum componente deste pacote referencia `--sz-kids-*`/`--sz-tool-*`.
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 
@@ -81,5 +97,6 @@ perfil do community e pelo pré-checkout do funil; convenção: o auth guarda S�
 
 ## Comandos
 
-`bun run typecheck` · `bun run check` / `check:fix` (Biome; overrides a11y p/ `packages/ui` no
-biome.json da raiz). Não há build — os apps transpilam o source.
+`bun run typecheck` · `bun test tests` (o contrato do `tool-chrome.css` + `phone`) · `bun run check`
+/ `check:fix` (Biome; overrides a11y p/ `packages/ui` no biome.json da raiz). Não há build — os
+apps transpilam o source.

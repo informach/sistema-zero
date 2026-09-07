@@ -4,17 +4,23 @@
      kids o valor de lá manda; fora dele vale o fallback (playground/standalone).
      Hierarquia kids (diretriz 07/2026): AZUL = ação/identidade/foco · VERDE =
      progresso/conclusão · laranja/amarelo = pontos de alegria · vermelho = alerta. */
-  --pz-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
-  --pz-surface: oklch(1 0 0);
-  --pz-surface-2: oklch(0.955 0.006 250);
+  /* 07/09/2026: cadeia em DOIS degraus. Com `@sistemazero/ui/tool-chrome.css` no host (o kids)
+     manda o token SEMÂNTICO `--sz-tool-*`, o MESMO do Pinta e do Estúdio; sem a folha vale o
+     fallback de sempre (primitivo `--sz-kids-*` ou o literal). */
+  --pz-bg: var(--sz-tool-bg, var(--sz-kids-ceu-suave, oklch(0.975 0.012 245)));
+  --pz-surface: var(--sz-tool-surface, oklch(1 0 0));
+  --pz-surface-2: var(--sz-tool-surface-2, oklch(0.955 0.006 250));
   /* Tinta e apagado do HOST, como o accent/green/orange abaixo já faziam — estes
      dois tinham ficado para trás na unificação e destoavam do Pinta/Estúdio ao
      lado. Só aparecem em `color:` (nunca fundo/borda), então é troca de cor de
      texto pura. Fallback = o valor de antes, para o Pensa standalone. */
-  --pz-ink: var(--sz-kids-tinta, oklch(0.145 0.01 265));
-  --pz-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.01 255));
-  --pz-line: oklch(0.9 0.01 250);
-  --pz-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* ação/identidade/foco */
+  --pz-ink: var(--sz-tool-ink, var(--sz-kids-tinta, oklch(0.145 0.01 265)));
+  --pz-muted: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.01 255)));
+  --pz-line: var(--sz-tool-line, oklch(0.9 0.01 250));
+  --pz-accent: var(
+    --sz-tool-accent,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* ação/identidade/foco */
   --pz-green: var(--sz-kids-verde-profundo, oklch(0.55 0.15 152)); /* conclusão/sucesso */
   --pz-orange: var(--sz-kids-laranja-texto, oklch(0.6 0.15 55)); /* destino Pinta / alegria */
   --pz-danger: oklch(0.55 0.22 27); /* erro/alerta */
@@ -22,11 +28,11 @@
   --pz-blue: var(--pz-accent); /* foco/interativo = azul */
   /* CTA "3D" azul — espelho do --sz-gradient / --sz-cta do community-kids. */
   --pz-gradient: var(
-    --sz-kids-grad-cta-azul,
-    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+    --sz-tool-cta-gradient,
+    var(--sz-kids-grad-cta-azul, linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255)))
   );
-  --pz-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
-  --pz-on-fill: #fff; /* texto sobre superfície saturada da marca (azul/verde) */
+  --pz-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
+  --pz-on-fill: var(--sz-tool-on-cta, #fff); /* texto sobre superfície saturada da marca */
   min-height: 100%;
   overflow: auto;
   color: var(--pz-ink);
@@ -40,26 +46,29 @@
 .pensa-theme-dark {
   /* A NOITE do tema kids: navy #0C1E3E, azul-vivo como ação, gradiente claro
      (texto navy por cima), verde-vivo p/ conclusão — espelha o dark do Pinta. */
-  --pz-bg: var(--sz-kids-navy, oklch(0.235 0.05 262));
-  --pz-surface: oklch(0.28 0.05 260);
-  --pz-surface-2: oklch(0.33 0.05 260);
+  --pz-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.235 0.05 262)));
+  --pz-surface: var(--sz-tool-surface, oklch(0.28 0.05 260));
+  --pz-surface-2: var(--sz-tool-surface-2, oklch(0.33 0.05 260));
   /* No escuro os valores já eram idênticos aos tokens do host — apontar só fecha
      a fiação, sem mudar um pixel. */
-  --pz-ink: var(--sz-kids-navy-tinta, oklch(0.975 0.005 250));
-  --pz-muted: var(--sz-kids-navy-tinta-suave, oklch(0.7 0.03 250));
-  --pz-line: oklch(0.34 0.05 260);
-  --pz-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pz-ink: var(--sz-tool-ink, var(--sz-kids-navy-tinta, oklch(0.975 0.005 250)));
+  --pz-muted: var(--sz-tool-muted, var(--sz-kids-navy-tinta-suave, oklch(0.7 0.03 250)));
+  --pz-line: var(--sz-tool-line, oklch(0.34 0.05 260));
+  --pz-accent: var(--sz-tool-accent, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
   --pz-green: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
   --pz-orange: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
   --pz-danger: oklch(0.64 0.215 27);
   --pz-purple: oklch(0.7 0.18 300);
   --pz-blue: var(--pz-accent);
   --pz-gradient: var(
-    --sz-kids-grad-cta-azul-suave,
-    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    --sz-tool-cta-gradient,
+    var(
+      --sz-kids-grad-cta-azul-suave,
+      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    )
   );
-  --pz-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
-  --pz-on-fill: oklch(0.22 0.05 262); /* navy sobre o azul claro/verde-vivo do dark */
+  --pz-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
+  --pz-on-fill: var(--sz-tool-on-cta, oklch(0.22 0.05 262)); /* navy sobre o azul claro do dark */
 }
 .pensa-planner *,
 .pensa-planner *::before,
@@ -76,7 +85,6 @@
    via var(--font-display); fallback arredondado p/ standalone.
    ⚠️ Os headings NÃO estão aqui: a tipografia deles (família + peso + tracking)
    vive inteira na regra logo abaixo, para não ficar espalhada em dois lugares. */
-.pensa-section-heading span,
 .pensa-project-orbit,
 .pensa-map-node > span,
 .pensa-stage-title > span,
@@ -129,7 +137,9 @@
   cursor: not-allowed;
   opacity: 0.5;
 }
-.pensa-planner :focus-visible {
+/* O chrome compartilhado (`.sz-tool-*`, em camada `components`) é dono do PRÓPRIO anel de
+   foco: esta regra sem camada venceria a dele. */
+.pensa-planner :focus-visible:not(.sz-tool-btn-menu, .sz-tool-btn, .sz-tool-btn-3d) {
   outline: 3px solid var(--pz-accent);
   outline-offset: 3px;
 }
@@ -147,9 +157,9 @@
   margin-inline: auto;
 }
 .pensa-home {
-  /* 24px no TOPO = o `pt-6` da `ProjectList` e o `p-6` da galeria do Pinta. Com
-     8px o título nascia colado na borda de cima, enquanto os irmãos respiravam. */
-  padding: 24px 0 32px;
+  /* 16px no TOPO = o `pt-4` da `ProjectList` e o `sm:pt-4` da galeria do Pinta (07/09/2026,
+     cabeçalho compacto). Com 8px o título nascia colado na borda de cima. */
+  padding: 16px 0 32px;
 }
 /* Cabeçalho de SEÇÃO no padrão do Pinta e do Estúdio — e agora seguindo de
    verdade. Os pares, para conferir sem caçar:
@@ -158,14 +168,11 @@
    ou seja: display + 1.875rem, subindo para 2.25rem a partir de 768px. Este
    comentário já prometia "o padrão do Pinta" sem citar a fonte, e foi assim que
    a divergência (peso 400, tamanho travado) passou despercebida. */
+/* O layout da linha (flex, wrap, `flex-end`, `space-between`) vem da `.sz-tool-header`
+   compartilhada (07/09/2026); aqui fica só o respiro até a linha seguinte (o campo de criar
+   sob demanda, ou a grade). */
 .pensa-home-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  /* Respiro GENEROSO até o "criar": com 18px o subtítulo e o campo colavam e a
-     home lia como um bloco só. O cabeçalho é apresentação; o campo é ação. */
-  margin-bottom: 44px;
+  margin-bottom: 16px;
 }
 .pensa-home-header h1 {
   margin: 0;
@@ -192,25 +199,30 @@
 }
 /* SEM painel: na home o "criar" é uma faixa solta sobre o fundo da página, e não
    um cartão. Embrulhá-lo dava a ele o mesmo peso visual dos planos já criados,
-   competindo com a lista — que é o que a criança vem ver. A geometria de cartão
-   (borda 2px + raio 1.5rem, do `.kids-card`) segue valendo nos planos e no
-   detalhe; aqui ela sai de propósito. */
+   competindo com a lista — que é o que a criança vem ver. Desde 07/09/2026 a faixa
+   só existe SOB DEMANDA: o "+ Novo plano" do cabeçalho a abre (a home nasce com ela
+   aberta só no primeiro uso). */
 .pensa-create {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0 0 20px;
+  max-width: 680px;
   padding: 0;
 }
 .pensa-create label {
-  display: block;
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 1rem;
   font-weight: 700;
 }
 /* ⚠️ Largura CONTIDA: a home é de largura total, e um campo de nome esticado de
-   ponta a ponta lê como "escreva muito" — o nome do jogo é curto. O botão fica
+   ponta a ponta lê como "escreva muito" — o nome do jogo é curto. Os botões ficam
    ao lado, à vista, em vez de a um palmo de distância. */
 .pensa-create div {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
-  max-width: 620px;
 }
 .pensa-create input,
 .pensa-task-edit input,
@@ -228,12 +240,14 @@
   background: var(--pz-bg);
   padding: 13px 16px;
 }
-/* O campo do nome é a ação principal da home: um pouco mais alto e com o texto
-   um pouco maior que os campos do detalhe, que são de formulário longo.
+/* O campo do nome é a ação principal da home: texto um pouco maior que os campos do
+   detalhe, e a altura ALINHADA aos 44px dos botões ao lado (12px + 1.0625rem + 2px de borda).
    ⚠️ Escopado em `.pensa-create` — a regra de input acima é COMPARTILHADA com o
    editor de tarefa e os formulários do plano, que não devem engordar junto. */
 .pensa-create input {
-  padding: 16px 18px;
+  flex: 1 1 260px;
+  width: auto;
+  padding: 12px 16px;
   font-size: 1.0625rem;
 }
 .pensa-inline-error {
@@ -273,9 +287,9 @@
   font-size: 1rem;
   font-weight: 700;
 }
-/* CTA "3D" azul (espelho do .sz-btn-gradient do kids): gradiente + sombra dura
-   que afunda no clique. Ações afirmativas de concluir/aprovar seguem VERDES. */
-.pensa-create button,
+/* CTA "3D" azul (espelho do .sz-btn-gradient do kids e da `.sz-tool-btn-3d` compartilhada,
+   que a home usa desde 07/09/2026): gradiente + sombra dura que afunda no clique. Ações
+   afirmativas de concluir/aprovar seguem VERDES. */
 .pensa-generate,
 .pensa-primary-action,
 .pensa-new-version {
@@ -286,48 +300,32 @@
   padding: 12px 22px;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
     filter 0.12s ease;
 }
-.pensa-create button:hover:not(:disabled),
 .pensa-generate:hover:not(:disabled),
 .pensa-primary-action:hover:not(:disabled),
 .pensa-new-version:hover:not(:disabled) {
   transform: translateY(-1px);
   filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
 }
-.pensa-create button:active:not(:disabled),
 .pensa-generate:active:not(:disabled),
 .pensa-primary-action:active:not(:disabled),
 .pensa-new-version:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--pz-cta) 60%, black);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
 }
-/* Par do cabeçalho de seção do Estúdio (`ProjectList.tsx`):
-   <h2 className="sz-ui-display text-lg"> num bloco com `mb-6`. */
-.pensa-section-heading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 40px 0 24px;
-}
-.pensa-section-heading h2 {
-  margin: 0;
-  font-size: 1.125rem;
-}
-.pensa-section-heading span {
-  display: grid;
-  place-items: center;
-  min-width: 28px;
-  height: 28px;
-  border-radius: 99px;
+/* Rodapé da home (07/09/2026): "Mostrando N planos", o par do "Mostrando N de M projetos"
+   do Estúdio. O antigo cabeçalho "Meus planos" + contador (40px de margem em cima) virou um
+   h2 `.pensa-sr-only` para o leitor de tela; o que se vê é a grade logo abaixo do cabeçalho. */
+.pensa-home-footer {
+  margin: 16px 0 0;
   color: var(--pz-muted);
-  background: var(--pz-surface-2);
-  font-weight: 700;
+  font-size: 0.875rem;
 }
 /* ⚠️ `auto-fill` (não `auto-fit`) é o que permite o `1fr` aqui: com `auto-fit` as
    faixas VAZIAS colapsam e dois planos numa tela larga viravam dois cards de
@@ -365,7 +363,7 @@
   border-radius: 1rem;
   color: var(--pz-ink);
   background: var(--pz-surface);
-  box-shadow: 0 3px 0 color-mix(in oklch, var(--pz-card-edge) 45%, transparent);
+  box-shadow: 0 3px 0 color-mix(in oklab, var(--pz-card-edge) 45%, transparent);
   transition:
     transform 0.18s ease-out,
     border-color 0.18s ease-out,
@@ -438,48 +436,21 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 24px 0 16px;
+  padding: 16px 0 12px;
 }
-.pensa-project-header > button {
-  width: 46px;
-  border: 1px solid var(--pz-line);
-  border-radius: 50%;
-  color: var(--pz-ink);
-  background: var(--pz-surface);
-  font-size: 1.3rem;
-}
+/* O menu do host e o "voltar" são a receita COMPARTILHADA (`.sz-tool-btn-menu` e
+   `.sz-tool-btn.sz-tool-btn--icon` de `@sistemazero/ui/tool-chrome.css`, 07/09/2026): o
+   círculo de 46px que morava aqui saiu, e nenhuma regra `> button` pode ficar (sem camada,
+   ela venceria a receita). */
 /* Por CLASSE, não por posição: com o botão do menu do host antes do "voltar", o 2º
    filho deixou de ser o bloco do título. */
 .pensa-project-header > .pensa-project-title {
   flex: 1;
 }
-/* Botão do menu da comunidade (host, 07/09/2026): o MESMO círculo de 46px do "voltar",
-   nos dois cabeçalhos. "Menu escondido" = tinta suave do acento (`aria-pressed`). */
-.pensa-round-btn {
-  display: inline-flex;
-  width: 46px;
-  min-height: 46px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--pz-line);
-  border-radius: 50%;
-  color: var(--pz-ink);
-  background: var(--pz-surface);
-  cursor: pointer;
-}
-.pensa-round-btn--on {
-  border-color: color-mix(in oklab, var(--pz-accent) 45%, transparent);
-  background: color-mix(in oklab, var(--pz-accent) 15%, transparent);
-  color: var(--pz-accent);
-}
-/* Na home o botão vai ANTES do título, dentro do bloco da esquerda (o header é
-   `space-between` [título][Zappy]; um 3º filho direto empurraria o título para o meio). */
+/* Na home o botão vai ANTES do título, dentro do bloco da esquerda (o layout do bloco vem
+   da `.sz-tool-header__lead`; a classe fica como âncora do teste do host). */
 .pensa-home-lead {
-  display: flex;
   min-width: 0;
-  align-items: flex-start;
-  gap: 14px;
 }
 .pensa-project-header span {
   color: var(--pz-muted);
@@ -524,7 +495,7 @@
   border: 1px solid var(--pz-line);
   border-radius: 14px;
   color: var(--pz-muted);
-  background: color-mix(in oklch, var(--pz-surface) 70%, transparent);
+  background: color-mix(in oklab, var(--pz-surface) 70%, transparent);
 }
 .pensa-map-node > span {
   display: grid;
@@ -555,7 +526,7 @@
 }
 .pensa-map-node.is-current {
   border-color: var(--pz-accent);
-  background: color-mix(in oklch, var(--pz-accent) 9%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 9%, var(--pz-surface));
 }
 .pensa-map-node.is-current > span {
   color: var(--pz-on-fill);
@@ -579,7 +550,7 @@ button.pensa-map-node:hover {
 .pensa-map-node.is-viewing {
   border-style: dashed;
   border-color: var(--pz-accent);
-  background: color-mix(in oklch, var(--pz-accent) 12%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
 }
 .pensa-peek-banner {
   display: flex;
@@ -590,7 +561,7 @@ button.pensa-map-node:hover {
   border: 1px dashed var(--pz-accent);
   border-radius: 14px;
   padding: 12px 16px;
-  background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
   font-weight: 700;
 }
 .pensa-peek-banner button {
@@ -621,7 +592,7 @@ button.pensa-map-node:hover {
   background-image: var(--pz-gradient);
   font-size: 1.8rem;
   font-weight: 700;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--pz-cta) 55%, black);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--pz-cta) 55%, black);
 }
 .pensa-stage-title h2 {
   margin: 0;
@@ -692,7 +663,7 @@ button.pensa-map-node:hover {
 }
 .pensa-decisions span.is-done {
   color: var(--pz-green);
-  background: color-mix(in oklch, var(--pz-green) 12%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-green) 12%, var(--pz-surface));
 }
 .pensa-messages {
   display: flex;
@@ -732,11 +703,11 @@ button.pensa-map-node:hover {
   min-inline-size: auto;
 }
 .pensa-suggestion-chips button {
-  border: 2px solid color-mix(in oklch, var(--pz-accent) 40%, var(--pz-line));
+  border: 2px solid color-mix(in oklab, var(--pz-accent) 40%, var(--pz-line));
   border-radius: 99px;
   padding: 8px 14px;
   color: var(--pz-ink);
-  background: color-mix(in oklch, var(--pz-accent) 8%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
   font-size: 1rem;
   font-weight: 700;
   text-align: left;
@@ -1007,11 +978,11 @@ button.pensa-map-node:hover {
   font-size: 0.875rem;
   font-weight: 700;
   white-space: nowrap;
-  background: color-mix(in oklch, var(--pz-accent) 14%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-accent) 14%, var(--pz-surface));
 }
 .pensa-bible-kind[data-tool="pinta"] {
   color: var(--pz-orange);
-  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-orange) 14%, var(--pz-surface));
 }
 .pensa-bible-chips {
   display: flex;
@@ -1066,7 +1037,7 @@ button.pensa-map-node:hover {
   place-items: center;
   border-radius: 15px;
   color: var(--pz-purple);
-  background: color-mix(in oklch, var(--pz-purple) 13%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-purple) 13%, var(--pz-surface));
   font-size: 1.5rem;
 }
 .pensa-audit h3 {
@@ -1117,7 +1088,7 @@ button.pensa-map-node:hover {
 }
 .pensa-task.is-next > article {
   border-color: var(--pz-green);
-  box-shadow: 0 0 0 3px color-mix(in oklch, var(--pz-green) 11%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--pz-green) 11%, transparent);
 }
 .pensa-task article > header {
   display: flex;
@@ -1136,11 +1107,11 @@ button.pensa-map-node:hover {
 }
 .pensa-task article > header span[data-destination="pinta"] {
   color: var(--pz-orange);
-  background: color-mix(in oklch, var(--pz-orange) 14%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-orange) 14%, var(--pz-surface));
 }
 .pensa-task article > header span[data-destination="studio"] {
   color: var(--pz-blue);
-  background: color-mix(in oklch, var(--pz-blue) 14%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-blue) 14%, var(--pz-surface));
 }
 .pensa-task article > header em {
   color: var(--pz-muted);
@@ -1207,7 +1178,7 @@ button.pensa-map-node:hover {
   border-radius: 7px;
   padding: 5px 7px;
   color: var(--pz-purple);
-  background: color-mix(in oklch, var(--pz-purple) 12%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-purple) 12%, var(--pz-surface));
   font-family: inherit;
   font-size: 0.875rem;
 }
@@ -1273,11 +1244,11 @@ button.pensa-map-node:hover {
 .pensa-alert {
   width: calc(100% - 32px);
   margin: 0 auto 12px;
-  border: 1px solid color-mix(in oklch, var(--pz-danger) 45%, var(--pz-line));
+  border: 1px solid color-mix(in oklab, var(--pz-danger) 45%, var(--pz-line));
   border-radius: 13px;
   padding: 11px 14px;
   color: var(--pz-danger);
-  background: color-mix(in oklch, var(--pz-danger) 8%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-danger) 8%, var(--pz-surface));
 }
 .pensa-approved {
   display: flex;
@@ -1287,7 +1258,7 @@ button.pensa-map-node:hover {
   padding: 24px;
   border: 1px solid var(--pz-green);
   border-radius: 24px;
-  background: color-mix(in oklch, var(--pz-green) 8%, var(--pz-surface));
+  background: color-mix(in oklab, var(--pz-green) 8%, var(--pz-surface));
 }
 .pensa-approved > span {
   display: grid;
@@ -1372,11 +1343,6 @@ button.pensa-map-node:hover {
   pointer-events: none;
   user-select: none;
 }
-.pensa-home-zappy {
-  width: 64px;
-  flex: 0 0 auto;
-  animation: pensa-float 4s ease-in-out infinite;
-}
 .pensa-empty-zappy {
   width: clamp(84px, 22vw, 120px);
   margin: 0 auto;
@@ -1427,12 +1393,9 @@ button.pensa-map-node:hover {
   .pensa-home-header {
     align-items: flex-start;
   }
-  .pensa-home-zappy {
-    width: 48px;
-  }
   .pensa-create div {
     flex-direction: column;
-    max-width: none;
+    align-items: stretch;
   }
   /* Sem o teto da faixa, o card não pode estourar o contêiner estreito. */
   .pensa-project-grid {

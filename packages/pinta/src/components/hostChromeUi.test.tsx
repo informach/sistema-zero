@@ -87,7 +87,9 @@ describe('chrome do host — galeria', () => {
     await esperarGaleria()
     const botao = screen.getByRole('button', { name: 'Mostrar menu' })
     expect(botao.getAttribute('aria-pressed')).toBe('true')
-    expect(botao.className).toContain('bg-pin-accent/15')
+    // A receita COMPARTILHADA (`@sistemazero/ui/tool-chrome.css`): o estado "escondido" é o
+    // `[aria-pressed="true"]` dela, nunca o preenchimento forte de ferramenta ativa.
+    expect(botao.className).toBe('sz-tool-btn-menu')
     expect(botao.className).not.toContain('pin-tool-active')
   })
 

@@ -2,6 +2,11 @@
 /* Primitivos da marca kids (--sz-kids-*) — fonte da verdade da paleta, compartilhada
    com o funil e os embarcados. Os tokens semânticos abaixo APONTAM para eles. */
 @import "@sistemazero/ui/theme-kids.css";
+/* Chrome COMPARTILHADO das ferramentas (07/09/2026): tokens semânticos --sz-tool-* (claro e
+   escuro, derivados dos primitivos acima) + as receitas do cabeçalho das galerias e do botão
+   do menu, em @layer components. DEPOIS dos primitivos e ANTES dos CSS dos pacotes, que
+   apontam seus tokens para os --sz-tool-* (teste de contrato em packages/ui/tests). */
+@import "@sistemazero/ui/tool-chrome.css";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind do kids: registra as cores
    sz (--color-sz-…) para o @source conseguir GERAR as utilitárias (bg-sz, text-sz,
    border-sz, etc.). Sem este @import (só o @source) as classes do Studio ficam NO-OP

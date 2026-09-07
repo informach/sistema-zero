@@ -15,8 +15,6 @@ import {
   IconMessageSquare,
   IconMoon,
   IconMore,
-  IconPanelLeftClose,
-  IconPanelLeftOpen,
   IconPuzzle,
   IconRefresh,
   IconSave,
@@ -48,6 +46,7 @@ import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share
 import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { ExportDialog } from './ExportDialog'
+import { HostMenuButton } from './HostMenuButton'
 import { ShareDialog } from './ShareDialog'
 
 export interface TopbarProps {
@@ -68,29 +67,26 @@ const BRAND_NAME = 'Sistema Zero Studio'
 const BRAND_SHORT = 'Studio'
 
 /**
- * Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta.
- * `tooltip={false}` para o botão do menu do host: com `aria-label` presente, o `title`
- * vira DESCRIÇÃO e o leitor de tela repete o nome (regra do kids).
+ * Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta. (O botão do menu do
+ * host NÃO passa por aqui: é o `HostMenuButton`, a receita compartilhada das ferramentas.)
  */
 function IconButton({
   label,
   onClick,
   active,
   disabled,
-  tooltip = true,
   children,
 }: {
   label: string
   onClick: () => void
   active?: boolean
   disabled?: boolean
-  tooltip?: boolean
   children: ReactNode
 }): JSX.Element {
   return (
     <button
       type="button"
-      title={tooltip ? label : undefined}
+      title={label}
       aria-label={label}
       aria-pressed={active}
       disabled={disabled}
@@ -390,22 +386,15 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     <>
       <header
         className={cn(
-          'flex items-center border-sz-border border-b-2 bg-sz-panel text-sm',
-          isCompact ? 'gap-1.5 px-2 py-2' : 'gap-3 px-4 py-2',
+          // `min-h-13` (52px) + `py-1`: a barra mede o MESMO com e sem o botão do menu do
+          // host (44px); com `py-2` ela cresceria para 60px só dentro do kids.
+          'flex min-h-13 items-center border-sz-border border-b-2 bg-sz-panel text-sm',
+          isCompact ? 'gap-1.5 px-2 py-1' : 'gap-3 px-4 py-1',
         )}
       >
         {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
-            perto do painel que ele controla. Sem tooltip (aria-label já é o nome). */}
-        {hostChrome?.menu ? (
-          <IconButton
-            label={hostChrome.menu.label}
-            active={hostChrome.menu.hidden}
-            tooltip={false}
-            onClick={hostChrome.menu.onToggle}
-          >
-            {hostChrome.menu.hidden ? <IconPanelLeftOpen /> : <IconPanelLeftClose />}
-          </IconButton>
-        ) : null}
+            perto do painel que ele controla, na receita compartilhada das ferramentas. */}
+        {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
         {/* A marca é TEXTO, não logo (pedido da dona): o Estúdio é uma seção da
             comunidade e o wordmark o fazia parecer outro produto. Na barra
             compacta cabe só "Studio" — o nome do projeto é o que importa lá. */}

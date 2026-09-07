@@ -7,6 +7,9 @@
    isto o playground mostraria só os valores de reserva e o QA visual mentiria.
    Caminho relativo de propósito: não cria dependência de package no Pinta. */
 @import "../../ui/src/styles/theme-kids.css";
+/* Chrome compartilhado das ferramentas (tokens --sz-tool-* + receitas do cabeçalho e do botão
+   do menu): o kids importa; sem isto o `?host=1` do playground sairia sem estilo. */
+@import "../../ui/src/styles/tool-chrome.css";
 @import "../src/styles/pinta.css";
 
 @source "../src";

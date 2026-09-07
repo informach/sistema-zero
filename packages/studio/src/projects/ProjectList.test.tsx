@@ -273,3 +273,69 @@ describe('ProjectList — atualização incremental', () => {
     expect(getManyCalls[0]).toHaveLength(4)
   })
 })
+
+/**
+ * Cabeçalho de DUAS linhas (07/09/2026): o "Meus projetos" vira heading só para o leitor de
+ * tela, o rodapé "Mostrando N de M projetos" é frase permanente (e `role="status"` SÓ ao
+ * filtrar), os jogos prontos abrem entre a barra de ferramentas e a grade, e a ajuda do rodapé
+ * os abre também.
+ */
+describe('ProjectList — cabeçalho de duas linhas', () => {
+  it('sem filtro o rodapé é uma frase sem role; ao filtrar vira o ÚNICO status', async () => {
+    await seedProjects()
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(3)
+    })
+    expect(screen.getByText(t('projects.searchCount', { shown: 3, total: 3 }))).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+    // O heading da seção segue no DOM (só para o leitor), e a legend nomeia o grupo de chips.
+    expect(screen.getByRole('heading', { name: t('projects.title') }).className).toContain(
+      'sr-only',
+    )
+    const modos = screen.getByRole('group', { name: t('projects.filterMode') })
+    fireEvent.click(within(modos).getByRole('button', { name: /Código/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('status').textContent).toBe(
+        t('projects.searchCountOne', { total: 3 }),
+      )
+    })
+    expect(screen.getAllByRole('status')).toHaveLength(1)
+  })
+
+  it('"Ver os jogos prontos" abre o painel ENTRE a barra e a grade; a ajuda do rodapé também', async () => {
+    await seedProjects()
+    render(<ProjectList onOpenProject={() => {}} theme="light" showExamples />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(3)
+    })
+    const abrir = screen.getByRole('button', { name: t('kits.show') })
+    expect(abrir.getAttribute('aria-expanded')).toBe('false')
+    expect(document.getElementById('sz-kits-panel')).toBeNull()
+    fireEvent.click(abrir)
+    const fechar = screen.getByRole('button', { name: t('kits.hide') })
+    expect(fechar.getAttribute('aria-expanded')).toBe('true')
+    const painel = document.getElementById('sz-kits-panel') as HTMLElement
+    expect(painel).not.toBeNull()
+    const primeiroCard = screen.getAllByRole('button', { name: /^Abrir projeto / })[0] as Element
+    // O painel vem ANTES do primeiro card no DOM (entre a barra e a grade).
+    const posicao = painel.compareDocumentPosition(primeiroCard)
+    expect(Boolean(posicao & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true)
+    fireEvent.click(fechar)
+    expect(document.getElementById('sz-kits-panel')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: t('projects.help') }))
+    await waitFor(() => {
+      expect(document.getElementById('sz-kits-panel')).not.toBeNull()
+    })
+  })
+
+  it('sem os jogos prontos (cliente) não há botão nem ajuda', async () => {
+    await seedProjects()
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(3)
+    })
+    expect(screen.queryByRole('button', { name: t('kits.show') })).toBeNull()
+    expect(screen.queryByRole('button', { name: t('projects.help') })).toBeNull()
+  })
+})

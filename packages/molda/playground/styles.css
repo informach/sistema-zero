@@ -7,6 +7,9 @@
    isto o playground mostraria só os valores de reserva e o QA visual mentiria.
    Caminho relativo de propósito: não cria dependência de package no Molda. */
 @import "../../ui/src/styles/theme-kids.css";
+/* Chrome compartilhado das ferramentas (tokens --sz-tool-*): o kids importa; o Molda passa a
+   usá-lo no lote 6b (por ora só os tokens ficam presentes, como no host). */
+@import "../../ui/src/styles/tool-chrome.css";
 @import "../src/styles/molda.css";
 
 @source "../src";

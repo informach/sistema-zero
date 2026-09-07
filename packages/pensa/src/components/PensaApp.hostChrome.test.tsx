@@ -27,7 +27,7 @@ function adapter(): PensaHostAdapter {
 }
 
 describe('PensaApp × chrome do host', () => {
-  test('a home desenha o botão do menu (círculo, aria-pressed, sem title) e o clique é do host', async () => {
+  test('a home desenha o botão do menu (receita compartilhada, aria-pressed, sem title) e o clique é do host', async () => {
     const onToggle = mock(() => {})
     const chrome: PensaHostChrome = { menu: { hidden: false, label: 'Esconder menu', onToggle } }
     render(
@@ -37,8 +37,8 @@ describe('PensaApp × chrome do host', () => {
     )
     await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
     const botao = screen.getByRole('button', { name: 'Esconder menu' })
-    expect(botao.className).toContain('pensa-round-btn')
-    expect(botao.className).not.toContain('pensa-round-btn--on')
+    // A receita COMPARTILHADA das ferramentas (`@sistemazero/ui/tool-chrome.css`).
+    expect(botao.className).toBe('sz-tool-btn-menu')
     expect(botao.getAttribute('aria-pressed')).toBe('false')
     expect(botao.getAttribute('title')).toBeNull()
     // Antes do título, dentro do bloco da esquerda (o header é space-between [título][Zappy]).
@@ -60,8 +60,9 @@ describe('PensaApp × chrome do host', () => {
     )
     await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
     const botao = screen.getByRole('button', { name: 'Mostrar menu' })
+    // O estado "escondido" é só o `aria-pressed` (a folha compartilhada pinta por ele).
     expect(botao.getAttribute('aria-pressed')).toBe('true')
-    expect(botao.className).toContain('pensa-round-btn--on')
+    expect(botao.className).toBe('sz-tool-btn-menu')
   })
 
   test('sem Provider (playground) e com menu null nada aparece', async () => {

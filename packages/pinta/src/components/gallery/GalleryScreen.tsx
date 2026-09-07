@@ -363,25 +363,26 @@ export function GalleryScreen(): JSX.Element {
       // Em modo seleção o padding de BAIXO sai (a barra sticky o substitui):
       // o clamp do sticky é o content box do root, então qualquer pb deixaria
       // a barra flutuando esse tanto acima do rodapé (medido: 24px).
-      className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 ${
+      className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 sm:pt-4 ${
         selectionMode ? 'pb-0 sm:pb-0' : ''
       }`}
       data-pin-scroll-root=""
     >
-      {/* Cabeçalho de SEÇÃO da comunidade (mesma escala de `/criar` e da home
-          do kids): este é o título da página quando o Pinta está embarcado —
-          por isso ele mora aqui e some sozinho ao abrir o editor. */}
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do
-            h1 (`items-start`), não ao meio do bloco título+subtítulo. */}
-        <div className="flex min-w-0 items-start gap-3">
+      {/* Cabeçalho de DUAS linhas (07/09/2026), o MESMO do Estúdio e do Pensa: linha 1 = menu
+          do host + título/subtítulo à esquerda, selo e ações à direita (os cinco botões, com
+          rótulo sempre visível: decisão dela; a 1366px com a sidebar o cluster cai para a
+          2ª linha); linha 2 = filtros à esquerda, busca à direita. Este é o título da página
+          quando o Pinta está embarcado, por isso mora aqui e some ao abrir o editor. As
+          receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o host importa). */}
+      <header className="sz-tool-header mb-3">
+        <div className="sz-tool-header__lead">
           {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <div className="min-w-0">
+          <div className="sz-tool-header__title">
             <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
             <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="sz-tool-header__actions">
           {/* "Guardado na sua conta" do host, como 1º item das ações (07/09/2026). */}
           {hostChrome?.status ? (
             <HostCloudStatus status={hostChrome.status} variant="header" />
@@ -398,7 +399,7 @@ export function GalleryScreen(): JSX.Element {
             }}
           />
           <Button
-            variant="ghost"
+            variant="tool"
             disabled={restoring}
             aria-busy={restoring}
             onClick={() => {
@@ -423,7 +424,7 @@ export function GalleryScreen(): JSX.Element {
             }}
           />
           <Button
-            variant="ghost"
+            variant="tool"
             onClick={() => {
               if (selectionMode) exitSelection()
               photoRef.current?.click()
@@ -433,7 +434,7 @@ export function GalleryScreen(): JSX.Element {
             {COPY.gallery.importImage}
           </Button>
           {assets.length > 0 && !selectionMode ? (
-            <Button variant="ghost" onClick={enterSelection}>
+            <Button variant="tool" onClick={enterSelection}>
               <SquareCheckBig aria-hidden="true" className="size-4" />
               {COPY.gallery.select}
             </Button>
@@ -442,13 +443,13 @@ export function GalleryScreen(): JSX.Element {
               que acabou de desmontar (mesmo ícone) e baixa a galeria INTEIRA
               ignorando a marcação — a barra sticky é o comando do modo. */}
           {assets.length > 0 && !selectionMode ? (
-            <Button variant="ghost" disabled={zipping} onClick={() => void handleDownloadAll()}>
+            <Button variant="tool" disabled={zipping} onClick={() => void handleDownloadAll()}>
               <Download aria-hidden="true" className="size-4" />
               {COPY.gallery.downloadAll}
             </Button>
           ) : null}
           <Button
-            variant="primary"
+            variant="tool3d"
             onClick={() => {
               // Criar navega ao editor e a galeria DESMONTA: sair do modo aqui
               // evita a marcação morrer em silêncio no meio do gesto.
@@ -480,50 +481,11 @@ export function GalleryScreen(): JSX.Element {
       ) : null}
 
       {loaded && !loadError && assets.length > 0 ? (
-        <div className="mb-4 flex flex-wrap items-center gap-2">
-          <label className="relative flex min-w-56 flex-1 items-center sm:max-w-md">
-            <Search
-              aria-hidden="true"
-              className="pointer-events-none absolute left-3 size-4 text-pin-muted"
-            />
-            <input
-              ref={searchRef}
-              type="search"
-              name="pinta-gallery-search"
-              autoComplete="off"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                // Esc limpa (e o Dialog nunca está aberto aqui: o campo é da galeria).
-                if (event.key === 'Escape' && query) {
-                  event.preventDefault()
-                  setQuery('')
-                }
-              }}
-              aria-label={COPY.gallery.search}
-              placeholder={COPY.gallery.searchPlaceholder}
-              className="min-h-11 w-full rounded-xl border-2 border-pin-border bg-pin-bg py-2 pr-11 pl-10 text-base outline-none [&::-webkit-search-cancel-button]:appearance-none focus:border-pin-accent"
-            />
-            {query ? (
-              <button
-                type="button"
-                aria-label={COPY.gallery.searchClear}
-                onClick={() => {
-                  setQuery('')
-                  searchRef.current?.focus()
-                }}
-                className="absolute right-1 inline-flex size-9 items-center justify-center rounded-lg text-pin-muted hover:bg-pin-surface hover:text-pin-text"
-              >
-                <X aria-hidden="true" className="size-4" />
-              </button>
-            ) : null}
-          </label>
-          {searching ? (
-            <p role="status" className="text-pin-muted text-sm">
-              {COPY.gallery.searchCount(visibleAssets.length, assets.length)}
-            </p>
-          ) : null}
-          <div className="flex w-full flex-wrap items-center gap-x-4 gap-y-2">
+        // Linha 2: os dois trilhos de chips à esquerda (com a legend VISÍVEL: dois "Todos"
+        // precisam de nome), o contador (só ao buscar; o ÚNICO `role="status"` da tela) e a
+        // busca à direita.
+        <div className="sz-tool-toolbar mb-3">
+          <div className="sz-tool-toolbar__start">
             <FilterChips<GalleryStyleFilter>
               label={COPY.gallery.filterStyle}
               value={filters.style}
@@ -585,11 +547,52 @@ export function GalleryScreen(): JSX.Element {
               ]}
             />
           </div>
+          <div className="sz-tool-toolbar__end">
+            {searching ? (
+              <p role="status" className="text-pin-muted text-sm">
+                {COPY.gallery.searchCount(visibleAssets.length, assets.length)}
+              </p>
+            ) : null}
+            <label className="sz-tool-search-wrap">
+              <Search aria-hidden="true" />
+              <input
+                ref={searchRef}
+                type="search"
+                name="pinta-gallery-search"
+                autoComplete="off"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  // Esc limpa (e o Dialog nunca está aberto aqui: o campo é da galeria).
+                  if (event.key === 'Escape' && query) {
+                    event.preventDefault()
+                    setQuery('')
+                  }
+                }}
+                aria-label={COPY.gallery.search}
+                placeholder={COPY.gallery.searchPlaceholder}
+                className="sz-tool-search pr-11"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  aria-label={COPY.gallery.searchClear}
+                  onClick={() => {
+                    setQuery('')
+                    searchRef.current?.focus()
+                  }}
+                  className="absolute right-1 inline-flex size-9 items-center justify-center rounded-lg text-pin-muted hover:bg-pin-surface hover:text-pin-text"
+                >
+                  <X aria-hidden="true" className="size-4" />
+                </button>
+              ) : null}
+            </label>
+          </div>
         </div>
       ) : null}
 
       {loaded && !loadError && searching && visibleAssets.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-12 text-center">
+        <div className="flex flex-col items-center gap-3 py-8 text-center">
           <p className="max-w-md text-base text-pin-muted">{COPY.gallery.searchEmpty}</p>
           <Button variant="ghost" onClick={clearFilters}>
             {COPY.gallery.searchClearAll}
@@ -600,7 +603,7 @@ export function GalleryScreen(): JSX.Element {
       {loaded && !loadError && assets.length === 0 ? (
         // Onboarding do primeiro uso: convite grande + CTA próprio (rótulo
         // distinto do "Criar novo" do header p/ não colidir com o getByRole).
-        <div className="flex flex-col items-center gap-4 py-12 text-center">
+        <div className="flex flex-col items-center gap-4 py-8 text-center">
           <span aria-hidden="true" className="text-5xl">
             🎨
           </span>
@@ -866,7 +869,9 @@ export function GalleryScreen(): JSX.Element {
 
 /**
  * Uma fileira de chips exclusivos (rádio): "Todos" + as opções. `aria-pressed` diz qual está
- * ligado; alvo de 36px (a galeria é densa, mas o dedo da criança precisa acertar).
+ * ligado; alvo de 36px (a galeria é densa, mas o dedo da criança precisa acertar). A receita
+ * (`.sz-tool-chips`/`.sz-tool-chip`) é a compartilhada com o Estúdio, e a legend fica INLINE
+ * com os chips (a folha a flutua; sem isso o navegador a desenhava numa linha acima).
  */
 function FilterChips<T extends string>({
   label,
@@ -880,28 +885,21 @@ function FilterChips<T extends string>({
   onChange: (value: T) => void
 }): JSX.Element {
   return (
-    <fieldset className="m-0 flex min-w-0 flex-wrap items-center gap-1.5 border-0 p-0">
-      <legend className="mr-1 text-pin-muted text-xs uppercase tracking-wide">{label}</legend>
-      {options.map((option) => {
-        const active = option.value === value
-        return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={active}
-            aria-label={option.aria}
-            onClick={() => onChange(option.value)}
-            className={`inline-flex min-h-9 items-center gap-1 rounded-full border-2 px-3 font-bold text-sm transition-colors ${
-              active
-                ? 'border-pin-accent bg-pin-accent text-pin-accent-fg'
-                : 'border-pin-border bg-pin-surface text-pin-text hover:border-pin-accent'
-            }`}
-          >
-            {option.emoji ? <span aria-hidden="true">{option.emoji}</span> : null}
-            {option.label}
-          </button>
-        )
-      })}
+    <fieldset className="sz-tool-chips">
+      <legend>{label}</legend>
+      {options.map((option) => (
+        <button
+          key={option.value}
+          type="button"
+          aria-pressed={option.value === value}
+          aria-label={option.aria}
+          onClick={() => onChange(option.value)}
+          className="sz-tool-chip"
+        >
+          {option.emoji ? <span aria-hidden="true">{option.emoji}</span> : null}
+          {option.label}
+        </button>
+      ))}
     </fieldset>
   )
 }

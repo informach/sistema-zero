@@ -8,6 +8,9 @@
    playground mostraria só os valores de reserva (creme/quase-preto) e o QA
    visual mentiria. Relativo de propósito: não cria dependência de package. */
 @import "../../ui/src/styles/theme-kids.css";
+/* Chrome compartilhado das ferramentas (tokens --sz-tool-* + receitas do cabeçalho da lista e
+   do botão do menu): o kids importa; a ProjectList depende dele desde 07/09/2026. */
+@import "../../ui/src/styles/tool-chrome.css";
 @import "../src/styles/studio.css";
 
 @source "../src";

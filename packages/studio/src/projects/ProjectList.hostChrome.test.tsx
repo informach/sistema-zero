@@ -81,13 +81,17 @@ describe('ProjectList × chrome do host', () => {
     expect(primeiro?.getAttribute('aria-label')).toBe('Esconder menu')
     expect(primeiro?.getAttribute('aria-pressed')).toBe('false')
     expect(primeiro?.getAttribute('title')).toBeNull()
+    // A receita COMPARTILHADA das ferramentas (a mesma do Pinta e do Pensa).
+    expect(primeiro?.className).toBe('sz-tool-btn-menu')
     fireEvent.click(primeiro as HTMLButtonElement)
     expect(onToggle).toHaveBeenCalledTimes(1)
-    // A lista mostra a frase INTEIRA (tem espaço; a barra do editor usa o rótulo curto).
+    // A lista mostra a frase INTEIRA (tem espaço; a barra do editor usa o rótulo curto), na
+    // pílula compartilhada.
     const selo = screen.getByRole('status', {
       name: 'Buscando o que você guardou na sua conta…',
     })
     expect(header?.contains(selo)).toBe(true)
+    expect(selo.className).toContain('sz-tool-status')
     // Os nomes acessíveis dos e2e seguem intactos.
     // A lista vazia mostra também a vitrine (que tem o próprio "+ Novo projeto"); o do cabeçalho segue lá.
     const novos = screen.getAllByRole('button', { name: '+ Novo projeto' })

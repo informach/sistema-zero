@@ -15,7 +15,7 @@ import type {
   PensaZState,
 } from '../core/types'
 import { AiCreditsBadge, AiCreditsNotice } from './AiCredits'
-import { HostMenuButton, usePensaHostChrome } from './hostChrome'
+import { ArrowLeftIcon, HostMenuButton, usePensaHostChrome } from './hostChrome'
 import { TaskPlan } from './TaskPlan'
 
 const STAGES: Array<{ id: PensaWorkStage; letter: string; title: string; description: string }> = [
@@ -306,15 +306,40 @@ function ProjectList(props: {
   onCreate(name: string): void
 }) {
   const [name, setName] = useState('')
+  // O campo de criar nasce FECHADO quando já há planos e ABERTO no primeiro uso (a criança
+  // nova não paga um clique a mais, e o vazio "Dê um nome ao jogo..." continua verdadeiro).
+  const [creating, setCreating] = useState(() => props.projects.length === 0)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const newButtonRef = useRef<HTMLButtonElement | null>(null)
+  const focusOnOpen = useRef(false)
   const hostChrome = usePensaHostChrome()
+  useEffect(() => {
+    if (creating && focusOnOpen.current) {
+      focusOnOpen.current = false
+      inputRef.current?.focus()
+    }
+  }, [creating])
+  const openCreate = () => {
+    focusOnOpen.current = true
+    setCreating(true)
+  }
+  const cancelCreate = () => {
+    if (props.busy === 'create') return
+    setCreating(false)
+    setName('')
+    newButtonRef.current?.focus()
+  }
+  const count = props.projects.length
   return (
     <section className="pensa-home">
-      <header className="pensa-home-header">
-        {/* O botão do menu da comunidade (host) vem antes do título, alinhado ao topo do
-            bloco — um 3º filho direto quebraria o `space-between` [título][Zappy]. */}
-        <div className="pensa-home-lead">
+      {/* Cabeçalho de DUAS linhas (07/09/2026), o mesmo do Pinta e do Estúdio: menu do host +
+          título/subtítulo à esquerda, o "+ Novo plano" (pílula 3D) à direita. O layout vem
+          das classes `sz-tool-*` de `@sistemazero/ui/tool-chrome.css` (o kids importa). */}
+      <header className="pensa-home-header sz-tool-header">
+        {/* `pensa-home-lead` fica como âncora do teste do host: menu ANTES do h1. */}
+        <div className="pensa-home-lead sz-tool-header__lead">
           {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <div>
+          <div className="sz-tool-header__title">
             <h1 className="pensa-display">Meus projetos</h1>
             <p>
               Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
@@ -322,39 +347,67 @@ function ProjectList(props: {
             </p>
           </div>
         </div>
-        <Zappy pose="happy" images={props.mascot} className="pensa-home-zappy" />
-      </header>
-      <form
-        className="pensa-create"
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (name.trim().length >= 2) props.onCreate(name.trim())
-        }}
-      >
-        <label htmlFor="pensa-project-name">Nome do novo jogo</label>
-        <div>
-          <input
-            id="pensa-project-name"
-            value={name}
-            maxLength={120}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Ex.: Guardiões da Lua"
-          />
-          <button type="submit" disabled={props.busy === 'create' || name.trim().length < 2}>
-            Criar meu plano
+        <div className="sz-tool-header__actions">
+          <button
+            ref={newButtonRef}
+            type="button"
+            className="sz-tool-btn-3d"
+            aria-expanded={creating}
+            aria-controls="pensa-create"
+            onClick={openCreate}
+          >
+            + Novo plano
           </button>
         </div>
-      </form>
+      </header>
+      {creating ? (
+        <form
+          id="pensa-create"
+          className="pensa-create"
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (name.trim().length >= 2) props.onCreate(name.trim())
+          }}
+        >
+          <label htmlFor="pensa-project-name">Nome do novo jogo</label>
+          <div>
+            <input
+              ref={inputRef}
+              id="pensa-project-name"
+              value={name}
+              maxLength={120}
+              onChange={(event) => setName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault()
+                  cancelCreate()
+                }
+              }}
+              placeholder="Ex.: Guardiões da Lua"
+            />
+            <button
+              type="submit"
+              className="sz-tool-btn-3d"
+              disabled={props.busy === 'create' || name.trim().length < 2}
+            >
+              Criar meu plano
+            </button>
+            <button
+              type="button"
+              className="sz-tool-btn"
+              disabled={props.busy === 'create'}
+              onClick={cancelCreate}
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      ) : null}
       {props.error ? <Alert>{props.error}</Alert> : null}
-      <div className="pensa-section-heading">
-        {/* A classe é redundante para a fonte (a regra de elemento `.pensa-planner
-            h2` já cuida disso) e fica só como par explícito do
-            <h2 className="sz-ui-display"> do Estúdio, para quem lê os dois lado a
-            lado. Tirar não muda um pixel. */}
-        <h2 className="pensa-display">Meus planos</h2>
-        <span>{props.projects.length}</span>
-      </div>
-      {props.projects.length === 0 ? (
+      {/* O heading da seção segue para o leitor de tela; visualmente o título da página já
+          diz tudo, e o contador foi para o rodapé (par do "Mostrando N de M" do Estúdio). */}
+      <h2 className="pensa-sr-only">Meus planos</h2>
+      {count === 0 ? (
         <div className="pensa-empty">
           {props.mascot?.happy ? (
             <Zappy pose="happy" images={props.mascot} className="pensa-empty-zappy" />
@@ -365,28 +418,33 @@ function ProjectList(props: {
           <p>Dê um nome ao jogo e vamos organizar a ideia juntos.</p>
         </div>
       ) : (
-        <div className="pensa-project-grid">
-          {props.projects.map((project) => (
-            <button
-              key={project.id}
-              type="button"
-              className="pensa-project-card"
-              onClick={() => props.onOpen(project.id)}
-            >
-              <span className="pensa-project-orbit" aria-hidden="true">
-                ◉
-              </span>
-              <strong>{project.name}</strong>
-              <span>
-                Versão {project.cycleNumber} ·{' '}
-                {project.stage === 'done'
-                  ? 'Plano aprovado'
-                  : `Etapa ${project.stage.toUpperCase()}`}
-              </span>
-              <i>Continuar →</i>
-            </button>
-          ))}
-        </div>
+        <>
+          <div className="pensa-project-grid">
+            {props.projects.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                className="pensa-project-card"
+                onClick={() => props.onOpen(project.id)}
+              >
+                <span className="pensa-project-orbit" aria-hidden="true">
+                  ◉
+                </span>
+                <strong>{project.name}</strong>
+                <span>
+                  Versão {project.cycleNumber} ·{' '}
+                  {project.stage === 'done'
+                    ? 'Plano aprovado'
+                    : `Etapa ${project.stage.toUpperCase()}`}
+                </span>
+                <i>Continuar →</i>
+              </button>
+            ))}
+          </div>
+          <p className="pensa-home-footer">
+            {count === 1 ? 'Mostrando 1 plano' : `Mostrando ${count} planos`}
+          </p>
+        </>
       )}
     </section>
   )
@@ -404,10 +462,15 @@ function ProjectHeader({
   const hostChrome = usePensaHostChrome()
   return (
     <header className="pensa-project-header">
-      {/* Menu da comunidade (host) e voltar: dois círculos iguais, o menu primeiro. */}
+      {/* Menu da comunidade (host) e voltar: a MESMA receita compartilhada, o menu primeiro. */}
       {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-      <button type="button" onClick={onBack} aria-label="Voltar aos meus planos">
-        ←
+      <button
+        type="button"
+        className="sz-tool-btn sz-tool-btn--icon"
+        onClick={onBack}
+        aria-label="Voltar aos meus planos"
+      >
+        <ArrowLeftIcon />
       </button>
       <div className="pensa-project-title">
         <span>VERSÃO {detail.currentCycle.number}</span>

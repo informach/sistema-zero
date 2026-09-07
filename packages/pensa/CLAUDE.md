@@ -27,16 +27,22 @@ Cada versão do jogo tem um ciclo próprio. Uma versão nova pode ser planejada 
 O adapter não cria projetos do Estúdio, não sincroniza snapshots e não renderiza editores. O pacote não conhece router, IndexedDB ou `LessonActivity`.
 
 **Chrome do HOST nos cabeçalhos (07/09/2026):** o botão de esconder o menu lateral da comunidade
-entrou nos DOIS cabeçalhos (home e detalhe do plano), desenhado com o círculo de 46px do próprio
-Pensa (`.pensa-round-btn`; "menu escondido" = `.pensa-round-btn--on`, tinta suave do acento). O
-contrato é `PensaHostChrome` (`core/types.ts`, só `menu: {hidden, label, onToggle} | null` — o
-Pensa persiste no servidor, então não há selo de nuvem) e chega pelo **`PensaHostChromeProvider`**
-(exportado no index, com `usePensaHostChrome`), que o kids renderiza em volta do `<PensaApp>`;
-sem Provider (playground) nada aparece. Na home o botão mora no `.pensa-home-lead` (o header é
-`space-between` [título][Zappy]; um 3º filho direto empurraria o título); no detalhe ele vem antes
-do "voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`). Os
-cabeçalhos rolam com o conteúdo, como nas galerias do Pinta/Molda. Teste:
-`components/PensaApp.hostChrome.test.tsx`.
+entrou nos DOIS cabeçalhos (home e detalhe do plano). Ele é a receita COMPARTILHADA
+`.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, cantos xl, borda 2px, fundo
+de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+`[aria-pressed="true"]`), a MESMA do Pinta e do Estúdio (o círculo de 46px `.pensa-round-btn` da
+primeira versão SAIU no lote do mesmo dia: ela reclamou que os três tinham saído diferentes). O
+"voltar" do detalhe usa `.sz-tool-btn.sz-tool-btn--icon` (`ArrowLeftIcon` inline) para não
+destoar do menu ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
+`.pensa-project-header > button` morreu, e o `:focus-visible` global tem `:not(.sz-tool-*)`),
+senão ela vence a receita em `@layer components`. O contrato é `PensaHostChrome` (`core/types.ts`,
+só `menu: {hidden, label, onToggle} | null` — o Pensa persiste no servidor, então não há selo de
+nuvem) e chega pelo **`PensaHostChromeProvider`** (exportado no index, com `usePensaHostChrome`),
+que o kids renderiza em volta do `<PensaApp>`; sem Provider (não há playground) nada aparece. Na
+home o botão mora no `.pensa-home-lead` (âncora do teste do host), antes do h1; no detalhe ele vem
+antes do "voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`).
+Os cabeçalhos rolam com o conteúdo, como nas galerias do Pinta/Molda. Testes:
+`components/PensaApp.hostChrome.test.tsx`, `styles/tokens.test.ts`.
 
 ## Cartão de Criação
 
@@ -135,6 +141,22 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   `px-6` da `ProjectList`; 16px no `@container 560` (`p-4`). Com os 16/10px de antes o conteúdo do
   Pensa encostava na borda visivelmente mais que o dos irmãos.
 - O host não embrulha mais o app num card (`pensa-client.tsx`).
+- ⭐⭐ **07/09/2026, cabeçalho compacto ("o cabeçalho ocupa espaço demais"):** o que mudou das
+  decisões acima, por pedido dela: (a) o **Zappy pequeno SAIU do cabeçalho** (segue no vazio, no
+  chat e no aprovado); (b) `.pensa-create` deixou de ser faixa sempre visível e virou linha 2 SOB
+  DEMANDA: o **"+ Novo plano"** (`.sz-tool-btn-3d`, à direita do título, `aria-expanded` +
+  `aria-controls="pensa-create"`) abre o campo "Nome do novo jogo" logo abaixo (com foco), Esc/
+  "Cancelar" fecham e devolvem o foco ao botão, criar navega, erro mantém o campo com o nome; a
+  home nasce com ele ABERTO só no primeiro uso (0 planos); (c) `.pensa-section-heading` ("Meus
+  planos" 1.125rem + contador, `margin: 40px 0 24px`) MORREU: o h2 virou `.pensa-sr-only` e o
+  contador foi para o rodapé `.pensa-home-footer` "Mostrando N planos" (par do "Mostrando N de M"
+  do Estúdio); (d) `.pensa-home` passou a `padding: 16px 0 32px` e `.pensa-home-header` a
+  `margin-bottom: 16px` (o layout da linha vem da `.sz-tool-header` compartilhada; o header leva
+  as duas classes); (e) `.pensa-project-header` a `padding: 16px 0 12px`. Ganho: 324px → ~106px
+  até a grade. Os tokens `--pz-*` passaram a ler os `--sz-tool-*` de `@sistemazero/ui/tool-chrome.css`
+  (cadeia `var(--sz-tool-x, fallback)`), e `color-mix` virou `in oklab` no arquivo inteiro (o
+  `in oklch` dava um rosa sutil em `.is-current`/`.is-viewing`/chips). Testes:
+  `components/PensaApp.create.test.tsx`, `styles/tokens.test.ts`.
 ⚠️ Mexer na largura interna (`width: calc(100% - 32px)`) desloca os `@container (max-width: 820px|560px)`
 — re-verifique os dois pontos de quebra em 1366 e 1920.
 

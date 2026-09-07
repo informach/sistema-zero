@@ -83,14 +83,16 @@ describe('Topbar × chrome do host', () => {
     expect(screen.getByText('Salvo')).toBeTruthy()
   })
 
-  it('menu escondido = pressionado, com o visual "ligado" do IconButton', () => {
+  it('menu escondido = pressionado, na receita COMPARTILHADA das ferramentas', () => {
     const { chrome } = chromeWith({
       menu: { hidden: true, label: 'Mostrar menu', onToggle: () => {} },
     })
     mount(1200, chrome)
     const botao = screen.getByRole('button', { name: 'Mostrar menu' })
     expect(botao.getAttribute('aria-pressed')).toBe('true')
-    expect(botao.className).toContain('bg-sz-accent/15')
+    // `.sz-tool-btn-menu` de `@sistemazero/ui/tool-chrome.css` (a mesma do Pinta e do Pensa);
+    // o "ligado" é pintado pelo `[aria-pressed="true"]` da folha.
+    expect(botao.className).toBe('sz-tool-btn-menu')
   })
 
   it('narrow e compact: o selo vira BOLINHA com o texto no aria-label (a barra não tem wrap)', () => {

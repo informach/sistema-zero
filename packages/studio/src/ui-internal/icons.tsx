@@ -245,3 +245,74 @@ export function IconRefresh(p: IconProps): JSX.Element {
     </Base>
   )
 }
+
+/* Ícones do cabeçalho da lista (07/09/2026): "Importar", a lupa da busca e o selo de nuvem
+   do host ("Guardado na sua conta"), no estilo Lucide como os demais. */
+
+export function IconUpload(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M12 3v12" />
+      <path d="m17 8-5-5-5 5" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    </Base>
+  )
+}
+
+export function IconSearch(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </Base>
+  )
+}
+
+export function IconCloud(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
+    </Base>
+  )
+}
+
+export function IconCloudUpload(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M12 13v8" />
+      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+      <path d="m8 17 4-4 4 4" />
+    </Base>
+  )
+}
+
+export function IconCloudDownload(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M12 13v8l-4-4" />
+      <path d="m12 21 4-4" />
+      <path d="M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284" />
+    </Base>
+  )
+}
+
+export function IconCloudOff(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m2 2 20 20" />
+      <path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193" />
+      <path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07" />
+    </Base>
+  )
+}
+
+/** Triângulo de alerta (Lucide "triangle-alert"). */
+export function IconAlert(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" />
+      <path d="M12 9v4" />
+      <path d="M12 17h.01" />
+    </Base>
+  )
+}

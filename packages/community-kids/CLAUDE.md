@@ -536,7 +536,9 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   (`lib/host-chrome.ts`, só DADOS, nunca `ReactNode`) e cada client embrulha o app no Provider
   que o PRÓPRIO pacote exporta (`mod.PintaHostChromeProvider`, `mod.StudioHostChromeProvider`,
   `mod.PensaHostChromeProvider`) — Pinta, Estúdio (lista, editor E o PRO, que antes não tinha
-  selo) e Pensa (só o menu) desenham no idioma deles. A região viva (`HostChromeAnnouncer`,
+  selo) e Pensa (só o menu) desenham no idioma deles; nas galerias o selo é a PÍLULA compartilhada
+  `.sz-tool-status(--ok|--warn|--danger)` do `tool-chrome.css` (a mesma no Pinta e no Estúdio), e
+  na Topbar do Estúdio segue Badge/bolinha. A região viva (`HostChromeAnnouncer`,
   `sr-only`, sempre montada) fica no HOST, irmã do app. ⚠️ O Provider TEM que vir do MESMO
   módulo do `import()` que montou o app, senão são duas instâncias de contexto e nada aparece.
   ⚠️ Nenhum texto do selo contém "Salvo" (o e2e do Studio usa `getByText('Salvo')` estrito).
@@ -1038,10 +1040,15 @@ mobile fica: a tab bar é `fixed`). Ganho no desktop: +52px de largura e +32px d
 linha do selo no Pinta); em 1280px o Estúdio volta a caber em SPLIT com o menu aberto (root 988 →
 1040 ≥ 1024). O botão (`PanelLeftClose`/`PanelLeftOpen`, `aria-pressed`, sem `title`) chega às
 ferramentas pelo contrato `hostChrome.menu` (`useHostChrome` → `menu: {hidden, label, onToggle}`,
-`null` sem `navAvailable`) e cada uma o desenha com o botão nativo dela como PRIMEIRO item da barra
-do editor e do cabeçalho da galeria/lista (Pinta `IconButton` 44px, Estúdio `IconButton h-9`,
-Pensa o círculo de 46px nos dois cabeçalhos); "menu escondido" é a tinta suave do acento
-(`bg-*-accent/15`), não o preenchimento forte de ferramenta ativa. A sidebar colapsada é `inert`
+`null` sem `navAvailable`) e cada uma o desenha como PRIMEIRO item da barra do editor e do
+cabeçalho da galeria/lista. ⭐⭐ **Desde o lote seguinte (mesmo dia) o botão é UM só nos três:** a
+receita compartilhada `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, cantos
+xl, borda 2px, fundo de painel, sombra dura; "menu escondido" = borda e tinta suaves do acento via
+`[aria-pressed="true"]`, nunca o preenchimento forte de ferramenta ativa) — ela reclamou que
+Pinta (44 sem borda), Estúdio (36) e Pensa (círculo de 46) tinham saído diferentes. A folha entra
+no `globals.css` DEPOIS do `theme-kids` e ANTES dos CSS dos pacotes (ver `packages/ui/CLAUDE.md`
+regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacotes passaram a ler e as
+receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`
 + `aria-hidden` (antes os 9 links ficavam no tab order invisíveis). Os fundos das quatro
 ferramentas e o `--background` do kids são os MESMOS primitivos, então sem padding não há emenda.
 ⚠️ INTERINO: o `/molda` mantém calha + puxador `edge` + o selo acima (pacote em obra na outra

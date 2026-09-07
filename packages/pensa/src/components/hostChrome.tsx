@@ -1,7 +1,7 @@
 /**
  * Chrome do HOST dentro do Pensa (07/09/2026): o botão de esconder o menu lateral da
- * comunidade entra nos dois cabeçalhos (home e detalhe do plano), desenhado com o círculo
- * do próprio Pensa (o mesmo do "voltar"). O host (community-kids) só manda DADOS pelo
+ * comunidade entra nos dois cabeçalhos (home e detalhe do plano), com a receita compartilhada
+ * das ferramentas (`.sz-tool-btn-menu`). O host (community-kids) só manda DADOS pelo
  * `PensaHostChromeProvider`; sem Provider (playground) nada aparece.
  *
  * Os cabeçalhos rolam com o conteúdo (o `.pensa-planner` é o rolável), como nas galerias
@@ -40,9 +40,31 @@ function PanelIcon({ open }: { open: boolean }) {
   )
 }
 
+/** Seta para a esquerda (o "voltar" do detalhe), no mesmo traço. */
+export function ArrowLeftIcon() {
+  return (
+    <svg
+      width={20}
+      height={20}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </svg>
+  )
+}
+
 /**
- * Esconder/mostrar o menu lateral: círculo de 46px como o "voltar" do detalhe; "menu
- * escondido" é a tinta suave do acento. Sem `title` (com `aria-label` viraria descrição).
+ * Esconder/mostrar o menu lateral: a receita COMPARTILHADA `.sz-tool-btn-menu` de
+ * `@sistemazero/ui/tool-chrome.css` (44px, cantos xl, borda 2px, fundo de painel, sombra
+ * dura; "menu escondido" = borda e tinta suaves do acento via `[aria-pressed]`), a MESMA do
+ * Pinta e do Estúdio. Sem `title` (com `aria-label` viraria descrição).
  */
 export function HostMenuButton({ menu }: { menu: PensaHostChromeMenu }) {
   return (
@@ -51,7 +73,7 @@ export function HostMenuButton({ menu }: { menu: PensaHostChromeMenu }) {
       aria-label={menu.label}
       aria-pressed={menu.hidden}
       onClick={menu.onToggle}
-      className={`pensa-round-btn${menu.hidden ? ' pensa-round-btn--on' : ''}`}
+      className="sz-tool-btn-menu"
     >
       <PanelIcon open={menu.hidden} />
     </button>

@@ -10,10 +10,12 @@
     "./cn": "./src/lib/cn.ts",
     "./phone": "./src/lib/phone.ts",
     "./theme-kids.css": "./src/styles/theme-kids.css",
+    "./tool-chrome.css": "./src/styles/tool-chrome.css",
     "./*": "./src/components/ui/*.tsx"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "test": "bun test tests",
     "check": "biome check .",
     "check:fix": "biome check --write ."
   },

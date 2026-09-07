@@ -33,10 +33,11 @@ export function usePintaHostChrome(): PintaHostChrome | null {
 }
 
 /**
- * Esconder/mostrar o menu lateral. A base é a do `IconButton` (44px, canto xl, anel de
- * foco do Pinta); "menu escondido" é a TINTA SUAVE do acento — o preenchimento forte do
- * `pin-tool-active` leria como ferramenta selecionada. Sem `title`: com `aria-label`
- * presente ele viraria descrição e o leitor repetiria o nome.
+ * Esconder/mostrar o menu lateral: a receita COMPARTILHADA `.sz-tool-btn-menu` de
+ * `@sistemazero/ui/tool-chrome.css` (44px, cantos xl, borda 2px, fundo de painel, sombra
+ * dura; "menu escondido" = borda e tinta suaves do acento via `[aria-pressed]`), a MESMA do
+ * Estúdio e do Pensa. Sem `title`: com `aria-label` presente ele viraria descrição e o leitor
+ * repetiria o nome.
  */
 export function HostMenuButton({ menu }: { menu: PintaHostChromeMenu }): JSX.Element {
   const Icon = menu.hidden ? PanelLeftOpen : PanelLeftClose
@@ -46,13 +47,7 @@ export function HostMenuButton({ menu }: { menu: PintaHostChromeMenu }): JSX.Ele
       aria-label={menu.label}
       aria-pressed={menu.hidden}
       onClick={menu.onToggle}
-      className={clsx(
-        'inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-xl transition',
-        'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent',
-        menu.hidden
-          ? 'bg-pin-accent/15 text-pin-accent hover:bg-pin-accent/25'
-          : 'text-pin-text hover:bg-pin-border/40',
-      )}
+      className="sz-tool-btn-menu"
     >
       <Icon aria-hidden="true" className="size-5" />
     </button>
@@ -75,11 +70,12 @@ const STATUS_TONES: Record<PintaHostChromeStatus['tone'], string> = {
 }
 
 /**
- * O selo da nuvem no idioma do `SaveBadge` do editor (texto forte, sem pílula). Na
- * BARRA (`variant="bar"`) mostra o rótulo curto e, abaixo de `lg`, só o ícone — a barra
- * é `flex-wrap` e uma 2ª linha custaria a altura que este lote recupera; offline/erro
- * mostram o texto sempre. No cabeçalho da galeria vai a frase inteira. Quem ANUNCIA
- * offline/erro ao leitor é a região viva do host (`aria-live="off"` aqui, de propósito).
+ * O selo da nuvem. Na BARRA do editor (`variant="bar"`) é o idioma do `SaveBadge` (texto
+ * forte, sem pílula): rótulo curto e, abaixo de `lg`, só o ícone — a barra é `flex-wrap` e
+ * uma 2ª linha custaria altura; offline/erro mostram o texto sempre. No cabeçalho da galeria
+ * (`variant="header"`) é a PÍLULA compartilhada `.sz-tool-status` (a mesma do Estúdio), com a
+ * frase inteira. Quem ANUNCIA offline/erro ao leitor é a região viva do host (`aria-live="off"`
+ * aqui, de propósito).
  */
 export function HostCloudStatus({
   status,
@@ -89,6 +85,19 @@ export function HostCloudStatus({
   variant: 'bar' | 'header'
 }): JSX.Element {
   const Icon = STATUS_ICONS[status.icon]
+  if (variant === 'header') {
+    return (
+      <span
+        role="status"
+        aria-live="off"
+        title={status.text}
+        className={clsx('sz-tool-status', `sz-tool-status--${status.tone}`)}
+      >
+        <Icon aria-hidden="true" />
+        {status.text}
+      </span>
+    )
+  }
   const attention = status.tone === 'warn' || status.tone === 'danger'
   return (
     <span
@@ -101,9 +110,7 @@ export function HostCloudStatus({
       )}
     >
       <Icon aria-hidden="true" className="size-4 shrink-0" />
-      <span className={clsx('truncate', variant === 'bar' && !attention && 'hidden lg:inline')}>
-        {variant === 'bar' ? status.label : status.text}
-      </span>
+      <span className={clsx('truncate', !attention && 'hidden lg:inline')}>{status.label}</span>
     </span>
   )
 }

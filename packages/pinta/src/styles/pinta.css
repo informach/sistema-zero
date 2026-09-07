@@ -26,18 +26,39 @@
      azul-céu da página, então o app "assenta" nela sem emenda). O fallback
      literal é o creme MakeCode de antes, que mantém o playground standalone
      e qualquer host sem os primitivos funcionando igual. */
-  --color-pin-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)); /* = --background do kids */
-  --color-pin-surface: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* = --card */
-  --color-pin-border: var(--sz-kids-linha, oklch(0.89 0.018 80)); /* = --border */
-  --color-pin-text: var(--sz-kids-tinta, oklch(0.145 0.012 262)); /* = --foreground */
-  --color-pin-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)); /* = --muted-foreground */
+  /* 07/09/2026: cadeia em DOIS degraus. Com `@sistemazero/ui/tool-chrome.css` no host (kids e
+     playgrounds) manda o token SEMÂNTICO `--sz-tool-*` (um valor só para Pinta, Estúdio e
+     Pensa); só com os primitivos, manda o `--sz-kids-*`; sem nada, o literal de sempre. */
+  --color-pin-bg: var(
+    --sz-tool-bg,
+    var(--sz-kids-ceu-suave, oklch(0.975 0.012 85))
+  ); /* = --background do kids */
+  --color-pin-surface: var(
+    --sz-tool-surface,
+    var(--sz-kids-branco, oklch(0.995 0.006 85))
+  ); /* = --card */
+  --color-pin-border: var(
+    --sz-tool-line,
+    var(--sz-kids-linha, oklch(0.89 0.018 80))
+  ); /* = --border */
+  --color-pin-text: var(
+    --sz-tool-ink,
+    var(--sz-kids-tinta, oklch(0.145 0.012 262))
+  ); /* = --foreground */
+  --color-pin-muted: var(
+    --sz-tool-muted,
+    var(--sz-kids-tinta-suave, oklch(0.5 0.012 255))
+  ); /* = --muted-foreground */
   /* Texto secundário sobre superfície (avisos discretos). */
-  --color-pin-text-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
+  --color-pin-text-soft: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)));
   --color-pin-accent: var(
-    --sz-kids-azul-texto,
-    oklch(0.52 0.15 252)
+    --sz-tool-accent,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
   ); /* azul escuro da marca (AA sobre claro) */
-  --color-pin-accent-fg: var(--sz-kids-branco, oklch(0.995 0.006 85)); /* texto sobre o accent */
+  --color-pin-accent-fg: var(
+    --sz-tool-on-accent,
+    var(--sz-kids-branco, oklch(0.995 0.006 85))
+  ); /* texto sobre o accent */
   --color-pin-ok: oklch(0.55 0.14 155);
   --color-pin-warn: oklch(0.6 0.14 65);
   --color-pin-danger: oklch(0.55 0.19 25);
@@ -60,14 +81,26 @@
 /* Tema escuro — override por atributo data-pinta-theme="dark" no root. */
 [data-pinta-theme="dark"] {
   /* A NOITE do tema kids: navy da comunidade (era #0d1117, um cinza à parte). */
-  --color-pin-bg: var(--sz-kids-navy, oklch(0.17 0.014 262));
-  --color-pin-surface: var(--sz-kids-navy-superficie, oklch(0.215 0.015 262));
-  --color-pin-border: var(--sz-kids-navy-linha, oklch(0.32 0.02 262));
-  --color-pin-text: var(--sz-kids-navy-tinta, oklch(0.965 0.005 250));
-  --color-pin-muted: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-pin-text-soft: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-pin-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)); /* azul claro da marca */
-  --color-pin-accent-fg: var(--sz-kids-navy, oklch(0.17 0.014 262)); /* texto escuro sobre o azul */
+  --color-pin-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.17 0.014 262)));
+  --color-pin-surface: var(
+    --sz-tool-surface,
+    var(--sz-kids-navy-superficie, oklch(0.215 0.015 262))
+  );
+  --color-pin-border: var(--sz-tool-line, var(--sz-kids-navy-linha, oklch(0.32 0.02 262)));
+  --color-pin-text: var(--sz-tool-ink, var(--sz-kids-navy-tinta, oklch(0.965 0.005 250)));
+  --color-pin-muted: var(--sz-tool-muted, var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250)));
+  --color-pin-text-soft: var(
+    --sz-tool-muted,
+    var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250))
+  );
+  --color-pin-accent: var(
+    --sz-tool-accent,
+    var(--sz-kids-azul-vivo, oklch(0.72 0.13 245))
+  ); /* azul claro da marca */
+  --color-pin-accent-fg: var(
+    --sz-tool-on-accent,
+    var(--sz-kids-navy, oklch(0.17 0.014 262))
+  ); /* texto escuro sobre o azul */
   --color-pin-ok: oklch(0.8 0.16 155);
   --color-pin-warn: oklch(0.83 0.14 85);
   --color-pin-danger: oklch(0.72 0.17 25);
@@ -97,11 +130,11 @@
      cima (mesma regra do kids). Primitivos do host quando presentes;
      fallback = playground standalone. */
   --pin-gradient: var(
-    --sz-kids-grad-cta-azul,
-    linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
+    --sz-tool-cta-gradient,
+    var(--sz-kids-grad-cta-azul, linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255)))
   );
   /* Base sólida das sombras 3D do CTA (espelho do --sz-cta do kids). */
-  --pin-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --pin-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
   /* Barra de título dos painéis — espelho do --kids-cyan-tint do host.
      ⚠️ Vive AQUI, e não no @theme: o Tailwind v4 PODA do @theme os tokens que
      nenhuma utilitária usa, e este é consumido só por CSS (.pin-panel-head).
@@ -114,10 +147,13 @@
 }
 [data-pinta-theme="dark"] {
   --pin-gradient: var(
-    --sz-kids-grad-cta-azul-suave,
-    linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    --sz-tool-cta-gradient,
+    var(
+      --sz-kids-grad-cta-azul-suave,
+      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
+    )
   );
-  --pin-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
+  --pin-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
   --pin-panel-head: color-mix(in oklab, var(--color-pin-accent) 16%, var(--color-pin-surface));
 }
 
@@ -145,9 +181,9 @@
 
 /* CTA pill com sombra dura (espelho do .sz-btn-gradient do kids). */
 [data-pinta-theme] .pin-btn-3d {
-  border-radius: 9999px;
+  border-radius: var(--sz-tool-radius-pill, 9999px);
   background-image: var(--pin-gradient);
-  color: var(--color-pin-accent-fg);
+  color: var(--sz-tool-on-cta, var(--color-pin-accent-fg));
   box-shadow: 0 4px 0 color-mix(in oklab, var(--pin-cta) 60%, black);
   transition:
     transform 0.12s ease,
@@ -173,8 +209,8 @@
    borda com a cor do PAPEL do asset e a sombra acompanha, como o --unit do
    .kids-card). */
 [data-pinta-theme] .pin-panel {
-  border: 2px solid var(--pin-panel-border, var(--color-pin-border));
-  border-radius: 1rem;
+  border: var(--sz-tool-border, 2px) solid var(--pin-panel-border, var(--color-pin-border));
+  border-radius: var(--sz-tool-radius-card, 1rem);
   background: var(--color-pin-surface);
   box-shadow: 0 3px 0
     color-mix(in oklab, var(--pin-panel-border, var(--color-pin-border)) 45%, transparent);

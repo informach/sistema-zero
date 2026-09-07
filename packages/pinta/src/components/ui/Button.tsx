@@ -7,7 +7,7 @@ import { clsx } from 'clsx'
 import type { ButtonHTMLAttributes, JSX, Ref } from 'react'
 import type { LucideIcon } from './icons'
 
-export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline'
+export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline' | 'tool' | 'tool3d'
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: 'pin-btn-3d disabled:hover:brightness-100',
@@ -15,6 +15,12 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   outline:
     'rounded-xl border-2 border-pin-border bg-pin-surface text-pin-text hover:border-pin-accent',
   danger: 'rounded-full bg-pin-danger text-white hover:brightness-110',
+  /* O chrome COMPARTILHADO das ferramentas (`@sistemazero/ui/tool-chrome.css`, 07/09/2026), só
+     para o cabeçalho da galeria: o secundário com borda 2px e sombra dura (o mesmo "Importar" do
+     Estúdio) e a pílula 3D. ⚠️ Só onde o host importa a folha (kids, playground); os diálogos e
+     as barras do editor, que rodam também no admin/adulto, seguem nas variantes de cima. */
+  tool: 'sz-tool-btn',
+  tool3d: 'sz-tool-btn-3d px-5 disabled:hover:brightness-100',
 }
 
 export function Button({
