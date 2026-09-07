@@ -2,21 +2,20 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, render } from '@testing-library/react'
 
 /**
- * Contrato de LAYOUT do `MainContainer` para apps embarcados (full review
- * 26/08): "app embarcado NÃO rola a janela" só se prova em browser (happy-dom
- * não faz layout), mas as CLASSES são o mecanismo — e classe some em limpeza
- * sem ninguém perceber. Trava:
- *  - o regime de altura das rotas embarcadas (mobile calc + `md:h-dvh` +
- *    `md:min-h-[36rem]` + `overflow-hidden`) — sem o min-height, janela
- *    desktop < ~560px CLIPA o pé do app (a barra de seleção do Pinta ficava
- *    inalcançável, medido em 500px);
+ * Contrato de LAYOUT do `MainContainer` para apps embarcados. "App embarcado NÃO rola a
+ * janela" e "é de borda a borda" só se provam em browser (happy-dom não faz layout), mas
+ * as CLASSES são o mecanismo — e classe some em limpeza sem ninguém perceber. Trava:
+ *  - o regime de altura das rotas embarcadas (mobile calc + `md:h-dvh` + `md:min-h-[34rem]`
+ *    + `overflow-hidden`) — sem o min-height, janela desktop < ~544px CLIPA o pé do app;
+ *  - BORDA A BORDA (07/09/2026): nenhum padding lateral/superior, nenhuma calha, nenhum
+ *    puxador dentro do <main> — o botão do menu e o selo vivem na barra da ferramenta;
  *  - o ramo normal SEM o regime (páginas comuns rolam a janela, como sempre);
- *  - o PAR main ↔ frames: o `md:min-h-[36rem]` do main = piso `min-h-[34rem]`
- *    dos frames + 2rem de `md:py-4` — mexeu num, mexa no outro.
+ *  - o PAR main ↔ frames: `md:min-h-[34rem]` do main = piso `min-h-[34rem]` dos frames + zero
+ *    de padding — mexeu num, mexa no outro;
+ *  - o INTERINO do Molda (calha + puxador + `36rem`), que some no lote 6b.
  *
- * ⚠️ `mock.module` não é isolado por arquivo no bun: o mock ESPALHA o módulo
- * atual (receita do focus-mode.test.tsx) para nenhum outro arquivo perder
- * export.
+ * ⚠️ `mock.module` não é isolado por arquivo no bun: o mock ESPALHA o módulo atual (receita
+ * do focus-mode.test.tsx) para nenhum outro arquivo perder export.
  */
 const nav = await import('next/navigation')
 let pathname = '/pinta'
@@ -31,7 +30,7 @@ const { EMBEDDED_APP_FRAME, EMBEDDED_STUDIO_FRAME } = await import(
   '../src/components/kids/embedded-app-loading'
 )
 
-/** happy-dom não implementa `matchMedia`; o FocusModeToggle (dentro do main) usa. */
+/** happy-dom não implementa `matchMedia`; o FocusModeProvider usa. */
 Object.defineProperty(window, 'matchMedia', {
   configurable: true,
   writable: true,
@@ -54,19 +53,54 @@ function mainFor(path: string): HTMLElement {
   return main
 }
 
-describe('MainContainer: regime de altura dos apps embarcados', () => {
-  it('rota embarcada trava a altura (mobile calc + md:h-dvh + piso md:min-h-[36rem])', () => {
-    for (const path of ['/pinta', '/molda', '/estudio', '/estudio/pro/abc', '/pensa']) {
+const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa']
+
+describe('MainContainer: regime de altura + borda a borda dos apps embarcados', () => {
+  it('rota embarcada trava a altura e fica de borda a borda (sem padding, calha ou puxador)', () => {
+    for (const path of EMBEDDED) {
       const main = mainFor(path)
-      const cls = main.className
-      expect(cls).toContain('h-[calc(100dvh-3.5rem)]')
-      expect(cls).toContain('md:h-dvh')
-      expect(cls).toContain('md:min-h-[36rem]')
-      expect(cls).toContain('md:flex-none')
-      expect(cls).toContain('overflow-hidden')
-      expect(cls).toContain('min-h-0')
+      const cls = main.className.split(' ')
+      for (const token of [
+        'flex',
+        'h-[calc(100dvh-3.5rem)]',
+        'min-h-0',
+        'w-full',
+        'flex-col',
+        'overflow-hidden',
+        'pb-24',
+        'md:h-dvh',
+        'md:min-h-[34rem]',
+        'md:flex-none',
+        'md:pb-0',
+      ]) {
+        expect(cls).toContain(token)
+      }
+      for (const token of [
+        'relative',
+        'px-2',
+        'pt-4',
+        'md:py-4',
+        'md:pr-4',
+        'md:pl-9',
+        'md:min-h-[36rem]',
+      ]) {
+        expect(cls).not.toContain(token)
+      }
+      // Nenhum padding de topo/lado (só o `pb-*` do mobile é permitido).
+      expect(cls.filter((t) => /^(md:)?p[xytlr]-/.test(t))).toEqual([])
+      // O puxador saiu do host: o botão do menu mora na barra da ferramenta.
+      expect(main.querySelector('button')).toBeNull()
       cleanup()
     }
+  })
+
+  it('INTERINO: o Molda ainda usa a calha + o puxador (some no lote 6b)', () => {
+    const main = mainFor('/molda')
+    const cls = main.className
+    expect(cls).toContain('md:pl-9')
+    expect(cls).toContain('md:min-h-[36rem]')
+    expect(cls).toContain('md:h-dvh')
+    expect(cls).toContain('overflow-hidden')
   })
 
   it('página comum fica FORA do regime (a janela rola, como sempre)', () => {
@@ -78,7 +112,7 @@ describe('MainContainer: regime de altura dos apps embarcados', () => {
   })
 
   it('o PAR main ↔ frames: os dois frames carregam o piso min-h-[34rem] + overflow-hidden', () => {
-    // 34rem (frame) + 2rem (md:py-4 do main) = o md:min-h-[36rem] travado acima.
+    // 34rem (frame) + 0 de padding = o md:min-h-[34rem] travado acima.
     for (const frame of [EMBEDDED_APP_FRAME, EMBEDDED_STUDIO_FRAME]) {
       expect(frame).toContain('min-h-[34rem]')
       expect(frame).toContain('flex-1')

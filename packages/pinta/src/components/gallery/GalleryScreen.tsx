@@ -34,6 +34,7 @@ import { zipGallery } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
+import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import {
@@ -89,6 +90,7 @@ function suggestName(role: NewAssetRole, taken: ReadonlySet<string>): string {
 
 export function GalleryScreen(): JSX.Element {
   const { gallery, openAsset, takeInitialIntent, initialIntentVersion } = usePintaApp()
+  const hostChrome = usePintaHostChrome()
   const { showToast } = useToast()
   const assets = usePintaGallery((state) => state.assets)
   const loaded = usePintaGallery((state) => state.loaded)
@@ -370,11 +372,20 @@ export function GalleryScreen(): JSX.Element {
           do kids): este é o título da página quando o Pinta está embarcado —
           por isso ele mora aqui e some sozinho ao abrir o editor. */}
       <header className="mb-5 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
-          <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
+        {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do
+            h1 (`items-start`), não ao meio do bloco título+subtítulo. */}
+        <div className="flex min-w-0 items-start gap-3">
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <div className="min-w-0">
+            <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
+            <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {/* "Guardado na sua conta" do host, como 1º item das ações (07/09/2026). */}
+          {hostChrome?.status ? (
+            <HostCloudStatus status={hostChrome.status} variant="header" />
+          ) : null}
           <input
             ref={restoreRef}
             type="file"
@@ -451,9 +462,10 @@ export function GalleryScreen(): JSX.Element {
         </div>
       </header>
 
-      {syncing && loaded ? (
+      {syncing && loaded && !hostChrome?.status ? (
         // Sem `role="status"`: o contador da busca é o único status da tela (os testes o
         // procuram); isto é só um lembrete discreto de que mais desenhos podem chegar.
+        // Com o selo do host no cabeçalho ("Buscando…"), a linha some — seria dito 2×.
         <p className="text-pin-muted text-sm">{COPY.gallery.syncing}</p>
       ) : null}
       {loading && !loaded ? (

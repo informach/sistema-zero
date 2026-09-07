@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from '@/components/kids/embedded-app-loading'
+import { useHostChrome } from '@/components/kids/use-host-chrome'
 
 type PensaModule = typeof import('@sistemazero/pensa')
 
@@ -75,6 +76,10 @@ export function PensaClient({
     [transport, theme, pintaOwned, studioAvailable, router],
   )
 
+  // Só o botão do menu lateral (o Pensa persiste no servidor: sem selo de nuvem), desenhado
+  // pelo próprio Pensa nos cabeçalhos dele (contrato `hostChrome`, 07/09/2026).
+  const { chrome: hostChrome } = useHostChrome({ cloud: null })
+
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
     // `embedded-app-loading.tsx`): sem card, porque o Pensa é uma SEÇÃO da
@@ -95,7 +100,9 @@ export function PensaClient({
           </div>
         </div>
       ) : mod ? (
-        <mod.PensaApp adapter={adapter} />
+        <mod.PensaHostChromeProvider value={hostChrome}>
+          <mod.PensaApp adapter={adapter} />
+        </mod.PensaHostChromeProvider>
       ) : (
         <EmbeddedAppLoadingBody label="Carregando o Pensa…" />
       )}

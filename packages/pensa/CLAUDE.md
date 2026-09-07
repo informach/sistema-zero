@@ -26,6 +26,18 @@ Cada versão do jogo tem um ciclo próprio. Uma versão nova pode ser planejada 
 
 O adapter não cria projetos do Estúdio, não sincroniza snapshots e não renderiza editores. O pacote não conhece router, IndexedDB ou `LessonActivity`.
 
+**Chrome do HOST nos cabeçalhos (07/09/2026):** o botão de esconder o menu lateral da comunidade
+entrou nos DOIS cabeçalhos (home e detalhe do plano), desenhado com o círculo de 46px do próprio
+Pensa (`.pensa-round-btn`; "menu escondido" = `.pensa-round-btn--on`, tinta suave do acento). O
+contrato é `PensaHostChrome` (`core/types.ts`, só `menu: {hidden, label, onToggle} | null` — o
+Pensa persiste no servidor, então não há selo de nuvem) e chega pelo **`PensaHostChromeProvider`**
+(exportado no index, com `usePensaHostChrome`), que o kids renderiza em volta do `<PensaApp>`;
+sem Provider (playground) nada aparece. Na home o botão mora no `.pensa-home-lead` (o header é
+`space-between` [título][Zappy]; um 3º filho direto empurraria o título); no detalhe ele vem antes
+do "voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`). Os
+cabeçalhos rolam com o conteúdo, como nas galerias do Pinta/Molda. Teste:
+`components/PensaApp.hostChrome.test.tsx`.
+
 ## Cartão de Criação
 
 Uma tarefa carrega destino, categoria, estimativa, posição global, dependências, guia e progresso. Os IDs de passos e critérios permanecem estáveis entre Pensa, Pinta e Estúdio.

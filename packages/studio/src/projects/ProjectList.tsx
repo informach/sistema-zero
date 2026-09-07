@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { Button } from '#ui'
+import { Badge, Button, cn, IconPanelLeftClose, IconPanelLeftOpen } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
 import { ImportButton } from '../components/projects/ImportButton'
@@ -28,6 +28,7 @@ import {
   type ProjectSummary,
 } from '../state/persistence'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
+import { HOST_STATUS_BADGE_TONE, useStudioHostChrome } from '../studio/host-chrome'
 import { useT } from '../studio/i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 import {
@@ -308,6 +309,9 @@ export function ProjectList({
     onOpenProject(id)
   }
 
+  // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
+  const hostChrome = useStudioHostChrome()
+
   return (
     <StudioThemeProvider value={theme}>
       <div
@@ -319,11 +323,43 @@ export function ProjectList({
             título display + subtítulo apagado à esquerda, ações à direita
             terminando na ÚNICA pílula 3D primária. */}
         <header className="flex flex-wrap items-end gap-3 px-6 pt-6 pb-4">
-          <div className="flex flex-col">
-            <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
-            <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
+          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do
+              h1 (`items-start`), não ao meio do bloco título+subtítulo. Mesma receita do
+              `IconButton` da Topbar; sem `title` (com `aria-label` viraria descrição). */}
+          <div className="flex min-w-0 items-start gap-3">
+            {hostChrome?.menu ? (
+              <button
+                type="button"
+                aria-label={hostChrome.menu.label}
+                aria-pressed={hostChrome.menu.hidden}
+                onClick={hostChrome.menu.onToggle}
+                style={{ touchAction: 'manipulation' }}
+                className={cn(
+                  'sz-touch-target mt-1 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-panel hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                  hostChrome.menu.hidden && 'bg-sz-accent/15 text-sz-accent hover:bg-sz-accent/20',
+                )}
+              >
+                {hostChrome.menu.hidden ? (
+                  <IconPanelLeftOpen size={18} />
+                ) : (
+                  <IconPanelLeftClose size={18} />
+                )}
+              </button>
+            ) : null}
+            <div className="flex min-w-0 flex-col">
+              <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
+              <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
+            </div>
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
+            {/* "Guardado na sua conta" do host, como 1º item das ações (07/09/2026). */}
+            {hostChrome?.status ? (
+              <span role="status" aria-live="off" title={hostChrome.status.text}>
+                <Badge tone={HOST_STATUS_BADGE_TONE[hostChrome.status.tone]}>
+                  {hostChrome.status.text}
+                </Badge>
+              </span>
+            ) : null}
             {themeProp === undefined && <ThemeToggle />}
             <ImportButton onImported={handleImported} allowedExtensions={allowedExtensions} />
             <Button

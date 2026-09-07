@@ -299,6 +299,32 @@ por `features.download:false`; o Salvar agora também fica no ⋯).
   HOST (member-shell) puxa a entrega do servidor e troca o projeto via `StudioHandle.replaceProject`.
   i18n `topbar.cloudSync`; ícone `IconRefresh` (novo em `ui-internal/icons.tsx`).
 
+## Chrome do HOST na Topbar e na lista (07/09/2026)
+
+O kids parou de sobrepor o selo "Guardado na sua conta" ao Estúdio (overlay no canto da lista e
+do PRO; o editor nem tinha) e de reservar uma calha ao lado para o puxador do menu: os dois
+entraram na `Topbar` e no cabeçalho da `ProjectList`, desenhados AQUI. O contrato é
+`StudioHostChrome` (`src/studio/host-chrome.ts`, espelho estrutural do `HostChrome` do
+community-kids — **só dados, nunca `ReactNode`**: `menu: {hidden, label, onToggle} | null` e
+`status: {tone, icon, label, text} | null`), num contexto PRÓPRIO e VOLÁTIL como o
+`StudioShareDisabledContext` (muda a cada saving↔saved; fora do `StudioCore` para não
+re-renderizar o editor): **`StudioHostChromeProvider`** + `useStudioHostChrome()`, exportados no
+index. O host embrulha `<ProjectList>` + `<StudioEditor>` (e o `StudioProEditor` do member-shell —
+mesma instância do módulo no bundle do kids) num único Provider. Default `null` = nada aparece
+(playground, bloco de aula, admin, adulto).
+
+- Topbar: o menu é o PRIMEIRO filho do `<header>` (antes da marca), no `IconButton` local com
+  `tooltip={false}` (com `aria-label`, `title` vira descrição e o leitor repete — regra do kids);
+  `active` = menu escondido. O status vem logo após o bloco do "Salvo": `Badge` no tier wide e
+  **BOLINHA** (`h-2.5 w-2.5`, texto no `aria-label`/`title`) em narrow E compact — a Topbar não
+  tem wrap, e o chip do host cede antes do "Salvo" (`HOST_STATUS_BADGE_TONE`/
+  `HOST_STATUS_DOT_CLASS` no `host-chrome.ts`). Ícones novos `IconPanelLeftClose/Open`.
+- `ProjectList`: menu antes do bloco do h1 (`items-start`, alinhado à linha do título), status
+  como 1º item do cluster `ml-auto` com a frase inteira (lá tem espaço).
+- ⚠️ Nenhum texto do host contém "Salvo": `e2e/smoke.spec.ts` usa `getByText('Salvo')` estrito.
+- Testes: `components/layout/Topbar.test.tsx` (o primeiro teste da Topbar: wide/narrow/compact,
+  sem Provider) e `projects/ProjectList.hostChrome.test.tsx`.
+
 ## Compartilhar (publicar no Mural dos Criadores)
 
 Botão **"Compartilhar"** na Topbar (solto, ao lado do ⋯) que publica o projeto no **Mural dos

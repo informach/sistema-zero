@@ -15,6 +15,7 @@ import type {
   PensaZState,
 } from '../core/types'
 import { AiCreditsBadge, AiCreditsNotice } from './AiCredits'
+import { HostMenuButton, usePensaHostChrome } from './hostChrome'
 import { TaskPlan } from './TaskPlan'
 
 const STAGES: Array<{ id: PensaWorkStage; letter: string; title: string; description: string }> = [
@@ -305,15 +306,21 @@ function ProjectList(props: {
   onCreate(name: string): void
 }) {
   const [name, setName] = useState('')
+  const hostChrome = usePensaHostChrome()
   return (
     <section className="pensa-home">
       <header className="pensa-home-header">
-        <div>
-          <h1 className="pensa-display">Meus projetos</h1>
-          <p>
-            Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
-            certo.
-          </p>
+        {/* O botão do menu da comunidade (host) vem antes do título, alinhado ao topo do
+            bloco — um 3º filho direto quebraria o `space-between` [título][Zappy]. */}
+        <div className="pensa-home-lead">
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <div>
+            <h1 className="pensa-display">Meus projetos</h1>
+            <p>
+              Use o método ZERO para criar um plano claro e mandar cada Cartão de Criação ao lugar
+              certo.
+            </p>
+          </div>
         </div>
         <Zappy pose="happy" images={props.mascot} className="pensa-home-zappy" />
       </header>
@@ -394,12 +401,15 @@ function ProjectHeader({
   credits?: AiCreditsView | null
   onBack(): void
 }) {
+  const hostChrome = usePensaHostChrome()
   return (
     <header className="pensa-project-header">
+      {/* Menu da comunidade (host) e voltar: dois círculos iguais, o menu primeiro. */}
+      {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
       <button type="button" onClick={onBack} aria-label="Voltar aos meus planos">
         ←
       </button>
-      <div>
+      <div className="pensa-project-title">
         <span>VERSÃO {detail.currentCycle.number}</span>
         <h1 className="pensa-display">{detail.name}</h1>
       </div>

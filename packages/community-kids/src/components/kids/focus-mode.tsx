@@ -184,6 +184,8 @@ export function SidebarFallback() {
   const { navCollapsed } = useFocusMode()
   return (
     <aside
+      inert={navCollapsed}
+      aria-hidden={navCollapsed}
       className={cn(
         'sticky top-0 hidden h-screen shrink-0 overflow-hidden border-border bg-card md:block',
         'transition-[width,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',

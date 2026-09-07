@@ -125,6 +125,15 @@ export type {
   TestCaseCheck,
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
+// Chrome do HOST na Topbar/lista (07/09/2026): o kids embrulha `<ProjectList>`, `<StudioEditor>`
+// e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta".
+export {
+  type StudioHostChrome,
+  type StudioHostChromeMenu,
+  StudioHostChromeProvider,
+  type StudioHostChromeStatus,
+  useStudioHostChrome,
+} from './studio/host-chrome'
 export type {
   StudioMoldaCreationKind,
   StudioMoldaCreationSummary,

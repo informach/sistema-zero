@@ -12,6 +12,7 @@ import { createEmptyProject, type Project } from '@sistemazero/studio/project'
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
 const StudioEditor = lazy(async () => {
@@ -399,16 +400,19 @@ export function App(): JSX.Element {
   if (view.name === 'dual') {
     return <DualView />
   }
-  if (view.name === 'editor') {
-    return <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
-  }
   // professional habilita o seletor de template profissional no "Novo projeto"
   // (o dev server do Vite já envia COOP/COEP, exigidos pelo WebContainer).
-  return (
-    <ProjectList
-      professional
-      showExamples
-      onOpenProject={(id) => navigate({ name: 'editor', projectId: id })}
-    />
-  )
+  const screen =
+    view.name === 'editor' ? (
+      <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
+    ) : (
+      <ProjectList
+        professional
+        showExamples
+        onOpenProject={(id) => navigate({ name: 'editor', projectId: id })}
+      />
+    )
+  // `?host=1` liga o chrome de HOST de mentira (ver hostChromeDemo.tsx): UM Provider cobre
+  // lista e editor, como o kids faz.
+  return HOST_DEMO ? <DemoHostChrome>{screen}</DemoHostChrome> : screen
 }

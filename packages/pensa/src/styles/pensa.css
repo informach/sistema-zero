@@ -448,8 +448,38 @@
   background: var(--pz-surface);
   font-size: 1.3rem;
 }
-.pensa-project-header div:nth-child(2) {
+/* Por CLASSE, não por posição: com o botão do menu do host antes do "voltar", o 2º
+   filho deixou de ser o bloco do título. */
+.pensa-project-header > .pensa-project-title {
   flex: 1;
+}
+/* Botão do menu da comunidade (host, 07/09/2026): o MESMO círculo de 46px do "voltar",
+   nos dois cabeçalhos. "Menu escondido" = tinta suave do acento (`aria-pressed`). */
+.pensa-round-btn {
+  display: inline-flex;
+  width: 46px;
+  min-height: 46px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--pz-line);
+  border-radius: 50%;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  cursor: pointer;
+}
+.pensa-round-btn--on {
+  border-color: color-mix(in oklab, var(--pz-accent) 45%, transparent);
+  background: color-mix(in oklab, var(--pz-accent) 15%, transparent);
+  color: var(--pz-accent);
+}
+/* Na home o botão vai ANTES do título, dentro do bloco da esquerda (o header é
+   `space-between` [título][Zappy]; um 3º filho direto empurraria o título para o meio). */
+.pensa-home-lead {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 14px;
 }
 .pensa-project-header span {
   color: var(--pz-muted);

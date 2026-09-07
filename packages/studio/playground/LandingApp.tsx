@@ -1,6 +1,7 @@
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useState } from 'react'
+import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 
 const EditorPlayground = lazy(async () => {
   const module = await import('./App')
@@ -42,7 +43,7 @@ export function LandingApp(): JSX.Element {
     )
   }
 
-  return (
+  const list = (
     <ProjectList
       professional
       showExamples
@@ -52,4 +53,6 @@ export function LandingApp(): JSX.Element {
       }}
     />
   )
+  // `?host=1` liga o chrome de HOST de mentira na lista (ver hostChromeDemo.tsx).
+  return HOST_DEMO ? <DemoHostChrome>{list}</DemoHostChrome> : list
 }

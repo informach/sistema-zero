@@ -15,6 +15,8 @@ import {
   IconMessageSquare,
   IconMoon,
   IconMore,
+  IconPanelLeftClose,
+  IconPanelLeftOpen,
   IconPuzzle,
   IconRefresh,
   IconSave,
@@ -35,6 +37,11 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
+import {
+  HOST_STATUS_BADGE_TONE,
+  HOST_STATUS_DOT_CLASS,
+  useStudioHostChrome,
+} from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
@@ -60,24 +67,30 @@ const BRAND_NAME = 'Sistema Zero Studio'
 /** Na barra compacta (<440px) só o essencial cabe. */
 const BRAND_SHORT = 'Studio'
 
-/** Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta. */
+/**
+ * Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta.
+ * `tooltip={false}` para o botão do menu do host: com `aria-label` presente, o `title`
+ * vira DESCRIÇÃO e o leitor de tela repete o nome (regra do kids).
+ */
 function IconButton({
   label,
   onClick,
   active,
   disabled,
+  tooltip = true,
   children,
 }: {
   label: string
   onClick: () => void
   active?: boolean
   disabled?: boolean
+  tooltip?: boolean
   children: ReactNode
 }): JSX.Element {
   return (
     <button
       type="button"
-      title={label}
+      title={tooltip ? label : undefined}
       aria-label={label}
       aria-pressed={active}
       disabled={disabled}
@@ -132,6 +145,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const shareDisabledReason = useStudioShareDisabledReason()
   // "Sincronizar com o enviado" (Estúdio da aula) — null = host não passou o callback.
   const onCloudSync = useStudioCloudSync()
+  // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
+  const hostChrome = useStudioHostChrome()
   // Stores da INSTÂNCIA: usados só para LER o projeto sob demanda (no clique do
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
@@ -379,6 +394,18 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           isCompact ? 'gap-1.5 px-2 py-2' : 'gap-3 px-4 py-2',
         )}
       >
+        {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
+            perto do painel que ele controla. Sem tooltip (aria-label já é o nome). */}
+        {hostChrome?.menu ? (
+          <IconButton
+            label={hostChrome.menu.label}
+            active={hostChrome.menu.hidden}
+            tooltip={false}
+            onClick={hostChrome.menu.onToggle}
+          >
+            {hostChrome.menu.hidden ? <IconPanelLeftOpen /> : <IconPanelLeftClose />}
+          </IconButton>
+        ) : null}
         {/* A marca é TEXTO, não logo (pedido da dona): o Estúdio é uma seção da
             comunidade e o wordmark o fazia parecer outro produto. Na barra
             compacta cabe só "Studio" — o nome do projeto é o que importa lá. */}
@@ -455,6 +482,29 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
             </Badge>
           </span>
         )}
+        {/* "Guardado na sua conta" (host), ao lado do "Salvo" local. Fora do tier wide
+            vira bolinha, como o próprio "Salvo": a Topbar não tem wrap e o selo do host
+            cede espaço primeiro. Quem ANUNCIA offline/erro é a região viva do host. */}
+        {hostChrome?.status ? (
+          isNarrow || isCompact ? (
+            <span
+              role="status"
+              aria-live="off"
+              aria-label={hostChrome.status.text}
+              title={hostChrome.status.text}
+              className={cn(
+                'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
+                HOST_STATUS_DOT_CLASS[hostChrome.status.tone],
+              )}
+            />
+          ) : (
+            <span role="status" aria-live="off" className="shrink-0" title={hostChrome.status.text}>
+              <Badge tone={HOST_STATUS_BADGE_TONE[hostChrome.status.tone]}>
+                {hostChrome.status.label}
+              </Badge>
+            </span>
+          )
+        ) : null}
 
         {availableModes.length > 0 && (
           <div

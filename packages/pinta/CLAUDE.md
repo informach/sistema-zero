@@ -52,6 +52,32 @@ seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatóri
 vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
 progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
 
+## Chrome do HOST na barra (07/09/2026)
+
+O kids parou de pôr o selo "Guardado na sua conta" numa linha ACIMA do Pinta e o puxador do menu
+numa calha ao lado: os dois entraram na barra do editor e no cabeçalho da galeria, desenhados
+AQUI, com os botões e tons do Pinta. O contrato é `PintaHostChrome` (`core/types.ts`, espelho
+estrutural do `HostChrome` do community-kids — **só dados, nunca `ReactNode`**: `menu:
+{hidden, label, onToggle} | null` e `status: {tone, icon, label, text} | null`) e chega pelo
+**`PintaHostChromeProvider`** (exportado no index, junto de `usePintaHostChrome`), que o host
+renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLesson>`) o contexto é
+`null` e nada aparece — o editor ainda guarda `!lesson` nos dois pontos.
+
+- `components/hostChrome.tsx`: `HostMenuButton` (base do `IconButton`, 44px; "menu escondido" =
+  `bg-pin-accent/15 text-pin-accent`, NÃO o `pin-tool-active`, que leria como ferramenta
+  selecionada; sem `title`) e `HostCloudStatus` (o idioma do `SaveBadge`: texto forte + ícone
+  lucide; `variant="bar"` mostra o rótulo curto e, abaixo de `lg`, só o ícone — a barra é
+  `flex-wrap` e uma 2ª linha custaria a altura que o lote recupera; offline/erro mostram texto
+  sempre; `variant="header"` mostra a frase inteira; `aria-live="off"` — quem anuncia é o host).
+- Editor: menu ANTES do Voltar (agrupados num `flex shrink-0 items-center gap-1`); status logo
+  depois do `<SaveBadge />`. Galeria: `<div class="flex min-w-0 items-start gap-3">` com o menu e
+  o bloco do título; o status é o 1º item do cluster de ações, e a linha `COPY.gallery.syncing`
+  só aparece SEM status do host (senão "Buscando…" 2×).
+- ⚠️ `core/types.ts` é alcançável do barril `/assets` (`purity.test.ts`): o contrato não pode
+  importar React — por isso é dado, não elemento.
+- Testes: `components/hostChromeUi.test.tsx` (galeria, editor, sem Provider, nulls) e
+  `lesson/pintaLessonHostChrome.test.tsx` (a aula embrulhada no Provider não mostra nada).
+
 ## Modelo de dados (`src/core/project.ts` + `projectConfig.ts` — NÃO em types.ts)
 
 - **Não há "projeto"**: a galeria é a lista de ASSETS do perfil; cada asset é um registro
