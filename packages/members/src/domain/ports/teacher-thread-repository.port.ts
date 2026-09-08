@@ -1,7 +1,11 @@
 import type { CourseAudience } from '../course/course'
 
 /** Contexto que ANCORA a conversa (a origem do retorno). */
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 /** Quem escreveu o turno. */
 export type TeacherMessageRole = 'teacher' | 'student'
 

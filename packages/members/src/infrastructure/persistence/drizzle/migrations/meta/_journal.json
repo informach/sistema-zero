@@ -547,6 +547,27 @@
       "when": 1788815876554,
       "tag": "0077_pensa_molda_destination",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1788894736523,
+      "tag": "0078_aulas_interativas",
+      "breakpoints": true
+    },
+    {
+      "idx": 79,
+      "version": "7",
+      "when": 1788894738267,
+      "tag": "0079_remove_practice",
+      "breakpoints": true
+    },
+    {
+      "idx": 80,
+      "version": "7",
+      "when": 1788894739540,
+      "tag": "0080_backfill_lesson_sections",
+      "breakpoints": true
     }
   ]
 }

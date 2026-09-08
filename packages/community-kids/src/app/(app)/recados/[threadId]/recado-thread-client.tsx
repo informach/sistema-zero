@@ -9,6 +9,7 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
+  lesson_section: 'Dúvida na aula',
   studio_submission: 'Sua entrega',
   mural_publication: 'Seu jogo no Mural',
   general: 'Recado',

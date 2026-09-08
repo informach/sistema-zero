@@ -6,14 +6,22 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import {
+  LessonSections,
+  useLessonLearning,
+} from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
+import {
+  isExperimentBlock,
+  unfinishedLearning,
+} from '@sistemazero/member-shell/lib/lesson-learning'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, ArrowRight, CheckCircle2, ChevronLeft, Circle, Lock } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
 import { type ApiError, apiSend } from '@/lib/api'
@@ -41,9 +49,6 @@ interface Props {
   shareUrl: string | null
 }
 
-/** Persistência da posição: salva no máximo a cada N segundos durante o playback. */
-const POSITION_SAVE_INTERVAL_MS = 12_000
-
 export function LessonPlayer({
   course,
   lesson,
@@ -56,6 +61,11 @@ export function LessonPlayer({
   shareUrl,
 }: Props) {
   const router = useRouter()
+  const learning = useLessonLearning(lesson, viewerId)
+  const blockedByLearning = unfinishedLearning(lesson.blocks, learning.progress)
+  const blockedByPinta = lesson.blocks.some(
+    (b) => b.kind === 'pinta' && !isExperimentBlock(b) && !b.pintaState?.submitted,
+  )
   const [completing, setCompleting] = useState(false)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
@@ -72,7 +82,10 @@ export function LessonPlayer({
 
   // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do quiz — 409)
   const blockedByStudio = useMemo(
-    () => lesson.blocks.some((b) => b.kind === 'studio' && !b.studioState?.submitted),
+    () =>
+      lesson.blocks.some(
+        (b) => b.kind === 'studio' && !isExperimentBlock(b) && !b.studioState?.submitted,
+      ),
     [lesson.blocks],
   )
   // Aula EM PRODUÇÃO: com o bloco "em breve" o members serve SÓ o recado (segura os
@@ -87,128 +100,37 @@ export function LessonPlayer({
   const blockedByStudioNotPassed = useMemo(
     () =>
       lesson.blocks.some((b) => {
-        if (b.kind !== 'studio' || !b.studioState?.submitted) return false
+        if (b.kind !== 'studio' || isExperimentBlock(b) || !b.studioState?.submitted) return false
         const content = b.content as StudioBlock | null
         return content?.activity?.passingScore !== undefined && !b.studioState?.passed
       }),
     [lesson.blocks],
   )
   const completeBlocked =
-    blockedByComingSoon || blockedByQuiz || blockedByStudio || blockedByStudioNotPassed
+    blockedByLearning ||
+    blockedByPinta ||
+    blockedByComingSoon ||
+    blockedByQuiz ||
+    blockedByStudio ||
+    blockedByStudioNotPassed
 
-  // ── Posição do vídeo: refs (sem re-render) + throttle + flush por beacon ────
-  const positionUrl = `/api/members/lessons/${encodeURIComponent(lesson.id)}/position`
-  const lastPosRef = useRef(lesson.positionSeconds ?? 0)
-  const lastSavedAtRef = useRef(0)
-  const lastSavedPosRef = useRef(lesson.positionSeconds ?? 0)
-
-  const savePosition = useCallback(
-    (seconds: number) => {
-      lastSavedAtRef.current = Date.now()
-      lastSavedPosRef.current = seconds
-      // keepalive: sobrevive à navegação client-side; erros são silenciosos
-      // (posição é best-effort, nunca atrapalha a aula).
-      fetch(positionUrl, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ courseSlug: course.slug, positionSeconds: Math.floor(seconds) }),
-        keepalive: true,
-      }).catch(() => {})
-    },
-    [positionUrl, course.slug],
-  )
-
-  const onVideoProgress = useCallback(
-    (seconds: number) => {
-      lastPosRef.current = seconds
-      const now = Date.now()
-      if (
-        now - lastSavedAtRef.current >= POSITION_SAVE_INTERVAL_MS &&
-        Math.abs(seconds - lastSavedPosRef.current) >= 3
-      ) {
-        savePosition(seconds)
-      }
-    },
-    [savePosition],
-  )
-
-  const onVideoFlush = useCallback((seconds: number) => savePosition(seconds), [savePosition])
-
-  // Flush ao sair (troca de aba/fechar/navegar): sendBeacon sobrevive ao unload.
-  useEffect(() => {
-    const flushBeacon = () => {
-      const seconds = Math.floor(lastPosRef.current)
-      if (seconds <= 0 || seconds === Math.floor(lastSavedPosRef.current)) return
-      lastSavedPosRef.current = seconds
-      navigator.sendBeacon(
-        positionUrl,
-        new Blob([JSON.stringify({ courseSlug: course.slug, positionSeconds: seconds })], {
-          type: 'application/json',
-        }),
-      )
-    }
-    const onVisibility = () => {
-      if (document.visibilityState === 'hidden') flushBeacon()
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-    window.addEventListener('pagehide', flushBeacon)
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility)
-      window.removeEventListener('pagehide', flushBeacon)
-      flushBeacon() // troca de aula (unmount) também persiste
-    }
-  }, [positionUrl, course.slug])
-
-  // ── Concluir aula (botão manual + auto a ~90% do vídeo) ─────────────────────
   const completedRef = useRef(lesson.completed)
-
-  const complete = useCallback(
-    async (opts: { silent?: boolean } = {}) => {
-      if (completedRef.current) return
-      if (!opts.silent) setCompleting(true)
-      try {
-        await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
-        completedRef.current = true
-        toast.success('Aula concluída!')
-        // Avança para a próxima na ordem (concluir a atual a destravou).
-        if (!opts.silent && nextLessonHref) router.push(nextLessonHref)
-        router.refresh()
-      } catch (err) {
-        const apiErr = err as ApiError
-        if (apiErr?.code === 'QUIZ_GATE_NOT_PASSED') {
-          // Auto-conclusão silenciada: a aula só conclui passando no quiz.
-          if (!opts.silent) {
-            toast.error('Conclua o quiz da aula com a nota mínima para finalizá-la.')
-          }
-        } else if (apiErr?.code === 'STUDIO_GATE_NOT_SUBMITTED') {
-          // A aula só conclui depois de enviar o projeto do Estúdio ao professor.
-          if (!opts.silent) {
-            toast.error('Envie o projeto do Estúdio para poder concluir a aula.')
-          }
-        } else if (apiErr?.code === 'STUDIO_GATE_NOT_PASSED') {
-          // Atividade do Estúdio com nota mínima exige aprovação, não só envio.
-          if (!opts.silent) {
-            toast.error('Atinja a nota mínima do Estúdio para poder concluir a aula.')
-          }
-        } else if (apiErr?.code === 'LESSON_COMING_SOON') {
-          // A aula ainda está sendo montada (bloco "em breve").
-          if (!opts.silent) {
-            toast.error('Esta aula ainda está sendo preparada. Volte em breve.')
-          }
-        } else if (!opts.silent) {
-          toast.error('Não foi possível marcar a aula. Tente de novo.')
-        }
-      } finally {
-        if (!opts.silent) setCompleting(false)
-      }
-    },
-    [lesson.id, nextLessonHref, router],
-  )
-
-  const onVideoReachedThreshold = useCallback(() => {
-    // Auto-marca ao assistir ~90% (sem navegar); bloqueio por quiz é silencioso.
-    void complete({ silent: true })
-  }, [complete])
+  const complete = useCallback(async () => {
+    if (completedRef.current) return
+    setCompleting(true)
+    try {
+      await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
+      completedRef.current = true
+      toast.success('Aula concluída!')
+      if (nextLessonHref) router.push(nextLessonHref)
+      router.refresh()
+    } catch (error) {
+      const apiError = error as ApiError
+      toast.error(apiError.message || 'Não foi possível concluir a aula. Tente novamente.')
+    } finally {
+      setCompleting(false)
+    }
+  }, [lesson.id, nextLessonHref, router])
 
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
@@ -216,23 +138,20 @@ export function LessonPlayer({
       courseSlug: course.slug,
       viewerWatermark,
       viewerId,
-      initialPositionSeconds: lesson.completed ? null : lesson.positionSeconds,
-      onVideoProgress,
-      onVideoFlush,
-      onVideoReachedThreshold,
+      initialPositionSeconds: lesson.positionSeconds,
+      learningProgress: learning.progress,
+      onLearningProgress: learning.onProgress,
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
     [
       lesson.id,
-      lesson.completed,
       lesson.positionSeconds,
+      learning.progress,
+      learning.onProgress,
       course.slug,
       viewerWatermark,
       viewerId,
-      onVideoProgress,
-      onVideoFlush,
-      onVideoReachedThreshold,
       router,
     ],
   )
@@ -254,7 +173,11 @@ export function LessonPlayer({
             <h1 className="sz-display mt-2 text-2xl">{lesson.title}</h1>
           </div>
 
-          <LessonBlocks blocks={lesson.blocks} />
+          <LessonSections
+            key={`${viewerId}:${lesson.id}`}
+            lesson={lesson}
+            renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
+          />
 
           {lesson.attachments.length > 0 ? (
             <LessonAttachments
@@ -277,7 +200,15 @@ export function LessonPlayer({
                   {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
                   Concluir aula
                 </Button>
-                {blockedByComingSoon ? (
+                {blockedByLearning ? (
+                  <p className="text-sm text-muted-foreground">
+                    Termine as atividades essenciais das seções para concluir a aula.
+                  </p>
+                ) : blockedByPinta ? (
+                  <p className="text-sm text-muted-foreground">
+                    Envie seu desenho ao professor para concluir a aula.
+                  </p>
+                ) : blockedByComingSoon ? (
                   <p className="text-xs text-muted-foreground">
                     Esta aula ainda está sendo preparada.
                   </p>

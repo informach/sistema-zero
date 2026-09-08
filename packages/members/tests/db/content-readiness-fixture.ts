@@ -51,6 +51,11 @@ export async function prepareContentReadinessTables(conn: DbConnection): Promise
       'content jsonb',
       "content_revision varchar(32) not null default 'x'",
     ],
+    lesson_structures: [
+      'lesson_id uuid primary key',
+      'revision uuid not null default gen_random_uuid()',
+      "sections jsonb not null default '[]'::jsonb",
+    ],
     lesson_completions: ['user_id uuid', 'lesson_id uuid', 'course_id uuid'],
   }
   for (const [table, columns] of Object.entries(definitions)) {

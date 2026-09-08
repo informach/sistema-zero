@@ -30,7 +30,6 @@ import {
   CourseUpdateBody,
   IdParams,
   LessonBody,
-  LessonIdParams,
   ListCoursesQuery,
   ModuleBody,
   ModuleIdParams,
@@ -374,21 +373,21 @@ export function contentRoutes(deps: ContentRoutesDeps) {
       )
       // ── Blocos ──
       .post(
-        '/lessons/:lessonId/blocks',
+        '/lessons/:id/blocks',
         async ({ params, body, headers, set }) => {
           guard(headers)
           set.status = 201
-          return deps.blocks.create(params.lessonId, body.content as LessonBlockContent)
+          return deps.blocks.create(params.id, body.content as LessonBlockContent)
         },
-        { body: BlockBody, params: LessonIdParams },
+        { body: BlockBody, params: IdParams },
       )
       .post(
-        '/lessons/:lessonId/blocks/reorder',
+        '/lessons/:id/blocks/reorder',
         async ({ params, body, headers }) => {
           guard(headers)
-          return deps.blocks.reorder(params.lessonId, body.orderedIds)
+          return deps.blocks.reorder(params.id, body.orderedIds)
         },
-        { body: ReorderBody, params: LessonIdParams },
+        { body: ReorderBody, params: IdParams },
       )
       .patch(
         '/blocks/:id',
@@ -408,21 +407,21 @@ export function contentRoutes(deps: ContentRoutesDeps) {
       )
       // ── Anexos ──
       .post(
-        '/lessons/:lessonId/attachments',
+        '/lessons/:id/attachments',
         async ({ params, body, headers, set }) => {
           guard(headers)
           set.status = 201
-          return deps.attachments.create(params.lessonId, attachmentFields(body))
+          return deps.attachments.create(params.id, attachmentFields(body))
         },
-        { body: AttachmentBody, params: LessonIdParams },
+        { body: AttachmentBody, params: IdParams },
       )
       .post(
-        '/lessons/:lessonId/attachments/reorder',
+        '/lessons/:id/attachments/reorder',
         async ({ params, body, headers }) => {
           guard(headers)
-          return deps.attachments.reorder(params.lessonId, body.orderedIds)
+          return deps.attachments.reorder(params.id, body.orderedIds)
         },
-        { body: ReorderBody, params: LessonIdParams },
+        { body: ReorderBody, params: IdParams },
       )
       .patch(
         '/attachments/:id',

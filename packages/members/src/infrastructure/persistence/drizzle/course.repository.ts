@@ -86,7 +86,9 @@ function toAttachment(row: typeof lessonAttachments.$inferSelect): LessonAttachm
 }
 
 export class DrizzleCourseRepository implements CourseRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database | Parameters<Parameters<Database['transaction']>[0]>[0],
+  ) {}
 
   async listShowcaseLessonIds(courseId: string): Promise<string[]> {
     const rows = await this.db

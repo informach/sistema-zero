@@ -15,6 +15,7 @@ import type { StudioSubmissionRepository } from '../../domain/ports/studio-submi
 import { computeProgress } from '../../domain/progress/progress'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { LearningService } from '../learning/learning.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import { type LessonCompleteView, toCourseProgressView } from '../mappers/views'
 
@@ -35,6 +36,7 @@ export class MarkLessonCompleteService {
     private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly gamification: AwardGamificationService,
     private readonly clock: () => Date,
+    private readonly learning: LearningService,
   ) {}
 
   async execute(
@@ -73,6 +75,7 @@ export class MarkLessonCompleteService {
       // blocos de quiz/estúdio da aula estão escondidos, e reclamar deles seria
       // um recado sem sentido. Tirar o bloco na autoria devolve a aula ao normal.
       if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
+      await this.learning.assertComplete({ userId, accountId: accountId ?? userId }, lesson)
 
       // Só gateiam quizzes COM nota de corte E com questões: um quiz gated vazio
       // não é respondível (a UI não o renderiza), então gatear nele travaria a
@@ -95,7 +98,9 @@ export class MarkLessonCompleteService {
       // Gate do bloco Estúdio: sem atividade (ou atividade sem nota de corte) =
       // exige ENVIO (igual à fase 1). Atividade COM `passingScore` = exige
       // APROVAÇÃO (passed_at sticky), espelhando o gate do quiz.
-      const studioBlocks = lesson.blocks.filter((b) => b.content.kind === 'studio')
+      const studioBlocks = lesson.blocks.filter(
+        (b) => b.content.kind === 'studio' && b.content.purpose !== 'experiment',
+      )
       if (studioBlocks.length > 0) {
         const states = await this.studioSubmissions.summarizeByBlockIds(
           userId,
@@ -113,7 +118,9 @@ export class MarkLessonCompleteService {
       // Gate do bloco PINTA: exige o ENVIO do desenho, e só isso — não há auto-correção de
       // desenho (fora de escopo). Laço à parte do Estúdio de propósito: o código do erro nomeia
       // a ferramenta, e uma aula pode ter os dois blocos.
-      const pintaBlockIds = lesson.blocks.filter((b) => b.content.kind === 'pinta').map((b) => b.id)
+      const pintaBlockIds = lesson.blocks
+        .filter((b) => b.content.kind === 'pinta' && b.content.purpose !== 'experiment')
+        .map((b) => b.id)
       if (pintaBlockIds.length > 0) {
         const states = await this.studioSubmissions.summarizeByBlockIds(userId, pintaBlockIds)
         if (pintaBlockIds.some((id) => !states.get(id))) throw new PintaGateNotSubmittedError()

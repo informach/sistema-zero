@@ -1,0 +1,180 @@
+{
+  "version": 1,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-04",
+  "title": "Um asteroide em vetor",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Sua nave já tem dois quadros de animação. Agora você vai criar o asset do asteroide no Pinta.\n\nHoje você vai comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Como a borda muda no zoom?",
+        "instructions": "Amplie e reduza as duas imagens. Compare pelo menos dois tamanhos e registre o que observou.",
+        "hints": ["Olhe a borda, não apenas a cor ou o tamanho da pedra."],
+        "required": true,
+        "activity": {
+          "type": "html",
+          "html": "<h2>Olhe a borda bem de perto</h2>\n<p>A mesma silhueta em uma grade de pixels e em curvas. Mude o tamanho para observar como as bordas se comportam. Nenhum formato é o “certo” para toda arte.</p>\n<label for=\"zoom\">Ampliação <output id=\"value\">4</output>×</label><input id=\"zoom\" type=\"range\" min=\"1\" max=\"10\" step=\"1\" value=\"4\">\n<div style=\"display:flex;gap:16px;flex-wrap:wrap\">\n  <figure style=\"margin:0;flex:1;min-width:120px\"><figcaption>Pixel art</figcaption><div style=\"height:190px;display:grid;place-items:center;overflow:hidden;background:#fff\"><canvas id=\"pixel\" width=\"16\" height=\"16\" aria-label=\"Pedra construída sobre uma grade de 16 por 16 pixels\" role=\"img\" style=\"image-rendering:pixelated\"></canvas></div></figure>\n  <figure style=\"margin:0;flex:1;min-width:120px\"><figcaption>Vetor</figcaption><div style=\"height:190px;display:grid;place-items:center;overflow:hidden;background:#fff\"><svg id=\"vector\" viewBox=\"0 0 16 16\" aria-label=\"Pedra descrita por uma curva contínua\" role=\"img\"><path d=\"M2 7Q3 1 9 2Q16 3 14 10Q11 16 5 13Q1 12 2 7\" fill=\"#1762bc\"/></svg></div></figure>\n</div><button id=\"observe\" type=\"button\">Observei as duas bordas</button><p id=\"status\" aria-live=\"polite\"></p>\n<script>\n(()=>{const zoom=document.getElementById('zoom'),pixel=document.getElementById('pixel'),vector=document.getElementById('vector'),ctx=pixel.getContext('2d');let tested=[];ctx.fillStyle='#1762bc';ctx.beginPath();ctx.moveTo(2,7);ctx.quadraticCurveTo(3,1,9,2);ctx.quadraticCurveTo(16,3,14,10);ctx.quadraticCurveTo(11,16,5,13);ctx.quadraticCurveTo(1,12,2,7);ctx.fill();\nfunction render(){const size=Number(zoom.value)*16;pixel.style.width=`${size}px`;pixel.style.height=`${size}px`;vector.style.width=`${size}px`;vector.style.height=`${size}px`;document.getElementById('value').textContent=zoom.value}\nzoom.addEventListener('input',()=>{tested=[...new Set([...tested,zoom.value])];render();window.learning?.save({zoom:Number(zoom.value),testedValues:tested})});\ndocument.getElementById('observe').addEventListener('click',()=>{document.getElementById('status').textContent=tested.length>=2?'As duas representações foram observadas em tamanhos diferentes.':'Compare pelo menos dois tamanhos antes de registrar.';if(tested.length>=2)window.learning?.participated()});\naddEventListener('learning:restore',event=>{const s=event.detail;zoom.value=Number.isFinite(s.zoom)?s.zoom:4;tested=Array.isArray(s.testedValues)?s.testedValues:[];render()});render()})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "Qual descrição combina com as duas representações?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Pixel art usa uma grade; vetor descreve a forma por pontos e curvas"
+            },
+            {
+              "id": "opcao-2",
+              "label": "Vetor sempre significa uma imagem em 3D"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Pixel art não pode ser ampliada"
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A ampliação mostra a grade da pixel art e a borda calculada da forma vetorial. São linguagens visuais diferentes."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na pixel art, você decide quais quadradinhos da grade recebem cor. No vetor, descreve uma forma por pontos e curvas; o programa desenha a borda no tamanho escolhido. Ao ampliar, a grade e a curva se comportam de formas diferentes. Nenhuma técnica é melhor para toda imagem. Nesta aula, pontos e curvas ajudam a criar uma pedra irregular. O número de pontas, crateras e cores faz parte da sua autoria."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64. Escreva asteroide. Esses dados precisam combinar com a importação da Aula 7.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Trace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos. O Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Use Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade. Quantas crateras usar e onde colocá-las é uma decisão sua.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Aproxime a borda do asteroide com o zoom. Compare com a nave em pixel art. O que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Confira o asset asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.\n\nNa Aula 5, esse mesmo asteroide vai ganhar fogo e movimento."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Como a borda muda no zoom?",
+      "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "começar o desenho novo",
+      "objective": "Na galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64. Escreva asteroide. Esses dados precisam combinar com a importação da Aula 7.",
+      "intent": "application",
+      "blockKeys": ["construir-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-04-passo-01: gravar a demonstração \"começar o desenho novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-2",
+      "title": "traçar a pedra e arredondar",
+      "objective": "Trace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos. O Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato.",
+      "intent": "application",
+      "blockKeys": ["construir-2"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-04-passo-02: gravar a demonstração \"traçar a pedra e arredondar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-3",
+      "title": "as crateras",
+      "objective": "Use Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade. Quantas crateras usar e onde colocá-las é uma decisão sua.",
+      "intent": "application",
+      "blockKeys": ["construir-3"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-04-passo-03: gravar a demonstração \"as crateras\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-4",
+      "title": "os dois jeitos de desenhar, lado a lado",
+      "objective": "Aproxime a borda do asteroide com o zoom. Compare com a nave em pixel art. O que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível.",
+      "intent": "application",
+      "blockKeys": ["construir-4"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-04-passo-04: gravar a demonstração \"os dois jeitos de desenhar, lado a lado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Confira o asset asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.",
+      "intent": "closing",
+      "blockKeys": ["fechamento"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    }
+  ]
+}

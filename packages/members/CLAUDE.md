@@ -2020,11 +2020,10 @@ vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
 - Missões Kids filtram DEPOIS da atribuição, por ferramenta liberada e eventos de conteúdo
   ainda possíveis nos cursos acessíveis. Aulas em breve e barreiras sequenciais são excluídas;
   eventos já premiados não viram novas oportunidades. Prêmios completos/recebidos permanecem.
-- Prática: rotas `/members/practice/{topics,sessions}`; tópicos e novas sessões revalidam
-  acesso ao curso pela conta e pela carreira do perfil. Sessões exigem aula concluída e quiz
-  aprovado, congelam até cinco perguntas e aceitam a primeira resposta de forma idempotente.
-  Histórico por perfil+conta sobrevive à edição de conteúdo; purge remove-o.
-  Nenhuma concessão de XP, moedas, progresso de curso ou nível. Migration `0076`.
 - Pensa aceita `destination=molda`, contexto `molda` e saída `molda_asset` para model/texture/sky.
   Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
   `0077` apenas acrescenta o valor ao enum. Não apagar/recriar planos para migrar.
+
+## Aulas por seções (09/2026)
+
+`lesson_structures` organiza os blocos existentes da aula. Progresso e tentativas são por perfil, conta, bloco e revisão; gabaritos nunca entram na view do aluno. Conclusão exige atividades essenciais e entregas, mantendo carreira e quizzes. Experimentos não produzem entregas. Importação é transacional em rascunhos, com prévia e controle de concorrência. Mídias pendentes impedem publicação. As migrations 0078–0080 acrescentam o modelo, removem a antiga prática e agrupam aulas legadas em uma seção sem mudar IDs. A migration histórica 0076 permanece aplicada.

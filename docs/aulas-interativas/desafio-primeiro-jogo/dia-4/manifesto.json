@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-4",
+  "title": "Pontos, vidas e consequências",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Você já consegue destruir asteroides. Seu jogo ainda não mostra quantos acertou nem o efeito de uma batida na nave.\n\nHoje você vai separar o valor guardado, o evento que o altera e o desenho que o mostra.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Quem faz o quê no placar?",
+        "instructions": "Associe cada tarefa ao momento correto. Pense no que muda o número e no que apenas o mostra.",
+        "hints": ["Se desenhar somasse pontos, eles aumentariam mesmo sem acertar nada."],
+        "required": true,
+        "activity": {
+          "type": "sequence",
+          "mode": "match",
+          "items": [
+            {
+              "id": "peca-1",
+              "label": "Desenhar o placar"
+            },
+            {
+              "id": "peca-2",
+              "label": "Começar pontos em zero"
+            },
+            {
+              "id": "peca-3",
+              "label": "Somar um ponto"
+            }
+          ],
+          "solution": ["peca-2", "peca-3", "peca-1"],
+          "targets": [
+            "Ao preparar uma partida",
+            "Quando o tiro acerta",
+            "Em cada quadro para mostrar o valor"
+          ]
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Um placar é como uma janela para um valor guardado. Desenhar a janela não deveria somar pontos. O ponto muda quando um tiro acerta um asteroide; a imagem do placar só mostra o valor atual. As vidas seguem outra regra: uma batida tira uma vida e dá um pequeno tempo de proteção. Isso evita que vários quadros do mesmo contato acabem com todas as vidas de uma vez."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Programação, Variáveis, crie pontos com valor 0 em Ao iniciar. No final da colisão entre tiro e asteroide, coloque Somar 1 em pontos. Assim o acerto é o acontecimento que muda o valor.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. No valor, encaixe valor da variável pontos, de Programação, Valores. Use x 12, y 30, branco e tamanho 24. Acerte um asteroide para conferir.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Vida, encaixe Dar ao sprite de vida em Ao iniciar. Escolha nave e 3. Cada nova partida começa com essas três vidas.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Colisões, procure o encontro de cada sprite do grupo com a nave. Use asteroides e o apelido inimigo. Dentro, remova inimigo, solte a explosão, machuque nave em 1 com 45 quadros de proteção e trema a tela com intensidade 8.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Vida, coloque Desenhar as vidas do sprite depois da batida. Escolha nave, corações, x 12, y 48, tamanho 22 e vermelho. Esse desenho mostra as vidas que ainda restam.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Acerte um asteroide e observe o ponto. Depois deixe outro bater na nave: uma vida sai, a nave pisca e a tela treme. Fique alguns instantes sem acertar nada: os pontos devem ficar parados.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Compare três situações: sem acerto, acerto de tiro e batida na nave. Cada uma deve produzir a consequência certa. Envie seu projeto.\n\nNo Dia 5, você vai decidir quando a partida começa, termina e recomeça."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Quem faz o quê no placar?",
+      "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "criar e somar os pontos",
+      "objective": "Em Programação, Variáveis, crie pontos com valor 0 em Ao iniciar. No final da colisão entre tiro e asteroide, coloque Somar 1 em pontos. Assim o acerto é o acontecimento que muda o valor.",
+      "intent": "application",
+      "blockKeys": ["construir-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-01: gravar a demonstração \"criar e somar os pontos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-2",
+      "title": "mostrar o placar",
+      "objective": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. No valor, encaixe valor da variável pontos, de Programação, Valores. Use x 12, y 30, branco e tamanho 24. Acerte um asteroide para conferir.",
+      "intent": "application",
+      "blockKeys": ["construir-2"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-02: gravar a demonstração \"mostrar o placar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-3",
+      "title": "dar vidas à nave",
+      "objective": "Em Jogo 2D, Vida, encaixe Dar ao sprite de vida em Ao iniciar. Escolha nave e 3. Cada nova partida começa com essas três vidas.",
+      "intent": "application",
+      "blockKeys": ["construir-3"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-03: gravar a demonstração \"dar vidas à nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-4",
+      "title": "fazer a batida machucar",
+      "objective": "Em Colisões, procure o encontro de cada sprite do grupo com a nave. Use asteroides e o apelido inimigo. Dentro, remova inimigo, solte a explosão, machuque nave em 1 com 45 quadros de proteção e trema a tela com intensidade 8.",
+      "intent": "application",
+      "blockKeys": ["construir-4"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-04: gravar a demonstração \"fazer a batida machucar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-5",
+      "title": "mostrar os corações",
+      "objective": "Em Vida, coloque Desenhar as vidas do sprite depois da batida. Escolha nave, corações, x 12, y 48, tamanho 22 e vermelho. Esse desenho mostra as vidas que ainda restam.",
+      "intent": "application",
+      "blockKeys": ["construir-5"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-05: gravar a demonstração \"mostrar os corações\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-6",
+      "title": "hora de testar",
+      "objective": "Acerte um asteroide e observe o ponto. Depois deixe outro bater na nave: uma vida sai, a nave pisca e a tela treme. Fique alguns instantes sem acertar nada: os pontos devem ficar parados.",
+      "intent": "application",
+      "blockKeys": ["construir-6"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "dia-4-passo-06: gravar a demonstração \"hora de testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Compare três situações: sem acerto, acerto de tiro e batida na nave. Cada uma deve produzir a consequência certa. Envie seu projeto.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

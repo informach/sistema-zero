@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-03",
+  "title": "Sua nave ganha movimento",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Retome o asset nave de 32 × 32 no Pinta, com espaço reservado na base.\n\nHoje você vai criar dois quadros de animação e usar a imagem anterior para controlar o que muda.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "O que deve mudar entre os quadros?",
+        "instructions": "Você quer fogo pulsando, sem a nave tremer. Qual mudança tentaria primeiro?",
+        "hints": ["Observe a parte que você quer animar e a que pretende manter firme."],
+        "required": false,
+        "activity": {
+          "type": "prediction",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Mover a nave inteira"
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar o fogo e manter o corpo alinhado"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Trocar o tamanho do asset"
+            }
+          ],
+          "outcome": "Mudar só o fogo produz uma pulsação com o corpo estável. Mover a nave inteira pode ser um efeito intencional, mas cria outra sensação. A prévia é o lugar de comparar."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma animação alterna imagens. Se o corpo da nave muda sem querer, ela parece tremer; se só o fogo muda, ele parece piscar enquanto a nave continua firme. A pele de cebola mostra o quadro anterior como referência, sem fazer parte do desenho exportado. O nome voando e os dois quadros serão usados na programação. Você decide o formato e as cores do fogo; manter o corpo estável ajuda a perceber a mudança que escolheu."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra Pinta e entre no cartão nave. Desenhe o fogo nas quatro linhas que ficaram livres. Escolha cores que você consiga reconhecer quando a nave estiver pequena no jogo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na faixa Spritesheet, duplique o quadro. Agora mude o fogo do segundo, preservando o corpo. Rode a prévia para ver as duas imagens alternando. Se quase não houver diferença, experimente uma mudança maior no fogo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Ligue a pele de cebola para ver a referência do quadro anterior. Compare o alinhamento do corpo e ajuste só o que você quer mover. Desligue a referência e olhe a prévia outra vez.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Renomeie a animação parado para voando. Confira dois quadros e mantenha a velocidade como veio nesta etapa. Espere salvar e volte à galeria para reconhecer a nave animada.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "A animação voando deve ter dois quadros. O corpo fica alinhado e o fogo muda. Confira o salvamento e abra novamente o mesmo asset.\n\nNa Aula 4, você vai desenhar o asteroide com outro jeito de construir imagens: vetor."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Criar dois quadros de animação e usar a imagem anterior para controlar o que muda.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "O que deve mudar entre os quadros?",
+      "objective": "Criar dois quadros de animação e usar a imagem anterior para controlar o que muda.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Criar dois quadros de animação e usar a imagem anterior para controlar o que muda.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "o seu fogo",
+      "objective": "Abra Pinta e entre no cartão nave. Desenhe o fogo nas quatro linhas que ficaram livres. Escolha cores que você consiga reconhecer quando a nave estiver pequena no jogo.",
+      "intent": "application",
+      "blockKeys": ["construir-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-03-passo-01: gravar a demonstração \"o seu fogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-2",
+      "title": "o segundo quadro",
+      "objective": "Na faixa Spritesheet, duplique o quadro. Agora mude o fogo do segundo, preservando o corpo. Rode a prévia para ver as duas imagens alternando. Se quase não houver diferença, experimente uma mudança maior no fogo.",
+      "intent": "application",
+      "blockKeys": ["construir-2"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-03-passo-02: gravar a demonstração \"o segundo quadro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-3",
+      "title": "o fantasma do quadro anterior",
+      "objective": "Ligue a pele de cebola para ver a referência do quadro anterior. Compare o alinhamento do corpo e ajuste só o que você quer mover. Desligue a referência e olhe a prévia outra vez.",
+      "intent": "application",
+      "blockKeys": ["construir-3"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-03-passo-03: gravar a demonstração \"o fantasma do quadro anterior\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-4",
+      "title": "o nome da animação",
+      "objective": "Renomeie a animação parado para voando. Confira dois quadros e mantenha a velocidade como veio nesta etapa. Espere salvar e volte à galeria para reconhecer a nave animada.",
+      "intent": "application",
+      "blockKeys": ["construir-4"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-03-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "A animação voando deve ter dois quadros. O corpo fica alinhado e o fogo muda. Confira o salvamento e abra novamente o mesmo asset.",
+      "intent": "closing",
+      "blockKeys": ["fechamento"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    }
+  ]
+}

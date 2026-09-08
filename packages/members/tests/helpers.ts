@@ -58,6 +58,8 @@ import { GetStudioCarryoverService } from '../src/application/get-studio-carryov
 import { GrantEntitlementService } from '../src/application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
+import { LearningService } from '../src/application/learning/learning.service'
+import { LearningImportService } from '../src/application/learning/learning-import.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from '../src/application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
@@ -82,7 +84,6 @@ import { UpdatePensaProjectService } from '../src/application/pensa/update-proje
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
-import { PracticeService } from '../src/application/practice/practice.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
@@ -139,8 +140,9 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryLearningImportRepository } from './fakes/learning-import-in-memory'
+import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
-import { InMemoryPracticeRepository } from './fakes/practice-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
@@ -170,7 +172,6 @@ export function buildApp(
   const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
-  const practiceRepository = new InMemoryPracticeRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   courses.onQuizGateChanged = (blockId) => quizAttempts.deleteByBlockId(blockId)
   courses.onStudioActivityChanged = (blockId) => studioSubmissions.resetCorrectionByBlockId(blockId)
@@ -307,17 +308,24 @@ export function buildApp(
     MAX_STUDIO_BODY_BYTES: 2 * 1024 * 1024,
   } as unknown as Env
 
+  const learningRepository = new InMemoryLearningRepository()
+  const learning = new LearningService(
+    learningRepository,
+    courses,
+    checkAccess,
+    progress,
+    clock,
+    teacherThreads,
+  )
   const app = createServer({
-    practice: {
-      practice: new PracticeService(
-        practiceRepository,
-        checkAccess,
+    learning: {
+      learning,
+      imports: new LearningImportService(
+        new InMemoryLearningImportRepository(courses, learningRepository),
         courses,
-        progress,
-        quizAttempts,
-        clock,
       ),
       internalToken: opts.internalToken,
+      requireAdminEnabled: true,
     },
     env,
     logger: silentLogger,
@@ -352,6 +360,7 @@ export function buildApp(
         quizAttempts,
         studioSubmissions,
         clock,
+        learning,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses, progress),
       resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress),
@@ -363,6 +372,7 @@ export function buildApp(
         studioSubmissions,
         awardGamification,
         clock,
+        learning,
       ),
       getProgress: new GetCourseProgressService(checkAccess, courses, progress),
       savePosition: new SaveVideoPositionService(checkAccess, courses, progress, positions, clock),
@@ -444,6 +454,7 @@ export function buildApp(
         progress,
         studioSubmissions,
         new AccessCheckService(entitlements, clock),
+        learningRepository,
         clock,
         hub,
       ),
@@ -566,7 +577,7 @@ export function buildApp(
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),
-      lessons: new LessonAdminService(courses, courses),
+      lessons: new LessonAdminService(courses, courses, learning),
       blocks: new BlockAdminService(courses),
       attachments: new AttachmentAdminService(courses),
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
@@ -592,6 +603,8 @@ export function buildApp(
   })
 
   return {
+    learning,
+    learningRepository,
     app,
     entitlements,
     courses,

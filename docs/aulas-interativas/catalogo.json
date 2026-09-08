@@ -1,0 +1,272 @@
+[
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 0,
+    "title": "Seu lugar para criar",
+    "path": "desafio-primeiro-jogo/introducao",
+    "source": "roteiro-aula-introdutoria-desafio-primeiro-jogo.md",
+    "sha256": "d3cb9fa0eb04bef925ae16af822ecb9222d66b10a498fd87cfd081b869b4e9fe",
+    "sections": 9,
+    "clips": 5
+  },
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 1,
+    "title": "A nave ganha vida",
+    "path": "desafio-primeiro-jogo/dia-1",
+    "source": "roteiro-aula-dia1-desafio-primeiro-jogo.md",
+    "sha256": "047763b7d5154ab4081c2127d7330c3af9e19495d79832c9028f5453e75ce6e6",
+    "sections": 10,
+    "clips": 6
+  },
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 2,
+    "title": "Tiros que saem da nave",
+    "path": "desafio-primeiro-jogo/dia-2",
+    "source": "roteiro-aula-dia2-desafio-primeiro-jogo.md",
+    "sha256": "f86024679543a69d6ac450ee09f6985e2275921c0bf72eb876eec1220036f5e9",
+    "sections": 10,
+    "clips": 6
+  },
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 3,
+    "title": "A chuva de asteroides",
+    "path": "desafio-primeiro-jogo/dia-3",
+    "source": "roteiro-aula-dia3-desafio-primeiro-jogo.md",
+    "sha256": "42f032a7ead97c237bcb82ed1b6a97405484801d4de4dc6e9d6598bc41446b55",
+    "sections": 10,
+    "clips": 6
+  },
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 4,
+    "title": "Pontos, vidas e consequências",
+    "path": "desafio-primeiro-jogo/dia-4",
+    "source": "roteiro-aula-dia4-desafio-primeiro-jogo.md",
+    "sha256": "5920b27b0007ee632bd60f587f59ed06e48fa2167acd5115f5c385d30fc0db1a",
+    "sections": 10,
+    "clips": 6
+  },
+  {
+    "course": "desafio-primeiro-jogo",
+    "number": 5,
+    "title": "Um jogo com começo e final",
+    "path": "desafio-primeiro-jogo/dia-5",
+    "source": "roteiro-aula-dia5-desafio-primeiro-jogo.md",
+    "sha256": "4752ff35745d17cd7df1473ed1da40f115a8437a87f3d1b455ecd2c27a1ceb7c",
+    "sections": 11,
+    "clips": 7
+  },
+  {
+    "course": "corre-dino",
+    "number": 1,
+    "title": "Prepare o mundo do Dino",
+    "path": "corre-dino/aula-01",
+    "source": "roteiro-aula-01-corre-dino.md",
+    "sha256": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "corre-dino",
+    "number": 2,
+    "title": "O Dino aparece e corre",
+    "path": "corre-dino/aula-02",
+    "source": "roteiro-aula-02-corre-dino.md",
+    "sha256": "c93882dd5de5ee1c27966f6c98e86bf301e5066acc3d059cf1c07cf38a8bd2a1",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "corre-dino",
+    "number": 3,
+    "title": "Um salto que volta ao chão",
+    "path": "corre-dino/aula-03",
+    "source": "roteiro-aula-03-corre-dino.md",
+    "sha256": "98f59a849d4d2f0fb36aa23422de7cb453cb6bf39057665cdfc4fac573495b3b",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "corre-dino",
+    "number": 4,
+    "title": "O som escuta o pulo",
+    "path": "corre-dino/aula-04",
+    "source": "roteiro-aula-04-corre-dino.md",
+    "sha256": "7b0c677793fae8c30bcef617c4ecc50ed6173beba622d672907eab8b72b6ab4f",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "corre-dino",
+    "number": 5,
+    "title": "Cactos no ritmo certo",
+    "path": "corre-dino/aula-05",
+    "source": "roteiro-aula-05-corre-dino.md",
+    "sha256": "7a103a2dd829c7795d691ef38ec384b3da742f02566db055e311358df080352d",
+    "sections": 9,
+    "clips": 5
+  },
+  {
+    "course": "corre-dino",
+    "number": 6,
+    "title": "A faxina dos cactos invisíveis",
+    "path": "corre-dino/aula-06",
+    "source": "roteiro-aula-06-corre-dino.md",
+    "sha256": "3f35c3213866fcd7d6ca59e0e1c34407f370807a410233aeb5ff95b0cd831a5f",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "corre-dino",
+    "number": 7,
+    "title": "Cada coisa na sua tela",
+    "path": "corre-dino/aula-07",
+    "source": "roteiro-aula-07-corre-dino.md",
+    "sha256": "7f3962d0ac9c56eae11ecd55631ff082d2ff03e8de476014f204f07b47ba9db5",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "corre-dino",
+    "number": 8,
+    "title": "Um convite para jogar",
+    "path": "corre-dino/aula-08",
+    "source": "roteiro-aula-08-corre-dino.md",
+    "sha256": "61a9981e52b892274aeeddc4ae00798d7a534530d5835205722d502f0b901139",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "corre-dino",
+    "number": 9,
+    "title": "Bateu, terminou, recomeçou",
+    "path": "corre-dino/aula-09",
+    "source": "roteiro-aula-09-corre-dino.md",
+    "sha256": "905dc7206a7ca7fc6264dbd2dc14661ad73e462690ba23b6d9b794d566a3c13b",
+    "sections": 9,
+    "clips": 5
+  },
+  {
+    "course": "corre-dino",
+    "number": 10,
+    "title": "Uma colisão mais justa",
+    "path": "corre-dino/aula-10",
+    "source": "roteiro-aula-10-corre-dino.md",
+    "sha256": "bdc328d620c6cb758db35578544f6beb4f2916714bf30bf0e4e6a0aad7f6519c",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "corre-dino",
+    "number": 11,
+    "title": "Quanto tempo você resistiu?",
+    "path": "corre-dino/aula-11",
+    "source": "roteiro-aula-11-corre-dino.md",
+    "sha256": "b30f94be234e9fb0da4db2fd54da6d3d070b01e51b7b5c0569f6db7568006c6e",
+    "sections": 9,
+    "clips": 5
+  },
+  {
+    "course": "corre-dino",
+    "number": 12,
+    "title": "Surpresas dentro de limites",
+    "path": "corre-dino/aula-12",
+    "source": "roteiro-aula-12-corre-dino.md",
+    "sha256": "159e3a4a3abd173079edeb63dca925f8f0d5de398b73da0f7c579e3d871a0c75",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "corre-dino",
+    "number": 13,
+    "title": "Dificuldade que cresce com a partida",
+    "path": "corre-dino/aula-13",
+    "source": "roteiro-aula-13-corre-dino.md",
+    "sha256": "05eb185cda62071bb736bbdf7461cdfbc0e03e694f8dad6609cf73972550660e",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 1,
+    "title": "Seu jogo no Estúdio Completo",
+    "path": "o-jogo-do-meu-jeito/aula-01",
+    "source": "roteiro-aula-01-o-jogo-do-meu-jeito.md",
+    "sha256": "aea9e2bb22e617e66266f6cd3c3f95d787269b30cb7f95bd6cfdcfbbf02e9c55",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 2,
+    "title": "Desenhe a sua nave no Pinta",
+    "path": "o-jogo-do-meu-jeito/aula-02",
+    "source": "roteiro-aula-02-o-jogo-do-meu-jeito.md",
+    "sha256": "e0b188a9253dd6adc10835b3c7673b7096508638a366bb26c51c98105ec2a451",
+    "sections": 9,
+    "clips": 5
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 3,
+    "title": "Sua nave ganha movimento",
+    "path": "o-jogo-do-meu-jeito/aula-03",
+    "source": "roteiro-aula-03-o-jogo-do-meu-jeito.md",
+    "sha256": "6cb8b8f7b1280f626cd3c915090ecd208c43a9dbf96132ddd84481c652f26bf4",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 4,
+    "title": "Um asteroide em vetor",
+    "path": "o-jogo-do-meu-jeito/aula-04",
+    "source": "roteiro-aula-04-o-jogo-do-meu-jeito.md",
+    "sha256": "49736e1aa90b056c2778a8337d400329fdaca77f30126bf9af0ff114fd3ba6e1",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 5,
+    "title": "O asteroide pega fogo",
+    "path": "o-jogo-do-meu-jeito/aula-05",
+    "source": "roteiro-aula-05-o-jogo-do-meu-jeito.md",
+    "sha256": "6c91114eeff90e43403960ab3b5976383576c498699ee9a98b7bcedca0c9b99f",
+    "sections": 8,
+    "clips": 4
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 6,
+    "title": "A sua nave entra no jogo",
+    "path": "o-jogo-do-meu-jeito/aula-06",
+    "source": "roteiro-aula-06-o-jogo-do-meu-jeito.md",
+    "sha256": "9ad05f5ccb2dab008f1b093e66a0b75b003a3f4d193754813bb5d2b8571114e8",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 7,
+    "title": "Os seus asteroides entram no jogo",
+    "path": "o-jogo-do-meu-jeito/aula-07",
+    "source": "roteiro-aula-07-o-jogo-do-meu-jeito.md",
+    "sha256": "8c6a62c7bee3bb50f7fb44aa1422d8bf18ed5744b6962819d43009532f7cfaf6",
+    "sections": 7,
+    "clips": 3
+  },
+  {
+    "course": "o-jogo-do-meu-jeito",
+    "number": 8,
+    "title": "Crie as suas versões",
+    "path": "o-jogo-do-meu-jeito/aula-08",
+    "source": "roteiro-aula-08-o-jogo-do-meu-jeito.md",
+    "sha256": "d7ef094360dfb4535e0a34b11c6c3a6252fee1ae7cc467bd89664ed7f3e8cde2",
+    "sections": 8,
+    "clips": 4
+  }
+]

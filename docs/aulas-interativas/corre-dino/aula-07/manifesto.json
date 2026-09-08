@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-07",
+  "title": "Cada coisa na sua tela",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! O projeto vem da Aula 6 com limpeza dos cactos e sem o contador de diagnóstico.\n\nHoje você vai usar uma condição para executar a partida somente na tela jogando.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "O relógio espera a partida?",
+        "instructions": "Teste o relógio em início e em jogando. Observe por que uma ação repetida também precisa de uma condição.",
+        "hints": ["Compare o contador sem condição quando a tela ainda está em início."],
+        "required": true,
+        "activity": {
+          "type": "html",
+          "html": "<h2>O relógio deve contar agora?</h2>\n<p>Escolha a tela e avance o relógio. Compare o contador protegido pela condição com o contador sem condição.</p>\n<label for=\"scene\">Tela atual</label><select id=\"scene\"><option value=\"inicio\">Início</option><option value=\"jogando\">Jogando</option><option value=\"fim\">Fim</option></select>\n<button id=\"tick\" type=\"button\">Passar um segundo</button><button id=\"reset\" type=\"button\">Zerar contadores</button>\n<div style=\"display:flex;gap:16px;flex-wrap:wrap;margin-top:16px\"><div style=\"padding:20px;background:#fff;border-radius:12px\">Se está jogando: <strong id=\"guarded\">0</strong></div><div style=\"padding:20px;background:#fff;border-radius:12px\">Sem condição: <strong id=\"always\">0</strong></div></div>\n<p id=\"status\" aria-live=\"polite\">Escolha uma tela para começar a comparação.</p>\n<script>\n(()=>{let guarded=0,always=0,tested=[];const scene=document.getElementById('scene');function render(){document.getElementById('guarded').textContent=guarded;document.getElementById('always').textContent=always}function save(){window.learning?.save({scene:scene.value,guarded,always,testedScenes:tested})}\ndocument.getElementById('tick').addEventListener('click',()=>{always++;if(scene.value==='jogando')guarded++;tested=[...new Set([...tested,scene.value])];render();document.getElementById('status').textContent=scene.value==='jogando'?'Os dois contadores aumentam durante a partida.':'Só o contador sem condição aumentou fora da partida.';save();if(tested.includes('jogando')&&tested.some(s=>s!=='jogando'))window.learning?.participated()});\nscene.addEventListener('change',save);document.getElementById('reset').addEventListener('click',()=>{guarded=0;always=0;render();save()});addEventListener('learning:restore',event=>{const s=event.detail;guarded=Number.isFinite(s.guarded)?s.guarded:0;always=Number.isFinite(s.always)?s.always:0;scene.value=['inicio','jogando','fim'].includes(s.scene)?s.scene:'inicio';tested=Array.isArray(s.testedScenes)?s.testedScenes:[];render()})})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "Um relógio fora da condição pode executar antes da partida?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Pode; ele precisa perguntar se a tela é jogando"
+            },
+            {
+              "id": "opcao-2",
+              "label": "Não; todos os relógios já sabem a tela"
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A condição precisa proteger cada ação que depende do estado da partida."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos. Podemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção. Mover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio. Agora o jogo sabe em qual tela começa.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas. Escolha jogando.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora. Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.\n\nNa Aula 8, a tela de início vai convidar o jogador e permitir que ele comece."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "O relógio espera a partida?",
+      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Usar uma condição para executar a partida somente na tela jogando.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "dizer em qual tela o jogo abre",
+      "objective": "Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio. Agora o jogo sabe em qual tela começa.",
+      "intent": "application",
+      "blockKeys": ["construir-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "aula-07-passo-01: gravar a demonstração \"dizer em qual tela o jogo abre\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-2",
+      "title": "a pergunta da tela \"jogando\"",
+      "objective": "Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas. Escolha jogando.",
+      "intent": "application",
+      "blockKeys": ["construir-2"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "aula-07-passo-02: gravar a demonstração \"a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-3",
+      "title": "mudar o jogo pra dentro",
+      "objective": "Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora. Envolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo.",
+      "intent": "application",
+      "blockKeys": ["construir-3"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [
+        "aula-07-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

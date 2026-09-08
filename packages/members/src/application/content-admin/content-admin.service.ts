@@ -1,4 +1,5 @@
 import { careerSlotsForTier } from '@sistemazero/core/career'
+import { isInteractiveBlock } from '@sistemazero/core/learning'
 import { isStudioProTemplateId } from '@sistemazero/core/studio'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
@@ -34,6 +35,7 @@ import type {
   ModuleFields,
 } from '../../domain/ports/content-admin-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { LearningService } from '../learning/learning.service'
 import {
   type AttachmentView,
   type BlockView,
@@ -356,6 +358,7 @@ export class LessonAdminService {
   constructor(
     private readonly content: ContentAdminRepository,
     private readonly courses: CourseRepository,
+    private readonly learning: LearningService,
   ) {}
 
   async create(moduleId: string, fields: LessonFields): Promise<LessonView> {
@@ -372,6 +375,7 @@ export class LessonAdminService {
     if (existing.isPublished && !fields.isPublished) {
       await this.assertNotLastPublished(existing.courseId, id)
     }
+    if (fields.isPublished) await this.learning.assertPublishable(id)
     const updated = await this.content.updateLesson(id, fields)
     if (!updated) throw new LessonNotFoundError()
     return toLessonView(updated)
@@ -417,7 +421,19 @@ export class LessonAdminService {
 // ── Blocos ──────────────────────────────────────────────────────────────────
 
 /** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
-function assertBlockCoherent(content: LessonBlockContent): void {
+export function assertBlockCoherent(content: LessonBlockContent): void {
+  if (content.kind === 'interactive' && !isInteractiveBlock(content))
+    throw new InvalidContentCommandError(
+      'Configure a atividade e sua verificação. Experimentos e HTML essenciais precisam de uma pergunta de verificação.',
+    )
+  if (
+    (content.kind === 'studio' || content.kind === 'pinta') &&
+    content.purpose === 'experiment' &&
+    (content.chain?.trim() || (content.kind === 'studio' && content.showcase?.enabled))
+  )
+    throw new InvalidContentCommandError(
+      'Experimentos não podem continuar uma cadeia ou publicar no Mural.',
+    )
   if (content.kind === 'quiz') {
     const problem = validateQuizAuthoring(content)
     if (problem) throw new InvalidContentCommandError(problem)

@@ -91,23 +91,7 @@ o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell —
 vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
-distingue os dois no toast/botão. **MODO CRIAÇÃO GUIADA (28/06):** quando a aula tem um bloco de VÍDEO
-**e** um de ESTÚDIO (`lessonSupportsGuided`), um botão "Modo criação guiada" aparece sob o título →
-abre o `GuidedCreationMode` (export do `kids-lesson-blocks`): overlay `fixed inset-0` com o vídeo à
-esquerda e o estúdio à direita (lado a lado no desktop; empilha no mobile) + botão "Voltar ao modo
-normal". A intenção de permanecer nesse modo fica em memória por `viewerId` + aula
-(`guided-creation-session.ts`): o `router.refresh()` disparado ao enviar a atividade para o professor
-pode remontar o player, mas NÃO fecha a criação guiada; somente "Voltar ao modo normal" a encerra
-(um reload completo da página começa no modo normal). **Split ARRASTÁVEL no desktop (07/2026):**
-`react-resizable-panels` (dep própria do kids —
-mesma lib/handle `.sz-resize-handle--vertical` de dentro do Estúdio), `autoSaveId
-"kids-guided-creation"` persiste a posição; vídeo `minSize 20`, estúdio `minSize 35` (Blockly
-inusável estreito). Gate por `useIsDesktop` (matchMedia 1024px, estado inicial lido direto — o modo
-só monta pós-clique, sem SSR/mismatch); <1024px segue o empilhado. Cruzar o limiar remonta o
-StudioBlockKids (re-semeia do rascunho, custo aceito); os DOIS layouts nunca montam juntos.
-O estúdio recebe `fillHeight` (prop nova do `StudioBlockView` → o editor preenche a coluna). É
-um OU outro (guiada vs layout normal) — renderizar os dois montaria o MESMO bloco de estúdio 2× (mesma
-chave de rascunho no IndexedDB → conflito); alternar remonta e re-semeia do rascunho local (sem perda).
+distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
 ⚠️ invariantes de segurança COPIADOS do shell: URL canônica de vídeo, sandbox SEM
@@ -2147,10 +2131,7 @@ A validação em staging e a promoção para produção estão em `../../docs/pl
   timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
 - `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com carreira,
   ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
-- `/praticar` exige perfil ativo e oferece até cinco perguntas de aulas já estudadas, feedback e
-  histórico separado; sem XP/moedas. Members revalida acesso ao curso, conclusão da aula e quiz
-  aprovado. Rascunho local é por perfil+sessão. O laboratório de matemática é uma proposta editorial.
-  As requisições enviam `x-sz-viewer`: troca de perfil em outra aba retorna 409 e pede atualização,
-  preservando as escolhas locais. Não iniciar sessão de prática com o dono de uma aba diferente.
 - Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é
   limitado e existe atualização manual. Falha de consulta não deve pedir recompra ou apagar marcos.
+
+As atividades interativas vivem nos blocos da própria aula. Respostas locais são isoladas por perfil/aula/bloco/revisão; escritas exigem `x-sz-viewer` correspondente à sessão. Vídeos usam Vimeo pelo componente compartilhado, com retomada por bloco e hash de privacidade. Não há auto-conclusão por porcentagem de vídeo. O upload continua no admin.

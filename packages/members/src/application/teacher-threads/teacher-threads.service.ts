@@ -326,8 +326,8 @@ export class TeacherThreadsService {
    * fluxo de envio (server-side confiável) chama isto; pela BORDA o aluno só RESPONDE
    * (`studentReply`), nunca inicia. `authorId` = o próprio aluno.
    */
-  async studentPostByContext(input: Omit<TeacherPostByContextInput, 'authorId'>): Promise<void> {
-    await this.postByContext({ ...input, authorId: input.userId }, 'student')
+  async studentPostByContext(input: Omit<TeacherPostByContextInput, 'authorId'>): Promise<string> {
+    return this.postByContext({ ...input, authorId: input.userId }, 'student')
   }
 
   // ── Interno ──────────────────────────────────────────────────────────────────

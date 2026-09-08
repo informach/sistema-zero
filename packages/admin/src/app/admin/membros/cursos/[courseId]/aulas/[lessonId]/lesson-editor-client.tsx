@@ -9,6 +9,7 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -46,6 +47,9 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
+import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-builder'
+import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
+import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
@@ -75,12 +79,13 @@ import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 // cheio de `default` silencioso (o `buildContent` grava QUIZ para kind sem case), então
 // vale prender o que dá para prender em tempo de compilação.
 const KIND_LABELS: Record<LessonBlockKind, string> = {
+  interactive: 'Descoberta interativa',
   rich_text: 'Texto',
   video: 'Vídeo',
   image: 'Imagem',
   audio: 'Áudio',
   quiz: 'Quiz',
-  embed: 'Interativo',
+  embed: 'HTML livre (sem progresso)',
   ebook: 'E-book (livro 3D)',
   studio: 'Estúdio',
   pinta: 'Pinta (desenho)',
@@ -94,6 +99,7 @@ const kindLabel = (kind: string): string => (KIND_LABELS as Record<string, strin
 // Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
 // (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
 const BLOCK_DIALOG_WIDTH: Record<string, string> = {
+  interactive: 'max-w-4xl',
   studio: 'max-w-7xl',
   pinta: 'max-w-7xl',
   quiz: 'max-w-4xl',
@@ -112,6 +118,8 @@ const STUDIO_MODES: { value: IDEMode; label: string }[] = [
 ]
 
 interface BlockForm {
+  interactive: InteractiveBlock
+  toolPurpose: 'experiment' | 'submission'
   kind: LessonBlockKind
   markdown: string
   html: string
@@ -182,6 +190,8 @@ interface BlockForm {
 }
 
 const EMPTY_BLOCK: BlockForm = {
+  interactive: EMPTY_LEARNING,
+  toolPurpose: 'submission',
   kind: 'rich_text',
   markdown: '',
   html: '',
@@ -262,6 +272,8 @@ function buildContent(
 ): LessonBlockContent {
   const dur = num(f.durationSeconds)
   switch (f.kind) {
+    case 'interactive':
+      return f.interactive
     case 'studio': {
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
       // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
@@ -272,6 +284,7 @@ function buildContent(
       const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
       return {
         kind: 'studio',
+        purpose: f.toolPurpose,
         initialProject: studioProject as Project,
         level: f.studioLevel,
         ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
@@ -376,6 +389,7 @@ function buildContent(
     case 'pinta':
       return {
         kind: 'pinta',
+        purpose: f.toolPurpose,
         // O desenho vem do editor embutido (o `saveBlock` já barrou o caso sem handle).
         initialAsset: pintaAsset,
         // "tudo" = SEM curadoria; o campo some do payload em vez de virar lista vazia (o
@@ -480,6 +494,8 @@ export function LessonEditorClient({
   studentAppUrls?: { adult?: string; kids?: string }
 }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
+  const [structureDirty, setStructureDirty] = useState(false)
+  const [structureVersion, setStructureVersion] = useState(0)
 
   const [lesson, setLesson] = useState<LessonContentView | null>(null)
   const [loading, setLoading] = useState(true)
@@ -532,6 +548,7 @@ export function LessonEditorClient({
     setLoading(true)
     try {
       setLesson(await apiGet<LessonContentView>(`/api/members/lessons/${lessonId}/content`))
+      setStructureVersion((value) => value + 1)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao carregar a aula.')
     } finally {
@@ -558,6 +575,10 @@ export function LessonEditorClient({
   }, [load])
 
   async function run(fn: () => Promise<unknown>, okMsg?: string) {
+    if (structureDirty) {
+      toast.error('Salve a organização didática antes de alterar o conteúdo.')
+      return
+    }
     setBusy(true)
     try {
       await fn()
@@ -572,6 +593,10 @@ export function LessonEditorClient({
 
   // ── Blocos ──
   function openCreateBlock() {
+    if (structureDirty) {
+      toast.error('Salve a organização didática antes de adicionar um bloco.')
+      return
+    }
     setEditingBlock(null)
     setBlockForm(EMPTY_BLOCK)
     setStudioKind('blocks')
@@ -579,11 +604,18 @@ export function LessonEditorClient({
     setBlockOpen(true)
   }
   function openEditBlock(b: BlockView) {
+    if (structureDirty) {
+      toast.error('Salve a organização didática antes de editar um bloco.')
+      return
+    }
     setEditingBlock(b)
     const c = b.content
     setBlockForm({
       ...EMPTY_BLOCK,
       kind: c.kind,
+      interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
+      toolPurpose:
+        c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
       src: c.kind === 'video' ? c.src : '',
@@ -664,6 +696,22 @@ export function LessonEditorClient({
     setBlockOpen(true)
   }
   async function saveBlock() {
+    if (blockForm.kind === 'interactive' && !isInteractiveBlock(blockForm.interactive)) {
+      toast.error(
+        'Complete o modelo, as alternativas e a pergunta de verificação, quando necessária.',
+      )
+      return
+    }
+    if (
+      (blockForm.kind === 'studio' || blockForm.kind === 'pinta') &&
+      blockForm.toolPurpose === 'experiment' &&
+      (blockForm.studioChain.trim() ||
+        blockForm.pintaChain.trim() ||
+        blockForm.studioShowcaseEnabled)
+    ) {
+      toast.error('Um experimento não pode continuar uma cadeia ou publicar no Mural.')
+      return
+    }
     if (blockForm.kind === 'quiz') {
       const error = validateQuiz(blockForm.quiz)
       if (error) {
@@ -756,6 +804,7 @@ export function LessonEditorClient({
   async function persistOrder(url: string, orderedIds: string[]) {
     try {
       await apiSend(url, 'POST', { orderedIds })
+      setStructureVersion((value) => value + 1)
     } catch (err) {
       toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
       await load()
@@ -763,6 +812,10 @@ export function LessonEditorClient({
   }
 
   function handleBlockDragEnd(event: DragEndEvent) {
+    if (structureDirty) {
+      toast.error('Salve a organização antes de reordenar blocos.')
+      return
+    }
     const { active, over } = event
     if (!lesson || !over || active.id === over.id) return
     const oldIdx = lesson.blocks.findIndex((b) => b.id === active.id)
@@ -777,6 +830,10 @@ export function LessonEditorClient({
   }
 
   function handleAttachmentDragEnd(event: DragEndEvent) {
+    if (structureDirty) {
+      toast.error('Salve a organização antes de reordenar anexos.')
+      return
+    }
     const { active, over } = event
     if (!lesson || !over || active.id === over.id) return
     const oldIdx = lesson.attachments.findIndex((a) => a.id === active.id)
@@ -929,8 +986,24 @@ export function LessonEditorClient({
         <Card className="py-10 text-center text-muted-foreground">Aula não encontrada.</Card>
       ) : (
         <>
+          {canWrite && courseInfo && (
+            <LessonManifestImport
+              lessonId={lessonId}
+              lessonSlug={lesson.slug}
+              courseSlug={courseInfo.slug}
+              published={courseInfo.lessonPublished}
+              disabled={structureDirty}
+              onImported={load}
+            />
+          )}
+          <LessonStructureEditor
+            key={`${lesson.id}:${structureVersion}`}
+            lesson={lesson}
+            canWrite={canWrite}
+            onDirtyChange={setStructureDirty}
+          />
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground">Blocos</h3>
+            <h3 className="text-sm font-semibold text-muted-foreground">Conteúdo dos blocos</h3>
             {lesson.blocks.length === 0 ? (
               <Card className="py-8 text-center text-sm text-muted-foreground">
                 Nenhum bloco. Adicione texto, vídeo, imagem, quiz ou conteúdo interativo.
@@ -1033,6 +1106,29 @@ export function LessonEditorClient({
             </Select>
           </Field>
 
+          {blockForm.kind === 'interactive' && (
+            <LearningBuilder
+              value={blockForm.interactive}
+              onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
+            />
+          )}
+          {(blockForm.kind === 'studio' || blockForm.kind === 'pinta') && (
+            <Field label="Papel desta ferramenta" htmlFor="tool-purpose">
+              <Select
+                id="tool-purpose"
+                value={blockForm.toolPurpose}
+                onChange={(e) =>
+                  setBlockForm((form) => ({
+                    ...form,
+                    toolPurpose: e.target.value === 'experiment' ? 'experiment' : 'submission',
+                  }))
+                }
+              >
+                <option value="submission">Criação com entrega ao professor</option>
+                <option value="experiment">Experimento independente, sem entrega</option>
+              </Select>
+            </Field>
+          )}
           {blockForm.kind === 'rich_text' ? (
             <Field label="Conteúdo" hint="Salvo como markdown — renderiza igual na área do aluno.">
               <RichTextEditor

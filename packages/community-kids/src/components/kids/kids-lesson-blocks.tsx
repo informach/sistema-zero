@@ -2,15 +2,11 @@
 
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
-import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
 import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
-import { VimeoPlayer } from '@sistemazero/member-shell/components/vimeo-player'
-import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import type { StudioShareResult } from '@sistemazero/studio'
-import { Button } from '@sistemazero/ui/button'
 import {
-  ArrowLeft,
   Award,
   BookOpenText,
   Clapperboard,
@@ -24,7 +20,6 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { cn } from '@/lib/cn'
 import { parseLessonBlock } from '@/lib/lesson-block-content'
 import { renderMarkdown } from '@/lib/markdown'
@@ -59,85 +54,6 @@ export function KidsLessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
       {ordered.map((block) => (
         <BlockRenderer key={block.id} block={block} />
       ))}
-    </div>
-  )
-}
-
-/**
- * A aula suporta o "modo criação guiada"? (tem um bloco de VÍDEO **e** um de ESTÚDIO).
- * Só então o botão de ativar aparece — o modo é vídeo à esquerda + estúdio à direita.
- */
-export function lessonSupportsGuided(blocks: LessonBlockView[]): boolean {
-  return blocks.some((b) => b.kind === 'video') && blocks.some((b) => b.kind === 'studio')
-}
-
-/**
- * MODO CRIAÇÃO GUIADA: tela limpa em overlay — botão "voltar ao modo normal" + o VÍDEO da
- * aula à esquerda e o ESTÚDIO à direita (lado a lado no desktop), pra a criança assistir e ir
- * fazendo junto. Usa o 1º bloco de vídeo + o 1º de estúdio (o estúdio é o MESMO bloco — mesmo
- * rascunho/entrega/Compartilhar). No mobile empilha (vídeo em cima). Renderizado DENTRO do
- * `LessonPlayerProvider` (precisa do contexto do player: viewerId, posição do vídeo etc.).
- *
- * No desktop o split é ARRASTÁVEL (react-resizable-panels, o mesmo divisor de dentro do
- * Estúdio): a criança aumenta o estúdio e encolhe o vídeo (ou o contrário) puxando o
- * divisor; a posição persiste no localStorage (`autoSaveId`). O estúdio tem piso maior
- * (minSize 35) — Blockly fica inusável estreito demais. Cruzar o limiar desktop↔mobile
- * remonta o StudioBlockKids (re-semeia do rascunho local, sem perda — mesmo custo aceito
- * da alternância guiada↔normal); os DOIS layouts nunca montam juntos (mesma chave de
- * rascunho no IndexedDB, ver comentário do modo).
- */
-export function GuidedCreationMode({
-  blocks,
-  lessonTitle,
-  onExit,
-}: {
-  blocks: LessonBlockView[]
-  lessonTitle: string
-  onExit: () => void
-}) {
-  const isDesktop = useIsDesktop()
-  let videoBlock: ReturnType<typeof parseLessonBlock> = null
-  let studioBlock: ReturnType<typeof parseLessonBlock> = null
-  for (const block of blocks) {
-    const parsed = parseLessonBlock(block)
-    if (!videoBlock && parsed?.content.kind === 'video') videoBlock = parsed
-    if (!studioBlock && parsed?.content.kind === 'studio') studioBlock = parsed
-  }
-  if (!videoBlock || !studioBlock) return null
-  if (videoBlock.content.kind !== 'video' || studioBlock.content.kind !== 'studio') return null
-  const video = <Video content={videoBlock.content} />
-  const studio = (
-    <StudioBlockKids block={studioBlock.block} content={studioBlock.content} fillHeight />
-  )
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <div className="flex shrink-0 items-center gap-3 border-border border-b px-3 py-2">
-        <Button variant="outline" onClick={onExit} className="rounded-full">
-          <ArrowLeft className="size-4" />
-          Voltar ao modo normal
-        </Button>
-        <span className="sz-display truncate text-sm">{lessonTitle}</span>
-      </div>
-      {isDesktop ? (
-        <PanelGroup
-          direction="horizontal"
-          autoSaveId="kids-guided-creation"
-          className="min-h-0 flex-1 overflow-hidden p-3"
-        >
-          <Panel defaultSize={50} minSize={20}>
-            <div className="scrollbar-subtle h-full min-h-0 overflow-y-auto pr-3">{video}</div>
-          </Panel>
-          <PanelResizeHandle className="sz-resize-handle sz-resize-handle--vertical" />
-          <Panel defaultSize={50} minSize={35}>
-            <div className="flex h-full min-h-0 flex-col pl-3">{studio}</div>
-          </Panel>
-        </PanelGroup>
-      ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden p-3">
-          <div className="scrollbar-subtle min-h-0 overflow-y-auto">{video}</div>
-          <div className="flex min-h-0 flex-col">{studio}</div>
-        </div>
-      )}
     </div>
   )
 }
@@ -303,18 +219,6 @@ function RichText({ content }: { content: RichTextBlock }) {
 }
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
-function youtubeId(src: string): string | null {
-  const m = src.match(
-    /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/,
-  )
-  return m?.[1] ?? null
-}
-
-function vimeoId(src: string): string | null {
-  const m = src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)
-  return m?.[1] ?? null
-}
-
 /** Moldura kids dos players (borda grossa colorida + cantos bem redondos). */
 function VideoFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -329,63 +233,10 @@ function VideoFrame({ children }: { children: React.ReactNode }) {
 
 function Video({ content }: { content: VideoBlock }) {
   if (!content.src) return null
-  if (content.provider === 'youtube') {
-    const id = youtubeId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <VideoFrame>
-        <div className="aspect-video w-full bg-black">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${id}`}
-            title="Vídeo da aula"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-          />
-        </div>
-      </VideoFrame>
-    )
-  }
-  if (content.provider === 'vimeo') {
-    const id = vimeoId(content.src)
-    if (!id) return <UnsupportedBlock label="Vídeo indisponível" />
-    return (
-      <VideoFrame>
-        <VimeoLessonVideo vimeoId={id} />
-      </VideoFrame>
-    )
-  }
-  // `file`/`mux` (URL direta de vídeo) → player nativo.
   return (
     <VideoFrame>
-      <video
-        controls
-        preload="metadata"
-        poster={content.posterUrl}
-        className="aspect-video w-full bg-black"
-      >
-        <source src={content.src} />
-        <track kind="captions" />
-      </video>
+      <LessonVideo content={content} />
     </VideoFrame>
-  )
-}
-
-/**
- * Vimeo com o player rico (SDK): watermark do aluno, fullscreen custom, retomar
- * posição e auto-conclusão por % assistido — tudo vindo do LessonPlayerContext.
- */
-function VimeoLessonVideo({ vimeoId }: { vimeoId: string }) {
-  const player = useLessonPlayer()
-  return (
-    <VimeoPlayer
-      vimeoId={vimeoId}
-      watermark={player?.viewerWatermark ?? null}
-      initialPositionSeconds={player?.initialPositionSeconds ?? null}
-      onProgress={player?.onVideoProgress}
-      onFlush={player?.onVideoFlush}
-      onReachedThreshold={player?.onVideoReachedThreshold}
-    />
   )
 }
 

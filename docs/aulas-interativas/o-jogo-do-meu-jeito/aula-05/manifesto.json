@@ -1,0 +1,177 @@
+{
+  "version": 1,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-05",
+  "title": "O asteroide pega fogo",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Abra o asteroide vetorial criado na Aula 4. A pedra ainda está parada e sem chamas.\n\nHoje você vai controlar a ordem visual das formas e criar uma animação com pedra e fogo.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "A pedra está escondida",
+        "instructions": "Ordene as formas de trás para frente para deixar a pedra na frente do fogo, com um centro claro dentro da chama maior.",
+        "hints": ["A forma mais à frente pode cobrir as que estão atrás."],
+        "required": true,
+        "activity": {
+          "type": "sequence",
+          "mode": "order",
+          "items": [
+            {
+              "id": "peca-1",
+              "label": "Pedra"
+            },
+            {
+              "id": "peca-2",
+              "label": "Chama externa maior"
+            },
+            {
+              "id": "peca-3",
+              "label": "Chama interna menor"
+            }
+          ],
+          "solution": ["peca-2", "peca-3", "peca-1"],
+          "targets": []
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Formas que se sobrepõem funcionam como papéis colocados uns sobre os outros. Uma chama pode cobrir a pedra se estiver na frente; enviá-la para trás muda a leitura da imagem. Tons mais claros dentro de uma chama maior ajudam a criar um centro quente, mas a paleta é sua. Ao duplicar o quadro e mudar alguns detalhes, você cria movimento sem redesenhar tudo. O nome girando e os dois quadros ligam a arte ao programa depois."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos. Coloque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Copie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição. Você pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Duplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento. Rode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Renomeie a animação parado para girando. Confira dois quadros. Espere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.\n\nNa Aula 6, seus desenhos vão entrar no projeto livre do Estúdio."
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "A pedra está escondida",
+      "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Controlar a ordem visual das formas e criar uma animação com pedra e fogo.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "a chama de fora",
+      "objective": "Abra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos. Coloque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo.",
+      "intent": "application",
+      "blockKeys": ["construir-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-05-passo-01: gravar a demonstração \"a chama de fora\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-2",
+      "title": "as chamas de dentro",
+      "objective": "Copie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição. Você pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu.",
+      "intent": "application",
+      "blockKeys": ["construir-2"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-05-passo-02: gravar a demonstração \"as chamas de dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-3",
+      "title": "fazer a pedra rolar",
+      "objective": "Duplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento. Rode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito.",
+      "intent": "application",
+      "blockKeys": ["construir-3"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-05-passo-03: gravar a demonstração \"fazer a pedra rolar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "construir-4",
+      "title": "o nome da animação",
+      "objective": "Renomeie a animação parado para girando. Confira dois quadros. Espere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados.",
+      "intent": "application",
+      "blockKeys": ["construir-4"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": [
+        "aula-05-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      ]
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.",
+      "intent": "closing",
+      "blockKeys": ["fechamento"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    }
+  ]
+}

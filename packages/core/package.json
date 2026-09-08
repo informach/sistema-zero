@@ -9,7 +9,6 @@
     ".": "./src/index.ts",
     "./ai-credits": "./src/ai-credits/index.ts",
     "./career": "./src/career/index.ts",
-    "./practice": "./src/practice/index.ts",
     "./creations": "./src/creations/index.ts",
     "./security": "./src/security/index.ts",
     "./logging": "./src/logging/index.ts",
@@ -18,7 +17,8 @@
     "./http": "./src/http/index.ts",
     "./studio": "./src/studio/index.ts",
     "./time": "./src/time/index.ts",
-    "./zappy": "./src/zappy/index.ts"
+    "./zappy": "./src/zappy/index.ts",
+    "./learning": "./src/learning/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

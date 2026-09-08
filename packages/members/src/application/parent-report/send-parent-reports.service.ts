@@ -3,6 +3,7 @@ import { localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
 import type { AuthGateway } from '../../domain/ports/auth-gateway.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { LearningRepository } from '../../domain/ports/learning-repository.port'
 import type { MessagingGateway } from '../../domain/ports/messaging-gateway.port'
 import type { ParentReportRepository } from '../../domain/ports/parent-report-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
@@ -54,6 +55,9 @@ function childSummary(name: string, stats: ChildStatsView): string {
       `   • ${w.badgesUnlocked} ${w.badgesUnlocked === 1 ? 'conquista nova' : 'conquistas novas'}`,
     )
   }
+  for (const lesson of stats.learningTopics) {
+    lines.push(`   • Explorou em "${lesson.lessonTitle}": ${lesson.topics.join('; ')}`)
+  }
   for (const game of stats.games ?? []) {
     lines.push(`   • 🎮 Publicou o jogo "${game.title}" no Mural!`)
   }
@@ -82,6 +86,7 @@ export class SendParentReportsService {
   constructor(
     private readonly gamification: GamificationRepository,
     private readonly studio: StudioSubmissionRepository,
+    private readonly learning: LearningRepository,
     private readonly childrenStats: GetChildrenStatsService,
     private readonly reports: ParentReportRepository,
     private readonly auth: AuthGateway,
@@ -115,11 +120,12 @@ export class SendParentReportsService {
 
     // Enumeração: contas com XP na semana ∪ contas com ENTREGA de atividade na
     // semana (fecha o buraco da atividade sem XP novo). Distinct, kids-only.
-    const [xpAccounts, studioAccounts] = await Promise.all([
+    const [xpAccounts, studioAccounts, learningAccounts] = await Promise.all([
       this.gamification.listActiveAccountsInPeriod('kids', weekFrom, now),
       this.studio.listAccountsSubmittedInPeriod('kids', weekFrom, now),
+      this.learning.listActiveAccounts('kids', weekFrom, now),
     ])
-    const candidates = [...new Set([...xpAccounts, ...studioAccounts])]
+    const candidates = [...new Set([...xpAccounts, ...studioAccounts, ...learningAccounts])]
     if (candidates.length === 0) return { sent: 0, skipped: 0, failed: 0 }
 
     const [sentSet, disabledSet] = await Promise.all([
@@ -136,7 +142,11 @@ export class SendParentReportsService {
 
     for (const accountId of pending) {
       try {
-        const profileIds = await this.gamification.listProfileIdsByAccount(accountId, 'kids')
+        const [gamificationProfiles, learningProfiles] = await Promise.all([
+          this.gamification.listProfileIdsByAccount(accountId, 'kids'),
+          this.learning.listProfileIdsByAccount(accountId, 'kids'),
+        ])
+        const profileIds = [...new Set([...gamificationProfiles, ...learningProfiles])]
         const stats = profileIds.length
           ? await this.childrenStats.execute(accountId, profileIds, { audience: 'kids' })
           : []

@@ -117,7 +117,8 @@ export class SubmitStudioProjectService {
     if (!privileged && hasComingSoonBlock(lesson.blocks)) throw limits.notFound()
 
     const block = lesson.blocks.find((b) => b.id === blockId)
-    if (block?.content.kind !== kind) throw limits.notFound()
+    if (block?.content.kind !== kind || block.content.purpose === 'experiment')
+      throw limits.notFound()
 
     // O desenho cruza HTTP/jsonb como arrays JSON. A borda restaura os typed arrays,
     // valida toda a estrutura e serializa novamente no formato estável de transporte.

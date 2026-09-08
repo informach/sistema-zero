@@ -1,4 +1,5 @@
 import { t } from 'elysia'
+import { InteractiveBlockSchema } from './learning.dtos'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -679,6 +680,7 @@ const PensaTaskGuideSchema = t.Object({
 })
 const PensaPintaContextSchema = t.Object({
   kind: t.Literal('pinta'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   assetId: t.String({ minLength: 1, maxLength: 100 }),
   artKind: t.Union([
     t.Literal('sprite'),
@@ -718,6 +720,7 @@ const PensaStudioBlockSchema = t.Object({
 })
 const PensaStudioContextSchema = t.Object({
   kind: t.Literal('studio'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
   visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
   blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),
@@ -1274,6 +1277,7 @@ const ComingSoonBlockSchema = t.Object({
 })
 
 export const LessonBlockContentSchema = t.Union([
+  InteractiveBlockSchema,
   RichTextBlockSchema,
   VideoBlockSchema,
   ImageBlockSchema,
@@ -1330,6 +1334,7 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('studio_submission'),
   t.Literal('mural_publication'),
   t.Literal('general'),
+  t.Literal('lesson_section'),
 ])
 /**
  * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).

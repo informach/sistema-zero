@@ -1,3 +1,4 @@
+import type { InteractiveBlock } from '@sistemazero/core/learning'
 /**
  * Contratos compartilhados entre o BFF e os componentes do painel. Espelham as
  * views do @sistemazero/catalog e o UserView do @sistemazero/auth (type-only —
@@ -458,6 +459,7 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'pinta',
+  'interactive',
   'certificate',
   'coming_soon',
 ] as const
@@ -526,6 +528,7 @@ export interface EbookBlock {
  * campos são a config de aprendizado (nível, allowlist de blocos, modos).
  */
 export interface StudioBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
   /** Aceita a escala LEGADA (aulas pré-reforma 2D/3D); o editor normaliza no load. */
@@ -595,6 +598,7 @@ export interface ComingSoonBlock {
  * do pacote, que o sanea nas duas pontas).
  */
 export interface PintaBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown
   /** Ferramentas liberadas (vazia/ausente = a caixa inteira). */
@@ -604,6 +608,7 @@ export interface PintaBlock {
 }
 
 export type LessonBlockContent =
+  | InteractiveBlock
   | RichTextBlock
   | VideoBlock
   | ImageBlock
@@ -721,7 +726,11 @@ export interface StudioSubmissionQueueRow {
 }
 
 // ── Conversas com o aluno (canal de retorno) ────────────────────────────────
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 export interface TeacherMessageView {

@@ -1,3 +1,8 @@
+import {
+  type LessonLearningProgress,
+  type LessonSection,
+  publicInteractiveBlock,
+} from '@sistemazero/core/learning'
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
@@ -705,6 +710,7 @@ export interface StudioStateView {
 }
 
 export interface LessonBlockView {
+  blockRevision?: string
   id: string
   kind: string
   sortOrder: number
@@ -751,6 +757,9 @@ export interface EbookDownloadView {
 }
 
 export interface LessonDetailView {
+  sections?: LessonSection[]
+  structureRevision?: string | null
+  learningProgress?: LessonLearningProgress
   id: string
   slug: string
   title: string
@@ -793,11 +802,20 @@ export function toLessonDetailView(
     completed,
     positionSeconds,
     blocks: visibleBlocks.map((b) => {
+      if (b.content.kind === 'interactive')
+        return {
+          id: b.id,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          blockRevision: b.contentRevision,
+          content: publicInteractiveBlock(b.content),
+        }
       // Quiz: NUNCA envia o gabarito (correctChoiceIds/explanation) ao aluno —
       // a projeção member-facing remove e anexa o estado das tentativas.
       if (b.content.kind === 'quiz') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: toMemberFacingQuizContent(b.content),
@@ -813,13 +831,20 @@ export function toLessonDetailView(
       // o community resolve via rota própria e serve com marca d'água (igual anexo).
       if (b.content.kind === 'ebook') {
         const { url: _url, ...memberFacing } = b.content
-        return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: memberFacing }
+        return {
+          id: b.id,
+          blockRevision: b.contentRevision,
+          kind: b.kind,
+          sortOrder: b.sortOrder,
+          content: memberFacing,
+        }
       }
       // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno
       // precisa dela para montar o editor. Anexa só o estado da entrega (já enviou?).
       if (b.content.kind === 'studio') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: b.content,
@@ -833,13 +858,20 @@ export function toLessonDetailView(
       if (b.content.kind === 'pinta') {
         return {
           id: b.id,
+          blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
           content: b.content,
           pintaState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
         }
       }
-      return { id: b.id, kind: b.kind, sortOrder: b.sortOrder, content: b.content }
+      return {
+        id: b.id,
+        blockRevision: b.contentRevision,
+        kind: b.kind,
+        sortOrder: b.sortOrder,
+        content: b.content,
+      }
     }),
     // Anexo é conteúdo baixável da aula — numa aula "em breve" ele some junto.
     attachments: (comingSoon ? [] : lesson.attachments).map((a) => ({

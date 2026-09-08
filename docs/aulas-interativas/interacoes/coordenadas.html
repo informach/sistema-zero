@@ -1,0 +1,17 @@
+<h2>Para onde vai o tiro?</h2>
+<p>Mantenha o ponto de partida e mude somente a velocidade vertical. Teste um número positivo e um negativo.</p>
+<label for="vy">Velocidade vertical <output id="value">-9</output></label>
+<input id="vy" type="range" min="-15" max="15" step="1" value="-9">
+<button id="test" type="button">Testar trajetória</button>
+<svg viewBox="0 0 400 250" role="img" aria-label="Trajetória vertical de um tiro a partir da nave" style="display:block;width:100%;max-height:260px;background:#152746;border-radius:12px">
+  <path d="M190 180L200 160L210 180Z" fill="#6bd7ec"/><path id="path" d="M200 160L200 160" stroke="#ffbe54" stroke-width="4" stroke-dasharray="6 4"/>
+  <text x="12" y="24" fill="white">y aumenta ↓</text><text x="12" y="240" fill="white" id="result">A nave está na mesma posição em todos os testes.</text>
+</svg>
+<p id="status" aria-live="polite">Ainda não há testes.</p>
+<script>
+(()=>{const input=document.getElementById('vy'),value=document.getElementById('value'),path=document.getElementById('path'),result=document.getElementById('result'),status=document.getElementById('status');let tested=[];
+const save=()=>window.learning?.save({vy:Number(input.value),testedValues:tested});
+input.addEventListener('input',()=>{value.textContent=input.value;save()});
+document.getElementById('test').addEventListener('click',()=>{const v=Number(input.value);tested=[...new Set([...tested,String(v)])];path.setAttribute('d',`M200 160L200 ${Math.max(30,Math.min(215,160+v*8))}`);result.textContent=v<0?'O tiro sobe.':v>0?'O tiro desce.':'O tiro não muda de altura.';status.textContent=`${tested.length} velocidades testadas.`;save();if(tested.some(v=>Number(v)<0)&&tested.some(v=>Number(v)>0))window.learning?.participated()});
+addEventListener('learning:restore',event=>{const s=event.detail;input.value=Number.isFinite(s.vy)?s.vy:-9;value.textContent=input.value;tested=Array.isArray(s.testedValues)?s.testedValues:[];status.textContent=`${tested.length} velocidades já testadas. Teste novamente para ver a trajetória.`})})();
+</script>

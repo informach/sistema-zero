@@ -1,3 +1,4 @@
+import type { LessonLearningProgress, LessonSection } from '@sistemazero/core/learning'
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -416,6 +417,7 @@ export interface EbookBlock {
  * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
  */
 export interface StudioBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
   /**
@@ -458,6 +460,7 @@ export interface StudioBlock {
  * do tipo. Quem sanea é o `<PintaLesson>`, na borda.
  */
 export interface PintaBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown
   /** Ferramentas liberadas pelo professor. Vazia/ausente = a caixa inteira. */
@@ -1084,6 +1087,7 @@ export interface ChildWeekGameView {
 
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
+  learningTopics?: import('@sistemazero/core/learning').LearningTopicSummary[]
   career?: import('@sistemazero/core/career').ParentCareerView
   profileId: string
   xp: number
@@ -1260,6 +1264,7 @@ export interface QuizAttemptResultView {
 
 /** Bloco como chega da API (`content` é `unknown` na borda — narrowing por `kind`). */
 export interface LessonBlockView {
+  blockRevision?: string
   id: string
   kind: string
   sortOrder: number
@@ -1308,6 +1313,9 @@ export interface EbookDownloadView {
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
+  sections?: LessonSection[]
+  structureRevision?: string | null
+  learningProgress?: LessonLearningProgress
   id: string
   slug: string
   title: string
@@ -1535,7 +1543,11 @@ export interface ShowcasePayloadView {
 }
 
 // ── Recados (conversas com o professor — canal de retorno) ──────────────────
-export type TeacherThreadContext = 'studio_submission' | 'mural_publication' | 'general'
+export type TeacherThreadContext =
+  | 'studio_submission'
+  | 'mural_publication'
+  | 'general'
+  | 'lesson_section'
 export type TeacherMessageRole = 'teacher' | 'student'
 
 /** Um turno da conversa (mirror do members). */
