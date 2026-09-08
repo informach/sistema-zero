@@ -20,6 +20,7 @@ import {
   CloneSameAudienceError,
   CourseConflictError,
   DuplicateSlugError,
+  NoShowcaseBlockError,
 } from '../../src/domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../src/domain/course/lesson-block'
 import {
@@ -404,6 +405,23 @@ export class InMemoryEntitlementRepository implements EntitlementRepository {
 }
 
 export class InMemoryCourseRepository implements CourseRepository, ContentAdminRepository {
+  async listShowcaseLessonIds(courseId: string): Promise<string[]> {
+    const outline = await this.findOutline(courseId, { publishedOnly: true })
+    return outline
+      .flatMap((module) => module.lessons)
+      .filter((lesson) => this.lessonContentAvailable(lesson.id))
+      .filter((lesson) =>
+        this.blocks.some((block) => {
+          return (
+            block.lessonId === lesson.id &&
+            block.content.kind === 'studio' &&
+            block.content.showcase?.enabled === true
+          )
+        }),
+      )
+      .map((lesson) => lesson.id)
+  }
+
   courses: Course[] = []
   modules: Module[] = []
   lessons: Lesson[] = []
@@ -578,6 +596,37 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   // ── ContentAdminRepository (autoria) — opera nos MESMOS arrays acima ──────
+  private lessonContentAvailable(lessonId: string): boolean {
+    return !this.blocks.some((b) => b.lessonId === lessonId && b.kind === 'coming_soon')
+  }
+
+  private assertShowcaseRemains(
+    courseId: string,
+    exclude: { blockId?: string; lessonId?: string; moduleId?: string },
+  ): void {
+    const course = this.courses.find((c) => c.id === courseId)
+    if (course?.status !== 'published' || course.audience !== 'kids' || course.careerSlot === null)
+      return
+    const published = this.lessons.filter((l) => l.courseId === courseId && l.isPublished)
+    const candidates = this.blocks.filter(
+      (b) =>
+        b.content.kind === 'studio' &&
+        b.content.showcase?.enabled &&
+        this.lessonContentAvailable(b.lessonId) &&
+        published.some((l) => l.id === b.lessonId),
+    )
+    if (
+      candidates.length &&
+      !candidates.some(
+        (b) =>
+          b.id !== exclude.blockId &&
+          b.lessonId !== exclude.lessonId &&
+          published.find((l) => l.id === b.lessonId)?.moduleId !== exclude.moduleId,
+      )
+    )
+      throw new NoShowcaseBlockError()
+  }
+
   async listCoursesAdmin(
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: Course[]; total: number }> {
@@ -598,7 +647,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     for (const block of this.blocks) {
       if (block.content.kind !== 'studio' || block.content.showcase?.enabled !== true) continue
       const lesson = this.lessons.find((l) => l.id === block.lessonId)
-      if (lesson?.isPublished && wanted.has(lesson.courseId)) found.add(lesson.courseId)
+      if (
+        lesson?.isPublished &&
+        wanted.has(lesson.courseId) &&
+        this.lessonContentAvailable(lesson.id)
+      )
+        found.add(lesson.courseId)
     }
     return [...found]
   }
@@ -765,6 +819,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async deleteModule(id: string): Promise<boolean> {
     if (!this.modules.some((m) => m.id === id)) return false
+    const courseId = this.modules.find((m) => m.id === id)?.courseId
+    if (courseId) this.assertShowcaseRemains(courseId, { moduleId: id })
     const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
     this.modules = this.modules.filter((m) => m.id !== id)
     this.lessons = this.lessons.filter((l) => l.moduleId !== id)
@@ -806,6 +862,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async updateLesson(id: string, fields: LessonFields): Promise<Lesson | null> {
     const l = this.lessons.find((x) => x.id === id)
     if (!l) return null
+    if (!fields.isPublished) this.assertShowcaseRemains(l.courseId, { lessonId: id })
     if (
       this.lessons.some((x) => x.id !== id && x.courseId === l.courseId && x.slug === fields.slug)
     ) {
@@ -820,6 +877,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async deleteLesson(id: string): Promise<boolean> {
     if (!this.lessons.some((l) => l.id === id)) return false
+    const courseId = this.lessons.find((l) => l.id === id)?.courseId
+    if (courseId) this.assertShowcaseRemains(courseId, { lessonId: id })
     this.lessons = this.lessons.filter((l) => l.id !== id)
     this.blocks = this.blocks.filter((b) => b.lessonId !== id)
     this.attachments = this.attachments.filter((a) => a.lessonId !== id)
@@ -845,6 +904,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
+    const courseId = this.lessons.find((l) => l.id === lessonId)?.courseId
+    if (courseId && kind === 'coming_soon') this.assertShowcaseRemains(courseId, { lessonId })
     const sortOrder = this.blocks
       .filter((b) => b.lessonId === lessonId)
       .reduce((mx, b) => Math.max(mx, b.sortOrder + 1), 0)
@@ -867,6 +928,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
+    const courseId = this.lessons.find((l) => l.id === b.lessonId)?.courseId
+    if (courseId && !(content.kind === 'studio' && content.showcase?.enabled))
+      this.assertShowcaseRemains(
+        courseId,
+        kind === 'coming_soon' ? { lessonId: b.lessonId } : { blockId: id },
+      )
     const quizGateChanged = quizGateFingerprint(b.content) !== quizGateFingerprint(content)
     const studioActivityChanged =
       studioActivityFingerprint(b.content) !== studioActivityFingerprint(content)
@@ -879,6 +946,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async deleteBlock(id: string): Promise<boolean> {
+    const block = this.blocks.find((b) => b.id === id)
+    const courseId = this.lessons.find((l) => l.id === block?.lessonId)?.courseId
+    if (courseId) this.assertShowcaseRemains(courseId, { blockId: id })
     const exists = this.blocks.some((b) => b.id === id)
     this.blocks = this.blocks.filter((b) => b.id !== id)
     return exists
@@ -2885,6 +2955,79 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       if (periods.has(period)) out.add(entry)
     }
     return out
+  }
+
+  async listContentMissionOpportunities(
+    userId: string,
+    audience: CourseAudience,
+    courseSlugs: string[],
+  ) {
+    const result = new Map<MissionGoalType, number>()
+    const candidates = new Map<MissionGoalType, Set<string>>()
+    for (const goal of [
+      'lesson_complete',
+      'unit_complete',
+      'quiz_passed',
+      'studio_submitted',
+      'course_showcased',
+      'course_rated',
+    ] as const)
+      candidates.set(goal, new Set())
+    const source = this.sources?.courses
+    for (const course of source?.courses ?? []) {
+      if (
+        course.audience !== audience ||
+        !courseSlugs.includes(course.slug) ||
+        course.status === 'draft'
+      )
+        continue
+      let blocked = false
+      for (const module of (source?.modules ?? [])
+        .filter((m) => m.courseId === course.id)
+        .sort((a, b) => a.sortOrder - b.sortOrder)) {
+        const lessons = (source?.lessons ?? [])
+          .filter((l) => l.moduleId === module.id && l.isPublished)
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+        let readyCount = 0
+        for (const lesson of lessons) {
+          const blocks = (source?.blocks ?? []).filter((b) => b.lessonId === lesson.id)
+          if (blocks.some((b) => b.kind === 'coming_soon')) {
+            if (course.sequentialLock) blocked = true
+            continue
+          }
+          if (blocked) continue
+          readyCount++
+          candidates.get('lesson_complete')?.add(lesson.id)
+          candidates.get('course_rated')?.add(course.id)
+          for (const block of blocks) {
+            if (block.content.kind === 'quiz' && block.content.questions.length)
+              candidates.get('quiz_passed')?.add(block.id)
+            if (block.content.kind === 'studio') {
+              candidates.get('studio_submitted')?.add(block.id)
+              if (block.content.showcase?.enabled)
+                candidates.get('course_showcased')?.add(course.id)
+            }
+          }
+        }
+        if (readyCount > 0 && readyCount === lessons.length)
+          candidates.get('unit_complete')?.add(module.id)
+      }
+    }
+    for (const [goal, ids] of candidates)
+      result.set(
+        goal,
+        [...ids].filter(
+          (id) =>
+            !this.events.some(
+              (e) =>
+                e.userId === userId &&
+                e.audience === audience &&
+                e.sourceType === goal &&
+                e.sourceId === id,
+            ),
+        ).length,
+      )
+    return result
   }
 
   async claimMission(input: ClaimMissionInput): Promise<ClaimMissionResult> {

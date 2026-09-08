@@ -1,3 +1,4 @@
+import { courseJourneyState, creativeToolAvailability } from '@sistemazero/core/career'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
@@ -61,10 +62,15 @@ export default async function HomePage() {
   // futuro/recompensa — vivem no Mapa da Carreira em /cursos). Ordenação
   // ação-primeiro: em andamento → não começados → concluídos (revisão) por último.
   const courseRank = (c: (typeof courses)[number]) => {
-    const done =
-      c.progress.totalLessons > 0 && c.progress.completedLessons >= c.progress.totalLessons
-    if (done) return 2
-    return c.progress.completedLessons > 0 ? 0 : 1
+    const order = {
+      publish: 0,
+      continue: 1,
+      start: 2,
+      review: 3,
+      'content-unavailable': 4,
+      locked: 5,
+    }
+    return order[courseJourneyState(c)]
   }
   const unlocked = courses
     .filter((c) => c.careerLock?.locked !== true)
@@ -81,6 +87,11 @@ export default async function HomePage() {
   const avatarPhotoUrl = avatarState?.photoUrl ?? null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
   const challengeEligible =
+    creativeToolAvailability({
+      tool: 'estudio-completo',
+      owned: true,
+      level: gamification?.level?.slug ?? null,
+    }) === 'available' &&
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
@@ -105,7 +116,7 @@ export default async function HomePage() {
             Olá{greetName ? `, ${greetName}` : ''}!
           </h1>
           <p className="mt-1 text-muted-foreground text-sm md:text-base">
-            Bora aprender mais um pouquinho hoje?
+            Vamos dar o próximo passo na sua criação?
           </p>
         </div>
       </div>
@@ -129,6 +140,21 @@ export default async function HomePage() {
       )}
 
       {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
+      {!startAvailable && courses.length > 0 ? (
+        <section className="rounded-2xl border border-primary/25 bg-card p-6">
+          <h2 className="sz-display text-xl">Espaço para sua próxima ideia</h2>
+          <p className="mt-2 text-muted-foreground text-sm">
+            Explore as ferramentas liberadas na sua oficina ou revisite um projeto dos cursos.
+          </p>
+          <Link
+            href="/criar"
+            prefetch={false}
+            className="sz-btn-gradient mt-4 inline-flex min-h-11 items-center"
+          >
+            Abrir minha oficina
+          </Link>
+        </section>
+      ) : null}
       {courses.length > 0 ? (
         <CreatorCareerCard
           gamification={gamification}

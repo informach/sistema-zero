@@ -5,6 +5,7 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { prepareContentReadinessTables } from './content-readiness-fixture'
 import { prepareTestDatabase } from './test-database'
 
 /**
@@ -43,6 +44,7 @@ describe.skipIf(!testDatabaseUrl)('updateBlock preserva as entregas (Postgres re
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
+    await prepareContentReadinessTables(conn)
     await conn.sql`create schema if not exists members`
     // ⚠️ Banco COMPARTILHADO entre os arquivos da pasta: o `create` de quem chega
     // primeiro vence, então TODA coluna usada aqui entra também num `alter table

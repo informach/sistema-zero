@@ -12,6 +12,7 @@ export type {
   PensaHostChrome,
   PensaHostChromeMenu,
   PensaMascotPose,
+  PensaMoldaTaskContext,
   PensaPintaTaskContext,
   PensaProjectDetailView,
   PensaProjectListView,

@@ -19,6 +19,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { GameCardDialog } from '@/components/kids/game-card-dialog'
+import { levelInfo } from '@/lib/level-info'
 import type {
   ChildDashboardView,
   ChildWeekGameView,
@@ -132,7 +133,32 @@ export function ChildrenDashboard({
     }
   }, [])
 
-  if (failed || (children !== null && children.length === 0)) return null
+  if (failed)
+    return (
+      <section
+        role="status"
+        className="w-full max-w-2xl rounded-2xl border border-border bg-card p-5"
+      >
+        <h2 className="font-bold">Não conseguimos consultar o acompanhamento</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Tente atualizar a página. Se a sessão dos responsáveis tiver expirado, abra novamente a
+          área dos pais.
+        </p>
+        <a
+          href="/perfis?manage=1"
+          className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-primary"
+        >
+          Voltar à área dos pais
+        </a>
+      </section>
+    )
+  if (children !== null && children.length === 0)
+    return (
+      <p className="w-full max-w-2xl rounded-2xl border border-border p-5 text-sm text-muted-foreground">
+        O acompanhamento aparece quando a criança inicia suas atividades. Você pode escolher ou
+        gerenciar os perfis acima.
+      </p>
+    )
 
   return (
     <section className="w-full max-w-2xl">
@@ -262,6 +288,53 @@ function ChildStatsCard({
           value={child.coursesInProgress}
         />
       </div>
+      {child.career ? (
+        <section className="rounded-xl bg-primary/5 p-4 text-sm">
+          <h3 className="font-bold">Carreira do Criador · {levelInfo(child.career.level).label}</h3>
+          {child.career.nextLevel ? (
+            <p className="mt-1 text-muted-foreground">
+              Próxima conquista: {levelInfo(child.career.nextLevel).label}. A evolução considera os
+              cursos obrigatórios concluídos e os projetos publicados.
+            </p>
+          ) : null}
+          {child.career.pendingPublications.length ? (
+            <div className="mt-3">
+              <p className="font-semibold">Concluiu as aulas e falta publicar o projeto:</p>
+              <ul className="mt-1 list-disc pl-5">
+                {child.career.pendingPublications.map((course) => (
+                  <li key={course.courseSlug}>{course.title}</li>
+                ))}
+              </ul>
+              <p className="mt-2 text-muted-foreground">
+                Convide a criança a mostrar o jogo e preparar a publicação na área do aluno.
+              </p>
+            </div>
+          ) : null}
+          <dl className="mt-3 space-y-2">
+            {child.career.tools.map((tool) => (
+              <div key={tool.id} className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+                <dt className="font-semibold">
+                  {
+                    {
+                      'estudio-completo': 'Estúdio',
+                      pinta: 'Pinta',
+                      pensa: 'Pensa',
+                      molda: 'Molda',
+                    }[tool.id]
+                  }
+                </dt>
+                <dd className="text-muted-foreground">
+                  {tool.state === 'available'
+                    ? 'Incluído e liberado'
+                    : tool.owned
+                      ? `Incluído · libera no ${levelInfo(tool.requiredLevel).label}`
+                      : 'Não incluído na conta'}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ) : null}
       {child.week ? <ChildWeekBlock week={child.week} games={child.games ?? null} /> : null}
     </div>
   )

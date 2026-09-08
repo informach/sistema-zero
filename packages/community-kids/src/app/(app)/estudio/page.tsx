@@ -31,9 +31,9 @@ export const dynamic = 'force-dynamic'
 export default async function EstudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tarefa?: string }>
+  searchParams: Promise<{ tarefa?: string; projeto?: string }>
 }) {
-  const { tarefa } = await searchParams
+  const { tarefa, projeto } = await searchParams
   // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
   // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
   // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
@@ -114,6 +114,7 @@ export default async function EstudioPage({
       zappyEnabled={zappyEnabled}
       aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
       taskId={tarefa ?? null}
+      initialProjectId={projeto ?? null}
       pintaOwned={pintaOwned}
       moldaOwned={moldaOwned}
     />

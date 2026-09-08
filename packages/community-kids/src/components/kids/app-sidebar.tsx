@@ -7,7 +7,8 @@ import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { useFocusMode } from './focus-mode'
 import { KidsLogo } from './kids-logo'
-import { NAV_ITEMS } from './nav'
+import { CLASSIC_NAV_ITEMS, NAV_ITEMS } from './nav'
+import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
 
@@ -29,11 +30,13 @@ export function AppSidebar({
   user,
   gamification,
   avatarPhotoUrl = null,
+  workshopEnabled = false,
 }: {
   user: SessionUserWithAvatar
   gamification: GamificationMeView | null
   /** Foto (snapshot) do avatar 3D do perfil ativo — `null` mostra o personagem padrão. */
   avatarPhotoUrl?: string | null
+  workshopEnabled?: boolean
 }) {
   const pathname = usePathname()
   // Modo foco da aula: o aluno pode esconder o menu p/ ganhar área útil (só em
@@ -63,8 +66,11 @@ export function AppSidebar({
           Next disparava ~7 requisições RSC pesadas (incl. /estudio e /quarto) a CADA página numa
           réplica ÚNICA → tempestade de 502/ERR_HTTP2 e navegação lenta. Navegar passa a buscar sob
           demanda; o `loading.tsx` do grupo dá o esqueleto instantâneo no clique. */}
-      <nav className="mt-8 min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1">
-        {NAV_ITEMS.map((item) => {
+      <nav
+        aria-label="Navegação principal"
+        className="mt-8 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1"
+      >
+        {(workshopEnabled ? NAV_ITEMS : CLASSIC_NAV_ITEMS).map((item) => {
           const active = isNavActive(pathname, item.href, item.match)
           const Icon = item.icon
           return (
@@ -74,8 +80,8 @@ export function AppSidebar({
               prefetch={false}
               aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 rounded-2xl border-2 px-4 py-3 transition-colors',
-                '[font-family:var(--font-display)] font-bold text-sm uppercase tracking-wide',
+                'flex items-center gap-3 rounded-xl border px-4 py-3 transition-colors',
+                'font-bold text-sm',
                 active
                   ? 'border-primary bg-(--kids-cyan-tint) text-primary'
                   : 'border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground',
@@ -87,6 +93,17 @@ export function AppSidebar({
           )
         })}
       </nav>
+
+      <div className="flex items-center gap-3 py-4">
+        <RecadosBell />
+        <Link
+          href="/recados"
+          prefetch={false}
+          className="font-semibold text-sm text-muted-foreground hover:text-foreground"
+        >
+          Recados do professor
+        </Link>
+      </div>
 
       {gamification ? (
         <div className="shrink-0 pt-2 pb-4">

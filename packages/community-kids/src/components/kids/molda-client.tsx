@@ -15,6 +15,8 @@ import {
 } from '@/lib/molda-cloud-persistence'
 import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
+import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
+import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/WebGL/IndexedDB); carregamos DENTRO de um
 // effect (igual ao pinta-client) e o server renderiza só o placeholder.
@@ -56,10 +58,17 @@ export function MoldaClient({
   // Deep link `/molda?criacao=<id>` (o Estúdio abre numa aba nova, com `noopener`,
   // então é query string). Lido no 1º render e limpo da URL logo depois.
   const searchParams = useSearchParams()
-  const [initialAssetId] = useState(() => searchParams.get('criacao'))
+  const [openRequest, setOpenRequest] = useState(() => ({
+    assetId: searchParams.get('criacao'),
+    revision: 0,
+  }))
+  const initialAssetId = openRequest.assetId
+  const [taskId] = useState(() => searchParams.get('tarefa'))
+  const handoff = useMoldaTaskHandoff(taskId)
   useEffect(() => {
-    if (initialAssetId) router.replace('/molda')
-  }, [initialAssetId, router])
+    if (initialAssetId)
+      router.replace(taskId ? `/molda?tarefa=${encodeURIComponent(taskId)}` : '/molda')
+  }, [initialAssetId, router, taskId])
 
   const loadMolda = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -210,14 +219,57 @@ export function MoldaClient({
         </div>
       ) : mod === null ? (
         <EmbeddedAppLoadingBody label="Carregando o Molda…" />
+      ) : taskId && handoff.status !== 'success' ? (
+        <div className="grid flex-1 place-content-center gap-4 p-6">
+          <p role="status">{handoff.error ?? 'Buscando o guia do Pensa…'}</p>
+          {handoff.status === 'error' ? (
+            <button
+              type="button"
+              onClick={handoff.retry}
+              className="min-h-11 rounded-xl border px-4 font-bold"
+            >
+              Tentar novamente
+            </button>
+          ) : null}
+        </div>
+      ) : handoff.data && !handoff.data.capability.owned ? (
+        <p role="status" className="p-6">
+          {handoff.data.capability.blockedReason}
+        </p>
       ) : (
         <>
+          {handoff.data && persistence ? (
+            <MoldaTaskGuide
+              key={`${viewerId}:${handoff.data.task.id}:${handoff.data.task.revision}`}
+              profileId={viewerId}
+              handoff={handoff.data}
+              persistence={persistence}
+              onProgress={handoff.updateProgress}
+              onOpenAsset={(assetId) =>
+                setOpenRequest((current) => ({ assetId, revision: current.revision + 1 }))
+              }
+              hasOpenCreation={async () => {
+                const gallery: MoldaGuidePersistence = persistence
+                const all = gallery.listSummaries
+                  ? await gallery.listSummaries()
+                  : await gallery.loadAll()
+                return all.some((asset) => mod.isMoldaAssetOpen(asset.id))
+              }}
+              onReturn={() =>
+                router.push(`/pensa?plano=${encodeURIComponent(handoff.data.project.id)}`)
+              }
+            />
+          ) : null}
           <div className="flex justify-end">
             <CloudSaveBadge cloud={cloud} syncing={syncing} />
           </div>
           {/* O selo é irmão do app: o wrapper dá ao `h-full` do Molda uma altura definida. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.MoldaApp adapter={adapter} {...(persistence ? { persistence } : {})} />
+            <mod.MoldaApp
+              key={openRequest.revision}
+              adapter={adapter}
+              {...(persistence ? { persistence } : {})}
+            />
           </div>
         </>
       )}

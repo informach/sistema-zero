@@ -1,3 +1,4 @@
+import { courseJourneyState } from '@sistemazero/core/career'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Card } from '@sistemazero/ui/card'
 import { BookOpen } from 'lucide-react'
@@ -23,17 +24,18 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
   const { progress } = course
   const started = progress.completedLessons > 0
   const done = progress.totalLessons > 0 && progress.completedLessons >= progress.totalLessons
+  const publishing = courseJourneyState(course) === 'publish'
 
   return (
     // `?de=inicio` diz à página do curso que a volta é para a HOME (senão ela
     // manda para a trilha do curso). Ver `lib/course-return.ts`.
     <Link
-      href={`/cursos/${encodeURIComponent(course.courseSlug)}?de=inicio`}
+      href={`/cursos/${encodeURIComponent(course.courseSlug)}?de=inicio${publishing ? '#publicar' : ''}`}
       className="group block"
     >
       <Card
         className={cn(
-          'kids-card kid-pop overflow-hidden p-0 dark:group-hover:brand-glow',
+          'overflow-hidden rounded-2xl border border-border p-0 shadow-sm transition-shadow group-hover:shadow-md',
           UNIT_THEME_CLASS[theme],
         )}
       >
@@ -62,6 +64,13 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
         </div>
         <div className="flex flex-col gap-3 p-4">
           <div>
+            <p className="mb-1 text-muted-foreground text-xs font-semibold">
+              {course.careerSlot === 1
+                ? 'Primeiro da trilha'
+                : typeof course.careerSlot === 'number'
+                  ? 'Curso da carreira'
+                  : 'Curso bônus'}
+            </p>
             <h3 className="sz-display text-base">{course.title}</h3>
             {course.subtitle ? (
               <p className="mt-1 line-clamp-2 text-muted-foreground text-sm">{course.subtitle}</p>
@@ -76,8 +85,14 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
             </div>
             <ProgressBar value={progress.percent} />
           </div>
-          <span className="sz-btn-gradient mt-1 w-full">
-            {done ? 'Revisar curso' : started ? 'Continuar' : 'Começar agora'}
+          <span className="mt-1 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary/10 px-4 font-bold text-primary">
+            {publishing
+              ? 'Preparar publicação'
+              : done
+                ? 'Revisar curso'
+                : started
+                  ? 'Continuar'
+                  : 'Começar agora'}
           </span>
         </div>
       </Card>

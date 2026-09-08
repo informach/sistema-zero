@@ -606,6 +606,9 @@ export interface ModuleOutlineView {
 }
 
 export interface CourseDetailView {
+  id: string
+  milestones?: CourseMilestonesView
+  showcaseLessonId?: string | null
   slug: string
   title: string
   subtitle: string | null
@@ -643,6 +646,7 @@ export function toCourseDetailView(
   lockedLessonIds: Set<string> = new Set(),
 ): CourseDetailView {
   return {
+    id: course.id,
     slug: course.slug,
     title: course.title,
     subtitle: course.subtitle,

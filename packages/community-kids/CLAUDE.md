@@ -2128,3 +2128,29 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Oficina e Carreira do Criador — 07/09/2026
+
+Atualização das superfícies descritas acima: `../../docs/plans/2026-09-07-creator-journey-evolution.md`.
+A implantação por família e os limites da validação estão em `../../docs/plans/creator-journey-rollout.md`.
+
+- `CREATOR_WORKSHOP_ACCOUNTS`, somente servidor, seleciona contas para cinco grupos de navegação
+  e trabalhos no Criar. Sem flag = navegação clássica. Os links de ferramentas ficam no Criar.
+- Início, cartões, mapa e curso usam a política comum: aulas concluídas e publicação são marcos
+  distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
+- `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
+  Retomar Estúdio pelo ID conserva a preferência pelo rascunho local e os conflitos existentes.
+- Molda aceita `?tarefa=` do Pensa, guia contextual e saída vinculada a uma criação real do perfil.
+  O guia exige guardar/fechar pelo Voltar nativo do Molda antes de concluir/sair, preservando IDs.
+  Cada abertura pelo guia tem revisão própria (o `initialAssetId` do editor só é consumido na
+  montagem). Marcações do guia têm rascunho por perfil+tarefa, validado pela revisão e pelo
+  timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
+- `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com carreira,
+  ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
+- `/praticar` consulta a flag em Members. Até cinco perguntas de aulas já estudadas, feedback e
+  histórico separado; sem XP/moedas. Rascunho local é por perfil+sessão. Histórico permanece
+  acessível quando novas sessões são desligadas. Não há laboratório de matemática habilitado.
+  As requisições enviam `x-sz-viewer`: troca de perfil em outra aba retorna 409 e pede atualização,
+  preservando as escolhas locais. Não iniciar sessão de prática com o dono de uma aba diferente.
+- Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é
+  limitado e existe atualização manual. Falha de consulta não deve pedir recompra ou apagar marcos.

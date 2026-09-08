@@ -78,21 +78,20 @@ export class CourseAdminService {
     filter: ListCoursesAdminFilter,
   ): Promise<{ items: CourseView[]; total: number; limit: number; offset: number }> {
     const { items, total } = await this.content.listCoursesAdmin(filter)
-    // Curso-base (kids, slot 1) sem bloco de Estúdio com vitrine em aula publicada
-    // nunca qualifica → a etapa não destrava. Marca p/ o painel avisar o operador.
-    const foundationIds = items
-      .filter((course) => course.audience === 'kids' && course.careerSlot === 1)
+    // Toda posição obrigatória exige publicação para qualificar na carreira.
+    const mandatoryIds = items
+      .filter((course) => course.audience === 'kids' && course.careerSlot !== null)
       .map((course) => course.id)
     const withShowcase = new Set(
-      foundationIds.length > 0
-        ? await this.content.listCourseIdsWithShowcaseBlock(foundationIds)
+      mandatoryIds.length > 0
+        ? await this.content.listCourseIdsWithShowcaseBlock(mandatoryIds)
         : [],
     )
     return {
       items: items.map((course) =>
         toCourseView(
           course,
-          course.audience === 'kids' && course.careerSlot === 1
+          course.audience === 'kids' && course.careerSlot !== null
             ? withShowcase.has(course.id)
             : undefined,
         ),
@@ -201,9 +200,11 @@ export class CourseAdminService {
     // no editor de AULA, e o aviso ⚠️ da listagem cobre a detecção. Caminho inverso
     // (remover a vitrine de curso-base publicado) fica de fora — follow-up documentado.
     const becomesTrapped =
-      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot === 1
+      merged.status === 'published' && merged.audience === 'kids' && merged.careerSlot !== null
     const wasTrapped =
-      existing.status === 'published' && existing.audience === 'kids' && existing.careerSlot === 1
+      existing.status === 'published' &&
+      existing.audience === 'kids' &&
+      existing.careerSlot !== null
     if (becomesTrapped && !wasTrapped) {
       const withShowcase = await this.content.listCourseIdsWithShowcaseBlock([id])
       if (withShowcase.length === 0) throw new NoShowcaseBlockError()

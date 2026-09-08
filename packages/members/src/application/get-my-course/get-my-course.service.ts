@@ -1,5 +1,6 @@
 import type { CourseRatingRepository } from '../../domain/ports/course-rating-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
+import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import { computeProgress, resolveContinueLesson } from '../../domain/progress/progress'
@@ -15,6 +16,7 @@ export class GetMyCourseService {
     private readonly progress: ProgressRepository,
     private readonly positions: VideoPositionRepository,
     private readonly ratings: CourseRatingRepository,
+    private readonly gamification: GamificationRepository,
   ) {}
 
   async execute(
@@ -31,13 +33,16 @@ export class GetMyCourseService {
       userId,
     )
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
-    const [outline, completedIds, last, lastAccessed, myRating] = await Promise.all([
-      this.courses.findOutline(course.id, { publishedOnly: true }),
-      this.progress.listCompletedLessonIds(userId, course.id),
-      this.progress.lastCompletedAt(userId, course.id),
-      this.positions.lastAccessedLessonId(userId, course.id),
-      this.ratings.find(userId, course.id),
-    ])
+    const [outline, completedIds, last, lastAccessed, myRating, careerState, showcaseLessonIds] =
+      await Promise.all([
+        this.courses.findOutline(course.id, { publishedOnly: true }),
+        this.progress.listCompletedLessonIds(userId, course.id),
+        this.progress.lastCompletedAt(userId, course.id),
+        this.positions.lastAccessedLessonId(userId, course.id),
+        this.ratings.find(userId, course.id),
+        course.audience === 'kids' ? this.gamification.listCareerCourseState(userId, 'kids') : null,
+        course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
+      ])
     const completedSet = new Set(completedIds)
     // Numerador e denominador derivados do MESMO outline publicado: conclusões de
     // aulas hoje despublicadas não contam (e não infla o percentual).
@@ -51,7 +56,7 @@ export class GetMyCourseService {
     // interna (privileged navega tudo destravado, como a chave-mestra virtual).
     const lockedSet = lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
     const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed, lockedSet)
-    return toCourseDetailView(
+    const view = toCourseDetailView(
       course,
       outline,
       completedSet,
@@ -61,5 +66,12 @@ export class GetMyCourseService {
       myRating,
       lockedSet,
     )
+    return {
+      ...view,
+      milestones: careerState
+        ? (careerState.milestones.get(course.id) ?? { completed: false, showcased: false })
+        : undefined,
+      showcaseLessonId: showcaseLessonIds.find((id) => !lockedSet.has(id)) ?? null,
+    }
   }
 }

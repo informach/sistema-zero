@@ -10,6 +10,8 @@ import type {
 
 /** Leitura da árvore de conteúdo (Fatia 1 = só leitura; autoria é fatia seguinte). */
 export interface CourseRepository {
+  /** Published lessons containing a showcase, in course order; never returns block payloads. */
+  listShowcaseLessonIds(courseId: string): Promise<string[]>
   findCourseBySlug(slug: string): Promise<Course | null>
   findCourseById(id: string): Promise<Course | null>
   /** Aula sem o conteúdo dos blocos (para checagem de acesso / mark-complete). */

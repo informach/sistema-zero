@@ -17,6 +17,7 @@ import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
+import { type PracticeRoutesDeps, practiceRoutes } from './routes/practice.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -27,6 +28,7 @@ export interface HttpDeps {
   readiness: ReadinessProbe
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
+  practice: PracticeRoutesDeps
   creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -151,6 +153,7 @@ export function createServer(deps: HttpDeps) {
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
     .use(pensaRoutes(deps.pensa))
+    .use(practiceRoutes(deps.practice))
     .use(creationsRoutes(deps.creations))
     .use(
       creationCleanupRoutes({

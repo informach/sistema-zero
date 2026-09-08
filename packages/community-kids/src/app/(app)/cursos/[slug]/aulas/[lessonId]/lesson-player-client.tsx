@@ -102,6 +102,8 @@ export function LessonPlayer({
   // + delta de gamificação vindo na RESPOSTA do complete; null = overlay fechado.
   const [celebration, setCelebration] = useState<{
     progress: CourseProgressView
+    progressAfter: CourseProgressView
+    publicationPending: boolean
     gamification: GamificationDelta | null
   } | null>(null)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
@@ -238,6 +240,8 @@ export function LessonPlayer({
   // até o fim ganhava só um toast e "perdia a festa" da conclusão manual.
   const deferredCelebrationRef = useRef<{
     progress: CourseProgressView
+    progressAfter: CourseProgressView
+    publicationPending: boolean
     gamification: GamificationDelta | null
   } | null>(null)
 
@@ -252,16 +256,25 @@ export function LessonPlayer({
         )
         completedRef.current = true
         const gamification = res?.gamification ?? null
+        const completion = {
+          progress: course.progress,
+          progressAfter: res,
+          publicationPending:
+            typeof course.careerSlot === 'number' &&
+            res.percent === 100 &&
+            course.milestones?.showcased === false,
+          gamification,
+        }
         if (opts.silent) {
           // Auto-conclusão a ~90% do vídeo: toast discreto agora (com o XP) e
           // a festa completa fica ARMADA para o fim do vídeo.
-          deferredCelebrationRef.current = { progress: course.progress, gamification }
+          deferredCelebrationRef.current = completion
           const xp = gamification?.xpAwarded ?? 0
           toast.success(xp > 0 ? `Aula concluída! +${xp} XP` : 'Aula concluída!')
         } else {
           // Celebração assume a navegação (snapshot ANTES do refresh — as
           // props de progresso mudam quando o server re-renderiza).
-          setCelebration({ progress: course.progress, gamification })
+          setCelebration(completion)
         }
         router.refresh()
       } catch (err) {
@@ -298,7 +311,7 @@ export function LessonPlayer({
         if (!opts.silent) setCompleting(false)
       }
     },
-    [lesson.id, course.progress, router],
+    [lesson.id, course.progress, course.careerSlot, course.milestones?.showcased, router],
   )
 
   const onVideoReachedThreshold = useCallback(() => {
@@ -589,6 +602,8 @@ export function LessonPlayer({
       {celebration ? (
         <LessonCelebration
           progressBefore={celebration.progress}
+          progressAfter={celebration.progressAfter}
+          publicationPending={celebration.publicationPending}
           gamification={celebration.gamification}
           // Próxima na ORDEM (ignora a trava): concluir esta aula já liberou a próxima.
           nextHref={nextLessonHref}

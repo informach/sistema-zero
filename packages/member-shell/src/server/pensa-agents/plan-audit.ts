@@ -6,6 +6,11 @@ import type {
 } from './planner-contract'
 
 type PlannerCatalog = ReturnType<typeof availablePlannerCatalog>
+type ToolCapabilities = {
+  moldaAvailable: boolean
+  pintaAvailable: boolean
+  studioAvailable: boolean
+}
 
 function addVisualCoverageFindings(
   stage: PensaStageView,
@@ -22,6 +27,18 @@ function addVisualCoverageFindings(
     })
   }
   for (const task of stage.tasks) {
+    if (task.context.kind === 'molda') {
+      const asset = inventory.get(task.context.assetId)
+      const inventoryKind = task.context.artKind === 'texture' ? 'material' : task.context.artKind
+      if (!asset || asset.kind !== inventoryKind)
+        findings.push({
+          severity: 'error',
+          message: 'O cartão do Molda não corresponde à criação da Bíblia Visual.',
+          taskKey: task.id,
+        })
+      else coverage.set(asset.id, (coverage.get(asset.id) ?? 0) + 1)
+      continue
+    }
     if (task.context.kind === 'pinta') {
       const asset = inventory.get(task.context.assetId)
       if (!asset || asset.kind !== task.context.artKind) {
@@ -65,7 +82,8 @@ export function auditPlan(
   catalog: PlannerCatalog,
   dimension: '2d' | '3d',
   approved: boolean,
-  visual?: VisualDirectionArtifact,
+  visual: VisualDirectionArtifact | undefined,
+  capabilities: ToolCapabilities,
 ): PlanReviewArtifact {
   const findings: PlanReviewArtifact['findings'] = []
   const blocks = new Map(catalog.blocks.map((block) => [block.type, block]))
@@ -78,6 +96,24 @@ export function auditPlan(
     findings.push({ severity: 'error', message: 'O plano não possui tarefas.', taskKey: null })
   const completed = new Set<string>()
   for (const task of stage.tasks) {
+    if (task.context.kind === 'molda' && (!capabilities.moldaAvailable || dimension !== '3d'))
+      findings.push({
+        severity: 'error',
+        message: 'O Molda não está disponível para executar este cartão.',
+        taskKey: task.id,
+      })
+    if (task.context.kind === 'pinta' && !capabilities.pintaAvailable)
+      findings.push({
+        severity: 'error',
+        message: 'O Pinta não está disponível para executar este cartão.',
+        taskKey: task.id,
+      })
+    if (task.context.kind === 'studio' && !capabilities.studioAvailable)
+      findings.push({
+        severity: 'error',
+        message: 'O Estúdio não está disponível para executar este cartão.',
+        taskKey: task.id,
+      })
     if (!task.guide.steps.some((item) => item.required)) {
       findings.push({
         severity: 'error',

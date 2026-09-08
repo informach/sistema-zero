@@ -26,11 +26,10 @@ export interface StudioUnlocksView {
  *   bloco do JSON, despublicar ou apagar o curso NÃO tire a ferramenta da mão de quem já
  *   a tinha (nem de projetos que já a usam).
  *
- * ⚠️ O congelamento acontece AQUI, na leitura, e não num hook nos marcos: assim "não
- * perde" significa exatamente "não perde o que já lhe foi servido", que é a promessa que
- * dá para cumprir. A escrita só ocorre quando a união REALMENTE cresceu — página aberta
- * sem novidade não escreve nada. É best-effort: falhar em congelar não pode negar a
- * paleta a quem tem direito a ela (o pior caso é congelar na próxima visita).
+ * Os marcos de curso congelam as concessões na mesma transação do award. Esta leitura
+ * também reconcilia conquistas legadas e acréscimos posteriores no currículo, somente
+ * quando a união cresceu. A conciliação aqui é best-effort: falhar não nega a paleta
+ * atual, e a próxima visita pode tentar novamente.
  */
 export class GetStudioUnlocksService {
   constructor(

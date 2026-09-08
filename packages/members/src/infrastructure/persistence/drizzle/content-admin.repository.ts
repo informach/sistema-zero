@@ -12,6 +12,7 @@ import {
   CloneSameAudienceError,
   CourseConflictError,
   DuplicateSlugError,
+  NoShowcaseBlockError,
 } from '../../../domain/course/course.errors'
 import type { LessonBlockContent, LessonBlockKind } from '../../../domain/course/lesson-block'
 import type {
@@ -24,6 +25,7 @@ import type {
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
 import type { Database } from './db'
+import { lessonContentAvailable } from './lesson-availability'
 import {
   courses,
   lessonAttachments,
@@ -216,6 +218,48 @@ type DatabaseExecutor = Database | DatabaseTransaction
 export class DrizzleContentAdminRepository implements ContentAdminRepository {
   constructor(private readonly db: DatabaseExecutor) {}
 
+  /** Every removal and course publication locks the course first, so concurrent
+   * editors cannot each remove the other's remaining publication activity. */
+  private async preserveShowcase(
+    tx: DatabaseExecutor,
+    courseId: string,
+    exclude: { blockId?: string; lessonId?: string; moduleId?: string },
+  ): Promise<void> {
+    const [course] = await tx
+      .select({ status: courses.status, audience: courses.audience, slot: courses.careerSlot })
+      .from(courses)
+      .where(eq(courses.id, courseId))
+      .for('update')
+    if (course?.status !== 'published' || course.audience !== 'kids' || course.slot === null) return
+    const candidates = await tx
+      .select({ blockId: lessonBlocks.id, lessonId: lessons.id, moduleId: lessons.moduleId })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+    // Legacy incomplete courses remain repairable. A valid course must stay valid.
+    if (
+      candidates.length &&
+      !candidates.some(
+        (row) =>
+          row.blockId !== exclude.blockId &&
+          row.lessonId !== exclude.lessonId &&
+          row.moduleId !== exclude.moduleId,
+      )
+    ) {
+      throw new NoShowcaseBlockError(
+        'Esta é a última atividade de publicação deste curso da carreira. Adicione outra atividade publicada ou despublique o curso antes de removê-la.',
+      )
+    }
+  }
+
   // ── Cursos ──────────────────────────────────────────────────────────────
   async listCoursesAdmin(
     filter: ListCoursesAdminFilter,
@@ -259,6 +303,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           eq(lessonBlocks.kind, 'studio'),
           // `enabled` é boolean no jsonb → `->>` devolve o texto 'true'.
           sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+          lessonContentAvailable(lessons.id),
         ),
       )
     return rows.map((row) => row.courseId)
@@ -441,27 +486,47 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     // reler a versão: isso aceitaria um payload velho e perderia a edição alheia.
     const expectedVersion = course.version
     try {
-      const updated = await this.db
-        .update(courses)
-        .set({
-          slug: course.slug,
-          title: course.title,
-          subtitle: course.subtitle,
-          description: course.description,
-          coverImageUrl: course.coverImageUrl,
-          status: course.status,
-          audience: course.audience,
-          sequentialLock: course.sequentialLock,
-          level: course.level,
-          track: course.track,
-          careerSlot: course.careerSlot,
-          metadata: course.metadata,
-          updatedAt: new Date(),
-          version: expectedVersion + 1,
-        })
-        .where(and(eq(courses.id, course.id), eq(courses.version, expectedVersion)))
-        .returning({ id: courses.id })
-      return updated.length > 0
+      return await this.db.transaction(async (tx) => {
+        const [previous] = await tx
+          .select({ status: courses.status, audience: courses.audience, slot: courses.careerSlot })
+          .from(courses)
+          .where(eq(courses.id, course.id))
+          .for('update')
+        const updated = await tx
+          .update(courses)
+          .set({
+            slug: course.slug,
+            title: course.title,
+            subtitle: course.subtitle,
+            description: course.description,
+            coverImageUrl: course.coverImageUrl,
+            status: course.status,
+            audience: course.audience,
+            sequentialLock: course.sequentialLock,
+            level: course.level,
+            track: course.track,
+            careerSlot: course.careerSlot,
+            metadata: course.metadata,
+            updatedAt: new Date(),
+            version: expectedVersion + 1,
+          })
+          .where(and(eq(courses.id, course.id), eq(courses.version, expectedVersion)))
+          .returning({ id: courses.id })
+        if (
+          updated.length &&
+          course.status === 'published' &&
+          course.audience === 'kids' &&
+          course.careerSlot !== null &&
+          (previous?.status !== 'published' ||
+            previous.audience !== 'kids' ||
+            previous.slot === null)
+        ) {
+          const repository = new DrizzleContentAdminRepository(tx)
+          if (!(await repository.listCourseIdsWithShowcaseBlock([course.id])).length)
+            throw new NoShowcaseBlockError()
+        }
+        return updated.length > 0
+      })
     } catch (error) {
       if (isCareerSlotUniqueViolation(error)) throw new CareerSlotConflictError()
       if (isSlugUniqueViolation(error))
@@ -534,6 +599,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async deleteModule(id: string): Promise<boolean> {
     return this.db.transaction(async (tx) => {
+      const [mod] = await tx
+        .select({ courseId: modules.courseId })
+        .from(modules)
+        .where(eq(modules.id, id))
+      if (mod) await this.preserveShowcase(tx, mod.courseId, { moduleId: id })
       const lessonRows = await tx
         .select({ id: lessons.id })
         .from(lessons)
@@ -621,18 +691,26 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async updateLesson(id: string, fields: LessonFields): Promise<Lesson | null> {
     try {
-      const [row] = await this.db
-        .update(lessons)
-        .set({
-          slug: fields.slug,
-          title: fields.title,
-          estimatedMinutes: fields.estimatedMinutes,
-          isPublished: fields.isPublished,
-          updatedAt: new Date(),
-        })
-        .where(eq(lessons.id, id))
-        .returning()
-      return row ? toLesson(row) : null
+      return await this.db.transaction(async (tx) => {
+        const [existing] = await tx
+          .select({ courseId: lessons.courseId })
+          .from(lessons)
+          .where(eq(lessons.id, id))
+        if (existing && !fields.isPublished)
+          await this.preserveShowcase(tx, existing.courseId, { lessonId: id })
+        const [row] = await tx
+          .update(lessons)
+          .set({
+            slug: fields.slug,
+            title: fields.title,
+            estimatedMinutes: fields.estimatedMinutes,
+            isPublished: fields.isPublished,
+            updatedAt: new Date(),
+          })
+          .where(eq(lessons.id, id))
+          .returning()
+        return row ? toLesson(row) : null
+      })
     } catch (error) {
       if (isSlugUniqueViolation(error)) {
         throw new DuplicateSlugError('Já existe uma aula com esse slug neste curso')
@@ -643,6 +721,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   async deleteLesson(id: string): Promise<boolean> {
     return this.db.transaction(async (tx) => {
+      const [existing] = await tx
+        .select({ courseId: lessons.courseId })
+        .from(lessons)
+        .where(eq(lessons.id, id))
+      if (existing) await this.preserveShowcase(tx, existing.courseId, { lessonId: id })
       await tx.delete(lessonCompletions).where(eq(lessonCompletions.lessonId, id))
       const deleted = await tx
         .delete(lessons)
@@ -693,6 +776,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         // O lock é por AULA, que é exatamente o agregado da ordenação. Ele cobre também
         // cadeias diferentes e criações sem cadeia, eliminando a corrida de `max+1` entre
         // todos os escritores que passam por este repositório.
+        if (kind === 'coming_soon') {
+          const [lesson] = await tx
+            .select({ courseId: lessons.courseId })
+            .from(lessons)
+            .where(eq(lessons.id, lessonId))
+          if (lesson) await this.preserveShowcase(tx, lesson.courseId, { lessonId })
+        }
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtextextended(${`lesson-block-order:${lessonId}`}, 0))`,
         )
@@ -718,6 +808,21 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     content: LessonBlockContent,
   ): Promise<LessonBlock | null> {
     return this.db.transaction(async (tx) => {
+      const [linkage] = await tx
+        .select({ courseId: lessons.courseId, lessonId: lessons.id })
+        .from(lessonBlocks)
+        .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
+        .where(eq(lessonBlocks.id, id))
+      if (
+        linkage &&
+        !(kind === 'studio' && content.kind === 'studio' && content.showcase?.enabled)
+      ) {
+        await this.preserveShowcase(
+          tx,
+          linkage.courseId,
+          kind === 'coming_soon' ? { lessonId: linkage.lessonId } : { blockId: id },
+        )
+      }
       const [current] = await tx.select().from(lessonBlocks).where(eq(lessonBlocks.id, id)).limit(1)
       if (!current) return null
 
@@ -748,11 +853,15 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
   }
 
   async deleteBlock(id: string): Promise<boolean> {
-    const deleted = await this.db
-      .delete(lessonBlocks)
-      .where(eq(lessonBlocks.id, id))
-      .returning({ id: lessonBlocks.id })
-    return deleted.length > 0
+    return this.db.transaction(async (tx) => {
+      const courseId = await new DrizzleContentAdminRepository(tx).findBlockCourseId(id)
+      if (courseId) await this.preserveShowcase(tx, courseId, { blockId: id })
+      const deleted = await tx
+        .delete(lessonBlocks)
+        .where(eq(lessonBlocks.id, id))
+        .returning({ id: lessonBlocks.id })
+      return deleted.length > 0
+    })
   }
 
   async listBlockIds(lessonId: string): Promise<string[]> {

@@ -143,13 +143,21 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       }
     },
 
-    async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
-      await postSignedWebhook(SHOWCASE_WEBHOOK_PATH, 'showcase', {
-        userId: args.userId,
-        accountId: args.accountId,
-        courseId: args.courseId,
-        audience: args.audience,
-      })
+    async notifyShowcasePublished(
+      args: ShowcasePublishedArgs,
+      deliveryId?: string,
+    ): Promise<boolean> {
+      return postSignedWebhook(
+        SHOWCASE_WEBHOOK_PATH,
+        'showcase',
+        {
+          userId: args.userId,
+          accountId: args.accountId,
+          courseId: args.courseId,
+          audience: args.audience,
+        },
+        deliveryId,
+      )
     },
 
     async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
@@ -224,10 +232,11 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
     path: string,
     kind: string,
     payload: Record<string, string | number>,
-  ): Promise<void> {
-    if (!opts.hmacSecret) return
+    persistentDeliveryId?: string,
+  ): Promise<boolean> {
+    if (!opts.hmacSecret) return false
     const rawBody = JSON.stringify(payload)
-    const deliveryId = randomUUID()
+    const deliveryId = persistentDeliveryId ?? randomUUID()
     for (let attempt = 1; attempt <= SHOWCASE_NOTIFY_ATTEMPTS; attempt++) {
       try {
         // Assinatura DENTRO do try (falha ao assinar cai no best-effort abaixo).
@@ -247,7 +256,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
           body: rawBody,
           signal: AbortSignal.timeout(timeoutMs),
         })
-        if (res.ok) return
+        if (res.ok) return true
         if (retryableShowcaseStatus(res.status) && attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
           await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
           continue
@@ -257,7 +266,7 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
           status: res.status,
           attempt,
         })
-        return
+        return false
       } catch (error) {
         if (attempt < SHOWCASE_NOTIFY_ATTEMPTS) {
           await delay(SHOWCASE_NOTIFY_RETRY_BASE_MS * attempt)
@@ -269,8 +278,9 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
           attempt,
           error: error instanceof Error ? error.message : String(error),
         })
-        return
+        return false
       }
     }
+    return false
   }
 }

@@ -12,6 +12,8 @@ import { PurgeUserDataService } from './application/purge-user-data/purge-user-d
 import { ReactionService } from './application/reactions/reaction.service'
 import { ReadCommunityService } from './application/read-community/read-community.service'
 import { ReadStateService } from './application/read-state/read-state.service'
+import { DeliverShowcaseService } from './application/showcase/deliver-showcase.service'
+import { GetShowcaseDeliveryService } from './application/showcase/get-showcase-delivery.service'
 import { ShowcaseService } from './application/showcase/showcase.service'
 import { ThreadService } from './application/threads/thread.service'
 import { noopStudioArtifactGateway } from './domain/ports/studio-artifact-gateway.port'
@@ -34,6 +36,7 @@ import { DrizzleModerationRepository } from './infrastructure/persistence/drizzl
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleReactionRepository } from './infrastructure/persistence/drizzle/reaction.repository'
 import { DrizzleReadStateRepository } from './infrastructure/persistence/drizzle/read-state.repository'
+import { DrizzleShowcaseDeliveryRepository } from './infrastructure/persistence/drizzle/showcase-delivery.repository'
 import { DrizzleThreadRepository } from './infrastructure/persistence/drizzle/thread.repository'
 import { DrizzleUserDataPurgeRepository } from './infrastructure/persistence/drizzle/user-data-purge.repository'
 import { createServer } from './interfaces/http/server'
@@ -220,6 +223,7 @@ export async function createApplication(env: Env): Promise<Application> {
       internalToken: env.INTERNAL_API_TOKEN,
     },
     showcase: {
+      delivery: new GetShowcaseDeliveryService(new DrizzleShowcaseDeliveryRepository(db)),
       showcase: showcaseService,
       internalToken: env.INTERNAL_API_TOKEN,
     },
@@ -250,6 +254,28 @@ export async function createApplication(env: Env): Promise<Application> {
   })
 
   let cleanupTimer: ReturnType<typeof setInterval> | null = null
+  let deliveryTimer: ReturnType<typeof setInterval> | null = null
+  let deliveryCycle: Promise<void> | null = null
+  const deliverShowcase = new DeliverShowcaseService(
+    new DrizzleShowcaseDeliveryRepository(db),
+    members,
+    () => new Date(),
+  )
+  const runDeliveries = () => {
+    if (deliveryCycle) return
+    deliveryCycle = (async () => {
+      // Bound each cycle; leases let other replicas work without duplicate claims.
+      for (let i = 0; i < 5; i++) if (!(await deliverShowcase.execute())) break
+    })()
+      .catch((error) => {
+        logger.error('showcase.delivery.failed', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      })
+      .finally(() => {
+        deliveryCycle = null
+      })
+  }
 
   // Retenção do dedupe de webhooks (fora do hot path). Advisory xact-lock → só uma
   // réplica limpa por ciclo (solta sozinho no commit/crash).
@@ -282,6 +308,8 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      runDeliveries()
+      deliveryTimer = setInterval(runDeliveries, 5_000)
       cleanupTimer = setInterval(() => {
         void runRetentionCycle().catch((error) =>
           logger.error('retention.cleanup.failed', {
@@ -295,6 +323,8 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     async stop() {
       if (cleanupTimer) clearInterval(cleanupTimer)
+      if (deliveryTimer) clearInterval(deliveryTimer)
+      await deliveryCycle
       await server.stop()
       await connection.close()
       logger.info('app.stopped')

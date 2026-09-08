@@ -9,7 +9,7 @@ import type { Database } from './db'
 import { studioBlockGrants } from './schema'
 
 export class DrizzleStudioUnlockRepository implements StudioUnlockRepository {
-  constructor(private readonly db: Database) {}
+  constructor(private readonly db: Pick<Database, 'select' | 'insert'>) {}
 
   async listGrants(userId: string, audience: CourseAudience): Promise<StudioBlockGrant[]> {
     const rows = await this.db

@@ -5,6 +5,7 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
+import { preparePracticeTables } from './practice-fixture'
 import { prepareTestDatabase } from './test-database'
 
 const testDatabaseUrl = await prepareTestDatabase()
@@ -17,6 +18,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
+    await preparePracticeTables(conn)
     await conn.sql`create schema if not exists members`
 
     const userTables = [
@@ -116,6 +118,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
     await conn.sql`
       truncate table
+        members.practice_sessions,
         members.creation_cleanup_jobs,
         members.account_deletion_fences,
         members.creations,
@@ -153,6 +156,8 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     const profileId = randomUUID()
     const entitlementId = randomUUID()
 
+    await conn.sql`insert into members.practice_sessions(id,user_id,account_id,course_id,course_slug,lesson_id,block_id,title,quiz,created_at) values(${randomUUID()},${profileId},${accountId},${randomUUID()},'curso',${randomUUID()},${randomUUID()},'Prática','{"kind":"quiz","questions":[]}'::jsonb,now())`
+
     await conn.sql`insert into members.entitlements (id, user_id) values (${entitlementId}, ${accountId})`
     await conn.sql`
       insert into members.teacher_threads
@@ -187,6 +192,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     })
 
     const tables = [
+      'practice_sessions',
       'creations',
       'teacher_threads',
       'pensa_projects',

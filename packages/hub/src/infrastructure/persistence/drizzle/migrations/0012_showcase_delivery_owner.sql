@@ -1,0 +1,1 @@
+CREATE INDEX "showcase_deliveries_owner_course_idx" ON "hub"."showcase_deliveries" USING btree ("user_id","account_id","course_id");

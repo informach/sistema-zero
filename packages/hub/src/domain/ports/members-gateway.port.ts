@@ -143,7 +143,7 @@ export interface MembersGateway {
    * `course_showcased` (alimenta o nível do aluno). **Best-effort**: NUNCA lança (a
    * publicação não pode falhar por causa disso); o members é idempotente por user+curso.
    */
-  notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void>
+  notifyShowcasePublished(args: ShowcasePublishedArgs, deliveryId?: string): Promise<boolean>
   /**
    * Avisa o members que o aluno publicou no Mural com a tag do DESAFIO do mês —
    * grava o marco `challenge_entry` (XP + badge). **Best-effort** como o showcase;

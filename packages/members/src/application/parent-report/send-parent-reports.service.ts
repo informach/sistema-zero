@@ -58,6 +58,10 @@ function childSummary(name: string, stats: ChildStatsView): string {
     lines.push(`   • 🎮 Publicou o jogo "${game.title}" no Mural!`)
   }
   if (lines.length === 1) lines.push('   • Semana tranquila, sem atividade registrada.')
+  if (stats.career?.pendingPublications.length) {
+    lines.push('   Próximo passo: publicar os projetos dos cursos já concluídos:')
+    for (const course of stats.career.pendingPublications) lines.push(`   • ${course.title}`)
+  }
   return lines.join('\n')
 }
 

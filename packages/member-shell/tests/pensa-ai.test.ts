@@ -326,6 +326,11 @@ describe('geração de artefatos por SSE', () => {
       }),
       aiUsageConsume: async () => ({ status: 200, body: { allowed: true } }),
       getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      getStudioUnlocksReadonly: async () => ({ status: 200, body: { blocks: [] } }),
+      checkCreativeToolsAccessReadonly: async () => ({
+        status: 200,
+        body: { access: { pinta: true, molda: true, 'estudio-completo': true } },
+      }),
       pensaSaveArtifact: async (_cycle: string, input: { type: string; content: unknown }) => ({
         status: 200,
         body: { artifact: artifact(input.type, input.content) },

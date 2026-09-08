@@ -2,7 +2,6 @@ import 'server-only'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
-import { resolveStudioTier } from '../lib/studio-tier'
 import type {
   PensaArtifactType,
   PensaArtifactView,
@@ -29,6 +28,7 @@ import {
   VisualDirectionArtifactSchema,
   validateVisualTaskCoverage,
 } from '../server/pensa-agents/planner-contract'
+import { getPensaCapabilities } from '../server/pensa-capabilities'
 
 export { auditPlan } from '../server/pensa-agents/plan-audit'
 
@@ -381,7 +381,25 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           )
           const gamification = await members.getGamification()
           if (gamification.status !== 200) return fail('PENSA_TIER_UNAVAILABLE', 503)
-          const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+          const capabilities = await getPensaCapabilities(
+            members,
+            gamification.body?.level?.slug,
+            user.role,
+          )
+          if (!capabilities) return fail('PENSA_TIER_UNAVAILABLE', 503)
+          const { tier, moldaAvailable } = capabilities
+          if (
+            !capabilities.studioAvailable ||
+            (!capabilities.pintaAvailable &&
+              visual.assets.some((asset) =>
+                ['sprite', 'background', 'tileset', 'tilemap'].includes(asset.kind),
+              ))
+          )
+            return fail(
+              'PENSA_TOOLS_UNAVAILABLE',
+              403,
+              'Este plano precisa de ferramentas que ainda não estão disponíveis para seu perfil. Seu planejamento continua guardado.',
+            )
           const catalog = plannerCatalogPrompt(tier, idea.dimension)
           const raw = await generateJson({
             schema: TaskPlanDraftSchema,
@@ -392,7 +410,10 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
               `GAME DESIGN:\n${json(design)}`,
               `BÍBLIA VISUAL:\n${json(visual)}`,
               'Gere o plano completo na ordem de execução.',
-              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId — e NUNCA cite essas artes 2D em visualAssetIds: a tarefa do Estúdio que usa a arte deve apenas DEPENDER da tarefa Pinta. Modelos, mundo e materiais são tarefas studio e entram em visualAssetIds.',
+              'Crie uma tarefa Pinta para CADA sprite/background/tileset/tilemap usando assetId. A tarefa do Estúdio que usa uma arte apenas DEPENDE da tarefa que a cria; não repete seu ID em visualAssetIds.',
+              moldaAvailable
+                ? 'Molda disponível: crie tarefas molda para model, material e sky da Bíblia Visual, com artKind model, texture e sky respectivamente. World continua no studio. Cada criação tem um cartão; a tarefa studio que a usa depende desse cartão, sem repetir a cobertura em visualAssetIds.'
+                : 'Molda indisponível: use apenas Pinta e Estúdio. Modelos, mundo e materiais são tarefas studio com visualAssetIds. Não proponha criação de céu HDR no Molda.',
               'Tarefas studio devem usar somente IDs do catálogo abaixo. IDs de steps e criteria precisam ser estáveis e únicos por tarefa.',
               `PEDIDO: ${body.feedback ?? 'nenhum'}`,
               catalog,
@@ -403,7 +424,7 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
             bodyTimeoutMs: 180_000,
           })
           const tasks = stripPintaArtFromStudioTasks(
-            resolveTaskPlan(raw, tier, idea.dimension),
+            resolveTaskPlan(raw, tier, idea.dimension, moldaAvailable),
             visual,
           )
           validateVisualTaskCoverage(tasks, visual)
@@ -432,13 +453,20 @@ export function createPensaAiRoutes(deps: { members: MembersClient; session: Ses
           const visual = VisualDirectionArtifactSchema.parse(
             requireValidated(eStage, 'visual_direction').content,
           )
-          const tier = resolveStudioTier(gamification.body?.level?.slug ?? 'noob', user.role)
+          const capabilities = await getPensaCapabilities(
+            members,
+            gamification.body?.level?.slug,
+            user.role,
+          )
+          if (!capabilities) return fail('PENSA_TIER_UNAVAILABLE', 503)
+          const { tier } = capabilities
           content = auditPlan(
             rStage,
             availablePlannerCatalog(tier, gameDimension),
             gameDimension,
             body.approved,
             visual,
+            capabilities,
           )
         }
 

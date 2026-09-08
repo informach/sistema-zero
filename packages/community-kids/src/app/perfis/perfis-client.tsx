@@ -503,6 +503,14 @@ export function PerfisClient({
         </div>
       ) : null}
 
+      {managing ? (
+        <a
+          href="/responsavel"
+          className="inline-flex min-h-11 items-center rounded-xl bg-primary px-5 font-bold text-primary-foreground"
+        >
+          Abrir acompanhamento da família
+        </a>
+      ) : null}
       {managing ? <ChildrenDashboard avatarPhotoByProfile={avatarPhotoByProfile} /> : null}
       {/* IRMÃO do dashboard, não filho: aquele some quando não há filhos, e a
           ajuda de IA é da CONTA — precisa aparecer de qualquer jeito. */}

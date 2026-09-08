@@ -413,9 +413,8 @@ export interface CourseView {
   /** Slug do curso de ORIGEM quando este é um clone; `null`/ausente senão. */
   clonedFrom?: string | null
   /**
-   * SÓ na listagem e SÓ no curso-base kids (posição 1): tem aula publicada com
-   * bloco de Estúdio de vitrine? `false` = o aluno nunca publica no Mural → o
-   * slot 1 nunca qualifica e a etapa não destrava (aviso "Sem vitrine").
+   * Na listagem, para toda posição obrigatória Kids: existe aula publicada com
+   * bloco de Estúdio de vitrine? Ausente = verificação não disponível.
    */
   hasShowcaseBlock?: boolean
   /** Concorrência otimista: enviar de volta no PATCH do curso (o members exige). */

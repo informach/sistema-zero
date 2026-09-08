@@ -249,6 +249,12 @@ export interface CareerCourseState {
 }
 
 export interface GamificationRepository {
+  /** Remaining one-time content events in courses already accessible to this learner. */
+  listContentMissionOpportunities(
+    userId: string,
+    audience: CourseAudience,
+    courseSlugs: string[],
+  ): Promise<Map<MissionGoalType, number>>
   /**
    * Concede XP/streak/badges numa transação serializada POR ALUNO (advisory
    * xact-lock). Sem evento novo, streak/lastActivityDate ficam INTOCADOS (só

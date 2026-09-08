@@ -9,6 +9,7 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { prepareContentReadinessTables } from './content-readiness-fixture'
 import { prepareTestDatabase } from './test-database'
 
 /**
@@ -38,6 +39,7 @@ describe.skipIf(!testDatabaseUrl)('cadeia do Pinta: as consultas SQL de verdade'
 
   beforeAll(async () => {
     conn = createDbConnection(testDatabaseUrl as string)
+    await prepareContentReadinessTables(conn)
     await conn.sql`create schema if not exists members`
     // Tabelas mínimas, com os nomes REAIS (é o que o Drizzle mira): o `kind` é enum no schema
     // de produção, mas aqui basta texto — o que se testa são os predicados (cadeia, tipo do

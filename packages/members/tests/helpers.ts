@@ -82,6 +82,7 @@ import { UpdatePensaProjectService } from '../src/application/pensa/update-proje
 import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
+import { PracticeService } from '../src/application/practice/practice.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
@@ -139,6 +140,7 @@ import {
   silentLogger,
 } from './fakes/in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
+import { InMemoryPracticeRepository } from './fakes/practice-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
@@ -147,6 +149,7 @@ export function buildApp(
   opts: {
     now?: Date
     internalToken?: string
+    practicePilotAccounts?: string
     requireAdmin?: boolean
     /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
     aiLimits?: { daily: number; monthly: number }
@@ -168,6 +171,7 @@ export function buildApp(
   const progress = new InMemoryProgressRepository(courses)
   const positions = new InMemoryVideoPositionRepository()
   const quizAttempts = new InMemoryQuizAttemptRepository()
+  const practiceRepository = new InMemoryPracticeRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   courses.onQuizGateChanged = (blockId) => quizAttempts.deleteByBlockId(blockId)
   courses.onStudioActivityChanged = (blockId) => studioSubmissions.resetCorrectionByBlockId(blockId)
@@ -305,6 +309,18 @@ export function buildApp(
   } as unknown as Env
 
   const app = createServer({
+    practice: {
+      practice: new PracticeService(
+        practiceRepository,
+        checkAccess,
+        courses,
+        progress,
+        quizAttempts,
+        clock,
+        opts.practicePilotAccounts,
+      ),
+      internalToken: opts.internalToken,
+    },
     env,
     logger: silentLogger,
     accountDeletionFence: {
@@ -322,7 +338,14 @@ export function buildApp(
       ),
       listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
       accessCheck: new AccessCheckService(entitlements, clock),
-      getMyCourse: new GetMyCourseService(checkAccess, courses, progress, positions, ratings),
+      getMyCourse: new GetMyCourseService(
+        checkAccess,
+        courses,
+        progress,
+        positions,
+        ratings,
+        gamification,
+      ),
       getLesson: new GetLessonService(
         checkAccess,
         courses,
@@ -404,7 +427,12 @@ export function buildApp(
       getGamification: new GetGamificationService(gamification, clock),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
       getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
-      getMissions: new GetMissionsService(gamification, accessCheck, clock),
+      getMissions: new GetMissionsService(
+        gamification,
+        accessCheck,
+        clock,
+        new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+      ),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
       recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
@@ -417,6 +445,7 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        new AccessCheckService(entitlements, clock),
         clock,
         hub,
       ),

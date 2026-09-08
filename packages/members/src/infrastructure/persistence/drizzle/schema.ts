@@ -18,7 +18,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
-import type { LessonBlockContent } from '../../../domain/course/lesson-block'
+import type { LessonBlockContent, QuizBlock } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type {
@@ -291,6 +291,29 @@ export const lessonCompletions = members.table(
 // ── Tentativas de quiz (histórico; score calculado NO SERVIDOR) ─────────────
 // Sem UNIQUE: cada submit é uma linha. O estado derivado (última nota, cooldown,
 // já aprovou) é agregado por (user_id, block_id) ordenado por created_at.
+/** Independent practice history. Content references are snapshots, not cascading foreign keys. */
+export const practiceSessions = members.table(
+  'practice_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    courseId: uuid('course_id').notNull(),
+    courseSlug: text('course_slug').notNull(),
+    lessonId: uuid('lesson_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    title: text('title').notNull(),
+    quiz: jsonb('quiz').$type<QuizBlock>().notNull(),
+    answers: jsonb('answers').$type<QuizAnswers>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('practice_sessions_owner_created_idx').on(t.userId, t.accountId, t.createdAt),
+    index('practice_sessions_account_idx').on(t.accountId),
+  ],
+)
+
 export const quizAttempts = members.table(
   'quiz_attempts',
   {
@@ -854,7 +877,11 @@ export const pensaArtifactTypeEnum = members.enum('pensa_artifact_type', [
   'plan_review',
 ])
 export const pensaArtifactStatusEnum = members.enum('pensa_artifact_status', ['draft', 'validated'])
-export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', ['pinta', 'studio'])
+export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', [
+  'pinta',
+  'studio',
+  'molda',
+])
 export const pensaTaskStatusEnum = members.enum('pensa_task_status', [
   'planned',
   'in_progress',
@@ -1398,6 +1425,7 @@ export const processedWebhooks = members.table(
 )
 
 export const schema = {
+  practiceSessions,
   courses,
   modules,
   lessons,

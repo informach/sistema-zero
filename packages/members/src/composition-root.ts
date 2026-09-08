@@ -82,6 +82,7 @@ import { UpdatePensaProjectService } from './application/pensa/update-project.se
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
+import { PracticeService } from './application/practice/practice.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
@@ -125,6 +126,7 @@ import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizz
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
+import { DrizzlePracticeRepository } from './infrastructure/persistence/drizzle/practice.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -252,6 +254,7 @@ export async function createApplication(env: Env): Promise<Application> {
     courses,
     progress,
     studioSubmissions,
+    accessCheck,
     clock,
     hub,
   )
@@ -326,7 +329,14 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const listCatalog = new ListCatalogService(courses, entitlements, gamificationRepo, clock)
-  const getMyCourse = new GetMyCourseService(checkAccess, courses, progress, positions, ratings)
+  const getMyCourse = new GetMyCourseService(
+    checkAccess,
+    courses,
+    progress,
+    positions,
+    ratings,
+    gamificationRepo,
+  )
   const zappyKnowledge = new ZappyKnowledgeService(
     new DrizzleZappyKnowledgeRepository(db),
     listMyCourses,
@@ -381,7 +391,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
-  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock)
+  const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock, listMyCourses)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
   // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
   const recordRemix = new RecordStudioRemixService(accessCheck, hub, awardGamification)
@@ -565,6 +575,18 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    practice: {
+      practice: new PracticeService(
+        new DrizzlePracticeRepository(db),
+        checkAccess,
+        courses,
+        progress,
+        quizAttempts,
+        clock,
+        env.PRACTICE_PILOT_ACCOUNTS,
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     env,
     logger,
     accountDeletionFence: userDataPurgeRepository,

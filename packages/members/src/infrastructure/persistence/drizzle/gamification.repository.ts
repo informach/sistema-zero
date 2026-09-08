@@ -71,6 +71,7 @@ import {
 } from '../../../domain/ports/gamification-repository.port'
 import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
+import { contentMissionOpportunities } from './mission-opportunities'
 import {
   avatarInventory,
   coinEvents,
@@ -83,6 +84,8 @@ import {
   userBadges,
   xpEvents,
 } from './schema'
+import { DrizzleStudioUnlockRepository } from './studio-unlock.repository'
+import { eligibleStudioGrants } from './studio-unlock-eligibility'
 
 type CoinSourceTypeValue = (typeof coinEvents.sourceType.enumValues)[number]
 
@@ -197,6 +200,13 @@ export class DrizzleGamificationRepository implements GamificationRepository {
                 amount: xpEvents.amount,
               })
           : []
+
+      // Freeze the earned curriculum in the SAME transaction as its milestone.
+      // Retried events also reconcile existing qualifying courses; no first GET is required.
+      if (courseMarcoIds.length > 0) {
+        const grants = await eligibleStudioGrants(tx, input.userId, input.audience, courseMarcoIds)
+        await new DrizzleStudioUnlockRepository(tx).saveGrants(input.userId, input.audience, grants)
+      }
 
       // Todas as badges são DERIVADAS do estado (ledger/streak) — sem candidatas
       // do caller (o dedupe do user_badges torna o re-check inócuo).
@@ -953,42 +963,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     userId: string,
     audience: CourseAudience,
   ): Promise<{ courseId: string; blocks: string[] }[]> {
-    const showcased = alias(xpEvents, 'sc')
-    const eligible =
-      audience === 'kids'
-        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
-        : and(isNotNull(courses.id), isNotNull(showcased.id))
-    const rows = await this.db
-      .select({ courseId: courses.id, metadata: courses.metadata })
-      .from(xpEvents)
-      .innerJoin(courses, publishedCourseSourceInAudience(audience))
-      .leftJoin(
-        showcased,
-        and(
-          eq(showcased.userId, xpEvents.userId),
-          eq(showcased.audience, xpEvents.audience),
-          eq(showcased.sourceType, 'course_showcased'),
-          eq(showcased.sourceId, xpEvents.sourceId),
-        ),
-      )
-      .where(
-        and(
-          eq(xpEvents.userId, userId),
-          eq(xpEvents.audience, audience),
-          eq(xpEvents.sourceType, 'course_complete'),
-          eligible,
-        ),
-      )
-    const byCourse = new Map<string, string[]>()
-    for (const row of rows) {
-      const raw = (row.metadata as Record<string, unknown> | null)?.studioUnlockBlocks
-      if (!Array.isArray(raw)) continue
-      const blocks = raw.filter(
-        (type): type is string => typeof type === 'string' && type.length > 0,
-      )
-      if (blocks.length > 0) byCourse.set(row.courseId, [...new Set(blocks)])
-    }
-    return [...byCourse].map(([courseId, blocks]) => ({ courseId, blocks }))
+    return eligibleStudioGrants(this.db, userId, audience)
   }
 
   async getStudioUnlockRevision(userId: string, audience: CourseAudience): Promise<string> {
@@ -1476,6 +1451,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         ),
       )
     return row?.c ?? 0
+  }
+
+  listContentMissionOpportunities(userId: string, audience: CourseAudience, courseSlugs: string[]) {
+    return contentMissionOpportunities(this.db, userId, audience, courseSlugs)
   }
 
   async listClaimedMissions(

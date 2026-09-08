@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { AccessCheckService } from '../../src/application/access-check/access-check.service'
 import { GetChildrenStatsService } from '../../src/application/children-stats/get-children-stats.service'
 import { AwardGamificationService } from '../../src/application/gamification/award-gamification.service'
 import { SendParentReportsService } from '../../src/application/parent-report/send-parent-reports.service'
@@ -60,6 +61,7 @@ function buildSender(now: Date) {
     courses,
     progress,
     studio,
+    new AccessCheckService(new InMemoryEntitlementRepository(), clock),
     clock,
     hub,
   )

@@ -176,7 +176,10 @@ describe('Pensa planejador — HTTP', () => {
     const allowed = await json(
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[0].id}/handoff?audience=kids`),
     )
-    expect(allowed.capability).toEqual({ owned: true, blockedReason: null })
+    expect(allowed.capability).toEqual({
+      owned: false,
+      blockedReason: 'O Pinta ainda não foi liberado pelo seu nível na carreira.',
+    })
 
     // O Estúdio do Pensa exige produto E o primeiro desbloqueio da carreira.
     grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
@@ -216,6 +219,11 @@ describe('Pensa planejador — HTTP', () => {
       await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[1].id}/handoff?audience=kids`),
     )
     expect(studioAllowed.capability).toEqual({ owned: true, blockedReason: null })
+    expect(
+      await (
+        await req(ctx.app, 'GET', `/members/pensa/tasks/${tasks[0].id}/handoff?audience=kids`)
+      ).json(),
+    ).toMatchObject({ capability: { owned: true, blockedReason: null } })
 
     const hidden = await req(
       ctx.app,
@@ -232,6 +240,30 @@ describe('Pensa planejador — HTTP', () => {
 
   test('sincroniza transições e só conclui com output + itens obrigatórios', async () => {
     const ctx = buildWithAccess()
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'pinta' })
+    grantLifetime(ctx.entitlements, { userId: USER, courseRef: 'estudio-completo' })
+    const foundation = seedSampleCourse(
+      ctx.courses,
+      'base-progresso',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    await ctx.gamification.award({
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      events: [
+        { sourceType: 'course_complete', sourceId: foundation.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: foundation.courseId, amount: 0 },
+      ],
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00Z'),
+      privileged: false,
+    })
     const project = await createProject(ctx)
     const cycleId = project.currentCycle.id
     const tasks = (

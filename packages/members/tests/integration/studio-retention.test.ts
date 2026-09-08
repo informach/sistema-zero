@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { XP_VALUES } from '../../src/domain/gamification/gamification'
 import { ESTUDIO_ACCESS_REF } from '../../src/domain/gamification/missions'
-import { buildApp, grantCommunity, signedWebhookHeaders } from '../helpers'
+import { buildApp, grantCommunity, seedSampleCourse, signedWebhookHeaders } from '../helpers'
 
 const USER = '22222222-2222-2222-2222-222222222222'
 const OTHER_AUTHOR = '33333333-3333-3333-3333-333333333333'
@@ -146,9 +146,31 @@ describe('marcos de plays recebidos — webhook /plays-milestone', () => {
 })
 
 describe('missões gated por estudio-completo', () => {
-  test('com posse: semanal E mensal têm ≥1 missão do estúdio; publicar/remixar andam o progresso', async () => {
-    const { app, entitlements, hubPlays, gamification } = buildApp()
+  test('com posse e carreira liberada: semanal E mensal têm missões do estúdio; publicar/remixar andam o progresso', async () => {
+    const { app, courses, entitlements, hubPlays, gamification } = buildApp()
     grantCommunity(entitlements, { userId: USER, communityKey: ESTUDIO_ACCESS_REF })
+    const foundation = seedSampleCourse(
+      courses,
+      'retention-foundation',
+      'published',
+      'kids',
+      false,
+      'primeiros-passos',
+      '2d',
+      1,
+    )
+    await gamification.award({
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      today: '2026-06-02',
+      now: new Date('2026-06-02T12:00:00Z'),
+      privileged: false,
+      events: [
+        { sourceType: 'course_complete', sourceId: foundation.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: foundation.courseId, amount: 0 },
+      ],
+    })
 
     // Anda as duas fontes: publica standalone (webhook) + remixa um jogo de colega.
     await postStandalone(app, {
@@ -170,7 +192,7 @@ describe('missões gated por estudio-completo', () => {
     const monthlyStudio = missions.monthly.filter((m: { goalType: string }) =>
       ['studio_published', 'studio_remix'].includes(m.goalType),
     )
-    // Garantia do sorteio 2 fases: sempre 1 vaga do estúdio p/ quem tem o produto.
+    // O sorteio reserva a vaga; a apresentação exige também a liberação pedagógica.
     expect(weeklyStudio.length).toBeGreaterThanOrEqual(1)
     expect(monthlyStudio.length).toBeGreaterThanOrEqual(1)
     // O progresso deriva do ledger — as duas fontes têm 1 evento cada.

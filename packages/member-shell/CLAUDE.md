@@ -983,3 +983,20 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
   seguem fail-closed. As flexibilizações são cirúrgicas: tag única sem atributo, `class`/`return`
   em texto, e `ANSWER_PHONE_RE` (telefone com DDD) usado SÓ no lado da RESPOSTA — a redação da
   PERGUNTA mantém o regex largo.
+
+## Jornada do criador — 07/09/2026
+
+Ver `../../docs/plans/creator-journey-rollout.md` para ordem de implantação e rollback.
+`server/pensa-capabilities.ts` usa os blocos conquistados e a disponibilidade das ferramentas
+na geração/auditoria, conservando o fallback legado de currículo vazio. Molda é destino de
+cartões 3D (model/texture/sky); IDs do inventário visual e da criação persistida são distintos.
+Os contratos e schemas do BFF reconhecem `molda`/`molda_asset`.
+A auditoria exige explicitamente a disponibilidade atual de Molda, Pinta e Estúdio;
+não basta o catálogo de blocos continuar compatível com um plano antigo.
+
+`createPracticeRoutes` é Kids com perfil ativo; escrita recusa impersonação somente leitura,
+corpos com campos extras e IDs do dono enviados pelo cliente. A autoridade do piloto é Members.
+Todas as leituras/escritas do BFF de prática exigem `x-sz-viewer` igual ao perfil da sessão;
+divergência ou ausência retorna 409 antes do upstream. O header vincula a tela, não concede acesso.
+`hub.myShowcaseDeliveryReadonly(courseId)` consulta entrega por ator, sem aceitar ID de outro
+perfil. Campos aditivos do detalhe do curso: id, milestones e showcaseLessonId.

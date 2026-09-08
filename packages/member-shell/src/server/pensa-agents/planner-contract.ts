@@ -41,7 +41,7 @@ export const GameDesignArtifactSchema = z.strictObject({
 const AssetInventoryItemSchema = z.strictObject({
   id: Id,
   name: Short,
-  kind: z.enum(['sprite', 'background', 'tileset', 'tilemap', 'model', 'world', 'material']),
+  kind: z.enum(['sprite', 'background', 'tileset', 'tilemap', 'model', 'world', 'material', 'sky']),
   appearance: Text,
   animations: z.array(Short).max(12),
   states: z.array(Short).max(12),
@@ -111,7 +111,7 @@ export const TaskPlanDraftSchema = z.strictObject({
         key: Id,
         title: z.string().trim().min(2).max(200),
         summary: z.string().trim().max(2000).nullable(),
-        destination: z.enum(['pinta', 'studio']),
+        destination: z.enum(['pinta', 'studio', 'molda']),
         category: z.enum(['art', 'setup', 'gameplay', 'scene', 'ui', 'polish']),
         estimatedMinutes: z.number().int().min(5).max(60),
         dependencies: z.array(Id).max(20),
@@ -119,6 +119,16 @@ export const TaskPlanDraftSchema = z.strictObject({
         context: z.discriminatedUnion('kind', [
           PintaTaskContextSchema,
           StudioTaskContextDraftSchema,
+          z.strictObject({
+            kind: z.literal('molda'),
+            assetId: Id,
+            artKind: z.enum(['model', 'texture', 'sky']),
+            appearance: Text,
+            usage: Text,
+            palette: z
+              .array(z.strictObject({ role: Short, color: z.string().regex(/^#[0-9A-Fa-f]{6}$/) }))
+              .max(16),
+          }),
         ]),
       }),
     )
@@ -178,7 +188,7 @@ export interface ResolvedPlanTask {
   key: string
   title: string
   summary: string | null
-  destination: 'pinta' | 'studio'
+  destination: 'pinta' | 'studio' | 'molda'
   category: 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
   estimatedMinutes: number
   dependencies: string[]
@@ -254,6 +264,7 @@ export function resolveTaskPlan(
   raw: TaskPlanDraft,
   tier: StudioTier,
   dimension: '2d' | '3d',
+  moldaAvailable = false,
 ): ResolvedPlanTask[] {
   const keys = new Set<string>()
   const seen = new Set<string>()
@@ -271,6 +282,11 @@ export function resolveTaskPlan(
       )
     }
     seen.add(task.key)
+    if (task.context.kind === 'molda') {
+      if (!moldaAvailable || dimension !== '3d')
+        throw new PensaCatalogDriftError('O Molda não está disponível para este plano.')
+      return { ...task, guide: resolveGuide(task.guide), context: task.context }
+    }
     if (task.context.kind === 'pinta') {
       const { preset, ...pintaContext } = task.context
       return {
@@ -359,6 +375,16 @@ export function validateVisualTaskCoverage(
     throw new PensaCatalogDriftError('A Bíblia Visual possui IDs de asset repetidos')
   const coverage = new Map<string, number>()
   for (const task of tasks) {
+    if (task.context.kind === 'molda') {
+      const asset = inventory.get(task.context.assetId)
+      const inventoryKind = task.context.artKind === 'texture' ? 'material' : task.context.artKind
+      if (!asset || asset.kind !== inventoryKind)
+        throw new PensaCatalogDriftError(
+          `A tarefa ${task.key} não corresponde à criação 3D da Bíblia Visual`,
+        )
+      coverage.set(asset.id, (coverage.get(asset.id) ?? 0) + 1)
+      continue
+    }
     if (task.context.kind === 'pinta') {
       const asset = inventory.get(task.context.assetId)
       if (!asset || !PINTA_ART_KINDS.has(asset.kind) || asset.kind !== task.context.artKind) {

@@ -12,7 +12,14 @@ import type {
 import type { Comment, Thread } from '../../../domain/thread/thread'
 import type { Database } from './db'
 import { isUniqueViolation } from './pg-errors'
-import { attachments, type CommentRow, comments, type ThreadRow, threads } from './schema'
+import {
+  attachments,
+  type CommentRow,
+  comments,
+  showcaseDeliveries,
+  type ThreadRow,
+  threads,
+} from './schema'
 
 const toThread = (r: ThreadRow): Thread => ({
   id: r.id,
@@ -125,44 +132,60 @@ export class DrizzleThreadRepository implements ThreadRepository {
   async createShowcaseThread(
     input: CreateShowcaseThreadInput,
   ): Promise<{ thread: Thread; deduped: boolean }> {
-    // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
-    // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
-    const inserted = await this.db
-      .insert(threads)
-      .values({
-        id: input.id,
-        version: 0,
-        channelId: input.channelId,
-        authorId: input.authorId,
-        title: input.title,
-        slug: input.slug,
-        body: input.body,
-        isPinned: false,
-        isLocked: false,
-        status: 'visible',
-        commentCount: 0,
-        isShowcase: true,
-        authorDisplayName: input.authorDisplayName,
-        authorPublic: input.authorPublic,
-        coverImageUrl: input.coverImageUrl,
-        playId: input.playId,
-        challengeKey: input.challengeKey ?? null,
-        studioMeta: input.studioMeta ?? null,
-        showcaseIdempotencyKey: input.idempotencyKey,
-        lastActivityAt: input.now,
-        createdAt: input.now,
-        editedAt: null,
-      })
-      .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
-      .returning()
-    if (inserted.length > 0) return { thread: toThread(inserted[0] as ThreadRow), deduped: false }
-    // Conflito na chave → já publicado; devolve o original.
-    const [existing] = await this.db
-      .select()
-      .from(threads)
-      .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
-      .limit(1)
-    return { thread: toThread(existing as ThreadRow), deduped: true }
+    return this.db.transaction(async (tx) => {
+      // Idempotente pela chave: dois publish concorrentes (duplo-clique/re-conclusão)
+      // → só um insere; o outro recupera o existente. NASCE `visible` (aparece na hora).
+      const inserted = await tx
+        .insert(threads)
+        .values({
+          id: input.id,
+          version: 0,
+          channelId: input.channelId,
+          authorId: input.authorId,
+          title: input.title,
+          slug: input.slug,
+          body: input.body,
+          isPinned: false,
+          isLocked: false,
+          status: 'visible',
+          commentCount: 0,
+          isShowcase: true,
+          authorDisplayName: input.authorDisplayName,
+          authorPublic: input.authorPublic,
+          coverImageUrl: input.coverImageUrl,
+          playId: input.playId,
+          challengeKey: input.challengeKey ?? null,
+          studioMeta: input.studioMeta ?? null,
+          showcaseIdempotencyKey: input.idempotencyKey,
+          lastActivityAt: input.now,
+          createdAt: input.now,
+          editedAt: null,
+        })
+        .onConflictDoNothing({ target: threads.showcaseIdempotencyKey })
+        .returning()
+      // Conflito na chave → já publicado; devolve o original.
+      const existing =
+        inserted[0] ??
+        (
+          await tx
+            .select()
+            .from(threads)
+            .where(eq(threads.showcaseIdempotencyKey, input.idempotencyKey))
+            .limit(1)
+        )[0]
+      if (!existing) throw new Error('Showcase transaction did not resolve a thread')
+      if (input.coursePublication) {
+        await tx
+          .insert(showcaseDeliveries)
+          .values({
+            threadId: existing.id,
+            ...input.coursePublication,
+            nextAttemptAt: input.now,
+          })
+          .onConflictDoNothing({ target: showcaseDeliveries.threadId })
+      }
+      return { thread: toThread(existing), deduped: inserted.length === 0 }
+    })
   }
 
   async hasVisibleShowcasePlayId(

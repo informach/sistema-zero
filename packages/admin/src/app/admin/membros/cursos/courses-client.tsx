@@ -420,16 +420,17 @@ function CareerReadiness({
           (item.track ?? '2d') === tier.track &&
           item.careerSlot === slot,
       )
-      // Curso-base publicado SEM aula publicada com bloco de Estúdio de vitrine:
-      // o aluno nunca publica no Mural → o slot 1 nunca qualifica e a etapa não
-      // destrava. Publicado sem vitrine NÃO conta como pronto.
-      const missingShowcase =
-        slot === 1 && course?.status === 'published' && course.hasShowcaseBlock === false
+      // Toda posição obrigatória exige uma oportunidade publicada de ir ao Mural.
+      // Resposta de um servidor antigo sem a verificação não significa prontidão.
+      const missingShowcase = course?.status === 'published' && course.hasShowcaseBlock === false
+      const unknownShowcase =
+        course?.status === 'published' && course.hasShowcaseBlock === undefined
       return {
         slot,
         course,
         missingShowcase,
-        ready: course?.status === 'published' && !missingShowcase,
+        unknownShowcase,
+        ready: course?.status === 'published' && course.hasShowcaseBlock === true,
       }
     })
     return {
@@ -483,7 +484,7 @@ function CareerReadiness({
               )}
             </div>
             <div className="space-y-1.5">
-              {tier.slots.map(({ slot, course, missingShowcase }) => {
+              {tier.slots.map(({ slot, course, missingShowcase, unknownShowcase }) => {
                 const inner = (
                   <>
                     <span
@@ -501,10 +502,12 @@ function CareerReadiness({
                       missingShowcase ? (
                         <span
                           className="inline-flex items-center gap-1 text-destructive"
-                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso o curso-base nunca qualifica e a etapa não destrava para os alunos."
+                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso este curso não qualifica para a carreira."
                         >
                           <TriangleAlert className="size-3.5" /> Sem vitrine
                         </span>
+                      ) : unknownShowcase ? (
+                        <span className="text-muted-foreground">Verificação pendente</span>
                       ) : (
                         <span
                           className={

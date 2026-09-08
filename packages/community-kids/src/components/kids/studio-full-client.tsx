@@ -22,6 +22,7 @@ import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { pensaStudioLinkKey, pensaStudioProjectId } from '../../lib/pensa-studio-link'
+import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { openStudioZappyLesson } from '../../lib/studio-zappy-navigation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
@@ -51,6 +52,7 @@ export function StudioFullClient({
   zappyEnabled = false,
   aiCredits = null,
   taskId = null,
+  initialProjectId = null,
   pintaOwned = false,
   moldaOwned = false,
 }: {
@@ -76,6 +78,8 @@ export function StudioFullClient({
   aiCredits?: AiCreditsView | null
   /** Cartão de Criação aberto por `/estudio?tarefa=<id>`. */
   taskId?: string | null
+  /** Resume an existing item from the creator hub; never creates a replacement. */
+  initialProjectId?: string | null
   /**
    * Posse do PINTA (a página checa `refs=pinta,estudio-completo` numa ida) —
    * liga o "Trazer do Pinta" no painel de Imagens. Produtos vendidos à parte:
@@ -92,6 +96,9 @@ export function StudioFullClient({
   const [mod, setMod] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
   const [view, setView] = useState<View>({ name: 'list' })
+  const [openingProject, setOpeningProject] = useState<'loading' | 'error' | null>(
+    initialProjectId && !taskId ? 'loading' : null,
+  )
   // "Guardado na sua conta": a fila da nuvem por perfil (o selo lê daqui) JUNTO do
   // desligar do espelho DELA — o par vive num estado só, para o cleanup de uma fila
   // nunca desligar o espelho da fila seguinte (era o que um ref compartilhado fazia).
@@ -111,6 +118,32 @@ export function StudioFullClient({
     cancelPull: () => void
   } | null>(null)
   const cloud = cloudSync?.cloud ?? null
+  useEffect(() => {
+    if (!mod || !initialProjectId || taskId) return
+    let active = true
+    setOpeningProject('loading')
+    const persistence = mod.createLocalPersistenceAdapter({ namespace: viewerId ?? '' })
+    void resumeExistingCreation(
+      initialProjectId,
+      (id) => persistence.load(id),
+      cloudSync?.restoreProject ?? null,
+    )
+      .then((project) => {
+        if (!active) return
+        if (!project) {
+          setOpeningProject('error')
+          return
+        }
+        setView({ name: 'editor', projectId: initialProjectId })
+        setOpeningProject(null)
+      })
+      .catch(() => {
+        if (active) setOpeningProject('error')
+      })
+    return () => {
+      active = false
+    }
+  }, [mod, initialProjectId, taskId, viewerId, cloudSync])
   const [taskError, setTaskError] = useState<string | null>(null)
   const [missingTaskProject, setMissingTaskProject] = useState<{
     projectId: string
@@ -742,6 +775,31 @@ export function StudioFullClient({
             </button>
           </div>
         </div>
+      ) : openingProject === 'error' ? (
+        <div className="grid h-full place-items-center p-6 text-center">
+          <div className="flex max-w-md flex-col gap-3">
+            <h2 className="sz-display text-xl">Não conseguimos abrir este trabalho</h2>
+            <p className="text-sm text-muted-foreground">
+              Ele pode estar em outro aparelho ou aguardando conexão. Tente novamente ou procure na
+              sua galeria.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="min-h-11 rounded-full bg-primary px-5 font-bold text-primary-foreground"
+            >
+              Tentar novamente
+            </button>
+            <a
+              href="/estudio"
+              className="inline-flex min-h-11 items-center justify-center font-bold text-primary"
+            >
+              Voltar à galeria
+            </a>
+          </div>
+        </div>
+      ) : openingProject === 'loading' ? (
+        <EmbeddedAppLoadingBody label="Abrindo seu trabalho…" />
       ) : // Espera do guia da tarefa (deep link do Pensa) e espera do pacote viram
       // UMA só: os dois correm em paralelo, e mostrar dois textos diferentes em
       // sequência fazia `/estudio?tarefa=` ter uma tela a mais.

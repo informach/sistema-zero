@@ -176,20 +176,14 @@ export function tierCompletionByLevel(
 /**
  * O medalhão mostra o ✓ de concluído?
  *
- * Só quando o posto ficou para trás **e** não sobrou curso por fazer naquela trilha. Um
- * curso novo publicado num degrau já vencido TIRA o ✓ até a criança fazer — decisão da
- * usuária (15/08): o sinal precisa ser impossível de ignorar.
- *
- * ⚠️ Sem catálogo confiável (`completion` ausente) o ✓ volta a ser posicional, como
- * sempre foi: uma falha de rede não pode apagar a conquista de todo mundo.
+ * O posto conquistado permanece marcado. Conteúdo adicional é anunciado separadamente
+ * pelo contador da trilha, sem transformar novidades em perda de uma conquista.
  */
 export function nodeShowsCheck(
   state: CareerNodeState,
-  completion: TierCompletion | null | undefined,
+  _completion: TierCompletion | null | undefined,
 ): boolean {
-  if (state !== 'done') return false
-  if (!completion) return true
-  return completion.done >= completion.total
+  return state === 'done'
 }
 
 /**

@@ -98,6 +98,12 @@ export function outputBelongsToContext(
   output: PensaTaskOutputRef | null,
 ): boolean {
   if (!output) return true
+  if (context.kind === 'molda')
+    return (
+      output.kind === 'molda_asset' &&
+      output.assetId.trim().length > 0 &&
+      output.assetKind === context.artKind
+    )
   if (context.kind === 'studio')
     return output.kind === 'studio_project' && output.projectId.trim().length > 0
   return (
@@ -114,6 +120,7 @@ function outputMatchesContext(
   if (!output) return false
   if (!outputBelongsToContext(context, output)) return false
   if (context.kind === 'studio') return true
+  if (context.kind === 'molda') return output.kind === 'molda_asset'
   if (output.kind !== 'pinta_asset') return false
   return !context.requiresStudioUse || typeof output.usedInStudioAt === 'string'
 }

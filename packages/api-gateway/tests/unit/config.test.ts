@@ -354,6 +354,21 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
+  test('prática independente preserva JWT ativo, token interno e limites nas rotas explícitas', () => {
+    const routes = realConfig.routes.filter((route) => route.id.startsWith('members-practice-'))
+    expect(routes).toHaveLength(6)
+    for (const route of routes) {
+      expect(route).toMatchObject({
+        service: 'members',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        rateLimit: { by: 'principal' },
+      })
+      expect(route.transforms).toBeDefined()
+      expect(route.pathPattern).not.toContain('*')
+      if (route.methods.includes('POST')) expect(route.maxBodyBytes).toBeLessThanOrEqual(64 * 1024)
+    }
+  })
   const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
   test('toda rota audit-marcada declara SÓ métodos mutantes', () => {

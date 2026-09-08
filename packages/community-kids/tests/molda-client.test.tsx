@@ -1,12 +1,21 @@
-import { afterAll, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, expect, mock, test } from 'bun:test'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
-import { render, screen, waitFor } from '@testing-library/react'
+import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { type ReactNode, useState } from 'react'
 
 const actualNavigation = await import('next/navigation')
 const actualMolda = await import('@sistemazero/molda')
 const actualPersonal = await import('@sistemazero/studio/personal-assets')
 const namespaces: string[] = []
+const originalFetch = globalThis.fetch
+let query = new URLSearchParams()
+let localAssets: MoldaAsset[] = []
+afterEach(() => {
+  globalThis.fetch = originalFetch
+  query = new URLSearchParams()
+  localAssets = []
+})
 /** O adapter que o host entregou ao último `<MoldaApp>` montado. */
 let lastAdapter: MoldaHostAdapter | undefined
 /** A biblioteca pessoal do Estúdio, falsa: o que existe e o que foi regravado. */
@@ -27,8 +36,8 @@ const router = {
 function localPersistence(namespace: string) {
   return {
     namespace,
-    loadAll: async () => [],
-    load: async () => null,
+    loadAll: async () => localAssets,
+    load: async (id: string) => localAssets.find((asset) => asset.id === id) ?? null,
     save: async () => {},
     saveMany: async () => {},
     remove: async () => {},
@@ -47,22 +56,30 @@ function ObservedMoldaApp({
 }): ReactNode {
   lastAdapter = adapter
   const [initialPersistence] = useState(persistence)
+  // The public adapter consumes initialAssetId once per app instance.
+  const [openedId, setOpenedId] = useState(adapter?.initialAssetId ?? null)
   const namespace = initialPersistence ? Reflect.get(initialPersistence, 'namespace') : undefined
   return (
-    <output data-testid="molda-persistence">
-      {typeof namespace === 'string'
-        ? `local:${namespace}`
-        : initialPersistence
-          ? 'wrapped'
-          : 'default'}
-    </output>
+    <>
+      <output data-testid="molda-persistence">
+        {typeof namespace === 'string'
+          ? `local:${namespace}`
+          : initialPersistence
+            ? 'wrapped'
+            : 'default'}
+      </output>
+      <output data-testid="molda-opened">{openedId ?? 'gallery'}</output>
+      <button type="button" onClick={() => setOpenedId(null)}>
+        Voltar à galeria
+      </button>
+    </>
   )
 }
 
 mock.module('next/navigation', () => ({
   ...actualNavigation,
   useRouter: () => router,
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => query,
 }))
 
 mock.module('@sistemazero/molda', () => ({
@@ -146,4 +163,63 @@ test('a volta da ponte só regrava a criação que JÁ está na biblioteca do Es
     reason: 'failed',
     error: 'A biblioteca está cheia.',
   })
+})
+
+test('o guia reabre a mesma criação depois de voltar à galeria, inclusive após um deep link', async () => {
+  const asset = createModelAsset({ name: 'Rocha do plano' })
+  localAssets = [asset]
+  query = new URLSearchParams({ criacao: asset.id, tarefa: 'task-a' })
+  globalThis.fetch = Object.assign(
+    mock(async () =>
+      Response.json({
+        project: { id: 'plan-a', name: 'Lua' },
+        cycle: { id: 'cycle-a', number: 1, goal: null },
+        capability: { owned: true, blockedReason: null },
+        task: {
+          id: 'task-a',
+          title: 'Rocha',
+          summary: null,
+          destination: 'molda',
+          category: 'art',
+          estimatedMinutes: 10,
+          position: 0,
+          dependencies: [],
+          revision: 1,
+          supersedesTaskId: null,
+          guide: { steps: [], criteria: [] },
+          context: {
+            kind: 'molda',
+            assetId: 'inventory-rock',
+            artKind: 'model',
+            appearance: 'Azul',
+            usage: 'Cenário',
+            palette: [],
+          },
+          progress: {
+            status: 'in_progress',
+            completedStepIds: [],
+            completedCriteriaIds: [],
+            startedAt: null,
+            completedAt: null,
+            updatedAt: null,
+            outputRef: {
+              kind: 'molda_asset',
+              assetId: asset.id,
+              assetName: asset.name,
+              assetKind: 'model',
+            },
+          },
+        },
+      }),
+    ),
+    { preconnect: originalFetch.preconnect },
+  )
+  render(<MoldaClient viewerId={null} studioAvailable />)
+  await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
+  for (let attempt = 0; attempt < 2; attempt++) {
+    fireEvent.click(screen.getByRole('button', { name: 'Voltar à galeria' }))
+    expect(screen.getByTestId('molda-opened').textContent).toBe('gallery')
+    fireEvent.click(await screen.findByRole('button', { name: 'Abrir criação vinculada' }))
+    await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
+  }
 })

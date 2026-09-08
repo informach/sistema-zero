@@ -1,4 +1,5 @@
 import { drawersForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { CareerTimeline } from '@/components/kids/career-timeline'
@@ -94,6 +95,28 @@ export default async function ProfilePage() {
         />
       ) : null}
       {ownsStudio ? <MyTools drawers={drawers} studioOwned={studioFree} /> : null}
+      <section className="grid gap-4 sm:grid-cols-2" aria-label="Meu espaço criativo">
+        <Link
+          href="/quarto"
+          prefetch={false}
+          className="rounded-2xl border border-border bg-card p-5"
+        >
+          <h2 className="sz-display text-xl">Meu quarto</h2>
+          <p className="mt-2 text-muted-foreground text-sm">
+            Decore seu cantinho com as conquistas da carreira.
+          </p>
+        </Link>
+        <Link
+          href="/meu-avatar"
+          prefetch={false}
+          className="rounded-2xl border border-border bg-card p-5"
+        >
+          <h2 className="sz-display text-xl">Meu avatar</h2>
+          <p className="mt-2 text-muted-foreground text-sm">
+            Escolha como você aparece para a turma.
+          </p>
+        </Link>
+      </section>
       {gamification ? (
         <StreakProtection
           freezesAvailable={gamification.streak.freezesAvailable ?? 0}

@@ -4,6 +4,7 @@ import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import type { CreateShowcaseThreadInput } from '../../src/domain/ports/thread-repository.port'
 import {
   createDbConnection,
   type DbConnection,
@@ -13,9 +14,11 @@ import {
   channels,
   comments,
   reports,
+  showcaseDeliveries,
   spaces,
   threads,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { DrizzleShowcaseDeliveryRepository } from '../../src/infrastructure/persistence/drizzle/showcase-delivery.repository'
 import { DrizzleThreadRepository } from '../../src/infrastructure/persistence/drizzle/thread.repository'
 
 const TEST_DB_NAME = 'sistemazero_test'
@@ -83,6 +86,98 @@ describe.skipIf(!testDatabaseUrl)('moderação no Postgres real', () => {
 
   beforeEach(async () => {
     await conn.sql`truncate table hub.reports, hub.spaces cascade`
+  })
+
+  async function publicationInput(): Promise<CreateShowcaseThreadInput> {
+    const now = new Date('2026-09-07T12:00:00Z')
+    const spaceId = randomUUID()
+    const channelId = randomUUID()
+    const userId = randomUUID()
+    await conn.db.insert(spaces).values({
+      id: spaceId,
+      slug: spaceId,
+      name: 'Mural',
+      audience: 'kids',
+      accessConfig: { visibility: 'public', courses: [], roles: [] },
+      createdAt: now,
+      updatedAt: now,
+    })
+    await conn.db.insert(channels).values({
+      id: channelId,
+      spaceId,
+      slug: channelId,
+      name: 'Parede',
+      createdAt: now,
+      updatedAt: now,
+    })
+    return {
+      id: randomUUID(),
+      channelId,
+      authorId: userId,
+      authorDisplayName: 'Criador',
+      authorPublic: false,
+      title: 'Projeto',
+      slug: randomUUID(),
+      body: 'Meu jogo',
+      coverImageUrl: null,
+      playId: null,
+      idempotencyKey: randomUUID(),
+      now,
+      coursePublication: {
+        userId,
+        accountId: randomUUID(),
+        courseId: randomUUID(),
+        audience: 'kids',
+      },
+    }
+  }
+
+  test('publication outbox is atomic, deduped, leased across replicas and recoverable after a crash', async () => {
+    const input = await publicationInput()
+    await threadRepo.createShowcaseThread(input)
+    expect((await threadRepo.createShowcaseThread({ ...input, id: randomUUID() })).deduped).toBe(
+      true,
+    )
+    expect(await conn.db.select().from(showcaseDeliveries)).toHaveLength(1)
+    const workerA = new DrizzleShowcaseDeliveryRepository(conn.db)
+    const workerB = new DrizzleShowcaseDeliveryRepository(conn.db)
+    const publication = input.coursePublication
+    if (!publication) throw new Error('Missing course publication fixture')
+    expect(
+      await workerA.findStatus(publication.userId, publication.accountId, publication.courseId),
+    ).toBe('pending')
+    expect(
+      await workerA.findStatus(randomUUID(), publication.accountId, publication.courseId),
+    ).toBe('none')
+    expect(await workerA.findStatus(publication.userId, randomUUID(), publication.courseId)).toBe(
+      'none',
+    )
+    const claimed = await Promise.all([workerA.claim(input.now), workerB.claim(input.now)])
+    expect(claimed.filter(Boolean)).toHaveLength(1)
+    expect(await workerA.claim(input.now)).toBeNull()
+    const later = new Date(input.now.getTime() + 120_001)
+    expect(await workerB.claim(later)).toMatchObject({
+      threadId: input.id,
+      payload: input.coursePublication,
+    })
+    await workerB.acknowledge(input.id, later)
+    expect(
+      await workerA.findStatus(publication.userId, publication.accountId, publication.courseId),
+    ).toBe('delivered')
+    expect(await workerA.claim(new Date(later.getTime() + 3_600_000))).toBeNull()
+    await conn.db.delete(threads).where(eq(threads.id, input.id))
+    expect(await conn.db.select().from(showcaseDeliveries)).toHaveLength(0)
+    expect(
+      await workerA.findStatus(publication.userId, publication.accountId, publication.courseId),
+    ).toBe('none')
+  })
+
+  test('failure to persist the career delivery rolls back the publication too', async () => {
+    const input = await publicationInput()
+    if (!input.coursePublication) throw new Error('Missing publication fixture')
+    input.coursePublication.courseId = 'invalid-uuid'
+    await expect(threadRepo.createShowcaseThread(input)).rejects.toThrow()
+    expect(await conn.db.select().from(threads).where(eq(threads.id, input.id))).toHaveLength(0)
   })
 
   test('migration + SQL cru carregam fila, contexto, snapshots e denúncia com datas reais', async () => {

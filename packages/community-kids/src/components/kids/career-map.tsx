@@ -1,5 +1,6 @@
 'use client'
 
+import { creativeToolAvailability } from '@sistemazero/core/career'
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
@@ -119,7 +120,15 @@ export function CareerMap({
       </ol>
 
       {progress.kind === 'up-to-date' && trilhaComplete ? (
-        <UpToDate studioOwned={studioOwned} />
+        <UpToDate
+          studioOwned={
+            creativeToolAvailability({
+              tool: 'estudio-completo',
+              owned: studioOwned,
+              level: level.slug,
+            }) === 'available'
+          }
+        />
       ) : null}
     </section>
   )
@@ -345,6 +354,11 @@ function CareerNode({
             <ProgressDots done={completion.done} total={completion.total} />
             {completion.done} de {completion.total}{' '}
             {completion.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+            {state === 'done' && completion.done < completion.total ? (
+              <span className="rounded-full bg-card px-2 py-0.5 text-foreground">
+                {completion.total - completion.done} para explorar · conquista mantida
+              </span>
+            ) : null}
           </span>
         ) : state === 'current' && progress.kind === 'up-to-date' ? (
           <span className="font-semibold text-[11px]" style={{ color: info.colorVar }}>

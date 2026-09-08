@@ -14,6 +14,7 @@ import type {
 import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
+import { lessonContentAvailable } from './lesson-availability'
 import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
@@ -86,6 +87,25 @@ function toAttachment(row: typeof lessonAttachments.$inferSelect): LessonAttachm
 
 export class DrizzleCourseRepository implements CourseRepository {
   constructor(private readonly db: Database) {}
+
+  async listShowcaseLessonIds(courseId: string): Promise<string[]> {
+    const rows = await this.db
+      .select({ lessonId: lessons.id })
+      .from(lessonBlocks)
+      .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
+      .innerJoin(modules, eq(lessons.moduleId, modules.id))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          eq(lessons.isPublished, true),
+          eq(lessonBlocks.kind, 'studio'),
+          sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
+          lessonContentAvailable(lessons.id),
+        ),
+      )
+      .orderBy(asc(modules.sortOrder), asc(lessons.sortOrder), asc(lessonBlocks.sortOrder))
+    return [...new Set(rows.map((row) => row.lessonId))]
+  }
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     const [row] = await this.db.select().from(courses).where(eq(courses.slug, slug)).limit(1)

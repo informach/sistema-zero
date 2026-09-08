@@ -43,5 +43,11 @@ export default async function MoldaPage() {
     levelSlug: gam.body?.level?.slug,
     role: session?.role,
   })
-  return <MoldaClient viewerId={session?.id ?? null} studioAvailable={studioAvailable} />
+  return (
+    <MoldaClient
+      key={session?.id ?? 'local'}
+      viewerId={session?.id ?? null}
+      studioAvailable={studioAvailable}
+    />
+  )
 }

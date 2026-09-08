@@ -285,6 +285,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
 
   /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
   private readonly showcaseKeys = new Map<string, string>()
+  readonly showcaseDeliveries = new Map<string, ShowcasePublishedArgs>()
 
   async createShowcaseThread(
     input: CreateShowcaseThreadInput,
@@ -292,7 +293,11 @@ export class InMemoryThreadRepository implements ThreadRepository {
     const existingId = this.showcaseKeys.get(input.idempotencyKey)
     if (existingId) {
       const existing = this.threads.find((t) => t.id === existingId)
-      if (existing) return { thread: existing, deduped: true }
+      if (existing) {
+        if (input.coursePublication)
+          this.showcaseDeliveries.set(existing.id, input.coursePublication)
+        return { thread: existing, deduped: true }
+      }
     }
     const thread: Thread = {
       id: input.id,
@@ -322,6 +327,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
     }
     this.threads.push(thread)
     this.showcaseKeys.set(input.idempotencyKey, thread.id)
+    if (input.coursePublication) this.showcaseDeliveries.set(thread.id, input.coursePublication)
     return { thread, deduped: false }
   }
 
@@ -1101,8 +1107,9 @@ export class FakeMembersGateway implements MembersGateway {
 
   /** Registra as notificações de "publicou no Mural" (nível do aluno) — best-effort. */
   showcaseNotifications: ShowcasePublishedArgs[] = []
-  async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<void> {
+  async notifyShowcasePublished(args: ShowcasePublishedArgs): Promise<boolean> {
     this.showcaseNotifications.push(args)
+    return true
   }
 
   /** Registra as notificações do DESAFIO do mês (XP + badge) — best-effort. */

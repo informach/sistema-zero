@@ -654,7 +654,11 @@ export const PensaArtifactBody = t.Object({
 /** Corpo de `POST /members/pensa/cycles/:cycleId/advance`. */
 export const PensaAdvanceBody = t.Object({ from: PENSA_WORK_STAGE })
 
-const PENSA_TASK_DESTINATION = t.Union([t.Literal('pinta'), t.Literal('studio')])
+const PENSA_TASK_DESTINATION = t.Union([
+  t.Literal('pinta'),
+  t.Literal('studio'),
+  t.Literal('molda'),
+])
 const PENSA_TASK_CATEGORY = t.Union([
   t.Literal('art'),
   t.Literal('setup'),
@@ -721,7 +725,25 @@ const PensaStudioContextSchema = t.Object({
   mechanicDocumentIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
   extensionIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
 })
-const PensaTaskContextSchema = t.Union([PensaPintaContextSchema, PensaStudioContextSchema])
+const PensaMoldaContextSchema = t.Object({
+  kind: t.Literal('molda'),
+  assetId: t.String({ minLength: 1, maxLength: 100 }),
+  artKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
+  appearance: t.String({ minLength: 1, maxLength: 2000 }),
+  usage: t.String({ minLength: 1, maxLength: 2000 }),
+  palette: t.Array(
+    t.Object({
+      role: t.String({ minLength: 1, maxLength: 80 }),
+      color: t.String({ maxLength: 20 }),
+    }),
+    { maxItems: 16 },
+  ),
+})
+const PensaTaskContextSchema = t.Union([
+  PensaPintaContextSchema,
+  PensaStudioContextSchema,
+  PensaMoldaContextSchema,
+])
 
 // REPLACE total das tasks. O teto de NEGÓCIO (≤60 → 409 PENSA_QUOTA_EXCEEDED) é
 // do use case — o `maxItems` da borda é só anti-DoS (mais folgado, senão viraria 400).
@@ -760,6 +782,12 @@ export const PensaTaskUpdateBody = t.Object({
   context: t.Optional(PensaTaskContextSchema),
 })
 const PensaTaskOutputRefSchema = t.Union([
+  t.Object({
+    kind: t.Literal('molda_asset'),
+    assetId: t.String({ minLength: 1, maxLength: 200 }),
+    assetName: t.Optional(t.String({ maxLength: 200 })),
+    assetKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
+  }),
   t.Object({
     kind: t.Literal('pinta_asset'),
     assetId: t.String({ minLength: 1, maxLength: 200 }),

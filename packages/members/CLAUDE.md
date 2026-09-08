@@ -2006,3 +2006,25 @@ nada de DDL. Três mudanças de contrato:
 A busca da base didática (`zappy-knowledge.repository.ts`) passou a juntar os termos com `or`
 antes do `websearch_to_tsquery` — o `ts_rank` vira rank-merge natural em vez do AND implícito,
 que devolvia zero aula sempre que a criança escrevia uma frase inteira.
+
+## Evolução da Carreira do Criador — 07/09/2026
+
+Contrato e implantação: `../../docs/plans/2026-09-07-creator-journey-evolution.md` e
+`../../docs/plans/creator-journey-rollout.md`. A política de ferramentas/próxima ação
+vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
+
+- `GetMyCourse` inclui ID, marcos permanentes e `showcaseLessonId` alcançável.
+- Autoria impede perder a última atividade publicada de vitrine nos cursos obrigatórios;
+  alterações de bloco/aula/módulo tomam o lock do curso na mesma transação.
+- `award` congela concessões de blocos junto ao marco; leitura ainda concilia o legado.
+- Missões Kids filtram DEPOIS da atribuição, por ferramenta liberada e eventos de conteúdo
+  ainda possíveis nos cursos acessíveis. Aulas em breve e barreiras sequenciais são excluídas;
+  eventos já premiados não viram novas oportunidades. Prêmios completos/recebidos permanecem.
+- Prática: `PRACTICE_PILOT_ACCOUNTS` autoriza contas (ausente = desligada). Rotas
+  `/members/practice/{availability,topics,sessions}`; sessões exigem aula concluída e quiz
+  aprovado, congelam até cinco perguntas e aceitam a primeira resposta de forma idempotente.
+  Histórico por perfil+conta sobrevive à saída do piloto/edição de conteúdo; purge remove-o.
+  Nenhuma concessão de XP, moedas, progresso de curso ou nível. Migration `0076`.
+- Pensa aceita `destination=molda`, contexto `molda` e saída `molda_asset` para model/texture/sky.
+  Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
+  `0077` apenas acrescenta o valor ao enum. Não apagar/recriar planos para migrar.

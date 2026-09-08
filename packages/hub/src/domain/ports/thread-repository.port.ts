@@ -1,5 +1,6 @@
 import type { CursorPos } from '../../application/cursor'
 import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
+import type { ShowcasePublishedArgs } from './members-gateway.port'
 
 export type ContentTransitionOutcome = 'updated' | 'not_found' | 'invalid_state'
 
@@ -29,6 +30,8 @@ export interface CreateThreadInput {
 
 /** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
 export interface CreateShowcaseThreadInput {
+  /** Persisted atomically with the thread for durable career notification. Absent on standalone games. */
+  coursePublication?: ShowcasePublishedArgs
   id: string
   channelId: string
   /** Perfil da criança (identidade de DADOS — o `authorId` do thread). */

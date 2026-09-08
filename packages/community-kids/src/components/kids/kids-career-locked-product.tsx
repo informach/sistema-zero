@@ -27,11 +27,11 @@ export function KidsCareerLockedProduct({
       >
         <LevelIcon className="size-4" /> Abre no {level.label}
       </span>
-      <h1 className="mt-3 sz-display text-2xl">{title} está quase chegando!</h1>
+      <h1 className="mt-3 sz-display text-2xl">{title} faz parte da sua carreira</h1>
       <p className="mt-3 max-w-md text-muted-foreground">{intro}</p>
       <p className="mt-3 max-w-md text-muted-foreground">
         Ele abre quando você chegar no nível <strong>{level.label}</strong>. Continue nos cursos e
-        publicando os seus projetos. Falta pouco!
+        publicando os seus projetos. No mapa você pode ver suas próximas conquistas.
       </p>
       <Link
         href="/cursos"

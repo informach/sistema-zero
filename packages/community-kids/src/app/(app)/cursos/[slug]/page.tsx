@@ -5,9 +5,12 @@ import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseTrail } from '@/components/kids/course-trail'
 import { careerLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
+import { PublicationStatus } from '@/components/kids/publication-status'
+import { courseBadge } from '@/lib/course-badge'
 import { resolveCourseBack } from '@/lib/course-return'
 import type { CourseDetailView, LessonOutlineView } from '@/lib/types'
 import { getMyCourse } from '@/server/members'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,6 +48,12 @@ export default async function CoursePage({
   const course = body
 
   const next = nextLesson(course)
+  const pendingPublication = courseBadge(course) === 'publicar'
+  const delivery =
+    pendingPublication && course.id
+      ? await shell.hub.myShowcaseDeliveryReadonly(course.id).catch(() => null)
+      : null
+  const deliveryState = delivery?.status === 200 ? delivery.body?.state : null
   const back = resolveCourseBack(de, course)
   const lessonHref = (l: LessonOutlineView) =>
     `/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(l.id)}`
@@ -93,7 +102,7 @@ export default async function CoursePage({
               </div>
               <ProgressBar value={course.progress.percent} />
             </div>
-            {next ? (
+            {next && !pendingPublication ? (
               <Link href={lessonHref(next)} className="sz-btn-gradient mt-2 self-start">
                 <PlayCircle className="size-4" />
                 {course.progress.completedLessons > 0 ? 'Continuar de onde parei' : 'Começar agora'}
@@ -104,6 +113,43 @@ export default async function CoursePage({
       </div>
 
       <hr className="sz-divider" />
+
+      {pendingPublication && (deliveryState === 'pending' || deliveryState === 'delivered') ? (
+        <PublicationStatus state={deliveryState} />
+      ) : pendingPublication ? (
+        <section
+          id="publicar"
+          className="scroll-mt-20 rounded-2xl border border-primary/25 bg-card p-6"
+        >
+          <p className="text-sm font-bold text-primary">Aulas concluídas · publicação pendente</p>
+          <h2 className="sz-display mt-2 text-xl">Seu projeto também faz parte da conquista</h2>
+          {deliveryState == null ? (
+            <p role="status" className="mt-3 text-sm text-muted-foreground">
+              Se você acabou de compartilhar, a confirmação pode estar a caminho. Ainda não
+              conseguimos consultar a publicação; você pode conferir seu jogo no Mural.
+            </p>
+          ) : null}
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Abra a aula do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
+            Depois que a publicação for confirmada, este curso contará na sua carreira.
+          </p>
+          {course.showcaseLessonId ? (
+            <Link
+              href={`/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(course.showcaseLessonId)}`}
+              className="sz-btn-gradient mt-4 inline-flex min-h-11 items-center"
+            >
+              Abrir projeto para publicar
+            </Link>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              A aula de publicação não está disponível agora. Sua conclusão continua registrada.
+              <Link href="/recados" className="ml-1 font-bold text-primary underline">
+                Falar com o professor
+              </Link>
+            </p>
+          )}
+        </section>
+      ) : null}
 
       {/* Trilha de aulas (estilo Duolingo) — substitui a lista de módulos. */}
       <CourseTrail course={course} />

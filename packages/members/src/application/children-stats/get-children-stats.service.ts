@@ -1,5 +1,12 @@
+import {
+  CREATIVE_TOOL_LEVELS,
+  type CreativeToolId,
+  creativeToolAvailability,
+  type ParentCareerView,
+} from '@sistemazero/core/career'
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
+import { computeStudentLevel } from '../../domain/gamification/levels'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import {
@@ -9,6 +16,7 @@ import {
 import type { HubGateway } from '../../domain/ports/hub-gateway.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import type { AccessCheckService } from '../access-check/access-check.service'
 
 /** Janela "Esta semana" (semana civil SP corrente, parcial) de um filho. */
 export interface ChildWeekStatsView {
@@ -30,6 +38,7 @@ export interface ChildWeekGameView {
 
 /** Resumo de progresso de UM filho (perfil) para a área dos pais. */
 export interface ChildStatsView {
+  career?: ParentCareerView
   profileId: string
   xp: number
   streak: { current: number; best: number }
@@ -64,6 +73,7 @@ export class GetChildrenStatsService {
     private readonly courses: CourseRepository,
     private readonly progress: ProgressRepository,
     private readonly studio: StudioSubmissionRepository,
+    private readonly accessCheck: AccessCheckService,
     private readonly clock: () => Date,
     /** Jogos da semana no Mural (S2S direto, best-effort — `null` degrada). */
     private readonly hub?: HubGateway,
@@ -82,6 +92,9 @@ export class GetChildrenStatsService {
     const authorized = await this.gamification.listByAccount(accountId, profileIds, audience)
     if (authorized.length === 0) return []
     const authorizedIds = authorized.map((rec) => rec.userId)
+    const toolIds: CreativeToolId[] = ['estudio-completo', 'pinta', 'pensa', 'molda']
+    const access = await this.accessCheck.execute(accountId, toolIds)
+    const ownedTools = new Set([...access.grants, ...access.communities])
 
     // 2) Cursos publicados da vitrine UMA vez (denominador compartilhado entre os filhos).
     const published = await this.courses.listPublishedCourses(audience)
@@ -120,6 +133,7 @@ export class GetChildrenStatsService {
           weekQuizzes,
           weekBadges,
           weekSubmissions,
+          careerState,
         ] = await Promise.all([
           this.gamification.listBadges(profileId, audience),
           courseIds.length
@@ -142,6 +156,7 @@ export class GetChildrenStatsService {
           ),
           this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
           this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
+          this.gamification.listCareerCourseState(profileId, audience),
         ])
 
         let coursesInProgress = 0
@@ -154,7 +169,28 @@ export class GetChildrenStatsService {
           else if (done > 0) coursesInProgress++
         }
 
+        const level = computeStudentLevel(careerState.qualified)
         return {
+          career: {
+            level: level.slug,
+            nextLevel: level.next,
+            pendingPublications: published
+              .filter((course) => {
+                const milestones = careerState.milestones.get(course.id)
+                return course.careerSlot !== null && milestones?.completed && !milestones.showcased
+              })
+              .map((course) => ({ courseSlug: course.slug, title: course.title })),
+            tools: toolIds.map((id) => ({
+              id,
+              owned: ownedTools.has(id),
+              requiredLevel: CREATIVE_TOOL_LEVELS[id],
+              state: creativeToolAvailability({
+                tool: id,
+                owned: ownedTools.has(id),
+                level: level.slug,
+              }),
+            })),
+          },
           profileId,
           xp: rec.xp,
           // Streak de EXIBIÇÃO (igual ao `GetGamificationService`): projeta o freeze grátis do

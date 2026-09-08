@@ -167,3 +167,11 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 ## Verificação
 
 Execute `bun run typecheck`, `bun test src` e `bun run check`. Os testes devem cobrir o mapa ZERO, os cinco artefatos, ordem/dependências, próxima tarefa, entitlement e abertura da ferramenta de destino.
+
+## Destino Molda — 07/09/2026
+
+Cartões também aceitam `destination: molda`. Contexto: `assetId` do inventário visual,
+`artKind` model/texture/sky, aparência, uso e paleta. Saída `molda_asset` referencia o ID da
+criação real, sem substituir o ID do inventário. O adapter recebe `moldaOwned` opcional;
+false/ausente preserva o plano e desabilita o envio. O host resolve posse + carreira.
+Pensa continua apenas planejador: não incorpora editor, IndexedDB ou navegação do Molda.

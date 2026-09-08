@@ -11,6 +11,7 @@ import { PurgeUserDataService } from '../src/application/purge-user-data/purge-u
 import { ReactionService } from '../src/application/reactions/reaction.service'
 import { ReadCommunityService } from '../src/application/read-community/read-community.service'
 import { ReadStateService } from '../src/application/read-state/read-state.service'
+import { GetShowcaseDeliveryService } from '../src/application/showcase/get-showcase-delivery.service'
 import { ShowcaseService } from '../src/application/showcase/showcase.service'
 import { ThreadService } from '../src/application/threads/thread.service'
 import type { AttachmentLimits } from '../src/domain/attachment/attachment'
@@ -134,6 +135,7 @@ export function buildApp(
       internalToken,
     },
     showcase: {
+      delivery: new GetShowcaseDeliveryService({ findStatus: async () => 'none' }),
       showcase: new ShowcaseService(
         repo,
         threadRepo,

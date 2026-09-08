@@ -13,6 +13,8 @@ export interface TaskPlanProps {
 const draftId = (prefix: string): string =>
   `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
 
+const destinationNames = { pinta: 'Pinta', studio: 'Estúdio', molda: 'Molda' }
+
 function useUnsavedChanges(active: boolean) {
   useEffect(() => {
     if (!active) return
@@ -79,7 +81,9 @@ function TaskCard(
   const owned =
     props.task.destination === 'pinta'
       ? props.adapter.capabilities.pintaOwned
-      : props.adapter.capabilities.studioOwned
+      : props.task.destination === 'molda'
+        ? props.adapter.capabilities.moldaOwned === true
+        : props.adapter.capabilities.studioOwned
   const save = () =>
     props.run(`task-${props.task.id}`, async () => {
       await props.adapter.transport.request(`/tasks/${props.task.id}`, {
@@ -114,7 +118,7 @@ function TaskCard(
       <article>
         <header>
           <span data-destination={props.task.destination}>
-            {props.task.destination === 'pinta' ? 'PINTA' : 'ESTÚDIO'}
+            {destinationNames[props.task.destination].toLocaleUpperCase('pt-BR')}
           </span>
           <em data-status={props.task.progress.status}>
             {props.task.progress.status === 'planned'
@@ -215,7 +219,7 @@ function TaskCard(
               disabled={!owned || (props.task.progress.status === 'planned' && !props.next)}
               title={
                 !owned
-                  ? `Você ainda não possui ${props.task.destination === 'pinta' ? 'o Pinta' : 'o Estúdio Completo'}.`
+                  ? `O ${destinationNames[props.task.destination]} ainda não está disponível para este perfil.`
                   : undefined
               }
               onClick={() =>
@@ -226,7 +230,7 @@ function TaskCard(
               }
             >
               {owned
-                ? `Abrir no ${props.task.destination === 'pinta' ? 'Pinta' : 'Estúdio'} →`
+                ? `Abrir no ${destinationNames[props.task.destination]} →`
                 : 'Ferramenta não liberada'}
             </button>
           ) : null}
@@ -326,7 +330,7 @@ function TaskEditor(props: TaskEditorProps) {
       </fieldset>
       <GuideEditor value={props.guide} onChange={props.onGuide} />
       <div className="pensa-context-lock">
-        <strong>Destino: {props.task.destination === 'pinta' ? 'Pinta' : 'Estúdio'}</strong>
+        <strong>Destino: {destinationNames[props.task.destination]}</strong>
         <small>
           O brief e as referências oficiais ficam protegidos. Recrie o plano para trocar o destino,
           assets, blocos ou extensões.

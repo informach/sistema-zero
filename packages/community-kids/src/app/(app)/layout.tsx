@@ -8,6 +8,7 @@ import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
 import { getMeReadonly } from '@/server/auth'
+import { getCreatorWorkshopEnabled } from '@/server/creator-rollout'
 import {
   checkStudioAccessReadonly,
   getAvatarReadonly,
@@ -51,8 +52,18 @@ async function loadChrome(session: Session) {
 }
 
 async function SidebarChrome({ session }: { session: Session }) {
-  const { user, gamification, avatarPhotoUrl } = await loadChrome(session)
-  return <AppSidebar user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
+  const [{ user, gamification, avatarPhotoUrl }, workshopEnabled] = await Promise.all([
+    loadChrome(session),
+    getCreatorWorkshopEnabled(),
+  ])
+  return (
+    <AppSidebar
+      user={user}
+      gamification={gamification}
+      avatarPhotoUrl={avatarPhotoUrl}
+      workshopEnabled={workshopEnabled}
+    />
+  )
 }
 
 async function TopbarChrome({ session }: { session: Session }) {
@@ -107,7 +118,7 @@ async function CelebrationChrome({ session }: { session: Session }) {
  * preenche quando resolver. O esqueleto reserva o espaço (sem layout shift).
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const session = await getSession()
+  const [session, workshopEnabled] = await Promise.all([getSession(), getCreatorWorkshopEnabled()])
   if (!session) redirect('/login')
 
   return (
@@ -143,7 +154,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <TopbarChrome session={session} />
             </Suspense>
             <MainContainer>{children}</MainContainer>
-            <MobileTabbar />
+            <MobileTabbar workshopEnabled={workshopEnabled} />
           </div>
         </div>
       </FocusModeProvider>

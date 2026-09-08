@@ -1,3 +1,5 @@
+import { creativeToolAvailability } from '@sistemazero/core/career'
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
 import { meetsAiAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
 import { KidsCareerLockedPensa } from '@/components/kids/kids-career-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
@@ -5,8 +7,8 @@ import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
 import {
+  checkCreativeToolsAccessReadonly,
   checkPensaAccessReadonly,
-  checkPintaAccessReadonly,
   getGamificationReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -22,14 +24,19 @@ export const dynamic = 'force-dynamic'
  * São 4 estados: indisponível, sem o produto, produto comprado mas carreira abaixo
  * de Inventor(a), e acesso completo. O gate também é reaplicado no BFF.
  */
-export default async function PensaPage() {
+export default async function PensaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plano?: string }>
+}) {
+  const { plano } = await searchParams
   // `session.id` = o PERFIL ativo (kids) → o Modo Missão semeia/abre o projeto do
   // Estúdio no MESMO namespace do IndexedDB que o /estudio usa (fase R do Pensa).
   // A posse do PINTA (produto à parte) só liga o "Desenhar no Pinta" das missões:
   // best-effort — soluço na checagem degrada escondendo o botão, nunca trava a página.
   const [res, toolsRes, gam, session] = await Promise.all([
     checkPensaAccessReadonly(),
-    checkPintaAccessReadonly().catch(() => null),
+    checkCreativeToolsAccessReadonly().catch(() => null),
     getGamificationReadonly().catch(() => null),
     getSession(),
   ])
@@ -47,5 +54,19 @@ export default async function PensaPage() {
     levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
     role: session?.role,
   })
-  return <PensaClient pintaOwned={pintaOwned} studioAvailable={studioAvailable} />
+  return (
+    <PensaClient
+      pintaOwned={pintaOwned}
+      studioAvailable={studioAvailable}
+      moldaAvailable={
+        creativeToolAvailability({
+          tool: 'molda',
+          owned: toolsRes?.body?.access?.molda === true,
+          level: gam.body?.level?.slug ?? null,
+          privileged: isPrivilegedRole(session?.role),
+        }) === 'available'
+      }
+      initialProjectId={plano ?? null}
+    />
+  )
 }

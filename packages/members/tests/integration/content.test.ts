@@ -158,10 +158,11 @@ describe('Members HTTP — autoria: cursos', () => {
     expect(onlyKids.items[0].slug).toBe('curso-kids')
   })
 
-  test('listagem marca hasShowcaseBlock SÓ no curso-base kids (aviso "sem vitrine")', async () => {
+  test('listagem marca hasShowcaseBlock em todas as posições obrigatórias kids', async () => {
     const { app } = buildApp()
     const base = await createCourse(app, { slug: 'base-2d', audience: 'kids', careerSlot: 1 })
     await createCourse(app, { slug: 'bonus-kids', audience: 'kids' })
+    await createCourse(app, { slug: 'posicao-2', audience: 'kids', careerSlot: 2 })
 
     type Item = { slug: string; hasShowcaseBlock?: boolean }
     const listBySlug = async () => {
@@ -172,6 +173,7 @@ describe('Members HTTP — autoria: cursos', () => {
     // Curso-base sem bloco de vitrine → false (alimenta o aviso); bônus → sem o campo.
     let bySlug = await listBySlug()
     expect(bySlug.get('base-2d')?.hasShowcaseBlock).toBe(false)
+    expect(bySlug.get('posicao-2')?.hasShowcaseBlock).toBe(false)
     expect(bySlug.get('bonus-kids')).not.toHaveProperty('hasShowcaseBlock')
 
     // Módulo + aula PUBLICADA + bloco de Estúdio com `showcase.enabled` → true.
@@ -396,7 +398,7 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
     expect((await readJson(res)).error.code).toBe('NO_SHOWCASE_BLOCK')
   })
 
-  test('fail-open: adult, kids sem slot e kids slot 2 publicam sem vitrine', async () => {
+  test('adult e kids bônus publicam sem vitrine; toda posição obrigatória exige vitrine', async () => {
     const { app } = buildApp()
     for (const [slug, over] of [
       ['adulto', {}],
@@ -411,7 +413,7 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
         ...over,
         status: 'published',
       })
-      expect(res.status).toBe(200)
+      expect(res.status).toBe(slug === 'kids-slot2' ? 409 : 200)
     }
   })
 
@@ -440,10 +442,8 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
     expect((await readJson(res)).error.code).toBe('NO_SHOWCASE_BLOCK')
   })
 
-  test('curso JÁ preso segue editável (guard é só na TRANSIÇÃO)', async () => {
-    const { app } = buildApp()
-    // Entra no estado-armadilha por um caminho legal: publica COM vitrine e depois
-    // remove o bloco (o caminho inverso é desguardado DE PROPÓSITO — follow-up doc).
+  test('última vitrine é protegida; curso legado incompleto continua editável', async () => {
+    const { app, courses } = buildApp()
     const base = await createCourse(app, { slug: 'base-presa', audience: 'kids', careerSlot: 1 })
     const { blockId } = await addLesson(app, base.id, { isPublished: true, showcase: true })
     expect(
@@ -457,7 +457,11 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
         })
       ).status,
     ).toBe(200)
-    expect((await send(app, `/members/admin/blocks/${blockId}`, 'DELETE')).status).toBe(200)
+    const remove = await send(app, `/members/admin/blocks/${blockId}`, 'DELETE')
+    expect(remove.status).toBe(409)
+    expect((await readJson(remove)).error.code).toBe('NO_SHOWCASE_BLOCK')
+    // Simula catálogo legado inválido, sem usar o comando agora protegido.
+    courses.blocks = courses.blocks.filter((block) => block.id !== blockId)
     // Preso — mas um PATCH de título que MANTÉM published+slot1 não é transição → 200.
     const res = await patchCourse(app, base.id, {
       ...COURSE,

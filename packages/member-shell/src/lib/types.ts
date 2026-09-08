@@ -316,6 +316,12 @@ export interface CourseRatingView {
 
 /** `GET /members/courses/:slug` — detalhe com módulos/aulas (outline). */
 export interface CourseDetailView {
+  /** Stable catalog ID; optional while rolling out the Members upgrade. */
+  id?: string
+  /** Permanent course milestones; independent of newly added lessons. */
+  milestones?: CourseMilestonesView
+  /** Published, unlocked lesson containing the course publication action. */
+  showcaseLessonId?: string | null
   slug: string
   title: string
   subtitle: string | null
@@ -1078,6 +1084,7 @@ export interface ChildWeekGameView {
 
 /** Resumo de progresso de UM filho (perfil) — espelha a view do members. */
 export interface ChildStatsView {
+  career?: import('@sistemazero/core/career').ParentCareerView
   profileId: string
   xp: number
   streak: { current: number; best: number }
@@ -1624,7 +1631,7 @@ export type PensaArtifactType =
   | 'task_plan'
   | 'plan_review'
 export type PensaArtifactStatus = 'draft' | 'validated'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
@@ -1756,8 +1763,26 @@ export interface PensaStudioTaskContext {
   extensionIds: string[]
 }
 
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
   | { kind: 'studio_project'; projectId: string; saveRevision?: string }
 

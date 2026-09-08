@@ -709,7 +709,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     checkCreativeToolsAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
       return gw.gatewayFetchReadonly('/members/access', {
         query: {
-          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF}`,
+          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF},${PENSA_ACCESS_REF}`,
           audience,
         },
       })
@@ -717,6 +717,9 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     /** Projetos ATIVOS do perfil (lista do Pensa). */
     pensaListProjects(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
       return gw.gatewayFetch('/members/pensa/projects', { query: { audience } })
+    },
+    pensaListProjectsReadonly(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {
+      return gw.gatewayFetchReadonly('/members/pensa/projects', { query: { audience } })
     },
     /** Cria projeto + ciclo 1 (Versão 1, etapa z). O members aplica o gate do produto. */
     pensaCreateProject(body: {
@@ -1167,6 +1170,11 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       const suffix = query.size > 0 ? `?${query}` : ''
       return gw.gatewayFetch(`/members/creations/${enc(tool)}${suffix}`, { method: 'GET' })
     },
+    listCreationsReadonly(
+      tool: CreationToolView,
+    ): Promise<GatewayResponse<{ items: CreationIndexView[]; nextCursor?: string | null }>> {
+      return gw.gatewayFetchReadonly(`/members/creations/${enc(tool)}`, { query: { limit: 24 } })
+    },
     /** Reserva a próxima revisão (gate de posse + quota no members) — o BFF assina o PUT. */
     reserveCreationUpload(
       tool: CreationToolView,
@@ -1509,6 +1517,11 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     /** Carreira (RSC, sem refresh): jogos publicados no Mural + soma das jogadas. */
     myShowcaseStatsReadonly(): Promise<GatewayResponse<{ published: number; plays: number }>> {
       return gw.gatewayFetchReadonly('/hub/my-showcase-stats')
+    },
+    myShowcaseDeliveryReadonly(
+      courseId: string,
+    ): Promise<GatewayResponse<{ state: 'none' | 'pending' | 'delivered' }>> {
+      return gw.gatewayFetchReadonly(`/hub/my-showcase-delivery/${enc(courseId)}`)
     },
     report(
       target: 'thread' | 'comment',

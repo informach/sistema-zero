@@ -238,10 +238,10 @@ describe('tierCompletion (régua MISTA: obrigatória exige o Mural, bônus só c
   })
 })
 
-describe('nodeShowsCheck (o ✓ regride quando sai curso novo)', () => {
-  test('posto vencido só mantém o ✓ com a trilha inteira feita', () => {
+describe('nodeShowsCheck (conquistas permanecem com conteúdo novo)', () => {
+  test('posto vencido mantém o ✓ independentemente dos novos cursos', () => {
     expect(nodeShowsCheck('done', { done: 9, total: 9 })).toBe(true)
-    expect(nodeShowsCheck('done', { done: 8, total: 9 })).toBe(false)
+    expect(nodeShowsCheck('done', { done: 8, total: 9 })).toBe(true)
     // Trilha ainda sem curso nenhum publicado: nada a fazer, o ✓ fica.
     expect(nodeShowsCheck('done', { done: 0, total: 0 })).toBe(true)
   })
@@ -259,7 +259,7 @@ describe('nodeShowsCheck (o ✓ regride quando sai curso novo)', () => {
     expect(nodeShowsCheck('done', undefined)).toBe(true)
     // ⚠️ ANTI-VÁCUO do achado: se a página passasse `{done:0,total:8}` no lugar do
     // `undefined`, o veterano perderia TODOS os ✓ do mapa por um soluço de rede.
-    expect(nodeShowsCheck('done', { done: 0, total: 8 })).toBe(false)
+    expect(nodeShowsCheck('done', { done: 0, total: 8 })).toBe(true)
   })
 })
 

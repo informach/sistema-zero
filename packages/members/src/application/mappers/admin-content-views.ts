@@ -42,9 +42,8 @@ export interface CourseView {
    */
   studioUnlockBlocks: string[]
   /**
-   * SÓ na listagem e SÓ p/ curso-base kids (careerSlot 1): tem ≥1 aula publicada
-   * com bloco de Estúdio de vitrine (`showcase.enabled`)? `false` = o slot 1
-   * nunca qualifica e a etapa não destrava — o painel avisa o operador.
+   * Na listagem, para toda posição obrigatória Kids: tem aula publicada com
+   * bloco de Estúdio de vitrine (`showcase.enabled`)? Ausente = não verificado.
    */
   hasShowcaseBlock?: boolean
   createdAt: string

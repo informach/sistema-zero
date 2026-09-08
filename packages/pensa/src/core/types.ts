@@ -8,7 +8,7 @@ export type PensaArtifactType =
   | 'visual_direction'
   | 'task_plan'
   | 'plan_review'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
@@ -95,8 +95,26 @@ export interface PensaStudioTaskContext {
   mechanicDocumentIds: string[]
   extensionIds: string[]
 }
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
   | { kind: 'studio_project'; projectId: string; saveRevision?: string }
 
@@ -198,7 +216,7 @@ export interface PensaHostAdapter {
   transport: PensaTransport
   mode: 'kids'
   theme?: 'light' | 'dark'
-  capabilities: { pintaOwned: boolean; studioOwned: boolean }
+  capabilities: { pintaOwned: boolean; studioOwned: boolean; moldaOwned?: boolean }
   mascotImages?: Partial<Record<PensaMascotPose, string>>
   onOpenTask(args: { taskId: string; destination: PensaTaskDestination }): void
 }

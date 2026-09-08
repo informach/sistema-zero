@@ -32,8 +32,6 @@ export interface StudioTier {
  * mínimo de repertório antes de perguntar qualquer coisa. Não confundir com o portão de
  * criação livre abaixo.
  */
-export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
-
 /**
  * Ferramentas de criação livre — Estúdio Completo e Pinta — abrem no **Construtor(a)**,
  * o 2º degrau (decisão da usuária, 14/08: o Pinta desceu do Inventor).
@@ -42,8 +40,6 @@ export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
  * projeto e pode criar sozinha. ⚠️ Casa com o `reward.freeStudio` do core — o Estúdio
  * continua sendo gateado por ele; esta constante existe para o Pinta e para a copy.
  */
-export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
-
 /**
  * A oficina 3D (Molda: modelos low poly, texturas e céus HDR) abre no **Explorador(a) de
  * Mundos** (`docs/carreira-do-criador.md`). Decisão da usuária (05/09/2026; de 04 a 05/09 era
@@ -55,7 +51,11 @@ export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
  * constante ao lado das duas acima, e agora as três são distintas (`coder` cria, `hacker`
  * usa IA, `explorer` modela em 3D); NUNCA colapsar duas mesmo que os valores coincidam.
  */
-export const THREE_D_CREATION_MIN_LEVEL: CareerLevelSlug = 'explorer'
+export {
+  AI_APPS_MIN_LEVEL,
+  FREE_CREATION_MIN_LEVEL,
+  THREE_D_CREATION_MIN_LEVEL,
+} from '@sistemazero/core/career'
 
 const PRIVILEGED_ROLES = new Set(['superadmin', 'admin', 'staff'])
 

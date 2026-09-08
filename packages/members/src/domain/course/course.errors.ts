@@ -113,14 +113,14 @@ export class CourseConflictError extends DomainError {
 }
 
 /**
- * Curso-base kids (careerSlot=1) publicado SEM aula publicada com bloco de Estúdio de
- * vitrine (`showcase.enabled`) — o aluno nunca qualificaria o slot e a etapa da carreira
- * travaria (armadilha do fail-open, full review 24/07). → 409. Guard SÓ na transição.
+ * Curso obrigatório Kids precisa de uma aula publicada com vitrine. Recusa publicar
+ * sem essa oportunidade e remover a última de um curso válido. Legado inválido
+ * continua editável para permitir reparo. → 409.
  */
 export class NoShowcaseBlockError extends DomainError {
   readonly code = 'NO_SHOWCASE_BLOCK'
   constructor(
-    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar o curso-base',
+    message = 'Publique uma aula com bloco de Estúdio com vitrine (Publicar no Mural) antes de publicar um curso obrigatório da carreira',
   ) {
     super(message)
   }

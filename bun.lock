@@ -127,6 +127,7 @@
         "@cantoo/pdf-lib": "^2.7.1",
         "@react-three/drei": "^10",
         "@react-three/fiber": "^9",
+        "@sistemazero/core": "workspace:*",
         "@sistemazero/member-shell": "workspace:*",
         "@sistemazero/ui": "workspace:*",
         "@vimeo/player": "^2.30.4",

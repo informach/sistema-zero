@@ -592,3 +592,14 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    `retention.cleanup.failed` a cada 6h (a poda de `processed_webhooks` NUNCA rodava). NÃO reproduz
    local. Fix: passar `date.toISOString()` (texto ISO vs `timestamptz` é comparado direto). Regra
    geral: em `db.execute`/`sql` cru, coaja `Date`→ISO na escrita e string→`Date` na leitura.
+
+## Entrega recuperável da publicação — 07/09/2026
+
+Migrations `0011_creator_showcase_delivery` e `0012_showcase_delivery_owner`: a transação
+que cria/recupera uma thread de curso também grava `showcase_deliveries`, com deduplicação.
+O worker reenvia o mesmo marco idempotente para Members e confirma recebimento; lease e
+backoff permitem retomar após falha/reinício. Não apagar pendências ao reverter a interface.
+`GET /hub/my-showcase-delivery/:courseId` retorna none/pending/delivered pelo userId+accountId
+injetados pelo gateway. Não recebe o dono por query. O status não substitui o ledger de Members.
+Entregas anteriores ao outbox não foram retroativamente inventadas: conciliação histórica
+exige referências reais. Ver `../../docs/plans/creator-journey-rollout.md`.

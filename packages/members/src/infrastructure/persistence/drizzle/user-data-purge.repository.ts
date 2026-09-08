@@ -20,6 +20,7 @@ import {
   parentReportPrefs,
   parentReportsSent,
   pensaProjects,
+  practiceSessions,
   quizAttempts,
   renewalRemindersSent,
   roomInventory,
@@ -118,6 +119,11 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(lessonCompletions).where(inArray(lessonCompletions.userId, userIds))
       await tx.delete(lessonProgress).where(inArray(lessonProgress.userId, userIds))
       await tx.delete(quizAttempts).where(inArray(quizAttempts.userId, userIds))
+      await tx
+        .delete(practiceSessions)
+        .where(
+          or(inArray(practiceSessions.userId, userIds), eq(practiceSessions.accountId, accountId)),
+        )
       await tx.delete(courseRatings).where(inArray(courseRatings.userId, userIds))
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))

@@ -6,6 +6,7 @@ import type { CourseAudience } from '../course/course'
 
 export const PENSA_ACCESS_REF = 'pensa'
 export const PENSA_PINTA_ACCESS_REF = 'pinta'
+export const PENSA_MOLDA_ACCESS_REF = 'molda'
 export const PENSA_STUDIO_ACCESS_REF = 'estudio-completo'
 
 export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
@@ -21,7 +22,7 @@ export type PensaArtifactType =
 export type PensaArtifactStatus = 'draft' | 'validated'
 
 export type PensaGameDimension = '2d' | '3d'
-export type PensaTaskDestination = 'pinta' | 'studio'
+export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
 export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
 export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
 export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
@@ -145,9 +146,27 @@ export interface PensaStudioTaskContext {
   extensionIds: string[]
 }
 
-export type PensaTaskContext = PensaPintaTaskContext | PensaStudioTaskContext
+export interface PensaMoldaTaskContext {
+  kind: 'molda'
+  /** Inventory reference; the finished creation keeps its own stable ID. */
+  assetId: string
+  artKind: 'model' | 'texture' | 'sky'
+  appearance: string
+  usage: string
+  palette: Array<{ role: string; color: string }>
+}
+export type PensaTaskContext =
+  | PensaPintaTaskContext
+  | PensaStudioTaskContext
+  | PensaMoldaTaskContext
 
 export type PensaTaskOutputRef =
+  | {
+      kind: 'molda_asset'
+      assetId: string
+      assetName?: string
+      assetKind: 'model' | 'texture' | 'sky'
+    }
   | {
       kind: 'pinta_asset'
       assetId: string

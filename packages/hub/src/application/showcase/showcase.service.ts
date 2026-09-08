@@ -220,6 +220,12 @@ export class ShowcaseService {
       body,
       coverImageUrl,
       playId: null,
+      coursePublication: {
+        userId: actor.userId,
+        accountId: actor.accountId,
+        courseId: elig.courseId,
+        audience: elig.audience,
+      },
       idempotencyKey,
       now: this.clock(),
     })
@@ -394,6 +400,12 @@ export class ShowcaseService {
       coverImageUrl,
       playId: cmd.playId,
       studioMeta: sanitizeStudioMeta(cmd.studioMeta),
+      coursePublication: {
+        userId: actor.userId,
+        accountId: actor.accountId,
+        courseId: elig.courseId,
+        audience: elig.audience,
+      },
       idempotencyKey,
       now: this.clock(),
     })

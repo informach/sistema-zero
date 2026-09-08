@@ -8,6 +8,7 @@ import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
 import { createPensaRoutes } from './routes/pensa'
 import { createPensaAiRoutes } from './routes/pensa-ai'
+import { createPracticeRoutes } from './routes/practice'
 import { createStudioRoutes } from './routes/studio'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import {
@@ -68,6 +69,7 @@ export function createShell(cfg: ShellConfig) {
     ...createStudioZappyRoutes({ members, session }),
     ...createCertificateRoutes({ members, session }),
     ...createPensaRoutes({ members, session }),
+    ...createPracticeRoutes({ gateway, session, audience: cfg.audience }),
     ...createPensaAiRoutes({ members, session }),
     ...createCreationsRoutes({ members, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),

@@ -14,9 +14,13 @@ type PensaModule = typeof import('@sistemazero/pensa')
 export function PensaClient({
   pintaOwned,
   studioAvailable,
+  moldaAvailable = false,
+  initialProjectId = null,
 }: {
   pintaOwned: boolean
   studioAvailable: boolean
+  moldaAvailable?: boolean
+  initialProjectId?: string | null
 }) {
   const [mod, setMod] = useState<PensaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -61,7 +65,7 @@ export function PensaClient({
       theme,
       // O pacote chama a capability de `studioOwned`, mas o host fornece a
       // disponibilidade efetiva: produto comprado + carreira liberada.
-      capabilities: { pintaOwned, studioOwned: studioAvailable },
+      capabilities: { pintaOwned, studioOwned: studioAvailable, moldaOwned: moldaAvailable },
       mascotImages: {
         happy: '/zappy/happy.webp',
         thinking: '/zappy/thinking.webp',
@@ -70,10 +74,10 @@ export function PensaClient({
       },
       onOpenTask: ({ taskId, destination }) =>
         router.push(
-          `/${destination === 'pinta' ? 'pinta' : 'estudio'}?tarefa=${encodeURIComponent(taskId)}`,
+          `/${destination === 'studio' ? 'estudio' : destination}?tarefa=${encodeURIComponent(taskId)}`,
         ),
     }),
-    [transport, theme, pintaOwned, studioAvailable, router],
+    [transport, theme, pintaOwned, studioAvailable, moldaAvailable, router],
   )
 
   // Só o botão do menu lateral (o Pensa persiste no servidor: sem selo de nuvem), desenhado
@@ -101,7 +105,7 @@ export function PensaClient({
         </div>
       ) : mod ? (
         <mod.PensaHostChromeProvider value={hostChrome}>
-          <mod.PensaApp adapter={adapter} />
+          <mod.PensaApp adapter={adapter} initialProjectId={initialProjectId} />
         </mod.PensaHostChromeProvider>
       ) : (
         <EmbeddedAppLoadingBody label="Carregando o Pensa…" />

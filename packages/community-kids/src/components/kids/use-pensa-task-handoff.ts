@@ -99,6 +99,17 @@ const studioProgressUpdateSchema = z.object({
   outputRef: studioOutputRefSchema.nullable(),
 })
 
+const moldaOutputRefSchema = z.object({
+  kind: z.literal('molda_asset'),
+  assetId: z.string(),
+  assetName: z.string().optional(),
+  assetKind: z.enum(['model', 'texture', 'sky']),
+})
+const moldaProgressSchema = z.object({
+  ...commonProgressShape,
+  outputRef: moldaOutputRefSchema.nullable(),
+})
+
 const commonTaskShape = {
   id: z.string(),
   title: z.string(),
@@ -147,11 +158,30 @@ const errorEnvelopeSchema = z.object({
   error: z.object({ message: z.string().optional() }).optional(),
 })
 
+const moldaHandoffSchema = z.object({
+  ...handoffBaseShape,
+  task: z.object({
+    ...commonTaskShape,
+    destination: z.literal('molda'),
+    context: z.object({
+      kind: z.literal('molda'),
+      assetId: z.string(),
+      artKind: z.enum(['model', 'texture', 'sky']),
+      appearance: z.string(),
+      usage: z.string(),
+      palette: z.array(z.object({ role: z.string(), color: z.string() })),
+    }),
+    progress: moldaProgressSchema,
+  }),
+})
+export type MoldaTaskHandoff = z.infer<typeof moldaHandoffSchema>
+export type MoldaTaskProgressUpdate = z.infer<typeof moldaProgressSchema>
+
 export type PintaTaskProgressUpdate = z.infer<typeof pintaProgressUpdateSchema>
 export type StudioTaskProgressUpdate = z.infer<typeof studioProgressUpdateSchema>
 export type PintaTaskHandoff = z.infer<typeof pintaHandoffSchema>
 export type StudioTaskHandoff = z.infer<typeof studioHandoffSchema>
-type Destination = 'pinta' | 'studio'
+type Destination = 'pinta' | 'studio' | 'molda'
 
 type HandoffState<T> =
   | { status: 'idle'; data: null; error: null }
@@ -167,6 +197,10 @@ type HandoffResult<T, P> = HandoffState<T> & {
 class HandoffLoadError extends Error {}
 
 const copy = {
+  molda: {
+    network: 'Não consegui carregar o guia desta tarefa. Tente de novo.',
+    wrong: 'Esta tarefa não pertence ao Molda.',
+  },
   pinta: {
     network: 'Não consegui carregar o brief desta tarefa. Tente de novo.',
     wrong: 'Esta tarefa não pertence ao Pinta.',
@@ -208,6 +242,20 @@ const studioConfig: HandoffConfig<StudioTaskHandoff, StudioTaskProgressUpdate> =
     ...data,
     task: { ...data.task, progress: { ...data.task.progress, ...progress } },
   }),
+}
+
+const moldaConfig: HandoffConfig<MoldaTaskHandoff, MoldaTaskProgressUpdate> = {
+  destination: 'molda',
+  schema: moldaHandoffSchema,
+  progressSchema: moldaProgressSchema,
+  networkCopy: copy.molda.network,
+  wrongCopy: copy.molda.wrong,
+  mergeProgress: (data, progress) => ({ ...data, task: { ...data.task, progress } }),
+}
+export function useMoldaTaskHandoff(
+  taskId: string | null,
+): HandoffResult<MoldaTaskHandoff, MoldaTaskProgressUpdate> {
+  return useTaskHandoff(taskId, moldaConfig)
 }
 
 function useTaskHandoff<T, P>(

@@ -94,7 +94,13 @@ function failure(cause: unknown): PensaFailure {
   return { kind: 'technical', text: errorMessage(cause) }
 }
 
-export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
+export function PensaApp({
+  adapter,
+  initialProjectId = null,
+}: {
+  adapter: PensaHostAdapter
+  initialProjectId?: string | null
+}) {
   const [projects, setProjects] = useState<PensaProjectListView[]>([])
   const [detail, setDetail] = useState<PensaProjectDetailView | null>(null)
   const [stage, setStage] = useState<PensaStageView | null>(null)
@@ -130,7 +136,7 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
       setError(null)
       try {
         const result = await adapter.transport.request<{ project: PensaProjectDetailView }>(
-          `/projects/${projectId}`,
+          `/projects/${encodeURIComponent(projectId)}`,
         )
         const project = result.project
         const stageResult = await adapter.transport.request<PensaStageView>(
@@ -153,8 +159,9 @@ export function PensaApp({ adapter }: { adapter: PensaHostAdapter }) {
   )
 
   useEffect(() => {
-    void loadProjects()
-  }, [loadProjects])
+    if (initialProjectId) void loadProject(initialProjectId)
+    else void loadProjects()
+  }, [loadProjects, loadProject, initialProjectId])
 
   const run = useCallback(async (key: string, action: () => Promise<void>) => {
     setBusy(key)
@@ -972,7 +979,7 @@ function StageR(props: StageProps) {
       <div className="pensa-ribbon">
         <div>
           <strong>Cartões de Criação</strong>
-          <span>Cada cartão vai abrir com o mesmo guia no Pinta ou Estúdio.</span>
+          <span>Cada cartão abre com seu guia na ferramenta indicada.</span>
         </div>
         <GenerateButton {...props} type="task_plan">
           {props.stage.tasks.length ? 'Recriar plano' : 'Criar plano de tarefas'}
@@ -1798,7 +1805,9 @@ function MyPlan(props: Parameters<typeof StageWorkspace>[0]) {
         <div>
           <p>PLANO APROVADO</p>
           <h2>Meu plano</h2>
-          <small>A criação acontece no Pinta e no Estúdio. O Pensa acompanha o caminho.</small>
+          <small>
+            A criação acontece no Pinta, no Molda e no Estúdio. O Pensa acompanha o caminho.
+          </small>
         </div>
         <Zappy
           pose="celebrating"

@@ -1,3 +1,4 @@
+import { careerCourseQualified } from '@sistemazero/core/career'
 import type { CourseMilestonesView } from '@/lib/types'
 
 /**
@@ -39,9 +40,7 @@ function isSlotCourse(course: CourseBadgeInput): boolean {
 
 /** A aventura conta como PRONTA? É a régua mista, num curso só. */
 export function courseIsDone(course: CourseBadgeInput): boolean {
-  const marcos = course.milestones
-  if (!marcos?.completed) return false
-  return isSlotCourse(course) ? marcos.showcased : true
+  return careerCourseQualified(course)
 }
 
 /** O selo do card: pronta, falta publicar, ou nada. */
