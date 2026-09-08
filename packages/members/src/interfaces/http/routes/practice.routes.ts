@@ -15,9 +15,6 @@ export function practiceRoutes(deps: PracticeRoutesDeps) {
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
-    .get('/availability', ({ headers }) => ({
-      enabled: deps.practice.available(resolveAccountId(headers)),
-    }))
     .get(
       '/topics',
       async ({ headers, query }) => ({

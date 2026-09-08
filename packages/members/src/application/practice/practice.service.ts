@@ -1,8 +1,6 @@
-import { creatorWorkshopEnabled } from '@sistemazero/core/career'
 import type { PracticeSessionView, PracticeTopicView } from '@sistemazero/core/practice'
 import { InvalidContentCommandError } from '../../domain/course/course.errors'
 import { gradeQuizAttempt, type QuizAnswers } from '../../domain/course/quiz'
-import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { PracticeRepository } from '../../domain/ports/practice-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
@@ -42,17 +40,7 @@ export class PracticeService {
     private readonly progress: ProgressRepository,
     private readonly attempts: QuizAttemptRepository,
     private readonly clock: () => Date,
-    private readonly pilotAccounts: string | undefined,
   ) {}
-
-  private assertPilot(accountId: string) {
-    if (!this.available(accountId))
-      throw new AccessDeniedError('A prática ainda não está disponível para esta conta.')
-  }
-
-  available(accountId: string) {
-    return creatorWorkshopEnabled(accountId, this.pilotAccounts)
-  }
 
   async topics(
     userId: string,
@@ -60,7 +48,6 @@ export class PracticeService {
     courseSlug: string,
     privileged = false,
   ): Promise<PracticeTopicView[]> {
-    this.assertPilot(accountId)
     const { course } = await this.access.requireBySlug(accountId, courseSlug, privileged, userId)
     if (course.audience !== 'kids') throw new PracticeNotFoundError()
     const completed = new Set(await this.progress.listCompletedLessonIds(userId, course.id))
@@ -102,7 +89,6 @@ export class PracticeService {
     input: { id: string; courseSlug: string; lessonId: string; blockId: string },
     privileged = false,
   ): Promise<PracticeSessionView> {
-    this.assertPilot(accountId)
     const existing = await this.repository.get(input.id, userId, accountId)
     if (existing) return practiceView(existing)
     const { course } = await this.access.requireBySlug(
@@ -146,7 +132,7 @@ export class PracticeService {
     )
   }
 
-  /** History stays readable after leaving the pilot; immutable snapshots survive course edits. */
+  /** Immutable session snapshots preserve history when course content changes. */
   async history(userId: string, accountId: string) {
     return (await this.repository.list(userId, accountId)).map(practiceView)
   }

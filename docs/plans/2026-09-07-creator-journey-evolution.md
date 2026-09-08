@@ -6,8 +6,12 @@ atuais de azul, céu/navy, laranja e amarelo, sem trocar o tema de adulto/admin.
 
 **Estado:** alterações de produto das fases 1–6 implementadas e verificadas por
 código, testes e build. A preparação operacional da fase 0 está documentada;
-inventário do catálogo real, revisão visual, piloto com famílias e implantação ainda
-não realizados. A fase 7 depende da avaliação desse piloto e não está habilitada.
+inventário do catálogo real e revisão visual seguem pendentes. A fase 7 contém uma
+proposta editorial de matemática, ainda sem implementação de interface e rotas.
+
+As fases são etapas consecutivas de construção do código. A entrega completa é
+validada em staging; a promoção para produção depende da aprovação do responsável
+pelo produto. Os recursos seguem as permissões de acesso e a Carreira do Criador.
 
 **Revisão posterior:** o [relatório de revisão](2026-09-07-creator-journey-review.md)
 registra seis problemas corrigidos e a nova verificação de 2.742 testes, TypeScript,
@@ -35,12 +39,12 @@ Biome e build. As contagens da seção Verificação abaixo são da implementaç
 
 | Fase | Implementado | Condição operacional restante |
 | --- | --- | --- |
-| 0 — Base | Política compartilhada; mapa dos serviços; matriz de aceitação; consultas de inventário; coortes por conta e instruções de reversão | Executar inventário/baseline no catálogo real e selecionar famílias |
+| 0 — Base | Política compartilhada; mapa dos serviços; matriz de aceitação; consultas de inventário e instruções de reversão | Executar inventário/baseline no catálogo de staging |
 | 1 — Consistência | Próxima ação; ferramentas por posse/rank; missões por conteúdo possível; outbox de publicação e estado de propagação; concessões persistentes; prontidão da autoria | Conferir propagação entre serviços no ambiente de implantação e conciliar casos históricos conhecidos |
 | 2 — Kids | Cinco grupos de navegação; início e curso orientados à próxima ação; marcos distintos no mapa/cartão; celebração com progresso confirmado; visual de oficina | Revisão visual e percurso completo com teclado/celular; avaliação com alunos |
-| 3 — Criação | Trabalhos da nuvem e planos no hub; retomada pelo ID com preferência local; Pensa → Molda; contexto da IA pelos blocos conquistados; retorno ao plano com salvamento protegido | Piloto de troca entre ferramentas e casos reais de conflito/offline |
+| 3 — Criação | Trabalhos da nuvem e planos no hub; retomada pelo ID com preferência local; Pensa → Molda; contexto da IA pelos blocos conquistados; retorno ao plano com salvamento protegido | Validar troca entre ferramentas e casos de conflito/offline em staging |
 | 4 — Acompanhamento | Área dedicada de responsáveis; carreira e pendências no dashboard/relatório; comunidade e recados; abertura da entrega pela conversa do professor | Conferir relatório com dados reais e avaliar clareza com responsáveis |
-| 5 — Prática | Sessões de até cinco perguntas já estudadas; feedback, revisão da aula, rascunho e histórico próprios; isolamento e idempotência; sem XP/moedas/rank | Revisão pedagógica do conteúdo e piloto por família; flag começa desligada |
+| 5 — Prática | Sessões de até cinco perguntas já estudadas; feedback, revisão da aula, rascunho e histórico próprios; isolamento e idempotência; sem XP/moedas/rank | Revisão pedagógica do conteúdo e validação dos fluxos em staging |
 | 6 — Adulto/admin | Retomada do curso e acesso a devolutivas no adulto; prontidão na tabela de cursos; contexto da entrega e erro recuperável no admin; componentes/temas próprios mantidos | Revisão visual dos fluxos afetados |
 | 7 — Outros conhecimentos | Oito atividades de matemática aplicada especificadas no guia de implantação | Implementação/liberação dependem da avaliação da prática; finanças ficam para depois |
 
@@ -49,7 +53,7 @@ Biome e build. As contagens da seção Verificação abaixo são da implementaç
 ### Jornada, aulas e publicação
 
 `@sistemazero/core/career` concentra qualificação, próxima ação, disponibilidade de
-ferramentas e coorte. Início, mapa, cartões e detalhe de curso distinguem aulas
+ferramentas. Início, mapa, cartões e detalhe de curso distinguem aulas
 concluídas de publicação. `GetMyCourse` resolve uma aula publicada e alcançável para
 publicar; falta de conteúdo apresenta ajuda, sem apagar a conclusão.
 
@@ -99,10 +103,10 @@ conversa, mantendo o rascunho da resposta. Erro ao buscar a conversa apresenta n
 tentativa. O adulto pode retomar seu curso e consultar devolutivas, inclusive após
 terminar os cursos disponíveis, sem receber o tema visual Kids.
 
-`/praticar` só inicia sessões para contas habilitadas em Members. Requer aula concluída
-e quiz aprovado, congela até cinco perguntas e oculta respostas corretas até o envio.
+`/praticar` exige perfil ativo. Members revalida acesso ao curso, aula concluída e
+quiz aprovado, congela até cinco perguntas e oculta respostas corretas até o envio.
 A primeira resposta confirmada é imutável; retentativas não duplicam a sessão.
-Histórico é isolado por perfil+conta, sobrevive a edições do curso e à saída do piloto,
+Histórico é isolado por perfil+conta, sobrevive a edições do curso
 e é removido na exclusão da conta. Rascunho local usa perfil+sessão. Não há escrita em
 XP, moedas, progresso das aulas ou marcos da carreira.
 
@@ -137,15 +141,13 @@ essa validação, nem representam pesquisa com crianças.
 ## Implantação e trabalho condicionado
 
 O [guia operacional](creator-journey-rollout.md) contém a ordem das quatro migrations,
-flags por conta, reversão, consultas de baseline, matriz de aceitação e proposta das
-oito atividades de matemática. `CREATOR_WORKSHOP_ACCOUNTS` (Kids) controla navegação
-agrupada/trabalhos; `PRACTICE_PILOT_ACCOUNTS` (Members) controla novas sessões. Ausentes
-ou `none`, começam desligadas. As correções de integridade independem dessas flags.
+validação em staging, promoção para produção, reversão, consultas de baseline,
+matriz de aceitação e proposta das oito atividades de matemática.
 
 O banco de desenvolvimento disponível não contém `members.courses`; portanto, o
-catálogo real e a baseline continuam sem medição. O piloto precisa dessa medição,
-da revisão visual e de observação de alunos/responsáveis antes de expansão. A fase 7
-não foi antecipada: há conteúdo proposto para revisão, sem rota ou liberação pública.
+catálogo real e a baseline continuam sem medição. A validação em staging inclui essa
+medição, revisão visual e os percursos de aluno/responsável antes da aprovação para
+produção. A fase 7 contém uma proposta editorial, ainda sem interface e rotas.
 
 As alterações anteriores do usuário em Molda e persistência foram preservadas.
 Nenhum commit, push, implantação, aplicação de migration em staging/produção ou envio

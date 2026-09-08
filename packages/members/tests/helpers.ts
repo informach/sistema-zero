@@ -149,7 +149,6 @@ export function buildApp(
   opts: {
     now?: Date
     internalToken?: string
-    practicePilotAccounts?: string
     requireAdmin?: boolean
     /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
     aiLimits?: { daily: number; monthly: number }
@@ -317,7 +316,6 @@ export function buildApp(
         progress,
         quizAttempts,
         clock,
-        opts.practicePilotAccounts,
       ),
       internalToken: opts.internalToken,
     },

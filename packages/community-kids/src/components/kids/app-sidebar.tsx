@@ -7,7 +7,7 @@ import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { useFocusMode } from './focus-mode'
 import { KidsLogo } from './kids-logo'
-import { CLASSIC_NAV_ITEMS, NAV_ITEMS } from './nav'
+import { NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
@@ -30,13 +30,11 @@ export function AppSidebar({
   user,
   gamification,
   avatarPhotoUrl = null,
-  workshopEnabled = false,
 }: {
   user: SessionUserWithAvatar
   gamification: GamificationMeView | null
   /** Foto (snapshot) do avatar 3D do perfil ativo — `null` mostra o personagem padrão. */
   avatarPhotoUrl?: string | null
-  workshopEnabled?: boolean
 }) {
   const pathname = usePathname()
   // Modo foco da aula: o aluno pode esconder o menu p/ ganhar área útil (só em
@@ -70,7 +68,7 @@ export function AppSidebar({
         aria-label="Navegação principal"
         className="mt-8 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto overscroll-contain pr-1"
       >
-        {(workshopEnabled ? NAV_ITEMS : CLASSIC_NAV_ITEMS).map((item) => {
+        {NAV_ITEMS.map((item) => {
           const active = isNavActive(pathname, item.href, item.match)
           const Icon = item.icon
           return (

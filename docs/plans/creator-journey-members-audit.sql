@@ -35,7 +35,7 @@ SELECT count(*) FILTER (WHERE completed AND NOT showcased) AS completed_without_
   count(*) FILTER (WHERE completed AND showcased) AS completed_and_published
 FROM milestones;
 
--- Pilot activity, by day; no individual learner identifiers in the output.
+-- Practice activity, by day; no individual learner identifiers in the output.
 SELECT created_at::date AS day, count(*) AS sessions_started,
   count(*) FILTER (WHERE completed_at IS NOT NULL) AS sessions_completed,
   count(DISTINCT user_id) AS learners

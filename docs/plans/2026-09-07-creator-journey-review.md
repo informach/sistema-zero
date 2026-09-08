@@ -171,14 +171,13 @@ Os logs `publication-red`, `pensa-red`, `molda-red`, `profile-red` e
   `0029`/`0030` de Members em banco vazio é anterior e não foi modificada.
 - Não houve teste de carga nem medição com crianças/responsáveis. Clareza da nova
   navegação, adequação pedagógica da prática e efeitos no engajamento dependem do
-  piloto descrito no [guia operacional](creator-journey-rollout.md).
+  processo de avaliação descrito no [guia operacional](creator-journey-rollout.md).
 - Esta revisão não implantou serviços, não aplicou migrações em produção, não
-  habilitou famílias reais e não enviou relatórios. A fase de outros conhecimentos
-  continua condicionada à avaliação do piloto.
+  enviou relatórios. A fase de outros conhecimentos contém uma proposta editorial,
+  ainda sem interface e rotas.
 
 Também foi corrigida a documentação interna do congelamento de blocos, que ainda
-descrevia apenas a conciliação na leitura, e a ausência de corpo na consulta de
-disponibilidade da prática passou a ser tratada como indisponibilidade técnica.
+descrevia apenas a conciliação na leitura.
 
 ## Preparação do commit para staging — 08/09/2026
 
@@ -197,6 +196,6 @@ incluindo TypeScript e as 59 páginas. Os logs desta verificação estão em
 `.audits/creator-review/commit/`.
 
 O conteúdo do índice de Git foi comparado ao checkout validado antes do commit.
-As flags continuam desligadas por padrão; o push não inclui configuração de
-famílias do piloto. O [guia operacional](creator-journey-rollout.md) descreve as
-migrations e flags necessárias para testar a navegação e a prática em staging.
+O [guia operacional](creator-journey-rollout.md) descreve as migrations, a validação
+do conjunto em staging e a promoção para produção após aprovação do responsável
+pelo produto.

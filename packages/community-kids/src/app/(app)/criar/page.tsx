@@ -6,8 +6,6 @@ import { ContinueHero } from '@/components/kids/continue-hero'
 import { CreatorWorks } from '@/components/kids/creator-works'
 import { levelInfo } from '@/lib/level-info'
 import { getCreatorJourney } from '@/server/creator-journey'
-import { getCreatorWorkshopEnabled } from '@/server/creator-rollout'
-import { getPracticeAvailability } from '@/server/practice'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,11 +40,7 @@ const tools: Record<
 }
 
 export default async function CriarPage() {
-  const [journey, workshopEnabled, practiceEnabled] = await Promise.all([
-    getCreatorJourney(),
-    getCreatorWorkshopEnabled(),
-    getPracticeAvailability().catch(() => null),
-  ])
+  const journey = await getCreatorJourney()
   const available = journey.tools.filter((tool) => tool.state === 'available')
   const future = journey.tools.filter((tool) => tool.state !== 'available')
   return (
@@ -67,21 +61,19 @@ export default async function CriarPage() {
           Não conseguimos consultar seus cursos agora. Tente atualizar esta página.
         </p>
       )}
-      {practiceEnabled ? (
-        <Link
-          href="/praticar"
-          className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5"
-        >
-          <span>
-            <strong className="block">Praticar um pouco</strong>
-            <span className="text-sm text-muted-foreground">
-              Relembre o que aprendeu com perguntas curtas.
-            </span>
+      <Link
+        href="/praticar"
+        className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5"
+      >
+        <span>
+          <strong className="block">Praticar um pouco</strong>
+          <span className="text-sm text-muted-foreground">
+            Relembre o que aprendeu com perguntas curtas.
           </span>
-          <ArrowRight aria-hidden="true" className="size-5 shrink-0" />
-        </Link>
-      ) : null}
-      {workshopEnabled && available.length ? (
+        </span>
+        <ArrowRight aria-hidden="true" className="size-5 shrink-0" />
+      </Link>
+      {available.length ? (
         <Suspense
           fallback={
             <p role="status" className="text-sm text-muted-foreground">
@@ -91,15 +83,6 @@ export default async function CriarPage() {
         >
           <CreatorWorks available={available.map((tool) => tool.id)} />
         </Suspense>
-      ) : null}
-      {!workshopEnabled ? (
-        <Link
-          href="/clube-dos-criadores"
-          prefetch={false}
-          className="inline-flex min-h-11 items-center font-bold text-primary"
-        >
-          Conversar no Clube dos Criadores
-        </Link>
       ) : null}
       {available.length ? (
         <section aria-labelledby="tools-heading">

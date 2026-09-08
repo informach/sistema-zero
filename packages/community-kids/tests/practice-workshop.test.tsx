@@ -30,6 +30,62 @@ afterEach(() => {
   localStorage.clear()
 })
 describe('oficina de prática', () => {
+  test('seleciona conteúdo estudado e inicia uma prática para o perfil ativo', async () => {
+    const requests: Array<{ url: string; viewer: string | null; body: unknown }> = []
+    globalThis.fetch = Object.assign(
+      mock(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input)
+        requests.push({
+          url,
+          viewer: new Headers(init?.headers).get('x-sz-viewer'),
+          body: typeof init?.body === 'string' ? JSON.parse(init.body) : null,
+        })
+        if (url === '/api/practice/topics?courseSlug=loops')
+          return Response.json({
+            topics: [
+              {
+                courseSlug: 'loops',
+                lessonId: 'lesson-a',
+                blockId: 'block-a',
+                title: 'Repetições',
+                questionCount: 1,
+              },
+            ],
+          })
+        if (url === '/api/practice/sessions' && init?.method === 'POST')
+          return Response.json({ session: initial })
+        throw new Error(`Unexpected request: ${url}`)
+      }),
+      { preconnect: originalFetch.preconnect },
+    )
+    render(
+      <PracticeWorkshop
+        profileId="child-a"
+        courses={[{ slug: 'loops', title: 'Laços' }]}
+        history={[]}
+      />,
+    )
+    fireEvent.change(screen.getByRole('combobox', { name: 'Curso' }), {
+      target: { value: 'loops' },
+    })
+    fireEvent.click(await screen.findByRole('button', { name: 'Repetições 1 pergunta' }))
+    await waitFor(() => expect(screen.getByRole('radio', { name: 'Repetir' })).toBeTruthy())
+    expect(requests).toEqual([
+      { url: '/api/practice/topics?courseSlug=loops', viewer: 'child-a', body: null },
+      {
+        url: '/api/practice/sessions',
+        viewer: 'child-a',
+        body: {
+          id: expect.any(String),
+          courseSlug: 'loops',
+          lessonId: 'lesson-a',
+          blockId: 'block-a',
+        },
+      },
+    ])
+    expect(screen.getByText('Qual bloco repete?')).toBeTruthy()
+    expect(screen.queryByText('Resposta esperada:')).toBeNull()
+  })
   test('retoma, envia e só então mostra a explicação recebida do servidor', async () => {
     const submissions: unknown[] = []
     const viewers: Array<string | null> = []
@@ -58,7 +114,7 @@ describe('oficina de prática', () => {
       }),
       { preconnect: originalFetch.preconnect },
     )
-    render(<PracticeWorkshop profileId="child-a" enabled={true} courses={[]} history={[initial]} />)
+    render(<PracticeWorkshop profileId="child-a" courses={[]} history={[initial]} />)
     fireEvent.click(screen.getByRole('button', { name: /Continuar/ }))
     expect(screen.queryByText('Repetir executa de novo.')).toBeNull()
     fireEvent.click(screen.getByRole('radio', { name: 'Parar' }))
@@ -74,12 +130,9 @@ describe('oficina de prática', () => {
       '/cursos/loops/aulas/lesson-a',
     )
   })
-  test('rascunho de outro perfil não preenche respostas e sair da coorte conserva a retomada', () => {
+  test('rascunho de outro perfil não preenche respostas ao retomar uma prática', () => {
     localStorage.setItem('sz-practice:child-a:session-a', JSON.stringify({ q: ['repeat'] }))
-    render(
-      <PracticeWorkshop profileId="child-b" enabled={false} courses={[]} history={[initial]} />,
-    )
-    expect(screen.queryByRole('combobox')).toBeNull()
+    render(<PracticeWorkshop profileId="child-b" courses={[]} history={[initial]} />)
     fireEvent.click(screen.getByRole('button', { name: /Continuar/ }))
     const choice = screen.getByRole('radio', { name: 'Repetir' })
     if (!(choice instanceof HTMLInputElement)) throw new Error('Expected radio input')
@@ -103,7 +156,7 @@ describe('oficina de prática', () => {
       ),
       { preconnect: originalFetch.preconnect },
     )
-    render(<PracticeWorkshop profileId="child-a" enabled history={[initial]} courses={[]} />)
+    render(<PracticeWorkshop profileId="child-a" history={[initial]} courses={[]} />)
     fireEvent.click(screen.getByRole('button', { name: /Continuar/ }))
     fireEvent.click(screen.getByRole('radio', { name: 'Repetir' }))
     fireEvent.click(screen.getByRole('button', { name: 'Conferir e entender' }))

@@ -356,7 +356,7 @@ describe('loadGatewayConfig', () => {
 describe('gateway.config.ts (configuração real)', () => {
   test('prática independente preserva JWT ativo, token interno e limites nas rotas explícitas', () => {
     const routes = realConfig.routes.filter((route) => route.id.startsWith('members-practice-'))
-    expect(routes).toHaveLength(6)
+    expect(routes).toHaveLength(5)
     for (const route of routes) {
       expect(route).toMatchObject({
         service: 'members',

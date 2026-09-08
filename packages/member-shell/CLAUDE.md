@@ -995,7 +995,8 @@ A auditoria exige explicitamente a disponibilidade atual de Molda, Pinta e Estú
 não basta o catálogo de blocos continuar compatível com um plano antigo.
 
 `createPracticeRoutes` é Kids com perfil ativo; escrita recusa impersonação somente leitura,
-corpos com campos extras e IDs do dono enviados pelo cliente. A autoridade do piloto é Members.
+corpos com campos extras e IDs do dono enviados pelo cliente. Members revalida o acesso ao curso
+e o conteúdo estudado antes de iniciar uma sessão.
 Todas as leituras/escritas do BFF de prática exigem `x-sz-viewer` igual ao perfil da sessão;
 divergência ou ausência retorna 409 antes do upstream. O header vincula a tela, não concede acesso.
 `hub.myShowcaseDeliveryReadonly(courseId)` consulta entrega por ator, sem aceitar ID de outro

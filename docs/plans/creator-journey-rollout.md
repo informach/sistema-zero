@@ -2,7 +2,9 @@
 
 Esta é a sequência operacional da implementação em
 [2026-09-07-creator-journey-evolution.md](2026-09-07-creator-journey-evolution.md).
-As flags começam desligadas. Nenhuma família real foi incluída nesta execução.
+As fases organizam a construção do código em etapas consecutivas. O conjunto completo
+é validado em staging e promovido para produção somente após aprovação do responsável
+pelo produto. Navegação, trabalhos e prática seguem as regras normais de acesso e carreira.
 
 ## Dependências e ordem
 
@@ -20,32 +22,24 @@ As flags começam desligadas. Nenhuma família real foi incluída nesta execuç�
 3. Conferir uma publicação de teste: thread e pendência na mesma transação,
    confirmação em Members, avanço somente com os dois marcos. Interromper e reiniciar
    o worker; a mesma entrega deve ser recuperada sem duplicar XP, carreira ou thread.
-4. Liberar a oficina para contas da equipe, depois para as famílias do piloto.
+4. Validar a oficina completa em staging com contas e perfis de teste.
    Validar desktop, celular, teclado, redução de movimento e troca entre irmãos.
    Repetir a troca de perfil com duas abas de prática abertas: a aba antiga deve
    receber 409 e pedir atualização, sem iniciar uma sessão para o outro perfil.
    No Molda, reabrir a mesma criação duas vezes pelo guia e sair pelo menu com
    marcações pendentes; o rascunho deve voltar apenas no mesmo perfil/versão.
-5. Habilitar a prática para uma coorte pequena depois da revisão de conteúdo.
-   Avaliar o piloto antes de expandir. O laboratório de outros conhecimentos continua
-   fora do produto até essa decisão.
+5. Validar a prática e revisar seu conteúdo em staging. Depois da aprovação do
+   responsável pelo produto, promover o conjunto validado para produção.
 
-## Flags por família
+## Validação e promoção
 
-| Variável | Serviço | Efeito |
-| --- | --- | --- |
-| `CREATOR_WORKSHOP_ACCOUNTS` | Kids, servidor | Cinco grupos de navegação e trabalhos no hub Criar |
-| `PRACTICE_PILOT_ACCOUNTS` | Members | Descoberta e início de sessões de prática |
+O deploy disponibiliza a navegação em cinco grupos e a prática. Os trabalhos aparecem
+conforme as ferramentas liberadas pela conta e pela carreira. Novas sessões de prática
+exigem acesso ao curso, aula concluída e quiz aprovado. Os dados continuam isolados por perfil.
 
-Valor ausente ou `none` desliga; IDs de **contas** separados por vírgula selecionam
-famílias; `all` habilita para todas. Nunca colocar IDs de perfis. O Kids consulta a
-disponibilidade da prática em Members, sem uma segunda lista local.
-
-Para recuar, usar `none` e reiniciar/reimplantar o serviço correspondente. O histórico
-de prática já iniciado continua consultável e pode ser concluído. A reversão da
-navegação mantém URLs e trabalhos. Não apagar tabelas, pendências, concessões,
-rascunhos ou planos para reverter uma interface. As correções de integridade da
-carreira e a recuperação de publicações independem das flags.
+Staging é o ambiente de validação do conjunto. A promoção para produção é uma decisão
+explícita do responsável pelo produto após essa avaliação. Uma eventual reversão de
+versão deve preservar tabelas, pendências, concessões, rascunhos, histórico e planos.
 
 Uma versão anterior que desconheça `destination=molda` não deve voltar a servir
 planos que já contenham esse destino. Preferir corrigir adiante ou manter o leitor
@@ -67,9 +61,9 @@ de atividade de publicação; a navegação até essa atividade ainda exige o ce
 de aceitação abaixo. A contagem de marcos inclui bônus/legado: não é a contagem de
 níveis qualificados, calculada pela política de carreira.
 
-Antes de ampliar a coorte, registrar:
+Durante a validação em staging, registrar:
 
-- Quantas famílias/alunos entraram, idade aproximada em faixas e dispositivos utilizados.
+- Quais cenários, perfis de teste e dispositivos foram avaliados.
 - Quantos conseguem identificar e executar o próximo passo sem ajuda.
 - Pendências de publicação, idade da fila e casos em que uma conclusão não vira conquista.
 - Quantos retomam a criação correta, quantos encontram conflito de versão e como o resolvem.
@@ -92,11 +86,11 @@ crianças, enviada mensagem real ou gerada nota de aprendizagem a partir destes 
 | Aula nova após conquista | Selo e blocos conquistados permanecem; aulas novas podem ser estudadas |
 | Última atividade de publicação na autoria | Remoção, conversão ou despublicação impedida, inclusive em alterações concorrentes |
 | Hub ou Members temporariamente fora | Jogo recebido permanece; fila recupera; erro de consulta não vira convite de compra |
-| Irmãos da mesma conta | Mesma coorte e posse; planos, progresso, prática e criações separados |
+| Irmãos da mesma conta | Mesma posse; planos, progresso, prática e criações separados |
 | Pensa em cada capacidade | Tarefas usam blocos conquistados; Molda exige 3D e disponibilidade; plano permanece quando bloqueado |
 | Volta Molda → Pensa | Editor precisa guardar/fechar; vínculo mantém ID real da criação e IDs do plano |
 | Local, nuvem e conflito | Abrir ID correto; conservar trabalho local; resolver conflito explicitamente |
-| Prática desligada após iniciar | Histórico acessível, sessão retomável, sem XP/moedas/conclusão de curso |
+| Prática e histórico | Sessão retomável mesmo após edição do conteúdo; sem XP/moedas/conclusão de curso |
 | Aula concluída | Progresso vem da resposta do servidor; publicação indicada quando necessária |
 | Responsáveis / aluno | Área dos pais exige sessão da conta e verificação de responsável |
 | Recado sobre entrega | Professor abre exatamente perfil, curso, aula e bloco daquela conversa; rascunho preservado |
@@ -106,9 +100,9 @@ crianças, enviada mensagem real ou gerada nota de aprendizagem a partir destes 
 Os testes automatizados cobrem regras e vários fluxos de componentes; a inspeção
 visual e o percurso completo entre serviços permanecem pendentes porque o navegador
 conectado não está disponível. Falhas de isolamento, perda de trabalho ou regressão
-de concessões interrompem a expansão e exigem correção antes de retomar.
+de concessões exigem correção antes da promoção para produção.
 
-## Laboratório de matemática: fase dependente do piloto
+## Laboratório de matemática: proposta editorial
 
 Proposta editorial para oito atividades, ainda sem rota nem liberação. Elas usam
 contextos de criação, mantêm histórico separado e não contam para a carreira.

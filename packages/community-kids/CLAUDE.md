@@ -2132,10 +2132,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Oficina e Carreira do Criador — 07/09/2026
 
 Atualização das superfícies descritas acima: `../../docs/plans/2026-09-07-creator-journey-evolution.md`.
-A implantação por família e os limites da validação estão em `../../docs/plans/creator-journey-rollout.md`.
+A validação em staging e a promoção para produção estão em `../../docs/plans/creator-journey-rollout.md`.
 
-- `CREATOR_WORKSHOP_ACCOUNTS`, somente servidor, seleciona contas para cinco grupos de navegação
-  e trabalhos no Criar. Sem flag = navegação clássica. Os links de ferramentas ficam no Criar.
+- A navegação tem cinco grupos para todos os alunos. O Criar reúne os links das ferramentas
+  e os trabalhos disponíveis conforme a posse da conta e a Carreira do Criador.
 - Início, cartões, mapa e curso usam a política comum: aulas concluídas e publicação são marcos
   distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
 - `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
@@ -2147,9 +2147,9 @@ A implantação por família e os limites da validação estão em `../../docs/p
   timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
 - `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com carreira,
   ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
-- `/praticar` consulta a flag em Members. Até cinco perguntas de aulas já estudadas, feedback e
-  histórico separado; sem XP/moedas. Rascunho local é por perfil+sessão. Histórico permanece
-  acessível quando novas sessões são desligadas. Não há laboratório de matemática habilitado.
+- `/praticar` exige perfil ativo e oferece até cinco perguntas de aulas já estudadas, feedback e
+  histórico separado; sem XP/moedas. Members revalida acesso ao curso, conclusão da aula e quiz
+  aprovado. Rascunho local é por perfil+sessão. O laboratório de matemática é uma proposta editorial.
   As requisições enviam `x-sz-viewer`: troca de perfil em outra aba retorna 409 e pede atualização,
   preservando as escolhas locais. Não iniciar sessão de prática com o dono de uma aba diferente.
 - Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é

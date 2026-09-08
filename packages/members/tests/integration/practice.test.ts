@@ -3,12 +3,11 @@ import { randomUUID } from 'node:crypto'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const TOKEN = 'practice-test-internal-token'
-async function setup(pilot = true) {
+async function setup() {
   const accountId = randomUUID(),
     userId = randomUUID()
   const ctx = buildApp({
     internalToken: TOKEN,
-    practicePilotAccounts: pilot ? accountId : undefined,
   })
   const course = seedSampleCourse(
     ctx.courses,
@@ -78,14 +77,16 @@ async function setup(pilot = true) {
 }
 
 describe('prática independente', () => {
-  test('coorte, autenticação e conteúdo aprendido são exigidos antes de abrir uma sessão', async () => {
-    const closed = await setup(false)
-    expect(await (await closed.request('/availability')).json()).toEqual({ enabled: false })
-    expect((await closed.request('/sessions', closed.input)).status).toBe(403)
+  test('autenticação, acesso ao curso e conteúdo aprendido são exigidos antes de abrir uma sessão', async () => {
     const ctx = await setup()
     expect(
       (await ctx.request('/sessions', ctx.input, { 'x-internal-token': 'wrong' })).status,
     ).toBe(401)
+    const withoutAccess = { 'x-auth-account-id': randomUUID() }
+    expect((await ctx.request('/sessions', ctx.input, withoutAccess)).status).toBe(403)
+    expect(
+      (await ctx.request(`/topics?courseSlug=${ctx.course.slug}`, undefined, withoutAccess)).status,
+    ).toBe(403)
     expect((await ctx.request('/sessions', ctx.input)).status).toBe(409)
     expect(await (await ctx.request(`/topics?courseSlug=${ctx.course.slug}`)).json()).toEqual({
       topics: [],

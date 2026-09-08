@@ -583,7 +583,6 @@ export async function createApplication(env: Env): Promise<Application> {
         progress,
         quizAttempts,
         clock,
-        env.PRACTICE_PILOT_ACCOUNTS,
       ),
       internalToken: env.INTERNAL_API_TOKEN,
     },

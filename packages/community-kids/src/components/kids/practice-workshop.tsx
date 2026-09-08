@@ -15,12 +15,10 @@ const draftKey = (profileId: string, id: string) => `sz-practice:${profileId}:${
 
 export function PracticeWorkshop({
   profileId,
-  enabled,
   courses,
   history: initialHistory,
 }: {
   profileId: string
-  enabled: boolean | null
   courses: { slug: string; title: string }[] | null
   history: PracticeSessionView[] | null
 }) {
@@ -301,87 +299,79 @@ export function PracticeWorkshop({
         </section>
       ) : (
         <>
-          {enabled === true ? (
-            <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
-              <h2 className="text-xl font-bold">O que você quer relembrar?</h2>
-              <p className="mt-2 text-muted-foreground">
-                Escolha um curso. Aparecem aqui os quizzes que você já concluiu nas aulas.
-              </p>
-              {courses === null ? (
-                <p role="status" className="mt-4">
-                  Não conseguimos consultar seus cursos. Atualize a página para tentar novamente.
-                </p>
-              ) : courses.length ? (
-                <>
-                  <label htmlFor="practice-course" className="mt-5 block font-bold">
-                    Curso
-                  </label>
-                  <select
-                    id="practice-course"
-                    value={courseSlug}
-                    disabled={busy}
-                    className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background px-4"
-                    onChange={(event) => {
-                      const slug = event.target.value
-                      setCourseSlug(slug)
-                      setTopics(null)
-                      if (slug)
-                        void run(async () => {
-                          const result = await apiGet<{ topics: PracticeTopicView[] }>(
-                            `/api/practice/topics?courseSlug=${encodeURIComponent(slug)}`,
-                            viewerHeaders,
-                          )
-                          setTopics(result.topics)
-                        })
-                    }}
-                  >
-                    <option value="">Escolha um curso</option>
-                    {courses.map((course) => (
-                      <option key={course.slug} value={course.slug}>
-                        {course.title}
-                      </option>
-                    ))}
-                  </select>
-                  {topics ? (
-                    <div className="mt-5 grid gap-3">
-                      {topics.length ? (
-                        topics.map((topic) => (
-                          <button
-                            key={topic.blockId}
-                            type="button"
-                            disabled={busy}
-                            onClick={() => start(topic)}
-                            className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-border p-4 text-left hover:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                          >
-                            <span className="font-bold">{topic.title}</span>
-                            <span className="shrink-0 text-sm">
-                              {topic.questionCount}{' '}
-                              {topic.questionCount === 1 ? 'pergunta' : 'perguntas'}
-                            </span>
-                          </button>
-                        ))
-                      ) : (
-                        <p>Este curso ainda não tem quizzes concluídos para relembrar por aqui.</p>
-                      )}
-                    </div>
-                  ) : null}
-                </>
-              ) : (
-                <p className="mt-4">
-                  Depois de concluir uma aula e seu quiz, você poderá relembrar esse conteúdo aqui.{' '}
-                  <Link href="/cursos" className="underline">
-                    Ir aos cursos
-                  </Link>
-                </p>
-              )}
-            </section>
-          ) : (
-            <p role="status" className="rounded-2xl border border-border bg-card p-5">
-              {enabled === null
-                ? 'Não conseguimos consultar a disponibilidade da prática. Tente atualizar a página.'
-                : 'Novas práticas ainda não estão disponíveis para sua conta. Você pode consultar as que já começou abaixo.'}
+          <section className="rounded-3xl border border-border bg-card p-5 sm:p-8">
+            <h2 className="text-xl font-bold">O que você quer relembrar?</h2>
+            <p className="mt-2 text-muted-foreground">
+              Escolha um curso. Aparecem aqui os quizzes que você já concluiu nas aulas.
             </p>
-          )}
+            {courses === null ? (
+              <p role="status" className="mt-4">
+                Não conseguimos consultar seus cursos. Atualize a página para tentar novamente.
+              </p>
+            ) : courses.length ? (
+              <>
+                <label htmlFor="practice-course" className="mt-5 block font-bold">
+                  Curso
+                </label>
+                <select
+                  id="practice-course"
+                  value={courseSlug}
+                  disabled={busy}
+                  className="mt-2 min-h-12 w-full rounded-xl border border-border bg-background px-4"
+                  onChange={(event) => {
+                    const slug = event.target.value
+                    setCourseSlug(slug)
+                    setTopics(null)
+                    if (slug)
+                      void run(async () => {
+                        const result = await apiGet<{ topics: PracticeTopicView[] }>(
+                          `/api/practice/topics?courseSlug=${encodeURIComponent(slug)}`,
+                          viewerHeaders,
+                        )
+                        setTopics(result.topics)
+                      })
+                  }}
+                >
+                  <option value="">Escolha um curso</option>
+                  {courses.map((course) => (
+                    <option key={course.slug} value={course.slug}>
+                      {course.title}
+                    </option>
+                  ))}
+                </select>
+                {topics ? (
+                  <div className="mt-5 grid gap-3">
+                    {topics.length ? (
+                      topics.map((topic) => (
+                        <button
+                          key={topic.blockId}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => start(topic)}
+                          className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-border p-4 text-left hover:border-primary focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                        >
+                          <span className="font-bold">{topic.title}</span>
+                          <span className="shrink-0 text-sm">
+                            {topic.questionCount}{' '}
+                            {topic.questionCount === 1 ? 'pergunta' : 'perguntas'}
+                          </span>
+                        </button>
+                      ))
+                    ) : (
+                      <p>Este curso ainda não tem quizzes concluídos para relembrar por aqui.</p>
+                    )}
+                  </div>
+                ) : null}
+              </>
+            ) : (
+              <p className="mt-4">
+                Depois de concluir uma aula e seu quiz, você poderá relembrar esse conteúdo aqui.{' '}
+                <Link href="/cursos" className="underline">
+                  Ir aos cursos
+                </Link>
+              </p>
+            )}
+          </section>
           <section aria-labelledby="practice-history">
             <h2 id="practice-history" className="text-xl font-bold">
               Suas últimas práticas

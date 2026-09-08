@@ -145,10 +145,10 @@ literal para a restrição valer.
 
 Adicionar/expor um serviço = **editar `gateway.config.ts`**, não código.
 
-**Prática Kids (09/2026):** seis rotas explícitas `members-practice-*` em
-`/members/practice/{availability,topics,sessions}` e `sessions/:id[/answers]`.
+**Prática Kids (09/2026):** cinco rotas explícitas `members-practice-*` em
+`/members/practice/{topics,sessions}` e `sessions/:id[/answers]`.
 JWT ativo + `membersInternalTransforms`; GET 60–120/min, POST 30/min com teto de corpo.
-Members decide a coorte `PRACTICE_PILOT_ACCOUNTS` e o acesso ao conteúdo estudado.
+Members revalida o acesso ao curso e o conteúdo estudado antes de iniciar uma sessão.
 Histórico por perfil/conta, separado dos quizzes de aula e dos prêmios da carreira.
 
 ---

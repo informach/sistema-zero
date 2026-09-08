@@ -34,7 +34,6 @@ export function normalizeAvatarPhotoPrefixes(value: string | undefined): string[
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-    PRACTICE_PILOT_ACCOUNTS: z.string().optional(),
     PORT: z.coerce.number().int().positive().default(3004),
     // Endereço de bind. `::` (default) é dual-stack (IPv4 + IPv6) — obrigatório
     // para o private networking do Railway (`members.railway.internal` resolve

@@ -2,7 +2,6 @@ import type { PracticeSessionView } from '@sistemazero/core/practice'
 import { redirect } from 'next/navigation'
 import { PracticeWorkshop } from '@/components/kids/practice-workshop'
 import { getCreatorJourney } from '@/server/creator-journey'
-import { getPracticeAvailability } from '@/server/practice'
 import { getSession } from '@/server/session'
 import { shell } from '@/server/shell'
 
@@ -10,8 +9,7 @@ export const dynamic = 'force-dynamic'
 export default async function PracticePage() {
   const user = await getSession()
   if (!user?.activeProfile) redirect('/perfis')
-  const [enabled, journey, history] = await Promise.all([
-    getPracticeAvailability().catch(() => null),
+  const [journey, history] = await Promise.all([
     getCreatorJourney(),
     shell.gateway
       .gatewayFetchReadonly<{ sessions: PracticeSessionView[] }>('/members/practice/sessions')
@@ -30,7 +28,6 @@ export default async function PracticePage() {
       <PracticeWorkshop
         key={user.id}
         profileId={user.id}
-        enabled={enabled}
         courses={
           journey.courses
             ?.filter((course) => !course.careerLock?.locked && course.progress.completedLessons > 0)

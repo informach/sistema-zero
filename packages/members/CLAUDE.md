@@ -2020,10 +2020,10 @@ vive em `@sistemazero/core/career`; os oito ranks e 49 posições permanecem.
 - Missões Kids filtram DEPOIS da atribuição, por ferramenta liberada e eventos de conteúdo
   ainda possíveis nos cursos acessíveis. Aulas em breve e barreiras sequenciais são excluídas;
   eventos já premiados não viram novas oportunidades. Prêmios completos/recebidos permanecem.
-- Prática: `PRACTICE_PILOT_ACCOUNTS` autoriza contas (ausente = desligada). Rotas
-  `/members/practice/{availability,topics,sessions}`; sessões exigem aula concluída e quiz
+- Prática: rotas `/members/practice/{topics,sessions}`; tópicos e novas sessões revalidam
+  acesso ao curso pela conta e pela carreira do perfil. Sessões exigem aula concluída e quiz
   aprovado, congelam até cinco perguntas e aceitam a primeira resposta de forma idempotente.
-  Histórico por perfil+conta sobrevive à saída do piloto/edição de conteúdo; purge remove-o.
+  Histórico por perfil+conta sobrevive à edição de conteúdo; purge remove-o.
   Nenhuma concessão de XP, moedas, progresso de curso ou nível. Migration `0076`.
 - Pensa aceita `destination=molda`, contexto `molda` e saída `molda_asset` para model/texture/sky.
   Handoff e atualização revalidam posse da conta e rank do perfil em cada destino. Migration
