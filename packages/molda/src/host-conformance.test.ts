@@ -63,7 +63,13 @@ describe('host kids', () => {
     )
     expect(read('packages/community-kids/src/proxy.ts')).toContain("'/molda'")
     expect(read('packages/community-kids/src/lib/embedded-app-path.ts')).toContain("'/molda'")
-    expect(read('packages/community-kids/src/components/kids/nav.ts')).toContain("href: '/molda'")
+    const nav = read('packages/community-kids/src/components/kids/nav.ts')
+    // The host groups creative tools under Criar; keep the complete discovery path covered.
+    expect(nav).toContain("href: '/criar'")
+    expect(nav).toContain("'/molda'")
+    expect(read('packages/community-kids/src/app/(app)/criar/page.tsx')).toMatch(
+      /molda:\s*\{[^}]*href:\s*'\/molda'/,
+    )
   })
 })
 
