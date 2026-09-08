@@ -32,11 +32,13 @@ export function LessonManifestImport({
   const [source, setSource] = useState('')
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const change = (text: string) => {
     setSource(text)
     setPreview(null)
     setError('')
+    setNotice('')
   }
   const parse = () => {
     const value: unknown = JSON.parse(source)
@@ -65,13 +67,22 @@ export function LessonManifestImport({
     setBusy(true)
     setError('')
     try {
-      await apiSend(`/api/members/lessons/${lessonId}/import-learning`, 'POST', {
-        document: parse(),
-        expectedFingerprint: preview.fingerprint,
-      })
+      const result = await apiSend<{ zappyKnowledgeStatus?: string }>(
+        `/api/members/lessons/${lessonId}/import-learning`,
+        'POST',
+        {
+          document: parse(),
+          expectedFingerprint: preview.fingerprint,
+        },
+      )
       setPreview(null)
       setSource('')
       await onImported()
+      setNotice(
+        result.zappyKnowledgeStatus === 'pending'
+          ? 'Roteiro importado. A atualização da base do Zappy está em andamento.'
+          : 'Roteiro importado.',
+      )
     } catch (e) {
       setError((e as ApiError).message || 'Não foi possível importar.')
     } finally {
@@ -169,6 +180,11 @@ export function LessonManifestImport({
               Aplicar ao rascunho desta aula
             </Button>
           </div>
+        )}
+        {notice && (
+          <p role="status" className="text-sm">
+            {notice}
+          </p>
         )}
         {error && (
           <p role="alert" className="text-sm text-destructive">

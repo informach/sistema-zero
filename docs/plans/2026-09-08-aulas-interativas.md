@@ -27,7 +27,7 @@ Implementação isolada em `feat/aulas-interativas`; o workspace original conté
 - [x] 4. Os 27 roteiros, manifestos válidos e atividades funcionais.
 - [x] 5. Acompanhamento do professor e dos pais.
 - [x] 6. Revisão, migrations em banco descartável, testes, lint, tipos e builds.
-- [ ] 7. Commits exclusivos e entrega para staging, sem promoção para produção.
+- [x] 7. Commits exclusivos e entrega para staging, sem promoção para produção.
 
 ## Aceite
 
@@ -58,6 +58,8 @@ Aluno de 9–16 anos, alternando entre observar, experimentar e construir. A int
 
 ## Verificação e entrega
 
-Evidências e limites estão em [qa/verification-report.md](../aulas-interativas/qa/verification-report.md). O push será feito apenas para `staging`, com as alterações deste worktree. O trabalho de Molda no checkout original continua separado.
+Evidências e limites estão em [qa/verification-report.md](../aulas-interativas/qa/verification-report.md). A implementação foi enviada para `staging` no commit `aab691c5`, com CI e deploy concluídos. O trabalho de Molda no checkout original continua separado.
 
 Verificação final: suíte global em sequência com 14.333 testes aprovados, 979 no Members com banco real, 16 cenários Playwright e builds de Kids, Adult e admin aprovados. Navegação autenticada e produção dos vídeos seguem as limitações registradas no relatório de QA.
+
+Depois dessa entrega, uma [revisão completa do lote](../../.audits/architectural-analysis-2026-09-08-aulas.md) reproduziu e corrigiu sete defeitos de integração. A revisão registra suas próprias evidências, distinguindo a implementação de código da produção/publicação das novas aulas.

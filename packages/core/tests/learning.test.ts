@@ -42,6 +42,29 @@ const sequence: InteractiveBlock = {
   },
 }
 describe('learning contracts', () => {
+  test('a checkpoint cannot approve an incorrectly ordered sequence', () => {
+    const block: InteractiveBlock = {
+      ...sequence,
+      checkpoint: {
+        prompt: 'Por que preparar primeiro?',
+        choices: [
+          { id: 'right', label: 'O desenho depende da preparação.' },
+          { id: 'wrong', label: 'Não importa.' },
+        ],
+        correctChoiceId: 'right',
+        explanation: 'A preparação cria o que será desenhado.',
+      },
+    }
+    expect(evaluateLearning(block, { order: ['draw', 'create'], checkpoint: 'right' }).passed).toBe(
+      false,
+    )
+    expect(evaluateLearning(block, { order: ['create', 'draw'], checkpoint: 'wrong' }).passed).toBe(
+      false,
+    )
+    expect(evaluateLearning(block, { order: ['create', 'draw'], checkpoint: 'right' }).passed).toBe(
+      true,
+    )
+  })
   test('keeps answer keys private and checks exact sequence without accepting duplicate pieces', () => {
     expect(publicInteractiveBlock(sequence).activity).not.toHaveProperty('solution')
     expect(evaluateLearning(sequence, { order: ['create', 'create'] }).passed).toBe(false)

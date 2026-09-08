@@ -30,6 +30,7 @@ import {
   studioSubmissions,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
+import { DrizzleVideoPositionRepository } from '../../src/infrastructure/persistence/drizzle/video-position.repository'
 
 // An explicitly named EMPTY disposable database is required. Never connects to DATABASE_URL.
 const url = process.env.LEARNING_QA_DATABASE_URL
@@ -221,6 +222,66 @@ describe.skipIf(!url)(
         (await db.select().from(lessonProgress).where(eq(lessonProgress.lessonId, lessonId)))[0]
           ?.positionSeconds,
       ).toBe(87)
+    })
+
+    test('resume and member activity include block progress and section navigation without replacing legacy video positions', async () => {
+      const { db } = get()
+      const content = new DrizzleContentAdminRepository(db)
+      const repo = new DrizzleLearningRepository(db)
+      const positions = new DrizzleVideoPositionRepository(db)
+      const learner = { userId: randomUUID(), accountId: randomUUID() }
+      const first = await content.createLesson(moduleId, courseId, {
+        slug: 'resume-first',
+        title: 'Primeira',
+        estimatedMinutes: null,
+        isPublished: true,
+      })
+      const second = await content.createLesson(moduleId, courseId, {
+        slug: 'resume-second',
+        title: 'Segunda',
+        estimatedMinutes: null,
+        isPublished: true,
+      })
+      const video = await content.createBlock(second.id, 'video', {
+        kind: 'video',
+        provider: 'vimeo',
+        src: 'https://vimeo.com/123456789',
+      })
+      const oldTime = new Date('2026-09-01T12:00:00Z')
+      const recentTime = new Date('2026-09-08T13:00:00Z')
+      await positions.upsert(learner.userId, first.id, courseId, 87, oldTime)
+      await repo.saveProgress({
+        ...learner,
+        lessonId: second.id,
+        progress: {
+          blockId: video.id,
+          revision: video.contentRevision!,
+          positionSeconds: 24,
+          answers: {},
+          hintsUsed: 0,
+          attemptsCount: 0,
+          result: null,
+          updatedAt: recentTime.toISOString(),
+        },
+      })
+      expect(await positions.lastAccessedLessonId(learner.userId, courseId)).toBe(second.id)
+      expect(
+        (await positions.lastAccessedByCourseIds(learner.userId, [courseId])).get(courseId),
+      ).toBe(second.id)
+      expect((await positions.lastAccessByCourse(learner.userId)).get(courseId)).toEqual(recentTime)
+      expect(
+        (await positions.lastAccessByUsers([learner.userId])).get(learner.userId)?.get(courseId),
+      ).toEqual(recentTime)
+      expect(
+        (await positions.listRecentAccessed(learner.userId, 5)).map((r) => r.lessonId),
+      ).toEqual([second.id, first.id])
+      expect(await positions.lastAccessedLessonId(randomUUID(), courseId)).toBeNull()
+      expect(await positions.findPosition(learner.userId, first.id)).toBe(87)
+      await repo.saveNavigation(learner, first.id, first.id)
+      expect(await positions.lastAccessedLessonId(learner.userId, courseId)).toBe(first.id)
+      expect(
+        (await positions.listRecentAccessed(learner.userId, 5)).map((r) => r.lessonId),
+      ).toEqual([first.id, second.id])
     })
 
     test('block CRUD maintains section coverage; concurrent section edits have one winner', async () => {

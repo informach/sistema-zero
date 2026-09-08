@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, type InteractiveBlock } from '@sistemazero/core/learning'
+import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -61,6 +62,61 @@ function setup() {
 }
 
 describe('learning activities and sections', () => {
+  for (const kind of ['studio', 'pinta'] as const) {
+    test(`${kind} experiment authoring survives the HTTP schema and never requires submission`, async () => {
+      const ctx = setup()
+      const experiment =
+        kind === 'studio'
+          ? {
+              kind,
+              purpose: 'experiment',
+              initialProject: { name: 'Exploração', files: { 'index.html': '' } },
+            }
+          : {
+              kind,
+              purpose: 'experiment',
+              initialAsset: pintaAssetToWire(createLessonAsset('pixel-sprite', 32, 'Experimento')),
+            }
+      const path = `/admin/lessons/${ctx.lessonId}/blocks`
+      const created = await ctx.request(path, 'POST', { content: experiment }, USER, true)
+      expect(created.status).toBe(201)
+      const body = (await created.json()) as { id: string; content: { purpose?: string } }
+      expect(body.content.purpose).toBe('experiment')
+      const saved = await ctx.request(
+        `/admin/blocks/${body.id}`,
+        'PATCH',
+        { content: experiment },
+        USER,
+        true,
+      )
+      expect(saved.status).toBe(200)
+      expect(await saved.json()).toMatchObject({ content: { purpose: 'experiment' } })
+      expect(
+        (
+          await ctx.request(
+            path,
+            'POST',
+            { content: { ...experiment, chain: 'principal' } },
+            USER,
+            true,
+          )
+        ).status,
+      ).toBe(400)
+      expect(
+        (
+          await ctx.request(
+            path,
+            'POST',
+            { content: { ...experiment, purpose: 'unknown' } },
+            USER,
+            true,
+          )
+        ).status,
+      ).toBe(400)
+      await ctx.attempt(['prepare', 'draw'])
+      expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(200)
+    })
+  }
   test('answer keys are private, grading gates completion, retries are idempotent', async () => {
     const ctx = setup()
     const raw = await (await ctx.read()).text()

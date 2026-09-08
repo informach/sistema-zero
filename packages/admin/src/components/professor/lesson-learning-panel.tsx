@@ -32,6 +32,17 @@ function answerLines(answers: LearningAnswers, content?: PublicInteractiveBlock)
     )
   if (typeof answers.experiments === 'number')
     lines.push(`Experimentos executados: ${answers.experiments}`)
+  if (activity?.type === 'experiment') {
+    const parameter =
+      activity.preset === 'motion'
+        ? 'Gravidade'
+        : activity.preset === 'population'
+          ? 'Intervalo entre objetos (segundos)'
+          : 'Raio da colisão'
+    if (Array.isArray(answers.testedValues) && answers.testedValues.length > 0)
+      lines.push(`${parameter} · valores testados: ${answers.testedValues.join('; ')}`)
+    if (typeof answers.tested === 'number') lines.push(`Último valor testado: ${answers.tested}`)
+  }
   if (answers.leftObserved || answers.rightObserved)
     lines.push(
       `Comparação: ${answers.leftObserved ? 'observou A' : 'A pendente'}; ${answers.rightObserved ? 'observou B' : 'B pendente'}`,

@@ -2,6 +2,7 @@
 
 import {
   defaultLessonSection,
+  isInteractiveBlock,
   type LearningBlockProgress,
   type LessonLearningProgress,
   SECTION_INTENT_LABELS,
@@ -17,6 +18,8 @@ import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
 
 export function useLessonLearning(lesson: LessonDetailView, viewerId: string | null) {
   const scope = `${viewerId}:${lesson.id}`
+  const activeScope = useRef(scope)
+  activeScope.current = scope
   const [updates, setUpdates] = useState<{
     scope: string
     values: Record<string, LearningBlockProgress>
@@ -35,10 +38,14 @@ export function useLessonLearning(lesson: LessonDetailView, viewerId: string | n
   }, [lesson.blocks, lesson.learningProgress, updates, scope])
   const onProgress = useCallback(
     (value: LearningBlockProgress) =>
-      setUpdates((all) => ({
-        scope,
-        values: { ...(all.scope === scope ? all.values : {}), [value.blockId]: value },
-      })),
+      setUpdates((all) =>
+        activeScope.current === scope
+          ? {
+              scope,
+              values: { ...(all.scope === scope ? all.values : {}), [value.blockId]: value },
+            }
+          : all,
+      ),
     [scope],
   )
   return { progress, onProgress }
@@ -250,7 +257,10 @@ export function LessonSections({
   const render = (block: LessonBlockView) => (
     <BlockScope key={`${block.id}:${block.blockRevision ?? ''}`} block={block} lesson={lesson}>
       {block.kind === 'interactive' ? (
-        <InteractiveLessonBlock block={block} />
+        <InteractiveLessonBlock
+          block={block}
+          previewContent={preview && isInteractiveBlock(block.content) ? block.content : undefined}
+        />
       ) : (
         renderBlocks([block])
       )}

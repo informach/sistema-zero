@@ -361,7 +361,7 @@ export function evaluateLearning(
         : 'Conclua a exploração para registrar sua participação.'
       break
   }
-  if (participated && block.checkpoint) {
+  if (passed && block.checkpoint) {
     passed = answers.checkpoint === block.checkpoint.correctChoiceId
     verifiedBy = 'server'
     feedback = passed

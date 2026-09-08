@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import {
   type InteractiveBlock,
   type LearningAnswers,
+  type LearningBlockProgress,
   publicInteractiveBlock,
 } from '@sistemazero/core/learning'
 import { InteractiveLessonBlock } from '@sistemazero/member-shell/components/learning-activity'
@@ -10,9 +11,12 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
-import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
+import {
+  LessonSections,
+  useLessonLearning,
+} from '@sistemazero/member-shell/components/lesson-sections'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
 
 const lesson: LessonDetailView = {
@@ -89,6 +93,69 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  test('uma resposta atrasada do perfil anterior não apaga o progresso do perfil atual', () => {
+    const handlers = new Map<string, (value: LearningBlockProgress) => void>()
+    const scopedLesson = {
+      ...lesson,
+      blocks: [
+        {
+          id: 'activity',
+          kind: 'interactive',
+          blockRevision: 'revision',
+          sortOrder: 0,
+          content: publicInteractiveBlock(prediction),
+        },
+      ],
+    }
+    function Host({ viewer }: { viewer: string }) {
+      const learning = useLessonLearning(scopedLesson, viewer)
+      handlers.set(viewer, learning.onProgress)
+      return (
+        <output aria-label="Progresso atual">
+          {String(learning.progress.blocks[0]?.answers.prediction ?? 'Sem resposta')}
+        </output>
+      )
+    }
+    const update: LearningBlockProgress = {
+      blockId: 'activity',
+      revision: 'revision',
+      positionSeconds: null,
+      answers: { prediction: 'down' },
+      hintsUsed: 0,
+      attemptsCount: 0,
+      result: null,
+      updatedAt: '2026-09-08T15:00:00Z',
+    }
+    const view = render(<Host viewer="child-a" />)
+    const previous = handlers.get('child-a')!
+    view.rerender(<Host viewer="child-b" />)
+    act(() => handlers.get('child-b')!(update))
+    expect(screen.getByLabelText('Progresso atual').textContent).toBe('down')
+    act(() => previous({ ...update, answers: { prediction: 'up' } }))
+    expect(screen.getByLabelText('Progresso atual').textContent).toBe('down')
+  })
+  test('a prévia da sequência permite conferir os blocos completos de autoria', () => {
+    render(
+      <LessonSections
+        lesson={{
+          ...lesson,
+          blocks: [{ id: 'discovery', kind: 'interactive', sortOrder: 0, content: prediction }],
+          sections: [{ ...lesson.sections![0]!, blockIds: ['discovery'], workspaceBlockId: null }],
+        }}
+        renderBlocks={() => null}
+      />,
+    )
+    fireEvent.click(screen.getByRole('radio', { name: 'Sobe' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Observar o resultado' }))
+    const check = screen.getByRole('button', {
+      name: 'Conferir minha descoberta',
+    }) as HTMLButtonElement
+    expect(check.disabled).toBe(false)
+    fireEvent.click(check)
+    expect(
+      screen.getByText('Prévia de autoria. Nenhum progresso de aluno foi registrado.'),
+    ).toBeTruthy()
+  })
   test('prévia de autoria permite conferir o resultado sem registrar atividade de aluno', async () => {
     const block = {
       id: 'preview',

@@ -1,6 +1,6 @@
 # Verificação das aulas interativas
 
-Registro atualizado em 2026-09-08T20:59:58+00:00. Worktree `sistema-zero-aulas`, base `d40f8fd9`, branch `feat/aulas-interativas`.
+Registro inicial em 2026-09-08T20:59:58+00:00. Worktree `sistema-zero-aulas`, base `d40f8fd9`, branch `feat/aulas-interativas`. Os resultados abaixo pertencem à entrega inicial; a revisão posterior está vinculada na seção Entrega.
 
 ## Escopo e conclusão
 
@@ -58,4 +58,6 @@ A primeira execução global em paralelo, simultânea aos builds, encontrou um t
 
 ## Entrega
 
-Commit e push para staging pendentes da conclusão da verificação global. Produção não foi promovida. O checkout original e suas alterações de Molda não entram neste lote.
+Implementação enviada para staging no commit `aab691c5e549afe19a501c52a8ede7aa0a4137f6`. O [CI 34278479416](https://github.com/informach/sistema-zero/actions/runs/34278479416) concluiu com sucesso, incluindo testes, tipos, E2E e deploy de staging em 2026-09-08T21:40:41Z. Produção não foi promovida. O checkout original e suas alterações de Molda não entram neste lote.
+
+A [revisão completa posterior](../../../.audits/architectural-analysis-2026-09-08-aulas.md) documenta sete defeitos reproduzidos e corrigidos, a nova verificação e os limites do aceite. As evidências dessa revisão são separadas das contagens históricas acima.

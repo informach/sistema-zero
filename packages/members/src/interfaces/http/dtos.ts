@@ -680,7 +680,6 @@ const PensaTaskGuideSchema = t.Object({
 })
 const PensaPintaContextSchema = t.Object({
   kind: t.Literal('pinta'),
-  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   assetId: t.String({ minLength: 1, maxLength: 100 }),
   artKind: t.Union([
     t.Literal('sprite'),
@@ -720,7 +719,6 @@ const PensaStudioBlockSchema = t.Object({
 })
 const PensaStudioContextSchema = t.Object({
   kind: t.Literal('studio'),
-  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
   visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
   blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),
@@ -1185,6 +1183,7 @@ const StudioActivitySchema = t.Object({
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialProject: StudioProjectSchema,
   level: t.Optional(StudioLevelSchema),
   allowBlocks: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 500 })),
@@ -1235,6 +1234,7 @@ const PintaAssetSchema = t.Object(
 /** Bloco Pinta: ateliê de desenho embarcado na aula (ver domain/course/lesson-block.ts). */
 const PintaBlockSchema = t.Object({
   kind: t.Literal('pinta'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialAsset: PintaAssetSchema,
   /** Curadoria da caixa de ferramentas (restritiva; vazia = a caixa inteira). */
   allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
