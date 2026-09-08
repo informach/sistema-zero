@@ -150,7 +150,7 @@ describe('TextureEditor', () => {
     expect(await screen.findByText((text) => text === ready || text === failed)).toBeDefined()
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    expect(fake.instances[0]?.disposed).toBe(true)
+    await waitFor(() => expect(fake.instances[0]?.disposed).toBe(true))
   })
 })
 
