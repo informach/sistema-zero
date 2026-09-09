@@ -98,5 +98,6 @@ export const LearningImportPreviewBody = t.Object({ document: t.Unknown() })
 export const LearningImportApplyBody = t.Object({
   operationId: Id,
   document: t.Unknown(),
-  expectedFingerprint: t.String({ pattern: '^[a-f0-9]{64}$' }),
+  // Import preview returns the same UUID revision used by draft writes/publication.
+  expectedFingerprint: Id,
 })

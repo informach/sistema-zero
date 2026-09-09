@@ -20,6 +20,10 @@ Os anexos pertencem à aula e usam o mesmo rascunho. Materiais de apoio ficam em
 
 ## O mesmo Estúdio em várias seções
 
+Os manifestos de Corre Dino e dos dias do Desafio foram preparados para adaptar aulas existentes. Eles reutilizam o primeiro bloco de Estúdio da própria aula e preservam seu projeto inicial, suas permissões e sua cadeia. O arquivo de manifesto não contém essa configuração.
+
+Ao usar esses manifestos em uma aula nova e vazia, primeiro use **Adicionar conteúdo aqui → Estúdio** e configure esse bloco no rascunho. Na continuação de um curso, confira o projeto inicial e a mesma cadeia usada pelas outras aulas. Depois confira e aplique a importação; ela organizará esse único Estúdio nas seções previstas. Não é necessário publicar a aula para importar. A introdução e os manifestos que usam somente ferramentas externas não exigem esse bloco.
+
 Adicione **um bloco de Estúdio** na seção em que o projeto começa. Configure o projeto inicial, os blocos disponíveis, o modo, a atividade e a cadeia entre aulas, conforme o curso.
 
 Nas demais seções em que a criança precisa continuar trabalhando, use **Ferramenta durante esta seção** e escolha esse bloco existente. Não adicione outro bloco de Estúdio para representar a continuação.

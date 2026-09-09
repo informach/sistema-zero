@@ -96,7 +96,19 @@ export class LearningImportService {
         const block = draft.document.blocks.filter((b) => b.content.kind === entry.existing.kind)[
           entry.existing.index
         ]
-        if (!block) throw new ValidationError(`Referência ausente: ${entry.key}`)
+        if (!block) {
+          const kind =
+            entry.existing.kind === 'studio'
+              ? 'Estúdio'
+              : entry.existing.kind === 'pinta'
+                ? 'Pinta'
+                : entry.existing.kind
+          throw new ValidationError(
+            `Este manifesto reutiliza o bloco de ${kind} nº ${entry.existing.index + 1} da aula (referência "${entry.key}"), mas ele ainda não existe no rascunho. ` +
+              `Em Percurso da aula, use "Adicionar conteúdo aqui", adicione e configure esse bloco e confira a importação novamente. ` +
+              'O manifesto contém a organização e as atividades; o conteúdo do bloco referenciado precisa estar cadastrado na aula.',
+          )
+        }
         mapping.set(entry.key, block.id)
         add(block)
       } else {
