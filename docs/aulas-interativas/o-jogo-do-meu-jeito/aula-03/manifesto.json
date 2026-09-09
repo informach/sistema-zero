@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-03",
   "title": "Sua nave ganha movimento",
@@ -80,6 +80,22 @@
         "kind": "rich_text",
         "markdown": "A animação voando deve ter dois quadros. O corpo fica alinhado e o fogo muda. Confira o salvamento e abra novamente o mesmo asset.\n\nNa Aula 4, você vai desenhar o asteroide com outro jeito de construir imagens: vetor."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-03-passo-01: gravar a demonstração \"o seu fogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-03-passo-02: gravar a demonstração \"o segundo quadro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-03-passo-03: gravar a demonstração \"o fantasma do quadro anterior\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-03-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -118,48 +134,40 @@
       "title": "o seu fogo",
       "objective": "Abra Pinta e entre no cartão nave. Desenhe o fogo nas quatro linhas que ficaram livres. Escolha cores que você consiga reconhecer quando a nave estiver pequena no jogo.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-03-passo-01: gravar a demonstração \"o seu fogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "o segundo quadro",
       "objective": "Na faixa Spritesheet, duplique o quadro. Agora mude o fogo do segundo, preservando o corpo. Rode a prévia para ver as duas imagens alternando. Se quase não houver diferença, experimente uma mudança maior no fogo.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-03-passo-02: gravar a demonstração \"o segundo quadro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "o fantasma do quadro anterior",
       "objective": "Ligue a pele de cebola para ver a referência do quadro anterior. Compare o alinhamento do corpo e ajuste só o que você quer mover. Desligue a referência e olhe a prévia outra vez.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-03-passo-03: gravar a demonstração \"o fantasma do quadro anterior\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "o nome da animação",
       "objective": "Renomeie a animação parado para voando. Confira dois quadros e mantenha a velocidade como veio nesta etapa. Espere salvar e volte à galeria para reconhecer a nave animada.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-03-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

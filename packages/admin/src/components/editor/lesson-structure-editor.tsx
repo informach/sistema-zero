@@ -2,32 +2,35 @@
 
 import {
   defaultLessonSection,
+  type LessonDraftChange,
+  type LessonDraftDocument,
+  type LessonDraftIssue,
   type LessonSection,
   SECTION_INTENT_LABELS,
   SECTION_INTENTS,
-  validateLessonSections,
 } from '@sistemazero/core/learning'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import { LessonSections } from '@sistemazero/member-shell/components/lesson-sections'
+import { sanitizePintaAsset } from '@sistemazero/pinta/assets'
+import type { PintaHandle } from '@sistemazero/pinta/lesson'
+import type { StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowDown, ArrowUp, Plus } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
-import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import type { BlockView, LessonContentView } from '@/lib/types'
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { VideoUploader } from '@/components/media/video-uploader'
+import { PintaEmbed } from '@/components/pinta/pinta-embed'
+import { StudioEmbed } from '@/components/studio/studio-embed'
+import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
 
-interface Structure {
-  revision: string | null
-  sections: LessonSection[]
-}
 function blockLabel(block: BlockView) {
   const c = block.content
-  if (c.kind === 'interactive') return c.title
+  if (c.kind === 'interactive') return c.title || 'Descoberta interativa'
   if (c.kind === 'rich_text')
     return (
-      (c.markdown ?? 'Texto')
+      (c.markdown ?? c.html ?? '')
         .replace(/^#+\s*/, '')
         .split('\n')[0]
         ?.slice(0, 90) || 'Texto'
@@ -45,367 +48,483 @@ function blockLabel(block: BlockView) {
     coming_soon: 'Em breve',
   }[c.kind]
 }
+function ToolPreview({ block }: { block: BlockView }) {
+  const studio = useRef<StudioHandle | null>(null)
+  const pinta = useRef<PintaHandle | null>(null)
+  if (block.content.kind === 'studio')
+    return (
+      <StudioEmbed
+        handleRef={studio}
+        initialProject={block.content.initialProject}
+        features={{ ai: false, export: false }}
+        lessonConfig={{
+          level: block.content.level,
+          allowedModes: block.content.allowedModes,
+          allowBlocks: block.content.allowBlocks,
+          allowCategories: block.content.allowCategories,
+          allowLevelReveal: block.content.allowLevelReveal,
+          activity: block.content.activity,
+        }}
+      />
+    )
+  if (block.content.kind === 'pinta') {
+    const asset = sanitizePintaAsset(block.content.initialAsset)
+    return asset ? (
+      <PintaEmbed
+        initialAsset={asset}
+        handleRef={pinta}
+        allowTools={block.content.allowTools}
+        features={{ resize: false, export: false }}
+      />
+    ) : (
+      <p>Configure o desenho inicial para abrir a prévia.</p>
+    )
+  }
+  return null
+}
 export function LessonStructureEditor({
   lesson,
+  document,
   canWrite,
-  onDirtyChange,
+  onChange,
+  onAddBlock,
+  onEditBlock,
+  onRemoveBlock,
+  issues,
+  preview,
+  onPreviewChange,
+  editingBlockId,
 }: {
   lesson: LessonContentView
+  editingBlockId?: string
+  document: LessonDraftDocument<LessonBlockContent>
   canWrite: boolean
-  onDirtyChange: (value: boolean) => void
+  onChange: (change: LessonDraftChange<LessonBlockContent>, immediate?: boolean) => void
+  onAddBlock: (sectionId: string | null) => void
+  onEditBlock: (block: BlockView) => void
+  onRemoveBlock: (block: BlockView) => void
+  issues: LessonDraftIssue[]
+  preview: boolean
+  onPreviewChange: (value: boolean) => void
 }) {
-  const [structure, setStructure] = useState<Structure | null>(null)
-  const [busy, setBusy] = useState(false)
-  const [dirty, setDirty] = useState(false)
-  const [error, setError] = useState('')
-  const [saved, setSaved] = useState('')
-  const [preview, setPreview] = useState(false)
-  const reload = useCallback(async () => {
-    try {
-      setStructure(await apiGet<Structure>(`/api/members/lessons/${lesson.id}/structure`))
-      setDirty(false)
-      setError('')
-    } catch (e) {
-      setError((e as ApiError).message || 'Não foi possível carregar as seções.')
-    }
-  }, [lesson.id])
-  useEffect(() => {
-    void reload()
-  }, [reload])
-  useEffect(() => {
-    onDirtyChange(dirty)
-  }, [dirty, onDirtyChange])
-  useEffect(() => {
-    if (!dirty) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = ''
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
-  function change(sections: LessonSection[]) {
-    setStructure((s) => (s ? { ...s, sections } : null))
-    setDirty(true)
-    setSaved('')
-    setError('')
+  const [settings, setSettings] = useState<string | null>(null)
+  const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
+  const tools = lesson.blocks.filter(
+    (b) => (b.kind === 'studio' || b.kind === 'pinta') && !document.supportBlockIds.includes(b.id),
+  )
+  const structure = (
+    sections: LessonSection[],
+    supportBlockIds = document.supportBlockIds,
+    immediate = true,
+  ) => onChange({ type: 'structure', sections, supportBlockIds }, immediate)
+  const patch = (id: string, change: Partial<LessonSection>, immediate = false) =>
+    structure(
+      document.sections.map((s) => (s.id === id ? { ...s, ...change } : s)),
+      document.supportBlockIds,
+      immediate,
+    )
+  function move(blockId: string, target: string) {
+    structure(
+      document.sections.map((s) => ({
+        ...s,
+        blockIds: [
+          ...s.blockIds.filter((id) => id !== blockId),
+          ...(s.id === target ? [blockId] : []),
+        ],
+        workspaceBlockId:
+          target === 'support' && s.workspaceBlockId === blockId ? null : s.workspaceBlockId,
+      })),
+      [
+        ...document.supportBlockIds.filter((id) => id !== blockId),
+        ...(target === 'support' ? [blockId] : []),
+      ],
+    )
   }
-  function patch(id: string, fields: Partial<LessonSection>) {
-    if (structure) change(structure.sections.map((s) => (s.id === id ? { ...s, ...fields } : s)))
-  }
-  async function save() {
-    if (!structure) return
-    const invalid = validateLessonSections(structure.sections, lesson.blocks)
-    if (invalid) {
-      setError(invalid)
-      return
-    }
-    setBusy(true)
-    try {
-      setStructure(
-        await apiSend<Structure>(`/api/members/lessons/${lesson.id}/structure`, 'PUT', {
-          expectedRevision: structure.revision,
-          sections: structure.sections,
-        }),
-      )
-      setDirty(false)
-      setSaved('Organização salva.')
-    } catch (e) {
-      setError((e as ApiError).message || 'Não foi possível salvar.')
-    } finally {
-      setBusy(false)
-    }
-  }
-  if (!structure)
+  function contentList(ids: string[], location: string) {
     return (
-      <div className="rounded-xl border border-border p-5">
-        {error || 'Carregando organização didática…'}
-        {error && (
-          <Button variant="outline" onClick={() => void reload()}>
-            Tentar novamente
-          </Button>
-        )}
+      <div className="space-y-3">
+        {ids.map((id, index) => {
+          const block = blocks.get(id)
+          if (!block) return null
+          const video = document.plannedVideos.find((v) => v.blockId === id)
+          return (
+            <article key={id} className="rounded-xl border border-border bg-background p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="min-w-0 flex-1 text-sm font-medium">{blockLabel(block)}</span>
+                {[-1, 1].map((direction) => (
+                  <Button
+                    key={direction}
+                    variant="ghost"
+                    size="icon"
+                    disabled={!canWrite || !ids[index + direction]}
+                    aria-label={
+                      direction < 0 ? 'Mover conteúdo para cima' : 'Mover conteúdo para baixo'
+                    }
+                    onClick={() => {
+                      const next = [...ids]
+                      const other = next[index + direction]
+                      if (!other) return
+                      next[index] = other
+                      next[index + direction] = id
+                      if (location === 'support') structure(document.sections, next)
+                      else patch(location, { blockIds: next }, true)
+                    }}
+                  >
+                    {direction < 0 ? (
+                      <ArrowUp className="size-4" />
+                    ) : (
+                      <ArrowDown className="size-4" />
+                    )}
+                  </Button>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={!canWrite}
+                  aria-label={`Editar ${blockLabel(block)}`}
+                  onClick={() => onEditBlock(block)}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  disabled={!canWrite}
+                  aria-label={`Retirar ${blockLabel(block)}`}
+                  onClick={() => onRemoveBlock(block)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+              <Select
+                className="mt-2 max-w-sm"
+                disabled={!canWrite}
+                aria-label={`Local de ${blockLabel(block)}`}
+                value={location}
+                onChange={(e) => move(id, e.target.value)}
+              >
+                {document.sections.map((s, i) => (
+                  <option key={s.id} value={s.id}>
+                    {i + 1}. {s.title || 'Seção sem título'}
+                  </option>
+                ))}
+                <option value="support">Materiais de apoio</option>
+              </Select>
+              {video && block.content.kind === 'video' && (
+                <div className="mt-4 space-y-3 border-t border-border pt-4">
+                  <label className="block space-y-1 text-sm">
+                    Orientação de produção
+                    <Textarea
+                      value={video.instructions}
+                      maxLength={5000}
+                      disabled={!canWrite}
+                      onChange={(e) =>
+                        onChange({
+                          type: 'planned-videos',
+                          plannedVideos: document.plannedVideos.map((v) =>
+                            v.blockId === id ? { ...v, instructions: e.target.value } : v,
+                          ),
+                        })
+                      }
+                    />
+                  </label>
+                  {canWrite && editingBlockId !== id ? (
+                    <VideoUploader
+                      autoCheckStatus
+                      currentSrc={block.content.src}
+                      onReady={(ready) => {
+                        const content = block.content
+                        if (content.kind !== 'video') return
+                        onChange(
+                          {
+                            type: 'block',
+                            block: {
+                              id,
+                              content: {
+                                ...content,
+                                provider: 'vimeo',
+                                src: ready.embedUrl,
+                                ...(ready.durationSeconds !== null
+                                  ? { durationSeconds: ready.durationSeconds }
+                                  : {}),
+                                ...(ready.captions.length ? { captions: ready.captions } : {}),
+                              },
+                            },
+                          },
+                          true,
+                        )
+                        onChange(
+                          {
+                            type: 'planned-videos',
+                            plannedVideos: document.plannedVideos.map((v) =>
+                              v.blockId === id ? { ...v, videoId: ready.vimeoVideoId } : v,
+                            ),
+                          },
+                          true,
+                        )
+                      }}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      {block.content.src ? 'Vídeo vinculado' : 'Vídeo a produzir'}
+                    </p>
+                  )}
+                  {canWrite && block.content.src && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        onChange(
+                          {
+                            type: 'block',
+                            block: { id, content: { kind: 'video', provider: 'vimeo', src: '' } },
+                          },
+                          true,
+                        )
+                        onChange(
+                          {
+                            type: 'planned-videos',
+                            plannedVideos: document.plannedVideos.map((v) =>
+                              v.blockId === id ? { ...v, videoId: null } : v,
+                            ),
+                          },
+                          true,
+                        )
+                      }}
+                    >
+                      Retirar mídia vinculada
+                    </Button>
+                  )}
+                </div>
+              )}
+              {issues
+                .filter((i) => i.blockId === id)
+                .map((issue) => (
+                  <p key={issue.message} role="alert" className="mt-2 text-sm text-destructive">
+                    {issue.message}
+                  </p>
+                ))}
+            </article>
+          )
+        })}
       </div>
     )
-  const tools = lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta')
+  }
   return (
-    <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <section className="space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Organização didática</h2>
-          <p className="mt-1 max-w-prose text-sm text-muted-foreground">
-            Cada seção apresenta um objetivo. O mesmo editor pode acompanhar várias seções.
+          <h2 className="text-lg font-semibold">Percurso da aula</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Organize o conteúdo e escolha onde o mesmo projeto acompanha o aluno.
           </p>
         </div>
-        <Button variant="outline" onClick={() => setPreview((v) => !v)}>
-          {preview ? 'Voltar à organização' : 'Prévia da sequência'}
+        <Button variant="outline" onClick={() => onPreviewChange(!preview)}>
+          {preview ? 'Voltar à edição' : 'Prévia do rascunho'}
         </Button>
       </div>
       {preview ? (
         <LessonSections
-          key={JSON.stringify(structure.sections)}
           lesson={{
             id: lesson.id,
-            slug: lesson.slug,
-            title: lesson.title,
+            slug: document.slug,
+            title: document.title,
             courseSlug: '',
             moduleId: '',
             completed: false,
-            estimatedMinutes: null,
+            estimatedMinutes: document.estimatedMinutes,
             positionSeconds: null,
-            sections: structure.sections,
+            sections: document.sections,
+            supportBlockIds: document.supportBlockIds,
             blocks: lesson.blocks,
             attachments: [],
           }}
-          renderBlocks={(blocks) =>
-            blocks.some((b) => b.kind === 'studio' || b.kind === 'pinta') ? (
-              <div className="rounded-xl border border-dashed border-primary/30 bg-primary/5 p-6">
-                Editor do projeto:{' '}
-                {blocks.map((b) => (b.kind === 'pinta' ? 'Pinta' : 'Estúdio')).join(', ')}. A
-                configuração completa pode ser conferida no bloco abaixo.
-              </div>
-            ) : (
-              <LessonBlocks blocks={blocks} />
-            )
+          renderBlocks={(items) =>
+            items.map((item) => {
+              const block = blocks.get(item.id)
+              if (!block) return null
+              if (block.kind === 'studio' || block.kind === 'pinta')
+                return <ToolPreview key={block.id} block={block} />
+              if (block.content.kind === 'video' && !block.content.src)
+                return (
+                  <p key={block.id} className="rounded-xl border border-dashed border-border p-5">
+                    Vídeo planejado:{' '}
+                    {document.plannedVideos.find((v) => v.blockId === block.id)?.instructions}
+                  </p>
+                )
+              return <LessonBlocks key={item.id} blocks={[item]} />
+            })
           }
         />
       ) : (
-        <fieldset disabled={!canWrite || busy} className="space-y-4">
-          {structure.sections.map((section, index) => (
-            <div key={section.id} className="space-y-4 rounded-xl border border-border p-4">
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Seção {index + 1}
+        <fieldset disabled={!canWrite} className="space-y-5">
+          {document.sections.map((section, index) => (
+            <div
+              key={section.id}
+              className="overflow-hidden rounded-2xl border border-border bg-card"
+            >
+              <div className="flex flex-wrap items-center gap-3 border-b border-border p-4 sm:px-5">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-sm font-semibold text-primary">
+                  {index + 1}
                 </span>
-                <div className="flex gap-1">
-                  {[-1, 1].map((direction) => (
-                    <Button
-                      key={direction}
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Mover seção ${index + 1} para ${direction < 0 ? 'cima' : 'baixo'}`}
-                      disabled={!canWrite || busy || !structure.sections[index + direction]}
-                      onClick={() => {
-                        const next = [...structure.sections]
-                        const other = next[index + direction]
-                        if (!other) return
-                        next[index] = other
-                        next[index + direction] = section
-                        change(next)
-                      }}
-                    >
-                      {direction < 0 ? (
-                        <ArrowUp className="size-4" />
-                      ) : (
-                        <ArrowDown className="size-4" />
-                      )}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    disabled={!canWrite || busy || structure.sections.length === 1}
-                    onClick={() => {
-                      const next = structure.sections.filter((s) => s.id !== section.id)
-                      const target = next[Math.max(0, index - 1)]
-                      change(
-                        next.map((s) =>
-                          s.id === target?.id
-                            ? { ...s, blockIds: [...s.blockIds, ...section.blockIds] }
-                            : s,
-                        ),
-                      )
-                    }}
-                  >
-                    Remover seção
-                  </Button>
-                </div>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="space-y-1 text-sm">
-                  Título
-                  <Input
-                    value={section.title}
-                    maxLength={200}
-                    onChange={(e) => patch(section.id, { title: e.target.value })}
-                  />
-                </label>
-                <label className="space-y-1 text-sm">
-                  Intenção didática
-                  <Select
-                    value={section.intent}
-                    onChange={(e) => {
-                      const intent = SECTION_INTENTS.find((v) => v === e.target.value)
-                      if (intent) patch(section.id, { intent })
-                    }}
-                  >
-                    {SECTION_INTENTS.map((intent) => (
-                      <option key={intent} value={intent}>
-                        {SECTION_INTENT_LABELS[intent]}
-                      </option>
-                    ))}
-                  </Select>
-                </label>
-              </div>
-              <label className="block space-y-1 text-sm">
-                Objetivo para o aluno
-                <Textarea
-                  value={section.objective}
-                  maxLength={2000}
-                  rows={2}
-                  onChange={(e) => patch(section.id, { objective: e.target.value })}
+                <Input
+                  aria-label={`Título da seção ${index + 1}`}
+                  value={section.title}
+                  maxLength={200}
+                  className="min-w-40 flex-1"
+                  onChange={(e) => patch(section.id, { title: e.target.value })}
                 />
-              </label>
-              <ol className="space-y-2">
-                {section.blockIds.map((id, blockIndex) => {
-                  const block = lesson.blocks.find((b) => b.id === id)
-                  return (
-                    <li
-                      key={id}
-                      className="flex flex-wrap items-center gap-2 rounded-lg bg-muted/30 px-3 py-2"
-                    >
-                      <span className="min-w-0 flex-1 text-sm">
-                        {block ? blockLabel(block) : 'Bloco não encontrado'}
-                      </span>
-                      {[-1, 1].map((direction) => (
-                        <Button
-                          key={direction}
-                          size="icon"
-                          variant="ghost"
-                          disabled={!section.blockIds[blockIndex + direction]}
-                          aria-label={`Mover bloco ${blockIndex + 1} para ${direction < 0 ? 'cima' : 'baixo'}`}
-                          onClick={() => {
-                            const ids = [...section.blockIds]
-                            const other = ids[blockIndex + direction]
-                            if (!other) return
-                            ids[blockIndex] = other
-                            ids[blockIndex + direction] = id
-                            patch(section.id, { blockIds: ids })
-                          }}
-                        >
-                          {direction < 0 ? (
-                            <ArrowUp className="size-4" />
-                          ) : (
-                            <ArrowDown className="size-4" />
-                          )}
-                        </Button>
-                      ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSettings(settings === section.id ? null : section.id)}
+                >
+                  Configurações
+                </Button>
+                {[-1, 1].map((direction) => (
+                  <Button
+                    key={direction}
+                    variant="ghost"
+                    size="icon"
+                    disabled={!document.sections[index + direction]}
+                    aria-label={direction < 0 ? 'Mover seção para cima' : 'Mover seção para baixo'}
+                    onClick={() => {
+                      const next = [...document.sections]
+                      const other = next[index + direction]
+                      if (!other) return
+                      next[index] = other
+                      next[index + direction] = section
+                      structure(next)
+                    }}
+                  >
+                    {direction < 0 ? (
+                      <ArrowUp className="size-4" />
+                    ) : (
+                      <ArrowDown className="size-4" />
+                    )}
+                  </Button>
+                ))}
+              </div>
+              <div className="space-y-4 p-4 sm:p-5">
+                {settings === section.id && (
+                  <div className="space-y-3 rounded-xl bg-muted/40 p-4">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Estas orientações aparecem apenas na autoria.
+                    </p>
+                    <label className="block space-y-1 text-sm">
+                      Intenção didática
                       <Select
-                        className="w-auto max-w-52"
-                        aria-label={`Seção do bloco ${blockIndex + 1}`}
-                        value={section.id}
-                        onChange={(e) =>
-                          change(
-                            structure.sections.map((s) =>
-                              s.id === section.id
-                                ? { ...s, blockIds: s.blockIds.filter((b) => b !== id) }
-                                : s.id === e.target.value
-                                  ? { ...s, blockIds: [...s.blockIds, id] }
-                                  : s,
-                            ),
-                          )
-                        }
+                        value={section.intent}
+                        onChange={(e) => {
+                          const intent = SECTION_INTENTS.find((v) => v === e.target.value)
+                          if (intent) patch(section.id, { intent })
+                        }}
                       >
-                        {structure.sections.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.title}
+                        {SECTION_INTENTS.map((intent) => (
+                          <option key={intent} value={intent}>
+                            {SECTION_INTENT_LABELS[intent]}
                           </option>
                         ))}
                       </Select>
-                    </li>
-                  )
-                })}
-              </ol>
-              <label className="block space-y-1 text-sm">
-                Ferramenta durante esta seção
-                <Select
-                  value={section.workspaceBlockId ?? section.externalTool ?? ''}
-                  onChange={(e) => {
-                    const value = e.target.value
-                    patch(
-                      section.id,
-                      value === 'estudio' || value === 'pinta'
-                        ? { externalTool: value, workspaceBlockId: null }
-                        : { externalTool: null, workspaceBlockId: value || null },
-                    )
-                  }}
-                >
-                  <option value="">Somente o conteúdo desta seção</option>
-                  <optgroup label="Mesmo projeto incorporado">
-                    {tools.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {blockLabel(b)} · bloco {lesson.blocks.indexOf(b) + 1}
-                      </option>
-                    ))}
-                  </optgroup>
-                  <optgroup label="Criar fora da aula">
-                    <option value="estudio">Abrir Estúdio livre em outra aba</option>
-                    <option value="pinta">Abrir Pinta em outra aba</option>
-                  </optgroup>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Crie um único bloco para o projeto e selecione o mesmo bloco nas seções em que ele
-                  deve aparecer. Outro bloco representa outro projeto.
-                </p>
-              </label>
-              <label className="block space-y-1 text-sm">
-                Mídias a produzir (uma por linha)
-                <Textarea
-                  value={section.pendingMedia.join('\n')}
-                  rows={2}
-                  onChange={(e) =>
-                    patch(section.id, {
-                      pendingMedia: e.target.value.split('\n').filter((line) => line.trim()),
-                    })
-                  }
-                />
-                <span className="text-xs text-muted-foreground">
-                  Pendências impedem publicar a aula. Remova cada item depois de produzir e vincular
-                  a mídia.
-                </span>
-              </label>
+                    </label>
+                    <label className="block space-y-1 text-sm">
+                      Objetivo didático
+                      <Textarea
+                        rows={2}
+                        maxLength={2000}
+                        value={section.objective}
+                        onChange={(e) => patch(section.id, { objective: e.target.value })}
+                      />
+                    </label>
+                    <Button
+                      variant="ghost"
+                      disabled={document.sections.length < 2}
+                      onClick={() => {
+                        const rest = document.sections.filter((s) => s.id !== section.id)
+                        const target = rest[Math.max(0, index - 1)]
+                        structure(
+                          rest.map((s) =>
+                            s.id === target?.id
+                              ? { ...s, blockIds: [...s.blockIds, ...section.blockIds] }
+                              : s,
+                          ),
+                        )
+                      }}
+                    >
+                      Remover seção e manter seu conteúdo na seção anterior
+                    </Button>
+                  </div>
+                )}
+                {contentList(section.blockIds, section.id)}
+                <Button variant="outline" onClick={() => onAddBlock(section.id)}>
+                  <Plus className="size-4" />
+                  Adicionar conteúdo aqui
+                </Button>
+                <label className="block space-y-1 text-sm">
+                  Ferramenta durante esta seção
+                  <Select
+                    value={section.workspaceBlockId ?? section.externalTool ?? ''}
+                    onChange={(e) => {
+                      const value = e.target.value
+                      patch(
+                        section.id,
+                        value === 'estudio' || value === 'pinta'
+                          ? { externalTool: value, workspaceBlockId: null }
+                          : { externalTool: null, workspaceBlockId: value || null },
+                        true,
+                      )
+                    }}
+                  >
+                    <option value="">Somente o conteúdo desta seção</option>
+                    <optgroup label="Continuar o mesmo projeto">
+                      {tools.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {blockLabel(b)} ·{' '}
+                          {document.sections.find((s) => s.blockIds.includes(b.id))?.title}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Ferramenta externa">
+                      <option value="estudio">Estúdio livre</option>
+                      <option value="pinta">Pinta livre</option>
+                    </optgroup>
+                  </Select>
+                </label>
+                {section.workspaceBlockId && (
+                  <p className="text-xs text-muted-foreground">
+                    O aluno continua o mesmo projeto. A entrega será contada uma única vez.
+                  </p>
+                )}
+              </div>
             </div>
           ))}
-          <div className="flex flex-wrap justify-between gap-3">
-            <Button
-              variant="outline"
-              disabled={structure.sections.length >= 60}
-              onClick={() =>
-                change([
-                  ...structure.sections,
-                  { ...defaultLessonSection(crypto.randomUUID(), 'Nova seção', []), objective: '' },
-                ])
-              }
-            >
-              <Plus className="size-4" />
-              Adicionar seção
-            </Button>
-            <Button disabled={!dirty || busy} onClick={() => void save()}>
-              {busy ? 'Salvando…' : 'Salvar organização'}
-            </Button>
-          </div>
-        </fieldset>
-      )}
-      {error && (
-        <div role="alert" className="space-y-2 text-sm text-destructive">
-          <p>{error}</p>
           <Button
             variant="outline"
-            onClick={() => {
-              if (
-                !dirty ||
-                window.confirm('Descartar as alterações locais e recarregar a organização salva?')
-              )
-                void reload()
-            }}
+            disabled={document.sections.length >= 60}
+            onClick={() =>
+              structure([
+                ...document.sections,
+                defaultLessonSection(crypto.randomUUID(), 'Nova seção', []),
+              ])
+            }
           >
-            Recarregar organização salva
+            <Plus className="size-4" />
+            Adicionar seção
           </Button>
-        </div>
-      )}
-      {saved && (
-        <p role="status" className="text-sm text-muted-foreground">
-          {saved}
-        </p>
+          <details className="rounded-2xl border border-border bg-card p-5">
+            <summary className="cursor-pointer font-semibold">
+              Materiais de apoio · {document.supportBlockIds.length}
+            </summary>
+            <p className="my-3 text-sm text-muted-foreground">
+              Conteúdo opcional, recolhido e fora da sequência principal.
+            </p>
+            {contentList(document.supportBlockIds, 'support')}
+            <Button className="mt-3" variant="outline" onClick={() => onAddBlock(null)}>
+              <Plus className="size-4" />
+              Adicionar apoio
+            </Button>
+          </details>
+        </fieldset>
       )}
     </section>
   )

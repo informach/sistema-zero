@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-10",
   "title": "Uma colisão mais justa",
@@ -91,6 +91,22 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-10-passo-01: gravar a demonstração \"ligar o raio-X\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-10-passo-02: gravar a demonstração \"por que a batida pareceu roubada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-10-passo-03: gravar a demonstração \"ajustar a área de colisão\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-10-passo-04: gravar a demonstração \"você escolhe o quanto perdoar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -129,48 +145,40 @@
       "title": "ligar o raio-X",
       "objective": "Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode. O contorno rosa vai mostrar a área que estava invisível.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-10-passo-01: gravar a demonstração \"ligar o raio-X\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "por que a batida pareceu roubada",
       "objective": "Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa. Essa diferença explica a sensação de perder cedo.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-10-passo-02: gravar a demonstração \"por que a batida pareceu roubada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "ajustar a área de colisão",
       "objective": "Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80. Recomece e confira a caixa menor com o raio-X ainda ligado.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-10-passo-03: gravar a demonstração \"ajustar a área de colisão\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "você escolhe o quanto perdoar",
       "objective": "Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos. Ao terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-10-passo-04: gravar a demonstração \"você escolhe o quanto perdoar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

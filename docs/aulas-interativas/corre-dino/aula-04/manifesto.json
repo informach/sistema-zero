@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-04",
   "title": "O som escuta o pulo",
@@ -87,6 +87,22 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-04-passo-01: gravar a demonstração \"a área que escuta o teclado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-04-passo-02: gravar a demonstração \"o som do pulo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-04-passo-03: gravar a demonstração \"o som está escutando a coisa errada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-04-passo-04: gravar a demonstração \"escolhe o seu som\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -125,48 +141,40 @@
       "title": "a área que escuta o teclado",
       "objective": "Em Áreas do projeto, adicione Quando acontecer. Em Jogo 2D, Controles, coloque Quando apertar a tecla dentro dele e escolha barra de espaço.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-04-passo-01: gravar a demonstração \"a área que escuta o teclado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "o som do pulo",
       "objective": "Em Kit dino, coloque Tocar som de pulo dentro do evento da tecla. Clique no jogo e pule com espaço. Agora escute o que acontece nos outros controles.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-04-passo-02: gravar a demonstração \"o som do pulo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "o som está escutando a coisa errada",
       "objective": "Teste espaço, seta para cima, clique e espaço no ar. Em Controles, adicione Quando o sprite pular e escolha dino. Mova o som para esse evento e apague o evento de tecla vazio. Repita os quatro testes.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-04-passo-03: gravar a demonstração \"o som está escutando a coisa errada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "escolhe o seu som",
       "objective": "Em Jogo 2D, Som, experimente Tocar efeito dentro do evento de pulo. Tire o som anterior para não tocar dois. Escolha um efeito e pule de novo; o estilo do som é uma decisão sua.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-04-passo-04: gravar a demonstração \"escolhe o seu som\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

@@ -23,7 +23,7 @@ import {
   courses,
   learningAttempts,
   lessonBlockProgress,
-  lessonBlocks,
+  activeLessonBlocks as lessonBlocks,
   lessonNavigation,
   lessonStructures,
   lessons,
@@ -99,7 +99,9 @@ export class DrizzleLearningRepository implements LearningRepository {
       .select()
       .from(lessonStructures)
       .where(eq(lessonStructures.lessonId, lessonId))
-    return row ? { revision: row.revision, sections: row.sections } : null
+    return row
+      ? { revision: row.revision, sections: row.sections, supportBlockIds: row.supportBlockIds }
+      : null
   }
   async saveStructure(
     lessonId: string,

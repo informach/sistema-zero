@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-01",
   "title": "Seu jogo no Estúdio Completo",
@@ -88,6 +88,22 @@
         "kind": "rich_text",
         "markdown": "Seu jogo do Dia 5 deve rodar no Estúdio Completo. Volte a Meus Jogos e abra o mesmo cartão. O projeto de teste pode ficar separado; nas próximas aulas use o importado.\n\nNa Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado no Estúdio, fora desta aula."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-01-passo-01: gravar a demonstração \"conhecer o Estúdio Completo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-01-passo-02: gravar a demonstração \"começar um projeto do zero e instalar os bloquinhos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-01-passo-03: gravar a demonstração \"trazer o seu jogo da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-01-passo-04: gravar a demonstração \"onde os seus jogos ficam guardados\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -126,48 +142,40 @@
       "title": "conhecer o Estúdio Completo",
       "objective": "Oi! Abra Estúdio no menu da comunidade. A tela Meus Jogos reúne seus projetos livres. Seu jogo do Desafio ainda está na aula, por isso pode não aparecer aqui. Veja os botões Importar e Novo projeto.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-01-passo-01: gravar a demonstração \"conhecer o Estúdio Completo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "começar um projeto do zero e instalar os bloquinhos",
       "objective": "Crie um projeto chamado Meu jogo novo. Se Jogo 2D não aparece, abra as extensões e instale a extensão correspondente. Feche a janela pelo botão Fechar. Para voltar à lista, clique na marca Sistema Zero Studio no canto superior esquerdo.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-01-passo-02: gravar a demonstração \"começar um projeto do zero e instalar os bloquinhos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "trazer o seu jogo da nave",
       "objective": "Abra Cursos, entre na trilha do Desafio e abra o curso. Procure a aula do Dia 5 pelo nome, não a última aula da lista. Exporte seu jogo para o Estúdio. Volte ao Estúdio Completo e use Importar; escolha o arquivo e espere o projeto abrir.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-01-passo-03: gravar a demonstração \"trazer o seu jogo da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "onde os seus jogos ficam guardados",
       "objective": "Volte à lista pela marca Sistema Zero Studio e reconheça o projeto importado pelo nome e pela imagem. Abra esse cartão para continuar. Na aula, rascunho e trabalho enviado também são coisas diferentes: use a opção de sincronizar com o enviado somente quando precisar recuperar aquela entrega.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-01-passo-04: gravar a demonstração \"onde os seus jogos ficam guardados\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

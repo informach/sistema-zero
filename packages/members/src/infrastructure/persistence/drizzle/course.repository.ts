@@ -15,7 +15,13 @@ import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
-import { courses, lessonAttachments, lessonBlocks, lessons, modules } from './schema'
+import {
+  courses,
+  lessonAttachments,
+  activeLessonBlocks as lessonBlocks,
+  lessons,
+  modules,
+} from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
 function toCourse(row: typeof courses.$inferSelect): Course {

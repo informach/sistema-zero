@@ -2616,6 +2616,41 @@ const config: GatewayConfigInput = {
     },
 
     {
+      id: 'members-admin-lesson-draft-read',
+      methods: ['GET'],
+      pathPattern: '/members/admin/lessons/:id/draft',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+    },
+    {
+      id: 'members-admin-lesson-draft-write',
+      methods: ['PATCH'],
+      pathPattern: '/members/admin/lessons/:id/draft',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
+    {
+      id: 'members-admin-lesson-draft-publication',
+      methods: ['POST'],
+      pathPattern: '/members/admin/lessons/:id/draft/:action',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 2 * 1024 * 1024,
+      audit: {},
+    },
+    {
       id: 'members-admin-import-preview',
       methods: ['POST'],
       pathPattern: '/members/admin/lessons/:id/import-preview',
@@ -2637,18 +2672,6 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 2 * 1024 * 1024,
-      audit: {},
-    },
-    {
-      id: 'members-admin-lesson-structure-write',
-      methods: ['PUT'],
-      pathPattern: '/members/admin/lessons/:id/structure',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      maxBodyBytes: SMALL_JSON_BODY_BYTES,
       audit: {},
     },
     // ── Área de membros — Admin de AUTORIA de conteúdo ───────────────────────
@@ -2709,20 +2732,6 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
-    {
-      id: 'members-admin-blocks-write',
-      methods: ['PATCH', 'DELETE'],
-      pathPattern: '/members/admin/blocks/*',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
-      // Auditoria: editar/apagar bloco mexe no que o ALUNO vê e (quiz/atividade)
-      // pode invalidar correção — sem trilha, o incidente das entregas sumidas
-      // (08/2026) ficou indiagnosticável em produção.
-      audit: {},
-    },
     // Leitura admin de blocos (GET `/members/admin/blocks/:id/studio-submissions[/:userId]`):
     // acompanhamento das entregas do Estúdio pelo professor (LEITURA staff+).
     {
@@ -2734,16 +2743,6 @@ const config: GatewayConfigInput = {
       authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
-    },
-    {
-      id: 'members-admin-attachments-write',
-      methods: ['PATCH', 'DELETE'],
-      pathPattern: '/members/admin/attachments/*',
-      service: 'members',
-      auth: { required: true, mode: 'any', strategies: ['jwt'] },
-      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
-      transforms: membersInternalTransforms,
-      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
     // Revogar um certificado emitido (a validação pública passa a mostrar inválido).
     // 4 segmentos — não colide com as demais rotas admin.

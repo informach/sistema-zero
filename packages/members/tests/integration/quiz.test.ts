@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -74,14 +75,12 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
-const updateBlock = (app: App, blockId: string, content: unknown) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-      method: 'PATCH',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
+const updateBlock = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  content: { kind: string; [key: string]: unknown },
+) => publishBlock(app, lessonId, { content }, {}, blockId)
 
 describe('Quiz server-side', () => {
   test('GET da aula NÃO vaza gabarito e traz quizState zerado', async () => {
@@ -232,7 +231,7 @@ describe('Quiz server-side', () => {
     expect(oldPass.status).toBe(200)
     expect((await readJson(oldPass)).passed).toBe(true)
 
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonId, blockId, {
       kind: 'quiz',
       passingScore: 100,
       questions: [
@@ -256,7 +255,7 @@ describe('Quiz server-side', () => {
         },
       ],
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     const blocked = await complete(app, lessonId)
     expect(blocked.status).toBe(409)

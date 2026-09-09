@@ -1,5 +1,10 @@
-import type { LearningAnswers, LearningResult, LessonSection } from '@sistemazero/core/learning'
-import { sql } from 'drizzle-orm'
+import type {
+  LearningAnswers,
+  LearningResult,
+  LessonDraftDocument,
+  LessonSection,
+} from '@sistemazero/core/learning'
+import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
@@ -211,13 +216,49 @@ export const lessonBlocks = members.table(
     sortOrder: integer('sort_order').notNull().default(0),
     // União discriminada por `kind` (ver domain/course/lesson-block.ts).
     content: jsonb('content').$type<LessonBlockContent>().notNull(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     // Token opaco da revisão do conteúdo. Muda somente em create/update do bloco;
     // ordenação não invalida extrações do Zappy.
     contentRevision: varchar('content_revision', { length: 32 })
       .notNull()
       .default(sql`md5(random()::text || clock_timestamp()::text)`),
   },
-  (t) => [uniqueIndex('lesson_blocks_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
+  (t) => [
+    uniqueIndex('lesson_blocks_lesson_sort_order_uq')
+      .on(t.lessonId, t.sortOrder)
+      .where(isNull(t.archivedAt)),
+  ],
+)
+
+/** Student/content reads use the active view; teacher history keeps the underlying rows. */
+export const activeLessonBlocks = members
+  .view('active_lesson_blocks')
+  .as((qb) => qb.select().from(lessonBlocks).where(isNull(lessonBlocks.archivedAt)))
+
+export const lessonDrafts = members.table('lesson_drafts', {
+  lessonId: uuid('lesson_id')
+    .primaryKey()
+    .references(() => lessons.id, { onDelete: 'cascade' }),
+  revision: uuid('revision').notNull(),
+  publishedRevision: text('published_revision').notNull(),
+  document: jsonb('document').$type<LessonDraftDocument>().notNull(),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const lessonDraftOperations = members.table(
+  'lesson_draft_operations',
+  {
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    operationId: uuid('operation_id').notNull(),
+    authorId: uuid('author_id').notNull(),
+    fingerprint: text('fingerprint').notNull(),
+    revision: uuid('revision').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.lessonId, t.operationId] })],
 )
 
 /** The complete section layout is replaced atomically with optimistic concurrency. */
@@ -227,6 +268,7 @@ export const lessonStructures = members.table('lesson_structures', {
     .references(() => lessons.id, { onDelete: 'cascade' }),
   revision: uuid('revision').notNull(),
   sections: jsonb('sections').$type<LessonSection[]>().notNull(),
+  supportBlockIds: jsonb('support_block_ids').$type<string[]>().notNull().default([]),
 })
 
 export const lessonNavigation = members.table(
@@ -1476,6 +1518,9 @@ export const processedWebhooks = members.table(
 )
 
 export const schema = {
+  lessonDrafts,
+  lessonDraftOperations,
+  activeLessonBlocks,
   courses,
   modules,
   lessons,

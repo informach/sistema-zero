@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-08",
   "title": "Crie as suas versões",
@@ -80,6 +80,22 @@
         "kind": "rich_text",
         "markdown": "Abra sua publicação, jogue e confira título, resumo e capa. Depois escolha uma única mudança para uma próxima versão e diga o que pretende testar.\n\nEste curso termina, mas os seus projetos continuam no Estúdio e os assets no Pinta. Use essa rotina depois dos próximos cursos: escolher, criar, testar e compartilhar."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-08-passo-01: gravar a demonstração \"publicar o seu jogo no Mural\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-08-passo-02: gravar a demonstração \"a rotina depois de cada curso\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-08-passo-03: gravar a demonstração \"onde buscar ideia quando não vier nenhuma\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-08-passo-04: gravar a demonstração \"o Clube dos Criadores\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -118,48 +134,40 @@
       "title": "publicar o seu jogo no Mural",
       "objective": "Abra seu jogo pelo cartão de Meus Jogos. Confira a partida e use o caminho de compartilhar do Estúdio livre. Escolha título, resumo e capa que mostrem a sua criação. Depois abra o link no Mural para testar como outra pessoa vai jogar.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-08-passo-01: gravar a demonstração \"publicar o seu jogo no Mural\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "a rotina depois de cada curso",
       "objective": "Para uma próxima versão, escolha uma ideia e preserve o projeto que já funciona. No Mural, veja o caminho Fazer a minha versão quando estiver disponível. Compare nave no espaço e carro na estrada: você pode começar mudando um recurso e testando.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-08-passo-02: gravar a demonstração \"a rotina depois de cada curso\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "onde buscar ideia quando não vier nenhuma",
       "objective": "Volte ao Início e veja o Desafio do mês. Leia a proposta e pense em uma mudança que combine com ela. Você não precisa começar um jogo enorme; uma ideia pequena já pode virar algo para mostrar.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "aula-08-passo-03: gravar a demonstração \"onde buscar ideia quando não vier nenhuma\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "o Clube dos Criadores",
       "objective": "Abra o Clube no menu. Veja as conversas, conte uma descoberta do seu projeto e peça uma opinião concreta, como sobre o controle ou a dificuldade. Ao ver outro jogo, descreva o que funcionou e faça uma pergunta respeitosa.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "aula-08-passo-04: gravar a demonstração \"o Clube dos Criadores\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

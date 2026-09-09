@@ -474,7 +474,7 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
 }
 
 /** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */
-function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+export function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
   if (content.kind !== 'pinta') return content
   const asset = pintaAssetFromWire(content.initialAsset)
   if (!asset) throw new InvalidContentCommandError('O desenho inicial do Pinta é inválido')
@@ -514,7 +514,7 @@ const CERTIFICATE_LESSON_NO_GATES =
  * ⚠️ Bloco com snapshot ilegível (`assetKind: null`) NÃO conflita, dos dois lados: recusar por
  * causa de um bloco quebrado prenderia o autor justamente quando ele está consertando.
  */
-async function assertPintaChainTypeMatches(
+export async function assertPintaChainTypeMatches(
   content: ContentAdminRepository,
   courseId: string,
   block: PintaBlock,

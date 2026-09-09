@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "introducao",
   "title": "Seu lugar para criar",
@@ -87,6 +87,26 @@
         "kind": "rich_text",
         "markdown": "Encontre o Dia 1 pelo nome e mostre onde você pediria ajuda se o projeto não funcionasse. Se quiser, deixe seu avatar com sua cara.\n\nNo Dia 1 você vai montar a tela e dar movimento à nave."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "introducao-passo-01: gravar a demonstração \"Conhecer seu perfil\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "introducao-passo-02: gravar a demonstração \"Conhecer o quarto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "introducao-passo-03: gravar a demonstração \"Encontrar o curso e os materiais\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "introducao-passo-04: gravar a demonstração \"Navegar pela aula\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "introducao-passo-05: gravar a demonstração \"Guardar e concluir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -125,60 +145,50 @@
       "title": "Conhecer seu perfil",
       "objective": "Oi! Este espaço é seu. Abra o Perfil e veja o avatar. Se quiser, escolha peças, entre na Cabine de fotos e tire a foto. Você pode voltar depois para mudar. Não precisa terminar toda a personalização para começar seu jogo.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "introducao-passo-01: gravar a demonstração \"Conhecer seu perfil\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "Conhecer o quarto",
       "objective": "Abra o Quarto e experimente posicionar um item. As configurações que envolvem sua conta e a visibilidade do perfil ficam com seu responsável, na Área dos pais. Convide essa pessoa para conhecer o espaço com você.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "introducao-passo-02: gravar a demonstração \"Conhecer o quarto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "Encontrar o curso e os materiais",
       "objective": "No menu Cursos, abra o Desafio do Primeiro Jogo. Encontre o Caderno do Aluno e mostre o Mapa dos Pais ao seu responsável. Na lista de aulas, procure o Dia 1 pelo nome.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "introducao-passo-03: gravar a demonstração \"Encontrar o curso e os materiais\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "Navegar pela aula",
       "objective": "Dentro da aula, veja o objetivo da seção e abra o índice. Você pode voltar a uma explicação, testar uma descoberta e continuar seu projeto. Para tirar uma dúvida, use Pedir ajuda nesta seção e conte o que tentou.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "introducao-passo-04: gravar a demonstração \"Navegar pela aula\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-5",
       "title": "Guardar e concluir",
       "objective": "Ao mudar seu projeto, espere o aviso de salvo antes de fechar. Quando a atividade pedir uma entrega, use Enviar para o professor. Para concluir a aula, confira as atividades essenciais e a entrega. Você não precisa deixar um vídeo rodando até o fim.",
       "intent": "application",
-      "blockKeys": ["construir-5"],
+      "blockKeys": ["construir-5", "video-construir-5-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": [
-        "introducao-passo-05: gravar a demonstração \"Guardar e concluir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

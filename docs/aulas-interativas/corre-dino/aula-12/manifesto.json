@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-12",
   "title": "Surpresas dentro de limites",
@@ -87,6 +87,22 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-12-passo-01: gravar a demonstração \"entender por que está sempre igual\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-12-passo-02: gravar a demonstração \"sortear o lugar do cacto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-12-passo-03: gravar a demonstração \"sortear a velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-12-passo-04: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -125,48 +141,40 @@
       "title": "entender por que está sempre igual",
       "objective": "Observe os valores do cacto: x 560, tamanho 44 e vx menos 5. O relógio continua em 1.4. Quando tudo se repete igual, dá para decorar o ritmo.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-12-passo-01: gravar a demonstração \"entender por que está sempre igual\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "sortear o lugar do cacto",
       "objective": "Em Jogo 2D, Mira e contas, encaixe um número de a no lugar do x 560. Use 500 e 560. Jogue algumas vezes: o lugar de nascimento muda dentro dessa faixa.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-12-passo-02: gravar a demonstração \"sortear o lugar do cacto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "sortear a velocidade",
       "objective": "Em Programação, Matemática, coloque uma conta no vx: menos 5 menos um sorteio de 0 a 1. Confira o sinal de subtração e os dois limites. A direção deve continuar para a esquerda.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-12-passo-03: gravar a demonstração \"sortear a velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "testar",
       "objective": "Jogue várias partidas. Compare a faixa x de 500 a 700 com a de 550 a 560. Volte a 500 e 560 para seguir. Observe várias aparições antes de concluir se a mudança ficou boa.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-12-passo-04: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

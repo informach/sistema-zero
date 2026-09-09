@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-09",
   "title": "Bateu, terminou, recomeçou",
@@ -100,6 +100,26 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-09-passo-01: gravar a demonstração \"a colisão que acaba o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-09-passo-02: gravar a demonstração \"a tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-09-passo-03: gravar a demonstração \"fazer você sentir a batida\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-09-passo-04: gravar a demonstração \"jogar de novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "aula-09-passo-05: gravar a demonstração \"testar do começo ao fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -138,60 +158,50 @@
       "title": "a colisão que acaba o jogo",
       "objective": "Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto. Dentro, coloque Ir para a tela fim. Rode e bata.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-09-passo-01: gravar a demonstração \"a colisão que acaba o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "a tela de fim",
       "objective": "No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela. Use Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-09-passo-02: gravar a demonstração \"a tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "fazer você sentir a batida",
       "objective": "Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-09-passo-03: gravar a demonstração \"fazer você sentir a batida\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "jogar de novo",
       "objective": "No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas. Preserve o caminho de inicio para jogando que já existe.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-09-passo-04: gravar a demonstração \"jogar de novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-5",
       "title": "testar do começo ao fim",
       "objective": "Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter. Confira se o novo jogo volta ao estado inicial.",
       "intent": "application",
-      "blockKeys": ["construir-5"],
+      "blockKeys": ["construir-5", "video-construir-5-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-09-passo-05: gravar a demonstração \"testar do começo ao fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

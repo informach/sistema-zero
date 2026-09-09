@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-07",
   "title": "Os seus asteroides entram no jogo",
@@ -75,6 +75,18 @@
         "kind": "rich_text",
         "markdown": "Confira um único nascimento por disparo do relógio, a queda, a animação, os acertos e as vidas. A nave e os asteroides agora têm sua arte, com as regras do jogo preservadas.\n\nNa Aula 8, você publica essa versão e aprende uma rotina para continuar criando fora dos cursos."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-07-passo-01: gravar a demonstração \"preparar a folha do asteroide\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-07-passo-02: gravar a demonstração \"trocar o bloco que cria os asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"fazer os asteroides girarem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -113,36 +125,30 @@
       "title": "preparar a folha do asteroide",
       "objective": "Abra o mesmo jogo no Estúdio. Em Jogo 2D, Animação, prepare folha-asteroide usando a imagem asteroide e quadros 64 por 64. A folha da nave continua como está.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-07-passo-01: gravar a demonstração \"preparar a folha do asteroide\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "trocar o bloco que cria os asteroides",
       "objective": "No relógio A cada 40 quadros, prepare a criação nova antes de apagar a do kit. Use o grupo asteroides, nome asteroide, y menos 30, largura 40, altura 40, vx 0 e vy 3. Transfira o sorteio de x, confira os campos e só então remova a criação antiga.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-07-passo-02: gravar a demonstração \"trocar o bloco que cria os asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "fazer os asteroides girarem",
       "objective": "Em Animação, faça o asteroide que acabou de nascer usar girando, do quadro 0 ao 1 a 8 fps, com folha-asteroide. Teste vários nascimentos. Cada objeto novo deve aparecer animado e continuar reagindo aos tiros e à nave.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-07-passo-03: gravar a demonstração \"fazer os asteroides girarem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

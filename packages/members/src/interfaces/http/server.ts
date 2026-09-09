@@ -66,6 +66,7 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
     ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
+    /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
     /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)

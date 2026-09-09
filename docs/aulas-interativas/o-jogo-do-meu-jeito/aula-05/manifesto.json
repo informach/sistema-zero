@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-05",
   "title": "O asteroide pega fogo",
@@ -82,6 +82,22 @@
         "kind": "rich_text",
         "markdown": "A animação girando tem dois quadros; a pedra continua reconhecível na frente do fogo. Confira os dois assets na galeria antes de seguir.\n\nNa Aula 6, seus desenhos vão entrar no projeto livre do Estúdio."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-05-passo-01: gravar a demonstração \"a chama de fora\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-05-passo-02: gravar a demonstração \"as chamas de dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-05-passo-03: gravar a demonstração \"fazer a pedra rolar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-05-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -120,48 +136,40 @@
       "title": "a chama de fora",
       "objective": "Abra o asteroide no Pinta. Desenhe a chama externa e ajuste seus pontos. Coloque essa forma atrás da pedra para preservar o contorno do asteroide. Escolha o tamanho e a direção do fogo.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-05-passo-01: gravar a demonstração \"a chama de fora\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "as chamas de dentro",
       "objective": "Copie a chama com Ctrl+C e Ctrl+V para experimentar uma forma interna menor. Ajuste tamanho, cor e posição. Você pode usar outras cores e outra quantidade de chamas; mantenha a ordem visual que escolheu.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-05-passo-02: gravar a demonstração \"as chamas de dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "fazer a pedra rolar",
       "objective": "Duplique o quadro. No segundo, mude algumas posições das crateras e das pontas do fogo para sugerir movimento. Rode a prévia e compare. Faça mudanças pequenas antes de exagerar o efeito.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-05-passo-03: gravar a demonstração \"fazer a pedra rolar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "o nome da animação",
       "objective": "Renomeie a animação parado para girando. Confira dois quadros. Espere o salvamento e volte à galeria: a nave e o asteroide devem estar disponíveis como dois assets separados.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-05-passo-04: gravar a demonstração \"o nome da animação\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

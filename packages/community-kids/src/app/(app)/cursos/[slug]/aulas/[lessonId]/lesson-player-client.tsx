@@ -1,5 +1,7 @@
 'use client'
 
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -9,10 +11,6 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import {
-  isExperimentBlock,
-  unfinishedLearning,
-} from '@sistemazero/member-shell/lib/lesson-learning'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -38,8 +36,6 @@ import type {
   GamificationDelta,
   LessonCompleteResult,
   LessonDetailView,
-  QuizBlock,
-  StudioBlock,
 } from '@/lib/types'
 
 interface Props {
@@ -76,12 +72,14 @@ export function LessonPlayer({
 }: Props) {
   const router = useRouter()
   const learning = useLessonLearning(lesson, viewerId)
-  const blockedByLearning = unfinishedLearning(lesson.blocks, learning.progress)
-  const blockedByPinta = lesson.blocks.some(
-    (b) => b.kind === 'pinta' && !isExperimentBlock(b) && !b.pintaState?.submitted,
-  )
-  // Modo foco: dois botões INDEPENDENTES no header (menu ≥768px, lista de aulas
-  // ≥1024px). Ver focus-mode.tsx.
+  const requirements = lessonCompletionRequirements({
+    ...lesson,
+    learningProgress: learning.progress,
+  })
+  const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
+  const blockedByLearning = missing('LEARNING_GATE_INCOMPLETE')
+  const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
+
   const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
   const [completing, setCompleting] = useState(false)
   // Snapshot do progresso ANTES do refresh (a celebração anima antes→depois)
@@ -111,49 +109,12 @@ export function LessonPlayer({
     return starts
   }, [modules])
 
-  // Há quiz com nota de corte ainda não aprovado? (bloqueia o concluir — 409 no backend)
-  const blockedByQuiz = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'quiz') return false
-        const content = b.content as QuizBlock | null
-        return content?.passingScore != null && !b.quizState?.passed
-      }),
-    [lesson.blocks],
-  )
+  const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
+  const blockedByStudioNotSubmitted = missing('STUDIO_GATE_NOT_SUBMITTED')
+  const blockedByStudioNotPassed = missing('STUDIO_GATE_NOT_PASSED')
+  const blockedByComingSoon = missing('LESSON_COMING_SOON')
 
-  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do backend — 409)
-  const blockedByStudioNotSubmitted = useMemo(
-    () =>
-      lesson.blocks.some(
-        (b) => b.kind === 'studio' && !isExperimentBlock(b) && !b.studioState?.submitted,
-      ),
-    [lesson.blocks],
-  )
-  // Atividades do Estúdio com nota mínima exigem aprovação, não só envio.
-  const blockedByStudioNotPassed = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'studio' || isExperimentBlock(b) || !b.studioState?.submitted) return false
-        const content = b.content as StudioBlock | null
-        return content?.activity?.passingScore !== undefined && !b.studioState?.passed
-      }),
-    [lesson.blocks],
-  )
-  // Aula EM PRODUÇÃO: o bloco "em breve" é o único que a criança recebe (o members
-  // segura os demais) e a conclusão é recusada com 409 LESSON_COMING_SOON. Espelha o
-  // gate aqui p/ o botão já nascer desabilitado, em vez de só falhar no clique.
-  const blockedByComingSoon = useMemo(
-    () => lesson.blocks.some((b) => b.kind === 'coming_soon'),
-    [lesson.blocks],
-  )
-  const completeBlocked =
-    blockedByLearning ||
-    blockedByPinta ||
-    blockedByComingSoon ||
-    blockedByQuiz ||
-    blockedByStudioNotSubmitted ||
-    blockedByStudioNotPassed
+  const completeBlocked = requirements.some((r) => !r.complete)
 
   // Com a trava sequencial, uma aula "em breve" prende TODAS as seguintes. O
   // "Próxima" some e a mini-trilha enche de cadeado — sem dizer por quê, a leitura

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-13",
   "title": "Dificuldade que cresce com a partida",
@@ -92,6 +92,22 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-13-passo-01: gravar a demonstração \"criar a caixinha da velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-13-passo-02: gravar a demonstração \"fazer o cacto obedecer a caixinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-13-passo-03: gravar a demonstração \"fazer a velocidade acelerar sozinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-13-passo-04: gravar a demonstração \"testar e ajustar o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -130,48 +146,40 @@
       "title": "criar a caixinha da velocidade",
       "objective": "Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-13-passo-01: gravar a demonstração \"criar a caixinha da velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "fazer o cacto obedecer a caixinha",
       "objective": "Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio. Rode: no começo deve parecer igual.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-13-passo-02: gravar a demonstração \"fazer o cacto obedecer a caixinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "fazer a velocidade acelerar sozinha",
       "objective": "Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando. Dentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior. Só dentro do segundo Se coloque Somar menos 1 em velocidade.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-13-passo-03: gravar a demonstração \"fazer a velocidade acelerar sozinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "testar e ajustar o seu jogo",
       "objective": "Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos. Escolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "aula-13-passo-04: gravar a demonstração \"testar e ajustar o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

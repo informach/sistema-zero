@@ -34,30 +34,21 @@ const lesson: LessonDetailView = {
     {
       id: 'first',
       title: 'Preparar',
-      objective: '',
-      intent: 'application',
       externalTool: null,
-      pendingMedia: [],
       blockIds: ['project'],
       workspaceBlockId: 'project',
     },
     {
       id: 'second',
       title: 'Observar',
-      objective: '',
-      intent: 'exploration',
       workspaceBlockId: null,
       externalTool: null,
-      pendingMedia: [],
       blockIds: [],
     },
     {
       id: 'third',
       title: 'Melhorar',
-      objective: '',
-      intent: 'application',
       externalTool: null,
-      pendingMedia: [],
       blockIds: [],
       workspaceBlockId: 'project',
     },
@@ -93,6 +84,45 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  test('pendência leva ao único projeto e fecha a lista durante a navegação', () => {
+    render(
+      <LessonSections
+        lesson={lesson}
+        renderBlocks={() => <input aria-label="Projeto de teste" />}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    const summary = screen.getByText('O que falta para concluir · 1')
+    fireEvent.click(summary)
+    fireEvent.click(screen.getByRole('button', { name: /Enviar projeto/ }))
+    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(document.activeElement?.id).toBe('lesson-block-project')
+    expect(summary.closest('details')?.open).toBe(false)
+    expect(screen.getAllByText('Atividade obrigatória')).toHaveLength(1)
+  })
+  test('descoberta incompleta na prévia mostra orientação e não registra tentativas', () => {
+    render(
+      <LessonSections
+        lesson={{
+          ...lesson,
+          blocks: [
+            {
+              id: 'unfinished',
+              kind: 'interactive',
+              sortOrder: 0,
+              content: { ...prediction, title: '' },
+            },
+          ],
+          sections: [{ ...lesson.sections![0]!, blockIds: ['unfinished'], workspaceBlockId: null }],
+        }}
+        renderBlocks={() => null}
+      />,
+    )
+    expect(
+      screen.getByText('Complete a descoberta interativa para experimentar a prévia.'),
+    ).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Conferir minha descoberta' })).toBeNull()
+  })
   test('uma resposta atrasada do perfil anterior não apaga o progresso do perfil atual', () => {
     const handlers = new Map<string, (value: LearningBlockProgress) => void>()
     const scopedLesson = {

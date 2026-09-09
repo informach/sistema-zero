@@ -32,7 +32,7 @@ export async function contentMissionOpportunities(
     ), published as (
       select l.id, l.course_id, l.module_id, l.sort_order, m.sort_order as module_order,
         c.sequential_lock, exists (
-          select 1 from members.lesson_blocks b where b.lesson_id=l.id and b.kind='coming_soon'
+          select 1 from members.active_lesson_blocks b where b.lesson_id=l.id and b.kind='coming_soon'
         ) as coming_soon
       from members.lessons l join accessible c on c.id=l.course_id
       join members.modules m on m.id=l.module_id where l.is_published
@@ -48,11 +48,11 @@ export async function contentMissionOpportunities(
       union select 'unit_complete', r.module_id from ready r where not exists (
         select 1 from published p where p.module_id=r.module_id and p.id not in (select id from ready)
       )
-      union select 'quiz_passed', b.id from members.lesson_blocks b join ready r on r.id=b.lesson_id
+      union select 'quiz_passed', b.id from members.active_lesson_blocks b join ready r on r.id=b.lesson_id
         where b.kind='quiz' and jsonb_array_length(coalesce(b.content->'questions', '[]'::jsonb))>0
-      union select 'studio_submitted', b.id from members.lesson_blocks b join ready r on r.id=b.lesson_id
+      union select 'studio_submitted', b.id from members.active_lesson_blocks b join ready r on r.id=b.lesson_id
         where b.kind='studio'
-      union select 'course_showcased', r.course_id from members.lesson_blocks b join ready r on r.id=b.lesson_id
+      union select 'course_showcased', r.course_id from members.active_lesson_blocks b join ready r on r.id=b.lesson_id
         where b.kind='studio' and b.content->'showcase'->>'enabled'='true'
       union select 'course_rated', course_id from ready
     )

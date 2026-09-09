@@ -154,7 +154,14 @@ describe('the 27 adapted lessons', () => {
       )
       expect(isLearningManifest(manifest)).toBe(true)
       if (!isLearningManifest(manifest)) throw new Error('Invalid authored manifest')
-      expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(entry.clips)
+      expect(manifest.version).toBe(2)
+      expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
+      const videos = manifest.blocks.filter((block) => 'plannedVideo' in block)
+      expect(videos).toHaveLength(entry.clips)
+      for (const video of videos)
+        expect(
+          manifest.sections.filter((section) => section.blockKeys.includes(video.key)),
+        ).toHaveLength(1)
       expect(readFileSync(resolve(directory, entry.path, 'roteiro.md'), 'utf8')).toContain(
         'Narração revisada',
       )

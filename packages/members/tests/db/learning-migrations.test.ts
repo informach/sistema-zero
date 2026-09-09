@@ -15,7 +15,7 @@ import { DrizzleContentAdminRepository } from '../../src/infrastructure/persiste
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLearningRepository } from '../../src/infrastructure/persistence/drizzle/learning.repository'
-import { DrizzleLearningImportRepository } from '../../src/infrastructure/persistence/drizzle/learning-import.repository'
+import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
 import {
   courses,
   learningAttempts,
@@ -31,6 +31,8 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from '../../src/infrastructure/persistence/drizzle/video-position.repository'
+import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
+import { lessonDraftCases } from './lesson-draft-cases'
 
 // An explicitly named EMPTY disposable database is required. Never connects to DATABASE_URL.
 const url = process.env.LEARNING_QA_DATABASE_URL
@@ -72,6 +74,7 @@ const activity: InteractiveBlock = {
 describe.skipIf(!url)(
   'learning upgrade and real persistence in an empty disposable database',
   () => {
+    lessonDraftCases(() => get().db)
     beforeAll(async () => {
       const { db, sql } = get()
       const [state] = await sql`select to_regnamespace('members') as existing`
@@ -112,7 +115,7 @@ describe.skipIf(!url)(
         createdAt: now,
         updatedAt: now,
       })
-      await db.insert(lessonBlocks).values([
+      const legacyBlocks = [
         {
           id: videoId,
           lessonId,
@@ -148,7 +151,9 @@ describe.skipIf(!url)(
           sortOrder: 2,
           content: { kind: 'studio', initialProject: {}, chain: 'projeto-continuo' },
         },
-      ])
+      ]
+      for (const block of legacyBlocks)
+        await sql`insert into members.lesson_blocks (id,lesson_id,kind,sort_order,content) values (${block.id},${block.lessonId},${block.kind},${block.sortOrder},${JSON.stringify(block.content)}::jsonb)`
       await db.insert(quizAttempts).values({
         id: attemptId,
         userId: owner.userId,
@@ -364,7 +369,10 @@ describe.skipIf(!url)(
     test('import previews are read-only and reimport preserves IDs and original student work', async () => {
       const { db } = get()
       const reader = new DrizzleCourseRepository(db)
-      const service = new LearningImportService(new DrizzleLearningImportRepository(db), reader)
+      const service = new LearningImportService(
+        new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
+        reader,
+      )
       const document: LearningManifest = {
         version: 1,
         courseSlug: 'learning-qa',
@@ -388,19 +396,23 @@ describe.skipIf(!url)(
         ],
       }
       const preview = await service.preview(lessonId, document)
-      let rejected: unknown
-      try {
-        await service.apply(lessonId, document, preview.fingerprint)
-      } catch (error) {
-        rejected = error
-      }
-      expect(rejected).toBeInstanceOf(Error)
-      expect(rejected instanceof Error && rejected.message).toContain('Despublique')
-      await db.update(lessons).set({ isPublished: false }).where(eq(lessons.id, lessonId))
-      const draft = await service.preview(lessonId, document)
-      const first = await service.apply(lessonId, document, draft.fingerprint)
+      const publishedBefore = await reader.findLessonWithContent(lessonId)
+      const first = await service.apply(
+        lessonId,
+        document,
+        preview.fingerprint,
+        owner.userId,
+        randomUUID(),
+      )
+      expect(await reader.findLessonWithContent(lessonId)).toEqual(publishedBefore)
       const next = await service.preview(lessonId, document)
-      const second = await service.apply(lessonId, document, next.fingerprint)
+      const second = await service.apply(
+        lessonId,
+        document,
+        next.fingerprint,
+        owner.userId,
+        randomUUID(),
+      )
       expect(second.blocks.map((b) => b.id)).toEqual(first.blocks.map((b) => b.id))
       expect(second.blocks.every((b) => b.action === 'preserve')).toBe(true)
       expect(
@@ -411,14 +423,11 @@ describe.skipIf(!url)(
       expect(
         await db.select().from(quizAttempts).where(eq(quizAttempts.id, attemptId)),
       ).toHaveLength(1)
-      await expect(
-        new DrizzleContentAdminRepository(db).updateLesson(lessonId, {
-          slug: 'aula-qa',
-          title: 'Publicar',
-          estimatedMinutes: null,
-          isPublished: true,
-        }),
-      ).rejects.toThrow('mídias pendentes')
+      const pending = await new DrizzleLessonDraftRepository(
+        db,
+        parsePublishedLessonBlock,
+      ).validate(lessonId, second.revision, [])
+      expect(pending.some((issue) => issue.message.includes('Vimeo'))).toBe(true)
     })
 
     test('clone remaps every section and workspace reference without copying student progress', async () => {

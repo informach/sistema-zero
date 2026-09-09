@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { changeDraft, publishBlock, publishDraft } from '../draft-authoring-helpers'
 import { buildApp } from '../helpers'
 
 type App = ReturnType<typeof buildApp>['app']
@@ -191,14 +192,14 @@ describe('Members HTTP — autoria: cursos', () => {
         isPublished: true,
       }),
     )
-    const block = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const block = await publishBlock(app, lesson.id, {
       content: {
         kind: 'studio',
         initialProject: { name: 'Jogo', files: { 'index.html': '' } },
         showcase: { enabled: true, title: 'Meu jogo' },
       },
     })
-    expect(block.status).toBe(201)
+    expect(block.status).toBe(200)
 
     bySlug = await listBySlug()
     expect(bySlug.get('base-2d')?.hasShowcaseBlock).toBe(true)
@@ -335,7 +336,7 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
     let blockId: string | null = null
     if (opts.showcase) {
       const block = await readJson(
-        await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+        await publishBlock(app, lesson.id, {
           content: {
             kind: 'studio',
             initialProject: { name: 'Jogo', files: { 'index.html': '' } },
@@ -343,8 +344,10 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
           },
         }),
       )
-      blockId = block.id
+      blockId = block.document.blocks.at(-1).id
     }
+    if (opts.isPublished) expect((await publishDraft(app, lesson.id)).status).toBe(200)
+    else if (opts.showcase) expect((await publishDraft(app, lesson.id, false)).status).toBe(200)
     return { lessonId: lesson.id, blockId }
   }
 
@@ -445,7 +448,10 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
   test('última vitrine é protegida; curso legado incompleto continua editável', async () => {
     const { app, courses } = buildApp()
     const base = await createCourse(app, { slug: 'base-presa', audience: 'kids', careerSlot: 1 })
-    const { blockId } = await addLesson(app, base.id, { isPublished: true, showcase: true })
+    const { lessonId, blockId } = await addLesson(app, base.id, {
+      isPublished: true,
+      showcase: true,
+    })
     expect(
       (
         await patchCourse(app, base.id, {
@@ -457,7 +463,9 @@ describe('Members HTTP — autoria: vitrine do curso-base (NO_SHOWCASE_BLOCK, 24
         })
       ).status,
     ).toBe(200)
-    const remove = await send(app, `/members/admin/blocks/${blockId}`, 'DELETE')
+    if (!blockId) throw new Error('Missing showcase')
+    await changeDraft(app, lessonId, { type: 'remove-block', blockId })
+    const remove = await publishDraft(app, lessonId)
     expect(remove.status).toBe(409)
     expect((await readJson(remove)).error.code).toBe('NO_SHOWCASE_BLOCK')
     // Simula catálogo legado inválido, sem usar o comando agora protegido.
@@ -518,11 +526,11 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const { app } = buildApp()
     const { course, lesson } = await seedTree(app)
 
-    const b1 = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const b1 = await publishBlock(app, lesson.id, {
       content: { kind: 'rich_text', markdown: '# Olá' },
     })
-    expect(b1.status).toBe(201)
-    await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    expect(b1.status).toBe(200)
+    await publishBlock(app, lesson.id, {
       content: { kind: 'video', provider: 'youtube', src: 'https://y/1' },
     })
 
@@ -548,7 +556,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
   test('bloco de vídeo sem src → 400 (validação da união)', async () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)
-    const bad = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const bad = await publishBlock(app, lesson.id, {
       content: { kind: 'video', provider: 'youtube' },
     })
     expect(bad.status).toBe(400)
@@ -565,36 +573,36 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
       proMeta: { templateId: 'modelo-inventado', devScript: 'dev' },
     }
 
-    const invalid = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const invalid = await publishBlock(app, lesson.id, {
       content: { kind: 'studio', initialProject: project },
     })
     expect(invalid.status).toBe(400)
     expect((await readJson(invalid)).error.message).toContain('modelo Pro válido')
 
-    const valid = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const valid = await publishBlock(app, lesson.id, {
       content: {
         kind: 'studio',
         initialProject: { ...project, proMeta: { templateId: 'react-ts', devScript: 'dev' } },
       },
     })
-    expect(valid.status).toBe(201)
+    expect(valid.status).toBe(200)
   })
 
   test('bloco embed v3 (só html) e bloco ebook → 201; embed sem html → 400', async () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)
 
-    const embed = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const embed = await publishBlock(app, lesson.id, {
       content: { kind: 'embed', html: '<canvas id="demo"></canvas>' },
     })
-    expect(embed.status).toBe(201)
+    expect(embed.status).toBe(200)
 
-    const ebook = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const ebook = await publishBlock(app, lesson.id, {
       content: { kind: 'ebook', url: 'r2priv:admin/attachments/livro.pdf', title: 'Livro' },
     })
-    expect(ebook.status).toBe(201)
+    expect(ebook.status).toBe(200)
 
-    const noHtml = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const noHtml = await publishBlock(app, lesson.id, {
       content: { kind: 'embed' },
     })
     expect(noHtml.status).toBe(400)
@@ -604,15 +612,15 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const { app } = buildApp()
     const { mod, lesson } = await seedTree(app)
 
-    const semRecado = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const semRecado = await publishBlock(app, lesson.id, {
       content: { kind: 'coming_soon' },
     })
-    expect(semRecado.status).toBe(201)
+    expect(semRecado.status).toBe(200)
 
-    const comRecado = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const comRecado = await publishBlock(app, lesson.id, {
       content: { kind: 'coming_soon', message: 'Essa aula chega semana que vem!' },
     })
-    expect(comRecado.status).toBe(201)
+    expect(comRecado.status).toBe(200)
 
     // "Em breve" TRAVA a conclusão, e a aula do certificado conclui direto pela
     // emissão — juntos, o diploma sairia numa aula ainda em produção.
@@ -622,12 +630,12 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
       isPublished: true,
     }).then(readJson)
 
-    const certificado = await send(app, `/members/admin/lessons/${outraAula.id}/blocks`, 'POST', {
+    const certificado = await publishBlock(app, outraAula.id, {
       content: { kind: 'certificate' },
     })
-    expect(certificado.status).toBe(201)
+    expect(certificado.status).toBe(200)
 
-    const barrado = await send(app, `/members/admin/lessons/${outraAula.id}/blocks`, 'POST', {
+    const barrado = await publishBlock(app, outraAula.id, {
       content: { kind: 'coming_soon' },
     })
     expect(barrado.status).toBe(400)
@@ -637,14 +645,9 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     // in-memory implementa o método chamando a função do DOMÍNIO, então uma
     // divergência do espelho passaria batida aqui. Quem trava o SQL de verdade é
     // `tests/db/gating-block-sql.test.ts`, contra Postgres real.
-    const certificadoDepois = await send(
-      app,
-      `/members/admin/lessons/${lesson.id}/blocks`,
-      'POST',
-      {
-        content: { kind: 'certificate' },
-      },
-    )
+    const certificadoDepois = await publishBlock(app, lesson.id, {
+      content: { kind: 'certificate' },
+    })
     expect(certificadoDepois.status).toBe(400)
   })
 
@@ -652,13 +655,13 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     const { app } = buildApp()
     const { lesson } = await seedTree(app)
 
-    const safe = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const safe = await publishBlock(app, lesson.id, {
       content: { kind: 'embed', html: '<canvas></canvas>', sandbox: 'allow-scripts allow-forms' },
     })
-    expect(safe.status).toBe(201)
+    expect(safe.status).toBe(200)
 
     // `allow-same-origin` num srcDoc roda o HTML na ORIGIN do community → XSS.
-    const sameOrigin = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const sameOrigin = await publishBlock(app, lesson.id, {
       content: {
         kind: 'embed',
         html: '<canvas></canvas>',
@@ -667,7 +670,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(sameOrigin.status).toBe(400)
 
-    const topNav = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const topNav = await publishBlock(app, lesson.id, {
       content: { kind: 'embed', html: '<canvas></canvas>', sandbox: 'allow-top-navigation' },
     })
     expect(topNav.status).toBe(400)
@@ -682,7 +685,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     ]
 
     // Gabarito apontando para alternativa que não existe → questão impossível.
-    const orphan = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const orphan = await publishBlock(app, lesson.id, {
       content: {
         kind: 'quiz',
         questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: ['z'] }],
@@ -690,7 +693,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(orphan.status).toBe(400)
 
-    const oneChoice = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const oneChoice = await publishBlock(app, lesson.id, {
       content: {
         kind: 'quiz',
         questions: [
@@ -700,7 +703,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(oneChoice.status).toBe(400)
 
-    const noCorrect = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const noCorrect = await publishBlock(app, lesson.id, {
       content: {
         kind: 'quiz',
         questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: [] }],
@@ -708,23 +711,23 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(noCorrect.status).toBe(400)
 
-    const ok = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const ok = await publishBlock(app, lesson.id, {
       content: {
         kind: 'quiz',
         questions: [{ id: 'q1', prompt: 'P?', choices, correctChoiceIds: ['b'] }],
       },
     })
-    expect(ok.status).toBe(201)
+    expect(ok.status).toBe(200)
 
     // Quiz sem questões segue permitido (rascunho em construção no builder).
-    const empty = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const empty = await publishBlock(app, lesson.id, {
       content: { kind: 'quiz', questions: [] },
     })
-    expect(empty.status).toBe(201)
+    expect(empty.status).toBe(200)
 
     // ...MAS quiz COM nota de corte e sem questões → 400 (gate impossível de
     // satisfazer travaria a conclusão da aula para sempre).
-    const gatedEmpty = await send(app, `/members/admin/lessons/${lesson.id}/blocks`, 'POST', {
+    const gatedEmpty = await publishBlock(app, lesson.id, {
       content: { kind: 'quiz', passingScore: 50, questions: [] },
     })
     expect(gatedEmpty.status).toBe(400)
@@ -760,19 +763,12 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     return { course, mod, lesson }
   }
 
-  test('aula nova nasce rascunho; PATCH com isPublished publica', async () => {
+  test('aula nova nasce rascunho; publicação explícita torna a aula disponível', async () => {
     const { app } = buildApp()
     const { lesson } = await seedDraftTree(app)
     expect(lesson.isPublished).toBe(false)
 
-    const patched = await readJson(
-      await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-        slug: 'aula-1',
-        title: 'Aula 1',
-        estimatedMinutes: 5,
-        isPublished: true,
-      }),
-    )
+    const patched = await readJson(await publishDraft(app, lesson.id, true))
     expect(patched.isPublished).toBe(true)
   })
 
@@ -797,12 +793,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     expect(blocked.status).toBe(409)
     expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
 
-    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-      slug: 'aula-1',
-      title: 'Aula 1',
-      estimatedMinutes: 5,
-      isPublished: true,
-    })
+    await publishDraft(app, lesson.id, true)
     const ok = await patchCourse(app, course.id, {
       ...COURSE,
       status: 'published',
@@ -823,12 +814,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
   /** Curso PUBLICADO com 1 aula publicada (o cenário dos guards "por baixo"). */
   async function seedPublishedTree(app: App) {
     const { course, mod, lesson } = await seedDraftTree(app)
-    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-      slug: 'aula-1',
-      title: 'Aula 1',
-      estimatedMinutes: 5,
-      isPublished: true,
-    })
+    await publishDraft(app, lesson.id, true)
     await patchCourse(app, course.id, {
       ...COURSE,
       status: 'published',
@@ -840,12 +826,7 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     const { app } = buildApp()
     const { lesson } = await seedPublishedTree(app)
 
-    const blocked = await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-      slug: 'aula-1',
-      title: 'Aula 1',
-      estimatedMinutes: 5,
-      isPublished: false,
-    })
+    const blocked = await publishDraft(app, lesson.id, false)
     expect(blocked.status).toBe(409)
     expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
   })
@@ -859,12 +840,13 @@ describe('Members HTTP — autoria: publicação por aula', () => {
     expect((await readJson(blocked)).error.code).toBe('NO_PUBLISHED_LESSON')
 
     // Com uma 2ª aula publicada, a exclusão passa (sobra ≥1).
-    await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
+    const second = await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
       slug: 'aula-2',
       title: 'Aula 2',
       estimatedMinutes: null,
       isPublished: true,
-    })
+    }).then(readJson)
+    expect((await publishDraft(app, second.id)).status).toBe(200)
     expect((await send(app, `/members/admin/lessons/${lesson.id}`, 'DELETE')).status).toBe(200)
   })
 
@@ -884,18 +866,8 @@ describe('Members HTTP — autoria: publicação por aula', () => {
   test('despublicar aula de curso DRAFT segue livre (guard só vale para published)', async () => {
     const { app } = buildApp()
     const { lesson } = await seedDraftTree(app)
-    await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-      slug: 'aula-1',
-      title: 'Aula 1',
-      estimatedMinutes: 5,
-      isPublished: true,
-    })
-    const ok = await send(app, `/members/admin/lessons/${lesson.id}`, 'PATCH', {
-      slug: 'aula-1',
-      title: 'Aula 1',
-      estimatedMinutes: 5,
-      isPublished: false,
-    })
+    await publishDraft(app, lesson.id, true)
+    const ok = await publishDraft(app, lesson.id, false)
     expect(ok.status).toBe(200)
     expect((await readJson(ok)).isPublished).toBe(false)
   })

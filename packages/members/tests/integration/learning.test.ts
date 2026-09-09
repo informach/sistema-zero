@@ -2,6 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, type InteractiveBlock } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import {
+  changeDraft,
+  draftRequest,
+  publishBlock,
+  publishDraft,
+  readDraft,
+} from '../draft-authoring-helpers'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -77,46 +84,56 @@ describe('learning activities and sections', () => {
               purpose: 'experiment',
               initialAsset: pintaAssetToWire(createLessonAsset('pixel-sprite', 32, 'Experimento')),
             }
-      const path = `/admin/lessons/${ctx.lessonId}/blocks`
-      const created = await ctx.request(path, 'POST', { content: experiment }, USER, true)
-      expect(created.status).toBe(201)
-      const body = (await created.json()) as { id: string; content: { purpose?: string } }
-      expect(body.content.purpose).toBe('experiment')
-      const saved = await ctx.request(
-        `/admin/blocks/${body.id}`,
-        'PATCH',
-        { content: experiment },
-        USER,
-        true,
-      )
-      expect(saved.status).toBe(200)
-      expect(await saved.json()).toMatchObject({ content: { purpose: 'experiment' } })
+      const id = randomUUID()
+      const created = await publishBlock(ctx.app, ctx.lessonId, { content: experiment }, {}, id)
+      expect(created.status).toBe(200)
+      expect(
+        (await readDraft(ctx.app, ctx.lessonId)).document.blocks.find((b) => b.id === id)?.content
+          .purpose,
+      ).toBe('experiment')
       expect(
         (
-          await ctx.request(
-            path,
-            'POST',
-            { content: { ...experiment, chain: 'principal' } },
-            USER,
-            true,
-          )
+          await publishBlock(ctx.app, ctx.lessonId, {
+            content: { ...experiment, chain: 'principal' },
+          })
         ).status,
       ).toBe(400)
       expect(
         (
-          await ctx.request(
-            path,
-            'POST',
-            { content: { ...experiment, purpose: 'unknown' } },
-            USER,
-            true,
-          )
+          await publishBlock(ctx.app, ctx.lessonId, {
+            content: { ...experiment, purpose: 'unknown' },
+          })
         ).status,
       ).toBe(400)
+      // The unchanged discovery keeps its revision when another block is published.
+      const learningBlock = ctx.courses.blocks.find((b) => b.id === ctx.blockId)
+      if (!learningBlock) throw new Error('Missing activity')
+      expect(learningBlock.contentRevision).toBe(REVISION)
       await ctx.attempt(['prepare', 'draw'])
       expect((await ctx.request(`/lessons/${ctx.lessonId}/complete`, 'POST')).status).toBe(200)
     })
   }
+  test('removed authoring endpoints cannot bypass the shared draft', async () => {
+    const ctx = setup()
+    for (const [path, method, body] of [
+      [
+        `/admin/lessons/${ctx.lessonId}`,
+        'PATCH',
+        { title: 'Bypass', slug: 'aula', isPublished: true },
+      ],
+      [
+        `/admin/lessons/${ctx.lessonId}/blocks`,
+        'POST',
+        { content: { kind: 'rich_text', markdown: 'Bypass' } },
+      ],
+      [`/admin/blocks/${ctx.blockId}`, 'DELETE', undefined],
+      [`/admin/lessons/${ctx.lessonId}/structure`, 'PUT', { sections: [] }],
+    ] as const)
+      expect((await ctx.request(path, method, body, USER, true)).status).toBe(404)
+    const read = await (await ctx.read()).json()
+    expect(JSON.stringify(read)).not.toContain('objective')
+    expect(JSON.stringify(read)).not.toContain('intent')
+  })
   test('answer keys are private, grading gates completion, retries are idempotent', async () => {
     const ctx = setup()
     const raw = await (await ctx.read()).text()
@@ -170,31 +187,24 @@ describe('learning activities and sections', () => {
     const ctx = setup()
     const blockIds = ctx.courses.blocks.filter((b) => b.lessonId === ctx.lessonId).map((b) => b.id)
     const section = defaultLessonSection(ctx.lessonId, 'Descubra a ordem', blockIds)
-    const path = `/admin/lessons/${ctx.lessonId}/structure`
-    const saved = await ctx.request(
-      path,
-      'PUT',
-      { expectedRevision: null, sections: [section] },
-      USER,
-      true,
-    )
+    const draft = await readDraft(ctx.app, ctx.lessonId)
+    const change = { type: 'structure' as const, sections: [section], supportBlockIds: [] }
+    const saved = await changeDraft(ctx.app, ctx.lessonId, change)
     expect(saved.status).toBe(200)
-    expect(await saved.json()).toMatchObject({ sections: [{ id: ctx.lessonId, blockIds }] })
-    expect(
-      (await ctx.request(path, 'PUT', { expectedRevision: null, sections: [section] }, USER, true))
-        .status,
-    ).toBe(409)
+    expect((await readDraft(ctx.app, ctx.lessonId)).document.sections[0]).toMatchObject({
+      id: ctx.lessonId,
+      blockIds,
+    })
     expect(
       (
-        await ctx.request(
-          path,
-          'PUT',
-          { expectedRevision: null, sections: [{ ...section, blockIds: [] }] },
-          USER,
-          true,
-        )
+        await draftRequest(ctx.app, ctx.lessonId, '', 'PATCH', {
+          expectedRevision: draft.revision,
+          operationId: randomUUID(),
+          change,
+        })
       ).status,
-    ).toBe(400)
+    ).toBe(409)
+    expect((await publishDraft(ctx.app, ctx.lessonId)).status).toBe(200)
     expect(
       (await ctx.request(`/lessons/${ctx.lessonId}/navigation`, 'PUT', { sectionId: section.id }))
         .status,

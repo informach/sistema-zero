@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
+import { changeDraft, publishBlock, publishDraft } from '../draft-authoring-helpers'
 import { buildApp, grantLifetime, seedSampleCourse, signedWebhookHeaders } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
@@ -62,9 +64,7 @@ describe('Validação de borda — ids uuid nos params (id lixo → 400, nunca 2
       (await send(app, 'PATCH', '/members/admin/entitlements/abc', { action: 'revoke' })).status,
     ).toBe(400)
     expect((await get(app, '/members/admin/courses/abc')).status).toBe(400)
-    expect(
-      (await send(app, 'PATCH', '/members/admin/lessons/xyz', { slug: 'a', title: 'A' })).status,
-    ).toBe(400)
+    expect((await get(app, '/members/admin/lessons/xyz/draft')).status).toBe(400)
   })
 })
 
@@ -98,26 +98,34 @@ describe('Validação de borda — URLs do admin exigem http(s) (XSS via javascr
     const course = seedSampleCourse(courses)
     const lessonId = course.lessonIds[0]
 
-    const badImage = await send(app, 'POST', `/members/admin/lessons/${lessonId}/blocks`, {
+    const badImage = await publishBlock(app, lessonId, {
       content: { kind: 'image', url: 'javascript:alert(1)' },
     })
     expect(badImage.status).toBe(400)
 
     // `r2priv:<key>` é o caminho padrão do ebook/anexo; http(s) externo segue aceito.
-    const okEbook = await send(app, 'POST', `/members/admin/lessons/${lessonId}/blocks`, {
+    const okEbook = await publishBlock(app, lessonId, {
       content: { kind: 'ebook', url: 'r2priv:admin/attachments/livro.pdf' },
     })
-    expect(okEbook.status).toBe(201)
+    expect(okEbook.status).toBe(200)
 
-    const badAttachment = await send(
-      app,
-      'POST',
-      `/members/admin/lessons/${lessonId}/attachments`,
-      {
-        label: 'Material',
-        url: 'ftp://servidor/arquivo.zip',
-      },
-    )
+    expect(
+      (
+        await changeDraft(app, lessonId, {
+          type: 'attachments',
+          attachments: [
+            {
+              id: randomUUID(),
+              label: 'Material',
+              url: 'ftp://servidor/arquivo.zip',
+              fileType: null,
+              sizeBytes: null,
+            },
+          ],
+        })
+      ).status,
+    ).toBe(200)
+    const badAttachment = await publishDraft(app, lessonId)
     expect(badAttachment.status).toBe(400)
   })
 })

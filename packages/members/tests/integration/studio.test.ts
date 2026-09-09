@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -53,14 +54,12 @@ const getLesson = (app: App, slug: string, lessonId: string) =>
     }),
   )
 
-const updateBlock = (app: App, blockId: string, content: unknown) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-      method: 'PATCH',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
+const updateBlock = (
+  app: App,
+  lessonId: string,
+  blockId: string,
+  content: { kind: string; [key: string]: unknown },
+) => publishBlock(app, lessonId, { content }, {}, blockId)
 
 /** O "save na nuvem": o projeto que o PRÓPRIO aluno enviou neste bloco. */
 const getOwnSubmission = (app: App, lessonId: string, blockId: string) =>
@@ -177,7 +176,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     expect(oldPass.status).toBe(200)
     expect((await readJson(oldPass)).passed).toBe(true)
 
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonIds[0], blockId, {
       ...baseStudio,
       activity: {
         instructions: 'crie a função go',
@@ -192,7 +191,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
         ],
       },
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     // A aprovação antiga caiu (gate volta a travar) — mas por NOT_PASSED, não
     // por NOT_SUBMITTED: a ENTREGA do aluno fica (é o save na nuvem dele).
@@ -252,7 +251,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
     // do initialProject sai re-serializado (normalizações do editor), a lista de
     // blocos muda, a vitrine é ligada… nada disso é a ATIVIDADE — a entrega e a
     // aprovação do aluno NÃO podem ser tocadas.
-    const patched = await updateBlock(app, blockId, {
+    const patched = await updateBlock(app, lessonIds[0], blockId, {
       kind: 'studio',
       level: 'intermediario',
       allowBlocks: ['sz_js_var_create'],
@@ -263,7 +262,7 @@ describe('Bloco Estúdio — gate de conclusão + entrega', () => {
       showcase: { enabled: true, title: 'Meu jogo' },
       activity,
     })
-    expect(patched.status).toBe(200)
+    expect(patched.status, await patched.clone().text()).toBe(200)
 
     const kept = await getOwnSubmission(app, lessonIds[0], blockId)
     expect(kept.status).toBe(200)

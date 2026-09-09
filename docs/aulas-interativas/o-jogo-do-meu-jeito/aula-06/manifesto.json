@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-06",
   "title": "A sua nave entra no jogo",
@@ -81,6 +81,18 @@
         "kind": "rich_text",
         "markdown": "A nave tem sua arte e o fogo animado; movimento, tiros, vidas e telas continuam funcionando. Confira o salvamento do mesmo projeto livre.\n\nNa Aula 7, você troca também os asteroides, preservando a chuva e as colisões."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-06-passo-01: gravar a demonstração \"trazer os seus desenhos para dentro do projeto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-06-passo-02: gravar a demonstração \"apagar a nave do kit e montar a sua\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-06-passo-03: gravar a demonstração \"carregar a folha e animar a nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -119,36 +131,30 @@
       "title": "trazer os seus desenhos para dentro do projeto",
       "objective": "Abra Estúdio pelo menu e entre no cartão do jogo importado, não no projeto de teste. Use a área de recursos para trazer nave e asteroide do Pinta. Confira os nomes antes de trocar os blocos.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-06-passo-01: gravar a demonstração \"trazer os seus desenhos para dentro do projeto\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "apagar a nave do kit e montar a sua",
       "objective": "Em Ao iniciar, remova somente Criar nave do kit, preservando a pilha. Em Jogo 2D, Sprites, crie o sprite nave com imagem nave: x 400, y 410, largura 54 e altura 54. O nome nave mantém a ligação com os controles.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-06-passo-02: gravar a demonstração \"apagar a nave do kit e montar a sua\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "carregar a folha e animar a nave",
       "objective": "Em Jogo 2D, Animação, carregue folha-nave da imagem nave com quadros 32 por 32. Configure a animação voando do quadro 0 ao 1 a 8 fps. Teste o fogo, as setas, os tiros e as colisões no mesmo jogo.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": [
-        "aula-06-passo-03: gravar a demonstração \"carregar a folha e animar a nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

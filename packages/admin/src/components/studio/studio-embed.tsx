@@ -15,6 +15,11 @@ type StudioModule = typeof import('@sistemazero/studio')
 type ProjectKindChoice = 'classic' | 'pro'
 
 interface Props {
+  lessonConfig?: Pick<
+    import('@sistemazero/studio').StudioLessonProps,
+    'level' | 'allowedModes' | 'allowBlocks' | 'allowCategories' | 'allowLevelReveal' | 'activity'
+  >
+  onChange?: (project: Project) => void
   /** Projeto inicial; ausente → cria um vazio (autoria de bloco novo). */
   initialProject?: Project | null
   /** Nome do projeto vazio criado quando não há `initialProject`. */
@@ -56,6 +61,8 @@ export function StudioEmbed({
   hideKindChooser = false,
   requestedKind,
   onKindResolved,
+  onChange,
+  lessonConfig,
 }: Props) {
   const [studioModule, setStudioModule] = useState<StudioModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -200,9 +207,11 @@ export function StudioEmbed({
       ) : null}
       <div className="min-h-0 flex-1">
         <StudioLesson
+          {...lessonConfig}
           ref={handleRef}
           initialProject={seed}
           persistence="none"
+          onChange={onChange}
           features={{
             ...features,
             ...(seed.kind === 'pro' ? { professional: true, terminal: false } : {}),

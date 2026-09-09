@@ -1,3 +1,4 @@
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
@@ -122,12 +123,27 @@ export class GetLessonService {
       // (é assim que a autoria confere a aula pelo "Ver como aluno").
       privileged,
     )
-    if (hasComingSoonBlock(lesson.blocks) && !privileged) return view
+    if (hasComingSoonBlock(lesson.blocks) && !privileged)
+      return { ...view, requirements: lessonCompletionRequirements(view) }
     const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)
     return {
       ...view,
-      sections: structure.sections.map((section) => ({ ...section, pendingMedia: [] })),
+      sections: structure.sections.map(
+        ({ id, title, blockIds, workspaceBlockId, externalTool }) => ({
+          id,
+          title,
+          blockIds,
+          workspaceBlockId,
+          externalTool,
+        }),
+      ),
       structureRevision: structure.revision,
+      supportBlockIds: structure.supportBlockIds ?? [],
+      requirements: lessonCompletionRequirements({
+        ...view,
+        sections: structure.sections,
+        learningProgress: structure.progress,
+      }),
       learningProgress: structure.progress,
     }
   }

@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-3",
   "title": "A chuva de asteroides",
@@ -101,6 +101,30 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "dia-3-passo-01: gravar a demonstração \"criar o grupo dos asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "dia-3-passo-02: gravar a demonstração \"montar o relógio da chuva\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "dia-3-passo-03: gravar a demonstração \"criar o asteroide surpresa\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "dia-3-passo-04: gravar a demonstração \"fazer os asteroides caírem e sumirem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "dia-3-passo-05: gravar a demonstração \"explodir asteroide com tiro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-6-1",
+      "plannedVideo": "dia-3-passo-06: gravar a demonstração \"hora de explodir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -139,72 +163,60 @@
       "title": "criar o grupo dos asteroides",
       "objective": "Em Jogo 2D, Muitos, crie o grupo asteroides em Ao iniciar, abaixo de tiros. Agora cada tipo tem seu próprio grupo.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-01: gravar a demonstração \"criar o grupo dos asteroides\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "montar o relógio da chuva",
       "objective": "Em Tempo e repetição, coloque A cada quadros dentro de Enquanto estiver rodando, ao lado de A cada quadro do jogo. Escreva 40. O relógio da criação fica separado do movimento.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-02: gravar a demonstração \"montar o relógio da chuva\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "criar o asteroide surpresa",
       "objective": "Em Kit espaço, coloque No grupo criar um asteroide dentro do relógio. Escolha asteroides. No x, use um x aleatório na tela, de Mira e contas. Confira y menos 30, tamanho 40, vx 0 e vy 3.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-03: gravar a demonstração \"criar o asteroide surpresa\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "fazer os asteroides caírem e sumirem",
       "objective": "Em A cada quadro, abaixo dos tiros, encaixe Atualizar o grupo asteroides, Tirar do grupo quem sair da tela e Desenhar o grupo asteroides. Deixe vazio o fazer da limpeza. Rode e observe a chuva.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-04: gravar a demonstração \"fazer os asteroides caírem e sumirem\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-5",
       "title": "explodir asteroide com tiro",
       "objective": "Em Colisões, encaixe Para cada colisão entre os grupos, usando tiros e asteroides. Dentro, tire tiro e asteroide de seus grupos, solte uma explosão no asteroide e toque o som de explosão. Confira os apelidos antes de testar.",
       "intent": "application",
-      "blockKeys": ["construir-5"],
+      "blockKeys": ["construir-5", "video-construir-5-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-05: gravar a demonstração \"explodir asteroide com tiro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-6",
       "title": "hora de explodir",
       "objective": "Clique no jogo, desvie e atire. Compare o relógio em 20 e em 80. Sua previsão combinou com o resultado? Volte a 40 para seguir com o mesmo ponto de partida.",
       "intent": "application",
-      "blockKeys": ["construir-6"],
+      "blockKeys": ["construir-6", "video-construir-6-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": [
-        "dia-3-passo-06: gravar a demonstração \"hora de explodir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

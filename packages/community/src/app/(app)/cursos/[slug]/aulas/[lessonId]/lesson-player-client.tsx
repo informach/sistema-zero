@@ -1,5 +1,7 @@
 'use client'
 
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+
 import { LessonAttachments } from '@sistemazero/member-shell/components/lesson-attachments'
 import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import {
@@ -11,10 +13,6 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import {
-  isExperimentBlock,
-  unfinishedLearning,
-} from '@sistemazero/member-shell/lib/lesson-learning'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -26,7 +24,7 @@ import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
-import type { CourseDetailView, LessonDetailView, QuizBlock, StudioBlock } from '@/lib/types'
+import type { CourseDetailView, LessonDetailView } from '@/lib/types'
 
 interface Props {
   course: CourseDetailView
@@ -62,57 +60,23 @@ export function LessonPlayer({
 }: Props) {
   const router = useRouter()
   const learning = useLessonLearning(lesson, viewerId)
-  const blockedByLearning = unfinishedLearning(lesson.blocks, learning.progress)
-  const blockedByPinta = lesson.blocks.some(
-    (b) => b.kind === 'pinta' && !isExperimentBlock(b) && !b.pintaState?.submitted,
-  )
+  const requirements = lessonCompletionRequirements({
+    ...lesson,
+    learningProgress: learning.progress,
+  })
+  const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
+  const blockedByLearning = missing('LEARNING_GATE_INCOMPLETE')
+  const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
+
   const [completing, setCompleting] = useState(false)
   const courseHref = `/cursos/${encodeURIComponent(course.slug)}`
 
-  // Há quiz com nota de corte ainda não aprovado? (bloqueia o concluir — 409 no backend)
-  const blockedByQuiz = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'quiz') return false
-        const content = b.content as QuizBlock | null
-        return content?.passingScore != null && !b.quizState?.passed
-      }),
-    [lesson.blocks],
-  )
+  const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
+  const blockedByStudio = missing('STUDIO_GATE_NOT_SUBMITTED')
+  const blockedByStudioNotPassed = missing('STUDIO_GATE_NOT_PASSED')
+  const blockedByComingSoon = missing('LESSON_COMING_SOON')
 
-  // Há bloco de estúdio cujo projeto ainda não foi enviado? (mesmo gate do quiz — 409)
-  const blockedByStudio = useMemo(
-    () =>
-      lesson.blocks.some(
-        (b) => b.kind === 'studio' && !isExperimentBlock(b) && !b.studioState?.submitted,
-      ),
-    [lesson.blocks],
-  )
-  // Aula EM PRODUÇÃO: com o bloco "em breve" o members serve SÓ o recado (segura os
-  // demais blocos e os anexos) e recusa a conclusão com 409 LESSON_COMING_SOON.
-  const blockedByComingSoon = useMemo(
-    () => lesson.blocks.some((b) => b.kind === 'coming_soon'),
-    [lesson.blocks],
-  )
-  // Atividade do Estúdio COM nota mínima exige aprovação, não só envio. O backend já
-  // devolvia 409 `STUDIO_GATE_NOT_PASSED` (o kids espelha desde 06/2026), mas aqui o
-  // botão seguia habilitado: o aluno clicava e só descobria pelo toast.
-  const blockedByStudioNotPassed = useMemo(
-    () =>
-      lesson.blocks.some((b) => {
-        if (b.kind !== 'studio' || isExperimentBlock(b) || !b.studioState?.submitted) return false
-        const content = b.content as StudioBlock | null
-        return content?.activity?.passingScore !== undefined && !b.studioState?.passed
-      }),
-    [lesson.blocks],
-  )
-  const completeBlocked =
-    blockedByLearning ||
-    blockedByPinta ||
-    blockedByComingSoon ||
-    blockedByQuiz ||
-    blockedByStudio ||
-    blockedByStudioNotPassed
+  const completeBlocked = requirements.some((r) => !r.complete)
 
   const completedRef = useRef(lesson.completed)
   const complete = useCallback(async () => {

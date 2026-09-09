@@ -15,8 +15,6 @@ import { GetAvatarsByProfilesService } from '../src/application/avatar/get-avata
 import { SetAvatarPhotoService } from '../src/application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from '../src/application/children-stats/get-children-stats.service'
 import {
-  AttachmentAdminService,
-  BlockAdminService,
   CourseAdminService,
   LessonAdminService,
   ModuleAdminService,
@@ -140,8 +138,8 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
-import { InMemoryLearningImportRepository } from './fakes/learning-import-in-memory'
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
+import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
 import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
@@ -317,13 +315,12 @@ export function buildApp(
     clock,
     teacherThreads,
   )
+  const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
   const app = createServer({
     learning: {
       learning,
-      imports: new LearningImportService(
-        new InMemoryLearningImportRepository(courses, learningRepository),
-        courses,
-      ),
+      imports: new LearningImportService(drafts, courses),
+      drafts,
       internalToken: opts.internalToken,
       requireAdminEnabled: true,
     },
@@ -578,8 +575,6 @@ export function buildApp(
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),
       lessons: new LessonAdminService(courses, courses, learning),
-      blocks: new BlockAdminService(courses),
-      attachments: new AttachmentAdminService(courses),
       studioSubmissions: new StudioSubmissionsAdminService(studioSubmissions, clock),
     },
     internal: {

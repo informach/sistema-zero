@@ -1,4 +1,6 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
+export * from './authoring'
+export * from './requirements'
 export const SECTION_INTENTS = [
   'presentation',
   'demonstration',
@@ -411,17 +413,18 @@ export function defaultLessonSection(
 export function validateLessonSections(
   sections: LessonSection[],
   blocks: { id: string; kind: string }[],
+  supportBlockIds: string[] = [],
 ): string | null {
   if (sections.length < 1 || sections.length > 60) return 'A aula precisa ter entre 1 e 60 seções.'
   if (new Set(sections.map((s) => s.id)).size !== sections.length)
     return 'As seções precisam ter identificadores diferentes.'
-  const assigned = sections.flatMap((s) => s.blockIds)
+  const assigned = [...sections.flatMap((s) => s.blockIds), ...supportBlockIds]
   if (
     assigned.length !== blocks.length ||
     new Set(assigned).size !== blocks.length ||
     blocks.some((b) => !assigned.includes(b.id))
   )
-    return 'Cada bloco deve pertencer a exatamente uma seção.'
+    return 'Cada bloco deve pertencer a uma seção ou aos materiais de apoio, sem duplicação.'
   for (const section of sections) {
     if (!text(section.title, 200) || section.objective.length > 2000)
       return 'Informe um título e um objetivo válido para cada seção.'
@@ -434,19 +437,22 @@ export function validateLessonSections(
       return 'O espaço de trabalho deve ser um Estúdio ou Pinta desta aula.'
     if (section.workspaceBlockId && section.externalTool)
       return 'Escolha um espaço de trabalho incorporado ou uma ferramenta externa.'
+    if (section.workspaceBlockId && supportBlockIds.includes(section.workspaceBlockId))
+      return 'Coloque o projeto reutilizado em uma seção do percurso antes de vinculá-lo.'
   }
   return null
 }
 
 /** Portable authoring format. Existing projects/media are references, never invented snapshots. */
 export interface LearningManifest {
-  version: 1
+  version: 1 | 2
   courseSlug: string
   lessonSlug: string
   title: string
   blocks: Array<
     | { key: string; content: InteractiveBlock | { kind: 'rich_text'; markdown: string } }
     | { key: string; existing: { kind: string; index: number } }
+    | { key: string; plannedVideo: string }
   >
   sections: Array<
     Omit<LessonSection, 'id' | 'blockIds' | 'workspaceBlockId'> & {
@@ -459,7 +465,7 @@ export interface LearningManifest {
 export function isLearningManifest(value: unknown): value is LearningManifest {
   if (
     !record(value) ||
-    value.version !== 1 ||
+    (value.version !== 1 && value.version !== 2) ||
     !text(value.courseSlug, 200) ||
     !text(value.lessonSlug, 200) ||
     !text(value.title, 200) ||
@@ -476,13 +482,20 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
       (b) =>
         record(b) &&
         key(b.key) &&
-        (('content' in b &&
+        ((value.version === 2 &&
+          'plannedVideo' in b &&
+          !('content' in b) &&
           !('existing' in b) &&
-          (isInteractiveBlock(b.content) ||
-            (record(b.content) &&
-              b.content.kind === 'rich_text' &&
-              text(b.content.markdown, 50000)))) ||
+          text(b.plannedVideo, 5000)) ||
+          ('content' in b &&
+            !('plannedVideo' in b) &&
+            !('existing' in b) &&
+            (isInteractiveBlock(b.content) ||
+              (record(b.content) &&
+                b.content.kind === 'rich_text' &&
+                text(b.content.markdown, 50000)))) ||
           ('existing' in b &&
+            !('plannedVideo' in b) &&
             !('content' in b) &&
             record(b.existing) &&
             text(b.existing.kind, 40) &&

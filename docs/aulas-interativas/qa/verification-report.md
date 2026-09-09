@@ -1,5 +1,7 @@
 # Verificação das aulas interativas
 
+A evolução mais recente tem um [relatório próprio de autoria por seções, rascunhos e publicação](autoria-rascunhos.md). As contagens abaixo são históricas e não substituem essa nova verificação.
+
 Registro inicial em 2026-09-08T20:59:58+00:00. Worktree `sistema-zero-aulas`, base `d40f8fd9`, branch `feat/aulas-interativas`. Os resultados abaixo pertencem à entrega inicial; a revisão posterior está vinculada na seção Entrega.
 
 ## Escopo e conclusão

@@ -9,7 +9,11 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
-import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
+import {
+  type InteractiveBlock,
+  isInteractiveBlock,
+  type LessonDraftIssue,
+} from '@sistemazero/core/learning'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -30,7 +34,6 @@ import {
   type Project,
   type StudioHandle,
 } from '@sistemazero/studio'
-import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -51,6 +54,7 @@ import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-bu
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { useLessonDraft } from '@/components/editor/use-lesson-draft'
 import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -61,7 +65,6 @@ import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import { fetchSubmissionCountsSafe, submissionCountWarning } from '@/lib/submission-counts'
 import {
   type AttachmentView,
   type BlockView,
@@ -94,7 +97,7 @@ const KIND_LABELS: Record<LessonBlockKind, string> = {
 }
 
 /** `BlockView.kind` vem como `string` da API — bloco de um deploy mais novo cai no slug. */
-const kindLabel = (kind: string): string => (KIND_LABELS as Record<string, string>)[kind] ?? kind
+const _kindLabel = (kind: string): string => (KIND_LABELS as Record<string, string>)[kind] ?? kind
 
 // Largura do modal de bloco por tipo: só os que embutem editor PESADO fogem do `max-w-lg` padrão
 // (o Estúdio = IDE blocos/código/preview; o quiz = editores de texto rico por pergunta/opção).
@@ -413,15 +416,15 @@ function buildContent(
 function validateBlock(f: BlockForm): string | null {
   switch (f.kind) {
     case 'video':
-      return f.src.trim() ? null : 'Envie o vídeo antes de salvar.'
+      return f.src.trim() ? null : 'Envie o vídeo antes de publicar.'
     case 'image':
-      return f.url.trim() ? null : 'Envie a imagem antes de salvar.'
+      return f.url.trim() ? null : 'Envie a imagem antes de publicar.'
     case 'audio':
-      return f.url.trim() ? null : 'Envie o áudio antes de salvar.'
+      return f.url.trim() ? null : 'Envie o áudio antes de publicar.'
     case 'embed':
       return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
     case 'ebook':
-      return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de salvar.'
+      return f.pdfUrl.trim() ? null : 'Envie o PDF do e-book antes de publicar.'
     case 'studio': {
       // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
       // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
@@ -447,58 +450,58 @@ function validateBlock(f: BlockForm): string | null {
   }
 }
 
-/** Resumo de uma linha p/ a lista de blocos. */
-function blockSummary(b: BlockView): string {
-  const c = b.content
-  switch (c.kind) {
-    case 'rich_text':
-      return (c.markdown ?? c.html ?? '').slice(0, 80) || '—'
-    case 'video':
-      return `${c.provider}: ${c.src}`
-    case 'image':
-      return c.url
-    case 'audio':
-      return c.url
-    case 'embed':
-      return c.html ? 'HTML interativo (iframe sandbox)' : (c.src ?? '—')
-    case 'ebook':
-      return c.title ?? c.url
-    case 'quiz':
-      return `${c.questions.length} pergunta(s)`
-    case 'studio':
-      return (c.initialProject as { name?: string })?.name ?? 'Atividade do Estúdio'
-    case 'pinta': {
-      const asset = c.initialAsset as { kind?: string } | undefined
-      const label = PINTA_LESSON_ASSET_OPTIONS.find((o) => o.kind === asset?.kind)?.label
-      return label ?? 'Desenho no Pinta'
-    }
-    case 'certificate':
-      return c.coursePhrase?.trim() || 'Certificado de conclusão'
-    case 'coming_soon':
-      return c.message?.trim() || 'A aula fica escondida até você tirar este bloco'
-    default:
-      return '—'
-  }
-}
-
 export function LessonEditorClient({
   courseId,
   lessonId,
   currentRole,
+  authorId,
   studentAppUrls,
 }: {
   courseId: string
   lessonId: string
   currentRole: string
+  authorId: string
   /** URLs públicas dos apps de aluno ("Ver como aluno") — ausentes → botão oculto. */
   studentAppUrls?: { adult?: string; kids?: string }
 }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
-  const [structureDirty, setStructureDirty] = useState(false)
-  const [structureVersion, setStructureVersion] = useState(0)
-
-  const [lesson, setLesson] = useState<LessonContentView | null>(null)
-  const [loading, setLoading] = useState(true)
+  const draftState = useLessonDraft(lessonId, authorId)
+  const { session, draft } = draftState
+  const loading = draftState.status === 'loading'
+  const [preview, setPreview] = useState(false)
+  const [issues, setIssues] = useState<LessonDraftIssue[]>([])
+  const [blockId, setBlockId] = useState('')
+  const [blockSectionId, setBlockSectionId] = useState<string | null>(null)
+  const [attachmentId, setAttachmentId] = useState('')
+  const [editorVersion, setEditorVersion] = useState(0)
+  const lesson = useMemo<LessonContentView | null>(
+    () =>
+      draft
+        ? {
+            id: lessonId,
+            courseId,
+            moduleId: '',
+            sortOrder: 0,
+            isPublished: draft.isPublished,
+            title: draft.document.title,
+            slug: draft.document.slug,
+            estimatedMinutes: draft.document.estimatedMinutes,
+            blocks: draft.document.blocks.map((b, sortOrder) => ({
+              ...b,
+              kind: b.content.kind,
+              lessonId,
+              sortOrder,
+              blockRevision: b.id.replaceAll('-', ''),
+            })),
+            attachments: draft.document.attachments.map((a, sortOrder) => ({
+              ...a,
+              lessonId,
+              sortOrder,
+            })),
+          }
+        : null,
+    [draft, lessonId, courseId],
+  )
   /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
   const [courseInfo, setCourseInfo] = useState<{
     slug: string
@@ -545,15 +548,7 @@ export function LessonEditorClient({
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   const load = useCallback(async () => {
-    setLoading(true)
-    try {
-      setLesson(await apiGet<LessonContentView>(`/api/members/lessons/${lessonId}/content`))
-      setStructureVersion((value) => value + 1)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar a aula.')
-    } finally {
-      setLoading(false)
-    }
+    await session.load()
     // "Ver como aluno": a árvore traz slug/audience/status + a publicação da aula
     // (o LessonContentView não os carrega). Best-effort — sem ela o botão só some.
     try {
@@ -568,35 +563,33 @@ export function LessonEditorClient({
     } catch {
       setCourseInfo(null)
     }
-  }, [lessonId, courseId])
+  }, [lessonId, courseId, session])
 
   useEffect(() => {
-    load()
-  }, [load])
-
-  async function run(fn: () => Promise<unknown>, okMsg?: string) {
-    if (structureDirty) {
-      toast.error('Salve a organização didática antes de alterar o conteúdo.')
-      return
+    let active = true
+    void apiGet<CourseTreeView>(`/api/members/courses/${courseId}`)
+      .then((tree) => {
+        if (!active) return
+        const treeLesson = tree.modules.flatMap((m) => m.lessons).find((l) => l.id === lessonId)
+        setCourseInfo({
+          slug: tree.slug,
+          audience: tree.audience === 'kids' ? 'kids' : 'adult',
+          status: tree.status,
+          lessonPublished: treeLesson?.isPublished ?? false,
+        })
+      })
+      .catch((error) => {
+        if (active) toast.error(error.message ?? 'Não foi possível carregar o curso.')
+      })
+    return () => {
+      active = false
     }
-    setBusy(true)
-    try {
-      await fn()
-      if (okMsg) toast.success(okMsg)
-      await load()
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Operação falhou.')
-    } finally {
-      setBusy(false)
-    }
-  }
+  }, [lessonId, courseId])
 
   // ── Blocos ──
-  function openCreateBlock() {
-    if (structureDirty) {
-      toast.error('Salve a organização didática antes de adicionar um bloco.')
-      return
-    }
+  function openCreateBlock(sectionId: string | null) {
+    setBlockId(crypto.randomUUID())
+    setBlockSectionId(sectionId)
     setEditingBlock(null)
     setBlockForm(EMPTY_BLOCK)
     setStudioKind('blocks')
@@ -604,10 +597,8 @@ export function LessonEditorClient({
     setBlockOpen(true)
   }
   function openEditBlock(b: BlockView) {
-    if (structureDirty) {
-      toast.error('Salve a organização didática antes de editar um bloco.')
-      return
-    }
+    setBlockId(b.id)
+    setBlockSectionId(draft?.document.sections.find((s) => s.blockIds.includes(b.id))?.id ?? null)
     setEditingBlock(b)
     const c = b.content
     setBlockForm({
@@ -695,165 +686,143 @@ export function LessonEditorClient({
     }
     setBlockOpen(true)
   }
-  async function saveBlock() {
-    if (blockForm.kind === 'interactive' && !isInteractiveBlock(blockForm.interactive)) {
-      toast.error(
-        'Complete o modelo, as alternativas e a pergunta de verificação, quando necessária.',
+  const captureBlock = useCallback(
+    (immediate = false) => {
+      if (!blockId || !blockOpen) return
+      const project = studioHandleRef.current?.getProject() ?? undefined
+      if (blockForm.kind === 'studio' && !project) return
+      const asset =
+        blockForm.kind === 'pinta' ? (pintaHandleRef.current?.getAsset() ?? pintaSeed) : null
+      const content = buildContent(
+        blockForm,
+        project,
+        editingBlock?.content,
+        asset ? pintaAssetToWire(asset) : undefined,
       )
-      return
-    }
-    if (
-      (blockForm.kind === 'studio' || blockForm.kind === 'pinta') &&
-      blockForm.toolPurpose === 'experiment' &&
-      (blockForm.studioChain.trim() ||
-        blockForm.pintaChain.trim() ||
-        blockForm.studioShowcaseEnabled)
-    ) {
-      toast.error('Um experimento não pode continuar uma cadeia ou publicar no Mural.')
-      return
-    }
-    if (blockForm.kind === 'quiz') {
-      const error = validateQuiz(blockForm.quiz)
-      if (error) {
-        toast.error(error)
-        return
-      }
-    }
-    // Estúdio: captura o snapshot do editor embutido (nome/tipo/código de partida).
-    let studioProject: Project | undefined
-    if (blockForm.kind === 'studio') {
-      const p = studioHandleRef.current?.getProject()
-      if (!p) {
-        toast.error('Monte o projeto inicial no Estúdio antes de salvar.')
-        return
-      }
-      studioProject = p
-    }
-    // Pinta: captura o desenho do editor embutido. `save()` ANTES de ler — o autosave do Pinta é
-    // debounced e sem isso os últimos traços dela ficariam de fora.
-    let pintaAsset: unknown
-    if (blockForm.kind === 'pinta') {
-      const handle = pintaHandleRef.current
-      if (!handle) {
-        toast.error('Espere o Pinta abrir antes de salvar.')
-        return
-      }
-      if (!(await handle.save())) {
-        toast.error('Não foi possível salvar os últimos traços do Pinta. Tente novamente.')
-        return
-      }
-      pintaAsset = pintaAssetToWire(handle.getAsset())
-    }
-    const missing = validateBlock(blockForm)
-    if (missing) {
-      toast.error(missing)
-      return
-    }
-    const content = buildContent(
-      blockForm,
-      studioProject,
-      editingBlock?.content as LessonBlockContent | undefined,
-      pintaAsset,
-    )
-    await run(async () => {
-      let result: { zappyKnowledgeStatus?: 'ready' | 'pending' }
-      if (editingBlock)
-        result = await apiSend(`/api/members/blocks/${editingBlock.id}`, 'PATCH', { content })
-      else result = await apiSend(`/api/members/lessons/${lessonId}/blocks`, 'POST', { content })
-      if (result.zappyKnowledgeStatus === 'pending') {
-        toast.warning('Bloco salvo, mas a base do Zappy aguarda reindexação.')
-      }
-      setBlockOpen(false)
-    }, 'Bloco salvo.')
-  }
-  async function deleteBlock(b: BlockView) {
-    // A contagem vem ANTES do confirm (o `message` do useConfirm é fixo): as FKs em
-    // cascata apagam as entregas dos alunos junto com o bloco, e o professor precisa
-    // ver o custo. Best-effort — members fora → confirm de sempre, exclusão livre.
-    const counts = await fetchSubmissionCountsSafe(courseId)
-    const warning = submissionCountWarning(counts?.byBlock[b.id] ?? 0)
-    confirm({
-      title: 'Excluir bloco',
-      message: (
-        <>
-          Tem certeza que deseja excluir este bloco? Esta ação não pode ser desfeita.
-          {warning ? (
-            <>
-              {' '}
-              <strong className="text-destructive">{warning}</strong>
-            </>
-          ) : null}
-        </>
-      ),
-      confirmText: 'Excluir',
-      confirmVariant: 'destructive',
-      onConfirm: () =>
-        run(async () => {
-          const result = await apiSend<{ zappyKnowledgeStatus?: 'ready' | 'pending' }>(
-            `/api/members/blocks/${b.id}`,
-            'DELETE',
+      session.enqueue(
+        { type: 'block', block: { id: blockId, content }, sectionId: blockSectionId },
+        immediate,
+      )
+      if (content.kind === 'video' && content.provider === 'vimeo') {
+        const current = session.getSnapshot().draft
+        const plan = current?.document.plannedVideos.find((v) => v.blockId === blockId)
+        const videoId = content.src.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] ?? null
+        if (current && (!plan || plan.videoId !== videoId))
+          session.enqueue(
+            {
+              type: 'planned-videos',
+              plannedVideos: plan
+                ? current.document.plannedVideos.map((v) =>
+                    v.blockId === blockId ? { ...v, videoId } : v,
+                  )
+                : [
+                    ...current.document.plannedVideos,
+                    { blockId, instructions: 'Vídeo desta seção', videoId },
+                  ],
+            },
+            immediate,
           )
-          if (result.zappyKnowledgeStatus === 'pending') {
-            toast.warning('Bloco excluído; a limpeza do Zappy aguarda reindexação.')
-          }
-        }, 'Bloco excluído.'),
+      }
+    },
+    [blockId, blockOpen, blockForm, editingBlock, pintaSeed, session, blockSectionId],
+  )
+  useEffect(() => {
+    void editorVersion
+    captureBlock()
+  }, [captureBlock, editorVersion])
+
+  async function captureEditors() {
+    if (blockOpen && blockForm.kind === 'studio') await studioHandleRef.current?.save()
+    if (
+      blockOpen &&
+      blockForm.kind === 'pinta' &&
+      pintaHandleRef.current &&
+      !(await pintaHandleRef.current.save())
+    )
+      throw new Error('Não foi possível capturar os últimos traços do Pinta.')
+    captureBlock(true)
+  }
+  async function closeBlock() {
+    try {
+      await captureEditors()
+      setBlockOpen(false)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Não foi possível capturar o projeto.')
+    }
+  }
+  async function beforePublish() {
+    await captureEditors()
+    await session.flush()
+  }
+  const publication = useRef<{ expectedRevision: string; operationId: string } | null>(null)
+  async function publish() {
+    setBusy(true)
+    setIssues([])
+    try {
+      await beforePublish()
+      const current = session.getSnapshot().draft
+      if (!current) return
+      const retry = publication.current?.expectedRevision === current.revision
+      const command =
+        retry && publication.current
+          ? publication.current
+          : { expectedRevision: current.revision, operationId: crypto.randomUUID() }
+      const found = retry
+        ? []
+        : await apiSend<LessonDraftIssue[]>(
+            `/api/members/lessons/${lessonId}/draft/validate`,
+            'POST',
+            command,
+          )
+      setIssues(found)
+      if (found.length) {
+        toast.error('Confira as pendências indicadas nos blocos antes de publicar.')
+        return
+      }
+      publication.current = command
+      await apiSend(`/api/members/lessons/${lessonId}/draft/publish`, 'POST', command)
+      publication.current = null
+      await load()
+      toast.success('Aula publicada. A base do Zappy será atualizada com esta versão.')
+    } catch (error) {
+      toast.error((error as ApiError).message ?? 'Não foi possível publicar.')
+    } finally {
+      setBusy(false)
+    }
+  }
+  function deleteBlock(b: BlockView) {
+    confirm({
+      title: 'Retirar bloco do percurso',
+      message:
+        'O bloco será retirado ao publicar. Os envios e o histórico dos alunos serão preservados.',
+      confirmText: 'Retirar bloco',
+      confirmVariant: 'destructive',
+      onConfirm: async () => {
+        session.enqueue({ type: 'remove-block', blockId: b.id }, true)
+      },
     })
   }
-
-  // ── Reordenação (drag-and-drop, otimista; falhou → toast + reload) ─────────
-  async function persistOrder(url: string, orderedIds: string[]) {
-    try {
-      await apiSend(url, 'POST', { orderedIds })
-      setStructureVersion((value) => value + 1)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
-      await load()
-    }
-  }
-
-  function handleBlockDragEnd(event: DragEndEvent) {
-    if (structureDirty) {
-      toast.error('Salve a organização antes de reordenar blocos.')
-      return
-    }
-    const { active, over } = event
-    if (!lesson || !over || active.id === over.id) return
-    const oldIdx = lesson.blocks.findIndex((b) => b.id === active.id)
-    const newIdx = lesson.blocks.findIndex((b) => b.id === over.id)
-    if (oldIdx === -1 || newIdx === -1) return
-    const blocks = arrayMove(lesson.blocks, oldIdx, newIdx)
-    setLesson({ ...lesson, blocks })
-    void persistOrder(
-      `/api/members/lessons/${lessonId}/blocks/reorder`,
-      blocks.map((b) => b.id),
-    )
-  }
-
   function handleAttachmentDragEnd(event: DragEndEvent) {
-    if (structureDirty) {
-      toast.error('Salve a organização antes de reordenar anexos.')
-      return
-    }
     const { active, over } = event
     if (!lesson || !over || active.id === over.id) return
-    const oldIdx = lesson.attachments.findIndex((a) => a.id === active.id)
-    const newIdx = lesson.attachments.findIndex((a) => a.id === over.id)
-    if (oldIdx === -1 || newIdx === -1) return
-    const attachments = arrayMove(lesson.attachments, oldIdx, newIdx)
-    setLesson({ ...lesson, attachments })
-    void persistOrder(
-      `/api/members/lessons/${lessonId}/attachments/reorder`,
-      attachments.map((a) => a.id),
+    const from = lesson.attachments.findIndex((a) => a.id === active.id)
+    const to = lesson.attachments.findIndex((a) => a.id === over.id)
+    if (from < 0 || to < 0) return
+    session.enqueue(
+      { type: 'attachments', attachments: arrayMove(lesson.attachments, from, to) },
+      true,
     )
   }
 
   // ── Anexos ──
   function openCreateAtt() {
+    setAttachmentId(crypto.randomUUID())
     setEditingAtt(null)
     setAttForm({ label: '', url: '', fileType: '', sizeBytes: '' })
     setAttOpen(true)
   }
   function openEditAtt(a: AttachmentView) {
+    setAttachmentId(a.id)
     setEditingAtt(a)
     setAttForm({
       label: a.label,
@@ -863,36 +832,32 @@ export function LessonEditorClient({
     })
     setAttOpen(true)
   }
-  async function saveAtt() {
-    if (!attForm.label.trim() || !attForm.url.trim()) {
-      toast.error('Informe rótulo e URL.')
-      return
+  useEffect(() => {
+    if (!attOpen || !attachmentId) return
+    const current = session.getSnapshot().draft
+    if (!current) return
+    const attachment = {
+      id: attachmentId,
+      label: attForm.label,
+      url: attForm.url,
+      fileType: attForm.fileType || null,
+      sizeBytes: attForm.sizeBytes ? Number(attForm.sizeBytes) : null,
     }
-    const payload = {
-      label: attForm.label.trim(),
-      url: attForm.url.trim(),
-      fileType: attForm.fileType.trim() || null,
-      sizeBytes: attForm.sizeBytes.trim() ? Number(attForm.sizeBytes) : null,
-    }
-    await run(async () => {
-      if (editingAtt) await apiSend(`/api/members/attachments/${editingAtt.id}`, 'PATCH', payload)
-      else await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', payload)
-      setAttOpen(false)
-    }, 'Anexo salvo.')
-  }
+    const attachments = current.document.attachments.some((a) => a.id === attachmentId)
+      ? current.document.attachments.map((a) => (a.id === attachmentId ? attachment : a))
+      : [...current.document.attachments, attachment]
+    session.enqueue({ type: 'attachments', attachments })
+  }, [attForm, attachmentId, attOpen, session])
   function deleteAtt(a: AttachmentView) {
-    confirm({
-      title: 'Excluir anexo',
-      message: (
-        <>
-          Excluir o anexo <strong className="text-foreground">{a.label}</strong>?
-        </>
-      ),
-      confirmText: 'Excluir',
-      confirmVariant: 'destructive',
-      onConfirm: () =>
-        run(() => apiSend(`/api/members/attachments/${a.id}`, 'DELETE'), 'Anexo excluído.'),
-    })
+    const current = session.getSnapshot().draft
+    if (current)
+      session.enqueue(
+        {
+          type: 'attachments',
+          attachments: current.document.attachments.filter((item) => item.id !== a.id),
+        },
+        true,
+      )
   }
 
   /**
@@ -914,19 +879,18 @@ export function LessonEditorClient({
       previousUrl && previousUrl !== file.url
         ? lesson?.attachments.find((a) => a.url === previousUrl)
         : undefined
-    try {
-      if (previous) {
-        await apiSend(`/api/members/attachments/${previous.id}`, 'PATCH', payload)
-        await load()
-        toast.success('Material da aula atualizado para o novo PDF.')
-        return
-      }
-      await apiSend(`/api/members/lessons/${lessonId}/attachments`, 'POST', payload)
-      await load()
-      toast.success('E-book adicionado aos materiais da aula.')
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao adicionar o e-book aos materiais.')
-    }
+    const current = session.getSnapshot().draft
+    if (!current) return
+    const attachment = { id: previous?.id ?? crypto.randomUUID(), ...payload }
+    session.enqueue(
+      {
+        type: 'attachments',
+        attachments: previous
+          ? current.document.attachments.map((a) => (a.id === previous.id ? attachment : a))
+          : [...current.document.attachments, attachment],
+      },
+      true,
+    )
   }
 
   return (
@@ -965,19 +929,174 @@ export function LessonEditorClient({
                   }
                   onClick={() => window.open(url, '_blank', 'noopener')}
                 >
-                  <ExternalLink className="size-4" /> Ver como aluno
+                  <ExternalLink className="size-4" /> Ver aula publicada
                 </Button>
               )
             })()}
+            {canWrite && draft?.isPublished && (
+              <Button
+                variant="outline"
+                disabled={busy}
+                onClick={() =>
+                  confirm({
+                    title: 'Despublicar aula',
+                    message:
+                      'A aula deixará de aparecer para os alunos. O conteúdo e o histórico serão preservados.',
+                    confirmText: 'Despublicar',
+                    onConfirm: async () => {
+                      await beforePublish()
+                      const current = session.getSnapshot().draft
+                      if (!current) return
+                      await apiSend(`/api/members/lessons/${lessonId}/draft/unpublish`, 'POST', {
+                        expectedRevision: current.revision,
+                        operationId: crypto.randomUUID(),
+                        readyVideoIds: [],
+                      })
+                      await load()
+                    },
+                  })
+                }
+              >
+                Despublicar aula
+              </Button>
+            )}
             {canWrite ? (
-              <Button onClick={openCreateBlock}>
-                <Plus className="size-4" /> Adicionar bloco
+              <Button
+                onClick={() => void publish()}
+                disabled={busy || loading || draftState.status === 'conflict'}
+              >
+                {busy ? <Spinner /> : null}Publicar aula
               </Button>
             ) : null}
           </div>
         }
       />
 
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
+        <p role="status" className="text-sm">
+          {draftState.status === 'saved'
+            ? 'Rascunho salvo'
+            : draftState.status === 'saving'
+              ? 'Salvando…'
+              : draftState.status === 'loading'
+                ? 'Carregando rascunho…'
+                : draftState.error}
+        </p>
+        {draftState.status === 'error' && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void (draft ? session.flush() : session.load()).catch((error) =>
+                toast.error(error.message),
+              )
+            }}
+          >
+            Tentar novamente
+          </Button>
+        )}
+      </div>
+      {draftState.status === 'conflict' && (
+        <div
+          role="alert"
+          className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
+        >
+          <p>Há uma versão diferente no servidor. Sua edição local foi preservada.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const blob = new Blob([JSON.stringify(draftState.recovery, null, 2)], {
+                  type: 'application/json',
+                })
+                const url = URL.createObjectURL(blob)
+                const link = window.document.createElement('a')
+                link.href = url
+                link.download = `aula-${lessonId}-copia-local.json`
+                link.click()
+                URL.revokeObjectURL(url)
+              }}
+            >
+              Baixar minha cópia local
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                void session.restoreServerVersion().catch((error) => toast.error(error.message))
+              }}
+            >
+              Abrir versão do servidor e arquivar cópia local
+            </Button>
+          </div>
+          <details>
+            <summary className="cursor-pointer text-sm">Comparar minha cópia local</summary>
+            <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs">
+              {JSON.stringify(draftState.recovery?.document, null, 2)}
+            </pre>
+          </details>
+        </div>
+      )}
+      {draft && (
+        <details className="rounded-xl border border-border bg-card p-4">
+          <summary className="cursor-pointer font-medium">Dados da aula</summary>
+          <fieldset
+            disabled={!canWrite || busy || draftState.status === 'conflict'}
+            className="mt-4 grid gap-4 sm:grid-cols-2"
+          >
+            <Field label="Título">
+              <Input
+                value={draft.document.title}
+                maxLength={200}
+                onChange={(e) =>
+                  session.enqueue({
+                    type: 'metadata',
+                    title: e.target.value,
+                    slug: draft.document.slug,
+                    estimatedMinutes: draft.document.estimatedMinutes,
+                  })
+                }
+              />
+            </Field>
+            <Field label="Slug">
+              <Input
+                value={draft.document.slug}
+                maxLength={200}
+                onChange={(e) =>
+                  session.enqueue({
+                    type: 'metadata',
+                    title: draft.document.title,
+                    slug: e.target.value,
+                    estimatedMinutes: draft.document.estimatedMinutes,
+                  })
+                }
+              />
+            </Field>
+            <Field label="Duração estimada (minutos)">
+              <Input
+                type="number"
+                min={0}
+                max={10000}
+                value={draft.document.estimatedMinutes ?? ''}
+                onChange={(e) =>
+                  session.enqueue({
+                    type: 'metadata',
+                    title: draft.document.title,
+                    slug: draft.document.slug,
+                    estimatedMinutes: e.target.value ? Number(e.target.value) : null,
+                  })
+                }
+              />
+            </Field>
+          </fieldset>
+        </details>
+      )}
+      {issues
+        .filter((issue) => !issue.blockId)
+        .map((issue) => (
+          <p key={issue.message} role="alert" className="text-sm text-destructive">
+            {issue.message}
+          </p>
+        ))}
       {loading ? (
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />
@@ -991,47 +1110,30 @@ export function LessonEditorClient({
               lessonId={lessonId}
               lessonSlug={lesson.slug}
               courseSlug={courseInfo.slug}
-              published={courseInfo.lessonPublished}
-              disabled={structureDirty}
+              disabled={busy || draftState.status === 'conflict'}
+              beforeImport={beforePublish}
               onImported={load}
             />
           )}
-          <LessonStructureEditor
-            key={`${lesson.id}:${structureVersion}`}
-            lesson={lesson}
-            canWrite={canWrite}
-            onDirtyChange={setStructureDirty}
-          />
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-muted-foreground">Conteúdo dos blocos</h3>
-            {lesson.blocks.length === 0 ? (
-              <Card className="py-8 text-center text-sm text-muted-foreground">
-                Nenhum bloco. Adicione texto, vídeo, imagem, quiz ou conteúdo interativo.
-              </Card>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleBlockDragEnd}
-              >
-                <SortableContext
-                  items={lesson.blocks.map((b) => b.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {lesson.blocks.map((b) => (
-                    <SortableBlockItem
-                      key={b.id}
-                      block={b}
-                      canWrite={canWrite}
-                      onEdit={() => openEditBlock(b)}
-                      onDelete={() => void deleteBlock(b)}
-                    />
-                  ))}
-                </SortableContext>
-              </DndContext>
-            )}
-          </div>
-
+          {draft && (
+            <LessonStructureEditor
+              editingBlockId={blockOpen ? blockId : undefined}
+              lesson={lesson}
+              document={draft.document}
+              canWrite={canWrite && !busy && draftState.status !== 'conflict'}
+              onChange={(change, immediate) => session.enqueue(change, immediate)}
+              onAddBlock={openCreateBlock}
+              onEditBlock={openEditBlock}
+              onRemoveBlock={deleteBlock}
+              issues={issues}
+              preview={preview}
+              onPreviewChange={(value) => {
+                void captureEditors()
+                  .then(() => setPreview(value))
+                  .catch((error) => toast.error(error.message))
+              }}
+            />
+          )}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-muted-foreground">Anexos</h3>
@@ -1071,24 +1173,28 @@ export function LessonEditorClient({
 
       <Dialog
         open={blockOpen}
-        onClose={() => setBlockOpen(false)}
+        onClose={() => void closeBlock()}
         title={editingBlock ? 'Editar bloco' : 'Adicionar bloco'}
         // Estúdio (IDE) e quiz (editores de texto rico) precisam de mais largura que os blocos
         // simples (texto/imagem/etc.), que seguem no `max-w-lg` padrão do Dialog.
         className={BLOCK_DIALOG_WIDTH[blockForm.kind]}
         footer={
-          <>
-            <Button variant="outline" onClick={() => setBlockOpen(false)} disabled={busy}>
-              Cancelar
-            </Button>
-            <Button onClick={saveBlock} disabled={busy}>
-              {busy ? <Spinner /> : null}
-              Salvar
-            </Button>
-          </>
+          <Button variant="outline" onClick={() => void closeBlock()}>
+            Fechar
+          </Button>
         }
       >
         <div className="flex flex-col gap-4">
+          {(validateBlock(blockForm) ||
+            (blockForm.kind === 'interactive' && !isInteractiveBlock(blockForm.interactive)) ||
+            (blockForm.kind === 'quiz' && validateQuiz(blockForm.quiz))) && (
+            <p className="text-sm text-muted-foreground">
+              {validateBlock(blockForm) ??
+                (blockForm.kind === 'quiz'
+                  ? validateQuiz(blockForm.quiz)
+                  : 'Complete os campos da descoberta antes de publicar.')}
+            </p>
+          )}
           <Field label="Tipo" htmlFor="bkind">
             <Select
               id="bkind"
@@ -1400,6 +1506,7 @@ export function LessonEditorClient({
                     }
                     initialAsset={pintaSeed}
                     handleRef={pintaHandleRef}
+                    onChange={() => setEditorVersion((v) => v + 1)}
                   />
                 ) : (
                   <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
@@ -1482,10 +1589,14 @@ export function LessonEditorClient({
                       : null
                   }
                   handleRef={studioHandleRef}
+                  onChange={() => setEditorVersion((v) => v + 1)}
                   professionalAuthoring
                   hideKindChooser
                   requestedKind={studioKind}
-                  onKindResolved={setStudioKind}
+                  onKindResolved={(kind) => {
+                    setStudioKind(kind)
+                    setEditorVersion((v) => v + 1)
+                  }}
                   features={{ terminal: false, ai: false, professional: true, export: false }}
                 />
               </Field>
@@ -1866,15 +1977,9 @@ export function LessonEditorClient({
         onClose={() => setAttOpen(false)}
         title={editingAtt ? 'Editar anexo' : 'Adicionar anexo'}
         footer={
-          <>
-            <Button variant="outline" onClick={() => setAttOpen(false)} disabled={busy}>
-              Cancelar
-            </Button>
-            <Button onClick={saveAtt} disabled={busy}>
-              {busy ? <Spinner /> : null}
-              Salvar
-            </Button>
-          </>
+          <Button variant="outline" onClick={() => setAttOpen(false)}>
+            Fechar
+          </Button>
         }
       >
         <div className="flex flex-col gap-4">
@@ -1929,53 +2034,6 @@ export function LessonEditorClient({
         </div>
       </Dialog>
     </div>
-  )
-}
-
-// ── Bloco arrastável (card com handle, tipo e resumo) ────────────────────────
-function SortableBlockItem({
-  block,
-  canWrite,
-  onEdit,
-  onDelete,
-}: {
-  block: BlockView
-  canWrite: boolean
-  onEdit: () => void
-  onDelete: () => void
-}) {
-  const { attributes, listeners, setNodeRef, style } = useSortableItem(block.id)
-
-  return (
-    <Card ref={setNodeRef} style={style} className="flex items-center justify-between gap-3 p-3">
-      <div className="flex min-w-0 items-center gap-3">
-        {canWrite ? (
-          <button
-            type="button"
-            className="cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
-            aria-label="Arrastar bloco"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVertical className="size-4" />
-          </button>
-        ) : null}
-        <Badge variant="outline">{kindLabel(block.kind)}</Badge>
-        <span className="truncate text-sm text-muted-foreground">{blockSummary(block)}</span>
-      </div>
-      <div className="flex shrink-0 items-center gap-1">
-        {canWrite ? (
-          <>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              Excluir
-            </Button>
-          </>
-        ) : null}
-      </div>
-    </Card>
   )
 }
 

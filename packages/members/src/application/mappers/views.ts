@@ -1,3 +1,4 @@
+import type { LessonRequirement } from '@sistemazero/core/learning'
 import {
   type LessonLearningProgress,
   type LessonSection,
@@ -757,7 +758,12 @@ export interface EbookDownloadView {
 }
 
 export interface LessonDetailView {
-  sections?: LessonSection[]
+  supportBlockIds?: string[]
+  requirements?: LessonRequirement[]
+  sections?: Pick<
+    LessonSection,
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  >[]
   structureRevision?: string | null
   learningProgress?: LessonLearningProgress
   id: string

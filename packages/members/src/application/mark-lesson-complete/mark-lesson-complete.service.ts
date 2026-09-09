@@ -1,3 +1,4 @@
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import {
   CertificateGateNotIssuedError,
   LessonComingSoonError,
@@ -7,7 +8,7 @@ import {
   StudioGateNotPassedError,
   StudioGateNotSubmittedError,
 } from '../../domain/course/course.errors'
-import { hasComingSoonBlock } from '../../domain/course/lesson-block'
+import { LearningGateError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
@@ -69,65 +70,50 @@ export class MarkLessonCompleteService {
         privileged,
       )
 
-      // Aula EM PRODUÇÃO ("em breve"): nem o aluno nem a equipe concluem — o resto
-      // do conteúdo sequer é servido (`toLessonDetailView`), então concluir aqui
-      // marcaria como visto algo que ninguém viu. Vem ANTES dos demais gates: os
-      // blocos de quiz/estúdio da aula estão escondidos, e reclamar deles seria
-      // um recado sem sentido. Tirar o bloco na autoria devolve a aula ao normal.
-      if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
-      await this.learning.assertComplete({ userId, accountId: accountId ?? userId }, lesson)
-
-      // Só gateiam quizzes COM nota de corte E com questões: um quiz gated vazio
-      // não é respondível (a UI não o renderiza), então gatear nele travaria a
-      // aula para sempre. A autoria já barra esse estado (validateQuizAuthoring),
-      // mas dados legados/escrita direta podem tê-lo — defesa em profundidade.
-      const gatedQuizIds = lesson.blocks
-        .filter(
-          (b) =>
-            b.content.kind === 'quiz' &&
-            b.content.passingScore !== undefined &&
-            b.content.questions.length > 0,
-        )
-        .map((b) => b.id)
-      if (gatedQuizIds.length > 0) {
-        const summaries = await this.quizAttempts.summarizeByBlockIds(userId, gatedQuizIds)
-        const allPassed = gatedQuizIds.every((id) => summaries.get(id)?.everPassed)
-        if (!allPassed) throw new QuizGateNotPassedError()
-      }
-
-      // Gate do bloco Estúdio: sem atividade (ou atividade sem nota de corte) =
-      // exige ENVIO (igual à fase 1). Atividade COM `passingScore` = exige
-      // APROVAÇÃO (passed_at sticky), espelhando o gate do quiz.
-      const studioBlocks = lesson.blocks.filter(
-        (b) => b.content.kind === 'studio' && b.content.purpose !== 'experiment',
-      )
-      if (studioBlocks.length > 0) {
-        const states = await this.studioSubmissions.summarizeByBlockIds(
+      const [learning, quizStates, studioStates] = await Promise.all([
+        this.learning.read({ userId, accountId: accountId ?? userId }, lesson),
+        this.quizAttempts.summarizeByBlockIds(
           userId,
-          studioBlocks.map((b) => b.id),
-        )
-        for (const b of studioBlocks) {
-          const state = states.get(b.id)
-          if (!state) throw new StudioGateNotSubmittedError()
-          const gated =
-            b.content.kind === 'studio' && b.content.activity?.passingScore !== undefined
-          if (gated && !state.passed) throw new StudioGateNotPassedError()
+          lesson.blocks.filter((b) => b.kind === 'quiz').map((b) => b.id),
+        ),
+        this.studioSubmissions.summarizeByBlockIds(
+          userId,
+          lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
+        ),
+      ])
+      const requirements = lessonCompletionRequirements({
+        completed: false,
+        sections: learning.sections,
+        learningProgress: learning.progress,
+        blocks: lesson.blocks.map((b) => ({
+          ...b,
+          blockRevision: b.contentRevision,
+          quizState: { passed: quizStates.get(b.id)?.everPassed ?? false },
+          studioState: {
+            submitted: studioStates.has(b.id),
+            passed: studioStates.get(b.id)?.passed ?? false,
+          },
+          pintaState: { submitted: studioStates.has(b.id) },
+        })),
+      })
+      const missing = requirements.find((r) => !r.complete)
+      if (missing) {
+        switch (missing.reason) {
+          case 'LESSON_COMING_SOON':
+            throw new LessonComingSoonError()
+          case 'LEARNING_GATE_INCOMPLETE':
+            throw new LearningGateError()
+          case 'QUIZ_GATE_NOT_PASSED':
+            throw new QuizGateNotPassedError()
+          case 'STUDIO_GATE_NOT_SUBMITTED':
+            throw new StudioGateNotSubmittedError()
+          case 'STUDIO_GATE_NOT_PASSED':
+            throw new StudioGateNotPassedError()
+          case 'PINTA_GATE_NOT_SUBMITTED':
+            throw new PintaGateNotSubmittedError()
+          case 'CERTIFICATE_GATE_NOT_ISSUED':
+            throw new CertificateGateNotIssuedError()
         }
-      }
-
-      // Gate do bloco PINTA: exige o ENVIO do desenho, e só isso — não há auto-correção de
-      // desenho (fora de escopo). Laço à parte do Estúdio de propósito: o código do erro nomeia
-      // a ferramenta, e uma aula pode ter os dois blocos.
-      const pintaBlockIds = lesson.blocks
-        .filter((b) => b.content.kind === 'pinta' && b.content.purpose !== 'experiment')
-        .map((b) => b.id)
-      if (pintaBlockIds.length > 0) {
-        const states = await this.studioSubmissions.summarizeByBlockIds(userId, pintaBlockIds)
-        if (pintaBlockIds.some((id) => !states.get(id))) throw new PintaGateNotSubmittedError()
-      }
-
-      if (lesson.blocks.some((b) => b.content.kind === 'certificate')) {
-        throw new CertificateGateNotIssuedError()
       }
     }
 

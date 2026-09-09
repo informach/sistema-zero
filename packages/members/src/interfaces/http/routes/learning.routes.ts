@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia'
 import type { LearningService } from '../../../application/learning/learning.service'
 import type { LearningImportService } from '../../../application/learning/learning-import.service'
+import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import {
   assertInternalCaller,
   isPrivilegedActor,
@@ -19,12 +20,13 @@ import {
   LearningNavigationBody,
   LearningProgressBody,
   LearningReportQuery,
-  LearningStructureBody,
 } from '../learning.dtos'
+import { DraftCommandSchema, DraftPublishSchema, draftCommand } from '../lesson-draft.dtos'
 
 export interface LearningRoutesDeps {
   learning: LearningService
   imports: LearningImportService
+  drafts: LessonDraftRepository
   internalToken?: string
   requireAdminEnabled: boolean
 }
@@ -66,25 +68,75 @@ export function learningRoutes(deps: LearningRoutesDeps) {
     .group('/admin', (app) =>
       app
         .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+        .get('/lessons/:id/draft', ({ params }) => deps.drafts.read(params.id), {
+          params: IdParams,
+        })
+        .patch(
+          '/lessons/:id/draft',
+          async ({ params, headers, body }) => {
+            const draft = await deps.drafts.change(
+              params.id,
+              resolveUserId(headers),
+              draftCommand(body),
+            )
+            return { revision: draft.revision, updatedAt: draft.updatedAt }
+          },
+          { params: IdParams, body: DraftCommandSchema },
+        )
+        .post(
+          '/lessons/:id/draft/validate',
+          ({ params, body }) =>
+            deps.drafts.validate(params.id, body.expectedRevision, body.readyVideoIds),
+          { params: IdParams, body: DraftPublishSchema },
+        )
+        .post(
+          '/lessons/:id/draft/publish',
+          ({ params, headers, body }) =>
+            deps.drafts.publish(
+              params.id,
+              resolveUserId(headers),
+              body.expectedRevision,
+              body.operationId,
+              body.readyVideoIds,
+            ),
+          { params: IdParams, body: DraftPublishSchema },
+        )
+        .post(
+          '/lessons/:id/draft/unpublish',
+          ({ params, headers, body }) =>
+            deps.drafts.unpublish(
+              params.id,
+              resolveUserId(headers),
+              body.expectedRevision,
+              body.operationId,
+            ),
+          { params: IdParams, body: DraftPublishSchema },
+        )
         .get('/lessons/:id/structure', ({ params }) => deps.learning.adminStructure(params.id), {
           params: IdParams,
         })
         .post(
           '/lessons/:id/import-preview',
-          ({ params, body }) => deps.imports.preview(params.id, body.document),
+          async ({ params, body }) => {
+            const { document: _document, ...preview } = await deps.imports.preview(
+              params.id,
+              body.document,
+            )
+            return preview
+          },
           { params: IdParams, body: LearningImportPreviewBody },
         )
         .post(
           '/lessons/:id/import-learning',
-          ({ params, body }) =>
-            deps.imports.apply(params.id, body.document, body.expectedFingerprint),
+          ({ params, headers, body }) =>
+            deps.imports.apply(
+              params.id,
+              body.document,
+              body.expectedFingerprint,
+              resolveUserId(headers),
+              body.operationId,
+            ),
           { params: IdParams, body: LearningImportApplyBody },
-        )
-        .put(
-          '/lessons/:id/structure',
-          ({ params, body }) =>
-            deps.learning.saveStructure(params.id, body.expectedRevision, body.sections),
-          { params: IdParams, body: LearningStructureBody },
         )
         .get(
           '/lessons/:id/learning-report',

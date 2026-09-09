@@ -15,7 +15,7 @@ import {
 import type { Database } from './db'
 import {
   courses,
-  lessonBlocks,
+  activeLessonBlocks as lessonBlocks,
   lessons,
   zappyKnowledgeChunks,
   zappyKnowledgeSources,

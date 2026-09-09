@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { defaultLessonSection } from '@sistemazero/core/learning'
 import { asc, eq, sql } from 'drizzle-orm'
 import type { Database } from './db'
-import { lessonBlocks, lessonStructures, lessons } from './schema'
+import { activeLessonBlocks as lessonBlocks, lessonStructures, lessons } from './schema'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 export async function lockLessonStructure(tx: Transaction, lessonId: string) {
@@ -38,15 +38,20 @@ export async function syncLessonStructure(tx: Transaction, lessonId: string, reo
     workspaceBlockId:
       s.workspaceBlockId && workspaces.has(s.workspaceBlockId) ? s.workspaceBlockId : null,
   })) ?? [defaultLessonSection(lessonId, lesson.title, [])]
-  const placed = new Set(sections.flatMap((s) => s.blockIds))
+  const supportBlockIds = current?.supportBlockIds.filter((id) => ids.has(id)) ?? []
+  const placed = new Set([...sections.flatMap((s) => s.blockIds), ...supportBlockIds])
   const last = sections.at(-1)
   if (last) last.blockIds.push(...blocks.filter((b) => !placed.has(b.id)).map((b) => b.id))
-  if (JSON.stringify(current?.sections) === JSON.stringify(sections)) return
+  if (
+    JSON.stringify(current?.sections) === JSON.stringify(sections) &&
+    JSON.stringify(current?.supportBlockIds) === JSON.stringify(supportBlockIds)
+  )
+    return
   await tx
     .insert(lessonStructures)
-    .values({ lessonId, sections, revision: randomUUID() })
+    .values({ lessonId, sections, supportBlockIds, revision: randomUUID() })
     .onConflictDoUpdate({
       target: lessonStructures.lessonId,
-      set: { sections, revision: randomUUID() },
+      set: { sections, supportBlockIds, revision: randomUUID() },
     })
 }

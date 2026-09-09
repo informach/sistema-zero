@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-02",
   "title": "Desenhe a sua nave no Pinta",
@@ -87,6 +87,26 @@
         "kind": "rich_text",
         "markdown": "Confira nome nave, tipo Personagem, 32 × 32 e quatro linhas livres embaixo. Abra novamente pela galeria. Seu desenho pode ser muito diferente do exemplo.\n\nNa Aula 3, o mesmo asset nave vai ganhar fogo em dois quadros. Não crie outro desenho."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-02-passo-01: gravar a demonstração \"conhecer o Pinta e começar o desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-02-passo-02: gravar a demonstração \"o contorno da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-02-passo-03: gravar a demonstração \"pintar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-02-passo-04: gravar a demonstração \"luz e sombra\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "aula-02-passo-05: gravar a demonstração \"guardar o seu desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -125,60 +145,50 @@
       "title": "conhecer o Pinta e começar o desenho",
       "objective": "Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32. Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-02-passo-01: gravar a demonstração \"conhecer o Pinta e começar o desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "o contorno da nave",
       "objective": "Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica. Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-02-passo-02: gravar a demonstração \"o contorno da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "pintar",
       "objective": "Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado. Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-02-passo-03: gravar a demonstração \"pintar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "luz e sombra",
       "objective": "Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra. Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-02-passo-04: gravar a demonstração \"luz e sombra\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-5",
       "title": "guardar o seu desenho",
       "objective": "Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave. O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o asset.",
       "intent": "application",
-      "blockKeys": ["construir-5"],
+      "blockKeys": ["construir-5", "video-construir-5-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-02-passo-05: gravar a demonstração \"guardar o seu desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

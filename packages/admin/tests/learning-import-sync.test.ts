@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { resolve } from 'node:path'
 
-test('importação sincroniza o conhecimento do Zappy após a resposta', () => {
+test('importação altera somente o rascunho e não sincroniza Zappy', () => {
   // Bun module mocks are global: isolate the gateway/Next lifecycle boundaries from other suites.
   const result = Bun.spawnSync(
     [process.execPath, 'test', './tests/fixtures/learning-import-sync.fixture.ts'],

@@ -5,7 +5,7 @@ import {
   isInteractiveBlock,
   type LearningBlockProgress,
   type LessonLearningProgress,
-  SECTION_INTENT_LABELS,
+  lessonCompletionRequirements,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, ExternalLink, List, MessageCircle } from 'lucide-react'
@@ -189,17 +189,40 @@ export function LessonSections({
   const [help, setHelp] = useState('')
   const [helpStatus, setHelpStatus] = useState('')
   const [sending, setSending] = useState(false)
+  const requirements = lessonCompletionRequirements({
+    ...lesson,
+    learningProgress: player?.learningProgress ?? lesson.learningProgress,
+  })
+  const pending = requirements.filter((r) => !r.complete)
+  const [destination, setDestination] = useState<string | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const indexMenu = useRef<HTMLDetailsElement>(null)
+  const requirementsMenu = useRef<HTMLDetailsElement>(null)
+  useEffect(() => {
+    if (!destination) return
+    const element =
+      destination === 'heading'
+        ? heading.current
+        : document.getElementById(`lesson-block-${destination}`)
+    element?.focus()
+    element?.scrollIntoView({
+      block: destination === 'heading' ? 'start' : 'center',
+      behavior: 'instant',
+    })
+    setDestination(null)
+  }, [destination])
   const navigationQueue = useRef<Promise<void>>(Promise.resolve())
   if (!section) return null
   const activeIds = new Set([
     ...section.blockIds,
     ...(section.workspaceBlockId ? [section.workspaceBlockId] : []),
   ])
-  const tools = lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta')
+  const supportIds = new Set(lesson.supportBlockIds ?? [])
+  const tools = lesson.blocks.filter(
+    (b) => (b.kind === 'studio' || b.kind === 'pinta') && !supportIds.has(b.id),
+  )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
-  function navigate(target: number) {
+  function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next) return
     setSelected(next.id)
@@ -216,10 +239,8 @@ export function LessonSections({
         ]),
     )
     if (indexMenu.current) indexMenu.current.open = false
-    requestAnimationFrame(() => {
-      heading.current?.focus()
-      heading.current?.scrollIntoView({ block: 'start', behavior: 'instant' })
-    })
+    if (requirementsMenu.current) requirementsMenu.current.open = false
+    setDestination(blockId ?? 'heading')
     if (preview) return
     navigationQueue.current = navigationQueue.current.then(async () => {
       try {
@@ -255,23 +276,72 @@ export function LessonSections({
   }
   const blockById = new Map(lesson.blocks.map((b) => [b.id, b]))
   const render = (block: LessonBlockView) => (
-    <BlockScope key={`${block.id}:${block.blockRevision ?? ''}`} block={block} lesson={lesson}>
-      {block.kind === 'interactive' ? (
-        <InteractiveLessonBlock
-          block={block}
-          previewContent={preview && isInteractiveBlock(block.content) ? block.content : undefined}
-        />
-      ) : (
-        renderBlocks([block])
+    <div
+      key={`${block.id}:${block.blockRevision ?? ''}`}
+      id={`lesson-block-${block.id}`}
+      tabIndex={-1}
+      className="space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {requirements.some((r) => r.blockId === block.id) && (
+        <p className="text-sm font-medium text-muted-foreground">
+          {requirements.find((r) => r.blockId === block.id)?.complete
+            ? 'Atividade concluída'
+            : 'Atividade obrigatória'}
+        </p>
       )}
-    </BlockScope>
+      <BlockScope block={block} lesson={lesson}>
+        {block.kind === 'interactive' && preview && !isInteractiveBlock(block.content) ? (
+          <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
+            Complete a descoberta interativa para experimentar a prévia.
+          </p>
+        ) : block.kind === 'interactive' ? (
+          <InteractiveLessonBlock
+            block={block}
+            previewContent={
+              preview && isInteractiveBlock(block.content) ? block.content : undefined
+            }
+          />
+        ) : (
+          renderBlocks([block])
+        )}
+      </BlockScope>
+    </div>
   )
   return (
     <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
-        <span className="text-sm font-medium tabular-nums">
-          Seção {index + 1} <span className="text-muted-foreground">de {sections.length}</span>
-        </span>
+        <details ref={requirementsMenu} className="relative">
+          <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+            O que falta para concluir · {pending.length}
+          </summary>
+          <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
+            {requirements.length === 0 ? (
+              <p className="p-2 text-sm text-muted-foreground">
+                Explore o conteúdo e conclua a aula quando terminar.
+              </p>
+            ) : (
+              requirements.map((r) => (
+                <button
+                  key={r.blockId}
+                  type="button"
+                  className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                  onClick={() => {
+                    const target = sections.findIndex((s) => s.id === r.sectionId)
+                    if (target >= 0) navigate(target, r.blockId)
+                  }}
+                >
+                  <span className="text-sm font-medium">
+                    {r.complete ? '✓ ' : ''}
+                    {r.title}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {r.complete ? 'Concluído' : r.action}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
+        </details>
         <details ref={indexMenu} className="relative">
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
             <List className="size-4" />
@@ -293,7 +363,14 @@ export function LessonSections({
                 )}
               >
                 <span className="tabular-nums">{i + 1}.</span>
-                <span>{s.title}</span>
+                <span>
+                  {s.title}
+                  {pending.some((r) => r.sectionId === s.id) && (
+                    <span className="mt-1 block text-xs text-muted-foreground">
+                      Atividade pendente
+                    </span>
+                  )}
+                </span>
               </button>
             ))}
           </nav>
@@ -307,9 +384,6 @@ export function LessonSections({
       >
         <div className="min-w-0 space-y-6">
           <header className="space-y-2 px-1">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-              {SECTION_INTENT_LABELS[section.intent]}
-            </p>
             <h2
               ref={heading}
               tabIndex={-1}
@@ -320,11 +394,6 @@ export function LessonSections({
             >
               {section.title}
             </h2>
-            {section.objective && (
-              <p className="max-w-prose leading-relaxed text-muted-foreground">
-                {section.objective}
-              </p>
-            )}
           </header>
           {section.blockIds
             .map((id) => blockById.get(id))
@@ -354,6 +423,16 @@ export function LessonSections({
           ))}
         </div>
       </div>
+      {supportIds.size > 0 && (
+        <details className="rounded-2xl border border-border bg-card p-4">
+          <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
+            Materiais de apoio
+          </summary>
+          <div className="space-y-6 pt-4">
+            {lesson.blocks.filter((b) => supportIds.has(b.id)).map(render)}
+          </div>
+        </details>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
         <Button variant="outline" disabled={index === 0} onClick={() => navigate(index - 1)}>
           <ArrowLeft className="size-4" />

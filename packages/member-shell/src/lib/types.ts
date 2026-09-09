@@ -1,4 +1,8 @@
-import type { LessonLearningProgress, LessonSection } from '@sistemazero/core/learning'
+import type {
+  LessonLearningProgress,
+  LessonRequirement,
+  LessonSection,
+} from '@sistemazero/core/learning'
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
  * `server/*` — Client Components importam daqui com segurança. Espelham as views
@@ -1313,7 +1317,12 @@ export interface EbookDownloadView {
 
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
-  sections?: LessonSection[]
+  supportBlockIds?: string[]
+  requirements?: LessonRequirement[]
+  sections?: Pick<
+    LessonSection,
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  >[]
   structureRevision?: string | null
   learningProgress?: LessonLearningProgress
   id: string

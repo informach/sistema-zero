@@ -1118,8 +1118,17 @@ const StudioProjectSchema = t.Object(
   { additionalProperties: true },
 )
 // ── Atividade com auto-correção (fase 2) ────────────────────────────────────
-// Base de toda checagem. Valores esperados (testcase/globalEquals) são `Unknown`
-// (dados opacos echoados ao cliente; o teto de tamanho é do corpo/jsonb).
+// Values are JSON at both the HTTP boundary and in the domain.
+const ActivityJsonValue = t.Recursive((self) =>
+  t.Union([
+    t.String(),
+    t.Number(),
+    t.Boolean(),
+    t.Null(),
+    t.Array(self),
+    t.Record(t.String(), self),
+  ]),
+)
 const ActivityCheckBase = {
   id: t.String({ minLength: 1, maxLength: 64 }),
   label: t.String({ minLength: 1, maxLength: 200 }),
@@ -1147,7 +1156,7 @@ const BehaviorRuleSchema = t.Union([
   t.Object({
     type: t.Literal('globalEquals'),
     name: t.String({ maxLength: 80 }),
-    value: t.Unknown(),
+    value: ActivityJsonValue,
   }),
 ])
 const ActivityCheckSchema = t.Union([
@@ -1160,8 +1169,8 @@ const ActivityCheckSchema = t.Union([
     cases: t.Array(
       t.Object({
         id: t.Optional(t.String({ maxLength: 64 })),
-        args: t.Array(t.Unknown(), { maxItems: 20 }),
-        expected: t.Unknown(),
+        args: t.Array(ActivityJsonValue, { maxItems: 20 }),
+        expected: ActivityJsonValue,
       }),
       {
         maxItems: 50,

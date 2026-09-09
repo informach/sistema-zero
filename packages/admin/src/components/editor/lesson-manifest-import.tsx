@@ -3,7 +3,7 @@
 import { isLearningManifest, type LessonSection } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { type ApiError, apiSend } from '@/lib/api'
 
 interface Preview {
@@ -17,24 +17,26 @@ export function LessonManifestImport({
   lessonId,
   lessonSlug,
   courseSlug,
-  published,
   disabled,
   onImported,
+  beforeImport,
 }: {
   lessonId: string
   lessonSlug: string
   courseSlug: string
-  published: boolean
   disabled: boolean
   onImported: () => Promise<void>
+  beforeImport: () => Promise<void>
 }) {
   const id = useId()
   const [source, setSource] = useState('')
+  const operationId = useRef(crypto.randomUUID())
   const [preview, setPreview] = useState<Preview | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const change = (text: string) => {
+    operationId.current = crypto.randomUUID()
     setSource(text)
     setPreview(null)
     setError('')
@@ -50,6 +52,8 @@ export function LessonManifestImport({
     setBusy(true)
     setError('')
     try {
+      await beforeImport()
+      operationId.current = crypto.randomUUID()
       const document = parse()
       setPreview(
         await apiSend<Preview>(`/api/members/lessons/${lessonId}/import-preview`, 'POST', {
@@ -67,22 +71,15 @@ export function LessonManifestImport({
     setBusy(true)
     setError('')
     try {
-      const result = await apiSend<{ zappyKnowledgeStatus?: string }>(
-        `/api/members/lessons/${lessonId}/import-learning`,
-        'POST',
-        {
-          document: parse(),
-          expectedFingerprint: preview.fingerprint,
-        },
-      )
+      await apiSend(`/api/members/lessons/${lessonId}/import-learning`, 'POST', {
+        document: parse(),
+        expectedFingerprint: preview.fingerprint,
+        operationId: operationId.current,
+      })
       setPreview(null)
       setSource('')
       await onImported()
-      setNotice(
-        result.zappyKnowledgeStatus === 'pending'
-          ? 'Roteiro importado. A atualização da base do Zappy está em andamento.'
-          : 'Roteiro importado.',
-      )
+      setNotice('Roteiro importado no rascunho. Confira a prévia antes de publicar.')
     } catch (e) {
       setError((e as ApiError).message || 'Não foi possível importar.')
     } finally {
@@ -93,7 +90,9 @@ export function LessonManifestImport({
     <details className="rounded-2xl border border-border bg-card p-5">
       <summary className="cursor-pointer font-semibold">Importar roteiro com seções</summary>
       <fieldset disabled={busy || disabled} className="mt-4 space-y-4">
-        {disabled && <p className="text-sm">Salve a organização didática antes de importar.</p>}
+        {disabled && (
+          <p className="text-sm">Resolva a sincronização do rascunho antes de importar.</p>
+        )}
         <p className="text-sm text-muted-foreground">
           Destino:{' '}
           <strong>
@@ -176,7 +175,7 @@ export function LessonManifestImport({
                 {warning}
               </p>
             ))}
-            <Button disabled={busy || published} onClick={() => void apply()}>
+            <Button disabled={busy} onClick={() => void apply()}>
               Aplicar ao rascunho desta aula
             </Button>
           </div>

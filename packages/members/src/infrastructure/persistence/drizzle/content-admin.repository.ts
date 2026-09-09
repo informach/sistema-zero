@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, asc, count, eq, inArray, ne, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, count, eq, inArray, isNull, ne, or, type SQL, sql } from 'drizzle-orm'
 import type {
   Course,
   Lesson,
@@ -195,12 +195,12 @@ async function retrySortOrderCollision<T>(operation: () => Promise<T>): Promise<
  * (histórico de respostas de questões que não existem mais — não é trabalho
  * autoral). Pinta não tem correção: editar o bloco não toca a entrega.
  */
-function quizGateFingerprint(content: LessonBlockContent): string {
+export function quizGateFingerprint(content: LessonBlockContent): string {
   if (content.kind !== 'quiz') return 'none'
   return stableJson({ questions: content.questions, passingScore: content.passingScore ?? null })
 }
 
-function studioActivityFingerprint(content: LessonBlockContent): string {
+export function studioActivityFingerprint(content: LessonBlockContent): string {
   if (content.kind !== 'studio') return 'none'
   return stableJson(content.activity ?? null)
 }
@@ -232,6 +232,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         and(
           eq(lessons.courseId, courseId),
           eq(lessons.isPublished, true),
+          isNull(lessonBlocks.archivedAt),
           eq(lessonBlocks.kind, 'studio'),
           sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
           lessonContentAvailable(lessons.id),
@@ -293,6 +294,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         and(
           inArray(lessons.courseId, courseIds),
           eq(lessons.isPublished, true),
+          isNull(lessonBlocks.archivedAt),
           eq(lessonBlocks.kind, 'studio'),
           // `enabled` é boolean no jsonb → `->>` devolve o texto 'true'.
           sql`${lessonBlocks.content} -> 'showcase' ->> 'enabled' = 'true'`,
@@ -404,7 +406,12 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       for (const lessonId of [...lessonIds].sort()) await lockLessonStructure(tx, lessonId)
       const srcBlocks =
         lessonIds.length > 0
-          ? await tx.select().from(lessonBlocks).where(inArray(lessonBlocks.lessonId, lessonIds))
+          ? await tx
+              .select()
+              .from(lessonBlocks)
+              .where(
+                and(isNull(lessonBlocks.archivedAt), inArray(lessonBlocks.lessonId, lessonIds)),
+              )
           : []
       const srcAttachments =
         lessonIds.length > 0
@@ -470,6 +477,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           await tx.insert(lessonStructures).values({
             lessonId: targetLessonId,
             revision: randomUUID(),
+            supportBlockIds: structure.supportBlockIds.map((id) => {
+              const mapped = blockIdMap.get(id)
+              if (!mapped) throw new Error('Bloco de apoio ausente no mapa do clone')
+              return mapped
+            }),
             sections: structure.sections.map((section) => ({
               ...section,
               id: randomUUID(),
@@ -845,7 +857,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         .select({ courseId: lessons.courseId, lessonId: lessons.id })
         .from(lessonBlocks)
         .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
-        .where(eq(lessonBlocks.id, id))
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
       if (
         linkage &&
         !(kind === 'studio' && content.kind === 'studio' && content.showcase?.enabled)
@@ -857,7 +869,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         )
       }
       if (linkage) await lockLessonStructure(tx, linkage.lessonId)
-      const [current] = await tx.select().from(lessonBlocks).where(eq(lessonBlocks.id, id)).limit(1)
+      const [current] = await tx
+        .select()
+        .from(lessonBlocks)
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
+        .limit(1)
       if (!current) return null
 
       const quizGateChanged = quizGateFingerprint(current.content) !== quizGateFingerprint(content)
@@ -866,7 +882,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const [row] = await tx
         .update(lessonBlocks)
         .set({ kind, content, contentRevision: randomUUID().replaceAll('-', '') })
-        .where(eq(lessonBlocks.id, id))
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
         .returning()
       if (!row) return null
 
@@ -894,12 +910,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       const [block] = await tx
         .select({ lessonId: lessonBlocks.lessonId })
         .from(lessonBlocks)
-        .where(eq(lessonBlocks.id, id))
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
       if (!block) return false
       await lockLessonStructure(tx, block.lessonId)
       const deleted = await tx
-        .delete(lessonBlocks)
-        .where(eq(lessonBlocks.id, id))
+        .update(lessonBlocks)
+        .set({ archivedAt: new Date() })
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
         .returning({ id: lessonBlocks.id })
       await syncLessonStructure(tx, block.lessonId)
       return deleted.length > 0
@@ -910,7 +927,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const rows = await this.db
       .select({ id: lessonBlocks.id })
       .from(lessonBlocks)
-      .where(eq(lessonBlocks.lessonId, lessonId))
+      .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.lessonId, lessonId)))
       .orderBy(asc(lessonBlocks.sortOrder))
     return rows.map((r) => r.id)
   }
@@ -923,7 +940,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       await tx
         .update(lessonBlocks)
         .set({ sortOrder: sql`${lessonBlocks.sortOrder} - ${REORDER_PARK_OFFSET}` })
-        .where(eq(lessonBlocks.lessonId, lessonId))
+        .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.lessonId, lessonId)))
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
           .update(lessonBlocks)
@@ -941,7 +958,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       .select({ courseId: lessons.courseId })
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessonBlocks.lessonId, lessons.id))
-      .where(eq(lessonBlocks.id, id))
+      .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
       .limit(1)
     return row?.courseId ?? null
   }
@@ -950,7 +967,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const [row] = await this.db
       .select({ lessonId: lessonBlocks.lessonId })
       .from(lessonBlocks)
-      .where(eq(lessonBlocks.id, id))
+      .where(and(isNull(lessonBlocks.archivedAt), eq(lessonBlocks.id, id)))
       .limit(1)
     return row?.lessonId ?? null
   }
@@ -959,7 +976,13 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const [row] = await this.db
       .select({ id: lessonBlocks.id })
       .from(lessonBlocks)
-      .where(and(eq(lessonBlocks.lessonId, lessonId), eq(lessonBlocks.kind, 'certificate')))
+      .where(
+        and(
+          isNull(lessonBlocks.archivedAt),
+          eq(lessonBlocks.lessonId, lessonId),
+          eq(lessonBlocks.kind, 'certificate'),
+        ),
+      )
       .limit(1)
     return row !== undefined
   }
@@ -984,7 +1007,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         sql`${lessonBlocks.content} ->> 'passingScore' is not null`,
       ),
     ) as SQL
-    const clauses: SQL[] = [eq(lessonBlocks.lessonId, lessonId), gating]
+    const clauses: SQL[] = [
+      isNull(lessonBlocks.archivedAt),
+      eq(lessonBlocks.lessonId, lessonId),
+      gating,
+    ]
     if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
     const [row] = await this.db
       .select({ id: lessonBlocks.id })
@@ -1003,6 +1030,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     // sem o trim no valor armazenado uma cadeia autorada com espaço sobrando não casaria — a
     // guarda passaria batida e o estado quebrado nasceria mesmo assim.
     const clauses: SQL[] = [
+      isNull(lessonBlocks.archivedAt),
       eq(lessons.courseId, courseId),
       eq(lessonBlocks.kind, 'pinta'),
       sql`btrim(${lessonBlocks.content}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
@@ -1041,7 +1069,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     courseId: string,
     opts: { excludeBlockId?: string } = {},
   ): Promise<number> {
-    const clauses: SQL[] = [eq(lessons.courseId, courseId), eq(lessonBlocks.kind, 'certificate')]
+    const clauses: SQL[] = [
+      isNull(lessonBlocks.archivedAt),
+      eq(lessons.courseId, courseId),
+      eq(lessonBlocks.kind, 'certificate'),
+    ]
     if (opts.excludeBlockId) clauses.push(ne(lessonBlocks.id, opts.excludeBlockId))
     const [row] = await this.db
       .select({ c: count() })

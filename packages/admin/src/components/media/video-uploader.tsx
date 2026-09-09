@@ -3,7 +3,7 @@
 import { Button } from '@sistemazero/ui/button'
 import { Progress } from '@sistemazero/ui/progress'
 import { CheckCircle2, Clapperboard, Loader2, RefreshCw } from 'lucide-react'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { type ReadyVideo, useVideoUpload } from './use-video-upload'
 import { VimeoPreview } from './vimeo-preview'
 
@@ -17,15 +17,28 @@ const ACCEPTED = 'video/mp4,video/quicktime,video/webm'
 export function VideoUploader({
   onReady,
   currentSrc,
+  autoCheckStatus = false,
 }: {
   onReady: (video: ReadyVideo) => void
   /** `src` atual do bloco (embed URL) — habilita "verificar status/transcrição". */
   currentSrc?: string
+  autoCheckStatus?: boolean
 }) {
   const fileRef = useRef<HTMLInputElement>(null)
-  const { phase, progress, error, embedUrl, upload, checkStatus } = useVideoUpload(onReady)
+  const { phase, progress, error, embedUrl, upload, checkStatus, reset } = useVideoUpload(onReady)
 
   const currentVideoId = currentSrc?.match(/vimeo\.com\/(?:video\/)?(\d{6,12})/)?.[1] ?? null
+  const checkedVideoId = useRef<string | null>(null)
+  useEffect(() => {
+    if (!currentVideoId) {
+      if (checkedVideoId.current) reset()
+      checkedVideoId.current = null
+      return
+    }
+    if (!autoCheckStatus || checkedVideoId.current === currentVideoId) return
+    checkedVideoId.current = currentVideoId
+    checkStatus(currentVideoId)
+  }, [autoCheckStatus, currentVideoId, checkStatus, reset])
   const busy = phase === 'requesting-ticket' || phase === 'uploading' || phase === 'processing'
 
   return (
@@ -42,7 +55,7 @@ export function VideoUploader({
         }}
       />
 
-      {phase === 'idle' || phase === 'error' ? (
+      {phase === 'idle' || phase === 'error' || phase === 'ready' ? (
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
@@ -73,8 +86,8 @@ export function VideoUploader({
 
       {phase === 'processing' ? (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Vimeo processando o vídeo… (pode salvar o
-          bloco; a transcrição entra quando terminar)
+          <Loader2 className="size-4 animate-spin" /> Vimeo processando o vídeo… O rascunho mantém o
+          vídeo; a publicação aguarda o processamento.
         </p>
       ) : null}
 

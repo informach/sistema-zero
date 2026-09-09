@@ -96,6 +96,7 @@ export const LearningAttemptBody = t.Object({ ...ProgressFields, id: Id })
 export const LearningReportQuery = t.Object({ userId: Id, accountId: Id })
 export const LearningImportPreviewBody = t.Object({ document: t.Unknown() })
 export const LearningImportApplyBody = t.Object({
+  operationId: Id,
   document: t.Unknown(),
   expectedFingerprint: t.String({ pattern: '^[a-f0-9]{64}$' }),
 })

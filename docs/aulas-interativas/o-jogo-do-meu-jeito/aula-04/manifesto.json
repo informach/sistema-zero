@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-04",
   "title": "Um asteroide em vetor",
@@ -85,6 +85,22 @@
         "kind": "rich_text",
         "markdown": "Confira o asset asteroide em vetor, Personagem, 64 × 64. Espere salvar e abra pela galeria. Sua pedra não precisa ter a mesma forma nem as mesmas crateras do exemplo.\n\nNa Aula 5, esse mesmo asteroide vai ganhar fogo e movimento."
       }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-04-passo-01: gravar a demonstração \"começar o desenho novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-04-passo-02: gravar a demonstração \"traçar a pedra e arredondar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-04-passo-03: gravar a demonstração \"as crateras\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-04-passo-04: gravar a demonstração \"os dois jeitos de desenhar, lado a lado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
     }
   ],
   "sections": [
@@ -123,48 +139,40 @@
       "title": "começar o desenho novo",
       "objective": "Na galeria do Pinta, escolha Criar novo. Use Vetor, Personagem e tamanho 64 por 64. Escreva asteroide. Esses dados precisam combinar com a importação da Aula 7.",
       "intent": "application",
-      "blockKeys": ["construir-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-04-passo-01: gravar a demonstração \"começar o desenho novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-2",
       "title": "traçar a pedra e arredondar",
       "objective": "Trace uma pedra irregular com pontos e feche a forma. Ajuste preenchimento e contorno e experimente arredondar os pontos. O Júlio mostra a pedra dele; você pode escolher outra quantidade de pontas e outro formato.",
       "intent": "application",
-      "blockKeys": ["construir-2"],
+      "blockKeys": ["construir-2", "video-construir-2-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-04-passo-02: gravar a demonstração \"traçar a pedra e arredondar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-3",
       "title": "as crateras",
       "objective": "Use Selecionar para sair da pedra antes de desenhar as crateras. Crie formas menores por cima e escolha cores que deem a ideia de profundidade. Quantas crateras usar e onde colocá-las é uma decisão sua.",
       "intent": "application",
-      "blockKeys": ["construir-3"],
+      "blockKeys": ["construir-3", "video-construir-3-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-04-passo-03: gravar a demonstração \"as crateras\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "construir-4",
       "title": "os dois jeitos de desenhar, lado a lado",
       "objective": "Aproxime a borda do asteroide com o zoom. Compare com a nave em pixel art. O que você viu na descoberta aparece nos seus desenhos? Volte ao tamanho normal e confira se a pedra continua legível.",
       "intent": "application",
-      "blockKeys": ["construir-4"],
+      "blockKeys": ["construir-4", "video-construir-4-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": [
-        "aula-04-passo-04: gravar a demonstração \"os dois jeitos de desenhar, lado a lado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
-      ]
+      "pendingMedia": []
     },
     {
       "key": "fechamento",

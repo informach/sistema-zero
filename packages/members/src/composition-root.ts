@@ -15,8 +15,6 @@ import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
-  AttachmentAdminService,
-  BlockAdminService,
   CourseAdminService,
   LessonAdminService,
   ModuleAdminService,
@@ -126,7 +124,7 @@ import { createDbConnection, type DbConnection } from './infrastructure/persiste
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
 import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
-import { DrizzleLearningImportRepository } from './infrastructure/persistence/drizzle/learning-import.repository'
+import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
@@ -143,6 +141,7 @@ import { DrizzleVideoPositionRepository } from './infrastructure/persistence/dri
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
+import { parsePublishedLessonBlock } from './interfaces/http/lesson-draft.dtos'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -536,8 +535,6 @@ export async function createApplication(env: Env): Promise<Application> {
   const courseAdmin = new CourseAdminService(content, courses)
   const moduleAdmin = new ModuleAdminService(content, courses)
   const lessonAdmin = new LessonAdminService(content, courses, learning)
-  const blockAdmin = new BlockAdminService(content)
-  const attachmentAdmin = new AttachmentAdminService(content)
 
   // Gestão admin (painel)
   const listMembers = new ListMembersService(entitlements, clock)
@@ -592,7 +589,11 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     learning: {
       learning,
-      imports: new LearningImportService(new DrizzleLearningImportRepository(db), courses),
+      imports: new LearningImportService(
+        new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
+        courses,
+      ),
+      drafts: new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
       internalToken: env.INTERNAL_API_TOKEN,
       requireAdminEnabled: env.REQUIRE_ADMIN,
     },
@@ -722,8 +723,6 @@ export async function createApplication(env: Env): Promise<Application> {
       courses: courseAdmin,
       modules: moduleAdmin,
       lessons: lessonAdmin,
-      blocks: blockAdmin,
-      attachments: attachmentAdmin,
       studioSubmissions: studioSubmissionsAdmin,
       zappyKnowledge,
       zappyHistory: zappy,

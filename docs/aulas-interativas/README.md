@@ -6,7 +6,7 @@ Em cada pasta há um `roteiro.md` completo para produção e um `manifesto.json`
 
 ## Como a aula funciona
 
-O aluno conhece a intenção, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite voltar a qualquer seção da aula desbloqueada. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
+O aluno vê o título da seção e seu conteúdo, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite voltar a qualquer seção da aula desbloqueada. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
 
 As atividades essenciais usam uma conferência no servidor. As previsões são opcionais; sequências, associações e experiências essenciais pedem uma conclusão coerente com o que foi observado. Elas não concedem XP nem desbloqueiam ferramentas por conta própria. O botão de concluir respeita essas atividades e as entregas existentes. A porcentagem assistida de um vídeo não conclui a aula.
 
@@ -16,14 +16,20 @@ Desafio e Corre Dino reaproveitam o primeiro bloco de Estúdio da aula como um �
 
 O pacote contém texto, roteiros e interações funcionais. Os novos vídeos ainda precisam ser produzidos: são **118 trechos de demonstração**, que podem ser gravados em uma sessão contínua e separados nos pontos indicados. Isso não significa 118 aulas. Não foram inventadas URLs, gravações ou minutagens. O número de trechos acompanha os passos técnicos de cada roteiro, sem impor a mesma duração às aulas.
 
-1. Abra a aula original no admin e coloque-a em rascunho. Selecione o manifesto correspondente, vincule ao destino real e confira a prévia antes de aplicar. Os slugs do pacote são referências de autoria, sem presumir os slugs cadastrados no ambiente.
-2. A prévia lista os blocos criados, atualizados e preservados. Referências `existing.kind` / `existing.index` usam índice começando em zero dentro dos blocos daquele tipo. Confira o primeiro Estúdio antes de aplicar. Se não existir, configure a atividade original apropriada; não criar um projeto inicial vazio para substituir a continuidade.
-3. Blocos não mapeados permanecem na seção “Materiais existentes da aula”, inclusive quizzes, vídeos, anexos e certificados. Reposicione o material que faz parte da nova sequência. Vídeos anteriores podem ficar como consulta enquanto forem úteis; não transformar um roteiro antigo inteiro na demonstração curta indicada.
-4. Grave conforme as instruções de tela e narração de cada seção. Use o uploader Vimeo/TUS já existente no admin, acrescente legendas e mova o bloco para a seção correspondente. Confira a edição, o áudio, os controles e a legibilidade da gravação no tamanho do player.
-5. Cada seção de demonstração tem `pendingMedia`. Retire a pendência depois de inserir e conferir a mídia. A prévia funciona em rascunho; a publicação é impedida enquanto houver pendências. Isso é uma verificação de conteúdo, sem feature flag.
-6. Percorra a aula e a transição para a seguinte com um perfil de teste autorizado. Confira também a retomada, os quizzes e a entrega. Publique após a validação em staging.
+1. Abra a aula original no admin. A versão publicada continua disponível enquanto você edita o **rascunho compartilhado**. Não é preciso despublicá-la.
+2. Em **Importar roteiro com seções**, selecione o manifesto, use **Vincular ao destino aberto**, confira a prévia e aplique. Os slugs dos arquivos são referências de autoria. As referências `existing.kind` / `existing.index` usam índice começando em zero dentro dos blocos daquele tipo; confira o primeiro Estúdio antes de importar.
+3. A sequência aparece em **Percurso da aula**. Em cada seção, use **Adicionar conteúdo aqui**, edite os blocos existentes e escolha sua posição. Título, blocos, anexos e organização são salvos automaticamente no mesmo rascunho. Não há salvamentos separados para blocos e estrutura.
+4. Atividades obrigatórias existentes que não foram mapeadas ficam no fechamento. Materiais opcionais, incluindo o vídeo longo original, ficam em **Materiais de apoio**, recolhidos fora da sequência. Entregas e histórico são preservados.
+5. Cada trecho a gravar aparece como um **cartão de vídeo planejado**, já na seção correta e com sua orientação de produção. Envie o arquivo no uploader Vimeo desse cartão. A vinculação é salva depois do upload, e o processamento é conferido ao reabrir. O servidor confirma que o Vimeo terminou antes de publicar; não há pendência textual para retirar manualmente.
+6. Use **Prévia do rascunho** para percorrer a aula sem criar progresso de aluno. Confira títulos, descobertas, vídeo e continuidade do projeto. A intenção didática e o objetivo ficam na autoria. No aluno, **O que falta para concluir** mostra as atividades obrigatórias e leva diretamente até elas.
+7. Clique em **Publicar aula**. A plataforma captura os últimos traços/projeto, termina o salvamento e valida o conjunto. Se houver problema, a versão publicada permanece intacta. Uma publicação válida substitui a aula inteira e agenda a atualização do Zappy. **Ver como aluno** abre a versão publicada.
+8. Em staging, percorra também a transição para a aula seguinte com um perfil de teste autorizado. Confira a retomada, os quizzes e a entrega. A promoção do ambiente para produção continua sendo uma decisão sua.
 
-Reimportar o mesmo manifesto preserva os IDs dos blocos criados pelo importador e não muda a revisão de conteúdo idêntico. Alterar a atividade muda sua revisão; respostas anteriores ficam no histórico, sem liberar uma atividade nova por um acerto antigo. A prévia usa a versão da aula para impedir que uma alteração concorrente seja sobrescrita.
+Reimportar o mesmo manifesto preserva IDs, projetos existentes e vídeos vinculados. Alterar apenas títulos de seção, posição ou referência do projeto não reinicia respostas. Mudar o conteúdo de uma descoberta muda sua revisão: o histórico fica guardado, mas uma resposta antiga não aprova o conteúdo novo. Aulas já concluídas continuam concluídas.
+
+Os 27 manifestos usam a versão 2: `{ "key": "video-demonstracao", "plannedVideo": "O que mostrar e narrar" }` define o cartão, e a chave entra em `section.blockKeys`. A versão 1 continua aceita; seus textos `pendingMedia` são convertidos em cartões durante a importação. Nenhum arquivo contém uma URL de vídeo inventada.
+
+Veja o [guia de cadastro e funcionamento](guia-de-autoria.md) para criação manual, projeto compartilhado, recuperação local e conflitos.
 
 ## Conferência pedagógica entre aulas
 

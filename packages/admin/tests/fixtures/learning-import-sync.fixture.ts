@@ -72,27 +72,24 @@ const request = () =>
     { params: Promise.resolve({ id: 'lesson' }) },
   )
 
-describe('imported lesson knowledge sync', () => {
-  test('schedules imported text synchronization and leaves existing Vimeo media alone', async () => {
+describe('draft import without indexing', () => {
+  test('successful import does not index unpublished content', async () => {
     const response = await request()
-    expect(response.status).toBe(202)
-    expect(await response.json()).toMatchObject({ ok: true, zappyKnowledgeStatus: 'pending' })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ ok: true })
     expect(writes).toEqual([])
-    expect(scheduled).toHaveLength(1)
-    await scheduled.shift()?.()
-    expect(writes.sort()).toEqual(['block:new', 'block:retained'])
+    expect(scheduled).toHaveLength(0)
   })
   test('a rejected import never schedules indexing', async () => {
     importStatus = 409
     expect((await request()).status).toBe(409)
     expect(scheduled).toHaveLength(0)
   })
-  test('indexing failure never rolls back the import or prevents other sources from being processed', async () => {
+  test('an unavailable index cannot prevent saving a draft', async () => {
     importStatus = 200
     failSource = true
-    writes.length = 0
-    expect((await request()).status).toBe(202)
-    await expect(scheduled.shift()?.()).resolves.toBeUndefined()
-    expect(writes.sort()).toEqual(['block:new', 'block:retained'])
+    expect((await request()).status).toBe(200)
+    expect(writes).toEqual([])
+    expect(scheduled).toHaveLength(0)
   })
 })

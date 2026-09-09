@@ -18,6 +18,7 @@ export default async function LessonEditorPage({
       courseId={courseId}
       lessonId={lessonId}
       currentRole={session?.role ?? ''}
+      authorId={session?.id ?? ''}
       studentAppUrls={{ adult: env.COMMUNITY_URL, kids: env.KIDS_COMMUNITY_URL }}
     />
   )

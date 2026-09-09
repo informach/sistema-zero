@@ -9,6 +9,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { createLessonAsset, pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -239,20 +240,14 @@ describe('bloco Pinta — gate da conclusão', () => {
 
     expect((await enviar(app, lessonId, blockId, { asset: DESENHO_DA_CRIANCA })).status).toBe(200)
 
-    const edited = await app.handle(
-      new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-        method: 'PATCH',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          content: {
-            kind: 'pinta',
-            initialAsset: INITIAL_ASSET,
-            allowTools: ['pencil'],
-          },
-        }),
-      }),
+    const edited = await publishBlock(
+      app,
+      lessonId,
+      { content: { kind: 'pinta', initialAsset: INITIAL_ASSET, allowTools: ['pencil'] } },
+      {},
+      blockId,
     )
-    expect(edited.status).toBe(200)
+    expect(edited.status, await edited.clone().text()).toBe(200)
 
     const kept = await readJson(await carregar(app, lessonId, blockId))
     expect(kept.asset).toMatchObject({ id: 'asset-aula', name: 'heroi' })
@@ -376,7 +371,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
   }
 
   const blocoPinta = (app: App, lessonId: string, content: Record<string, unknown>) =>
-    enviarAdmin(app, `/members/admin/lessons/${lessonId}/blocks`, 'POST', {
+    publishBlock(app, lessonId, {
       content: { kind: 'pinta', initialAsset: INITIAL_ASSET, ...content },
     })
 
@@ -394,7 +389,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     const { app } = buildApp()
     const { aulas } = await arvore(app)
 
-    expect((await blocoPinta(app, aulas[0].id, { chain: 'heroi' })).status).toBe(201)
+    expect((await blocoPinta(app, aulas[0].id, { chain: 'heroi' })).status).toBe(200)
 
     const conflito = await blocoPinta(app, aulas[1].id, {
       chain: 'heroi',
@@ -413,7 +408,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     const { aulas } = await arvore(app)
 
     await blocoPinta(app, aulas[0].id, { chain: 'heroi' })
-    expect((await blocoPinta(app, aulas[1].id, { chain: 'heroi' })).status).toBe(201)
+    expect((await blocoPinta(app, aulas[1].id, { chain: 'heroi' })).status).toBe(200)
     expect(
       (
         await blocoPinta(app, aulas[1].id, {
@@ -421,7 +416,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
           initialAsset: VECTOR_BACKGROUND_ASSET,
         })
       ).status,
-    ).toBe(201)
+    ).toBe(200)
   })
 
   test('canonicaliza o nome da cadeia antes de validar e persistir', async () => {
@@ -430,9 +425,9 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
 
     const res = await blocoPinta(app, aulas[0].id, { chain: '\t heroi\u00a0' })
 
-    expect(res.status).toBe(201)
+    expect(res.status).toBe(200)
     const bloco = await readJson(res)
-    expect(bloco.content.chain).toBe('heroi')
+    expect(bloco.document.blocks.at(-1).content.chain).toBe('heroi')
   })
 
   test('reeditar o PRÓPRIO bloco não conflita consigo mesmo', async () => {
@@ -442,20 +437,26 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     const { aulas } = await arvore(app)
     const bloco = await readJson(await blocoPinta(app, aulas[0].id, { chain: 'heroi' }))
 
-    const res = await enviarAdmin(app, `/members/admin/blocks/${bloco.id}`, 'PATCH', {
-      content: {
-        kind: 'pinta',
-        initialAsset: VECTOR_BACKGROUND_ASSET,
-        chain: 'heroi',
+    const res = await publishBlock(
+      app,
+      aulas[0].id,
+      {
+        content: {
+          kind: 'pinta',
+          initialAsset: VECTOR_BACKGROUND_ASSET,
+          chain: 'heroi',
+        },
       },
-    })
+      {},
+      bloco.document.blocks.at(-1).id,
+    )
     expect(res.status).toBe(200)
   })
 
   test('bloco de Estúdio com o mesmo nome de cadeia não conflita', async () => {
     const { app } = buildApp()
     const { aulas } = await arvore(app)
-    await enviarAdmin(app, `/members/admin/lessons/${aulas[0].id}/blocks`, 'POST', {
+    await publishBlock(app, aulas[0].id, {
       content: {
         kind: 'studio',
         initialProject: { name: 'p', files: { 'index.html': '' } },
@@ -463,7 +464,7 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
       },
     })
 
-    expect((await blocoPinta(app, aulas[1].id, { chain: 'heroi' })).status).toBe(201)
+    expect((await blocoPinta(app, aulas[1].id, { chain: 'heroi' })).status).toBe(200)
   })
 })
 
