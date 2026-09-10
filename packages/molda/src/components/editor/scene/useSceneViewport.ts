@@ -240,7 +240,12 @@ export function useSceneViewport({
       // Fotografa só o que o palco realmente desenhou: uma revisão que falhou ao
       // ser aplicada não vira retrato da criação guardada.
       if (displayed.current !== document) return
-      takeThumb.current?.(viewport.renderThumb() ?? undefined)
+      const photo = viewport.renderThumb()
+      // ⚠️ `null` é RECUSA de fotografar (isolamento ligado, contexto perdido, palco
+      // descartado), não "esta criação não tem foto". Convertê-la em valor APAGAVA o
+      // retrato que já existia: bastava isolar uma peça e mexer nela para a criança
+      // perder a foto do cartão. O contrato de `renderThumb` sempre disse o contrário.
+      if (photo) takeThumb.current?.(photo)
     }, SCENE_THUMB_DELAY_MS)
     return () => clearTimeout(timer)
   }, [document, viewport, lost])

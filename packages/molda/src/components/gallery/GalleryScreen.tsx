@@ -47,6 +47,10 @@ const RESTORE_ACCEPT = '.zip,.json,application/zip,application/x-zip-compressed,
 export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX.Element {
   const { adapter, gallery, persistence, scene } = useMoldaApp()
   const assets = useGallery((state) => state.assets)
+  // A lista da geração seguinte não respondeu nesta leitura. A galeria v1 fica de pé, mas o
+  // "Baixar tudo" promete o pacote COMPLETO: um ZIP sem as criações promovidas, anunciado
+  // como pronto, é o único backup da criança mentindo para ela.
+  const sceneUnavailable = useGallery((state) => state.sceneUnavailable)
   const loaded = useGallery((state) => state.loaded)
   const loading = useGallery((state) => state.loading)
   const syncing = useGallery((state) => state.syncing)
@@ -82,6 +86,13 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
 
   async function downloadAll(): Promise<void> {
     if (assets.length === 0 || packing) return
+    // Inventário da geração seguinte mudo: nenhuma criação promovida foi sequer LISTADA,
+    // então a contagem de faltantes daria ZERO e o pacote sairia anunciado como completo.
+    // Recusar e pedir para tentar de novo é o único recado honesto que cabe aqui.
+    if (sceneUnavailable) {
+      showToast(COPY.gallery.downloadFailed)
+      return
+    }
     const controller = new AbortController()
     packingAbortRef.current = controller
     setPacking(true)
@@ -94,8 +105,13 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
       const scenes: Array<{ name: string; json: string }> = []
       for (const asset of assets) {
         if (asset.formatVersion !== 2) continue
+        // Ler cada projeto é a fase mais cara; sem conferir aqui, "Cancelar" só era
+        // atendido depois de ler todos, com o contador parado o tempo inteiro.
+        if (controller.signal.aborted)
+          throw new GalleryZipError('aborted', 'A preparação do ZIP foi cancelada.')
         const json = await scene.readProject(asset.id)
         if (json) scenes.push({ name: asset.name, json })
+        setPackingProgress(scenes.length)
       }
       const blob = await zipGalleryBlob(content, {
         signal: controller.signal,
