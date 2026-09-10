@@ -72,8 +72,17 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
-      - name: Testes (todos os pacotes)
-        run: bun run --filter '*' test
+      # O molda fica FORA deste passo: os testes dele sobem Workers de verdade e, disputando
+      # a CPU com os outros 21 pacotes, o Bun 1.3.11 no Linux ora derruba o processo com
+      # segfault ao encerrar Workers ("oh no: Bun has crashed", 2 vezes seguidas em 10/09),
+      # ora deixa testes sensíveis a tempo vermelhos. Sozinho ele é verde e estável (medido
+      # num container Linux com o mesmo Bun). `--filter '!pkg'` sozinho = todos MENOS ele;
+      # combinar com `--filter '*'` faz UNIÃO e traz o molda de volta.
+      - name: Testes (todos os pacotes, menos o molda)
+        run: bun run --filter '!@sistemazero/molda' test
+
+      - name: Testes do molda (isolado, sem disputa de CPU)
+        run: bun run --filter '@sistemazero/molda' test
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
