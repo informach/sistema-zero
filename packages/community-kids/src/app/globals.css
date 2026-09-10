@@ -119,6 +119,58 @@
      "passa AA sobre claro". */
   --kids-ouro-texto: oklch(0.55 0.13 70);
 
+  /* ── FAIXAS de seção (redesenho 09/2026) ─────────────────────────────────
+     A página deixa de ser um bloco branco e passa a ter ritmo: cada seção pinta
+     a largura toda e o conteúdo se centraliza por dentro. Os valores são os das
+     PÁGINAS DE OFERTA, que é a régua que a dona mandou seguir. A primeira faixa
+     é sempre creme e a última sempre lilás; as do meio variam por página.
+     ⚠️ São fundos de FAIXA, não de cartão: o cartão continua branco por cima. */
+  --band-creme: var(--sz-kids-creme); /* #fff7e9 */
+  --band-menta: var(--sz-kids-menta-bg); /* #e6f8ec */
+  --band-ceu: var(--sz-kids-ceu); /* #e4f2ff */
+  --band-lilas: var(--sz-kids-lilas-bg); /* #efe7ff */
+  --band-rosa: var(--sz-kids-rosa-bg); /* #fff0f7 */
+  --band-amarelo: var(--sz-kids-amarelo-bg); /* #fff6dc */
+
+  /* ── CARTA das páginas de oferta ─────────────────────────────────────────
+     O canto e a sombra do cartão do funil. O canto é bem maior que o `--radius`
+     do app (10px) porque no funil o cartão é o objeto principal da tela; a
+     sombra é larga e fraca, o oposto do degrau duro do `.kids-card` do catálogo.
+     Fica aqui, e não nos primitivos de `@sistemazero/ui`, porque as quatro
+     ferramentas embarcadas compartilham aquele arquivo e não vestem esta carta. */
+  --raio-carta: 24px;
+  /* Borda de AREIA: sobre o creme das faixas um cinza neutro some, e o cartão
+     perde o contorno justamente onde ele mais precisa dele. */
+  --linha-carta: var(--sz-kids-linha-areia);
+  --sombra-carta: 0 14px 40px rgba(28, 48, 90, 0.12);
+  --sombra-carta-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
+
+  /* ── COR DE ASSINATURA por oficina ───────────────────────────────────────
+     Hoje as quatro herdam o mesmo azul do chrome compartilhado, e a criança não
+     tem como reconhecer a oficina antes de ler o nome. Cada uma passa a ter a
+     sua, como na referência. */
+  --tool-estudio: var(--sz-kids-azul);
+  --tool-pinta: var(--sz-kids-vermelho);
+  --tool-pensa: var(--sz-kids-laranja-texto-forte);
+  --tool-molda: var(--sz-kids-roxo);
+  /* ⚠️ As quatro acima são cor de FUNDO. Medido: com texto branco pequeno elas dão
+     3,68 a 4,23:1 e reprovam AA. Servem para o cabeçalho do cartão com ícone branco
+     (não-texto, régua 3:1, que todas passam) e nunca para tinta miúda. Quando a cor
+     precisa VIRAR TEXTO (o selo, o "Abrir minha oficina"), use o par `-texto`, que é
+     o mesmo matiz escurecido até passar sobre branco E sobre o creme das faixas
+     (5,1 a 5,7:1). É a convenção da marca: `-texto` quer dizer "passa AA no claro". */
+  --tool-estudio-texto: oklch(0.52 0.16 250);
+  --tool-pinta-texto: oklch(0.52 0.16 25);
+  --tool-pensa-texto: oklch(0.52 0.17 50);
+  --tool-molda-texto: oklch(0.52 0.2 295);
+
+  /* Medalhas do pódio do ranking. Não são cor de marca: são metal, e todo mundo
+     lê ouro/prata/bronze sem legenda. */
+  --medal-ouro: var(--sz-kids-amarelo);
+  /* L 0.56, e não 0.62: com 0.62 o número branco do pódio dava 3,64:1. */
+  --medal-prata: oklch(0.56 0.02 255);
+  --medal-bronze: oklch(0.53 0.09 55);
+
   /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
   --background: var(--sz-kids-ceu-suave);
   --foreground: oklch(0.105 0.01 265);
@@ -253,6 +305,47 @@
   --kids-ouro-fg: oklch(0.2 0.04 262);
   --kids-ouro-tint: oklch(0.85 0.15 88 / 0.15);
   --kids-ouro-texto: var(--sz-kids-amarelo);
+
+  /* Na noite as faixas não podem ser pastel: cada uma vira o navy do fundo com
+     um SOPRO do próprio matiz, para o ritmo da página sobreviver sem gritar. */
+  /* ⚠️ LITERAIS, e não `color-mix` como no resto do arquivo, por duas razões
+     medidas. (1) O Lightning CSS emite um FALLBACK com a cor CRUA para browsers
+     sem `color-mix` — numa borda tintada isso é aceitável, mas numa faixa de borda
+     a borda seria o amarelo #ffce3a inteiro no lugar de 7% dele. (2) Misturar 7 a
+     9% sobre um navy já cromático não move o matiz: as seis saíam entre 244° e
+     280°, ou seja, seis tons do MESMO azul, e a faixa perdia a função de separar
+     seção. Aqui cada uma nasce no matiz dela, um pouco mais clara que o fundo.
+     Medido contra o fundo navy e as duas tintas do tema: 12,2 a 13,0:1 com
+     `--foreground` e 5,3 a 5,7:1 com a tinta suave. */
+  --band-creme: oklch(0.3 0.045 262); /* a de descanso: o próprio navy, um tom acima */
+  --band-menta: oklch(0.3 0.055 165);
+  --band-ceu: oklch(0.31 0.06 245);
+  --band-lilas: oklch(0.3 0.065 292);
+  --band-rosa: oklch(0.3 0.055 350);
+  --band-amarelo: oklch(0.31 0.05 90);
+
+  /* No escuro a areia clara viraria um fio aceso em volta do cartão; quem separa
+     ali é a borda navy que o tema já tem. */
+  --linha-carta: var(--border);
+  /* A sombra azulada do funil desaparece contra o navy: vira preta e mais funda,
+     que é como sombra se lê num fundo escuro. */
+  --sombra-carta: 0 14px 40px rgba(0, 0, 0, 0.45);
+  --sombra-carta-sm: 0 8px 22px rgba(0, 0, 0, 0.38);
+
+  /* ⚠️ `--tool-*` (o FUNDO do cabeçalho) NÃO muda no escuro, e isso é deliberado.
+     A primeira versão clareava as quatro aqui, como se faz com cor de tinta — e o
+     cabeçalho virava um bloco pastel com texto BRANCO por cima, medido em 2,1 a
+     2,6:1. Cor de fundo não segue o tema: ela carrega o branco por cima em
+     qualquer um dos dois. Quem clareia é a TINTA, abaixo. */
+  /* Tinta sobre o CORPO do cartão, que no escuro é navy: aí sim a cor viva. */
+  --tool-estudio-texto: var(--sz-kids-azul-vivo);
+  --tool-pinta-texto: oklch(0.72 0.16 25);
+  --tool-pensa-texto: var(--sz-kids-laranja-viva);
+  --tool-molda-texto: oklch(0.74 0.16 300);
+
+  --medal-ouro: var(--sz-kids-amarelo);
+  --medal-prata: oklch(0.75 0.02 255);
+  --medal-bronze: oklch(0.68 0.1 55);
 
   --background: var(--sz-kids-navy);
   --foreground: oklch(0.975 0.005 250);
@@ -803,6 +896,104 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   .sz-lesson-sections .sz-lesson-toolbar {
     border-color: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
     background: color-mix(in oklab, var(--sz-primary) 4%, var(--card));
+  }
+}
+
+/* ============================================================
+   KIT DAS PÁGINAS DE OFERTA (09/2026) — as receitas de superfície do funil.
+   Nada aqui reescreve peça existente: `.kids-card` (borda de unidade + sombra
+   dura) continua sendo o card do CATÁLOGO. O que entra é a carta CLARA das
+   páginas de venda, que é o que dá o ar de página feita para criança: fundo
+   branco, canto bem redondo, borda de AREIA (o cinza some sobre o creme) e uma
+   sombra larga e fraca em vez do degrau.
+   ============================================================ */
+@layer components {
+  .kids-carta {
+    border-radius: var(--raio-carta);
+    border: 1px solid var(--linha-carta);
+    background: var(--card);
+    box-shadow: var(--sombra-carta);
+  }
+
+  /* Bolha de cor NÍTIDA atrás de uma seção: círculo pastel com um blur de 2px só
+     para tirar a serrilha. É o truque do funil para o fundo ter profundidade sem
+     asset nenhum.
+     ⚠️ NÃO é o `.kids-blob` do auth, que continua existindo logo abaixo e é outra
+     coisa: aquele é um halo de 60px de blur a 25% de opacidade. Nome separado de
+     propósito — o `.kids-blob` está FORA de camada e venceria esta regra sem dar
+     erro nenhum, deixando a bolha nova borrada e quase invisível. */
+  .kids-bolha {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(2px);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  /* Brilho radial atrás da ilustração do herói (o `.glow` do funil). */
+  .kids-glow {
+    position: absolute;
+    inset: -12%;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 50% 45%,
+      color-mix(in oklab, var(--sz-kids-amarelo) 55%, transparent),
+      transparent 62%
+    );
+    pointer-events: none;
+  }
+
+  /* Variações de ritmo do `.kid-float` que já existia (4s). O funil usa três
+     velocidades para as decorações não subirem todas juntas, o que é o que
+     denuncia a animação. O reset global de `prefers-reduced-motion` no fim
+     deste arquivo já para as três. */
+  .kid-float-lento {
+    animation: kids-float 7s ease-in-out infinite;
+  }
+  .kid-float-rev {
+    animation-direction: reverse;
+  }
+
+  /* HERÓI e PÍLULA CHEIA da marca.
+     ⚠️ Existem porque `text-white` sobre `--sz-primary` está ERRADO metade do
+     tempo: a marca tem PAR (`--sz-primary` + `--sz-primary-fg`), e no escuro o
+     azul vira o CLARO (#56acf0) com tinta ESCURA. Medido: branco sobre ele dá
+     2,45:1 — o herói inteiro reprovava no tema escuro, título, texto e botão.
+     Com o par, dá 5,5:1 no claro e 7:1 no escuro, sem tocar em cor nenhuma. */
+  .kids-marca {
+    background-color: var(--sz-primary);
+    color: var(--sz-primary-fg);
+  }
+  /* Texto de apoio dentro do herói: 12% da própria cor de fundo misturada na
+     tinta, no lugar de um `/90` que só funciona quando a tinta é branca. */
+  .kids-marca-suave {
+    color: color-mix(in oklab, var(--sz-primary-fg) 88%, var(--sz-primary));
+  }
+  /* Ladrilho translúcido do herói: a tinta a 20%, e não `bg-white/20`. */
+  .kids-marca-tile {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 20%, transparent);
+  }
+  /* Botão INVERTIDO dentro do herói (o "Continuar" branco da referência). */
+  .kids-marca-inverso {
+    background-color: var(--sz-primary-fg);
+    color: var(--sz-primary);
+  }
+  /* Ladrilho de pontinhos por cima do azul chapado: mesma textura do fundo do
+     app, invertida. Dá relevo ao herói sem introduzir cor nenhuma. */
+  .kids-marca-pontos {
+    background-image: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--sz-primary-fg) 18%, transparent) 1.5px,
+      transparent 1.5px
+    );
+    background-size: 22px 22px;
+  }
+
+  /* Recorte de ilustração: NUNCA canto arredondado nem `box-shadow` (a sombra
+     retangular entrega que a figura é uma caixa). Só `drop-shadow`, que segue o
+     contorno do PNG. Regra de acabamento herdada do funil. */
+  .kids-recorte {
+    filter: drop-shadow(0 18px 26px rgba(12, 30, 62, 0.22));
   }
 }
 

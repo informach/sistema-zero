@@ -36,31 +36,55 @@ export function tileTheme(seed: string): string {
 export function KidsIconTile({
   icon: Icon,
   seed,
+  tone,
   active = false,
+  size = 'sm',
   className,
 }: {
   icon: LucideIcon
-  /** Semente da cor (o href do destino, por exemplo). */
-  seed: string
+  /** Semente da cor (o href do destino). Ignorada quando `tone` vem preenchido. */
+  seed?: string
+  /**
+   * Cor EXPLÍCITA, para quando o ladrilho não é de navegação: a assinatura da
+   * oficina (`--tool-*`) no card do Criar, o ouro no cabeçalho da página. Passa a
+   * cor de fundo e a tinta que vai por cima dela — as duas, sempre, porque a cor de
+   * fundo com tinta miúda por cima costuma reprovar AA (ver o comentário dos
+   * `--tool-*` no globals).
+   */
+  tone?: { fundo: string; tinta: string }
   active?: boolean
+  /** `sm` é o do menu (32px); `md` é o das faixas (48px, o `.ci` do funil). */
+  size?: 'sm' | 'md'
   className?: string
 }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        'grid size-8 shrink-0 place-items-center rounded-lg transition-colors',
-        tileTheme(seed),
-        className,
-      )}
-      style={{
+  const grande = size === 'md'
+  const cores = tone
+    ? // Ladrilho de assinatura: no estado normal ele é o LAVADO da cor (para o
+      // ícone poder ser a própria cor); `active` inverte e o ícone fica branco.
+      active
+      ? { backgroundColor: tone.fundo, color: '#fff' }
+      : {
+          backgroundColor: `color-mix(in oklab, ${tone.fundo} 16%, transparent)`,
+          color: tone.tinta,
+        }
+    : {
         backgroundColor: active
           ? 'var(--unit)'
           : 'color-mix(in oklab, var(--unit) 14%, transparent)',
         color: active ? 'var(--unit-fg)' : 'var(--unit)',
-      }}
+      }
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        'grid shrink-0 place-items-center transition-colors',
+        grande ? 'size-12 rounded-2xl' : 'size-8 rounded-lg',
+        tone ? undefined : tileTheme(seed ?? ''),
+        className,
+      )}
+      style={cores}
     >
-      <Icon className="size-5" />
+      <Icon className={grande ? 'size-6' : 'size-5'} />
     </span>
   )
 }

@@ -105,10 +105,32 @@ describe('MainContainer: regime de altura + borda a borda dos apps embarcados', 
 
   it('página comum fica FORA do regime (a janela rola, como sempre)', () => {
     const main = mainFor('/perfil')
-    expect(main.className).toContain('max-w-5xl')
     expect(main.className).toContain('flex-1')
     expect(main.className).not.toContain('overflow-hidden')
     expect(main.className).not.toContain('md:h-dvh')
+  })
+
+  it('página comum é em FAIXAS: largura toda e ZERO padding lateral', () => {
+    // O `max-w-5xl` que travava aqui não sumiu, desceu um nível: quem centraliza
+    // na largura de leitura agora é a `KidsBand` de cada seção (mesmo
+    // `mx-auto w-full max-w-5xl px-4 md:px-8`). O <main> precisa ser mais LARGO que
+    // o texto para a cor da faixa sangrar até a borda — é a mudança estrutural do
+    // redesenho de 09/2026, e é a única razão pela qual a régua saiu daqui.
+    const main = mainFor('/perfil')
+    expect(main.className).toContain('w-full')
+    expect(main.className).not.toContain('max-w-5xl')
+    expect(main.className).not.toContain('mx-auto')
+    // Nenhum padding lateral nem de topo: só o `pb-*` que reserva a barra de abas.
+    const cls = main.className.split(' ')
+    expect(cls.filter((t) => /^(md:)?p[xytlr]?-/.test(t) && !t.includes('pb-'))).toEqual([])
+  })
+
+  it('a AULA guarda o padding: ela não foi convertida em faixas', () => {
+    const main = mainFor('/cursos/meu-curso/aulas/aula-1')
+    expect(main.className).toContain('w-full')
+    expect(main.className).toContain('kids-field')
+    expect(main.className).toContain('px-4')
+    expect(main.className).not.toContain('max-w-5xl')
   })
 
   it('o PAR main ↔ frames: os dois frames carregam o piso min-h-[34rem] + overflow-hidden', () => {

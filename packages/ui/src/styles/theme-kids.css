@@ -94,4 +94,19 @@
   --sz-kids-verde-profundo: oklch(0.55 0.15 152); /* superfície c/ texto branco no light */
   --sz-kids-verde-vivo: oklch(0.78 0.15 152); /* versão dark */
   --sz-kids-amarelo: #ffce3a; /* estrelas, decorações */
+
+  /* ── Vindos das PÁGINAS DE OFERTA (09/2026) ──────────────────
+     As páginas de venda declaravam a paleta delas à mão, sem passar por aqui, e
+     por isso a plataforma nunca teve acesso ao roxo, ao ciano nem aos fundos
+     claros que dão o ar infantil do funil. Estes valores são os DE LÁ, byte a
+     byte. Nada acima mudou: isto é acréscimo.
+     ⚠️ Os `-bg` são FUNDOS DE FAIXA (seção inteira), não superfícies de cartão. */
+  --sz-kids-roxo: #8b5cf6; /* acento (Molda, ladrilhos, gradiente do CTA largo) */
+  --sz-kids-ciano: #22b8d0; /* acento (ladrilhos) */
+  --sz-kids-vermelho: #e05353; /* acento (Pinta) */
+  --sz-kids-menta-bg: #e6f8ec; /* faixa verde */
+  --sz-kids-lilas-bg: #efe7ff; /* faixa lilás */
+  --sz-kids-rosa-bg: #fff0f7; /* faixa rosa */
+  --sz-kids-amarelo-bg: #fff6dc; /* faixa amarela */
+  --sz-kids-linha-areia: #eae3d3; /* borda de cartão sobre creme (o cinza some ali) */
 }
