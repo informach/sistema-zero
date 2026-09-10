@@ -204,6 +204,24 @@ export function SceneWorkshop({
         <h1 tabIndex={-1} className="mld-display mr-auto truncate text-xl">
           {document.name}
         </h1>
+        <fieldset aria-label={copy.animationModes} className="mr-auto flex shrink-0 gap-2">
+          <Button
+            className="text-sm"
+            variant={mode === 'model' ? 'primary' : 'ghost'}
+            aria-pressed={mode === 'model'}
+            onClick={() => changeMode('model')}
+          >
+            {copy.modelMode}
+          </Button>
+          <Button
+            className="text-sm"
+            variant={mode === 'animation' ? 'primary' : 'ghost'}
+            aria-pressed={mode === 'animation'}
+            onClick={() => changeMode('animation')}
+          >
+            {copy.animationMode}
+          </Button>
+        </fieldset>
         <span role="status" className="text-sm text-mld-muted">
           {saveState === 'saved'
             ? COPY.editor.saved
@@ -281,27 +299,6 @@ export function SceneWorkshop({
         )}
       </header>
       {storage && <SceneStorageNotice observer={storage} />}
-      <fieldset
-        aria-label={copy.animationModes}
-        className="flex gap-2 border-b border-mld-border px-3 py-2"
-      >
-        <Button
-          className="text-sm"
-          variant={mode === 'model' ? 'primary' : 'ghost'}
-          aria-pressed={mode === 'model'}
-          onClick={() => changeMode('model')}
-        >
-          {copy.modelMode}
-        </Button>
-        <Button
-          className="text-sm"
-          variant={mode === 'animation' ? 'primary' : 'ghost'}
-          aria-pressed={mode === 'animation'}
-          onClick={() => changeMode('animation')}
-        >
-          {copy.animationMode}
-        </Button>
-      </fieldset>
       {mode === 'animation' && (
         <DeferredModule
           load={loadClips}
