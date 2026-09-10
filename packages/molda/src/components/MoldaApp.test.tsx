@@ -63,6 +63,21 @@ describe('MoldaApp', () => {
     )
   })
 
+  test('limita a primeira página da galeria e permite revelar o restante', async () => {
+    const assets = Array.from({ length: 61 }, (_unused, index) =>
+      makeSky({ id: `sky-${index}`, name: `ceu-${index}`, updatedAt: index + 1 }),
+    )
+    render(<MoldaApp persistence={createMemoryPersistence(assets)} />)
+
+    const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(60))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.loadMore }))
+
+    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(61))
+    expect(screen.queryByRole('button', { name: COPY.gallery.loadMore })).toBeNull()
+  })
+
   test('Criar novo: tipo → opções → nome → abre o editor e grava', async () => {
     const persistence = createMemoryPersistence()
     render(<MoldaApp persistence={persistence} />)
@@ -177,6 +192,58 @@ describe('MoldaApp', () => {
     await waitFor(() => expect(isMoldaAssetOpen('sky-1')).toBe(false))
   })
 
+  test('Voltar rechecks edits made during asynchronous Studio delivery before leaving', async () => {
+    const memory = createMemoryPersistence([makeSky()])
+    let savingAllowed = true
+    const persistence = {
+      ...memory,
+      save: async (asset: MoldaAsset) => {
+        if (!savingAllowed) throw new Error('storage unavailable')
+        await memory.save(asset)
+      },
+    }
+    let release = (): void => {
+      throw new Error('Delivery gate not initialized')
+    }
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    let deliveries = 0
+    render(
+      <MoldaApp
+        persistence={persistence}
+        adapter={{
+          initialAssetId: 'sky-1',
+          resyncToStudio: async () => {
+            deliveries += 1
+            await gate
+            return { updated: true }
+          },
+        }}
+      />,
+    )
+    await screen.findByRole('button', { name: COPY.skyPresets.nublado })
+    fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.nublado }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
+    await waitFor(() => expect(deliveries).toBe(1))
+    savingAllowed = false
+    fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
+    await act(async () => {
+      release()
+      await gate
+    })
+    await screen.findAllByText(COPY.editor.saveError)
+    expect(screen.queryByRole('heading', { level: 1, name: COPY.gallery.title })).toBeNull()
+    expect(
+      screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    savingAllowed = true
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
+    await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
+    expect(presetOf(memory.snapshot()[0])).toBe('noite')
+    expect(deliveries).toBe(2)
+  })
+
   test('atalho Ctrl+Z desfaz no editor (e não com um modal aberto)', async () => {
     const persistence = createMemoryPersistence([makeSky()])
     render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'sky-1' }} />)
@@ -219,7 +286,7 @@ describe('MoldaApp', () => {
     render(<MoldaApp persistence={persistence} />)
     await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
 
-    persistence.save = async () => {
+    persistence.saveIfUnchanged = async () => {
       throw new Error('disco indisponível')
     }
     fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.rename} grama` }))

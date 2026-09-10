@@ -18,7 +18,7 @@ import { cross, type FaceFrame, faceUvToPoint, normalize, planarFaceFrame, sub }
 import { faceVertices, meshTriangleCount } from './mesh'
 import { faceLocalPolygon, meshFaceFrame } from './meshFrame'
 import { partSize } from './shapes'
-import { length } from './vec'
+import { length, triangleUnitNormal } from './vec'
 
 export const CYLINDER_SEGMENTS = 16
 export const SPHERE_SEGMENTS_AROUND = 12
@@ -38,7 +38,8 @@ export interface PartGeometry {
   /** 6 por triângulo: (u, v) local da face. */
   uvs: Float32Array
   faceOfTriangle: FaceId[]
-  faceRanges: Partial<Record<FaceId, FaceRange>>
+  /** Contiguous spans per face; cylinder caps alternate top/bottom triangles. */
+  faceRanges: Partial<Record<FaceId, FaceRange[]>>
   triangleCount: number
 }
 
@@ -69,27 +70,37 @@ export function modelTriangleCount(model: Pick<MoldaModelAsset, 'parts'>): numbe
 }
 
 type Uv = [number, number]
+type GeometryPart = Pick<MoldaPart, 'shape' | 'from' | 'to' | 'mesh'>
 
 class GeometryBuilder {
+  constructor(private readonly precision: 'legacy' | 'relative') {}
   private readonly positions: number[] = []
   private readonly normals: number[] = []
   private readonly uvs: number[] = []
   readonly faceOfTriangle: FaceId[] = []
-  readonly faceRanges: Partial<Record<FaceId, FaceRange>> = {}
+  readonly faceRanges: PartGeometry['faceRanges'] = {}
 
   triangle(face: FaceId, a: Vec3, b: Vec3, c: Vec3, uva: Uv, uvb: Uv, uvc: Uv): void {
-    const raw = cross(sub(b, a), sub(c, a))
-    // Área zero: sem triângulo (uma normal nula no .glb é inválida e não desenha nada).
-    if (length(raw) < 1e-12) return
-    const normal = normalize(raw)
+    let normal: Vec3
+    if (this.precision === 'relative') {
+      normal = triangleUnitNormal(a, b, c)
+      if (length(normal) === 0) return
+    } else {
+      const raw = cross(sub(b, a), sub(c, a))
+      // Keep the v1 area threshold and numerical path unchanged.
+      if (length(raw) < 1e-12) return
+      normal = normalize(raw)
+    }
     for (const point of [a, b, c]) this.positions.push(point[0], point[1], point[2])
     for (let i = 0; i < 3; i += 1) this.normals.push(normal[0], normal[1], normal[2])
     for (const uv of [uva, uvb, uvc]) this.uvs.push(uv[0], uv[1])
     const index = this.faceOfTriangle.length
     this.faceOfTriangle.push(face)
-    const range = this.faceRanges[face]
-    if (range) range.count += 1
-    else this.faceRanges[face] = { start: index, count: 1 }
+    const ranges = this.faceRanges[face] ?? []
+    const last = ranges.at(-1)
+    if (last && last.start + last.count === index) last.count += 1
+    else ranges.push({ start: index, count: 1 })
+    this.faceRanges[face] = ranges
   }
 
   /** Quadrilátero de uma base plana: TL → BL → BR e TL → BR → TR (CCW de fora). */
@@ -114,17 +125,17 @@ class GeometryBuilder {
   }
 }
 
-function frameOf(part: MoldaPart, face: FaceId): FaceFrame {
+function frameOf(part: GeometryPart, face: FaceId): FaceFrame {
   const frame = planarFaceFrame(part, face)
   if (!frame) throw new Error(`face ${face} sem base plana na forma ${part.shape}`)
   return frame
 }
 
-function buildBox(part: MoldaPart, out: GeometryBuilder): void {
+function buildBox(part: GeometryPart, out: GeometryBuilder): void {
   for (const face of ['px', 'nx', 'py', 'ny', 'pz', 'nz'] as const) out.quad(frameOf(part, face))
 }
 
-function buildWedge(part: MoldaPart, out: GeometryBuilder): void {
+function buildWedge(part: GeometryPart, out: GeometryBuilder): void {
   out.quad(frameOf(part, 'ny'))
   out.quad(frameOf(part, 'nz'))
   out.quad(frameOf(part, 'slope'))
@@ -151,7 +162,7 @@ function buildWedge(part: MoldaPart, out: GeometryBuilder): void {
   )
 }
 
-function buildCylinder(part: MoldaPart, out: GeometryBuilder): void {
+function buildCylinder(part: GeometryPart, out: GeometryBuilder): void {
   const [sx, , sz] = partSize(part)
   const [x0, y0, z0] = part.from
   const [, y1] = part.to
@@ -203,7 +214,7 @@ function buildCylinder(part: MoldaPart, out: GeometryBuilder): void {
   }
 }
 
-function buildSphere(part: MoldaPart, out: GeometryBuilder): void {
+function buildSphere(part: GeometryPart, out: GeometryBuilder): void {
   const [sx, sy, sz] = partSize(part)
   const [x0, y0, z0] = part.from
   const cx = x0 + sx / 2
@@ -245,7 +256,7 @@ function buildSphere(part: MoldaPart, out: GeometryBuilder): void {
  * leque do `quad()` da caixa) triângulos, com a UV local pela base da face. Face
  * degenerada (sem base) é pulada no desenho; o `normalizeMesh` a remove no commit.
  */
-function buildMesh(part: MoldaPart, out: GeometryBuilder): void {
+function buildMesh(part: GeometryPart, out: GeometryBuilder): void {
   const mesh = part.mesh
   if (!mesh) return
   for (const key of Object.keys(mesh.faces) as MeshFaceKey[]) {
@@ -268,8 +279,11 @@ function buildMesh(part: MoldaPart, out: GeometryBuilder): void {
 }
 
 /** Geometria da peça em coordenadas da caixa (sem giro, sem pivô). */
-export function buildPartGeometry(part: MoldaPart): PartGeometry {
-  const out = new GeometryBuilder()
+export function buildPartGeometry(
+  part: GeometryPart,
+  precision: 'legacy' | 'relative' = 'legacy',
+): PartGeometry {
+  const out = new GeometryBuilder(precision)
   switch (part.shape) {
     case 'box':
       buildBox(part, out)

@@ -39,6 +39,7 @@ import { modelTriangleCount } from '../../../model/geometry'
 import { type MeshIssue, meshIssues } from '../../../model/mesh'
 import { deleteMeshSelection, moveMeshVertices } from '../../../model/meshOps'
 import {
+  type MeshEdge,
   type MeshPick,
   selectedEdges,
   selectedFaces,
@@ -46,26 +47,30 @@ import {
   selectionVertices,
 } from '../../../model/meshSelection'
 import {
+  MESH_SELECTION_ACTIONS,
+  type MeshSelectionAction,
+  selectMeshTopology,
+} from '../../../model/meshSelectionGraph'
+import {
   applyMeshFix,
-  canConnectVertices,
+  canCreateFaceOrEdge,
+  canExtrudeEdgesInDirection,
   canInsetFace,
-  connectVertices,
-  createFace,
+  createFaceOrEdge,
   extrudeEdges,
   extrudeFaces,
   flipFaces,
   insetFace,
   loopCut,
+  type MeshExtrudeDirection,
   type MeshToolResult,
   mergeVertices,
   splitQuads,
 } from '../../../model/meshTools'
 import {
   addExtraColor,
-  addPart,
-  addPartAtSurface,
   boxToMesh,
-  duplicatePart,
+  duplicateParts,
   findPart,
   movePartBy,
   movePartsBy,
@@ -74,6 +79,8 @@ import {
   setPartSize,
   setSnap,
   setTexelsPerUnit,
+  tryAddPart,
+  tryAddPartAtSurface,
   trySetMirrorX,
   updateExtraColor,
   updatePart,
@@ -88,12 +95,13 @@ import {
   type TransformTool,
 } from '../../../state/sessionStore'
 import { type ApplyMode, applyTextureToPart } from '../../../texture/ops'
-import type { ViewName } from '../../../viewport/types'
+import type { CameraView, ViewName } from '../../../viewport/types'
 import { Button, ToolButton } from '../../ui/Button'
 import { CircleHelp, Download } from '../../ui/icons'
 import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { EditorTopBar } from '../EditorTopBar'
+import { useEditorGesture } from '../useEditorGesture'
 import { ApplyTextureDialog } from './ApplyTextureDialog'
 import { ArrangePanel, type RepeatAdjustmentValue } from './ArrangePanel'
 import { ColorsPanel } from './ColorsPanel'
@@ -106,7 +114,7 @@ import {
   type ModelCommandState as RegistryCommandState,
 } from './commandRegistry'
 import { FacePaintDialog } from './FacePaintDialog'
-import { type MeshAdjust, MeshToolbox } from './MeshToolbox'
+import { type MeshAdjust, MeshAdjustmentTray, MeshToolbox } from './MeshToolbox'
 import type { MeshCommandId, MeshCommandState } from './meshCommands'
 import { useModelEditorShortcuts, useModelThumbnail } from './modelEditorHooks'
 import { PaintToolbox } from './PaintToolbox'
@@ -116,6 +124,7 @@ import { Toolbox } from './Toolbox'
 import { useModelViewportController } from './useModelViewportController'
 import { useSnapController } from './useSnapController'
 import { ViewportPane } from './ViewportPane'
+import { WorkspaceInspector } from './WorkspaceInspector'
 
 function issueKey(issue: MeshIssue): string {
   return issue.kind === 'overlap'
@@ -154,16 +163,31 @@ function ModeTabs({
   )
 }
 
-type MeshAdjustment = {
+type MeshAdjustmentBase = {
   before: MoldaModelAsset
   /** Revisão exata produzida pela última execução desta ferramenta. */
   afterRevision: number
   partId: string
+  /** Seleção original usada para reexecutar a ferramenta. */
   selection: MeshPick[]
-  kind: 'extrude-faces' | 'extrude-edges' | 'inset'
-  value: number
-  faceKey?: MeshFaceKey
+  /** Seleção produzida pela execução atual; mudar a seleção fecha a bandeja. */
+  resultSelection: MeshPick[]
 }
+
+type MeshAdjustment =
+  | (MeshAdjustmentBase & { kind: 'extrude-faces'; value: number })
+  | (MeshAdjustmentBase & {
+      kind: 'extrude-edges'
+      value: number
+      direction: MeshExtrudeDirection
+    })
+  | (MeshAdjustmentBase & { kind: 'inset'; value: number; faceKey: MeshFaceKey })
+  | (MeshAdjustmentBase & {
+      kind: 'loop-cut'
+      edge: MeshEdge
+      cuts: number
+      position: number
+    })
 
 type RepeatAdjustment = {
   before: MoldaModelAsset
@@ -173,7 +197,7 @@ type RepeatAdjustment = {
   value: RepeatAdjustmentValue
 }
 
-function replayMeshAdjustment(adjustment: MeshAdjustment, value: number): MeshToolResult | null {
+function replayMeshAdjustment(adjustment: MeshAdjustment): MeshToolResult | null {
   const mesh = findPart(adjustment.before, adjustment.partId)?.mesh
   if (!mesh) return null
   switch (adjustment.kind) {
@@ -182,21 +206,44 @@ function replayMeshAdjustment(adjustment: MeshAdjustment, value: number): MeshTo
         adjustment.before,
         adjustment.partId,
         selectedFaces(mesh, adjustment.selection),
-        value,
+        adjustment.value,
       )
     case 'extrude-edges':
       return extrudeEdges(
         adjustment.before,
         adjustment.partId,
         selectedEdges(mesh, adjustment.selection),
-        value,
+        adjustment.value,
+        adjustment.direction,
       )
     case 'inset':
-      return adjustment.faceKey
-        ? insetFace(adjustment.before, adjustment.partId, adjustment.faceKey, value)
-        : null
+      return insetFace(adjustment.before, adjustment.partId, adjustment.faceKey, adjustment.value)
+    case 'loop-cut':
+      return loopCut(adjustment.before, adjustment.partId, adjustment.edge, {
+        cuts: adjustment.cuts,
+        position: adjustment.position,
+      })
   }
 }
+
+function meshSelectionKey(selection: readonly MeshPick[]): string {
+  return selection
+    .map((pick) =>
+      pick.kind === 'edge' ? `edge:${[...pick.keys].sort().join(':')}` : `${pick.kind}:${pick.key}`,
+    )
+    .sort()
+    .join('|')
+}
+
+const MESH_EXTRUDE_DIRECTIONS: readonly MeshExtrudeDirection[] = [
+  'auto',
+  'x',
+  '-x',
+  'y',
+  '-y',
+  'z',
+  '-z',
+]
 
 export function ModelEditor({
   editor,
@@ -215,6 +262,7 @@ export function ModelEditor({
   const extraIds = useStore(session, (state) => state.extraIds)
   const partsAdditive = useStore(session, (state) => state.partsAdditive)
   const edgesVisible = useStore(session, (state) => state.edgesVisible)
+  const isolateSelection = useStore(session, (state) => state.isolateSelection)
   const gridVisible = useStore(session, (state) => state.gridVisible)
   const paintTool = useStore(session, (state) => state.paintTool)
   const paintColor = useStore(session, (state) => state.paintColor)
@@ -230,12 +278,11 @@ export function ModelEditor({
     [selectedMesh, meshSelection],
   )
   const meshAdditive = useStore(session, (state) => state.meshAdditive)
-  const wide = useMediaQuery('(min-width: 768px)')
+  const wide = useMediaQuery('(min-width: 1024px)')
   const gestureBefore = useRef<MoldaModelAsset | null>(null)
   // O gesto do "+ Nova cor" (seletor nativo) tem o SEU "antes": o `gestureBefore` do palco não
   // serve, porque um `pointerdown` no canvas pode chegar antes do `blur` que fecha o seletor.
   const colorGesture = useRef<{
-    before: MoldaModelAsset
     /** A extra criada pelo gesto (os passos seguintes a trocam no lugar); `null` até criar. */
     index: number | null
     /** Teto batido no meio do gesto: um toast só, e os passos seguintes são ignorados. */
@@ -243,6 +290,7 @@ export function ModelEditor({
   } | null>(null)
   const [applyOpen, setApplyOpen] = useState(false)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [cameraView, setCameraView] = useState<CameraView>('free')
   const [faceTarget, setFaceTarget] = useState<FacePaintTarget | null>(null)
   // O "Ajustar" reexecuta a última ação contínua sobre o `before` (um passo no desfazer).
   const [meshAdjust, setMeshAdjust] = useState<MeshAdjustment | null>(null)
@@ -254,6 +302,8 @@ export function ModelEditor({
     (): MoldaModelAsset => editor.getState().asset as MoldaModelAsset,
     [editor],
   )
+  const colorEdits = useEditorGesture(editor, model)
+  const nudgeEdits = useEditorGesture(editor, model)
   /**
    * Fecha o gesto do "+ Nova cor" (UM `commitGesture` sobre o `before` dele). Chamado no
    * fim natural (`change`/`blur`) e, de forma DEFENSIVA, antes de qualquer outro commit ou
@@ -265,18 +315,26 @@ export function ModelEditor({
     const gesture = colorGesture.current
     colorGesture.current = null
     if (!gesture) return
-    const after = editor.getState().asset as MoldaModelAsset
-    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
-  }, [editor])
+    colorEdits.end()
+  }, [colorEdits])
   // As setas seguradas são UM gesto (`replace` a cada repetição, `commitGesture` no soltar).
-  const nudgeGesture = useRef<{ before: MoldaModelAsset } | null>(null)
+  const nudgeGesture = useRef(false)
   const endNudge = useCallback(() => {
     const gesture = nudgeGesture.current
-    nudgeGesture.current = null
+    nudgeGesture.current = false
     if (!gesture) return
-    const after = editor.getState().asset as MoldaModelAsset
-    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
-  }, [editor])
+    nudgeEdits.end()
+  }, [nudgeEdits])
+  useEffect(() => {
+    const cancelNudge = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || !nudgeGesture.current) return
+      event.preventDefault()
+      nudgeGesture.current = false
+      nudgeEdits.cancel()
+    }
+    document.addEventListener('keydown', cancelNudge, { capture: true })
+    return () => document.removeEventListener('keydown', cancelNudge, { capture: true })
+  }, [nudgeEdits])
   const commit = useCallback(
     (next: MoldaModelAsset) => {
       closeColorGesture()
@@ -373,10 +431,14 @@ export function ModelEditor({
   )
   const placeAtSurface = useCallback(
     (shape: ShapeId, point: Vec3, normal: Vec3, nearId: string | null) => {
-      const result = addPartAtSurface(model(), shape, point, normal, { nearId })
+      const result = tryAddPartAtSurface(model(), shape, point, normal, { nearId })
       session.getState().setPlacingShape(null)
-      if (!result) {
-        showToast(COPY.editor.model.partsFull)
+      if (!result.ok) {
+        showToast(
+          result.reason === 'parts-full'
+            ? COPY.editor.model.partsFull
+            : COPY.editor.model.trianglesFull,
+        )
         return
       }
       commit(result.model)
@@ -401,9 +463,11 @@ export function ModelEditor({
       mirrorPaint,
       gridVisible,
       edgesVisible,
+      isolateSelection,
       meshEditId,
       meshSelectMode,
       meshVertices,
+      meshSelection,
       snapState,
     },
     model,
@@ -431,9 +495,13 @@ export function ModelEditor({
 
   const add = useCallback(
     (shape: ShapeId) => {
-      const result = addPart(model(), shape, { nearId: session.getState().selectedId })
-      if (!result) {
-        showToast(COPY.editor.model.partsFull)
+      const result = tryAddPart(model(), shape, { nearId: session.getState().selectedId })
+      if (!result.ok) {
+        showToast(
+          result.reason === 'parts-full'
+            ? COPY.editor.model.partsFull
+            : COPY.editor.model.trianglesFull,
+        )
         return
       }
       commit(result.model)
@@ -460,25 +528,20 @@ export function ModelEditor({
     const state = session.getState()
     const ids = state.selectedId ? [state.selectedId, ...state.extraIds] : []
     if (ids.length === 0) return
-    let next = model()
-    const created: string[] = []
-    for (const id of ids) {
-      const result = duplicatePart(next, id)
-      if (!result) break
-      next = result.model
-      created.push(result.partId)
+    const result = duplicateParts(model(), ids)
+    if (!result.ok) {
+      if (result.reason !== 'invalid-selection') {
+        showToast(
+          result.reason === 'parts-full'
+            ? COPY.editor.model.partsFull
+            : COPY.editor.model.trianglesFull,
+        )
+      }
+      return
     }
-    if (created.length < ids.length) {
-      showToast(
-        next.parts.length >= MOLDA_LIMITS.maxParts
-          ? COPY.editor.model.partsFull
-          : COPY.editor.model.trianglesFull,
-      )
-    }
-    if (created.length === 0) return
-    commit(next)
-    state.select(created[0] as string)
-    if (created.length > 1) state.setExtraIds(created.slice(1))
+    commit(result.model)
+    state.select(result.partIds[0] as string)
+    if (result.partIds.length > 1) state.setExtraIds(result.partIds.slice(1))
   }, [commit, model, session, showToast])
 
   const remove = useCallback(() => {
@@ -578,22 +641,28 @@ export function ModelEditor({
       if (!repeat) endNudge()
       if (!nudgeGesture.current) {
         closeColorGesture()
-        nudgeGesture.current = { before: current }
+        nudgeGesture.current = true
+        nudgeEdits.begin()
       }
-      editor.getState().replace(next)
+      nudgeEdits.update(next)
     },
-    [closeColorGesture, editor, endNudge, model, session, showToast],
+    [closeColorGesture, nudgeEdits, endNudge, model, session, showToast],
   )
 
-  const selectAllVertices = useCallback(() => {
-    const state = session.getState()
-    const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
-    if (!part?.mesh) return
-    state.setMeshSelectMode('vertex')
-    state.setMeshSelection(
-      Object.keys(part.mesh.vertices).map((key) => ({ kind: 'vertex' as const, key })),
-    )
-  }, [model, session])
+  const selectMesh = useCallback(
+    (action: MeshSelectionAction) => {
+      // Do not retarget an in-flight gesture. Its pointer/key release still owns the original selection.
+      if (gestureBefore.current || nudgeGesture.current) return
+      const state = session.getState()
+      const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
+      if (!part?.mesh) return
+      setMeshAdjust(null)
+      state.setMeshSelection(
+        selectMeshTopology(part.mesh, state.meshSelectMode, state.meshSelection, action),
+      )
+    },
+    [model, session],
+  )
 
   const togglePartFlag = useCallback(
     (id: string, flag: 'locked' | 'hidden') => {
@@ -733,43 +802,82 @@ export function ModelEditor({
         : COPY.editor.model.mesh.toolHints.extrude,
     )
     if (!outcome) return
-    setMeshAdjust({
+    const adjustment = {
       before: outcome.before,
       afterRevision: editor.getState().contentRevision,
       partId,
       selection,
-      kind,
+      resultSelection: outcome.result.selection,
       value: distance,
-    })
+    }
+    setMeshAdjust(
+      kind === 'extrude-edges'
+        ? { ...adjustment, kind, direction: 'auto' }
+        : { ...adjustment, kind },
+    )
   }, [editor, model, runMeshTool, session])
-  const adjustMeshTool = useCallback(
-    (value: number) => {
-      const current = meshAdjustRef.current
-      if (!current) return
-      const result = replayMeshAdjustment(current, value)
+  const applyMeshAdjustment = useCallback(
+    (next: MeshAdjustment) => {
+      const result = replayMeshAdjustment(next)
       if (!result) return
       editor.getState().amend(result.model)
       session.getState().setMeshSelection(result.selection)
       setMeshAdjust({
-        ...current,
+        ...next,
         afterRevision: editor.getState().contentRevision,
-        value,
+        resultSelection: result.selection,
       })
-      warnMeshIssues(current.before, result.model, current.partId)
+      warnMeshIssues(next.before, result.model, next.partId)
     },
     [editor, session, warnMeshIssues],
+  )
+  const adjustMeshValue = useCallback(
+    (value: number) => {
+      const current = meshAdjustRef.current
+      if (!current || current.kind === 'loop-cut') return
+      applyMeshAdjustment({ ...current, value })
+    },
+    [applyMeshAdjustment],
+  )
+  const adjustLoopCuts = useCallback(
+    (cuts: number) => {
+      const current = meshAdjustRef.current
+      if (current?.kind !== 'loop-cut') return
+      applyMeshAdjustment({ ...current, cuts })
+    },
+    [applyMeshAdjustment],
+  )
+  const adjustLoopPosition = useCallback(
+    (position: number) => {
+      const current = meshAdjustRef.current
+      if (current?.kind !== 'loop-cut') return
+      applyMeshAdjustment({ ...current, position })
+    },
+    [applyMeshAdjustment],
+  )
+  const adjustExtrudeDirection = useCallback(
+    (direction: MeshExtrudeDirection) => {
+      const current = meshAdjustRef.current
+      if (current?.kind !== 'extrude-edges') return
+      applyMeshAdjustment({ ...current, direction })
+    },
+    [applyMeshAdjustment],
   )
   const loopCutSelection = useCallback(() => {
     let snapChanged = false
     let offGrid = false
     let hadEdge = false
+    let sourceEdge: MeshEdge | null = null
+    let sourceSelection: MeshPick[] = []
     const outcome = runMeshTool((current, id, selection) => {
       const part = findPart(current, id)
       const edges = part?.mesh ? selectedEdges(part.mesh, selection) : []
       const edge = edges.length === 1 ? edges[0] : undefined
       if (!edge) return null
       hadEdge = true
-      const result = loopCut(current, id, edge)
+      sourceEdge = edge
+      sourceSelection = [...selection]
+      const result = loopCut(current, id, edge, { cuts: 1, position: 50 })
       snapChanged = result?.snapChanged ?? false
       offGrid = result?.offGrid ?? false
       return result
@@ -778,7 +886,20 @@ export function ModelEditor({
     if (!outcome && hadEdge) showToast(COPY.editor.model.mesh.toolHints.loopCutQuad)
     if (outcome && snapChanged) showToast(COPY.editor.model.mesh.snapHalfOn)
     else if (outcome && offGrid) showToast(COPY.editor.model.mesh.cutOffGrid)
-  }, [runMeshTool, showToast])
+    if (outcome && sourceEdge) {
+      setMeshAdjust({
+        before: outcome.before,
+        afterRevision: editor.getState().contentRevision,
+        partId: session.getState().meshEditId as string,
+        selection: sourceSelection,
+        resultSelection: outcome.result.selection,
+        kind: 'loop-cut',
+        edge: sourceEdge,
+        cuts: 1,
+        position: 50,
+      })
+    }
+  }, [editor, runMeshTool, session, showToast])
   const mergeSelection = useCallback(
     () =>
       runMeshTool((current, id, selection) => {
@@ -787,27 +908,18 @@ export function ModelEditor({
       }, COPY.editor.model.mesh.toolHints.merge),
     [runMeshTool],
   )
-  const closeFace = useCallback(() => {
+  const createSelection = useCallback(() => {
     const state = session.getState()
     const part = state.meshEditId ? findPart(model(), state.meshEditId) : undefined
     const vertices = part?.mesh ? selectionVertices(part.mesh, state.meshSelection) : []
-    const wanted = new Set(vertices)
-    const exists = Object.values(part?.mesh?.faces ?? {}).some(
-      (face) => face.v.length === wanted.size && face.v.every((vertex) => wanted.has(vertex)),
-    )
+    const possible = part?.mesh ? canCreateFaceOrEdge(part.mesh, vertices) : false
     runMeshTool(
-      (current, id) => createFace(current, id, vertices),
-      exists
+      (current, id) => createFaceOrEdge(current, id, vertices),
+      vertices.length >= 2 && vertices.length <= 4 && !possible
         ? COPY.editor.model.mesh.toolHints.faceExists
         : COPY.editor.model.mesh.toolHints.createFace,
     )
   }, [model, runMeshTool, session])
-  const connectSelection = useCallback(() => {
-    runMeshTool((current, id, selection) => {
-      const mesh = findPart(current, id)?.mesh
-      return mesh ? connectVertices(current, id, selectionVertices(mesh, selection)) : null
-    }, COPY.editor.model.mesh.toolHints.connect)
-  }, [runMeshTool])
   const insetSelection = useCallback(() => {
     const state = session.getState()
     const partId = state.meshEditId
@@ -833,6 +945,7 @@ export function ModelEditor({
       afterRevision: editor.getState().contentRevision,
       partId,
       selection,
+      resultSelection: outcome.result.selection,
       kind: 'inset',
       value,
       faceKey,
@@ -854,12 +967,17 @@ export function ModelEditor({
       }, COPY.editor.model.mesh.toolHints.split),
     [runMeshTool],
   )
-  // O "Ajustar" morre quando qualquer outra coisa muda o modelo (ou a edição fecha).
+  // O "Ajustar" morre quando muda o conteúdo, a seleção, o modo ou a peça aberta.
   useEffect(() => {
-    if (meshAdjust && (!meshEditId || contentRevision !== meshAdjust.afterRevision)) {
+    if (
+      meshAdjust &&
+      (!meshEditId ||
+        contentRevision !== meshAdjust.afterRevision ||
+        meshSelectionKey(meshSelection) !== meshSelectionKey(meshAdjust.resultSelection))
+    ) {
       setMeshAdjust(null)
     }
-  }, [contentRevision, meshAdjust, meshEditId])
+  }, [contentRevision, meshAdjust, meshEditId, meshSelection])
   useEffect(() => {
     if (repeatAdjust && contentRevision !== repeatAdjust.afterRevision) {
       repeatAdjustRef.current = null
@@ -917,7 +1035,7 @@ export function ModelEditor({
     deleteMeshSelection: deleteSelection,
     nudge,
     endNudge,
-    selectAllVertices,
+    selectMesh,
     toggleSnap: toggleSnapTool,
     cancelSnap: cancelSnapTool,
   })
@@ -933,10 +1051,7 @@ export function ModelEditor({
       : meshSelectMode === 'edge'
         ? meshSelectedEdges.length
         : meshSelectedFaces.length
-  const wantedFace = new Set(meshVertices)
-  const meshFaceAlreadyExists = Object.values(meshEditMesh?.faces ?? {}).some(
-    (face) => face.v.length === wantedFace.size && face.v.every((vertex) => wantedFace.has(vertex)),
-  )
+  const canCreate = meshEditMesh ? canCreateFaceOrEdge(meshEditMesh, meshVertices) : false
   const meshCommands: Record<MeshCommandId, MeshCommandState> = {
     merge: {
       enabled: meshVertices.length >= 2,
@@ -944,16 +1059,12 @@ export function ModelEditor({
       run: mergeSelection,
     },
     createFace: {
-      enabled: meshVertices.length >= 3 && meshVertices.length <= 4 && !meshFaceAlreadyExists,
-      disabledMessage: meshFaceAlreadyExists
-        ? COPY.editor.model.mesh.toolHints.faceExists
-        : COPY.editor.model.mesh.toolHints.createFace,
-      run: closeFace,
-    },
-    connect: {
-      enabled: meshEditMesh ? canConnectVertices(meshEditMesh, meshVertices) : false,
-      disabledMessage: COPY.editor.model.mesh.toolHints.connect,
-      run: connectSelection,
+      enabled: canCreate,
+      disabledMessage:
+        meshVertices.length >= 2 && meshVertices.length <= 4
+          ? COPY.editor.model.mesh.toolHints.faceExists
+          : COPY.editor.model.mesh.toolHints.createFace,
+      run: createSelection,
     },
     extrudeEdges: {
       enabled: meshSelectedEdges.length > 0,
@@ -992,6 +1103,13 @@ export function ModelEditor({
   }
   const helpContext: ModelCommandContext = meshEditId ? `mesh-${meshSelectMode}` : mode
   const helpStates: Partial<Record<ModelCommandId, RegistryCommandState>> = {}
+  const selectionCommandState = (action: MeshSelectionAction): RegistryCommandState => ({
+    enabled: action === 'all' || action === 'invert' || meshSelectedCount > 0,
+    disabledReason: COPY.editor.model.mesh.nothingSelected,
+    run: () => selectMesh(action),
+  })
+  for (const action of MESH_SELECTION_ACTIONS)
+    helpStates[`mesh.select.${action}`] = selectionCommandState(action)
   const chosenIds = selectedPartIds()
   const hasChosenParts = chosenIds.length > 0
   const chosenPartsLocked = chosenIds.some((id) => findPart(asset, id)?.locked)
@@ -1048,26 +1166,65 @@ export function ModelEditor({
     }
   }
   const helpCommands = contextualModelCommands(helpContext, helpStates)
-  const meshAdjustProps: MeshAdjust | null = meshAdjust
-    ? meshAdjust.kind === 'inset'
-      ? {
-          label: COPY.editor.model.mesh.insetAmount,
-          short: '%',
-          value: meshAdjust.value,
-          step: 5,
-          min: 10,
-          max: 80,
-          onValue: adjustMeshTool,
-        }
-      : {
-          label: COPY.editor.model.mesh.distance,
-          value: meshAdjust.value,
-          step: asset.snap,
-          min: asset.snap,
-          max: MOLDA_LIMITS.maxPartSize,
-          onValue: adjustMeshTool,
-        }
-    : null
+  let meshAdjustProps: MeshAdjust | null = null
+  if (meshAdjust?.kind === 'loop-cut') {
+    meshAdjustProps = {
+      kind: 'loop-cut',
+      cuts: meshAdjust.cuts,
+      position: meshAdjust.position,
+      onCuts: adjustLoopCuts,
+      onPosition: adjustLoopPosition,
+      onClose: () => setMeshAdjust(null),
+    }
+  } else if (meshAdjust?.kind === 'inset') {
+    meshAdjustProps = {
+      kind: 'value',
+      toolLabel: COPY.editor.model.mesh.tools.inset,
+      label: COPY.editor.model.mesh.insetAmount,
+      short: '%',
+      value: meshAdjust.value,
+      step: 5,
+      min: 10,
+      max: 80,
+      onValue: adjustMeshValue,
+      onClose: () => setMeshAdjust(null),
+    }
+  } else if (meshAdjust?.kind === 'extrude-edges') {
+    const beforeMesh = findPart(meshAdjust.before, meshAdjust.partId)?.mesh
+    const beforeEdges = beforeMesh ? selectedEdges(beforeMesh, meshAdjust.selection) : []
+    const directionEnabled = Object.fromEntries(
+      MESH_EXTRUDE_DIRECTIONS.map((direction) => [
+        direction,
+        beforeMesh ? canExtrudeEdgesInDirection(beforeMesh, beforeEdges, direction) : false,
+      ]),
+    ) as Record<MeshExtrudeDirection, boolean>
+    meshAdjustProps = {
+      kind: 'extrude',
+      toolLabel: COPY.editor.model.mesh.tools.extrude,
+      label: COPY.editor.model.mesh.distance,
+      value: meshAdjust.value,
+      step: asset.snap,
+      min: asset.snap,
+      max: MOLDA_LIMITS.maxPartSize,
+      direction: meshAdjust.direction,
+      directionEnabled,
+      onValue: adjustMeshValue,
+      onDirection: adjustExtrudeDirection,
+      onClose: () => setMeshAdjust(null),
+    }
+  } else if (meshAdjust?.kind === 'extrude-faces') {
+    meshAdjustProps = {
+      kind: 'value',
+      toolLabel: COPY.editor.model.mesh.tools.extrude,
+      label: COPY.editor.model.mesh.distance,
+      value: meshAdjust.value,
+      step: asset.snap,
+      min: asset.snap,
+      max: MOLDA_LIMITS.maxPartSize,
+      onValue: adjustMeshValue,
+      onClose: () => setMeshAdjust(null),
+    }
+  }
   const triangles = modelTriangleCount(asset)
   // Acima de metade do teto de triângulos (a malha é quem chega lá) o status mostra o teto.
   const statusBase =
@@ -1078,7 +1235,13 @@ export function ModelEditor({
     atlas && atlas.size > 0
       ? `${statusBase} · ${COPY.editor.model.statusAtlas(atlas.size)}`
       : statusBase
-  const onView = useCallback((view: ViewName) => viewport?.setView(view), [viewport])
+  const onView = useCallback(
+    (view: ViewName) => {
+      viewport?.setView(view)
+      if (view !== 'frame' && view !== 'selection') setCameraView(view)
+    },
+    [viewport],
+  )
 
   const panels = useMemo(
     () => (
@@ -1115,7 +1278,8 @@ export function ModelEditor({
             // GESTO do seletor nativo: cada passo do arrasto chega aqui. O 1º cria a extra (ou
             // só escolhe a cor, se ela já existe); os seguintes TROCAM a cor dessa extra no
             // lugar, ao vivo (`replace`); `onAddColorEnd` fecha tudo com UM desfazer.
-            const gesture = colorGesture.current ?? { before: model(), index: null, full: false }
+            if (!colorGesture.current) colorEdits.begin()
+            const gesture = colorGesture.current ?? { index: null, full: false }
             colorGesture.current = gesture
             if (gesture.full) return
             if (gesture.index !== null) {
@@ -1129,12 +1293,12 @@ export function ModelEditor({
                 else if (selectedPart) {
                   next = updatePart(next, selectedPart.id, { color: existing })
                 }
-                if (next !== model()) editor.getState().replace(next)
+                if (next !== model()) colorEdits.update(next)
                 gesture.index = null
                 return
               }
               const next = updateExtraColor(model(), gesture.index, hex)
-              if (next !== model()) editor.getState().replace(next)
+              if (next !== model()) colorEdits.update(next)
               return
             }
             const current = model()
@@ -1147,7 +1311,7 @@ export function ModelEditor({
             let next = result.model
             if (mode === 'paint') session.getState().setPaintColor(result.index)
             else if (selectedPart) next = updatePart(next, selectedPart.id, { color: result.index })
-            if (next !== current) editor.getState().replace(next)
+            if (next !== current) colorEdits.update(next)
             // Só uma extra CRIADA vira o alvo do gesto: cor que já existia (fixa ou extra de
             // outra peça) não pode ser trocada por tabela.
             if (result.model !== current) gesture.index = result.index
@@ -1226,7 +1390,7 @@ export function ModelEditor({
       showToast,
       mode,
       paintColor,
-      editor,
+      colorEdits,
       togglePartFlag,
       closeColorGesture,
       meshEditId,
@@ -1275,7 +1439,7 @@ export function ModelEditor({
           </>
         }
       />
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
         {mode === 'paint' ? (
           <PaintToolbox
             tool={paintTool}
@@ -1288,19 +1452,7 @@ export function ModelEditor({
             onTexels={(value: TexelsPerUnit) => commit(setTexelsPerUnit(model(), value))}
             onApplyTexture={openApplyTexture}
           />
-        ) : meshEditPart?.mesh ? (
-          <MeshToolbox
-            mode={meshSelectMode}
-            onMode={(next) => session.getState().setMeshSelectMode(next)}
-            additive={meshAdditive}
-            onToggleAdditive={() => session.getState().toggleMeshAdditive()}
-            selectedCount={meshSelectedCount}
-            commands={meshCommands}
-            adjust={meshAdjustProps}
-            onDeleteSelection={deleteSelection}
-            onDone={() => session.getState().exitMeshEdit()}
-          />
-        ) : (
+        ) : !meshEditPart?.mesh ? (
           <Toolbox
             tool={tool}
             onTool={(next: TransformTool) => {
@@ -1322,33 +1474,46 @@ export function ModelEditor({
             partsAdditive={partsAdditive}
             onTogglePartsAdditive={() => session.getState().togglePartsAdditive()}
           />
-        )}
+        ) : null}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          {meshEditPart?.mesh ? (
+            <MeshToolbox
+              mode={meshSelectMode}
+              onMode={(next) => {
+                setMeshAdjust(null)
+                session.getState().setMeshSelectMode(next)
+              }}
+              additive={meshAdditive}
+              onToggleAdditive={() => session.getState().toggleMeshAdditive()}
+              selectedCount={meshSelectedCount}
+              commands={meshCommands}
+              selectionState={selectionCommandState}
+              onDeleteSelection={deleteSelection}
+              onDone={() => session.getState().exitMeshEdit()}
+            />
+          ) : null}
           <ViewportPane
             canvasRef={canvasRef}
             unsupported={unsupported}
             onView={onView}
+            cameraView={cameraView}
+            hasSelection={selectedId !== null}
             gridVisible={gridVisible}
             onToggleGrid={() => session.getState().toggleGrid()}
             edgesVisible={edgesVisible}
+            isolated={isolateSelection}
+            onToggleIsolation={() => session.getState().toggleIsolation()}
             onToggleEdges={() => session.getState().toggleEdges()}
             status={status}
             snapInstruction={snapInstruction}
+            adjustment={
+              meshEditPart?.mesh ? <MeshAdjustmentTray adjust={meshAdjustProps} /> : undefined
+            }
           />
-          {!wide ? (
-            <details className="max-h-72 shrink-0 overflow-y-auto border-t-2 border-mld-border bg-mld-surface">
-              <summary className="min-h-11 cursor-pointer px-3 py-2 text-sm font-bold text-mld-text">
-                {COPY.editor.model.panelsToggle}
-              </summary>
-              <div className="flex flex-col gap-2 p-2">{panels}</div>
-            </details>
-          ) : null}
         </div>
-        {wide ? (
-          <aside className="mld-scroll-y flex w-68 shrink-0 flex-col gap-2 overflow-y-auto border-l-2 border-mld-border bg-mld-bg p-2">
-            {panels}
-          </aside>
-        ) : null}
+        <WorkspaceInspector docked={wide} onBeforeClose={closeColorGesture}>
+          {panels}
+        </WorkspaceInspector>
       </div>
       <ApplyTextureDialog
         open={applyOpen}

@@ -21,6 +21,7 @@ export interface FakeViewport extends MoldaViewportLike {
   selected: string | null
   extraSelected: string[]
   edgesVisible: boolean
+  isolatedIds: readonly string[] | null
   mode: EditorMode
   tool: TransformTool
   placementShape: ShapeId | null
@@ -30,6 +31,7 @@ export interface FakeViewport extends MoldaViewportLike {
   views: ViewName[]
   thumbs: number
   disposed: boolean
+  cancellations: number
   meshEdit: MeshEditState | null
   snapState: ViewportSnapState
 }
@@ -46,6 +48,10 @@ export function installFakeViewport(options: { thumb?: string | null } = {}): {
       selected: null,
       extraSelected: [],
       edgesVisible: false,
+      isolatedIds: null,
+      setIsolation(ids) {
+        fake.isolatedIds = ids
+      },
       mode: 'build',
       tool: 'move',
       placementShape: null,
@@ -55,6 +61,10 @@ export function installFakeViewport(options: { thumb?: string | null } = {}): {
       views: [],
       thumbs: 0,
       disposed: false,
+      cancellations: 0,
+      cancelGesture() {
+        fake.cancellations += 1
+      },
       meshEdit: null,
       snapState: { phase: 'inactive' },
       setMeshEdit(state) {

@@ -1493,8 +1493,10 @@ export const CreationItemParams = t.Object({
  * nome/kind nos tetos e descarta a miniatura grande; os `maxLength` aqui são a rede de
  * segurança de quem chegar por outro caminho.
  */
+// Elysia's t.Integer coerces numeric strings, unlike this strict JSON number contract.
+const CreationFormatVersion = t.Number({ minimum: 1, maximum: 65_535, multipleOf: 1 })
 export const CreationUploadBody = t.Object({
-  formatVersion: t.Optional(t.Integer({ minimum: 1, maximum: 65_535 })),
+  formatVersion: t.Optional(CreationFormatVersion),
   name: t.String({ minLength: 1, maxLength: 120 }),
   kind: t.String({ minLength: 1, maxLength: 40 }),
   /** `updatedAt` do item no relógio do editor (ISO). */
@@ -1532,6 +1534,7 @@ export const CreationUploadBody = t.Object({
 /** Exclusões também são condicionais: uma lápide velha não pode apagar uma edição nova. */
 export const CreationDeleteBody = t.Object({
   baseRevision: t.Integer({ minimum: 0 }),
+  maxFormatVersion: t.Optional(CreationFormatVersion),
 })
 
 export const CreationListQuery = t.Object({

@@ -1494,8 +1494,19 @@ formato menor que o confirmado OU pendente. Commit revalida formato e mata reser
 legada incompatível sem tocar no blob corrente. Erro HTTP 409
 `CREATION_CLIENT_OUTDATED`, `details.requiredVersion`; retry não resolve.
 Listas/download/commit expõem o formato do documento confirmado. Aplicar migration
-antes do backend e terminar o rollout dos guards antes de novos escritores;
-rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
+antes do backend e terminar o rollout dos guards antes de novos escritores.
+Rollback da UI não remove essas colunas. Plano: `../../docs/plans/2026-09-06-molda-evolution.md`.
+
+**Reserva (07/09):** ticket inclui `formatVersion` validada, independente da revisão.
+BFF e cliente conferem essa confirmação antes de PUT; omissão confirma só legado 1.
+Essa confirmação não substitui o rollout de todos os guards.
+
+**Exclusão (07/09):** `maxFormatVersion` opcional, default 1, número inteiro real
+1..65535. Sob o lock da revisão, compara máximo confirmado/pendente e devolve
+`CREATION_CLIENT_OUTDATED` antes de qualquer mutação incompatível. Repetir delete
+cancela restauro pendente compatível, mantendo `deletedAt` original e `deleted: false`.
+DTO de versões usa `t.Number({ multipleOf: 1, ... })`: `t.Integer` do Elysia instalado
+converte strings e não satisfaz o contrato estrito de número no corpo JSON.
 
 ⭐ **Ferramenta nova = `CREATION_TOOLS` + enum + migration própria (04/09/2026, `molda`).** O
 union vive em `domain/creations/creation.ts` (`CREATION_TOOLS`, `CREATION_ACCESS_REF`,

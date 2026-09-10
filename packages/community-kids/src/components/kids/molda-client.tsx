@@ -4,6 +4,7 @@
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
 import type { MoldaHostAdapter } from '@sistemazero/molda'
+import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -91,6 +92,7 @@ export function MoldaClient({
           // trocou de perfil (irmão que entrou no meio de um upload em voo).
           const nextCloud = createCreationsCloud({
             tool: 'molda',
+            maxFormatVersion: MOLDA_MAX_READ_VERSION,
             viewerId,
             idleMs: MOLDA_CLOUD_IDLE_MS,
           })
@@ -100,6 +102,9 @@ export function MoldaClient({
           setPersistence(
             createCloudMirroredMoldaPersistence({
               local,
+              // A geração seguinte entra no MESMO espelho. Sem ela, uma criação promovida
+              // sairia do inventário v1 e a reconciliação a leria como ausente.
+              sceneSource: m.createMoldaSceneCloudSource(),
               cloud: nextCloud,
               viewerId,
               // A descida não grava por baixo de uma criação ABERTA no editor — e, ao fechar
@@ -160,6 +165,16 @@ export function MoldaClient({
       theme,
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
+      /**
+       * A oficina 3D nova é o editor de modelos. Abrir um modelo antigo por lá o PROMOVE
+       * para o formato seguinte, no aparelho e na nuvem.
+       *
+       * ⚠️ Depende dos leitores compatíveis já implantados (o espelho das duas gerações):
+       * sem eles, um cliente antigo veria a criação promovida como ilegível. Desligar de
+       * volta é seguro: quem já foi promovido continua listado e continua abrindo, porque
+       * a chave governa só a promoção, não o acesso.
+       */
+      sceneWorkshop: true,
       ...(initialAssetId ? { initialAssetId } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
       // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do

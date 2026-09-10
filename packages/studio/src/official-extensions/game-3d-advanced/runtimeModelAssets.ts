@@ -15,7 +15,6 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
   var _hdrLoaderWaiters = [];
   var _skelMod = null;       // SkeletonUtils: clone que REAMARRA o esqueleto
   var _modelCache = null;    // nome -> { scene, clips } já parseado (clonado a cada uso)
-  var _cachedModelMaterials = new Set();
   var _modelPending = null;  // nome -> FILA de callbacks (import/parse em voo)
   var _pendingModelCancels = [];
   var _hdrCache = null;      // nome -> DataTexture-base (cada uso recebe um clone)
@@ -45,15 +44,76 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
    * Clona um modelo importado. ⭐ O clone comum do Object3D NÃO reamarra o esqueleto aos
    * ossos do clone — o boneco clonado fica preso ao esqueleto do original e a
    * animação sai deformada. É por isso que o próprio curso trocou o clone comum
-   * pelo SkeletonUtils.clone (cached-asset-streamer.js:135-136). Sem o addon
-   * carregado, cai no clone comum: peça estática continua certa, e só o boneco
-   * animado é que perderia — por isso o aviso vive no caminho da animação.
+   * pelo SkeletonUtils.clone. Sem o addon, somente modelos sem skin podem usar
+   * clone comum. Falhar não autoriza compartilhar ossos com o template.
    */
   function cloneModel(root) {
+    var skinned = false;
+    root.traverse(function (o) { if (o.isSkinnedMesh) skinned = true; });
+    if (!skinned) return root.clone();
     if (_skelMod && _skelMod.clone) {
-      try { return _skelMod.clone(root); } catch (e) {}
+      return _skelMod.clone(root);
     }
-    return root.clone();
+    throw new Error('não consegui criar ossos independentes para este modelo');
+  }
+
+  /** Skeletons own bone textures; geometry/materials belong to the shared model cache. */
+  function disposeModelSkeletons(root, released) {
+    if (!root || !root.traverse) return;
+    var seen = released || new Set();
+    root.traverse(function (o) {
+      var skeleton = o.isSkinnedMesh && o.skeleton;
+      if (!skeleton || seen.has(skeleton)) return;
+      seen.add(skeleton);
+      try { skeleton.dispose(); }
+      catch (e) { warnOnce('dispose-model-skeleton', 'não consegui liberar os ossos de um modelo: ' + e); }
+    });
+  }
+
+  /** Release one obsolete clone; its recipe's materials remain alive while other clones need them. */
+  function disposeModelResource(resource, disposedResources) {
+    if (!resource || !resource.owner) return;
+    var owner = resource.owner;
+    resource.owner = null;
+    var mixer = resource.mixer;
+    if (mixer) {
+      try { mixer.stopAllAction(); mixer.uncacheRoot(resource.mesh); }
+      catch (e) { warnOnce('dispose-model-mixer', 'não consegui liberar um movimento antigo: ' + e); }
+    }
+    disposeModelSkeletons(resource.mesh, disposedResources && disposedResources.skeletons);
+    if (resource.mesh && resource.mesh.userData) delete resource.mesh.userData.szEntity;
+    owner.resourceCount--;
+    releaseRetiredMoldMaterials(owner, disposedResources && disposedResources.materials);
+  }
+
+  function discardStaleModelResources(pool, mold) {
+    if (!pool) return;
+    var kept = 0;
+    for (var i = 0; i < pool.free.length; i++) {
+      var resource = pool.free[i];
+      if (resource.owner === mold && resource.revision === mold.resourceRevision) pool.free[kept++] = resource;
+      else disposeModelResource(resource);
+    }
+    pool.free.length = kept;
+  }
+
+  function returnModelResource(pool, entity, disposedResources) {
+    var resource = pooledResources(entity);
+    var mold = molds[entity._mold];
+    if (mold && resource.owner === mold && resource.revision === mold.resourceRevision) pool.free.push(resource);
+    else disposeModelResource(resource, disposedResources);
+  }
+
+  /** Only for discarded runs, not recycle: active AND detached pooled roots own skeletons/mixers. */
+  function disposeModelPools(disposedResources) {
+    for (var key in pools) {
+      var pool = pools[key];
+      releaseAll(pool, disposedResources);
+      for (var i = 0; i < pool.free.length; i++) {
+        disposeModelResource(pool.free[i], disposedResources);
+      }
+      pool.free.length = 0;
+    }
   }
 
   // ---- 🕺 Animação do modelo (a lição do AnimatedObjectComponent do curso) ----
@@ -64,12 +124,11 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
    * exatamente confundir esses dois tempos que gerou o bug do cubo.
    */
   function attachMixer(e, m) {
-    if (!m.model || !THREE.AnimationMixer) return;
-    var hit = _modelCache && _modelCache[m.model];
-    if (!hit || !hit.clips || !hit.clips.length) return;
+    // Clips belong to the installed template, not merely to an entry parsed into the cache.
+    if (!m.modelClips || !m.modelClips.length || !THREE.AnimationMixer) return;
     try {
       e._mixer = new THREE.AnimationMixer(e.mesh);
-      e._clips = hit.clips;
+      e._clips = m.modelClips;
       e._action = null;
     } catch (err) {
       e._mixer = null;
@@ -212,6 +271,7 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
   }
 
   function disposeImportedModel(root, disposedResources) {
+    disposeModelSkeletons(root, disposedResources && disposedResources.skeletons);
     var geometries = new Set();
     var materials = new Set();
     var textures = new Set();
@@ -249,24 +309,6 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
     });
   }
 
-  /** Materiais de um GLB cacheado são compartilhados pelos clones dos moldes. */
-  function rememberCachedModelMaterials(root) {
-    try {
-      root.traverse(function (o) {
-        var list = o.material && o.material.length ? o.material : [o.material];
-        for (var i = 0; i < list.length; i++) {
-          if (list[i]) _cachedModelMaterials.add(list[i]);
-        }
-      });
-    } catch (e) {
-      warnOnce('cache-model-materials', 'não consegui registrar os materiais de um modelo 3D: ' + e);
-    }
-  }
-
-  function isCachedModelMaterial(material) {
-    return _cachedModelMaterials.has(material);
-  }
-
   /** O cache-base fica fora da cena; no teardown ele também precisa soltar GPU/CPU. */
   function disposeCachedModels(disposedResources) {
     if (!_modelCache) return;
@@ -278,7 +320,95 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
       disposeImportedModel(hit.scene, disposedResources);
     }
     _modelCache = null;
-    _cachedModelMaterials = new Set();
+  }
+
+  /**
+   * 🎞️ Pintura animada do Molda. O contrato versionado viaja no GLB, em
+   * material.userData.molda.flipbook, e o KHR_texture_transform já deixou a
+   * textura na primeira célula da sequência. Aqui só se move o offset.
+   *
+   * ⭐ UMA linha do tempo POR MATERIAL, compartilhada por todas as cópias do
+   * molde: a folha é a MESMA textura para todo mundo (geometria e material vêm
+   * do cache), então um relógio por boneco exigiria uma cópia da folha na GPU
+   * por instância. Todas as cópias tocam juntas, e isso é contrato, não acaso.
+   *
+   * Guarda o MATERIAL, não o mapa: o mapa é lido a cada passo, então uma textura
+   * que chega depois (ou é trocada) continua sendo animada.
+   */
+  function collectModelFlipbooks(root) {
+    var found = [];
+    if (!root || !root.traverse) return found;
+    var seen = new Set();
+    root.traverse(function (o) {
+      if (!o || !o.material) return;
+      var list = Array.isArray(o.material) ? o.material : [o.material];
+      for (var i = 0; i < list.length; i++) {
+        var material = list[i];
+        if (!material || seen.has(material)) continue;
+        seen.add(material);
+        var molda = material.userData && material.userData.molda;
+        var book = molda && molda.flipbook;
+        // Contrato desconhecido não é palpite: fica parado, como qualquer pintura.
+        if (!book || book.contract !== 1) continue;
+        var columns = Math.round(num(book.columns, 0));
+        var rows = Math.round(num(book.rows, 0));
+        var fps = num(book.fps, 0);
+        var cells = columns * rows;
+        if (columns < 1 || rows < 1 || !(fps > 0)) continue;
+        var frames = [];
+        var raw = Array.isArray(book.frames) ? book.frames : [];
+        for (var f = 0; f < raw.length; f++) {
+          var cell = Math.round(num(raw[f], -1));
+          if (cell >= 0 && cell < cells) frames.push(cell);
+        }
+        if (frames.length !== raw.length || !frames.length) continue;
+        found.push({
+          material: material, columns: columns, rows: rows, frames: frames,
+          fps: fps, loop: book.loop !== false, t: 0, step: -1
+        });
+      }
+    });
+    return found;
+  }
+
+  /**
+   * Mesma conta do produtor: célula da sequência, origem no topo-esquerda da folha.
+   * Devolve se colocou de fato — sem textura ainda não é passo dado, senão uma
+   * folha que chega depois do primeiro quadro ficaria parada para sempre.
+   */
+  function placeFlipbook(book, step) {
+    var map = book.material && book.material.map;
+    if (!map || !map.offset || !map.repeat) return false;
+    var frame = book.frames[step];
+    map.repeat.set(1 / book.columns, 1 / book.rows);
+    map.offset.set(
+      (frame % book.columns) / book.columns,
+      Math.floor(frame / book.columns) / book.rows
+    );
+    return true;
+  }
+
+  function stepModelFlipbooks(dt) {
+    if (!_modelCache) return;
+    for (var key in _modelCache) {
+      var hit = _modelCache[key];
+      var books = hit && hit.flipbooks;
+      if (!books || !books.length) continue;
+      for (var i = 0; i < books.length; i++) {
+        var book = books[i];
+        book.t += dt;
+        var total = book.frames.length / book.fps;
+        var step;
+        if (book.loop) {
+          // O módulo no TEMPO evita perder precisão num jogo longo.
+          step = Math.floor((book.t % total) * book.fps) % book.frames.length;
+        } else {
+          step = Math.min(book.frames.length - 1, Math.floor(book.t * book.fps));
+        }
+        if (step === book.step) continue;
+        if (placeFlipbook(book, step)) book.step = step;
+      }
+    }
   }
 
   function loadModel(name, onReady) {
@@ -357,8 +487,10 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
             }
             // Guarda os CLIPES junto: são eles que dão vida ao boneco (a lição do
             // AnimatedObjectComponent do curso). Antes o gltf.animations ia no lixo.
-            rememberCachedModelMaterials(gltf.scene);
-            _modelCache[k] = { scene: gltf.scene, clips: gltf.animations || [], metrics: metrics };
+            _modelCache[k] = {
+              scene: gltf.scene, clips: gltf.animations || [], metrics: metrics,
+              flipbooks: collectModelFlipbooks(gltf.scene)
+            };
             warmModel(gltf.scene);
             flush(_modelCache[k]);
           } else {
@@ -380,10 +512,8 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
     }, MODEL_LOAD_TIMEOUT_MS);
     if (_gltfMod) { finish(_gltfMod); return null; }
     try {
-      // Os DOIS addons antes de parsear. O SkeletonUtils é opcional (catch -> null):
-      // sem ele o clone não reamarra o esqueleto e só a ANIMAÇÃO se perde — a peça
-      // estática continua certa. Esperar os dois evita a corrida de clonar o
-      // template antes de o SkeletonUtils chegar.
+      // Esperar os dois evita clonar antes de SkeletonUtils chegar. Modelos sem
+      // skin ainda podem usar clone comum; uma skin nunca degrada para ossos compartilhados.
       Promise.all([
         import('three/addons/loaders/GLTFLoader.js'),
         import('three/addons/utils/SkeletonUtils.js').catch(function () { return null; })

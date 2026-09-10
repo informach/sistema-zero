@@ -5,7 +5,10 @@
  * `m[0..3]` é a primeira coluna.
  */
 import type { MoldaModelAsset, MoldaPart, Vec3 } from '../core/model'
+import { transformPoint } from '../scene/matrix'
 import { partCenter } from './shapes'
+
+export { transformDirection, transformPoint } from '../scene/matrix'
 
 export type Mat4 = Float64Array
 
@@ -55,25 +58,6 @@ export function partMatrix(part: MoldaPart): Mat4 {
   const ty = py - (r10 * px + r11 * py + r12 * pz)
   const tz = pz - (r20 * px + r21 * py + r22 * pz)
   return Float64Array.from([r00, r10, r20, 0, r01, r11, r21, 0, r02, r12, r22, 0, tx, ty, tz, 1])
-}
-
-export function transformPoint(m: Mat4, p: Vec3): Vec3 {
-  const [x, y, z] = p
-  return [
-    (m[0] as number) * x + (m[4] as number) * y + (m[8] as number) * z + (m[12] as number),
-    (m[1] as number) * x + (m[5] as number) * y + (m[9] as number) * z + (m[13] as number),
-    (m[2] as number) * x + (m[6] as number) * y + (m[10] as number) * z + (m[14] as number),
-  ]
-}
-
-/** Só a parte de giro (direções): sem translação. */
-export function transformDirection(m: Mat4, v: Vec3): Vec3 {
-  const [x, y, z] = v
-  return [
-    (m[0] as number) * x + (m[4] as number) * y + (m[8] as number) * z,
-    (m[1] as number) * x + (m[5] as number) * y + (m[9] as number) * z,
-    (m[2] as number) * x + (m[6] as number) * y + (m[10] as number) * z,
-  ]
 }
 
 /** Os 8 cantos da caixa da peça, já girados (espaço do modelo). */

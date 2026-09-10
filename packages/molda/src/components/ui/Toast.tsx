@@ -71,34 +71,36 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
     <ToastContext.Provider value={{ showToast }}>
       {children}
       <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center">
-        {toast ? (
-          <div className="pointer-events-auto flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface px-5 py-3 text-base font-bold text-mld-text shadow-lg">
-            {/* Só a MENSAGEM é região viva: botão dentro de aria-live é reanunciado a cada
-                render e confunde o leitor de tela. A região existe sempre (ver abaixo). */}
-            <span aria-live="polite">{toast.message}</span>
-            {toast.actions.map((action) => (
-              <button
-                key={action.label}
-                type="button"
-                onFocus={hold}
-                onBlur={release}
-                onMouseEnter={hold}
-                onMouseLeave={release}
-                onClick={() => {
-                  if (timerRef.current) clearTimeout(timerRef.current)
-                  timerRef.current = null
-                  setToast(null)
-                  action.onClick()
-                }}
-                className="min-h-11 rounded-full border-2 border-mld-accent px-4 text-sm font-bold text-mld-accent hover:bg-mld-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <span aria-live="polite" className="sr-only" />
-        )}
+        <div
+          className={
+            toast
+              ? 'pointer-events-auto flex max-w-[calc(100%-2rem)] flex-wrap items-center gap-2 rounded-2xl border-2 border-mld-border bg-mld-surface px-5 py-3 text-base font-bold text-mld-text shadow-lg'
+              : 'sr-only'
+          }
+        >
+          {/* A mesma região viva fica montada vazia e só recebe texto depois. Os botões são
+              irmãos, para mudanças de foco/hover não reanunciarem a mensagem. */}
+          <span aria-live="polite">{toast?.message ?? ''}</span>
+          {toast?.actions.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              onFocus={hold}
+              onBlur={release}
+              onMouseEnter={hold}
+              onMouseLeave={release}
+              onClick={() => {
+                if (timerRef.current) clearTimeout(timerRef.current)
+                timerRef.current = null
+                setToast(null)
+                action.onClick()
+              }}
+              className="min-h-11 rounded-full border-2 border-mld-accent px-4 text-sm font-bold text-mld-accent hover:bg-mld-accent/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
       </div>
     </ToastContext.Provider>
   )

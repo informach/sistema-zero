@@ -1232,7 +1232,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
     deleteCreation(
       tool: CreationToolView,
       itemId: string,
-      body: { baseRevision: number },
+      body: { baseRevision: number; maxFormatVersion?: number },
     ): Promise<GatewayResponse<CreationDeleteResultView>> {
       return gw.gatewayFetch(`/members/creations/${enc(tool)}/${enc(itemId)}`, {
         method: 'DELETE',

@@ -1309,6 +1309,37 @@ nas puladas; os `changed` do próprio IndexedDB atravessam o embrulho) e o `mold
 + `molda`) ANTES do deploy do kids — sem ela a reserva falha e a fila retenta. Os espelhos do
 union (members domínio/schema/DTO/cache/contagem, core, member-shell, kids) são travados por
 `tests/molda-conformance.test.ts` (lê por texto + o `CREATION_TOOLS` puro do members).
+
+**Proteção de formato (06/09, evolution lote 1):** uploads do Molda levam
+`formatVersion` do próprio `assetToJson` (hoje 1), separado de `baseRevision`.
+Filtro de versões futuras e exclusão usam `MOLDA_MAX_READ_VERSION`, independente
+da liberação de escrita. Serializar uma vez e usar a versão desse mesmo payload.
+`CREATION_CLIENT_OUTDATED` não retenta PUT nem confirma a marca; o selo pede atualizar.
+DELETE envia a capacidade `maxFormatVersion` configurada na instância da nuvem.
+Molda informa sua capacidade de leitura; Studio/Pinta sem opção mantêm o wire
+legado (servidor assume 1). Incompatibilidade não dispara resolvedor de revisão
+vencida nem confirma exclusão. Repetir exclusão compatível cancela restauro pendente.
+O transporte também confere a versão confirmada no ticket ANTES de qualquer PUT
+(07/09): ausência confirma só 1; divergência/null/texto é 503
+`CLOUD_FORMAT_UNSUPPORTED`, com retry limitado, sem avançar marcas. O BFF faz a mesma
+checagem antes de assinar URLs. Escritor novo continua dependendo do rollout dos guards.
+O adaptador exclui formatos futuros dos DOIS lados da reconciliação, inclusive com
+timestamps iguais; `getReadIssues/read` permitem mostrar e baixar o original na galeria.
+`assetFromCloudJson` lança `MoldaUnsupportedVersionError` em formato futuro: não converter
+essa falha em "não existe" nem avançar a revisão conhecida. Migration 0075 e guards
+de todos os servidores devem preceder escritores novos. Plano e gates restantes:
+`../../docs/plans/2026-09-06-molda-evolution.md`.
+
+**Galeria e concorrência (evolution lotes 12/13):** wrapper lista `listSummaries`
+e reconcilia metadados; documento completo é leitura pontual para abrir/exportar/
+copiar conflito. Fila captura somente id e relê a revisão atual ao produzir upload.
+Persistência exige `saveIfUnchanged`/`removeIfUnchanged`: comparação de `updatedAt`
+e mutação na MESMA transação local, `null` = ausência. Usar ao baixar, excluir,
+restaurar após 409 e reverter cópia de conflito; recusa não avança marcas nem fila.
+Se a criança editou a cópia antes do rollback, mantê-la e enfileirar sua revisão
+atual. Nunca emular atomicidade com `load` seguido de `saveMany`. `loadAll` continua
+disponível para backup completo explícito, não para abrir a galeria.
+
 **"Trazer do Molda" no Estúdio (lote 7, 04/09):** a página `/estudio` passou a pedir
 `checkCreativeToolsAccessReadonly()` (refs `estudio-completo,pinta,molda` numa ida) e o
 `studio-full-client` monta o adapter `moldaLibrary` SÓ com `moldaOwned` (import dinâmico do subpath
@@ -1320,8 +1351,9 @@ traz modelo/textura/céu, e o kit Jogo 3D ganhou "Criar o objeto … com o model
 recompensa do Explorador(a) de Mundos anuncia "Molda, a sua oficina 3D" e a do Inventor(a) voltou a
 "Pensa + Zappy" (`career-rewards.ts`; o `career-rewards-conformance` trava a promessa em
 `THREE_D_CREATION_MIN_LEVEL`). Requisitos de build: `transpilePackages` + `@import`
-do `molda.css` + `@source "../../../molda/src"` no globals.css (MESMO gotcha das `sz-*`/`pz-*`/
-`pin-*`: sem isso as `mld-*` são no-op). Deploy: `packages/molda/**` nos watchPatterns do
+do `molda.css` no globals.css. O stylesheet do Molda registra suas fontes de UI e exclui
+testes; não registrar todo `molda/src` no host. Sem importar seus tokens, as `mld-*`
+são no-op. Deploy: `packages/molda/**` nos watchPatterns do
 railway.json + case `packages/molda/*` no ci.yml. Produto no catálogo: sku/slug/chave **`molda`**
 (seed idempotente, R$97 placeholder; o seed também reconcilia o componente num combo existente).
 Assinantes anteriores entram pelo comando do members `entitlements:rollout-molda`: dry-run por

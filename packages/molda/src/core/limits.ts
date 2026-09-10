@@ -33,6 +33,8 @@ export const MOLDA_LIMITS = {
   maxTriangles: 20_000,
   maxMeshVertices: 1_024,
   maxMeshFaces: 1_024,
+  /** Arestas de construção por peça (não entram no orçamento de triângulos). */
+  maxMeshLooseEdges: 1_024,
   /** Precisão das posições e pivôs no disco; o encaixe escolhido só guia ações futuras. */
   positionPrecision: 1 / 16,
   /** Precisão dos vértices no disco (1/16): a edição encaixa na grade, a conversão não. */
@@ -41,6 +43,14 @@ export const MOLDA_LIMITS = {
   /** Miniatura guardada no asset (data URL): o teto do `thumb` das creations do members. */
   maxThumbChars: 12_000,
   undoBudgetBytes: 16_000_000,
+  /** Cached export strings, conservatively counted as UTF-16 plus entry overhead. */
+  exportCacheBytes: 16 * 1024 * 1024,
+  /** Gallery retains derived previews only, separate from document/editor lifetime. */
+  previewCacheBytes: 8 * 1024 * 1024,
+  /** One temporary reference image, inspected before the browser decoder is invoked. */
+  referenceFileBytes: 4 * 1024 * 1024,
+  referenceImagePixels: 4 * 1024 * 1024,
+  referenceImageSide: 4096,
   /** Orçamento local da galeria (bytes crus dos assets no IndexedDB). */
   maxGalleryBytes: 96 * 1024 * 1024,
   /**

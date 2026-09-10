@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import { indexedAssetBytes, summarizeAsset } from '../core/assetSummary'
 import { assetBytes } from '../core/bytes'
+import { MoldaUnsupportedVersionError } from '../core/documentVersion'
 import type { MoldaAsset } from '../core/model'
+import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { clearIdbMock, idbMockDbNames, idbMockStore } from '../testing/idbMock'
 import { createMemoryPersistence } from './memoryPersistence'
@@ -24,6 +27,192 @@ beforeEach(() => {
 })
 
 describe('persistência local', () => {
+  test('scene generation beats stale v1 summaries and exposes raw recovery without opening it', async () => {
+    const p = createMoldaPersistence({ namespace: 'scene-readonly' })
+    const disk = idbMockStore(moldaDbNameFor('scene-readonly'))
+    const model = makeModel()
+    const scene = migrateLegacyModel(model).document
+    const originals = {
+      formatVersion: 2,
+      records: [{ key: `molda:record:${model.id}`, value: model }],
+    }
+    disk.set(`molda:record:${model.id}`, { ...model, name: 'antigo' })
+    disk.set(`molda:summary:${model.id}`, { ...summarizeAsset(model), formatVersion: 1 })
+    disk.set(`molda:scene:${model.id}`, scene)
+    disk.set(`molda:scene-originals:${model.id}`, originals)
+    const before = new Map(disk)
+    expect(await p.listSummaries?.()).toEqual([])
+    expect(p.getReadIssues?.()).toEqual([
+      { id: model.id, name: model.name, status: 'unsupported', version: 2 },
+    ])
+    expect(await p.read?.(model.id)).toEqual({ status: 'unsupported', version: 2, raw: scene })
+    expect(await p.loadRecovery?.(model.id)).toEqual(originals)
+    await expect(p.load(model.id)).rejects.toBeInstanceOf(MoldaUnsupportedVersionError)
+    expect(new Map(disk)).toEqual(before)
+  })
+
+  test('a scene tombstone hides late v1 records and their indexed summary', async () => {
+    const p = createMoldaPersistence({ namespace: 'scene-deleted' })
+    const disk = idbMockStore(moldaDbNameFor('scene-deleted'))
+    const model = makeModel()
+    disk.set(`molda:record:${model.id}`, model)
+    disk.set(`molda:summary:${model.id}`, { ...summarizeAsset(model), formatVersion: 1 })
+    disk.set(`molda:scene-deleted:${model.id}`, true)
+    expect(await p.load(model.id)).toBeNull()
+    expect(await p.loadAll()).toEqual([])
+    expect(await p.listSummaries?.()).toEqual([])
+    await expect(p.save(model)).rejects.toBeInstanceOf(MoldaUnsupportedVersionError)
+  })
+
+  test('summaries contain no document payload and follow saves, removals and namespaces', async () => {
+    const p = createMoldaPersistence({ namespace: 'summaries' })
+    await p.saveMany([makeModel(), makeSky(), makeTexture()])
+    expect(await p.listSummaries?.()).toEqual(
+      [makeModel(), makeSky(), makeTexture()].map(summarizeAsset),
+    )
+    await p.save({ ...makeModel(), name: 'resumo-atual' })
+    await p.remove('sky-1')
+    expect(await p.listSummaries?.()).toEqual([
+      summarizeAsset({ ...makeModel(), name: 'resumo-atual' }),
+      summarizeAsset(makeTexture()),
+    ])
+    expect(await createMoldaPersistence({ namespace: 'summary-other' }).listSummaries?.()).toEqual(
+      [],
+    )
+  })
+
+  test('listing legacy summaries never promotes or rewrites records and observes late old-tab edits', async () => {
+    const p = createMoldaPersistence({ namespace: 'summaries-legacy' })
+    const disk = idbMockStore(moldaDbNameFor('summaries-legacy'))
+    const original = { ...makeModel(), unknown: 'keep' }
+    disk.set('molda:document:model-1', original)
+    expect(await p.listSummaries?.()).toEqual([summarizeAsset(makeModel())])
+    expect([...disk]).toEqual([['molda:document:model-1', original]])
+    disk.set('molda:document:model-1', { ...original, name: 'outra-aba' })
+    expect((await p.listSummaries?.())?.[0]?.name).toBe('outra-aba')
+  })
+
+  test('an older indexed-unaware tab cannot change a promoted summary, original or deletion', async () => {
+    const p = createMoldaPersistence({ namespace: 'summaries-isolated' })
+    const disk = idbMockStore(moldaDbNameFor('summaries-isolated'))
+    const original = { ...makeModel(), earliest: true }
+    disk.set('molda:document:model-1', makeModel())
+    disk.set('molda:recovery:model-1', original)
+    await p.save({ ...makeModel(), name: 'promovido' })
+    disk.set('molda:document:model-1', { ...makeModel(), name: 'antigo' })
+    disk.delete('molda:recovery:model-1')
+    disk.set('molda:deleted:model-1', true)
+    expect(await p.loadRecovery?.('model-1')).toEqual(original)
+    expect((await p.listSummaries?.())?.[0]?.name).toBe('promovido')
+    expect((await p.load('model-1'))?.name).toBe('promovido')
+    await p.remove('model-1')
+    disk.set('molda:document:model-1', makeModel())
+    disk.delete('molda:deleted:model-1')
+    expect(await p.listSummaries?.()).toEqual([])
+    expect(await p.load('model-1')).toBeNull()
+  })
+
+  test('missing, malformed and unsupported indexes fall back to guarded point reads', async () => {
+    const p = createMoldaPersistence({ namespace: 'summary-recovery' })
+    await p.saveMany([makeModel(), makeSky(), makeTexture()])
+    const disk = idbMockStore(moldaDbNameFor('summary-recovery'))
+    disk.delete('molda:summary:sky-1')
+    disk.set('molda:summary:texture-1', {
+      ...summarizeAsset(makeTexture()),
+      id: 'wrong',
+      formatVersion: 1,
+    })
+    const future = { ...makeModel(), formatVersion: 2, animations: ['keep'] }
+    disk.set('molda:record:model-1', future)
+    disk.set('molda:summary:model-1', { ...summarizeAsset(makeModel()), formatVersion: 2 })
+    expect(await p.listSummaries?.()).toEqual([makeSky(), makeTexture()].map(summarizeAsset))
+    expect(p.getReadIssues?.()).toEqual([
+      { id: 'model-1', name: makeModel().name, status: 'unsupported', version: 2 },
+    ])
+    expect(await p.read?.('model-1')).toEqual({ status: 'unsupported', version: 2, raw: future })
+    expect(disk.has('molda:summary:sky-1')).toBe(false)
+  })
+
+  test('writing over a stored undefined value retains its existence as a recovery record', async () => {
+    const p = createMoldaPersistence({ namespace: 'undefined-write' })
+    const disk = idbMockStore(moldaDbNameFor('undefined-write'))
+    disk.set('molda:record:model-1', undefined)
+    await p.save(makeModel())
+    expect(disk.has('molda:record-recovery:model-1')).toBe(true)
+    expect(disk.get('molda:record-recovery:model-1')).toBeUndefined()
+  })
+
+  test('a stored undefined value is corrupt, not permission to resurrect a legacy document', async () => {
+    const p = createMoldaPersistence({ namespace: 'undefined-current' })
+    const disk = idbMockStore(moldaDbNameFor('undefined-current'))
+    disk.set('molda:asset:model-1', makeModel())
+    disk.set('molda:document:model-1', undefined)
+    expect(await p.read?.('model-1')).toEqual({ status: 'invalid', raw: undefined })
+    expect(await p.load('model-1')).toBeNull()
+    expect(await p.loadAll()).toEqual([])
+    expect(p.getReadIssues?.()).toEqual([{ id: 'model-1', name: 'model-1', status: 'invalid' }])
+  })
+
+  test('future documents remain recoverable and reject all writes in an atomic batch', async () => {
+    const p = createMoldaPersistence({ namespace: 'future' })
+    const raw = { ...makeModel(), formatVersion: 2, animations: [{ name: 'andar' }] }
+    const disk = idbMockStore(moldaDbNameFor('future'))
+    disk.set('molda:asset:model-1', raw)
+    expect(await p.read?.('model-1')).toEqual({ status: 'unsupported', version: 2, raw })
+    await expect(p.load('model-1')).rejects.toBeInstanceOf(MoldaUnsupportedVersionError)
+    await expect(p.saveMany([makeSky(), makeModel()])).rejects.toBeInstanceOf(
+      MoldaUnsupportedVersionError,
+    )
+    expect(disk.get('molda:asset:model-1')).toEqual(raw)
+    expect(await p.load('sky-1')).toBeNull()
+  })
+
+  test('lazy promotion retains the exact legacy original, only after a successful write', async () => {
+    const p = createMoldaPersistence({ namespace: 'legacy' })
+    const original = { ...makeModel(), oldMetadata: { keep: true } }
+    const disk = idbMockStore(moldaDbNameFor('legacy'))
+    disk.set('molda:asset:model-1', original)
+    expect(await p.load('model-1')).toEqual(makeModel())
+    expect(await p.loadRecovery?.('model-1')).toBeUndefined()
+    const small = createMoldaPersistence({ namespace: 'legacy', maxBytes: 1 })
+    await expect(small.save(makeModel())).rejects.toThrow()
+    expect(disk.get('molda:asset:model-1')).toEqual(original)
+    expect(await p.loadRecovery?.('model-1')).toBeUndefined()
+    await p.save({ ...makeModel(), name: 'editado' })
+    expect(await p.loadRecovery?.('model-1')).toEqual(original)
+    expect(disk.get('molda:record:model-1')).toMatchObject({ formatVersion: 1, name: 'editado' })
+    expect(disk.get('molda:asset:model-1')).toBeUndefined()
+    await p.save({ ...makeModel(), name: 'mais-edicoes' })
+    expect(await p.loadRecovery?.('model-1')).toEqual(original)
+  })
+
+  test('canonical records win over late legacy writes and deletion prevents resurrection', async () => {
+    const p = createMoldaPersistence({ namespace: 'old-tab' })
+    const disk = idbMockStore(moldaDbNameFor('old-tab'))
+    disk.set('molda:asset:model-1', makeModel())
+    await p.save({ ...makeModel(), name: 'atual' })
+    disk.set('molda:asset:model-1', { ...makeModel(), name: 'antigo' })
+    expect((await p.load('model-1'))?.name).toBe('atual')
+    expect((await p.loadAll()).map((a) => a.name)).toEqual(['atual'])
+    await p.remove('model-1')
+    disk.set('molda:asset:model-1', makeModel())
+    expect(await p.load('model-1')).toBeNull()
+    expect(await p.loadAll()).toEqual([])
+    expect(await p.loadRecovery?.('model-1')).toBeUndefined()
+  })
+
+  test('an invalid canonical record never falls back to a legacy copy or a different id', async () => {
+    const p = createMoldaPersistence({ namespace: 'invalid-current' })
+    const disk = idbMockStore(moldaDbNameFor('invalid-current'))
+    disk.set('molda:asset:model-1', makeModel())
+    disk.set('molda:document:model-1', { ...makeModel(), id: 'wrong-id' })
+    expect(await p.load('model-1')).toBeNull()
+    expect(await p.loadAll()).toEqual([])
+    expect(p.getReadIssues?.()).toEqual([
+      { id: 'model-1', name: makeModel().name, status: 'invalid' },
+    ])
+  })
+
   test('salva e relê os três tipos, com Uint8Array intacto', async () => {
     const p = createMoldaPersistence({ namespace: 't1' })
     const model = makeModel()
@@ -69,6 +258,24 @@ describe('persistência local', () => {
     expect(await memory.load('x')).toBeNull()
   })
 
+  test('native and memory persistence share the atomic revision contract', async () => {
+    for (const p of [
+      createMemoryPersistence(),
+      createMoldaPersistence({ namespace: 'conditional-contract' }),
+    ]) {
+      const asset = makeSky()
+      const next = { ...asset, updatedAt: asset.updatedAt + 1 }
+      expect(await p.saveIfUnchanged(asset, null)).toBe(true)
+      expect(await p.saveIfUnchanged(next, null)).toBe(false)
+      expect(await p.saveIfUnchanged(next, asset.updatedAt)).toBe(true)
+      expect(await p.removeIfUnchanged(asset.id, asset.updatedAt)).toBe(false)
+      expect(await p.load(asset.id)).toEqual(next)
+      expect(await p.removeIfUnchanged(asset.id, next.updatedAt)).toBe(true)
+      expect(await p.load(asset.id)).toBeNull()
+      p.dispose?.()
+    }
+  })
+
   test('registro ilegível some sem derrubar os outros', async () => {
     const p = createMoldaPersistence({ namespace: 't4' })
     await p.save(makeSky())
@@ -106,7 +313,7 @@ describe('persistência local', () => {
   test('duas instâncias carregadas compartilham a autoridade do orçamento', async () => {
     const firstAsset = makeTexture()
     const secondAsset = { ...makeTexture(), id: 'texture-2', name: 'pedra' }
-    const eachBytes = assetBytes(firstAsset)
+    const eachBytes = indexedAssetBytes(firstAsset)
     const maxBytes = eachBytes + Math.floor(eachBytes / 2)
     const first = createMoldaPersistence({ namespace: 't5-shared', maxBytes })
     const second = createMoldaPersistence({ namespace: 't5-shared', maxBytes })
@@ -127,7 +334,7 @@ describe('persistência local', () => {
   test('duas gravações simultâneas no mesmo banco não ultrapassam o orçamento', async () => {
     const firstAsset = makeTexture()
     const secondAsset = { ...makeTexture(), id: 'texture-2', name: 'pedra' }
-    const eachBytes = assetBytes(firstAsset)
+    const eachBytes = indexedAssetBytes(firstAsset)
     const maxBytes = eachBytes + Math.floor(eachBytes / 2)
     const first = createMoldaPersistence({ namespace: 't5-race', maxBytes })
     const second = createMoldaPersistence({ namespace: 't5-race', maxBytes })
@@ -145,7 +352,10 @@ describe('persistência local', () => {
   test('saveMany conta ids repetidos uma vez e preserva a última versão', async () => {
     const first = makeSky()
     const last = { ...first, name: 'ceu-final' }
-    const p = createMoldaPersistence({ namespace: 't5-duplicate', maxBytes: assetBytes(last) })
+    const p = createMoldaPersistence({
+      namespace: 't5-duplicate',
+      maxBytes: indexedAssetBytes(last),
+    })
 
     await p.saveMany([first, last])
 

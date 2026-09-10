@@ -601,6 +601,8 @@ export interface CreationPartTicketView {
 /** `POST /members/creations/:tool/:itemId/upload` — a reserva que o BFF assina (+ as partes FALTANTES). */
 export interface CreationUploadTicketView {
   revision: number
+  /** Missing only from old servers; confirms legacy format 1, never a newer format. */
+  formatVersion?: number
   storageKey: string
   bytes: number
   parts: CreationPartTicketView[]

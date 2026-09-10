@@ -565,18 +565,24 @@ ${buildProjectRunContextRuntime()}
   }
 
   function disposeMoldTemplate(mold, disposedMaterials) {
-    var tpl = mold && mold.template;
-    if (!tpl || !tpl.traverse) return;
-    tpl.traverse(function (o) {
-      var list = o.material && o.material.length ? o.material : [o.material];
-      for (var i = 0; i < list.length; i++) {
-        var material = list[i];
-        if (!material || !material.dispose || disposedMaterials.has(material) || isCachedModelMaterial(material)) continue;
-        disposedMaterials.add(material);
-        try { material.dispose(); }
-        catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
-      }
+    if (!mold || mold.retired) return;
+    mold.retired = true;
+    disposeModelSkeletons(mold.template);
+    releaseRetiredMoldMaterials(mold, disposedMaterials);
+  }
+
+  /** A recipe owns primitive/reserve materials, including reserves replaced after loading. */
+  function releaseRetiredMoldMaterials(mold, disposedMaterials) {
+    if (!mold.retired || mold.resourceCount !== 0) return;
+    var seen = disposedMaterials || new Set();
+    mold.ownedMaterials.forEach(function (material) {
+      if (!material || !material.dispose || seen.has(material)) return;
+      seen.add(material);
+      try { material.dispose(); }
+      catch (e) { warnOnce('dispose-mold', 'não consegui liberar um material antigo: ' + e); }
     });
+    mold.ownedMaterials.clear();
+    mold.template = null;
   }
 
   /*__SZ_GAME_KIT_3D_PROJECT_RUNTIME__*/
@@ -1059,6 +1065,10 @@ const gameKit3DRuntimeAfterModelSource = `
       health: Math.max(1, num(o.health, 30)),
       speed: num(o.speed, 3),
       template: group,
+      ownedMaterials: new Set(),
+      resourceCount: 0,
+      resourceRevision: 0,
+      retired: false,
       parts: 0,
       radius: 0.5,
       // Caixa LOCAL do colisor (origem = pés, y=0). min/max em vez de meia-largura
@@ -1095,6 +1105,7 @@ const gameKit3DRuntimeAfterModelSource = `
       // montar o mixer da entidade; o "no estado X, tocar Y" usa para achar os
       // clipes.
       model: '',
+      modelClips: null,
       modelTriangles: 0,
       modelMeshes: 0,
       modelBones: 0,
@@ -1102,10 +1113,13 @@ const gameKit3DRuntimeAfterModelSource = `
       modelDrawCalls: 0,
       stateAnims: null
     };
-    if (previousMold) disposeMoldTemplate(previousMold, new Set());
-    else moldCount++;
+    if (!previousMold) moldCount++;
     molds[k] = mold;
     if (!pools[k]) pools[k] = { active: [], free: [], _sweeping: 0 };
+    if (previousMold) {
+      disposeMoldTemplate(previousMold, new Set());
+      discardStaleModelResources(pools[k], mold);
+    }
     // O corpo de blocos roda AGORA, com o molde corrente implícito (as peças
     // se montam nele) — mesmo padrão do defineShape/defineLook do 2D.
     if (typeof buildFn === 'function') {
@@ -1212,6 +1226,7 @@ const gameKit3DRuntimeAfterModelSource = `
     try {
       var color = text(o.color, config.accent);
       var mat = new THREE.MeshStandardMaterial({ color: color });
+      mold.ownedMaterials.add(mat);
       // Acabamento da peça. 'brilho' = emissivo → o bloom pega e a peça ACENDE
       // (é o controle explícito do neon que faltava; antes só os cristais brilhavam).
       var kind = text(o.material, 'normal');
@@ -1248,23 +1263,31 @@ const gameKit3DRuntimeAfterModelSource = `
           warnOnce('twomodel:' + mold.name, 'o molde "' + mold.name + '" tem mais de um modelo (.glb); a animação usa só o último ("' + text(o.model, '') + '")');
         }
         mold.model = text(o.model, '');
+        mold.modelClips = null;
+        var modelName = mold.model;
         var modelInstalled = false;
         var installModel = function (hit) {
-          if (modelInstalled) return;
-          modelInstalled = true;
+          if (modelInstalled || disposed || molds[mold.name] !== mold) return;
           try {
+            var imported = cloneModel(hit.scene);
             while (holder.children.length) holder.remove(holder.children[0]);
-            holder.add(cloneModel(hit.scene));
+            holder.add(imported);
+            modelInstalled = true;
+            if (mold.model === modelName) mold.modelClips = hit.clips;
             mold.modelTriangles += hit.metrics.triangles;
             mold.modelMeshes += hit.metrics.meshes;
             mold.modelBones += hit.metrics.bones;
             mold.modelMaterials += hit.metrics.materials;
             mold.modelDrawCalls += hit.metrics.drawCalls;
-          } catch (e) {}
+            mold.resourceRevision++;
+            discardStaleModelResources(pools[mold.name], mold);
+          } catch (e) {
+            warnOnce('model-clone:' + mold.name, 'não consegui preparar o modelo do molde "' + mold.name + '": ' + e);
+          }
         };
         var ready = loadModel(o.model, installModel);
         if (ready) installModel(ready);
-        else holder.add(new THREE.Mesh(unitGeo('box'), mat));
+        if (!modelInstalled) holder.add(new THREE.Mesh(unitGeo('box'), mat));
       } else {
         mesh = new THREE.Mesh(unitGeo(shape), mat);
       }
@@ -1275,6 +1298,8 @@ const gameKit3DRuntimeAfterModelSource = `
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       mold.template.add(mesh);
+      mold.resourceRevision++;
+      discardStaleModelResources(pools[mold.name], mold);
       mold.parts += 1;
       // Caixa LOCAL do colisor: UNIÃO das caixas de cada peça (min/max de verdade,
       // não meia-largura simétrica). Uma peça só em x=5 não faz mais o molde
@@ -1354,6 +1379,9 @@ const gameKit3DRuntimeAfterModelSource = `
       // Custo do modelo reclamado por ESTA vida; guardado na entidade porque o
       // molde pode ser redefinido antes de ela ser recolhida.
       _modelCost: null,
+      // Owner/revision describe the cloned resource, not whichever recipe now has this name.
+      _resourceOwner: null,
+      _resourceRevision: 0,
       // Geração: incrementa a cada nascimento do recurso gráfico reutilizado.
       _gen: 0,
       _gi: null,
@@ -1368,7 +1396,9 @@ const gameKit3DRuntimeAfterModelSource = `
       mesh: e.mesh,
       mixer: e._mixer,
       clips: e._clips,
-      gen: e._gen
+      gen: e._gen,
+      owner: e._resourceOwner,
+      revision: e._resourceRevision
     };
   }
 
@@ -1442,6 +1472,10 @@ const gameKit3DRuntimeAfterModelSource = `
     }
     var pool = pools[k] || (pools[k] = { active: [], free: [], _sweeping: 0 });
     var resource = pool.free.pop();
+    while (resource && (resource.owner !== m || resource.revision !== m.resourceRevision)) {
+      disposeModelResource(resource);
+      resource = pool.free.pop();
+    }
     var e = blankEntity();
     if (resource) {
       e.mesh = resource.mesh;
@@ -1450,7 +1484,7 @@ const gameKit3DRuntimeAfterModelSource = `
       e._gen = resource.gen;
     } else {
       try {
-        // cloneModel compartilha geometria e material (nascer não aloca GPU) E,
+        // cloneModel compartilha geometria e material E,
         // ⭐ quando há SkinnedMesh, REAMARRA o esqueleto aos ossos deste clone.
         // O clone comum do Object3D compartilha o esqueleto por referência: o
         // mixer da entidade animaria os ossos do CLONE enquanto a malha deforma
@@ -1458,11 +1492,14 @@ const gameKit3DRuntimeAfterModelSource = `
         // parado em bind pose, sem um aviso. Molde só de peças cai no clone comum
         // (sem SkeletonUtils) e não paga nada.
         e.mesh = cloneModel(m.template);
+        m.resourceCount++;
       } catch (err) {
         warn('não consegui fazer nascer do molde "' + k + '": ' + err);
         return null;
       }
     }
+    e._resourceOwner = m;
+    e._resourceRevision = m.resourceRevision;
     // Ponte mesh→entidade para o raycast. Na reutilização aponta para a vida NOVA,
     // nunca para o handle morto que devolveu o mesh ao pool.
     if (e.mesh.userData) e.mesh.userData.szEntity = e;
@@ -1599,7 +1636,7 @@ const gameKit3DRuntimeAfterModelSource = `
       var idx = pool.active.indexOf(e);
       if (idx > -1) {
         pool.active.splice(idx, 1);
-        pool.free.push(pooledResources(e));
+        returnModelResource(pool, e);
       }
     }
   }
@@ -1609,12 +1646,12 @@ const gameKit3DRuntimeAfterModelSource = `
       if (!pool.active[i]._alive) {
         var dead = pool.active[i];
         pool.active.splice(i, 1);
-        pool.free.push(pooledResources(dead));
+        returnModelResource(pool, dead);
       }
     }
   }
 
-  function releaseAll(pool) {
+  function releaseAll(pool, disposedResources) {
     for (var i = 0; i < pool.active.length; i++) {
       var e = pool.active[i];
       if (e._alive) {
@@ -1626,7 +1663,7 @@ const gameKit3DRuntimeAfterModelSource = `
       e._iFrames = 0;
       if (e.mesh && scene) scene.remove(e.mesh);
       gridRemove(e);
-      pool.free.push(pooledResources(e));
+      returnModelResource(pool, e, disposedResources);
     }
     pool.active.length = 0;
   }
@@ -2870,6 +2907,8 @@ const gameKit3DRuntimeAfterModelSource = `
     // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
     stepEmitters(dt);
     stepParticles(dt);
+    // A pintura que se mexe congela junto: ela é do mundo, não da interface.
+    stepModelFlipbooks(dt);
   }
 
     /** phase: 0 = tudo · 1 = sólidos (plataformas potenciais) · 2 = o resto. */
@@ -3356,7 +3395,7 @@ const gameKit3DRuntimeAfterModelSource = `
         // vários "Atualizar".
         try { renderer.forceContextLoss(); } catch (e) {}
       }
-      var disposedModelResources = { geometries: new Set(), materials: new Set(), textures: new Set() };
+      var disposedModelResources = { geometries: new Set(), materials: new Set(), textures: new Set(), skeletons: new Set() };
       if (scene && scene.traverse) {
         scene.traverse(function (o) {
           if (o.geometry && o.geometry.dispose && !disposedModelResources.geometries.has(o.geometry)) {
@@ -3389,6 +3428,7 @@ const gameKit3DRuntimeAfterModelSource = `
         for (var hk in _hdrCache) disposeTexture(_hdrCache[hk], 'dispose-hdr-cache');
         _hdrCache = null;
       }
+      disposeModelPools(disposedModelResources);
       disposeCachedModels(disposedModelResources);
       _skyPhotoRequest++;
       // Templates de molde vivem FORA da cena — descarta os materiais próprios
@@ -3399,7 +3439,11 @@ const gameKit3DRuntimeAfterModelSource = `
       }
       if (UNIT_GEOS) {
         for (var gk in UNIT_GEOS) {
-          if (UNIT_GEOS[gk] && UNIT_GEOS[gk].dispose) { try { UNIT_GEOS[gk].dispose(); } catch (e) {} }
+          var unitGeometry = UNIT_GEOS[gk];
+          if (unitGeometry && unitGeometry.dispose && !disposedModelResources.geometries.has(unitGeometry)) {
+            disposedModelResources.geometries.add(unitGeometry);
+            try { unitGeometry.dispose(); } catch (e) {}
+          }
         }
         UNIT_GEOS = null;
       }

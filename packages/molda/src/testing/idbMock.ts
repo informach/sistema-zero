@@ -9,14 +9,14 @@ import { mock } from 'bun:test'
 
 interface StoreHandle {
   db: string
-  name: string
+  storeName: string
 }
 
 const DEFAULT_KEY = 'keyval-store/keyval'
 const stores = new Map<string, Map<IDBValidKey, unknown>>()
 
 function keyOf(store?: StoreHandle): string {
-  return store ? `${store.db}/${store.name}` : DEFAULT_KEY
+  return store ? `${store.db}/${store.storeName}` : DEFAULT_KEY
 }
 
 function mapFor(store?: StoreHandle): Map<IDBValidKey, unknown> {
@@ -39,15 +39,66 @@ export function clearIdbMock(): void {
 
 /** Inspeção direta de um banco (sem passar pela persistência). */
 export function idbMockStore(db: string, name = 'assets'): Map<IDBValidKey, unknown> {
-  return mapFor({ db, name })
+  return mapFor({ db, storeName: name })
 }
 
 export function idbMockDbNames(): string[] {
   return [...stores.keys()]
 }
 
+/** Transactional surface used by guarded writes; changes become visible only on commit. */
+function transactionalStore(db: string, name: string) {
+  const handle = { db, storeName: name }
+  return Object.assign(
+    async (_mode: IDBTransactionMode, callback: (store: IDBObjectStore) => unknown) => {
+      const target = mapFor(handle)
+      const staged = new Map(target)
+      let aborted = false
+      const transaction = {
+        oncomplete: null as (() => void) | null,
+        onabort: null as (() => void) | null,
+        onerror: null as (() => void) | null,
+        error: null,
+        abort() {
+          aborted = true
+          queueMicrotask(() => transaction.onabort?.())
+        },
+      }
+      const request = (value: unknown) => {
+        const result = { result: clone(value), onsuccess: null as (() => void) | null }
+        queueMicrotask(() => {
+          if (!aborted) result.onsuccess?.()
+        })
+        return result
+      }
+      const objectStore = {
+        transaction,
+        getAllKeys: () => request([...staged.keys()]),
+        getAll: () => request([...staged.values()]),
+        openCursor: (key: IDBValidKey) =>
+          request(staged.has(key) ? { value: staged.get(key) } : null),
+        put: (value: unknown, key: IDBValidKey) => {
+          staged.set(key, clone(value))
+        },
+        delete: (key: IDBValidKey) => staged.delete(key),
+      }
+      const result = callback(objectStore as unknown as IDBObjectStore)
+      queueMicrotask(() => {
+        if (aborted) return
+        if (_mode === 'readwrite') {
+          target.clear()
+          for (const [key, value] of staged) target.set(key, value)
+        }
+        transaction.oncomplete?.()
+      })
+      return result
+    },
+    handle,
+  )
+}
+
 mock.module('idb-keyval', () => ({
-  createStore: (db: string, name: string): StoreHandle => ({ db, name }),
+  createStore: transactionalStore,
   get: async (key: IDBValidKey, store?: StoreHandle) => clone(mapFor(store).get(key)),
   set: async (key: IDBValidKey, value: unknown, store?: StoreHandle) => {
     mapFor(store).set(key, clone(value))

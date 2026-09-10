@@ -48,6 +48,7 @@ export function useViewport(
           onMeshDragStart: () => callbacksRef.current.onMeshDragStart(),
           onMeshDragMove: (delta) => callbacksRef.current.onMeshDragMove(delta),
           onMeshDragEnd: () => callbacksRef.current.onMeshDragEnd(),
+          onGestureCancel: () => callbacksRef.current.onGestureCancel(),
           onSnapSource: (anchor) => callbacksRef.current.onSnapSource(anchor),
           onSnapTarget: (anchor) => callbacksRef.current.onSnapTarget(anchor),
         },

@@ -128,6 +128,88 @@ describe.skipIf(!testDatabaseUrl)('índice das criações (Postgres real)', () =
   })
   const key = (rev: number) => `creations/${perfil}/studio/proj-1/${rev}.json.gz`
 
+  test('delete confere capacidade contra formato confirmado e pendente sob lock', async () => {
+    const input = { ...base, userId: randomUUID(), itemId: 'delete-formato' }
+    const first = await repo.reserveUpload(input)
+    if (!first.ok) throw new Error('Expected initial reservation')
+    await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
+    const next = await repo.reserveUpload({ ...input, formatVersion: 2 })
+    if (!next.ok) throw new Error('Expected future reservation')
+    const before = await repo.get(input.userId, input.tool, input.itemId)
+    for (const cap of [undefined, 1]) {
+      expect(
+        await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, cap),
+      ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+      expect(await repo.get(input.userId, input.tool, input.itemId)).toEqual(before)
+    }
+    await repo.commit({ ...input, revision: next.revision, storageRef: 'future' })
+    expect(
+      await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now),
+    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    expect(
+      await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now, 2),
+    ).toMatchObject({ ok: false, reason: 'stale-base' })
+    expect(
+      await repo.softDelete(input.userId, input.tool, input.itemId, next.revision, now, 2),
+    ).toMatchObject({ ok: true, deleted: true, storageRef: 'future' })
+  })
+
+  test('delete espera uma atualização concorrente e reavalia a versão, sem preflight externo', async () => {
+    const input = { ...base, userId: randomUUID(), itemId: 'delete-lock' }
+    const first = await repo.reserveUpload(input)
+    if (!first.ok) throw new Error('Expected reservation')
+    await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
+    let release!: () => void
+    let locked!: () => void
+    const ready = new Promise<void>((resolve) => {
+      locked = resolve
+    })
+    const barrier = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const promoted = conn.sql.begin(async (sql) => {
+      await sql`update members.creations set format_version = 2 where user_id = ${input.userId} and item_id = ${input.itemId}`
+      locked()
+      await barrier
+    })
+    await ready
+    const deleting = repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now)
+    release()
+    await promoted
+    expect(await deleting).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    expect(await repo.get(input.userId, input.tool, input.itemId)).toMatchObject({
+      formatVersion: 2,
+      storageRef: 'original',
+      deletedAt: null,
+    })
+  })
+
+  test('delete repetido cancela uma reserva compatível de restauro sem renovar a lápide', async () => {
+    const input = { ...base, userId: randomUUID(), itemId: 'delete-restauro' }
+    const first = await repo.reserveUpload(input)
+    if (!first.ok) throw new Error('Expected reservation')
+    await repo.commit({ ...input, revision: first.revision, storageRef: 'original' })
+    await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now)
+    const pending = await repo.reserveUpload({ ...input, formatVersion: 2 })
+    if (!pending.ok) throw new Error('Expected restoration reservation')
+    expect(
+      await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, now),
+    ).toEqual({ ok: false, reason: 'client-outdated', requiredVersion: 2 })
+    const later = new Date(now.getTime() + 60_000)
+    expect(
+      await repo.softDelete(input.userId, input.tool, input.itemId, first.revision, later, 2),
+    ).toMatchObject({ ok: true, deleted: false })
+    expect(await repo.get(input.userId, input.tool, input.itemId)).toMatchObject({
+      pending: null,
+      deletedAt: now,
+      storageRef: null,
+      bytes: 0,
+    })
+    expect(
+      await repo.commit({ ...input, revision: pending.revision, storageRef: 'late-restoration' }),
+    ).toEqual({ ok: false })
+  })
+
   test('formatos são monotônicos em reservas concorrentes e commits, inclusive reserva legada', async () => {
     const input = { ...base, userId: randomUUID(), itemId: 'formatos' }
     const old = await repo.reserveUpload(input)

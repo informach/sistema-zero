@@ -36,10 +36,30 @@ export function isMoldaDialogOpen(): boolean {
 
 function focusableElements(root: HTMLElement): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>('*')).filter((element) => {
+    // Only the first summary stays interactive inside a closed disclosure.
+    // Check every ancestor: an open nested details may itself be hidden.
+    for (
+      let parent = element.parentElement;
+      parent && parent !== root;
+      parent = parent.parentElement
+    ) {
+      if (
+        parent.tagName === 'DETAILS' &&
+        !parent.hasAttribute('open') &&
+        !parent.querySelector(':scope > summary')?.contains(element)
+      )
+        return false
+    }
     if (element.getAttribute('tabindex') === '-1') return false
     if ('disabled' in element && element.disabled) return false
     if (element.hasAttribute('tabindex')) return true
     if (element.tagName === 'A') return element.hasAttribute('href')
+    if (element.tagName === 'SUMMARY') {
+      return (
+        element.parentElement?.tagName === 'DETAILS' &&
+        element.parentElement.querySelector(':scope > summary') === element
+      )
+    }
     return ['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName)
   })
 }

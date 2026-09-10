@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import type { MoldaModelAsset } from '../../../core/model'
@@ -20,6 +20,7 @@ import type { EditorStore } from '../../../state/editorStore'
 import { Button, ToolButton } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
 import { IndexedPixelStage } from '../texture/IndexedPixelStage'
+import { useEditorGesture } from '../useEditorGesture'
 import {
   bindModelCommand,
   commandForShortcut,
@@ -34,7 +35,6 @@ const BRUSHES: readonly BrushSize[] = [1, 2, 3]
 
 interface FaceStroke {
   pointerId: number
-  before: MoldaModelAsset
   last: TexelHit | null
   lastMirror: TexelHit | null
 }
@@ -65,6 +65,8 @@ export function FacePaintDialog({
   const asset = useStore(editor, (state) => state.asset) as MoldaModelAsset
   const [tool, setTool] = useState<ClosePaintTool>('pencil')
   const stroke = useRef<FaceStroke | null>(null)
+  const current = useCallback(() => editor.getState().asset as MoldaModelAsset, [editor])
+  const paintGesture = useEditorGesture(editor, current)
   const canvas = target ? facePaintCanvas(asset, target) : null
   const colors = resolvePaletteColors(asset)
 
@@ -127,10 +129,7 @@ export function FacePaintDialog({
     const gesture = stroke.current
     stroke.current = null
     if (!gesture) return
-    const current = editor.getState().asset as MoldaModelAsset
-    const after = finishStroke(current)
-    if (after !== current) editor.getState().replace(after)
-    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
+    paintGesture.finish(finishStroke(current()))
   }
 
   function commitOne(next: MoldaModelAsset): void {
@@ -232,11 +231,12 @@ export function FacePaintDialog({
                     rotateAt(hit)
                     return
                   }
-                  stroke.current = { pointerId, before: current, last: null, lastMirror: null }
+                  paintGesture.begin()
+                  stroke.current = { pointerId, last: null, lastMirror: null }
                   const painted = paintAt(current, null, hit)
                   stroke.current.last = hit
                   stroke.current.lastMirror = painted.mirrorHit
-                  if (painted.model !== current) editor.getState().replace(painted.model)
+                  if (painted.model !== current) paintGesture.update(painted.model)
                 }}
                 onMove={(point, pointerId) => {
                   const gesture = stroke.current
@@ -252,10 +252,15 @@ export function FacePaintDialog({
                   const painted = paintAt(current, gesture.last, hit)
                   gesture.last = hit
                   gesture.lastMirror = painted.mirrorHit
-                  if (painted.model !== current) editor.getState().replace(painted.model)
+                  if (painted.model !== current) paintGesture.update(painted.model)
                 }}
                 onUp={(pointerId) => {
                   if (stroke.current?.pointerId === pointerId) finishGesture()
+                }}
+                onCancel={(pointerId) => {
+                  if (stroke.current?.pointerId !== pointerId) return
+                  stroke.current = null
+                  paintGesture.cancel()
                 }}
               />
             </div>

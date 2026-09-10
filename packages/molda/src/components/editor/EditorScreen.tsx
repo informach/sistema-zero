@@ -10,17 +10,23 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import type { MoldaAsset } from '../../core/model'
+import { exportLoadedAssetForStudio } from '../../export/studioLibrary'
 import { createEditorStore } from '../../state/editorStore'
 import { markMoldaAssetClosed, markMoldaAssetOpen } from '../../state/persistence'
-import { useGallery, useMoldaApp } from '../appContext'
+import { useMoldaApp } from '../appContext'
 import { Button } from '../ui/Button'
 import { isMoldaDialogOpen } from '../ui/Dialog'
 import { isTypingTarget } from '../ui/interaction'
 import { useToast } from '../ui/Toast'
-import { ModelEditor } from './model/ModelEditor'
-import { SkyEditor } from './sky/SkyEditor'
-import { TextureEditor } from './texture/TextureEditor'
+import { DeferredEditor, type EditorModuleLoader } from './DeferredEditor'
+import { useAssetDocument } from './useAssetDocument'
 import { useStudioResync } from './useStudioResync'
+
+const EDITORS = {
+  model: () => import('./model/ModelEditor').then((module) => module.ModelEditor),
+  sky: () => import('./sky/SkyEditor').then((module) => module.SkyEditor),
+  texture: () => import('./texture/TextureEditor').then((module) => module.TextureEditor),
+} satisfies Record<MoldaAsset['kind'], EditorModuleLoader>
 
 function LoadedEditor({
   initial,
@@ -44,36 +50,43 @@ function LoadedEditor({
   const { flush: flushStudioResync } = useStudioResync({
     savedAsset,
     send: adapter.resyncToStudio,
+    exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
   const closingRef = useRef(false)
+  const lifetime = useRef(0)
   const handleBack = useCallback(() => {
     if (closingRef.current) return
     closingRef.current = true
+    const generation = lifetime.current
     void (async () => {
-      await editor.getState().flush()
-      const state = editor.getState()
-      if (state.savedAsset !== state.asset) {
-        closingRef.current = false
-        showToast(state.saveError ?? COPY.editor.saveError)
+      // Drain revisions, not retries: a user can keep editing while the host is awaiting I/O.
+      while (generation === lifetime.current) {
+        await editor.getState().flush()
+        if (generation !== lifetime.current) return
+        const state = editor.getState()
+        if (state.savedAsset !== state.asset) {
+          closingRef.current = false
+          showToast(state.saveError ?? COPY.editor.saveError)
+          return
+        }
+        await flushStudioResync(state.savedAsset)
+        if (generation !== lifetime.current) return
+        if (editor.getState().asset !== state.savedAsset) continue
+        onBack()
         return
       }
-      await flushStudioResync(state.savedAsset)
-      onBack()
     })()
   }, [editor, flushStudioResync, onBack, showToast])
 
   useEffect(() => {
-    markMoldaAssetOpen(initial.id)
     return () => {
-      // Tudo SÍNCRONO no cleanup: o StrictMode desmonta e remonta na hora, e um
-      // "fechado" atrasado num `.finally` chegaria DEPOIS do "aberto" da
-      // remontagem. O `flush` segue gravando em segundo plano.
+      lifetime.current += 1
+      // Cleanup synchronous; a pending save may finish without owning this screen anymore.
       void editor.getState().flush()
       editor.getState().dispose()
-      markMoldaAssetClosed(initial.id)
     }
-  }, [editor, initial.id])
+  }, [editor])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent): void {
@@ -93,9 +106,14 @@ function LoadedEditor({
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [editor])
 
-  if (asset.kind === 'model') return <ModelEditor editor={editor} onBack={handleBack} />
-  if (asset.kind === 'sky') return <SkyEditor editor={editor} onBack={handleBack} />
-  return <TextureEditor editor={editor} onBack={handleBack} />
+  return (
+    <DeferredEditor
+      key={asset.kind}
+      load={EDITORS[asset.kind]}
+      editor={editor}
+      onBack={handleBack}
+    />
+  )
 }
 
 export function EditorScreen({
@@ -105,17 +123,24 @@ export function EditorScreen({
   assetId: string
   onBack: () => void
 }): JSX.Element {
-  const initial = useGallery((state) => state.getById(assetId))
-  const [pinned] = useState(() => initial)
-  if (!pinned) {
+  const { persistence } = useMoldaApp()
+  const { state, retry } = useAssetDocument(persistence, assetId)
+  useEffect(() => {
+    markMoldaAssetOpen(assetId)
+    return () => markMoldaAssetClosed(assetId)
+  }, [assetId])
+  if (state.status !== 'ready') {
     return (
       <div className="flex flex-col items-center gap-3 p-8 text-center">
-        <p className="text-base text-mld-text">{COPY.editor.notFound}</p>
+        <p role={state.status === 'error' ? 'alert' : 'status'} className="text-base text-mld-text">
+          {state.status === 'error' ? state.message : COPY.editor.loading}
+        </p>
+        {state.status === 'error' && <Button onClick={retry}>{COPY.gallery.retry}</Button>}
         <Button variant="outline" onClick={onBack}>
           {COPY.editor.backToGallery}
         </Button>
       </div>
     )
   }
-  return <LoadedEditor initial={pinned} onBack={onBack} />
+  return <LoadedEditor key={state.asset.id} initial={state.asset} onBack={onBack} />
 }

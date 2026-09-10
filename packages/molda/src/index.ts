@@ -29,3 +29,8 @@ export {
   setMoldaStorageNamespace,
   subscribeMoldaAssetOpenState,
 } from './state/persistence'
+export type {
+  MoldaSceneCloudDocument,
+  MoldaSceneCloudSource,
+} from './state/sceneCloudSource'
+export { createMoldaSceneCloudSource } from './state/sceneCloudSource'

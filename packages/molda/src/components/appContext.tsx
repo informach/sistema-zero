@@ -5,6 +5,7 @@
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
+import type { GallerySceneSource } from '../state/gallerySceneSource'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
 import type { MoldaPersistence } from '../state/persistence'
 
@@ -25,12 +26,26 @@ export interface MoldaHostAdapter {
   resyncToStudio?: (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
+  /**
+   * PROMOVER modelos antigos para a oficina da geração seguinte. Desligada por padrão.
+   *
+   * ⚠️ Ela governa só a promoção, e não o acesso: uma criação JÁ promovida continua
+   * listada e continua abrindo na oficina mesmo com isto desligado. É o que torna
+   * desligar reversível — do contrário, voltar atrás deixaria o trabalho da criança
+   * inalcançável, porque o editor antigo não sabe ler o documento novo.
+   *
+   * Promover é escrever o formato novo no disco e na nuvem: só ligar depois que os
+   * leitores compatíveis (lote 230) estiverem implantados.
+   */
+  sceneWorkshop?: boolean
 }
 
 export interface MoldaAppContextValue {
   adapter: MoldaHostAdapter
   gallery: GalleryStore
   persistence: MoldaPersistence
+  /** A geração seguinte, para o que a galeria precisa dela além da lista. */
+  scene: GallerySceneSource
 }
 
 const MoldaAppContext = createContext<MoldaAppContextValue | null>(null)

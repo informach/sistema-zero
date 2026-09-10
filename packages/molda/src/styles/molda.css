@@ -1,8 +1,8 @@
 /*
  * Tokens + estilos do componente <MoldaApp>. Este arquivo é exportado como
  * `@sistemazero/molda/styles.css` e deve ser importado DENTRO do pipeline
- * Tailwind do consumer (depois do `@import "tailwindcss"` dele), junto com
- * `@source` apontando para packages/molda/src.
+ * Tailwind do consumer (depois do `@import "tailwindcss"` dele). As fontes
+ * da interface são registradas aqui; o consumidor não precisa varrer src.
  *
  * NÃO importa tailwindcss aqui (duplicaria preflight/utilities no consumer) e
  * NÃO define `@custom-variant dark` (sobrescreveria a variant dark do app
@@ -15,6 +15,9 @@
  * kids). O escuro é ativado por `[data-molda-theme="dark"]` no ROOT do
  * componente — nunca no <html> do host. Os diálogos permanecem dentro do root.
  */
+@source "../components";
+@source not "../components/**/*.test.{ts,tsx}";
+
 @theme {
   /* SUPERFÍCIES: o Molda é uma SEÇÃO da comunidade kids, não um app à parte —
      fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo

@@ -26,9 +26,12 @@ export interface MeshEditState {
   partId: string
   mode: MeshSelectMode
   vertices: readonly string[]
+  selection: readonly MeshPick[]
 }
 
-export type ViewName = 'front' | 'back' | 'left' | 'right' | 'top' | 'frame'
+export const CAMERA_VIEWS = ['free', 'front', 'back', 'left', 'right', 'top'] as const
+export type CameraView = (typeof CAMERA_VIEWS)[number]
+export type ViewName = CameraView | 'frame' | 'selection'
 
 /** O que uma alça arrastada muda numa peça (sempre a peça FONTE). */
 export interface DragPatch {
@@ -71,6 +74,8 @@ export interface ViewportCallbacks {
   /** Delta acumulado desde o início, em coordenadas da CAIXA da peça (sem histórico). */
   onMeshDragMove(delta: Vec3): void
   onMeshDragEnd(): void
+  /** Interrupção pelo navegador/contexto: restaura a revisão confirmada do gesto. */
+  onGestureCancel(): void
   /** Primeiro e segundo toque da ferramenta “Grudar”. */
   onSnapSource(anchor: SnapAnchor): void
   onSnapTarget(anchor: SnapAnchor): void
@@ -84,6 +89,8 @@ export interface ViewportOptions {
 }
 
 export interface MoldaViewportLike {
+  /** Abandona buffers e alças ativos; o controller restaura o documento separadamente. */
+  cancelGesture(): void
   setModel(model: MoldaModelAsset): void
   setSelected(partId: string | null): void
   /** As peças SOMADAS à seleção (contorno em todas; alça no centro do grupo). */
@@ -96,6 +103,8 @@ export interface MoldaViewportLike {
   setGridVisible(visible: boolean): void
   /** "Ver arestas": contorno de todas as peças. */
   setEdgesVisible(visible: boolean): void
+  /** Solo temporário; null mostra todas as peças não escondidas no documento. */
+  setIsolation(ids: readonly string[] | null): void
   setView(view: ViewName): void
   /** Liga/desliga o sub-modo "Editar malha" (overlay de pontos e arestas + alça no centro da seleção). */
   setMeshEdit(state: MeshEditState | null): void

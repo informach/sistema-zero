@@ -103,6 +103,89 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('apagar de novo durante restauro cancela a reserva compatível, sem deixar o item voltar', async () => {
+    const ctx = buildWithTools()
+    const saved = await saveItem(ctx, 'studio', 'restauro')
+    const remove = (maxFormatVersion = 1) =>
+      req(ctx.app, 'DELETE', '/members/creations/studio/restauro', {
+        baseRevision: saved.item.revision,
+        maxFormatVersion,
+      })
+    expect((await remove()).status).toBe(200)
+    const pending = await json(await reserve(ctx, 'studio', 'restauro', { formatVersion: 2 }))
+    expect((await remove()).status).toBe(409)
+    expect((await remove(2)).status).toBe(200)
+    expect((await commit(ctx, 'studio', 'restauro', pending.revision)).status).toBe(409)
+    expect((await listOf(ctx, 'studio'))[0].deletedAt).toBeDefined()
+  })
+
+  test('exclusão antiga não apaga formato futuro confirmado nem sua reserva pendente', async () => {
+    const ctx = buildWithTools()
+    const saved = await saveItem(ctx, 'studio', 'futuro')
+    const ticket = await json(await reserve(ctx, 'studio', 'futuro', { formatVersion: 2 }))
+    for (const committed of [false, true]) {
+      if (committed)
+        expect((await commit(ctx, 'studio', 'futuro', ticket.revision)).status).toBe(200)
+      const baseRevision = committed ? ticket.revision : saved.item.revision
+      for (const cap of [{}, { maxFormatVersion: 1 }]) {
+        const response = await req(ctx.app, 'DELETE', '/members/creations/studio/futuro', {
+          baseRevision,
+          ...cap,
+        })
+        expect(response.status).toBe(409)
+        expect(await json(response)).toMatchObject({
+          error: { code: 'CREATION_CLIENT_OUTDATED' },
+          details: { requiredVersion: 2 },
+        })
+        expect((await listOf(ctx, 'studio'))[0].deletedAt).toBeUndefined()
+      }
+    }
+    const stale = await req(ctx.app, 'DELETE', '/members/creations/studio/futuro', {
+      baseRevision: 0,
+      maxFormatVersion: 2,
+    })
+    expect(stale.status).toBe(409)
+    expect(await json(stale)).toMatchObject({ error: { code: 'CREATION_STALE_BASE' } })
+    const deleted = await req(ctx.app, 'DELETE', '/members/creations/studio/futuro', {
+      baseRevision: ticket.revision,
+      maxFormatVersion: 2,
+    })
+    expect(deleted.status).toBe(200)
+    expect(await json(deleted)).toMatchObject({ deleted: true, revision: ticket.revision })
+  })
+
+  test.each([
+    null,
+    0,
+    -1,
+    1.5,
+    65_536,
+    '2',
+  ])('capacidade inválida no delete é recusada: %s', async (maxFormatVersion) => {
+    const ctx = buildWithTools()
+    const saved = await saveItem(ctx, 'studio', 'keep')
+    const result = await req(ctx.app, 'DELETE', '/members/creations/studio/keep', {
+      baseRevision: saved.item.revision,
+      maxFormatVersion,
+    })
+    expect(result.status).toBe(400)
+    expect((await listOf(ctx, 'studio'))[0].itemId).toBe('keep')
+    expect((await listOf(ctx, 'studio'))[0].deletedAt).toBeUndefined()
+  })
+
+  test.each([
+    undefined,
+    1,
+    2,
+    65_535,
+  ])('reserva confirma o formato aceito: %s', async (formatVersion) => {
+    const ctx = buildWithTools()
+    const result = await reserve(ctx, 'studio', 'formato', { formatVersion })
+    expect(result.status).toBe(200)
+    expect(await json(result)).toMatchObject({ formatVersion: formatVersion ?? 1, revision: 1 })
+    expect(await listOf(ctx, 'studio')).toEqual([])
+  })
+
   test('formato legado é 1; promoção só no commit e editor antigo recebe erro recuperável', async () => {
     const ctx = buildWithTools()
     grantLifetime(ctx.entitlements, { userId: ACCOUNT, courseRef: 'molda' })
@@ -139,7 +222,7 @@ describe('criações guardadas na conta — HTTP', () => {
 
   test('versão de formato precisa ser inteiro positivo limitado', async () => {
     const ctx = buildWithTools()
-    for (const formatVersion of [0, -1, 1.5, 65_536, 'dois', null]) {
+    for (const formatVersion of [0, -1, 1.5, 65_536, 'dois', '2', null]) {
       expect(
         (await reserve(ctx, 'studio', 'invalido', { formatVersion })).status,
         JSON.stringify(formatVersion),

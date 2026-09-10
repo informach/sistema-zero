@@ -5,11 +5,13 @@
  * e a sincronização de estado para o WebGL. O `ModelEditor` continua dono das
  * ações de produto; este controller cuida apenas do protocolo do palco.
  */
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { createGestureCoordinator, type GestureToken } from '../../../core/gesture'
 import type { MoldaModelAsset, ShapeId } from '../../../core/model'
 import { moveMeshVertices } from '../../../model/meshOps'
 import {
+  type MeshPick,
   mergeMeshSelection,
   pruneMeshSelection,
   selectionVertices,
@@ -46,9 +48,11 @@ interface ViewportState {
   mirrorPaint: boolean
   gridVisible: boolean
   edgesVisible: boolean
+  isolateSelection: boolean
   meshEditId: string | null
   meshSelectMode: MeshSelectMode
   meshVertices: readonly string[]
+  meshSelection: readonly MeshPick[]
   snapState: ViewportSnapState
 }
 
@@ -94,6 +98,37 @@ export function useModelViewportController({
   const [atlas, setAtlas] = useState<AtlasInfo | null>(null)
   const atlasFullWarned = useRef(false)
   const meshDragBlocked = useRef(false)
+  const token = useRef<GestureToken<MoldaModelAsset> | null>(null)
+  const gestures = useMemo(
+    () =>
+      createGestureCoordinator({
+        current: model,
+        revision: () => editor.getState().contentRevision,
+        preview: (next: MoldaModelAsset) => editor.getState().replace(next),
+        cancel: (before) => editor.getState().cancelGesture(before),
+        commit: (before, after) => editor.getState().commitGesture(before, after),
+      }),
+    [editor, model],
+  )
+  const beginGesture = () => {
+    closeColorGesture()
+    endNudge()
+    token.current = gestures.begin()
+    gestureBefore.current = token.current.before
+  }
+  const endGesture = (after: MoldaModelAsset) => {
+    const current = token.current
+    token.current = null
+    gestureBefore.current = null
+    return current ? gestures.commit(current, after) : false
+  }
+  const cancelDocumentGesture = useCallback(() => {
+    const current = token.current
+    token.current = null
+    gestureBefore.current = null
+    meshDragBlocked.current = false
+    if (current) gestures.cancel(current)
+  }, [gestures, gestureBefore])
   const {
     asset,
     selectedId,
@@ -107,9 +142,11 @@ export function useModelViewportController({
     mirrorPaint,
     gridVisible,
     edgesVisible,
+    isolateSelection,
     meshEditId,
     meshSelectMode,
     meshVertices,
+    meshSelection,
     snapState,
   } = state
 
@@ -124,32 +161,21 @@ export function useModelViewportController({
         current.pick(id, additive || current.partsAdditive)
       },
       onPlace: placeAtSurface,
-      onDragStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
+      onDragStart: beginGesture,
       onDragMove: (patch) => {
         const current = model()
         const next = applyPatch(current, patch)
-        if (next !== current) editor.getState().replace(next)
+        if (next !== current && token.current) gestures.preview(token.current, next)
       },
       onDragEnd: (patch) => {
-        const before = gestureBefore.current
-        gestureBefore.current = null
         let after = model()
         if (patch) after = applyPatch(after, patch)
-        if (before && after !== before) editor.getState().commitGesture(before, after)
+        if (!endGesture(after)) viewportResult.viewport?.setModel(model())
       },
-      onPaintStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
+      onPaintStart: beginGesture,
       onPaintEnd: (after) => {
-        const before = gestureBefore.current ?? model()
-        gestureBefore.current = null
-        if (after !== before) editor.getState().commitGesture(before, after)
+        // The imperative paint buffer may have outlived a palette edit/undo.
+        if (!endGesture(after)) viewportResult.viewport?.setModel(model())
       },
       onPickColor: (index) => session.getState().setPaintColor(index),
       onOpenFace: openFace,
@@ -161,11 +187,7 @@ export function useModelViewportController({
           mergeMeshSelection(current.meshSelection, pick, additive || current.meshAdditive),
         )
       },
-      onMeshDragStart: () => {
-        closeColorGesture()
-        endNudge()
-        gestureBefore.current = model()
-      },
+      onMeshDragStart: beginGesture,
       onMeshDragMove: (delta) => {
         const before = gestureBefore.current
         const current = session.getState()
@@ -183,20 +205,24 @@ export function useModelViewportController({
           (value) => Math.abs(Math.round(value / before.snap) * before.snap) > 0,
         )
         if (next === before && wanted) meshDragBlocked.current = true
-        if (next !== model()) editor.getState().replace(next)
+        if (next !== model() && token.current) gestures.preview(token.current, next)
       },
       onMeshDragEnd: () => {
         const before = gestureBefore.current
-        gestureBefore.current = null
         const after = model()
         const blocked = meshDragBlocked.current
         meshDragBlocked.current = false
-        if (before && after !== before) {
-          editor.getState().commitGesture(before, after)
+        const accepted = endGesture(after)
+        if (!accepted) viewportResult.viewport?.setModel(model())
+        if (accepted && before && after !== before) {
           warnMeshIssues(before, after, session.getState().meshEditId)
-        } else if (before && blocked) {
+        } else if (accepted && before && blocked) {
           showToast(COPY.editor.model.mesh.cannotMove)
         }
+      },
+      onGestureCancel: () => {
+        cancelDocumentGesture()
+        viewportResult.viewport?.setModel(model())
       },
       onAtlas: (info) => {
         setAtlas(info)
@@ -213,6 +239,19 @@ export function useModelViewportController({
   )
 
   const { viewport } = viewportResult
+
+  useEffect(() => {
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || !token.current) return
+      event.preventDefault()
+      viewport?.cancelGesture()
+      cancelDocumentGesture()
+      viewport?.setModel(model())
+    }
+    const owner = viewportResult.canvasRef.current?.ownerDocument
+    owner?.addEventListener('keydown', cancel, { capture: true })
+    return () => owner?.removeEventListener('keydown', cancel, { capture: true })
+  }, [viewport, viewportResult.canvasRef, cancelDocumentGesture, model])
 
   useEffect(() => viewport?.setModel(asset), [viewport, asset])
   useEffect(() => viewport?.setSelected(selectedId), [viewport, selectedId])
@@ -233,19 +272,37 @@ export function useModelViewportController({
   useEffect(() => viewport?.setGridVisible(gridVisible), [viewport, gridVisible])
   useEffect(() => viewport?.setEdgesVisible(edgesVisible), [viewport, edgesVisible])
   useEffect(() => viewport?.setExtraSelected(extraIds), [viewport, extraIds])
+  useEffect(() => {
+    viewport?.setIsolation(isolateSelection && selectedId ? [selectedId, ...extraIds] : null)
+  }, [viewport, isolateSelection, selectedId, extraIds])
   useEffect(() => viewport?.setSnapState(snapState), [viewport, snapState])
 
   useEffect(() => {
     if (selectedId && !findPart(asset, selectedId)) session.getState().select(null)
     const alive = extraIds.filter((id) => findPart(asset, id))
     if (alive.length !== extraIds.length) session.getState().setExtraIds(alive)
+    if (
+      session.getState().isolateSelection &&
+      !asset.parts.some(
+        (part) => !part.hidden && (part.id === selectedId || extraIds.includes(part.id)),
+      )
+    ) {
+      session.getState().toggleIsolation()
+    }
   }, [asset, selectedId, extraIds, session])
 
   useEffect(() => {
     viewport?.setMeshEdit(
-      meshEditId ? { partId: meshEditId, mode: meshSelectMode, vertices: meshVertices } : null,
+      meshEditId
+        ? {
+            partId: meshEditId,
+            mode: meshSelectMode,
+            vertices: meshVertices,
+            selection: meshSelection,
+          }
+        : null,
     )
-  }, [viewport, meshEditId, meshSelectMode, meshVertices])
+  }, [viewport, meshEditId, meshSelectMode, meshVertices, meshSelection])
 
   useEffect(() => {
     const current = session.getState()

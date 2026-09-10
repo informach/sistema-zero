@@ -27,6 +27,16 @@ function mod(value: number, size: number): number {
   return ((value % size) + size) % size
 }
 
+/** View-space texel to canonical pixels. Offset never rewrites the bitmap. */
+function texturePixelIndex(
+  bitmap: MoldaSkin,
+  x: number,
+  y: number,
+  offset: readonly [number, number],
+): number {
+  return mod(y + offset[1], bitmap.height) * bitmap.width + mod(x + offset[0], bitmap.width)
+}
+
 export function textureColors(asset: MoldaTextureAsset): readonly string[] {
   return resolvePaletteColors(asset)
 }
@@ -34,10 +44,11 @@ export function textureColors(asset: MoldaTextureAsset): readonly string[] {
 /** Pinta texels na folha; com `wrap`, coordenadas fora dão a volta. */
 export function paintTexture(
   asset: MoldaTextureAsset,
-  texels: readonly Texel[],
+  texels: Iterable<Texel>,
   color: number,
   brush: BrushSize,
   wrap: boolean,
+  offset: readonly [number, number] = [0, 0],
 ): MoldaTextureAsset {
   const { bitmap } = asset
   let out: MoldaSkin | null = null
@@ -51,7 +62,7 @@ export function paintTexture(
       } else if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) {
         continue
       }
-      const index = y * bitmap.width + x
+      const index = texturePixelIndex(bitmap, x, y, offset)
       if ((out ?? bitmap).data[index] === color) continue
       if (!out) out = cloneSkin(bitmap)
       out.data[index] = color
@@ -114,11 +125,12 @@ export function floodFillTexture(
   y: number,
   color: number,
   wrap: boolean,
+  offset: readonly [number, number] = [0, 0],
 ): MoldaTextureAsset {
   const { bitmap } = asset
   const { width, height } = bitmap
   if (x < 0 || y < 0 || x >= width || y >= height) return asset
-  const target = bitmap.data[y * width + x] ?? 0
+  const target = bitmap.data[texturePixelIndex(bitmap, x, y, offset)] ?? 0
   if (target === color) return asset
   const out = cloneSkin(bitmap)
   const stack: Texel[] = [[x, y]]
@@ -132,7 +144,7 @@ export function floodFillTexture(
     } else if (cx < 0 || cy < 0 || cx >= width || cy >= height) {
       continue
     }
-    const index = cy * width + cx
+    const index = texturePixelIndex(bitmap, cx, cy, offset)
     if (out.data[index] !== target) continue
     out.data[index] = color
     stack.push([cx + 1, cy], [cx - 1, cy], [cx, cy + 1], [cx, cy - 1])
@@ -140,10 +152,15 @@ export function floodFillTexture(
   return { ...asset, bitmap: out }
 }
 
-export function sampleTexture(asset: MoldaTextureAsset, x: number, y: number): number {
+export function sampleTexture(
+  asset: MoldaTextureAsset,
+  x: number,
+  y: number,
+  offset: readonly [number, number] = [0, 0],
+): number {
   const { bitmap } = asset
   if (x < 0 || y < 0 || x >= bitmap.width || y >= bitmap.height) return 0
-  return bitmap.data[y * bitmap.width + x] ?? 0
+  return bitmap.data[texturePixelIndex(bitmap, x, y, offset)] ?? 0
 }
 
 /** Cor extra nova na textura (índice ≥ 16). `null` = teto. */

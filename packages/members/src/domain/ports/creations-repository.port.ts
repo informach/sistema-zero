@@ -99,6 +99,7 @@ export type CreationCommitResult =
   | { ok: false; reason: 'parts-missing'; hashes: string[] }
 
 export type CreationDeleteResult =
+  | { ok: false; reason: 'client-outdated'; requiredVersion: number }
   | {
       ok: true
       deleted: boolean
@@ -162,5 +163,6 @@ export interface CreationsRepository {
     itemId: string,
     baseRevision: number,
     now: Date,
+    maxFormatVersion?: number,
   ): Promise<CreationDeleteResult>
 }

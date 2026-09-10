@@ -1,5 +1,14 @@
 import { describe, expect, test } from 'bun:test'
-import { Object3D, PerspectiveCamera, Raycaster, Vector2, Vector3 } from 'three'
+import {
+  LineDashedMaterial,
+  LineSegments,
+  Object3D,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Raycaster,
+  Vector2,
+  Vector3,
+} from 'three'
 import { boxMesh } from '../model/mesh'
 import { MESH_PICK_TOLERANCE_MOUSE_PX, MeshEditOverlay } from './meshEditOverlay'
 
@@ -45,6 +54,25 @@ function setup() {
 }
 
 describe('overlay da malha: picking com tolerância em pixels', () => {
+  test('orthographic vertex tolerance follows zoom in screen pixels, not a fixed world radius', () => {
+    const { overlay } = setup()
+    const camera = new OrthographicCamera(-6, 6, 6, -6, 0.1, 100)
+    camera.position.set(1, 1, 12)
+    camera.lookAt(1, 1, 1)
+    camera.updateMatrixWorld(true)
+    const raycaster = new Raycaster()
+    const pick = (zoom: number) => {
+      camera.zoom = zoom
+      camera.updateProjectionMatrix()
+      const point = new Vector3(2.1, 2, 2).project(camera)
+      raycaster.setFromCamera(new Vector2(point.x, point.y), camera)
+      return overlay.pick(raycaster.ray, camera, 8, 600, 10, 'f_pz', 'vertex')
+    }
+    expect(pick(1)).toEqual({ kind: 'vertex', key: 'v_111' })
+    expect(pick(2)).toBeNull()
+    overlay.dispose()
+  })
+
   test('perto de um canto escolhe o PONTO; no meio de uma aresta a ARESTA; no miolo a FACE', () => {
     const { pickAt } = setup()
     // O canto (2, 2, 2) com um desvio de ~2 px (0,02 unidades a 10 de distância ≈ 1,4 px).
@@ -74,6 +102,27 @@ describe('overlay da malha: picking com tolerância em pixels', () => {
     const world = overlay.worldPosition('v_111')
     expect(world?.toArray()).toEqual([2, 2, 2])
     expect(overlay.worldPosition('v_zzz')).toBeNull()
+  })
+
+  test('aresta de construção é selecionável e desenhada tracejada', () => {
+    const { overlay, pickAt } = setup()
+    overlay.setMesh(
+      {
+        vertices: { v_a: [0, 0, 2], v_b: [2, 0, 2] },
+        faces: {},
+        looseEdges: [['v_a', 'v_b']],
+      },
+      [1, 1, 1],
+      [],
+    )
+    expect(pickAt(new Vector3(1, 0, 2), null, 'edge')).toEqual({
+      kind: 'edge',
+      keys: ['v_a', 'v_b'],
+    })
+    const dashed = overlay.group.children.find(
+      (child) => child instanceof LineSegments && child.material instanceof LineDashedMaterial,
+    )
+    expect(dashed).toBeDefined()
   })
 })
 

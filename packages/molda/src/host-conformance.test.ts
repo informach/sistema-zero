@@ -23,7 +23,7 @@ describe('host kids', () => {
     expect(ci).toMatch(/packages\/molda\/\*\)[^\n]*add community-kids/)
   })
 
-  test('kids depende do pacote, transpila e importa o CSS + @source', () => {
+  test('kids depende do pacote, transpila e importa o CSS com fontes próprias da UI', () => {
     const pkg = JSON.parse(read('packages/community-kids/package.json')) as {
       dependencies: Record<string, string>
     }
@@ -31,7 +31,10 @@ describe('host kids', () => {
     expect(read('packages/community-kids/next.config.ts')).toContain("'@sistemazero/molda'")
     const css = read('packages/community-kids/src/app/globals.css')
     expect(css).toContain('@import "../../../molda/src/styles/molda.css";')
-    expect(css).toContain('@source "../../../molda/src";')
+    expect(css).not.toContain('@source "../../../molda/src";')
+    const moldaCss = read('packages/molda/src/styles/molda.css')
+    expect(moldaCss).toContain('@source "../components";')
+    expect(moldaCss).toContain('@source not "../components/**/*.test.{ts,tsx}";')
     // Todo @import antes de qualquer @source (regra do Tailwind v4). Só as LINHAS
     // de diretiva contam: os comentários do arquivo também falam de "@import".
     const lines = css.split('\n')

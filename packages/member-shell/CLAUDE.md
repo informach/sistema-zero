@@ -610,10 +610,16 @@ PLAIN (React escapa — sem markdown de UGC). Contrato do members: ver `../membe
 
 **Versão do documento (06/09/2026):** reserva aceita `formatVersion` opcional,
 inteiro 1..65535 sem coerção; ausência continua compatível com clientes legados.
+DELETE também encaminha `maxFormatVersion` opcional (inteiro 1..65535, sem coerção,
+ausência significa cliente legado 1). Recusa de versão não agenda limpeza R2.
 Encaminhar ao members sem confundir com `baseRevision`. `CREATION_CLIENT_OUTDATED`
 409 e `details.requiredVersion` atravessam o BFF, sem assinar PUT. Resumo pode trazer
 `formatVersion`; tipo opcional permite transição com servidores antigos. Backend
 com migration 0075 e guard completo deve preceder escritores de formatos novos.
+O ticket também confirma `formatVersion` (07/09): conferir igualdade com a pedida
+ANTES de qualquer `presignPut` e encaminhar a confirmação ao cliente. Ausência no
+upstream confirma só 1; null/texto/divergência retorna 503 `UPSTREAM_INCOMPATIBLE`.
+Não ecoar a versão pedida como se tivesse sido aceita por um Members antigo.
 
 ⚠️ A `Tool` da rota (`z.enum(['studio', 'pinta', 'molda'])`) e o `CreationToolView` de
 `lib/types.ts` são ESPELHOS de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026):

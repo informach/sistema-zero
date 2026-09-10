@@ -11,20 +11,11 @@ import {
   type MoldaPersistence,
   setMoldaStorageNamespace,
 } from '@sistemazero/molda'
-import { StrictMode } from 'react'
+import { lazy, StrictMode, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
-import { defaultViewportFactory, setMoldaViewportFactory } from '../src/viewport/factory'
+import { COPY } from '../src/core/copy'
 import type { SkyPreviewLike } from '../src/viewport/SkyPreview'
-import {
-  defaultSkyPreviewFactory,
-  setMoldaSkyPreviewFactory,
-} from '../src/viewport/skyPreviewFactory'
 import type { TexturePreviewLike } from '../src/viewport/TexturePreview'
-import {
-  defaultTexturePreviewFactory,
-  setMoldaTexturePreviewFactory,
-} from '../src/viewport/texturePreviewFactory'
 import type { MoldaViewportLike } from '../src/viewport/types'
 import './styles.css'
 
@@ -35,6 +26,7 @@ if (!root) throw new Error('#root não encontrado')
 
 const params = new URLSearchParams(window.location.search)
 const initialAssetId = params.get('criacao')
+const ScenePlayground = lazy(() => import('./ScenePlayground'))
 
 const persistence = getDefaultMoldaPersistence()
 const debug = { saves: 0, lastSaved: null as string | null, errors: [] as string[] }
@@ -95,7 +87,8 @@ window.__molda = {
     }
     return { wrapS, wrapT, repeatX, repeatY }
   },
-  inspectGlb(bytes) {
+  async inspectGlb(bytes) {
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js')
     return new Promise((resolve, reject) => {
       new GLTFLoader().parse(
         Uint8Array.from(bytes).buffer,
@@ -121,34 +114,54 @@ window.__molda = {
   },
 }
 
-setMoldaViewportFactory((canvas, callbacks, options) => {
-  const viewport = defaultViewportFactory(canvas, callbacks, options)
-  if (window.__molda) window.__molda.viewport = viewport
-  return viewport
-})
+async function installPreviewTracking(): Promise<void> {
+  // QA instrumentation must not pull every 3D workshop into the production entry chunk.
+  if (!import.meta.env.DEV) return
+  const [viewportModule, skyModule, textureModule] = await Promise.all([
+    import('../src/viewport/factory'),
+    import('../src/viewport/skyPreviewFactory'),
+    import('../src/viewport/texturePreviewFactory'),
+  ])
+  viewportModule.setMoldaViewportFactory((canvas, callbacks, options) => {
+    const viewport = viewportModule.defaultViewportFactory(canvas, callbacks, options)
+    if (window.__molda) window.__molda.viewport = viewport
+    return viewport
+  })
 
-setMoldaSkyPreviewFactory((canvas, options) => {
-  skyPreview = defaultSkyPreviewFactory(canvas, options)
-  return skyPreview
-})
+  skyModule.setMoldaSkyPreviewFactory((canvas, options) => {
+    skyPreview = skyModule.defaultSkyPreviewFactory(canvas, options)
+    return skyPreview
+  })
 
-setMoldaTexturePreviewFactory((canvas, options) => {
-  texturePreview = defaultTexturePreviewFactory(canvas, options)
-  return texturePreview
-})
+  textureModule.setMoldaTexturePreviewFactory((canvas, options) => {
+    texturePreview = textureModule.defaultTexturePreviewFactory(canvas, options)
+    return texturePreview
+  })
+}
 
-createRoot(root).render(
-  <StrictMode>
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <MoldaApp
-        persistence={tracked}
-        adapter={{
-          studioOwned: true,
-          onOpenStudio: () => console.log('[playground] onOpenStudio'),
-          // Deep link de teste: `?criacao=<id>` abre direto uma criação.
-          ...(initialAssetId ? { initialAssetId } : {}),
-        }}
-      />
-    </div>
-  </StrictMode>,
+void installPreviewTracking().then(() =>
+  createRoot(root).render(
+    <StrictMode>
+      <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        {params.get('oficina') === 'nova' ? (
+          <Suspense fallback={<p role="status">{COPY.scene.starting}</p>}>
+            <ScenePlayground id={initialAssetId} />
+          </Suspense>
+        ) : (
+          <MoldaApp
+            persistence={tracked}
+            adapter={{
+              studioOwned: true,
+              onOpenStudio: () => console.log('[playground] onOpenStudio'),
+              // Deep link de teste: `?criacao=<id>` abre direto uma criação.
+              ...(initialAssetId ? { initialAssetId } : {}),
+              // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
+              // do app, com a galeria enxergando as duas. Não é ativação de produto.
+              ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
+            }}
+          />
+        )}
+      </div>
+    </StrictMode>,
+  ),
 )
