@@ -95,7 +95,10 @@ export function MainContainer({ children }: { children: ReactNode }) {
       <main
         id="main-content"
         tabIndex={-1}
-        className="kids-field w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8"
+        // `kids-aula`: gancho da PELE da aula (fundo azul-claro + cartas brancas
+        // por cima). A aula é do member-shell, compartilhada com a comunidade
+        // adulta, então tudo o que é kids ali entra por CSS a partir daqui.
+        className="kids-field kids-aula w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8"
       >
         {children}
       </main>

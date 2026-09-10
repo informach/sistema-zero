@@ -959,9 +959,38 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
      O alvo é a barra do índice, por CLASSE e não por posição: o
      `LessonProgress` entrou antes dela e roubaria um `:first-of-type` (e voltaria
      a soltá-lo em aula de uma seção só, que é quando ele não renderiza). */
+  /* ── A PELE DA AULA (referência de 10/09/2026) ─────────────────────────────
+     A aula vive no `member-shell` e é compartilhada com a comunidade ADULTA, então
+     nada disto pode virar prop de componente: entra por CSS a partir do `.kids-aula`
+     que o `MainContainer` carimba no <main>, e do `.sz-lesson-sections` que o
+     próprio member-shell já aplica sob a flag `kids`. O adulto não importa este
+     arquivo, então nada vaza para lá.
+
+     A ideia é a da referência: a PÁGINA fica azul-clara e o conteúdo vira cartas
+     brancas boiando nela, no lugar do bloco branco contínuo. */
+  .kids-aula {
+    background-color: var(--band-ceu);
+  }
+
+  /* Barra do índice, lista de aulas e rodapé viram CARTA. */
   .sz-lesson-sections .sz-lesson-toolbar {
-    border-color: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
-    background: color-mix(in oklab, var(--sz-primary) 4%, var(--card));
+    border-color: var(--linha-carta);
+    background: var(--card);
+    border-radius: var(--raio-carta);
+    box-shadow: var(--sombra-carta-sm);
+  }
+
+  /* O rodapé de navegação era um fio `border-t` cruzando o azul; vira carta.
+     Por CLASSE (`sz-lesson-nav`, criada no member-shell junto com esta regra) e
+     não por estrutura: mirar "a div com border-t" é o tipo de alvo que já quebrou
+     uma vez nesta mesma tela. */
+  .sz-lesson-sections .sz-lesson-nav {
+    border-top: 0;
+    border-radius: var(--raio-carta);
+    border: 1px solid var(--linha-carta);
+    background: var(--card);
+    box-shadow: var(--sombra-carta-sm);
+    padding: 0.875rem 1rem;
   }
 }
 

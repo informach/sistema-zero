@@ -629,7 +629,11 @@ export function LessonSections({
           </div>
         </details>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+      {/* `sz-lesson-nav`: gancho ESTÁVEL para o tema do kids, no mesmo espírito do
+          `sz-lesson-toolbar` acima. Sem classe, o kids teria de mirar por estrutura
+          ("a div com border-t"), que é exatamente o que já quebrou uma vez aqui. A
+          classe não pinta nada por si: o adulto não importa o CSS do kids. */}
+      <div className="sz-lesson-nav flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
         <Button variant="outline" disabled={index === 0} onClick={() => navigate(index - 1)}>
           <ArrowLeft className="size-4" />
           Anterior
