@@ -1194,8 +1194,7 @@ function fakeScene(initial: MoldaAsset[] = []) {
     writeDirect(asset: MoldaAsset) {
       put(asset)
       revision += 1
-      for (const listener of [...listeners])
-        listener({ id: asset.id, revision, status: 'indexed' })
+      for (const listener of [...listeners]) listener({ id: asset.id, revision, status: 'indexed' })
     },
     deleteDirect(id: string) {
       rows.delete(id)
