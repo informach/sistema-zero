@@ -1,4 +1,4 @@
-# Entrega: a evolução do Molda continuada, dos lotes 225 ao 237
+# Entrega: a evolução do Molda continuada, dos lotes 225 ao 238
 
 Escrito em 10/09/2026. O plano completo é `2026-09-06-molda-evolution.md`, com um registro
 por lote; este documento é o resumo de uma sessão e o que ela deixa para você.
@@ -29,6 +29,7 @@ suíte roda em Chromium de verdade.
 | 235 | A causa dos avisos `act`, aberta desde o lote 203 |
 | 236 | A oficina sai do bundle de entrada |
 | 237 | Chanfro em mais de uma quina |
+| 238 | **Full review de tudo isso: 14 defeitos corrigidos, 12 registrados em aberto** |
 
 ## Os achados que mudaram decisões
 
@@ -55,11 +56,34 @@ o navegador nunca conectou em 224 lotes.
 **Eu mesmo introduzi uma regressão de peso** no lote 228 e a medição a encontrou: o bundle
 de entrada saltou de 364 kB para 568 kB. Hoje são 351 kB.
 
+**E o full review achou catorze defeitos meus, quatro deles graves.** Os dois piores tinham
+a mesma raiz: a galeria e a oficina falam DIRETO com o armazenamento da geração seguinte,
+então nada do que a criança fazia na oficina nova passava pelo espelho da nuvem. Apagar uma
+criação promovida nunca virava lápide — ela voltava inteira no outro aparelho — e salvar
+nunca enfileirava subida, então o backup da conta ficava até vinte minutos velho. O terceiro:
+a ponte com o Estúdio relia o perfil CORRENTE depois de esperar na fila, e num tablet
+compartilhado mandava a criação de uma criança para o Estúdio da outra (a sonda devolveu
+`nave-do-bento.glb` para um pedido da Ana). O quarto: a recusa de fotografar apagava a foto
+do cartão, ao contrário do que o próprio contrato dizia.
+
+Nenhum dos quatro apareceria num teste da geração v1, e nenhum deles existia antes desta
+sessão — são meus, dos lotes 228 a 234.
+
+## O que o review deixou aberto
+
+Doze achados ficaram registrados em vez de corrigidos, ranqueados e com o motivo em
+`.audits/molda-evolution/full-review-l238.md`. Os dois primeiros orientam o próximo lote:
+o **download cruzado entre gerações**, que trava em silêncio quando um aparelho já promoveu
+e o outro ainda não, e a **perda silenciosa na ponte do Estúdio** — peça escondida some da
+cópia sem aviso, enquanto o "Exportar GLB" da própria oficina exige aceite para a mesma
+perda. Esse segundo é decisão sua: recusar, avisar ou manter como está.
+
 ## Estado dos portões
 
-Molda **2.839/0** (381 arquivos, zero avisos act) · Estúdio **7.956/0** · members **983/0**
-· member-shell **472/0** · kids **619/0** · **14/14 e2e em Chromium** · tipos dos cinco
-pacotes, Biome e build do Kids. Árvore de trabalho limpa.
+Molda **2.850/0** (381 arquivos, zero avisos act) · Estúdio, kit Jogo 3D Avançado **481/0**
+(a suíte inteira dele deu **7.956/0** no lote 226) · members **983/0** · member-shell
+**472/0** · kids **623/0** · **14/14 e2e em Chromium** · tipos dos cinco pacotes, Biome e
+build do Kids.
 
 ## O que é seu
 

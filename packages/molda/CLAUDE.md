@@ -1406,6 +1406,32 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Full review (lote 238), as invariantes que ele cravou:
+  ⚠️⚠️ **A geração seguinte NÃO passa pelo espelho da nuvem do host.** A galeria e a oficina
+  falam direto com `scenePersistence`: autosave, renomear, duplicar e APAGAR nunca chamam
+  `save`/`remove` do wrapper, que são os únicos lugares que enfileiram nuvem. Quem liga as
+  duas pontas é `MoldaSceneCloudSource.subscribe`, que agora leva `{id, revision, status}`;
+  o espelho do kids ouve e despacha `enqueue` / `enqueueRemove`. Nunca tirar essa inscrição:
+  sem ela a exclusão não vira lápide e a criação volta no outro aparelho.
+  ⚠️⚠️ **Exportar para o Estúdio é do PERFIL que pediu**: `exportAssetForStudio(id, context)`
+  recebe `{persistence, namespace}` do `useStudioResync` e resolve o banco da geração
+  seguinte por `getMoldaGenerationStore(namespace)`. Reler o namespace corrente depois dos
+  awaits manda a criação de uma criança para o Estúdio da outra no tablet compartilhado.
+  ⚠️ **`renderThumb()` devolvendo `null` é RECUSA, não "sem foto"**: `?? undefined` no
+  consumidor apagava o retrato do cartão (bastava isolar uma peça e mexer nela).
+  ⚠️ **A galeria deduplica por id**: o espelho soma as duas gerações no `listSummaries`
+  dele de propósito, e a galeria soma a geração seguinte por conta própria.
+  ⚠️ A ponte confere `inspectSceneStudioCompatibility`, não só bytes: `empty` vira
+  `encode-failed` (como no v1) e qualquer teto estourado vira `asset-too-big`.
+  ⚠️ Renomear na geração seguinte usa carimbo CRESCENTE, igual ao v1 no mesmo store.
+  ⚠️ `sceneUnavailable` no `galleryStore`: a galeria v1 não vai a branco, mas "Baixar tudo"
+  RECUSA em vez de anunciar completo um pacote sem as criações promovidas.
+  ⚠️ `stats.animatedPaints` existe para o relatório de destino: pintura animada é MOVIMENTO
+  e só o Jogo 3D Avançado toca. Perdas na ponte continuam SILENCIOSAS (peça escondida some,
+  ao contrário do v1) — decisão de produto em aberto, registrada no review.
+  ⚠️ `resetMoldaPersistenceForTests()` zera a fábrica da geração seguinte: deixá-la de pé
+  faz o teste seguinte passar por um motivo errado (lista vazia de um banco fechado).
+  Lista completa do que ficou aberto: `.audits/molda-evolution/full-review-l238.md`.
 - Chanfro em várias quinas (lote 237): `bevelMeshEdges` aplica UMA passada por quina,
   sobre o resultado da anterior. ⚠️ Entre as passadas os IDS de linha mudam: a identidade
   que atravessa é o PAR DE PONTOS. ⚠️ Quinas VIZINHAS recusam a ação inteira (a primeira
