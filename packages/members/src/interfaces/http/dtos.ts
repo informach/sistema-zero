@@ -201,6 +201,8 @@ export const AvatarsBatchQuery = t.Object({
 
 // ── Missões + proteção de sequência ──────────────────────────────────────────
 export const MissionSlugParams = t.Object({ slug: AVATAR_SLUG })
+/** Baú de fim de unidade: o curso pelo slug, a unidade pelo id do módulo. */
+export const UnitChestParams = t.Object({ slug: SLUG, moduleId: UUID })
 
 const ISO_DATE = t.String({ minLength: 10, maxLength: 10, pattern: '^\\d{4}-\\d{2}-\\d{2}$' })
 /** Corpo de `PUT /members/gamification/vacation` — janela (ou null/null p/ limpar). */

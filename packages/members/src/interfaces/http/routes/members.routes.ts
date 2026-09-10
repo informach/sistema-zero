@@ -10,6 +10,7 @@ import type { SetAvatarPhotoService } from '../../../application/avatar/set-avat
 import type { GetChildrenStatsService } from '../../../application/children-stats/get-children-stats.service'
 import type { BuyStreakFreezeService } from '../../../application/gamification/buy-streak-freeze.service'
 import type { ClaimMissionService } from '../../../application/gamification/claim-mission.service'
+import type { ClaimUnitChestService } from '../../../application/gamification/claim-unit-chest.service'
 import type { GetChallengeService } from '../../../application/gamification/get-challenge.service'
 import type { GetGamificationService } from '../../../application/gamification/get-gamification.service'
 import type { GetLeagueService } from '../../../application/gamification/get-league.service'
@@ -95,6 +96,7 @@ import {
   TeacherThreadPageQuery,
   TeacherThreadReplyBody,
   TeacherThreadsQuery,
+  UnitChestParams,
   VacationBody,
   VideoPositionBody,
   ZappyFeedbackBody,
@@ -139,6 +141,7 @@ export interface MembersRoutesDeps {
   getStudioUnlocks: GetStudioUnlocksService
   getMissions: GetMissionsService
   claimMission: ClaimMissionService
+  claimUnitChest: ClaimUnitChestService
   recordRemix: RecordStudioRemixService
   recordStudioActivity: RecordStudioActivityDayService
   buyStreakFreeze: BuyStreakFreezeService
@@ -464,6 +467,21 @@ export function membersRoutes(deps: MembersRoutesDeps) {
             isPrivilegedActor(headers),
           ),
         { params: MissionSlugParams, query: AudienceQuery },
+      )
+      // Abre o BAÚ de fim de unidade e paga o prêmio (idempotente; 409 se a unidade
+      // ainda não fechou). Até 09/2026 esse XP caía sozinho ao concluir a última
+      // aula — agora é a criança que abre.
+      .post(
+        '/courses/:slug/units/:moduleId/chest/claim',
+        async ({ headers, params }) =>
+          deps.claimUnitChest.execute(
+            resolveUserId(headers),
+            resolveAccountId(headers),
+            params.slug,
+            params.moduleId,
+            isPrivilegedActor(headers),
+          ),
+        { params: UnitChestParams },
       )
       // Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco de missão
       // gated por estudio-completo. O service valida posse + playId no hub + não-self.

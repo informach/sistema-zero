@@ -37,6 +37,20 @@ const complete = (app: App, lessonId: string, headers: Record<string, string> = 
     }),
   )
 
+/** Abre o baú de fim de unidade (o clique da criança na trilha). */
+const claimChest = (
+  app: App,
+  courseSlug: string,
+  moduleId: string,
+  headers: Record<string, string> = authHeaders,
+) =>
+  app.handle(
+    new Request(`http://localhost/members/courses/${courseSlug}/units/${moduleId}/chest/claim`, {
+      method: 'POST',
+      headers,
+    }),
+  )
+
 const submitQuiz = (app: App, lessonId: string, blockId: string, answers: unknown) =>
   app.handle(
     new Request(`http://localhost/members/lessons/${lessonId}/blocks/${blockId}/quiz-attempts`, {
@@ -125,17 +139,20 @@ describe('Gamificação — XP e idempotência', () => {
     expect(again.gamification.badgesUnlocked).toEqual([])
   })
 
-  test('última aula do módulo → baú (+25) e curso completo → badge course-complete', async () => {
+  test('fechar a unidade AVISA do baú, mas quem paga é o clique da criança', async () => {
+    // Desde 09/2026 o XP de fim de unidade é o prêmio do BAÚ da trilha, e o baú é
+    // clicável. Concluir a última aula do módulo passa a só ANUNCIAR que ele está
+    // esperando: `unitCompleted` virou convite, não recibo.
     const { app, courses, entitlements } = buildApp()
     const course = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await complete(app, course.lessonIds[0])
     const done = await readJson(await complete(app, course.lessonIds[1]))
-    // 10 da aula + 25 do baú (módulo único = curso completo).
+    // Só os 10 da aula: os 25 do baú ficam para o clique.
     expect(done.gamification).toMatchObject({
-      xpAwarded: 35,
-      totalXp: 45,
+      xpAwarded: 10,
+      totalXp: 20,
       unitCompleted: true,
       streak: { current: 1, extended: false },
     })
@@ -143,9 +160,25 @@ describe('Gamificação — XP e idempotência', () => {
       'course-complete',
     ])
 
-    // Re-complete: baú NÃO duplica (ledger por moduleId).
-    const again = await readJson(await complete(app, course.lessonIds[1]))
-    expect(again.gamification).toMatchObject({ xpAwarded: 0, totalXp: 45, unitCompleted: false })
+    // Abrir o baú paga; abrir de novo não paga duas vezes (ledger por moduleId).
+    const chest = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(chest).toMatchObject({ xpAwarded: 25, totalXp: 45 })
+    const denovo = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(denovo).toMatchObject({ xpAwarded: 0, totalXp: 45 })
+  })
+
+  test('o baú recusa 409 enquanto a unidade não fechou, e 404 para unidade de outro curso', async () => {
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+
+    // O cliente NUNCA decide que a unidade fechou: o servidor reconta.
+    await complete(app, course.lessonIds[0])
+    expect((await claimChest(app, course.slug, course.moduleId)).status).toBe(409)
+
+    await complete(app, course.lessonIds[1])
+    expect((await claimChest(app, course.slug, course.moduleId)).status).toBe(200)
+    expect((await claimChest(app, course.slug, randomUUID())).status).toBe(404)
   })
 
   test('2º e 3º cursos 100% destravam course-complete-2 e -3 (marco no ledger)', async () => {
@@ -169,8 +202,9 @@ describe('Gamificação — XP e idempotência', () => {
     expect(second.gamification.badgesUnlocked.map((b: { slug: string }) => b.slug)).toEqual([
       'course-complete-2',
     ])
-    // Marco é evento de amount 0 — o XP do complete não muda (10 + 25 do baú).
-    expect(second.gamification.xpAwarded).toBe(35)
+    // Marco é evento de amount 0 — o XP do complete não muda (10 da aula; os 25 do
+    // baú ficam para o clique da criança na trilha).
+    expect(second.gamification.xpAwarded).toBe(10)
 
     const third = await finishCourse(c3)
     expect(third.gamification.badgesUnlocked.map((b: { slug: string }) => b.slug)).toEqual([
@@ -190,9 +224,13 @@ describe('Gamificação — XP e idempotência', () => {
     const draft = courses.lessons.find((l) => l.id === course.lessonIds[1])
     if (draft) draft.isPublished = false
 
-    // Única aula publicada do módulo concluída → baú abre (e curso 100%).
+    // Única aula publicada do módulo concluída → a unidade FECHA (e o curso 100%).
     const done = await readJson(await complete(app, course.lessonIds[0]))
-    expect(done.gamification).toMatchObject({ xpAwarded: 35, unitCompleted: true })
+    expect(done.gamification).toMatchObject({ xpAwarded: 10, unitCompleted: true })
+    // E o baú libera sobre a mesma régua: a aula rascunho não segura o prêmio.
+    expect(await readJson(await claimChest(app, course.slug, course.moduleId))).toMatchObject({
+      xpAwarded: 25,
+    })
   })
 })
 
@@ -439,10 +477,11 @@ describe('Gamificação — segregação por vitrine (?audience=)', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: kidsCourse.slug })
     grantLifetime(entitlements, { userId: USER, courseRef: adultCourse.slug })
 
-    // 1 aula kids (+10) e curso adulto INTEIRO (+10+10+25 = 45).
+    // 1 aula kids (+10) e curso adulto INTEIRO com o baú aberto (+10+10+25 = 45).
     await complete(app, kidsCourse.lessonIds[0])
     await complete(app, adultCourse.lessonIds[0])
     await complete(app, adultCourse.lessonIds[1])
+    await claimChest(app, adultCourse.slug, adultCourse.moduleId)
 
     const kids = await readJson(
       await app.handle(
@@ -686,14 +725,17 @@ describe('Gamificação — Zappy Coins (carteira)', () => {
     expect(again.gamification.coinBalance).toBe(5)
   })
 
-  test('baú de unidade soma moedas (aula 5 + baú 15) na ação que fecha o módulo', async () => {
+  test('as moedas do baú entram no CLIQUE, não na aula que fecha o módulo', async () => {
     const { app, courses, entitlements } = buildApp()
     const course = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await complete(app, course.lessonIds[0])
     const done = await readJson(await complete(app, course.lessonIds[1]))
-    expect(done.gamification.coinsAwarded).toBe(20) // 5 (aula) + 15 (baú)
-    expect(done.gamification.coinBalance).toBe(25)
+    expect(done.gamification.coinsAwarded).toBe(5) // só a aula
+    expect(done.gamification.coinBalance).toBe(10)
+    const chest = await readJson(await claimChest(app, course.slug, course.moduleId))
+    expect(chest.coinsAwarded).toBe(15)
+    expect(chest.coinBalance).toBe(25)
   })
 
   test('quiz aprovado nota 100 → +15 moedas (10 base + 5 bônus)', async () => {
@@ -711,6 +753,7 @@ describe('Gamificação — Zappy Coins (carteira)', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await complete(app, course.lessonIds[0])
     await complete(app, course.lessonIds[1])
+    await claimChest(app, course.slug, course.moduleId)
     expect(await gamification.getBalance(USER, 'adult')).toBe(25)
 
     const now = new Date('2026-06-02T12:00:00.000Z')

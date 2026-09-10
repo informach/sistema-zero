@@ -124,7 +124,6 @@ async function seedWeekActivity(ctx: ReturnType<typeof buildSender>) {
     moduleId: randomUUID(),
     courseId: randomUUID(),
     audience: 'kids',
-    unitCompleted: false,
     courseCompleted: false,
     privileged: false,
   })

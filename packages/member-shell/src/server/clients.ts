@@ -542,6 +542,19 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
       })
     },
     /**
+     * Abre o BAÚ de fim de unidade e paga o prêmio. O members revalida que TODAS as
+     * aulas publicadas da unidade estão concluídas; o ledger dedupa o clique repetido.
+     */
+    claimUnitChest(
+      courseSlug: string,
+      moduleId: string,
+    ): Promise<GatewayResponse<GamificationDelta | null>> {
+      return gw.gatewayFetch(
+        `/members/courses/${enc(courseSlug)}/units/${enc(moduleId)}/chest/claim`,
+        { method: 'POST' },
+      )
+    },
+    /**
      * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
      * gated por estudio-completo. O members valida posse + playId no hub + não-self.
      */

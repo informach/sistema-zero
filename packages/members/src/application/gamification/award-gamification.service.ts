@@ -42,7 +42,6 @@ export class AwardGamificationService {
     courseId: string
     /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
     audience: CourseAudience
-    unitCompleted: boolean
     courseCompleted: boolean
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
@@ -54,20 +53,45 @@ export class AwardGamificationService {
         coins: COIN_VALUES.LESSON_COMPLETE,
       },
     ]
-    if (input.unitCompleted) {
-      events.push({
-        sourceType: 'unit_complete',
-        sourceId: input.moduleId,
-        amount: XP_VALUES.UNIT_COMPLETE,
-        coins: COIN_VALUES.UNIT_COMPLETE,
-      })
-    }
+    // ⚠️ O XP de fim de UNIDADE não sai daqui desde 09/2026. Ele é o prêmio do BAÚ
+    // da trilha, e o baú agora é clicável: quem paga é `awardUnitChest`, no clique.
     // Curso 100% → MARCO no ledger (amount 0): conta cursos concluídos p/ as
     // badges course-complete/-2/-3 (derivadas no repositório, dedupe por curso).
     if (input.courseCompleted) {
       events.push({ sourceType: 'course_complete', sourceId: input.courseId, amount: 0 })
     }
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+  }
+
+  /**
+   * Prêmio do BAÚ de fim de unidade, no clique da criança. A idempotência é a do
+   * ledger: `xp_events` tem índice único por (usuário, tipo, origem), então
+   * clicar de novo (ou em outra aba) devolve `xpAwarded: 0` sem pagar duas vezes.
+   *
+   * Move o streak, ao contrário do resgate de missão: abrir o baú é ATIVIDADE da
+   * criança, e não é farmável (um baú por módulo, para sempre).
+   */
+  async awardUnitChest(input: {
+    userId: string
+    accountId: string
+    moduleId: string
+    audience: CourseAudience
+    privileged: boolean
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [
+        {
+          sourceType: 'unit_complete',
+          sourceId: input.moduleId,
+          amount: XP_VALUES.UNIT_COMPLETE,
+          coins: COIN_VALUES.UNIT_COMPLETE,
+        },
+      ],
+      input.privileged,
+    )
   }
 
   async awardQuizPassed(input: {

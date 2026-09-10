@@ -31,6 +31,7 @@ import { AwardGamificationService } from './application/gamification/award-gamif
 import { BuyStreakFreezeService } from './application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from './application/gamification/challenge-admin.service'
 import { ClaimMissionService } from './application/gamification/claim-mission.service'
+import { ClaimUnitChestService } from './application/gamification/claim-unit-chest.service'
 import { GetChallengeService } from './application/gamification/get-challenge.service'
 import { GetGamificationService } from './application/gamification/get-gamification.service'
 import { GetLeagueService } from './application/gamification/get-league.service'
@@ -407,6 +408,14 @@ export async function createApplication(env: Env): Promise<Application> {
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
   const getMissions = new GetMissionsService(gamificationRepo, accessCheck, clock, listMyCourses)
   const claimMission = new ClaimMissionService(gamificationRepo, accessCheck, clock)
+  // Baú de fim de unidade: a criança clica na trilha e AÍ ganha o XP (antes ele caía
+  // sozinho ao concluir a última aula do módulo).
+  const claimUnitChest = new ClaimUnitChestService(
+    checkAccess,
+    courses,
+    progress,
+    awardGamification,
+  )
   // Remix do Mural (marco de missão gated) — valida posse + playId no hub (anti-farm).
   const recordRemix = new RecordStudioRemixService(accessCheck, hub, awardGamification)
   // XP diário de CRIAR no Estúdio (sem hub/playId — só posse + award do dia).
@@ -627,6 +636,7 @@ export async function createApplication(env: Env): Promise<Application> {
       getStudioUnlocks,
       getMissions,
       claimMission,
+      claimUnitChest,
       recordRemix,
       recordStudioActivity,
       buyStreakFreeze,

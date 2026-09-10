@@ -105,6 +105,12 @@
   --kids-lime-tint: oklch(0.58 0.15 55 / 0.12);
   --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
   --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
+  /* OURO = recompensa (baú, moeda, certificado). É o emprego que faltava para o
+     amarelo da marca, que estava só como "decoração". Tom escurecido no claro
+     para o texto branco por cima passar em AA. */
+  --kids-ouro: oklch(0.62 0.14 78);
+  --kids-ouro-fg: oklch(1 0 0);
+  --kids-ouro-tint: oklch(0.62 0.14 78 / 0.12);
 
   /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
   --background: var(--sz-kids-ceu-suave);
@@ -233,6 +239,10 @@
   --kids-lime-tint: oklch(0.8 0.15 70 / 0.15);
   --kids-rosa-tint: oklch(0.75 0.16 356 / 0.15);
   --kids-verde-tint: oklch(0.78 0.15 152 / 0.15);
+  /* No escuro o ouro é o amarelo vivo da marca, e a tinta por cima vira navy. */
+  --kids-ouro: var(--sz-kids-amarelo);
+  --kids-ouro-fg: oklch(0.2 0.04 262);
+  --kids-ouro-tint: oklch(0.85 0.15 88 / 0.15);
 
   --background: var(--sz-kids-navy);
   --foreground: oklch(0.975 0.005 250);
@@ -686,6 +696,14 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --unit-bg: var(--unit);
   --unit-bg-image: none;
 }
+/* Tesouro: NÃO rotaciona com as unidades. Ouro quer dizer recompensa, e a criança
+   aprende a ler o baú pela cor. */
+.kids-unit-tesouro {
+  --unit: var(--kids-ouro);
+  --unit-fg: var(--kids-ouro-fg);
+  --unit-bg: var(--unit);
+  --unit-bg-image: none;
+}
 .kids-unit-grad {
   --unit: var(--sz-cta);
   --unit-fg: var(--sz-primary-fg);
@@ -781,6 +799,49 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
   box-shadow: 0 5px 0 var(--node-shadow);
 }
+/* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
+.kids-node--chest-ready {
+  background-color: var(--unit-bg);
+  color: var(--unit-fg);
+  border: 2px solid var(--unit);
+  --node-shadow: color-mix(in oklab, var(--unit) 55%, black);
+  box-shadow: 0 5px 0 var(--node-shadow);
+  animation: kids-ring 2.4s ease-out infinite;
+}
+button:active > .kids-node--chest-ready {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--node-shadow);
+}
+/* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
+   de `prefers-reduced-motion` no fim do arquivo doma as duas. */
+@keyframes kids-chest-shake {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: rotate(-7deg) scale(1.04);
+  }
+  45% {
+    transform: rotate(7deg) scale(1.08);
+  }
+  70% {
+    transform: rotate(-3deg) scale(1.12);
+  }
+}
+@keyframes kids-chest-lid {
+  to {
+    transform: rotate(-58deg) translateY(-2px);
+  }
+}
+.kids-chest-opening {
+  animation: kids-chest-shake 0.52s ease-in-out;
+}
+.kids-chest-opening .chest-lid {
+  transform-origin: 20% 100%;
+  animation: kids-chest-lid 0.32s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
 /* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
 .kids-node-link:active .kids-node {
   transform: translateY(4px);

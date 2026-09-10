@@ -1,8 +1,9 @@
-import { Check, Gift, Lock, Star } from 'lucide-react'
+import { Check, Lock, Star } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView } from '@/lib/types'
 import { KidsMascot } from './mascot'
+import { TrailChest } from './trail-chest'
 import { balloonLabel, buildTrail, type TrailNode } from './trail-layout'
 import { UNIT_THEME_CLASS } from './unit-theme'
 
@@ -50,9 +51,10 @@ function TrailDots({ from, to, done }: { from: number; to: number; done: boolean
 /**
  * Trilha estilo Duolingo: módulo = unidade com banner colorido (temas
  * alternando nas cores da marca), aula = nó circular serpenteante e fim de
- * unidade = BAÚ (abre com o módulo 100% — o +25 XP é do backend). Trilha
- * LIVRE: os nós de aula são clicáveis — o estado é só visual; o baú não é
- * clicável. Server Component puro (as animações são CSS do globals).
+ * unidade = BAÚ. Desde 09/2026 o baú é CLICÁVEL: a criança abre e AÍ ganha o XP
+ * (antes ele caía sozinho ao concluir a última aula do módulo). Por isso o baú é
+ * a única ilha `'use client'` daqui — ver `trail-chest.tsx`. O resto segue Server
+ * Component puro, com as animações no CSS do globals.
  *
  * Sem ícone por TIPO de aula (quiz/vídeo): LessonOutlineView não expõe os
  * blocos — seria mudança de backend, fora desta fatia.
@@ -171,32 +173,20 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               })}
 
               <li className="relative" style={{ height: 'var(--trail-row)' }}>
-                <div
-                  role="img"
-                  aria-label={`Baú da unidade ${unitIndex + 1} (${unit.chest.opened ? 'aberto, você completou a unidade' : 'fechado, abre quando você completar a unidade'})`}
-                  className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
-                  style={{ left: `calc(50% + ${unit.chest.offset} * var(--trail-step))` }}
-                >
-                  <span
-                    className={cn(
-                      'kids-node',
-                      unit.chest.opened ? 'kids-node--chest-open' : 'kids-node--chest-closed',
-                    )}
-                  >
-                    <Gift
-                      className={cn('size-7', unit.chest.opened && 'kid-float')}
-                      strokeWidth={2.5}
-                    />
-                  </span>
-                  <span
-                    className={cn(
-                      'text-center font-semibold text-xs leading-tight',
-                      unit.chest.opened ? 'sz-display-grad' : 'text-muted-foreground',
-                    )}
-                  >
-                    {unit.chest.opened ? 'Baú aberto!' : 'Baú da unidade'}
-                  </span>
-                </div>
+                <TrailChest
+                  courseSlug={course.slug}
+                  moduleId={unit.module.id}
+                  unitNumber={unitIndex + 1}
+                  chest={
+                    unit.module.chest ?? {
+                      unlocked: unit.module.lessons.every((l) => l.completed),
+                      claimed: false,
+                      xp: 0,
+                      coins: 0,
+                    }
+                  }
+                  offset={unit.chest.offset}
+                />
               </li>
             </ol>
           </section>

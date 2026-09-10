@@ -287,12 +287,27 @@ export interface LessonOutlineView {
   locked: boolean
 }
 
+/**
+ * Baú de fim de unidade na trilha kids. `null` no curso adulto (não tem trilha).
+ * O estado vem do SERVIDOR: derivar no cliente não sobrevive a um F5.
+ */
+export interface ModuleChestView {
+  /** Todas as aulas publicadas da unidade concluídas: dá para abrir. */
+  unlocked: boolean
+  /** Já aberto (e pago). */
+  claimed: boolean
+  /** O prêmio, para a criança ver ANTES de abrir. */
+  xp: number
+  coins: number
+}
+
 export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
+  chest: ModuleChestView | null
 }
 
 // ── Classificação do curso (estilo Udemy) ───────────────────────────────────

@@ -10,6 +10,8 @@ import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
+import { COIN_VALUES } from '../../domain/gamification/coins'
+import { XP_VALUES } from '../../domain/gamification/gamification'
 import type { StudentLevel, StudentLevelSlug } from '../../domain/gamification/levels'
 import type { AwardResult } from '../../domain/ports/gamification-repository.port'
 import type { CourseProgress } from '../../domain/progress/progress'
@@ -50,7 +52,11 @@ export interface GamificationDeltaView {
   totalXp: number
   streak: { current: number; best: number; extended: boolean }
   badgesUnlocked: { slug: string; unlockedAt: string }[]
-  /** `true` quando ESTA ação fechou a unidade (baú de +25 XP incluído no total). */
+  /**
+   * `true` quando ESTA ação FECHOU a unidade. Desde 09/2026 isso NÃO significa que
+   * o XP entrou: o prêmio é do baú da trilha, que a criança abre com um clique. O
+   * campo virou convite ("tem um baú te esperando"), não recibo.
+   */
   unitCompleted: boolean
   /** Moedas Zappy ganhas nesta ação (já com teto diário aplicado). */
   coinsAwarded: number
@@ -74,7 +80,10 @@ export function toGamificationDeltaView(result: AwardResult): GamificationDeltaV
       slug: b.slug,
       unlockedAt: b.unlockedAt.toISOString(),
     })),
-    unitCompleted: result.newEvents.some((e) => e.sourceType === 'unit_complete'),
+    // Preenchido pelo chamador que SABE se a unidade fechou (o mark-lesson-complete
+    // calcula isso do outline). O ledger não serve mais de fonte: o evento do baú
+    // só nasce no clique, e pode nunca ter acontecido nesta ação.
+    unitCompleted: false,
     coinsAwarded: result.coinsAwarded,
     coinBalance: result.coinBalance,
     coinsCapped: result.coinsCapped,
@@ -603,12 +612,28 @@ export interface LessonOutlineView {
   locked: boolean
 }
 
+/**
+ * Baú de fim de unidade na trilha. `null` fora da vitrine kids (o adulto não tem
+ * trilha nem baú). Sem este campo, um F5 apagava a memória de que o baú já foi
+ * aberto: o estado era derivado no cliente e não tinha como saber.
+ */
+export interface ModuleChestView {
+  /** Todas as aulas publicadas da unidade concluídas: dá para abrir. */
+  unlocked: boolean
+  /** Já aberto. Contas antigas nascem `true` pela linha do ledger, sem backfill. */
+  claimed: boolean
+  /** O prêmio, para a criança ver ANTES de abrir. */
+  xp: number
+  coins: number
+}
+
 export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
   sortOrder: number
   lessons: LessonOutlineView[]
+  chest: ModuleChestView | null
 }
 
 export interface CourseDetailView {
@@ -650,6 +675,8 @@ export function toCourseDetailView(
   // Aulas TRAVADAS pela trava sequencial (já resolvido pelo service: vazio quando a
   // trava está desligada ou para equipe interna). Default vazio = nada travado.
   lockedLessonIds: Set<string> = new Set(),
+  /** Unidades cujo baú já foi aberto. `null` = curso sem trilha (adulto). */
+  claimedUnitIds: Set<string> | null = null,
 ): CourseDetailView {
   return {
     id: course.id,
@@ -672,6 +699,16 @@ export function toCourseDetailView(
       title: m.title,
       summary: m.summary,
       sortOrder: m.sortOrder,
+      chest: claimedUnitIds
+        ? {
+            // Unidade sem aula publicada NUNCA libera: baú impossível não vira
+            // prêmio grátis só porque a autora ainda não montou a unidade.
+            unlocked: m.lessons.length > 0 && m.lessons.every((l) => completedLessonIds.has(l.id)),
+            claimed: claimedUnitIds.has(m.id),
+            xp: XP_VALUES.UNIT_COMPLETE,
+            coins: COIN_VALUES.UNIT_COMPLETE,
+          }
+        : null,
       lessons: m.lessons.map((l) => ({
         id: l.id,
         slug: l.slug,

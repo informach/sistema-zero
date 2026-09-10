@@ -71,6 +71,7 @@ const DOMAIN_STATUS: Record<string, number> = {
   // Missões + proteção de sequência.
   MISSION_NOT_FOUND: 404,
   MISSION_NOT_COMPLETED: 409,
+  UNIT_NOT_COMPLETED: 409,
   MAX_FREEZES: 409,
   VACATION_INVALID: 400,
   // Desafio do mês (tema gerenciável pelo admin).

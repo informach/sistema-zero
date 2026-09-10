@@ -163,10 +163,12 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
         </p>
       ) : null}
 
+      {/* Desde 09/2026 quem abre o baú é a CRIANÇA, na trilha. Aqui não cabe mais
+          dizer "você abriu": isto virou convite, não recibo. */}
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">
-          <Gift className="size-4 text-primary" />
-          Você abriu o baú da unidade!
+          <Gift className="size-4 text-(--kids-ouro)" />
+          Você terminou a unidade! Tem um baú te esperando na trilha.
         </p>
       ) : null}
 

@@ -127,7 +127,8 @@ export class MarkLessonCompleteService {
       this.courses.listPublishedLessonIds(lesson.moduleId),
     ])
 
-    // Baú de fim de unidade: TODAS as aulas publicadas do módulo concluídas.
+    // Fechou a unidade? TODAS as aulas publicadas do módulo concluídas. Isso NÃO
+    // paga nada: o prêmio é do baú da trilha, que a criança abre com um clique.
     const completedSet = new Set([...completedIds, lessonId])
     const unitCompleted =
       moduleLessonIds.length > 0 && moduleLessonIds.every((id) => completedSet.has(id))
@@ -142,7 +143,6 @@ export class MarkLessonCompleteService {
       moduleId: lesson.moduleId,
       courseId: course.id,
       audience: course.audience,
-      unitCompleted,
       courseCompleted,
       privileged,
     })
@@ -162,7 +162,9 @@ export class MarkLessonCompleteService {
 
     return {
       ...toCourseProgressView(computeProgress(completed, total), last),
-      gamification,
+      // O delta vem do ledger e não sabe de unidade fechada (o evento do baú só
+      // nasce no clique). Quem sabe é aqui, pelo outline.
+      gamification: gamification ? { ...gamification, unitCompleted } : null,
       showcase,
     }
   }

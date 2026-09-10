@@ -15,13 +15,13 @@ export interface TrailNode {
 }
 
 /**
- * Baú de fim de unidade (gamificação): abre quando TODAS as aulas do módulo
- * estão concluídas — derivado client-side do outline; o XP (+25) é concedido
- * pelo backend no complete que fechou o módulo. Estado é só visual.
+ * Baú de fim de unidade. Só a POSIÇÃO no serpenteado sai daqui: liberado, aberto
+ * e o valor do prêmio vêm do servidor (`module.chest`), porque desde 09/2026 a
+ * criança ABRE o baú com um clique e derivar isso no cliente não sobreviveria a
+ * um F5. Ver `trail-chest.tsx`.
  */
 export interface TrailChest {
   offset: number
-  opened: boolean
 }
 
 export interface TrailUnit {
@@ -94,7 +94,7 @@ export function buildTrail(course: CourseDetailView): TrailUnit[] {
               : 'todo',
       }),
     ),
-    chest: { offset: nextOffset(), opened: module.lessons.every((l) => l.completed) },
+    chest: { offset: nextOffset() },
   }))
 }
 

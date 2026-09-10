@@ -15,7 +15,21 @@ function lesson(id: string, completed: boolean, locked = false): LessonOutlineVi
 }
 
 function moduleOf(id: string, lessons: LessonOutlineView[]): ModuleOutlineView {
-  return { id, title: `Módulo ${id}`, summary: null, sortOrder: 0, lessons }
+  return {
+    id,
+    title: `Módulo ${id}`,
+    summary: null,
+    sortOrder: 0,
+    lessons,
+    // O estado do baú vem do SERVIDOR desde 09/2026 (a criança abre com um
+    // clique). Aqui a fixture só precisa dizer que ele existe.
+    chest: {
+      unlocked: lessons.length > 0 && lessons.every((l) => l.completed),
+      claimed: false,
+      xp: 25,
+      coins: 15,
+    },
+  }
 }
 
 function course(modules: ModuleOutlineView[]): CourseDetailView {
@@ -63,14 +77,18 @@ describe('buildTrail', () => {
     }
   })
 
-  test('baú abre só com TODAS as aulas do módulo concluídas', () => {
+  test('o baú tem POSIÇÃO no serpenteado; abrir ou não é assunto do servidor', () => {
+    // Antes o layout derivava `opened` do outline. Desde que o baú virou clicável
+    // isso vem do servidor (`module.chest`): derivar aqui não sobreviveria ao F5,
+    // porque o cliente não tem como saber que a criança já abriu.
     const c = course([
       moduleOf('m1', [lesson('a', true), lesson('b', true)]),
       moduleOf('m2', [lesson('c', true), lesson('d', false)]),
     ])
     const units = buildTrail(c)
-    expect(units[0]?.chest).toMatchObject({ opened: true })
-    expect(units[1]?.chest).toMatchObject({ opened: false })
+    expect(Object.keys(units[0]?.chest ?? {})).toEqual(['offset'])
+    expect(units[0]?.module.chest?.unlocked).toBe(true)
+    expect(units[1]?.module.chest?.unlocked).toBe(false)
   })
 
   test('módulo SEM aula publicada não vira unidade (nem banner, nem baú)', () => {
