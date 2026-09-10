@@ -56,8 +56,8 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
-              <BookOpen className="size-10 text-muted-foreground" />
+            <div className="kids-cover-fallback flex h-full w-full items-center justify-center">
+              <BookOpen className="size-10" />
             </div>
           )}
           {/* Só o que FALTA: "pronta" aqui seria redundante com a barra em 100% e o

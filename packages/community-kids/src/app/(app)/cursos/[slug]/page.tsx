@@ -79,7 +79,7 @@ export default async function CoursePage({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <div className="h-full w-full bg-gradient-to-br from-secondary to-muted" />
+              <div className="kids-cover-fallback h-full w-full" />
             )}
           </div>
           <div className="flex flex-1 flex-col gap-3">

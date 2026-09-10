@@ -67,8 +67,8 @@ export function CatalogCourseCard({
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
-            <BookOpen className="size-10 text-muted-foreground" />
+          <div className="kids-cover-fallback flex h-full w-full items-center justify-center">
+            <BookOpen className="size-10" />
           </div>
         )}
         {!available ? (
