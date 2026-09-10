@@ -2503,122 +2503,111 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  // ⚠️ No runner Linux do CI o Bun (1.3.11 e 1.3.12) morre com "panic: Segmentation fault"
-  // DENTRO deste teste: 3 runs seguidos em 10/09, com o molda isolado ou não, sempre depois
-  // de "animation settings retime". É crash do Bun, não do código ("This indicates a bug in
-  // Bun, not your code"): no Windows e num container Linux com o mesmo Bun (2 CPUs, com carga,
-  // com workers atrasados) o arquivo fecha 97/97. O gatilho parece ser encerrar Workers em
-  // disco lento (reproduziu num bind mount). Enquanto o Bun não corrige, este teste roda em
-  // todo lugar MENOS no runner Linux do CI; `useSceneFlipbookPlayer.test.tsx` segue cobrindo
-  // o player lá.
-  test.skipIf(process.platform === 'linux' && process.env.CI === 'true')(
-    'flipbook form preserves pixels, previews without document redraw/history and pauses on blur/close/context loss',
-    async () => {
-      let now = 0,
-        id = 0
-      const frames = new Map<number, FrameRequestCallback>()
-      const request = spyOn(globalThis, 'requestAnimationFrame').mockImplementation((fn) => {
-        frames.set(++id, fn)
-        return id
-      })
-      const cancel = spyOn(globalThis, 'cancelAnimationFrame').mockImplementation((id) => {
-        frames.delete(id)
-      })
-      const clock = spyOn(performance, 'now').mockImplementation(() => now)
-      const { editor, ports, view, openInspector } = setup()
-      try {
-        await waitFor(() => expect(ports.length).toBeGreaterThan(0))
-        openInspector()
-        fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-        const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
-        const toggle = (open: boolean) =>
-          act(() => {
-            appearance.open = open
-            fireEvent(appearance, new Event('toggle'))
-          })
-        toggle(true)
-        await waitFor(() =>
-          expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
-            true,
-          ),
-        )
-        const original = editor.getState().asset,
-          image = original.images[0]!
-        const material = original.materials.find((m) => m.colorImageId === image.id)!
-        fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.materialChoose }), {
-          target: { value: material.id },
-        })
-        const settings = screen
-          .getByText(COPY.scene.flipbookSettings, { selector: 'summary' })
-          .closest('details')!
+  test('flipbook form preserves pixels, previews without document redraw/history and pauses on blur/close/context loss', async () => {
+    let now = 0,
+      id = 0
+    const frames = new Map<number, FrameRequestCallback>()
+    const request = spyOn(globalThis, 'requestAnimationFrame').mockImplementation((fn) => {
+      frames.set(++id, fn)
+      return id
+    })
+    const cancel = spyOn(globalThis, 'cancelAnimationFrame').mockImplementation((id) => {
+      frames.delete(id)
+    })
+    const clock = spyOn(performance, 'now').mockImplementation(() => now)
+    const { editor, ports, view, openInspector } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      const toggle = (open: boolean) =>
         act(() => {
-          settings.open = true
-          fireEvent(settings, new Event('toggle'))
+          appearance.open = open
+          fireEvent(appearance, new Event('toggle'))
         })
-        const width = screen.getByRole('spinbutton', { name: COPY.scene.flipbookWidth })
-        fireEvent.change(width, { target: { value: image.width / 2 } })
-        fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookHeight }), {
-          target: { value: image.height / 2 },
-        })
-        fireEvent.change(screen.getByRole('textbox', { name: COPY.scene.flipbookSequence }), {
-          target: { value: '1, 4, 4, 2' },
-        })
-        fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookFps }), {
-          target: { value: '2.5' },
-        })
-        fireEvent.submit(width.closest('form')!)
-        const animated = editor.getState().asset
-        expect(animated.images[0]!.flipbook).toEqual({
-          frameWidth: image.width / 2,
-          frameHeight: image.height / 2,
-          frames: [0, 3, 3, 1],
-          fps: 2.5,
-          loop: true,
-        })
-        expect(animated.images[0]!.layers).toBe(image.layers)
-        expect(animated.geometries).toBe(original.geometries)
-        const revision = editor.getState().contentRevision
-        fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }), {
-          target: { value: '1' },
-        })
-        expect(ports.at(-1)!.frames.at(-1)).toEqual({ id: image.id, frame: 3 })
-        const documents = ports.at(-1)!.documentUpdates
-        fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-        expect(frames.size).toBe(1)
-        act(() => {
-          now = 400
-          const callbacks = [...frames.values()]
-          frames.clear()
-          for (const fn of callbacks) fn(now)
-        })
-        expect(
-          (screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }) as HTMLSelectElement)
-            .value,
-        ).toBe('2')
-        expect(editor.getState().asset).toBe(animated)
-        expect(editor.getState().contentRevision).toBe(revision)
-        expect(ports.at(-1)!.documentUpdates).toBe(documents)
-        act(() => window.dispatchEvent(new Event('blur')))
-        expect(frames.size).toBe(0)
-        fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-        act(() => ports.at(-1)!.callbacks.contextLost(true))
-        expect(frames.size).toBe(0)
-        act(() => ports.at(-1)!.callbacks.contextLost(false))
-        fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
-        toggle(false)
-        expect(frames.size).toBe(0)
-        fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-        expect(editor.getState().asset.images).toEqual(original.images)
-        expect(editor.getState().canUndo).toBe(false)
-      } finally {
-        view.unmount()
-        editor.getState().dispose()
-        request.mockRestore()
-        cancel.mockRestore()
-        clock.mockRestore()
-      }
-    },
-  )
+      toggle(true)
+      await waitFor(() =>
+        expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
+          true,
+        ),
+      )
+      const original = editor.getState().asset,
+        image = original.images[0]!
+      const material = original.materials.find((m) => m.colorImageId === image.id)!
+      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.materialChoose }), {
+        target: { value: material.id },
+      })
+      const settings = screen
+        .getByText(COPY.scene.flipbookSettings, { selector: 'summary' })
+        .closest('details')!
+      act(() => {
+        settings.open = true
+        fireEvent(settings, new Event('toggle'))
+      })
+      const width = screen.getByRole('spinbutton', { name: COPY.scene.flipbookWidth })
+      fireEvent.change(width, { target: { value: image.width / 2 } })
+      fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookHeight }), {
+        target: { value: image.height / 2 },
+      })
+      fireEvent.change(screen.getByRole('textbox', { name: COPY.scene.flipbookSequence }), {
+        target: { value: '1, 4, 4, 2' },
+      })
+      fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.flipbookFps }), {
+        target: { value: '2.5' },
+      })
+      fireEvent.submit(width.closest('form')!)
+      const animated = editor.getState().asset
+      expect(animated.images[0]!.flipbook).toEqual({
+        frameWidth: image.width / 2,
+        frameHeight: image.height / 2,
+        frames: [0, 3, 3, 1],
+        fps: 2.5,
+        loop: true,
+      })
+      expect(animated.images[0]!.layers).toBe(image.layers)
+      expect(animated.geometries).toBe(original.geometries)
+      const revision = editor.getState().contentRevision
+      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }), {
+        target: { value: '1' },
+      })
+      expect(ports.at(-1)!.frames.at(-1)).toEqual({ id: image.id, frame: 3 })
+      const documents = ports.at(-1)!.documentUpdates
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
+      expect(frames.size).toBe(1)
+      act(() => {
+        now = 400
+        const callbacks = [...frames.values()]
+        frames.clear()
+        for (const fn of callbacks) fn(now)
+      })
+      expect(
+        (screen.getByRole('combobox', { name: COPY.scene.flipbookChoose }) as HTMLSelectElement)
+          .value,
+      ).toBe('2')
+      expect(editor.getState().asset).toBe(animated)
+      expect(editor.getState().contentRevision).toBe(revision)
+      expect(ports.at(-1)!.documentUpdates).toBe(documents)
+      act(() => window.dispatchEvent(new Event('blur')))
+      expect(frames.size).toBe(0)
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
+      act(() => ports.at(-1)!.callbacks.contextLost(true))
+      expect(frames.size).toBe(0)
+      act(() => ports.at(-1)!.callbacks.contextLost(false))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.flipbookPlay }))
+      toggle(false)
+      expect(frames.size).toBe(0)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.images).toEqual(original.images)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+      request.mockRestore()
+      cancel.mockRestore()
+      clock.mockRestore()
+    }
+  })
   test('3D frame bounds clip wide brushes and fill while 2D sheet painting remains unrestricted', async () => {
     const original = migrateLegacyModel(makeModel()).document
     const image = original.images[0]!
