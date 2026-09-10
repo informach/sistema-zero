@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import {
   AxesHelper,
   Box3Helper,
@@ -9,6 +9,7 @@ import {
   type Scene,
   SkinnedMesh,
   Vector3,
+  WebGLRenderer,
 } from 'three'
 import { createModelAsset } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
@@ -28,7 +29,7 @@ import { createScenePaintGesture } from '../state/scenePaintGesture'
 import { createSceneSkinPaintGesture } from '../state/sceneSkinPaintGesture'
 import { createSceneTransformGesture } from '../state/sceneTransformGesture'
 import { makeModel } from '../testing/fixtures'
-import { sceneAnimationClip } from '../testing/sceneAnimation'
+import { animatedScene, sceneAnimationClip } from '../testing/sceneAnimation'
 import { makeSceneGridGeometry } from '../testing/sceneFixtures'
 import { makeSceneSkinFixture } from '../testing/sceneSkin'
 import { makeSceneTwoBoneFixture } from '../testing/sceneTwoBone'
@@ -38,6 +39,7 @@ import type {
   SceneSkinPaintActions,
   SceneTransformActions,
 } from './sceneViewportTypes'
+import { ViewportThumbnail } from './viewportThumbnail'
 
 let request: typeof requestAnimationFrame
 let cancel: typeof cancelAnimationFrame
@@ -64,6 +66,7 @@ function setup(
   transform?: SceneTransformActions,
   paint?: ScenePaintActions,
   skinPaint?: SceneSkinPaintActions,
+  gpuCapture = false,
 ) {
   const host = document.createElement('div')
   Object.defineProperties(host, { clientWidth: { value: 320 }, clientHeight: { value: 180 } })
@@ -97,21 +100,22 @@ function setup(
       skinPaint,
     },
     true,
-    () => ({
-      setPixelRatio: () => {},
-      setClearColor: () => {},
-      setSize: () => {},
-      dispose: () => {
-        disposals++
-      },
-      render: (world, activeCamera) => {
-        world.updateMatrixWorld(true)
-        activeCamera.updateMatrixWorld(true)
-        camera = activeCamera
-        scene = world as Scene
-        renders++
-      },
-    }),
+    () =>
+      Object.assign(Object.create(gpuCapture ? WebGLRenderer.prototype : Object.prototype), {
+        setPixelRatio: () => {},
+        setClearColor: () => {},
+        setSize: () => {},
+        dispose: () => {
+          disposals++
+        },
+        render: (world: Scene, activeCamera: Camera) => {
+          world.updateMatrixWorld(true)
+          activeCamera.updateMatrixWorld(true)
+          camera = activeCamera
+          scene = world as Scene
+          renders++
+        },
+      }),
   )
   const source = migrateLegacyModel(createModelAsset({ name: 'Caixa' })).document
   viewport.setDocument(source)
@@ -159,6 +163,92 @@ function setup(
 }
 
 describe('scene viewport lifecycle and picking', () => {
+  test('thumbnail capture works at rest and refuses a transient animation pose until it is cleared', () => {
+    const capture = spyOn(ViewportThumbnail.prototype, 'render').mockReturnValue(
+      'data:image/jpeg;base64,AAAA',
+    )
+    const f = setup(undefined, undefined, undefined, true)
+    try {
+      const source = animatedScene()
+      f.viewport.setDocument(source)
+      expect(f.viewport.renderThumb()).toBe('data:image/jpeg;base64,AAAA')
+      expect(capture).toHaveBeenCalledTimes(1)
+      f.viewport.setPose(prepareSceneAnimation(source, source.animations[0]!.id).sample(1))
+      expect(f.viewport.renderThumb()).toBeNull()
+      expect(capture).toHaveBeenCalledTimes(1)
+      f.viewport.setPose(null)
+      expect(f.viewport.renderThumb()).toBe('data:image/jpeg;base64,AAAA')
+      expect(capture).toHaveBeenCalledTimes(2)
+    } finally {
+      f.close()
+      capture.mockRestore()
+    }
+  })
+
+  test('movement steps snap the relative world displacement, retain fractional coordinates and undo in one step', () => {
+    let gesture: ReturnType<typeof createSceneTransformGesture> | undefined
+    const f = setup({
+      begin: () => gesture?.begin(f.source.nodes.map((node) => node.id)) ?? false,
+      preview: (delta) => {
+        const result = gesture?.preview(delta) ?? false
+        f.viewport.setDocument(editor.getState().asset)
+        return result
+      },
+      end: (commit) => {
+        gesture?.end(commit)
+        f.viewport.setDocument(editor.getState().asset)
+      },
+    })
+    const shift = identityMatrix()
+    shift[12] = 0.37
+    const source = transformSceneNodes(
+      f.source,
+      f.source.nodes.map((node) => node.id),
+      shift,
+    )
+    const editor = createDocumentEditorStore({
+      asset: source,
+      sizeOf: structuredBytes,
+      autosaveMs: 60_000,
+      persistence: { save: async () => {} },
+    })
+    gesture = createSceneTransformGesture(editor, (error) => {
+      throw error
+    })
+    try {
+      f.viewport.setDocument(source)
+      f.viewport.setSelection(source.nodes.map((node) => node.id))
+      f.viewport.setTransformTool('move')
+      f.viewport.setMovementStep(0.5)
+      f.viewport.setGridVisible(false)
+      f.tick()
+      expect(editor.getState().asset).toBe(source)
+      expect(editor.getState().canUndo).toBe(false)
+      const point = new Vector3(0.37, 1, 0).project(f.count().camera!)
+      const x = (point.x + 1) * 160,
+        y = (1 - point.y) * 90
+      f.pointer('pointermove', 1, { clientX: x + 20, clientY: y, button: -1 })
+      f.pointer('pointerdown', 1, { clientX: x + 20, clientY: y, buttons: 1 })
+      f.pointer('pointermove', 1, { clientX: x + 45, clientY: y, button: -1, buttons: 1 })
+      const moved = indexSceneDocument(editor.getState().asset).scene.worldMatrices.get(
+        source.nodes[0]!.id,
+      )!
+      const original = indexSceneDocument(source).scene.worldMatrices.get(source.nodes[0]!.id)!
+      const delta = moved[12] - original[12]
+      expect(delta).toBeGreaterThan(0)
+      expect(delta / 0.5).toBeCloseTo(Math.round(delta / 0.5), 10)
+      expect(editor.getState().canUndo).toBe(false)
+      f.pointer('pointerup', 1, { clientX: x + 45, clientY: y })
+      expect(editor.getState().canUndo).toBe(true)
+      editor.getState().undo()
+      expect(editor.getState().asset.nodes).toEqual(source.nodes)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      f.close()
+      editor.getState().dispose()
+    }
+  })
+
   test('real destination arrows move the requested target, retain it after release and cancel only the next drag', () => {
     let actions: SceneTransformActions | undefined
     const f = setup({

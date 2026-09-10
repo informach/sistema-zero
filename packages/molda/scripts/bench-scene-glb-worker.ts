@@ -43,7 +43,12 @@ for (const [parts, grid, keys, textureSide, layers] of [
       last = now
       count++
     }, 1)
-    const request = { document: source, documentId: source.id, revision: sample }
+    const request = {
+      document: source,
+      documentId: source.id,
+      revision: sample,
+      animatedPaint: false,
+    }
     let result: ReturnType<typeof encodeSceneGlb>, elapsed: number
     try {
       const start = performance.now()

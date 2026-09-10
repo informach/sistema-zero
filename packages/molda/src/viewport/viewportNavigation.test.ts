@@ -1,10 +1,40 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, spyOn, test } from 'bun:test'
 import { MOUSE, TOUCH, Vector3 } from 'three'
 import { ViewportCamera } from './viewportCamera'
 import { VIEW_DIRECTIONS } from './viewportMath'
 import { createViewportOrbit } from './viewportNavigation'
 
 describe('viewport navigation with real OrbitControls, without a GPU', () => {
+  test('disposing a detached canvas removes document keyboard listeners, including a held Control key', () => {
+    const canvas = document.createElement('canvas')
+    document.body.append(canvas)
+    const added = spyOn(document, 'addEventListener'),
+      removed = spyOn(document, 'removeEventListener')
+    const orbit = createViewportOrbit(canvas, new ViewportCamera(), false, () => {})
+    try {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Control' }))
+      const listeners = added.mock.calls.filter(([type]) => type === 'keydown' || type === 'keyup')
+      expect(listeners.map(([type]) => type)).toEqual(['keydown', 'keyup'])
+      canvas.remove()
+      orbit.dispose()
+      for (const [type, listener] of listeners)
+        expect(
+          removed.mock.calls.some(
+            (call) =>
+              call[0] === type &&
+              call[1] === listener &&
+              typeof call[2] === 'object' &&
+              call[2]?.capture,
+          ),
+        ).toBe(true)
+    } finally {
+      canvas.remove()
+      orbit.dispose()
+      added.mockRestore()
+      removed.mockRestore()
+    }
+  })
+
   test('named views stay exact after damping updates, including top with its own up-axis', () => {
     const canvas = document.createElement('canvas')
     const rig = new ViewportCamera()

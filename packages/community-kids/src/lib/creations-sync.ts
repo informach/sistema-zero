@@ -458,21 +458,20 @@ export async function reconcileCreations<T extends LocalCreation, P>(
       report.skipped += 1
       continue
     }
-    if (local && options.localUpdatedAt) {
-      const freshUpdatedAt = await options.localUpdatedAt(remote.itemId)
-      if (freshUpdatedAt === null) {
-        localById.delete(remote.itemId)
-      } else if (typeof freshUpdatedAt === 'number' && freshUpdatedAt !== local.updatedAt) {
-        report.skipped += 1
-        continue
-      }
-    }
-
-    const current = localById.get(remote.itemId)
     let stagedCopy: StagedConflictCopy | undefined
     let rollbackAttempted = false
     let deleted = false
     try {
+      if (local && options.localUpdatedAt) {
+        const freshUpdatedAt = await options.localUpdatedAt(remote.itemId)
+        if (freshUpdatedAt === null) {
+          localById.delete(remote.itemId)
+        } else if (typeof freshUpdatedAt === 'number' && freshUpdatedAt !== local.updatedAt) {
+          report.skipped += 1
+          continue
+        }
+      }
+      const current = localById.get(remote.itemId)
       const lastSynced = current ? options.marks.get(current.id) : undefined
       const localChanged = current !== undefined && current.updatedAt !== lastSynced
       if (current && localChanged) stagedCopy = await options.keepLocalCopy(current)
@@ -582,7 +581,6 @@ export async function reconcileCreations<T extends LocalCreation, P>(
         }
         continue
       }
-      if (tombstone) options.marks.clearTombstone(remote.itemId)
       if (options.canAccept && !options.canAccept(remote)) {
         report.skipped += 1
         continue
@@ -649,6 +647,7 @@ export async function reconcileCreations<T extends LocalCreation, P>(
           applied = true
           stagedCopy?.commit()
           if (stagedCopy) report.conflicts += 1
+          options.marks.clearTombstone(remote.itemId)
           options.marks.set(remote.itemId, remote.itemUpdatedAt, remote.revision)
           report.downloaded += 1
         } else {

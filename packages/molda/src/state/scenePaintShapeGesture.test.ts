@@ -62,9 +62,14 @@ function setup() {
     },
   }
 }
-test('shape outline is session-only, freezes settings, and runs one real worker command after release', async () => {
+test.each([
+  false,
+  true,
+])('shape outline freezes settings and runs one worker command after thumbnail=%s', async (thumbnail) => {
   const f = setup()
   try {
+    if (thumbnail) f.editor.getState().setThumb('photo')
+    const before = f.editor.getState().asset
     expect(
       f.gesture.begin(
         f.source,
@@ -75,7 +80,7 @@ test('shape outline is session-only, freezes settings, and runs one real worker 
     ).toBe(true)
     f.gesture.move({ point: [4, 3], region: 'face' })
     f.gesture.move({ point: [2, 2], region: 'face' })
-    expect(f.editor.getState().asset).toBe(f.source)
+    expect(f.editor.getState().asset).toBe(before)
     expect(f.tasks).toHaveLength(0)
     expect(f.previews.at(-1)?.to).toEqual([2, 2])
     f.gesture.end(true)

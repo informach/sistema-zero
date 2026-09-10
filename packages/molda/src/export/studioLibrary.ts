@@ -12,10 +12,11 @@
 
 import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 import { ByteLru } from '../core/byteLru'
+import { COPY } from '../core/copy'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset } from '../core/model'
 import { bytesToBase64 } from '../core/skinCodec'
-import { readSceneDocument } from '../scene/readDocument'
+import type { MoldaSceneDocument } from '../scene/document'
 import {
   getDefaultMoldaPersistence,
   getMoldaGenerationStore,
@@ -23,9 +24,11 @@ import {
   type MoldaPersistence,
 } from '../state/persistence'
 import { createMoldaSceneCloudSource } from '../state/sceneCloudSource'
+import { createScenePersistence } from '../state/scenePersistence'
 import { prepareSceneGlbInWorker } from '../workers/sceneGlb'
 import { exportSkyHdrInWorker } from '../workers/skyExport'
 import { exportModelGlb } from './modelGlb'
+import type { SceneGlbIssue } from './sceneGlbReport'
 import { inspectSceneStudioCompatibility } from './sceneStudioCompatibility'
 import { exportTexturePng } from './texturePng'
 
@@ -57,6 +60,22 @@ export type MoldaStudioResyncResult =
 export type ExportForStudioResult =
   | { ok: true; asset: MoldaExportedAsset }
   | { ok: false; reason: 'not-found' | 'encode-failed' | 'asset-too-big' }
+  | { ok: false; reason: 'needs-review'; review: MoldaStudioReview }
+
+export interface MoldaStudioReview {
+  /** Consent applies to this namespace, creation and saved revision only. */
+  token: string
+  losses: string[]
+}
+
+export interface MoldaStudioExportContext {
+  persistence?: MoldaPersistence
+  namespace?: string
+  acceptedReview?: string
+  signal?: AbortSignal
+  /** Supplied only by the transactional storage reader, never by the review UI. */
+  storageRevision?: number
+}
 
 const MAX_EXPORT_CACHE_ENTRIES = 16
 type CachedExport =
@@ -64,8 +83,11 @@ type CachedExport =
   | {
       ok: true
       encoded: Pick<MoldaExportedAsset, 'kind' | 'dataUrl' | 'bytes' | 'width' | 'height'>
+      losses?: string[]
     }
 const exportCaches = new WeakMap<MoldaPersistence, ByteLru<string, CachedExport>>()
+const sceneSnapshotIds = new WeakMap<MoldaSceneDocument, number>()
+let nextSceneSnapshotId = 0
 
 function cacheFor(persistence: MoldaPersistence): ByteLru<string, CachedExport> {
   let cache = exportCaches.get(persistence)
@@ -74,7 +96,10 @@ function cacheFor(persistence: MoldaPersistence): ByteLru<string, CachedExport> 
       maxBytes: MOLDA_LIMITS.exportCacheBytes,
       maxEntries: MAX_EXPORT_CACHE_ENTRIES,
       sizeOf: (key, value) =>
-        128 + 2 * (key.length + (value.ok ? value.encoded.dataUrl.length : 0)),
+        128 +
+        2 *
+          (key.length +
+            (value.ok ? value.encoded.dataUrl.length + (value.losses?.join('').length ?? 0) : 0)),
     })
     exportCaches.set(persistence, cache)
   }
@@ -107,63 +132,99 @@ function materializeExport(
 /** Do namespace corrente, ordenada da mais recente para a mais antiga, nas DUAS gerações. */
 export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
   const persistence = getDefaultMoldaPersistence()
+  const generation = createMoldaSceneCloudSource(getMoldaGenerationStore())
   const v1 = persistence.listSummaries
     ? await persistence.listSummaries()
     : (await persistence.loadAll()).map(summarizeAsset)
   // A criação promovida continua sendo a mesma criação para o Estúdio: some daqui e o
   // "Trazer do Molda" deixaria de enxergar o que a criança acabou de modelar.
-  const scene = await createMoldaSceneCloudSource().listSummaries()
+  const scene = await generation.listSummaries()
   return [...v1, ...scene].sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
-/**
- * A geração seguinte vai pelo `encodeSceneGlb`, com a pintura animada: a hierarquia, os
- * clipes e a folha inteira que o runtime avançado sabe tocar. Nunca pelo escritor v1, que
- * funde tudo numa malha só.
- *
- * ⚠️ Perdas NÃO seguem o contrato do v1, e isto é uma diferença de comportamento conhecida:
- * o v1 é tudo-ou-recusa e leva as peças escondidas; aqui o worker grava com `allowLosses`,
- * então peça escondida, face descartada e geometria solta SOMEM da cópia sem aviso. O
- * "Exportar GLB" da própria oficina exige aceite explícito para essas mesmas perdas; esta
- * ponte não tem canal para pedir aceite (é um PULL do Estúdio). Registrado no plano como
- * decisão de produto em aberto — não confundir com o portão de tetos abaixo, que recusa.
- */
-async function exportSceneForStudio(id: string, namespace: string): Promise<ExportForStudioResult> {
-  // O banco do PERFIL que pediu, não o corrente: entre enfileirar e enviar, o host pode ter
-  // trocado de criança no mesmo tablet, e a cópia sairia da galeria da outra.
-  const found = await createMoldaSceneCloudSource(getMoldaGenerationStore(namespace)).read(id)
-  if (!found) return { ok: false, reason: 'not-found' }
-  const read = readSceneDocument(JSON.parse(found.json))
-  if (read.status !== 'valid') return { ok: false, reason: 'encode-failed' }
-  const summary = { id, name: found.summary.name, thumb: found.summary.thumbDataUrl ?? undefined }
+/** The editor owns a validated snapshot: no JSON roundtrip or disk reload. */
+export async function exportLoadedSceneForStudio(
+  document: MoldaSceneDocument,
+  context: MoldaStudioExportContext = {},
+): Promise<ExportForStudioResult> {
+  context.signal?.throwIfAborted()
+  const namespace = context.namespace ?? getMoldaStorageNamespace()
+  const cache = cacheFor(context.persistence ?? getDefaultMoldaPersistence())
+  let snapshotId = sceneSnapshotIds.get(document)
+  if (snapshotId === undefined) {
+    snapshotId = ++nextSceneSnapshotId
+    sceneSnapshotIds.set(document, snapshotId)
+  }
+  const token = JSON.stringify([
+    namespace,
+    document.id,
+    document.updatedAt,
+    context.storageRevision === undefined
+      ? ['snapshot', snapshotId]
+      : ['storage', context.storageRevision],
+  ])
+  const key = `scene:${token}`
+  const finish = (result: CachedExport): ExportForStudioResult => {
+    if (result.ok && result.losses?.length && context.acceptedReview !== token)
+      return { ok: false, reason: 'needs-review', review: { token, losses: [...result.losses] } }
+    return materializeExport(document, result)
+  }
+  const cached = cache.get(key)
+  if (cached) return finish(cached)
   try {
-    const result = await prepareSceneGlbInWorker({
-      document: read.document,
-      documentId: id,
-      revision: 0,
-      animatedPaint: true,
-    })
-    // Os MESMOS tetos que o painel da oficina mostra item a item. Conferir só os bytes
-    // deixava passar uma cópia leve e pesada de desenhar (60 malhas num teto de 48), e
-    // deixava passar a criação VAZIA, que o caminho v1 recusa com `empty`.
+    const result = await prepareSceneGlbInWorker(
+      {
+        document,
+        documentId: document.id,
+        revision: document.updatedAt,
+        animatedPaint: true,
+      },
+      { ...(context.signal ? { signal: context.signal } : {}) },
+    )
     const report = inspectSceneStudioCompatibility({
       stats: result.stats,
       byteLength: result.bytes.length,
     })
     if (!report.fitsSingleCopy)
-      return materializeExport(summary, {
-        ok: false,
-        reason: report.empty ? 'encode-failed' : 'asset-too-big',
-      })
-    const dataUrl = `data:model/gltf-binary;base64,${bytesToBase64(result.bytes)}`
-    return materializeExport(summary, {
+      return { ok: false, reason: report.empty ? 'encode-failed' : 'asset-too-big' }
+    const counts = new Map<SceneGlbIssue['code'], number>()
+    for (const issue of result.issues) counts.set(issue.code, (counts.get(issue.code) ?? 0) + 1)
+    const encoded: CachedExport = {
       ok: true,
-      encoded: { kind: 'model3d', dataUrl, bytes: result.bytes.length },
-    })
+      encoded: {
+        kind: 'model3d',
+        dataUrl: `data:model/gltf-binary;base64,${bytesToBase64(result.bytes)}`,
+        bytes: result.bytes.length,
+      },
+      losses: [...counts].map(([code, count]) => COPY.scene.glbExport.issues[code](count)),
+    }
+    context.signal?.throwIfAborted()
+    cache.set(key, encoded)
+    return finish(encoded)
   } catch {
-    return materializeExport(summary, { ok: false, reason: 'encode-failed' })
+    context.signal?.throwIfAborted()
+    return { ok: false, reason: 'encode-failed' }
   }
 }
+
+async function exportSceneForStudio(
+  id: string,
+  context: MoldaStudioExportContext,
+): Promise<ExportForStudioResult> {
+  const found = await createScenePersistence(getMoldaGenerationStore(context.namespace)).read(
+    id,
+    context.signal,
+  )
+  if (found.status === 'missing' || found.status === 'deleted')
+    return { ok: false, reason: 'not-found' }
+  if (found.status !== 'active') return { ok: false, reason: 'encode-failed' }
+  return exportLoadedSceneForStudio(found.document, {
+    ...context,
+    storageRevision: found.summary.revision,
+  })
+}
+
+export { sameSceneContent as sameSceneStudioContent } from '../scene/documentContent'
 
 /** Separador das chaves do cache: `namespace` (o viewerId do host, um UUID), `id` e `updatedAt` nunca o contêm. */
 const CACHE_KEY_SEPARATOR = String.fromCharCode(0)
@@ -175,8 +236,9 @@ const CACHE_KEY_SEPARATOR = String.fromCharCode(0)
  */
 export async function exportLoadedAssetForStudio(
   asset: MoldaAsset,
-  options: { persistence?: MoldaPersistence; namespace?: string } = {},
+  options: MoldaStudioExportContext = {},
 ): Promise<ExportForStudioResult> {
+  options.signal?.throwIfAborted()
   const namespace = options.namespace ?? getMoldaStorageNamespace()
   const persistence = options.persistence ?? getDefaultMoldaPersistence()
   const cache = cacheFor(persistence)
@@ -184,6 +246,7 @@ export async function exportLoadedAssetForStudio(
   const cached = cache.get(cacheKey)
   if (cached) return materializeExport(asset, cached)
   const finish = (result: CachedExport): ExportForStudioResult => {
+    options.signal?.throwIfAborted()
     cache.set(cacheKey, result)
     return materializeExport(asset, result)
   }
@@ -201,7 +264,7 @@ export async function exportLoadedAssetForStudio(
     })
   }
   if (asset.kind === 'sky') {
-    const result = await exportSkyHdrInWorker(asset)
+    const result = await exportSkyHdrInWorker(asset, { signal: options.signal })
     if (!result.ok) return finish({ ok: false, reason: 'asset-too-big' })
     return finish({
       ok: true,
@@ -229,13 +292,13 @@ export async function exportAssetForStudio(
    * entrar na fila justamente porque uma troca de criança no meio da espera faria a cópia
    * sair do banco da outra; reler o namespace aqui, depois dos awaits, desfazia isso.
    */
-  context?: { persistence?: MoldaPersistence; namespace?: string },
+  context?: MoldaStudioExportContext,
 ): Promise<ExportForStudioResult> {
   const namespace = context?.namespace ?? getMoldaStorageNamespace()
   const persistence = context?.persistence ?? getDefaultMoldaPersistence()
   // Falhar ao ler o inventário v1 não pode impedir a geração seguinte de responder:
   // uma criação promovida não está mais lá, e é justamente ela que precisa sair daqui.
   const asset = await persistence.load(id).catch(() => null)
-  if (!asset) return exportSceneForStudio(id, namespace)
-  return exportLoadedAssetForStudio(asset, { persistence, namespace })
+  if (!asset) return exportSceneForStudio(id, { ...context, namespace, persistence })
+  return exportLoadedAssetForStudio(asset, { ...context, persistence, namespace })
 }

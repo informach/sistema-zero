@@ -1,0 +1,173 @@
+diff --git a/node_modules/three/.bun-tag-4ef66eb89f8dcf7a b/.bun-tag-4ef66eb89f8dcf7a
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/build/three.cjs b/build/three.cjs
+index 6531748d1acdd9d85c4299d15ff6c3ffa3dfeaa0..930e735a887caf9e40ae0c2cb68e7215008a38f7 100644
+--- a/build/three.cjs
++++ b/build/three.cjs
+@@ -75936,6 +75936,7 @@ class WebGLRenderer {
+ 		const _this = this;
+ 
+ 		let _isContextLost = false;
++		let _dfgLUT = null;
+ 		let _nodesHandler = null;
+ 
+ 		// internal state cache
+@@ -76712,6 +76713,13 @@ class WebGLRenderer {
+ 			canvas.removeEventListener( 'webglcontextrestored', onContextRestore, false );
+ 			canvas.removeEventListener( 'webglcontextcreationerror', onContextCreationError, false );
+ 
++			if ( _dfgLUT !== null ) {
++
++				_dfgLUT.dispose();
++				_dfgLUT = null;
++
++			}
++
+ 			background.dispose();
+ 			renderLists.dispose();
+ 			renderStates.dispose();
+@@ -78335,7 +78343,9 @@ class WebGLRenderer {
+ 			// Set DFG LUT for physically-based materials
+ 			if ( m_uniforms.dfgLUT !== undefined ) {
+ 
+-				m_uniforms.dfgLUT.value = getDFGLUT();
++				// Own the texture listener per renderer; the shared LUT must not retain disposed contexts.
++				if ( _dfgLUT === null ) _dfgLUT = getDFGLUT().clone();
++				m_uniforms.dfgLUT.value = _dfgLUT;
+ 
+ 			}
+ 
+diff --git a/build/three.module.js b/build/three.module.js
+index b1a0fdda8a14f71dd62d21325f3eb59afc45f1d0..748fb19725a4d922c631a1d1c8dd0c552d8f3b79 100644
+--- a/build/three.module.js
++++ b/build/three.module.js
+@@ -16233,6 +16233,7 @@ class WebGLRenderer {
+ 		const _this = this;
+ 
+ 		let _isContextLost = false;
++		let _dfgLUT = null;
+ 		let _nodesHandler = null;
+ 
+ 		// internal state cache
+@@ -17009,6 +17010,13 @@ class WebGLRenderer {
+ 			canvas.removeEventListener( 'webglcontextrestored', onContextRestore, false );
+ 			canvas.removeEventListener( 'webglcontextcreationerror', onContextCreationError, false );
+ 
++			if ( _dfgLUT !== null ) {
++
++				_dfgLUT.dispose();
++				_dfgLUT = null;
++
++			}
++
+ 			background.dispose();
+ 			renderLists.dispose();
+ 			renderStates.dispose();
+@@ -18632,7 +18640,9 @@ class WebGLRenderer {
+ 			// Set DFG LUT for physically-based materials
+ 			if ( m_uniforms.dfgLUT !== undefined ) {
+ 
+-				m_uniforms.dfgLUT.value = getDFGLUT();
++				// Own the texture listener per renderer; the shared LUT must not retain disposed contexts.
++				if ( _dfgLUT === null ) _dfgLUT = getDFGLUT().clone();
++				m_uniforms.dfgLUT.value = _dfgLUT;
+ 
+ 			}
+ 
+diff --git a/examples/jsm/controls/OrbitControls.js b/examples/jsm/controls/OrbitControls.js
+index 6060cd4f9a1cb3adb531bf0c055449ab201d5f4c..98d161d5b6e38128dd07982288e091c7184ba008 100644
+--- a/examples/jsm/controls/OrbitControls.js
++++ b/examples/jsm/controls/OrbitControls.js
+@@ -451,6 +451,7 @@ class OrbitControls extends Controls {
+ 
+ 		this._interceptControlDown = interceptControlDown.bind( this );
+ 		this._interceptControlUp = interceptControlUp.bind( this );
++		this._domElementRoot = null;
+ 
+ 		//
+ 
+@@ -502,7 +503,7 @@ class OrbitControls extends Controls {
+ 		this.domElement.addEventListener( 'contextmenu', this._onContextMenu );
+ 		this.domElement.addEventListener( 'wheel', this._onMouseWheel, { passive: false } );
+ 
+-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
++		const document = this._domElementRoot = this.domElement.getRootNode(); // Capture before a canvas can detach.
+ 		document.addEventListener( 'keydown', this._interceptControlDown, { passive: true, capture: true } );
+ 
+ 		this.domElement.style.touchAction = 'none'; // Disable touch scroll
+@@ -521,8 +522,11 @@ class OrbitControls extends Controls {
+ 
+ 		this.stopListenToKeyEvents();
+ 
+-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
+-		document.removeEventListener( 'keydown', this._interceptControlDown, { capture: true } );
++		const document = this._domElementRoot;
++		document?.removeEventListener( 'keydown', this._interceptControlDown, { capture: true } );
++		document?.removeEventListener( 'keyup', this._interceptControlUp, { capture: true } );
++		this._domElementRoot = null;
++		this._controlActive = false;
+ 
+ 		this.domElement.style.touchAction = ''; // Restore touch scroll
+ 
+@@ -1938,9 +1942,9 @@ function interceptControlDown( event ) {
+ 
+ 		this._controlActive = true;
+ 
+-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
++		const document = this._domElementRoot;
+ 
+-		document.addEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
++		document?.addEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
+ 
+ 	}
+ 
+@@ -1952,9 +1956,9 @@ function interceptControlUp( event ) {
+ 
+ 		this._controlActive = false;
+ 
+-		const document = this.domElement.getRootNode(); // offscreen canvas compatibility
++		const document = this._domElementRoot;
+ 
+-		document.removeEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
++		document?.removeEventListener( 'keyup', this._interceptControlUp, { passive: true, capture: true } );
+ 
+ 	}
+ 
+diff --git a/src/renderers/WebGLRenderer.js b/src/renderers/WebGLRenderer.js
+index ad830e1b2daf857647ab67be1ad3ee0996ab7ad1..a1840a5e26a3542426323f270517b609910c9b81 100644
+--- a/src/renderers/WebGLRenderer.js
++++ b/src/renderers/WebGLRenderer.js
+@@ -293,6 +293,7 @@ class WebGLRenderer {
+ 		const _this = this;
+ 
+ 		let _isContextLost = false;
++		let _dfgLUT = null;
+ 		let _nodesHandler = null;
+ 
+ 		// internal state cache
+@@ -1069,6 +1070,13 @@ class WebGLRenderer {
+ 			canvas.removeEventListener( 'webglcontextrestored', onContextRestore, false );
+ 			canvas.removeEventListener( 'webglcontextcreationerror', onContextCreationError, false );
+ 
++			if ( _dfgLUT !== null ) {
++
++				_dfgLUT.dispose();
++				_dfgLUT = null;
++
++			}
++
+ 			background.dispose();
+ 			renderLists.dispose();
+ 			renderStates.dispose();
+@@ -2692,7 +2700,9 @@ class WebGLRenderer {
+ 			// Set DFG LUT for physically-based materials
+ 			if ( m_uniforms.dfgLUT !== undefined ) {
+ 
+-				m_uniforms.dfgLUT.value = getDFGLUT();
++				// Own the texture listener per renderer; the shared LUT must not retain disposed contexts.
++				if ( _dfgLUT === null ) _dfgLUT = getDFGLUT().clone();
++				m_uniforms.dfgLUT.value = _dfgLUT;
+ 
+ 			}
+ 

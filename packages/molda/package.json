@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit",
     "test": "bun run test:1 && bun run test:2 && bun run test:3",
     "e2e": "playwright test",
+    "serve:e2e": "bun scripts/serve-e2e.ts",
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "dev": "vite --config playground/vite.config.ts",

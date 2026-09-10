@@ -27,7 +27,7 @@ export function useScenePoseSetPreview(
         open &&
         liveContext.current.open &&
         liveContext.current.selectionKey === selectionKey &&
-        editor.getState().asset === document &&
+        editor.getState().content === document &&
         snapshot.source?.document === document &&
         snapshot.source.clip.id === clipId &&
         !snapshot.source.preview &&

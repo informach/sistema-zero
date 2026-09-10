@@ -14,9 +14,11 @@ import type {
   SceneTransformActions,
   SceneTransformTool,
   SceneViewportFactory,
+  SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
 import { Button } from '../../ui/Button'
+import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
 import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
 import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPaintControls'
@@ -48,6 +50,7 @@ interface Props {
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
   onThumb?(thumb: string | undefined): void
+  onViewport?(viewport: SceneViewportPort | null): void
 }
 
 const inactiveSubscription = () => () => {}
@@ -84,6 +87,7 @@ function SceneCanvasAttempt({
   onEndPaint,
   skinPaint,
   onThumb,
+  onViewport,
 }: Props & { onRetry(): void }) {
   const [tool, setTool] = useState<SceneTransformTool | 'box' | 'lasso'>('select')
   const [through, setThrough] = useState(false)
@@ -193,12 +197,22 @@ function SceneCanvasAttempt({
     skinPaintSettings,
     onThumb,
   })
+  useEffect(() => {
+    onViewport?.(view.viewport)
+    return () => onViewport?.(null)
+  }, [view.viewport, onViewport])
   const cancelPaint = () => {
     skinPaint?.cancel()
     view.viewport?.cancelGesture()
   }
+  const [gridVisible, setGridVisible] = useState(true)
+  const [movementStep, setMovementStep] = useState<number | null>(null)
   const [camera, setCamera] = useState<CameraView>('free')
   const copy = COPY.scene
+  useEffect(() => {
+    view.viewport?.setGridVisible?.(gridVisible)
+    view.viewport?.setMovementStep?.(movementStep)
+  }, [view.viewport, gridVisible, movementStep])
   return (
     <section
       aria-label={componentSelection ? copy.componentViewport : copy.viewport}
@@ -387,6 +401,34 @@ function SceneCanvasAttempt({
             {copy.supportGuides}
           </Button>
         )}
+        <Button
+          variant="ghost"
+          className="px-3 text-sm"
+          aria-pressed={gridVisible}
+          disabled={!view.viewport?.setGridVisible}
+          onClick={() => setGridVisible((visible) => !visible)}
+        >
+          {copy.showGrid}
+        </Button>
+        <label className="flex min-h-11 items-center gap-2 text-sm">
+          <span>{copy.movementStep}</span>
+          <select
+            name="molda-movement-step"
+            value={movementStep ?? 'free'}
+            disabled={!view.viewport?.setMovementStep}
+            onChange={(event) =>
+              setMovementStep(event.target.value === 'free' ? null : Number(event.target.value))
+            }
+            className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
+          >
+            <option value="free">{copy.movementFree}</option>
+            {[0.1, 0.5, 1].map((step) => (
+              <option key={step} value={step}>
+                {step.toLocaleString('pt-BR')}
+              </option>
+            ))}
+          </select>
+        </label>
         {CAMERA_VIEWS.map((name) => (
           <Button
             key={name}
@@ -420,59 +462,69 @@ function SceneCanvasAttempt({
           {copy.supportGuidesHint}
         </p>
       )}
-      <div className="relative min-h-64 flex-1">
-        <canvas
-          ref={view.canvas}
-          aria-label={componentSelection ? copy.componentViewport : copy.viewport}
-          tabIndex={0}
-          className="absolute inset-0 size-full touch-none"
-        />
-        {view.area.length > 1 && (
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 1 1"
-            preserveAspectRatio="none"
-            className="pointer-events-none absolute inset-0 size-full overflow-visible"
-          >
-            <path
-              d={`M ${view.area.map((point) => point.join(' ')).join(' L ')} Z`}
-              fillRule="evenodd"
-              vectorEffect="non-scaling-stroke"
-              strokeWidth={2}
-              className="fill-mld-accent/15 stroke-mld-accent"
-            />
-          </svg>
-        )}
-        {!view.viewport && !view.error && (
-          <p role="status" className="absolute inset-x-3 top-4 text-center text-mld-muted">
-            {copy.loading3d}
-          </p>
-        )}
-        {(view.error || view.lost) && (
-          <div
-            role="alert"
-            className="absolute inset-x-3 top-3 rounded-xl border border-mld-border bg-mld-surface p-4 text-sm text-mld-text"
-          >
-            <p>{view.error ?? copy.lost3d}</p>
-            {view.error && (
-              <Button className="mt-3 text-sm" onClick={onRetry}>
-                {copy.retry3d}
-              </Button>
-            )}
-          </div>
-        )}
-        {view.issueCount > 0 && (
-          <p
-            role="status"
-            className="absolute inset-x-3 bottom-3 rounded-xl bg-mld-surface p-3 text-sm text-mld-warn"
-          >
-            {copy.drawIssues(view.issueCount)}
-          </p>
-        )}
-        <SceneFirstSteps
-          key={document.id}
-          context={mode === 'animation' ? 'animation' : paintTarget ? 'paint' : 'model'}
-        />
+      <div className="relative flex min-h-64 flex-1">
+        <ReferenceImageGuide view={camera} disabled={!view.viewport || !!view.error || view.lost}>
+          <canvas
+            ref={view.canvas}
+            aria-label={componentSelection ? copy.componentViewport : copy.viewport}
+            tabIndex={0}
+            className="absolute inset-0 size-full touch-none"
+          />
+          {view.area.length > 1 && (
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 1 1"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute inset-0 size-full overflow-visible"
+            >
+              <path
+                d={`M ${view.area.map((point) => point.join(' ')).join(' L ')} Z`}
+                fillRule="evenodd"
+                vectorEffect="non-scaling-stroke"
+                strokeWidth={2}
+                className="fill-mld-accent/15 stroke-mld-accent"
+              />
+            </svg>
+          )}
+          {!view.viewport && !view.error && (
+            <p role="status" className="absolute inset-x-3 top-4 text-center text-mld-muted">
+              {copy.loading3d}
+            </p>
+          )}
+          {(view.error || view.lost) && (
+            <div
+              role="alert"
+              className="absolute inset-x-3 top-3 rounded-xl border border-mld-border bg-mld-surface p-4 text-sm text-mld-text"
+            >
+              <p>{view.error ?? copy.lost3d}</p>
+              {view.error && (
+                <Button className="mt-3 text-sm" onClick={onRetry}>
+                  {copy.retry3d}
+                </Button>
+              )}
+            </div>
+          )}
+          {view.issueCount > 0 && (
+            <p
+              role="status"
+              className="absolute inset-x-3 bottom-3 rounded-xl bg-mld-surface p-3 text-sm text-mld-warn"
+            >
+              {copy.drawIssues(view.issueCount)}
+            </p>
+          )}
+          <SceneFirstSteps
+            key={document.id}
+            context={
+              mode === 'animation'
+                ? 'animation'
+                : paintTarget
+                  ? 'paint'
+                  : weightTarget
+                    ? 'skin'
+                    : 'model'
+            }
+          />
+        </ReferenceImageGuide>
       </div>
     </section>
   )

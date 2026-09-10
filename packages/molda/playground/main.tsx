@@ -116,7 +116,7 @@ window.__molda = {
 
 async function installPreviewTracking(): Promise<void> {
   // QA instrumentation must not pull every 3D workshop into the production entry chunk.
-  if (!import.meta.env.DEV) return
+  if (!import.meta.env.DEV && import.meta.env.MODE !== 'e2e') return
   const [viewportModule, skyModule, textureModule] = await Promise.all([
     import('../src/viewport/factory'),
     import('../src/viewport/skyPreviewFactory'),

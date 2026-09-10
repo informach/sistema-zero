@@ -760,6 +760,9 @@
       },
     },
   },
+  "patchedDependencies": {
+    "three@0.184.0": "patches/three@0.184.0.patch",
+  },
   "overrides": {
     "postcss": "8.5.23",
   },

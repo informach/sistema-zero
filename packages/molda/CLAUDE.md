@@ -1438,7 +1438,7 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   consome a linha da segunda) — atômico, nunca pela metade. Uma quina só continua indo pelo
   `bevelMeshEdge` de sempre.
 - Peso da primeira tela (lote 236): ⚠️ `SceneWorkshopHost` é carregado sob demanda no
-  `MoldaApp` (`lazy` + `Suspense`). Importá-lo estaticamente arrasta os 159 componentes da
+  `MoldaApp` (`DeferredModule`, com recuperação de falha). Importá-lo estaticamente arrasta os 159 componentes da
   oficina para o bundle de ENTRADA: 364 → 568 kB, medido. Sob demanda a entrada é 351,55 kB.
   O aviso do chunk Three (579,29 kB) fica: ele não entra na primeira carga (confira os
   `modulepreload` do index.html) e o teto NÃO deve ser aumentado para escondê-lo.
@@ -1449,7 +1449,7 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   `{ thumb: null }`; quem prova a miniatura reinstala com foto. Regressão em
   `ModelEditor.test.tsx` assere a PROPRIEDADE (nada gravado passado o tempo), não o log.
 - Volta da ponte e backup (lote 234): `useStudioResync` recebe `exportAsset` e não conhece
-  formato; a oficina passa `exportAssetForStudio(id)`, que relê o disco pela geração dona.
+  formato; a oficina passa `exportLoadedSceneForStudio`, com o snapshot já salvo e seu perfil.
   O aviso `COPY.scene.development` só aparece SEM `resyncToStudio` (host interno).
   ⚠️ `exportAssetForStudio` precisa tolerar falha na leitura v1: sem isso a exceção subia e
   a geração seguinte, dona da criação promovida, nunca era consultada. "Baixar tudo" leva a
@@ -1464,6 +1464,15 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   lançar. Quem escreve o formato novo é a persistência de cena, que não passa por ele.
   ⚠️ Falha ao listar o inventário da geração seguinte NÃO pode derrubar a galeria v1.
   Rollout e volta atrás: `docs/plans/2026-09-10-molda-rollout.md`.
+- Retomada da nuvem (lote 239, 10/09): `MoldaSceneCloudSource.owns` inclui lápides; o
+  espelho escolhe a geração dona local mesmo quando desce um documento v1. `saveIfUnchanged`
+  converte esse v1 pelo migrador existente, restaura cenas apagadas pela revisão da lápide e
+  usa `adoptCloudScene` para substituir v1 por v2 com preservação atômica dos registros
+  originais. Não promover primeiro e depois salvar: isso deixaria estado intermediário.
+  `read` distingue ilegível/futuro de ausente; nunca buscar um v1 por baixo de uma cena
+  ilegível. O reconciliador do Kids mantém lápides até a gravação e isola falhas por item.
+  Histórico recuperado, matriz das nove fases e evidências:
+  `docs/plans/2026-09-10-molda-retomada.md`. As outras lacunas continuam abertas.
 - Nuvem das duas gerações (lote 230): `createMoldaSceneCloudSource` (exportado no barril)
   é o que o host usa para listar, ler, conferir (`inspect`, sem gravar), gravar com
   renomeação, copiar e apagar a geração seguinte. ⚠️⚠️ Promover TIRA o registro do
@@ -2337,5 +2346,35 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Cancelar revoga o preparado e a entrada. Geração antes da publicação de remoção
   impede commit antigo quando um assinante começa outra pose na mesma revisão.
   Revalidar contexto antes de instalar uma captura após cancelar seleção: a
-  publicação de cancelamento pode fazer seek. Miniatura ainda cancela a sessão
-  pelo contrato exato do viewport/player. Não anunciar tolerância COW de UI ainda.
+  publicação de cancelamento pode fazer seek. Miniatura não é revisão autoral:
+  viewport/player e prévias usam `EditorState.content`, estável durante atualização de foto.
+
+## Contratos de fechamento — lotes 240–243
+
+- `EditorState.asset` contém os metadados mais recentes; `content` identifica a última
+  alteração autoral. Foto/carimbo não cancelam pose, pintura ou reprodução. Os comandos
+  partem de `asset`, preservando metadados atuais. Fotografar uma pose transitória é recusado.
+- Exportações glTF e OBJ usam o mesmo worker e protocolo do GLB, com `format` no token.
+  Constantes ficam em `sceneFileFormat`, sem trazer o codificador para a entrada da UI.
+  OBJ é ZIP com MTL/PNG e perdas explícitas; glTF inclui o buffer em data URI. PNG e HTML
+  de apresentação compartilham o renderer, não criam contexto gráfico extra.
+- `needs-review` é um resultado da ponte Molda/Estúdio. O aceite pertence ao perfil,
+  criação e revisão que geraram o relatório; nunca reutilizá-lo depois de editar.
+  Reenvio cancela codificação superada, conserva entrega iniciada e ignora miniaturas.
+  O perfil é capturado na montagem, antes da desmontagem do host. `canResyncToStudio`
+  consulta o vínculo antes de codificar; não substituir a guarda de vínculo na entrega.
+  `prepareExit` espera a fila e mantém a oficina aberta quando falta revisar perdas.
+- `DeferredModule` conserva só carregamentos bem-sucedidos. Falhas podem ser tentadas
+  novamente ou abandonadas sem derrubar a oficina; a entrada pública oferece recarregar.
+- Backup inclui projetos das duas gerações. Leitura/compressão é adiada por cena; restauração
+  cria cópias com novos IDs/nomes e mantém originais. CRC e orçamento agregado são validados.
+- Three 0.184.0 recebe o patch versionado da raiz: LUT por renderer e dono estável dos
+  listeners de OrbitControls. Não substituir isso por limpeza de listeners privados na UI.
+  Cada viewport/preview dono encerra também seu contexto WebGL. Ver `patches/README.md`
+  e o e2e de vinte aberturas antes de alterar descarte ou atualizar Three.
+- E2E usa build/preview estável (`serve:e2e`, modo `e2e`), com rastreadores só no playground.
+  Servidor existente só é reutilizado por `PW_REUSE_SERVER=1`; `E2E_PORT` permite outra
+  porta sem interromper uma sessão de interface. O playground desativa modulepreload
+  por retenção de falha no WebKit 270357; não alterar o teste para aceitar recuperação falha.
+- Compatibilidade e limites: `docs/plans/2026-09-10-molda-compatibilidade.md`. Importação
+  com relatório não equivale a suporte completo a PBR bbmodel ou extensões glTF obrigatórias.

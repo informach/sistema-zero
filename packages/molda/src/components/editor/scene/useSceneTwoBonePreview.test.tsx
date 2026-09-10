@@ -59,6 +59,8 @@ test('the form reuses preparation across invalidations and revokes old closures 
     })
     expect(animationPose.getSnapshot().pose).toBe(pose)
     act(() => editor.getState().setThumb('latest'))
+    act(() => expect(current.preview([1, 1, 0])).toBe(true))
+    act(() => editor.getState().replace({ ...editor.getState().asset, name: 'Changed content' }))
     expect(current.preview([1, 1, 0])).toBe(false)
     const latest = view.result.current.input
     act(() => expect(latest.preview([1, 1, 0])).toBe(true))

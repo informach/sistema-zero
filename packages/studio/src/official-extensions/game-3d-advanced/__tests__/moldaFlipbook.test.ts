@@ -17,11 +17,14 @@ interface PaintedMaterial extends Material {
  * chama computeBoneTexture na fronteira simulada. O que se prova aqui é o
  * avanço da sequência, não a decodificação da imagem.
  */
-async function inGame(run: (kit: Kit, material: PaintedMaterial) => void | Promise<void>) {
+async function inGame(
+  run: (kit: Kit, material: PaintedMaterial) => void | Promise<void>,
+  dataUrl = fixture.dataUrl,
+) {
   const win = window as unknown as Record<string, unknown>
   const previous = win.__SZGAME_ASSETS_3D
   win.__SZGAME_ASSETS_3D = {
-    pintado: { kind: 'model3d', dataUrl: fixture.dataUrl, fileName: 'pintado.glb' },
+    pintado: { kind: 'model3d', dataUrl, fileName: 'pintado.glb' },
   }
   try {
     expect(isValidAssetDataUrl(fixture.dataUrl, 'model3d', 'pintado.glb')).toBe(true)
@@ -206,4 +209,40 @@ test('contrato de uma versão futura deixa a pintura parada, sem adivinhação',
     if (previous === undefined) delete win.__SZGAME_ASSETS_3D
     else win.__SZGAME_ASSETS_3D = previous
   }
+})
+
+function contractDataUrl(change: Record<string, unknown>) {
+  const bytes = Uint8Array.from(atob(fixture.dataUrl.split(',')[1]!), (char) => char.charCodeAt(0))
+  const oldLength = new DataView(bytes.buffer).getUint32(12, true)
+  const json = JSON.parse(new TextDecoder().decode(bytes.subarray(20, 20 + oldLength)))
+  for (const material of json.materials) {
+    const book = material.extras?.molda?.flipbook
+    if (book) Object.assign(book, change)
+  }
+  const encoded = new TextEncoder().encode(JSON.stringify(json))
+  const length = Math.ceil(encoded.length / 4) * 4
+  const tail = bytes.subarray(20 + oldLength)
+  const patched = new Uint8Array(20 + length + tail.length)
+  patched.set(bytes.subarray(0, 20))
+  const view = new DataView(patched.buffer)
+  view.setUint32(8, patched.length, true)
+  view.setUint32(12, length, true)
+  patched.fill(32, 20, 20 + length)
+  patched.set(encoded, 20)
+  patched.set(tail, 20 + length)
+  return `data:model/gltf-binary;base64,${btoa(Array.from(patched, (n) => String.fromCharCode(n)).join(''))}`
+}
+
+test.each([
+  { frames: Array.from({ length: 257 }, () => 1) },
+  { frames: [0.5, 1.5] },
+  { columns: 1.5 },
+  { fps: 61 },
+  { frames: ['1', '0'] },
+])('invalid or excessive flipbook metadata stays static without coercion: %j', async (change) => {
+  await inGame((kit, material) => {
+    const start = placed(material)
+    kit.step(500)
+    expect(placed(material)).toEqual(start)
+  }, contractDataUrl(change))
 })

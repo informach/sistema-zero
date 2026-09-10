@@ -16,6 +16,15 @@ export class SceneTransformGizmo {
   private owner: number | null = null
   private readonly pointers = new Set<number>()
   private disposed = false
+  private movementStep: number | null = null
+
+  setMovementStep(step: number | null) {
+    if (step !== null && (!Number.isFinite(step) || step <= 0))
+      throw new Error('Invalid movement step')
+    if (step === this.movementStep) return
+    this.cancel()
+    this.movementStep = step
+  }
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -108,6 +117,10 @@ export class SceneTransformGizmo {
     if (!this.inverse) return
     this.proxy.updateMatrixWorld(true)
     const delta = affineMultiply([...this.proxy.matrixWorld.elements] as AffineMatrix, this.inverse)
+    // Snap only the requested displacement, preserving fractional imported coordinates.
+    if (this.tool === 'move' && this.movementStep !== null)
+      for (const axis of [12, 13, 14] as const)
+        delta[axis] = Math.round(delta[axis] / this.movementStep) * this.movementStep
     if (!this.actions.preview(delta)) this.cancel()
     this.request()
   }

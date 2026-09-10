@@ -615,11 +615,22 @@ export function StudioFullClient({
           thumbDataUrl: item.thumbDataUrl,
         }))
       },
-      async import(creationId) {
+      async import(creationId, options) {
         const lib = await import('@sistemazero/molda/studio-library')
         lib.setMoldaStorageNamespace(viewerId ?? '')
-        const result = await lib.exportAssetForStudio(creationId)
+        const result = await lib.exportAssetForStudio(creationId, {
+          namespace: viewerId ?? '',
+          ...options,
+        })
         if (!result.ok) {
+          if (result.reason === 'needs-review') {
+            return {
+              ok: false,
+              code: 'needs-review',
+              error: 'Confira as mudanças nesta cópia.',
+              review: result.review,
+            }
+          }
           if (result.reason === 'not-found') {
             return {
               ok: false,

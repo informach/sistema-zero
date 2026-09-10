@@ -3,6 +3,12 @@
 Escrito em 10/09/2026, com a implementação pronta na `staging`. Este documento é a ordem
 de implantação e o que fazer se algo der errado. Nada aqui foi implantado por mim.
 
+Atualização da retomada 239–244: a ordem abaixo continua necessária. Os commits da tabela
+são a base histórica e não incluem as correções ainda locais de sincronização entre gerações,
+revisão das perdas, backup/restauração e descarte. A frente de interface tem commits próprios.
+Antes de publicar, conferir o estado em `2026-09-10-molda-retomada.md` e incluir as correções
+verificadas; esta retomada não consultou nem alterou o estado de produção.
+
 ## O que muda para a criança
 
 A oficina 3D nova passa a ser o editor de **modelos**. Textura e céu continuam nos
@@ -42,6 +48,11 @@ serviço: ele é código-fonte dentro do kids.
 4. Entre com o MESMO perfil em outro aparelho: a criação tem que descer inteira.
 5. No Estúdio, "Trazer do Molda" tem que listar e trazer a criação promovida.
 6. Apague a criação num aparelho e confira que ela não volta no outro.
+7. Atualize um modelo já trazido para o Estúdio. Havendo perdas na cópia, confira o relatório,
+   mantenha a versão anterior e depois aceite a atualização. O projeto nativo deve permanecer
+   intacto, e outro perfil/projeto não deve receber a cópia.
+8. Baixe o backup completo, restaure-o e reabra uma criação de cada geração. Os originais
+   continuam presentes; as cópias têm novos IDs e nomes.
 
 O passo 4 é o mais importante: é ele que prova que a nuvem entendeu o formato novo.
 

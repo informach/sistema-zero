@@ -64,6 +64,7 @@ async function png(bytes: Uint8Array, index: number) {
 
 interface GlbJson {
   extensionsUsed?: string[]
+  extensionsRequired?: string[]
   materials?: Array<{
     alphaMode: string
     extras?: { molda?: { flipbook?: unknown } }
@@ -97,6 +98,38 @@ test('documento sem pintura animada sai idêntico nas duas gravações', () => {
   expect(encodeSceneGlb(plain, { animatedPaint: true }).bytes).toEqual(encodeSceneGlb(plain).bytes)
 })
 
+test('UVs outside a flipbook cell require review and export a cropped static frame', async () => {
+  const source = fixture(quadSheet(), [1, 3])
+  const geometry = source.geometries[0]!
+  if (geometry.kind !== 'mesh') throw new Error('Expected mesh fixture')
+  Object.values(geometry.faces)[0]!.corners[0]!.uv = [-0.25, 1.5]
+  expect(() => encodeSceneGlb(source, { animatedPaint: true })).toThrow(SceneGlbLossError)
+  const accepted = encodeSceneGlb(source, { animatedPaint: true, allowLosses: true })
+  expect(accepted.issues).toContainEqual({ code: 'flipbook-uv-first-frame', sourceId: 'paint' })
+  expect(accepted.stats.animatedPaints).toBe(0)
+  expect(json(accepted.bytes).extensionsRequired).toBeUndefined()
+  const image = await png(accepted.bytes, 0)
+  expect([image.width, image.height]).toEqual([1, 1])
+  expect(image.rgba).toEqual(Uint8Array.from([255, 0, 0, 255]))
+  await expectValidGlb(accepted.bytes)
+})
+
+test('a later unsafe mesh prevents an earlier shared material from encoding an unsafe sheet', async () => {
+  const source = fixture(quadSheet(), [1, 3])
+  const geometry = structuredClone(source.geometries[0]!)
+  const node = source.nodes[0]!
+  if (geometry.kind !== 'mesh' || node.kind !== 'mesh') throw new Error('Expected mesh')
+  geometry.id = 'later-geometry'
+  Object.values(geometry.faces)[0]!.corners[0]!.uv = [2, 0]
+  source.geometries.push(geometry)
+  source.nodes.push({ ...node, id: 'later-node', geometryId: geometry.id })
+  const result = encodeSceneGlb(source, { animatedPaint: true, allowLosses: true })
+  expect(result.stats.animatedPaints).toBe(0)
+  expect(result.stats.renderedParts).toBe(2)
+  expect(result.issues).toEqual([{ code: 'flipbook-uv-first-frame', sourceId: 'paint' }])
+  expect((await png(result.bytes, 0)).rgba).toEqual(Uint8Array.from([255, 0, 0, 255]))
+})
+
 test('com a opção a folha inteira viaja com o contrato versionado e sem perda', async () => {
   const source = fixture(quadSheet(), [1, 3])
   const result = encodeSceneGlb(source, { animatedPaint: true })
@@ -104,6 +137,7 @@ test('com a opção a folha inteira viaja com o contrato versionado e sem perda'
   await expectValidGlb(result.bytes)
   const parsed = json(result.bytes)
   expect(parsed.extensionsUsed).toEqual(['KHR_texture_transform'])
+  expect(parsed.extensionsRequired).toEqual(['KHR_texture_transform'])
   expect(parsed.materials?.[0]?.extras?.molda?.flipbook).toEqual({
     contract: SCENE_GLB_FLIPBOOK_CONTRACT,
     sourceId: 'paint',

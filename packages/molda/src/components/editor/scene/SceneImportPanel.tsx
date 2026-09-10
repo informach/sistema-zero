@@ -1,19 +1,16 @@
-import { lazy, Suspense, useState } from 'react'
+import { useState } from 'react'
+import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY as copy } from '../../../core/nativeImportCopy'
+import { DeferredModule } from '../DeferredEditor'
 import type { SceneImportPanelProps } from './sceneImportPanelTypes'
 import { importChoice } from './sceneImportStyles'
 
-const GltfPanel = lazy(() =>
-  import('./SceneGltfImportPanel').then((module) => ({ default: module.SceneGltfImportPanel })),
-)
-const ObjPanel = lazy(() =>
-  import('./SceneObjImportPanel').then((module) => ({ default: module.SceneObjImportPanel })),
-)
-const BbmodelPanel = lazy(() =>
-  import('./SceneBbmodelImportPanel').then((module) => ({
-    default: module.SceneBbmodelImportPanel,
-  })),
-)
+const loaders = {
+  gltf: () => import('./SceneGltfImportPanel').then((module) => module.SceneGltfImportPanel),
+  obj: () => import('./SceneObjImportPanel').then((module) => module.SceneObjImportPanel),
+  bbmodel: () =>
+    import('./SceneBbmodelImportPanel').then((module) => module.SceneBbmodelImportPanel),
+}
 const formats = { gltf: copy.gltfFormat, obj: copy.objFormat, bbmodel: copy.bbmodelFormat }
 
 /** Switching formats unmounts the old revision-owned task; no files/consent leak across formats. */
@@ -39,15 +36,13 @@ export function SceneImportPanel(props: SceneImportPanelProps) {
           ))}
         </div>
       </fieldset>
-      <Suspense fallback={<p role="status">{copy.validating}</p>}>
-        {format === 'gltf' ? (
-          <GltfPanel {...props} />
-        ) : format === 'obj' ? (
-          <ObjPanel {...props} />
-        ) : (
-          <BbmodelPanel {...props} />
-        )}
-      </Suspense>
+      <DeferredModule
+        key={format}
+        load={loaders[format]}
+        props={props}
+        onBack={props.onClose}
+        backLabel={COPY.scene.glbExport.close}
+      />
     </div>
   )
 }

@@ -26,10 +26,14 @@ function setup() {
     },
   }
 }
-test('async conversion has one undo, keeps other images, and validates the source and shared locks', async () => {
+test.each([
+  false,
+  true,
+])('async conversion has one undo, keeps other images and validates source/locks after thumbnail=%s', async (thumbnail) => {
   const f = setup()
   try {
     const image = f.source.images[0]!
+    if (thumbnail) f.editor.getState().setThumb('photo')
     expect(await f.task.run(f.source, image.id, { kind: 'rgba' })).toBe(true)
     expect(f.editor.getState().asset.images[0]!.encoding).toBe('rgba')
     expect(f.editor.getState().asset.images[1]).toBe(f.source.images[1])

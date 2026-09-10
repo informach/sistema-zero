@@ -21,7 +21,7 @@ export function useSceneTwoBonePreview(
       const state = animation.getSnapshot()
       return (
         active &&
-        editor.getState().asset === document &&
+        editor.getState().content === document &&
         state.source?.document === document &&
         state.source.clip.id === clipId &&
         !state.source.preview &&

@@ -46,6 +46,23 @@ export const SCENE_FIRST_STEPS_COPY = {
         },
       ],
     },
+    skin: {
+      label: 'Articular',
+      steps: [
+        {
+          title: 'Prepare os apoios',
+          text: `Em “${scene.add}”, acrescente pontos de apoio onde a peça deve dobrar. Posicione os apoios antes de criar o vínculo.`,
+        },
+        {
+          title: 'Ligue a forma aos ossos',
+          text: `Escolha uma peça de malha e abra “${scene.skinBinding.open}”. Marque os apoios, prepare a sugestão e confira antes de aplicar. Cada ponto da forma passa a acompanhar os ossos escolhidos.`,
+        },
+        {
+          title: 'Ajuste como a peça dobra',
+          text: `Abra a forma-base e “${scene.weightMap.title}”. Escolha um osso e use “${scene.skinPaint.add}” ou “${scene.skinPaint.subtract}”. Um traço pode ser desfeito inteiro. Em Animar, mova os apoios para experimentar a dobra.`,
+        },
+      ],
+    },
     animation: {
       label: 'Animar',
       steps: [

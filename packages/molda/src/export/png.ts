@@ -17,8 +17,8 @@ const CRC_TABLE = (() => {
   return table
 })()
 
-export function crc32(bytes: Uint8Array): number {
-  let crc = 0xffffffff
+export function crc32(bytes: Uint8Array, previous = 0): number {
+  let crc = previous ^ 0xffffffff
   for (let i = 0; i < bytes.length; i += 1) {
     crc = (CRC_TABLE[(crc ^ (bytes[i] as number)) & 0xff] as number) ^ (crc >>> 8)
   }

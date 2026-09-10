@@ -18,7 +18,7 @@ import { useSceneSkinPaint } from './useSceneSkinPaint'
 
 export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const activeTransform = useRef<'components' | 'nodes' | null>(null)
-  const document = useStore(editor, (state) => state.asset)
+  const document = useStore(editor, (state) => state.content)
   const [chosen, setChosen] = useState<readonly string[]>([])
   const [additive, setAdditive] = useState(false)
   const [isolation, setIsolation] = useState<readonly string[] | null>(null)

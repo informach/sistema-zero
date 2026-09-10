@@ -50,6 +50,7 @@ function LoadedEditor({
   const { flush: flushStudioResync } = useStudioResync({
     savedAsset,
     send: adapter.resyncToStudio,
+    canSend: adapter.canResyncToStudio,
     exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })

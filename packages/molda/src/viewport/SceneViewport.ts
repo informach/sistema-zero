@@ -64,7 +64,8 @@ import { workshopLights } from './workshopLights'
 export type SceneRenderer = Pick<
   WebGLRenderer,
   'setPixelRatio' | 'setClearColor' | 'setSize' | 'render' | 'dispose'
->
+> &
+  Partial<Pick<WebGLRenderer, 'forceContextLoss'>>
 
 /** Browser owner only: navigation, picking, context lifecycle and demand scheduling. */
 export class SceneViewport implements SceneViewportPort {
@@ -572,7 +573,16 @@ export class SceneViewport implements SceneViewportPort {
    * valendo, em vez de gravar um retrato pela metade da criação.
    */
   renderThumb(): string | null {
-    if (this.disposed || this.contextLost || this.isolated || !this.thumbnail) return null
+    return this.photograph()
+  }
+
+  captureImage(size: number, angle: number): string | null {
+    return this.photograph({ size, angle })
+  }
+
+  private photograph(capture?: { size: number; angle: number }): string | null {
+    if (this.disposed || this.contextLost || this.isolated || this.pose || !this.thumbnail)
+      return null
     if (typeof document === 'undefined' || !this.index) return null
     const bounds = sceneBounds(
       this.index,
@@ -580,17 +590,22 @@ export class SceneViewport implements SceneViewportPort {
       this.boundsCache ?? undefined,
     )
     if (!bounds) return null
-    return this.thumbnail.render(this.scene, bounds, [
-      this.grid,
-      this.outline,
-      this.pivot,
-      this.faces.root,
-      this.supports.root,
-      this.poseGuide.root,
-      this.weightPoints.root,
-      this.brushCursor.root,
-      ...(this.gizmo ? [this.gizmo.root] : []),
-    ])
+    return this.thumbnail.render(
+      this.scene,
+      bounds,
+      [
+        this.grid,
+        this.outline,
+        this.pivot,
+        this.faces.root,
+        this.supports.root,
+        this.poseGuide.root,
+        this.weightPoints.root,
+        this.brushCursor.root,
+        ...(this.gizmo ? [this.gizmo.root] : []),
+      ],
+      capture,
+    )
   }
 
   frame(selectionOnly = false): void {
@@ -599,6 +614,16 @@ export class SceneViewport implements SceneViewportPort {
     this.rig.frame(this.bounds(selectionOnly) ?? this.bounds(false))
     this.orbit?.update()
     this.request()
+  }
+
+  setGridVisible(visible: boolean): void {
+    if (this.disposed || visible === this.grid.visible) return
+    this.grid.visible = visible
+    this.request()
+  }
+
+  setMovementStep(step: number | null): void {
+    if (!this.disposed) this.gizmo?.setMovementStep(step)
   }
 
   private readonly request = () => {
@@ -921,6 +946,9 @@ export class SceneViewport implements SceneViewportPort {
     this.outline.dispose()
     this.pivot.dispose()
     this.renderer.dispose()
+    // This viewport owns its canvas and renderer. Retire the GPU context as well as
+    // its resources; otherwise reopening retains browser context slots until GC.
+    this.renderer.forceContextLoss?.()
     this.scene.clear()
     this.index = null
     this.baseIndex = null

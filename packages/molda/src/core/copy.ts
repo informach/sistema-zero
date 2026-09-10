@@ -161,8 +161,32 @@ export const COPY = {
       exportHint:
         'O GLB pode levar os ossos e os pesos. Confira as mudanças na exportação antes de baixar a cópia. Seu projeto original não muda.',
     },
+    photoExport: {
+      png: 'PNG: foto da criação',
+      presentation: 'Apresentação: fotos para girar',
+      pngHint: 'Uma foto de 1024 × 1024 pixels, sem grade, seleção ou imagem de referência.',
+      presentationHint:
+        'Um arquivo HTML com 24 fotos para girar a criação. Abre no navegador sem internet; mostra a pose salva, sem tocar os movimentos.',
+      original:
+        'Volte a Modelar e mostre todas as peças antes de preparar. O projeto e a miniatura da galeria continuam como estavam.',
+      unavailable:
+        'Não consegui fotografar agora. Volte a Modelar, encerre as prévias, mostre todas as peças e tente de novo.',
+      preview: 'Prévia da foto para exportar',
+      progress: (current: number, total: number) =>
+        `Fotografando a criação: ${current} de ${total}`,
+    },
     glbExport: {
       open: 'Exportar GLB',
+      format: 'Formato da cópia',
+      formats: {
+        glb: 'GLB: modelo 3D',
+        gltf: 'glTF: modelo 3D em JSON',
+        obj: 'OBJ: formas e pinturas em ZIP',
+      },
+      prepareFile: 'Preparar cópia',
+      downloadFile: 'Baixar cópia',
+      objHint:
+        'O OBJ leva formas paradas, cores e pinturas. Extraia o ZIP e mantenha os arquivos juntos.',
       pendingPose:
         'Antes de exportar, escolha Gravar pose ajustada ou Cancelar pose. Sua prévia continua no modelo.',
       title: 'Levar minha criação',
@@ -202,6 +226,11 @@ export const COPY = {
       summary: (parts: number, clips: number, bytes: number) =>
         `${parts} ${parts === 1 ? 'peça' : 'peças'} · ${clips} ${clips === 1 ? 'movimento' : 'movimentos'} · ${(bytes / (bytes < 1_048_576 ? 1024 : 1_048_576)).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ${bytes < 1_048_576 ? 'KB' : 'MB'}`,
       studio: {
+        review: 'Confira as mudanças antes de atualizar sua cópia no Estúdio.',
+        accept: 'Aceitar mudanças e atualizar no Estúdio',
+        keep: 'Manter a cópia anterior',
+        textureBudget:
+          'A pintura desta cópia ocupa espaço demais para preparar o modelo. Reduza o tamanho das imagens ou reutilize os mesmos acabamentos.',
         title: 'Conferir para o Estúdio',
         needsChanges: 'Estúdio: esta cópia precisa de ajustes',
         fits: 'Uma cópia cabe nos limites de modelos do Estúdio.',
@@ -216,7 +245,7 @@ export const COPY = {
         scope:
           'Isso confere os limites de uma cópia, não a velocidade do jogo inteiro. Outras cópias, modelos e efeitos também têm custo.',
         manual:
-          'Baixar o GLB não envia nada ao Estúdio. Esta oficina ainda não está ligada ao botão Trazer do Molda.',
+          'Para usar esta criação em um jogo, abra o projeto no Estúdio e escolha Trazer do Molda. Depois disso, as edições salvas aqui atualizam a cópia vinculada.',
         limits: {
           bytes: (actual: number, maximum: number) =>
             `Arquivo: ${(actual / 1_048_576).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} MB; limite aproximado de ${(maximum / 1_048_576).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} MB. Reduza a resolução da pintura ou a quantidade de chaves de movimento numa cópia do projeto.`,
@@ -233,6 +262,14 @@ export const COPY = {
         },
       },
       issues: {
+        'obj-structure': (_count: number) =>
+          'No OBJ, grupos e espelhos viram formas independentes na posição salva. A organização editável continua no projeto Molda.',
+        'obj-static': (_count: number) =>
+          'Esta cópia OBJ fica parada na pose salva, sem ossos nem movimentos editáveis.',
+        'obj-material': (_count: number) =>
+          'O OBJ conserva cores e pinturas. Brilho, metal, relevo, transparência e pintura nos dois lados podem mudar no outro programa. Pinturas podem repetir nas bordas de UV.',
+        'flipbook-uv-first-frame': (count: number) =>
+          `${count} ${count === 1 ? 'pintura fica parada' : 'pinturas ficam paradas'} no primeiro quadro porque há faces com UV fora do quadro. Ajuste essas UVs para levar o movimento sem mostrar quadros vizinhos.`,
         'hidden-node': (count: number) =>
           `${count} ${count === 1 ? 'item escondido fica' : 'itens escondidos ficam'} fora da cópia.`,
         'skin-dependency': (count: number) =>
@@ -1036,7 +1073,7 @@ export const COPY = {
     pathCreate: 'Criar tubo pelo caminho',
     pathCreateTitle: 'Tubo a partir das linhas',
     pathCreateHint:
-      'Escolha linhas ligadas, sem bifurcações e com começo e fim separados. Elas serão copiadas para um tubo novo; a peça original continua igual.',
+      'Escolha linhas ligadas, sem bifurcações. Para formar um laço, marque Caminho fechado. Elas serão copiadas para um tubo novo; a peça original continua igual.',
     pathName: 'Tubo',
     meshCheck: 'Conferir a malha',
     meshCheckHint:
@@ -1098,6 +1135,10 @@ export const COPY = {
     pathRadius: 'Raio do tubo',
     pathAround: 'Lados do tubo',
     pathCaps: 'Fechar as pontas',
+    pathClosed: 'Caminho fechado',
+    movementStep: 'Passo do movimento',
+    movementFree: 'Livre',
+    showGrid: 'Mostrar grade',
     applyPathSettings: 'Aplicar formato do tubo',
     pathPoint: 'Ponto do caminho',
     pathPointName: (number: number) => `Ponto ${number}`,
@@ -1148,6 +1189,7 @@ export const COPY = {
     empty: 'Nada por aqui ainda. Toque em "Criar novo" para montar a sua primeira criação!',
     emptyCta: 'Começar minha primeira criação',
     loading: 'Abrindo a sua galeria...',
+    reloadPage: 'Recarregar página',
     loadError: 'Não consegui abrir a sua galeria. Tente de novo daqui a pouco.',
     retry: 'Tentar de novo',
     open: 'Abrir',
@@ -1177,6 +1219,8 @@ export const COPY = {
     importHint: 'Escolha o .zip ou o .molda.json que você baixou antes.',
     imported: (count: number) =>
       count === 1 ? 'Trouxe 1 criação de volta!' : `Trouxe ${count} criações de volta!`,
+    importedPartial: (count: number) =>
+      `Trouxe ${count} criações. Não consegui trazer todas; conserve o backup e confira o espaço disponível. As criações que já estavam aqui continuam guardadas.`,
     importedNone: 'Esse arquivo não tinha nenhuma criação que eu conseguisse ler.',
     importFailed:
       'Não consegui ler esse arquivo. Ele veio do "Baixar tudo" do Molda (.zip ou .molda.json)?',
@@ -1196,9 +1240,8 @@ export const COPY = {
         '',
         'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" do painel de imagens.',
         'Para voltar com tudo para o Molda, use o botão "Trazer de volta" e escolha este .zip.',
-        'O arquivo galeria.molda.json é o backup completo: não apague.',
-        'A pasta projetos/ tem as criações da oficina nova. Para trazer uma de volta, abra a',
-        'oficina e use "Trazer uma cópia do Molda".',
+        'Conserve galeria.molda.json e a pasta projetos/: juntos, eles guardam toda a galeria.',
+        'Trazer de volta restaura as duas gerações em novas cópias, sem substituir suas criações.',
       ],
       /** A geração seguinte viaja no arquivo nativo dela, não num .glb pronto. */
       project: (name: string, file: string) =>
@@ -1310,20 +1353,51 @@ export const COPY = {
       description: 'Comece de um modelo pronto e mude do seu jeito.',
     },
     stepTitle: 'Escolha um modelo para começar',
+    practiceHint:
+      'Comece por onde quiser. Cada modelo tem uma experiência curta para tentar na oficina.',
+    levels: { 1: 'Primeiras formas', 2: 'Cores e detalhes', 3: 'Malhas e movimentos' },
     items: {
       personagem: {
         title: 'Personagem',
         description: 'Um boneco de blocos com o rosto já pintado.',
+        level: 2,
+        challenge: 'Experimente: pinte outra expressão no rosto e troque a cor da roupa.',
       },
-      carro: { title: 'Carro', description: 'Rodas, vidros e faróis. Pinte do seu jeito.' },
-      arvore: { title: 'Árvore', description: 'Tronco, copa de bolas e frutinhas.' },
-      casa: { title: 'Casa', description: 'Paredes, telhado de duas águas, porta e janelas.' },
-      nave: { title: 'Nave espacial', description: 'Asas, motores e uma cabine de vidro.' },
+      carro: {
+        title: 'Carro',
+        description: 'Rodas, vidros e faróis. Pinte do seu jeito.',
+        level: 1,
+        challenge: 'Experimente: duplique uma roda, mova a cópia e desfaça para comparar.',
+      },
+      arvore: {
+        title: 'Árvore',
+        description: 'Tronco, copa de bolas e frutinhas.',
+        level: 1,
+        challenge: 'Experimente: aumente uma parte da copa e mude a posição de uma fruta.',
+      },
+      casa: {
+        title: 'Casa',
+        description: 'Paredes, telhado de duas águas, porta e janelas.',
+        level: 2,
+        challenge: 'Experimente: pinte uma janela e crie uma nova camada para os detalhes.',
+      },
+      nave: {
+        title: 'Nave espacial',
+        description: 'Asas, motores e uma cabine de vidro.',
+        level: 3,
+        challenge: 'Experimente: agrupe a nave, abra Animar e teste o movimento Balançar.',
+      },
       cristal: {
         title: 'Cristais',
         description: 'Três cristais de malha numa pedra: pontas, arestas e faces para mexer.',
+        level: 3,
+        challenge:
+          'Experimente: entre em Editar malha, escolha uma ponta e mude a forma do cristal.',
       },
-    } satisfies Record<MoldaTemplateId, { title: string; description: string }>,
+    } satisfies Record<
+      MoldaTemplateId,
+      { title: string; description: string; level: 1 | 2 | 3; challenge: string }
+    >,
   },
   rename: {
     title: 'Renomear',
@@ -1335,6 +1409,7 @@ export const COPY = {
   },
   editor: {
     loading: 'Preparando a sua oficina...',
+    reloadPage: 'Recarregar página',
     loadError:
       'Não consegui carregar as ferramentas. Sua criação continua guardada. Tente de novo; se continuar, atualize a página.',
     back: 'Voltar',

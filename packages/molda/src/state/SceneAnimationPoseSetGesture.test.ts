@@ -91,7 +91,6 @@ test.each([
   'clip',
   'preview',
   'revision',
-  'thumbnail',
   'error',
   'disconnect',
   'cancel',
@@ -114,9 +113,6 @@ test.each([
         break
       case 'revision':
         f.editor.getState().commit({ ...f.source, name: 'Mudou' })
-        break
-      case 'thumbnail':
-        f.editor.getState().setThumb('data:image/png;base64,AA==')
         break
       case 'error':
         f.player.reportError(new Error('render'))
@@ -189,6 +185,29 @@ test('reentrant cancellation of publication or replacement during recording neve
     offReplacement()
     expect(f.gesture.getSnapshot().kind).toBe('pose-set')
     expect(f.editor.getState().asset).toBe(f.source)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('thumbnail metadata keeps the assisted candidate recordable with one undo', async () => {
+  const f = setup()
+  try {
+    const input = f.start()
+
+    const pose = f.gesture.getSnapshot().pose!
+    f.editor.getState().setThumb('latest')
+    await f.editor.getState().flush()
+    expect(input.isCurrent()).toBe(true)
+    expect(f.gesture.getSnapshot().pose).toBe(pose)
+    expect(input.record()).toBe(true)
+    expect(f.editor.getState().asset.thumb).toBe('latest')
+    expect(
+      prepareSceneAnimation(f.editor.getState().asset, 'clip').sample(0.7, false).worldMatrices,
+    ).toEqual(pose.worldMatrices)
+    f.editor.getState().undo()
+    expect(f.editor.getState().asset.animations).toEqual(f.source.animations)
     expect(f.editor.getState().canUndo).toBe(false)
   } finally {
     f.close()

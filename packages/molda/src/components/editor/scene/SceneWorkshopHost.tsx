@@ -22,6 +22,7 @@ export function SceneWorkshopHost({
   viewportFactory,
   theme = 'light',
   resyncToStudio,
+  canResyncToStudio,
 }: {
   store: UseStore
   initialId?: string | null
@@ -30,6 +31,7 @@ export function SceneWorkshopHost({
   theme?: 'light' | 'dark'
   /** Ausente = host interno sem ponte; é o que decide o aviso de oficina em desenvolvimento. */
   resyncToStudio?: ResyncToStudio
+  canResyncToStudio?: (id: string) => Promise<boolean>
 }) {
   const scope = useMemo(
     () => ({ store, persistence: createScenePersistence(store), active: false }),
@@ -151,7 +153,7 @@ export function SceneWorkshopHost({
           viewportFactory={viewportFactory}
           theme={theme}
           onExit={leave}
-          {...(resyncToStudio ? { resyncToStudio } : {})}
+          {...(resyncToStudio ? { resyncToStudio, canResyncToStudio } : {})}
         />
       ) : failed ? (
         <div className="space-y-4 p-6">

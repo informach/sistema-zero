@@ -5,6 +5,7 @@ import {
   type SceneAnimationPresetOptions,
 } from '../../../scene/animationPresets'
 import type { MoldaSceneDocument } from '../../../scene/document'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { requireScene } from '../../../scene/validation'
 import type { SceneAnimationSnapshot } from '../../../state/SceneAnimationPlayer'
 import type { useSceneWorkshop } from './useSceneWorkshop'
@@ -76,7 +77,7 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
     }
   }, [animation, cancel])
   const matches = (owner: Preview) =>
-    owner.document === editor.getState().asset &&
+    owner.document === editor.getState().content &&
     owner.selectionKey === JSON.stringify(live.current.selected) &&
     owner.playerSource === animation.getSnapshot().source
   function prepare(options: SceneAnimationPresetOptions) {
@@ -84,7 +85,7 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
     try {
       const current = live.current
       requireScene(
-        current.document === editor.getState().asset,
+        current.document === editor.getState().content,
         'source',
         COPY.scene.animationChanged,
       )
@@ -94,7 +95,7 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
       requireScene(
         playerSource?.preview &&
           playerSource.document === current.document &&
-          editor.getState().asset === current.document &&
+          editor.getState().content === current.document &&
           playerSource.clip.id === next.animations!.at(-1)!.id,
         'source',
         COPY.scene.animationChanged,
@@ -123,7 +124,7 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
     pending.current = null
     setSession(null)
     const next = live.current.run((source) => {
-      requireScene(source === owner.document, 'source', COPY.scene.animationChanged)
+      requireScene(sameSceneContent(source, owner.document), 'source', COPY.scene.animationChanged)
       return owner.next
     })
     if (!next) {
@@ -131,10 +132,10 @@ export function useSceneAnimationPreset(workshop: ReturnType<typeof useSceneWork
       return false
     }
     try {
-      animation.setClip(editor.getState().asset, owner.playerSource.clip.id)
+      animation.setClip(editor.getState().content, owner.playerSource.clip.id)
       const source = animation.getSnapshot().source
       if (
-        source?.document === editor.getState().asset &&
+        source?.document === editor.getState().content &&
         source.clip.id === owner.playerSource.clip.id &&
         !source.preview
       )

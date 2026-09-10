@@ -29,6 +29,8 @@ export interface EditableDocument {
 
 export interface EditorState<T extends EditableDocument = MoldaAsset> {
   asset: T
+  /** Stable authoring snapshot. Derived thumbnail/save stamps never replace this owner. */
+  content: T
   /**
    * Versão monotônica do CONTEÚDO editável. Miniaturas e estado de salvamento não
    * avançam esta revisão; ações adiadas usam-na para não reaplicar snapshots velhos.
@@ -185,6 +187,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
     function apply(next: T, contentChanged = true): void {
       set((state) => ({
         asset: next,
+        content: contentChanged ? next : state.content,
         contentRevision: state.contentRevision + (contentChanged ? 1 : 0),
         saveState: 'dirty',
         ...historyFlags(),
@@ -194,6 +197,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
 
     return {
       asset: options.asset,
+      content: options.asset,
       contentRevision: 0,
       savedAsset: options.asset,
       saveState: 'saved',
@@ -203,7 +207,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
 
       commit(next) {
         const current = get().asset
-        if (next === current) return
+        if (next === current || next === get().content) return
         const stamped = stamp(next)
         const previous = historyCurrent
         historyCurrent = historyAsset(stamped)
@@ -215,6 +219,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
         if (next === get().asset) return
         set((state) => ({
           asset: next,
+          content: next,
           contentRevision: state.contentRevision + 1,
           saveState: next === state.savedAsset ? 'saved' : 'dirty',
         }))

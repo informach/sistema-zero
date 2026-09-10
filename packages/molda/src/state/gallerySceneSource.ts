@@ -2,7 +2,9 @@ import type { UseStore } from 'idb-keyval'
 import type { MoldaAssetSummary } from '../core/assetSummary'
 import { newId } from '../core/id'
 import { sceneToJson } from '../scene/documentJson'
+import { readSceneDocument } from '../scene/readDocument'
 import { sceneCloudSummary } from './sceneGenerationSummary'
+import { sceneSummary } from './sceneMetadata'
 import { createScenePersistence } from './scenePersistence'
 
 /**
@@ -17,6 +19,8 @@ export interface GallerySceneSource {
   rename(id: string, name: string): Promise<boolean>
   remove(id: string): Promise<boolean>
   duplicate(id: string, name: string): Promise<MoldaAssetSummary | null>
+  /** Restore as a new creation; never overwrite a local document or a tombstone. */
+  importProject?(json: string, name: string): Promise<MoldaAssetSummary | null>
   subscribe(listener: () => void): () => void
 }
 
@@ -78,6 +82,15 @@ export function createGallerySceneSource(
         thumbDataUrl: copy.thumb ?? null,
         formatVersion: 2 as const,
       }
+    },
+    async importProject(json, name) {
+      const read = readSceneDocument(JSON.parse(json))
+      if (read.status !== 'valid') return null
+      const stamp = now()
+      const copy = { ...read.document, id: newId(), name, createdAt: stamp, updatedAt: stamp }
+      const result = await persistence.save(copy, null)
+      if (result.status !== 'saved') return null
+      return sceneCloudSummary(sceneSummary(copy, result.revision, 0))
     },
     subscribe(listener) {
       const controller = new AbortController()

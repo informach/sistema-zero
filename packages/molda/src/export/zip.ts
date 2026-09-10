@@ -56,9 +56,13 @@ export interface ZipGalleryOptions {
   /**
    * As criações da geração seguinte, cada uma no arquivo NATIVO dela (o mesmo do
    * "Baixar projeto"). Elas não entram no envelope v1: o backup antigo continua sendo
-   * exatamente o que sempre foi, e a volta delas é pela própria oficina.
+   * exatamente o que sempre foi. Trazer de volta também lê esses projetos.
+   * Um leitor adiado permite comprimir e liberar cada projeto antes de ler o próximo.
    */
-  scenes?: readonly { name: string; json: string }[]
+  scenes?: readonly (
+    | { name: string; json: string }
+    | { name: string; read(): Promise<string | null> }
+  )[]
 }
 
 export interface GalleryZipProgress {
@@ -298,9 +302,13 @@ async function buildGalleryZipChunks(
     for (const [index, scene] of (options.scenes ?? []).entries()) {
       if (yieldBetween) await yieldBetween()
       throwIfAborted(options.signal)
-      const file = safeEntryName(scene.name, taken)
-      add(`projetos/${file}.molda.json`, strToU8(scene.json))
-      readme.push(COPY.gallery.readme.project(scene.name, file))
+      const json = 'json' in scene ? scene.json : await scene.read()
+      throwIfAborted(options.signal)
+      if (json !== null) {
+        const file = safeEntryName(scene.name, taken)
+        add(`projetos/${file}.molda.json`, strToU8(json))
+        readme.push(COPY.gallery.readme.project(scene.name, file))
+      }
       options.onProgress?.({
         processed: assets.length + index + 1,
         total: assets.length + (options.scenes?.length ?? 0),

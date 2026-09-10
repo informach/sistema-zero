@@ -12,9 +12,18 @@ import {
   createModelAsset,
   createSkyAsset,
   createTextureAsset,
+  MOLDA_LIMITS,
   MoldaUnsupportedVersionError,
   summarizeAsset,
 } from '@sistemazero/molda/assets'
+import { readMoldaDocumentForId } from '../../molda/src/core/documentReader'
+import { sceneToJson } from '../../molda/src/scene/documentJson'
+import { migrateLegacyModel } from '../../molda/src/scene/migrateLegacy'
+import { guardedWrite, removeStoredDocuments } from '../../molda/src/state/guardedWrite'
+import { createMoldaSceneCloudSource } from '../../molda/src/state/sceneCloudSource'
+import { createScenePersistence } from '../../molda/src/state/scenePersistence'
+import { DOCUMENT_KEY_PREFIX, storedDocumentKey } from '../../molda/src/state/storageKeys'
+import { nativeDatabase } from '../../molda/src/testing/nativeDatabase'
 import type {
   CloudCreationSummary,
   CreationsCloud,
@@ -321,6 +330,112 @@ function fakeCloud(remote: Map<string, { summary: CloudCreationSummary; json: st
   }
   return { cloud, uploads, removed, lists }
 }
+
+/** Real transactional storage for generation boundaries; only HTTP is replaced by fakeCloud. */
+function storedLocal(db: Awaited<ReturnType<typeof nativeDatabase>>): MoldaPersistenceLike {
+  const load = async (id: string) => {
+    const records = await db.dump()
+    const key = storedDocumentKey(records, id)
+    if (key === null) return null
+    const read = readMoldaDocumentForId(records.get(key), id)
+    return read.status === 'valid' ? read.asset : null
+  }
+  return {
+    load,
+    loadAll: async () => {
+      const rows = [...(await db.dump()).keys()]
+      const ids = rows.filter(
+        (key): key is string => typeof key === 'string' && key.startsWith(DOCUMENT_KEY_PREFIX),
+      )
+      const assets = await Promise.all(
+        ids.map((key) => load(key.slice(DOCUMENT_KEY_PREFIX.length))),
+      )
+      return assets.filter((asset): asset is MoldaAsset => asset !== null)
+    },
+    save: async (asset) => {
+      await guardedWrite(db.store, [asset], MOLDA_LIMITS.maxGalleryBytes)
+    },
+    saveMany: async (assets) => {
+      await guardedWrite(db.store, assets, MOLDA_LIMITS.maxGalleryBytes)
+    },
+    saveIfUnchanged: (asset, expected) =>
+      guardedWrite(
+        db.store,
+        [asset],
+        MOLDA_LIMITS.maxGalleryBytes,
+        new Map([[asset.id, expected]]),
+      ),
+    remove: async (id) => {
+      await removeStoredDocuments(db.store, [id])
+    },
+    removeMany: async (ids) => {
+      await removeStoredDocuments(db.store, ids)
+    },
+    removeIfUnchanged: (id, expected) =>
+      removeStoredDocuments(db.store, [id], new Map([[id, expected]])),
+  }
+}
+
+test.each([
+  { localVersion: 1, remoteVersion: 2, deleted: false },
+  { localVersion: 2, remoteVersion: 1, deleted: false },
+  { localVersion: 2, remoteVersion: 2, deleted: true },
+  { localVersion: 2, remoteVersion: 1, deleted: true },
+])('a reconciliação atravessa gerações no IndexedDB e só confirma após gravar: %j', async ({
+  localVersion,
+  remoteVersion,
+  deleted,
+}) => {
+  const db = await nativeDatabase()
+  let mirrored: MoldaPersistenceLike | undefined
+  try {
+    const original = createModelAsset({ name: 'nave', now: 1000 })
+    const persistence = createScenePersistence(db.store)
+    const local = storedLocal(db)
+    if (localVersion === 1) await local.save(original)
+    else await persistence.save(migrateLegacyModel(original).document, null)
+    if (deleted) await persistence.remove(original.id, 1)
+    const remote = { ...original, name: 'nave-da-nuvem', updatedAt: 3000 }
+    const json =
+      remoteVersion === 1
+        ? assetToCloudJson(remote)
+        : JSON.stringify(sceneToJson(migrateLegacyModel(remote).document))
+    const { cloud, uploads, removed } = fakeCloud(
+      new Map([
+        [
+          remote.id,
+          {
+            json,
+            summary: summaryOf(remote, { revision: 3, formatVersion: remoteVersion }),
+          },
+        ],
+      ]),
+    )
+    const marks = createMemorySyncedMarks()
+    if (deleted) marks.setTombstone(original.id, { at: 2000, sent: true, revision: 2 })
+    else marks.set(original.id, original.updatedAt, 1)
+    mirrored = createCloudMirroredMoldaPersistence({
+      local,
+      sceneSource: createMoldaSceneCloudSource(db.store),
+      cloud,
+      marks,
+      viewerId: 'real-generation-test',
+    })
+    await loadSettled(mirrored, local)
+    const saved = await persistence.read(original.id)
+    expect(saved.status === 'active' && saved.document).toEqual(migrateLegacyModel(remote).document)
+    expect(await local.loadAll()).toEqual([])
+    expect(marks.get(original.id)).toBe(3000)
+    expect(marks.revision(original.id)).toBe(3)
+    expect(marks.tombstone(original.id)).toBeUndefined()
+    expect(removed).toEqual([])
+    // A commit notification may queue a producer, but a confirmed download must produce no upload.
+    for (const job of uploads.values()) expect(await job.produce()).toBeNull()
+  } finally {
+    mirrored?.dispose?.()
+    db.close()
+  }
+})
 
 const model = (name: string, updatedAt: number, thumb?: string): MoldaAsset => ({
   ...createModelAsset({ name, now: updatedAt }),
@@ -1151,6 +1266,7 @@ function fakeScene(initial: MoldaAsset[] = []) {
     rows,
     listSummaries: async () => [...rows.values()].map((row) => row.summary),
     read: async (id: string) => rows.get(id) ?? null,
+    owns: async (id: string) => rows.has(id),
     inspect: (json: string) => readJson(json),
     saveIfUnchanged: async (
       id: string,

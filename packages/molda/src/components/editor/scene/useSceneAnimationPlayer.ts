@@ -14,17 +14,17 @@ export function useSceneAnimationPlayer(editor: EditorStore<MoldaSceneDocument>)
   )
   useEffect(() => {
     const unsubscribe = editor.subscribe((state, before) => {
-      // Poses own the exact document object, including thumbnail-only replacements.
-      if (state.asset === before.asset) return
+      // Only authoring changes invalidate the clip/pose owner; thumbnails are metadata.
+      if (state.content === before.content) return
       if (player.getSnapshot().source?.preview) {
         player.setClip(null, null)
         return
       }
       const id = player.getSnapshot().source?.clip.id
       if (!id) return
-      const clip = state.asset.animations?.find((clip) => clip.id === id)
+      const clip = state.content.animations?.find((clip) => clip.id === id)
       try {
-        player.setClip(clip ? state.asset : null, clip?.id ?? null)
+        player.setClip(clip ? state.content : null, clip?.id ?? null)
       } catch (error) {
         player.setClip(null, null)
         player.reportError(error)

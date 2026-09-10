@@ -1,9 +1,9 @@
-import { lazy, Suspense, useId, useRef, useState, useSyncExternalStore } from 'react'
+import { useId, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { triggerDownload } from '../../../export/download'
-import { exportAssetForStudio } from '../../../export/studioLibrary'
+import { exportLoadedSceneForStudio, sameSceneStudioContent } from '../../../export/studioLibrary'
 import {
   convertSceneNodesToMesh,
   deleteSceneNodes,
@@ -15,11 +15,12 @@ import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneToJson } from '../../../scene/documentJson'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
-import type { SceneViewportFactory } from '../../../viewport/sceneViewportTypes'
+import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import { isTypingTarget } from '../../ui/interaction'
 import { useMediaQuery } from '../../ui/useMediaQuery'
+import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
 import { type ResyncToStudio, useStudioResync } from '../useStudioResync'
 import { SceneCanvas } from './SceneCanvas'
@@ -32,23 +33,13 @@ import { SceneNodeProperties } from './SceneNodeProperties'
 import { SceneStorageNotice } from './SceneStorageNotice'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
-const ScenePaintEditor = lazy(() =>
-  import('./ScenePaintEditor').then((module) => ({ default: module.ScenePaintEditor })),
-)
-const SceneImportPanel = lazy(() =>
-  import('./SceneImportPanel').then((module) => ({ default: module.SceneImportPanel })),
-)
-const SceneAnimationClips = lazy(() =>
-  import('./SceneAnimationClips').then((module) => ({ default: module.SceneAnimationClips })),
-)
-const SceneAnimationTimeline = lazy(() =>
-  import('./SceneAnimationTimeline').then((module) => ({ default: module.SceneAnimationTimeline })),
-)
-const SceneAnimationInspector = lazy(() =>
-  import('./SceneAnimationInspector').then((module) => ({
-    default: module.SceneAnimationInspector,
-  })),
-)
+const loadPaint = () => import('./ScenePaintEditor').then((module) => module.ScenePaintEditor)
+const loadImport = () => import('./SceneImportPanel').then((module) => module.SceneImportPanel)
+const loadClips = () => import('./SceneAnimationClips').then((module) => module.SceneAnimationClips)
+const loadTimeline = () =>
+  import('./SceneAnimationTimeline').then((module) => module.SceneAnimationTimeline)
+const loadAnimationInspector = () =>
+  import('./SceneAnimationInspector').then((module) => module.SceneAnimationInspector)
 
 /** Internal workshop shared with the development host; no cloud writer activation here. */
 export function SceneWorkshop({
@@ -58,6 +49,7 @@ export function SceneWorkshop({
   viewportFactory,
   theme = 'light',
   resyncToStudio,
+  canResyncToStudio,
 }: {
   editor: EditorStore<MoldaSceneDocument>
   storage?: SceneStorageObserver
@@ -66,21 +58,24 @@ export function SceneWorkshop({
   theme?: 'light' | 'dark'
   /** A VOLTA da ponte: depois de SALVAR, reenvia a criação ao host já no formato do Estúdio. */
   resyncToStudio?: ResyncToStudio
+  canResyncToStudio?: (id: string) => Promise<boolean>
 }) {
   const workshop = useSceneWorkshop(editor)
-  // A volta da ponte, igual à do editor antigo: só depois de SALVAR, nunca ao abrir, e a
-  // exportação relê o disco pela geração dona da criação.
+  // Resync the exact saved snapshot, retaining its profile and explicit loss review.
   const savedAsset = useStore(editor, (state) => state.savedAsset)
   const setWorkshopMessage = workshop.setMessage
-  useStudioResync({
+  const studioSync = useStudioResync({
     savedAsset,
     send: resyncToStudio,
-    exportAsset: (document, context) => exportAssetForStudio(document.id, context),
+    canSend: canResyncToStudio,
+    exportAsset: exportLoadedSceneForStudio,
+    sameContent: sameSceneStudioContent,
     // Sem isto a falha da ponte é MUDA aqui, enquanto o editor antigo avisa: o jogo ficaria
     // com o modelo velho para sempre e a criança não teria como saber.
     onFailure: (message) => setWorkshopMessage(message ?? COPY.editor.studioSyncFailed),
   })
   const [mode, setMode] = useState<'model' | 'animation'>('model')
+  const [exportViewport, setExportViewport] = useState<SceneViewportPort | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const importTrigger = useRef<HTMLButtonElement>(null)
@@ -102,7 +97,7 @@ export function SceneWorkshop({
     workshop.paint.close()
     workshop.components.close()
     workshop.flipbook.setImage(null)
-    const source = editor.getState().asset
+    const source = editor.getState().content
     const clip = next === 'animation' ? source.animations?.[0] : null
     try {
       workshop.animation.setClip(clip ? source : null, clip?.id ?? null)
@@ -196,6 +191,7 @@ export function SceneWorkshop({
           <SceneExitControl
             editor={editor}
             onExit={onExit}
+            beforeExit={() => studioSync.prepareExit(editor.getState().savedAsset)}
             backup={backup}
             cancelPreview={() => {
               workshop.cancelGesture()
@@ -307,9 +303,12 @@ export function SceneWorkshop({
         </Button>
       </fieldset>
       {mode === 'animation' ? (
-        <Suspense fallback={<p role="status">{copy.appearanceLoading}</p>}>
-          <SceneAnimationClips workshop={workshop} />
-        </Suspense>
+        <DeferredModule
+          load={loadClips}
+          props={{ workshop }}
+          onBack={() => changeMode('model')}
+          backLabel={copy.glbExport.close}
+        />
       ) : (
         <div className="flex flex-wrap gap-2 border-b border-mld-border p-2">
           <SceneCreateMenu run={run} />
@@ -385,6 +384,7 @@ export function SceneWorkshop({
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
           <SceneCanvas
+            onViewport={setExportViewport}
             mode={mode}
             document={document}
             selection={selected}
@@ -421,9 +421,12 @@ export function SceneWorkshop({
             }}
           />
           {mode === 'animation' && (
-            <Suspense fallback={<p role="status">{copy.appearanceLoading}</p>}>
-              <SceneAnimationTimeline workshop={workshop} />
-            </Suspense>
+            <DeferredModule
+              load={loadTimeline}
+              props={{ workshop }}
+              onBack={() => changeMode('model')}
+              backLabel={copy.glbExport.close}
+            />
           )}
         </div>
         <WorkspaceInspector docked={docked} onBeforeClose={workshop.cancelGesture}>
@@ -450,13 +453,22 @@ export function SceneWorkshop({
             onSelect={workshop.select}
           />
           {mode === 'animation' ? (
-            <Suspense fallback={<p role="status">{copy.appearanceLoading}</p>}>
-              <SceneAnimationInspector workshop={workshop} />
-            </Suspense>
+            <DeferredModule
+              load={loadAnimationInspector}
+              props={{ workshop }}
+              onBack={() => changeMode('model')}
+              backLabel={copy.glbExport.close}
+            />
           ) : workshop.paint.session ? (
-            <Suspense fallback={<p role="status">{copy.appearanceLoading}</p>}>
-              <ScenePaintEditor workshop={workshop} />
-            </Suspense>
+            <DeferredModule
+              load={loadPaint}
+              props={{ workshop }}
+              onBack={() => {
+                workshop.cancelGesture()
+                workshop.paint.close()
+              }}
+              backLabel={copy.glbExport.close}
+            />
           ) : workshop.components.selection ? (
             <SceneComponentTools {...workshop.components} />
           ) : (
@@ -472,6 +484,7 @@ export function SceneWorkshop({
       >
         {exportOpen && (
           <SceneGlbExportPanel
+            viewport={exportViewport}
             key={document.id}
             editor={editor}
             onClose={() => setExportOpen(false)}
@@ -486,24 +499,45 @@ export function SceneWorkshop({
         wide
       >
         {importOpen && (
-          <Suspense fallback={<p role="status">{NATIVE_IMPORT_COPY.validating}</p>}>
-            <SceneImportPanel
-              key={document.id}
-              editor={editor}
-              viewportFactory={viewportFactory}
-              blocked={pendingPose}
-              canAdopt={() => !hasPendingPose()}
-              onClose={() => setImportOpen(false)}
-              onImported={() => {
+          <DeferredModule
+            key={document.id}
+            load={loadImport}
+            onBack={() => setImportOpen(false)}
+            backLabel={copy.glbExport.close}
+            props={{
+              editor,
+              viewportFactory,
+              blocked: pendingPose,
+              canAdopt: () => !hasPendingPose(),
+              onClose: () => setImportOpen(false),
+              onImported: () => {
                 workshop.select(null, false)
                 workshop.setIsolation(null)
                 workshop.animation.setClip(null, null)
                 setImportOpen(false)
-              }}
-            />
-          </Suspense>
+              },
+            }}
+          />
         )}
       </Dialog>
+      {studioSync.review && (
+        <section aria-label={copy.glbExport.changes} className="border-t border-mld-border p-3">
+          <p className="font-semibold">{copy.glbExport.studio.review}</p>
+          <ul className="list-disc pl-5 text-sm">
+            {studioSync.review.losses.map((loss) => (
+              <li key={loss}>{loss}</li>
+            ))}
+          </ul>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button onClick={() => void studioSync.approveReview()}>
+              {copy.glbExport.studio.accept}
+            </Button>
+            <Button variant="outline" onClick={studioSync.dismissReview}>
+              {copy.glbExport.studio.keep}
+            </Button>
+          </div>
+        </section>
+      )}
     </section>
   )
 }

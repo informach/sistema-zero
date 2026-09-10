@@ -67,6 +67,7 @@ export interface GalleryActions {
   /** O editor salvou: atualiza a lista SEM gravar de novo. */
   absorb(asset: MoldaAsset): void
   importAssets(assets: readonly MoldaAsset[]): Promise<ImportResult>
+  importProjects(projects: readonly { name: string; json: string }[]): Promise<ImportResult>
   /** Liga a releitura por aviso externo; devolve o desligar. */
   attachPersistence(): () => void
   getById(id: string): MoldaAssetSummary | undefined
@@ -382,6 +383,31 @@ export function createGalleryStore(
           for (const clone of clones) assets = upsertSorted(assets, clone)
           set({ assets })
           return { imported: clones.length }
+        })
+      },
+
+      importProjects(projects) {
+        return enqueue(async (): Promise<ImportResult> => {
+          const taken = takenNames(get().assets)
+          let imported = 0
+          if (!scene?.importProject) return { imported, reason: 'save-failed' }
+          try {
+            for (const project of projects) {
+              const name = uniqueAssetName(project.name, taken)
+              if (!name) return { imported, reason: 'save-failed' }
+              const copy = await scene.importProject(project.json, name)
+              if (!copy) return { imported, reason: 'save-failed' }
+              imported++
+              taken.add(name)
+              set({ assets: upsertSummary(get().assets, copy) })
+            }
+            return { imported }
+          } catch (error) {
+            return {
+              imported,
+              reason: isStorageBudgetError(error) ? 'storage-budget' : 'save-failed',
+            }
+          }
         })
       },
 

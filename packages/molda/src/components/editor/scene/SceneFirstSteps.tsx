@@ -10,7 +10,7 @@ import { isMoldaDialogOpen } from '../../ui/Dialog'
 export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) {
   const [open, setOpen] = useState(false)
   const [topic, setTopic] = useState(context)
-  const [positions, setPositions] = useState({ model: 0, paint: 0, animation: 0 })
+  const [positions, setPositions] = useState({ model: 0, paint: 0, animation: 0, skin: 0 })
   const trigger = useRef<HTMLButtonElement>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const panelId = useId()

@@ -8,7 +8,7 @@ import { createDocumentEditorStore } from '../../../state/editorStore'
 import { animatedScene, sceneAnimationClip } from '../../../testing/sceneAnimation'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
 
-test('thumbnail-only asset replacement rebinds the exact pose owner without losing the cursor or adding history', () => {
+test('thumbnail updates preserve playback and preview ownership without adding history', () => {
   const asset = animatedScene()
   const editor = createDocumentEditorStore<MoldaSceneDocument>({
     asset,
@@ -23,14 +23,18 @@ test('thumbnail-only asset replacement rebinds the exact pose owner without losi
       player.setClip(asset, 'clip')
       player.seek(1.123456789123)
     })
+    act(() => player.play())
+    const before = player.getSnapshot()
     act(() => editor.getState().setThumb('data:image/png;base64,thumb'))
-    expect(player.getSnapshot().pose?.source === editor.getState().asset).toBe(true)
+    expect(player.getSnapshot()).toBe(before)
+    expect(player.getSnapshot().playing).toBe(true)
     expect(player.getSnapshot().time).toBe(1.123456789123)
     expect(editor.getState().contentRevision).toBe(0)
     expect(editor.getState().canUndo).toBe(false)
-    act(() => player.setPreview(editor.getState().asset, { ...sceneAnimationClip(), id: 'draft' }))
+    act(() => player.setPreview(asset, { ...sceneAnimationClip(), id: 'draft' }))
+    const preview = player.getSnapshot()
     act(() => editor.getState().setThumb(undefined))
-    expect(player.getSnapshot().source).toBeNull()
+    expect(player.getSnapshot()).toBe(preview)
   } finally {
     view.unmount()
     editor.getState().dispose()

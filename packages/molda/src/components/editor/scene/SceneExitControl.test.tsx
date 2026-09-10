@@ -32,6 +32,38 @@ function dialog() {
   return within(screen.getByRole('dialog', { name: copy.title }))
 }
 
+test('saving locally keeps the workshop open when the Studio copy still needs review', async () => {
+  const { editor, writes } = fixture()
+  const exits: SceneExitMode[] = []
+  const ready = deferred<boolean>()
+  const view = render(
+    <SceneExitControl
+      editor={editor}
+      cancelPreview={() => {}}
+      backup={() => true}
+      onExit={(mode) => exits.push(mode)}
+      beforeExit={() => ready.promise}
+    />,
+  )
+  try {
+    fireEvent.click(screen.getByRole('button', { name: copy.open }))
+    fireEvent.click(dialog().getByRole('button', { name: copy.save }))
+    await act(async () => {
+      writes[0]!.done.resolve()
+    })
+    expect(exits).toEqual([])
+    await act(async () => {
+      ready.resolve(false)
+    })
+    expect(exits).toEqual([])
+    expect(editor.getState().saveState).toBe('saved')
+    expect(screen.queryByRole('dialog', { name: copy.title })).toBeNull()
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 test('exit preserves previews on opening/cancel, waits for all writes and invalidates a cancelled pending navigation', async () => {
   const { editor, writes } = fixture()
   const exits: SceneExitMode[] = []

@@ -19,6 +19,53 @@ function path(points: Vec3[], around = 8, endCaps = true): ScenePathGeometry {
   }
 }
 
+test('closed planar and spatial tubes share their closing ring, remain watertight and preserve UV seams', () => {
+  for (const points of [
+    [
+      [0, 0, 0],
+      [2, 0, 0],
+      [2, 2, 0],
+      [0, 2, 0],
+    ],
+    [
+      [0, 0, 0],
+      [2, 0, 1],
+      [3, 2, 0],
+      [1, 3, -1],
+      [-1, 1, 1],
+    ],
+  ] as Vec3[][]) {
+    const source = { ...path(points, 12, false), closed: true }
+    const original = structuredClone(source)
+    const { mesh } = pathMesh(source)
+    const topology = indexMeshEdges(mesh)
+    expect(Object.keys(mesh.vertices)).toHaveLength(points.length * source.around)
+    expect(Object.keys(mesh.faces)).toHaveLength(pathTriangleCount(points.length, source))
+    expect(
+      Object.keys(mesh.vertices).length - topology.edges.size + Object.keys(mesh.faces).length,
+    ).toBe(0)
+    for (const incident of topology.edges.values()) {
+      expect(incident).toHaveLength(2)
+      expect([incident[0]!.a, incident[0]!.b]).toEqual([incident[1]!.b, incident[1]!.a])
+    }
+    const seam = mesh.faces[`side:${points.length - 1}:0:a`]!
+    expect(seam.corners[2]).toEqual({ vertexId: 'ring:0:1', uv: [1 / source.around, 1] })
+    expect(mesh.faces['side:0:0:a']!.corners[1]).toEqual({
+      vertexId: 'ring:0:1',
+      uv: [1 / source.around, 0],
+    })
+    expect(buildSceneGeometry(source).issues).toEqual([])
+    expect(readSceneGeometry(source)).toEqual(source)
+    expect(source).toEqual(original)
+    for (const invalid of [
+      { ...source, endCaps: true },
+      { ...source, points: source.points.slice(0, 2) },
+      { ...source, points: [...source.points, { ...source.points[0]!, id: 'duplicate-position' }] },
+    ])
+      expect(() => readSceneGeometry(invalid)).toThrow()
+  }
+})
+
 test('open straight and bent paths produce consistently oriented tubes with exact budgets and per-corner seams', () => {
   for (const points of [
     [

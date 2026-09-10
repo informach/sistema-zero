@@ -15,10 +15,15 @@ import {
   hasActiveGalleryFilters,
 } from '../../core/gallerySearch'
 import { MOLDA_ASSET_KINDS } from '../../core/model'
-import { type MoldaBackupReadFailure, readMoldaBackupFile } from '../../export/backupFile'
+import {
+  type MoldaBackupReadFailure,
+  readMoldaBackupFile,
+  readMoldaBackupProjects,
+} from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importMoldaJson } from '../../export/projectJson'
 import { GALLERY_ZIP_FILE_NAME, GalleryZipError, zipGalleryBlob } from '../../export/zip'
+import { readSceneDocument } from '../../scene/readDocument'
 import { createGalleryPreviews } from '../../state/galleryPreviews'
 import { useGallery, useMoldaApp } from '../appContext'
 import { Button, IconButton } from '../ui/Button'
@@ -101,18 +106,17 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
     try {
       // Explicit backup requests content; ordinary listing/filtering never does.
       const content = await persistence.loadAll()
-      // A geração seguinte viaja no arquivo NATIVO dela: o envelope v1 não muda de forma.
-      const scenes: Array<{ name: string; json: string }> = []
-      for (const asset of assets) {
-        if (asset.formatVersion !== 2) continue
-        // Ler cada projeto é a fase mais cara; sem conferir aqui, "Cancelar" só era
-        // atendido depois de ler todos, com o contador parado o tempo inteiro.
-        if (controller.signal.aborted)
-          throw new GalleryZipError('aborted', 'A preparação do ZIP foi cancelada.')
-        const json = await scene.readProject(asset.id)
-        if (json) scenes.push({ name: asset.name, json })
-        setPackingProgress(scenes.length)
-      }
+      let missing = 0
+      const scenes = assets
+        .filter((asset) => asset.formatVersion === 2)
+        .map((asset) => ({
+          name: asset.name,
+          async read() {
+            const json = await scene.readProject(asset.id)
+            if (json === null) missing++
+            return json
+          },
+        }))
       const blob = await zipGalleryBlob(content, {
         signal: controller.signal,
         scenes,
@@ -120,7 +124,6 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
       })
       // Uma criação da geração seguinte que não pôde ser lida agora ficaria de fora em
       // silêncio; dizer isso vale mais do que um pacote que parece completo e não é.
-      const missing = assets.filter((asset) => asset.formatVersion === 2).length - scenes.length
       showToast(
         !triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
           ? COPY.gallery.downloadFailed
@@ -151,19 +154,52 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         showToast(RESTORE_MESSAGES[read.reason])
         return
       }
-      const parsed = importMoldaJson(read.text)
-      if (!parsed) {
+      const bundle = await readMoldaBackupProjects(file)
+      if (!bundle.ok) {
+        showToast(RESTORE_MESSAGES[bundle.reason])
+        return
+      }
+      const raw = read.source === 'json' ? JSON.parse(read.text) : null
+      const native = raw?.kind === 'model' && raw.formatVersion >= 2
+      const parsed = native ? null : importMoldaJson(read.text)
+      const texts = bundle.projects.slice()
+      if (!parsed && read.source === 'json') texts.push(read.text)
+      if (!parsed && !texts.length) {
         showToast(COPY.gallery.importFailed)
         return
       }
-      if (parsed.assets.length === 0) {
+      // Validate all project entries before the first write, including unknown future versions.
+      const projects: Array<{ name: string; json: string }> = []
+      for (const json of texts) {
+        const project = readSceneDocument(JSON.parse(json))
+        if (project.status !== 'valid') {
+          showToast(COPY.gallery.importFailed)
+          return
+        }
+        projects.push({ name: project.document.name, json })
+      }
+      const total = (parsed?.assets.length ?? 0) + projects.length
+      if (!total) {
         showToast(COPY.gallery.importedNone)
         return
       }
-      const result = await gallery.getState().importAssets(parsed.assets)
-      if (result.reason === 'storage-budget') showToast(COPY.gallery.storageBudget)
-      else if (result.reason) showToast(COPY.toast.saveFailed)
-      else showToast(COPY.gallery.imported(result.imported))
+      let imported = 0
+      const previous = await gallery.getState().importAssets(parsed?.assets ?? [])
+      imported += previous.imported
+      if (previous.reason) {
+        showToast(
+          previous.reason === 'storage-budget' ? COPY.gallery.storageBudget : COPY.toast.saveFailed,
+        )
+        return
+      }
+      const next = projects.length
+        ? await gallery.getState().importProjects(projects)
+        : { imported: 0 }
+      imported += next.imported
+      if (next.reason || parsed?.skipped) showToast(COPY.gallery.importedPartial(imported))
+      else showToast(COPY.gallery.imported(imported))
+    } catch {
+      showToast(COPY.gallery.importFailed)
     } finally {
       setRestoring(false)
     }

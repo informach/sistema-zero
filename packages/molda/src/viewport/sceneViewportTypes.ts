@@ -16,6 +16,8 @@ export interface SceneViewportPort {
   setSelection(ids: readonly string[]): void
   setIsolation(ids: readonly string[] | null): void
   setView(view: CameraView): void
+  setGridVisible?(visible: boolean): void
+  setMovementStep?(step: number | null): void
   frame(selectionOnly?: boolean): void
   setTransformTool(tool: SceneTransformTool): void
   setAreaTool(tool: SceneAreaTool, through: boolean): void
@@ -31,6 +33,8 @@ export interface SceneViewportPort {
   cancelGesture(): void
   /** Foto da criação guardada; `null` quando não há o que fotografar ou o palco não pode. */
   renderThumb(): string | null
+  /** Clean photograph of the saved geometry. Session-only PNG; never a gallery stamp. */
+  captureImage?(size: number, angle: number): string | null
   dispose(): void
 }
 

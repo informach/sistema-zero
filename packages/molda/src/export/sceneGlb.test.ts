@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import sharp from 'sharp'
 import { Color, Mesh, MeshStandardMaterial, SRGBColorSpace } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { COPY } from '../core/copy'
 import type { MoldaSceneDocument, SceneImage, SceneMaterial } from '../scene/document'
 import { buildSceneGeometry } from '../scene/geometry'
 import { list, record } from '../scene/validation'
@@ -345,7 +346,7 @@ test('export budgets reject incompatible map grids, output pixel growth and over
     geometryId: 'surface',
     materialId: material.id,
   }))
-  expect(() => encodeSceneGlb(source)).toThrow('orçamento de pixels')
+  expect(() => encodeSceneGlb(source)).toThrow(COPY.scene.glbExport.studio.textureBudget)
   const binary = new GlbBinary(),
     bytes = new Uint8Array(MAX_SCENE_GLB_BYTES)
   binary.addView(bytes)

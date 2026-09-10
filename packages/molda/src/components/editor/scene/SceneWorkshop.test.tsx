@@ -752,7 +752,7 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('two-bone controls cancel on close, Escape in a field, selection, time, blur, context loss and thumbnail changes', async () => {
+  test('two-bone controls cancel on close, Escape in a field, selection, time, blur, context loss; thumbnail metadata preserves the pending pose', async () => {
     const source = makeSceneTwoBoneFixture(),
       { editor, view, ports, openInspector } = setup(source),
       copy = COPY.scene.twoBone
@@ -828,7 +828,7 @@ describe('scene workshop integration', () => {
               name: COPY.scene.animationPoseRecord,
             }) as HTMLButtonElement
           ).disabled,
-        }).toEqual({ kind, disabled: true })
+        }).toEqual({ kind, disabled: kind !== 'thumbnail' })
         expect(editor.getState().asset.animations).toBe(source.animations)
         expect(editor.getState().contentRevision).toBe(0)
         expect(editor.getState().canUndo).toBe(false)
@@ -2005,7 +2005,7 @@ describe('scene workshop integration', () => {
         expect(
           (screen.getByRole('button', { name: copy.animationPoseRecord }) as HTMLButtonElement)
             .disabled,
-        ).toBe(true)
+        ).toBe(reason !== 'thumbnail')
         expect(editor.getState().asset.animations).toEqual(source.animations)
         expect(editor.getState().canUndo).toBe(false)
       }
@@ -3721,6 +3721,43 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
+  test('closed tube controls create a loop from selected edges and undo the entire operation', async () => {
+    const { editor, view, ports, openInspector } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() =>
+        editor.getState().commit(convertSceneNodesToMesh(editor.getState().asset, ['body'])),
+      )
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
+      fireEvent.click(screen.getByText(COPY.scene.pathCreateTitle))
+      const points = ['v_000', 'v_010', 'v_110', 'v_100']
+      act(() =>
+        points.forEach((id, i) => {
+          ports
+            .at(-1)!
+            .callbacks.selectComponent?.(meshEdgeKey(id, points[(i + 1) % points.length]!), i > 0)
+        }),
+      )
+      const before = editor.getState().asset
+      fireEvent.click(screen.getByLabelText(COPY.scene.pathClosed))
+      expect((screen.getByLabelText(COPY.scene.pathCaps) as HTMLInputElement).disabled).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.pathCreate }))
+      expect(editor.getState().asset.geometries.at(-1)).toMatchObject({
+        kind: 'path',
+        closed: true,
+        endCaps: false,
+      })
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(before.geometries)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('path creation copies a chain and edits radius, caps and stable control points with separate undo steps', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
