@@ -1406,6 +1406,17 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Pintura animada no GLB (lote 225): `encodeSceneGlb(doc, { animatedPaint: true })` é a
+  gravação para o Estúdio; ausente, o GLB portátil continua no primeiro quadro com
+  `flipbook-first-frame`. Ligada, a cor base leva a FOLHA INTEIRA, `KHR_texture_transform`
+  aponta o primeiro quadro da SEQUÊNCIA (não a célula 0) e o contrato versionado 1 mora em
+  `materials[i].extras.molda.flipbook` — o GLTFLoader entrega isso em `material.userData`.
+  O contrato leva grade e sequência, NUNCA deslocamentos prontos: o consumidor roda a mesma
+  `sceneGlbFlipbookTransform`. A chave do cache de textura inclui a escolha; `extensionsUsed`
+  só sai quando algum material usa a extensão. Normal/rugosidade/metal com quadros seguem no
+  primeiro quadro, avisando. ⚠️ A folha inteira decide a transparência do material, e a cor
+  base entra como FUNDO da composição (base opaca = nenhum quadro transparente). Fora do
+  navegador o loader não decodifica PNG: `map.offset` real é gate de browser.
 - Ajuda contextual (lote 224): SceneFirstSteps dentro do palco, com chave de projeto,
   leitura por assunto só na sessão. Não recebe editor nem cancela gestos/poses;
   Escape local fecha ajuda, não pintura/pose. Foco no layout sem roubar de modais,

@@ -12,11 +12,17 @@ import { SCENE_LIMITS } from '../scene/limits'
 import { requireScene } from '../scene/validation'
 import type { GlbBinary } from './GlbBinary'
 import { encodePng } from './png'
+import {
+  type SceneGlbFlipbookContract,
+  sceneGlbFlipbookContract,
+  sceneGlbFlipbookTransform,
+} from './sceneGlbFlipbook'
 import type { prepareSceneGlbHierarchy } from './sceneGlbHierarchy'
 import type { SceneGlbIssue } from './sceneGlbReport'
 
 interface TextureInfo {
   index: number
+  extensions?: { KHR_texture_transform: { offset: [number, number]; scale: [number, number] } }
 }
 interface GlbMaterial {
   name: string
@@ -31,13 +37,15 @@ interface GlbMaterial {
   alphaMode: 'BLEND' | 'OPAQUE' | 'MASK'
   alphaCutoff?: number
   doubleSided: boolean
+  extras?: { molda: { flipbook: SceneGlbFlipbookContract } }
 }
 type Hierarchy = ReturnType<typeof prepareSceneGlbHierarchy>
 
-function dimensions(image: SceneImage | undefined) {
+/** Whole sheet only where the frames themselves travel; every other map stays one cell. */
+function dimensions(image: SceneImage | undefined, whole = false) {
   return {
-    width: image?.flipbook?.frameWidth ?? image?.width ?? 1,
-    height: image?.flipbook?.frameHeight ?? image?.height ?? 1,
+    width: (whole ? image?.width : image?.flipbook?.frameWidth) ?? image?.width ?? 1,
+    height: (whole ? image?.height : image?.flipbook?.frameHeight) ?? image?.height ?? 1,
   }
 }
 function commonSize(a: number, b: number) {
@@ -60,6 +68,8 @@ export class SceneGlbMaterials {
   readonly images: Array<{ bufferView: number; mimeType: 'image/png' }> = []
   readonly samplers = [{ magFilter: 9728, minFilter: 9728, wrapS: 33071, wrapT: 33071 }]
   pixelBytes = 0
+  /** Set only when a material actually carries the transform, so extensionsUsed stays honest. */
+  textureTransform = false
   private readonly palette: SceneRgba[]
   private readonly materialIds = new Map<string, number>()
   private readonly textureIds = new Map<string, { index: number; transparent: boolean }>()
@@ -69,6 +79,7 @@ export class SceneGlbMaterials {
     private readonly hierarchy: Hierarchy,
     private readonly binary: GlbBinary,
     private readonly issues: SceneGlbIssue[],
+    private readonly animatedPaint = false,
   ) {
     this.palette = scenePalette(hierarchy.source)
   }
@@ -77,11 +88,18 @@ export class SceneGlbMaterials {
     return id === undefined ? undefined : this.hierarchy.index.images.get(id)!
   }
 
-  private raster(image: SceneImage, base: SceneRgba, preserveTransparentRgb = false) {
-    const region = image.flipbook
-      ? sceneFlipbookRegion(image, image.flipbook.frames[0]!)
-      : { x0: 0, y0: 0, x1: image.width - 1, y1: image.height - 1 }
-    if (image.flipbook && !this.flipbooks.has(image.id)) {
+  private raster(
+    image: SceneImage,
+    base: SceneRgba,
+    preserveTransparentRgb = false,
+    whole = false,
+  ) {
+    const region =
+      image.flipbook && !whole
+        ? sceneFlipbookRegion(image, image.flipbook.frames[0]!)
+        : { x0: 0, y0: 0, x1: image.width - 1, y1: image.height - 1 }
+    // Carrying every frame is not a loss, so it must not report one.
+    if (image.flipbook && !whole && !this.flipbooks.has(image.id)) {
       this.flipbooks.add(image.id)
       this.issues.push({ code: 'flipbook-first-frame', sourceId: image.id })
     }
@@ -136,16 +154,26 @@ export class SceneGlbMaterials {
       doubleSided: source.doubleSided,
     }
     if (color) {
-      const { width, height } = dimensions(color)
+      const animated = this.animatedPaint && color.flipbook !== undefined
+      const { width, height } = dimensions(color, animated)
       const preserveTransparentRgb = source.alphaMask !== undefined
       const texture = this.texture(
-        JSON.stringify(['color', color.id, base, preserveTransparentRgb]),
+        JSON.stringify(['color', color.id, base, preserveTransparentRgb, animated]),
         width,
         height,
-        () => this.raster(color, base, preserveTransparentRgb),
+        () => this.raster(color, base, preserveTransparentRgb, animated),
       )
       result.pbrMetallicRoughness.baseColorTexture = { index: texture.index }
+      // The whole sheet decides transparency now: a later frame counts as much as the first.
       result.alphaMode = texture.transparent ? 'BLEND' : 'OPAQUE'
+      const contract = animated ? sceneGlbFlipbookContract(color) : null
+      if (contract) {
+        result.pbrMetallicRoughness.baseColorTexture.extensions = {
+          KHR_texture_transform: sceneGlbFlipbookTransform(contract, contract.frames[0]!),
+        }
+        result.extras = { molda: { flipbook: contract } }
+        this.textureTransform = true
+      }
     }
     if (source.alphaMask) {
       result.alphaMode = 'MASK'

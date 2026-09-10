@@ -9,10 +9,14 @@ import { prepareSceneGlbHierarchy } from './sceneGlbHierarchy'
 import { type SceneGlbIssue, SceneGlbLossError } from './sceneGlbReport'
 import { prepareSceneGlbSkin } from './sceneGlbSkin'
 
-/** Internal v2 export; never down-convert through the public v1 writer. No source mutation. */
+/**
+ * Internal v2 export; never down-convert through the public v1 writer. No source mutation.
+ * `animatedPaint` is the Studio-bound encoding: the whole sheet plus the versioned contract.
+ * Absent, the portable download keeps the first frame and its explicit loss, byte for byte.
+ */
 export function encodeSceneGlb(
   document: MoldaSceneDocument,
-  options: { allowLosses?: boolean } = {},
+  options: { allowLosses?: boolean; animatedPaint?: boolean } = {},
 ) {
   const hierarchy = prepareSceneGlbHierarchy(document)
   const issues: SceneGlbIssue[] = hierarchy.excluded.map((sourceId) => ({
@@ -24,7 +28,7 @@ export function encodeSceneGlb(
     if (node.kind !== 'mesh' && node.bendLimit !== undefined)
       issues.push({ code: 'bend-limit-omitted', sourceId: node.id })
   const binary = new GlbBinary(),
-    materials = new SceneGlbMaterials(hierarchy, binary, issues)
+    materials = new SceneGlbMaterials(hierarchy, binary, issues, options.animatedPaint === true)
   const geometries = new Map<string, ReturnType<typeof prepareSceneGlbGeometry>>()
   const meshes: Array<{
     name: string
@@ -119,6 +123,8 @@ export function encodeSceneGlb(
   if (issues.length && !options.allowLosses) throw new SceneGlbLossError(issues)
   const json = {
     asset: { version: '2.0', generator: 'Molda' },
+    // Declared only when a material carries it: an unused extension would be a false promise.
+    ...(materials.textureTransform ? { extensionsUsed: ['KHR_texture_transform'] } : {}),
     scene: 0,
     scenes: [
       { name: document.name, ...(hierarchy.roots.length ? { nodes: hierarchy.roots } : {}) },

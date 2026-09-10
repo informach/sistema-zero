@@ -5,10 +5,10 @@ Blockbench é referência de capacidades, não uma fonte de código a incorporar
 Referência estudada: `JannisX11/blockbench`, commit
 `47e633e4a1338f957ee7baa0acbcf54da11e77df` (5.1.6, GPL-3.0-or-later).
 
-## Acompanhamento — atualizado em 09/09/2026
+## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 224, primeiros passos contextuais, fases 3/9.**
-Próximo lote: contrato interno de pinturas animadas para o Estúdio, fases 5/8, lote 225.
+**Último lote implementado e verificado: 225, contrato de pintura animada, fases 5/8.**
+Próximo lote: consumidor da pintura animada no runtime do Estúdio, fases 5/8, lote 226.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -18,17 +18,19 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido vazio/templates e retomada disponíveis no playground | Integração pública e revisão visual/toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
-| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos | Metadados/runtime Studio e homologação |
+| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; contrato versionado de pintura animada no GLB do Estúdio | Consumidor no runtime Studio, conexão da oficina e homologação |
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido | Integração Studio e homologação |
 | 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.805 testes, zero falhas, 377 arquivos**, tipos, Biome e Vite (1,15 s)
-no lote 224; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
-**7.951 testes, zero falhas, 505 arquivos**, tipos e Biome passaram. Build Kids
-do lote 224: 7,2 s de compilação, 9,7 s de tipos, 59 páginas. Os cinco testes
+Molda: **2.813 testes, zero falhas, 378 arquivos**, tipos, Biome e Vite (1,63 s)
+no lote 225; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+**7.951 testes, zero falhas, 505 arquivos**, tipos e Biome passaram, reconferidos em 10/09.
+Build Kids do lote 225: 4,7 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
+Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
+`staging` em cinco commits escopados, com todos os gates reexecutados antes.
 Testes automatizados não homologam GPU, toque
 real ou usabilidade infantil; o chunk Three ainda gera aviso de tamanho (>500 kB).
 A falha intermitente de foco registrada no lote 148 reapareceu no lote 149 e foi
@@ -45,6 +47,9 @@ No lote 216, os avisos act apareceram em ModelEditor.paint.test durante a integr
 mesma pendência de diagnóstico de interação, sem atribuir causa nem suprimir logs.
 No lote 219, dez avisos act em ModelEditor.paint/TextureEditor; mesma pendência.
 No lote 221, cinco avisos act em TextureEditor; não houve supressão nem correção alegada.
+No lote 225 reapareceram cinco avisos act, nos mesmos componentes do lote 219 (LoadedEditor,
+EditorTopBar duas vezes, FacePaintDialog e ModelEditor); mesma pendência, agora com
+reprodução fresca para o lote de diagnóstico, sem supressão nem correção alegada.
 A integral do lote 155 encontrou outra janela: prévia de superfície concluída não
 fechava após revisão externa. Assinatura de revisão e ownership reentrante corrigidos;
 regressão local/worker, 40 repetições focais e integral passaram. Review do lote 155.
@@ -57,8 +62,9 @@ os critérios de aceite das fases separados das tarefas já implementadas.
 Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
 e abra `http://127.0.0.1:5198/?oficina=nova`. O playground usa armazenamento local
 separado; não é a ativação pública do editor nem do formato novo na nuvem.
-Próxima frente de implementação: pintura animada na ponte com o Estúdio, mantendo
-importadores, integração e homologação visíveis, sem ativar o formato público.
+Próxima frente de implementação: consumo da pintura animada no runtime do Estúdio e o
+destino "Usar no Estúdio" na oficina, mantendo importadores, integração e homologação
+visíveis, sem ativar o formato público.
 
 ## Decisões aprovadas
 
@@ -4939,14 +4945,31 @@ conversão compartilhada continuam abertos na fase 5.
 - Review de semântica/foco/atalhos, integral **2.805/0**, tipos, Biome, Vite e Kids
   passaram. Review `first-steps-l224.md`. Aprendizagem e visual não homologados.
 
-### Próximo lote 225: contrato de pintura animada para o Estúdio
+### Lote 225: contrato de pintura animada para o Estúdio — verificado
 
-- Mapear exportação/consumo/ownership antes de definir transporte; hoje o GLB
-  portátil guarda só o primeiro quadro, com aviso de perda explícito.
-- Propor contrato versionado interno, orçamentos e fixtures compartilhadas para
-  preservar sequência/fps/loop/pixels, sem mudar silenciosamente o GLB portátil.
-- Implementar em incrementos verificáveis: contrato/produtor, consumidor e conexão
-  da oficina. Guardas de rollout público e formatos desconhecidos permanecem.
+- Mapear exportação, consumo e posse antes de escolher transporte. Não inventar canal
+  novo ao lado do GLB sem provar que ele carrega algo que o arquivo não carregue melhor.
+- Contrato versionado com grade e sequência, nunca uma tabela de deslocamentos pronta:
+  duas fontes da verdade para a mesma conta é como as duas pontas se afastam.
+- O GLB que a criança baixa não pode mudar. Gravação para o Estúdio é escolha explícita,
+  e a perda `flipbook-first-frame` continua existindo para quem não pediu a folha inteira.
+- `animatedPaint` no `encodeSceneGlb` leva a folha inteira, `KHR_texture_transform`
+  apontando para o primeiro quadro da SEQUÊNCIA e `materials[i].extras.molda.flipbook`
+  com o contrato 1. Mapas de superfície com quadros seguem no primeiro quadro, avisando.
+  Fixture compartilhada e `--flipbook` no script de impressão.
+- Focal 15/0; integral **2.813/0**, tipos, Biome, Vite e Kids passaram; validador Khronos
+  sem erros nem avisos e GLTFLoader real entregando o contrato em `userData`.
+  Review `animated-paint-l225.md`.
+- Sem browser, `map.offset` real da textura não foi observado; cinco avisos act
+  reapareceram, sem correção alegada. Consumidor e oficina ficam nos lotes 226 e 227.
+
+### Próximo lote 226: consumidor da pintura animada no Estúdio
+
+- Reproduzir por ENTIDADE, não por material do cache: materiais são compartilhados entre
+  todas as instâncias de todos os moldes, e mexer no `offset` do cache animaria tudo junto.
+- Qualquer clone por entidade entra na contabilidade de posse e revisão do lote 118
+  (`ownedMaterials`, `resourceCount`, `returnModelResource`, `disposeModelPools`).
+- Respeitar a pausa que os testes já exigem e não alterar bloco que a criança já usa.
 
 ### Situação do plano após esses lotes
 
