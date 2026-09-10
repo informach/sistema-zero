@@ -28,6 +28,7 @@ import { Button } from '../../ui/Button'
 import { Download, Sparkles } from '../../ui/icons'
 import { Panel } from '../../ui/Panel'
 import { useMediaQuery } from '../../ui/useMediaQuery'
+import { usePanelGroup } from '../../ui/usePanelGroup'
 import { EditorTopBar } from '../EditorTopBar'
 import { useEditorGesture } from '../useEditorGesture'
 import { useSkyDownload } from './useSkyDownload'
@@ -221,9 +222,24 @@ export function SkyEditor({
     gesture.commit(withParams(current(), { clouds: { ...current().params.clouds, seed } }))
   }
 
+  /**
+   * A hierarquização do céu, por FREQUÊNCIA e DIFICULDADE (redesenho, 10/09/2026).
+   *
+   * Nascem ABERTOS os dois por onde uma criança de 9 anos começa e que ela entende sozinha:
+   * escolher um céu pronto (um toque e a tela inteira muda) e o Sol (arrastar move a luz, a
+   * relação é imediata). Nascem RECOLHIDOS os quatro de ajuste fino: cores, nuvens, estrelas
+   * (que só fazem sentido de noite) e exposição, que é conceito de fotografia e o mais
+   * abstrato da tela. Nada saiu do editor: tudo continua a um toque.
+   */
+  const panels = usePanelGroup(['presets', 'sun'])
+
   const controls = (
     <>
-      <Panel title={copy.presetsPanel} className="shrink-0">
+      <Panel
+        title={copy.presetsPanel}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('presets', copy.presetsPanel)}
+      >
         <div className="flex flex-wrap gap-2">
           {SKY_PRESET_IDS.map((id) => {
             const active = params.preset === id
@@ -251,7 +267,11 @@ export function SkyEditor({
           <p className="px-1 text-xs text-mld-muted">{COPY.skyPresets.custom}</p>
         ) : null}
       </Panel>
-      <Panel title={copy.sun} className="shrink-0">
+      <Panel
+        title={copy.sun}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('sun', copy.sun)}
+      >
         <SkySlider
           label={copy.elevation}
           value={params.sunElevation}
@@ -300,7 +320,11 @@ export function SkyEditor({
           onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.colors} className="shrink-0">
+      <Panel
+        title={copy.colors}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('colors', copy.colors)}
+      >
         <ColorField
           label={copy.top}
           value={params.topColor}
@@ -329,6 +353,7 @@ export function SkyEditor({
       <Panel
         title={copy.clouds}
         className="shrink-0"
+        disclosure={panels.disclosureFor('clouds', copy.clouds)}
         actions={
           <Button variant="ghost" onClick={shuffleClouds} className="min-h-11 px-2 text-xs">
             <Sparkles aria-hidden="true" className="size-4" />
@@ -361,7 +386,11 @@ export function SkyEditor({
           onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.stars} className="shrink-0">
+      <Panel
+        title={copy.stars}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('stars', copy.stars)}
+      >
         <SkySlider
           label={copy.stars}
           value={params.stars}
@@ -375,7 +404,11 @@ export function SkyEditor({
           onCancel={gesture.cancel}
         />
       </Panel>
-      <Panel title={copy.exposure} className="shrink-0">
+      <Panel
+        title={copy.exposure}
+        className="shrink-0"
+        disclosure={panels.disclosureFor('exposure', copy.exposure)}
+      >
         <SkySlider
           label={copy.exposure}
           value={params.exposure}
