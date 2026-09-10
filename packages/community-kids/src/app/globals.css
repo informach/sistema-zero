@@ -34,8 +34,7 @@
 @source "../../../pensa/src";
 /* Editor de assets embarcável (@sistemazero/pinta) — idem. */
 @source "../../../pinta/src";
-/* Oficina 3D embarcável (@sistemazero/molda) — idem. */
-@source "../../../molda/src";
+/* O stylesheet do Molda registra apenas suas fontes de UI, excluindo testes. */
 
 @custom-variant dark (&:is(.dark *));
 

@@ -100,6 +100,7 @@ const CommitBody = z.strictObject({
 })
 const DeleteBody = z.strictObject({
   baseRevision: z.number().int().min(0),
+  maxFormatVersion: z.number().int().min(1).max(65_535).optional(),
 })
 const ListQuery = z.strictObject({
   cursor: z.string().min(1).max(512).optional(),
@@ -286,6 +287,21 @@ export function createCreationsRoutes(deps: {
       }
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
+      // Old services may silently strip the request field. Confirm before signing ANY PUT.
+      // Only absence means legacy 1; malformed values (including null/string) fail closed.
+      const confirmedFormat =
+        reserved.body.formatVersion === undefined ? 1 : reserved.body.formatVersion
+      if (confirmedFormat !== (parsed.data.formatVersion ?? 1)) {
+        return NextResponse.json(
+          {
+            error: {
+              code: 'UPSTREAM_INCOMPATIBLE',
+              message: 'O serviço de criações não confirmou o formato solicitado',
+            },
+          },
+          { status: 503 },
+        )
+      }
       // Partes declaradas mas o members não devolveu a lista das faltantes (members ANTERIOR ao
       // protocolo, numa janela de deploy/rollback — o DTO dele descarta campos desconhecidos em
       // silêncio): sem essa lista o cliente subiria só o manifesto e o índice apontaria para
@@ -323,6 +339,7 @@ export function createCreationsRoutes(deps: {
         )
         return NextResponse.json({
           revision: reserved.body.revision,
+          formatVersion: confirmedFormat,
           bytes: reserved.body.bytes,
           uploadUrl,
           method: 'PUT',

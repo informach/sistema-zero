@@ -48,6 +48,8 @@ export interface CreationPartTicket extends CreationPartRef {
 /** O que o `reserve` devolve ao BFF: a revisão, a chave que ele vai assinar e as partes FALTANTES. */
 export interface CreationUploadTicket {
   revision: number
+  /** Native format validated and reserved, independent of the upload revision. */
+  formatVersion: number
   storageKey: string
   /** Eco dos tetos, para o BFF assinar `Content-Length` = bytes e negar o resto. */
   bytes: number
@@ -320,6 +322,7 @@ export class ReserveCreationUploadService {
     }
     return {
       revision: reservation.revision,
+      formatVersion,
       storageKey: creationStorageKey(input.userId, input.tool, input.itemId, reservation.revision),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
@@ -451,6 +454,7 @@ export class DeleteCreationService {
     tool: CreationTool,
     itemId: string,
     baseRevision: number,
+    maxFormatVersion = 1,
   ): Promise<{
     deleted: boolean
     storageKey: string | null
@@ -461,7 +465,20 @@ export class DeleteCreationService {
     if (!Number.isInteger(baseRevision) || baseRevision < 0) {
       throw new ValidationError('Revisão-base inválida')
     }
-    const result = await this.creations.softDelete(userId, tool, itemId, baseRevision, this.clock())
+    if (!Number.isInteger(maxFormatVersion) || maxFormatVersion < 1 || maxFormatVersion > 65_535) {
+      throw new ValidationError('Capacidade de formato inválida')
+    }
+    const result = await this.creations.softDelete(
+      userId,
+      tool,
+      itemId,
+      baseRevision,
+      this.clock(),
+      maxFormatVersion,
+    )
+    if (!result.ok && result.reason === 'client-outdated') {
+      throw new CreationClientOutdatedError(result.requiredVersion)
+    }
     if (!result.ok) throw new CreationStaleBaseError(result.currentRevision)
     return {
       deleted: result.deleted,

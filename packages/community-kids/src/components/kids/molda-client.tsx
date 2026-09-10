@@ -4,6 +4,7 @@
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — mesmo gotcha do
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
 import type { MoldaHostAdapter } from '@sistemazero/molda'
+import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -91,6 +92,7 @@ export function MoldaClient({
           // trocou de perfil (irmão que entrou no meio de um upload em voo).
           const nextCloud = createCreationsCloud({
             tool: 'molda',
+            maxFormatVersion: MOLDA_MAX_READ_VERSION,
             viewerId,
             idleMs: MOLDA_CLOUD_IDLE_MS,
           })

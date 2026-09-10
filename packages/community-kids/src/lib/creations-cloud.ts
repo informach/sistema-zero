@@ -412,6 +412,8 @@ function toSummary(raw: RawCloudSummary): CloudCreationSummary {
 
 export function createCreationsCloud(options: {
   tool: CreationTool
+  /** Highest native format the editor can read when deleting. Absent = legacy 1. */
+  maxFormatVersion?: number
   /** Perfil dono da fila: vai em `x-sz-viewer` (o BFF confere com a sessão). */
   viewerId?: string
   /** Injetável (testes). Default: o `fetch` global. */
@@ -427,6 +429,7 @@ export function createCreationsCloud(options: {
   wait?: (ms: number, wake: Promise<void>) => Promise<void>
 }): CreationsCloud {
   const tool = options.tool
+  const maxFormatVersion = options.maxFormatVersion
   const doFetch: FetchLike = options.fetch ?? ((input, init) => fetch(input, init))
   const idleMs = options.idleMs ?? IDLE_MS
   const now = options.now ?? (() => Date.now())
@@ -550,6 +553,8 @@ export function createCreationsCloud(options: {
 
   interface UploadTicket {
     revision: number
+    /** Old servers omit this and only confirm native format 1. */
+    formatVersion?: number
     bytes: number
     uploadUrl: string
     method: 'PUT'
@@ -649,6 +654,15 @@ export function createCreationsCloud(options: {
       }
     }
     if (!ticket) throw new Error('Reserva sem resposta')
+    const confirmedFormat = ticket.formatVersion === undefined ? 1 : ticket.formatVersion
+    if (confirmedFormat !== (meta.formatVersion ?? 1)) {
+      // A legacy BFF can drop the field even with an updated Members service.
+      // Never upload parts/manifest or advance marks on an unconfirmed format.
+      const err = new Error('A nuvem não confirmou o formato solicitado') as CloudError
+      err.status = 503
+      err.code = 'CLOUD_FORMAT_UNSUPPORTED'
+      throw err
+    }
     if (byHash.size > 0 && !Array.isArray(ticket.parts)) {
       // O serviço do outro lado ainda não fala "partes" (janela de deploy/rollback): sem a
       // lista do que falta, subir só o manifesto gravaria na conta um jogo sem os desenhos.
@@ -764,7 +778,10 @@ export function createCreationsCloud(options: {
   async function remove(itemId: string, baseRevision: number): Promise<{ revision: number }> {
     const result = await api<{ revision: number }>(`/${encodeURIComponent(itemId)}`, {
       method: 'DELETE',
-      body: JSON.stringify({ baseRevision }),
+      body: JSON.stringify({
+        baseRevision,
+        ...(maxFormatVersion !== undefined ? { maxFormatVersion } : {}),
+      }),
     })
     return { revision: result.revision }
   }

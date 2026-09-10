@@ -340,6 +340,167 @@ describe('gzip de ida e volta', () => {
 })
 
 describe('createCreationsCloud', () => {
+  test('delete usa capacidade da instância e uma recusa futura não confirma nem resolve como conflito', async () => {
+    const requests: unknown[] = []
+    let removed = false
+    let stale = false
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      maxFormatVersion: 2,
+      idleMs: 0,
+      wait: noWait,
+      fetch: async (_input, init) => {
+        requests.push(JSON.parse(String(init?.body)))
+        return Response.json(
+          {
+            error: { code: 'CREATION_CLIENT_OUTDATED', message: 'raw' },
+            details: { requiredVersion: 3 },
+          },
+          { status: 409 },
+        )
+      },
+    })
+    try {
+      cloud.enqueueRemove(
+        'model',
+        7,
+        () => {
+          removed = true
+        },
+        () => {
+          stale = true
+        },
+      )
+      await cloud.flush()
+      expect(requests).toEqual([{ baseRevision: 7, maxFormatVersion: 2 }])
+      expect(removed).toBe(false)
+      expect(stale).toBe(false)
+      expect(cloud.getState()).toMatchObject({
+        status: 'error',
+        pending: 0,
+        lastError: CLOUD_MESSAGES.clientOutdated,
+      })
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test('ticket incompatível esgota retry sem PUT nem confirmação e o próximo envio pode recuperar', async () => {
+    const server = fakeServer()
+    let acceptsFormat = false
+    let confirmed = 0
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      idleMs: 0,
+      wait: noWait,
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok || !acceptsFormat) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion: 2 })
+      },
+    })
+    const enqueue = () =>
+      cloud.enqueueUpload(
+        'model',
+        async () => ({
+          json: '{}',
+          meta: { name: 'Modelo', kind: 'model', formatVersion: 2 },
+        }),
+        () => {
+          confirmed += 1
+        },
+      )
+    try {
+      enqueue()
+      await cloud.flush()
+      expect(server.calls.filter((call) => call.url.endsWith('/upload'))).toHaveLength(3)
+      expect(server.calls.filter((call) => call.method === 'PUT')).toEqual([])
+      expect(confirmed).toBe(0)
+      expect(cloud.getState()).toMatchObject({ status: 'error', pending: 0 })
+      acceptsFormat = true
+      enqueue()
+      await cloud.flush()
+      expect(confirmed).toBe(1)
+      expect(cloud.getState()).toMatchObject({ status: 'saved', pending: 0 })
+      expect(server.calls.filter((call) => call.method === 'PUT')).toHaveLength(1)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test.each([
+    undefined,
+    null,
+    0,
+    1,
+    '2',
+    3,
+  ])('não envia manifesto nem partes sem confirmação exata do formato: %s', async (formatVersion) => {
+    const server = fakeServer()
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion })
+      },
+    })
+    try {
+      const part = await partOf({ id: 'skin', pixels: [1, 2] })
+      await expect(
+        cloud.upload(
+          {
+            itemId: 'model',
+            name: 'Modelo',
+            kind: 'model',
+            updatedAt: 1,
+            formatVersion: 2,
+          },
+          '{}',
+          [part],
+        ),
+      ).rejects.toMatchObject({ status: 503, code: 'CLOUD_FORMAT_UNSUPPORTED' })
+      expect(server.calls.filter((call) => call.method === 'PUT')).toEqual([])
+      expect(server.calls.some((call) => call.url.endsWith('/commit'))).toBe(false)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
+  test.each([
+    undefined,
+    1,
+    2,
+  ])('compatibilidade do ticket confirma a versão certa: %s', async (formatVersion) => {
+    const server = fakeServer()
+    const cloud = createCreationsCloud({
+      tool: 'molda',
+      fetch: async (input, init) => {
+        const response = await server.fetchImpl(input, init)
+        if (!String(input).endsWith('/upload') || !response.ok) return response
+        return Response.json({ ...((await response.json()) as object), formatVersion })
+      },
+    })
+    try {
+      const expected = formatVersion ?? 1
+      const result = await cloud.upload(
+        {
+          itemId: 'model',
+          name: 'Modelo',
+          kind: 'model',
+          updatedAt: 1,
+          formatVersion: expected,
+        },
+        '{}',
+      )
+      expect(result.revision).toBe(1)
+      expect(server.calls.filter((call) => call.method === 'PUT')).toHaveLength(1)
+      expect(server.calls.filter((call) => call.url.endsWith('/commit'))).toHaveLength(1)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
   test('fila envia versão do documento e recusa de editor antigo não dispara PUT, retry ou confirmação', async () => {
     const calls: string[] = []
     let sent: unknown

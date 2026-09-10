@@ -163,8 +163,73 @@ beforeEach(() => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 20))
 
 describe('BFF das criações — reserva', () => {
+  test.each([
+    undefined,
+    null,
+    0,
+    1,
+    '2',
+    3,
+  ])('não assina blob nem partes sem confirmação exata do formato solicitado: %s', async (formatVersion) => {
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async () => ({
+          status: 200,
+          body: {
+            revision: 2,
+            storageKey: 'main',
+            bytes: 100,
+            formatVersion,
+            parts: [{ hash: HASH_A, storageKey: 'part', bytes: 10 }],
+          },
+        }),
+      },
+    })
+    const result = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Modelo',
+        kind: 'model',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 100,
+        formatVersion: 2,
+        parts: [{ hash: HASH_A, bytes: 10 }],
+      }),
+      item,
+    )
+    expect(result.status).toBe(503)
+    expect(await result.json()).toMatchObject({ error: { code: 'UPSTREAM_INCOMPATIBLE' } })
+    expect(r2.presignPut).toEqual([])
+  })
+
+  test('ticket legado ausente confirma somente formato 1', async () => {
+    const { routes } = buildRoutes()
+    const result = await routes.creationsUploadUrl.POST(
+      post({
+        name: 'Modelo',
+        kind: 'model',
+        itemUpdatedAt: '2026-09-06T12:00:00.000Z',
+        bytes: 100,
+      }),
+      item,
+    )
+    expect(result.status).toBe(200)
+    expect(await result.json()).toMatchObject({ formatVersion: 1 })
+    expect(r2.presignPut).toHaveLength(1)
+  })
+
   test('encaminha formato numérico sem coerção', async () => {
-    const { routes, calls } = buildRoutes()
+    const reservedInputs: unknown[] = []
+    const { routes } = buildRoutes({
+      members: {
+        reserveCreationUpload: async (_tool: unknown, _id: unknown, input: unknown) => {
+          reservedInputs.push(input)
+          return {
+            status: 200,
+            body: { revision: 2, storageKey: 'main', bytes: 100, formatVersion: 2 },
+          }
+        },
+      },
+    })
     const body = {
       name: 'Modelo',
       kind: 'model',
@@ -172,14 +237,16 @@ describe('BFF das criações — reserva', () => {
       bytes: 100,
       formatVersion: 2,
     }
-    expect((await routes.creationsUploadUrl.POST(post(body), item)).status).toBe(200)
-    expect((calls.reserveCreationUpload?.[0] as unknown[])[2]).toMatchObject({ formatVersion: 2 })
+    const response = await routes.creationsUploadUrl.POST(post(body), item)
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ formatVersion: 2 })
+    expect(reservedInputs[0]).toMatchObject({ formatVersion: 2 })
     for (const formatVersion of [0, 1.5, 65_536, '2', null]) {
       expect(
         (await routes.creationsUploadUrl.POST(post({ ...body, formatVersion }), item)).status,
       ).toBe(400)
     }
-    expect(calls.reserveCreationUpload).toHaveLength(1)
+    expect(reservedInputs).toHaveLength(1)
   })
 
   test('recusa de formato atravessa o BFF com a versão exigida, sem assinar upload', async () => {
@@ -608,6 +675,55 @@ describe('BFF das criações — commit', () => {
 })
 
 describe('BFF das criações — apagar', () => {
+  test('encaminha capacidade junto da revisão; recusa de formato não apaga R2', async () => {
+    const { routes, calls } = buildRoutes()
+    const request = (maxFormatVersion: unknown) =>
+      new Request('https://community.test/api', {
+        method: 'DELETE',
+        body: JSON.stringify({ baseRevision: 2, maxFormatVersion }),
+      })
+    expect((await routes.creationsDelete.DELETE(request(2), item)).status).toBe(200)
+    expect(calls.deleteCreation?.[0]).toEqual([
+      'studio',
+      'proj-1',
+      { baseRevision: 2, maxFormatVersion: 2 },
+    ])
+    r2.deleted.length = 0
+    const error = {
+      error: { code: 'CREATION_CLIENT_OUTDATED', message: 'Atualize' },
+      details: { requiredVersion: 3 },
+    }
+    const blocked = buildRoutes({
+      members: { deleteCreation: async () => ({ status: 409, body: error }) },
+    })
+    const result = await blocked.routes.creationsDelete.DELETE(request(2), item)
+    expect(result.status).toBe(409)
+    expect(await result.json()).toEqual(error)
+    expect(r2.deleted).toEqual([])
+    expect(r2.deletedBatches).toEqual([])
+  })
+
+  test.each([
+    null,
+    0,
+    -1,
+    1.5,
+    65_536,
+    '2',
+  ])('não encaminha capacidade inválida: %s', async (maxFormatVersion) => {
+    const { routes, calls } = buildRoutes()
+    const result = await routes.creationsDelete.DELETE(
+      new Request('https://community.test/api', {
+        method: 'DELETE',
+        body: JSON.stringify({ baseRevision: 2, maxFormatVersion }),
+      }),
+      item,
+    )
+    expect(result.status).toBe(400)
+    expect(calls.deleteCreation).toBeUndefined()
+    expect(r2.deleted).toEqual([])
+  })
+
   test('a lixeira apaga o blob que o members soltou (best-effort) e devolve só `{deleted}`', async () => {
     const { routes, calls } = buildRoutes()
     const res = await routes.creationsDelete.DELETE(deleteRequest(2), item)

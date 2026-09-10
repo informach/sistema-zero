@@ -110,6 +110,7 @@ export function creationsRoutes(deps: CreationsRoutesDeps) {
             params.tool,
             params.itemId,
             body.baseRevision,
+            body.maxFormatVersion ?? 1,
           ),
         { params: CreationItemParams, body: CreationDeleteBody },
       )

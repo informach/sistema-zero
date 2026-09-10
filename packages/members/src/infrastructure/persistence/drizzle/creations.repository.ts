@@ -528,6 +528,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
     itemId: string,
     baseRevision: number,
     now: Date,
+    maxFormatVersion = 1,
   ): ReturnType<CreationsRepository['softDelete']> {
     return this.db.transaction(async (tx) => {
       const [row] = await tx
@@ -536,6 +537,9 @@ export class DrizzleCreationsRepository implements CreationsRepository {
           parts: creations.parts,
           revision: creations.revision,
           deletedAt: creations.deletedAt,
+          formatVersion: creations.formatVersion,
+          pendingFormatVersion: creations.pendingFormatVersion,
+          pendingRevision: creations.pendingRevision,
         })
         .from(creations)
         .where(whereItem(userId, tool, itemId))
@@ -549,13 +553,17 @@ export class DrizzleCreationsRepository implements CreationsRepository {
       if (baseRevision !== row.revision) {
         return { ok: false, reason: 'stale-base', currentRevision: row.revision }
       }
-      if (row.deletedAt !== null) {
+      const requiredVersion = Math.max(row.formatVersion, row.pendingFormatVersion ?? 1)
+      if (maxFormatVersion < requiredVersion) {
+        return { ok: false, reason: 'client-outdated', requiredVersion }
+      }
+      if (row.deletedAt !== null && row.pendingRevision === null) {
         return { ok: true, deleted: false, storageRef: null, partRefs: [], revision: row.revision }
       }
       await tx
         .update(creations)
         .set({
-          deletedAt: now,
+          deletedAt: row.deletedAt ?? now,
           // Cancela a reserva em voo (o commit dela cai em 409); o contador NÃO volta.
           ...clearPending(),
           // O blob (e as partes) saem da linha — e do R2, pelo BFF: apagado não ocupa espaço
@@ -569,7 +577,7 @@ export class DrizzleCreationsRepository implements CreationsRepository {
         .where(whereItem(userId, tool, itemId))
       return {
         ok: true,
-        deleted: true,
+        deleted: row.deletedAt === null,
         storageRef: row.storageRef,
         partRefs: sanitizeParts(row.parts),
         revision: row.revision,

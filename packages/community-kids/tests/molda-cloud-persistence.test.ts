@@ -5,13 +5,15 @@
  * no local (id preservado, nome único); conflito real vira `-copia`; criação ABERTA no editor
  * é pulada e volta a descer ao fechar.
  */
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, spyOn, test } from 'bun:test'
 import type { MoldaAsset } from '@sistemazero/molda/assets'
 import {
   assetFromJson,
   createModelAsset,
   createSkyAsset,
   createTextureAsset,
+  MoldaUnsupportedVersionError,
+  summarizeAsset,
 } from '@sistemazero/molda/assets'
 import type {
   CloudCreationSummary,
@@ -32,6 +34,197 @@ import {
   uniqueAssetName,
 } from '../src/lib/molda-cloud-persistence'
 
+test('formato remoto desconhecido não vira um modelo legado incompleto', () => {
+  const original = createModelAsset({ name: 'modelo', starter: false })
+  const json = JSON.stringify({
+    ...JSON.parse(assetToCloudJson(original)),
+    formatVersion: 2,
+    animations: [{ name: 'andar' }],
+  })
+  expect(() => assetFromCloudJson(json, original.id)).toThrow(MoldaUnsupportedVersionError)
+})
+
+test('summary listing reconciles without loading the gallery payload, including conflict copies', async () => {
+  const mine = model('casa', 2000)
+  if (mine.kind !== 'model') throw new Error('model fixture')
+  const theirs = { ...mine, name: 'casa-remota', updatedAt: 3000 }
+  const local = fakeLocal([mine])
+  local.listSummaries = async () => [...local.rows.values()].map(summarizeAsset)
+  const all = spyOn(local, 'loadAll')
+  const marks = createMemorySyncedMarks()
+  marks.set(mine.id, 1000, 1)
+  const { cloud } = fakeCloud(
+    new Map([
+      [
+        mine.id,
+        {
+          json: assetToCloudJson(theirs),
+          summary: summaryOf(theirs, { revision: 2 }),
+        },
+      ],
+    ]),
+  )
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    viewerId: 'summary-profile',
+    marks,
+  })
+  const done = new Promise<void>((resolve) => {
+    mirrored.subscribe?.((event) => {
+      if (event.type === 'sync-end') resolve()
+    })
+  })
+  expect(await mirrored.listSummaries?.()).toEqual([summarizeAsset(mine)])
+  await done
+  expect(all).not.toHaveBeenCalled()
+  expect(local.rows.get(mine.id)).toEqual(theirs)
+  const copy = [...local.rows.values()].find((item) => item.id !== mine.id)
+  expect(copy?.name).toBe('casa-copia')
+  expect(copy?.kind === 'model' && copy.parts).toEqual(mine.parts)
+  expect((await mirrored.listSummaries?.())?.length).toBe(2)
+  expect(all).not.toHaveBeenCalled()
+  mirrored.dispose?.()
+  all.mockRestore()
+})
+
+test('an edit arriving while a conflict copy saves is not overwritten by the remote document', async () => {
+  const mine = model('casa', 2000)
+  const theirs = { ...mine, updatedAt: 3000 }
+  const editedWhileCopying = { ...mine, updatedAt: 4000, name: 'edicao-durante-copia' }
+  const local = fakeLocal([mine])
+  const normalSave = local.saveMany.bind(local)
+  local.saveMany = async (assets) => {
+    await normalSave(assets)
+    if (assets.some((asset) => asset.id !== mine.id)) local.rows.set(mine.id, editedWhileCopying)
+  }
+  const marks = createMemorySyncedMarks()
+  marks.set(mine.id, 1000, 1)
+  const { cloud } = fakeCloud(
+    new Map([
+      [
+        mine.id,
+        {
+          json: assetToCloudJson(theirs),
+          summary: summaryOf(theirs, { revision: 2 }),
+        },
+      ],
+    ]),
+  )
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    viewerId: 'copy-race',
+    marks,
+  })
+  await loadSettled(mirrored, local)
+  expect(local.rows.get(mine.id)).toEqual(editedWhileCopying)
+  expect(local.rows.size).toBe(1)
+  expect(marks.revision(mine.id)).toBe(1)
+  mirrored.dispose?.()
+})
+
+test('remote deletion cannot erase an edit arriving while its conflict copy is saved', async () => {
+  const mine = model('casa', 2000)
+  const latest = { ...mine, name: 'edicao-nova', updatedAt: 4000 }
+  const local = fakeLocal([mine])
+  const save = local.saveMany
+  local.saveMany = async (assets) => {
+    await save(assets)
+    local.rows.set(mine.id, latest)
+  }
+  const marks = createMemorySyncedMarks()
+  marks.set(mine.id, 1000, 1)
+  const { cloud } = fakeCloud(
+    new Map([
+      [
+        mine.id,
+        {
+          json: '',
+          summary: summaryOf(mine, { revision: 2, deletedAt: 3000 }),
+        },
+      ],
+    ]),
+  )
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    viewerId: 'delete-race',
+    marks,
+  })
+  await loadSettled(mirrored, local)
+  expect(local.rows.get(mine.id)).toEqual(latest)
+  expect(local.rows.size).toBe(1)
+  expect(marks.revision(mine.id)).toBe(1)
+  expect(marks.tombstone(mine.id)).toBeUndefined()
+  mirrored.dispose?.()
+})
+
+test('a conflict copy edited before rollback survives and its newest contents are queued', async () => {
+  const mine = model('casa', 2000)
+  const theirs = { ...mine, updatedAt: 3000 }
+  const local = fakeLocal([mine])
+  const save = local.saveMany
+  let adopted: MoldaAsset | undefined
+  local.saveMany = async (assets) => {
+    await save(assets)
+    const copy = assets.find((asset) => asset.id !== mine.id)
+    if (!copy) return
+    adopted = { ...copy, name: 'minha-copia-editada', updatedAt: copy.updatedAt + 1 }
+    local.rows.set(copy.id, adopted)
+    local.rows.set(mine.id, { ...mine, updatedAt: 4000 })
+  }
+  const marks = createMemorySyncedMarks()
+  marks.set(mine.id, 1000, 1)
+  const { cloud, uploads } = fakeCloud(
+    new Map([
+      [
+        mine.id,
+        {
+          json: assetToCloudJson(theirs),
+          summary: summaryOf(theirs, { revision: 2 }),
+        },
+      ],
+    ]),
+  )
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    viewerId: 'adopted-copy',
+    marks,
+  })
+  await loadSettled(mirrored, local)
+  if (!adopted) throw new Error('Expected a conflict copy')
+  expect(local.rows.size).toBe(2)
+  expect(local.rows.get(adopted.id)).toEqual(adopted)
+  const upload = await uploads.get(adopted.id)?.produce()
+  expect(assetFromCloudJson(upload?.json ?? '', adopted.id)).toEqual(adopted)
+  expect(marks.revision(mine.id)).toBe(1)
+  mirrored.dispose?.()
+})
+
+test('rejected conditional mutations do not enqueue uploads, deletions or advance marks', async () => {
+  const mine = model('casa', 2000)
+  const local = fakeLocal([mine])
+  const marks = createMemorySyncedMarks()
+  marks.set(mine.id, 2000, 3)
+  const { cloud, uploads, removed } = fakeCloud(new Map())
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    viewerId: 'conditional',
+    marks,
+  })
+  expect(await mirrored.saveIfUnchanged({ ...mine, updatedAt: 3000 }, 1000)).toBe(false)
+  expect(await mirrored.removeIfUnchanged(mine.id, 1000)).toBe(false)
+  expect(local.rows.get(mine.id)).toEqual(mine)
+  expect(uploads.size).toBe(0)
+  expect(removed).toHaveLength(0)
+  expect(marks.revision(mine.id)).toBe(3)
+  expect(marks.tombstone(mine.id)).toBeUndefined()
+  mirrored.dispose?.()
+})
+
 function fakeLocal(initial: MoldaAsset[] = []): MoldaPersistenceLike & {
   rows: Map<string, MoldaAsset>
   emitLocal(event: { type: 'changed'; ids?: string[] }): void
@@ -49,11 +242,21 @@ function fakeLocal(initial: MoldaAsset[] = []): MoldaPersistenceLike & {
     async save(asset) {
       rows.set(asset.id, asset)
     },
+    async saveIfUnchanged(asset, expectedUpdatedAt) {
+      if ((rows.get(asset.id)?.updatedAt ?? null) !== expectedUpdatedAt) return false
+      rows.set(asset.id, asset)
+      return true
+    },
     async saveMany(assets) {
       for (const asset of assets) rows.set(asset.id, asset)
     },
     async remove(id) {
       rows.delete(id)
+    },
+    async removeIfUnchanged(id, expectedUpdatedAt) {
+      if ((rows.get(id)?.updatedAt ?? null) !== expectedUpdatedAt) return false
+      rows.delete(id)
+      return true
     },
     async removeMany(ids) {
       for (const id of ids) rows.delete(id)
@@ -141,6 +344,39 @@ const summaryOf = (
 const remoteOf = (assets: MoldaAsset[]) =>
   new Map(assets.map((a) => [a.id, { json: assetToCloudJson(a), summary: summaryOf(a) }]))
 
+test('criação remota de formato novo aparece para recuperação sem regravar, copiar ou avançar marca', async () => {
+  const mine = model('robot', 1000)
+  const raw = {
+    ...JSON.parse(assetToCloudJson(mine)),
+    formatVersion: 2,
+    animations: [{ name: 'andar' }],
+  }
+  const remote = new Map([
+    [
+      mine.id,
+      { json: JSON.stringify(raw), summary: summaryOf(mine, { revision: 2, formatVersion: 2 }) },
+    ],
+  ])
+  const local = fakeLocal([mine])
+  const { cloud, uploads } = fakeCloud(remote)
+  const marks = createMemorySyncedMarks()
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    cloud,
+    marks,
+    viewerId: 'future-profile',
+  })
+  await loadSettled(mirrored, local)
+  expect(mirrored.getReadIssues?.()).toEqual([
+    { id: mine.id, name: mine.name, status: 'unsupported', version: 2 },
+  ])
+  expect(await mirrored.read?.(mine.id)).toEqual({ status: 'unsupported', version: 2, raw })
+  expect(local.rows.get(mine.id)).toEqual(mine)
+  expect(uploads.size).toBe(0)
+  expect(marks.revision(mine.id)).toBeUndefined()
+  mirrored.dispose?.()
+})
+
 /**
  * Abre a galeria (o wrapper devolve o LOCAL na hora e reconcilia em segundo plano) e espera
  * a reconciliação terminar (`sync-end`); devolve o local já reconciliado.
@@ -227,6 +463,7 @@ describe('createCloudMirroredMoldaPersistence', () => {
     const snapshot = await job?.produce()
     // `baseRevision: 0` = este aparelho nunca viu o item na nuvem (a reserva recusa se já houver).
     expect(snapshot?.meta).toEqual({
+      formatVersion: 1,
       name: 'casa',
       kind: 'model',
       updatedAt: 1000,
@@ -234,6 +471,7 @@ describe('createCloudMirroredMoldaPersistence', () => {
       baseRevision: 0,
     })
     expect(assetFromCloudJson(snapshot?.json ?? '', casa.id)?.name).toBe('casa')
+    expect(JSON.parse(snapshot?.json ?? '{}').formatVersion).toBe(snapshot?.meta?.formatVersion)
     // Enfileirar NÃO marca; o commit confirmado marca com o updatedAt E a revisão do que subiu.
     expect(marks.get(casa.id)).toBeUndefined()
     job?.onUploaded?.({ itemId: casa.id, updatedAt: 1000, revision: 3 })
@@ -825,10 +1063,10 @@ describe('review 06/09: upload em voo × exclusão, flush antes da descida, cria
     expect(marks.tombstone(casa.id)).toEqual({ at: 4242, sent: false, revision: 5 })
     // A lápide ainda existe na hora de GRAVAR o restauro (só sai depois).
     const tombstoneAtWrite: unknown[] = []
-    const saveMany = local.saveMany
-    local.saveMany = async (assets) => {
+    const saveIfUnchanged = local.saveIfUnchanged
+    local.saveIfUnchanged = async (asset, expectedUpdatedAt) => {
       tombstoneAtWrite.push(marks.tombstone(casa.id))
-      return saveMany(assets)
+      return saveIfUnchanged(asset, expectedUpdatedAt)
     }
     // 2º 409 (`retried`): a corrente é 9 > 5, alguém editou entre os dois envios → restaura.
     await removed[1]?.onStale?.({ itemId: casa.id, currentRevision: 9 })
