@@ -152,7 +152,7 @@ Na Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado n
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -162,3 +162,53 @@ Na Aula 2, você abre o Pinta para desenhar a sua nave. Seu jogo fica guardado n
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Levar o projeto do Dia 5 ao Estúdio Completo e reconhecer onde cada versão fica guardada.
+
+### Qual lugar guarda o quê?
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Publicar no Mural e editar um projeto são a mesma operação?
+
+**Resposta e explicação:** Não; a publicação é uma versão para jogar, enquanto o projeto continua editável.
+
+### conhecer o Estúdio Completo
+
+**Checagem:** Onde ficam os projetos livres do Estúdio?
+
+**Resposta e explicação:** Em Meus Jogos.
+
+### começar um projeto do zero e instalar os bloquinhos
+
+**Checagem:** Se Jogo 2D não aparece no projeto novo, o que fazer?
+
+**Resposta e explicação:** Abrir as extensões e instalar a correspondente.
+
+### trazer o seu jogo da nave
+
+**Checagem:** Como trazer o jogo do Dia 5 para o Estúdio Completo?
+
+**Resposta e explicação:** Exportar da aula do Dia 5 e importar no Estúdio.
+
+### onde os seus jogos ficam guardados
+
+**Checagem:** Como retomar o projeto importado?
+
+**Resposta e explicação:** Abrir seu cartão em Meus Jogos, conferindo nome e imagem.
+
+### Teste e guarde sua criação
+
+**Checagem:** Qual projeto será usado nas próximas aulas?
+
+**Resposta e explicação:** O jogo importado do Dia 5.

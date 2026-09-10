@@ -6,7 +6,7 @@ A aula continua no mesmo curso e módulo, com os mesmos acessos e regras da carr
 
 No editor do curso, crie a aula com título e slug. Ela nasce sem publicação. Abra sua edição para cadastrar conteúdo. Em uma aula existente, abrir a edição cria ou carrega seu rascunho sem alterar o que está publicado.
 
-O título da seção aparece para a criança. Intenção didática e objetivo são orientações da autoria; não aparecem no percurso do aluno. O aluno pode usar o índice, avançar e voltar livremente dentro de uma aula liberada.
+O título da seção aparece para a criança. Intenção didática e objetivo são orientações da autoria; não aparecem no percurso do aluno. Nos percursos com critérios, o aluno acessa a seção atual e revisa as concluídas. As próximas ficam bloqueadas, inclusive por acesso direto à API.
 
 ## Conteúdo no lugar em que será usado
 
@@ -24,7 +24,7 @@ Os manifestos de Corre Dino e dos dias do Desafio foram preparados para adaptar 
 
 Ao usar esses manifestos em uma aula nova e vazia, primeiro use **Adicionar conteúdo aqui → Estúdio** e configure esse bloco no rascunho. Na continuação de um curso, confira o projeto inicial e a mesma cadeia usada pelas outras aulas. Depois confira e aplique a importação; ela organizará esse único Estúdio nas seções previstas. Não é necessário publicar a aula para importar. A introdução e os manifestos que usam somente ferramentas externas não exigem esse bloco.
 
-Adicione **um bloco de Estúdio** na seção em que o projeto começa. Configure o projeto inicial, os blocos disponíveis, o modo, a atividade e a cadeia entre aulas, conforme o curso.
+Adicione **um bloco de Estúdio** na última seção do percurso, marcada como **Fechamento**, e escolha esse mesmo bloco em **Ferramenta durante esta seção** desde o início da construção. Configure o projeto inicial, os blocos disponíveis, o modo, a atividade e a cadeia entre aulas, conforme o curso.
 
 Nas demais seções em que a criança precisa continuar trabalhando, use **Ferramenta durante esta seção** e escolha esse bloco existente. Não adicione outro bloco de Estúdio para representar a continuação.
 
@@ -36,9 +36,19 @@ Um segundo bloco de Estúdio representa outra atividade, com outro projeto e out
 
 As descobertas podem oferecer previsão, comparação, ordenação, associação, experimento ou HTML isolado. Configure sua pergunta, alternativas, explicação, pistas e necessidade de conclusão. Uma experiência essencial precisa da conferência nativa correspondente.
 
-Errar uma tentativa não bloqueia a navegação. Pistas não descontam pontos. O aluno pode voltar à explicação e tentar novamente. O servidor confere a atividade obrigatória antes da conclusão da aula.
+Uma tentativa errada mantém a seção atual disponível, com pistas e novas tentativas sem punição. O servidor libera a próxima seção quando as verificações forem cumpridas. A hipótese inicial pode estar errada; a checagem final precisa ser acertada. A navegação só muda depois de o servidor confirmar o salvamento; uma falha preserva o rascunho e a seção atual.
 
 Durante o percurso, O que falta para concluir mostra os requisitos e permite abrir a seção e a atividade correspondente. Os mesmos critérios são usados ao clicar em Concluir aula: descobertas essenciais, quizzes avaliativos, entrega/correção de projetos e certificado, conforme os blocos cadastrados. Conteúdo opcional não gera uma exigência nova.
+
+## Configurar o avanço real
+
+Use **Preparar avanço por seções** no percurso. Em cada seção, selecione as atividades que comprovam seu objetivo. Uma pergunta curta é uma descoberta interativa do tipo **Pergunta curta**, com alternativas, resposta correta, explicação e pistas. Ler, assistir, percorrer a tela ou salvar uma resposta não comprova o objetivo.
+
+Sequências e associações precisam ser resolvidas. Experimentos, HTML e ferramentas externas exigem uma conferência nativa. No Estúdio, use uma verificação estrutural quando a presença de um bloco, repetição, variável ou função for suficiente; quando o objetivo envolver comportamento, use uma pergunta sobre o resultado. A verificação da etapa examina o projeto atual, sem fazer a entrega final. Pinta e ferramentas externas usam checagens pedagógicas.
+
+Todas as seções precisam de critérios, inclusive abertura e fechamento. O editor informa referências inválidas e critérios ausentes; o servidor impede a publicação. A entrega final do projeto deve pertencer à última seção do percurso, marcada como fechamento. Reordenar essa seção para antes das demais impede a publicação e o envio da entrega. Materiais de apoio não contam como seção; quizzes opcionais de apoio continuam disponíveis para responder.
+
+A publicação ativa as travas. Seções já concluídas não perdem seu marco com revisões; evidências ainda não confirmadas precisam corresponder ao conteúdo atual. A barra principal mostra seções concluídas / total de seções, com pesos iguais. Aulas legadas permanecem no fluxo anterior até a adaptação. A prévia do professor continua livre e não registra progresso.
 
 ## Vídeos do Vimeo
 

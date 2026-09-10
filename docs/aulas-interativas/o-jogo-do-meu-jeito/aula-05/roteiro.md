@@ -143,7 +143,7 @@ Na Aula 6, seus desenhos vão entrar no projeto livre do Estúdio.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,53 @@ Na Aula 6, seus desenhos vão entrar no projeto livre do Estúdio.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Controlar a ordem visual das formas e criar uma animação com pedra e fogo.
+
+### A pedra está escondida
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Como deixar a pedra visível na frente do fogo?
+
+**Resposta e explicação:** Colocar as chamas atrás dela.
+
+### a chama de fora
+
+**Checagem:** Onde fica a chama externa em relação à pedra?
+
+**Resposta e explicação:** Atrás da pedra.
+
+### as chamas de dentro
+
+**Checagem:** Como criar uma chama interna a partir da externa?
+
+**Resposta e explicação:** Copiar, colar e ajustar tamanho, cor e posição.
+
+### fazer a pedra rolar
+
+**Checagem:** Como sugerir movimento no segundo quadro?
+
+**Resposta e explicação:** Alterar crateras e pontas do fogo e conferir a prévia.
+
+### o nome da animação
+
+**Checagem:** Qual animação deve ser salva no asteroide?
+
+**Resposta e explicação:** girando, com dois quadros.
+
+### Teste e guarde sua criação
+
+**Checagem:** Como nave e asteroide ficam na galeria?
+
+**Resposta e explicação:** Como dois assets separados.

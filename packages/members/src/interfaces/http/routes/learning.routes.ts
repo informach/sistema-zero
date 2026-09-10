@@ -20,6 +20,8 @@ import {
   LearningNavigationBody,
   LearningProgressBody,
   LearningReportQuery,
+  SectionProjectBody,
+  SectionProjectParams,
 } from '../learning.dtos'
 import { DraftCommandSchema, DraftPublishSchema, draftCommand } from '../lesson-draft.dtos'
 
@@ -64,6 +66,18 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       ({ headers, params, body }) =>
         deps.learning.attempt(actor(headers), params.lessonId, params.blockId, body),
       { params: LearningBlockParams, body: LearningAttemptBody },
+    )
+    .post(
+      '/lessons/:lessonId/sections/:sectionId/project-check',
+      ({ headers, params, body }) =>
+        deps.learning.checkProject(
+          actor(headers),
+          params.lessonId,
+          params.sectionId,
+          body.revision,
+          body.project,
+        ),
+      { params: SectionProjectParams, body: SectionProjectBody },
     )
     .group('/admin', (app) =>
       app

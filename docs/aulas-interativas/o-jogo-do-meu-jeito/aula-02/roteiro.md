@@ -174,7 +174,7 @@ Na Aula 3, o mesmo asset nave vai ganhar fogo em dois quadros. Não crie outro d
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -184,3 +184,61 @@ Na Aula 3, o mesmo asset nave vai ganhar fogo em dois quadros. Não crie outro d
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.
+
+### Uma luz, dois lados
+
+**Checagem:** O que caracteriza pixel art ao ampliar a imagem?
+
+**Resposta e explicação:** Os quadradinhos da grade ficam evidentes.
+
+### O que aconteceu?
+
+**Checagem:** O que caracteriza pixel art ao ampliar a imagem?
+
+**Resposta e explicação:** Os quadradinhos da grade ficam evidentes.
+
+### conhecer o Pinta e começar o desenho
+
+**Checagem:** Quais dados deve ter o novo asset nave?
+
+**Resposta e explicação:** Pixel art, Personagem, 32 por 32.
+
+### o contorno da nave
+
+**Checagem:** Por que deixar quatro linhas livres embaixo da nave?
+
+**Resposta e explicação:** Para desenhar o fogo na próxima aula.
+
+### pintar
+
+**Checagem:** Como fazer detalhes diferentes nos dois lados?
+
+**Resposta e explicação:** Desligar o espelho quando necessário.
+
+### luz e sombra
+
+**Checagem:** Como manter luz e sombra coerentes?
+
+**Resposta e explicação:** Escolher de onde vem a luz e respeitar esse lado.
+
+### guardar o seu desenho
+
+**Checagem:** Como conferir que o desenho ficou guardado?
+
+**Resposta e explicação:** Esperar salvar e abrir novamente o cartão nave na galeria.
+
+### Teste e guarde sua criação
+
+**Checagem:** O que deve continuar livre para a animação da próxima aula?
+
+**Resposta e explicação:** Quatro linhas embaixo da nave.

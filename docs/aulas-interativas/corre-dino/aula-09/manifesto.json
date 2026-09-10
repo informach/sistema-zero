@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-09",
   "title": "Bateu, terminou, recomeçou",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! A tela de início funciona por teclado e toque. O dino ainda atravessa os cactos sem perder.\n\nHoje você vai definir a consequência da colisão e testar o ciclo completo da partida.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! A tela de início funciona por teclado e toque. O dino ainda atravessa os cactos sem perder.\n\nHoje você vai definir a consequência da colisão e testar o ciclo completo da partida.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -120,6 +120,230 @@
     {
       "key": "video-construir-5-1",
       "plannedVideo": "aula-09-passo-05: gravar a demonstração \"testar do começo ao fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Definir a consequência da colisão e testar o ciclo completo da partida."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Definir a consequência da colisão e testar o ciclo completo da partida."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Definir a consequência da colisão e testar o ciclo completo da partida."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Elas deixam de executar."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que acontece com as ações protegidas por Se jogando ao mudar para fim?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Elas deixam de executar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Elas dobram de velocidade."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Elas passam para Ao iniciar sozinhas."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Elas deixam de executar."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a colisão que acaba o jogo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Ir para a tela fim."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual consequência encerra a partida após a colisão?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Criar outro grupo cactos."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar apenas a cor do obstáculo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Ir para a tela fim."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Ir para a tela fim."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a tela de fim",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Qualquer tecla ou toque permite jogar de novo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual dica combina com o reinício que vamos configurar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O jogo reinicia sem comando."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Qualquer tecla ou toque permite jogar de novo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Só fechar o navegador permite recomeçar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Qualquer tecla ou toque permite jogar de novo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer você sentir a batida",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Esses sinais mostram ao jogador o que aconteceu."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que colocar explosão, tremida e som antes de ir para fim?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Esses sinais mostram ao jogador o que aconteceu."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Esses sinais apagam o projeto."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Eles substituem a necessidade de detectar a colisão."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Esses sinais mostram ao jogador o que aconteceu."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: jogar de novo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Reiniciar o jogo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual ação deve acontecer ao receber um comando na tela fim?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Criar mais cactos sem limpar a partida."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Apagar o evento de início."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Reiniciar o jogo."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Reiniciar o jogo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: testar do começo ao fim",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Iniciar, bater, ver o fim e recomeçar."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual sequência testa o ciclo completo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Só trocar as cores do jogo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Iniciar, bater, ver o fim e recomeçar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Só olhar a tela inicial."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Iniciar, bater, ver o fim e recomeçar."
+        }
+      }
     }
   ],
   "sections": [
@@ -128,10 +352,14 @@
       "title": "A criação de hoje",
       "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -141,67 +369,95 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "a colisão que acaba o jogo",
       "objective": "Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto. Dentro, coloque Ir para a tela fim. Rode e bata.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "a tela de fim",
       "objective": "No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela. Use Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "fazer você sentir a batida",
       "objective": "Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "jogar de novo",
       "objective": "No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas. Preserve o caminho de inicio para jogando que já existe.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "testar do começo ao fim",
       "objective": "Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter. Confira se o novo jogo volta ao estado inicial.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "fechamento",
@@ -211,7 +467,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

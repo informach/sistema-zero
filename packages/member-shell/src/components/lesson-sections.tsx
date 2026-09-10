@@ -8,7 +8,7 @@ import {
   lessonCompletionRequirements,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
-import { ArrowLeft, ArrowRight, ExternalLink, List, MessageCircle } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ExternalLink, List, Lock, MessageCircle } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
@@ -143,7 +143,16 @@ function BlockScope({
   )
 }
 
-export function LessonSections({
+export function LessonSections(props: {
+  lesson: LessonDetailView
+  renderBlocks: (blocks: LessonBlockView[]) => ReactNode
+  kids?: boolean
+}) {
+  const player = useLessonPlayer()
+  return <LessonSectionsContent key={`${player?.viewerId}:${props.lesson.id}`} {...props} />
+}
+
+function LessonSectionsContent({
   lesson,
   renderBlocks,
   kids = false,
@@ -167,13 +176,25 @@ export function LessonSections({
           ],
     [lesson.id, lesson.title, lesson.sections, lesson.blocks],
   )
+  const state = lesson.sectionProgress
+  const locked = (id: string) =>
+    !preview && state?.sections.some((s) => s.id === id && s.status === 'locked') === true
   const savedSection = lesson.learningProgress?.sectionId
   const [selected, setSelected] = useState(
-    () => sections.find((s) => s.id === savedSection)?.id ?? sections[0]?.id,
+    () =>
+      sections.find((s) => s.id === savedSection && !locked(s.id))?.id ??
+      state?.sections.find((s) => s.status === 'available')?.id ??
+      sections[0]?.id,
   )
   const index = Math.max(
     0,
-    sections.findIndex((s) => s.id === selected),
+    sections.findIndex(
+      (s) =>
+        s.id ===
+        (locked(selected ?? '')
+          ? state?.sections.find((p) => p.status === 'available')?.id
+          : selected),
+    ),
   )
   const section = sections[index]
   const [visited, setVisited] = useState<Set<string>>(
@@ -211,7 +232,9 @@ export function LessonSections({
     })
     setDestination(null)
   }, [destination])
-  const navigationQueue = useRef<Promise<void>>(Promise.resolve())
+  const navigationBusy = useRef(false)
+  const lastNavigation = useRef<{ sectionId: string; blockId?: string } | null>(null)
+  const [navigating, setNavigating] = useState(false)
   if (!section) return null
   const activeIds = new Set([
     ...section.blockIds,
@@ -222,38 +245,42 @@ export function LessonSections({
     (b) => (b.kind === 'studio' || b.kind === 'pinta') && !supportIds.has(b.id),
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
-  function navigate(target: number, blockId?: string) {
+  async function navigate(target: number, blockId?: string) {
     const next = sections[target]
-    if (!next) return
-    setSelected(next.id)
+    if (!next || locked(next.id) || navigationBusy.current) return
+    lastNavigation.current = { sectionId: next.id, blockId }
+    navigationBusy.current = true
+    setNavigating(true)
     setError('')
-    setHelpOpen(false)
-    setHelp('')
-    setHelpStatus('')
-    setVisited(
-      (old) =>
-        new Set([
-          ...old,
-          ...next.blockIds,
-          ...(next.workspaceBlockId ? [next.workspaceBlockId] : []),
-        ]),
-    )
-    if (indexMenu.current) indexMenu.current.open = false
-    if (requirementsMenu.current) requirementsMenu.current.open = false
-    setDestination(blockId ?? 'heading')
-    if (preview) return
-    navigationQueue.current = navigationQueue.current.then(async () => {
-      try {
+    try {
+      if (!preview)
         await apiSend(
           `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
           'POST',
           { sectionId: next.id },
           { 'x-sz-viewer': player?.viewerId ?? '' },
         )
-      } catch {
-        setError('Não foi possível salvar a seção atual. Você pode continuar e tentar novamente.')
-      }
-    })
+      setSelected(next.id)
+      setHelpOpen(false)
+      setHelp('')
+      setHelpStatus('')
+      setVisited(
+        (old) =>
+          new Set([
+            ...old,
+            ...next.blockIds,
+            ...(next.workspaceBlockId ? [next.workspaceBlockId] : []),
+          ]),
+      )
+      if (indexMenu.current) indexMenu.current.open = false
+      if (requirementsMenu.current) requirementsMenu.current.open = false
+      setDestination(blockId && blockId !== next.id ? blockId : 'heading')
+    } catch {
+      setError('Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.')
+    } finally {
+      navigationBusy.current = false
+      setNavigating(false)
+    }
   }
   async function sendHelp() {
     if (!section || !help.trim() || sending) return
@@ -308,196 +335,260 @@ export function LessonSections({
     </div>
   )
   return (
-    <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
-        <details ref={requirementsMenu} className="relative">
-          <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-            O que falta para concluir · {pending.length}
-          </summary>
-          <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
-            {requirements.length === 0 ? (
-              <p className="p-2 text-sm text-muted-foreground">
-                Explore o conteúdo e conclua a aula quando terminar.
-              </p>
-            ) : (
-              requirements.map((r) => (
+    <LessonPlayerProvider
+      value={
+        player
+          ? {
+              ...player,
+              sectionProjectCheck:
+                section.completion?.projectChecks?.length && section.workspaceBlockId && state
+                  ? {
+                      sectionId: section.id,
+                      revision: state.revision,
+                      blockId: section.workspaceBlockId,
+                    }
+                  : undefined,
+              submissionAllowedBlockIds: state
+                ? sections.filter((s) => !locked(s.id)).flatMap((s) => s.blockIds)
+                : undefined,
+            }
+          : null
+      }
+    >
+      <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
+          <details ref={requirementsMenu} className="relative">
+            <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+              O que falta para concluir · {pending.length}
+            </summary>
+            <div className="absolute left-0 z-30 mt-2 max-h-96 w-80 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-3 shadow-lg">
+              {requirements.length === 0 ? (
+                <p className="p-2 text-sm text-muted-foreground">
+                  Explore o conteúdo e conclua a aula quando terminar.
+                </p>
+              ) : (
+                requirements.map((r) => (
+                  <button
+                    key={r.blockId}
+                    type="button"
+                    disabled={navigating || Boolean(r.sectionId && locked(r.sectionId))}
+                    className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
+                    onClick={() => {
+                      const target = sections.findIndex((s) => s.id === r.sectionId)
+                      if (target >= 0) navigate(target, r.blockId)
+                    }}
+                  >
+                    <span className="text-sm font-medium">
+                      {r.complete ? '✓ ' : ''}
+                      {r.title}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {r.complete ? 'Concluído' : r.action}
+                    </span>
+                  </button>
+                ))
+              )}
+            </div>
+          </details>
+          <details ref={indexMenu} className="relative">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
+              <List className="size-4" />
+              Índice da aula
+            </summary>
+            <nav
+              aria-label="Seções da aula"
+              className="absolute right-0 z-30 mt-2 max-h-96 w-72 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
+            >
+              {sections.map((s, i) => (
                 <button
-                  key={r.blockId}
+                  key={s.id}
                   type="button"
-                  className="flex min-h-12 w-full flex-col gap-1 rounded-lg p-3 text-left hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-                  onClick={() => {
-                    const target = sections.findIndex((s) => s.id === r.sectionId)
-                    if (target >= 0) navigate(target, r.blockId)
-                  }}
+                  disabled={navigating || locked(s.id)}
+                  aria-current={s.id === section.id ? 'step' : undefined}
+                  onClick={() => navigate(i)}
+                  className={cn(
+                    'flex min-h-12 w-full gap-3 rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-ring',
+                    s.id === section.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+                  )}
                 >
-                  <span className="text-sm font-medium">
-                    {r.complete ? '✓ ' : ''}
-                    {r.title}
+                  <span className="tabular-nums">
+                    {locked(s.id) ? (
+                      <Lock className="size-4" aria-label="Bloqueada" />
+                    ) : state?.sections.find((p) => p.id === s.id)?.status === 'completed' ? (
+                      <Check className="size-4" aria-label="Concluída" />
+                    ) : (
+                      `${i + 1}.`
+                    )}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {r.complete ? 'Concluído' : r.action}
+                  <span>
+                    {s.title}
+                    {locked(s.id) ? (
+                      <span className="mt-1 block text-xs text-muted-foreground">
+                        Abre após concluir a anterior
+                      </span>
+                    ) : (
+                      pending.some((r) => r.sectionId === s.id) && (
+                        <span className="mt-1 block text-xs text-muted-foreground">
+                          Atividade pendente
+                        </span>
+                      )
+                    )}
                   </span>
                 </button>
-              ))
-            )}
-          </div>
-        </details>
-        <details ref={indexMenu} className="relative">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
-            <List className="size-4" />
-            Índice da aula
-          </summary>
-          <nav
-            aria-label="Seções da aula"
-            className="absolute right-0 z-30 mt-2 max-h-96 w-72 max-w-[85vw] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-lg"
-          >
-            {sections.map((s, i) => (
-              <button
-                key={s.id}
-                type="button"
-                aria-current={s.id === section.id ? 'step' : undefined}
-                onClick={() => navigate(i)}
+              ))}
+            </nav>
+          </details>
+        </div>
+        <div
+          className={cn(
+            'grid items-start gap-6',
+            hasWorkspace && '2xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]',
+          )}
+        >
+          <div className="min-w-0 space-y-6">
+            <header className="space-y-2 px-1">
+              <h2
+                ref={heading}
+                tabIndex={-1}
                 className={cn(
-                  'flex min-h-12 w-full gap-3 rounded-lg px-3 py-2 text-left text-sm focus-visible:outline-2 focus-visible:outline-ring',
-                  s.id === section.id ? 'bg-primary/10 text-primary' : 'hover:bg-muted',
+                  'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
+                  kids && 'sz-display',
                 )}
               >
-                <span className="tabular-nums">{i + 1}.</span>
-                <span>
-                  {s.title}
-                  {pending.some((r) => r.sectionId === s.id) && (
-                    <span className="mt-1 block text-xs text-muted-foreground">
-                      Atividade pendente
-                    </span>
-                  )}
-                </span>
-              </button>
-            ))}
-          </nav>
-        </details>
-      </div>
-      <div
-        className={cn(
-          'grid items-start gap-6',
-          hasWorkspace && '2xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]',
-        )}
-      >
-        <div className="min-w-0 space-y-6">
-          <header className="space-y-2 px-1">
-            <h2
-              ref={heading}
-              tabIndex={-1}
-              className={cn(
-                'scroll-mt-6 text-2xl font-semibold tracking-tight outline-none sm:text-3xl',
-                kids && 'sz-display',
-              )}
-            >
-              {section.title}
-            </h2>
-          </header>
-          {section.blockIds
-            .map((id) => blockById.get(id))
-            .filter(
-              (b): b is LessonBlockView =>
-                Boolean(b) && b?.kind !== 'studio' && b?.kind !== 'pinta',
-            )
-            .map(render)}
-          {section.externalTool && (
-            <a
-              href={`/${section.externalTool}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
-            >
-              Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
-              <ExternalLink className="size-5" />
-              <span className="sr-only">em outra aba</span>
-            </a>
-          )}
-        </div>
-        <div className={hasWorkspace ? 'min-w-0 space-y-6' : 'hidden'}>
-          {tools.map((block) => (
-            <div key={block.id} style={{ display: activeIds.has(block.id) ? undefined : 'none' }}>
-              {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
-            </div>
-          ))}
-        </div>
-      </div>
-      {supportIds.size > 0 && (
-        <details className="rounded-2xl border border-border bg-card p-4">
-          <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
-            Materiais de apoio
-          </summary>
-          <div className="space-y-6 pt-4">
-            {lesson.blocks.filter((b) => supportIds.has(b.id)).map(render)}
+                {section.title}
+              </h2>
+            </header>
+            {section.blockIds
+              .map((id) => blockById.get(id))
+              .filter(
+                (b): b is LessonBlockView =>
+                  Boolean(b) && b?.kind !== 'studio' && b?.kind !== 'pinta',
+              )
+              .map(render)}
+            {section.externalTool && (
+              <a
+                href={`/${section.externalTool}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-primary/25 bg-primary/5 px-5 py-4 font-medium text-primary"
+              >
+                Abrir {section.externalTool === 'pinta' ? 'meu Pinta' : 'meu Estúdio'}
+                <ExternalLink className="size-5" />
+                <span className="sr-only">em outra aba</span>
+              </a>
+            )}
           </div>
-        </details>
-      )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
-        <Button variant="outline" disabled={index === 0} onClick={() => navigate(index - 1)}>
-          <ArrowLeft className="size-4" />
-          Anterior
-        </Button>
-        {!preview && (
-          <Button
-            variant="ghost"
-            onClick={() => setHelpOpen((open) => !open)}
-            aria-expanded={helpOpen}
-          >
-            <MessageCircle className="size-4" />
-            Preciso de ajuda
-          </Button>
+          <div className={hasWorkspace ? 'min-w-0 space-y-6' : 'hidden'}>
+            {tools.map((block) => (
+              <div key={block.id} style={{ display: activeIds.has(block.id) ? undefined : 'none' }}>
+                {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
+              </div>
+            ))}
+          </div>
+        </div>
+        {supportIds.size > 0 && (
+          <details className="rounded-2xl border border-border bg-card p-4">
+            <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
+              Materiais de apoio
+            </summary>
+            <div className="space-y-6 pt-4">
+              {lesson.blocks.filter((b) => supportIds.has(b.id)).map(render)}
+            </div>
+          </details>
         )}
-        <Button disabled={index === sections.length - 1} onClick={() => navigate(index + 1)}>
-          Próxima seção
-          <ArrowRight className="size-4" />
-        </Button>
-      </div>
-      {helpOpen && (
-        <form
-          className="space-y-3 rounded-xl border border-border bg-card p-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void sendHelp()
-          }}
-        >
-          <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
-            Em qual parte você ficou com dúvida?
-          </label>
-          <textarea
-            id={`section-help-${lesson.id}`}
-            value={help}
-            onChange={(e) => setHelp(e.target.value)}
-            maxLength={8000}
-            rows={3}
-            className="w-full rounded-lg border border-border bg-background p-3"
-          />
-          <p className="text-sm text-muted-foreground">
-            O professor receberá o nome desta aula e desta seção.
-          </p>
-          <Button type="submit" disabled={sending || !help.trim()}>
-            {sending ? 'Enviando…' : 'Enviar ao professor'}
+        {state?.sections
+          .find((s) => s.id === section.id)
+          ?.pending.map((message) => (
+            <p key={message} className="text-sm text-muted-foreground">
+              {message}
+            </p>
+          ))}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+          <Button
+            variant="outline"
+            disabled={index === 0 || navigating}
+            onClick={() => navigate(index - 1)}
+          >
+            <ArrowLeft className="size-4" />
+            Anterior
           </Button>
-        </form>
-      )}
-      {helpStatus && (
-        <p role="status" className="text-sm">
-          {helpStatus}
-        </p>
-      )}
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}{' '}
-          <button type="button" className="underline" onClick={() => navigate(index)}>
-            Tentar novamente
-          </button>
-        </p>
-      )}
-      {index === sections.length - 1 && !lesson.completed && (
-        <p className="text-center text-sm text-muted-foreground">
-          Quando terminar as atividades e a criação desta aula, use o botão de concluir abaixo.
-        </p>
-      )}
-    </div>
+          {!preview && (
+            <Button
+              variant="ghost"
+              onClick={() => setHelpOpen((open) => !open)}
+              aria-expanded={helpOpen}
+            >
+              <MessageCircle className="size-4" />
+              Preciso de ajuda
+            </Button>
+          )}
+          <Button
+            disabled={
+              index === sections.length - 1 || navigating || locked(sections[index + 1]?.id ?? '')
+            }
+            onClick={() => navigate(index + 1)}
+          >
+            Próxima seção
+            <ArrowRight className="size-4" />
+          </Button>
+        </div>
+        {helpOpen && (
+          <form
+            className="space-y-3 rounded-xl border border-border bg-card p-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              void sendHelp()
+            }}
+          >
+            <label htmlFor={`section-help-${lesson.id}`} className="block font-medium">
+              Em qual parte você ficou com dúvida?
+            </label>
+            <textarea
+              id={`section-help-${lesson.id}`}
+              value={help}
+              onChange={(e) => setHelp(e.target.value)}
+              maxLength={8000}
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background p-3"
+            />
+            <p className="text-sm text-muted-foreground">
+              O professor receberá o nome desta aula e desta seção.
+            </p>
+            <Button type="submit" disabled={sending || !help.trim()}>
+              {sending ? 'Enviando…' : 'Enviar ao professor'}
+            </Button>
+          </form>
+        )}
+        {helpStatus && (
+          <p role="status" className="text-sm">
+            {helpStatus}
+          </p>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}{' '}
+            <button
+              type="button"
+              className="underline"
+              onClick={() => {
+                const retry = lastNavigation.current
+                if (retry)
+                  void navigate(
+                    sections.findIndex((s) => s.id === retry.sectionId),
+                    retry.blockId,
+                  )
+              }}
+            >
+              Tentar novamente
+            </button>
+          </p>
+        )}
+        {index === sections.length - 1 && !lesson.completed && (
+          <p className="text-center text-sm text-muted-foreground">
+            Quando terminar as atividades e a criação desta aula, use o botão de concluir abaixo.
+          </p>
+        )}
+      </div>
+    </LessonPlayerProvider>
   )
 }

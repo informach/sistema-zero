@@ -8,7 +8,7 @@ import {
   StudioGateNotPassedError,
   StudioGateNotSubmittedError,
 } from '../../domain/course/course.errors'
-import { LearningGateError } from '../../domain/learning/learning.errors'
+import { LearningGateError, SectionGateError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
@@ -81,7 +81,12 @@ export class MarkLessonCompleteService {
           lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
         ),
       ])
+      const sectionProgress = await this.learning.sections.read(
+        { userId, accountId: accountId ?? userId },
+        lesson,
+      )
       const requirements = lessonCompletionRequirements({
+        sectionProgress,
         completed: false,
         sections: learning.sections,
         learningProgress: learning.progress,
@@ -99,6 +104,8 @@ export class MarkLessonCompleteService {
       const missing = requirements.find((r) => !r.complete)
       if (missing) {
         switch (missing.reason) {
+          case 'SECTION_GATE_INCOMPLETE':
+            throw new SectionGateError()
           case 'LESSON_COMING_SOON':
             throw new LessonComingSoonError()
           case 'LEARNING_GATE_INCOMPLETE':

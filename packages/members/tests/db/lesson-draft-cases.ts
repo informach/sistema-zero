@@ -116,6 +116,36 @@ export function lessonDraftCases(getDb: () => Database) {
       expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
       expect((await f.repo.read(f.lessonId)).revision).toBe(draft.revision)
     })
+    test('publication requires valid criteria in every section and keeps invalid edits private', async () => {
+      const f = await fixture()
+      const block = await f.content.createBlock(f.lessonId, 'interactive', interactive)
+      const before = await f.reader.findLessonWithContent(f.lessonId)
+      let draft = await f.repo.read(f.lessonId)
+      const section = {
+        ...defaultLessonSection(randomUUID(), 'Confira', [block.id]),
+        completion: { version: 1 as const, blockIds: [] as string[] },
+      }
+      draft = await f.change(draft, { type: 'structure', sections: [section], supportBlockIds: [] })
+      expect(
+        (await f.repo.validate(f.lessonId, draft.revision, [])).some((issue) =>
+          issue.message.includes('checagem'),
+        ),
+      ).toBe(true)
+      await expect(f.publish(draft)).rejects.toThrow()
+      expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
+      draft = await f.change(draft, {
+        type: 'structure',
+        sections: [{ ...section, completion: { version: 1, blockIds: [block.id] } }],
+        supportBlockIds: [],
+      })
+      expect(await f.repo.validate(f.lessonId, draft.revision, [])).toEqual([])
+      await f.publish(draft)
+      expect(
+        (await new DrizzleLearningRepository(f.db).getStructure(f.lessonId))?.sections[0]
+          ?.completion?.blockIds,
+      ).toEqual([block.id])
+    })
+
     test('concurrent authors cannot overwrite one another; exact network retries are idempotent', async () => {
       const f = await fixture(),
         draft = await f.repo.read(f.lessonId)
@@ -413,7 +443,7 @@ export function lessonDraftCases(getDb: () => Database) {
       ).rejects.toThrow()
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
-    test('all 27 version-two manifests import into drafts; retry and reimport retain linked videos and required work', async () => {
+    test('all 27 sequential manifests import into drafts; retry and reimport retain linked videos and required work', async () => {
       const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas')
       const paths = [...new Bun.Glob('**/manifesto.json').scanSync(root)]
       expect(paths).toHaveLength(27)
@@ -421,7 +451,7 @@ export function lessonDraftCases(getDb: () => Database) {
       for (const path of paths) {
         const manifest: unknown = await Bun.file(resolve(root, path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
-        expect(manifest.version).toBe(2)
+        expect(manifest.version).toBe(3)
         const f = await fixture()
         await f.db
           .update(courses)

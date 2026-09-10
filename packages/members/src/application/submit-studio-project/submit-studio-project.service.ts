@@ -26,6 +26,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
 import type { TeacherThreadsService } from '../teacher-threads/teacher-threads.service'
@@ -79,6 +80,7 @@ export class SubmitStudioProjectService {
     private readonly logger: Logger,
     private readonly newId: () => string,
     private readonly clock: () => Date,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(
@@ -109,6 +111,13 @@ export class SubmitStudioProjectService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    await this.sections.assertBlock(
+      { userId, accountId: accountId ?? userId },
+      lesson,
+      blockId,
+      privileged,
+      true,
+    )
 
     // Aula EM PRODUÇÃO ("em breve"): a 4ª porta lateral. Com a aba ainda aberta, o
     // "Enviar para o professor" passaria e o upsert último-vence SOBRESCREVERIA a

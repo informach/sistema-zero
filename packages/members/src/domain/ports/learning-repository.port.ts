@@ -4,6 +4,7 @@ import type {
   LearningTopicSummary,
   LessonLearningProgress,
   LessonSection,
+  SectionProgressRecord,
 } from '@sistemazero/core/learning'
 import type { CourseAudience } from '../course/course'
 
@@ -21,6 +22,14 @@ export interface SaveLearningProgress extends LearningOwner {
   progress: LearningBlockProgress
 }
 export interface LearningRepository {
+  getSectionProgress(owner: LearningOwner, lessonId: string): Promise<SectionProgressRecord[]>
+  saveSectionProgress(
+    owner: LearningOwner,
+    lessonId: string,
+    structureRevision: string,
+    records: SectionProgressRecord[],
+    blockRevisions: { id: string; revision: string }[],
+  ): Promise<void>
   getStructure(lessonId: string): Promise<LessonStructure | null>
   saveStructure(
     lessonId: string,

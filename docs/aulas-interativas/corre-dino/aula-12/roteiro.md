@@ -115,7 +115,7 @@ Na Aula 13, a dificuldade vai aumentar com o tempo, respeitando um limite.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -125,3 +125,53 @@ Na Aula 13, a dificuldade vai aumentar com o tempo, respeitando um limite.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Usar faixas aleatórias e números negativos para variar a partida sem perder o controle da dificuldade.
+
+### Menos cinco, menos um pouco
+
+**Checagem:** Sortear um valor significa aceitar qualquer número?
+
+**Resposta e explicação:** Não; os limites escolhidos definem a faixa do sorteio.
+
+### O que aconteceu?
+
+**Checagem:** Sortear um valor significa aceitar qualquer número?
+
+**Resposta e explicação:** Não; os limites escolhidos definem a faixa do sorteio.
+
+### entender por que está sempre igual
+
+**Checagem:** Se posição, velocidade e intervalo se repetem iguais, o que o jogador pode perceber?
+
+**Resposta e explicação:** Um ritmo previsível.
+
+### sortear o lugar do cacto
+
+**Checagem:** O que varia ao sortear x entre 500 e 560?
+
+**Resposta e explicação:** O lugar em que cada cacto nasce.
+
+### sortear a velocidade
+
+**Checagem:** Qual faixa resulta de menos 5 menos um sorteio de 0 a 1?
+
+**Resposta e explicação:** De menos 5 a menos 6, ainda para a esquerda.
+
+### testar
+
+**Checagem:** Por que observar várias aparições antes de avaliar o sorteio?
+
+**Resposta e explicação:** Um único nascimento não mostra a variação da faixa.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

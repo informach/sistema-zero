@@ -84,6 +84,15 @@ export function applyLessonDraftChange<T extends { kind: string }>(
         sections: document.sections.map((s) => ({
           ...s,
           blockIds: s.blockIds.filter((id) => id !== change.blockId),
+          ...(s.completion
+            ? {
+                completion: {
+                  ...s.completion,
+                  blockIds: s.completion.blockIds.filter((id) => id !== change.blockId),
+                  ...(s.workspaceBlockId === change.blockId ? { projectChecks: [] } : {}),
+                },
+              }
+            : {}),
           workspaceBlockId: s.workspaceBlockId === change.blockId ? null : s.workspaceBlockId,
         })),
         supportBlockIds: document.supportBlockIds.filter((id) => id !== change.blockId),

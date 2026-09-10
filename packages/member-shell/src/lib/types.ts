@@ -2,6 +2,7 @@ import type {
   LessonLearningProgress,
   LessonRequirement,
   LessonSection,
+  SectionProgressView,
 } from '@sistemazero/core/learning'
 /**
  * Tipos compartilhados client/server do app do aluno. SEM lógica e SEM imports de
@@ -1323,9 +1324,10 @@ export interface LessonDetailView {
   requirements?: LessonRequirement[]
   sections?: Pick<
     LessonSection,
-    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
   >[]
   structureRevision?: string | null
+  sectionProgress?: SectionProgressView
   learningProgress?: LessonLearningProgress
   id: string
   slug: string

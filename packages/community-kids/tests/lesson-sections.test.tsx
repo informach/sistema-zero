@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import type { SectionProgressView } from '@sistemazero/core/learning'
 import {
   type InteractiveBlock,
   type LearningAnswers,
@@ -11,6 +12,7 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
@@ -84,6 +86,77 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  const progression = (completed = 0): SectionProgressView => ({
+    revision: 'structure',
+    completed,
+    total: 3,
+    percent: (completed / 3) * 100,
+    sections: ['first', 'second', 'third'].map((id, index) => ({
+      id,
+      title: id,
+      status: index < completed ? 'completed' : index === completed ? 'available' : 'locked',
+      pending: index < completed ? [] : ['Conclua a atividade.'],
+    })),
+  })
+  test('a barra conta conclusões e o índice não permite abrir seções futuras', () => {
+    const progress = progression()
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonProgressBar progress={progress} />
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progress }}
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByText('0 de 3 seções concluídas · 0%')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+    fireEvent.click(screen.getByText('Índice da aula'))
+    const future = screen.getByRole('button', { name: /Bloqueada Observar/ })
+    expect(future.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(future)
+    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+  })
+  test('falha de navegação mantém a seção atual; a nova tentativa preserva o projeto', async () => {
+    let fail = true
+    globalThis.fetch = Object.assign(
+      async () =>
+        fail
+          ? Response.json({ error: { message: 'Falha de rede' } }, { status: 503 })
+          : Response.json({ ok: true }),
+      { preconnect: () => {} },
+    )
+    const progress = progression(1)
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonProgressBar progress={progress} />
+        <LessonSections
+          lesson={{
+            ...lesson,
+            learningProgress: { sectionId: 'first', blocks: [] },
+            sectionProgress: progress,
+          }}
+          renderBlocks={() => <input aria-label="Meu projeto" defaultValue="Dino" />}
+        />
+      </LessonPlayerProvider>,
+    )
+    const input = screen.getByRole('textbox', { name: 'Meu projeto' })
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await screen.findByText(
+      'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
+    )
+    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(screen.getByText('1 de 3 seções concluídas · 33,3%')).toBeTruthy()
+    fail = false
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await screen.findByRole('heading', { name: 'Observar' })
+    expect(input.isConnected).toBe(true)
+    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+  })
   test('pendência leva ao único projeto e fecha a lista durante a navegação', () => {
     render(
       <LessonSections

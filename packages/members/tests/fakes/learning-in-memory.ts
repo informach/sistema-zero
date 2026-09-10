@@ -4,6 +4,7 @@ import type {
   LearningBlockProgress,
   LearningTopicSummary,
   LessonSection,
+  SectionProgressRecord,
 } from '@sistemazero/core/learning'
 import type { CourseAudience } from '../../src/domain/course/course'
 import { LearningConflictError } from '../../src/domain/learning/learning.errors'
@@ -16,6 +17,35 @@ import type {
 
 const key = (owner: LearningOwner, id: string) => `${owner.accountId}:${owner.userId}:${id}`
 export class InMemoryLearningRepository implements LearningRepository {
+  readonly sectionProgress = new Map<string, SectionProgressRecord[]>()
+  async getSectionProgress(owner: LearningOwner, lessonId: string) {
+    return structuredClone(this.sectionProgress.get(key(owner, lessonId)) ?? [])
+  }
+  async saveSectionProgress(
+    owner: LearningOwner,
+    lessonId: string,
+    revision: string,
+    records: SectionProgressRecord[],
+  ) {
+    const structure = this.structures.get(lessonId)
+    if (
+      structure?.revision !== revision ||
+      records.some((r) => !structure.sections.some((s) => s.id === r.sectionId))
+    )
+      throw new LearningConflictError()
+    const all = await this.getSectionProgress(owner, lessonId)
+    for (const r of records) {
+      const old = all.find((p) => p.sectionId === r.sectionId)
+      if (old?.completedAt) continue
+      const next = {
+        ...r,
+        projectPassed: r.projectPassed || (old?.revision === r.revision && old.projectPassed),
+      }
+      if (old) Object.assign(old, next)
+      else all.push(next)
+    }
+    this.sectionProgress.set(key(owner, lessonId), all)
+  }
   readonly weeklyTopicRows: Array<
     LearningOwner & {
       audience: CourseAudience

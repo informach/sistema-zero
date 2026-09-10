@@ -129,7 +129,7 @@ Na Aula 6, você vai investigar o que acontece com os cactos que já saíram da 
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -139,3 +139,59 @@ Na Aula 6, você vai investigar o que acontece com os cactos que já saíram da 
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.
+
+### Um cacto por quadro
+
+**Checagem:** Por que criar cactos em cada quadro provoca uma avalanche?
+
+**Resposta e explicação:** O jogo atualiza muitos quadros por segundo.
+
+### O que aconteceu?
+
+**Checagem:** Por que criar cactos em cada quadro provoca uma avalanche?
+
+**Resposta e explicação:** O jogo atualiza muitos quadros por segundo.
+
+### criar o grupo dos cactos
+
+**Checagem:** Qual nome deve ligar os blocos do grupo de obstáculos?
+
+**Resposta e explicação:** cactos.
+
+### fazer o cacto nascer, andar e aparecer
+
+**Checagem:** Para que o cacto se mova e apareça, quais ações o grupo precisa?
+
+**Resposta e explicação:** Atualizar e desenhar o grupo.
+
+### o relógio
+
+**Checagem:** Qual ação deve passar para o relógio de 1,4 segundo?
+
+**Resposta e explicação:** A criação do cacto.
+
+### nascer fora da tela
+
+**Checagem:** Por que usar x 560 e velocidade horizontal negativa?
+
+**Resposta e explicação:** O cacto nasce além da direita e anda para a esquerda.
+
+### testar
+
+**Checagem:** Como descobrir o efeito do intervalo de criação?
+
+**Resposta e explicação:** Mudar o intervalo mantendo a velocidade.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

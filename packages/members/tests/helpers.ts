@@ -58,6 +58,7 @@ import { GrantManualEntitlementService } from '../src/application/grant-manual-e
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
 import { LearningService } from '../src/application/learning/learning.service'
 import { LearningImportService } from '../src/application/learning/learning-import.service'
+import { SectionProgressionService } from '../src/application/learning/section-progression.service'
 import { ListCatalogService } from '../src/application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from '../src/application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
@@ -307,6 +308,13 @@ export function buildApp(
   } as unknown as Env
 
   const learningRepository = new InMemoryLearningRepository()
+  const sectionProgression = new SectionProgressionService(
+    learningRepository,
+    progress,
+    quizAttempts,
+    studioSubmissions,
+    clock,
+  )
   const learning = new LearningService(
     learningRepository,
     courses,
@@ -314,6 +322,7 @@ export function buildApp(
     progress,
     clock,
     teacherThreads,
+    sectionProgression,
   )
   const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
   const app = createServer({
@@ -360,7 +369,7 @@ export function buildApp(
         learning,
       ),
       resolveAttachment: new GetAttachmentDownloadService(checkAccess, courses, progress),
-      resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress),
+      resolveEbook: new GetEbookDownloadService(checkAccess, courses, progress, sectionProgression),
       markComplete: new MarkLessonCompleteService(
         checkAccess,
         courses,
@@ -383,6 +392,7 @@ export function buildApp(
         awardGamification,
         () => randomUUID(),
         clock,
+        sectionProgression,
       ),
       submitStudio: new SubmitStudioProjectService(
         checkAccess,
@@ -394,18 +404,21 @@ export function buildApp(
         silentLogger,
         () => randomUUID(),
         clock,
+        sectionProgression,
       ),
       getStudioCarryover: new GetStudioCarryoverService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       teacherThreads,
       getShowcasePayload: new GetShowcasePayloadService(
@@ -413,6 +426,7 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       profileAllowance: new GetProfileAllowanceService(entitlements, clock, {
         defaultMaxProfiles: 1,
@@ -591,6 +605,7 @@ export function buildApp(
         courses,
         progress,
         studioSubmissions,
+        sectionProgression,
       ),
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,

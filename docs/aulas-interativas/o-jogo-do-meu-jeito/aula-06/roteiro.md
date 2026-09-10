@@ -133,7 +133,7 @@ Na Aula 7, você troca também os asteroides, preservando a chuva e as colisões
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -143,3 +143,47 @@ Na Aula 7, você troca também os asteroides, preservando a chuva e as colisões
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.
+
+### Tamanho do desenho ou tamanho no jogo?
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Qual diferença existe entre o quadro 32 por 32 e o sprite 54 por 54?
+
+**Resposta e explicação:** O quadro mede a arte na folha; o sprite mede sua exibição no jogo.
+
+### trazer os seus desenhos para dentro do projeto
+
+**Checagem:** Em qual projeto importar os desenhos do Pinta?
+
+**Resposta e explicação:** No jogo importado que já funciona.
+
+### apagar a nave do kit e montar a sua
+
+**Checagem:** Por que manter o nome nave ao substituir a arte do kit?
+
+**Resposta e explicação:** Para preservar a ligação com controles e outros blocos.
+
+### carregar a folha e animar a nave
+
+**Checagem:** Quais quadros formam a animação voando?
+
+**Resposta e explicação:** 0 e 1, pois a contagem começa em zero.
+
+### Teste e guarde sua criação
+
+**Checagem:** O que testar depois de trocar a nave?
+
+**Resposta e explicação:** Animação, movimento, tiros, vidas e telas.

@@ -6,6 +6,7 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
@@ -77,7 +78,8 @@ export function LessonPlayer({
     learningProgress: learning.progress,
   })
   const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
-  const blockedByLearning = missing('LEARNING_GATE_INCOMPLETE')
+  const blockedByLearning =
+    missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
   const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
@@ -161,6 +163,7 @@ export function LessonPlayer({
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
+      refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
@@ -187,14 +190,13 @@ export function LessonPlayer({
       >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso do CURSO. */}
+          {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso real das seções da AULA. */}
           <div className="flex items-center gap-3">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
             <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
-            <ProgressBar value={course.progress.percent} className="flex-1" />
-            <span className="sz-display text-sm">{course.progress.percent}%</span>
+            <LessonProgressBar progress={lesson.sectionProgress} />
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
             {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">
@@ -316,9 +318,13 @@ export function LessonPlayer({
           )}
         >
           <Card className="overflow-hidden p-0">
-            {/* Sem barra de progresso aqui: o header da lição (topo) já a mostra. */}
+            {/* O índice lateral mantém o progresso geral do curso. */}
             <div className="border-border border-b px-4 py-3">
               <p className="sz-display text-sm">{course.title}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Progresso do curso · {course.progress.percent}%
+              </p>
+              <ProgressBar value={course.progress.percent} />
               <CourseRatingFlow
                 courseSlug={course.slug}
                 initialRating={course.myRating}

@@ -288,6 +288,26 @@ export const lessonNavigation = members.table(
   ],
 )
 
+/** Section milestones are independent of navigation and survive later review. */
+export const lessonSectionProgress = members.table(
+  'lesson_section_progress',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull(),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    projectPassed: boolean('project_passed').notNull().default(false),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.lessonId, t.sectionId] }),
+    index('lesson_section_progress_account_idx').on(t.accountId),
+  ],
+)
+
 export const lessonBlockProgress = members.table(
   'lesson_block_progress',
   {
@@ -1528,6 +1548,7 @@ export const schema = {
   lessonAttachments,
   lessonStructures,
   lessonNavigation,
+  lessonSectionProgress,
   lessonBlockProgress,
   learningAttempts,
   entitlements,

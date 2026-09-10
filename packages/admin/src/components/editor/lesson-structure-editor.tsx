@@ -24,6 +24,7 @@ import { VideoUploader } from '@/components/media/video-uploader'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
+import { SectionCompletionEditor } from './section-completion-editor'
 
 function blockLabel(block: BlockView) {
   const c = block.content
@@ -124,6 +125,7 @@ export function LessonStructureEditor({
       immediate,
     )
   function move(blockId: string, target: string) {
+    const criterion = document.sections.some((s) => s.completion?.blockIds.includes(blockId))
     structure(
       document.sections.map((s) => ({
         ...s,
@@ -131,6 +133,20 @@ export function LessonStructureEditor({
           ...s.blockIds.filter((id) => id !== blockId),
           ...(s.id === target ? [blockId] : []),
         ],
+        ...(s.completion
+          ? {
+              completion: {
+                ...s.completion,
+                blockIds: [
+                  ...s.completion.blockIds.filter((id) => id !== blockId),
+                  ...(s.id === target && criterion ? [blockId] : []),
+                ],
+                ...(target === 'support' && s.workspaceBlockId === blockId
+                  ? { projectChecks: [] }
+                  : {}),
+              },
+            }
+          : {}),
         workspaceBlockId:
           target === 'support' && s.workspaceBlockId === blockId ? null : s.workspaceBlockId,
       })),
@@ -358,6 +374,21 @@ export function LessonStructureEditor({
         />
       ) : (
         <fieldset disabled={!canWrite} className="space-y-5">
+          {!document.sections.some((s) => s.completion) && (
+            <Button
+              variant="outline"
+              onClick={() =>
+                structure(
+                  document.sections.map((s) => ({
+                    ...s,
+                    completion: { version: 1, blockIds: [] },
+                  })),
+                )
+              }
+            >
+              Preparar avanço por seções
+            </Button>
+          )}
           {document.sections.map((section, index) => (
             <div
               key={section.id}
@@ -445,7 +476,21 @@ export function LessonStructureEditor({
                         structure(
                           rest.map((s) =>
                             s.id === target?.id
-                              ? { ...s, blockIds: [...s.blockIds, ...section.blockIds] }
+                              ? {
+                                  ...s,
+                                  blockIds: [...s.blockIds, ...section.blockIds],
+                                  ...(s.completion
+                                    ? {
+                                        completion: {
+                                          ...s.completion,
+                                          blockIds: [
+                                            ...s.completion.blockIds,
+                                            ...(section.completion?.blockIds ?? []),
+                                          ],
+                                        },
+                                      }
+                                    : {}),
+                                }
                               : s,
                           ),
                         )
@@ -455,6 +500,28 @@ export function LessonStructureEditor({
                     </Button>
                   </div>
                 )}
+                {section.completion && (
+                  <SectionCompletionEditor
+                    value={section.completion}
+                    candidates={section.blockIds.flatMap((id) => {
+                      const b = blocks.get(id)
+                      return b && ['interactive', 'quiz', 'studio', 'pinta'].includes(b.kind)
+                        ? [{ id, label: blockLabel(b) }]
+                        : []
+                    })}
+                    hasStudio={tools.some(
+                      (b) => b.id === section.workspaceBlockId && b.kind === 'studio',
+                    )}
+                    onChange={(completion) => patch(section.id, { completion })}
+                  />
+                )}
+                {issues
+                  .filter((i) => i.sectionId === section.id)
+                  .map((issue) => (
+                    <p key={issue.message} role="alert" className="text-sm text-destructive">
+                      {issue.message}
+                    </p>
+                  ))}
                 {contentList(section.blockIds, section.id)}
                 <Button variant="outline" onClick={() => onAddBlock(section.id)}>
                   <Plus className="size-4" />
@@ -504,7 +571,12 @@ export function LessonStructureEditor({
             onClick={() =>
               structure([
                 ...document.sections,
-                defaultLessonSection(crypto.randomUUID(), 'Nova seção', []),
+                {
+                  ...defaultLessonSection(crypto.randomUUID(), 'Nova seção', []),
+                  ...(document.sections.some((s) => s.completion)
+                    ? { completion: { version: 1 as const, blockIds: [] } }
+                    : {}),
+                },
               ])
             }
           >

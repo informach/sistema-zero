@@ -490,6 +490,18 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
                 if (!mapped) throw new Error('Bloco ausente no mapa do clone')
                 return mapped
               }),
+              ...(section.completion
+                ? {
+                    completion: {
+                      ...section.completion,
+                      blockIds: section.completion.blockIds.map((id) => {
+                        const mapped = blockIdMap.get(id)
+                        if (!mapped) throw new Error('Critério ausente no mapa do clone')
+                        return mapped
+                      }),
+                    },
+                  }
+                : {}),
               workspaceBlockId: section.workspaceBlockId
                 ? (blockIdMap.get(section.workspaceBlockId) ?? null)
                 : null,

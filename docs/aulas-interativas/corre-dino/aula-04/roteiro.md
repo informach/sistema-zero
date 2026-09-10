@@ -115,7 +115,7 @@ Na Aula 5, você vai criar os cactos para desviar.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -125,3 +125,53 @@ Na Aula 5, você vai criar os cactos para desviar.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Distinguir o comando de entrada do acontecimento que ele pode causar.
+
+### Som sem pulo?
+
+**Checagem:** Por que ligar o som ao pulo é diferente de ligá-lo à tecla espaço?
+
+**Resposta e explicação:** Pode haver comando sem pulo e pulo por outros controles.
+
+### O que aconteceu?
+
+**Checagem:** Por que ligar o som ao pulo é diferente de ligá-lo à tecla espaço?
+
+**Resposta e explicação:** Pode haver comando sem pulo e pulo por outros controles.
+
+### a área que escuta o teclado
+
+**Checagem:** Em qual área fica o evento da tecla?
+
+**Resposta e explicação:** Quando acontecer.
+
+### o som do pulo
+
+**Checagem:** Ao ligar o som somente ao espaço, qual teste pode revelar o problema?
+
+**Resposta e explicação:** Pular com seta ou toque.
+
+### o som está escutando a coisa errada
+
+**Checagem:** Qual evento acompanha todo pulo real do personagem?
+
+**Resposta e explicação:** Quando o sprite dino pular.
+
+### escolhe o seu som
+
+**Checagem:** Como evitar dois sons tocando no mesmo pulo?
+
+**Resposta e explicação:** Retirar o som anterior ao escolher o novo efeito.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

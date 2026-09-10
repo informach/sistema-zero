@@ -143,7 +143,7 @@ No Dia 2, o mesmo projeto vai ganhar tiros. Não comece um jogo novo.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,63 @@ No Dia 2, o mesmo projeto vai ganhar tiros. Não comece um jogo novo.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Distinguir preparar o jogo de repetir ações em cada quadro.
+
+### O rastro da nave
+
+**Checagem:** O que evita o rastro dos desenhos anteriores?
+
+**Resposta e explicação:** Limpar antes de desenhar a próxima imagem
+
+### O que aconteceu?
+
+**Checagem:** Qual diferença existe entre preparar e desenhar o jogo?
+
+**Resposta e explicação:** Preparar ocorre no começo; desenhar se repete a cada quadro.
+
+### montar as áreas do projeto
+
+Objetivo conferido no projeto pelo servidor: Montar Ao iniciar, Montar Enquanto estiver rodando.
+
+### preparar a tela do jogo
+
+**Checagem:** Qual tamanho de tela vamos usar?
+
+**Resposta e explicação:** 800 por 480.
+
+### criar a sua nave
+
+**Checagem:** O nome nave deve identificar o quê?
+
+**Resposta e explicação:** O personagem usado pelos controles e desenhos.
+
+### ligar o motor do jogo
+
+**Checagem:** Onde entra A cada quadro do jogo?
+
+**Resposta e explicação:** Dentro de Enquanto estiver rodando.
+
+### desenhar o mundo e dar vida à nave
+
+**Checagem:** Qual ação evita rastros antes de desenhar novamente?
+
+**Resposta e explicação:** Limpar a tela.
+
+### testar e deixar do seu jeito
+
+**Checagem:** Depois de editar a velocidade, como testar o novo valor?
+
+**Resposta e explicação:** Confirmar clicando fora do campo e voltar ao jogo.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

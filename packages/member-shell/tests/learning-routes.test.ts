@@ -106,6 +106,36 @@ describe('learning BFF boundary', () => {
     ).toBe(400)
     expect(calls).toHaveLength(0)
   })
+  test('project checks preserve profile, section and publication revision boundaries', async () => {
+    const { routes, calls } = setup()
+    const section = { params: Promise.resolve({ lessonId, sectionId: blockId }) }
+    const payload = { revision: lessonId, project: { blocksState: { blocks: [] } } }
+    expect((await routes.learningProjectCheck.POST(request(payload), section)).status).toBe(200)
+    expect(calls[0]).toEqual({
+      path: `/members/lessons/${lessonId}/sections/${blockId}/project-check`,
+      opts: { method: 'POST', body: payload },
+    })
+    expect(
+      (await routes.learningProjectCheck.POST(request(payload, 'other-profile'), section)).status,
+    ).toBe(409)
+    expect(
+      (await routes.learningProjectCheck.POST(request({ ...payload, passed: true }), section))
+        .status,
+    ).toBe(400)
+    expect(
+      (await routes.learningProjectCheck.POST(request({ ...payload, revision: 'stale' }), section))
+        .status,
+    ).toBe(400)
+    expect(
+      (
+        await routes.learningProjectCheck.POST(
+          request({ ...payload, project: 'x'.repeat(2 * 1024 * 1024) }),
+          section,
+        )
+      ).status,
+    ).toBe(413)
+    expect(calls).toHaveLength(1)
+  })
   test('navigation, help and attempts use the same session boundary and strict contracts', async () => {
     const { routes, calls } = setup()
     expect(

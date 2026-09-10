@@ -8,6 +8,7 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
@@ -65,7 +66,8 @@ export function LessonPlayer({
     learningProgress: learning.progress,
   })
   const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
-  const blockedByLearning = missing('LEARNING_GATE_INCOMPLETE')
+  const blockedByLearning =
+    missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
   const [completing, setCompleting] = useState(false)
@@ -105,6 +107,7 @@ export function LessonPlayer({
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
+      refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
@@ -137,6 +140,7 @@ export function LessonPlayer({
             <h1 className="sz-display mt-2 text-2xl">{lesson.title}</h1>
           </div>
 
+          <LessonProgressBar progress={lesson.sectionProgress} />
           <LessonSections
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}

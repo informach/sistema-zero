@@ -1252,8 +1252,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
-  const { learningNavigation, learningProgress, learningAttempt, learningHelp } =
-    createLearningRoutes({ session, gateway })
+  const {
+    learningNavigation,
+    learningProgress,
+    learningAttempt,
+    learningHelp,
+    learningProjectCheck,
+  } = createLearningRoutes({ session, gateway })
 
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
   const quizAttempts = {
@@ -1662,6 +1667,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     lessonPosition,
     quizAttempts,
     learningNavigation,
+    learningProjectCheck,
     learningProgress,
     learningAttempt,
     learningHelp,

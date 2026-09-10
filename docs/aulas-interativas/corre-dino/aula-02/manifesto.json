@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-02",
   "title": "O Dino aparece e corre",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Retome o projeto da Aula 1: tela preparada e dino criado, ainda sem aparecer.\n\nHoje você vai organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Retome o projeto da Aula 1: tela preparada e dino criado, ainda sem aparecer.\n\nHoje você vai organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -96,6 +96,166 @@
     {
       "key": "video-construir-3-1",
       "plannedVideo": "aula-02-passo-03: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O desenho posterior cobre o anterior."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que o dino some quando a floresta é desenhada depois dele?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O desenho posterior cobre o anterior."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Criar a floresta apaga o dino da memória."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A floresta desliga o teclado."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O desenho posterior cobre o anterior."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: ligar o motor do jogo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Repete as ações de desenho durante o jogo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que A cada quadro faz nesta etapa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Desenha uma única vez ao abrir."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Espera o jogador apertar Enter."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Repete as ações de desenho durante o jogo."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Repete as ações de desenho durante o jogo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: desenhar o mundo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Limpar, desenhar a floresta e desenhar o dino."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual ordem mantém o dino visível e sem rastros?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Desenhar a floresta, desenhar o dino e limpar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Limpar, desenhar a floresta e desenhar o dino."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Desenhar o dino, limpar e desenhar a floresta."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Limpar, desenhar a floresta e desenhar o dino."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: testar e deixar do seu jeito",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["A sensação de velocidade da corrida."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao comparar velocidades 2 e 9 do fundo, o que muda?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A sensação de velocidade da corrida."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O nome do dino nos blocos."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A quantidade de áreas do projeto."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A sensação de velocidade da corrida."
+        }
+      }
     }
   ],
   "sections": [
@@ -104,10 +264,14 @@
       "title": "A criação de hoje",
       "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -117,47 +281,67 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "ligar o motor do jogo",
       "objective": "Em Áreas do projeto, coloque Enquanto estiver rodando ao lado de Ao iniciar. Em Jogo 2D, Tempo e repetição, encaixe A cada quadro do jogo dentro dele. Esse será o motor do desenho.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "desenhar o mundo",
       "objective": "Em Sprites, comece com Desenhar o sprite e escolha dino. Em Aparência, encaixe Limpar a tela no topo. Em Kit dino, experimente colocar a floresta depois do dino: ele some. Mova a floresta para antes dele. Use velocidade 5 e remova só o bloco da borda, preservando os vizinhos.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "testar e deixar do seu jeito",
       "objective": "Clique no jogo e observe a floresta passando. Teste velocidades 2 e 9 para o fundo. Compare a sensação de corrida e escolha seu ritmo. Se apagar uma pilha sem querer, use Ctrl+Z; para remover um bloco isolado, use Apagar este bloco no botão direito.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "fechamento",
@@ -167,7 +351,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

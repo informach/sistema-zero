@@ -219,12 +219,14 @@ export function PintaBlockView({
           {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           {expanded ? 'Reduzir' : 'Expandir'}
         </Button>
-        {content.purpose !== 'experiment' && (
-          <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
-            {submitting ? <Spinner /> : <Send className="size-4" />}
-            {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
-          </Button>
-        )}
+        {content.purpose !== 'experiment' &&
+          (!player?.submissionAllowedBlockIds ||
+            player.submissionAllowedBlockIds.includes(blockId)) && (
+            <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
+              {submitting ? <Spinner /> : <Send className="size-4" />}
+              {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
+            </Button>
+          )}
       </div>
 
       <div
@@ -276,7 +278,9 @@ export function PintaBlockView({
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Envie o seu desenho ao professor para poder concluir a aula.
+          {player?.submissionAllowedBlockIds && !player.submissionAllowedBlockIds.includes(blockId)
+            ? 'Continue desenhando. A entrega fica no fechamento.'
+            : 'Envie o seu desenho ao professor para poder concluir a aula.'}
         </p>
       )}
 

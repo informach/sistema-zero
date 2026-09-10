@@ -143,7 +143,7 @@ No Dia 3, os tiros vão encontrar asteroides.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,65 @@ No Dia 3, os tiros vão encontrar asteroides.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.
+
+### Para onde o tiro vai?
+
+**Checagem:** Para um tiro subir nessa tela, a velocidade vertical deve ser…
+
+**Resposta e explicação:** Negativa
+
+### O que aconteceu?
+
+**Checagem:** Por que uma velocidade vertical negativa faz o tiro subir?
+
+**Resposta e explicação:** O eixo y cresce para baixo; diminuir y move para cima.
+
+### criar o grupo dos tiros
+
+**Checagem:** Qual grupo reúne os tiros?
+
+**Resposta e explicação:** tiros.
+
+### a área que escuta o teclado
+
+**Checagem:** Qual evento deve criar um tiro nesta etapa?
+
+**Resposta e explicação:** Apertar a barra de espaço.
+
+### fazer o tiro nascer na nave
+
+**Checagem:** De onde vêm as coordenadas do nascimento do tiro?
+
+**Resposta e explicação:** Da posição atual da nave.
+
+### a velocidade e o som do tiro
+
+**Checagem:** Qual combinação faz o tiro subir sem andar de lado?
+
+**Resposta e explicação:** vx 0 e vy menos 9.
+
+### fazer os tiros voarem pela tela
+
+**Checagem:** Como cuidar dos tiros enquanto o jogo roda?
+
+**Resposta e explicação:** Atualizar, remover os que saíram e desenhar o grupo.
+
+### hora de atirar
+
+**Checagem:** Qual teste confirma que o tiro acompanha a nave?
+
+**Resposta e explicação:** Mover a nave e atirar de lugares diferentes.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

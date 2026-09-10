@@ -19,6 +19,7 @@ import {
   lessonCompletions,
   lessonNavigation,
   lessonProgress,
+  lessonSectionProgress,
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
@@ -116,6 +117,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           .where(inArray(renewalRemindersSent.entitlementId, entitlementIds))
       }
 
+      await tx
+        .delete(lessonSectionProgress)
+        .where(
+          or(
+            inArray(lessonSectionProgress.userId, userIds),
+            eq(lessonSectionProgress.accountId, accountId),
+          ),
+        )
       await tx
         .delete(lessonNavigation)
         .where(

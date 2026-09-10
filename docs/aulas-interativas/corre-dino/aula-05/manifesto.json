@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-05",
   "title": "Cactos no ritmo certo",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu dino corre, pula e faz som. A pista ainda não tem obstáculos.\n\nHoje você vai separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Seu dino corre, pula e faz som. A pista ainda não tem obstáculos.\n\nHoje você vai separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -18,7 +18,7 @@
         "title": "Um cacto por quadro",
         "instructions": "Você colocou Criar cacto dentro de A cada quadro do jogo. O que espera acontecer?",
         "hints": ["A cada quadro não significa uma vez por partida."],
-        "required": false,
+        "required": true,
         "activity": {
           "type": "prediction",
           "choices": [
@@ -36,6 +36,25 @@
             }
           ],
           "outcome": "O bloco executa de novo em cada quadro, criando muitos cactos. Mover a criação para um relógio de 1,4 segundo controla o nascimento; mover e desenhar continuam a cada quadro."
+        },
+        "checkpoint": {
+          "prompt": "Por que criar cactos em cada quadro provoca uma avalanche?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O grupo só permite um cacto por vez."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O jogo atualiza muitos quadros por segundo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Cada cacto apaga o anterior automaticamente."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O jogo atualiza muitos quadros por segundo."
         }
       }
     },
@@ -114,6 +133,232 @@
     {
       "key": "video-construir-5-1",
       "plannedVideo": "aula-05-passo-05: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O jogo atualiza muitos quadros por segundo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que criar cactos em cada quadro provoca uma avalanche?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O jogo atualiza muitos quadros por segundo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Cada cacto apaga o anterior automaticamente."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O grupo só permite um cacto por vez."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O jogo atualiza muitos quadros por segundo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: criar o grupo dos cactos",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["cactos."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual nome deve ligar os blocos do grupo de obstáculos?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "dino."
+            },
+            {
+              "id": "opcao-2",
+              "label": "tiros."
+            },
+            {
+              "id": "opcao-3",
+              "label": "cactos."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "cactos."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer o cacto nascer, andar e aparecer",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Atualizar e desenhar o grupo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Para que o cacto se mova e apareça, quais ações o grupo precisa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Somente mudar a cor do céu."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Atualizar e desenhar o grupo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somente criar o nome do grupo."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Atualizar e desenhar o grupo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: o relógio",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["A criação do cacto."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual ação deve passar para o relógio de 1,4 segundo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A criação do cacto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Todo o desenho do jogo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A preparação inicial da tela."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A criação do cacto."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: nascer fora da tela",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O cacto nasce além da direita e anda para a esquerda."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que usar x 560 e velocidade horizontal negativa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O cacto nasce no chão e sobe."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O cacto fica parado no centro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O cacto nasce além da direita e anda para a esquerda."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "O cacto nasce além da direita e anda para a esquerda."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: testar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Mudar o intervalo mantendo a velocidade."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como descobrir o efeito do intervalo de criação?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Observar somente o nome do grupo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar o intervalo mantendo a velocidade."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Mudar todos os valores juntos."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Mudar o intervalo mantendo a velocidade."
+        }
+      }
     }
   ],
   "sections": [
@@ -122,10 +367,14 @@
       "title": "A criação de hoje",
       "objective": "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -135,67 +384,95 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Separar a criação de objetos do movimento contínuo e ajustar o ritmo de nascimento.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "criar o grupo dos cactos",
       "objective": "Em Jogo 2D, Muitos, coloque Criar grupo de sprites em Ao iniciar, abaixo do dino. Escreva cactos. Use esse mesmo nome nos próximos blocos.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "fazer o cacto nascer, andar e aparecer",
       "objective": "Abaixo do desenho do dino, coloque criar obstáculo do Kit dino, Atualizar o grupo e Desenhar o grupo, de Muitos. Escolha cactos nos três. Rode por pouco tempo para observar a avalanche.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "o relógio",
       "objective": "Em Tempo e repetição, coloque A cada segundos ao lado de A cada quadro, dentro de Enquanto estiver rodando. Use 1.4. Leve somente a criação do cacto para dentro desse relógio.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "nascer fora da tela",
       "objective": "No cacto, troque x 400 por 560 e vx menos 3 por menos 5. O tamanho fica 44. Observe que agora ele nasce fora da tela e entra pela direita.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "testar",
       "objective": "Compare vx menos 3 e menos 9 mantendo o relógio. Depois compare intervalos 0.8 e 2.5 mantendo a velocidade. Volte ao ponto de partida de 1.4 e menos 5 antes de seguir.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "fechamento",
@@ -205,7 +482,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

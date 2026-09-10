@@ -129,7 +129,7 @@ Na Aula 12, os cactos deixarão de chegar sempre do mesmo jeito.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -139,3 +139,59 @@ Na Aula 12, os cactos deixarão de chegar sempre do mesmo jeito.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.
+
+### O placar conta na hora certa?
+
+**Checagem:** Qual contador mede o tempo de jogo sem contar início e fim?
+
+**Resposta e explicação:** O que soma somente em jogando
+
+### O que aconteceu?
+
+**Checagem:** Mostrar placar deve somar pontos?
+
+**Resposta e explicação:** Não; ele só mostra o valor guardado.
+
+### criar a caixinha dos pontos
+
+**Checagem:** Com qual valor pontos começa a partida?
+
+**Resposta e explicação:** 0.
+
+### mostrar o placar
+
+**Checagem:** Por que comparar branco e azul escuro no placar?
+
+**Resposta e explicação:** Para escolher contraste que permita ler o número.
+
+### fazer o número subir
+
+**Checagem:** Quando o relógio deve somar um ponto?
+
+**Resposta e explicação:** A cada segundo, somente na tela jogando.
+
+### contar os pontos na tela de fim
+
+**Checagem:** Como mostrar o resultado real na tela fim?
+
+**Resposta e explicação:** Juntar o texto com o valor da variável pontos.
+
+### testar
+
+**Checagem:** Qual teste confirma a regra de pontuação?
+
+**Resposta e explicação:** Observar o placar antes, durante e depois da partida.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

@@ -24,6 +24,7 @@ import { lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
 import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
 import { useLessonPlayer } from '../lesson-player-context'
+import { SectionProjectCheck } from './section-project-check'
 
 // "Compartilhar" da AULA = UMA vez só. O projeto da aula tem começo/meio/fim: a
 // criança termina, publica no Mural, pronto — não fica republicando (cada republish
@@ -441,25 +442,27 @@ export function StudioBlockView({
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
-          {content.purpose !== 'experiment' && (
-            <Button
-              size="sm"
-              onClick={() => {
-                setTemplateWarning(
-                  submitted &&
-                    isInitialTemplateProject(
-                      handleRef.current?.getProject(),
-                      content.initialProject,
-                    ),
-                )
-                setConfirmOpen(true)
-              }}
-              disabled={submitting || !ready}
-            >
-              {submitting ? <Spinner /> : <Send className="size-4" />}
-              {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
-            </Button>
-          )}
+          {content.purpose !== 'experiment' &&
+            (!player?.submissionAllowedBlockIds ||
+              player.submissionAllowedBlockIds.includes(blockId)) && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setTemplateWarning(
+                    submitted &&
+                      isInitialTemplateProject(
+                        handleRef.current?.getProject(),
+                        content.initialProject,
+                      ),
+                  )
+                  setConfirmOpen(true)
+                }}
+                disabled={submitting || !ready}
+              >
+                {submitting ? <Spinner /> : <Send className="size-4" />}
+                {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
+              </Button>
+            )}
         </div>
       </div>
 
@@ -518,6 +521,7 @@ export function StudioBlockView({
         )}
       </div>
 
+      <SectionProjectCheck blockId={blockId} handleRef={handleRef} />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       {/* Nota da auto-correção (quando o bloco tem atividade). O feedback POR
@@ -554,7 +558,10 @@ export function StudioBlockView({
         <p className="text-xs text-muted-foreground">
           {passingScore !== undefined
             ? 'Use "Verificar" no editor e envie ao professor. Atinja a nota mínima para concluir a aula.'
-            : 'Envie seu projeto ao professor para poder concluir a aula.'}
+            : player?.submissionAllowedBlockIds &&
+                !player.submissionAllowedBlockIds.includes(blockId)
+              ? 'Continue construindo. A entrega do projeto fica no fechamento.'
+              : 'Envie seu projeto ao professor para poder concluir a aula.'}
         </p>
       )}
 

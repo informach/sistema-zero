@@ -101,7 +101,7 @@ Na Aula 3, o dino vai responder ao pulo e voltar ao chão.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -111,3 +111,45 @@ Na Aula 3, o dino vai responder ao pulo e voltar ao chão.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Organizar a ordem de desenho em cada quadro e reconhecer o efeito das camadas.
+
+### Quem fica na frente?
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Por que o dino some quando a floresta é desenhada depois dele?
+
+**Resposta e explicação:** O desenho posterior cobre o anterior.
+
+### ligar o motor do jogo
+
+**Checagem:** O que A cada quadro faz nesta etapa?
+
+**Resposta e explicação:** Repete as ações de desenho durante o jogo.
+
+### desenhar o mundo
+
+**Checagem:** Qual ordem mantém o dino visível e sem rastros?
+
+**Resposta e explicação:** Limpar, desenhar a floresta e desenhar o dino.
+
+### testar e deixar do seu jeito
+
+**Checagem:** Ao comparar velocidades 2 e 9 do fundo, o que muda?
+
+**Resposta e explicação:** A sensação de velocidade da corrida.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

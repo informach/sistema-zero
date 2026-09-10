@@ -101,7 +101,7 @@ Na Aula 9, uma batida terá consequência e você poderá jogar de novo.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -111,3 +111,47 @@ Na Aula 9, uma batida terá consequência e você poderá jogar de novo.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Conectar a instrução mostrada ao jogador com controles que realmente funcionam.
+
+### A dica prometeu um toque
+
+**Checagem:** Se a dica diz para tocar na tela, o que o jogo precisa oferecer?
+
+**Resposta e explicação:** Um evento que também responda ao toque.
+
+### O que aconteceu?
+
+**Checagem:** Se a dica diz para tocar na tela, o que o jogo precisa oferecer?
+
+**Resposta e explicação:** Um evento que também responda ao toque.
+
+### desenhar a tela de início
+
+**Checagem:** Em qual condição desenhamos o convite para começar?
+
+**Resposta e explicação:** Quando a tela atual é inicio.
+
+### o jogo começa quando o jogador manda
+
+**Checagem:** Qual evento atende teclado e toque para começar?
+
+**Resposta e explicação:** Quando apertar qualquer tecla ou tocar na tela.
+
+### testar e deixar com a sua cara
+
+**Checagem:** Como conferir se a dica da tela está correta?
+
+**Resposta e explicação:** Testar cada controle que a dica promete.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

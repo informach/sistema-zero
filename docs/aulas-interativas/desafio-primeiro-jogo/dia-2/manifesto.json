@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-2",
   "title": "Tiros que saem da nave",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Continue o projeto do Dia 1, com a nave se movendo e as estrelas ao fundo.\n\nHoje você vai relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Continue o projeto do Dia 1, com a nave se movendo e as estrelas ao fundo.\n\nHoje você vai relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -130,6 +130,264 @@
     {
       "key": "video-construir-6-1",
       "plannedVideo": "dia-2-passo-06: gravar a demonstração \"hora de atirar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O eixo y cresce para baixo; diminuir y move para cima."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que uma velocidade vertical negativa faz o tiro subir?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O eixo y cresce sempre para cima."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A velocidade negativa apaga o tiro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O eixo y cresce para baixo; diminuir y move para cima."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "O eixo y cresce para baixo; diminuir y move para cima."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: criar o grupo dos tiros",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["tiros."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual grupo reúne os tiros?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "tiros."
+            },
+            {
+              "id": "opcao-3",
+              "label": "asteroides."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "tiros."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a área que escuta o teclado",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Apertar a barra de espaço."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual evento deve criar um tiro nesta etapa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Apertar a barra de espaço."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Desenhar a tela inicial."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Criar a cor do fundo."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Apertar a barra de espaço."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer o tiro nascer na nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Da posição atual da nave."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "De onde vêm as coordenadas do nascimento do tiro?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "De um ponto fixo, independente da nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Do título do jogo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Da posição atual da nave."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Da posição atual da nave."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a velocidade e o som do tiro",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["vx 0 e vy menos 9."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual combinação faz o tiro subir sem andar de lado?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "vx 0 e vy mais 9."
+            },
+            {
+              "id": "opcao-2",
+              "label": "vx 0 e vy menos 9."
+            },
+            {
+              "id": "opcao-3",
+              "label": "vx 9 e vy 0."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "vx 0 e vy menos 9."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer os tiros voarem pela tela",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Atualizar, remover os que saíram e desenhar o grupo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como cuidar dos tiros enquanto o jogo roda?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Atualizar, remover os que saíram e desenhar o grupo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Criar um grupo novo a cada quadro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somente tocar o som de tiro."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Atualizar, remover os que saíram e desenhar o grupo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-6",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: hora de atirar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Mover a nave e atirar de lugares diferentes."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual teste confirma que o tiro acompanha a nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Atirar sempre sem mover a nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar só a cor do fundo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Mover a nave e atirar de lugares diferentes."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Mover a nave e atirar de lugares diferentes."
+        }
+      }
     }
   ],
   "sections": [
@@ -138,10 +396,14 @@
       "title": "A criação de hoje",
       "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -151,77 +413,109 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "criar o grupo dos tiros",
       "objective": "Em Jogo 2D, abra Muitos. Coloque Criar grupo de sprites em Ao iniciar, abaixo da nave, e escreva tiros. Esse nome vai ligar os blocos que cuidam dos tiros.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "a área que escuta o teclado",
       "objective": "Em Áreas do projeto, coloque Quando acontecer ao lado das outras áreas. Em Jogo 2D, Controles, encaixe Quando apertar a tecla dentro dele e escolha barra de espaço.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "fazer o tiro nascer na nave",
       "objective": "Em Jogo 2D, Muitos, coloque Criar tiro no grupo dentro do evento. Escolha tiros. No x encaixe o centro x da nave; no y, a posição y da nave, em Posição e tamanho. Use raio 5 e escolha uma cor.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "a velocidade e o som do tiro",
       "objective": "No tiro, deixe vx em 0 e vy em menos 9. Ele deve subir, como na descoberta. Em Kit espaço, coloque Tocar som de tiro logo abaixo, no mesmo evento.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "fazer os tiros voarem pela tela",
       "objective": "Volte a A cada quadro. Abaixo do desenho da nave, em Muitos, encaixe Atualizar o grupo tiros, Tirar do grupo quem sair da tela e Desenhar o grupo tiros. O espaço fazer da limpeza fica vazio.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "construir-6",
       "title": "hora de atirar",
       "objective": "Mova a nave e aperte espaço de lugares diferentes. O tiro deve nascer junto dela. Compare vy menos 9 e menos 15: confirme o número clicando fora do campo antes de testar.",
       "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-6"]
+      }
     },
     {
       "key": "fechamento",
@@ -231,7 +525,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

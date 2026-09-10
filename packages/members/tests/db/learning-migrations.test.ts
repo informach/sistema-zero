@@ -23,6 +23,7 @@ import {
   lessonBlocks,
   lessonCompletions,
   lessonProgress,
+  lessonSectionProgress,
   lessonStructures,
   lessons,
   modules,
@@ -430,6 +431,64 @@ describe.skipIf(!url)(
       expect(pending.some((issue) => issue.message.includes('Vimeo'))).toBe(true)
     })
 
+    test('section milestones reject stale publication and block evidence, serialize retries and preserve completion', async () => {
+      const { db } = get()
+      const repo = new DrizzleLearningRepository(db)
+      const structure = await repo.getStructure(lessonId)
+      if (!structure?.sections[0]) throw new Error('Missing structure')
+      const [block] = await db.select().from(lessonBlocks).where(eq(lessonBlocks.id, videoId))
+      if (!block) throw new Error('Missing block')
+      const evidence = [{ id: block.id, revision: block.contentRevision }]
+      const record = {
+        sectionId: structure.sections[0].id,
+        revision: '12345678901234567890123456789012',
+        completedAt: now.toISOString(),
+        projectPassed: true,
+      }
+      await expect(
+        repo.saveSectionProgress(owner, lessonId, randomUUID(), [record], evidence),
+      ).rejects.toThrow()
+      await expect(
+        repo.saveSectionProgress(
+          owner,
+          lessonId,
+          structure.revision,
+          [record],
+          [{ id: block.id, revision: 'stale' }],
+        ),
+      ).rejects.toThrow()
+      expect(await repo.getSectionProgress(owner, lessonId)).toHaveLength(0)
+      await Promise.all([
+        repo.saveSectionProgress(owner, lessonId, structure.revision, [record], evidence),
+        repo.saveSectionProgress(owner, lessonId, structure.revision, [record], evidence),
+      ])
+      await repo.saveSectionProgress(
+        owner,
+        lessonId,
+        structure.revision,
+        [{ ...record, revision: 'changed', completedAt: null, projectPassed: false }],
+        evidence,
+      )
+      expect(await repo.getSectionProgress(owner, lessonId)).toEqual([record])
+      expect(
+        await repo.getSectionProgress({ ...owner, userId: randomUUID() }, lessonId),
+      ).toHaveLength(0)
+      // Include explicit criteria in the source so clone coverage verifies portable references too.
+      await db
+        .update(lessonStructures)
+        .set({
+          sections: structure.sections.map((section, i) =>
+            i === 0
+              ? {
+                  ...section,
+                  completion: { version: 1 as const, blockIds: section.blockIds.slice(0, 1) },
+                }
+              : section,
+          ),
+        })
+        .where(eq(lessonStructures.lessonId, lessonId))
+    })
+
     test('clone remaps every section and workspace reference without copying student progress', async () => {
       const { db } = get()
       const clone = await new DrizzleContentAdminRepository(db).cloneCourseTree(courseId, {
@@ -455,10 +514,18 @@ describe.skipIf(!url)(
         structure?.sections.every(
           (s) =>
             s.blockIds.every((id) => blocks.some((b) => b.id === id)) &&
+            (s.completion?.blockIds.every((id) => blocks.some((b) => b.id === id)) ?? true) &&
             (!s.workspaceBlockId || blocks.some((b) => b.id === s.workspaceBlockId)),
         ),
       ).toBe(true)
       expect(structure?.sections[0]?.workspaceBlockId).not.toBe(studioId)
+      expect(structure?.sections[0]?.completion?.blockIds).toHaveLength(1)
+      expect(
+        await db
+          .select()
+          .from(lessonSectionProgress)
+          .where(eq(lessonSectionProgress.lessonId, clonedLesson.id)),
+      ).toHaveLength(0)
       expect(
         await db
           .select()
@@ -624,6 +691,30 @@ describe.skipIf(!url)(
           .from(lessonBlockProgress)
           .where(eq(lessonBlockProgress.userId, owner.userId)),
       ).toHaveLength(0)
+      expect(
+        await db
+          .select()
+          .from(lessonSectionProgress)
+          .where(eq(lessonSectionProgress.userId, owner.userId)),
+      ).toHaveLength(0)
+      const structure = await new DrizzleLearningRepository(db).getStructure(lessonId)
+      if (!structure?.sections[0]) throw new Error('Missing structure')
+      await expect(
+        new DrizzleLearningRepository(db).saveSectionProgress(
+          owner,
+          lessonId,
+          structure.revision,
+          [
+            {
+              sectionId: structure.sections[0].id,
+              revision: 'deleted',
+              completedAt: now.toISOString(),
+              projectPassed: false,
+            },
+          ],
+          [],
+        ),
+      ).rejects.toThrow('excluída')
       await expect(
         new DrizzleLearningRepository(db).saveNavigation(
           owner,

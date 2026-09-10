@@ -145,7 +145,7 @@ Na Aula 5, esse mesmo asteroide vai ganhar fogo e movimento.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -155,3 +155,55 @@ Na Aula 5, esse mesmo asteroide vai ganhar fogo e movimento.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Comparar pixel art e vetor e construir uma forma com pontos, curvas e crateras.
+
+### Como a borda muda no zoom?
+
+**Checagem:** Qual descrição combina com as duas representações?
+
+**Resposta e explicação:** Pixel art usa uma grade; vetor descreve a forma por pontos e curvas
+
+### O que aconteceu?
+
+**Checagem:** Como o vetor descreve uma imagem?
+
+**Resposta e explicação:** Com formas, pontos e curvas.
+
+### começar o desenho novo
+
+**Checagem:** Quais dados deve ter o asset asteroide?
+
+**Resposta e explicação:** Vetor, Personagem, 64 por 64.
+
+### traçar a pedra e arredondar
+
+**Checagem:** O que permite formar e arredondar a pedra?
+
+**Resposta e explicação:** Fechar a forma e ajustar seus pontos.
+
+### as crateras
+
+**Checagem:** Antes de desenhar crateras, como sair da edição da pedra?
+
+**Resposta e explicação:** Usar Selecionar e criar formas menores por cima.
+
+### os dois jeitos de desenhar, lado a lado
+
+**Checagem:** O que comparar entre o asteroide e a nave ao ampliar?
+
+**Resposta e explicação:** A borda em curva do vetor e a grade da pixel art.
+
+### Teste e guarde sua criação
+
+**Checagem:** A pedra precisa ter exatamente as crateras do exemplo?
+
+**Resposta e explicação:** Não; forma, cores e crateras são escolhas suas, preservando os dados do asset.

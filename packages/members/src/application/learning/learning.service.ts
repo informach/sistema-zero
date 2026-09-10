@@ -19,6 +19,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { CheckAccessService } from '../access/check-access.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import type { TeacherThreadsService } from '../teacher-threads/teacher-threads.service'
+import type { SectionProgressionService } from './section-progression.service'
 
 export interface LearningActor extends LearningOwner {
   privileged: boolean
@@ -38,6 +39,7 @@ export class LearningService {
     private readonly progress: ProgressRepository,
     private readonly clock: () => Date,
     private readonly teacherThreads: TeacherThreadsService,
+    readonly sections: SectionProgressionService,
   ) {}
 
   private async requireLesson(actor: LearningActor, lessonId: string) {
@@ -101,6 +103,7 @@ export class LearningService {
   }
   async navigation(actor: LearningActor, lessonId: string, sectionId: string) {
     const lesson = await this.requireLesson(actor, lessonId)
+    await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
     const structure = await this.structure(lesson)
     if (!structure.sections.some((s) => s.id === sectionId))
       throw new LessonNotFoundError('Seção não encontrada')
@@ -109,6 +112,7 @@ export class LearningService {
   }
   async help(actor: LearningActor, lessonId: string, sectionId: string, body: string) {
     const lesson = await this.requireLesson(actor, lessonId)
+    await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
     const section = (await this.structure(lesson)).sections.find((s) => s.id === sectionId)
     if (!section) throw new LessonNotFoundError('Seção não encontrada')
     const course = await this.courses.findCourseById(lesson.courseId)
@@ -133,6 +137,7 @@ export class LearningService {
     input: LearningProgressInput,
   ) {
     const lesson = await this.requireLesson(actor, lessonId)
+    await this.sections.assertBlock(actor, lesson, blockId, actor.privileged)
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (!block || (block.content.kind !== 'interactive' && block.content.kind !== 'video'))
       throw new LessonNotFoundError()
@@ -170,6 +175,7 @@ export class LearningService {
     input: Omit<LearningProgressInput, 'positionSeconds'> & { id: string },
   ) {
     const lesson = await this.requireLesson(actor, lessonId)
+    await this.sections.assertBlock(actor, lesson, blockId, actor.privileged)
     const block = lesson.blocks.find((b) => b.id === blockId)
     if (block?.content.kind !== 'interactive') throw new LessonNotFoundError()
     if (block.contentRevision !== input.revision) throw new LearningConflictError()
@@ -195,7 +201,17 @@ export class LearningService {
     const progress = await this.repository.recordAttempt(actor, lessonId, attempt)
     const recorded = await this.repository.findAttempt(actor, input.id)
     if (!recorded) throw new LearningConflictError()
-    return { attempt: recorded, progress }
+    return { attempt: recorded, progress, sectionProgress: await this.sections.read(actor, lesson) }
+  }
+  async checkProject(
+    actor: LearningActor,
+    lessonId: string,
+    sectionId: string,
+    revision: string,
+    project: unknown,
+  ) {
+    const lesson = await this.requireLesson(actor, lessonId)
+    return this.sections.checkProject(actor, lesson, sectionId, revision, project)
   }
   async assertComplete(owner: LearningOwner, lesson: LessonWithContent) {
     const required = lesson.blocks.filter(

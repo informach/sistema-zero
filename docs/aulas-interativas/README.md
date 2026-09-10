@@ -6,9 +6,9 @@ Em cada pasta há um `roteiro.md` completo para produção e um `manifesto.json`
 
 ## Como a aula funciona
 
-O aluno vê o título da seção e seu conteúdo, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite voltar a qualquer seção da aula desbloqueada. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
+O aluno vê o título da seção e seu conteúdo, experimenta uma relação, encontra uma explicação curta e aplica no próprio projeto. As demonstrações mostram os encaixes e ações; o texto da explicação continua disponível para consulta. O índice permite revisar seções concluídas. As próximas exibem apenas título e cadeado até a seção atual ser concluída. A barra principal conta seções concluídas com pesos iguais; o progresso do curso permanece no índice do curso. Pistas não descontam pontos. Uma hipótese inicial diferente não é tratada como erro que impede continuar.
 
-As atividades essenciais usam uma conferência no servidor. As previsões são opcionais; sequências, associações e experiências essenciais pedem uma conclusão coerente com o que foi observado. Elas não concedem XP nem desbloqueiam ferramentas por conta própria. O botão de concluir respeita essas atividades e as entregas existentes. A porcentagem assistida de um vídeo não conclui a aula.
+As atividades essenciais usam uma conferência no servidor. A hipótese inicial pode estar errada; a checagem final precisa ser acertada. Sequências, associações e experiências essenciais pedem uma conclusão coerente com o que foi observado. Elas não concedem XP nem desbloqueiam ferramentas por conta própria. O botão de concluir respeita essas atividades e as entregas existentes. Abrir uma seção, salvar um rascunho ou assistir a um vídeo não conta como conclusão. Texto e vídeo são acompanhados de uma pergunta curta. A última seção também precisa ser concluída.
 
 Desafio e Corre Dino reaproveitam o primeiro bloco de Estúdio da aula como um único espaço de trabalho. Sua identidade, configuração, cadeia de projetos e submissões são preservadas. A introdução não pede um Estúdio. O Jogo do Meu Jeito usa atalhos para Pinta e Estúdio externos, ensinando a trabalhar com a galeria e os projetos livres. Não importar um projeto do curso dentro de outro só para preencher a aula.
 
@@ -27,7 +27,9 @@ O pacote contém texto, roteiros e interações funcionais. Os novos vídeos ain
 
 Reimportar o mesmo manifesto preserva IDs, projetos existentes e vídeos vinculados. Alterar apenas títulos de seção, posição ou referência do projeto não reinicia respostas. Mudar o conteúdo de uma descoberta muda sua revisão: o histórico fica guardado, mas uma resposta antiga não aprova o conteúdo novo. Aulas já concluídas continuam concluídas.
 
-Os 27 manifestos usam a versão 2: `{ "key": "video-demonstracao", "plannedVideo": "O que mostrar e narrar" }` define o cartão, e a chave entra em `section.blockKeys`. A versão 1 continua aceita; seus textos `pendingMedia` são convertidos em cartões durante a importação. Nenhum arquivo contém uma URL de vídeo inventada.
+Os 27 manifestos usam a versão 3, com critérios explícitos em todas as 226 seções. `completion.blockIds` referencia as chaves portáveis dos blocos avaliados, e `completion.projectChecks` define verificações estruturais do projeto. O formato de vídeo planejado continua o mesmo: `{ "key": "video-demonstracao", "plannedVideo": "O que mostrar e narrar" }` define o cartão, e a chave entra em `section.blockKeys`. As versões 1 e 2 continuam aceitas sem ativar automaticamente as travas; seus textos `pendingMedia` são convertidos em cartões durante a importação. Nenhum arquivo contém uma URL de vídeo inventada.
+
+A nova regra entra em vigor ao publicar a estrutura adaptada. Aulas legadas continuam no fluxo anterior até serem adaptadas. Aulas e seções já concluídas permanecem concluídas; posições antigas de navegação nunca viram evidência. Verificações do projeto durante a construção não criam entregas: a entrega final fica no fechamento.
 
 Veja o [guia de cadastro e funcionamento](guia-de-autoria.md) para criação manual, projeto compartilhado, recuperação local e conflitos.
 

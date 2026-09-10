@@ -143,7 +143,7 @@ No Dia 4, essas batidas vão mudar os pontos e as vidas.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,65 @@ No Dia 4, essas batidas vão mudar os pontos e as vidas.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Controlar a frequência de criação e ligar a colisão à remoção dos objetos.
+
+### Qual chuva fica mais intensa?
+
+**Checagem:** Qual intervalo produz mais asteroides no mesmo tempo?
+
+**Resposta e explicação:** 20 quadros produz mais que 80.
+
+### O que aconteceu?
+
+**Checagem:** Qual intervalo produz mais asteroides no mesmo tempo?
+
+**Resposta e explicação:** 20 quadros produz mais que 80.
+
+### criar o grupo dos asteroides
+
+**Checagem:** Por que criar um grupo asteroides separado de tiros?
+
+**Resposta e explicação:** Para cuidar de cada tipo e identificar os grupos nas colisões.
+
+### montar o relógio da chuva
+
+**Checagem:** Onde fica o relógio que cria asteroides?
+
+**Resposta e explicação:** Ao lado do relógio de cada quadro, em Enquanto estiver rodando.
+
+### criar o asteroide surpresa
+
+**Checagem:** Por que usar y menos 30 e vy 3 no asteroide?
+
+**Resposta e explicação:** Ele nasce acima da tela e cai.
+
+### fazer os asteroides caírem e sumirem
+
+**Checagem:** Quais ações mantêm a chuva visível sem acumular objetos fora da tela?
+
+**Resposta e explicação:** Atualizar, limpar quem saiu e desenhar asteroides.
+
+### explodir asteroide com tiro
+
+**Checagem:** Por que remover tiro e asteroide depois do acerto?
+
+**Resposta e explicação:** Para a mesma batida não continuar valendo nos quadros seguintes.
+
+### hora de explodir
+
+**Checagem:** Depois de comparar 20 e 80, qual é o ponto de partida para seguir?
+
+**Resposta e explicação:** 40 quadros.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.
