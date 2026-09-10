@@ -79,6 +79,13 @@ jobs:
         working-directory: packages/studio
         run: bun run check:game-3d-examples
 
+      # ⚠️ Este portão nunca rodou no CI: ele só era encadeado pelo `test:coverage` do
+      # pacote, e o passo global chama `test`. Ele reprova quando um módulo declarado
+      # crítico sai do grafo de import dos testes — o `bun test` verde não percebe isso.
+      - name: Alcance dos testes do Community Kids
+        working-directory: packages/community-kids
+        run: bun run test:reachability
+
       - name: Testes DB fiscal (Postgres real)
         run: cd packages/fiscal && bun test tests/db
         env:
