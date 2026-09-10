@@ -225,6 +225,22 @@ describe('aula por seções', () => {
     expect(input.value).toBe('Meu dinossauro')
   })
 
+  test('a divisória entre a aula e a ferramenta é arrastável e alcançável pelo teclado', () => {
+    // A criança que está ASSISTINDO quer o vídeo maior; a que está CRIANDO quer o
+    // editor maior. Antes do lote o split era um grid fixo em 0.8fr/1.2fr, sem
+    // arrasto, e só existia acima de 1536px de VIEWPORT.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const divisoria = screen.getByRole('separator')
+    expect(divisoria.tabIndex).toBe(0)
+    expect(divisoria.getAttribute('data-panel-group-direction')).toBe('horizontal')
+    // desabilitada, a divisória seria só enfeite: o arrasto não moveria nada
+    expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
+  })
+
   test('retoma a seção salva e inclui seu contexto no pedido de ajuda', async () => {
     const requests: Array<{ url: string; body: unknown; viewer: string | null }> = []
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {

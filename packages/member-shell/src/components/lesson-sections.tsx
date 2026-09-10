@@ -10,6 +10,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, ExternalLink, List, MessageCircle } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
@@ -308,7 +309,10 @@ export function LessonSections({
     </div>
   )
   return (
-    <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
+    // `@container` mede a COLUNA da aula, não a viewport: com o modo foco ligado
+    // ela cresce 568px sem a janela mudar de tamanho, então viewport é proxy ruim
+    // para "cabe lado a lado". `sz-lesson-sections` é o gancho de tema do kids.
+    <div className={cn('@container space-y-5', kids && 'sz-lesson-sections')}>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
         <details ref={requirementsMenu} className="relative">
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
@@ -376,13 +380,27 @@ export function LessonSections({
           </nav>
         </details>
       </div>
-      <div
+      <PanelGroup
+        direction="horizontal"
+        // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
+        // para as próximas. Na prévia do admin (`preview`) não persiste nada.
+        autoSaveId={player?.viewerId ? `sz:lesson-split:${player.viewerId}` : null}
         className={cn(
-          'grid items-start gap-6',
-          hasWorkspace && '2xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]',
+          // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
+          // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
+          // e `sticky` dentro, então os três precisam ser desfeitos. O flex só liga
+          // quando há ferramenta E a coluna passa de 1024px.
+          'block! h-auto! items-start overflow-visible!',
+          hasWorkspace && '@5xl:flex!',
         )}
       >
-        <div className="min-w-0 space-y-6">
+        <Panel
+          id="lesson-content"
+          order={1}
+          defaultSize={55}
+          minSize={30}
+          className="min-w-0 space-y-6 overflow-visible!"
+        >
           <header className="space-y-2 px-1">
             <h2
               ref={heading}
@@ -414,15 +432,42 @@ export function LessonSections({
               <span className="sr-only">em outra aba</span>
             </a>
           )}
-        </div>
-        <div className={hasWorkspace ? 'min-w-0 space-y-6' : 'hidden'}>
+        </Panel>
+        {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
+            reordena a árvore e REMONTA o editor da direita (Blockly caro, rascunho
+            re-semeado). Só as classes mudam. */}
+        <PanelResizeHandle
+          // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
+          hitAreaMargins={{ coarse: 20, fine: 6 }}
+          className={cn(
+            'group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+            hasWorkspace && '@5xl:block',
+          )}
+        >
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
+          />
+        </PanelResizeHandle>
+        <Panel
+          id="lesson-tool"
+          order={2}
+          defaultSize={45}
+          minSize={30}
+          className={cn(
+            // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
+            'mt-6 overflow-visible! @5xl:mt-0',
+            hasWorkspace ? 'min-w-0 space-y-6' : 'hidden',
+          )}
+        >
           {tools.map((block) => (
             <div key={block.id} style={{ display: activeIds.has(block.id) ? undefined : 'none' }}>
               {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
             </div>
           ))}
-        </div>
-      </div>
+        </Panel>
+      </PanelGroup>
       {supportIds.size > 0 && (
         <details className="rounded-2xl border border-border bg-card p-4">
           <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
