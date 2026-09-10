@@ -10,8 +10,8 @@ disco, **sem um único commit**: 394 arquivos, 354 deles em `packages/molda`. A 
 nova, 159 componentes, só abria em `bun run dev`. E nada tinha sido visto num navegador:
 todos os lotes recentes registram que o browser não conectava.
 
-Agora são **19 commits na `staging`**, a oficina nova é o editor de modelos do kids e a
-suíte roda em Chromium de verdade.
+Agora são **25 commits na `staging`**, a oficina nova é o editor de
+modelos do kids, a suíte roda em Chromium de verdade e tudo isso passou por um full review.
 
 | Lote | O que entrou |
 | --- | --- |
