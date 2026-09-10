@@ -6,6 +6,7 @@ import { readSceneDocument } from '../scene/readDocument'
 import { getMoldaGenerationStore } from './persistence'
 import { sceneCloudSummary } from './sceneGenerationSummary'
 import { createScenePersistence } from './scenePersistence'
+import type { SceneStorageChange } from './sceneStorageChannel'
 
 export interface MoldaSceneCloudDocument {
   summary: MoldaAssetSummary
@@ -44,7 +45,15 @@ export interface MoldaSceneCloudSource {
    */
   saveCopy(json: string, name: string, now?: () => number): Promise<MoldaAssetSummary | null>
   removeIfUnchanged(id: string, expectedUpdatedAt: number | null): Promise<boolean>
-  subscribe(listener: () => void): () => void
+  /**
+   * Todo commit da geração seguinte, com o id e se ele foi GRAVADO ou APAGADO.
+   *
+   * ⚠️⚠️ A galeria e a oficina falam direto com a persistência de cena: nem o autosave da
+   * oficina, nem renomear, nem duplicar, nem APAGAR passam pelo espelho do host. Sem ouvir
+   * aqui, a nuvem só saberia da criação numa visita à galeria, e a exclusão nunca viraria
+   * lápide — a criação voltaria inteira no outro aparelho.
+   */
+  subscribe(listener: (change: SceneStorageChange) => void): () => void
 }
 
 export function createMoldaSceneCloudSource(
@@ -122,7 +131,7 @@ export function createMoldaSceneCloudSource(
     subscribe(listener) {
       const controller = new AbortController()
       // Desmontar antes de a inscrição assentar aborta a promessa; cancelar não é erro.
-      void persistence.subscribe(() => listener(), controller.signal).catch(() => undefined)
+      void persistence.subscribe(listener, controller.signal).catch(() => undefined)
       return () => controller.abort()
     },
   }

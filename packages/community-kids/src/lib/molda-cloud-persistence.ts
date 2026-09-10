@@ -84,7 +84,17 @@ export interface MoldaSceneCloudSourceLike {
   ): Promise<boolean>
   saveCopy(json: string, name: string, now?: () => number): Promise<MoldaAssetSummary | null>
   removeIfUnchanged(id: string, expectedUpdatedAt: number | null): Promise<boolean>
-  subscribe(listener: () => void): () => void
+  subscribe(listener: (change: MoldaSceneStorageChange) => void): () => void
+}
+
+/**
+ * O commit da geração seguinte: qual criação e se ela foi GRAVADA ou APAGADA no aparelho
+ * (espelho de `SceneStorageChange` do pacote, para não importar o barril React).
+ */
+export interface MoldaSceneStorageChange {
+  id: string
+  revision: number
+  status: 'indexed' | 'deleted'
 }
 
 /**
@@ -145,14 +155,18 @@ export function copyName(name: string, taken: Set<string>): string {
 }
 
 /** A miniatura que vai na reserva: só o modelo a tem, só PNG/JPEG data URL, só até o teto. */
-export function cloudThumbOf(asset: MoldaAsset): string | null {
-  const thumb = asset.kind === 'model' ? asset.thumb : undefined
+/** O portão do que pode viajar como miniatura: é imagem e cabe no teto da reserva. */
+export function cloudThumbTextOf(thumb: string | null | undefined): string | null {
   return typeof thumb === 'string' &&
     thumb.length > 0 &&
     thumb.length <= MAX_THUMB_CHARS &&
     thumb.startsWith('data:image/')
     ? thumb
     : null
+}
+
+export function cloudThumbOf(asset: MoldaAsset): string | null {
+  return cloudThumbTextOf(asset.kind === 'model' ? asset.thumb : undefined)
 }
 
 /** O JSON que sobe (as peles em base64, id e nome preservados). */
@@ -266,7 +280,11 @@ export function createCloudMirroredMoldaPersistence(options: {
           kind: next.summary.kind,
           updatedAt: next.summary.updatedAt,
           formatVersion: 2,
-          thumb: next.summary.thumbDataUrl,
+          // Pelo MESMO portão do v1 (prefixo `data:image/` + teto de caracteres da reserva):
+          // hoje os dois números coincidem por duplicação, e no dia em que o orçamento de
+          // miniatura do documento divergir do da reserva, toda subida v2 passaria a levar
+          // 4xx sem nada aqui para segurar.
+          thumb: cloudThumbTextOf(next.summary.thumbDataUrl),
           json: next.json,
         }
       const current = await local.load(id)
@@ -722,6 +740,22 @@ export function createCloudMirroredMoldaPersistence(options: {
       })
   }
 
+  // ⚠️⚠️ A geração seguinte NÃO passa por este espelho. A galeria e a oficina falam direto
+  // com a persistência de cena: o autosave da oficina, renomear, duplicar e APAGAR nunca
+  // chamam `save`/`remove` daqui, que são os únicos lugares que enfileiram nuvem. Sem ouvir
+  // os commits dela:
+  //   - o trabalho da criança só subiria numa visita à galeria (uma reconciliação por minuto,
+  //     no máximo), em vez dos segundos do editor antigo; e
+  //   - a exclusão NUNCA viraria lápide, então a criação voltaria inteira no outro aparelho.
+  // O canal só traz id, revisão e se foi gravado ou apagado: `enqueue` relê o disco pela
+  // geração dona e não sobe nada quando a marca já é este `updatedAt`.
+  let unsubscribeSceneStorage: (() => void) | null =
+    scene?.subscribe((change) => {
+      if (disposed) return
+      if (change.status === 'deleted') enqueueRemove(change.id)
+      else enqueue({ id: change.id })
+    }) ?? null
+
   // Fechou uma criação que a descida PULOU por estar aberta: traz a versão da nuvem agora
   // (fora do intervalo mínimo — é um pedido pontual, não uma releitura em laço). O registro
   // do pacote avisa sem o id: confere quais das puladas já não estão abertas.
@@ -827,6 +861,8 @@ export function createCloudMirroredMoldaPersistence(options: {
       pendingReconcileAssets = null
       unsubscribeOpenState?.()
       unsubscribeOpenState = null
+      unsubscribeSceneStorage?.()
+      unsubscribeSceneStorage = null
       if (changedTimer) clearTimeout(changedTimer)
       changedTimer = null
       changedIds = []

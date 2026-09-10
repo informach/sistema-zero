@@ -46,6 +46,12 @@ export interface GalleryState {
   /** A persistência está buscando fora (nuvem): a galeria mostra o aviso. */
   syncing: boolean
   error: string | null
+  /**
+   * O inventário da geração seguinte não respondeu nesta leitura. A galeria v1 continua de
+   * pé (é para isso que a falha não derruba a lista), mas quem promete algo COMPLETO — o
+   * "Baixar tudo" — precisa saber que o que está na tela pode não ser tudo.
+   */
+  sceneUnavailable: boolean
 }
 
 export interface GalleryActions {
@@ -148,13 +154,21 @@ export function createGalleryStore(
       // As duas vivem no mesmo banco, então na prática elas falham juntas e o erro de
       // carga já cobre esse caso; o que este `catch` evita é o contrário, uma galeria
       // inteira em branco por causa de um inventário que talvez nem exista ainda.
+      let sceneUnavailable = false
       const next = scene
         ? await scene
             .listSummaries()
             .then((result) => result.summaries)
-            .catch(() => [])
+            .catch(() => {
+              sceneUnavailable = true
+              return []
+            })
         : []
-      const fresh = [...v1, ...next]
+      // Deduplicar por id, e a geração seguinte VENCE: o espelho da nuvem do host soma as
+      // duas gerações no `listSummaries` dele (é assim que a promoção não parece exclusão
+      // para a reconciliação), então a criação promovida chega pelos DOIS lados e vira dois
+      // cartões com a mesma chave. Somar sem deduplicar é o que quebra.
+      const fresh = [...new Map([...v1, ...next].map((asset) => [asset.id, asset])).values()]
       const current = new Map(get().assets.map((asset) => [asset.id, asset]))
       // Uma criação ABERTA no editor tem a versão mais nova em memória: a
       // releitura não pode regredi-la para o que está no disco.
@@ -164,7 +178,13 @@ export function createGalleryStore(
           ? mine
           : asset
       })
-      set({ assets: sortAssets(merged), loaded: true, loading: false, error: null })
+      set({
+        assets: sortAssets(merged),
+        loaded: true,
+        loading: false,
+        error: null,
+        sceneUnavailable,
+      })
     }
 
     return {
@@ -172,6 +192,7 @@ export function createGalleryStore(
       loaded: false,
       loading: false,
       syncing: false,
+      sceneUnavailable: false,
       error: null,
 
       load() {

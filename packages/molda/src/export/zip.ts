@@ -313,12 +313,10 @@ async function buildGalleryZipChunks(
     throwIfAborted(options.signal)
     zip.end()
     await done
-    options.onProgress?.({
-      processed: assets.length,
-      total: assets.length,
-      readyBytes,
-      compressedBytes,
-    })
+    // O total inclui a geração seguinte: repetir só `assets.length` fazia o contador do
+    // botão andar para TRÁS (5/5 e depois 3/5) no instante antes de sumir.
+    const total = assets.length + (options.scenes?.length ?? 0)
+    options.onProgress?.({ processed: total, total, readyBytes, compressedBytes })
     return { chunks, compressedBytes }
   } catch (error) {
     if (!settled) zip.terminate()

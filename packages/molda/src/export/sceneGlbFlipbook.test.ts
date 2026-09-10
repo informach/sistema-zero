@@ -16,6 +16,7 @@ import {
   sceneGlbFlipbookTransform,
 } from './sceneGlbFlipbook'
 import { SceneGlbLossError } from './sceneGlbReport'
+import { inspectSceneStudioCompatibility } from './sceneStudioCompatibility'
 
 function sheet(
   id: string,
@@ -214,4 +215,21 @@ test('imagem sem quadros não tem contrato e a fórmula da célula é a mesma do
     offset: [0.75, 2 / 3],
     scale: [0.25, 1 / 3],
   })
+})
+
+// O painel de destino dizia "esta cópia não contém movimentos" para uma cópia cuja TINTA
+// anda, dois parágrafos depois de o próprio destino ter dito o contrário.
+test('a pintura animada conta como movimento no relatório de destino', () => {
+  const document = fixture(quadSheet(), [3, 1, 2, 1])
+  // O portátil declara a perda `flipbook-first-frame`; aqui só interessa o relatório.
+  const portable = encodeSceneGlb(document, { allowLosses: true })
+  const studio = encodeSceneGlb(document, { animatedPaint: true })
+  expect(portable.stats.clips).toBe(0)
+  expect(portable.stats.animatedPaints).toBe(0)
+  expect(studio.stats.animatedPaints).toBeGreaterThan(0)
+  const report = (result: typeof studio) =>
+    inspectSceneStudioCompatibility({ stats: result.stats, byteLength: result.bytes.byteLength })
+  expect(report(studio).animated).toBe(true)
+  // O GLB portátil fica no primeiro quadro: ali "sem movimento" continua sendo verdade.
+  expect(report(portable).animated).toBe(false)
 })

@@ -31,6 +31,7 @@ import {
   copyName,
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
+  type MoldaSceneStorageChange,
   uniqueAssetName,
 } from '../src/lib/molda-cloud-persistence'
 
@@ -1129,6 +1130,8 @@ describe('review 06/09: upload em voo × exclusão, flush antes da descida, cria
  */
 function fakeScene(initial: MoldaAsset[] = []) {
   const rows = new Map<string, { summary: MoldaAssetSummary; json: string }>()
+  const listeners = new Set<(change: MoldaSceneStorageChange) => void>()
+  let revision = 1
   const put = (asset: MoldaAsset) => {
     const json = JSON.stringify({ ...JSON.parse(assetToCloudJson(asset)), formatVersion: 2 })
     rows.set(asset.id, { summary: { ...summarizeAsset(asset), formatVersion: 2 }, json })
@@ -1180,7 +1183,24 @@ function fakeScene(initial: MoldaAsset[] = []) {
       rows.delete(id)
       return true
     },
-    subscribe: () => () => {},
+    subscribe: (listener: (change: MoldaSceneStorageChange) => void) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+    /**
+     * O que a oficina e a galeria fazem de verdade: gravar/apagar DIRETO no armazenamento
+     * da geração seguinte, sem passar pelo espelho, e o canal de commits avisa depois.
+     */
+    writeDirect(asset: MoldaAsset) {
+      put(asset)
+      revision += 1
+      for (const listener of [...listeners]) listener({ id: asset.id, revision, status: 'indexed' })
+    },
+    deleteDirect(id: string) {
+      rows.delete(id)
+      revision += 1
+      for (const listener of [...listeners]) listener({ id, revision, status: 'deleted' })
+    },
   }
 }
 
@@ -1250,5 +1270,103 @@ test('a criação da geração seguinte desce para o inventário dela, não para
   expect(mirrored.getReadIssues?.()).toEqual([])
   expect(scene.rows.get(remote.id)?.summary.name).toBe('nave')
   expect(local.rows.size).toBe(0)
+  mirrored.dispose?.()
+})
+
+// ⚠️⚠️ A oficina e a galeria gravam DIRETO no armazenamento da geração seguinte: nem o
+// autosave, nem renomear, nem duplicar, nem apagar chamam este espelho. Sem ouvir os
+// commits dela, a exclusão nunca virava lápide e a criação voltava no outro aparelho.
+test('apagar uma criação da geração seguinte vira lápide e exclusão na nuvem', async () => {
+  const promoted = model('nave', 2000)
+  const local = fakeLocal([])
+  const scene = fakeScene([promoted])
+  const { cloud, removed } = fakeCloud(remoteOf([promoted]))
+  const marks = createMemorySyncedMarks()
+  marks.set(promoted.id, promoted.updatedAt, 4)
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'delete-profile',
+  })
+  scene.deleteDirect(promoted.id)
+  // A revisão que ESTE aparelho conhece é a base do DELETE: base 0 leva a 409 e restauro.
+  expect(removed.map((item) => [item.itemId, item.baseRevision])).toEqual([[promoted.id, 4]])
+  expect(marks.tombstone(promoted.id)?.revision).toBe(4)
+  mirrored.dispose?.()
+})
+
+test('salvar na oficina enfileira a subida sem depender de uma volta à galeria', async () => {
+  const promoted = model('nave', 2000)
+  const local = fakeLocal([])
+  const scene = fakeScene([promoted])
+  const { cloud, uploads } = fakeCloud(remoteOf([promoted]))
+  const marks = createMemorySyncedMarks()
+  marks.set(promoted.id, promoted.updatedAt, 1)
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'workshop-profile',
+  })
+  scene.writeDirect({ ...promoted, updatedAt: 9000 })
+  const snapshot = await uploads.get(promoted.id)?.produce()
+  if (!snapshot?.meta) throw new Error('a edição da oficina não foi enfileirada')
+  expect(snapshot.meta.updatedAt).toBe(9000)
+  expect(snapshot.meta.formatVersion).toBe(2)
+  // A base é a revisão conhecida por este aparelho, não zero.
+  expect(snapshot.meta.baseRevision).toBe(1)
+  mirrored.dispose?.()
+})
+
+test('a promoção sozinha não gera HTTP: o carimbo não mudou', async () => {
+  const promoted = model('nave', 2000)
+  const local = fakeLocal([])
+  const scene = fakeScene([promoted])
+  const { cloud, uploads } = fakeCloud(remoteOf([promoted]))
+  const marks = createMemorySyncedMarks()
+  marks.set(promoted.id, promoted.updatedAt, 1)
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'promote-profile',
+  })
+  scene.writeDirect(promoted)
+  const upload = uploads.get(promoted.id)
+  if (!upload) throw new Error('o commit da promoção nem chegou ao espelho')
+  // Enfileirou, leu o disco e desistiu: a marca JÁ é este `updatedAt`. Zero HTTP.
+  expect(await upload.produce()).toBeNull()
+  mirrored.dispose?.()
+})
+
+// A miniatura da geração seguinte ia CRUA para a reserva, enquanto a v1 passa pelo portão.
+// Hoje os dois tetos coincidem por duplicação; divergir faria toda subida v2 levar 4xx.
+test('a miniatura da geração seguinte passa pelo mesmo portão da v1', async () => {
+  const promoted = model('nave', 2000)
+  const local = fakeLocal([])
+  const scene = fakeScene([])
+  const { cloud, uploads } = fakeCloud(new Map())
+  const marks = createMemorySyncedMarks()
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'thumb-profile',
+  })
+  const boa = `data:image/jpeg;base64,${'A'.repeat(64)}`
+  scene.writeDirect({ ...promoted, updatedAt: 3000, thumb: boa })
+  expect((await uploads.get(promoted.id)?.produce())?.meta?.thumb).toBe(boa)
+  // Acima do teto da reserva: sobe SEM miniatura, não com uma que a nuvem recusaria.
+  scene.writeDirect({
+    ...promoted,
+    updatedAt: 4000,
+    thumb: `data:image/jpeg;base64,${'A'.repeat(20_000)}`,
+  })
+  expect((await uploads.get(promoted.id)?.produce())?.meta?.thumb).toBeNull()
   mirrored.dispose?.()
 })

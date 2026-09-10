@@ -46,7 +46,10 @@ export function createGallerySceneSource(
       const active = await current(id)
       if (!active) return false
       const result = await persistence.save(
-        { ...active.document, name, updatedAt: now() },
+        // Carimbo CRESCENTE, a mesma regra do caminho v1 no mesmo store: a criação pode ter
+        // descido de um aparelho com o relógio adiantado, e um `updatedAt` menor faz o
+        // espelho da nuvem ler o rename como vencido e devolver o nome antigo.
+        { ...active.document, name, updatedAt: Math.max(now(), active.document.updatedAt + 1) },
         active.summary.revision,
       )
       return result.status === 'saved'

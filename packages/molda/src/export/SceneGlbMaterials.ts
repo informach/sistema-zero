@@ -70,6 +70,8 @@ export class SceneGlbMaterials {
   pixelBytes = 0
   /** Set only when a material actually carries the transform, so extensionsUsed stays honest. */
   textureTransform = false
+  /** Materiais cuja cor saiu com a FOLHA INTEIRA e a sequência: é o que o Estúdio anima. */
+  animatedPaints = 0
   private readonly palette: SceneRgba[]
   private readonly materialIds = new Map<string, number>()
   private readonly textureIds = new Map<string, { index: number; transparent: boolean }>()
@@ -173,6 +175,7 @@ export class SceneGlbMaterials {
         }
         result.extras = { molda: { flipbook: contract } }
         this.textureTransform = true
+        this.animatedPaints += 1
       }
     }
     if (source.alphaMask) {

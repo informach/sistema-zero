@@ -55,7 +55,12 @@ function setup(
   persistedEditor?: SceneEditorStore,
   options: {
     renderThumb?: () => string | null
-    resyncToStudio?: (asset: { id: string; name: string }) => Promise<{ updated: boolean }>
+    resyncToStudio?: (asset: {
+      id: string
+      name: string
+    }) => Promise<
+      { updated: true } | { updated: false; reason: 'not-linked' | 'failed'; error?: string }
+    >
   } = {},
 ) {
   const editor =
@@ -185,6 +190,60 @@ describe('scene workshop integration', () => {
     }
   })
 
+  // O editor antigo avisa quando a ponte falha (`COPY.editor.studioSyncFailed`); a oficina
+  // ficava muda, e o jogo continuava com o modelo velho sem a criança saber.
+  test('a falha da ponte com o Estúdio chega à criança', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    const asset = migrateLegacyModel(makeModel()).document
+    await createScenePersistence(db.store).save(asset, null)
+    const { editor, view, ports } = setup(asset, undefined, {
+      resyncToStudio: async () => ({ updated: false, reason: 'failed', error: 'a nuvem recusou' }),
+    })
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => {
+        editor.getState().commit(addScenePrimitive(editor.getState().asset, 'box', 'Bloco'))
+      })
+      await act(async () => {
+        await editor.getState().flush()
+      })
+      await waitFor(() => expect(screen.queryByText('a nuvem recusou')).not.toBeNull(), {
+        timeout: 20_000,
+      })
+    } finally {
+      view.unmount()
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
+  // A forma forte de "abrir não é salvar": o desmontar DRENA a fila, então um reenvio
+  // enfileirado na abertura apareceria aqui. Conferir logo depois de montar só provaria
+  // que o debounce de 1,5 s ainda não venceu.
+  test('abrir e sair sem editar não reenvia nada, nem na drenagem da saída', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    const sent: unknown[] = []
+    const asset = migrateLegacyModel(makeModel()).document
+    await createScenePersistence(db.store).save(asset, null)
+    const { view, ports } = setup(asset, undefined, {
+      resyncToStudio: async (exported) => {
+        sent.push(exported)
+        return { updated: true }
+      },
+    })
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      view.unmount()
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      expect(sent).toEqual([])
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
   test('a foto da criação entra no documento sem virar passo de desfazer', async () => {
     const photo = 'data:image/jpeg;base64,Zm90bw=='
     const { editor, ports, view, openInspector } = setup(undefined, undefined, {
@@ -205,6 +264,26 @@ describe('scene workshop integration', () => {
       expect(editor.getState().canUndo).toBe(true)
       expect(editor.getState().contentRevision).toBe(revision + 1)
       await waitFor(() => expect(editor.getState().asset.thumb).toBe(photo), { timeout: 3000 })
+    } finally {
+      view.unmount()
+    }
+  })
+
+  test('o palco que RECUSA fotografar preserva a foto que a criação já tinha', async () => {
+    const photo = 'data:image/jpeg;base64,dmVsaGE='
+    // Isolamento ligado (ou contexto perdido) devolve `null`: foto velha e inteira vale
+    // mais que uma nova pela metade. Apagar era a leitura contrária do mesmo `null`.
+    const { editor, ports, view } = setup(
+      { ...migrateLegacyModel(makeModel()).document, thumb: photo },
+      undefined,
+      { renderThumb: () => null },
+    )
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      expect(editor.getState().asset.thumb).toBe(photo)
+      // E nada foi gravado por causa disso: a foto derivada não carimba a criação.
+      expect(editor.getState().canUndo).toBe(false)
     } finally {
       view.unmount()
     }
