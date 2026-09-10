@@ -21,7 +21,7 @@ criação na área de recuperação em vez de abrir. Por isso os leitores vão p
 | 1 | Guardas de formato no backend e a migration `0075` | `d957a313` | **já em produção** |
 | 2 | Reserva confirma o formato e a exclusão leva capacidade | `3a30fef5` | na staging |
 | 3 | **Leitores**: o cliente sabe abrir a geração nova, e o espelho da nuvem conhece as duas | `13153d48` | na staging |
-| 4 | **Escritor**: a oficina nova vira o editor de modelos | `f92...` (o commit do lote 233) | na staging |
+| 4 | **Escritor**: a oficina nova vira o editor de modelos | `b4a3cbd0` | na staging |
 
 Os passos 2 e 3 podem ir juntos. O passo 4 idealmente vai num **deploy seguinte** ao do 3.
 
