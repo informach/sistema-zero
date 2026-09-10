@@ -155,6 +155,9 @@ void installPreviewTracking().then(() =>
               onOpenStudio: () => console.log('[playground] onOpenStudio'),
               // Deep link de teste: `?criacao=<id>` abre direto uma criação.
               ...(initialAssetId ? { initialAssetId } : {}),
+              // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
+              // do app, com a galeria enxergando as duas. Não é ativação de produto.
+              ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
             }}
           />
         )}

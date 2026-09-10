@@ -25,6 +25,13 @@ export interface MoldaHostAdapter {
   resyncToStudio?: (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
+  /**
+   * Oficina da geração seguinte. Desligada por padrão: ligá-la faz a galeria listar
+   * também as criações da geração nova e abrir cada uma no editor dela. Abrir um
+   * modelo antigo por lá o PROMOVE, e promover é escrever o formato novo no disco:
+   * só ligar depois que os leitores compatíveis estiverem implantados.
+   */
+  sceneWorkshop?: boolean
 }
 
 export interface MoldaAppContextValue {

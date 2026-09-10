@@ -12,6 +12,7 @@ import { newId } from '../core/id'
 import { createAsset, type MoldaAsset, type NewAssetInput } from '../core/model'
 import { normalizeAssetName, uniqueAssetName } from '../core/names'
 import { findTemplate } from '../templates/catalog'
+import type { GallerySceneSource } from './gallerySceneSource'
 import { isMoldaAssetOpen, isStorageBudgetError, type MoldaPersistence } from './persistence'
 
 export type CreateResult =
@@ -54,7 +55,8 @@ export interface GalleryActions {
   /** Cria a partir de um MODELO PRONTO do catálogo (`templates/`), já com o nome escolhido. */
   createFromTemplate(input: { templateId: string; name: string }): Promise<CreateResult>
   rename(id: string, name: string): Promise<RenameResult>
-  duplicate(id: string): Promise<MoldaAsset | null>
+  /** A geração seguinte não produz um `MoldaAsset`: a cópia dela é resumo. */
+  duplicate(id: string): Promise<MoldaAsset | MoldaAssetSummary | null>
   remove(id: string): Promise<RemoveResult>
   /** O editor salvou: atualiza a lista SEM gravar de novo. */
   absorb(asset: MoldaAsset): void
@@ -77,7 +79,15 @@ function upsertSorted(
   assets: readonly MoldaAssetSummary[],
   asset: MoldaAsset,
 ): MoldaAssetSummary[] {
-  return sortAssets([...assets.filter((item) => item.id !== asset.id), summarizeAsset(asset)])
+  return upsertSummary(assets, summarizeAsset(asset))
+}
+
+/** A geração seguinte já entrega resumo pronto: não há criação inteira para resumir. */
+function upsertSummary(
+  assets: readonly MoldaAssetSummary[],
+  summary: MoldaAssetSummary,
+): MoldaAssetSummary[] {
+  return sortAssets([...assets.filter((item) => item.id !== summary.id), summary])
 }
 
 function takenNames(assets: readonly MoldaAssetSummary[]): Set<string> {
@@ -108,12 +118,15 @@ export function cloneWithNewIds(asset: MoldaAsset, name: string, now: number): M
 
 export interface CreateGalleryStoreOptions {
   now?: () => number
+  /** Geração seguinte, quando o host a habilita. Ausente = só a galeria v1. */
+  scene?: GallerySceneSource
 }
 
 export function createGalleryStore(
   persistence: MoldaPersistence,
   options: CreateGalleryStoreOptions = {},
 ): GalleryStore {
+  const scene = options.scene
   const now = options.now ?? (() => Date.now())
   let chain: Promise<unknown> = Promise.resolve()
   let loadPromise: Promise<void> | null = null
@@ -126,9 +139,11 @@ export function createGalleryStore(
 
   return createStore<GalleryState & GalleryActions>((set, get) => {
     async function readAndMerge(): Promise<void> {
-      const fresh = persistence.listSummaries
+      const v1 = persistence.listSummaries
         ? await persistence.listSummaries()
         : (await persistence.loadAll()).map(summarizeAsset)
+      // A geração seguinte tem inventário próprio; a lista da criança é uma só.
+      const fresh = scene ? [...v1, ...(await scene.listSummaries()).summaries] : v1
       const current = new Map(get().assets.map((asset) => [asset.id, asset]))
       // Uma criação ABERTA no editor tem a versão mais nova em memória: a
       // releitura não pode regredi-la para o que está no disco.
@@ -230,6 +245,15 @@ export function createGalleryStore(
           if (!name) return 'invalid'
           if (name === current.name) return 'ok'
           if (takenNames(get().assets).has(name)) return 'taken'
+          if (current.formatVersion === 2) {
+            if (!scene) return 'missing'
+            if (!(await scene.rename(id, name))) {
+              await readAndMerge()
+              return 'changed'
+            }
+            set({ assets: upsertSummary(get().assets, { ...current, name, updatedAt: now() }) })
+            return 'ok'
+          }
           try {
             const source = await persistence.load(id)
             if (!source) return 'missing'
@@ -253,6 +277,15 @@ export function createGalleryStore(
 
       duplicate(id) {
         return enqueue(async () => {
+          const summary = get().assets.find((asset) => asset.id === id)
+          if (summary?.formatVersion === 2) {
+            if (!scene) return null
+            const name = uniqueAssetName(summary.name, takenNames(get().assets))
+            if (!name) return null
+            const copy = await scene.duplicate(id, name)
+            if (copy) set({ assets: upsertSummary(get().assets, copy) })
+            return copy
+          }
           try {
             const source = await persistence.load(id)
             if (!source) return null
@@ -270,6 +303,11 @@ export function createGalleryStore(
 
       remove(id) {
         return enqueue(async (): Promise<RemoveResult> => {
+          if (get().assets.find((asset) => asset.id === id)?.formatVersion === 2) {
+            if (!scene || !(await scene.remove(id))) return { ok: false, reason: 'save-failed' }
+            set({ assets: get().assets.filter((asset) => asset.id !== id) })
+            return { ok: true }
+          }
           try {
             await persistence.remove(id)
           } catch (error) {
@@ -316,8 +354,21 @@ export function createGalleryStore(
       },
 
       attachPersistence() {
-        if (!persistence.subscribe) return () => undefined
         let timer: ReturnType<typeof setTimeout> | null = null
+        // A oficina seguinte grava no próprio inventário: sem isto a galeria mostraria
+        // o nome e a miniatura de antes de a criança sair da oficina.
+        const detachScene = scene?.subscribe(() => {
+          if (timer) clearTimeout(timer)
+          timer = setTimeout(() => {
+            timer = null
+            void get().reload()
+          }, CHANGED_RELOAD_DELAY_MS)
+        })
+        if (!persistence.subscribe)
+          return () => {
+            if (timer) clearTimeout(timer)
+            detachScene?.()
+          }
         const unsubscribe = persistence.subscribe((event) => {
           switch (event.type) {
             case 'sync-start':
@@ -338,6 +389,7 @@ export function createGalleryStore(
         })
         return () => {
           if (timer) clearTimeout(timer)
+          detachScene?.()
           unsubscribe()
         }
       },

@@ -9,11 +9,18 @@
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { unlistedReadIssues } from '../core/assetSummary'
 import { COPY } from '../core/copy'
+import { createGallerySceneSource } from '../state/gallerySceneSource'
 import { createGalleryStore } from '../state/galleryStore'
-import { getDefaultMoldaPersistence, type MoldaPersistence } from '../state/persistence'
+import {
+  getDefaultMoldaPersistence,
+  getMoldaGenerationStore,
+  type MoldaPersistence,
+} from '../state/persistence'
 import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
+import { SceneWorkshopHost } from './editor/scene/SceneWorkshopHost'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { ToastProvider, useToast } from './ui/Toast'
 
@@ -24,7 +31,10 @@ export interface MoldaAppProps {
   className?: string
 }
 
-type Screen = { type: 'gallery' } | { type: 'editor'; assetId: string }
+type Screen =
+  | { type: 'gallery' }
+  /** A geração decide o editor, não o `kind`: o documento seguinte é sempre um modelo. */
+  | { type: 'editor'; assetId: string; generation: 1 | 2 }
 
 const EMPTY_ADAPTER: MoldaHostAdapter = {}
 
@@ -39,7 +49,10 @@ function InitialAssetOpener({
   const ready = useGallery((state) => state.loaded && !state.syncing)
   const exists = useGallery((state) => id !== undefined && state.assets.some((a) => a.id === id))
   const { persistence } = useMoldaApp()
-  const unreadable = persistence.getReadIssues?.().some((issue) => issue.id === id) ?? false
+  const listed = useGallery((state) => state.assets)
+  const unreadable = unlistedReadIssues(persistence.getReadIssues?.() ?? [], listed).some(
+    (issue) => issue.id === id,
+  )
   const { showToast } = useToast()
   const done = useRef(false)
   useEffect(() => {
@@ -56,8 +69,26 @@ function InitialAssetOpener({
 export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JSX.Element {
   const adapterValue = adapter ?? EMPTY_ADAPTER
   const [persist] = useState(() => persistence ?? getDefaultMoldaPersistence())
-  const [gallery] = useState(() => createGalleryStore(persist))
+  // A oficina seguinte lê o MESMO banco do namespace: uma criação, uma identidade.
+  const [sceneStore] = useState(() =>
+    adapterValue.sceneWorkshop ? getMoldaGenerationStore() : null,
+  )
+  const [gallery] = useState(() =>
+    createGalleryStore(persist, {
+      ...(sceneStore ? { scene: createGallerySceneSource(sceneStore) } : {}),
+    }),
+  )
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
+  /**
+   * Com a oficina seguinte ligada ela É o editor de modelos: abrir um modelo antigo
+   * por lá o PROMOVE (`openSceneWorkshop`), e promover é escrever o formato novo no
+   * disco. Textura e céu continuam nos editores deles. Sem a capacidade, nada muda.
+   */
+  function open(assetId: string): void {
+    const summary = gallery.getState().getById(assetId)
+    const next = sceneStore && (summary?.formatVersion === 2 || summary?.kind === 'model') ? 2 : 1
+    setScreen({ type: 'editor', assetId, generation: next })
+  }
 
   useEffect(() => {
     void gallery.getState().load()
@@ -88,7 +119,18 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
       <MoldaAppProvider value={context}>
         <ToastProvider>
           {screen.type === 'gallery' ? (
-            <GalleryScreen onOpen={(assetId) => setScreen({ type: 'editor', assetId })} />
+            <GalleryScreen onOpen={open} />
+          ) : screen.generation === 2 && sceneStore ? (
+            <SceneWorkshopHost
+              key={screen.assetId}
+              store={sceneStore}
+              initialId={screen.assetId}
+              theme={adapterValue.theme ?? 'light'}
+              onRouteChange={(id) => {
+                // Sair da criação na oficina volta para a galeria do app, não para a lista dela.
+                if (id === null) setScreen({ type: 'gallery' })
+              }}
+            />
           ) : (
             <EditorScreen
               key={screen.assetId}
@@ -96,10 +138,7 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
               onBack={() => setScreen({ type: 'gallery' })}
             />
           )}
-          <InitialAssetOpener
-            id={adapterValue.initialAssetId}
-            onOpen={(assetId) => setScreen({ type: 'editor', assetId })}
-          />
+          <InitialAssetOpener id={adapterValue.initialAssetId} onOpen={open} />
         </ToastProvider>
       </MoldaAppProvider>
     </div>

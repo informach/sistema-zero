@@ -12,6 +12,17 @@ import {
 } from 'three'
 import { acceleratedRaycast, MeshBVH } from 'three-mesh-bvh'
 
+/**
+ * Duas cópias de three-mesh-bvh convivem no monorepo: o `@react-three/drei` do kids
+ * fixa a 0.8 e o Molda usa a 0.9, e cada uma AUMENTA `BufferGeometry` com o seu próprio
+ * `boundsTree`. Quem compila este arquivo pode ter a outra augmentação vencendo, e a
+ * atribuição direta reprova. Escrever por uma visão local mantém o runtime idêntico
+ * (o `acceleratedRaycast` desta MESMA cópia lê o campo) sem depender de qual venceu.
+ */
+function setBoundsTree(geometry: BufferGeometry, tree: MeshBVH | undefined): void {
+  ;(geometry as unknown as { boundsTree: MeshBVH | undefined }).boundsTree = tree
+}
+
 /** Query-scoped spatial index. No global patches, retained cache, or mutation of render resources. */
 export class SceneOcclusionQuery {
   private readonly material = new MeshBasicMaterial({ side: DoubleSide })
@@ -50,7 +61,7 @@ export class SceneOcclusionQuery {
           if (object.geometry.index) geometry.setIndex(object.geometry.index.clone())
           geometry.setDrawRange(object.geometry.drawRange.start, object.geometry.drawRange.count)
           const options = { indirect: true, setBoundingBox: false, maxLeafTris: 10 }
-          geometry.boundsTree = new MeshBVH(geometry, options)
+          setBoundsTree(geometry, new MeshBVH(geometry, options))
         }
         const proxy = new Mesh(geometry, this.material)
         proxy.matrixAutoUpdate = false
@@ -82,7 +93,7 @@ export class SceneOcclusionQuery {
     this.disposed = true
     this.targets.length = 0
     for (const geometry of this.geometries.values()) {
-      geometry.boundsTree = undefined
+      setBoundsTree(geometry, undefined)
       geometry.dispose()
     }
     this.geometries.clear()

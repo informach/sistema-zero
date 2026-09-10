@@ -138,7 +138,7 @@ describe('galleryStore', () => {
     const copy = await store.getState().duplicate('model-1')
     expect(copy?.name).toBe('nave-2')
     expect(copy?.id).not.toBe('model-1')
-    if (copy?.kind !== 'model') throw new Error('kind')
+    if (!copy || !('parts' in copy) || copy.kind !== 'model') throw new Error('kind')
     const ids = new Set(copy.parts.map((part) => part.id))
     expect(ids.has('body')).toBe(false)
     expect(ids.has('wing')).toBe(false)

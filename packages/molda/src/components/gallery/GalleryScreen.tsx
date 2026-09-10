@@ -5,7 +5,7 @@
  */
 import type { ChangeEvent, JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { MoldaAssetSummary } from '../../core/assetSummary'
+import { type MoldaAssetSummary, unlistedReadIssues } from '../../core/assetSummary'
 import { COPY } from '../../core/copy'
 import {
   EMPTY_GALLERY_FILTERS,
@@ -51,7 +51,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const loading = useGallery((state) => state.loading)
   const syncing = useGallery((state) => state.syncing)
   const error = useGallery((state) => state.error)
-  const readIssues = persistence.getReadIssues?.() ?? []
+  const readIssues = unlistedReadIssues(persistence.getReadIssues?.() ?? [], assets)
   const { showToast } = useToast()
   const [previews] = useState(() => createGalleryPreviews(persistence))
   useEffect(() => () => previews.clear(), [previews])

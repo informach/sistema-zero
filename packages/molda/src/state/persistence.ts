@@ -114,6 +114,27 @@ function storeFor(dbName: string): UseStore {
   return handle
 }
 
+let generationStoreFactory: (() => UseStore) | null = null
+
+/**
+ * Injeta o banco da geração seguinte, no mesmo molde de `setMoldaViewportFactory`:
+ * o mock de `idb-keyval` dos testes não é um `UseStore` chamável, e a persistência
+ * de cena usa transações IndexedDB de verdade. `null` volta ao banco do namespace.
+ */
+export function setMoldaGenerationStoreFactory(factory: (() => UseStore) | null): void {
+  generationStoreFactory = factory
+}
+
+/**
+ * O MESMO banco do namespace corrente, para a geração seguinte abrir os próprios
+ * registros. Não é um segundo inventário: `storedDocumentKey` já resolve as duas
+ * gerações na mesma chave de criação, e é por isso que elas não podem se separar
+ * em bancos diferentes. Não escreve nada por si.
+ */
+export function getMoldaGenerationStore(): UseStore {
+  return generationStoreFactory?.() ?? storeFor(moldaDbNameFor(currentNamespace))
+}
+
 // ── Fila de escrita por banco ───────────────────────────────────────────────
 
 const writeQueues = new Map<string, Promise<unknown>>()

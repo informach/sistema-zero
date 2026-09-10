@@ -1406,6 +1406,20 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Oficina seguinte no app (lote 228): `MoldaHostAdapter.sceneWorkshop`, DESLIGADA por
+  padrão. Ligada, a galeria lista as duas gerações numa lista só (`GallerySceneSource` no
+  `createGalleryStore`) e a oficina É o editor de MODELOS: abrir um modelo antigo o PROMOVE.
+  ⚠️ O discriminador é `summary.formatVersion === 2` (a GERAÇÃO), nunca o `kind`: o
+  documento seguinte é sempre `kind: 'model'`. ⚠️ As duas gerações vivem no MESMO banco
+  (`getMoldaGenerationStore`), porque `storedDocumentKey` resolve as duas na mesma chave.
+  ⚠️ `unlistedReadIssues`: criação que a galeria lista NÃO é arquivo ilegível, senão ela
+  aparece como cartão e como aviso de recuperação ao mesmo tempo. ⚠️ A inscrição de
+  mudanças da cena é assíncrona e o StrictMode a aborta: sem `catch` vira rejeição não
+  tratada. ⚠️⚠️ `three-mesh-bvh` tem DUAS cópias no monorepo (o drei do kids fixa a 0.8,
+  o Molda usa a 0.9) e cada uma aumenta `BufferGeometry` com o seu `boundsTree`: escrever
+  o campo direto reprova o typecheck do KIDS, não o do Molda. Use `setBoundsTree`.
+  Pendem antes de ligar: miniatura da geração nova, ramo v2 da nuvem, "Baixar tudo" e
+  a ponte do Estúdio.
 - Destino da cópia (lote 227): o painel de exportação escolhe entre "Para outros programas"
   (padrão, GLB portátil) e "Para o Estúdio" (`animatedPaint`). ⚠️ O destino faz parte da
   IDENTIDADE do pedido: entrou no `SceneGlbToken` e `readSceneGlbReply` recusa a resposta

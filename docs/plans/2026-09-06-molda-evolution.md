@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 227, destino da cópia na oficina, fases 5/8.**
-Próximo lote: integração pública da oficina no app, fase 3, lote 228.
+**Último lote implementado e verificado: 228, a oficina seguinte dentro do app, fase 3.**
+Próximo lote: miniatura da geração seguinte e ramo v2 da nuvem, fases 3/1, lote 229.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -16,7 +16,7 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | --- | --- | --- |
 | 1 — Segurança e medição | Proteções e migração interna implementadas | Homologação com abas reais, medições em hardware e rollout |
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
-| 3 — Oficina e navegação | Oficina, começo rápido vazio/templates e retomada disponíveis no playground | Integração pública e revisão visual/toque/temas |
+| 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações e promoção ao abrir, verificadas em navegador real | Miniatura da geração nova, nuvem v2, ponte Estúdio e revisão de toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
 | 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Integração pública e homologação |
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
@@ -24,10 +24,10 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.814 testes, zero falhas, 378 arquivos**, tipos, Biome e Vite (1,36 s)
-no lote 227; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.822 testes, zero falhas, 380 arquivos**, tipos, Biome e Vite (1,19 s)
+no lote 228; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
-Build Kids do lote 227: 7,1 s de compilação, 59 páginas, 616 testes. Os cinco testes
+Build Kids do lote 228: 3,9 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
 Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
 `staging` em cinco commits escopados, com todos os gates reexecutados antes.
@@ -60,11 +60,12 @@ evidências e limitações de cada lote. Atualizar ambos ao encerrar um lote, ma
 os critérios de aceite das fases separados das tarefas já implementadas.
 
 Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
-e abra `http://127.0.0.1:5198/?oficina=nova`. O playground usa armazenamento local
-separado; não é a ativação pública do editor nem do formato novo na nuvem.
-Próxima frente de implementação: a integração pública da oficina no app do kids, com a
-galeria enxergando as duas gerações e a ponte do Estúdio roteando o documento v2, sem
-ativar o formato público antes do rollout de guardas.
+e abra `http://127.0.0.1:5198/?oficina=nova`. Para ver a INTEGRAÇÃO no app, com a galeria
+enxergando as duas gerações, use `?oficina=app`. Nenhum dos dois é a ativação pública do
+editor nem do formato novo na nuvem: a capacidade `sceneWorkshop` do host nasce desligada.
+Próxima frente de implementação: a miniatura da geração seguinte e o ramo v2 da nuvem,
+que são os dois pré-requisitos de ligar a capacidade sem a criança perder nada; depois a
+ponte do Estúdio, os leitores compatíveis e só então o escritor novo.
 
 ## Decisões aprovadas
 
@@ -4997,13 +4998,33 @@ conversão compartilhada continuam abertos na fase 5.
   Kids passaram. A oficina ainda entrega a cópia como download: levar direto à biblioteca
   do Estúdio depende de rotear `studio-library` para o v2, na integração pública.
 
-### Próximo lote 228: integração pública da oficina no app
+### Lote 228: a oficina seguinte dentro do app — verificado
 
-- O `EditorScreen` despacha por `kind`, e o documento v2 é sempre `kind: 'model'`. O
-  discriminador tem que passar a ser a GERAÇÃO de armazenamento, não o tipo da criação.
-- Galeria precisa enxergar as duas gerações; nuvem e ponte do Estúdio precisam do ramo v2.
-- Nada disso ativa o formato público: leitores primeiro, escritor depois, na ordem do
-  rollout documentado.
+- O discriminador passa a ser a GERAÇÃO de armazenamento, não o `kind`: o documento
+  seguinte é sempre um modelo, então o tipo da criação não serve mais para escolher editor.
+- Uma lista só para a criança, com o `galleryStore` continuando sem saber o que é um
+  documento de cena: colaborador opcional, mutação para a persistência dona, nome único
+  conferido nas duas gerações. Capacidade `sceneWorkshop` do host, DESLIGADA por padrão.
+- Com ela ligada, a oficina É o editor de modelos: abrir um modelo antigo o promove.
+- Três defeitos apareceram só no navegador, e nenhum deles em teste: a mesma criação
+  aparecia como cartão E como aviso de "versão mais nova"; a inscrição de mudanças da cena
+  derrubava uma rejeição não tratada a cada montagem do StrictMode; e o kids nem compilava,
+  porque referenciar a oficina arrasta o índice espacial e o monorepo tem DUAS cópias de
+  `three-mesh-bvh` (o drei do kids fixa a 0.8) aumentando `BufferGeometry` de formas
+  diferentes. Review `public-workshop-l228.md`.
+- Integral **2.822/0**, zero avisos act, tipos do Molda e do Kids, Biome, Vite e build do
+  Kids passaram. No navegador: criar um modelo pelo fluxo antigo abre a oficina já
+  promovida, voltar traz para a galeria do app, console sem um único erro, e as chaves do
+  IndexedDB confirmam original preservado e as duas lápides.
+- Miniatura, nuvem v2, "Baixar tudo" e ponte do Estúdio continuam abertos: são eles que
+  decidem quando a capacidade pode ser ligada sem a criança perder nada.
+
+### Próximo lote 229: miniatura da geração seguinte e ramo v2 da nuvem
+
+- Criação da geração nova aparece com o cubo de reserva na galeria: perda visível.
+- `assetToCloudJson` só serializa v1, então promover hoje tira a criação do espelho da
+  nuvem. Ligar a capacidade antes disso seria perder o backup da criança.
+- Só depois disso vale falar em leitores compatíveis e, por último, no escritor novo.
 
 ### Situação do plano após esses lotes
 

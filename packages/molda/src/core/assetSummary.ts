@@ -11,6 +11,12 @@ export interface MoldaAssetSummary {
   updatedAt: number
   bytes: number
   thumbDataUrl: string | null
+  /**
+   * Ausente = geração v1. A galeria usa isto para abrir cada criação no editor
+   * dela e para despachar renomear/duplicar/apagar à persistência certa. O leitor
+   * v1 nunca produz esse campo: quem o preenche é a geração seguinte.
+   */
+  formatVersion?: 2
 }
 
 export function summarizeAsset(asset: MoldaAsset): MoldaAssetSummary {
@@ -66,4 +72,17 @@ export function readAssetSummary(raw: unknown, id: string): MoldaAssetSummary | 
     bytes: value.bytes,
     thumbDataUrl: value.thumbDataUrl,
   }
+}
+
+/**
+ * Uma criação que a galeria lista e abre NÃO é um arquivo ilegível, mesmo que o
+ * leitor v1 não saiba lê-la: quem sabe é a geração dona dela. Sem este filtro a
+ * mesma criação aparece duas vezes, uma como cartão e outra como aviso de recuperação.
+ */
+export function unlistedReadIssues<T extends { id: string }>(
+  issues: readonly T[],
+  assets: readonly MoldaAssetSummary[],
+): T[] {
+  const listed = new Set(assets.map((asset) => asset.id))
+  return issues.filter((issue) => !listed.has(issue.id))
 }
