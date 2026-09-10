@@ -1406,6 +1406,11 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Peso da primeira tela (lote 236): ⚠️ `SceneWorkshopHost` é carregado sob demanda no
+  `MoldaApp` (`lazy` + `Suspense`). Importá-lo estaticamente arrasta os 159 componentes da
+  oficina para o bundle de ENTRADA: 364 → 568 kB, medido. Sob demanda a entrada é 351,55 kB.
+  O aviso do chunk Three (579,29 kB) fica: ele não entra na primeira carga (confira os
+  `modulepreload` do index.html) e o teto NÃO deve ser aumentado para escondê-lo.
 - Avisos act (lote 235, aberto desde o 203): a causa era o TEMPO do teste, não a ordem.
   ⚠️⚠️ `installFakeViewport()` devolve foto por PADRÃO, e com ela cada montagem do editor
   de modelos agenda um `setThumb` 700 ms depois; teste mais lento que isso recebe a

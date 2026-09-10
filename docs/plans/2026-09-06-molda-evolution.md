@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 235, a causa dos avisos act, fase 2.**
-Próximo lote: o chunk Three acima de 500 kB e as lacunas das fases 4 e 8, lote 236.
+**Último lote implementado e verificado: 236, o peso da primeira tela, fase 2.**
+Próximo lote: as lacunas das fases 4 e 8, lote 237.
 A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
@@ -34,7 +34,9 @@ Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados
 `staging` em cinco commits escopados, com todos os gates reexecutados antes.
 Desde o lote 232 a suíte e2e roda em Chromium real: **14 de 14 specs passam**, incluindo
 tres novas da oficina integrada. Testes automatizados continuam sem homologar GPU, toque
-real ou usabilidade infantil; o chunk Three ainda gera aviso de tamanho (>500 kB).
+real ou usabilidade infantil. O chunk Three (579,29 kB) ainda gera o aviso de tamanho, e o
+teto continua onde estava: ele NÃO entra na primeira carga, e o que o aviso protege já está
+protegido (lote 236).
 A falha intermitente de foco registrada no lote 148 reapareceu no lote 149 e foi
 reproduzida: o DOM atualizava antes da restauração em efeito passivo. Correção no
 ciclo de vida, regressão determinística, 75 execuções focais e integral passaram;
@@ -5124,9 +5126,21 @@ conversão compartilhada continuam abertos na fase 5.
 - Integral **2.836/0**, zero avisos act; três execuções integrais seguidas antes disso já
   vinham limpas. A contagem sozinha não seria prova: quem sustenta é a sonda.
 
-### Próximo lote 236: o chunk Three e as lacunas das fases 4 e 8
+### Lote 236: o peso da primeira tela e o aviso do chunk Three — verificado
 
-- O chunk Three de 579 kB passa do aviso de 500 kB desde o lote 1, sem levantar o teto.
+- **Regressão minha, achada medindo**: o lote 228 importou a oficina estaticamente no
+  `MoldaApp` e arrastou os 159 componentes dela para o bundle de entrada, que saltou de
+  364 kB para 568 kB. A criança baixava a oficina só para ver a galeria.
+- Carregada sob demanda, a entrada caiu para **351,55 kB** (gzip 113,57 kB), menor do que
+  antes da integração.
+- O aviso do Three foi medido antes de tentar dividir: ele NÃO está entre os 13
+  `modulepreload` da primeira carga, os addons já são pedaços próprios, e o que sobra é o
+  módulo único do Three depois do tree-shaking. O teto não foi aumentado: o aviso é um
+  sinal verdadeiro, e o que ele protege já está protegido. Review `bundle-weight-l236.md`.
+- Integral **2.836/0**, 14/14 e2e, tipos, Biome e build do Kids passaram.
+
+### Próximo lote 237: as lacunas das fases 4 e 8
+
 - Fase 4: chanfro em mais de uma quina e caminhos abertos.
 - Fase 8: ampliar clipes, camadas e PBR do bbmodel; compatibilidade glTF que ficou aberta.
 

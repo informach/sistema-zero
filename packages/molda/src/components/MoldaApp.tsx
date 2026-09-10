@@ -8,7 +8,7 @@
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { unlistedReadIssues } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { createGallerySceneSource } from '../state/gallerySceneSource'
@@ -20,7 +20,7 @@ import {
 } from '../state/persistence'
 import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
-import { SceneWorkshopHost } from './editor/scene/SceneWorkshopHost'
+
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { ToastProvider, useToast } from './ui/Toast'
 
@@ -37,6 +37,17 @@ type Screen =
   | { type: 'editor'; assetId: string; generation: 1 | 2 }
 
 const EMPTY_ADAPTER: MoldaHostAdapter = {}
+
+/**
+ * A oficina da geração seguinte é o pedaço mais pesado do pacote. Estática, ela entrava
+ * no bundle inicial e a criança baixava a oficina inteira só para ver a galeria; carregada
+ * sob demanda, ela só chega quando uma criação abre.
+ */
+const SceneWorkshopHost = lazy(() =>
+  import('./editor/scene/SceneWorkshopHost').then((module) => ({
+    default: module.SceneWorkshopHost,
+  })),
+)
 
 /** Abre a criação do deep link assim que a galeria carregar (e a nuvem assentar). */
 function InitialAssetOpener({
@@ -120,19 +131,21 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
           {screen.type === 'gallery' ? (
             <GalleryScreen onOpen={open} />
           ) : screen.generation === 2 ? (
-            <SceneWorkshopHost
-              key={screen.assetId}
-              store={sceneStore}
-              initialId={screen.assetId}
-              theme={adapterValue.theme ?? 'light'}
-              {...(adapterValue.resyncToStudio
-                ? { resyncToStudio: adapterValue.resyncToStudio }
-                : {})}
-              onRouteChange={(id) => {
-                // Sair da criação na oficina volta para a galeria do app, não para a lista dela.
-                if (id === null) setScreen({ type: 'gallery' })
-              }}
-            />
+            <Suspense fallback={<p role="status">{COPY.scene.starting}</p>}>
+              <SceneWorkshopHost
+                key={screen.assetId}
+                store={sceneStore}
+                initialId={screen.assetId}
+                theme={adapterValue.theme ?? 'light'}
+                {...(adapterValue.resyncToStudio
+                  ? { resyncToStudio: adapterValue.resyncToStudio }
+                  : {})}
+                onRouteChange={(id) => {
+                  // Sair da criação na oficina volta para a galeria do app, não para a lista dela.
+                  if (id === null) setScreen({ type: 'gallery' })
+                }}
+              />
+            </Suspense>
           ) : (
             <EditorScreen
               key={screen.assetId}
