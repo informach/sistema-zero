@@ -302,76 +302,13 @@ export function SceneWorkshop({
           {copy.animationMode}
         </Button>
       </fieldset>
-      {mode === 'animation' ? (
+      {mode === 'animation' && (
         <DeferredModule
           load={loadClips}
           props={{ workshop }}
           onBack={() => changeMode('model')}
           backLabel={copy.glbExport.close}
         />
-      ) : (
-        <div className="flex flex-wrap gap-2 border-b border-mld-border p-2">
-          <SceneCreateMenu run={run} />
-          <Button
-            ref={faceToggle}
-            className="text-sm"
-            disabled={!workshop.components.canEdit}
-            aria-pressed={workshop.components.selection !== null}
-            onClick={() =>
-              workshop.components.selection ? closeFaces() : workshop.components.open()
-            }
-          >
-            {workshop.components.selection
-              ? copy.finishFaces
-              : selected.length === 1 && workshop.index.skinsByNode.has(selected[0]!)
-                ? copy.editSkinBase
-                : copy.editFaces}
-          </Button>
-          <Button
-            className="text-sm"
-            disabled={!canConvert}
-            title={copy.convertMeshHint}
-            onClick={() => run((source) => convertSceneNodesToMesh(source, selected))}
-          >
-            {copy.convertMesh}
-          </Button>
-          <Button
-            className="text-sm"
-            disabled={!selected.length}
-            onClick={() =>
-              run(
-                (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
-                'created',
-              )
-            }
-          >
-            {copy.group}
-          </Button>
-          <Button
-            className="text-sm"
-            disabled={
-              !selected.length ||
-              selected.some((id) => workshop.index.scene.nodes.get(id)?.kind !== 'group')
-            }
-            onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
-          >
-            {copy.ungroup}
-          </Button>
-          <Button
-            className="text-sm"
-            disabled={!selected.length}
-            onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
-          >
-            {copy.duplicate}
-          </Button>
-          <Button
-            className="text-sm"
-            disabled={!selected.length || workshop.components.selection !== null}
-            onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-          >
-            {copy.remove}
-          </Button>
-        </div>
       )}
       {(workshop.message || (!workshop.paint.session && workshop.paint.error)) && (
         <p
@@ -382,7 +319,71 @@ export function SceneWorkshop({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
+        {mode !== 'animation' && (
+          <div className="flex w-52 shrink-0 flex-col gap-1 overflow-y-auto border-mld-border border-r p-2">
+            <SceneCreateMenu run={run} />
+            <Button
+              ref={faceToggle}
+              className="text-sm"
+              disabled={!workshop.components.canEdit}
+              aria-pressed={workshop.components.selection !== null}
+              onClick={() =>
+                workshop.components.selection ? closeFaces() : workshop.components.open()
+              }
+            >
+              {workshop.components.selection
+                ? copy.finishFaces
+                : selected.length === 1 && workshop.index.skinsByNode.has(selected[0]!)
+                  ? copy.editSkinBase
+                  : copy.editFaces}
+            </Button>
+            <Button
+              className="text-sm"
+              disabled={!canConvert}
+              title={copy.convertMeshHint}
+              onClick={() => run((source) => convertSceneNodesToMesh(source, selected))}
+            >
+              {copy.convertMesh}
+            </Button>
+            <Button
+              className="text-sm"
+              disabled={!selected.length}
+              onClick={() =>
+                run(
+                  (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
+                  'created',
+                )
+              }
+            >
+              {copy.group}
+            </Button>
+            <Button
+              className="text-sm"
+              disabled={
+                !selected.length ||
+                selected.some((id) => workshop.index.scene.nodes.get(id)?.kind !== 'group')
+              }
+              onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
+            >
+              {copy.ungroup}
+            </Button>
+            <Button
+              className="text-sm"
+              disabled={!selected.length}
+              onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
+            >
+              {copy.duplicate}
+            </Button>
+            <Button
+              className="text-sm"
+              disabled={!selected.length || workshop.components.selection !== null}
+              onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
+            >
+              {copy.remove}
+            </Button>
+          </div>
+        )}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <SceneCanvas
             onViewport={setExportViewport}
             mode={mode}

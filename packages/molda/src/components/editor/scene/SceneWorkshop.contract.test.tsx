@@ -26,7 +26,7 @@ import { addScenePrimitive } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
 import { createDocumentEditorStore } from '../../../state/editorStore'
-import { controlInventory, openEveryDisclosure } from '../../../testing/domContract'
+import { controlInventory, frontControls, openEveryDisclosure } from '../../../testing/domContract'
 import { makeModel } from '../../../testing/fixtures'
 import { sceneViewportProbe } from '../../../testing/sceneViewportProbe'
 import { SceneWorkshop } from './SceneWorkshop'
@@ -153,23 +153,44 @@ describe('inventário da oficina: o que a criança alcança', () => {
   /**
    * A CATRACA da queixa que originou o redesenho: "hoje é tudo à vista por igual".
    *
-   * Medido em 10/09/2026, antes de qualquer mudança de layout: **44 controles** com a oficina
-   * recém-aberta e **67** com uma peça escolhida. O alvo do redesenho é ≤30 com uma peça
-   * escolhida. Estes tetos só descem: cada lote que hierarquiza baixa o número aqui, e nada
-   * pode empurrá-lo de volta em silêncio.
+   * São DOIS números, e a diferença entre eles é o redesenho inteiro:
    *
-   * ⚠️ Isto conta o que está MONTADO, não o que está visível — o happy-dom mostra `<details>`
-   * fechado. Um lote que só recolhe controles não muda este número, e é por isso que ele
-   * sozinho não prova hierarquização: ele prova que ninguém ACRESCENTOU mais coisa à tela.
+   * - **montados** (`controlInventory`) é tudo o que existe na tela, aberto ou recolhido.
+   *   Este só pode subir quando um controle NOVO entra, e o aumento tem de ser explicado
+   *   aqui. Ele é a rede contra "acrescentaram mais coisa".
+   * - **encarados** (`frontControls`) é o que a criança vê ao chegar: os montados menos o
+   *   que está atrás de um `<details>` fechado. Este é o número da queixa, e ele SÓ DESCE.
+   *
+   * Medido em 10/09/2026, antes de qualquer mudança de layout: 44 montados com a oficina
+   * recém-aberta e 67 com uma peça escolhida — e, como nada era recolhido, encarados eram
+   * os mesmos 44 e 67. É literalmente o "tudo à vista por igual" dela, em número.
+   *
+   * ⚠️ Montados subiram para 46/69 no lote do palco, e os dois a mais são exatamente os
+   * dois `<summary>` novos ("Vista: ..." e "Mais ajustes do palco"). Um gatilho de
+   * revelação É um controle e tem de aparecer aqui; o que ele comprou foi tirar oito
+   * controles da frente da criança. Nenhum comando foi removido — quem prova isso é o
+   * teste de inventário em duas fases, logo acima.
+   *
+   * Alvo do redesenho: **≤30 encarados** com uma peça escolhida.
    */
-  test('a quantidade de controles na tela não cresce', () => {
+  test('a quantidade de controles na tela não cresce, e a que a criança encara desce', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(44)
+    const encaradosVazio = frontControls(vazio.view.container)
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(46)
+    expect(
+      encaradosVazio.length,
+      `encarados na abertura: ${encaradosVazio.join(' | ')}`,
+    ).toBeLessThanOrEqual(33)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(67)
+    const encaradosPeca = frontControls(comPeca.view.container)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(69)
+    expect(
+      encaradosPeca.length,
+      `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
+    ).toBeLessThanOrEqual(47)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

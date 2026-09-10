@@ -3,6 +3,7 @@ import { screen, within } from '@testing-library/react'
 import {
   accessibleName,
   controlInventory,
+  frontControls,
   openDisclosure,
   openEveryDisclosure,
   reachableControls,
@@ -149,5 +150,38 @@ describe('costuras do redesenho da interface', () => {
     const host = render('<button type="button"><svg /></button><input type="hidden" name="id" />')
     expect(controlInventory(host)).toEqual([])
     expect(screen.queryAllByRole('button')).toHaveLength(1)
+  })
+
+  /**
+   * O contraponto do primeiro teste. Aquele prova que a consulta por papel NÃO enxerga
+   * hierarquização; este prova que `frontControls` enxerga — estruturalmente, sem CSS.
+   */
+  test('frontControls conta o que a criança encara: o summary fica, o que está atrás sai', () => {
+    const host = render(`
+      <button type="button">Mostrar grade</button>
+      <details><summary>Vista: Livre</summary>
+        <button type="button">Frente</button>
+        <button type="button">Cima</button>
+      </details>`)
+    // O inventário inteiro continua vendo tudo: nada foi desmontado.
+    expect(controlInventory(host)).toHaveLength(4)
+    // O que a criança encara são dois: o botão solto e o convite para abrir a lista.
+    expect(frontControls(host)).toEqual(['button: Mostrar grade', 'button: Vista: Livre'])
+
+    const details = host.querySelector('details') as HTMLDetailsElement
+    details.open = true
+    // Aberto, os quatro voltam a ser encarados: recolher escondeu, não removeu.
+    expect(frontControls(host)).toHaveLength(4)
+  })
+
+  /** Aninhado: o de fora fechado esconde o summary do de dentro. */
+  test('frontControls respeita disclosure dentro de disclosure', () => {
+    const host = render(`
+      <details><summary>Mais ajustes do palco</summary>
+        <details open><summary>Passo do movimento</summary>
+          <button type="button">Livre</button>
+        </details>
+      </details>`)
+    expect(frontControls(host)).toEqual(['button: Mais ajustes do palco'])
   })
 })
