@@ -1,0 +1,1617 @@
+# CPU Profile
+
+| Duration | Samples | Interval | Functions |
+|----------|---------|----------|----------|
+| 3.33s | 462 | 1.0ms | 153 |
+
+**Top 10:** `structuredClone` 12.9%, `indexSceneSkins` 8.5%, `deepEquals` 5.4%, `cloneObject` 5.2%, `indexSceneDocument` 4.9%, `indexMeshEdges` 4.5%, `indexSceneSkins` 3.5%, `(anonymous)` 2.8%, `map` 2.8%, `stringify` 2.7%
+
+## Hot Functions (Self Time)
+
+| Self% | Self | Total% | Total | Function | Location |
+|------:|-----:|-------:|------:|----------|----------|
+| 12.9% | 432.3ms | 12.9% | 432.3ms | `structuredClone` | `[native code]` |
+| 8.5% | 284.1ms | 8.5% | 284.1ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:71` |
+| 5.4% | 182.2ms | 5.4% | 182.2ms | `deepEquals` | `[native code]` |
+| 5.2% | 173.2ms | 5.2% | 173.2ms | `cloneObject` | `[native code]` |
+| 4.9% | 163.4ms | 4.9% | 163.4ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:24` |
+| 4.5% | 152.2ms | 4.5% | 152.2ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:37` |
+| 3.5% | 117.9ms | 3.5% | 117.9ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:55` |
+| 2.8% | 96.5ms | 8.7% | 290.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:66` |
+| 2.8% | 96.4ms | 36.2% | 1.20s | `map` | `[native code]` |
+| 2.7% | 92.2ms | 2.7% | 92.2ms | `stringify` | `[native code]` |
+| 2.6% | 88.3ms | 2.6% | 88.3ms | `values` | `[native code]` |
+| 2.5% | 85.5ms | 2.5% | 85.5ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:31` |
+| 2.3% | 77.9ms | 2.3% | 77.9ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:63` |
+| 2.3% | 77.6ms | 2.3% | 77.6ms | `fromEntries` | `[native code]` |
+| 1.9% | 65.1ms | 1.9% | 65.1ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:65` |
+| 1.8% | 62.0ms | 1.8% | 62.0ms | `record` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` |
+| 1.8% | 60.4ms | 1.8% | 60.4ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:32` |
+| 1.6% | 53.3ms | 1.6% | 53.3ms | `hypot` | `[native code]` |
+| 1.4% | 48.1ms | 1.4% | 48.1ms | `meshEdgeKey` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:5` |
+| 1.4% | 47.4ms | 1.4% | 47.4ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:39` |
+| 1.3% | 44.8ms | 1.3% | 44.8ms | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:42` |
+| 1.0% | 36.3ms | 1.0% | 36.3ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:41` |
+| 0.9% | 32.5ms | 0.9% | 32.5ms | `readSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:6` |
+| 0.9% | 31.8ms | 0.9% | 31.8ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:46` |
+| 0.9% | 31.8ms | 0.9% | 31.8ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:27` |
+| 0.9% | 31.2ms | 0.9% | 31.2ms | `entries` | `[native code]` |
+| 0.9% | 31.0ms | 0.9% | 31.0ms | `max` | `[native code]` |
+| 0.9% | 30.9ms | 0.9% | 30.9ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:66` |
+| 0.9% | 30.8ms | 0.9% | 30.8ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:83` |
+| 0.9% | 29.9ms | 1.8% | 61.0ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:30` |
+| 0.8% | 29.6ms | 0.8% | 29.6ms | `number` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:61` |
+| 0.8% | 29.0ms | 0.8% | 29.0ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:69` |
+| 0.8% | 29.0ms | 0.8% | 29.0ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:84` |
+| 0.8% | 29.0ms | 1.3% | 45.7ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:68` |
+| 0.8% | 28.1ms | 0.8% | 28.1ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:91` |
+| 0.8% | 27.5ms | 1.5% | 52.2ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:29` |
+| 0.8% | 27.3ms | 0.8% | 27.3ms | `push` | `[native code]` |
+| 0.7% | 24.6ms | 0.7% | 24.6ms | `min` | `[native code]` |
+| 0.6% | 23.1ms | 2.0% | 69.4ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:11` |
+| 0.6% | 20.2ms | 0.6% | 22.0ms | `id` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:50` |
+| 0.5% | 17.5ms | 0.7% | 24.3ms | `parseModule` | `[native code]` |
+| 0.5% | 17.1ms | 0.5% | 17.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:14` |
+| 0.4% | 16.6ms | 0.4% | 16.6ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:92` |
+| 0.4% | 16.5ms | 0.6% | 20.0ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:94` |
+| 0.4% | 15.9ms | 0.4% | 15.9ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:70` |
+| 0.4% | 15.3ms | 0.4% | 16.3ms | `tuple` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:81` |
+| 0.4% | 15.3ms | 0.4% | 15.3ms | `makeSceneGridGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:10` |
+| 0.4% | 15.1ms | 0.4% | 15.1ms | `number` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` |
+| 0.4% | 15.1ms | 0.4% | 15.1ms | `readSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts` |
+| 0.4% | 15.0ms | 0.4% | 15.0ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:28` |
+| 0.4% | 14.8ms | 0.4% | 14.8ms | `transformPoint` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts` |
+| 0.4% | 14.2ms | 0.4% | 14.2ms | `savedWeight` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:83` |
+| 0.4% | 14.2ms | 0.4% | 14.2ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:159` |
+| 0.4% | 13.8ms | 4.6% | 154.1ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:35` |
+| 0.3% | 13.0ms | 0.7% | 26.1ms | `link` | `[native code]` |
+| 0.3% | 11.2ms | 0.3% | 11.2ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:83` |
+| 0.2% | 6.8ms | 0.2% | 6.8ms | `symbolToStringify` | `node:os` |
+| 0.1% | 3.5ms | 0.1% | 3.5ms | `set` | `[native code]` |
+| 0.0% | 2.1ms | 0.8% | 29.5ms | `async (anonymous)` | `[native code]` |
+| 0.0% | 2.0ms | 0.0% | 2.0ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:38` |
+| 0.0% | 1.9ms | 0.0% | 1.9ms | `transformPoint` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts:166` |
+| 0.0% | 1.7ms | 0.0% | 1.7ms | `/^[A-Za-z0-9_:-]+$/` | `[native code]` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:138` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `migrateLegacyModel` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\migrateLegacy.ts:180` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:68` |
+| 0.0% | 999us | 0.0% | 999us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:82` |
+| 0.0% | 997us | 0.0% | 1.9ms | `from` | `[native code]` |
+| 0.0% | 989us | 0.4% | 14.9ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:93` |
+| 0.0% | 970us | 0.0% | 970us | `resolve` | `[native code]` |
+| 0.0% | 965us | 0.0% | 965us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:116` |
+| 0.0% | 950us | 0.0% | 950us | `record` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:29` |
+| 0.0% | 925us | 0.8% | 29.6ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:15` |
+| 0.0% | 913us | 0.0% | 913us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:135` |
+| 0.0% | 887us | 0.0% | 887us | `makeSceneGridGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:14` |
+| 0.0% | 866us | 0.0% | 866us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:65` |
+| 0.0% | 858us | 0.0% | 858us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:89` |
+| 0.0% | 848us | 0.0% | 848us | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts` |
+
+## Call Tree (Total Time)
+
+| Total% | Total | Self% | Self | Function | Location |
+|-------:|------:|------:|-----:|----------|----------|
+| 100.0% | 6.57s | 0.0% | 0us | `moduleEvaluation` | `[native code]` |
+| 99.3% | 3.30s | 0.0% | 0us | `async loadAndEvaluateModule` | `[native code]` |
+| 98.7% | 3.28s | 0.0% | 0us | `evaluate` | `[native code]` |
+| 36.2% | 1.20s | 2.8% | 96.4ms | `map` | `[native code]` |
+| 23.2% | 773.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:77` |
+| 22.7% | 758.4ms | 0.0% | 0us | `sample` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:100` |
+| 22.7% | 758.4ms | 0.0% | 0us | `query` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:118` |
+| 21.6% | 721.8ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:53` |
+| 19.6% | 653.4ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:71` |
+| 19.6% | 653.4ms | 0.0% | 0us | `createSceneSkinPaintStroke` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:45` |
+| 15.3% | 511.2ms | 0.0% | 0us | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:18` |
+| 12.9% | 432.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:56` |
+| 12.9% | 432.3ms | 12.9% | 432.3ms | `structuredClone` | `[native code]` |
+| 11.8% | 394.1ms | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:81` |
+| 10.9% | 364.2ms | 0.0% | 0us | `readSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:29` |
+| 10.2% | 342.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:90` |
+| 9.5% | 319.4ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:64` |
+| 8.7% | 290.1ms | 2.8% | 96.5ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:66` |
+| 8.5% | 284.1ms | 8.5% | 284.1ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:71` |
+| 8.2% | 275.5ms | 0.0% | 0us | `createSceneSkin` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinCommands.ts:60` |
+| 7.7% | 259.7ms | 0.0% | 0us | `bindSceneSkin` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:51` |
+| 6.2% | 208.5ms | 0.0% | 0us | `readNormalizedSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:7` |
+| 6.1% | 203.6ms | 0.0% | 0us | `sceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:50` |
+| 5.9% | 197.5ms | 0.0% | 0us | `readSceneSkinBindings` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:15` |
+| 5.4% | 182.2ms | 5.4% | 182.2ms | `deepEquals` | `[native code]` |
+| 5.4% | 182.2ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:107` |
+| 5.2% | 173.2ms | 5.2% | 173.2ms | `cloneObject` | `[native code]` |
+| 5.2% | 173.2ms | 0.0% | 0us | `patchSceneSkinWeights` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeightPatch.ts:38` |
+| 5.2% | 173.2ms | 0.0% | 0us | `commit` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:162` |
+| 5.0% | 169.0ms | 0.0% | 0us | `commit` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:175` |
+| 5.0% | 166.6ms | 0.0% | 0us | `readSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:319` |
+| 4.9% | 163.4ms | 4.9% | 163.4ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:24` |
+| 4.8% | 160.8ms | 0.0% | 0us | `readSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:9` |
+| 4.6% | 156.2ms | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:86` |
+| 4.6% | 154.1ms | 0.4% | 13.8ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:35` |
+| 4.5% | 152.2ms | 4.5% | 152.2ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:37` |
+| 4.0% | 135.5ms | 0.0% | 0us | `readSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:331` |
+| 3.5% | 117.9ms | 3.5% | 117.9ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:55` |
+| 2.7% | 92.2ms | 2.7% | 92.2ms | `stringify` | `[native code]` |
+| 2.6% | 88.3ms | 2.6% | 88.3ms | `values` | `[native code]` |
+| 2.5% | 85.5ms | 2.5% | 85.5ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:31` |
+| 2.3% | 79.1ms | 0.0% | 0us | `readSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:354` |
+| 2.3% | 77.9ms | 2.3% | 77.9ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:63` |
+| 2.3% | 77.6ms | 2.3% | 77.6ms | `fromEntries` | `[native code]` |
+| 2.0% | 69.4ms | 0.6% | 23.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:11` |
+| 1.9% | 65.1ms | 1.9% | 65.1ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:65` |
+| 1.8% | 62.0ms | 1.8% | 62.0ms | `record` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` |
+| 1.8% | 61.1ms | 0.0% | 0us | `readSceneGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:123` |
+| 1.8% | 61.0ms | 0.9% | 29.9ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:30` |
+| 1.8% | 60.4ms | 1.8% | 60.4ms | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:32` |
+| 1.8% | 60.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:134` |
+| 1.7% | 58.8ms | 0.0% | 0us | `readSceneGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:159` |
+| 1.6% | 53.3ms | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:87` |
+| 1.6% | 53.3ms | 1.6% | 53.3ms | `hypot` | `[native code]` |
+| 1.5% | 52.2ms | 0.8% | 27.5ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:29` |
+| 1.5% | 50.9ms | 0.0% | 0us | `finishSceneCommand` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\commandContext.ts:74` |
+| 1.4% | 48.1ms | 1.4% | 48.1ms | `meshEdgeKey` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:5` |
+| 1.4% | 47.4ms | 1.4% | 47.4ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:39` |
+| 1.3% | 46.3ms | 0.0% | 0us | `readSceneSkinBindings` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:17` |
+| 1.3% | 45.7ms | 0.8% | 29.0ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:68` |
+| 1.3% | 45.6ms | 0.0% | 0us | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:67` |
+| 1.3% | 45.2ms | 0.0% | 0us | `sample` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:114` |
+| 1.3% | 45.2ms | 0.0% | 0us | `flatIntoArrayWithCallback` | `[native code]` |
+| 1.3% | 44.8ms | 1.3% | 44.8ms | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:42` |
+| 1.3% | 44.8ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:63` |
+| 1.2% | 42.6ms | 0.0% | 0us | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:14` |
+| 1.2% | 42.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:57` |
+| 1.0% | 36.3ms | 1.0% | 36.3ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:41` |
+| 0.9% | 32.5ms | 0.9% | 32.5ms | `readSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:6` |
+| 0.9% | 31.8ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:45` |
+| 0.9% | 31.8ms | 0.9% | 31.8ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:46` |
+| 0.9% | 31.8ms | 0.9% | 31.8ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:27` |
+| 0.9% | 31.2ms | 0.9% | 31.2ms | `entries` | `[native code]` |
+| 0.9% | 31.0ms | 0.9% | 31.0ms | `max` | `[native code]` |
+| 0.9% | 30.9ms | 0.9% | 30.9ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:66` |
+| 0.9% | 30.8ms | 0.9% | 30.8ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:83` |
+| 0.9% | 30.6ms | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:85` |
+| 0.9% | 30.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:85` |
+| 0.9% | 30.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:126` |
+| 0.8% | 29.6ms | 0.0% | 925us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:15` |
+| 0.8% | 29.6ms | 0.8% | 29.6ms | `number` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:61` |
+| 0.8% | 29.5ms | 0.0% | 2.1ms | `async (anonymous)` | `[native code]` |
+| 0.8% | 29.0ms | 0.8% | 29.0ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:69` |
+| 0.8% | 29.0ms | 0.8% | 29.0ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:84` |
+| 0.8% | 28.1ms | 0.8% | 28.1ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:91` |
+| 0.8% | 27.3ms | 0.8% | 27.3ms | `push` | `[native code]` |
+| 0.8% | 27.2ms | 0.0% | 0us | `tuple` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:83` |
+| 0.8% | 27.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:141` |
+| 0.7% | 26.1ms | 0.3% | 13.0ms | `link` | `[native code]` |
+| 0.7% | 24.6ms | 0.7% | 24.6ms | `min` | `[native code]` |
+| 0.7% | 24.3ms | 0.5% | 17.5ms | `parseModule` | `[native code]` |
+| 0.6% | 22.0ms | 0.6% | 20.2ms | `id` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:50` |
+| 0.6% | 20.0ms | 0.4% | 16.5ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:94` |
+| 0.6% | 20.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:12` |
+| 0.5% | 17.3ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:44` |
+| 0.5% | 17.3ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:161` |
+| 0.5% | 17.1ms | 0.5% | 17.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:14` |
+| 0.5% | 16.7ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:136` |
+| 0.4% | 16.6ms | 0.4% | 16.6ms | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:92` |
+| 0.4% | 16.3ms | 0.4% | 15.3ms | `tuple` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:81` |
+| 0.4% | 16.2ms | 0.0% | 0us | `indexSceneDocument` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:27` |
+| 0.4% | 16.1ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:41` |
+| 0.4% | 15.9ms | 0.4% | 15.9ms | `point` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:70` |
+| 0.4% | 15.8ms | 0.0% | 0us | `bindSceneSkin` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:37` |
+| 0.4% | 15.8ms | 0.0% | 0us | `readSceneSkinBindings` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:16` |
+| 0.4% | 15.5ms | 0.0% | 0us | `readSceneGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:158` |
+| 0.4% | 15.3ms | 0.4% | 15.3ms | `makeSceneGridGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:10` |
+| 0.4% | 15.1ms | 0.4% | 15.1ms | `number` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` |
+| 0.4% | 15.1ms | 0.0% | 0us | `paintSceneSkinWeight` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaintWeights.ts:18` |
+| 0.4% | 15.1ms | 0.4% | 15.1ms | `readSceneSkinInfluences` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts` |
+| 0.4% | 15.0ms | 0.4% | 15.0ms | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:28` |
+| 0.4% | 14.9ms | 0.0% | 989us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:93` |
+| 0.4% | 14.9ms | 0.0% | 0us | `paintSceneSkinWeight` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaintWeights.ts:19` |
+| 0.4% | 14.8ms | 0.4% | 14.8ms | `transformPoint` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts` |
+| 0.4% | 14.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:118` |
+| 0.4% | 14.2ms | 0.4% | 14.2ms | `savedWeight` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:83` |
+| 0.4% | 14.2ms | 0.4% | 14.2ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:159` |
+| 0.4% | 13.9ms | 0.0% | 0us | `createSceneSkin` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinCommands.ts:38` |
+| 0.4% | 13.9ms | 0.0% | 0us | `sceneCommandSelection` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\commandContext.ts:32` |
+| 0.4% | 13.3ms | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:90` |
+| 0.3% | 13.0ms | 0.0% | 0us | `linkAndEvaluateModule` | `[native code]` |
+| 0.3% | 11.2ms | 0.3% | 11.2ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:83` |
+| 0.2% | 6.8ms | 0.2% | 6.8ms | `symbolToStringify` | `node:os` |
+| 0.2% | 6.8ms | 0.0% | 0us | `node:os` | `node:os:109` |
+| 0.1% | 4.2ms | 0.0% | 0us | `async loadModule` | `[native code]` |
+| 0.1% | 3.5ms | 0.1% | 3.5ms | `set` | `[native code]` |
+| 0.0% | 2.1ms | 0.0% | 0us | `requestInstantiate` | `[native code]` |
+| 0.0% | 2.1ms | 0.0% | 0us | `requestSatisfyUtil` | `[native code]` |
+| 0.0% | 2.1ms | 0.0% | 0us | `requestSatisfy` | `[native code]` |
+| 0.0% | 2.0ms | 0.0% | 2.0ms | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:38` |
+| 0.0% | 1.9ms | 0.0% | 997us | `from` | `[native code]` |
+| 0.0% | 1.9ms | 0.0% | 1.9ms | `transformPoint` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts:166` |
+| 0.0% | 1.8ms | 0.0% | 0us | `indexMeshEdges` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:29` |
+| 0.0% | 1.7ms | 0.0% | 1.7ms | `/^[A-Za-z0-9_:-]+$/` | `[native code]` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:137` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:138` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:40` |
+| 0.0% | 1.0ms | 0.0% | 0us | `animatedScene` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneAnimation.ts:32` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `migrateLegacyModel` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\migrateLegacy.ts:180` |
+| 0.0% | 1.0ms | 0.0% | 0us | `makeSceneSkinFixture` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneSkin.ts:5` |
+| 0.0% | 1.0ms | 0.0% | 0us | `makeSceneGlbFixture` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneGlbFixture.ts:14` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `indexSceneSkins` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:68` |
+| 0.0% | 999us | 0.0% | 0us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:80` |
+| 0.0% | 999us | 0.0% | 999us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:82` |
+| 0.0% | 970us | 0.0% | 970us | `resolve` | `[native code]` |
+| 0.0% | 965us | 0.0% | 965us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:116` |
+| 0.0% | 950us | 0.0% | 950us | `record` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:29` |
+| 0.0% | 928us | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:124` |
+| 0.0% | 913us | 0.0% | 913us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:135` |
+| 0.0% | 887us | 0.0% | 887us | `makeSceneGridGeometry` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:14` |
+| 0.0% | 866us | 0.0% | 866us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:65` |
+| 0.0% | 858us | 0.0% | 858us | `graph` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:89` |
+| 0.0% | 848us | 0.0% | 848us | `prepareSceneBounds` | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts` |
+
+## Function Details
+
+### `structuredClone`
+`[native code]` | Self: 12.9% (432.3ms) | Total: 12.9% (432.3ms) | Samples: 52
+
+**Called by:**
+- `(module)` (52)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:71` | Self: 8.5% (284.1ms) | Total: 8.5% (284.1ms) | Samples: 36
+
+**Called by:**
+- `indexSceneDocument` (36)
+
+### `deepEquals`
+`[native code]` | Self: 5.4% (182.2ms) | Total: 5.4% (182.2ms) | Samples: 32
+
+**Called by:**
+- `(module)` (32)
+
+### `cloneObject`
+`[native code]` | Self: 5.2% (173.2ms) | Total: 5.2% (173.2ms) | Samples: 28
+
+**Called by:**
+- `patchSceneSkinWeights` (28)
+
+### `indexSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:24` | Self: 4.9% (163.4ms) | Total: 4.9% (163.4ms) | Samples: 18
+
+**Called by:**
+- `createSceneSkinPaintStroke` (13)
+- `bindSceneSkin` (2)
+- `(module)` (1)
+- `sceneCommandSelection` (1)
+- `readSceneDocument` (1)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:37` | Self: 4.5% (152.2ms) | Total: 4.5% (152.2ms) | Samples: 16
+
+**Called by:**
+- `graph` (16)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:55` | Self: 3.5% (117.9ms) | Total: 3.5% (117.9ms) | Samples: 17
+
+**Called by:**
+- `indexSceneDocument` (16)
+- `readSceneSkinBindings` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:66` | Self: 2.8% (96.5ms) | Total: 8.7% (290.1ms) | Samples: 18
+
+**Called by:**
+- `map` (45)
+
+**Calls:**
+- `readNormalizedSceneSkinInfluences` (27)
+
+### `map`
+`[native code]` | Self: 2.8% (96.4ms) | Total: 36.2% (1.20s) | Samples: 9
+
+**Called by:**
+- `readSceneSkins` (55)
+- `(anonymous)` (48)
+- `readSceneSkinInfluences` (23)
+- `readSceneDocument` (18)
+- `readSceneGeometry` (10)
+- `(anonymous)` (9)
+- `readSceneGeometry` (5)
+- `(module)` (3)
+- `tuple` (3)
+- `(anonymous)` (1)
+
+**Calls:**
+- `(anonymous)` (48)
+- `(anonymous)` (45)
+- `readSceneGeometry` (10)
+- `(anonymous)` (9)
+- `(anonymous)` (7)
+- `(anonymous)` (7)
+- `(anonymous)` (6)
+- `readSceneGeometry` (6)
+- `(anonymous)` (4)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `readSceneGeometry` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `number` (1)
+- `(anonymous)` (1)
+
+### `stringify`
+`[native code]` | Self: 2.7% (92.2ms) | Total: 2.7% (92.2ms) | Samples: 13
+
+**Called by:**
+- `indexMeshEdges` (13)
+
+### `values`
+`[native code]` | Self: 2.6% (88.3ms) | Total: 2.6% (88.3ms) | Samples: 12
+
+**Called by:**
+- `prepareSceneBounds` (8)
+- `indexSceneSkins` (4)
+
+### `indexSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:31` | Self: 2.5% (85.5ms) | Total: 2.5% (85.5ms) | Samples: 12
+
+**Called by:**
+- `createSceneSkinPaintStroke` (9)
+- `readSceneDocument` (2)
+- `readSceneSkinBindings` (1)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:63` | Self: 2.3% (77.9ms) | Total: 2.3% (77.9ms) | Samples: 11
+
+**Called by:**
+- `indexSceneDocument` (11)
+
+### `fromEntries`
+`[native code]` | Self: 2.3% (77.6ms) | Total: 2.3% (77.6ms) | Samples: 11
+
+**Called by:**
+- `(anonymous)` (7)
+- `readSceneGeometry` (2)
+- `(module)` (2)
+
+### `point`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:65` | Self: 1.9% (65.1ms) | Total: 1.9% (65.1ms) | Samples: 8
+
+**Called by:**
+- `graph` (6)
+- `graph` (2)
+
+### `record`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` | Self: 1.8% (62.0ms) | Total: 1.8% (62.0ms) | Samples: 5
+
+**Called by:**
+- `(anonymous)` (4)
+- `(anonymous)` (1)
+
+### `indexSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:32` | Self: 1.8% (60.4ms) | Total: 1.8% (60.4ms) | Samples: 5
+
+**Called by:**
+- `createSceneSkinPaintStroke` (3)
+- `readSceneSkinBindings` (1)
+- `readSceneDocument` (1)
+
+### `hypot`
+`[native code]` | Self: 1.6% (53.3ms) | Total: 1.6% (53.3ms) | Samples: 6
+
+**Called by:**
+- `graph` (6)
+
+### `meshEdgeKey`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:5` | Self: 1.4% (48.1ms) | Total: 1.4% (48.1ms) | Samples: 4
+
+**Called by:**
+- `indexMeshEdges` (4)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:39` | Self: 1.4% (47.4ms) | Total: 1.4% (47.4ms) | Samples: 6
+
+**Called by:**
+- `graph` (6)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:42` | Self: 1.3% (44.8ms) | Total: 1.3% (44.8ms) | Samples: 9
+
+**Called by:**
+- `evaluate` (9)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:41` | Self: 1.0% (36.3ms) | Total: 1.0% (36.3ms) | Samples: 10
+
+**Called by:**
+- `graph` (10)
+
+### `readSceneSkinInfluences`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:6` | Self: 0.9% (32.5ms) | Total: 0.9% (32.5ms) | Samples: 4
+
+**Called by:**
+- `readNormalizedSceneSkinInfluences` (4)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:46` | Self: 0.9% (31.8ms) | Total: 0.9% (31.8ms) | Samples: 3
+
+**Called by:**
+- `map` (3)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:27` | Self: 0.9% (31.8ms) | Total: 0.9% (31.8ms) | Samples: 5
+
+**Called by:**
+- `sceneBounds` (5)
+
+### `entries`
+`[native code]` | Self: 0.9% (31.2ms) | Total: 0.9% (31.2ms) | Samples: 5
+
+**Called by:**
+- `indexSceneDocument` (2)
+- `indexMeshEdges` (2)
+- `readSceneGeometry` (1)
+
+### `max`
+`[native code]` | Self: 0.9% (31.0ms) | Total: 0.9% (31.0ms) | Samples: 3
+
+**Called by:**
+- `prepareSceneBounds` (3)
+
+### `point`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:66` | Self: 0.9% (30.9ms) | Total: 0.9% (30.9ms) | Samples: 4
+
+**Called by:**
+- `graph` (4)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:83` | Self: 0.9% (30.8ms) | Total: 0.9% (30.8ms) | Samples: 4
+
+**Called by:**
+- `indexSceneDocument` (3)
+- `readSceneSkinBindings` (1)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:30` | Self: 0.9% (29.9ms) | Total: 1.8% (61.0ms) | Samples: 3
+
+**Called by:**
+- `sceneBounds` (6)
+
+**Calls:**
+- `max` (3)
+
+### `number`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:61` | Self: 0.8% (29.6ms) | Total: 0.8% (29.6ms) | Samples: 4
+
+**Called by:**
+- `(anonymous)` (3)
+- `map` (1)
+
+### `point`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:69` | Self: 0.8% (29.0ms) | Total: 0.8% (29.0ms) | Samples: 2
+
+**Called by:**
+- `graph` (2)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:84` | Self: 0.8% (29.0ms) | Total: 0.8% (29.0ms) | Samples: 2
+
+**Called by:**
+- `query` (2)
+
+### `point`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:68` | Self: 0.8% (29.0ms) | Total: 1.3% (45.7ms) | Samples: 3
+
+**Called by:**
+- `graph` (6)
+
+**Calls:**
+- `transformPoint` (2)
+- `transformPoint` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:91` | Self: 0.8% (28.1ms) | Total: 0.8% (28.1ms) | Samples: 3
+
+**Called by:**
+- `query` (3)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:29` | Self: 0.8% (27.5ms) | Total: 1.5% (52.2ms) | Samples: 13
+
+**Called by:**
+- `sceneBounds` (15)
+
+**Calls:**
+- `min` (2)
+
+### `push`
+`[native code]` | Self: 0.8% (27.3ms) | Total: 0.8% (27.3ms) | Samples: 2
+
+**Called by:**
+- `graph` (1)
+- `graph` (1)
+
+### `min`
+`[native code]` | Self: 0.7% (24.6ms) | Total: 0.7% (24.6ms) | Samples: 2
+
+**Called by:**
+- `prepareSceneBounds` (2)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:11` | Self: 0.6% (23.1ms) | Total: 2.0% (69.4ms) | Samples: 3
+
+**Called by:**
+- `map` (7)
+
+**Calls:**
+- `record` (4)
+
+### `id`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:50` | Self: 0.6% (20.2ms) | Total: 0.6% (22.0ms) | Samples: 6
+
+**Called by:**
+- `(anonymous)` (6)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+
+**Calls:**
+- `/^[A-Za-z0-9_:-]+$/` (2)
+
+### `parseModule`
+`[native code]` | Self: 0.5% (17.5ms) | Total: 0.7% (24.3ms) | Samples: 4
+
+**Called by:**
+- `async (anonymous)` (5)
+
+**Calls:**
+- `node:os` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:14` | Self: 0.5% (17.1ms) | Total: 0.5% (17.1ms) | Samples: 3
+
+**Called by:**
+- `map` (3)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:92` | Self: 0.4% (16.6ms) | Total: 0.4% (16.6ms) | Samples: 2
+
+**Called by:**
+- `query` (2)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:94` | Self: 0.4% (16.5ms) | Total: 0.6% (20.0ms) | Samples: 3
+
+**Called by:**
+- `query` (6)
+
+**Calls:**
+- `set` (3)
+
+### `point`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:70` | Self: 0.4% (15.9ms) | Total: 0.4% (15.9ms) | Samples: 2
+
+**Called by:**
+- `graph` (2)
+
+### `tuple`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:81` | Self: 0.4% (15.3ms) | Total: 0.4% (16.3ms) | Samples: 1
+
+**Called by:**
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+
+**Calls:**
+- `from` (1)
+
+### `makeSceneGridGeometry`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:10` | Self: 0.4% (15.3ms) | Total: 0.4% (15.3ms) | Samples: 3
+
+**Called by:**
+- `(module)` (3)
+
+### `number`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` | Self: 0.4% (15.1ms) | Total: 0.4% (15.1ms) | Samples: 1
+
+**Called by:**
+- `paintSceneSkinWeight` (1)
+
+### `readSceneSkinInfluences`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts` | Self: 0.4% (15.1ms) | Total: 0.4% (15.1ms) | Samples: 1
+
+**Called by:**
+- `readNormalizedSceneSkinInfluences` (1)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:28` | Self: 0.4% (15.0ms) | Total: 0.4% (15.0ms) | Samples: 1
+
+**Called by:**
+- `sceneBounds` (1)
+
+### `transformPoint`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts` | Self: 0.4% (14.8ms) | Total: 0.4% (14.8ms) | Samples: 1
+
+**Called by:**
+- `point` (1)
+
+### `savedWeight`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:83` | Self: 0.4% (14.2ms) | Total: 0.4% (14.2ms) | Samples: 1
+
+**Called by:**
+- `(anonymous)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:159` | Self: 0.4% (14.2ms) | Total: 0.4% (14.2ms) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:35` | Self: 0.4% (13.8ms) | Total: 4.6% (154.1ms) | Samples: 1
+
+**Called by:**
+- `graph` (18)
+
+**Calls:**
+- `stringify` (13)
+- `meshEdgeKey` (4)
+
+### `link`
+`[native code]` | Self: 0.3% (13.0ms) | Total: 0.7% (26.1ms) | Samples: 1
+
+**Called by:**
+- `link` (1)
+- `linkAndEvaluateModule` (1)
+
+**Calls:**
+- `link` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:83` | Self: 0.3% (11.2ms) | Total: 0.3% (11.2ms) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `symbolToStringify`
+`node:os` | Self: 0.2% (6.8ms) | Total: 0.2% (6.8ms) | Samples: 1
+
+**Called by:**
+- `node:os` (1)
+
+### `set`
+`[native code]` | Self: 0.1% (3.5ms) | Total: 0.1% (3.5ms) | Samples: 3
+
+**Called by:**
+- `graph` (3)
+
+### `async (anonymous)`
+`[native code]` | Self: 0.0% (2.1ms) | Total: 0.8% (29.5ms) | Samples: 1
+
+**Called by:**
+- `requestInstantiate` (1)
+- `async (anonymous)` (1)
+
+**Calls:**
+- `parseModule` (5)
+- `resolve` (1)
+- `async (anonymous)` (1)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:38` | Self: 0.0% (2.0ms) | Total: 0.0% (2.0ms) | Samples: 2
+
+**Called by:**
+- `graph` (2)
+
+### `transformPoint`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts:166` | Self: 0.0% (1.9ms) | Total: 0.0% (1.9ms) | Samples: 2
+
+**Called by:**
+- `point` (2)
+
+### `/^[A-Za-z0-9_:-]+$/`
+`[native code]` | Self: 0.0% (1.7ms) | Total: 0.0% (1.7ms) | Samples: 2
+
+**Called by:**
+- `id` (2)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:138` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `migrateLegacyModel`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\migrateLegacy.ts:180` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `animatedScene` (1)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:68` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `indexSceneDocument` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:82` | Self: 0.0% (999us) | Total: 0.0% (999us) | Samples: 1
+
+**Called by:**
+- `from` (1)
+
+### `from`
+`[native code]` | Self: 0.0% (997us) | Total: 0.0% (1.9ms) | Samples: 1
+
+**Called by:**
+- `graph` (1)
+- `tuple` (1)
+
+**Calls:**
+- `(anonymous)` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:93` | Self: 0.0% (989us) | Total: 0.4% (14.9ms) | Samples: 1
+
+**Called by:**
+- `query` (2)
+
+**Calls:**
+- `push` (1)
+
+### `resolve`
+`[native code]` | Self: 0.0% (970us) | Total: 0.0% (970us) | Samples: 1
+
+**Called by:**
+- `async (anonymous)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:116` | Self: 0.0% (965us) | Total: 0.0% (965us) | Samples: 1
+
+**Called by:**
+- `flatIntoArrayWithCallback` (1)
+
+### `record`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:29` | Self: 0.0% (950us) | Total: 0.0% (950us) | Samples: 1
+
+**Called by:**
+- `(anonymous)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:15` | Self: 0.0% (925us) | Total: 0.8% (29.6ms) | Samples: 1
+
+**Called by:**
+- `map` (4)
+
+**Calls:**
+- `number` (3)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:135` | Self: 0.0% (913us) | Total: 0.0% (913us) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `makeSceneGridGeometry`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts:14` | Self: 0.0% (887us) | Total: 0.0% (887us) | Samples: 1
+
+**Called by:**
+- `(module)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:65` | Self: 0.0% (866us) | Total: 0.0% (866us) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:89` | Self: 0.0% (858us) | Total: 0.0% (858us) | Samples: 1
+
+**Called by:**
+- `query` (1)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts` | Self: 0.0% (848us) | Total: 0.0% (848us) | Samples: 1
+
+**Called by:**
+- `sceneBounds` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:45` | Self: 0.0% (0us) | Total: 0.9% (31.8ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (3)
+
+**Calls:**
+- `map` (3)
+
+### `readSceneSkinInfluences`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:9` | Self: 0.0% (0us) | Total: 4.8% (160.8ms) | Samples: 0
+
+**Called by:**
+- `readNormalizedSceneSkinInfluences` (23)
+
+**Calls:**
+- `map` (23)
+
+### `requestInstantiate`
+`[native code]` | Self: 0.0% (0us) | Total: 0.0% (2.1ms) | Samples: 0
+
+**Called by:**
+- `requestSatisfyUtil` (1)
+
+**Calls:**
+- `async (anonymous)` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:87` | Self: 0.0% (0us) | Total: 1.6% (53.3ms) | Samples: 0
+
+**Called by:**
+- `query` (6)
+
+**Calls:**
+- `hypot` (6)
+
+### `sceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:50` | Self: 0.0% (0us) | Total: 6.1% (203.6ms) | Samples: 0
+
+**Called by:**
+- `commit` (28)
+- `finishSceneCommand` (5)
+- `readSceneDocument` (3)
+
+**Calls:**
+- `prepareSceneBounds` (15)
+- `prepareSceneBounds` (8)
+- `prepareSceneBounds` (6)
+- `prepareSceneBounds` (5)
+- `prepareSceneBounds` (1)
+- `prepareSceneBounds` (1)
+
+### `readSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:331` | Self: 0.0% (0us) | Total: 4.0% (135.5ms) | Samples: 0
+
+**Called by:**
+- `(module)` (18)
+
+**Calls:**
+- `map` (18)
+
+### `readSceneSkinBindings`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:17` | Self: 0.0% (0us) | Total: 1.3% (46.3ms) | Samples: 0
+
+**Called by:**
+- `bindSceneSkin` (3)
+
+**Calls:**
+- `indexSceneSkins` (1)
+- `indexSceneSkins` (1)
+- `indexSceneSkins` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:86` | Self: 0.0% (0us) | Total: 4.6% (156.2ms) | Samples: 0
+
+**Called by:**
+- `query` (20)
+
+**Calls:**
+- `point` (6)
+- `point` (6)
+- `point` (4)
+- `point` (2)
+- `point` (2)
+
+### `tuple`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts:83` | Self: 0.0% (0us) | Total: 0.8% (27.2ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+
+**Calls:**
+- `map` (3)
+
+### `createSceneSkin`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinCommands.ts:38` | Self: 0.0% (0us) | Total: 0.4% (13.9ms) | Samples: 0
+
+**Called by:**
+- `(module)` (1)
+
+**Calls:**
+- `sceneCommandSelection` (1)
+
+### `paintSceneSkinWeight`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaintWeights.ts:18` | Self: 0.0% (0us) | Total: 0.4% (15.1ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `number` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:56` | Self: 0.0% (0us) | Total: 12.9% (432.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (52)
+
+**Calls:**
+- `structuredClone` (52)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:161` | Self: 0.0% (0us) | Total: 0.5% (17.3ms) | Samples: 0
+
+**Called by:**
+- `map` (3)
+
+**Calls:**
+- `tuple` (1)
+- `tuple` (1)
+- `map` (1)
+
+### `commit`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:162` | Self: 0.0% (0us) | Total: 5.2% (173.2ms) | Samples: 0
+
+**Called by:**
+- `(module)` (28)
+
+**Calls:**
+- `patchSceneSkinWeights` (28)
+
+### `readSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:29` | Self: 0.0% (0us) | Total: 10.9% (364.2ms) | Samples: 0
+
+**Called by:**
+- `readSceneDocument` (34)
+- `readSceneSkinBindings` (21)
+
+**Calls:**
+- `map` (55)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:81` | Self: 0.0% (0us) | Total: 11.8% (394.1ms) | Samples: 0
+
+**Called by:**
+- `query` (54)
+
+**Calls:**
+- `indexMeshEdges` (18)
+- `indexMeshEdges` (16)
+- `indexMeshEdges` (10)
+- `indexMeshEdges` (6)
+- `indexMeshEdges` (2)
+- `indexMeshEdges` (2)
+
+### `patchSceneSkinWeights`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeightPatch.ts:38` | Self: 0.0% (0us) | Total: 5.2% (173.2ms) | Samples: 0
+
+**Called by:**
+- `commit` (28)
+
+**Calls:**
+- `cloneObject` (28)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:126` | Self: 0.0% (0us) | Total: 0.9% (30.0ms) | Samples: 0
+
+**Called by:**
+- `flatIntoArrayWithCallback` (2)
+
+**Calls:**
+- `paintSceneSkinWeight` (1)
+- `paintSceneSkinWeight` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:141` | Self: 0.0% (0us) | Total: 0.8% (27.2ms) | Samples: 0
+
+**Called by:**
+- `map` (3)
+
+**Calls:**
+- `tuple` (2)
+- `tuple` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:85` | Self: 0.0% (0us) | Total: 0.9% (30.6ms) | Samples: 0
+
+**Called by:**
+- `query` (2)
+
+**Calls:**
+- `point` (2)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:85` | Self: 0.0% (0us) | Total: 0.9% (30.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (3)
+
+**Calls:**
+- `sample` (3)
+
+### `indexSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:27` | Self: 0.0% (0us) | Total: 0.4% (16.2ms) | Samples: 0
+
+**Called by:**
+- `createSceneSkinPaintStroke` (2)
+
+**Calls:**
+- `entries` (2)
+
+### `commit`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:175` | Self: 0.0% (0us) | Total: 5.0% (169.0ms) | Samples: 0
+
+**Called by:**
+- `(module)` (28)
+
+**Calls:**
+- `sceneBounds` (28)
+
+### `paintSceneSkinWeight`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaintWeights.ts:19` | Self: 0.0% (0us) | Total: 0.4% (14.9ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `readNormalizedSceneSkinInfluences` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:40` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `makeSceneSkinFixture` (1)
+
+### `readSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:319` | Self: 0.0% (0us) | Total: 5.0% (166.6ms) | Samples: 0
+
+**Called by:**
+- `(module)` (34)
+
+**Calls:**
+- `readSceneSkins` (34)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:90` | Self: 0.0% (0us) | Total: 10.2% (342.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (56)
+
+**Calls:**
+- `commit` (28)
+- `commit` (28)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:53` | Self: 0.0% (0us) | Total: 21.6% (721.8ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (99)
+
+**Calls:**
+- `readSceneDocument` (34)
+- `createSceneSkin` (28)
+- `readSceneDocument` (18)
+- `readSceneDocument` (10)
+- `finishSceneCommand` (8)
+- `createSceneSkin` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:77` | Self: 0.0% (0us) | Total: 23.2% (773.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (101)
+
+**Calls:**
+- `sample` (100)
+- `sample` (1)
+
+### `readSceneGeometry`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:123` | Self: 0.0% (0us) | Total: 1.8% (61.1ms) | Samples: 0
+
+**Called by:**
+- `map` (10)
+
+**Calls:**
+- `map` (10)
+
+### `createSceneSkinPaintStroke`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:45` | Self: 0.0% (0us) | Total: 19.6% (653.4ms) | Samples: 0
+
+**Called by:**
+- `(module)` (85)
+
+**Calls:**
+- `indexSceneDocument` (58)
+- `indexSceneDocument` (13)
+- `indexSceneDocument` (9)
+- `indexSceneDocument` (3)
+- `indexSceneDocument` (2)
+
+### `finishSceneCommand`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\commandContext.ts:74` | Self: 0.0% (0us) | Total: 1.5% (50.9ms) | Samples: 0
+
+**Called by:**
+- `(module)` (8)
+
+**Calls:**
+- `sceneBounds` (5)
+- `indexSceneDocument` (3)
+
+### `query`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:118` | Self: 0.0% (0us) | Total: 22.7% (758.4ms) | Samples: 0
+
+**Called by:**
+- `sample` (100)
+
+**Calls:**
+- `graph` (54)
+- `graph` (20)
+- `graph` (6)
+- `graph` (6)
+- `graph` (3)
+- `graph` (2)
+- `graph` (2)
+- `graph` (2)
+- `graph` (2)
+- `graph` (1)
+- `graph` (1)
+- `graph` (1)
+
+### `makeSceneGlbFixture`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneGlbFixture.ts:14` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `makeSceneSkinFixture` (1)
+
+**Calls:**
+- `animatedScene` (1)
+
+### `async loadModule`
+`[native code]` | Self: 0.0% (0us) | Total: 0.1% (4.2ms) | Samples: 0
+
+**Called by:**
+- `async loadModule` (1)
+- `async loadAndEvaluateModule` (1)
+
+**Calls:**
+- `requestSatisfy` (1)
+- `async loadModule` (1)
+
+### `createSceneSkin`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinCommands.ts:60` | Self: 0.0% (0us) | Total: 8.2% (275.5ms) | Samples: 0
+
+**Called by:**
+- `(module)` (28)
+
+**Calls:**
+- `bindSceneSkin` (26)
+- `bindSceneSkin` (2)
+
+### `requestSatisfyUtil`
+`[native code]` | Self: 0.0% (0us) | Total: 0.0% (2.1ms) | Samples: 0
+
+**Called by:**
+- `requestSatisfy` (1)
+
+**Calls:**
+- `requestInstantiate` (1)
+
+### `bindSceneSkin`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:37` | Self: 0.0% (0us) | Total: 0.4% (15.8ms) | Samples: 0
+
+**Called by:**
+- `createSceneSkin` (2)
+
+**Calls:**
+- `indexSceneDocument` (2)
+
+### `requestSatisfy`
+`[native code]` | Self: 0.0% (0us) | Total: 0.0% (2.1ms) | Samples: 0
+
+**Called by:**
+- `async loadModule` (1)
+
+**Calls:**
+- `requestSatisfyUtil` (1)
+
+### `animatedScene`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneAnimation.ts:32` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `makeSceneGlbFixture` (1)
+
+**Calls:**
+- `migrateLegacyModel` (1)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:80` | Self: 0.0% (0us) | Total: 0.0% (999us) | Samples: 0
+
+**Called by:**
+- `query` (1)
+
+**Calls:**
+- `from` (1)
+
+### `readSceneSkinBindings`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:16` | Self: 0.0% (0us) | Total: 0.4% (15.8ms) | Samples: 0
+
+**Called by:**
+- `bindSceneSkin` (2)
+
+**Calls:**
+- `indexSceneDocument` (1)
+- `indexSceneDocument` (1)
+
+### `indexSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts:18` | Self: 0.0% (0us) | Total: 15.3% (511.2ms) | Samples: 0
+
+**Called by:**
+- `createSceneSkinPaintStroke` (58)
+- `(module)` (6)
+- `finishSceneCommand` (3)
+- `readSceneDocument` (3)
+
+**Calls:**
+- `indexSceneSkins` (36)
+- `indexSceneSkins` (16)
+- `indexSceneSkins` (11)
+- `indexSceneSkins` (3)
+- `indexSceneSkins` (3)
+- `indexSceneSkins` (1)
+
+### `sample`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:114` | Self: 0.0% (0us) | Total: 1.3% (45.2ms) | Samples: 0
+
+**Called by:**
+- `(module)` (3)
+- `(module)` (1)
+
+**Calls:**
+- `flatIntoArrayWithCallback` (4)
+
+### `indexMeshEdges`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts:29` | Self: 0.0% (0us) | Total: 0.0% (1.8ms) | Samples: 0
+
+**Called by:**
+- `graph` (2)
+
+**Calls:**
+- `entries` (2)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:44` | Self: 0.0% (0us) | Total: 0.5% (17.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (2)
+
+**Calls:**
+- `fromEntries` (2)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:107` | Self: 0.0% (0us) | Total: 5.4% (182.2ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (32)
+
+**Calls:**
+- `deepEquals` (32)
+
+### `prepareSceneBounds`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts:14` | Self: 0.0% (0us) | Total: 1.2% (42.6ms) | Samples: 0
+
+**Called by:**
+- `sceneBounds` (8)
+
+**Calls:**
+- `values` (8)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:41` | Self: 0.0% (0us) | Total: 0.4% (16.1ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (4)
+
+**Calls:**
+- `makeSceneGridGeometry` (3)
+- `makeSceneGridGeometry` (1)
+
+### `flatIntoArrayWithCallback`
+`[native code]` | Self: 0.0% (0us) | Total: 1.3% (45.2ms) | Samples: 0
+
+**Called by:**
+- `sample` (4)
+
+**Calls:**
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+
+### `sample`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:100` | Self: 0.0% (0us) | Total: 22.7% (758.4ms) | Samples: 0
+
+**Called by:**
+- `(module)` (100)
+
+**Calls:**
+- `query` (100)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:64` | Self: 0.0% (0us) | Total: 9.5% (319.4ms) | Samples: 0
+
+**Called by:**
+- `map` (48)
+
+**Calls:**
+- `map` (48)
+
+### `moduleEvaluation`
+`[native code]` | Self: 0.0% (0us) | Total: 100.0% (6.57s) | Samples: 0
+
+**Called by:**
+- `moduleEvaluation` (454)
+- `async loadAndEvaluateModule` (454)
+
+**Calls:**
+- `evaluate` (454)
+- `moduleEvaluation` (454)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:137` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `map` (1)
+
+**Calls:**
+- `id` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:71` | Self: 0.0% (0us) | Total: 19.6% (653.4ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (85)
+
+**Calls:**
+- `createSceneSkinPaintStroke` (85)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:134` | Self: 0.0% (0us) | Total: 1.8% (60.2ms) | Samples: 0
+
+**Called by:**
+- `map` (9)
+
+**Calls:**
+- `map` (9)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:63` | Self: 0.0% (0us) | Total: 1.3% (44.8ms) | Samples: 0
+
+**Called by:**
+- `map` (7)
+
+**Calls:**
+- `fromEntries` (7)
+
+### `readNormalizedSceneSkinInfluences`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts:7` | Self: 0.0% (0us) | Total: 6.2% (208.5ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (27)
+- `paintSceneSkinWeight` (1)
+
+**Calls:**
+- `readSceneSkinInfluences` (23)
+- `readSceneSkinInfluences` (4)
+- `readSceneSkinInfluences` (1)
+
+### `readSceneGeometry`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:158` | Self: 0.0% (0us) | Total: 0.4% (15.5ms) | Samples: 0
+
+**Called by:**
+- `map` (2)
+
+**Calls:**
+- `fromEntries` (2)
+
+### `indexSceneSkins`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts:67` | Self: 0.0% (0us) | Total: 1.3% (45.6ms) | Samples: 0
+
+**Called by:**
+- `indexSceneDocument` (3)
+- `readSceneSkinBindings` (1)
+
+**Calls:**
+- `values` (4)
+
+### `graph`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts:90` | Self: 0.0% (0us) | Total: 0.4% (13.3ms) | Samples: 0
+
+**Called by:**
+- `query` (1)
+
+**Calls:**
+- `push` (1)
+
+### `readSceneSkinBindings`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:15` | Self: 0.0% (0us) | Total: 5.9% (197.5ms) | Samples: 0
+
+**Called by:**
+- `bindSceneSkin` (21)
+
+**Calls:**
+- `readSceneSkins` (21)
+
+### `sceneCommandSelection`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\commandContext.ts:32` | Self: 0.0% (0us) | Total: 0.4% (13.9ms) | Samples: 0
+
+**Called by:**
+- `createSceneSkin` (1)
+
+**Calls:**
+- `indexSceneDocument` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts:12` | Self: 0.0% (0us) | Total: 0.6% (20.0ms) | Samples: 0
+
+**Called by:**
+- `map` (6)
+
+**Calls:**
+- `id` (6)
+
+### `node:os`
+`node:os:109` | Self: 0.0% (0us) | Total: 0.2% (6.8ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (1)
+
+**Calls:**
+- `symbolToStringify` (1)
+
+### `linkAndEvaluateModule`
+`[native code]` | Self: 0.0% (0us) | Total: 0.3% (13.0ms) | Samples: 0
+
+**Called by:**
+- `async loadAndEvaluateModule` (1)
+
+**Calls:**
+- `link` (1)
+
+### `async loadAndEvaluateModule`
+`[native code]` | Self: 0.0% (0us) | Total: 99.3% (3.30s) | Samples: 0
+
+**Called by:**
+- `async loadAndEvaluateModule` (1)
+
+**Calls:**
+- `moduleEvaluation` (454)
+- `async loadModule` (1)
+- `async loadAndEvaluateModule` (1)
+- `linkAndEvaluateModule` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:136` | Self: 0.0% (0us) | Total: 0.5% (16.7ms) | Samples: 0
+
+**Called by:**
+- `map` (2)
+
+**Calls:**
+- `record` (1)
+- `record` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts:57` | Self: 0.0% (0us) | Total: 1.2% (42.3ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (7)
+
+**Calls:**
+- `indexSceneDocument` (6)
+- `indexSceneDocument` (1)
+
+### `bindSceneSkin`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinBinding.ts:51` | Self: 0.0% (0us) | Total: 7.7% (259.7ms) | Samples: 0
+
+**Called by:**
+- `createSceneSkin` (26)
+
+**Calls:**
+- `readSceneSkinBindings` (21)
+- `readSceneSkinBindings` (3)
+- `readSceneSkinBindings` (2)
+
+### `evaluate`
+`[native code]` | Self: 0.0% (0us) | Total: 98.7% (3.28s) | Samples: 0
+
+**Called by:**
+- `moduleEvaluation` (454)
+
+**Calls:**
+- `(module)` (101)
+- `(module)` (99)
+- `(module)` (85)
+- `(module)` (56)
+- `(module)` (52)
+- `(module)` (32)
+- `(module)` (9)
+- `(module)` (7)
+- `(module)` (4)
+- `(module)` (3)
+- `(module)` (3)
+- `(module)` (2)
+- `(module)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:124` | Self: 0.0% (0us) | Total: 0.0% (928us) | Samples: 0
+
+**Called by:**
+- `map` (1)
+
+**Calls:**
+- `id` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts:118` | Self: 0.0% (0us) | Total: 0.4% (14.2ms) | Samples: 0
+
+**Called by:**
+- `flatIntoArrayWithCallback` (1)
+
+**Calls:**
+- `savedWeight` (1)
+
+### `makeSceneSkinFixture`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneSkin.ts:5` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `(module)` (1)
+
+**Calls:**
+- `makeSceneGlbFixture` (1)
+
+### `readSceneGeometry`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts:159` | Self: 0.0% (0us) | Total: 1.7% (58.8ms) | Samples: 0
+
+**Called by:**
+- `map` (6)
+
+**Calls:**
+- `map` (5)
+- `entries` (1)
+
+### `readSceneDocument`
+`C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readDocument.ts:354` | Self: 0.0% (0us) | Total: 2.3% (79.1ms) | Samples: 0
+
+**Called by:**
+- `(module)` (10)
+
+**Calls:**
+- `indexSceneDocument` (3)
+- `sceneBounds` (3)
+- `indexSceneDocument` (2)
+- `indexSceneDocument` (1)
+- `indexSceneDocument` (1)
+
+## Files
+
+| Self% | Self | File |
+|------:|-----:|------|
+| 40.5% | 1.35s | `[native code]` |
+| 15.3% | 511.8ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinIndex.ts` |
+| 9.2% | 309.4ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\documentIndex.ts` |
+| 9.0% | 300.0ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshTopology.ts` |
+| 7.9% | 263.2ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\meshDistanceField.ts` |
+| 4.6% | 154.5ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\validation.ts` |
+| 3.1% | 105.3ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\bounds.ts` |
+| 2.9% | 97.4ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readSkin.ts` |
+| 2.6% | 88.8ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinWeights.ts` |
+| 2.3% | 76.7ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\scripts\bench-scene-skin-paint.ts` |
+| 0.5% | 16.7ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\matrix.ts` |
+| 0.4% | 16.1ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\testing\sceneFixtures.ts` |
+| 0.4% | 16.1ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\readGeometry.ts` |
+| 0.4% | 15.2ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\skinPaint.ts` |
+| 0.2% | 6.8ms | `node:os` |
+| 0.0% | 1.0ms | `C:\Users\tocha\projects\sistema-zero\packages\molda\src\scene\migrateLegacy.ts` |
