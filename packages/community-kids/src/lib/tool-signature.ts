@@ -1,4 +1,5 @@
 import type { CreativeToolId } from '@sistemazero/core/career'
+import { Blocks, Box, Lightbulb, type LucideIcon, Palette } from 'lucide-react'
 
 /**
  * Cor de ASSINATURA de cada oficina (redesenho 09/2026).
@@ -18,17 +19,49 @@ import type { CreativeToolId } from '@sistemazero/core/career'
  * tema escuro; aqui ficam só os nomes das variáveis.
  */
 export interface ToolSignature {
+  nome: string
+  href: string
+  icone: LucideIcon
   fundo: string
   tinta: string
 }
 
+/**
+ * Nome, atalho e ícone moravam num mapa literal dentro de `criar/page.tsx` e
+ * outro, com títulos próprios, dentro de `creator-works.tsx`. Juntar aqui é o que
+ * deixa a cor "seguir" a oficina do card à galeria sem ninguém repetir a tabela.
+ */
 export const TOOL_SIGNATURE: Record<CreativeToolId, ToolSignature> = {
   // O Estúdio fica com o AZUL da marca: é a ferramenta principal e a única que
   // aparece dentro da aula, então trocar a cor dela seria trocar a cor do produto.
-  'estudio-completo': { fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-texto)' },
-  pinta: { fundo: 'var(--tool-pinta)', tinta: 'var(--tool-pinta-texto)' },
-  pensa: { fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-texto)' },
-  molda: { fundo: 'var(--tool-molda)', tinta: 'var(--tool-molda-texto)' },
+  'estudio-completo': {
+    nome: 'Estúdio',
+    href: '/estudio',
+    icone: Blocks,
+    fundo: 'var(--tool-estudio)',
+    tinta: 'var(--tool-estudio-texto)',
+  },
+  pinta: {
+    nome: 'Pinta',
+    href: '/pinta',
+    icone: Palette,
+    fundo: 'var(--tool-pinta)',
+    tinta: 'var(--tool-pinta-texto)',
+  },
+  pensa: {
+    nome: 'Pensa',
+    href: '/pensa',
+    icone: Lightbulb,
+    fundo: 'var(--tool-pensa)',
+    tinta: 'var(--tool-pensa-texto)',
+  },
+  molda: {
+    nome: 'Molda',
+    href: '/molda',
+    icone: Box,
+    fundo: 'var(--tool-molda)',
+    tinta: 'var(--tool-molda-texto)',
+  },
 }
 
 /** Oficina desconhecida (id novo antes do deploy daqui) → a cor da marca. */

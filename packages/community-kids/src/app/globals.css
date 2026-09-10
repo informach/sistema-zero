@@ -164,6 +164,26 @@
   --tool-pensa-texto: oklch(0.52 0.17 50);
   --tool-molda-texto: oklch(0.52 0.2 295);
 
+  /* ── COR DE ASSINATURA por PORTA da Comunidade ───────────────────────────
+     Mesmo contrato dos `--tool-*`: o FUNDO não muda de tema (cor de fundo carrega
+     o branco por cima nos dois), e só a TINTA clareia no escuro. As quatro portas
+     eram o mesmo azul, e a criança tinha de ler o título para saber onde estava.
+     ⚠️ NÃO uso os `--kids-*` das unidades aqui: aqueles INVERTEM no tema escuro
+     (viram as variantes vivas), que é exatamente o que não pode acontecer com
+     fundo. Croma já limitado ao que cabe no sRGB — fora do gamute o browser
+     recorta e a cor pintada deixa de ser a que foi medida.
+     Medido: branco sobre o fundo 4,00 a 4,12:1 (ícone e título de 20px em negrito,
+     régua 3:1); tinta clara 5,17 a 6,13:1 no branco e 4,86 a 5,76:1 no creme;
+     tinta escura 4,62 a 4,68:1 sobre o navy. */
+  --porta-mural: oklch(0.62 0.19 355);
+  --porta-clube: oklch(0.58 0.1 212);
+  --porta-recados: oklch(0.58 0.15 152);
+  --porta-ranking: oklch(0.6 0.13 70);
+  --porta-mural-texto: oklch(0.52 0.19 355);
+  --porta-clube-texto: oklch(0.52 0.09 212);
+  --porta-recados-texto: oklch(0.52 0.135 152);
+  --porta-ranking-texto: oklch(0.52 0.11 70);
+
   /* Medalhas do pódio do ranking. Não são cor de marca: são metal, e todo mundo
      lê ouro/prata/bronze sem legenda. */
   --medal-ouro: var(--sz-kids-amarelo);
@@ -342,6 +362,17 @@
   --tool-pinta-texto: oklch(0.72 0.16 25);
   --tool-pensa-texto: var(--sz-kids-laranja-viva);
   --tool-molda-texto: oklch(0.74 0.16 300);
+  /* Só a TINTA das portas clareia; o fundo delas fica onde está (ver o comentário
+     no `:root`).
+     ⚠️ Medido contra o CARTÃO (`oklch(0.28 0.05 260)`), e não contra o fundo da
+     página: o rodapé "Explorar" mora dentro do cartão, que no escuro é MAIS CLARO
+     que o navy do fundo. Calibrado contra o fundo, o rodapé saía a 4,03–4,10:1 nas
+     quatro portas — perto o bastante para eu não desconfiar sem medir.
+     Agora: 4,71 a 4,79:1 no cartão e 5,40 a 5,50:1 direto na página. */
+  --porta-mural-texto: oklch(0.69 0.19 355);
+  --porta-clube-texto: oklch(0.65 0.105 212);
+  --porta-recados-texto: oklch(0.645 0.15 152);
+  --porta-ranking-texto: oklch(0.67 0.13 70);
 
   --medal-ouro: var(--sz-kids-amarelo);
   --medal-prata: oklch(0.75 0.02 255);
@@ -546,6 +577,21 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   }
   .sz-btn-gradient svg {
     stroke: currentColor;
+  }
+
+  /* Variante do CTA para quando o botão fica EM CIMA do azul da marca (o herói).
+     ⚠️ O `.sz-btn-gradient` do kids é um gradiente AZUL — no funil o botão 3D é
+     laranja, aqui não —, então sobre o herói ele ficava azul sobre azul, separado
+     do fundo só pelo degrau da sombra. Esta inverte o par do tema: a tinta do
+     herói vira o preenchimento e o azul vira o rótulo. É o botão branco da
+     referência, e funciona nos dois temas porque os dois lados são o mesmo par.
+     Vai JUNTO com o `.sz-btn-gradient` (herda a forma) e depois dele no arquivo,
+     que é o que faz o fundo e a sombra vencerem dentro da mesma camada. */
+  .sz-btn-inverso {
+    background-image: none;
+    background-color: var(--sz-primary-fg);
+    color: var(--sz-primary);
+    box-shadow: 0 4px 0 color-mix(in oklab, var(--sz-primary-fg) 74%, var(--sz-primary));
   }
 }
 
