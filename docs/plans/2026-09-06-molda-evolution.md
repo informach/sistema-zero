@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 234, volta da ponte e backup da geração nova, fases 5/8/9.**
-Próximo lote: as lacunas de código que sobraram das fases 2, 4 e 8, lote 235.
+**Último lote implementado e verificado: 235, a causa dos avisos act, fase 2.**
+Próximo lote: o chunk Three acima de 500 kB e as lacunas das fases 4 e 8, lote 236.
 A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
@@ -16,7 +16,7 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | Fase | Situação | Principais pendências |
 | --- | --- | --- |
 | 1 — Segurança e medição | Proteções, migração interna, leitores compatíveis e a virada pública pronta e REVERSÍVEL (a chave governa a promoção, não o acesso) | Implantar na ordem do documento de rollout; homologação com abas reais e medições em hardware |
-| 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
+| 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos; avisos act diagnosticados e corrigidos pela causa | Reduzir latência/memória dos blobs, dividir o chunk Three e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações, promoção ao abrir e miniatura da criação, verificadas em navegador real | Nuvem v2, "Baixar tudo", ponte Estúdio e revisão de toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
 | 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Integração pública e homologação |
@@ -25,8 +25,8 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
 
-Molda: **2.835 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 234; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.836 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 235; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -39,21 +39,12 @@ A falha intermitente de foco registrada no lote 148 reapareceu no lote 149 e foi
 reproduzida: o DOM atualizava antes da restauração em efeito passivo. Correção no
 ciclo de vida, regressão determinística, 75 execuções focais e integral passaram;
 testes originais preservados. Detalhes no review do lote 149.
-No lote 203 houve avisos de updates fora de act nos testes de TextureEditor;
-o focal passou sem repeti-los. A causa da interação da suíte permanece pendente,
-sem supressões nem alegação de correção; detalhes no review do lote 203.
-No lote 214, ModelEditor.test emitiu avisos act na integral; o focal de 39 testes
-passou sem repeti-los. A origem dessa interação também segue aberta, sem atribuir
-causa ou alegar correção a partir do focal; detalhes no review do lote 214.
-No lote 216, os avisos act apareceram em ModelEditor.paint.test durante a integral;
-mesma pendência de diagnóstico de interação, sem atribuir causa nem suprimir logs.
-No lote 219, dez avisos act em ModelEditor.paint/TextureEditor; mesma pendência.
-No lote 221, cinco avisos act em TextureEditor; não houve supressão nem correção alegada.
-No lote 225 reapareceram cinco avisos act, nos mesmos componentes do lote 219 (LoadedEditor,
-EditorTopBar duas vezes, FacePaintDialog e ModelEditor); mesma pendência, agora com
-reprodução fresca para o lote de diagnóstico, sem supressão nem correção alegada.
-Nos lotes 227 e 228 a integral não emitiu act; no 229 os mesmos cinco reapareceram. A
-intermitência é do editor ANTIGO e não vem do código da oficina nova.
+**Os avisos `act` intermitentes registrados dos lotes 203 a 231 foram diagnosticados e
+corrigidos no lote 235.** A causa não era ordem de arquivos nem contenção: o palco falso
+devolvia uma foto por padrão, e com ela cada montagem do editor de modelos agendava um
+`setThumb` 700 ms depois; um teste mais lento que isso recebia a atualização fora do act.
+Uma sonda reproduziu a assinatura exata dos cinco componentes sob demanda e a apagou ao
+tirar a foto. Review `act-warnings-diagnosis-l235.md`.
 A integral do lote 155 encontrou outra janela: prévia de superfície concluída não
 fechava após revisão externa. Assinatura de revisão e ownership reentrante corrigidos;
 regressão local/worker, 40 repetições focais e integral passaram. Review do lote 155.
@@ -66,7 +57,8 @@ os critérios de aceite das fases separados das tarefas já implementadas.
 Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
 e abra `http://127.0.0.1:5198/?oficina=nova`. Para ver a INTEGRAÇÃO no app, com a galeria
 enxergando as duas gerações, use `?oficina=app`. Nenhum dos dois é a ativação pública do
-editor nem do formato novo na nuvem: a capacidade `sceneWorkshop` do host nasce desligada.
+editor nem do formato novo na nuvem. No app do kids a capacidade `sceneWorkshop` está
+LIGADA desde o lote 233, e desligá-la é uma linha: ela governa a promoção, não o acesso.
 Próxima frente de implementação: a miniatura da geração seguinte e o ramo v2 da nuvem,
 que são os dois pré-requisitos de ligar a capacidade sem a criança perder nada; depois a
 ponte do Estúdio, os leitores compatíveis e só então o escritor novo.
@@ -5116,12 +5108,27 @@ conversão compartilhada continuam abertos na fase 5.
 - Duas criações com o mesmo nome, uma de cada geração, não se sobrescrevem no pacote.
 - Molda **2.835/0**, kids **619/0**, tipos, Biome, build do Kids e 14/14 e2e.
 
-### Próximo lote 235: as lacunas de código das fases 2, 4 e 8
+### Lote 235: a causa dos avisos act, aberta desde o lote 203 — verificado
 
+- Descartado medindo, não por hipótese: arquivo sozinho, pasta inteira, com os vizinhos
+  que o antecedem na suíte e com CPU disputada. Zero avisos em todos.
+- A causa é o TEMPO do teste, não a ordem: o palco falso devolve uma foto por padrão, e
+  com ela cada montagem do editor agenda um `setThumb` 700 ms depois. Um teste que passe
+  desse tempo recebe a atualização fora do act, e é por isso que só a suíte inteira, mais
+  lenta, os produzia.
+- Uma sonda reproduziu **os mesmos cinco avisos, nos mesmos componentes e na mesma ordem**,
+  e nenhum ao tirar a foto. Virou regressão permanente que assere a PROPRIEDADE, não o log.
+- Os três arquivos que montam o editor passam a instalar o palco sem foto; os dois casos
+  que provam a miniatura reinstalam com ela, então a cobertura não diminuiu. Sem supressão
+  de log e sem mudar o produto. Review `act-warnings-diagnosis-l235.md`.
+- Integral **2.836/0**, zero avisos act; três execuções integrais seguidas antes disso já
+  vinham limpas. A contagem sozinha não seria prova: quem sustenta é a sonda.
+
+### Próximo lote 236: o chunk Three e as lacunas das fases 4 e 8
+
+- O chunk Three de 579 kB passa do aviso de 500 kB desde o lote 1, sem levantar o teto.
 - Fase 4: chanfro em mais de uma quina e caminhos abertos.
 - Fase 8: ampliar clipes, camadas e PBR do bbmodel; compatibilidade glTF que ficou aberta.
-- Fase 2: o custo dos blobs (o ledger varre tudo para medir) e o chunk Three de 579 kB.
-- E a pendência mais antiga: a causa dos avisos `act` intermitentes do editor ANTIGO.
 
 ### Situação do plano após esses lotes
 

@@ -13,7 +13,11 @@ let fake: ReturnType<typeof installFakeViewport>
 
 beforeEach(() => {
   resetMoldaPersistenceForTests()
-  fake = installFakeViewport()
+  // ⚠️ Sem foto por padrão: com a foto, cada montagem agenda um `setThumb` 700 ms depois,
+  // e um teste que passe desse tempo recebe essa atualização FORA do act. Era a causa dos
+  // avisos act intermitentes que só apareciam na suíte inteira, onde os testes ficam mais
+  // lentos. Quem prova a miniatura reinstala o palco com ela.
+  fake = installFakeViewport({ thumb: null })
 })
 
 afterEach(() => {

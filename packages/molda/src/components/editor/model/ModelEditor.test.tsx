@@ -21,7 +21,11 @@ let fake: ReturnType<typeof installFakeViewport>
 
 beforeEach(() => {
   resetMoldaPersistenceForTests()
-  fake = installFakeViewport()
+  // ⚠️ Sem foto por padrão: com a foto, cada montagem agenda um `setThumb` 700 ms depois,
+  // e um teste que passe desse tempo recebe essa atualização FORA do act. Era a causa dos
+  // avisos act intermitentes que só apareciam na suíte inteira, onde os testes ficam mais
+  // lentos. Quem prova a miniatura reinstala o palco com ela.
+  fake = installFakeViewport({ thumb: null })
 })
 
 afterEach(() => {
@@ -396,7 +400,22 @@ describe('ModelEditor (bancada Montar)', () => {
     expect(undo.disabled).toBe(true)
   })
 
+  test('sem foto no palco, nada é gravado depois que o teste passa do tempo da miniatura', async () => {
+    // Regressão da causa dos avisos act intermitentes (aberta desde o lote 203): com o
+    // palco devolvendo foto, cada montagem agendava um `setThumb` 700 ms depois. Um teste
+    // mais lento que isso recebia a atualização FORA do act, e é por isso que os avisos só
+    // apareciam na suíte inteira. A sonda que provou isso reproduzia exatamente os mesmos
+    // cinco componentes: LoadedEditor, EditorTopBar duas vezes, FacePaintDialog e ModelEditor.
+    const persistence = await openModel()
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+    expect(modelOf(persistence.snapshot()[0]).thumb).toBeUndefined()
+    expect(fake.instances[0]?.thumbs ?? 0).toBeGreaterThan(0)
+  })
+
   test('a miniatura é fotografada depois de uma mudança e salva no asset', async () => {
+    // Este é o teste da foto: aqui o palco devolve uma.
+    fake.uninstall()
+    fake = installFakeViewport()
     const persistence = await openModel()
     fireEvent.keyDown(document, { key: 'b' })
     await waitFor(

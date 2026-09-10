@@ -18,7 +18,11 @@ let fake: ReturnType<typeof installFakeViewport>
 
 beforeEach(() => {
   resetMoldaPersistenceForTests()
-  fake = installFakeViewport()
+  // ⚠️ Sem foto por padrão: com a foto, cada montagem agenda um `setThumb` 700 ms depois,
+  // e um teste que passe desse tempo recebe essa atualização FORA do act. Era a causa dos
+  // avisos act intermitentes que só apareciam na suíte inteira, onde os testes ficam mais
+  // lentos. Quem prova a miniatura reinstala o palco com ela.
+  fake = installFakeViewport({ thumb: null })
 })
 
 afterEach(() => {
@@ -64,6 +68,9 @@ describe('Editar malha (M2)', () => {
   })
 
   test('selection tools and shortcuts keep the current mode, share results and never enter undo history', async () => {
+    // Este caso também prova que a foto sai durante a seleção: aqui o palco devolve uma.
+    fake.uninstall()
+    fake = installFakeViewport()
     const callbacks = await openAndConvert()
     const before = structuredClone(lastModel())
     fireEvent.click(screen.getByRole('button', { name: copy.modes.face }))
