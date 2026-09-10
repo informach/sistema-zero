@@ -3666,6 +3666,42 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
 - **ActivityPanel**: micro-celebração ao passar TODAS as checagens — banner `<output>` verde com
   pop finito (`.sz-activity-pop` no studio.css; `prefers-reduced-motion` desliga a animação).
 
+## Contrato nativo Molda e recursos de skin (09/2026, lote 117)
+
+- Lote Molda 187: data URLs das duas fixtures atualizados para a reflexão V da
+  exportação corrigida. Prova byte a byte e hashes históricos no produtor confirmam
+  que somente UV mudou nessas fixtures; poses, clipes e skin continuam idênticos.
+  Consumidor usa os mesmos testes/runtime, sem importar implementação Molda.
+- O motor avançado consome `fixtures/molda-skinned.json` e `molda-articulated.json`
+  como dados portáteis. Não importar código Molda no runtime Studio. As fixtures
+  são reproduzidas e validadas no pacote produtor; os testes Studio usam loader,
+  matemática, SkeletonUtils e mixers reais, com GPU simulada. Isso não homologa
+  aparência/WebGL/CSP, nem ativa ponte pública ou suporte do motor básico.
+- `cloneModel` usa clone comum apenas sem SkinnedMesh. Skin requer SkeletonUtils;
+  erro preserva a peça de reserva e avisa, sem compartilhar ossos. A instalação
+  é preparada antes de retirar a reserva; callback de molde substituído ou runtime
+  encerrado não pode instalar uma árvore órfã. `modelClips` pertence ao modelo
+  instalado no template, não à mera presença de um arquivo no cache.
+- Cada template/entidade possui seus Skeletons; geometria/material são do cache.
+  Reciclar conserva recursos reutilizáveis. Reiniciar ou encerrar chama
+  `disposeModelPools` para incluir também raízes recolhidas fora da cena: parar e
+  uncacheRoot do mixer, liberar boneTexture pelo Skeleton e limpar os recursos.
+  `disposeMoldTemplate` e `disposeImportedModel` liberam seus próprios Skeletons.
+  Reinício não descarta geometria/material do cache; teardown deduplica recursos
+  compartilhados. Não confiar somente em scene.traverse para liberar os pools.
+- Lote 118: cada recurso de pool guarda a receita dona e a revisão clonada. Somente
+  ambas iguais à receita atual permitem reaproveitamento. Instalar um GLB ou alterar
+  a receita invalida os recursos recolhidos antigos; instâncias ainda vivas conservam
+  seus ossos/clipes até serem recolhidas. `returnModelResource` cobre recolhimento,
+  compactação de varreduras e releaseAll; não adicionar atalhos de push em free[].
+- Materiais próprios de primitivas/reservas são registrados na criação em
+  `ownedMaterials`, inclusive reservas substituídas durante carregamento. A receita
+  aposentada só os libera quando `resourceCount` chega a zero; não percorrer o
+  template atual para inferir ownership nem usar nomes de molde para essa decisão.
+  GLB conserva seu próprio cache compartilhado. Teardown usa a mesma deduplicação
+  de geometrias para cena e UNIT_GEOS. A suíte cobre 20 trocas e descarte de 126
+  texturas de ossos, mas esses contadores não medem memória/GPU em hardware.
+
 ## Backlog
 
 - `<ProjectList>` adapter-based (hoje acoplada ao IndexedDB local).

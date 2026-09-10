@@ -87,6 +87,7 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
     }
     extraLights.length = 0;
     for (var fk in effects) disposeEffect(effects[fk]);
+    disposeModelPools();
     var disposedMaterials = new Set();
     for (var mk in molds) disposeMoldTemplate(molds[mk], disposedMaterials);
     for (var bi = 0; bi < projectButtons.length; bi++) {
