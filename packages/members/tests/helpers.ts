@@ -32,6 +32,7 @@ import { AwardGamificationService } from '../src/application/gamification/award-
 import { BuyStreakFreezeService } from '../src/application/gamification/buy-streak-freeze.service'
 import { ChallengeAdminService } from '../src/application/gamification/challenge-admin.service'
 import { ClaimMissionService } from '../src/application/gamification/claim-mission.service'
+import { ClaimUnitChestService } from '../src/application/gamification/claim-unit-chest.service'
 import { GetChallengeService } from '../src/application/gamification/get-challenge.service'
 import { GetGamificationService } from '../src/application/gamification/get-gamification.service'
 import { GetLeagueService } from '../src/application/gamification/get-league.service'
@@ -453,6 +454,7 @@ export function buildApp(
         new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
       ),
       claimMission: new ClaimMissionService(gamification, accessCheck, clock),
+      claimUnitChest: new ClaimUnitChestService(checkAccess, courses, progress, awardGamification),
       recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
       recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),

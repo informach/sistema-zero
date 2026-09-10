@@ -64,6 +64,25 @@ afterEach(() => {
   useProjectStore.setState({ project: null, isDirty: false, saveError: null })
 })
 
+describe('Topbar × olhinho do preview', () => {
+  /**
+   * No ESTREITO o preview é uma ABA (ver NarrowPanels), não um painel ao lado. O
+   * olhinho não teria o que esconder ali, e pior: ele apagaria a própria aba. A
+   * criança clicaria, o preview sumiria da tira e não haveria botão para trazer de
+   * volta — leitura natural para uma criança: "o app quebrou".
+   */
+  it('wide: o olhinho aparece', () => {
+    mount(1280, null)
+    expect(screen.getByRole('button', { name: 'Ocultar pré-visualização' })).toBeTruthy()
+  })
+
+  it('narrow: o olhinho NÃO aparece (lá o preview é aba)', () => {
+    mount(800, null)
+    expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Mostrar pré-visualização' })).toBeNull()
+  })
+})
+
 describe('Topbar × chrome do host', () => {
   it('wide: o menu é o PRIMEIRO botão da barra (sem title) e o selo é um Badge ao lado do Salvo', () => {
     const { chrome, onToggle } = chromeWith()

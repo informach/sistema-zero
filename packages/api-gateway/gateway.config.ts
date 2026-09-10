@@ -1918,6 +1918,22 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 300, windowMs: 60_000, by: 'principal' },
     },
+    // Baú de fim de unidade da trilha kids: a criança clica e AÍ ganha o XP+moedas
+    // (antes caía sozinho ao concluir a última aula do módulo). 5 segmentos, com
+    // literais `units` e `chest/claim` — não colide com `/courses/:slug` (2),
+    // `/courses/:slug/progress` (3) nem `/courses/:slug/rating` (3). Teto baixo:
+    // é escrita, e um baú por módulo para sempre.
+    {
+      id: 'members-unit-chest-claim',
+      methods: ['POST'],
+      pathPattern: '/members/courses/:slug/units/:moduleId/chest/claim',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+    },
     {
       id: 'members-course-progress',
       methods: ['GET'],

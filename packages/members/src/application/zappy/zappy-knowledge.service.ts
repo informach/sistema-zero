@@ -233,14 +233,22 @@ export class ZappyKnowledgeService {
     const pending: ZappyKnowledgePendingExtraction[] = []
     for (const block of blocks) {
       const sourceRef = `block:${block.blockId}`
-      if (block.content.kind === 'rich_text') {
+      // O balão de fala do mascote carrega justamente a INSTRUÇÃO da aula ("agora
+      // você vai…"), que antes vivia em texto corrido. Se ele não entrasse aqui,
+      // migrar a instrução de `rich_text` para `dialogue` REMOVERIA conhecimento
+      // da base: a linha antiga é apagada na reconciliação e a nova nunca entra, e
+      // o Zappy passaria a responder "o que eu faço agora?" sem saber.
+      if (block.content.kind === 'rich_text' || block.content.kind === 'dialogue') {
         await this.sync({
           courseId: block.courseId,
           lessonId: block.lessonId,
           sourceType: 'rich-text',
           sourceRef,
           expectedBlockRevision: block.blockRevision,
-          content: block.content.markdown ?? block.content.html ?? '',
+          content:
+            block.content.kind === 'dialogue'
+              ? block.content.text
+              : (block.content.markdown ?? block.content.html ?? ''),
         })
         indexed += 1
       } else if (block.content.kind === 'video') {

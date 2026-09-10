@@ -1397,16 +1397,26 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
   (forward-compat). Inclui a de PARTICIPAÇÃO **`clube-primeiro-post`** ("Voz da turma", `MessagesSquare`
   — 1ª conversa aprovada no Clube; ver §Full review do Clube dos Criadores).
 - `lesson-celebration.tsx` — overlay ganhou `gamification` (chip +XP, fogo do streak com
-  destaque quando `extended`, "abriu o baú da unidade", badges); `xpAwarded: 0`/`null` →
+  destaque quando `extended`, o CONVITE "tem um baú te esperando na trilha" — desde 09/2026 quem
+  abre o baú é a criança, então aqui não cabe mais dizer "você abriu" —, badges); `xpAwarded: 0`/`null` →
   overlay antigo. O `lesson-player-client` agora LÊ a resposta do complete (estado
   `celebration = {progress, gamification}`); auto-complete a ~90% vira toast `+N XP`.
 - `kids-quiz.tsx` — tela de aprovado mostra chip +XP e badges destravadas (vêm na resposta do
   submit).
-- `course-trail.tsx` + `trail-layout.ts` — nó de BAÚ no fim de cada unidade (`TrailUnit.chest`,
-  derivado client-side: todas as aulas do módulo `completed`; o índice global do serpenteado
-  avança TAMBÉM no baú — offsets consecutivos seguem diferindo de 1, travado em teste).
-  Fechado = tracejado neutro; aberto = tema da unidade (`kids-node--chest-{open,closed}` no
-  globals). Não-clicável. ⚠️ o label "+25 XP" do baú aberto espelha o XP_VALUES do members.
+- `course-trail.tsx` + `trail-layout.ts` + **`trail-chest.tsx`** — nó de BAÚ no fim de cada
+  unidade. O índice global do serpenteado avança TAMBÉM no baú (offsets consecutivos seguem
+  diferindo de 1, travado em teste), e o `trail-layout` só devolve a POSIÇÃO dele.
+  ⭐⭐ **CLICÁVEL desde 09/2026:** a criança clica, o baú abre com animação, confete e som, e AÍ
+  ganha o XP + moedas. Antes o `unit_complete` caía sozinho no `complete` da última aula do
+  módulo e o baú era só desenho. O estado (`liberado`/`resgatado`/prêmio) vem do SERVIDOR em
+  `ModuleOutlineView.chest` — derivar no cliente não sobrevivia a um F5. O claim é
+  `POST /members/courses/:slug/units/:moduleId/chest/claim`, revalidado no servidor e idempotente
+  pelo índice único de `xp_events`; contas antigas nascem com os baús ABERTOS, porque a linha
+  `unit_complete` que elas já têm no ledger É o carimbo (sem backfill).
+  ⚠️ **Só o KIDS** trocou de modelo: a vitrine ADULTA não tem trilha nem baú, então lá o XP de
+  unidade continua caindo no complete. ⚠️ Fechado, o baú **não é `<button>`** (seria parada de
+  foco que não faz nada) — o estado vive no `aria-label`, como sempre foi. Fechado = tracejado
+  neutro; liberado/aberto = OURO (`kids-unit-tesouro`, o `--sz-kids-amarelo` da marca).
 - `streak-widget.tsx` — sidebar (cheio) + `MobileTopbar` (compact): fogo aceso (vermelho
   `--sz-hot`) quando `activeToday` + XP total. O layout busca via `Promise.all` com o avatar.
   **Equipe (passe livre):** quando `coins.unlimited` (members marca p/ superadmin/admin/staff), o

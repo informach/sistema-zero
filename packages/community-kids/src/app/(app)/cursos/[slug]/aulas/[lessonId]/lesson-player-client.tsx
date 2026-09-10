@@ -190,7 +190,12 @@ export function LessonPlayer({
       >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso real das seções da AULA. */}
+          {/* Header de "lição" (padrão Duolingo): voltar em círculo + o progresso
+              real das seções DA AULA + modo foco.
+              ⚠️ O progresso do CURSO saiu daqui (09/2026) e não volta: dentro da
+              aula o que a criança precisa medir é a AULA. O do curso ela já vê na
+              trilha, no card do curso e na celebração. O chip "Aula N de M" abaixo
+              FICA: ele situa a aula no curso sem medir nada. */}
           <div className="flex items-center gap-3">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria

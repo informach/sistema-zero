@@ -4,6 +4,8 @@ import { type ReactNode, StrictMode } from 'react'
 import { createEmptyProject } from '#core'
 import type { SZIR, SZIRV2 } from '#ir'
 import { useProjectStore } from '../state/projectStore'
+import { useUIStore } from '../state/uiStore'
+import { type StudioLayout, StudioLayoutProvider } from '../studio/layoutContext'
 import { BlocksMode } from './BlocksMode'
 
 // bun:test NÃO isola module mocks por arquivo (módulos são compartilhados na
@@ -32,6 +34,37 @@ afterAll(() => {
   mock.module('react-resizable-panels', () => realPanels)
   mock.module('../components/blocks/BlocklyPanel', () => realBlocklyPanel)
   mock.module('../components/preview/PreviewIframe', () => realPreviewIframe)
+})
+
+const narrow: StudioLayout = { width: 800, isNarrow: true, isCompact: false }
+
+describe('BlocksMode × preview no estreito', () => {
+  afterEach(() => {
+    cleanup()
+    useUIStore.setState({ showPreview: true })
+  })
+
+  /**
+   * No estreito o olhinho da Topbar não é renderizado, então `showPreview` ali é só
+   * uma preferência velha de desktop. Se ela apagasse a aba, quem desligou o preview
+   * no computador abriria no celular sem preview E sem botão para trazer de volta.
+   */
+  it('a aba de preview sobrevive a showPreview=false', () => {
+    useProjectStore.setState({
+      project: createEmptyProject('project-narrow', 'Projeto'),
+      isDirty: false,
+      saveError: null,
+    })
+    useUIStore.setState({ showPreview: false })
+
+    const { getByTitle } = render(
+      <StudioLayoutProvider value={narrow}>
+        <BlocksMode />
+      </StudioLayoutProvider>,
+    )
+
+    expect(getByTitle('preview')).toBeTruthy()
+  })
 })
 
 describe('BlocksMode', () => {

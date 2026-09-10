@@ -1,7 +1,21 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, mock, test } from 'bun:test'
 import { render, screen } from '@testing-library/react'
-import { CourseTrail } from '../src/components/kids/course-trail'
 import type { CourseDetailView, LessonOutlineView, ModuleOutlineView } from '../src/lib/types'
+
+// O baú virou ilha `'use client'` com `useRouter` (ele abre com um clique e
+// re-sincroniza o XP do topo). Sem o router montado, renderizar a trilha quebra.
+//
+// ⚠️ Espalhe o módulo inteiro e NÃO restaure no fim: bun:test não isola module
+// mocks por arquivo, e devolver o módulo real no `afterAll` derruba os arquivos
+// que rodam depois (medido: 19 quedas). Os outros mocks de `next/navigation` do
+// pacote seguem a mesma receita.
+const nav = await import('next/navigation')
+mock.module('next/navigation', () => ({
+  ...nav,
+  useRouter: () => ({ refresh: () => {}, push: () => {} }),
+}))
+
+const { CourseTrail } = await import('../src/components/kids/course-trail')
 
 function lesson(id: string): LessonOutlineView {
   return {
@@ -16,7 +30,21 @@ function lesson(id: string): LessonOutlineView {
 }
 
 function moduleOf(id: string, lessons: LessonOutlineView[]): ModuleOutlineView {
-  return { id, title: `Modulo ${id}`, summary: null, sortOrder: 0, lessons }
+  return {
+    id,
+    title: `Modulo ${id}`,
+    summary: null,
+    sortOrder: 0,
+    lessons,
+    // O estado do baú vem do SERVIDOR desde 09/2026 (a criança abre com um
+    // clique). Aqui a fixture só precisa dizer que ele existe.
+    chest: {
+      unlocked: lessons.length > 0 && lessons.every((l) => l.completed),
+      claimed: false,
+      xp: 25,
+      coins: 15,
+    },
+  }
 }
 
 function course(modules: ModuleOutlineView[]): CourseDetailView {

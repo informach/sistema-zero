@@ -1,6 +1,7 @@
 'use client'
 
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
@@ -16,6 +17,7 @@ import {
   Headphones,
   ListChecks,
   type LucideIcon,
+  MessageCircle,
   Palette,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -90,6 +92,18 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
   switch (content.kind) {
     case 'rich_text':
       return <RichText content={content} />
+    case 'dialogue':
+      return (
+        <div className="kids-unit-cyan flex flex-col gap-3">
+          <BlockChip icon={MessageCircle} label="O Zappy fala" themeClass="kids-unit-cyan" />
+          <DialogueBlockView
+            content={content}
+            mascot={
+              <KidsMascot expression={content.pose ?? 'speaking'} className="size-16 sm:size-24" />
+            }
+          />
+        </div>
+      )
     case 'video':
       return <Video content={content} />
     case 'image':
@@ -153,8 +167,10 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
           duas pílulas gêmeas na mesma dobra, com o visual de maior ênfase do sistema
           num estado em que não há nada a fazer. A moldura tracejada já diz "em obras". */}
       <BlockChip icon={Hammer} label="Em breve" themeClass="kids-unit-muted" />
-      <div className="flex flex-col items-center gap-3 rounded-3xl border-(--unit) border-4 border-dashed bg-card px-6 py-10 text-center">
-        <KidsMascot expression="thinking" className="size-20" />
+      <div className="flex flex-col items-center gap-3 rounded-2xl border-(--unit) border-2 border-dashed bg-card px-6 py-10 text-center">
+        {/* Dormindo, não pensativo: aqui não há dúvida a resolver, a aula ainda
+            não existe. Pensativo é para erro e carregamento. */}
+        <KidsMascot expression="sleeping" className="size-20" />
         {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
             ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
         <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
@@ -219,12 +235,14 @@ function RichText({ content }: { content: RichTextBlock }) {
 }
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
-/** Moldura kids dos players (borda grossa colorida + cantos bem redondos). */
+/** Moldura kids dos players: borda COLORIDA e cantos arredondados, mas sem
+ *  engrossar. Era `border-4 rounded-3xl` (09/2026): o infantil vem da cor, e os
+ *  4px a menos de traço voltam como largura útil para o vídeo. */
 function VideoFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
       <BlockChip icon={Clapperboard} label="Assista" themeClass="kids-unit-cyan" />
-      <div className="overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+      <div className="overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
         {children}
       </div>
     </div>
@@ -246,7 +264,7 @@ function ImageView({ content }: { content: ImageBlock }) {
     <figure className="kids-unit-lime">
       {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS) empurrando
           o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
-      <div className="aspect-[4/3] w-full overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={content.url}
@@ -268,7 +286,7 @@ function ImageView({ content }: { content: ImageBlock }) {
 function Audio({ content }: { content: AudioBlock }) {
   if (!content.url) return null
   return (
-    <div className="kids-unit-lime flex flex-col gap-3 rounded-3xl border-2 border-border bg-card p-4 shadow-[0_4px_0_var(--border)]">
+    <div className="kids-unit-lime flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-[0_4px_0_var(--border)]">
       <BlockChip icon={Headphones} label="Escute" themeClass="kids-unit-lime" />
       {/* biome-ignore lint/a11y/useMediaCaption: áudio de aula sem faixa de legenda disponível */}
       <audio controls preload="metadata" src={content.url} className="w-full" />
@@ -285,7 +303,7 @@ function Embed({ content }: { content: EmbedBlock }) {
   return (
     <div className="kids-unit-grad flex flex-col gap-3">
       <BlockChip icon={Gamepad2} label="Brinque" themeClass="kids-unit-grad" />
-      <div className="overflow-hidden rounded-3xl border-(--unit) border-4 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+      <div className="overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
         <iframe
           srcDoc={content.html}
           title="Conteúdo interativo"
@@ -299,7 +317,7 @@ function Embed({ content }: { content: EmbedBlock }) {
 
 function UnsupportedBlock({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center rounded-3xl border-2 border-border border-dashed py-10 text-muted-foreground text-sm">
+    <div className="flex items-center justify-center rounded-2xl border-2 border-border border-dashed py-10 text-muted-foreground text-sm">
       {label}
     </div>
   )

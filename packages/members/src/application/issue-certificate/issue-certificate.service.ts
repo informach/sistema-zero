@@ -186,6 +186,8 @@ export class IssueCertificateService {
       this.progress.countCompletedPublished(input.userId, course.id),
       this.courses.listPublishedLessonIds(lesson.moduleId),
     ])
+    // Na vitrine KIDS isto não paga nada (o prêmio é o baú da trilha, no clique);
+    // na ADULTA, que não tem trilha, o comportamento antigo continua valendo.
     const completedSet = new Set([...completedIds, input.lessonId])
     const unitCompleted =
       moduleLessonIds.length > 0 && moduleLessonIds.every((id) => completedSet.has(id))

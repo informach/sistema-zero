@@ -10,6 +10,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, Check, ExternalLink, List, Lock, MessageCircle } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
@@ -143,6 +144,27 @@ function BlockScope({
   )
 }
 
+/** Largura da JANELA a partir da qual o lado a lado existe (o `2xl` do Tailwind). */
+const SPLIT_MIN_WIDTH_PX = 1536
+
+/**
+ * Só para DESABILITAR a divisória onde ela está escondida — o layout continua
+ * decidido pelo CSS, que não pisca. Começa em `false` e aplica o valor real num
+ * efeito: ler `matchMedia` no inicializador do estado quebra a hidratação
+ * (React #418), pisão já documentado no modo foco do kids.
+ */
+function useWideEnoughForSplit(): boolean {
+  const [wide, setWide] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH_PX}px)`)
+    const sync = () => setWide(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  return wide
+}
+
 export function LessonSections(props: {
   lesson: LessonDetailView
   renderBlocks: (blocks: LessonBlockView[]) => ReactNode
@@ -206,6 +228,8 @@ function LessonSectionsContent({
       ),
   )
   const [error, setError] = useState('')
+  // Nem todo erro de navegação é repetível: ver o 409 no `catch` do `navigate`.
+  const [retryable, setRetryable] = useState(true)
   const [helpOpen, setHelpOpen] = useState(false)
   const [help, setHelp] = useState('')
   const [helpStatus, setHelpStatus] = useState('')
@@ -235,6 +259,27 @@ function LessonSectionsContent({
   const navigationBusy = useRef(false)
   const lastNavigation = useRef<{ sectionId: string; blockId?: string } | null>(null)
   const [navigating, setNavigating] = useState(false)
+  // ⚠️ ANTES do return antecipado abaixo: hook chamado depois de um `return` roda
+  // condicionalmente e desalinha a ordem dos hooks entre renders.
+  const wideEnough = useWideEnoughForSplit()
+  const registrouAbertura = useRef(false)
+  // Abrir a aula REGISTRA a seção em que a criança entrou. A navegação só grava em
+  // TRANSIÇÃO, então quem abre e fica na primeira seção nunca criava linha — e é o
+  // `updated_at` dela que alimenta o "continuar de onde parou" do card do curso.
+  // Silencioso de propósito: isto é telemetria de retomada, e falhar aqui não pode
+  // virar erro na cara da criança (a navegação de verdade, essa sim, avisa).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: montagem, uma vez só
+  useEffect(() => {
+    if (registrouAbertura.current || preview || !selected) return
+    registrouAbertura.current = true
+    void apiSend(
+      `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
+      'POST',
+      { sectionId: selected },
+      { 'x-sz-viewer': player?.viewerId ?? '' },
+      { keepalive: true },
+    ).catch(() => {})
+  }, [])
   if (!section) return null
   const activeIds = new Set([
     ...section.blockIds,
@@ -245,6 +290,8 @@ function LessonSectionsContent({
     (b) => (b.kind === 'studio' || b.kind === 'pinta') && !supportIds.has(b.id),
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
+  // A divisória só é interativa onde ela APARECE. Ver o comentário no handle.
+  const arrastavel = hasWorkspace && wideEnough
   async function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next || locked(next.id) || navigationBusy.current) return
@@ -259,6 +306,9 @@ function LessonSectionsContent({
           'POST',
           { sectionId: next.id },
           { 'x-sz-viewer': player?.viewerId ?? '' },
+          // `keepalive`: trocar de seção e fechar a aba é comum, e sem isso o
+          // navegador cancela o pedido no unload.
+          { keepalive: true },
         )
       setSelected(next.id)
       setHelpOpen(false)
@@ -275,8 +325,19 @@ function LessonSectionsContent({
       if (indexMenu.current) indexMenu.current.open = false
       if (requirementsMenu.current) requirementsMenu.current.open = false
       setDestination(blockId && blockId !== next.id ? blockId : 'heading')
-    } catch {
-      setError('Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.')
+    } catch (e) {
+      // Trocar de perfil no meio da aula devolve 409 VIEWER_CHANGED: aqui repetir
+      // NUNCA funciona, então quem fala é o servidor e o botão some. Sem isto a
+      // criança lê "tente novamente" para um erro que só passa reabrindo a aula.
+      if ((e as { code?: string } | null)?.code === 'VIEWER_CHANGED') {
+        setError((e as { message?: string }).message ?? 'O perfil mudou. Abra a aula de novo.')
+        setRetryable(false)
+      } else {
+        setError(
+          'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
+        )
+        setRetryable(true)
+      }
     } finally {
       navigationBusy.current = false
       setNavigating(false)
@@ -356,7 +417,10 @@ function LessonSectionsContent({
       }
     >
       <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
+        {/* `sz-lesson-toolbar`: gancho ESTÁVEL para o tema do kids. Por posição não
+            funciona — a barra já perdeu um `:first-of-type` quando outro elemento
+            entrou na frente dela. */}
+        <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
           <details ref={requirementsMenu} className="relative">
             <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
               O que falta para concluir · {pending.length}
@@ -439,13 +503,30 @@ function LessonSectionsContent({
             </nav>
           </details>
         </div>
-        <div
+        {/* ⚠️ Era um grid `0.8fr/1.2fr`. Foi ELE que derrubou a largura do vídeo de
+            ~900-1290px para ~350-505px, e o Vimeo escolhe a rendition pelo tamanho
+            renderizado do iframe — daí o "vídeo ruim em tela cheia" que a dona
+            reportou. Agora a criança decide onde fica a divisória. */}
+        <PanelGroup
+          direction="horizontal"
+          // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
+          // para as próximas. Na prévia do admin (`preview`) não persiste nada.
+          autoSaveId={player?.viewerId ? `sz:lesson-split:${player.viewerId}` : null}
           className={cn(
-            'grid items-start gap-6',
-            hasWorkspace && '2xl:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]',
+            // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
+            // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
+            // e `sticky` dentro, então os três precisam ser desfeitos.
+            'block! h-auto! items-start overflow-visible!',
+            hasWorkspace && '2xl:flex!',
           )}
         >
-          <div className="min-w-0 space-y-6">
+          <Panel
+            id="lesson-content"
+            order={1}
+            defaultSize={55}
+            minSize={30}
+            className="min-w-0 space-y-6 overflow-visible!"
+          >
             <header className="space-y-2 px-1">
               <h2
                 ref={heading}
@@ -477,15 +558,51 @@ function LessonSectionsContent({
                 <span className="sr-only">em outra aba</span>
               </a>
             )}
-          </div>
-          <div className={hasWorkspace ? 'min-w-0 space-y-6' : 'hidden'}>
+          </Panel>
+          {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
+              reordena a árvore e REMONTA o editor da direita (Blockly caro, rascunho
+              re-semeado). Só as classes mudam.
+              ⚠️ Mas montado E escondido não basta: a lib registra a área de arrasto no
+              mount e a acha por `getBoundingClientRect()`, que num `display:none` é
+              {0,0,0,0} — e o guarda de "tem elemento por cima" usa comparação estrita,
+              então retângulo de área zero nunca é descartado. O resultado era uma zona
+              de arrasto FANTASMA no canto (0,0) da tela, com a folga de toque de 20px:
+              a criança encostava no canto do tablet, o `pointerdown` morria na captura
+              do body e um arrasto invisível gravava lixo na divisória do perfil. Por
+              isso `disabled`, que a lib respeita pulando o registro sem desmontar. */}
+          <PanelResizeHandle
+            disabled={!arrastavel}
+            // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
+            hitAreaMargins={{ coarse: 20, fine: 6 }}
+            className={cn(
+              'group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
+              'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+              hasWorkspace && '2xl:block',
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-y-0 left-1/2 w-[3px] -translate-x-1/2 rounded-full bg-border transition-colors group-hover/split:bg-primary group-data-[resize-handle-state=drag]/split:bg-primary"
+            />
+          </PanelResizeHandle>
+          <Panel
+            id="lesson-tool"
+            order={2}
+            defaultSize={45}
+            minSize={30}
+            className={cn(
+              // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
+              'mt-6 overflow-visible! 2xl:mt-0',
+              hasWorkspace ? 'min-w-0 space-y-6' : 'hidden',
+            )}
+          >
             {tools.map((block) => (
               <div key={block.id} style={{ display: activeIds.has(block.id) ? undefined : 'none' }}>
                 {(visited.has(block.id) || activeIds.has(block.id)) && render(block)}
               </div>
             ))}
-          </div>
-        </div>
+          </Panel>
+        </PanelGroup>
         {supportIds.size > 0 && (
           <details className="rounded-2xl border border-border bg-card p-4">
             <summary className="min-h-11 cursor-pointer py-2 font-medium focus-visible:outline-2 focus-visible:outline-ring">
@@ -503,7 +620,9 @@ function LessonSectionsContent({
               {message}
             </p>
           ))}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
+        {/* `sz-lesson-nav`: gancho ESTÁVEL, mesmo espírito do `sz-lesson-toolbar`.
+            Sem ele o kids teria de mirar por estrutura ("a div com border-t"). */}
+        <div className="sz-lesson-nav flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
           <Button
             variant="outline"
             disabled={index === 0 || navigating}
@@ -567,20 +686,22 @@ function LessonSectionsContent({
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}{' '}
-            <button
-              type="button"
-              className="underline"
-              onClick={() => {
-                const retry = lastNavigation.current
-                if (retry)
-                  void navigate(
-                    sections.findIndex((s) => s.id === retry.sectionId),
-                    retry.blockId,
-                  )
-              }}
-            >
-              Tentar novamente
-            </button>
+            {retryable && (
+              <button
+                type="button"
+                className="underline"
+                onClick={() => {
+                  const retry = lastNavigation.current
+                  if (retry)
+                    void navigate(
+                      sections.findIndex((s) => s.id === retry.sectionId),
+                      retry.blockId,
+                    )
+                }}
+              >
+                Tentar novamente
+              </button>
+            )}
           </p>
         )}
         {index === sections.length - 1 && !lesson.completed && (

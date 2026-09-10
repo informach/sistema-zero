@@ -1067,6 +1067,20 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
+   * Abre o baú de fim de unidade (a criança clica na trilha). Escrita, então exige
+   * sessão que possa escrever — impersonação em leitura é recusada.
+   */
+  const unitChestClaim = {
+    POST: async (_req: Request, ctx: { params: Promise<{ slug: string; moduleId: string }> }) => {
+      const readonly = await requireWritableSession()
+      if (readonly) return readonly
+      const { slug, moduleId } = await ctx.params
+      const { status, body } = await members.claimUnitChest(slug, moduleId)
+      return NextResponse.json(body ?? { ok: status === 200 }, { status })
+    },
+  }
+
+  /**
    * Registra o REMIX de um jogo do Mural ("Fazer a minha versão") — marco da missão
    * gated por estudio-completo (retenção pós-cursos). Best-effort do cliente kids
    * (o toast do remix não espera); os guards anti-farm (posse + playId real no hub
@@ -1657,6 +1671,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     roomBuy,
     missionsGet,
     missionClaim,
+    unitChestClaim,
     studioRemix,
     studioActivityDay,
     streakFreezeBuy,

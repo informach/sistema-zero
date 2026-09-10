@@ -6,7 +6,7 @@ import { KidsMascot } from './mascot'
 export function KidsCareerLockedStudio() {
   return (
     <section className="mx-auto flex w-full max-w-xl flex-col items-center px-4 py-10 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
+      <KidsMascot expression="sleeping" className="size-24" />
       <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 font-bold text-primary text-sm">
         <Sparkles className="size-4" /> Próxima conquista
       </span>

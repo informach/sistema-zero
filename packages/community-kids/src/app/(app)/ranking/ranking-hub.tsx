@@ -1,13 +1,16 @@
 'use client'
 
 import { Button } from '@sistemazero/ui/button'
-import { Card, CardContent } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { Crown, Sparkles, Trophy } from 'lucide-react'
+import { Crown, Flame, Rocket, Sparkles, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
+import { KidsBand } from '@/components/kids/kids-band'
+import { KidsClosingCard } from '@/components/kids/kids-closing-card'
+import { KidsEmptyState } from '@/components/kids/kids-empty-state'
+import { KidsTabs } from '@/components/kids/kids-tabs'
 import { LeagueBoard } from '@/components/kids/league-board'
 import { LevelBadge } from '@/components/kids/level-badge'
 import { apiGet } from '@/lib/api'
@@ -15,6 +18,17 @@ import { cn } from '@/lib/cn'
 import type { LeagueMeView, RankingEntryView, RankingLeaderboardView } from '@/lib/types'
 
 const PAGE_SIZE = 20
+
+/**
+ * Cor da medalha por posição do pódio. Ouro, prata e bronze não são cor de marca:
+ * são metal, e todo mundo lê sem legenda. O 1º ainda ganha a coroa e sobe dois
+ * pixels, que é o que a referência faz.
+ */
+const MEDALHA = [
+  { cor: 'var(--medal-ouro)', tinta: 'var(--medal-ouro-fg)' },
+  { cor: 'var(--medal-prata)', tinta: 'var(--medal-prata-fg)' },
+  { cor: 'var(--medal-bronze)', tinta: 'var(--medal-bronze-fg)' },
+] as const
 
 export function RankingHub({
   initialRanking,
@@ -47,52 +61,52 @@ export function RankingHub({
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-2 rounded-2xl border-2 border-border bg-card p-1.5">
-        <button
-          type="button"
-          onClick={() => setTab('general')}
-          aria-pressed={tab === 'general'}
-          className={cn(
-            'min-h-12 rounded-xl px-4 font-bold sz-display transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-            tab === 'general'
-              ? 'bg-primary text-primary-foreground shadow-[0_3px_0_color-mix(in_oklch,var(--primary),black_22%)]'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-          )}
-        >
-          Ranking geral
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('league')}
-          aria-pressed={tab === 'league'}
-          className={cn(
-            'min-h-12 rounded-xl px-4 font-bold sz-display transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-            tab === 'league'
-              ? 'bg-primary text-primary-foreground shadow-[0_3px_0_color-mix(in_oklch,var(--primary),black_22%)]'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground',
-          )}
-        >
-          Minha liga
-        </button>
-      </div>
-
-      {tab === 'general' ? (
-        <GeneralRanking
-          available={initialRanking !== null}
-          items={items}
-          me={initialRanking?.me ?? null}
-          total={total}
-          hasMore={nextCursor !== null}
-          loadingMore={loadingMore}
-          onLoadMore={loadMore}
+    <>
+      <KidsBand tone="ceu">
+        <KidsTabs
+          label="Qual placar mostrar"
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: 'general', label: 'Ranking geral', icon: Trophy },
+            { value: 'league', label: 'Minha liga', icon: Flame },
+          ]}
+          className="mx-auto max-w-md"
         />
-      ) : league ? (
-        <LeagueBoard league={league} />
-      ) : (
-        <Unavailable message="Sua liga não pôde ser carregada agora." />
-      )}
-    </div>
+        <div className="mt-6">
+          {tab === 'general' ? (
+            <GeneralRanking
+              available={initialRanking !== null}
+              items={items}
+              me={initialRanking?.me ?? null}
+              total={total}
+              hasMore={nextCursor !== null}
+              loadingMore={loadingMore}
+              onLoadMore={loadMore}
+            />
+          ) : league ? (
+            <LeagueBoard league={league} />
+          ) : (
+            <Unavailable message="Sua liga não pôde ser carregada agora." />
+          )}
+        </div>
+      </KidsBand>
+
+      <KidsBand tone="lilas">
+        <div className="kids-unit-cyan">
+          <KidsClosingCard
+            icon={Rocket}
+            title="XP é o que move o placar"
+            description="Cada aula concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
+            action={
+              <Link href="/cursos" prefetch={false} className="sz-btn-gradient px-6">
+                Ver a minha carreira
+              </Link>
+            }
+          />
+        </div>
+      </KidsBand>
+    </>
   )
 }
 
@@ -116,15 +130,13 @@ function GeneralRanking({
   if (!available) return <Unavailable message="O ranking geral não pôde ser carregado agora." />
   if (items.length === 0) {
     return (
-      <Card className="border-2">
-        <CardContent className="flex flex-col items-center py-12 text-center">
-          <Sparkles className="size-10 text-primary" />
-          <h2 className="mt-3 sz-display text-xl">O placar está só começando!</h2>
-          <p className="mt-1 max-w-md text-muted-foreground text-sm">
-            Complete uma atividade que dá XP para aparecer aqui junto com os outros criadores.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="kids-unit-cyan">
+        <KidsEmptyState
+          icon={Sparkles}
+          title="O placar está só começando!"
+          description="Complete uma atividade que dá XP para aparecer aqui junto com os outros criadores."
+        />
+      </div>
     )
   }
 
@@ -150,16 +162,16 @@ function GeneralRanking({
 
       {!meIsLoaded ? (
         me ? (
-          <div className="sticky bottom-20 z-10 rounded-2xl border-2 border-primary bg-card p-1 shadow-lg md:bottom-4">
+          <div className="kids-carta sticky bottom-20 z-10 border-primary! p-1 md:bottom-4">
             <p className="px-3 pt-2 font-bold text-primary text-xs uppercase tracking-wide">
               Sua posição
             </p>
             <RankingRow entry={me} compact />
           </div>
         ) : (
-          <div className="rounded-2xl border-2 border-dashed border-primary/40 bg-(--kids-cyan-tint) px-4 py-3 text-center text-sm">
+          <p className="kids-carta px-4 py-3 text-center font-semibold text-sm">
             Ganhe seu primeiro XP para entrar no ranking! 🚀
-          </div>
+          </p>
         )
       ) : null}
 
@@ -171,7 +183,7 @@ function GeneralRanking({
           </Button>
         </div>
       ) : (
-        <p className="text-center text-muted-foreground text-xs">
+        <p className="text-center font-semibold text-muted-foreground text-xs">
           Você chegou ao fim do ranking: {total} {total === 1 ? 'criador' : 'criadores'} com XP.
         </p>
       )}
@@ -188,18 +200,35 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
           // biome-ignore lint/suspicious/noArrayIndexKey: os dados públicos não têm id único
           key={index}
           className={cn(
-            'relative flex flex-col items-center rounded-2xl border-2 bg-card px-3 py-5 text-center',
-            entry.position === 1
-              ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/25 sm:-translate-y-2'
-              : entry.isMe
-                ? 'border-primary bg-(--kids-cyan-tint)'
-                : 'border-border',
+            'kids-carta relative flex flex-col items-center px-3 py-5 text-center',
+            entry.position === 1 && 'sm:-translate-y-2',
           )}
+          // A medalha entra pela BORDA do cartão, não pelo fundo: sobre o creme e o
+          // azul-claro das faixas, um cartão de fundo dourado brigaria com a faixa.
+          // O "sou eu" fica no FUNDO, para os dois sinais poderem coexistir — antes
+          // a borda carregava os dois e um apagava o outro.
+          style={{
+            borderColor: MEDALHA[index]?.cor,
+            backgroundColor: entry.isMe
+              ? 'color-mix(in oklab, var(--primary) 9%, var(--card))'
+              : undefined,
+          }}
         >
           {entry.position === 1 ? (
-            <Crown className="absolute -top-4 size-8 rotate-[-8deg] text-amber-500" />
+            <Crown
+              className="-top-4 absolute size-8 rotate-[-8deg]"
+              style={{ color: MEDALHA[0].cor }}
+            />
           ) : null}
-          <span className="mb-3 flex size-9 items-center justify-center rounded-full bg-muted font-bold sz-display">
+          <span
+            className="sz-display mb-3 flex size-9 items-center justify-center rounded-full"
+            style={{
+              // Cada medalha traz a PRÓPRIA tinta: escura no ouro, branca na prata e
+              // no bronze (ver o par `--medal-*-fg` no globals).
+              backgroundColor: MEDALHA[index]?.cor ?? 'var(--muted)',
+              color: MEDALHA[index]?.tinta,
+            }}
+          >
             {entry.position}º
           </span>
           <AvatarWithAura
@@ -210,7 +239,7 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
           />
           <ParticipantName
             entry={entry}
-            className="mt-3 max-w-full truncate font-bold sz-display"
+            className="sz-display mt-3 max-w-full truncate font-bold"
           />
           <span className="mt-1 font-bold text-primary text-sm tabular-nums">
             {entry.xp.toLocaleString('pt-BR')} XP
@@ -262,14 +291,12 @@ function ParticipantName({ entry, className }: { entry: RankingEntryView; classN
 
 function Unavailable({ message }: { message: string }) {
   return (
-    <Card className="border-2">
-      <CardContent className="flex flex-col items-center py-12 text-center">
-        <Trophy className="size-10 text-muted-foreground" />
-        <h2 className="mt-3 sz-display text-xl">Placar em pausa</h2>
-        <p className="mt-1 text-muted-foreground text-sm">
-          {message} Tente novamente em instantes.
-        </p>
-      </CardContent>
-    </Card>
+    <div className="kids-unit-muted">
+      <KidsEmptyState
+        icon={Trophy}
+        title="Placar em pausa"
+        description={`${message} Tente novamente em instantes.`}
+      />
+    </div>
   )
 }

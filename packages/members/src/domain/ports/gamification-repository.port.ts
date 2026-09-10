@@ -281,6 +281,16 @@ export interface GamificationRepository {
     sourceType: XpSourceType,
     sourceId: string,
   ): Promise<boolean>
+  /**
+   * Módulos cujo baú JÁ foi aberto. A linha `unit_complete` do ledger É o carimbo
+   * de resgate: quem ganhou o XP no modelo antigo (automático, ao concluir a
+   * última aula) nasce com o baú aberto, sem migration de backfill nenhuma.
+   */
+  listClaimedUnits(
+    userId: string,
+    audience: CourseAudience,
+    moduleIds: string[],
+  ): Promise<Set<string>>
   getProfile(userId: string, audience: CourseAudience): Promise<GamificationProfileRecord | null>
   listBadges(
     userId: string,

@@ -12,6 +12,7 @@ import type { LessonActivity } from './studio-activity'
  */
 export const LESSON_BLOCK_KINDS = [
   'rich_text',
+  'dialogue',
   'video',
   'image',
   'audio',
@@ -40,6 +41,35 @@ export interface RichTextBlock {
   html?: string
   markdown?: string
   codeLanguageHints?: string[]
+}
+
+/**
+ * Poses do mascote que o bloco de diálogo oferece. É um subconjunto DELIBERADO do
+ * elenco: "dormindo" existe para tela vazia, e num balão de fala seria absurdo.
+ */
+export const DIALOGUE_POSES = ['speaking', 'happy', 'thinking', 'celebrating'] as const
+export type DialoguePose = (typeof DIALOGUE_POSES)[number]
+
+/** Tamanho máximo da fala. É régua EDITORIAL antes de ser limite técnico: o bloco
+ *  existe para não ser parede de texto. Três frases curtas cabem folgadas. */
+export const DIALOGUE_MAX_LENGTH = 400
+
+/**
+ * Fala do mascote num balão de conversa, no lugar de contexto corrido. Serve de
+ * instrução ("agora você vai...") logo acima do bloco que ela explica.
+ *
+ * O texto é SIMPLES, não markdown, e isso é escolha: markdown num balão convida
+ * título, imagem e bloco de código, que estouram a forma. Quebras de linha são
+ * preservadas na apresentação. De brinde, superfície de XSS zero.
+ *
+ * O mascote é do KIDS; o renderizador compartilhado recebe a figura por slot e a
+ * comunidade adulta vê o mesmo balão como um recado destacado, sem personagem.
+ */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  /** Ausente = 'speaking' (o balão pede um mascote falando). */
+  pose?: DialoguePose
+  text: string
 }
 
 export type VideoProvider = 'mux' | 'youtube' | 'vimeo' | 'file'
@@ -378,6 +408,7 @@ export interface ComingSoonBlock {
 export type LessonBlockContent =
   | InteractiveBlock
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock

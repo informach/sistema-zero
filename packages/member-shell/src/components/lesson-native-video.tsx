@@ -9,6 +9,9 @@ export function LessonNativeVideo({ content }: { content: VideoBlock }) {
     // biome-ignore lint/a11y/useMediaCaption: uploaded caption tracks are rendered from the content array below.
     <video
       controls
+      // Sem isto o Safari do iPhone ARRANCA o vídeo para a tela cheia nativa no
+      // play, tirando a criança da aula (e da lista de seções) sem ela pedir.
+      playsInline
       preload="metadata"
       poster={content.posterUrl}
       className="aspect-video w-full rounded-lg bg-black"

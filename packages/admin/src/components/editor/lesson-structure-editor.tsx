@@ -29,6 +29,9 @@ import { SectionCompletionEditor } from './section-completion-editor'
 function blockLabel(block: BlockView) {
   const c = block.content
   if (c.kind === 'interactive') return c.title || 'Descoberta interativa'
+  // Mostra o começo da FALA, não o rótulo do tipo: a autora reconhece o bloco pelo
+  // que o Zappy diz, não por "Diálogo" repetido cinco vezes na lista.
+  if (c.kind === 'dialogue') return c.text.split('\n')[0]?.slice(0, 90) || 'Diálogo do Zappy'
   if (c.kind === 'rich_text')
     return (
       (c.markdown ?? c.html ?? '')

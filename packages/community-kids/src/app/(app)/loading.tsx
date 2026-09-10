@@ -1,5 +1,6 @@
 import { Card } from '@sistemazero/ui/card'
 import { Skeleton } from '@sistemazero/ui/skeleton'
+import { KidsBand } from '@/components/kids/kids-band'
 
 // Chaves estáveis dos cards-fantasma (evita usar o índice do array como key).
 const CARD_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6']
@@ -13,8 +14,12 @@ const CARD_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6']
  */
 export default function AppLoading() {
   return (
-    <div aria-busy="true" className="flex flex-col gap-6">
-      <span className="sr-only">Carregando…</span>
+    // A cor da faixa entra JÁ no esqueleto: sem ela a tela pisca branca antes de
+    // a página real chegar com o creme, e o salto é bem visível.
+    <KidsBand tone="creme" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+      <span aria-busy="true" className="sr-only">
+        Carregando…
+      </span>
       {/* Cabeçalho */}
       <div className="flex flex-col gap-2">
         <Skeleton className="h-7 w-52" />
@@ -36,6 +41,6 @@ export default function AppLoading() {
           </Card>
         ))}
       </div>
-    </div>
+    </KidsBand>
   )
 }

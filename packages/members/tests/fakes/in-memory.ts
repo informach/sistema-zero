@@ -2572,6 +2572,26 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
   }
 
+  async listClaimedUnits(
+    userId: string,
+    audience: CourseAudience,
+    moduleIds: string[],
+  ): Promise<Set<string>> {
+    const alvo = new Set(moduleIds)
+    return new Set(
+      this.events
+        .filter(
+          (e) =>
+            e.userId === userId &&
+            e.audience === audience &&
+            e.sourceType === 'unit_complete' &&
+            e.sourceId != null &&
+            alvo.has(e.sourceId),
+        )
+        .map((e) => e.sourceId as string),
+    )
+  }
+
   async getProfile(
     userId: string,
     audience: CourseAudience,

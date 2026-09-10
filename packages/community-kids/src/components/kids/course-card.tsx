@@ -33,11 +33,13 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
       href={`/cursos/${encodeURIComponent(course.courseSlug)}?de=inicio${publishing ? '#publicar' : ''}`}
       className="group block"
     >
+      {/* ⚠️ Este card CALCULAVA o tema da unidade e jogava fora: aplicava a classe
+          (que define `--unit`) e depois pintava `border-border` + `shadow-sm` por
+          cima, então a cor nunca chegava à tela mais vista do app. O irmão do
+          catálogo sempre usou `.kids-card`. Densidade não muda: a borda ganha 1px
+          e a sombra difusa sai. */}
       <Card
-        className={cn(
-          'overflow-hidden rounded-2xl border border-border p-0 shadow-sm transition-shadow group-hover:shadow-md',
-          UNIT_THEME_CLASS[theme],
-        )}
+        className={cn('kids-card kid-pop overflow-hidden rounded-2xl p-0', UNIT_THEME_CLASS[theme])}
       >
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
           {course.coverImageUrl ? (
@@ -54,8 +56,8 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
-              <BookOpen className="size-10 text-muted-foreground" />
+            <div className="kids-cover-fallback flex h-full w-full items-center justify-center">
+              <BookOpen className="size-10" />
             </div>
           )}
           {/* Só o que FALTA: "pronta" aqui seria redundante com a barra em 100% e o
@@ -85,7 +87,9 @@ export function CourseCard({ course, theme = 'cyan' }: CourseCardProps) {
             </div>
             <ProgressBar value={progress.percent} />
           </div>
-          <span className="mt-1 inline-flex min-h-11 items-center justify-center rounded-xl bg-primary/10 px-4 font-bold text-primary">
+          {/* Era `bg-primary/10 text-primary`: um fantasma de botão no lugar do CTA
+              que a marca já tem. Mesmo alvo de toque de 44px. */}
+          <span className="sz-btn-gradient mt-1 w-full">
             {publishing
               ? 'Preparar publicação'
               : done

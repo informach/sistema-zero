@@ -18,7 +18,10 @@ export function ContinueHeroLink({
     <Link
       href={href}
       aria-describedby={guideDescriptionId}
-      className="sz-btn-gradient mt-5 inline-flex min-h-11 items-center gap-2 px-6"
+      // `sz-btn-inverso`: o herói é azul e o CTA da marca também, então o botão
+      // some no fundo sem a inversão. Sem `mt-5`: quem espaça agora é a fileira
+      // de ações do `KidsHero`.
+      className="sz-btn-gradient sz-btn-inverso inline-flex min-h-11 items-center gap-2 px-6"
     >
       <Play className="size-4 fill-current" aria-hidden="true" />
       {label ?? (started ? 'Continuar' : 'Começar')}

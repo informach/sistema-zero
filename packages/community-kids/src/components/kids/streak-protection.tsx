@@ -131,7 +131,7 @@ export function StreakProtection({
                   type="date"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  className="rounded-lg border-2 border-border px-2 py-1"
+                  className="rounded-lg border-2 border-input px-2 py-1"
                 />
               </label>
               <label className="flex items-center gap-1">
@@ -140,7 +140,7 @@ export function StreakProtection({
                   type="date"
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
-                  className="rounded-lg border-2 border-border px-2 py-1"
+                  className="rounded-lg border-2 border-input px-2 py-1"
                 />
               </label>
             </div>

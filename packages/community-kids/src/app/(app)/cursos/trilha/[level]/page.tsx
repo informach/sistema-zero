@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
+import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
 import { careerHorizon, nextLevelHintWithin } from '@/lib/career-horizon'
@@ -55,8 +56,11 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
 
   if (trilhaLocked(level, levelSlug, all)) {
     return (
-      <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
-        <KidsMascot expression="thinking" className="size-24" />
+      <KidsBand
+        tone="creme"
+        innerClassName="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center"
+      >
+        <KidsMascot expression="thinking" className="kid-float size-24" />
         <h1 className="mt-4 sz-display text-2xl">
           {beyondHorizon
             ? 'Esta parte do mapa está sendo construída'
@@ -76,7 +80,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
         >
           <MapIcon className="size-4" /> Voltar ao mapa
         </Link>
-      </section>
+      </KidsBand>
     )
   }
 
@@ -89,66 +93,85 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   const hint = level && level.slug === levelSlug ? nextLevelHintWithin(level, all) : null
 
   return (
-    <div className="flex flex-col gap-8">
-      <div className="flex flex-col gap-3">
-        <KidsBackButton href="/cursos" label="Voltar ao mapa" showLabel />
-        <div className="flex items-center gap-3">
-          <span
-            className="grid size-12 shrink-0 place-items-center rounded-full border-2 bg-card shadow-sm"
-            style={{ borderColor: owner.colorVar }}
-          >
-            <OwnerIcon className="size-6" style={{ color: owner.colorVar }} aria-hidden />
-          </span>
-          <div>
-            {/* ⚠️ A trilha se chama pelo POSTO do aluno ("Trilha Faísca"), nunca pelo degrau
-                interno ("Iniciante 2D"), que é vocabulário de quem monta o curso. */}
-            <h1 className="sz-display text-2xl md:text-3xl">
-              {tier ? `Trilha ${owner.label}` : 'Cursos da Lenda 👑'}
-            </h1>
-            {tier ? null : (
-              <p className="text-muted-foreground text-sm">
-                A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.
-              </p>
-            )}
-          </div>
-        </div>
-        {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}
-      </div>
-
-      {courses.length === 0 ? (
-        <section className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed px-6 py-16 text-center">
-          <KidsMascot expression="thinking" className="size-16" />
-          <p className="text-muted-foreground text-sm">
-            Os cursos desta trilha estão a caminho! Volte daqui a pouquinho. 🚀
-          </p>
-          {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
-              que quiser enquanto os cursos não chegam. */}
-          {studioOwned ? (
-            <Link
-              href="/estudio"
-              className={cn(buttonVariants({ variant: 'default' }), 'h-11 rounded-full px-6')}
+    <>
+      <KidsBand tone="creme">
+        <div className="flex flex-col gap-3">
+          <KidsBackButton href="/cursos" label="Voltar ao mapa" showLabel />
+          <div className="flex items-center gap-3">
+            {/* ⚠️ O MEDALHÃO do nível, não um ícone genérico: é a mesma arte do mapa
+                da carreira (`/carreira/<slug>.webp`), e é assim que a criança
+                reconhece a trilha. */}
+            <span
+              className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-full border-2 bg-card shadow-sm"
+              style={{ borderColor: owner.colorVar }}
             >
-              Criar um jogo meu
-            </Link>
-          ) : null}
-        </section>
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {courses.map((course, i) => (
-            <CatalogCourseCard
-              key={course.courseSlug}
-              course={course}
-              salesUrl={course.salesPageUrl}
-              foundationTitle={
-                course.careerLock?.foundationCourseSlug
-                  ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
-                  : null
-              }
-              theme={unitThemeAt(i)}
-            />
-          ))}
+              {/* O ícone fica POR BAIXO e a arte por cima. O mapa da carreira faz o
+                  mesmo com um `onError` em estado de cliente; aqui a página é de
+                  SERVIDOR, e empilhar resolve sem JS: se o .webp não existir no
+                  deploy, a imagem com `alt=""` não desenha nada e o ícone aparece. */}
+              <OwnerIcon className="size-7" style={{ color: owner.colorVar }} aria-hidden />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/carreira/${levelSlug}.webp`}
+                alt=""
+                width={56}
+                height={56}
+                className="absolute inset-0 size-full object-cover"
+              />
+            </span>
+            <div>
+              {/* ⚠️ A trilha se chama pelo POSTO do aluno ("Trilha Faísca"), nunca pelo degrau
+                  interno ("Iniciante 2D"), que é vocabulário de quem monta o curso. */}
+              <h1 className="sz-display text-[clamp(1.75rem,4.4vw,2.6rem)]">
+                {tier ? `Trilha ${owner.label}` : 'Cursos da Lenda 👑'}
+              </h1>
+              {tier ? null : (
+                <p className="font-semibold text-muted-foreground text-sm">
+                  A formatura! Cursos extras que abriram por você ter chegado ao topo da carreira.
+                </p>
+              )}
+            </div>
+          </div>
+          {hint ? <p className="font-semibold text-muted-foreground text-base">{hint}</p> : null}
         </div>
-      )}
-    </div>
+      </KidsBand>
+
+      <KidsBand tone="ceu">
+        {courses.length === 0 ? (
+          <section className="kids-carta flex flex-col items-center gap-4 px-6 py-16 text-center">
+            <KidsMascot expression="thinking" className="kid-float size-16" />
+            <p className="sz-display text-lg">
+              Os cursos desta trilha estão a caminho! Volte daqui a pouquinho.
+            </p>
+            {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
+              que quiser enquanto os cursos não chegam. */}
+            {studioOwned ? (
+              <Link
+                href="/estudio"
+                className={cn(buttonVariants({ variant: 'default' }), 'h-11 rounded-full px-6')}
+              >
+                Criar um jogo meu
+              </Link>
+            ) : null}
+          </section>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {courses.map((course, i) => (
+              <CatalogCourseCard
+                key={course.courseSlug}
+                course={course}
+                salesUrl={course.salesPageUrl}
+                foundationTitle={
+                  course.careerLock?.foundationCourseSlug
+                    ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
+                    : null
+                }
+                theme={unitThemeAt(i)}
+              />
+            ))}
+          </div>
+        )}
+      </KidsBand>
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import { CareerMap } from '@/components/kids/career-map'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
+import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
 import { unitThemeAt } from '@/components/kids/unit-theme'
 import { tierCompletionByLevel } from '@/lib/career-map'
@@ -48,49 +49,58 @@ export default async function CatalogPage() {
 
   if (level) {
     return (
-      <div className="flex flex-col gap-8">
-        <div className="text-center">
-          <h1 className="sz-display text-2xl md:text-3xl">Cursos da Carreira de Criador</h1>
-          <p className="mt-1 text-muted-foreground text-sm">
-            Sua jornada de Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
-          </p>
-        </div>
-        {/* Recorte de 3 campos: o mapa é CLIENTE e a view inteira mandaria título,
-            capa e URL de vendas de todos os cursos no payload para calcular o horizonte. */}
-        <CareerMap
-          level={level}
-          courses={courses.map((c) => ({
-            level: c.level,
-            track: c.track,
-            careerSlot: c.careerSlot,
-          }))}
-          completionByLevel={completionByLevel}
-          studioOwned={studioOwned}
-        />
-      </div>
+      <>
+        <KidsBand tone="creme">
+          <div className="text-center">
+            <h1 className="sz-display text-[clamp(1.75rem,4.4vw,2.6rem)]">
+              Cursos da Carreira de Criador
+            </h1>
+            <p className="mt-2 font-semibold text-base text-muted-foreground">
+              Sua jornada de Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
+            </p>
+          </div>
+        </KidsBand>
+        {/* O mapa é a tela inteira: faixa azul-céu do começo ao fim, como na
+            referência, com a fita e os medalhões por cima dela. */}
+        <KidsBand tone="ceu">
+          {/* Recorte de 3 campos: o mapa é CLIENTE e a view inteira mandaria título,
+              capa e URL de vendas de todos os cursos no payload para calcular o horizonte. */}
+          <CareerMap
+            level={level}
+            courses={courses.map((c) => ({
+              level: c.level,
+              track: c.track,
+              careerSlot: c.careerSlot,
+            }))}
+            completionByLevel={completionByLevel}
+            studioOwned={studioOwned}
+          />
+        </KidsBand>
+      </>
     )
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="sz-display text-2xl md:text-3xl">Todos os cursos</h1>
-        <p className="mt-1 text-muted-foreground text-sm">
+    <>
+      <KidsBand tone="creme">
+        <h1 className="sz-display text-[clamp(1.75rem,4.4vw,2.6rem)]">Todos os cursos</h1>
+        <p className="mt-2 font-semibold text-base text-muted-foreground">
           Suas aventuras de aprender: as que já são suas e as que você ainda pode ganhar.
         </p>
-      </div>
-
-      {courses.length === 0 ? (
-        <section className="flex flex-col items-center gap-4 rounded-3xl border-2 border-border border-dashed px-6 py-16 text-center">
-          <KidsMascot expression="thinking" className="size-16" />
-          <p className="text-muted-foreground text-sm">
-            Os cursos estão a caminho! Volte daqui a pouquinho. 🚀
-          </p>
-        </section>
-      ) : (
-        <CatalogGrid courses={courses} />
-      )}
-    </div>
+      </KidsBand>
+      <KidsBand tone="lilas">
+        {courses.length === 0 ? (
+          <div className="kids-unit-cyan flex flex-col items-center gap-4">
+            <KidsMascot expression="thinking" className="kid-float size-16" />
+            <p className="sz-display text-lg">
+              Os cursos estão a caminho! Volte daqui a pouquinho.
+            </p>
+          </div>
+        ) : (
+          <CatalogGrid courses={courses} />
+        )}
+      </KidsBand>
+    </>
   )
 }
 

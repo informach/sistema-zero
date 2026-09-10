@@ -69,6 +69,9 @@ import {
   type AttachmentView,
   type BlockView,
   type CourseTreeView,
+  DIALOGUE_MAX_LENGTH,
+  DIALOGUE_POSES,
+  type DialoguePose,
   LESSON_BLOCK_KINDS,
   type LessonBlockContent,
   type LessonBlockKind,
@@ -84,6 +87,7 @@ import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
 const KIND_LABELS: Record<LessonBlockKind, string> = {
   interactive: 'Descoberta interativa',
   rich_text: 'Texto',
+  dialogue: 'Diálogo do Zappy',
   video: 'Vídeo',
   image: 'Imagem',
   audio: 'Áudio',
@@ -94,6 +98,14 @@ const KIND_LABELS: Record<LessonBlockKind, string> = {
   pinta: 'Pinta (desenho)',
   certificate: 'Certificado',
   coming_soon: 'Em breve (aula em produção)',
+}
+
+/** Nome de cada pose, só para o `alt` do seletor (a autora escolhe pela cara). */
+const DIALOGUE_POSE_LABELS: Record<DialoguePose, string> = {
+  speaking: 'Zappy acenando e falando',
+  happy: 'Zappy feliz',
+  thinking: 'Zappy pensativo',
+  celebrating: 'Zappy comemorando',
 }
 
 /** `BlockView.kind` vem como `string` da API — bloco de um deploy mais novo cai no slug. */
@@ -120,10 +132,13 @@ const STUDIO_MODES: { value: IDEMode; label: string }[] = [
   { value: 'code', label: 'Código' },
 ]
 
-interface BlockForm {
+export interface BlockForm {
   interactive: InteractiveBlock
   toolPurpose: 'experiment' | 'submission'
   kind: LessonBlockKind
+  /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
+  dialoguePose: DialoguePose
+  dialogueText: string
   markdown: string
   html: string
   /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
@@ -192,10 +207,13 @@ interface BlockForm {
   pintaChain: string
 }
 
-const EMPTY_BLOCK: BlockForm = {
+/** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
+export const EMPTY_BLOCK: BlockForm = {
   interactive: EMPTY_LEARNING,
   toolPurpose: 'submission',
   kind: 'rich_text',
+  dialoguePose: 'speaking',
+  dialogueText: '',
   markdown: '',
   html: '',
   src: '',
@@ -267,7 +285,7 @@ const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined
 const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
 
 /** Monta o conteúdo do bloco a partir do form. `studioProject` = snapshot do editor embutido. */
-function buildContent(
+export function buildContent(
   f: BlockForm,
   studioProject?: Project,
   previousContent?: LessonBlockContent,
@@ -320,6 +338,12 @@ function buildContent(
       return {
         kind: 'coming_soon',
         ...(opt(f.comingSoonMessage) ? { message: f.comingSoonMessage.trim() } : {}),
+      }
+    case 'dialogue':
+      return {
+        kind: 'dialogue',
+        pose: f.dialoguePose,
+        text: f.dialogueText.trim(),
       }
     case 'rich_text':
       return {
@@ -415,6 +439,13 @@ function buildContent(
 /** Campo obrigatório faltando → mensagem amigável (null = válido). */
 function validateBlock(f: BlockForm): string | null {
   switch (f.kind) {
+    case 'dialogue': {
+      const fala = f.dialogueText.trim()
+      if (!fala) return 'Escreva a fala do Zappy.'
+      if (fala.length > DIALOGUE_MAX_LENGTH)
+        return `A fala do Zappy passa de ${DIALOGUE_MAX_LENGTH} caracteres.`
+      return null
+    }
     case 'video':
       return f.src.trim() ? null : 'Envie o vídeo antes de publicar.'
     case 'image':
@@ -607,6 +638,8 @@ export function LessonEditorClient({
       interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
       toolPurpose:
         c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
+      dialoguePose: c.kind === 'dialogue' ? (c.pose ?? 'speaking') : 'speaking',
+      dialogueText: c.kind === 'dialogue' ? c.text : '',
       markdown: c.kind === 'rich_text' ? (c.markdown ?? '') : '',
       html: c.kind === 'rich_text' ? (c.html ?? '') : c.kind === 'embed' ? (c.html ?? '') : '',
       src: c.kind === 'video' ? c.src : '',
@@ -1235,6 +1268,53 @@ export function LessonEditorClient({
               </Select>
             </Field>
           )}
+          {blockForm.kind === 'dialogue' ? (
+            <>
+              {/* A escolha é pela CARA, não pelo nome: quem monta a aula está
+                  decidindo a expressão, e nome de pose não desenha nada. */}
+              <fieldset className="space-y-2">
+                <legend className="font-medium text-sm">Pose do Zappy</legend>
+                <div className="flex flex-wrap gap-3">
+                  {DIALOGUE_POSES.map((pose) => (
+                    <label key={pose} className="cursor-pointer">
+                      <input
+                        type="radio"
+                        name="dialogue-pose"
+                        value={pose}
+                        checked={blockForm.dialoguePose === pose}
+                        onChange={() => setBlockForm((f) => ({ ...f, dialoguePose: pose }))}
+                        className="peer sr-only"
+                      />
+                      {/* biome-ignore lint/performance/noImgElement: asset local estático, sem otimização a fazer */}
+                      <img
+                        src={`/zappy/${pose}.webp`}
+                        alt={DIALOGUE_POSE_LABELS[pose]}
+                        width={64}
+                        height={64}
+                        className="size-16 rounded-xl border-2 border-transparent bg-muted/40 object-contain peer-checked:border-primary peer-focus-visible:outline-2 peer-focus-visible:outline-ring"
+                      />
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+              <Field
+                label="Fala do Zappy"
+                hint="Texto simples e curto: o balão existe para não ser parede de texto. As quebras de linha são preservadas. Na comunidade adulta o mesmo bloco vira um recado destacado, sem o personagem."
+              >
+                <Textarea
+                  value={blockForm.dialogueText}
+                  maxLength={DIALOGUE_MAX_LENGTH}
+                  rows={3}
+                  placeholder="Ex.: Agora a gente vai fazer o dinossauro pular! Toque no bloco verde."
+                  onChange={(e) => setBlockForm((f) => ({ ...f, dialogueText: e.target.value }))}
+                />
+                <p className="text-muted-foreground text-xs">
+                  {blockForm.dialogueText.trim().length} de {DIALOGUE_MAX_LENGTH} caracteres
+                </p>
+              </Field>
+            </>
+          ) : null}
+
           {blockForm.kind === 'rich_text' ? (
             <Field label="Conteúdo" hint="Salvo como markdown — renderiza igual na área do aluno.">
               <RichTextEditor

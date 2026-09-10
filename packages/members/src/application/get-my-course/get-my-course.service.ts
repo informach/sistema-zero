@@ -43,6 +43,18 @@ export class GetMyCourseService {
         course.audience === 'kids' ? this.gamification.listCareerCourseState(userId, 'kids') : null,
         course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
       ])
+    // Baú de fim de unidade: só a vitrine kids tem trilha. Depende dos ids do
+    // outline, então vem depois dele. A linha `unit_complete` do ledger É o carimbo
+    // de "já aberto" — inclusive para quem ganhou o XP no modelo antigo, em que ele
+    // caía sozinho ao concluir a última aula. Por isso não há backfill nenhum.
+    const claimedUnitIds =
+      course.audience === 'kids'
+        ? await this.gamification.listClaimedUnits(
+            userId,
+            'kids',
+            outline.map((m) => m.id),
+          )
+        : null
     const completedSet = new Set(completedIds)
     // Numerador e denominador derivados do MESMO outline publicado: conclusões de
     // aulas hoje despublicadas não contam (e não infla o percentual).
@@ -65,6 +77,7 @@ export class GetMyCourseService {
       continueLessonId,
       myRating,
       lockedSet,
+      claimedUnitIds,
     )
     return {
       ...view,

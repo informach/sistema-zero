@@ -16,6 +16,14 @@ export class MissionNotCompletedError extends DomainError {
   }
 }
 
+/** Abrir o baú antes de terminar todas as aulas da unidade. → 409. */
+export class UnitNotCompletedError extends DomainError {
+  readonly code = 'UNIT_NOT_COMPLETED'
+  constructor(message = 'Essa unidade ainda não foi concluída') {
+    super(message)
+  }
+}
+
 /** Já tem o máximo de protetores de sequência. → 409. */
 export class MaxFreezesError extends DomainError {
   readonly code = 'MAX_FREEZES'

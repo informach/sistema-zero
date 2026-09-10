@@ -101,6 +101,11 @@ export function BridgeMode(): JSX.Element {
   const setFiles = useProjectStore((s) => s.setFiles)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  // No ESTREITO (abas) o olhinho da Topbar não é renderizado, então `showPreview`
+  // ali é só uma preferência velha de desktop. Se ela apagasse a aba, quem
+  // desligou o preview no computador abriria no celular sem preview E sem botão
+  // para trazer de volta. A aba existe sempre que o host oferece preview.
+  const previewAvailable = studioConfig.preview
   const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
@@ -660,7 +665,7 @@ export function BridgeMode(): JSX.Element {
               { id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> },
               { id: 'code', label: t('tab.code'), content: codeEditor },
             ]}
-            preview={showPreview ? <PreviewIframe /> : undefined}
+            preview={previewAvailable ? <PreviewIframe /> : undefined}
           />
         </div>
       </div>

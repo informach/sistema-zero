@@ -1,5 +1,6 @@
 import { courseJourneyState, nextCareerCourse } from '@sistemazero/core/career'
 import { ContinueHeroLink } from '@/components/kids/continue-hero-link'
+import { KidsHero } from '@/components/kids/kids-hero'
 import type { MyCourseView } from '@/lib/types'
 
 interface CourseActivityView {
@@ -22,8 +23,17 @@ export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null
 }
 
 /**
- * Card-herói "Continuar de onde parei" (estilo Duolingo): gradiente da
- * marca em largura total, progresso grande e CTA 3D direto pra aula-alvo.
+ * Card-herói "Continuar de onde parei" (estilo Duolingo): azul da marca em largura
+ * total, progresso grande e CTA 3D direto pra aula-alvo. Abre a home E o Criar.
+ *
+ * Era um card BRANCO com um fio azul em volta — o mesmo tom de todo o resto da
+ * página, e por isso a coisa mais importante da tela não parecia a mais
+ * importante. Agora ele é o bloco azul da referência, com a capa do curso à
+ * direita em vez de escondida no `md:`.
+ *
+ * ⚠️ O CTA continua sendo o `.sz-btn-gradient` laranja, e não o botão branco da
+ * referência: é o botão de ação da marca, está em 25 lugares, e laranja sobre azul
+ * é o par de maior contraste que a paleta tem.
  */
 export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const course = pickContinueCourse(courses)
@@ -41,42 +51,52 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const started = courseHasActivity(course)
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-primary/25 bg-card p-6 shadow-sm md:p-8">
-      <div className="flex items-center gap-6">
-        <div className="min-w-0 flex-1">
-          <p className="font-bold text-primary text-sm">
-            {publishing
-              ? 'Seu próximo passo: publicar'
-              : started
-                ? 'Continue sua criação'
-                : 'Sua primeira criação começa aqui'}
-          </p>
-          <h2 className="sz-display mt-2 text-2xl md:text-3xl">{course.title}</h2>
-          {publishing ? (
-            <p className="mt-3 max-w-xl text-muted-foreground text-sm">
-              Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na
-              carreira.
-            </p>
-          ) : null}
-          <div className="mt-4 flex items-center gap-3">
-            <div className="h-2.5 max-w-72 flex-1 overflow-hidden rounded-full bg-muted">
-              <span
-                className="block h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none"
-                style={{ width: `${course.progress.percent}%` }}
-              />
-            </div>
-            <span className="text-muted-foreground text-sm">
-              {course.progress.completedLessons}/{course.progress.totalLessons} aulas
-            </span>
+    <KidsHero
+      variant="alto"
+      eyebrow={
+        publishing
+          ? 'Seu próximo passo: publicar'
+          : started
+            ? 'Continue sua criação'
+            : 'Sua primeira criação começa aqui'
+      }
+      title={course.title}
+      description={
+        publishing
+          ? 'Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na carreira.'
+          : undefined
+      }
+      footer={
+        <div className="flex items-center gap-3">
+          <div
+            className="h-2.5 max-w-72 flex-1 overflow-hidden rounded-full"
+            // Trilho e enchimento saem da TINTA do herói e do ouro da marca, e não
+            // de `bg-muted`/`bg-primary`: aqui o fundo é o azul, e os dois somem
+            // nele. O ouro é a cor de maior contraste que a paleta tem sobre azul.
+            style={{
+              backgroundColor: 'color-mix(in oklab, var(--sz-primary-fg) 25%, transparent)',
+            }}
+          >
+            <span
+              className="block h-full rounded-full bg-(--sz-kids-amarelo) transition-[width] duration-500 motion-reduce:transition-none"
+              style={{ width: `${course.progress.percent}%` }}
+            />
           </div>
-          <ContinueHeroLink
-            href={href}
-            started={started}
-            label={publishing ? 'Preparar publicação' : undefined}
-          />
+          <span className="kids-marca-suave font-semibold text-sm">
+            {course.progress.completedLessons}/{course.progress.totalLessons} aulas
+          </span>
         </div>
-        {course.coverImageUrl ? (
-          <div className="hidden w-56 shrink-0 rotate-2 overflow-hidden rounded-2xl shadow-lg md:block">
+      }
+      actions={
+        <ContinueHeroLink
+          href={href}
+          started={started}
+          label={publishing ? 'Preparar publicação' : undefined}
+        />
+      }
+      art={
+        course.coverImageUrl ? (
+          <div className="w-48 rotate-2 overflow-hidden rounded-2xl shadow-lg md:w-56">
             {/* Capa pode ser URL externa arbitrária (autoria) → <img> simples. */}
             <img
               src={course.coverImageUrl}
@@ -86,8 +106,8 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
               className="aspect-video w-full object-cover"
             />
           </div>
-        ) : null}
-      </div>
-    </section>
+        ) : undefined
+      }
+    />
   )
 }

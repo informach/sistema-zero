@@ -3,6 +3,7 @@ import type {
   AudioBlock,
   CertificateBlock,
   ComingSoonBlock,
+  DialogueBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -20,6 +21,7 @@ export type ParsedLessonBlock = {
     | AudioBlock
     | CertificateBlock
     | ComingSoonBlock
+    | DialogueBlock
     | EbookBlock
     | EmbedBlock
     | ImageBlock
@@ -276,11 +278,23 @@ function isComingSoonBlock(value: unknown): value is ComingSoonBlock {
   return isRecord(value) && value.kind === 'coming_soon' && optionalString(value, 'message')
 }
 
+const DIALOGUE_POSES = new Set(['speaking', 'happy', 'thinking', 'celebrating'])
+
+function isDialogueBlock(value: unknown): value is DialogueBlock {
+  if (!isRecord(value) || value.kind !== 'dialogue') return false
+  if (typeof value.text !== 'string' || value.text.length === 0) return false
+  return (
+    value.pose === undefined || (typeof value.pose === 'string' && DIALOGUE_POSES.has(value.pose))
+  )
+}
+
 export function parseLessonBlock(block: LessonBlockView): ParsedLessonBlock | null {
   const value = block.content
   switch (block.kind) {
     case 'rich_text':
       return isRichTextBlock(value) ? { block, content: value } : null
+    case 'dialogue':
+      return isDialogueBlock(value) ? { block, content: value } : null
     case 'video':
       return isVideoBlock(value) ? { block, content: value } : null
     case 'image':

@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@sistemazero/ui/card'
 import { Skeleton } from '@sistemazero/ui/skeleton'
+import { KidsBand } from '@/components/kids/kids-band'
 
 /**
  * Esqueleto da página "Meu perfil" (fallback de Suspense do Next) — casa com o card
@@ -8,25 +9,29 @@ import { Skeleton } from '@sistemazero/ui/skeleton'
  */
 export default function ProfileLoading() {
   return (
-    <div aria-busy="true" className="flex w-full flex-col gap-6">
-      <span className="sr-only">Carregando…</span>
-      <div>
-        <Skeleton className="h-7 w-40" />
-        <Skeleton className="mt-2 h-4 w-56 max-w-full" />
-      </div>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap items-center gap-5">
-            <Skeleton className="size-20 shrink-0 rounded-full" />
-            <div className="min-w-0 flex-1 space-y-2">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-4 w-28" />
-              <Skeleton className="h-4 w-32" />
+    // Faixa creme já no esqueleto: sem ela a tela pisca branca até a página
+    // real chegar, e o salto de cor é bem visível.
+    <KidsBand tone="creme">
+      <div aria-busy="true" className="flex w-full flex-col gap-6">
+        <span className="sr-only">Carregando…</span>
+        <div>
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="mt-2 h-4 w-56 max-w-full" />
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap items-center gap-5">
+              <Skeleton className="size-20 shrink-0 rounded-full" />
+              <div className="min-w-0 flex-1 space-y-2">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <Skeleton className="h-9 w-28 rounded-xl" />
             </div>
-            <Skeleton className="h-9 w-28 rounded-xl" />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </KidsBand>
   )
 }

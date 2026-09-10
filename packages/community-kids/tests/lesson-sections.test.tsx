@@ -298,6 +298,80 @@ describe('aula por seções', () => {
     expect(input.value).toBe('Meu dinossauro')
   })
 
+  test('a divisória entre a aula e a ferramenta é arrastável e alcançável pelo teclado', () => {
+    // A criança que está ASSISTINDO quer o vídeo maior; a que está CRIANDO quer o
+    // editor maior. Antes do lote o split era um grid fixo em 0.8fr/1.2fr, sem
+    // arrasto, e só existia acima de 1536px de VIEWPORT.
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const divisoria = screen.getByRole('separator')
+    expect(divisoria.getAttribute('data-panel-group-direction')).toBe('horizontal')
+    // ⚠️ O que este teste PRECISA morder é o par: a divisória existe sempre (senão
+    // o editor da direita remonta) mas só é interativa onde ela aparece. Montada e
+    // habilitada num layout empilhado, a lib registra uma zona de arrasto fantasma
+    // no canto (0,0) da tela, porque `display:none` mede {0,0,0,0}.
+    // Aqui a janela do happy-dom é estreita, então tem que estar DESABILITADA.
+    expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('false')
+
+    // Larga o bastante: a divisória acorda.
+    window.matchMedia = ((q: string) => ({
+      matches: true,
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia
+    cleanup()
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const larga = screen.getByRole('separator')
+    expect(larga.tabIndex).toBe(0)
+    expect(larga.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
+  })
+
+  test('trocar de perfil no meio da aula não oferece "tentar novamente"', async () => {
+    // 409 VIEWER_CHANGED: aqui repetir NUNCA funciona, então o recado é o do
+    // servidor e o botão some. Antes a criança lia "tentar novamente" para um
+    // erro que só passa reabrindo a aula.
+    globalThis.fetch = (async () =>
+      Response.json(
+        { error: { code: 'VIEWER_CHANGED', message: 'O perfil mudou. Abra a aula de novo.' } },
+        { status: 409 },
+      )) as unknown as typeof fetch
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    const aviso = await screen.findByRole('alert')
+    expect(aviso.textContent).toContain('O perfil mudou. Abra a aula de novo.')
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).toBeNull()
+  })
+
+  test('a troca de seção sobrevive ao fechamento da aba', async () => {
+    // Sem `keepalive` o navegador CANCELA o pedido no unload, e o lugar se perde
+    // justamente em quem troca de seção e fecha a aula em seguida.
+    const inits: RequestInit[] = []
+    globalThis.fetch = (async (_i: RequestInfo | URL, init?: RequestInit) => {
+      if (init) inits.push(init)
+      return Response.json({ ok: true })
+    }) as unknown as typeof fetch
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await waitFor(() => expect(inits.length).toBeGreaterThan(0))
+    expect(inits.every((i) => i.keepalive === true)).toBe(true)
+  })
+
   test('retoma a seção salva e inclui seu contexto no pedido de ajuda', async () => {
     const requests: Array<{ url: string; body: unknown; viewer: string | null }> = []
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -322,6 +396,15 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
     await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
     expect(requests).toEqual([
+      // Abrir a aula REGISTRA a seção onde a criança entrou, e isso acontece na
+      // MONTAGEM — por isso vem primeiro. A navegação só grava em transição, então
+      // quem abre e fica na primeira seção nunca criava linha, e é o `updated_at`
+      // dela que alimenta o "continuar de onde parou".
+      {
+        url: '/api/members/lessons/lesson/navigation',
+        body: { sectionId: 'second' },
+        viewer: 'child-a',
+      },
       {
         url: '/api/members/lessons/lesson/section-help',
         body: { sectionId: 'second', body: 'Por que ele cai?' },

@@ -726,6 +726,26 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return Boolean(row)
   }
 
+  async listClaimedUnits(
+    userId: string,
+    audience: CourseAudience,
+    moduleIds: string[],
+  ): Promise<Set<string>> {
+    if (moduleIds.length === 0) return new Set()
+    const rows = await this.db
+      .select({ sourceId: xpEvents.sourceId })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          eq(xpEvents.sourceType, 'unit_complete'),
+          inArray(xpEvents.sourceId, moduleIds),
+        ),
+      )
+    return new Set(rows.map((r) => r.sourceId).filter((id): id is string => id !== null))
+  }
+
   async getProfile(
     userId: string,
     audience: CourseAudience,
