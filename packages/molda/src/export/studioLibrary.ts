@@ -18,6 +18,7 @@ import { bytesToBase64 } from '../core/skinCodec'
 import { readSceneDocument } from '../scene/readDocument'
 import {
   getDefaultMoldaPersistence,
+  getMoldaGenerationStore,
   getMoldaStorageNamespace,
   type MoldaPersistence,
 } from '../state/persistence'
@@ -25,6 +26,7 @@ import { createMoldaSceneCloudSource } from '../state/sceneCloudSource'
 import { prepareSceneGlbInWorker } from '../workers/sceneGlb'
 import { exportSkyHdrInWorker } from '../workers/skyExport'
 import { exportModelGlb } from './modelGlb'
+import { inspectSceneStudioCompatibility } from './sceneStudioCompatibility'
 import { exportTexturePng } from './texturePng'
 
 export { getMoldaStorageNamespace, setMoldaStorageNamespace } from '../state/persistence'
@@ -117,11 +119,19 @@ export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
 /**
  * A geração seguinte vai pelo `encodeSceneGlb`, com a pintura animada: a hierarquia, os
  * clipes e a folha inteira que o runtime avançado sabe tocar. Nunca pelo escritor v1, que
- * funde tudo numa malha só. Perdas seguem o mesmo contrato do caminho v1 desta ponte:
- * a cópia sai com o que dá para levar, e o relatório detalhado é do "Exportar GLB" da oficina.
+ * funde tudo numa malha só.
+ *
+ * ⚠️ Perdas NÃO seguem o contrato do v1, e isto é uma diferença de comportamento conhecida:
+ * o v1 é tudo-ou-recusa e leva as peças escondidas; aqui o worker grava com `allowLosses`,
+ * então peça escondida, face descartada e geometria solta SOMEM da cópia sem aviso. O
+ * "Exportar GLB" da própria oficina exige aceite explícito para essas mesmas perdas; esta
+ * ponte não tem canal para pedir aceite (é um PULL do Estúdio). Registrado no plano como
+ * decisão de produto em aberto — não confundir com o portão de tetos abaixo, que recusa.
  */
-async function exportSceneForStudio(id: string): Promise<ExportForStudioResult> {
-  const found = await createMoldaSceneCloudSource().read(id)
+async function exportSceneForStudio(id: string, namespace: string): Promise<ExportForStudioResult> {
+  // O banco do PERFIL que pediu, não o corrente: entre enfileirar e enviar, o host pode ter
+  // trocado de criança no mesmo tablet, e a cópia sairia da galeria da outra.
+  const found = await createMoldaSceneCloudSource(getMoldaGenerationStore(namespace)).read(id)
   if (!found) return { ok: false, reason: 'not-found' }
   const read = readSceneDocument(JSON.parse(found.json))
   if (read.status !== 'valid') return { ok: false, reason: 'encode-failed' }
@@ -133,9 +143,19 @@ async function exportSceneForStudio(id: string): Promise<ExportForStudioResult> 
       revision: 0,
       animatedPaint: true,
     })
+    // Os MESMOS tetos que o painel da oficina mostra item a item. Conferir só os bytes
+    // deixava passar uma cópia leve e pesada de desenhar (60 malhas num teto de 48), e
+    // deixava passar a criação VAZIA, que o caminho v1 recusa com `empty`.
+    const report = inspectSceneStudioCompatibility({
+      stats: result.stats,
+      byteLength: result.bytes.length,
+    })
+    if (!report.fitsSingleCopy)
+      return materializeExport(summary, {
+        ok: false,
+        reason: report.empty ? 'encode-failed' : 'asset-too-big',
+      })
     const dataUrl = `data:model/gltf-binary;base64,${bytesToBase64(result.bytes)}`
-    if (dataUrl.length > MOLDA_LIMITS.studioMax3DChars)
-      return materializeExport(summary, { ok: false, reason: 'asset-too-big' })
     return materializeExport(summary, {
       ok: true,
       encoded: { kind: 'model3d', dataUrl, bytes: result.bytes.length },
@@ -202,12 +222,20 @@ export async function exportLoadedAssetForStudio(
   })
 }
 
-export async function exportAssetForStudio(id: string): Promise<ExportForStudioResult> {
-  const namespace = getMoldaStorageNamespace()
-  const persistence = getDefaultMoldaPersistence()
+export async function exportAssetForStudio(
+  id: string,
+  /**
+   * O perfil ao qual esta exportação pertence. `useStudioResync` prende a conta ANTES de
+   * entrar na fila justamente porque uma troca de criança no meio da espera faria a cópia
+   * sair do banco da outra; reler o namespace aqui, depois dos awaits, desfazia isso.
+   */
+  context?: { persistence?: MoldaPersistence; namespace?: string },
+): Promise<ExportForStudioResult> {
+  const namespace = context?.namespace ?? getMoldaStorageNamespace()
+  const persistence = context?.persistence ?? getDefaultMoldaPersistence()
   // Falhar ao ler o inventário v1 não pode impedir a geração seguinte de responder:
   // uma criação promovida não está mais lá, e é justamente ela que precisa sair daqui.
   const asset = await persistence.load(id).catch(() => null)
-  if (!asset) return exportSceneForStudio(id)
+  if (!asset) return exportSceneForStudio(id, namespace)
   return exportLoadedAssetForStudio(asset, { persistence, namespace })
 }

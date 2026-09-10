@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import { MOLDA_LIMITS } from '../core/limits'
+import { createSceneProject } from '../scene/createProject'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import {
   createMoldaPersistence,
@@ -12,6 +14,9 @@ import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { readGlb } from '../testing/glbRead'
 import { clearIdbMock } from '../testing/idbMock'
 import { nativeDatabase } from '../testing/nativeDatabase'
+import { makeSceneGlbFixture } from '../testing/sceneGlbFixture'
+import { encodeSceneGlb } from './sceneGlb'
+import { inspectSceneStudioCompatibility } from './sceneStudioCompatibility'
 import { exportAssetForStudio, listGalleryForStudio } from './studioLibrary'
 
 beforeEach(() => {
@@ -122,6 +127,69 @@ describe('studio-library e a geração seguinte', () => {
     } finally {
       setMoldaGenerationStoreFactory(null)
       db.close()
+    }
+  })
+
+  // Os dois tetos que o caminho v1 já cobrava e a ponte da geração seguinte deixava passar.
+  test('a criação vazia é recusada, como o caminho v1 recusa um modelo sem peça', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    try {
+      const vazia = createSceneProject({ kind: 'empty', name: 'vazia' })
+      await createScenePersistence(db.store).save(vazia, null)
+      // O v1 devolve `empty` e o host o mapeia para `encode-failed`: a mesma recusa aqui.
+      expect(await exportAssetForStudio(vazia.id)).toEqual({ ok: false, reason: 'encode-failed' })
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
+  test('a criação que estoura um teto do Estúdio não atravessa a ponte só porque é leve', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    try {
+      // 60 malhas contra o teto de 48: cabe nos bytes com folga e derruba o desenho do jogo.
+      const pesada = { ...makeSceneGlbFixture(60, 2, 3, 0), id: 'pesada' },
+        encoded = encodeSceneGlb(pesada),
+        report = inspectSceneStudioCompatibility({
+          stats: encoded.stats,
+          byteLength: encoded.bytes.byteLength,
+        })
+      expect(report.exceeded.map((item) => item.limit)).toEqual(['meshes'])
+      // Leve nos bytes: é só a contagem de malhas que a recusa, e o teto de bytes não.
+      expect(encoded.bytes.byteLength < MOLDA_LIMITS.studioMax3DChars / 4).toBe(true)
+      await createScenePersistence(db.store).save(pesada, null)
+      expect(await exportAssetForStudio('pesada')).toEqual({ ok: false, reason: 'asset-too-big' })
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
+  // `useStudioResync` prende a conta ANTES de entrar na fila ("a profile switch cannot borrow
+  // its cache"). O caminho da geração seguinte relia o namespace corrente DEPOIS dos awaits,
+  // então uma troca de criança no mesmo tablet mandava a criação da outra para o Estúdio.
+  test('a exportação sai do perfil que pediu, mesmo se o host trocar de criança no meio', async () => {
+    const a = await nativeDatabase()
+    const b = await nativeDatabase()
+    setMoldaGenerationStoreFactory((namespace) => (namespace === 'crianca-a' ? a.store : b.store))
+    try {
+      const base = migrateLegacyModel({ ...makeModel(), id: 'mesma-criacao' }).document
+      await createScenePersistence(a.store).save({ ...base, name: 'nave-da-ana' }, null)
+      await createScenePersistence(b.store).save({ ...base, name: 'nave-do-bento' }, null)
+      // O host já trocou de perfil enquanto o reenvio esperava na fila.
+      setMoldaStorageNamespace('crianca-b')
+      const exported = await exportAssetForStudio('mesma-criacao', {
+        persistence: createMoldaPersistence({ namespace: 'crianca-a' }),
+        namespace: 'crianca-a',
+      })
+      if (!exported.ok) throw new Error(`exportação falhou: ${exported.reason}`)
+      expect(exported.asset.originalFileName).toBe('nave-da-ana.glb')
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      a.close()
+      b.close()
     }
   })
 

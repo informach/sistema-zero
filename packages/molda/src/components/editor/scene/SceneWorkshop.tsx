@@ -71,10 +71,14 @@ export function SceneWorkshop({
   // A volta da ponte, igual à do editor antigo: só depois de SALVAR, nunca ao abrir, e a
   // exportação relê o disco pela geração dona da criação.
   const savedAsset = useStore(editor, (state) => state.savedAsset)
+  const setWorkshopMessage = workshop.setMessage
   useStudioResync({
     savedAsset,
     send: resyncToStudio,
-    exportAsset: (document) => exportAssetForStudio(document.id),
+    exportAsset: (document, context) => exportAssetForStudio(document.id, context),
+    // Sem isto a falha da ponte é MUDA aqui, enquanto o editor antigo avisa: o jogo ficaria
+    // com o modelo velho para sempre e a criança não teria como saber.
+    onFailure: (message) => setWorkshopMessage(message ?? COPY.editor.studioSyncFailed),
   })
   const [mode, setMode] = useState<'model' | 'animation'>('model')
   const [exportOpen, setExportOpen] = useState(false)
