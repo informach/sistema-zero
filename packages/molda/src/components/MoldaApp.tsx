@@ -73,9 +73,8 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
   // Sempre ligada: quem já foi promovido precisa continuar visível e abrível, mesmo que
   // a promoção de novos modelos seja desligada de novo.
   const [sceneStore] = useState(() => getMoldaGenerationStore())
-  const [gallery] = useState(() =>
-    createGalleryStore(persist, { scene: createGallerySceneSource(sceneStore) }),
-  )
+  const [scene] = useState(() => createGallerySceneSource(sceneStore))
+  const [gallery] = useState(() => createGalleryStore(persist, { scene }))
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
   /**
    * Uma criação JÁ na geração seguinte abre na oficina, sempre. Um modelo ANTIGO só vai
@@ -104,8 +103,8 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
   }, [gallery, onChange])
 
   const context = useMemo(
-    () => ({ adapter: adapterValue, gallery, persistence: persist }),
-    [adapterValue, gallery, persist],
+    () => ({ adapter: adapterValue, gallery, persistence: persist, scene }),
+    [adapterValue, gallery, persist, scene],
   )
 
   return (
@@ -126,6 +125,9 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
               store={sceneStore}
               initialId={screen.assetId}
               theme={adapterValue.theme ?? 'light'}
+              {...(adapterValue.resyncToStudio
+                ? { resyncToStudio: adapterValue.resyncToStudio }
+                : {})}
               onRouteChange={(id) => {
                 // Sair da criação na oficina volta para a galeria do app, não para a lista dela.
                 if (id === null) setScreen({ type: 'gallery' })

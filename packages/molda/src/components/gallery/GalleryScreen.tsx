@@ -45,7 +45,7 @@ const RESTORE_MESSAGES: Record<MoldaBackupReadFailure, string> = {
 const RESTORE_ACCEPT = '.zip,.json,application/zip,application/x-zip-compressed,application/json'
 
 export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX.Element {
-  const { adapter, gallery, persistence } = useMoldaApp()
+  const { adapter, gallery, persistence, scene } = useMoldaApp()
   const assets = useGallery((state) => state.assets)
   const loaded = useGallery((state) => state.loaded)
   const loading = useGallery((state) => state.loading)
@@ -90,19 +90,26 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
     try {
       // Explicit backup requests content; ordinary listing/filtering never does.
       const content = await persistence.loadAll()
+      // A geração seguinte viaja no arquivo NATIVO dela: o envelope v1 não muda de forma.
+      const scenes: Array<{ name: string; json: string }> = []
+      for (const asset of assets) {
+        if (asset.formatVersion !== 2) continue
+        const json = await scene.readProject(asset.id)
+        if (json) scenes.push({ name: asset.name, json })
+      }
       const blob = await zipGalleryBlob(content, {
         signal: controller.signal,
+        scenes,
         onProgress: ({ processed }) => setPackingProgress(processed),
       })
-      const started = triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
-      // O pacote é da geração v1. Dizer quantas ficaram de fora é melhor do que uma
-      // cópia de segurança que a criança acha completa e não é.
-      const skipped = assets.filter((asset) => asset.formatVersion === 2).length
+      // Uma criação da geração seguinte que não pôde ser lida agora ficaria de fora em
+      // silêncio; dizer isso vale mais do que um pacote que parece completo e não é.
+      const missing = assets.filter((asset) => asset.formatVersion === 2).length - scenes.length
       showToast(
-        !started
+        !triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
           ? COPY.gallery.downloadFailed
-          : skipped
-            ? COPY.gallery.downloadSkippedScene(skipped)
+          : missing > 0
+            ? COPY.gallery.downloadSkippedScene(missing)
             : COPY.gallery.downloadReady,
       )
     } catch (error) {

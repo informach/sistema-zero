@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import type { MoldaAsset } from '../../core/model'
+import { exportLoadedAssetForStudio } from '../../export/studioLibrary'
 import { createEditorStore } from '../../state/editorStore'
 import { markMoldaAssetClosed, markMoldaAssetOpen } from '../../state/persistence'
 import { useMoldaApp } from '../appContext'
@@ -49,6 +50,7 @@ function LoadedEditor({
   const { flush: flushStudioResync } = useStudioResync({
     savedAsset,
     send: adapter.resyncToStudio,
+    exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
   const closingRef = useRef(false)

@@ -9,6 +9,7 @@ import type { SceneEditorStore } from '../../../state/sceneEditorStore'
 import { createScenePersistence } from '../../../state/scenePersistence'
 import type { SceneViewportFactory } from '../../../viewport/sceneViewportTypes'
 import { Button } from '../../ui/Button'
+import type { ResyncToStudio } from '../useStudioResync'
 import type { RestoreSceneProject } from './SceneProjectRestore'
 import { SceneStart } from './SceneStart'
 import { SceneWorkshop } from './SceneWorkshop'
@@ -20,12 +21,15 @@ export function SceneWorkshopHost({
   onRouteChange,
   viewportFactory,
   theme = 'light',
+  resyncToStudio,
 }: {
   store: UseStore
   initialId?: string | null
   onRouteChange?: (id: string | null) => void
   viewportFactory?: SceneViewportFactory
   theme?: 'light' | 'dark'
+  /** Ausente = host interno sem ponte; é o que decide o aviso de oficina em desenvolvimento. */
+  resyncToStudio?: ResyncToStudio
 }) {
   const scope = useMemo(
     () => ({ store, persistence: createScenePersistence(store), active: false }),
@@ -124,9 +128,13 @@ export function SceneWorkshopHost({
       data-molda-theme={theme}
       className="flex min-h-0 flex-1 flex-col bg-mld-bg text-mld-text"
     >
-      <p className="border-b border-mld-border px-4 py-2 text-sm text-mld-muted">
-        {COPY.scene.development}
-      </p>
+      {/* Sem ponte com o Estúdio, isto é o host interno: o aviso continua verdadeiro.
+          Com ela, a oficina é o editor de verdade da criança e o aviso mentiria. */}
+      {resyncToStudio ? null : (
+        <p className="border-b border-mld-border px-4 py-2 text-sm text-mld-muted">
+          {COPY.scene.development}
+        </p>
+      )}
       {id === null ? (
         <SceneStart
           persistence={scope.persistence}
@@ -143,6 +151,7 @@ export function SceneWorkshopHost({
           viewportFactory={viewportFactory}
           theme={theme}
           onExit={leave}
+          {...(resyncToStudio ? { resyncToStudio } : {})}
         />
       ) : failed ? (
         <div className="space-y-4 p-6">

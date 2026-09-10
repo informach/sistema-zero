@@ -5,6 +5,7 @@
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
+import type { GallerySceneSource } from '../state/gallerySceneSource'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
 import type { MoldaPersistence } from '../state/persistence'
 
@@ -43,6 +44,8 @@ export interface MoldaAppContextValue {
   adapter: MoldaHostAdapter
   gallery: GalleryStore
   persistence: MoldaPersistence
+  /** A geração seguinte, para o que a galeria precisa dela além da lista. */
+  scene: GallerySceneSource
 }
 
 const MoldaAppContext = createContext<MoldaAppContextValue | null>(null)

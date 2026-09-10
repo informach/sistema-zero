@@ -1197,7 +1197,12 @@ export const COPY = {
         'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" do painel de imagens.',
         'Para voltar com tudo para o Molda, use o botão "Trazer de volta" e escolha este .zip.',
         'O arquivo galeria.molda.json é o backup completo: não apague.',
+        'A pasta projetos/ tem as criações da oficina nova. Para trazer uma de volta, abra a',
+        'oficina e use "Trazer uma cópia do Molda".',
       ],
+      /** A geração seguinte viaja no arquivo nativo dela, não num .glb pronto. */
+      project: (name: string, file: string) =>
+        `• Criação da oficina nova "${name}": projetos/${file}.molda.json`,
       model: (name: string, file: string, parts: number, triangles: number) =>
         `• Modelo "${name}": modelos/${file}.glb (${parts === 1 ? '1 peça' : `${parts} peças`}, ${triangles} triângulos)`,
       texture: (name: string, file: string, size: number) =>

@@ -3,6 +3,7 @@ import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { triggerDownload } from '../../../export/download'
+import { exportAssetForStudio } from '../../../export/studioLibrary'
 import {
   convertSceneNodesToMesh,
   deleteSceneNodes,
@@ -20,6 +21,7 @@ import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import { isTypingTarget } from '../../ui/interaction'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
+import { type ResyncToStudio, useStudioResync } from '../useStudioResync'
 import { SceneCanvas } from './SceneCanvas'
 import { SceneComponentTools } from './SceneComponentTools'
 import { SceneCreateMenu } from './SceneCreateMenu'
@@ -55,14 +57,25 @@ export function SceneWorkshop({
   onExit,
   viewportFactory,
   theme = 'light',
+  resyncToStudio,
 }: {
   editor: EditorStore<MoldaSceneDocument>
   storage?: SceneStorageObserver
   onExit?: (mode: SceneExitMode) => void
   viewportFactory?: SceneViewportFactory
   theme?: 'light' | 'dark'
+  /** A VOLTA da ponte: depois de SALVAR, reenvia a criação ao host já no formato do Estúdio. */
+  resyncToStudio?: ResyncToStudio
 }) {
   const workshop = useSceneWorkshop(editor)
+  // A volta da ponte, igual à do editor antigo: só depois de SALVAR, nunca ao abrir, e a
+  // exportação relê o disco pela geração dona da criação.
+  const savedAsset = useStore(editor, (state) => state.savedAsset)
+  useStudioResync({
+    savedAsset,
+    send: resyncToStudio,
+    exportAsset: (document) => exportAssetForStudio(document.id),
+  })
   const [mode, setMode] = useState<'model' | 'animation'>('model')
   const [exportOpen, setExportOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, renderHook, waitFor } from '@testing-library/react'
 import { createSkyAsset, createTextureAsset, type MoldaAsset } from '../../core/model'
 import type { MoldaExportedAsset } from '../../export/studioLibrary'
+import { exportLoadedAssetForStudio } from '../../export/studioLibrary'
 import { useStudioResync } from './useStudioResync'
 
 /**
@@ -20,7 +21,13 @@ function harness(idleMs = 60) {
   })
   const first = createTextureAsset({ name: 'grama', size: 16, now: 1 })
   const view = renderHook(
-    ({ savedAsset }: { savedAsset: MoldaAsset }) => useStudioResync({ savedAsset, send, idleMs }),
+    ({ savedAsset }: { savedAsset: MoldaAsset }) =>
+      useStudioResync({
+        exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
+        savedAsset,
+        send,
+        idleMs,
+      }),
     { initialProps: { savedAsset: first } },
   )
   return { sent, send, first, ...view }
@@ -42,7 +49,12 @@ describe('useStudioResync', () => {
       return { updated: true as const }
     }
     const { result } = renderHook(() =>
-      useStudioResync({ savedAsset: first, send, idleMs: 10_000 }),
+      useStudioResync({
+        exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
+        savedAsset: first,
+        send,
+        idleMs: 10_000,
+      }),
     )
     const firstFlush = result.current.flush({ ...first, name: 'ceu-1', updatedAt: 2 })
     const lastFlush = result.current.flush({ ...first, name: 'ceu-2', updatedAt: 3 })
@@ -104,7 +116,12 @@ describe('useStudioResync', () => {
     const first = createTextureAsset({ name: 'grama', size: 16, now: 1 })
     const view = renderHook(
       ({ savedAsset }: { savedAsset: MoldaAsset }) =>
-        useStudioResync({ savedAsset, send: undefined, idleMs: 5 }),
+        useStudioResync({
+          exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
+          savedAsset,
+          send: undefined,
+          idleMs: 5,
+        }),
       { initialProps: { savedAsset: first } },
     )
     view.rerender({ savedAsset: { ...first, updatedAt: 2 } })
@@ -126,6 +143,7 @@ describe('useStudioResync', () => {
     const view = renderHook(
       ({ savedAsset }: { savedAsset: MoldaAsset }) =>
         useStudioResync({
+          exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
           savedAsset,
           send,
           idleMs: 5,
@@ -151,6 +169,7 @@ describe('useStudioResync', () => {
     const view = renderHook(
       ({ savedAsset }: { savedAsset: MoldaAsset }) =>
         useStudioResync({
+          exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
           savedAsset,
           send: async () => ({ updated: false, reason: 'not-linked' }),
           idleMs: 5,
@@ -175,7 +194,12 @@ describe('useStudioResync: o host recria o adapter', () => {
       })
     const view = renderHook(
       ({ savedAsset, send }: { savedAsset: MoldaAsset; send: ReturnType<typeof makeSend> }) =>
-        useStudioResync({ savedAsset, send, idleMs: 60 }),
+        useStudioResync({
+          exportAsset: (asset, context) => exportLoadedAssetForStudio(asset, context),
+          savedAsset,
+          send,
+          idleMs: 60,
+        }),
       { initialProps: { savedAsset: first, send: makeSend() } },
     )
     view.rerender({ savedAsset: { ...first, updatedAt: 2 }, send: makeSend() })

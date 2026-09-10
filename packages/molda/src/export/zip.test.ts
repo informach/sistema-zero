@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'bun:test'
 import { strFromU8, unzipSync } from 'fflate'
+import { readSceneProjectFile } from '../import/sceneProjectFile'
+import { sceneToJson } from '../scene/documentJson'
+import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { readGlb } from '../testing/glbRead'
 import { decodePng } from '../testing/pngDecode'
@@ -149,5 +152,28 @@ describe('"Baixar tudo" (o zip da galeria)', () => {
     await expect(
       zipGallery([makeTexture()], { yieldBetween: null, maxCompressedBytes: 1 }),
     ).rejects.toMatchObject({ code: 'compressed-bytes' })
+  })
+})
+
+describe('o pacote e a geração seguinte', () => {
+  it('leva a criação da oficina nova no arquivo nativo dela, sem mexer no envelope v1', async () => {
+    const model = makeModel()
+    const scene = migrateLegacyModel({ ...makeModel(), id: 'promovida', name: 'nave' }).document
+    const bytes = await zipGallery([model], {
+      yieldBetween: null,
+      scenes: [{ name: 'nave', json: JSON.stringify(sceneToJson(scene)) }],
+    })
+    const entries = unzipSync(bytes)
+    // Duas criações com o MESMO nome, uma de cada geração, não podem se sobrescrever.
+    expect(Object.keys(entries)).toContain('modelos/nave.glb')
+    expect(Object.keys(entries)).toContain('projetos/nave-2.molda.json')
+    // O envelope antigo continua exatamente o que era: só a geração v1 mora nele.
+    const backup = importMoldaJson(strFromU8(entries[MOLDA_GALLERY_ZIP_ENTRY] as Uint8Array))
+    expect(backup?.assets.map((asset) => asset.id)).toEqual([model.id])
+    // E o arquivo nativo volta pela mesma porta do "Trazer uma cópia do Molda".
+    const restored = readSceneProjectFile(entries['projetos/nave-2.molda.json'] as Uint8Array)
+    expect(restored.id).toBe('promovida')
+    expect(restored.formatVersion).toBe(2)
+    expect(strFromU8(entries[README_ENTRY] as Uint8Array)).toContain('projetos/nave-2.molda.json')
   })
 })

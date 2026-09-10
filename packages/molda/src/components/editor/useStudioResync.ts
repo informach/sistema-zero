@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef } from 'react'
-import type { MoldaAsset } from '../../core/model'
-import {
-  exportLoadedAssetForStudio,
-  type MoldaExportedAsset,
-  type MoldaStudioResyncResult,
+import type {
+  ExportForStudioResult,
+  MoldaExportedAsset,
+  MoldaStudioResyncResult,
 } from '../../export/studioLibrary'
 import { getDefaultMoldaPersistence, getMoldaStorageNamespace } from '../../state/persistence'
 
@@ -12,10 +11,16 @@ export const RESYNC_IDLE_MS = 1500
 
 export type ResyncToStudio = (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
 
-export interface StudioResyncController {
+export interface StudioResyncController<T> {
   /** Drena a fila; com um snapshot explícito, não depende de um novo render do hook. */
-  flush(savedAsset?: MoldaAsset): Promise<void>
+  flush(savedAsset?: T): Promise<void>
 }
+
+/** Como cada geração vira o que o Estúdio aceita. O gancho não conhece formato. */
+export type StudioExporter<T> = (
+  asset: T,
+  context: { persistence: ReturnType<typeof getDefaultMoldaPersistence>; namespace: string },
+) => Promise<ExportForStudioResult>
 
 /**
  * A VOLTA da ponte "Trazer do Molda" (porte do `useStudioResync` do Pinta): depois de
@@ -29,25 +34,29 @@ export interface StudioResyncController {
  * - Só o que o Estúdio aceita: a exportação passa pelos mesmos tetos do "Trazer do
  *   Molda"; o que não cabe não é reenviado (o jogo fica com a versão anterior).
  */
-export function useStudioResync(options: {
-  savedAsset: MoldaAsset
+export function useStudioResync<T extends { id: string }>(options: {
+  savedAsset: T
   send: ResyncToStudio | undefined
+  /** A exportação da geração dona desta criação. */
+  exportAsset: StudioExporter<T>
   /** Falha real da ponte; `not-linked` é o estado normal de uma criação ainda não importada. */
   onFailure?: (message?: string) => void
   idleMs?: number
-}): StudioResyncController {
-  const { savedAsset, send, onFailure, idleMs = RESYNC_IDLE_MS } = options
+}): StudioResyncController<T> {
+  const { savedAsset, send, exportAsset, onFailure, idleMs = RESYNC_IDLE_MS } = options
   // O que estava salvo ao MONTAR nunca é reenviado: abrir não é salvar.
   const lastSeenRef = useRef(savedAsset)
-  const pendingRef = useRef<MoldaAsset | null>(null)
+  const pendingRef = useRef<T | null>(null)
   const chainRef = useRef<Promise<void>>(Promise.resolve())
   const sendRef = useRef(send)
   sendRef.current = send
   const onFailureRef = useRef(onFailure)
   onFailureRef.current = onFailure
+  const exportRef = useRef(exportAsset)
+  exportRef.current = exportAsset
 
-  const flushRef = useRef((_savedAsset?: MoldaAsset): Promise<void> => Promise.resolve())
-  flushRef.current = (explicitAsset?: MoldaAsset): Promise<void> => {
+  const flushRef = useRef((_savedAsset?: T): Promise<void> => Promise.resolve())
+  flushRef.current = (explicitAsset?: T): Promise<void> => {
     if (explicitAsset && explicitAsset !== lastSeenRef.current) {
       lastSeenRef.current = explicitAsset
       pendingRef.current = explicitAsset
@@ -61,7 +70,7 @@ export function useStudioResync(options: {
     const namespace = getMoldaStorageNamespace()
     chainRef.current = chainRef.current.then(async () => {
       try {
-        const exported = await exportLoadedAssetForStudio(asset, { persistence, namespace })
+        const exported = await exportRef.current(asset, { persistence, namespace })
         // Size/geometry refusals remain distinct from a failed worker/host connection.
         if (!exported.ok) return
         const result = await deliver(exported.asset)
@@ -75,7 +84,7 @@ export function useStudioResync(options: {
     return chainRef.current
   }
 
-  const flush = useCallback((asset?: MoldaAsset): Promise<void> => flushRef.current(asset), [])
+  const flush = useCallback((asset?: T): Promise<void> => flushRef.current(asset), [])
 
   // O `send` vive no ref de propósito: o host recria o adapter a cada render dele e um
   // `send` novo no meio da folga cancelaria o reenvio agendado (ficaria preso até a aba

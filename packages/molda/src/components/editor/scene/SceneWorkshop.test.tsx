@@ -33,6 +33,7 @@ import {
   setSceneSkinWeights,
 } from '../../../scene/skinCommands'
 import { createDocumentEditorStore } from '../../../state/editorStore'
+import { setMoldaGenerationStoreFactory } from '../../../state/persistence'
 import { createSceneEditorStore, type SceneEditorStore } from '../../../state/sceneEditorStore'
 import { createScenePersistence } from '../../../state/scenePersistence'
 import { makeModel } from '../../../testing/fixtures'
@@ -52,7 +53,10 @@ import { SceneWorkshop } from './SceneWorkshop'
 function setup(
   asset = migrateLegacyModel(makeModel()).document,
   persistedEditor?: SceneEditorStore,
-  options: { renderThumb?: () => string | null } = {},
+  options: {
+    renderThumb?: () => string | null
+    resyncToStudio?: (asset: { id: string; name: string }) => Promise<{ updated: boolean }>
+  } = {},
 ) {
   const editor =
     persistedEditor ??
@@ -132,7 +136,12 @@ function setup(
   }
   const view = render(
     <StrictMode>
-      <SceneWorkshop editor={editor} storage={persistedEditor?.storage} viewportFactory={factory} />
+      <SceneWorkshop
+        editor={editor}
+        storage={persistedEditor?.storage}
+        viewportFactory={factory}
+        {...(options.resyncToStudio ? { resyncToStudio: options.resyncToStudio as never } : {})}
+      />
     </StrictMode>,
   )
   function openInspector() {
@@ -143,6 +152,39 @@ function setup(
 }
 
 describe('scene workshop integration', () => {
+  test('salvar na oficina reenvia a criação ao Estúdio; abrir não reenvia nada', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    const sent: Array<{ id: string; kind: string }> = []
+    const asset = migrateLegacyModel(makeModel()).document
+    await createScenePersistence(db.store).save(asset, null)
+    const { editor, view, ports } = setup(asset, undefined, {
+      resyncToStudio: async (exported) => {
+        sent.push(exported as unknown as { id: string; kind: string })
+        return { updated: true }
+      },
+    })
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      // Abrir não é salvar: a ponte fica quieta.
+      expect(sent).toEqual([])
+      act(() => {
+        editor.getState().commit(addScenePrimitive(editor.getState().asset, 'box', 'Bloco'))
+      })
+      await act(async () => {
+        await editor.getState().flush()
+      })
+      // Fechar a criação com um reenvio pendente drena a fila na hora.
+      view.unmount()
+      await waitFor(() => expect(sent.length).toBe(1), { timeout: 20_000 })
+      expect(sent[0]?.id).toBe(asset.id)
+      expect(sent[0]?.kind).toBe('model3d')
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
   test('a foto da criação entra no documento sem virar passo de desfazer', async () => {
     const photo = 'data:image/jpeg;base64,Zm90bw=='
     const { editor, ports, view, openInspector } = setup(undefined, undefined, {

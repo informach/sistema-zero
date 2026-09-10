@@ -205,8 +205,9 @@ export async function exportLoadedAssetForStudio(
 export async function exportAssetForStudio(id: string): Promise<ExportForStudioResult> {
   const namespace = getMoldaStorageNamespace()
   const persistence = getDefaultMoldaPersistence()
-  const asset = await persistence.load(id)
-  // A geração seguinte responde depois: uma criação promovida não está mais no v1.
+  // Falhar ao ler o inventário v1 não pode impedir a geração seguinte de responder:
+  // uma criação promovida não está mais lá, e é justamente ela que precisa sair daqui.
+  const asset = await persistence.load(id).catch(() => null)
   if (!asset) return exportSceneForStudio(id)
   return exportLoadedAssetForStudio(asset, { persistence, namespace })
 }

@@ -1406,6 +1406,13 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Volta da ponte e backup (lote 234): `useStudioResync` recebe `exportAsset` e não conhece
+  formato; a oficina passa `exportAssetForStudio(id)`, que relê o disco pela geração dona.
+  O aviso `COPY.scene.development` só aparece SEM `resyncToStudio` (host interno).
+  ⚠️ `exportAssetForStudio` precisa tolerar falha na leitura v1: sem isso a exceção subia e
+  a geração seguinte, dona da criação promovida, nunca era consultada. "Baixar tudo" leva a
+  geração nova em `projetos/<nome>.molda.json` (o arquivo do "Baixar projeto"); o envelope
+  `galeria.molda.json` continua SÓ v1 e não muda de forma.
 - Virada pública (lote 233): `MoldaHostAdapter.sceneWorkshop` governa a PROMOÇÃO, não o
   acesso. ⚠️⚠️ Criação já na geração seguinte é listada e aberta na oficina SEMPRE, com a
   chave ligada ou não: é isso que torna desligar reversível, senão voltar atrás deixaria o

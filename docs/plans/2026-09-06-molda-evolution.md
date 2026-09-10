@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 233, a virada pública, fases 1/3.**
-Próximo lote: a volta da ponte com o Estúdio e o "Baixar tudo" da geração nova, lote 234.
+**Último lote implementado e verificado: 234, volta da ponte e backup da geração nova, fases 5/8/9.**
+Próximo lote: as lacunas de código que sobraram das fases 2, 4 e 8, lote 235.
 A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
@@ -25,8 +25,8 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
 
-Molda: **2.833 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 233; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.835 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 234; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -5101,12 +5101,27 @@ conversão compartilhada continuam abertos na fase 5.
 - ⚠️ **Nada foi implantado.** A ordem está em `docs/plans/2026-09-10-molda-rollout.md`, com
   a conferência pós-deploy e a volta atrás de uma linha.
 
-### Próximo lote 234: a volta da ponte e o "Baixar tudo" da geração nova
+### Lote 234: a volta da ponte e o backup da geração nova — verificado
 
-- A oficina nova ainda não reenvia ao Estúdio depois de salvar; por isso o aviso de que a
-  sincronização não está ligada continua certo.
-- O pacote de backup ainda é só da geração v1 e já DIZ o que deixa de fora. Ela pode
-  entrar com o arquivo nativo dela, sem mexer no envelope antigo.
+- `useStudioResync` deixou de conhecer formato: recebe a exportação da geração dona da
+  criação. Debounce, ordem e saída ao fechar continuam sendo um código só, para os dois.
+- O aviso de "oficina em desenvolvimento" passou a depender de a ponte existir: sem ela é
+  o host interno e o aviso é verdade; com ela, mentiria.
+- **Defeito real achado pela prova**: se a leitura do inventário v1 LANÇASSE,
+  `exportAssetForStudio` nunca chegava a consultar a geração seguinte, que é justamente a
+  dona da criação promovida. O reenvio ficava mudo.
+- "Baixar tudo" passa a levar a criação da geração nova em `projetos/<nome>.molda.json`, o
+  mesmo arquivo do "Baixar projeto", que volta pelo "Trazer uma cópia do Molda". O
+  envelope `galeria.molda.json` NÃO muda de forma. Review `bridge-return-and-backup-l234.md`.
+- Duas criações com o mesmo nome, uma de cada geração, não se sobrescrevem no pacote.
+- Molda **2.835/0**, kids **619/0**, tipos, Biome, build do Kids e 14/14 e2e.
+
+### Próximo lote 235: as lacunas de código das fases 2, 4 e 8
+
+- Fase 4: chanfro em mais de uma quina e caminhos abertos.
+- Fase 8: ampliar clipes, camadas e PBR do bbmodel; compatibilidade glTF que ficou aberta.
+- Fase 2: o custo dos blobs (o ledger varre tudo para medir) e o chunk Three de 579 kB.
+- E a pendência mais antiga: a causa dos avisos `act` intermitentes do editor ANTIGO.
 
 ### Situação do plano após esses lotes
 

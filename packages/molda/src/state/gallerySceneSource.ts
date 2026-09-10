@@ -1,6 +1,7 @@
 import type { UseStore } from 'idb-keyval'
 import type { MoldaAssetSummary } from '../core/assetSummary'
 import { newId } from '../core/id'
+import { sceneToJson } from '../scene/documentJson'
 import { sceneCloudSummary } from './sceneGenerationSummary'
 import { createScenePersistence } from './scenePersistence'
 
@@ -11,6 +12,8 @@ import { createScenePersistence } from './scenePersistence'
  */
 export interface GallerySceneSource {
   listSummaries(): Promise<{ summaries: MoldaAssetSummary[]; issues: readonly string[] }>
+  /** O arquivo nativo da criação, o MESMO do "Baixar projeto" da oficina. */
+  readProject(id: string): Promise<string | null>
   rename(id: string, name: string): Promise<boolean>
   remove(id: string): Promise<boolean>
   duplicate(id: string, name: string): Promise<MoldaAssetSummary | null>
@@ -34,6 +37,10 @@ export function createGallerySceneSource(
         summaries: summaries.map(sceneCloudSummary),
         issues: issues.map((issue) => issue.id),
       }
+    },
+    async readProject(id) {
+      const found = await current(id)
+      return found ? JSON.stringify(sceneToJson(found.document)) : null
     },
     async rename(id, name) {
       const active = await current(id)
