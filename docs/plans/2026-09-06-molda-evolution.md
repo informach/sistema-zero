@@ -5160,15 +5160,25 @@ conversão compartilhada continuam abertos na fase 5.
 
 ### Situação do plano após esses lotes
 
-As nove fases não estão concluídas. Lotes são incrementos de implementação, não
-sinônimos de fases. Formato público segue 1; domínio v2, leitor/codec e migração em
-memória, promoção local transacional, comandos de hierarquia e persistência local
-com revisão/índice de custos e oficina de hierarquia no playground estão implementados
-internamente, incluindo UV, materiais, camadas e lápis 2D/3D. Ativação pública desse editor,
-integração pública de imagem/animação, skin/IK, importadores e
-integrações avançadas do Estúdio ainda estão abertos. Workers para outras operações, otimização dos blobs,
-atualizações mais locais e homologação de hardware/usabilidade seguem em aberto.
-Não habilitar novo formato antes de respeitar o rollout de guardas documentado.
+As nove fases continuam sem estar concluídas, e lotes seguem sendo incrementos, não fases.
+O que mudou de estado nos lotes 225 a 237:
+
+- **A oficina da geração seguinte deixou de ser interna.** Ela é o editor de modelos no
+  app do kids, com a galeria enxergando as duas gerações, promoção ao abrir, miniatura,
+  nuvem, ponte com o Estúdio nos dois sentidos e backup. A capacidade governa a PROMOÇÃO,
+  não o acesso, então desligá-la é uma linha e não prende trabalho de ninguém.
+- **Os leitores compatíveis estão prontos e commitados**, e são o passo que precisa ser
+  implantado ANTES do escritor. A ordem, a conferência e a volta atrás estão em
+  `docs/plans/2026-09-10-molda-rollout.md`. **Nada foi implantado.**
+- **A pintura animada atravessa a fronteira inteira**, do documento ao jogo.
+- **A homologação em navegador real aconteceu**: 14 de 14 specs em Chromium, incluindo
+  três novas da oficina, e duas do editor antigo que estavam quebradas desde o lote grande.
+- **Os avisos act, abertos desde o lote 203, foram diagnosticados pela causa.**
+
+Continuam abertos, e são o que orienta os próximos lotes: laço fechado nos caminhos de
+tubo; clipes, camadas e PBR do bbmodel; compatibilidade glTF; latência e memória dos
+blobs; e a homologação que nenhum teste substitui, que é tablet físico, toque de verdade
+e uma criança de 9 a 11 anos usando a oficina.
 
 ### Matriz de capacidades que orienta os próximos lotes
 
