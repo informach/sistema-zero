@@ -114,9 +114,10 @@ describe('unreleased scene document reader', () => {
     expect(readSceneDocument(source).status).toBe('invalid')
   })
 
-  test('internal v2 codec does not grant the public application permission to read/write/promote v2', () => {
+  test('ler a geração seguinte não autoriza o caminho v1 a escrevê-la nem a saneá-la', () => {
     const json = sceneToJson(fixture())
-    expect(MOLDA_MAX_READ_VERSION).toBe(1)
+    // O cliente sabe abrir a v2, mas por ESTE leitor, não pelo v1 nem pelo sanitize.
+    expect(MOLDA_MAX_READ_VERSION).toBe(2)
     expect(MOLDA_DOCUMENT_WRITE_VERSION).toBe(1)
     expect(readMoldaDocument(json)).toEqual({ status: 'unsupported', version: 2, raw: json })
     expect(sanitizeMoldaAsset(json)).toBeNull()

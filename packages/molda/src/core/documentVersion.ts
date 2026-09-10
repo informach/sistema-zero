@@ -2,10 +2,22 @@
 export const MOLDA_DOCUMENT_WRITE_VERSION = 1
 const READABLE_VERSIONS = [1] as const
 type ReadableVersion = (typeof READABLE_VERSIONS)[number]
-/** Ordered reader registry is independent of the writer rollout and remote tickets. */
-export const MOLDA_MAX_READ_VERSION = READABLE_VERSIONS[
+/**
+ * Registro do leitor v1, e só dele. Acrescentar aqui cobra um parser: o `never` do
+ * despacho em `documentReader` não compila sem ele.
+ */
+export const MOLDA_V1_MAX_READ_VERSION = READABLE_VERSIONS[
   READABLE_VERSIONS.length - 1
 ] as ReadableVersion
+
+/**
+ * A geração mais nova que ESTE cliente sabe abrir, por qualquer leitor: v1 pelo
+ * `readMoldaDocument`, v2 pelo `readSceneDocument`. Não é o registro do leitor v1 nem a
+ * versão do escritor. É o que o host pode aceitar da nuvem sem reconciliar às cegas um
+ * documento que não entende, e por isso precisa ser implantado ANTES de qualquer
+ * escritor da geração nova.
+ */
+export const MOLDA_MAX_READ_VERSION = 2
 /** @deprecated Use the explicit read capability or write version at the boundary. */
 export const MOLDA_DOCUMENT_VERSION = MOLDA_DOCUMENT_WRITE_VERSION
 

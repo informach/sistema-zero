@@ -7,14 +7,14 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 229, miniatura da geração seguinte, fase 3.**
-Próximo lote: ramo v2 da nuvem, para promover sem tirar a criação do backup, lote 230.
+**Último lote implementado e verificado: 230, nuvem ciente das duas gerações, fases 1/3.**
+Próximo lote: ponte do Estúdio para o documento v2 e "Baixar tudo", lote 231.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
 | Fase | Situação | Principais pendências |
 | --- | --- | --- |
-| 1 — Segurança e medição | Proteções e migração interna implementadas | Homologação com abas reais, medições em hardware e rollout |
+| 1 — Segurança e medição | Proteções, migração interna e LEITORES compatíveis com a geração seguinte, com a capacidade declarada casando com a real | Implantar os leitores antes de qualquer escritor; homologação com abas reais e medições em hardware |
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações, promoção ao abrir e miniatura da criação, verificadas em navegador real | Nuvem v2, "Baixar tudo", ponte Estúdio e revisão de toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
@@ -24,8 +24,8 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.823 testes, zero falhas, 380 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 229; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.829 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 230; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -5036,12 +5036,28 @@ conversão compartilhada continuam abertos na fase 5.
   para a galeria com a foto do próprio WebGL. Cinco avisos act do editor ANTIGO
   reapareceram; sem correção alegada.
 
-### Próximo lote 230: ramo v2 da nuvem
+### Lote 230: a nuvem ciente das duas gerações — verificado
 
-- `assetToCloudJson` só serializa v1, então promover uma criação hoje a tira do espelho
-  da nuvem: o trabalho continua no aparelho e para de subir.
-- Ligar a capacidade antes disso seria perder o backup da criança. Depois dele vêm os
-  leitores compatíveis e, por último, o escritor novo.
+- Promover tira o registro do inventário v1. Com o espelho conhecendo só ele, a criação
+  promovida sumiria da lista comparada com a nuvem, e sumir da lista é o mesmo que ter
+  sido apagada: **a promoção apagaria o backup da criança**. Dois espelhos seriam pior.
+- UM espelho ciente das duas, com toda a máquina de fila, lápides e conflito intacta e um
+  único ponto de despacho por geração.
+- Capacidade declarada tem que casar com a real: `MOLDA_MAX_READ_VERSION` virou 2, mas o
+  espelho só declara 2 com a fonte ligada. O leitor v1 continua recusando v2, e o `never`
+  do despacho continua cobrando um parser por versão que entrar no registro dele.
+- A integração achou um defeito: `loadAll` começava a reconciliação com a lista v1 apenas,
+  e a criação promovida ficaria de fora dela. Review `cloud-two-generations-l230.md`.
+- Molda **2.829/0**, kids **619/0**, tipos, Biome e build do Kids passaram.
+- ⚠️ Este é o passo de LEITORES do rollout: **precisa estar em produção antes de qualquer
+  escritor da geração nova**.
+
+### Próximo lote 231: ponte do Estúdio para o documento v2 e "Baixar tudo"
+
+- `exportLoadedAssetForStudio` só sabe o `exportModelGlb` de uma malha só; o documento v2
+  precisa ir pelo `encodeSceneGlb`, com a pintura animada que os lotes 225 a 227 fizeram.
+- "Baixar tudo" ainda não inclui a geração seguinte; ela tem o "Baixar projeto" próprio.
+- Só depois desses dois é que faz sentido virar o escritor.
 
 ### Situação do plano após esses lotes
 

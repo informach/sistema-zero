@@ -102,6 +102,9 @@ export function MoldaClient({
           setPersistence(
             createCloudMirroredMoldaPersistence({
               local,
+              // A geração seguinte entra no MESMO espelho. Sem ela, uma criação promovida
+              // sairia do inventário v1 e a reconciliação a leria como ausente.
+              sceneSource: m.createMoldaSceneCloudSource(),
               cloud: nextCloud,
               viewerId,
               // A descida não grava por baixo de uma criação ABERTA no editor — e, ao fechar

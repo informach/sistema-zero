@@ -8,12 +8,16 @@ import {
   MOLDA_DOCUMENT_VERSION,
   MOLDA_DOCUMENT_WRITE_VERSION,
   MOLDA_MAX_READ_VERSION,
+  MOLDA_V1_MAX_READ_VERSION,
 } from './documentVersion'
 import { sanitizeMoldaAsset } from './sanitize'
 
 describe('native document versions', () => {
-  test('capacidade de leitura e liberação de escrita permanecem explicitamente em v1', () => {
-    expect(MOLDA_MAX_READ_VERSION).toBe(1)
+  test('o leitor v1 e o escritor continuam em v1; ler a geração seguinte é de outro leitor', () => {
+    // Capacidade do CLIENTE (v1 pelo leitor daqui, v2 pelo leitor de cena) e registro do
+    // leitor v1 são coisas distintas: só a segunda governa este despacho.
+    expect(MOLDA_MAX_READ_VERSION).toBe(2)
+    expect(MOLDA_V1_MAX_READ_VERSION).toBe(1)
     expect(MOLDA_DOCUMENT_WRITE_VERSION).toBe(1)
     expect(MOLDA_DOCUMENT_VERSION).toBe(MOLDA_DOCUMENT_WRITE_VERSION)
     for (const version of [2, 65535, Number.MAX_SAFE_INTEGER]) {

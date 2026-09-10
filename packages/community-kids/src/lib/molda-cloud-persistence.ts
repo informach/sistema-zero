@@ -68,6 +68,39 @@ export interface MoldaPersistenceLike {
   dispose?(): void
 }
 
+/**
+ * A superfície de `MoldaSceneCloudSource` do pacote (espelhada aqui para não importar o
+ * barril React). Ausente = só a geração v1, que é como o espelho sempre funcionou.
+ */
+export interface MoldaSceneCloudSourceLike {
+  listSummaries(): Promise<MoldaAssetSummary[]>
+  read(id: string): Promise<{ summary: MoldaAssetSummary; json: string } | null>
+  inspect(json: string): MoldaAssetSummary | null
+  saveIfUnchanged(
+    id: string,
+    json: string,
+    expectedUpdatedAt: number | null,
+    name?: string,
+  ): Promise<boolean>
+  saveCopy(json: string, name: string, now?: () => number): Promise<MoldaAssetSummary | null>
+  removeIfUnchanged(id: string, expectedUpdatedAt: number | null): Promise<boolean>
+  subscribe(listener: () => void): () => void
+}
+
+/**
+ * Uma criação vista pelo espelho, seja qual for a geração: o que sobe, o que desce e o
+ * que se compara. O espelho move JSON e carimbos; quem entende o formato é cada geração.
+ */
+interface MirroredDocument {
+  id: string
+  name: string
+  kind: MoldaAsset['kind']
+  updatedAt: number
+  formatVersion: number
+  thumb: string | null
+  json: string
+}
+
 const MAX_NAME = MOLDA_LIMITS.maxNameChars
 /** Teto da miniatura que viaja na reserva (= `CREATION_LIMITS.maxThumbChars` do members). */
 const MAX_THUMB_CHARS = 12_000
@@ -143,6 +176,12 @@ export function assetFromCloudJson(json: string, expectedId: string): MoldaAsset
 
 export function createCloudMirroredMoldaPersistence(options: {
   local: MoldaPersistenceLike
+  /**
+   * ⚠️ A geração seguinte. Uma criação PROMOVIDA sai do inventário v1 e entra neste; sem
+   * somar os dois, a reconciliação enxerga a promoção como uma exclusão e apaga o backup
+   * da criança. Por isso é UM espelho ciente das duas, nunca dois espelhos.
+   */
+  sceneSource?: MoldaSceneCloudSourceLike
   cloud: CreationsCloud
   /** Perfil (namespace) — as marcas de sincronia são por perfil. */
   viewerId: string
@@ -181,19 +220,154 @@ export function createCloudMirroredMoldaPersistence(options: {
    */
   const sendingAt = new Map<string, number>()
 
+  const scene = options.sceneSource
+  /**
+   * O que ESTE espelho sabe abrir de verdade. Sem a fonte da geração seguinte ligada, a
+   * capacidade continua sendo 1: declarar 2 e depois não conseguir ler seria pior do que
+   * mandar a criação para a recuperação.
+   */
+  const maxReadVersion = scene ? MOLDA_MAX_READ_VERSION : 1
+
   async function localSummaries(): Promise<MoldaAssetSummary[]> {
-    return local.listSummaries ? local.listSummaries() : (await local.loadAll()).map(summarizeAsset)
+    const v1 = local.listSummaries
+      ? await local.listSummaries()
+      : (await local.loadAll()).map(summarizeAsset)
+    // A geração seguinte tem inventário próprio. Somar os dois é o que impede a promoção
+    // de parecer uma exclusão para a reconciliação.
+    return scene ? [...v1, ...(await scene.listSummaries())] : v1
   }
 
-  function enqueue({ id }: Pick<MoldaAsset, 'id'>): void {
+  /** Só o que a versão do documento disser; JSON quebrado não vira palpite de geração. */
+  function formatVersionOf(json: string): number | null {
+    let raw: unknown
+    try {
+      raw = JSON.parse(json)
+    } catch {
+      return null
+    }
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null
+    const value = (raw as { formatVersion?: unknown }).formatVersion
+    if (value === undefined) return 1
+    return typeof value === 'number' && Number.isSafeInteger(value) && value >= 1 ? value : null
+  }
+
+  /**
+   * O único ponto de despacho por geração. Tudo o que o espelho faz com uma criação passa
+   * por aqui: quem lê, grava, copia e apaga é a persistência dona daquele documento.
+   */
+  const documents = {
+    /** A geração seguinte responde primeiro: depois da promoção, é ela quem tem a criação. */
+    async read(id: string): Promise<MirroredDocument | null> {
+      const next = await scene?.read(id)
+      if (next)
+        return {
+          id: next.summary.id,
+          name: next.summary.name,
+          kind: next.summary.kind,
+          updatedAt: next.summary.updatedAt,
+          formatVersion: 2,
+          thumb: next.summary.thumbDataUrl,
+          json: next.json,
+        }
+      const current = await local.load(id)
+      if (!current) return null
+      const document = assetToJson(current)
+      return {
+        id: current.id,
+        name: current.name,
+        kind: current.kind,
+        updatedAt: current.updatedAt,
+        formatVersion: document.formatVersion,
+        thumb: cloudThumbOf(current),
+        json: JSON.stringify(document),
+      }
+    },
+    /** Confere o que desceu sem gravar. Formato acima da capacidade deste cliente lança. */
+    parse(json: string, id: string): MirroredDocument | null {
+      const version = formatVersionOf(json)
+      if (version === null) return null
+      if (version > maxReadVersion) throw new MoldaUnsupportedVersionError(version)
+      if (version === 2) {
+        const found = scene?.inspect(json)
+        if (!found || found.id !== id) return null
+        return {
+          id: found.id,
+          name: found.name,
+          kind: found.kind,
+          updatedAt: found.updatedAt,
+          formatVersion: 2,
+          thumb: found.thumbDataUrl,
+          json,
+        }
+      }
+      const asset = assetFromCloudJson(json, id)
+      if (!asset) return null
+      return {
+        id: asset.id,
+        name: asset.name,
+        kind: asset.kind,
+        updatedAt: asset.updatedAt,
+        formatVersion: 1,
+        thumb: cloudThumbOf(asset),
+        json,
+      }
+    },
+    async write(
+      document: MirroredDocument,
+      name: string,
+      expectedUpdatedAt: number | null,
+    ): Promise<boolean> {
+      if (document.formatVersion === 2)
+        return (
+          (await scene?.saveIfUnchanged(document.id, document.json, expectedUpdatedAt, name)) ??
+          false
+        )
+      const asset = assetFromCloudJson(document.json, document.id)
+      if (!asset) return false
+      return local.saveIfUnchanged(
+        asset.name === name ? asset : { ...asset, name },
+        expectedUpdatedAt,
+      )
+    },
+    /** Cópia de conflito: id novo, sempre na geração da criação copiada. */
+    async copy(document: MirroredDocument, name: string): Promise<MirroredDocument | null> {
+      if (document.formatVersion === 2) {
+        const copy = await scene?.saveCopy(document.json, name, now)
+        return copy
+          ? { ...document, id: copy.id, name: copy.name, updatedAt: copy.updatedAt }
+          : null
+      }
+      const asset = assetFromCloudJson(document.json, document.id)
+      if (!asset) return null
+      const copy: MoldaAsset = { ...asset, id: crypto.randomUUID(), name, updatedAt: now() }
+      await local.saveMany([copy])
+      return {
+        id: copy.id,
+        name: copy.name,
+        kind: copy.kind,
+        updatedAt: copy.updatedAt,
+        formatVersion: 1,
+        thumb: cloudThumbOf(copy),
+        json: assetToCloudJson(copy),
+      }
+    },
+    async remove(id: string, expectedUpdatedAt: number | null): Promise<boolean> {
+      const owned = (await scene?.read(id)) ?? null
+      if (owned) return (await scene?.removeIfUnchanged(id, expectedUpdatedAt)) ?? false
+      return local.removeIfUnchanged(id, expectedUpdatedAt)
+    },
+  }
+
+  function enqueue({ id }: { id: string }): void {
     cloud.enqueueUpload(
       id,
       async () => {
         // O instante em que ESTE envio começa, ANTES de ler o disco: uma exclusão feita durante
         // a leitura (ou durante o upload) é posterior a ele e vence a confirmação.
         sendingAt.set(id, now())
-        // Sempre o estado MAIS RECENTE do disco (a fila pode rodar depois de mais edições).
-        const current = await local.load(id)
+        // Sempre o estado MAIS RECENTE do disco, e da geração que tem a criação AGORA:
+        // entre enfileirar e enviar, ela pode ter sido promovida.
+        const current = await documents.read(id)
         if (!current) {
           sendingAt.delete(id)
           return null
@@ -204,15 +378,14 @@ export function createCloudMirroredMoldaPersistence(options: {
           sendingAt.delete(id)
           return null
         }
-        const document = assetToJson(current)
         return {
-          json: JSON.stringify(document),
+          json: current.json,
           meta: {
-            formatVersion: document.formatVersion,
+            formatVersion: current.formatVersion,
             name: current.name,
             kind: current.kind,
             updatedAt: current.updatedAt,
-            thumb: cloudThumbOf(current),
+            thumb: current.thumb,
             // A revisão que ESTE aparelho conhece (0 = nunca viu): a nuvem recusa base vencida.
             baseRevision: marks.revision(id) ?? 0,
           },
@@ -251,31 +424,25 @@ export function createCloudMirroredMoldaPersistence(options: {
   async function resolveStale(id: string): Promise<void> {
     const downloaded = await cloud.download(id)
     if (downloaded) {
-      const remote = assetFromCloudJson(downloaded.json, id)
+      const remote = documents.parse(downloaded.json, id)
       if (!remote)
         throw new Error('A criação da nuvem não pôde ser lida; o original foi preservado.')
-      const mine = await local.load(id)
+      const mine = await documents.read(id)
       // A versão da nuvem É a deste aparelho (mesmo `updatedAt`: outra aba deste perfil subiu
       // antes de as marcas se encontrarem): só avança a marca — cópia aqui seria duplicata.
-      if (remote && mine && remote.updatedAt === mine.updatedAt) {
+      if (mine && remote.updatedAt === mine.updatedAt) {
         marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
         return
       }
-      if (remote) {
-        const taken = new Set((await localSummaries()).map((a) => a.name))
-        const copy: MoldaAsset = {
-          ...remote,
-          id: crypto.randomUUID(),
-          name: copyName(remote.name, taken),
-          updatedAt: now(),
-        }
-        await local.saveMany([copy])
+      const taken = new Set((await localSummaries()).map((a) => a.name))
+      const copy = await documents.copy(remote, copyName(remote.name, taken))
+      if (copy) {
         emitChangedSoon([copy.id])
         enqueue(copy)
       }
       marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
     }
-    const current = await local.load(id)
+    const current = await documents.read(id)
     if (current) enqueue(current)
   }
 
@@ -326,15 +493,13 @@ export function createCloudMirroredMoldaPersistence(options: {
     // o próximo autosave sobrescreveria o restauro. A lápide fica como está e a próxima
     // reconciliação, já com a criação fechada, decide de novo.
     if (options.isAssetOpen?.(id)) return
-    const remote = assetFromCloudJson(downloaded.json, id)
+    const remote = documents.parse(downloaded.json, id)
     if (!remote) return
     const taken = new Set(
       (await localSummaries()).filter((asset) => asset.id !== id).map((asset) => asset.name),
     )
-    const restored = taken.has(remote.name)
-      ? { ...remote, name: uniqueAssetName(remote.name, taken) }
-      : remote
-    if (!(await local.saveIfUnchanged(restored, null))) return
+    const restoredName = taken.has(remote.name) ? uniqueAssetName(remote.name, taken) : remote.name
+    if (!(await documents.write(remote, restoredName, null))) return
     marks.set(id, downloaded.summary.itemUpdatedAt, downloaded.summary.revision)
     marks.clearTombstone(id)
     emitChangedSoon([id])
@@ -418,7 +583,7 @@ export function createCloudMirroredMoldaPersistence(options: {
     if (!remote) return 0
     remoteReadIssues.clear()
     for (const summary of remote) {
-      if (!summary.deletedAt && (summary.formatVersion ?? 1) > MOLDA_MAX_READ_VERSION) {
+      if (!summary.deletedAt && (summary.formatVersion ?? 1) > maxReadVersion) {
         remoteReadIssues.set(summary.itemId, {
           id: summary.itemId,
           name: summary.name.slice(0, MAX_NAME),
@@ -431,7 +596,7 @@ export function createCloudMirroredMoldaPersistence(options: {
     const takenNames = new Set(localAssets.map((a) => a.name))
     const nameOwner = new Map(localAssets.map((a) => [a.name, a.id]))
     const revisions = new Map(localAssets.map((a) => [a.id, a.updatedAt]))
-    const report = await reconcileCreations<MoldaAssetSummary, MoldaAsset>({
+    const report = await reconcileCreations<MoldaAssetSummary, MirroredDocument>({
       // Neither side of an unsupported item enters timestamp-based reconciliation:
       // equal timestamps alone must not acknowledge a document this client cannot read.
       local: localAssets.filter((asset) => !remoteReadIssues.has(asset.id)),
@@ -447,50 +612,45 @@ export function createCloudMirroredMoldaPersistence(options: {
       },
       // Mudou no disco depois do retrato desta reconciliação (autosave/renomear no meio)?
       // Não grava por cima: a subida dessa edição resolve (base vencida → cópia).
-      localUpdatedAt: async (itemId) => (await local.load(itemId))?.updatedAt ?? null,
+      localUpdatedAt: async (itemId) => (await documents.read(itemId))?.updatedAt ?? null,
       fetch: async (summary: CloudCreationSummary, signal: AbortSignal) => {
         const downloaded = await cloud.download(summary.itemId, { signal })
         if (!downloaded) return null
-        return assetFromCloudJson(downloaded.json, summary.itemId)
+        return documents.parse(downloaded.json, summary.itemId)
       },
       apply: async (_summary, asset) => {
         if (options.isAssetOpen?.(asset.id) || disposed) return false
         // Nome já usado por OUTRA criação local: sufixo (a galeria exige nome único).
         const owner = nameOwner.get(asset.name)
-        const named =
-          owner && owner !== asset.id
-            ? { ...asset, name: uniqueAssetName(asset.name, takenNames) }
-            : asset
+        const name =
+          owner && owner !== asset.id ? uniqueAssetName(asset.name, takenNames) : asset.name
         // Reserva o nome ANTES do primeiro `await`: os workers da reconciliação rodam em
         // paralelo e dois assets homônimos não podem escolher o mesmo sufixo enquanto a
         // primeira persistência ainda está em voo.
-        takenNames.add(named.name)
-        nameOwner.set(named.name, named.id)
+        takenNames.add(name)
+        nameOwner.set(name, asset.id)
         // Grava DIRETO no local (id preservado), fora do embrulho: não é edição.
-        if (!(await local.saveIfUnchanged(named, revisions.get(named.id) ?? null))) {
-          if (owner !== named.id && nameOwner.get(named.name) === named.id) {
-            takenNames.delete(named.name)
-            nameOwner.delete(named.name)
+        if (!(await documents.write(asset, name, revisions.get(asset.id) ?? null))) {
+          if (owner !== asset.id && nameOwner.get(name) === asset.id) {
+            takenNames.delete(name)
+            nameOwner.delete(name)
           }
           return false
         }
-        emitChangedSoon([named.id])
+        emitChangedSoon([asset.id])
         return true
       },
       keepLocalCopy: async (item) => {
-        const source = await local.load(item.id)
+        const source = await documents.read(item.id)
         if (!source || source.updatedAt !== item.updatedAt || options.isAssetOpen?.(item.id)) {
           throw new Error('A criação mudou durante a sincronização; o original foi preservado.')
         }
-        const copy: MoldaAsset = {
-          ...source,
-          id: crypto.randomUUID(),
-          name: copyName(item.name, takenNames),
-          updatedAt: now(),
+        const copy = await documents.copy(source, copyName(item.name, takenNames))
+        if (!copy) {
+          throw new Error('A criação da nuvem não pôde ser copiada; o original foi preservado.')
         }
         takenNames.add(copy.name)
         nameOwner.set(copy.name, copy.id)
-        await local.saveMany([copy])
         emitChangedSoon([copy.id])
         return {
           // A cópia só entra na fila quando a substituição do original foi confirmada.
@@ -498,7 +658,7 @@ export function createCloudMirroredMoldaPersistence(options: {
           rollback: async () => {
             if (
               options.isAssetOpen?.(copy.id) ||
-              !(await local.removeIfUnchanged(copy.id, copy.updatedAt))
+              !(await documents.remove(copy.id, copy.updatedAt))
             ) {
               // The child already adopted/edited this copy. Do not erase their new work.
               enqueue(copy)
@@ -515,7 +675,7 @@ export function createCloudMirroredMoldaPersistence(options: {
       deleteLocal: async (itemId) => {
         if (options.isAssetOpen?.(itemId) || disposed) return false
         const item = localAssets.find((asset) => asset.id === itemId)
-        if (!(await local.removeIfUnchanged(itemId, revisions.get(itemId) ?? null))) return false
+        if (!(await documents.remove(itemId, revisions.get(itemId) ?? null))) return false
         if (item && nameOwner.get(item.name) === itemId) {
           nameOwner.delete(item.name)
           takenNames.delete(item.name)
@@ -593,8 +753,13 @@ export function createCloudMirroredMoldaPersistence(options: {
       // "buscando…", `changed` a cada lote que desce (a galeria relê), `sync-end` no fim.
       // Uma reconciliação por carga (e nunca em laço): as releituras que a própria
       // reconciliação provoca passam aqui de novo e NÃO podem abrir outra.
+      // ⚠️ A reconciliação recebe as DUAS gerações, não só o que este `loadAll` devolve:
+      // com a lista v1 sozinha, uma criação promovida pareceria ausente aqui e presente
+      // na nuvem, e a reconciliação decidiria por ela sem que ela tivesse sumido.
       if (now() - lastReconcileEndedAt >= reconcileMinIntervalMs)
-        startReconcile(localAssets.map(summarizeAsset))
+        void localSummaries()
+          .then((items) => startReconcile(items))
+          .catch(() => undefined)
       return localAssets
     },
     load: (id) => local.load(id),

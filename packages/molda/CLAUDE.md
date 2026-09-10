@@ -1406,6 +1406,15 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Nuvem das duas gerações (lote 230): `createMoldaSceneCloudSource` (exportado no barril)
+  é o que o host usa para listar, ler, conferir (`inspect`, sem gravar), gravar com
+  renomeação, copiar e apagar a geração seguinte. ⚠️⚠️ Promover TIRA o registro do
+  inventário v1: sem somar as duas listas, a reconciliação lê a promoção como exclusão e
+  apaga o backup da criança. Por isso é UM espelho ciente das duas, nunca dois.
+  ⚠️ `MOLDA_MAX_READ_VERSION` agora é 2 (o que o CLIENTE sabe abrir, por qualquer leitor)
+  e `MOLDA_V1_MAX_READ_VERSION` continua 1 (o registro do leitor v1, onde o `never` do
+  despacho cobra um parser). Quem declara 2 precisa ter a fonte da geração ligada.
+  ⚠️ Este é o passo de LEITORES: implantar ANTES de qualquer escritor da geração nova.
 - Miniatura da oficina seguinte (lote 229): `SceneViewport.renderThumb()` reusa o
   `ViewportThumbnail` do editor antigo (96 px, mesmo fundo) e entrou no `SceneViewportPort`,
   então todo palco falso precisa respondê-lo. `useSceneViewport` agenda por `onThumb`

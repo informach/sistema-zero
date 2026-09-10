@@ -1,6 +1,7 @@
 import type { UseStore } from 'idb-keyval'
 import type { MoldaAssetSummary } from '../core/assetSummary'
 import { newId } from '../core/id'
+import { sceneCloudSummary } from './sceneGenerationSummary'
 import { createScenePersistence } from './scenePersistence'
 
 /**
@@ -30,16 +31,7 @@ export function createGallerySceneSource(
     async listSummaries() {
       const { summaries, issues } = await persistence.listSummaries()
       return {
-        summaries: summaries.map((summary) => ({
-          id: summary.id,
-          name: summary.name,
-          kind: summary.kind,
-          createdAt: summary.createdAt,
-          updatedAt: summary.updatedAt,
-          bytes: summary.bytes,
-          thumbDataUrl: summary.thumbDataUrl,
-          formatVersion: 2 as const,
-        })),
+        summaries: summaries.map(sceneCloudSummary),
         issues: issues.map((issue) => issue.id),
       }
     },

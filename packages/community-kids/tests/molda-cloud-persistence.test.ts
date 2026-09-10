@@ -6,7 +6,7 @@
  * é pulada e volta a descer ao fechar.
  */
 import { describe, expect, spyOn, test } from 'bun:test'
-import type { MoldaAsset } from '@sistemazero/molda/assets'
+import type { MoldaAsset, MoldaAssetSummary } from '@sistemazero/molda/assets'
 import {
   assetFromJson,
   createModelAsset,
@@ -344,7 +344,7 @@ const summaryOf = (
 const remoteOf = (assets: MoldaAsset[]) =>
   new Map(assets.map((a) => [a.id, { json: assetToCloudJson(a), summary: summaryOf(a) }]))
 
-test('criação remota de formato novo aparece para recuperação sem regravar, copiar ou avançar marca', async () => {
+test('sem a fonte da geração seguinte ligada, a criação remota nova vai para recuperação', async () => {
   const mine = model('robot', 1000)
   const raw = {
     ...JSON.parse(assetToCloudJson(mine)),
@@ -1121,4 +1121,134 @@ describe('review 06/09: upload em voo × exclusão, flush antes da descida, cria
     removed[0]?.onRemoved?.({ revision: 3 })
     expect(marks.tombstone(casa.id)).toEqual({ at: 500, sent: true, revision: 3 })
   })
+})
+
+/**
+ * A fonte da geração seguinte, no molde da real: guarda o JSON e o resumo, compara o
+ * carimbo autoral antes de gravar e devolve resumo marcado com `formatVersion: 2`.
+ */
+function fakeScene(initial: MoldaAsset[] = []) {
+  const rows = new Map<string, { summary: MoldaAssetSummary; json: string }>()
+  const put = (asset: MoldaAsset) => {
+    const json = JSON.stringify({ ...JSON.parse(assetToCloudJson(asset)), formatVersion: 2 })
+    rows.set(asset.id, { summary: { ...summarizeAsset(asset), formatVersion: 2 }, json })
+  }
+  for (const asset of initial) put(asset)
+  const readJson = (json: string): MoldaAssetSummary | null => {
+    try {
+      const raw = JSON.parse(json) as { formatVersion?: number; id?: string; name?: string }
+      if (raw.formatVersion !== 2 || typeof raw.id !== 'string' || typeof raw.name !== 'string')
+        return null
+      return { ...summarizeAsset(assetFromJson({ ...raw, formatVersion: 1 })!), formatVersion: 2 }
+    } catch {
+      return null
+    }
+  }
+  return {
+    rows,
+    listSummaries: async () => [...rows.values()].map((row) => row.summary),
+    read: async (id: string) => rows.get(id) ?? null,
+    inspect: (json: string) => readJson(json),
+    saveIfUnchanged: async (
+      id: string,
+      json: string,
+      expectedUpdatedAt: number | null,
+      name?: string,
+    ) => {
+      const current = rows.get(id)
+      if ((current?.summary.updatedAt ?? null) !== expectedUpdatedAt) return false
+      const summary = readJson(json)
+      if (!summary || summary.id !== id) return false
+      rows.set(id, {
+        summary: name === undefined ? summary : { ...summary, name },
+        json: name === undefined ? json : JSON.stringify({ ...JSON.parse(json), name }),
+      })
+      return true
+    },
+    saveCopy: async (json: string, name: string, clock?: () => number) => {
+      const summary = readJson(json)
+      if (!summary) return null
+      const id = crypto.randomUUID()
+      const updatedAt = (clock ?? Date.now)()
+      const copy = { ...summary, id, name, updatedAt }
+      rows.set(id, { summary: copy, json: JSON.stringify({ ...JSON.parse(json), id, name }) })
+      return copy
+    },
+    removeIfUnchanged: async (id: string, expectedUpdatedAt: number | null) => {
+      const current = rows.get(id)
+      if (!current || current.summary.updatedAt !== expectedUpdatedAt) return false
+      rows.delete(id)
+      return true
+    },
+    subscribe: () => () => {},
+  }
+}
+
+test('a criação promovida continua na lista e a nuvem NÃO recebe exclusão por causa disso', async () => {
+  const promoted = model('nave', 2000)
+  // Promovida: saiu do inventário v1 e entrou no da geração seguinte.
+  const local = fakeLocal([])
+  const scene = fakeScene([promoted])
+  const { cloud, removed } = fakeCloud(remoteOf([promoted]))
+  const marks = createMemorySyncedMarks()
+  marks.set(promoted.id, promoted.updatedAt, 1)
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'promoted-profile',
+  })
+  await loadSettled(mirrored, local)
+  expect(removed).toEqual([])
+  expect(scene.rows.has(promoted.id)).toBe(true)
+  expect(local.rows.size).toBe(0)
+  mirrored.dispose?.()
+})
+
+test('a criação da geração seguinte sobe com o formato e a miniatura dela', async () => {
+  const promoted = model('nave', 5000)
+  const local = fakeLocal([])
+  const scene = fakeScene([promoted])
+  const { cloud, uploads } = fakeCloud(new Map())
+  const marks = createMemorySyncedMarks()
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks,
+    viewerId: 'upload-profile',
+  })
+  await loadSettled(mirrored, local)
+  const upload = uploads.get(promoted.id)
+  expect(upload !== undefined).toBe(true)
+  const snapshot = await upload?.produce()
+  if (!snapshot?.meta) throw new Error('a criação da geração seguinte não foi enfileirada')
+  expect(snapshot.meta.formatVersion).toBe(2)
+  expect(snapshot.meta.name).toBe('nave')
+  expect(snapshot.meta.updatedAt).toBe(5000)
+  expect(JSON.parse(snapshot.json).formatVersion).toBe(2)
+  mirrored.dispose?.()
+})
+
+test('a criação da geração seguinte desce para o inventário dela, não para o v1', async () => {
+  const remote = model('nave', 7000)
+  const json = JSON.stringify({ ...JSON.parse(assetToCloudJson(remote)), formatVersion: 2 })
+  const local = fakeLocal([])
+  const scene = fakeScene([])
+  const { cloud } = fakeCloud(
+    new Map([[remote.id, { json, summary: summaryOf(remote, { formatVersion: 2 }) }]]),
+  )
+  const mirrored = createCloudMirroredMoldaPersistence({
+    local,
+    sceneSource: scene,
+    cloud,
+    marks: createMemorySyncedMarks(),
+    viewerId: 'download-profile',
+  })
+  await loadSettled(mirrored, local)
+  expect(mirrored.getReadIssues?.()).toEqual([])
+  expect(scene.rows.get(remote.id)?.summary.name).toBe('nave')
+  expect(local.rows.size).toBe(0)
+  mirrored.dispose?.()
 })
