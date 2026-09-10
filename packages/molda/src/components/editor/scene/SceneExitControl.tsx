@@ -13,11 +13,13 @@ export function SceneExitControl({
   cancelPreview,
   backup,
   onExit,
+  beforeExit,
 }: {
   editor: EditorStore<MoldaSceneDocument>
   cancelPreview(): void
   backup(): boolean
   onExit(mode: SceneExitMode): void
+  beforeExit?(): Promise<boolean>
 }) {
   const copy = COPY.scene.exit
   const trigger = useRef<HTMLButtonElement>(null)
@@ -64,6 +66,14 @@ export function SceneExitControl({
       if (saved.saveState !== 'saved' || saved.asset !== saved.savedAsset) {
         setState({ session, open: true, pending: false, error: saved.saveError ?? copy.failed })
         return
+      }
+      if (beforeExit) {
+        const ready = await beforeExit()
+        if (!owns()) return
+        if (!ready) {
+          close()
+          return
+        }
       }
       setState({ session, open: false, pending: false, error: null })
       session.onExit('saved')

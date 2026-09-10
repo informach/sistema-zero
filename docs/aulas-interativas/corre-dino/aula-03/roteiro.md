@@ -101,7 +101,7 @@ Na Aula 4, você vai ligar o som ao acontecimento certo.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -111,3 +111,47 @@ Na Aula 4, você vai ligar o som ao acontecimento certo.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.
+
+### O que traz o salto de volta?
+
+**Checagem:** O que muda quando há gravidade neste modelo?
+
+**Resposta e explicação:** A velocidade vertical muda e ele pode voltar ao chão
+
+### O que aconteceu?
+
+**Checagem:** Como a força do pulo e a gravidade se relacionam?
+
+**Resposta e explicação:** A força inicia o salto e a gravidade muda o movimento, trazendo o dino de volta.
+
+### dar o comando de pulo ao dino
+
+**Checagem:** Onde entra Controlar o dinossauro?
+
+**Resposta e explicação:** Depois da floresta e antes de desenhar o dino.
+
+### a gravidade traz o dino pro chão
+
+**Checagem:** Qual sprite deve receber a gravidade nesta aula?
+
+**Resposta e explicação:** dino.
+
+### você escolhe a altura
+
+**Checagem:** Como comparar forças de pulo sem confundir os resultados?
+
+**Resposta e explicação:** Mudar a força e manter a gravidade durante a comparação.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

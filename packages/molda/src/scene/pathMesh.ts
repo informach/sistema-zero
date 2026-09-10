@@ -6,12 +6,11 @@ import { number, requireScene } from './validation'
 
 /** Parallel-transport frames avoid arbitrary per-segment spins. Parameters, not GPU data, are canonical. */
 export function pathMesh(source: ScenePathGeometry) {
-  const { points: knots, radius, around, endCaps } = readPathParameters(source)
+  const { points: knots, radius, around, endCaps, closed = false } = readPathParameters(source)
   const points = knots.map((knot) => knot.position)
-  const directions = pathDirections(points)
-  const tangents = pathTangents(directions)
-  const total = points
-    .slice(1)
+  const directions = pathDirections(points, closed)
+  const tangents = pathTangents(directions, closed)
+  const total = (closed ? [...points.slice(1), points[0]!] : points.slice(1))
     .map((p, i) => number(Math.hypot(...sub(p, points[i]!)), 'points'))
     .reduce((sum, length) => number(sum + length, 'points'), 0)
   let distance = 0
@@ -22,26 +21,48 @@ export function pathMesh(source: ScenePathGeometry) {
   const vertices: SceneMeshGeometry['vertices'] = {}
   const faces: SceneMeshGeometry['faces'] = {}
   const surfaceByFace = new Map<string, ShapeFaceId>()
-  const ring = (i: number, j: number) => `ring:${i}:${j % around}`
+  const ring = (i: number, j: number) => `ring:${closed ? i % points.length : i}:${j % around}`
   const lengths: number[] = []
-  points.forEach((point, i) => {
-    const tangent = tangents[i]!
+  const transport = (normal: Vec3, previous: Vec3, tangent: Vec3): Vec3 => {
+    const axis = cross(previous, tangent)
+    const denominator = 1 + dot(previous, tangent)
+    requireScene(denominator > 1e-10, 'points', 'Abra um pouco a curva do caminho.')
+    const once = cross(axis, normal),
+      twice = cross(axis, once)
+    return normalize(normal.map((value, k) => value + once[k]! + twice[k]! / denominator) as Vec3)
+  }
+  const frames = points.map((point, i) => {
     if (i) {
-      const previous = tangents[i - 1]!
-      const axis = cross(previous, tangent)
-      const denominator = 1 + dot(previous, tangent)
-      requireScene(denominator > 1e-10, 'points', 'Abra um pouco a curva do caminho.')
-      const once = cross(axis, u),
-        twice = cross(axis, once)
-      u = normalize(u.map((value, k) => value + once[k]! + twice[k]! / denominator) as Vec3)
+      u = transport(u, tangents[i - 1]!, tangents[i]!)
       distance += Math.hypot(...sub(point, points[i - 1]!))
     }
     lengths.push(distance / total)
-    const v = normalize(cross(tangent, u))
+    return u
+  })
+  // Distribute holonomy by arc length: the virtual final frame meets the first
+  // without a sudden twist at the closing edge, including non-planar loops.
+  const end = closed ? transport(frames.at(-1)!, tangents.at(-1)!, first) : frames[0]!
+  const twist = closed ? Math.atan2(dot(first, cross(end, frames[0]!)), dot(end, frames[0]!)) : 0
+  points.forEach((point, i) => {
+    const tangent = tangents[i]!
+    let normal = frames[i]!
+    if (closed && twist !== 0) {
+      const angle = twist * lengths[i]!,
+        sine = Math.sin(angle),
+        cosine = Math.cos(angle)
+      const perpendicular = cross(tangent, normal)
+      normal = normalize(
+        normal.map((value, k) => value * cosine + perpendicular[k]! * sine) as Vec3,
+      )
+    }
+    const v = normalize(cross(tangent, normal))
     for (let j = 0; j < around; j++) {
       const angle = (j / around) * Math.PI * 2
       vertices[ring(i, j)] = point.map((value, k) =>
-        number(value + radius * (Math.cos(angle) * u[k]! + Math.sin(angle) * v[k]!), 'vertices'),
+        number(
+          value + radius * (Math.cos(angle) * normal[k]! + Math.sin(angle) * v[k]!),
+          'vertices',
+        ),
       ) as Vec3
     }
   })
@@ -71,13 +92,13 @@ export function pathMesh(source: ScenePathGeometry) {
     }
     surfaceByFace.set(id, surfaceId)
   }
-  for (let i = 0; i < points.length - 1; i++)
+  for (let i = 0; i < points.length - (closed ? 0 : 1); i++)
     for (let j = 0; j < around; j++) {
       const corners = [
         { vertexId: ring(i, j), uv: [j / around, lengths[i]!] as Vec2 },
         { vertexId: ring(i, j + 1), uv: [(j + 1) / around, lengths[i]!] as Vec2 },
-        { vertexId: ring(i + 1, j + 1), uv: [(j + 1) / around, lengths[i + 1]!] as Vec2 },
-        { vertexId: ring(i + 1, j), uv: [j / around, lengths[i + 1]!] as Vec2 },
+        { vertexId: ring(i + 1, j + 1), uv: [(j + 1) / around, lengths[i + 1] ?? 1] as Vec2 },
+        { vertexId: ring(i + 1, j), uv: [j / around, lengths[i + 1] ?? 1] as Vec2 },
       ]
       face(`side:${i}:${j}:a`, 'side', [corners[0]!, corners[1]!, corners[2]!])
       face(`side:${i}:${j}:b`, 'side', [corners[0]!, corners[2]!, corners[3]!])

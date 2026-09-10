@@ -143,7 +143,7 @@ Este curso termina, mas os seus projetos continuam no Estúdio e os assets no Pi
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,55 @@ Este curso termina, mas os seus projetos continuam no Estúdio e os assets no Pi
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Publicar a criação, escolher uma mudança própria e repetir um processo de criar, testar e compartilhar.
+
+### Um carro no lugar da nave
+
+**Checagem:** Por que mudar uma coisa de cada vez numa nova versão?
+
+**Resposta e explicação:** Para perceber o efeito da mudança ao testar.
+
+### O que aconteceu?
+
+**Checagem:** Por que mudar uma coisa de cada vez numa nova versão?
+
+**Resposta e explicação:** Para perceber o efeito da mudança ao testar.
+
+### publicar o seu jogo no Mural
+
+**Checagem:** Como conferir a experiência de quem recebe sua publicação?
+
+**Resposta e explicação:** Abrir o link do Mural e jogar.
+
+### a rotina depois de cada curso
+
+**Checagem:** Como começar uma próxima versão sem se perder?
+
+**Resposta e explicação:** Preservar o projeto que funciona e escolher uma mudança.
+
+### onde buscar ideia quando não vier nenhuma
+
+**Checagem:** Onde procurar uma proposta para criar algo novo?
+
+**Resposta e explicação:** No Desafio do mês, na página Início.
+
+### o Clube dos Criadores
+
+**Checagem:** Que pedido de opinião ajuda no Clube?
+
+**Resposta e explicação:** Uma pergunta concreta sobre controle ou dificuldade.
+
+### Teste e guarde sua criação
+
+**Checagem:** Qual rotina ajuda a continuar criando depois do curso?
+
+**Resposta e explicação:** Escolher uma ideia, criar, testar e compartilhar.

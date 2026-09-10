@@ -3,6 +3,7 @@ import { requireEditableAppearance, sceneAppearanceUsage } from '../scene/appear
 import { finishSceneCommand } from '../scene/commandContext'
 import { scenePalette } from '../scene/composite'
 import type { MoldaSceneDocument } from '../scene/document'
+import { sameSceneContent } from '../scene/documentContent'
 import { readSceneImageOperation, type SceneImageOperation } from '../scene/imageOperations'
 import { requireScene } from '../scene/validation'
 import { operateImageInWorker } from '../workers/sceneImage'
@@ -29,7 +30,7 @@ export function createSceneImageTask(
       try {
         const state = editor.getState()
         requireScene(
-          state.asset === source,
+          sameSceneContent(state.asset, source),
           'revision',
           'A criação mudou. Confira a imagem novamente.',
         )

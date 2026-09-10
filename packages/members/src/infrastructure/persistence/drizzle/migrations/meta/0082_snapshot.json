@@ -1,5 +1,5 @@
 {
-  "id": "b9d29988-dd63-425a-bba9-e49818bf0fa5",
+  "id": "2c2c5cc5-e791-4505-a977-eaad379954a8",
   "prevId": "c99f2e35-24fc-4e54-ae38-2202beaddbaf",
   "version": "7",
   "dialect": "postgresql",
@@ -2699,6 +2699,102 @@
         }
       },
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "members.lesson_section_progress": {
+      "name": "lesson_section_progress",
+      "schema": "members",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lesson_id": {
+          "name": "lesson_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section_id": {
+          "name": "section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revision": {
+          "name": "revision",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "project_passed": {
+          "name": "project_passed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {
+        "lesson_section_progress_account_idx": {
+          "name": "lesson_section_progress_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "lesson_section_progress_lesson_id_lessons_id_fk": {
+          "name": "lesson_section_progress_lesson_id_lessons_id_fk",
+          "tableFrom": "lesson_section_progress",
+          "tableTo": "lessons",
+          "schemaTo": "members",
+          "columnsFrom": [
+            "lesson_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lesson_section_progress_user_id_lesson_id_section_id_pk": {
+          "name": "lesson_section_progress_user_id_lesson_id_section_id_pk",
+          "columns": [
+            "user_id",
+            "lesson_id",
+            "section_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -5868,8 +5964,7 @@
         "certificate",
         "coming_soon",
         "pinta",
-        "interactive",
-        "dialogue"
+        "interactive"
       ]
     },
     "members.pensa_artifact_status": {

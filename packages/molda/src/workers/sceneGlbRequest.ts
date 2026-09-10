@@ -59,7 +59,7 @@ function packAnimations(clips: readonly SceneAnimationClip[]) {
 
 /** Owns only the derived animation arrays. Live document geometry/pixels are still structured-cloned. */
 export function packSceneGlbRequest(request: SceneGlbRequest) {
-  v.record(request, 'request', ['documentId', 'revision', 'animatedPaint', 'document'])
+  v.record(request, 'request', ['documentId', 'revision', 'animatedPaint', 'format', 'document'])
   const { animations, ...document } = request.document
   return {
     ...request,
@@ -133,6 +133,7 @@ export function readSceneGlbWireRequest(raw: unknown): SceneGlbRequest {
     'documentId',
     'revision',
     'animatedPaint',
+    'format',
     'document',
     'animations',
   ])
@@ -147,6 +148,7 @@ export function readSceneGlbWireRequest(raw: unknown): SceneGlbRequest {
     documentId: row.documentId,
     revision: row.revision,
     animatedPaint: row.animatedPaint,
+    ...(row.format === undefined ? {} : { format: row.format }),
     document: {
       ...document,
       ...(row.animations === undefined ? {} : { animations: unpackAnimations(row.animations) }),

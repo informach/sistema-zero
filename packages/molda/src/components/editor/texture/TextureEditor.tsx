@@ -452,7 +452,16 @@ export function TextureEditor({
         </aside>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
           <div className="flex flex-col gap-3 p-3 lg:flex-row lg:items-start">
-            <div className="mld-checkerboard mld-panel mx-auto w-full max-w-[32rem] overflow-hidden lg:mx-0">
+            {/*
+              ⚠️ A folha é o OBJETO deste editor, e o teto fixo de 32rem a prendia em 508px
+              enquanto metade da tela ficava vazia (medido a 1366×768: 37% da largura). O
+              teto agora é o menor entre 44rem e a altura que sobra, porque a folha é
+              quadrada: quem limita de verdade é a ALTURA, não a largura. Em telas estreitas
+              o flex continua encolhendo a folha como antes, então nada piora ali.
+              O `PixelStage` já é `aspect-square w-full`; nada de transform, borda ou padding
+              novos no canvas, que mudariam o retângulo que `texelOf` usa para achar o texel.
+            */}
+            <div className="mld-checkerboard mld-panel mx-auto w-full max-w-[min(44rem,calc(100dvh_-_8rem))] overflow-hidden lg:mx-0">
               <PixelStage
                 asset={asset}
                 offset={offset}

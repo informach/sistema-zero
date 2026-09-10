@@ -1,6 +1,7 @@
-import type { LessonLearningProgress, LessonSection } from './index'
+import type { LessonLearningProgress, LessonSection, SectionProgressView } from './index'
 
 export type LessonRequirementReason =
+  | 'SECTION_GATE_INCOMPLETE'
   | 'LEARNING_GATE_INCOMPLETE'
   | 'QUIZ_GATE_NOT_PASSED'
   | 'STUDIO_GATE_NOT_SUBMITTED'
@@ -34,7 +35,17 @@ export function lessonCompletionRequirements(input: {
   sections?: Pick<LessonSection, 'id' | 'title' | 'blockIds'>[]
   learningProgress?: LessonLearningProgress
   completed: boolean
+  sectionProgress?: SectionProgressView
 }): LessonRequirement[] {
+  if (input.sectionProgress)
+    return input.sectionProgress.sections.map((s) => ({
+      blockId: s.id,
+      sectionId: s.id,
+      title: s.title,
+      complete: input.completed || s.status === 'completed',
+      action: s.pending.join(' '),
+      reason: 'SECTION_GATE_INCOMPLETE',
+    }))
   const requirements: LessonRequirement[] = []
   const comingSoon = input.blocks.find((b) => b.kind === 'coming_soon')
   for (const block of comingSoon ? [comingSoon] : input.blocks) {

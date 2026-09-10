@@ -44,6 +44,7 @@ export type SceneComponentToolsProps = Pick<
   | 'cutPlane'
   | 'bevel'
   | 'createPath'
+  | 'pathPointCount'
   | 'blocked'
   | 'check'
   | 'uv'
@@ -71,6 +72,7 @@ export function SceneComponentTools({
   cutPlane,
   bevel,
   createPath,
+  pathPointCount,
   blocked,
   check,
   uv,
@@ -257,7 +259,7 @@ export function SceneComponentTools({
             <p className="mb-3 text-xs text-mld-muted">{copy.pathCreateHint}</p>
             <ScenePathForm
               settings={{ radius: 0.1, around: 8, endCaps: true }}
-              points={count + 1}
+              points={pathPointCount}
               action={copy.pathCreate}
               onApply={createPath}
             />

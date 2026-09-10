@@ -4,7 +4,7 @@
  * importar nada de outro pacote).
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const ROOT = resolve(import.meta.dir, '../../..')
@@ -97,4 +97,37 @@ describe('documentação executável', () => {
     expect(plan).toContain('bun run typecheck && bun test src && bun run check')
     expect(plan).not.toContain('bun run typecheck && bun test && bun run check')
   })
+})
+
+/**
+ * ⚠️⚠️ A suíte roda em TRÊS processos (`test:1`..`test:3`), e não num só. O motivo é medido:
+ * num processo só ela abre e fecha ~148 Workers, e o Bun 1.3.11 do Linux SEGFAULTA no
+ * desmonte deles (`panic: Segmentation fault`, SIGILL/132) por volta de 85% da execução,
+ * enquanto os 22 pacotes disputam dois núcleos no runner. Reproduziu em quatro execuções
+ * seguidas do CI, em dois commits diferentes, com o mesmo endereço de falha.
+ *
+ * O preço de dividir é este teste: lote que esquece um diretório NÃO reprova sozinho, ele
+ * simplesmente deixa de rodar, e o verde passa a ser falso. Aqui a conta é fechada: tudo o
+ * que existe em `src` precisa estar em exatamente um dos lotes.
+ */
+test('os lotes de teste cobrem TODO o src, sem sobra e sem repetição', () => {
+  const manifest = JSON.parse(
+    readFileSync(resolve(import.meta.dir, '../package.json'), 'utf8'),
+  ) as {
+    scripts: Record<string, string>
+  }
+  const shards = ['test:1', 'test:2', 'test:3']
+  expect(manifest.scripts.test).toBe(shards.map((name) => `bun run ${name}`).join(' && '))
+  const covered = shards.flatMap((name) => {
+    const script = manifest.scripts[name] ?? ''
+    // O teto de 20 s é do PACOTE, não de um teste: o runner divide dois núcleos com 21
+    // outros pacotes, e o padrão de 5 s reprovava o teste mais pesado por inanição.
+    expect(script.startsWith('bun test --timeout 20000 ')).toBe(true)
+    return script.slice('bun test --timeout 20000 '.length).trim().split(/\s+/)
+  })
+  expect(covered.length).toBe(new Set(covered).size)
+  const present = readdirSync(resolve(import.meta.dir, '.'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() || /\.test\.tsx?$/.test(entry.name))
+    .map((entry) => `src/${entry.name}`)
+  expect(covered.slice().sort()).toEqual(present.slice().sort())
 })

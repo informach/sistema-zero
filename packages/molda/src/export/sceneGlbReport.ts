@@ -1,5 +1,8 @@
 /** Stable codes for confirmation UI; reports never retain the document or pixel buffers. */
 export type SceneGlbIssue =
+  | { code: 'obj-structure'; sourceId: string }
+  | { code: 'obj-static'; sourceId: string }
+  | { code: 'obj-material'; sourceId: string }
   | { code: 'hidden-node'; sourceId: string }
   | { code: 'skin-dependency'; sourceId: string }
   | { code: 'skin-precision'; sourceId: string }
@@ -9,6 +12,7 @@ export type SceneGlbIssue =
   | { code: 'face-omitted'; sourceId: string; faceId: string; reason: string }
   | { code: 'loose-geometry'; sourceId: string; edges: number; vertices: number }
   | { code: 'flipbook-first-frame'; sourceId: string }
+  | { code: 'flipbook-uv-first-frame'; sourceId: string }
   | { code: 'runtime-tangent-space'; sourceId: string }
   | {
       code: 'animation-resampled'

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+import type { SectionProgressView } from '@sistemazero/core/learning'
 import {
   type InteractiveBlock,
   type LearningAnswers,
@@ -11,6 +12,7 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
@@ -84,6 +86,77 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  const progression = (completed = 0): SectionProgressView => ({
+    revision: 'structure',
+    completed,
+    total: 3,
+    percent: (completed / 3) * 100,
+    sections: ['first', 'second', 'third'].map((id, index) => ({
+      id,
+      title: id,
+      status: index < completed ? 'completed' : index === completed ? 'available' : 'locked',
+      pending: index < completed ? [] : ['Conclua a atividade.'],
+    })),
+  })
+  test('a barra conta conclusões e o índice não permite abrir seções futuras', () => {
+    const progress = progression()
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonProgressBar progress={progress} />
+        <LessonSections
+          lesson={{ ...lesson, sectionProgress: progress }}
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByText('0 de 3 seções concluídas · 0%')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+    fireEvent.click(screen.getByText('Índice da aula'))
+    const future = screen.getByRole('button', { name: /Bloqueada Observar/ })
+    expect(future.hasAttribute('disabled')).toBe(true)
+    fireEvent.click(future)
+    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+  })
+  test('falha de navegação mantém a seção atual; a nova tentativa preserva o projeto', async () => {
+    let fail = true
+    globalThis.fetch = Object.assign(
+      async () =>
+        fail
+          ? Response.json({ error: { message: 'Falha de rede' } }, { status: 503 })
+          : Response.json({ ok: true }),
+      { preconnect: () => {} },
+    )
+    const progress = progression(1)
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonProgressBar progress={progress} />
+        <LessonSections
+          lesson={{
+            ...lesson,
+            learningProgress: { sectionId: 'first', blocks: [] },
+            sectionProgress: progress,
+          }}
+          renderBlocks={() => <input aria-label="Meu projeto" defaultValue="Dino" />}
+        />
+      </LessonPlayerProvider>,
+    )
+    const input = screen.getByRole('textbox', { name: 'Meu projeto' })
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await screen.findByText(
+      'Não foi possível abrir esta seção. Suas respostas foram mantidas. Tente novamente.',
+    )
+    expect(screen.getByRole('heading', { name: 'Preparar' })).toBeTruthy()
+    expect(screen.getByText('1 de 3 seções concluídas · 33,3%')).toBeTruthy()
+    fail = false
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await screen.findByRole('heading', { name: 'Observar' })
+    expect(input.isConnected).toBe(true)
+    expect(screen.getByRole('button', { name: 'Próxima seção' }).hasAttribute('disabled')).toBe(
+      true,
+    )
+  })
   test('pendência leva ao único projeto e fecha a lista durante a navegação', () => {
     render(
       <LessonSections
@@ -261,55 +334,6 @@ describe('aula por seções', () => {
     expect(larga.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
   })
 
-  test('a barra do topo mede a AULA, e a seção com atividade pendente fica marcada', () => {
-    // Dentro da aula a criança precisa do progresso DA AULA; o do curso ela já vê
-    // na trilha. A régua é posicional porque seção expositiva não gera requisito
-    // nenhum, e uma régua por requisito diria "aula completa" no meio dela.
-    globalThis.fetch = (async () => Response.json({ ok: true })) as unknown as typeof fetch
-    render(
-      <LessonPlayerProvider value={player}>
-        <LessonSections lesson={lesson} renderBlocks={() => null} kids />
-      </LessonPlayerProvider>,
-    )
-    expect(screen.getByText(/Seção 1 de 3/)).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
-    expect(screen.getByText(/Seção 2 de 3/)).toBeTruthy()
-    // A aula tem um bloco de Estúdio obrigatório na seção 1: mesmo depois de
-    // avançar, a barra não pode dizer que está tudo resolvido.
-    expect(screen.getByText(/ainda tem atividade para fazer/)).toBeTruthy()
-  })
-
-  test('rede fora ao trocar de seção: a criança volta onde estava, e o espelho some no primeiro ok', async () => {
-    // A seção corrente é do servidor. Mas se a gravação falha, um F5 devolvia a
-    // criança para a seção 1 sem aviso. O espelho local existe SÓ enquanto há
-    // escrita não confirmada, então nunca atropela o que outro aparelho gravou.
-    let derruba = true
-    globalThis.fetch = (async () => {
-      if (derruba) throw new TypeError('sem rede')
-      return Response.json({ ok: true })
-    }) as unknown as typeof fetch
-
-    const tela = render(
-      <LessonPlayerProvider value={player}>
-        <LessonSections lesson={lesson} renderBlocks={() => null} />
-      </LessonPlayerProvider>,
-    )
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
-    await screen.findByRole('alert')
-    expect(localStorage.getItem('sz:lesson-section:child-a:lesson')).toBe('second')
-
-    // Um F5 no meio da queda: a aula reabre onde a criança estava de verdade.
-    tela.unmount()
-    derruba = false
-    render(
-      <LessonPlayerProvider value={player}>
-        <LessonSections lesson={lesson} renderBlocks={() => null} />
-      </LessonPlayerProvider>,
-    )
-    expect(await screen.findByRole('heading', { name: 'Observar' })).toBeTruthy()
-    await waitFor(() => expect(localStorage.getItem('sz:lesson-section:child-a:lesson')).toBeNull())
-  })
-
   test('trocar de perfil no meio da aula não oferece "tentar novamente"', async () => {
     // 409 VIEWER_CHANGED: aqui repetir NUNCA funciona, então o recado é o do
     // servidor e o botão some. Antes a criança lia "tentar novamente" para um
@@ -372,17 +396,18 @@ describe('aula por seções', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Enviar ao professor' }))
     await screen.findByText('Pedido enviado. A resposta aparecerá nos seus recados.')
     expect(requests).toEqual([
-      {
-        url: '/api/members/lessons/lesson/section-help',
-        body: { sectionId: 'second', body: 'Por que ele cai?' },
-        viewer: 'child-a',
-      },
-      // Abrir a aula REGISTRA a seção onde a criança entrou. A navegação só grava
-      // em transição, então quem abre e fica na primeira seção nunca criava linha,
-      // e é o `updated_at` dela que alimenta o "continuar de onde parou".
+      // Abrir a aula REGISTRA a seção onde a criança entrou, e isso acontece na
+      // MONTAGEM — por isso vem primeiro. A navegação só grava em transição, então
+      // quem abre e fica na primeira seção nunca criava linha, e é o `updated_at`
+      // dela que alimenta o "continuar de onde parou".
       {
         url: '/api/members/lessons/lesson/navigation',
         body: { sectionId: 'second' },
+        viewer: 'child-a',
+      },
+      {
+        url: '/api/members/lessons/lesson/section-help',
+        body: { sectionId: 'second', body: 'Por que ele cai?' },
         viewer: 'child-a',
       },
     ])

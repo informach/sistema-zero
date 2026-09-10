@@ -143,7 +143,7 @@ No Dia 5, você vai decidir quando a partida começa, termina e recomeça.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -153,3 +153,63 @@ No Dia 5, você vai decidir quando a partida começa, termina e recomeça.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Separar o valor guardado, o evento que o altera e o desenho que o mostra.
+
+### Quem faz o quê no placar?
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Qual acontecimento deve aumentar os pontos?
+
+**Resposta e explicação:** O tiro acertar um asteroide.
+
+### criar e somar os pontos
+
+**Checagem:** Onde colocamos Somar 1 em pontos?
+
+**Resposta e explicação:** No fim da colisão entre tiro e asteroide.
+
+### mostrar o placar
+
+**Checagem:** De onde o placar lê seu número?
+
+**Resposta e explicação:** Da variável pontos.
+
+### dar vidas à nave
+
+**Checagem:** Quantas vidas a nave recebe ao iniciar?
+
+**Resposta e explicação:** 3.
+
+### fazer a batida machucar
+
+**Checagem:** Para que servem os 45 quadros de proteção após uma batida?
+
+**Resposta e explicação:** Evitar perder várias vidas pelos quadros do mesmo contato.
+
+### mostrar os corações
+
+**Checagem:** O que o desenho dos corações representa?
+
+**Resposta e explicação:** As vidas que ainda restam à nave.
+
+### hora de testar
+
+**Checagem:** Sem acertar nenhum asteroide, como devem ficar os pontos?
+
+**Resposta e explicação:** Parados no valor atual.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

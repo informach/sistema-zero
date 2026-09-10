@@ -12,16 +12,17 @@ import { meshComponentEdges } from './meshComponents'
 import { PATH_LIMITS, readPathParameters } from './pathParameters'
 import { record, requireScene, text } from './validation'
 
-export type ScenePathSettings = Pick<ScenePathGeometry, 'radius' | 'around' | 'endCaps'>
+export type ScenePathSettings = Pick<ScenePathGeometry, 'radius' | 'around' | 'endCaps' | 'closed'>
 
-/** Traverse a single open chain independently of selection order; junctions and closed loops need an explicit different tool. */
+/** Traverse a single chain independently of selection order; a closed loop needs explicit consent, and forks are refused. */
 export function meshPathPoints(
   mesh: SceneMeshGeometry,
   edgeIds: readonly string[],
+  allowClosed = false,
 ): ScenePathGeometry['points'] {
   const chosen = [...new Set(edgeIds)]
   requireScene(
-    chosen.length > 0 && chosen.length < PATH_LIMITS.points,
+    chosen.length > 0 && chosen.length <= PATH_LIMITS.points - (allowClosed ? 0 : 1),
     'edges',
     'Escolha de 1 a 127 linhas ligadas para criar o caminho.',
   )
@@ -41,10 +42,14 @@ export function meshPathPoints(
     .filter(([, neighbors]) => neighbors.length === 1)
     .map(([id]) => id)
     .sort()
-  requireScene(ends.length === 2, 'edges', 'Escolha um caminho aberto, com um começo e um fim.')
+  requireScene(
+    ends.length === 2 || (allowClosed && ends.length === 0),
+    'edges',
+    'Para unir linhas em laço, marque Caminho fechado.',
+  )
   const seen = new Set<string>()
   const points: ScenePathGeometry['points'] = []
-  let current: string | undefined = ends[0]
+  let current: string | undefined = ends[0] ?? [...adjacent.keys()].sort()[0]
   while (current !== undefined) {
     seen.add(current)
     const point = mesh.vertices[current]
@@ -54,7 +59,11 @@ export function meshPathPoints(
       'Ponto ausente no caminho.',
     )
     points.push({ id: current, position: [...point] })
-    current = adjacent.get(current)?.find((id) => !seen.has(id))
+    current = adjacent
+      .get(current)
+      ?.slice()
+      .sort()
+      .find((id) => !seen.has(id))
   }
   requireScene(
     seen.size === adjacent.size,
@@ -83,8 +92,11 @@ export function createScenePath(
     'geometry',
     'Transforme a forma em malha para escolher suas linhas.',
   )
-  record(settings, 'settings', ['radius', 'around', 'endCaps'])
-  const parameters = readPathParameters({ ...settings, points: meshPathPoints(mesh, edgeIds) })
+  record(settings, 'settings', ['radius', 'around', 'endCaps', 'closed'])
+  const parameters = readPathParameters({
+    ...settings,
+    points: meshPathPoints(mesh, edgeIds, settings.closed === true),
+  })
   const validName = text(name, 'name', 48)
   const allocate = allocateSceneId(document, nextId)
   const geometryId = allocate()
@@ -115,7 +127,7 @@ export function editScenePath(
   record(
     change,
     'change',
-    'point' in change ? ['point', 'position'] : ['radius', 'around', 'endCaps'],
+    'point' in change ? ['point', 'position'] : ['radius', 'around', 'endCaps', 'closed'],
   )
   let points = path.points
   if ('point' in change) {
@@ -138,6 +150,7 @@ export function editScenePath(
     parameters.radius === path.radius &&
     parameters.around === path.around &&
     parameters.endCaps === path.endCaps &&
+    (parameters.closed ?? false) === (path.closed ?? false) &&
     samePoints
   )
     return document

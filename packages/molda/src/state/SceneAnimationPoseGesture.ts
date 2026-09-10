@@ -99,7 +99,7 @@ export class SceneAnimationPoseGesture {
     const state = this.editor.getState(),
       snapshot = this.player.getSnapshot()
     return (
-      state.asset === owner.source.document &&
+      state.content === owner.source.document &&
       state.contentRevision === owner.revision &&
       snapshot.source === owner.source &&
       snapshot.time === owner.time &&
@@ -166,7 +166,7 @@ export class SceneAnimationPoseGesture {
     if (this.generation !== ticket) return false
     const { source, time, error } = this.player.getSnapshot()
     const state = this.editor.getState()
-    if (!source || source.preview || error || source.document !== state.asset) return false
+    if (!source || source.preview || error || source.document !== state.content) return false
     const selection = JSON.stringify([...new Set(ids)].sort())
     if (this.owner && (!this.current(this.owner) || selection !== this.owner.selection)) {
       ticket = this.cancel()
@@ -174,7 +174,12 @@ export class SceneAnimationPoseGesture {
     }
     try {
       if (!this.owner) {
-        const prepared = prepareSceneAnimationPoseTransform(state.asset, source.clip.id, ids, time)
+        const prepared = prepareSceneAnimationPoseTransform(
+          state.content,
+          source.clip.id,
+          ids,
+          time,
+        )
         const owner: TransformOwner = {
           kind: 'transform',
           source,
@@ -210,10 +215,10 @@ export class SceneAnimationPoseGesture {
     if (this.generation !== ticket) return null
     const { source, time, error } = this.player.getSnapshot(),
       state = this.editor.getState()
-    if (!source || source.preview || error || source.document !== state.asset) return null
+    if (!source || source.preview || error || source.document !== state.content) return null
     try {
       const next = pasteSceneAnimationPoseSet(
-        state.asset,
+        state.content,
         source.clip.id,
         time,
         input,
@@ -260,9 +265,9 @@ export class SceneAnimationPoseGesture {
     if (this.generation !== ticket) return null
     const { source, time, error } = this.player.getSnapshot(),
       state = this.editor.getState()
-    if (!source || source.preview || error || source.document !== state.asset) return null
+    if (!source || source.preview || error || source.document !== state.content) return null
     try {
-      const prepared = prepareSceneTwoBonePose(state.asset, source.clip.id, chain, time),
+      const prepared = prepareSceneTwoBonePose(state.content, source.clip.id, chain, time),
         owner: TwoBoneOwner = {
           kind: 'two-bone',
           source,
@@ -502,7 +507,7 @@ export class SceneAnimationPoseGesture {
         owner.kind === 'pose-set'
           ? owner.next
           : owner.kind === 'two-bone'
-            ? owner.prepared.commit(owner.frame, this.editor.getState().asset)
+            ? owner.prepared.commit(owner.frame, this.editor.getState().content)
             : setSceneAnimationKeys(
                 owner.source.document,
                 owner.source.clip.id,
@@ -512,7 +517,13 @@ export class SceneAnimationPoseGesture {
       if (this.generation !== ticket) return false
       // A subscriber can change the creation/clip while the preview is being removed.
       requireScene(this.current(owner), 'pose', COPY.scene.animationChanged)
-      if (next !== owner.source.document) this.editor.getState().commit(next)
+      if (next !== owner.source.document) {
+        const state = this.editor.getState()
+        const recorded = { ...next }
+        if (state.asset.thumb) recorded.thumb = state.asset.thumb
+        else delete recorded.thumb
+        state.commit(recorded)
+      }
       return true
     } catch (error) {
       if (this.generation === ticket) this.reportError(error)

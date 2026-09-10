@@ -130,6 +130,7 @@ export class SkyPreview implements SkyPreviewLike {
     this.texture?.dispose()
     this.pmrem.dispose()
     this.renderer.dispose()
+    this.renderer.forceContextLoss()
   }
 
   private buildSampleScene(): void {

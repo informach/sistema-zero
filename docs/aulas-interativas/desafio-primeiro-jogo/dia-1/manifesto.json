@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-1",
   "title": "A nave ganha vida",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Você está começando um projeto vazio. Ao fim desta aula, terá uma nave que responde às setas.\n\nHoje você vai distinguir preparar o jogo de repetir ações em cada quadro.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Você está começando um projeto vazio. Ao fim desta aula, terá uma nave que responde às setas.\n\nHoje você vai distinguir preparar o jogo de repetir ações em cada quadro.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -130,6 +130,230 @@
     {
       "key": "video-construir-6-1",
       "plannedVideo": "dia-1-passo-06: gravar a demonstração \"testar e deixar do seu jeito\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Distinguir preparar o jogo de repetir ações em cada quadro."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Distinguir preparar o jogo de repetir ações em cada quadro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Distinguir preparar o jogo de repetir ações em cada quadro."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Preparar ocorre no começo; desenhar se repete a cada quadro."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual diferença existe entre preparar e desenhar o jogo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Preparar e desenhar só acontecem após perder."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Criar a nave já garante seu desenho em todos os quadros."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Preparar ocorre no começo; desenhar se repete a cada quadro."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Preparar ocorre no começo; desenhar se repete a cada quadro."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: preparar a tela do jogo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["800 por 480."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual tamanho de tela vamos usar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "800 por 480."
+            },
+            {
+              "id": "opcao-2",
+              "label": "480 por 800."
+            },
+            {
+              "id": "opcao-3",
+              "label": "54 por 62."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "800 por 480."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: criar a sua nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O personagem usado pelos controles e desenhos."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O nome nave deve identificar o quê?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Apenas a cor das asas."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O título do curso."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O personagem usado pelos controles e desenhos."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "O personagem usado pelos controles e desenhos."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: ligar o motor do jogo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Dentro de Enquanto estiver rodando."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Onde entra A cada quadro do jogo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Fora de qualquer área, como uma cor."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Dentro de Enquanto estiver rodando."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Dentro da descrição da nave."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Dentro de Enquanto estiver rodando."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: desenhar o mundo e dar vida à nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Limpar a tela."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual ação evita rastros antes de desenhar novamente?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Limpar a tela."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Criar outra nave com o mesmo nome."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Apagar todos os controles."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Limpar a tela."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-6",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: testar e deixar do seu jeito",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Confirmar clicando fora do campo e voltar ao jogo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Depois de editar a velocidade, como testar o novo valor?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Fechar o navegador sem confirmar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Editar vários números sem observar o resultado."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Confirmar clicando fora do campo e voltar ao jogo."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Confirmar clicando fora do campo e voltar ao jogo."
+        }
+      }
     }
   ],
   "sections": [
@@ -138,10 +362,14 @@
       "title": "A criação de hoje",
       "objective": "Distinguir preparar o jogo de repetir ações em cada quadro.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -151,17 +379,25 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Distinguir preparar o jogo de repetir ações em cada quadro.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
@@ -171,57 +407,99 @@
       "blockKeys": ["construir-1", "video-construir-1-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "area-sz_frame_start",
+            "label": "Montar Ao iniciar",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_start"
+            }
+          },
+          {
+            "id": "area-sz_frame_loops",
+            "label": "Montar Enquanto estiver rodando",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_frame_loops"
+            }
+          }
+        ]
+      }
     },
     {
       "key": "construir-2",
       "title": "preparar a tela do jogo",
       "objective": "Em Jogo 2D, abra Aparência. Encaixe Preparar o jogo em tela cheia dentro de Ao iniciar. Confira 800 por 480 e escolha a cor do espaço. Esse retângulo será o lugar onde seu jogo acontece.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "criar a sua nave",
       "objective": "Em Jogo 2D, abra Kit espaço e encaixe Criar nave abaixo da preparação. Use x 400, y 410, largura 54 e altura 62. As cores do corpo e das asas são suas escolhas.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "ligar o motor do jogo",
       "objective": "Em Jogo 2D, abra Tempo e repetição. Encaixe A cada quadro do jogo dentro de Enquanto estiver rodando. Ele ainda está vazio: vamos colocar a sequência de ações que você acabou de experimentar.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "desenhar o mundo e dar vida à nave",
       "objective": "Dentro de A cada quadro, encaixe Limpar a tela, o fundo de estrelas, o movimento com as setas, a proteção das bordas e o desenho da nave. No movimento use velocidade 7. Confira o nome nave em todos os blocos que apontam para ela.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "construir-6",
       "title": "testar e deixar do seu jeito",
       "objective": "Clique na área do jogo e use as setas. Experimente velocidade 12. Depois de editar o número, clique num espaço vazio dos blocos para confirmar; só então volte ao jogo. Compare e escolha uma velocidade confortável.",
       "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-6"]
+      }
     },
     {
       "key": "fechamento",
@@ -231,7 +509,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

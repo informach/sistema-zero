@@ -1,5 +1,6 @@
 import { isMoldaAssetId } from '../core/id'
 import { MAX_SCENE_GLB_BYTES } from '../export/GlbBinary'
+import { MAX_SCENE_FILE_BYTES, type SceneFileFormat } from '../export/sceneFileFormat'
 import type { encodeSceneGlb } from '../export/sceneGlb'
 import { MAX_SCENE_GLB_ANIMATION_CHANNELS } from '../export/sceneGlbAnimations'
 import { MAX_SCENE_GLB_NODES } from '../export/sceneGlbHierarchy'
@@ -19,6 +20,7 @@ export interface SceneGlbToken {
   revision: number
   /** Destination encoding. Part of the identity: a reply for the other one is not this one. */
   animatedPaint: boolean
+  format?: SceneFileFormat
 }
 export interface SceneGlbRequest extends SceneGlbToken {
   document: MoldaSceneDocument
@@ -40,10 +42,19 @@ export function readSceneGlbToken(raw: unknown): SceneGlbToken {
     documentId: row.documentId,
     revision: v.number(row.revision, 'revision', 0, Number.MAX_SAFE_INTEGER, true),
     animatedPaint: v.boolean(row.animatedPaint, 'animatedPaint'),
+    ...(row.format === undefined
+      ? {}
+      : { format: v.choice(row.format, ['glb', 'gltf', 'obj'], 'format') }),
   }
 }
 export function readSceneGlbRequest(raw: unknown): SceneGlbRequest {
-  const row = v.record(raw, 'request', ['documentId', 'revision', 'animatedPaint', 'document']),
+  const row = v.record(raw, 'request', [
+      'documentId',
+      'revision',
+      'animatedPaint',
+      'format',
+      'document',
+    ]),
     token = readSceneGlbToken(row)
   const read = readSceneDocument(row.document)
   v.requireScene(
@@ -65,6 +76,9 @@ function readIssue(raw: unknown): SceneGlbIssue {
   const code = v.choice(
     row.code,
     [
+      'obj-structure',
+      'obj-static',
+      'obj-material',
       'hidden-node',
       'skin-dependency',
       'skin-precision',
@@ -74,6 +88,7 @@ function readIssue(raw: unknown): SceneGlbIssue {
       'face-omitted',
       'loose-geometry',
       'flipbook-first-frame',
+      'flipbook-uv-first-frame',
       'runtime-tangent-space',
       'animation-resampled',
       'clip-omitted',
@@ -156,19 +171,29 @@ const STAT_LIMITS = {
 } as const
 
 /** Transport/container check only, not a second geometry build or production Khronos validation. */
-function readBytes(raw: unknown): Uint8Array<ArrayBuffer> {
+function readBytes(raw: unknown, format: SceneFileFormat = 'glb'): Uint8Array<ArrayBuffer> {
   v.requireScene(
     raw instanceof Uint8Array &&
       raw.buffer instanceof ArrayBuffer &&
       raw.byteOffset === 0 &&
       raw.byteLength === raw.buffer.byteLength &&
       raw.byteLength >= 24 &&
-      raw.byteLength <= MAX_SCENE_GLB_BYTES &&
-      raw.byteLength % 4 === 0,
+      raw.byteLength <= (format === 'glb' ? MAX_SCENE_GLB_BYTES : MAX_SCENE_FILE_BYTES) &&
+      (format !== 'glb' || raw.byteLength % 4 === 0),
     'bytes',
     'Arquivo GLB fora do orçamento.',
   )
   const view = new DataView(raw.buffer)
+  if (format !== 'glb') {
+    v.requireScene(
+      format === 'obj'
+        ? view.getUint32(0, true) === 0x04034b50
+        : raw[0] === 123 && raw.at(-1) === 125,
+      'bytes',
+      'Arquivo preparado inválido.',
+    )
+    return new Uint8Array(raw.buffer)
+  }
   v.requireScene(
     view.getUint32(0, true) === 0x46546c67 &&
       view.getUint32(4, true) === 2 &&
@@ -205,6 +230,7 @@ export function sceneGlbReply(token: SceneGlbToken, result: ReturnType<typeof en
     documentId: token.documentId,
     revision: token.revision,
     animatedPaint: token.animatedPaint,
+    ...(token.format === undefined ? {} : { format: token.format }),
     type: 'result' as const,
     result,
   }
@@ -217,20 +243,28 @@ export function readSceneGlbReply(
   v.requireScene(
     row.documentId === expected.documentId &&
       row.revision === expected.revision &&
-      row.animatedPaint === expected.animatedPaint,
+      row.animatedPaint === expected.animatedPaint &&
+      row.format === expected.format,
     'reply',
     'Esse resultado pertence a outra criação, revisão ou destino.',
   )
   const type = v.choice(row.type, ['result', 'progress', 'error'], 'type')
   if (type === 'error') {
-    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'message'])
+    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'format', 'type', 'message'])
     return { type, message: v.text(row.message, 'message', 512) }
   }
   if (type === 'progress') {
-    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'progress'])
+    v.record(row, 'reply', [
+      'documentId',
+      'revision',
+      'animatedPaint',
+      'format',
+      'type',
+      'progress',
+    ])
     return { type, progress: v.choice(row.progress, ['validating', 'encoding'], 'progress') }
   }
-  v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'result'])
+  v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'format', 'type', 'result'])
   const result = v.record(row.result, 'result', ['bytes', 'issues', 'stats', 'clips'])
   const stats = v.record(result.stats, 'stats', Object.keys(STAT_LIMITS))
   const count = (key: keyof typeof STAT_LIMITS) =>
@@ -246,7 +280,7 @@ export function readSceneGlbReply(
   return {
     type,
     result: {
-      bytes: readBytes(result.bytes),
+      bytes: readBytes(result.bytes, expected.format),
       issues: v.list(result.issues, 'issues', MAX_SCENE_GLB_ISSUES).map(readIssue),
       clips,
       stats: {

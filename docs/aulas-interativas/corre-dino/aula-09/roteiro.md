@@ -129,7 +129,7 @@ Na Aula 10, você vai investigar por que algumas batidas parecem injustas.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -139,3 +139,57 @@ Na Aula 10, você vai investigar por que algumas batidas parecem injustas.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Definir a consequência da colisão e testar o ciclo completo da partida.
+
+### Monte o ciclo da partida
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** O que acontece com as ações protegidas por Se jogando ao mudar para fim?
+
+**Resposta e explicação:** Elas deixam de executar.
+
+### a colisão que acaba o jogo
+
+**Checagem:** Qual consequência encerra a partida após a colisão?
+
+**Resposta e explicação:** Ir para a tela fim.
+
+### a tela de fim
+
+**Checagem:** Qual dica combina com o reinício que vamos configurar?
+
+**Resposta e explicação:** Qualquer tecla ou toque permite jogar de novo.
+
+### fazer você sentir a batida
+
+**Checagem:** Por que colocar explosão, tremida e som antes de ir para fim?
+
+**Resposta e explicação:** Esses sinais mostram ao jogador o que aconteceu.
+
+### jogar de novo
+
+**Checagem:** Qual ação deve acontecer ao receber um comando na tela fim?
+
+**Resposta e explicação:** Reiniciar o jogo.
+
+### testar do começo ao fim
+
+**Checagem:** Qual sequência testa o ciclo completo?
+
+**Resposta e explicação:** Iniciar, bater, ver o fim e recomeçar.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

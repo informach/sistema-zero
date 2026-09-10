@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-10",
   "title": "Uma colisão mais justa",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu jogo já tem começo, partida e fim. Em alguns saltos, o dino parece perder antes de encostar no desenho do cacto.\n\nHoje você vai distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Seu jogo já tem começo, partida e fim. Em alguns saltos, o dino parece perder antes de encostar no desenho do cacto.\n\nHoje você vai distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -107,6 +107,200 @@
     {
       "key": "video-construir-4-1",
       "plannedVideo": "aula-10-passo-04: gravar a demonstração \"você escolhe o quanto perdoar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["A área de colisão pode incluir espaço transparente do desenho."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que a colisão pode acontecer antes do contato parecer visível?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A área de colisão pode incluir espaço transparente do desenho."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O computador sempre segue cada pixel colorido."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A cor do dino muda a distância da batida."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A área de colisão pode incluir espaço transparente do desenho."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: ligar o raio-X",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Tornar visível a área usada para detectar contatos."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Para que serve mostrar a caixa de colisão?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Mudar o desenho definitivo do dino."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Impedir qualquer derrota."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Tornar visível a área usada para detectar contatos."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Tornar visível a área usada para detectar contatos."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: por que a batida pareceu roubada",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O contorno de colisão e o desenho visível."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que devemos comparar ao investigar uma batida precoce?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O número de blocos e a cor do editor."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O contorno de colisão e o desenho visível."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O título e o som da aula."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O contorno de colisão e o desenho visível."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: ajustar a área de colisão",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["A área de contato fica menor que a área original."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao usar 80% do tamanho na colisão, o que deve mudar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A área de contato fica menor que a área original."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O sprite desaparece do grupo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O relógio de cactos fica mais rápido."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A área de contato fica menor que a área original."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: você escolhe o quanto perdoar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["A configuração da área; retiramos apenas o bloco que mostra a caixa."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao terminar o ajuste, o que preservamos?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Apenas o raio-X, apagando o ajuste."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Uma área sempre mínima sem testar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A configuração da área; retiramos apenas o bloco que mostra a caixa."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "A configuração da área; retiramos apenas o bloco que mostra a caixa."
+        }
+      }
     }
   ],
   "sections": [
@@ -115,10 +309,14 @@
       "title": "A criação de hoje",
       "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -128,57 +326,81 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "ligar o raio-X",
       "objective": "Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode. O contorno rosa vai mostrar a área que estava invisível.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "por que a batida pareceu roubada",
       "objective": "Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa. Essa diferença explica a sensação de perder cedo.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "ajustar a área de colisão",
       "objective": "Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80. Recomece e confira a caixa menor com o raio-X ainda ligado.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "você escolhe o quanto perdoar",
       "objective": "Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos. Ao terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "fechamento",
@@ -188,7 +410,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

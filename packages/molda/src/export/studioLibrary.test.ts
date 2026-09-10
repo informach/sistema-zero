@@ -26,6 +26,38 @@ beforeEach(() => {
 })
 
 describe('studio-library', () => {
+  test('listing captures both generations before a profile switch during the legacy read', async () => {
+    const a = await nativeDatabase(),
+      b = await nativeDatabase()
+    setMoldaGenerationStoreFactory((namespace) => (namespace === 'crianca-a' ? a.store : b.store))
+    let release!: () => void
+    const waiting = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    let listSpy: ReturnType<typeof spyOn> | undefined
+    try {
+      const source = migrateLegacyModel(makeModel()).document
+      await createScenePersistence(a.store).save({ ...source, name: 'perfil-a' }, null)
+      await createScenePersistence(b.store).save({ ...source, name: 'perfil-b' }, null)
+      setMoldaStorageNamespace('crianca-a')
+      listSpy = spyOn(getDefaultMoldaPersistence(), 'listSummaries').mockImplementation(
+        async () => {
+          await waiting
+          return []
+        },
+      )
+      const listing = listGalleryForStudio()
+      setMoldaStorageNamespace('crianca-b')
+      release()
+      expect((await listing).map((item) => item.name)).toEqual(['perfil-a'])
+    } finally {
+      release()
+      listSpy?.mockRestore()
+      setMoldaGenerationStoreFactory(null)
+      a.close()
+      b.close()
+    }
+  })
   test('lista e exporta o modelo como model3d validável pelo Estúdio', async () => {
     const persistence = createMoldaPersistence({ namespace: 'estudio' })
     await persistence.saveMany([makeModel({ thumb: 'data:image/jpeg;base64,AAAA' }), makeSky()])
@@ -99,6 +131,35 @@ describe('studio-library', () => {
 })
 
 describe('studio-library e a geração seguinte', () => {
+  test('losses require explicit consent for the exact saved revision before crossing the bridge', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    try {
+      const scene = migrateLegacyModel(makeModel()).document
+      scene.nodes[0]!.hidden = true
+      const storage = createScenePersistence(db.store)
+      const saved = await storage.save(scene, null)
+      expect(saved.status).toBe('saved')
+      const review = await exportAssetForStudio(scene.id)
+      expect(review.ok).toBe(false)
+      if (review.ok || review.reason !== 'needs-review') throw new Error('Missing loss review')
+      expect(review.review.losses.some((line) => line.includes('escondid'))).toBe(true)
+      const accepted = await exportAssetForStudio(scene.id, { acceptedReview: review.review.token })
+      expect(accepted.ok).toBe(true)
+      if (saved.status !== 'saved') throw new Error('Missing saved revision')
+      await storage.save(
+        { ...scene, updatedAt: scene.updatedAt + 1, name: 'mudou' },
+        saved.revision,
+      )
+      const stale = await exportAssetForStudio(scene.id, { acceptedReview: review.review.token })
+      expect(stale.ok).toBe(false)
+      if (stale.ok || stale.reason !== 'needs-review') throw new Error('Missing refreshed review')
+      expect(stale.review.token).not.toBe(review.review.token)
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
   test('a criação promovida continua na lista e sai pelo exportador de cena, não pelo v1', async () => {
     const db = await nativeDatabase()
     setMoldaGenerationStoreFactory(() => db.store)

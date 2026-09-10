@@ -75,6 +75,7 @@ export interface MoldaPersistenceLike {
 export interface MoldaSceneCloudSourceLike {
   listSummaries(): Promise<MoldaAssetSummary[]>
   read(id: string): Promise<{ summary: MoldaAssetSummary; json: string } | null>
+  owns(id: string): Promise<boolean>
   inspect(json: string): MoldaAssetSummary | null
   saveIfUnchanged(
     id: string,
@@ -335,7 +336,7 @@ export function createCloudMirroredMoldaPersistence(options: {
       name: string,
       expectedUpdatedAt: number | null,
     ): Promise<boolean> {
-      if (document.formatVersion === 2)
+      if (document.formatVersion === 2 || (await scene?.owns(document.id)))
         return (
           (await scene?.saveIfUnchanged(document.id, document.json, expectedUpdatedAt, name)) ??
           false

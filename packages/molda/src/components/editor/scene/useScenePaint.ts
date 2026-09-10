@@ -29,7 +29,7 @@ import { useSceneRasterFile } from './useSceneRasterFile'
 export type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
 
 export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
-  const document = useStore(editor, (state) => state.asset)
+  const document = useStore(editor, (state) => state.content)
   const [session, setSession] = useState<{ documentId: string; target: ScenePaintTarget } | null>(
     null,
   )
@@ -354,7 +354,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       cancel()
       clearFile()
       try {
-        const document = editor.getState().asset
+        const document = editor.getState().content
         const { image, imageKind } = resolveScenePaintTarget(document, target)
         setSession({ documentId: document.id, target: { ...target } })
         setColor(

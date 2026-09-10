@@ -6,10 +6,12 @@ import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -76,7 +78,8 @@ export function LessonPlayer({
     learningProgress: learning.progress,
   })
   const missing = (reason: string) => requirements.some((r) => !r.complete && r.reason === reason)
-  const blockedByLearning = missing('LEARNING_GATE_INCOMPLETE')
+  const blockedByLearning =
+    missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
   const { navAvailable, outlineAvailable, outlineCollapsed } = useFocusMode()
@@ -160,6 +163,7 @@ export function LessonPlayer({
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
+      refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
     }),
@@ -186,18 +190,18 @@ export function LessonPlayer({
       >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Header de "lição" (padrão Duolingo): voltar em círculo + modo foco.
-              O progresso do CURSO saiu daqui (09/2026): dentro da aula o que a
-              criança precisa é o progresso DA AULA, que agora vive em segmentos
-              logo acima das seções (`LessonProgress`). O do curso ela já vê na
-              trilha, no card do curso e na celebração. O chip "Aula N de M"
-              abaixo FICA: ele situa a aula no curso sem medir nada. */}
+          {/* Header de "lição" (padrão Duolingo): voltar em círculo + o progresso
+              real das seções DA AULA + modo foco.
+              ⚠️ O progresso do CURSO saiu daqui (09/2026) e não volta: dentro da
+              aula o que a criança precisa medir é a AULA. O do curso ela já vê na
+              trilha, no card do curso e na celebração. O chip "Aula N de M" abaixo
+              FICA: ele situa a aula no curso sem medir nada. */}
           <div className="flex items-center gap-3">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
             <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
-            <div className="flex-1" />
+            <LessonProgressBar progress={lesson.sectionProgress} />
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
             {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">
@@ -319,9 +323,13 @@ export function LessonPlayer({
           )}
         >
           <Card className="overflow-hidden p-0">
-            {/* Sem barra de progresso aqui: o header da lição (topo) já a mostra. */}
+            {/* O índice lateral mantém o progresso geral do curso. */}
             <div className="border-border border-b px-4 py-3">
               <p className="sz-display text-sm">{course.title}</p>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Progresso do curso · {course.progress.percent}%
+              </p>
+              <ProgressBar value={course.progress.percent} />
               <CourseRatingFlow
                 courseSlug={course.slug}
                 initialRating={course.myRating}

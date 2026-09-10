@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-06",
   "title": "A sua nave entra no jogo",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Você tem nave/voando de 32 × 32 e asteroide/girando de 64 × 64 no Pinta. O projeto livre ainda usa o Kit espaço.\n\nHoje você vai usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Você tem nave/voando de 32 × 32 e asteroide/girando de 64 × 64 no Pinta. O projeto livre ainda usa o Kit espaço.\n\nHoje você vai usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -93,6 +93,200 @@
     {
       "key": "video-construir-3-1",
       "plannedVideo": "aula-06-passo-03: gravar a demonstração \"carregar a folha e animar a nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O quadro mede a arte na folha; o sprite mede sua exibição no jogo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual diferença existe entre o quadro 32 por 32 e o sprite 54 por 54?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O quadro mede a arte na folha; o sprite mede sua exibição no jogo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Os dois precisam sempre ter o mesmo tamanho."
+            },
+            {
+              "id": "opcao-3",
+              "label": "54 por 54 é o tamanho de toda a tela."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "O quadro mede a arte na folha; o sprite mede sua exibição no jogo."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: trazer os seus desenhos para dentro do projeto",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["No jogo importado que já funciona."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Em qual projeto importar os desenhos do Pinta?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "No projeto vazio de teste."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Em uma cópia nova a cada aula."
+            },
+            {
+              "id": "opcao-3",
+              "label": "No jogo importado que já funciona."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "No jogo importado que já funciona."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: apagar a nave do kit e montar a sua",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Para preservar a ligação com controles e outros blocos."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que manter o nome nave ao substituir a arte do kit?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Para mudar o nome da conta."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Para preservar a ligação com controles e outros blocos."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Para impedir a animação."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Para preservar a ligação com controles e outros blocos."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: carregar a folha e animar a nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["0 e 1, pois a contagem começa em zero."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Quais quadros formam a animação voando?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "0 e 1, pois a contagem começa em zero."
+            },
+            {
+              "id": "opcao-2",
+              "label": "1 e 2, pois zero não é um quadro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somente 8, por causa dos 8 fps."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "0 e 1, pois a contagem começa em zero."
+        }
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Teste e guarde sua criação",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Animação, movimento, tiros, vidas e telas."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que testar depois de trocar a nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Somente a capa do projeto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Apenas o título da aula."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Animação, movimento, tiros, vidas e telas."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Animação, movimento, tiros, vidas e telas."
+        }
+      }
     }
   ],
   "sections": [
@@ -101,10 +295,14 @@
       "title": "A criação de hoje",
       "objective": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -114,57 +312,81 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Usar a imagem e a folha de animação próprias mantendo o nome e o comportamento da nave.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "trazer os seus desenhos para dentro do projeto",
       "objective": "Abra Estúdio pelo menu e entre no cartão do jogo importado, não no projeto de teste. Use a área de recursos para trazer nave e asteroide do Pinta. Confira os nomes antes de trocar os blocos.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "apagar a nave do kit e montar a sua",
       "objective": "Em Ao iniciar, remova somente Criar nave do kit, preservando a pilha. Em Jogo 2D, Sprites, crie o sprite nave com imagem nave: x 400, y 410, largura 54 e altura 54. O nome nave mantém a ligação com os controles.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "carregar a folha e animar a nave",
       "objective": "Em Jogo 2D, Animação, carregue folha-nave da imagem nave com quadros 32 por 32. Configure a animação voando do quadro 0 ao 1 a 8 fps. Teste o fogo, as setas, os tiros e as colisões no mesmo jogo.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "fechamento",
       "title": "Teste e guarde sua criação",
       "objective": "A nave tem sua arte e o fogo animado; movimento, tiros, vidas e telas continuam funcionando. Confira o salvamento do mesmo projeto livre.",
       "intent": "closing",
-      "blockKeys": ["fechamento"],
+      "blockKeys": ["fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "estudio",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
     }
   ]
 }

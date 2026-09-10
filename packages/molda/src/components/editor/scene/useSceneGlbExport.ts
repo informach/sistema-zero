@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { triggerDownload } from '../../../export/download'
+import { SCENE_FILE_TYPES, type SceneFileFormat } from '../../../export/sceneFileFormat'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
@@ -78,7 +79,7 @@ export function useSceneGlbExport(
     }
   }, [editor, cancel, copy.changed, copy.interrupted])
 
-  async function prepare(animatedPaint: boolean) {
+  async function prepare(animatedPaint: boolean, format?: SceneFileFormat) {
     if (activeEditor.current !== editor) return
     cancel()
     if (document.hidden) {
@@ -91,6 +92,7 @@ export function useSceneGlbExport(
       documentId: source.asset.id,
       revision: source.contentRevision,
       animatedPaint,
+      ...(format === undefined ? {} : { format }),
       name: source.asset.name,
       controller: new AbortController(),
     }
@@ -104,6 +106,7 @@ export function useSceneGlbExport(
           documentId: owner.documentId,
           revision: owner.revision,
           animatedPaint: owner.animatedPaint,
+          ...(owner.format === undefined ? {} : { format: owner.format }),
         },
         {
           signal: owner.controller.signal,
@@ -152,8 +155,8 @@ export function useSceneGlbExport(
     try {
       if (
         !triggerDownload(
-          new Blob([result.bytes.buffer], { type: 'model/gltf-binary' }),
-          `${owner.name}.glb`,
+          new Blob([result.bytes.buffer], { type: SCENE_FILE_TYPES[owner.format ?? 'glb'].mime }),
+          `${owner.name}.${SCENE_FILE_TYPES[owner.format ?? 'glb'].extension}`,
         )
       )
         throw new Error('Download unavailable')

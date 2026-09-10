@@ -115,7 +115,7 @@ Você concluiu o Corre, Dino! A Ponte pode mostrar o código dos blocos. Confira
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -125,3 +125,53 @@ Você concluiu o Corre, Dino! A Ponte pode mostrar o código dos blocos. Confira
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.
+
+### Onde a aceleração para?
+
+**Checagem:** Com base −9 e regra “se velocidade > −9, somar −1”, o próximo passo…
+
+**Resposta e explicação:** Mantém a base em −9
+
+### O que aconteceu?
+
+**Checagem:** O limite menos 9 pertence a qual valor?
+
+**Resposta e explicação:** À velocidade-base; o sorteio ainda pode diminuir o vx final.
+
+### criar a caixinha da velocidade
+
+**Checagem:** Com qual valor começa a variável velocidade?
+
+**Resposta e explicação:** Menos 5.
+
+### fazer o cacto obedecer a caixinha
+
+**Checagem:** O que deve substituir o menos 5 na conta do vx?
+
+**Resposta e explicação:** O valor da variável velocidade, preservando o sorteio.
+
+### fazer a velocidade acelerar sozinha
+
+**Checagem:** Qual condição impede a base de ultrapassar o limite planejado?
+
+**Resposta e explicação:** Velocidade maior que menos 9 antes de subtrair 1.
+
+### testar e ajustar o seu jogo
+
+**Checagem:** Ao começar uma nova partida, o que deve acontecer com a velocidade-base?
+
+**Resposta e explicação:** Voltar a menos 5.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

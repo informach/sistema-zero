@@ -141,6 +141,9 @@ export class LearningImportService {
       workspaceBlockId: s.workspaceKey ? mapped(s.workspaceKey) : null,
       externalTool: s.externalTool,
       pendingMedia: [],
+      ...(s.completion
+        ? { completion: { ...s.completion, blockIds: s.completion.blockIds.map(mapped) } }
+        : {}),
     }))
     const retained = draft.document.blocks.filter((b) => !used.has(b.id))
     for (const block of retained) add(block)

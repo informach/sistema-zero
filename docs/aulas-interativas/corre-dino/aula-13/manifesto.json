@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-13",
   "title": "Dificuldade que cresce com a partida",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Retome o projeto com placar e pequenas variações no nascimento dos cactos.\n\nHoje você vai acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Retome o projeto com placar e pequenas variações no nascimento dos cactos.\n\nHoje você vai acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -108,6 +108,200 @@
     {
       "key": "video-construir-4-1",
       "plannedVideo": "aula-13-passo-04: gravar a demonstração \"testar e ajustar o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["À velocidade-base; o sorteio ainda pode diminuir o vx final."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O limite menos 9 pertence a qual valor?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "À velocidade-base; o sorteio ainda pode diminuir o vx final."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A todo vx final, sem considerar o sorteio."
+            },
+            {
+              "id": "opcao-3",
+              "label": "À posição vertical do dino."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "À velocidade-base; o sorteio ainda pode diminuir o vx final."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: criar a caixinha da velocidade",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Menos 5."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Com qual valor começa a variável velocidade?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Menos 9."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mais 5."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Menos 5."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Menos 5."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer o cacto obedecer a caixinha",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O valor da variável velocidade, preservando o sorteio."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que deve substituir o menos 5 na conta do vx?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A largura da floresta."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O valor da variável velocidade, preservando o sorteio."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O nome da tela fim."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O valor da variável velocidade, preservando o sorteio."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer a velocidade acelerar sozinha",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Velocidade maior que menos 9 antes de subtrair 1."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual condição impede a base de ultrapassar o limite planejado?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Velocidade maior que menos 9 antes de subtrair 1."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Velocidade menor que menos 9 antes de subtrair 1."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somar sem condição em todas as telas."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Velocidade maior que menos 9 antes de subtrair 1."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: testar e ajustar o seu jogo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Voltar a menos 5."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao começar uma nova partida, o que deve acontecer com a velocidade-base?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Continuar sempre na maior dificuldade anterior."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Virar zero para todos os cactos."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Voltar a menos 5."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Voltar a menos 5."
+        }
+      }
     }
   ],
   "sections": [
@@ -116,10 +310,14 @@
       "title": "A criação de hoje",
       "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -129,57 +327,81 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "criar a caixinha da velocidade",
       "objective": "Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "fazer o cacto obedecer a caixinha",
       "objective": "Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio. Rode: no começo deve parecer igual.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "fazer a velocidade acelerar sozinha",
       "objective": "Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando. Dentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior. Só dentro do segundo Se coloque Somar menos 1 em velocidade.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "testar e ajustar o seu jogo",
       "objective": "Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos. Escolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "fechamento",
@@ -189,7 +411,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

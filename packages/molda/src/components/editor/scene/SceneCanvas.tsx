@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
+import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
@@ -14,9 +15,11 @@ import type {
   SceneTransformActions,
   SceneTransformTool,
   SceneViewportFactory,
+  SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
 import { Button } from '../../ui/Button'
+import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
 import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
 import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPaintControls'
@@ -48,6 +51,7 @@ interface Props {
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
   onThumb?(thumb: string | undefined): void
+  onViewport?(viewport: SceneViewportPort | null): void
 }
 
 const inactiveSubscription = () => () => {}
@@ -84,6 +88,7 @@ function SceneCanvasAttempt({
   onEndPaint,
   skinPaint,
   onThumb,
+  onViewport,
 }: Props & { onRetry(): void }) {
   const [tool, setTool] = useState<SceneTransformTool | 'box' | 'lasso'>('select')
   const [through, setThrough] = useState(false)
@@ -193,16 +198,26 @@ function SceneCanvasAttempt({
     skinPaintSettings,
     onThumb,
   })
+  useEffect(() => {
+    onViewport?.(view.viewport)
+    return () => onViewport?.(null)
+  }, [view.viewport, onViewport])
   const cancelPaint = () => {
     skinPaint?.cancel()
     view.viewport?.cancelGesture()
   }
+  const [gridVisible, setGridVisible] = useState(true)
+  const [movementStep, setMovementStep] = useState<number | null>(null)
   const [camera, setCamera] = useState<CameraView>('free')
   const copy = COPY.scene
+  useEffect(() => {
+    view.viewport?.setGridVisible?.(gridVisible)
+    view.viewport?.setMovementStep?.(movementStep)
+  }, [view.viewport, gridVisible, movementStep])
   return (
     <section
       aria-label={componentSelection ? copy.componentViewport : copy.viewport}
-      className="relative flex min-h-80 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
+      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
       onKeyDown={(event) => {
         if (event.key === 'Escape' && !event.defaultPrevented) {
           if (mode === 'animation') {
@@ -217,7 +232,7 @@ function SceneCanvasAttempt({
         }
       }}
     >
-      <div className="flex flex-wrap items-center gap-1 border-b border-mld-border p-2">
+      <div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
         {paintTarget && (
           <>
             <Button
@@ -284,8 +299,9 @@ function SceneCanvasAttempt({
                       : copy[name]}
               </Button>
             ))}
+
         {!paintTarget && (
-          <span className="text-xs text-mld-muted">
+          <span className="text-mld-muted text-xs">
             {skinPaintSettings
               ? copy.skinPaint.hint
               : mode === 'animation'
@@ -373,36 +389,18 @@ function SceneCanvasAttempt({
         />
       )}
       <section
-        className="flex flex-wrap items-center gap-1 border-b border-mld-border p-2"
+        className="absolute right-3 bottom-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm"
         aria-label={COPY.editor.model.viewControls}
       >
-        {!paintTarget && !componentSelection && (
-          <Button
-            variant="ghost"
-            className="px-3 text-sm"
-            disabled={!view.viewport}
-            aria-pressed={supportGuides}
-            onClick={() => setSupportGuides((shown) => !shown)}
-          >
-            {copy.supportGuides}
-          </Button>
-        )}
-        {CAMERA_VIEWS.map((name) => (
-          <Button
-            key={name}
-            variant="ghost"
-            className="px-3 text-sm"
-            aria-pressed={camera === name}
-            disabled={!view.viewport}
-            onClick={() => {
-              skinPaint?.cancel()
-              view.viewport?.setView(name)
-              setCamera(name)
-            }}
-          >
-            {COPY.editor.model.views[name]}
-          </Button>
-        ))}
+        <Button
+          variant="ghost"
+          className="px-3 text-sm"
+          aria-pressed={gridVisible}
+          disabled={!view.viewport?.setGridVisible}
+          onClick={() => setGridVisible((visible) => !visible)}
+        >
+          {copy.showGrid}
+        </Button>
         <Button
           variant="ghost"
           className="px-3 text-sm"
@@ -414,65 +412,141 @@ function SceneCanvasAttempt({
         >
           {COPY.editor.model.views.selection}
         </Button>
+        {/*
+         * As seis vistas atrás de UM botão. Deitadas elas pediam 432px de largura, e era
+         * isso que fazia a fileira virar uma tampa sobre o palco. O rótulo leva a vista
+         * ATUAL: a criança lê de onde está olhando sem precisar abrir nada.
+         */}
+        <details className="relative">
+          <summary className="flex min-h-11 cursor-pointer items-center rounded-xl px-3 font-bold text-mld-text text-sm hover:bg-mld-border/40">
+            {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
+          </summary>
+          <div className="absolute right-0 bottom-full z-30 mb-1 flex w-56 flex-col gap-1 rounded-xl border border-mld-border bg-mld-surface p-2 shadow-lg">
+            {CAMERA_VIEWS.map((name) => (
+              <Button
+                key={name}
+                variant="ghost"
+                className="px-3 text-sm"
+                aria-pressed={camera === name}
+                disabled={!view.viewport}
+                onClick={() => {
+                  skinPaint?.cancel()
+                  view.viewport?.setView(name)
+                  setCamera(name)
+                }}
+              >
+                {COPY.editor.model.views[name]}
+              </Button>
+            ))}
+          </div>
+        </details>
+        {/* Apoios e passo do movimento: pouco usados, e o passo é o mais abstrato daqui. */}
+        <details className="relative">
+          <summary className="flex min-h-11 cursor-pointer items-center rounded-xl px-3 font-bold text-mld-text text-sm hover:bg-mld-border/40">
+            {SCENE_SHELL_COPY.stageSettings}
+          </summary>
+          <div className="absolute right-0 bottom-full z-30 mb-1 flex w-56 flex-col gap-1 rounded-xl border border-mld-border bg-mld-surface p-2 shadow-lg">
+            {!paintTarget && !componentSelection && (
+              <Button
+                variant="ghost"
+                className="px-3 text-sm"
+                disabled={!view.viewport}
+                aria-pressed={supportGuides}
+                onClick={() => setSupportGuides((shown) => !shown)}
+              >
+                {copy.supportGuides}
+              </Button>
+            )}
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <span>{copy.movementStep}</span>
+              <select
+                name="molda-movement-step"
+                value={movementStep ?? 'free'}
+                disabled={!view.viewport?.setMovementStep}
+                onChange={(event) =>
+                  setMovementStep(event.target.value === 'free' ? null : Number(event.target.value))
+                }
+                className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
+              >
+                <option value="free">{copy.movementFree}</option>
+                {[0.1, 0.5, 1].map((step) => (
+                  <option key={step} value={step}>
+                    {step.toLocaleString('pt-BR')}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </details>
       </section>
       {supportGuides && !paintTarget && !componentSelection && (
         <p role="status" className="border-b border-mld-border px-3 py-2 text-sm text-mld-muted">
           {copy.supportGuidesHint}
         </p>
       )}
-      <div className="relative min-h-64 flex-1">
-        <canvas
-          ref={view.canvas}
-          aria-label={componentSelection ? copy.componentViewport : copy.viewport}
-          tabIndex={0}
-          className="absolute inset-0 size-full touch-none"
-        />
-        {view.area.length > 1 && (
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 1 1"
-            preserveAspectRatio="none"
-            className="pointer-events-none absolute inset-0 size-full overflow-visible"
-          >
-            <path
-              d={`M ${view.area.map((point) => point.join(' ')).join(' L ')} Z`}
-              fillRule="evenodd"
-              vectorEffect="non-scaling-stroke"
-              strokeWidth={2}
-              className="fill-mld-accent/15 stroke-mld-accent"
-            />
-          </svg>
-        )}
-        {!view.viewport && !view.error && (
-          <p role="status" className="absolute inset-x-3 top-4 text-center text-mld-muted">
-            {copy.loading3d}
-          </p>
-        )}
-        {(view.error || view.lost) && (
-          <div
-            role="alert"
-            className="absolute inset-x-3 top-3 rounded-xl border border-mld-border bg-mld-surface p-4 text-sm text-mld-text"
-          >
-            <p>{view.error ?? copy.lost3d}</p>
-            {view.error && (
-              <Button className="mt-3 text-sm" onClick={onRetry}>
-                {copy.retry3d}
-              </Button>
-            )}
-          </div>
-        )}
-        {view.issueCount > 0 && (
-          <p
-            role="status"
-            className="absolute inset-x-3 bottom-3 rounded-xl bg-mld-surface p-3 text-sm text-mld-warn"
-          >
-            {copy.drawIssues(view.issueCount)}
-          </p>
-        )}
-        <SceneFirstSteps
-          key={document.id}
-          context={mode === 'animation' ? 'animation' : paintTarget ? 'paint' : 'model'}
-        />
+      <div className="relative flex min-h-0 flex-1">
+        <ReferenceImageGuide view={camera} disabled={!view.viewport || !!view.error || view.lost}>
+          <canvas
+            ref={view.canvas}
+            aria-label={componentSelection ? copy.componentViewport : copy.viewport}
+            tabIndex={0}
+            className="absolute inset-0 size-full touch-none"
+          />
+          {view.area.length > 1 && (
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 1 1"
+              preserveAspectRatio="none"
+              className="pointer-events-none absolute inset-0 size-full overflow-visible"
+            >
+              <path
+                d={`M ${view.area.map((point) => point.join(' ')).join(' L ')} Z`}
+                fillRule="evenodd"
+                vectorEffect="non-scaling-stroke"
+                strokeWidth={2}
+                className="fill-mld-accent/15 stroke-mld-accent"
+              />
+            </svg>
+          )}
+          {!view.viewport && !view.error && (
+            <p role="status" className="absolute inset-x-3 top-4 text-center text-mld-muted">
+              {copy.loading3d}
+            </p>
+          )}
+          {(view.error || view.lost) && (
+            <div
+              role="alert"
+              className="absolute inset-x-3 top-3 rounded-xl border border-mld-border bg-mld-surface p-4 text-sm text-mld-text"
+            >
+              <p>{view.error ?? copy.lost3d}</p>
+              {view.error && (
+                <Button className="mt-3 text-sm" onClick={onRetry}>
+                  {copy.retry3d}
+                </Button>
+              )}
+            </div>
+          )}
+          {view.issueCount > 0 && (
+            <p
+              role="status"
+              className="absolute inset-x-3 bottom-3 rounded-xl bg-mld-surface p-3 text-sm text-mld-warn"
+            >
+              {copy.drawIssues(view.issueCount)}
+            </p>
+          )}
+          <SceneFirstSteps
+            key={document.id}
+            context={
+              mode === 'animation'
+                ? 'animation'
+                : paintTarget
+                  ? 'paint'
+                  : weightTarget
+                    ? 'skin'
+                    : 'model'
+            }
+          />
+        </ReferenceImageGuide>
       </div>
     </section>
   )

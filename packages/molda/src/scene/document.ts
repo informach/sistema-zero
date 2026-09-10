@@ -67,7 +67,7 @@ export type ScenePrimitiveGeometry = ScenePrimitiveBase &
   )
 export type SceneCurvedPrimitive = Extract<ScenePrimitiveGeometry, { kind: 'cylinder' | 'sphere' }>
 
-/** Open authorial polyline; surface vertices are derived, never a second stored copy. */
+/** Authorial polyline; closed paths reuse the first ring, without duplicate control points. */
 export interface ScenePathGeometry {
   id: string
   kind: 'path'
@@ -75,6 +75,7 @@ export interface ScenePathGeometry {
   radius: number
   around: number
   endCaps: boolean
+  closed?: boolean
   surfaces: ScenePrimitiveGeometry['surfaces']
 }
 

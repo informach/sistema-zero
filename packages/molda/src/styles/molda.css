@@ -23,14 +23,21 @@
      fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
      azul-céu da página). O fallback literal é o creme MakeCode, que mantém o
      playground standalone funcionando igual. */
-  --color-mld-bg: var(--sz-kids-ceu-suave, oklch(0.975 0.012 85));
-  --color-mld-surface: var(--sz-kids-branco, oklch(0.995 0.006 85));
-  --color-mld-border: var(--sz-kids-linha, oklch(0.89 0.018 80));
-  --color-mld-text: var(--sz-kids-tinta, oklch(0.145 0.012 262));
-  --color-mld-muted: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
-  --color-mld-text-soft: var(--sz-kids-tinta-suave, oklch(0.5 0.012 255));
-  --color-mld-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
-  --color-mld-accent-fg: var(--sz-kids-branco, oklch(0.995 0.006 85));
+  --color-mld-bg: var(--sz-tool-bg, var(--sz-kids-ceu-suave, oklch(0.975 0.012 85)));
+  --color-mld-surface: var(--sz-tool-surface, var(--sz-kids-branco, oklch(0.995 0.006 85)));
+  --color-mld-border: var(--sz-tool-line, var(--sz-kids-linha, oklch(0.89 0.018 80)));
+  --color-mld-text: var(--sz-tool-ink, var(--sz-kids-tinta, oklch(0.145 0.012 262)));
+  --color-mld-muted: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)));
+  --color-mld-text-soft: var(--sz-tool-muted, var(--sz-kids-tinta-suave, oklch(0.5 0.012 255)));
+  --color-mld-accent: var(--sz-tool-accent, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
+  --color-mld-accent-fg: var(--sz-tool-on-accent, var(--sz-kids-branco, oklch(0.995 0.006 85)));
+  /*
+   * ⚠️ `ok`/`warn`/`danger` NÃO passam pelo `--sz-tool-*` de propósito, por ora. Os três da
+   * plataforma são valores ajustados para contraste AA e são DIFERENTES destes: encadear
+   * mudaria a cor de aviso e de erro na tela da criança, e isso é mudança visível que quer
+   * conferência de contraste no navegador, não uma troca de cadeia feita no escuro. Fica
+   * registrado aqui em vez de escondido; alinhar é lote próprio, com a medida junto.
+   */
   --color-mld-ok: oklch(0.55 0.14 155);
   --color-mld-warn: oklch(0.6 0.14 65);
   --color-mld-danger: oklch(0.55 0.19 25);
@@ -44,14 +51,20 @@
 
 /* Tema escuro — override por atributo data-molda-theme="dark" no root. */
 [data-molda-theme="dark"] {
-  --color-mld-bg: var(--sz-kids-navy, oklch(0.17 0.014 262));
-  --color-mld-surface: var(--sz-kids-navy-superficie, oklch(0.215 0.015 262));
-  --color-mld-border: var(--sz-kids-navy-linha, oklch(0.32 0.02 262));
-  --color-mld-text: var(--sz-kids-navy-tinta, oklch(0.965 0.005 250));
-  --color-mld-muted: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-mld-text-soft: var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250));
-  --color-mld-accent: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
-  --color-mld-accent-fg: var(--sz-kids-navy, oklch(0.17 0.014 262));
+  --color-mld-bg: var(--sz-tool-bg, var(--sz-kids-navy, oklch(0.17 0.014 262)));
+  --color-mld-surface: var(
+    --sz-tool-surface,
+    var(--sz-kids-navy-superficie, oklch(0.215 0.015 262))
+  );
+  --color-mld-border: var(--sz-tool-line, var(--sz-kids-navy-linha, oklch(0.32 0.02 262)));
+  --color-mld-text: var(--sz-tool-ink, var(--sz-kids-navy-tinta, oklch(0.965 0.005 250)));
+  --color-mld-muted: var(--sz-tool-muted, var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250)));
+  --color-mld-text-soft: var(
+    --sz-tool-muted,
+    var(--sz-kids-navy-tinta-suave, oklch(0.72 0.015 250))
+  );
+  --color-mld-accent: var(--sz-tool-accent, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
+  --color-mld-accent-fg: var(--sz-tool-on-accent, var(--sz-kids-navy, oklch(0.17 0.014 262)));
   --color-mld-ok: oklch(0.8 0.16 155);
   --color-mld-warn: oklch(0.83 0.14 85);
   --color-mld-danger: oklch(0.72 0.17 25);

@@ -32,6 +32,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       'mission_claims (user_id uuid not null)',
       'room_inventory (user_id uuid not null)',
       'studio_submissions (user_id uuid not null, account_id uuid)',
+      'lesson_section_progress (user_id uuid not null, account_id uuid not null)',
       'lesson_navigation (user_id uuid not null, account_id uuid not null)',
       'lesson_block_progress (user_id uuid not null, account_id uuid not null)',
       'learning_attempts (user_id uuid not null, account_id uuid not null)',
@@ -119,6 +120,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     // por ordem, não por lógica. Aqui a semântica desejada é "limpe o que depender disto".
     await conn.sql`
       truncate table
+        members.lesson_section_progress,
         members.lesson_navigation,
         members.lesson_block_progress,
         members.learning_attempts,
@@ -178,6 +180,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
         (${randomUUID()}, ${profileId}, ${accountId}, 'studio', 'proj-1', 'Nave', 'classic', now(), now(), now()),
         (${randomUUID()}, ${accountId}, ${accountId}, 'pinta', 'd-1', 'nave', 'pixel-sprite', now(), now(), now())`
 
+    await conn.sql`insert into members.lesson_section_progress (user_id, account_id) values (${profileId}, ${accountId})`
     const cleanupId = randomUUID()
     const createdAt = new Date('2026-08-19T12:00:00.000Z')
     const notBefore = new Date('2026-08-19T12:15:00.000Z')
@@ -193,6 +196,7 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
     })
 
     const tables = [
+      'lesson_section_progress',
       'creations',
       'teacher_threads',
       'pensa_projects',

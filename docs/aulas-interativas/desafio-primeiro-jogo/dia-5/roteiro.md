@@ -137,11 +137,11 @@ categoria "Jogo 2D", subcategoria "Controles", arrastar "Quando apertar a tecla"
 
 **Narração revisada:**
 
-Teste o ciclo inteiro: comece com Enter, perca uma partida, reinicie e tente ganhar outra. Confira o jogo antes de Enviar para o professor. Depois use Compartilhar, escreva o resumo, confira a capa e publique no Mural.
+Teste o ciclo inteiro: comece com Enter, perca uma partida, reinicie e tente ganhar outra. Confira o jogo e responda à checagem desta etapa. Na próxima seção, faça a entrega e compartilhe no Mural.
 
 **Na tela (sequência técnica preservada do original):**
 
-jogar o ciclo completo: tela de início, Enter, jogar, perder de propósito, Enter, jogar de novo até ganhar. Depois, Enviar para o professor, botão Compartilhar, resumo, capa e o link do jogo publicado.
+jogar o ciclo completo: tela de início, Enter, jogar, perder de propósito, Enter, jogar de novo até ganhar. Mostrar a checagem da etapa; a entrega e o compartilhamento serão feitos no fechamento.
 
 **Depois do trecho:** o aluno realiza a etapa, testa e mantém o trabalho no mesmo projeto. A explicação conceitual está na descoberta e no texto anterior; não repetir um monólogo teórico durante a montagem.
 
@@ -151,13 +151,13 @@ jogar o ciclo completo: tela de início, Enter, jogar, perder de propósito, Ent
 
 **Fala / texto de fechamento:**
 
-Antes de publicar, teste início, derrota, vitória e reinício. Confira se uma partida nova começa com zero pontos e três vidas. Abra o link publicado e jogue.
+Antes de publicar, teste início, derrota, vitória e reinício. Confira se uma partida nova começa com zero pontos e três vidas. Envie para o professor, use Compartilhar, confira o resumo e a capa e publique no Mural. Abra o link publicado e jogue.
 
 Seu primeiro jogo está pronto. Siga as próximas aulas do curso e confira na Carreira o que sua conclusão e publicação liberaram. O Jogo do Meu Jeito usará o projeto do Dia 5.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -167,3 +167,71 @@ Seu primeiro jogo está pronto. Siga as próximas aulas do curso e confira na Ca
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Usar condições para separar início, partida, vitória e derrota, e publicar o jogo concluído.
+
+### Pontos antes de começar?
+
+**Checagem:** Qual regra mantém a contagem dentro da partida?
+
+**Resposta e explicação:** Somar somente se a tela atual é jogando
+
+### O que aconteceu?
+
+**Checagem:** Por que o Enter precisa consultar a tela atual?
+
+**Resposta e explicação:** Na entrada ele começa; no fim ou vitória ele reinicia.
+
+### o alvo e a primeira tela
+
+**Checagem:** Qual é o valor fixo da constante alvo?
+
+**Resposta e explicação:** 26.
+
+### fazer a pergunta da tela "jogando"
+
+**Checagem:** Qual condição protege as ações da partida?
+
+**Resposta e explicação:** A tela atual é jogando.
+
+### mudar o jogo pra dentro
+
+**Checagem:** O relógio de asteroides também deve perguntar se estamos jogando?
+
+**Resposta e explicação:** Sim, para não criar asteroides fora da partida.
+
+### criar a vitória e a derrota
+
+**Checagem:** Quais situações abrem vitória e fim?
+
+**Resposta e explicação:** Pontos atingem o alvo: vitória; vidas acabam: fim.
+
+### montar as telas de início, de vitória e de derrota
+
+**Checagem:** O que a dica de cada tela deve explicar?
+
+**Resposta e explicação:** Que Enter começa ou reinicia, conforme o momento.
+
+### o Enter comanda o jogo
+
+**Checagem:** Qual ação usar com Enter nas telas fim e vitoria?
+
+**Resposta e explicação:** Reiniciar o jogo.
+
+### testar do começo ao fim e publicar
+
+**Checagem:** O que precisa ser testado antes da entrega e publicação?
+
+**Resposta e explicação:** Começar, perder, reiniciar e ganhar uma partida.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

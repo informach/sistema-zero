@@ -88,6 +88,44 @@ const empty = {
 }
 
 describe('reconcileCreations', () => {
+  test('falha ao reler uma exclusão fica no item e não interrompe as outras descidas', async () => {
+    const h = harness()
+    const marks = createMemorySyncedMarks()
+    marks.set('ilegivel', 100, 1)
+    const report = await reconcileCreations({
+      local: [{ id: 'ilegivel', updatedAt: 100 }],
+      cloud: [
+        remote({ itemId: 'ilegivel', revision: 2, deletedAt: 200 }),
+        remote({ itemId: 'outra', revision: 3 }),
+      ],
+      marks,
+      ...h,
+      localUpdatedAt: async () => {
+        throw new Error('Registro ilegível')
+      },
+    })
+    expect(report.failed).toBe(1)
+    expect(report.downloaded).toBe(1)
+    expect(h.applied).toEqual(['outra'])
+    expect(h.deletedLocal).toEqual([])
+    expect(marks.revision('ilegivel')).toBe(1)
+  })
+
+  test('restauração recusada preserva a lápide até a gravação remota ter sucesso', async () => {
+    const h = harness({ failApply: new Set(['nave']) })
+    const marks = createMemorySyncedMarks()
+    const tombstone = { at: 500, sent: true, revision: 1 }
+    marks.setTombstone('nave', tombstone)
+    const report = await reconcileCreations({
+      local: [],
+      cloud: [remote({ itemId: 'nave', itemUpdatedAt: 900, revision: 2 })],
+      marks,
+      ...h,
+    })
+    expect(report.failed).toBe(1)
+    expect(marks.tombstone('nave')).toEqual(tombstone)
+    expect(marks.revision('nave')).toBeUndefined()
+  })
   test('só na nuvem → baixa; só local → sobe SEM marcar; iguais → nada e marca', async () => {
     const h = harness()
     const marks = createMemorySyncedMarks()

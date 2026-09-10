@@ -394,6 +394,10 @@ export function useSceneComponents({
     choose,
     apply,
     splitEdges,
+    pathPointCount:
+      selection?.mode === 'edge' && mesh?.kind === 'mesh'
+        ? meshComponentVertices(mesh, selection).length
+        : 0,
     createPath: (settings: ScenePathSettings) => {
       if (selection?.mode !== 'edge' || !editable || blocked) return
       const next = run((source) => {

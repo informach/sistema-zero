@@ -350,18 +350,17 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
         var book = molda && molda.flipbook;
         // Contrato desconhecido não é palpite: fica parado, como qualquer pintura.
         if (!book || book.contract !== 1) continue;
-        var columns = Math.round(num(book.columns, 0));
-        var rows = Math.round(num(book.rows, 0));
-        var fps = num(book.fps, 0);
+        var columns = book.columns;
+        var rows = book.rows;
+        var fps = book.fps;
         var cells = columns * rows;
-        if (columns < 1 || rows < 1 || !(fps > 0)) continue;
-        var frames = [];
-        var raw = Array.isArray(book.frames) ? book.frames : [];
-        for (var f = 0; f < raw.length; f++) {
-          var cell = Math.round(num(raw[f], -1));
-          if (cell >= 0 && cell < cells) frames.push(cell);
-        }
-        if (frames.length !== raw.length || !frames.length) continue;
+        if (!Number.isInteger(columns) || !Number.isInteger(rows) || columns < 1 || rows < 1 || cells > 256) continue;
+        if (!Number.isFinite(fps) || fps < 0.1 || fps > 60 || typeof book.loop !== 'boolean') continue;
+        var raw = book.frames;
+        // Bound before copying/scanning untrusted GLB extras. Same contract as the producer.
+        if (!Array.isArray(raw) || !raw.length || raw.length > 256) continue;
+        if (!raw.every(function (cell) { return Number.isInteger(cell) && cell >= 0 && cell < cells; })) continue;
+        var frames = raw.slice();
         found.push({
           material: material, columns: columns, rows: rows, frames: frames,
           fps: fps, loop: book.loop !== false, t: 0, step: -1

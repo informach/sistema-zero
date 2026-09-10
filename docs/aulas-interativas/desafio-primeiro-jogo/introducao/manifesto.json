@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "introducao",
   "title": "Seu lugar para criar",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Este é seu primeiro encontro com a comunidade. Você ainda não precisa saber programar.\n\nHoje você vai encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Este é seu primeiro encontro com a comunidade. Você ainda não precisa saber programar.\n\nHoje você vai encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -18,7 +18,7 @@
         "title": "Como você gostaria de começar?",
         "instructions": "Escolha o que mais dá vontade de fazer. Depois veja como essas partes se encontram.",
         "hints": ["Não existe uma preferência certa. Escolha o que desperta sua curiosidade."],
-        "required": false,
+        "required": true,
         "activity": {
           "type": "prediction",
           "choices": [
@@ -36,6 +36,25 @@
             }
           ],
           "outcome": "Esses caminhos fazem parte da comunidade. Hoje você conhece o espaço; no Dia 1 começa o jogo. Personalizar o perfil é uma escolha sua, e o curso continua disponível pelo menu Cursos."
+        },
+        "checkpoint": {
+          "prompt": "O que determina o acesso às ferramentas da Carreira?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Somente a aparência do avatar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Os cursos, publicações e regras indicadas no perfil."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somente a quantidade de moedas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Os cursos, publicações e regras indicadas no perfil."
         }
       }
     },
@@ -107,6 +126,264 @@
     {
       "key": "video-construir-5-1",
       "plannedVideo": "introducao-passo-05: gravar a demonstração \"Guardar e concluir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Os cursos, publicações e regras indicadas no perfil."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que determina o acesso às ferramentas da Carreira?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Os cursos, publicações e regras indicadas no perfil."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Somente a quantidade de moedas."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somente a aparência do avatar."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Os cursos, publicações e regras indicadas no perfil."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Conhecer seu perfil",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Não; é possível voltar a personalizar depois."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "É preciso terminar toda a personalização do avatar para começar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Sim; todas as peças precisam ser compradas."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Sim; o avatar precisa ficar igual ao exemplo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Não; é possível voltar a personalizar depois."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Não; é possível voltar a personalizar depois."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Conhecer o quarto",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O responsável, na Área dos pais."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Quem cuida das configurações da conta e da visibilidade do perfil?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A cor escolhida para o quarto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O responsável, na Área dos pais."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Qualquer colega no Clube."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O responsável, na Área dos pais."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Encontrar o curso e os materiais",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Abrir o curso e procurar o Dia 1 pelo nome."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como encontrar o primeiro passo do projeto?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Abrir o curso e procurar o Dia 1 pelo nome."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Abrir sempre a última aula da lista."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Procurar somente o quarto."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Abrir o curso e procurar o Dia 1 pelo nome."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Navegar pela aula",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["No botão Preciso de ajuda da seção, contando o que tentou."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Onde enviar uma dúvida sobre a etapa atual?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Só no título do projeto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Somente na escolha do avatar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "No botão Preciso de ajuda da seção, contando o que tentou."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "No botão Preciso de ajuda da seção, contando o que tentou."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Guardar e concluir",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Não; salvar guarda o trabalho e enviar registra a entrega pedida."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Salvar e enviar ao professor são a mesma coisa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Sim; mudar de seção sempre envia o projeto."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Não; salvar guarda o trabalho e enviar registra a entrega pedida."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Sim; abrir a aula já entrega tudo."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Não; salvar guarda o trabalho e enviar registra a entrega pedida."
+        }
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Teste e guarde sua criação",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Dia 1 do Desafio do Primeiro Jogo."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual é a próxima aula de construção que você deve procurar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Dia 1 do Desafio do Primeiro Jogo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A última aula de qualquer curso."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Uma aula escolhida somente pela posição na lista."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Dia 1 do Desafio do Primeiro Jogo."
+        }
+      }
     }
   ],
   "sections": [
@@ -115,10 +392,14 @@
       "title": "A criação de hoje",
       "objective": "Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -128,77 +409,109 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "Conhecer seu perfil",
       "objective": "Oi! Este espaço é seu. Abra o Perfil e veja o avatar. Se quiser, escolha peças, entre na Cabine de fotos e tire a foto. Você pode voltar depois para mudar. Não precisa terminar toda a personalização para começar seu jogo.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "Conhecer o quarto",
       "objective": "Abra o Quarto e experimente posicionar um item. As configurações que envolvem sua conta e a visibilidade do perfil ficam com seu responsável, na Área dos pais. Convide essa pessoa para conhecer o espaço com você.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "Encontrar o curso e os materiais",
       "objective": "No menu Cursos, abra o Desafio do Primeiro Jogo. Encontre o Caderno do Aluno e mostre o Mapa dos Pais ao seu responsável. Na lista de aulas, procure o Dia 1 pelo nome.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "Navegar pela aula",
       "objective": "Dentro da aula, veja o objetivo da seção e abra o índice. Você pode voltar a uma explicação, testar uma descoberta e continuar seu projeto. Para tirar uma dúvida, use Pedir ajuda nesta seção e conte o que tentou.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "Guardar e concluir",
       "objective": "Ao mudar seu projeto, espere o aviso de salvo antes de fechar. Quando a atividade pedir uma entrega, use Enviar para o professor. Para concluir a aula, confira as atividades essenciais e a entrega. Você não precisa deixar um vídeo rodando até o fim.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "fechamento",
       "title": "Teste e guarde sua criação",
       "objective": "Encontre o Dia 1 pelo nome e mostre onde você pediria ajuda se o projeto não funcionasse. Se quiser, deixe seu avatar com sua cara.",
       "intent": "closing",
-      "blockKeys": ["fechamento"],
+      "blockKeys": ["fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
     }
   ]
 }

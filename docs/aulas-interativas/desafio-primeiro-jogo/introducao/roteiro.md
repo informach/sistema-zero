@@ -129,7 +129,7 @@ No Dia 1 você vai montar a tela e dar movimento à nave.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -139,3 +139,61 @@ No Dia 1 você vai montar a tela e dar movimento à nave.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Encontrar a próxima aula, reconhecer onde seu trabalho é salvo e saber pedir ajuda.
+
+### Como você gostaria de começar?
+
+**Checagem:** O que determina o acesso às ferramentas da Carreira?
+
+**Resposta e explicação:** Os cursos, publicações e regras indicadas no perfil.
+
+### O que aconteceu?
+
+**Checagem:** O que determina o acesso às ferramentas da Carreira?
+
+**Resposta e explicação:** Os cursos, publicações e regras indicadas no perfil.
+
+### Conhecer seu perfil
+
+**Checagem:** É preciso terminar toda a personalização do avatar para começar?
+
+**Resposta e explicação:** Não; é possível voltar a personalizar depois.
+
+### Conhecer o quarto
+
+**Checagem:** Quem cuida das configurações da conta e da visibilidade do perfil?
+
+**Resposta e explicação:** O responsável, na Área dos pais.
+
+### Encontrar o curso e os materiais
+
+**Checagem:** Como encontrar o primeiro passo do projeto?
+
+**Resposta e explicação:** Abrir o curso e procurar o Dia 1 pelo nome.
+
+### Navegar pela aula
+
+**Checagem:** Onde enviar uma dúvida sobre a etapa atual?
+
+**Resposta e explicação:** No botão Preciso de ajuda da seção, contando o que tentou.
+
+### Guardar e concluir
+
+**Checagem:** Salvar e enviar ao professor são a mesma coisa?
+
+**Resposta e explicação:** Não; salvar guarda o trabalho e enviar registra a entrega pedida.
+
+### Teste e guarde sua criação
+
+**Checagem:** Qual é a próxima aula de construção que você deve procurar?
+
+**Resposta e explicação:** Dia 1 do Desafio do Primeiro Jogo.

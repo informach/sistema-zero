@@ -208,6 +208,7 @@ function Activity({
       setResult(data.attempt.result)
       callback.current?.(data.progress)
       setStatus('Atividade salva.')
+      player?.refreshAfterLearning?.()
       if (key)
         try {
           localStorage.removeItem(key)

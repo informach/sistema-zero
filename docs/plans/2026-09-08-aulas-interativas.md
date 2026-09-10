@@ -3,6 +3,8 @@
 Plano aprovado em 08/09/2026. Base: `d40f8fd93da1511ea52bf2a390dae995d0413f24`.
 Implementação isolada em `feat/aulas-interativas`; o workspace original contém trabalho de Molda de outra frente.
 
+> Atualização de 10/09/2026: a navegação livre deste plano foi substituída pelo [progresso real das seções](2026-09-10-progresso-secoes.md).
+
 ## Decisões de produto
 
 - Kids e Adultos compartilham player e contratos; apresentação respeita cada comunidade.

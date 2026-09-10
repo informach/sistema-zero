@@ -16,6 +16,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
+import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
 import type { GamificationDeltaView } from '../mappers/views'
 
@@ -46,6 +47,7 @@ export class SubmitQuizAttemptService {
     private readonly gamification: AwardGamificationService,
     private readonly newId: () => string,
     private readonly clock: () => Date,
+    private readonly sections: SectionProgressionService,
   ) {}
 
   async execute(
@@ -68,6 +70,12 @@ export class SubmitQuizAttemptService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    await this.sections.assertBlock(
+      { userId, accountId: accountId ?? userId },
+      lesson,
+      blockId,
+      privileged,
+    )
 
     // Aula EM PRODUÇÃO ("em breve"): o quiz não vai mais ao aluno, mas o id antigo
     // ainda resolveria — e a resposta do submit carrega o GABARITO

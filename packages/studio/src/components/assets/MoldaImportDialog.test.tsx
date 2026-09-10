@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
  * Modal "Trazer do Molda" (fluxo pull das criações 3D) + o botão no AssetsPanel.
@@ -52,11 +52,15 @@ const { setPersonalAssetsNamespace } = await import('../../asset-library/persona
 const { releaseDrawingSyncProfile } = await import('../../asset-library/personalSync')
 const { setStorageNamespace } = await import('../../state/persistence')
 const { useProjectStore } = await import('../../state/projectStore')
+const { StudioStoresContext } = await import('../../state/storesContext')
+const { createStudioStores } = await import('../../state/studioStores')
 const { StudioMoldaLibraryProvider } = await import('../../studio/molda-library')
 type MoldaLibraryAdapter = import('../../studio/molda-library').StudioMoldaLibraryAdapter
 type CreationSummary = import('../../studio/molda-library').StudioMoldaCreationSummary
 const { AssetsPanel } = await import('./AssetsPanel')
-const { filterMoldaCreations, moldaCreationNeeds3D } = await import('./MoldaImportDialog')
+const { MoldaImportDialog, filterMoldaCreations, moldaCreationNeeds3D } = await import(
+  './MoldaImportDialog'
+)
 const { projectHas3DConsumer } = await import('./has3DConsumer')
 
 function base64DataUrl(mime: string, bytes: number[]): string {
@@ -148,9 +152,15 @@ function renderPanel(adapter: MoldaLibraryAdapter | null) {
   )
 }
 
+async function click(element: Element) {
+  await act(async () => {
+    fireEvent.click(element)
+  })
+}
+
 async function openDialog(adapter: MoldaLibraryAdapter | null): Promise<void> {
   renderPanel(adapter)
-  fireEvent.click(await screen.findByRole('button', { name: /Trazer do Molda/ }))
+  await click(await screen.findByRole('button', { name: /Trazer do Molda/ }))
 }
 
 beforeEach(() => {
@@ -184,6 +194,39 @@ describe('AssetsPanel — botão "Trazer do Molda"', () => {
 })
 
 describe('MoldaImportDialog', () => {
+  it.each([
+    'project',
+    'close',
+  ] as const)('does not deliver a pending import after changing %s', async (change) => {
+    seedProject({ with3D: true })
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const delegate = fakeAdapter()
+    await openDialog(
+      fakeAdapter({
+        import: async (id) => {
+          await gate
+          return delegate.import(id)
+        },
+      }),
+    )
+    await screen.findByText('nave-cristal')
+    await click(screen.getAllByRole('button', { name: 'Adicionar ao projeto' })[0]!)
+    await act(async () => {
+      if (change === 'project')
+        useProjectStore.setState({ project: createEmptyProject('p2', 'Outro jogo') })
+      else cleanup()
+      release()
+      await gate
+    })
+    await waitFor(() => expect(delegate.importCalls).toEqual(['m1']))
+    expect(
+      useProjectStore.getState().project?.assets?.some((asset) => asset.libId === 'personal:m1'),
+    ).toBe(false)
+  })
+
   it('lista a galeria com o selo do tipo e a busca filtra sem acento/caixa', async () => {
     await openDialog(fakeAdapter())
     expect(await screen.findByText('nave-cristal')).not.toBeNull()
@@ -206,7 +249,7 @@ describe('MoldaImportDialog', () => {
     expect((buttons[0] as HTMLButtonElement).disabled).toBe(true)
     expect((buttons[1] as HTMLButtonElement).disabled).toBe(false)
     expect((buttons[2] as HTMLButtonElement).disabled).toBe(true)
-    fireEvent.click(buttons[1] as HTMLButtonElement)
+    await click(buttons[1] as HTMLButtonElement)
     await waitFor(() => expect(adapter.importCalls).toEqual(['t1']))
     await waitFor(() => {
       const asset = useProjectStore.getState().project?.assets?.[0]
@@ -219,6 +262,40 @@ describe('MoldaImportDialog', () => {
     expect(await screen.findByText('✓ no projeto')).not.toBeNull()
   })
 
+  it('requires the reported consent before importing and preserves the project link', async () => {
+    seedProject({ with3D: true })
+    const delegate = fakeAdapter()
+    const attempts: Array<string | undefined> = []
+    const adapter = fakeAdapter({
+      import: async (id, options) => {
+        attempts.push(options?.acceptedReview)
+        if (options?.acceptedReview !== 'revision-1')
+          return {
+            ok: false,
+            code: 'needs-review',
+            error: 'Confira',
+            review: { token: 'revision-1', losses: ['Uma peça escondida fica fora desta cópia.'] },
+          }
+        return delegate.import(id)
+      },
+    })
+    await openDialog(adapter)
+    await screen.findByText('nave-cristal')
+    await click(screen.getAllByRole('button', { name: 'Adicionar ao projeto' })[0]!)
+    await screen.findByRole('region', { name: 'O que muda nesta cópia' })
+    expect(
+      useProjectStore.getState().project!.assets?.some((asset) => asset.libId === 'personal:m1'),
+    ).toBe(false)
+    await click(screen.getByRole('button', { name: 'Aceitar mudanças e adicionar' }))
+    await waitFor(() =>
+      expect(
+        useProjectStore.getState().project!.assets?.some((asset) => asset.libId === 'personal:m1'),
+      ).toBe(true),
+    )
+    expect(attempts).toEqual([undefined, 'revision-1'])
+    expect(delegate.importCalls).toEqual(['m1'])
+  })
+
   it('COM o Jogo 3D instalado: o modelo entra como model3d (com o nome do arquivo) e o céu como environment3d', async () => {
     seedProject({ with3D: true })
     const adapter = fakeAdapter()
@@ -226,7 +303,7 @@ describe('MoldaImportDialog', () => {
     await screen.findByText('nave-cristal')
     expect(screen.queryByRole('note')).toBeNull()
     const buttons = screen.getAllByRole('button', { name: 'Adicionar ao projeto' })
-    fireEvent.click(buttons[0] as HTMLButtonElement)
+    await click(buttons[0] as HTMLButtonElement)
     await waitFor(() => expect(adapter.importCalls).toEqual(['m1']))
     await waitFor(() => {
       const asset = useProjectStore
@@ -242,7 +319,7 @@ describe('MoldaImportDialog', () => {
     const skyButton = screen
       .getAllByRole('button', { name: 'Adicionar ao projeto' })
       .at(-1) as HTMLButtonElement
-    fireEvent.click(skyButton)
+    await click(skyButton)
     await waitFor(() => expect(adapter.importCalls).toEqual(['m1', 's1']))
     await waitFor(() => {
       const sky = useProjectStore.getState().project?.assets?.find((a) => a.name === 'ceu-de-tarde')
@@ -259,7 +336,7 @@ describe('MoldaImportDialog', () => {
     })
     await openDialog(adapter)
     await screen.findByText('nave-cristal')
-    fireEvent.click(
+    await click(
       screen.getAllByRole('button', { name: 'Adicionar ao projeto' })[0] as HTMLButtonElement,
     )
     expect(await screen.findByRole('alert')).not.toBeNull()
@@ -280,9 +357,35 @@ describe('MoldaImportDialog', () => {
     expect(
       await screen.findByText('Não consegui abrir a sua galeria do Molda agora.'),
     ).not.toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    await click(screen.getByRole('button', { name: 'Tentar de novo' }))
     expect(await screen.findByText('nave-cristal')).not.toBeNull()
   })
+})
+
+it('importa e resolve colisão de nome na instância montada, preservando a store global', async () => {
+  const stores = createStudioStores()
+  const project = createEmptyProject('instancia-do-jogo', 'Jogo aberto')
+  stores.project.setState({ project })
+  expect(stores.project.getState().addAsset({ name: 'grama-do-molda', dataUrl: PNG })).toBeNull()
+  render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioMoldaLibraryProvider value={fakeAdapter()}>
+        <MoldaImportDialog onClose={() => {}} />
+      </StudioMoldaLibraryProvider>
+    </StudioStoresContext.Provider>,
+  )
+  await screen.findByText('grama-do-molda')
+  const importButton = screen
+    .getAllByRole('button', { name: 'Adicionar ao projeto' })
+    .find((button) => !(button as HTMLButtonElement).disabled)!
+  await click(importButton)
+  await screen.findByText('✓ no projeto')
+  expect(stores.project.getState().project?.assets?.map((asset) => asset.name)).toEqual([
+    'grama-do-molda',
+    'grama-do-molda-2',
+  ])
+  expect(stores.project.getState().project?.assets?.[1]?.libId).toBe('personal:t1')
+  expect(useProjectStore.getState().project?.assets).toEqual([])
 })
 
 describe('régua pura', () => {

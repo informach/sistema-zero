@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-04",
   "title": "O som escuta o pulo",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! O dino pula com teclado e clique, mas o salto ainda está silencioso.\n\nHoje você vai distinguir o comando de entrada do acontecimento que ele pode causar.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! O dino pula com teclado e clique, mas o salto ainda está silencioso.\n\nHoje você vai distinguir o comando de entrada do acontecimento que ele pode causar.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -18,7 +18,7 @@
         "title": "Som sem pulo?",
         "instructions": "O som está ligado à barra de espaço. Você aperta espaço quando o dino já está no ar. Faça sua previsão.",
         "hints": ["Pergunte ao bloco: ele está escutando a tecla ou o personagem?"],
-        "required": false,
+        "required": true,
         "activity": {
           "type": "prediction",
           "choices": [
@@ -36,6 +36,25 @@
             }
           ],
           "outcome": "O evento da tecla pode tocar o som mesmo sem outro salto. Ao ligar o som a Quando o sprite pular, ele acompanha o salto real, incluindo seta e toque."
+        },
+        "checkpoint": {
+          "prompt": "Por que ligar o som ao pulo é diferente de ligá-lo à tecla espaço?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Som e controles nunca se relacionam."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Pode haver comando sem pulo e pulo por outros controles."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Todo espaço produz um novo pulo, mesmo no ar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Pode haver comando sem pulo e pulo por outros controles."
         }
       }
     },
@@ -103,6 +122,198 @@
     {
       "key": "video-construir-4-1",
       "plannedVideo": "aula-04-passo-04: gravar a demonstração \"escolhe o seu som\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Distinguir o comando de entrada do acontecimento que ele pode causar."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Distinguir o comando de entrada do acontecimento que ele pode causar."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Distinguir o comando de entrada do acontecimento que ele pode causar."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Pode haver comando sem pulo e pulo por outros controles."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que ligar o som ao pulo é diferente de ligá-lo à tecla espaço?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Pode haver comando sem pulo e pulo por outros controles."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Todo espaço produz um novo pulo, mesmo no ar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Som e controles nunca se relacionam."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Pode haver comando sem pulo e pulo por outros controles."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a área que escuta o teclado",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Quando acontecer."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Em qual área fica o evento da tecla?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Ao iniciar, como uma ação única."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Dentro da cor do cenário."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Quando acontecer."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Quando acontecer."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: o som do pulo",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Pular com seta ou toque."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Ao ligar o som somente ao espaço, qual teste pode revelar o problema?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Trocar a cor da floresta."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Pular com seta ou toque."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Mudar o título da aula."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Pular com seta ou toque."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: o som está escutando a coisa errada",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Quando o sprite dino pular."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual evento acompanha todo pulo real do personagem?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Quando o sprite dino pular."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Quando apertar espaço, mesmo no ar."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A cada quadro do desenho."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Quando o sprite dino pular."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: escolhe o seu som",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Retirar o som anterior ao escolher o novo efeito."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como evitar dois sons tocando no mesmo pulo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Duplicar os dois sons em todos os eventos."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Tocar o som continuamente a cada quadro."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Retirar o som anterior ao escolher o novo efeito."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Retirar o som anterior ao escolher o novo efeito."
+        }
+      }
     }
   ],
   "sections": [
@@ -111,10 +322,14 @@
       "title": "A criação de hoje",
       "objective": "Distinguir o comando de entrada do acontecimento que ele pode causar.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -124,57 +339,81 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Distinguir o comando de entrada do acontecimento que ele pode causar.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "a área que escuta o teclado",
       "objective": "Em Áreas do projeto, adicione Quando acontecer. Em Jogo 2D, Controles, coloque Quando apertar a tecla dentro dele e escolha barra de espaço.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "o som do pulo",
       "objective": "Em Kit dino, coloque Tocar som de pulo dentro do evento da tecla. Clique no jogo e pule com espaço. Agora escute o que acontece nos outros controles.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "o som está escutando a coisa errada",
       "objective": "Teste espaço, seta para cima, clique e espaço no ar. Em Controles, adicione Quando o sprite pular e escolha dino. Mova o som para esse evento e apague o evento de tecla vazio. Repita os quatro testes.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "escolhe o seu som",
       "objective": "Em Jogo 2D, Som, experimente Tocar efeito dentro do evento de pulo. Tire o som anterior para não tocar dois. Escolha um efeito e pule de novo; o estilo do som é uma decisão sua.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "fechamento",
@@ -184,7 +423,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

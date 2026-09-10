@@ -58,6 +58,7 @@ import { GrantManualEntitlementService } from './application/grant-manual-entitl
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
 import { LearningService } from './application/learning/learning.service'
 import { LearningImportService } from './application/learning/learning-import.service'
+import { SectionProgressionService } from './application/learning/section-progression.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from './application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from './application/list-member-ratings/list-member-ratings.service'
@@ -349,6 +350,13 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
+  const sectionProgression = new SectionProgressionService(
+    learningRepository,
+    progress,
+    quizAttempts,
+    studioSubmissions,
+    clock,
+  )
   const learning = new LearningService(
     learningRepository,
     courses,
@@ -356,6 +364,7 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     clock,
     teacherThreads,
+    sectionProgression,
   )
   const getLesson = new GetLessonService(
     checkAccess,
@@ -368,7 +377,12 @@ export async function createApplication(env: Env): Promise<Application> {
     learning,
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses, progress)
-  const resolveEbook = new GetEbookDownloadService(checkAccess, courses, progress)
+  const resolveEbook = new GetEbookDownloadService(
+    checkAccess,
+    courses,
+    progress,
+    sectionProgression,
+  )
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
   const avatarRepo = new DrizzleAvatarRepository(db)
@@ -456,6 +470,7 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     () => randomUUID(),
     clock,
+    sectionProgression,
   )
   // Antes do submitStudio: o envio espelha o recado do aluno na conversa (histórico).
   const submitStudio = new SubmitStudioProjectService(
@@ -468,24 +483,28 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
     () => randomUUID(),
     clock,
+    sectionProgression,
   )
   const getStudioCarryover = new GetStudioCarryoverService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const getOwnStudioSubmission = new GetOwnStudioSubmissionService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const getShowcasePayload = new GetShowcasePayloadService(
     checkAccess,
     courses,
     progress,
     studioSubmissions,
+    sectionProgression,
   )
   const studioSubmissionsAdmin = new StudioSubmissionsAdminService(studioSubmissions, clock)
   const getCertificate = new GetCertificateService(checkAccess, courses, progress, certificates)

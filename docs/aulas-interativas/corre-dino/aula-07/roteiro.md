@@ -101,7 +101,7 @@ Na Aula 8, a tela de início vai convidar o jogador e permitir que ele comece.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -111,3 +111,47 @@ Na Aula 8, a tela de início vai convidar o jogador e permitir que ele comece.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Usar uma condição para executar a partida somente na tela jogando.
+
+### O relógio espera a partida?
+
+**Checagem:** Um relógio fora da condição pode executar antes da partida?
+
+**Resposta e explicação:** Pode; ele precisa perguntar se a tela é jogando
+
+### O que aconteceu?
+
+**Checagem:** Para que serve Se a tela é jogando?
+
+**Resposta e explicação:** Executar ações da partida apenas nesse momento.
+
+### dizer em qual tela o jogo abre
+
+**Checagem:** Qual tela deve ser definida ao iniciar?
+
+**Resposta e explicação:** inicio.
+
+### a pergunta da tela "jogando"
+
+**Checagem:** Qual condição deve proteger as ações da partida?
+
+**Resposta e explicação:** A tela atual é jogando.
+
+### mudar o jogo pra dentro
+
+**Checagem:** Além das ações de cada quadro, o que precisa da mesma condição?
+
+**Resposta e explicação:** O relógio que cria cactos.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

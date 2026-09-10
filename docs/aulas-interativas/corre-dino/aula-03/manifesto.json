@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-03",
   "title": "Um salto que volta ao chão",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu dino já aparece correndo na floresta, mas ainda não responde a você.\n\nHoje você vai relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Seu dino já aparece correndo na floresta, mas ainda não responde a você.\n\nHoje você vai relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -100,6 +100,168 @@
     {
       "key": "video-construir-3-1",
       "plannedVideo": "aula-03-passo-03: gravar a demonstração \"você escolhe a altura\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "A força inicia o salto e a gravidade muda o movimento, trazendo o dino de volta."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como a força do pulo e a gravidade se relacionam?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A força inicia o salto e a gravidade muda o movimento, trazendo o dino de volta."
+            },
+            {
+              "id": "opcao-2",
+              "label": "As duas só escolhem a cor do dino."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A gravidade mantém o dino subindo para sempre."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A força inicia o salto e a gravidade muda o movimento, trazendo o dino de volta."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: dar o comando de pulo ao dino",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Depois da floresta e antes de desenhar o dino."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Onde entra Controlar o dinossauro?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Depois de todos os desenhos, fora do jogo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Dentro da descrição para leitor de tela."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Depois da floresta e antes de desenhar o dino."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Depois da floresta e antes de desenhar o dino."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: a gravidade traz o dino pro chão",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["dino."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual sprite deve receber a gravidade nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "cactos."
+            },
+            {
+              "id": "opcao-2",
+              "label": "dino."
+            },
+            {
+              "id": "opcao-3",
+              "label": "jogador, mesmo que esse sprite não exista."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "dino."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: você escolhe a altura",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Mudar a força e manter a gravidade durante a comparação."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como comparar forças de pulo sem confundir os resultados?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Mudar a força e manter a gravidade durante a comparação."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mudar força, gravidade e tela ao mesmo tempo."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Escolher sempre o maior valor sem jogar."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Mudar a força e manter a gravidade durante a comparação."
+        }
+      }
     }
   ],
   "sections": [
@@ -108,10 +270,14 @@
       "title": "A criação de hoje",
       "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -121,47 +287,67 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "dar o comando de pulo ao dino",
       "objective": "Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15. Teste espaço: ele ainda não está pronto para pular do chão.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "a gravidade traz o dino pro chão",
       "objective": "Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino. Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "você escolhe a altura",
       "objective": "Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais. Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "fechamento",
@@ -171,7 +357,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

@@ -169,9 +169,8 @@ export function bevelMeshEdge(
  * Chanfra várias quinas, uma de cada vez, sobre o resultado da anterior.
  *
  * ⚠️ Cada chanfro reescreve a topologia, então os IDS de linha mudam entre as passadas:
- * a identidade que atravessa é o PAR DE PONTOS. Uma quina que desapareceu (porque a
- * anterior a consumiu, o caso de duas quinas vizinhas) recusa a operação INTEIRA, em vez
- * de deixar a peça pela metade. Multisseleção é atômica, como em todo o resto.
+ * a identidade que atravessa é o PAR DE PONTOS. Quinas vizinhas são recusadas antes
+ * de reescrever a primeira face. Multisseleção é atômica, como em todo o resto.
  */
 export function bevelMeshEdges(
   mesh: SceneMeshGeometry,
@@ -188,6 +187,17 @@ export function bevelMeshEdges(
     requireScene(incident?.length === 2, 'edges', 'Escolha linhas entre duas faces da peça.')
     return [incident![0]!.a, incident![0]!.b] as const
   })
+  if (depth !== 0) {
+    const points = new Set<string>()
+    for (const pair of pairs) {
+      requireScene(
+        pair.every((id) => !points.has(id)),
+        'edges',
+        'Escolha quinas separadas, sem pontos em comum.',
+      )
+      for (const id of pair) points.add(id)
+    }
+  }
   let current = mesh
   const edgeIds: string[] = []
   for (const [a, b] of pairs) {

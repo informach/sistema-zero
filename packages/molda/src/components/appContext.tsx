@@ -24,6 +24,8 @@ export interface MoldaHostAdapter {
    * foi levada ao Estúdio (o host decide pela guarda dele). Nunca chamado ao abrir.
    */
   resyncToStudio?: (asset: MoldaExportedAsset) => Promise<MoldaStudioResyncResult>
+  /** Check the existing link before encoding or asking to review a Studio copy. */
+  canResyncToStudio?: (creationId: string) => Promise<boolean>
   /** A lista de criações mudou (criar, renomear, apagar, salvar, releitura). */
   onChange?: () => void
   /**

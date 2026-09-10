@@ -5,6 +5,7 @@ import { MOLDA_LIMITS } from '../core/limits'
 import { structuredBytes } from '../core/structuredBytes'
 import type { MoldaSceneDocument } from '../scene/document'
 import { type LegacyMigrationIssue, migrateLegacyModel } from '../scene/migrateLegacy'
+import { readSceneDocument } from '../scene/readDocument'
 import { SceneValidationError } from '../scene/validation'
 import { MoldaStorageBudgetError } from './guardedWrite'
 import { inspectSceneBlobRecords } from './sceneBlobStorage'
@@ -55,7 +56,33 @@ export async function promoteLegacyScene(
   expectedUpdatedAt: number,
   maxBytes = MOLDA_LIMITS.maxGalleryBytes,
 ): Promise<ScenePromotionResult> {
-  if (!Number.isFinite(expectedUpdatedAt) || !Number.isSafeInteger(maxBytes) || maxBytes < 1) {
+  return promoteScene(withStore, id, expectedUpdatedAt, maxBytes)
+}
+
+/** Cloud reconciliation has already resolved the conflict; replace v1 and retain its raw records atomically. */
+export async function adoptCloudScene(
+  withStore: UseStore,
+  document: MoldaSceneDocument,
+  expectedUpdatedAt: number | null,
+  maxBytes = MOLDA_LIMITS.maxGalleryBytes,
+): Promise<ScenePromotionResult> {
+  const read = readSceneDocument(document)
+  if (read.status !== 'valid') throw new SceneValidationError(document.id, 'Cena remota inválida.')
+  return promoteScene(withStore, read.document.id, expectedUpdatedAt, maxBytes, read.document)
+}
+
+async function promoteScene(
+  withStore: UseStore,
+  id: string,
+  expectedUpdatedAt: number | null,
+  maxBytes: number,
+  incoming?: MoldaSceneDocument,
+): Promise<ScenePromotionResult> {
+  if (
+    (expectedUpdatedAt !== null && !Number.isFinite(expectedUpdatedAt)) ||
+    !Number.isSafeInteger(maxBytes) ||
+    maxBytes < 1
+  ) {
     return Promise.reject(new TypeError('Revisão ou orçamento inválido.'))
   }
   const outcome = await withStore(
@@ -89,6 +116,10 @@ export async function promoteLegacyScene(
             const originalsKey = `${SCENE_RECOVERY_KEY_PREFIX}${id}`
             const summaryKey = `${SCENE_SUMMARY_KEY_PREFIX}${id}`
             if (records.has(documentKey)) {
+              if (incoming) {
+                result = { status: 'conflict' }
+                return
+              }
               // This branch never writes. Verify the captured blob layout after the transaction,
               // not by awaiting hashes in a live IDB callback or falling back to legacy data.
               const captured = new Map<string, unknown>()
@@ -106,12 +137,15 @@ export async function promoteLegacyScene(
                 'Atualização incompleta; cópia original preservada.',
               )
             const sourceKey = storedDocumentKey(records, id)
-            if (sourceKey === null) return
-            const read = readMoldaDocumentForId(records.get(sourceKey), id)
-            if (read.status === 'unsupported') throw new MoldaUnsupportedVersionError(read.version)
-            if (read.status !== 'valid' || read.asset.kind !== 'model')
-              throw new SceneValidationError(sourceKey, 'Modelo de origem inválido.')
-            if (read.asset.updatedAt !== expectedUpdatedAt) {
+            if (sourceKey === null && !incoming) return
+            const read =
+              sourceKey === null ? null : readMoldaDocumentForId(records.get(sourceKey), id)
+            if (read?.status === 'unsupported') throw new MoldaUnsupportedVersionError(read.version)
+            if (read && (read.status !== 'valid' || read.asset.kind !== 'model'))
+              throw new SceneValidationError(sourceKey ?? id, 'Modelo de origem inválido.')
+            const legacy =
+              read?.status === 'valid' && read.asset.kind === 'model' ? read.asset : null
+            if ((legacy?.updatedAt ?? null) !== expectedUpdatedAt) {
               result = { status: 'conflict' }
               return
             }
@@ -134,7 +168,10 @@ export async function promoteLegacyScene(
               if (version.status === 'unsupported')
                 throw new MoldaUnsupportedVersionError(version.version)
             }
-            const { document, issues } = migrateLegacyModel(read.asset)
+            const migrated = !incoming && legacy ? migrateLegacyModel(legacy) : null
+            const document = incoming ?? migrated?.document
+            if (!document) return
+            const issues = incoming ? [] : (migrated?.issues ?? [])
             const originals: SceneOriginals = {
               formatVersion: 2,
               kind: 'molda-scene-originals',

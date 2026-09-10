@@ -46,6 +46,30 @@ function move(x: number) {
   return matrix
 }
 
+test('thumbnail metadata preserves a pending pose through saving and recording', async () => {
+  const f = setup()
+  try {
+    expect(f.gesture.begin(['body'])).toBe(true)
+    expect(f.gesture.preview(move(2))).toBe(true)
+    f.gesture.end(true)
+    const pose = f.gesture.getSnapshot().pose!
+    f.editor.getState().setThumb('data:image/png;base64,thumb')
+    await f.editor.getState().flush()
+    expect(f.gesture.getSnapshot().pending).toBe(true)
+    expect(f.gesture.getSnapshot().pose).toBe(pose)
+    expect(f.gesture.record()).toBe(true)
+    expect(
+      prepareSceneAnimation(f.editor.getState().asset, 'clip').sample(0, false).worldMatrices,
+    ).toEqual(pose.worldMatrices)
+    expect(f.editor.getState().asset.thumb).toBe('data:image/png;base64,thumb')
+    f.editor.getState().undo()
+    expect(f.editor.getState().asset.animations).toEqual(f.source.animations)
+    expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
 test('120 pose previews do not write, replace or autosave; explicit recording creates one undo and matches the preview exactly', async () => {
   const f = setup()
   try {
@@ -142,7 +166,6 @@ test.each([
   'preview',
   'clip',
   'revision',
-  'thumbnail',
   'error',
   'disconnect',
 ] as const)('%s invalidates an outstanding draft and prevents late automatic writes', (kind) => {
@@ -156,7 +179,6 @@ test.each([
     if (kind === 'preview') f.player.setPreview(f.source, { ...sceneAnimationClip(), id: 'draft' })
     if (kind === 'clip') f.player.setClip(null, null)
     if (kind === 'revision') f.editor.getState().replace({ ...f.source, name: 'Nova revisão' })
-    if (kind === 'thumbnail') f.editor.getState().setThumb('data:image/png;base64,thumb')
     if (kind === 'error') f.player.reportError(new Error('Render failed'))
     if (kind === 'disconnect') f.disconnect()
     const current = f.editor.getState().asset

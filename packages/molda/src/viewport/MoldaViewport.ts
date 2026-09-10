@@ -602,6 +602,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.backMaterial.dispose()
     this.thumbnail.dispose()
     this.renderer.dispose()
+    this.renderer.forceContextLoss()
   }
 
   requestFrame(): void {

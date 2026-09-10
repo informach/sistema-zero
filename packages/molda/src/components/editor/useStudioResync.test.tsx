@@ -1,8 +1,15 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, renderHook, waitFor } from '@testing-library/react'
+import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { createSkyAsset, createTextureAsset, type MoldaAsset } from '../../core/model'
 import type { MoldaExportedAsset } from '../../export/studioLibrary'
-import { exportLoadedAssetForStudio } from '../../export/studioLibrary'
+import {
+  exportLoadedAssetForStudio,
+  exportLoadedSceneForStudio,
+  sameSceneStudioContent,
+} from '../../export/studioLibrary'
+import { migrateLegacyModel } from '../../scene/migrateLegacy'
+import { setMoldaStorageNamespace } from '../../state/persistence'
+import { makeModel } from '../../testing/fixtures'
 import { useStudioResync } from './useStudioResync'
 
 /**
@@ -34,6 +41,160 @@ function harness(idleMs = 60) {
 }
 
 describe('useStudioResync', () => {
+  it('does not encode or request consent for a creation that has never been linked to Studio', async () => {
+    const first = migrateLegacyModel(makeModel()).document
+    const encode = mock(exportLoadedSceneForStudio),
+      send = mock(async () => ({ updated: true as const }))
+    const view = renderHook(() =>
+      useStudioResync({ savedAsset: first, exportAsset: encode, send, canSend: async () => false }),
+    )
+    try {
+      await act(async () => {
+        expect(
+          await view.result.current.prepareExit({ ...first, name: 'nova', updatedAt: 2 }),
+        ).toBe(true)
+      })
+      expect(encode).not.toHaveBeenCalled()
+      expect(send).not.toHaveBeenCalled()
+      expect(view.result.current.review).toBeNull()
+    } finally {
+      view.unmount()
+    }
+  })
+
+  it('unmount after switching profiles exports in the original profile', async () => {
+    setMoldaStorageNamespace('resync-a')
+    const first = createTextureAsset({ name: 'perfil-a', size: 16, now: 1 })
+    const namespaces: string[] = []
+    const view = renderHook(
+      ({ savedAsset }) =>
+        useStudioResync({
+          savedAsset,
+          idleMs: 60_000,
+          send: async () => ({ updated: true }),
+          exportAsset: async (asset, context) => {
+            namespaces.push(context.namespace)
+            return exportLoadedAssetForStudio(asset, context)
+          },
+        }),
+      { initialProps: { savedAsset: first } },
+    )
+    try {
+      view.rerender({ savedAsset: { ...first, updatedAt: 2 } })
+      setMoldaStorageNamespace('resync-b')
+      view.unmount()
+      await waitFor(() => expect(namespaces).toEqual(['resync-a']))
+    } finally {
+      view.unmount()
+      setMoldaStorageNamespace('')
+    }
+  })
+
+  it('a newer save cancels the actual scene export before delivery and only sends the latest creation', async () => {
+    const first = migrateLegacyModel(makeModel()).document
+    const sent: MoldaExportedAsset[] = [],
+      signals: AbortSignal[] = [],
+      failures: unknown[] = []
+    const view = renderHook(() =>
+      useStudioResync({
+        savedAsset: first,
+        exportAsset: (asset, context) => {
+          signals.push(context.signal!)
+          return exportLoadedSceneForStudio(asset, context)
+        },
+        send: async (asset) => {
+          sent.push(asset)
+          return { updated: true }
+        },
+        onFailure: (message) => {
+          failures.push(message)
+        },
+      }),
+    )
+    try {
+      await act(async () => {
+        const old = view.result.current.flush({ ...first, name: 'anterior', updatedAt: 2 })
+        await Promise.resolve()
+        expect(signals).toHaveLength(1)
+        const latest = view.result.current.flush({ ...first, name: 'mais-nova', updatedAt: 3 })
+        expect(signals[0]!.aborted).toBe(true)
+        await Promise.all([old, latest])
+      })
+      expect(sent.map((asset) => asset.name)).toEqual(['mais-nova'])
+      expect(failures).toEqual([])
+    } finally {
+      view.unmount()
+    }
+  })
+  it('reviews a real scene export before resync and invalidates consent on a later save', async () => {
+    const first = migrateLegacyModel(makeModel()).document
+    const sent: MoldaExportedAsset[] = []
+    const view = renderHook(() =>
+      useStudioResync({
+        savedAsset: first,
+        exportAsset: exportLoadedSceneForStudio,
+        sameContent: sameSceneStudioContent,
+        send: async (asset) => {
+          sent.push(asset)
+          return { updated: true }
+        },
+        idleMs: 60_000,
+      }),
+    )
+    const hidden = {
+      ...first,
+      updatedAt: first.updatedAt + 1,
+      nodes: first.nodes.map((node, index) => (index === 0 ? { ...node, hidden: true } : node)),
+    }
+    await act(async () => {
+      expect(await view.result.current.prepareExit(hidden)).toBe(false)
+    })
+    expect(sent).toHaveLength(0)
+    expect(view.result.current.review?.losses.some((line) => line.includes('escondid'))).toBe(true)
+    const approve = view.result.current.approveReview
+    await act(async () => {
+      await view.result.current.flush({ ...hidden, name: 'nova', updatedAt: hidden.updatedAt + 1 })
+    })
+    await act(async () => {
+      await approve()
+    })
+    expect(sent).toHaveLength(0)
+    await act(async () => {
+      await view.result.current.approveReview()
+    })
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.name).toBe('nova')
+  })
+
+  it('thumbnail saves preserve a pending authoring send and never send another model copy', async () => {
+    const first = migrateLegacyModel(makeModel()).document
+    const sent: MoldaExportedAsset[] = []
+    const view = renderHook(
+      ({ savedAsset }) =>
+        useStudioResync({
+          savedAsset,
+          exportAsset: exportLoadedSceneForStudio,
+          sameContent: sameSceneStudioContent,
+          send: async (asset) => {
+            sent.push(asset)
+            return { updated: true }
+          },
+          idleMs: 20,
+        }),
+      { initialProps: { savedAsset: first } },
+    )
+    const edited = { ...first, updatedAt: first.updatedAt + 1, name: 'nova' }
+    view.rerender({ savedAsset: edited })
+    view.rerender({ savedAsset: { ...edited, updatedAt: edited.updatedAt + 1, thumb: 'foto' } })
+    await waitFor(() => expect(sent).toHaveLength(1))
+    view.rerender({ savedAsset: { ...edited, updatedAt: edited.updatedAt + 2, thumb: 'outra' } })
+    await act(async () => {
+      await view.result.current.flush()
+    })
+    view.unmount()
+    expect(sent).toHaveLength(1)
+    expect(sent[0]!.name).toBe('nova')
+  })
   it('serializes worker export and delivery; flush waits for the newest saved sky', async () => {
     const first = createSkyAsset({ name: 'ceu', now: 1 })
     const delivered: string[] = []
@@ -57,8 +218,8 @@ describe('useStudioResync', () => {
       }),
     )
     const firstFlush = result.current.flush({ ...first, name: 'ceu-1', updatedAt: 2 })
-    const lastFlush = result.current.flush({ ...first, name: 'ceu-2', updatedAt: 3 })
     await waitFor(() => expect(delivered).toEqual(['ceu-1.hdr']))
+    const lastFlush = result.current.flush({ ...first, name: 'ceu-2', updatedAt: 3 })
     releaseFirst()
     await Promise.all([firstFlush, lastFlush])
     expect(delivered).toEqual(['ceu-1.hdr', 'ceu-2.hdr'])

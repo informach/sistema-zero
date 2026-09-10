@@ -63,14 +63,18 @@ export type StudioMoldaImportResult =
       ok: false
       error: string
       /** Razão tipada opcional — `not-found` faz a modal remover o card. */
-      code?: 'not-found' | 'too-big' | 'encode-failed'
+      code?: 'not-found' | 'too-big' | 'encode-failed' | 'needs-review'
+      review?: { token: string; losses: string[] }
     }
 
 export interface StudioMoldaLibraryAdapter {
   /** Todas as criações do perfil, mais recente primeiro. Rejeição → erro na modal. */
   list(): Promise<StudioMoldaCreationSummary[]>
   /** Exporta + grava na biblioteca pessoal; o Studio faz o `addAsset` com o retorno. */
-  import(creationId: string): Promise<StudioMoldaImportResult>
+  import(
+    creationId: string,
+    options?: { acceptedReview?: string },
+  ): Promise<StudioMoldaImportResult>
 }
 
 const StudioMoldaLibraryContext = createContext<StudioMoldaLibraryAdapter | null>(null)

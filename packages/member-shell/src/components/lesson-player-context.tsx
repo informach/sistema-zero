@@ -9,6 +9,9 @@ import { createContext, useContext } from 'react'
  * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
+  refreshAfterLearning?: () => void
+  sectionProjectCheck?: { sectionId: string; revision: string; blockId: string }
+  submissionAllowedBlockIds?: string[]
   learningProgress?: LessonLearningProgress
   onLearningProgress?: (progress: LearningBlockProgress) => void
   lessonId: string

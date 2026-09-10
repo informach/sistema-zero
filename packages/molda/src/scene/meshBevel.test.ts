@@ -156,6 +156,23 @@ test('duas quinas opostas do cubo são chanfradas na mesma ação, e o sólido c
   // A ordem não muda o resultado: chanfrar quinas separadas é comutativo.
   const reversed = bevelMeshEdges(mesh, [opposite as string, first as string], 0.1)
   expect(Object.keys(reversed.mesh.faces)).toHaveLength(8)
+  const surfaces = (value: typeof mesh) =>
+    Object.values(value.faces)
+      .map((face) => {
+        const corners = face.corners.map((corner) =>
+          JSON.stringify([
+            value.vertices[corner.vertexId]!.map((n) => Number(n.toFixed(10))),
+            corner.uv.map((n) => Number(n.toFixed(10))),
+          ]),
+        )
+        // Ignore generated IDs/start corner, retaining orientation, coordinates, UV and material.
+        return JSON.stringify([
+          face.materialId,
+          corners.map((_, i) => [...corners.slice(i), ...corners.slice(0, i)].join('|')).sort()[0],
+        ])
+      })
+      .sort()
+  expect(surfaces(reversed.mesh)).toEqual(surfaces(result))
 })
 
 test('duas quinas vizinhas recusam a ação INTEIRA, sem deixar a peça pela metade', () => {
@@ -171,7 +188,11 @@ test('duas quinas vizinhas recusam a ação INTEIRA, sem deixar a peça pela met
     return [edge.a, edge.b].some((id) => id === firstEdge.a || id === firstEdge.b)
   }) as string
   const before = structuredClone(mesh)
-  expect(() => bevelMeshEdges(mesh, [first, neighbor], 0.1)).toThrow('quinas separadas')
+  let allocated = 0
+  expect(() =>
+    bevelMeshEdges(mesh, [first, neighbor], 0.1, () => `allocated:${allocated++}`),
+  ).toThrow('quinas separadas')
+  expect(allocated).toBe(0)
   expect(mesh).toEqual(before)
 })
 

@@ -5,7 +5,15 @@
  * O playground liga a capacidade com `?oficina=app`; ligá-la de verdade para a criança é
  * decisão de rollout, não deste teste.
  */
+import { readFile, writeFile } from 'node:fs/promises'
 import { expect, type Page, test } from '@playwright/test'
+import { unzipSync } from 'fflate'
+import sharp from 'sharp'
+import { COPY } from '../src/core/copy'
+import type { MoldaSceneDocument } from '../src/scene/document'
+import { sceneToJson } from '../src/scene/documentJson'
+import { animatedScene } from '../src/testing/sceneAnimation'
+import { makeSceneSkinFixture } from '../src/testing/sceneSkin'
 
 /** Chaves do IndexedDB do playground: é assim que se prova a promoção, não pela tela. */
 async function storageKeys(page: Page): Promise<string[]> {
@@ -157,4 +165,328 @@ test('a oficina cabe em tablet e em celular sem esconder as ferramentas', async 
     expect(overflow).toBeLessThanOrEqual(1)
   }
   expect(pageErrors).toEqual([])
+})
+
+async function downloaded(page: Page, button: string) {
+  const [file] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: button, exact: true }).click(),
+  ])
+  const path = await file.path()
+  if (!path) throw new Error('Download missing')
+  return { name: file.suggestedFilename(), bytes: await readFile(path) }
+}
+
+test('exporta glTF, OBJ com materiais, PNG limpo e apresentação que gira sem internet', async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90_000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/?oficina=app')
+  await createModel(page, 'exportacoes-e2e')
+  await expect(page.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: 'Exportar GLB', exact: true }).click()
+  const format = page.getByLabel('Formato da cópia')
+  await format.selectOption('gltf')
+  await page.getByRole('button', { name: 'Preparar cópia', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Baixar cópia', exact: true })).toBeEnabled()
+  const gltf = await downloaded(page, 'Baixar cópia')
+  expect(gltf.name).toBe('exportacoes-e2e.gltf')
+  expect(JSON.parse(gltf.bytes.toString()).asset.version).toBe('2.0')
+  await format.selectOption('obj')
+  await page.getByRole('button', { name: 'Preparar cópia', exact: true }).click()
+  await expect(page.getByText('O que muda nesta cópia', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Baixar cópia', exact: true })).toBeDisabled()
+  await page.getByLabel('Li as mudanças e quero baixar esta cópia.').check()
+  const obj = await downloaded(page, 'Baixar cópia')
+  expect(Object.keys(unzipSync(obj.bytes))).toContain('modelo.mtl')
+  await format.selectOption('png')
+  await page.getByRole('button', { name: 'Preparar cópia', exact: true }).click()
+  await expect(page.getByAltText('Prévia da foto para exportar')).toBeVisible()
+  const png = await downloaded(page, 'Baixar cópia')
+  expect(png.name).toBe('exportacoes-e2e.png')
+  const metadata = await sharp(png.bytes).metadata(),
+    stats = await sharp(png.bytes).stats()
+  expect([metadata.width, metadata.height]).toEqual([1024, 1024])
+  expect(stats.channels[0]!.stdev).toBeGreaterThan(5)
+  await format.selectOption('presentation')
+  await page.getByRole('button', { name: 'Preparar cópia', exact: true }).click()
+  await expect(page.getByAltText('Prévia da foto para exportar')).toBeVisible({ timeout: 30_000 })
+  const presentation = await downloaded(page, 'Baixar cópia')
+  await page.getByRole('button', { name: 'Voltar à oficina', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
+  const offline = await browser.newContext({ offline: true })
+  try {
+    const viewer = await offline.newPage()
+    await viewer.setContent(presentation.bytes.toString())
+    await expect(viewer.getByRole('heading', { name: 'exportacoes-e2e' })).toBeVisible()
+    const image = viewer.locator('#model'),
+      first = await image.getAttribute('src')
+    await viewer.getByRole('button', { name: 'Girar para a direita' }).click()
+    expect(await image.getAttribute('src')).not.toBe(first)
+    await expect
+      .poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth))
+      .toBe(384)
+  } finally {
+    await offline.close()
+  }
+  expect(errors).toEqual([])
+})
+
+test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina nova na galeria', async ({
+  page,
+}) => {
+  await page.goto('/?oficina=app')
+  await createModel(page, 'backup-e2e')
+  const reference = await sharp({
+    create: { width: 20, height: 20, channels: 4, background: '#ef2244' },
+  })
+    .png()
+    .toBuffer()
+  await page.getByRole('button', { name: 'Imagem de apoio', exact: true }).click()
+  await page
+    .locator('input[name="molda-reference-file"]')
+    .setInputFiles({ name: 'apoio.png', mimeType: 'image/png', buffer: reference })
+  await expect(page.getByText('apoio.png', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Voltar ao modelo', exact: true }).click()
+  await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
+  await page.getByRole('combobox', { name: 'Passo do movimento', exact: true }).selectOption('0.5')
+  await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
+  await backToGallery(page)
+  const backup = await downloaded(page, 'Baixar tudo')
+  await page
+    .locator('input[name="molda-backup"]')
+    .setInputFiles({ name: backup.name, mimeType: 'application/zip', buffer: backup.bytes })
+  await expect(page.getByRole('button', { name: 'Modelo backup-e2e-2', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Modelo backup-e2e-2', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mostrar grade', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.getByRole('combobox', { name: 'Passo do movimento', exact: true })).toHaveValue(
+    'free',
+  )
+  await page.getByRole('button', { name: 'Imagem de apoio', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Escolher imagem', exact: true })).toBeVisible()
+  await expect(page.getByText('apoio.png', { exact: true })).toHaveCount(0)
+})
+
+test('falha ao carregar a oficina preserva a criação e oferece recuperação por recarregamento', async ({
+  page,
+}) => {
+  let failed = false
+  await page.route(/\/SceneWorkshopHost(?:\.tsx|-[\w-]+\.js)(?:\?.*)?$/, async (route) => {
+    if (!failed) {
+      failed = true
+      await route.abort()
+    } else await route.continue()
+  })
+  await page.goto('/?oficina=app')
+  await createModel(page, 'recuperar-e2e')
+  await expect(page.getByRole('button', { name: 'Recarregar página', exact: true })).toBeVisible()
+  expect(failed).toBe(true)
+  await page.getByRole('button', { name: 'Recarregar página', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Modelo recuperar-e2e', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Modelo recuperar-e2e', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Editar malha' })).toBeVisible()
+})
+
+async function restoreProject(page: Page, source: MoldaSceneDocument) {
+  await page.goto('/?oficina=app')
+  await expect(page.getByRole('heading', { name: 'Minhas criações 3D' })).toBeVisible()
+  await page.locator('input[name="molda-backup"]').setInputFiles({
+    name: 'projeto.molda.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(sceneToJson(source))),
+  })
+  await page.getByRole('button', { name: `Modelo ${source.name}`, exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
+}
+
+async function nativeProject(page: Page) {
+  const file = await downloaded(page, 'Baixar projeto')
+  return JSON.parse(file.bytes.toString())
+}
+
+test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movimento pronto vira clipe editável', async ({
+  page,
+}) => {
+  test.setTimeout(60_000)
+  const source = { ...animatedScene(), name: 'pintura-e2e', animations: [] }
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await restoreProject(page, source)
+  await page.getByRole('button', { name: COPY.scene.select('corpo'), exact: true }).click()
+  await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
+  const material = source.materials.find((entry) => entry.colorImageId === source.images[0]!.id)!
+  await page.getByRole('combobox', { name: COPY.scene.materialChoose }).selectOption(material.id)
+  await page.getByRole('button', { name: COPY.scene.paintLayer, exact: true }).click()
+  const before = await nativeProject(page)
+  await page.locator('select[name="paintColorIndex"]').selectOption('2')
+  const canvas = page.getByRole('button', { name: COPY.scene.paintCanvas, exact: true })
+  await canvas.scrollIntoViewIfNeeded()
+  const box = (await canvas.boundingBox())!
+  await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.25)
+  await page.mouse.down()
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.7, { steps: 5 })
+  await page.mouse.up()
+  const painted = await nativeProject(page)
+  expect(painted.images).not.toEqual(before.images)
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect((await nativeProject(page)).images).toEqual(before.images)
+  await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
+  expect((await nativeProject(page)).images).toEqual(painted.images)
+  await page.getByRole('button', { name: COPY.scene.paintFinish, exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.animationMode, exact: true }).click()
+  await page.getByText(COPY.scene.animationPresetTitle, { exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.animationPresetPrepare, exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.animationPresetConfirm, exact: true }).click()
+  const animated = await nativeProject(page)
+  expect(animated.animations).toHaveLength(1)
+  expect(animated.animations[0].tracks.length).toBeGreaterThan(0)
+  await page.getByRole('button', { name: COPY.scene.animationPlay, exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: COPY.scene.animationPause, exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: COPY.scene.animationPause, exact: true }).click()
+  await backToGallery(page)
+  await page.getByRole('button', { name: 'Modelo pintura-e2e', exact: true }).click()
+  const reopened = await nativeProject(page)
+  expect(reopened.images).toEqual(painted.images)
+  expect(reopened.animations).toEqual(animated.animations)
+  expect(errors).toEqual([])
+})
+
+test('vincular uma malha aos apoios e desfazer usa a oficina pública e exporta ossos portáteis', async ({
+  page,
+}) => {
+  test.setTimeout(60_000)
+  const source = { ...makeSceneSkinFixture().document, name: 'ossos-e2e' }
+  await restoreProject(page, source)
+  await page
+    .getByRole('button', { name: COPY.scene.select(source.nodes[0]!.name), exact: true })
+    .click()
+  await page.getByRole('button', { name: COPY.scene.skinBinding.open, exact: true }).click()
+  const modal = page.getByRole('dialog', { name: COPY.scene.skinBinding.title })
+  await modal.getByRole('checkbox', { name: `Braço ${COPY.scene.skinBinding.group}` }).check()
+  await modal.getByRole('checkbox', { name: `Antebraço ${COPY.scene.skinBinding.locator}` }).check()
+  await modal.getByRole('button', { name: COPY.scene.skinBinding.prepare, exact: true }).click()
+  await modal.getByRole('button', { name: COPY.scene.skinBinding.apply, exact: true }).click()
+  const bound = await nativeProject(page)
+  expect(bound.skins).toHaveLength(1)
+  expect(Object.keys(bound.skins[0].weights).length).toBeGreaterThan(0)
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect((await nativeProject(page)).skins).toBeUndefined()
+  await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
+  expect((await nativeProject(page)).skins).toEqual(bound.skins)
+  await page.getByRole('button', { name: COPY.scene.glbExport.open, exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.glbExport.prepare, exact: true }).click()
+  await page.getByLabel(COPY.scene.glbExport.accept).check()
+  const file = await downloaded(page, COPY.scene.glbExport.download)
+  const jsonLength = file.bytes.readUInt32LE(12)
+  expect(JSON.parse(file.bytes.subarray(20, 20 + jsonLength).toString()).skins).toHaveLength(1)
+})
+
+test('duas abas detectam revisão externa e preservam a cópia local para recuperação', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/?oficina=app')
+  await createModel(page, 'abas-e2e')
+  const original = await nativeProject(page)
+  const second = await context.newPage()
+  await second.goto('/?oficina=app')
+  await second.getByRole('button', { name: 'Modelo abas-e2e', exact: true }).click()
+  await expect(second.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
+  await page.bringToFront()
+  await page.getByText('Adicionar forma ou ponto', { exact: true }).click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.getByRole('button', { name: COPY.scene.save, exact: true }).click()
+  await second.bringToFront()
+  await expect(second.getByText(COPY.scene.conflict, { exact: true })).toBeVisible({
+    timeout: 15_000,
+  })
+  expect((await nativeProject(second)).nodes).toEqual(original.nodes)
+  expect((await nativeProject(page)).nodes.length).toBe(original.nodes.length + 1)
+  await second.close()
+})
+
+test('vinte aberturas liberam o contexto gráfico e mantêm a memória limitada', async ({
+  page,
+  context,
+  browserName,
+}, info) => {
+  test.skip(browserName !== 'chromium', 'Heap medido pelo protocolo do Chromium.')
+  test.setTimeout(180_000)
+  await page.addInitScript(() => {
+    const contexts: WeakRef<WebGLRenderingContext | WebGL2RenderingContext>[] = []
+    const original = HTMLCanvasElement.prototype.getContext
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+      value: function (this: HTMLCanvasElement, ...args: unknown[]) {
+        const result = Reflect.apply(original, this, args)
+        if (
+          (args[0] === 'webgl' || args[0] === 'webgl2') &&
+          result &&
+          !contexts.some((ref) => ref.deref() === result)
+        )
+          contexts.push(new WeakRef(result))
+        return result
+      },
+    })
+    Object.defineProperty(window, 'activeMoldaContexts', {
+      value: () =>
+        contexts.filter((ref) => {
+          const gl = ref.deref()
+          return gl && !gl.isContextLost()
+        }).length,
+    })
+  })
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  page.on('console', (message) => {
+    if (message.text().includes('Too many active WebGL')) errors.push(message.text())
+  })
+  const cdp = await context.newCDPSession(page)
+  const samples: Array<{ cycle: number; heap: number; nodes: number }> = []
+  await page.goto('/?oficina=app')
+  await createModel(page, 'memoria-e2e')
+  for (let cycle = 1; cycle <= 20; cycle++) {
+    if (cycle > 1)
+      await page.getByRole('button', { name: 'Modelo memoria-e2e', exact: true }).click()
+    await expect(page.getByRole('button', { name: 'Imagem de apoio', exact: true })).toBeEnabled()
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (window as unknown as { activeMoldaContexts(): number }).activeMoldaContexts(),
+        ),
+      )
+      .toBeGreaterThan(0)
+    await backToGallery(page)
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          (window as unknown as { activeMoldaContexts(): number }).activeMoldaContexts(),
+        ),
+      )
+      .toBe(0)
+    if ([5, 10, 15, 20].includes(cycle)) {
+      await cdp.send('HeapProfiler.collectGarbage')
+      const heap = await cdp.send('Runtime.getHeapUsage'),
+        dom = await cdp.send('Memory.getDOMCounters')
+      samples.push({ cycle, heap: heap.usedSize, nodes: dom.nodes })
+    }
+  }
+  await info.attach('memoria-20-aberturas.json', {
+    body: JSON.stringify(samples, null, 2),
+    contentType: 'application/json',
+  })
+  await writeFile(info.outputPath('memoria-20-aberturas.json'), JSON.stringify(samples, null, 2))
+  expect(samples.at(-1)!.heap - samples[0]!.heap).toBeLessThan(12 * 1024 * 1024)
+  expect(samples.at(-1)!.nodes - samples[0]!.nodes).toBeLessThan(100)
+  expect(errors).toEqual([])
 })

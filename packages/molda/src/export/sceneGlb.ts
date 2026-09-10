@@ -1,4 +1,5 @@
 import type { MoldaSceneDocument } from '../scene/document'
+import { buildSceneGeometry } from '../scene/geometry'
 import { requireScene } from '../scene/validation'
 import { GlbBinary, MAX_SCENE_GLB_BYTES } from './GlbBinary'
 import { encodeGlbContainer } from './glbContainer'
@@ -29,6 +30,29 @@ export function encodeSceneGlb(
       issues.push({ code: 'bend-limit-omitted', sourceId: node.id })
   const binary = new GlbBinary(),
     materials = new SceneGlbMaterials(hierarchy, binary, issues, options.animatedPaint === true)
+  // Inspect every use before encoding any material: a later mesh may share its paint.
+  // Reuse the derived buffers and preserve the original binary allocation order.
+  const prepared = new Map<string, ReturnType<typeof buildSceneGeometry>>()
+  if (options.animatedPaint && document.images.some((image) => image.flipbook)) {
+    for (const [sourceId] of hierarchy.meshes) {
+      const node = hierarchy.index.scene.nodes.get(sourceId)!
+      if (node.kind !== 'mesh') continue
+      let built = prepared.get(node.geometryId)
+      if (!built) {
+        built = buildSceneGeometry(hierarchy.index.geometries.get(node.geometryId)!)
+        prepared.set(node.geometryId, built)
+      }
+      for (let triangle = 0; triangle < built.materialIds.length; triangle++) {
+        for (let corner = 0; corner < 6; corner++) {
+          const uv = built.uvs[triangle * 6 + corner]!
+          if (uv < 0 || uv > 1) {
+            materials.omitAnimatedPaint(built.materialIds[triangle] ?? node.materialId)
+            break
+          }
+        }
+      }
+    }
+  }
   const geometries = new Map<string, ReturnType<typeof prepareSceneGlbGeometry>>()
   const meshes: Array<{
     name: string
@@ -63,7 +87,12 @@ export function encodeSceneGlb(
     if (!geometries.has(node.geometryId))
       geometries.set(
         node.geometryId,
-        prepareSceneGlbGeometry(hierarchy.index.geometries.get(node.geometryId)!, binary, issues),
+        prepareSceneGlbGeometry(
+          hierarchy.index.geometries.get(node.geometryId)!,
+          binary,
+          issues,
+          prepared.get(node.geometryId),
+        ),
       )
     const geometry = geometries.get(node.geometryId)
     if (!geometry) continue
@@ -124,7 +153,12 @@ export function encodeSceneGlb(
   const json = {
     asset: { version: '2.0', generator: 'Molda' },
     // Declared only when a material carries it: an unused extension would be a false promise.
-    ...(materials.textureTransform ? { extensionsUsed: ['KHR_texture_transform'] } : {}),
+    ...(materials.textureTransform
+      ? {
+          extensionsUsed: ['KHR_texture_transform'],
+          extensionsRequired: ['KHR_texture_transform'],
+        }
+      : {}),
     scene: 0,
     scenes: [
       { name: document.name, ...(hierarchy.roots.length ? { nodes: hierarchy.roots } : {}) },

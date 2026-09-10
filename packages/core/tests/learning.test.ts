@@ -11,6 +11,7 @@ import {
   LEARNING_PROTOCOL,
   type LearningAnswers,
   publicInteractiveBlock,
+  sectionCompletionIssues,
   validateLessonSections,
 } from '../src/learning'
 
@@ -154,7 +155,26 @@ describe('the 27 adapted lessons', () => {
       )
       expect(isLearningManifest(manifest)).toBe(true)
       if (!isLearningManifest(manifest)) throw new Error('Invalid authored manifest')
-      expect(manifest.version).toBe(2)
+      expect(manifest.version).toBe(3)
+      expect(
+        sectionCompletionIssues(
+          manifest.sections.map((s) => ({
+            ...s,
+            id: s.key,
+            blockIds: s.blockKeys,
+            workspaceBlockId: s.workspaceKey,
+          })),
+          manifest.blocks.map((b) => ({
+            id: b.key,
+            content:
+              'content' in b
+                ? b.content
+                : 'existing' in b
+                  ? { kind: b.existing.kind }
+                  : { kind: 'video' },
+          })),
+        ),
+      ).toEqual([])
       expect(manifest.sections.flatMap((section) => section.pendingMedia)).toHaveLength(0)
       const videos = manifest.blocks.filter((block) => 'plannedVideo' in block)
       expect(videos).toHaveLength(entry.clips)

@@ -5,6 +5,7 @@ import type {
   LearningAttemptView,
   LearningBlockProgress,
   LessonSection,
+  SectionProgressRecord,
 } from '@sistemazero/core/learning'
 import { validateLessonSections } from '@sistemazero/core/learning'
 import { and, asc, desc, eq, gte, lte, sql } from 'drizzle-orm'
@@ -25,6 +26,7 @@ import {
   lessonBlockProgress,
   activeLessonBlocks as lessonBlocks,
   lessonNavigation,
+  lessonSectionProgress,
   lessonStructures,
   lessons,
 } from './schema'
@@ -93,6 +95,76 @@ export class DrizzleLearningRepository implements LearningRepository {
       .for('share')
     if (!block) throw new LessonNotFoundError()
     if (block.revision !== revision) throw new LearningConflictError()
+  }
+  async getSectionProgress(
+    owner: LearningOwner,
+    lessonId: string,
+  ): Promise<SectionProgressRecord[]> {
+    const rows = await this.db
+      .select()
+      .from(lessonSectionProgress)
+      .where(
+        and(
+          eq(lessonSectionProgress.userId, owner.userId),
+          eq(lessonSectionProgress.accountId, owner.accountId),
+          eq(lessonSectionProgress.lessonId, lessonId),
+        ),
+      )
+    return rows.map((r) => ({
+      sectionId: r.sectionId,
+      revision: r.revision,
+      completedAt: r.completedAt?.toISOString() ?? null,
+      projectPassed: r.projectPassed,
+    }))
+  }
+  async saveSectionProgress(
+    owner: LearningOwner,
+    lessonId: string,
+    structureRevision: string,
+    records: SectionProgressRecord[],
+    blockRevisions: { id: string; revision: string }[],
+  ) {
+    if (!records.length) return
+    await this.withOwner(owner, async (tx) => {
+      await lockLessonStructure(tx, lessonId)
+      const [structure] = await tx
+        .select()
+        .from(lessonStructures)
+        .where(eq(lessonStructures.lessonId, lessonId))
+      if (
+        !structure ||
+        structure.revision !== structureRevision ||
+        records.some((r) => !structure.sections.some((s) => s.id === r.sectionId))
+      )
+        throw new LearningConflictError()
+      for (const b of blockRevisions) await this.assertRevision(tx, lessonId, b.id, b.revision)
+      for (const r of records) {
+        await tx
+          .insert(lessonSectionProgress)
+          .values({
+            ...owner,
+            lessonId,
+            ...r,
+            completedAt: r.completedAt ? new Date(r.completedAt) : null,
+          })
+          .onConflictDoUpdate({
+            target: [
+              lessonSectionProgress.userId,
+              lessonSectionProgress.lessonId,
+              lessonSectionProgress.sectionId,
+            ],
+            set: {
+              revision: r.revision,
+              completedAt: r.completedAt ? new Date(r.completedAt) : null,
+              projectPassed: sql`case when ${lessonSectionProgress.revision} = ${r.revision} then ${lessonSectionProgress.projectPassed} or ${r.projectPassed} else ${r.projectPassed} end`,
+            },
+            setWhere: and(
+              eq(lessonSectionProgress.accountId, owner.accountId),
+              sql`${lessonSectionProgress.completedAt} is null`,
+            ),
+          })
+      }
+    })
   }
   async getStructure(lessonId: string) {
     const [row] = await this.db

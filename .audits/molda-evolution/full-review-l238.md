@@ -1,6 +1,9 @@
 # Lote 238 — full review de tudo o que esta sessão implementou
 
 Estado: revisado, corrigido e verificado, 10/09/2026.
+Atualização posterior: este é o registro histórico do lote 238. Os doze itens então
+abertos foram tratados na retomada 239–244; resultados e pendências atuais estão em
+[`2026-09-10-molda-retomada.md`](../../docs/plans/2026-09-10-molda-retomada.md).
 Escopo: o diff autorado por mim, `57dec75d..HEAD` (91 arquivos, +4234), ou seja os lotes
 225 a 237 mais os cinco commits que trouxeram os 224 lotes anteriores para a `staging`.
 

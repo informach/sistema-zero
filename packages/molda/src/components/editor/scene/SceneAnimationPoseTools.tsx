@@ -58,7 +58,7 @@ export function SceneAnimationPoseTools({
           onClick={() => {
             if (!primary) return
             try {
-              requireScene(editor.getState().asset === document, 'source', copy.animationChanged)
+              requireScene(editor.getState().content === document, 'source', copy.animationChanged)
               setClipboard({
                 documentId: document.id,
                 name: primary.name,

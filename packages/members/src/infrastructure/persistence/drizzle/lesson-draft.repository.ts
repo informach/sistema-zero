@@ -7,6 +7,7 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  sectionCompletionIssues,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { and, eq, inArray, isNull, notInArray, sql } from 'drizzle-orm'
@@ -391,6 +392,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           message: 'Envie o vídeo planejado e aguarde a confirmação do processamento no Vimeo.',
         })
     }
+    issues.push(...sectionCompletionIssues(document.sections, blocks))
     return { issues, blocks }
   }
 

@@ -1,6 +1,9 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
 export * from './requirements'
+export * from './section-progression'
+
+import { isSectionCompletion, type SectionCompletion } from './section-progression'
 export const SECTION_INTENTS = [
   'presentation',
   'demonstration',
@@ -29,6 +32,7 @@ export interface LessonSection {
   externalTool: 'estudio' | 'pinta' | null
   /** Authoring-only production requirements. A published lesson cannot contain these. */
   pendingMedia: string[]
+  completion?: SectionCompletion
 }
 
 export interface LearningChoice {
@@ -70,7 +74,11 @@ export interface HtmlActivity {
   type: 'html'
   html: string
 }
+export interface CheckpointActivity {
+  type: 'checkpoint'
+}
 export type LearningActivity =
+  | CheckpointActivity
   | PredictionActivity
   | ComparisonActivity
   | SequenceActivity
@@ -272,6 +280,8 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   }
   const a = value.activity
   switch (a.type) {
+    case 'checkpoint':
+      return value.checkpoint !== undefined
     case 'prediction':
       return choices(a.choices) && text(a.outcome)
     case 'comparison':
@@ -317,6 +327,11 @@ export function evaluateLearning(
   let feedback = 'Experimente a atividade antes de conferir.'
   let verifiedBy: LearningResult['verifiedBy'] = 'server'
   switch (a.type) {
+    case 'checkpoint':
+      participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
+      passed = participated
+      feedback = 'Escolha uma resposta antes de conferir.'
+      break
     case 'prediction':
       participated =
         a.choices.some((choice) => choice.id === answers.prediction) && answers.observed === true
@@ -426,6 +441,8 @@ export function validateLessonSections(
   )
     return 'Cada bloco deve pertencer a uma seção ou aos materiais de apoio, sem duplicação.'
   for (const section of sections) {
+    if (section.completion !== undefined && !isSectionCompletion(section.completion))
+      return 'Critérios de conclusão inválidos.'
     if (!text(section.title, 200) || section.objective.length > 2000)
       return 'Informe um título e um objetivo válido para cada seção.'
     if (
@@ -445,7 +462,7 @@ export function validateLessonSections(
 
 /** Portable authoring format. Existing projects/media are references, never invented snapshots. */
 export interface LearningManifest {
-  version: 1 | 2
+  version: 1 | 2 | 3
   courseSlug: string
   lessonSlug: string
   title: string
@@ -471,7 +488,7 @@ export interface LearningManifest {
 export function isLearningManifest(value: unknown): value is LearningManifest {
   if (
     !record(value) ||
-    (value.version !== 1 && value.version !== 2) ||
+    (value.version !== 1 && value.version !== 2 && value.version !== 3) ||
     !text(value.courseSlug, 200) ||
     !text(value.lessonSlug, 200) ||
     !text(value.title, 200) ||
@@ -488,7 +505,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
       (b) =>
         record(b) &&
         key(b.key) &&
-        ((value.version === 2 &&
+        (((value.version === 2 || value.version === 3) &&
           'plannedVideo' in b &&
           !('content' in b) &&
           !('existing' in b) &&
@@ -535,7 +552,8 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
         (s.workspaceKey === null || key(s.workspaceKey)) &&
         (s.externalTool === null || s.externalTool === 'estudio' || s.externalTool === 'pinta') &&
         strings(s.pendingMedia, 20) &&
-        !(s.workspaceKey && s.externalTool),
+        !(s.workspaceKey && s.externalTool) &&
+        (s.completion === undefined ? value.version !== 3 : isSectionCompletion(s.completion)),
     )
   )
     return false

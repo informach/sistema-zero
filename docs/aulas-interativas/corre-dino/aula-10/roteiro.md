@@ -115,7 +115,7 @@ Na Aula 11, você vai medir o resultado da partida com um placar.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -125,3 +125,53 @@ Na Aula 11, você vai medir o resultado da partida com um placar.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.
+
+### Quando as áreas se encontram?
+
+**Checagem:** Por que pode existir colisão antes dos desenhos encostarem?
+
+**Resposta e explicação:** A área usada pelo programa pode ser maior que a parte visível
+
+### O que aconteceu?
+
+**Checagem:** Por que a colisão pode acontecer antes do contato parecer visível?
+
+**Resposta e explicação:** A área de colisão pode incluir espaço transparente do desenho.
+
+### ligar o raio-X
+
+**Checagem:** Para que serve mostrar a caixa de colisão?
+
+**Resposta e explicação:** Tornar visível a área usada para detectar contatos.
+
+### por que a batida pareceu roubada
+
+**Checagem:** O que devemos comparar ao investigar uma batida precoce?
+
+**Resposta e explicação:** O contorno de colisão e o desenho visível.
+
+### ajustar a área de colisão
+
+**Checagem:** Ao usar 80% do tamanho na colisão, o que deve mudar?
+
+**Resposta e explicação:** A área de contato fica menor que a área original.
+
+### você escolhe o quanto perdoar
+
+**Checagem:** Ao terminar o ajuste, o que preservamos?
+
+**Resposta e explicação:** A configuração da área; retiramos apenas o bloco que mostra a caixa.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

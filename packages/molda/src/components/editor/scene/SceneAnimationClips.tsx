@@ -26,7 +26,7 @@ export function SceneAnimationClips({
   const copy = COPY.scene
   function choose(id: string | null) {
     try {
-      animation.setClip(id ? editor.getState().asset : null, id)
+      animation.setClip(id ? editor.getState().content : null, id)
     } catch (error) {
       animation.reportError(error)
     }

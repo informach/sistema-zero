@@ -93,7 +93,6 @@ test.each([
   'preview',
   'clip',
   'revision',
-  'thumbnail',
   'error',
   'disconnect',
   'cancel',
@@ -109,7 +108,6 @@ test.each([
     if (kind === 'preview') f.player.setPreview(f.source, sceneAnimationClip())
     if (kind === 'clip') f.player.setClip(null, null)
     if (kind === 'revision') f.editor.getState().replace({ ...f.source, name: 'Novo nome' })
-    if (kind === 'thumbnail') f.editor.getState().setThumb('latest')
     if (kind === 'error') f.player.reportError(new Error('Failed to draw'))
     if (kind === 'disconnect') f.disconnect()
     if (kind === 'cancel') old.cancel()
@@ -445,6 +443,29 @@ test.each([
     expect(actions.preview(identityMatrix())).toBe(false)
     expect(f.gesture.getSnapshot().dragging).toBe(false)
     expect(f.editor.getState().asset).toBe(f.source)
+  } finally {
+    f.close()
+  }
+})
+
+test('thumbnail metadata keeps the assisted candidate recordable with one undo', async () => {
+  const f = setup()
+  try {
+    const input = f.gesture.beginTwoBone(CHAIN)!
+    expect(input.sample([1, 1, 0], [0, 0, 3])).toBe(true)
+    const pose = f.gesture.getSnapshot().pose!
+    f.editor.getState().setThumb('latest')
+    await f.editor.getState().flush()
+    expect(input.isCurrent()).toBe(true)
+    expect(f.gesture.getSnapshot().pose).toBe(pose)
+    expect(input.record()).toBe(true)
+    expect(f.editor.getState().asset.thumb).toBe('latest')
+    expect(
+      prepareSceneAnimation(f.editor.getState().asset, 'clip').sample(0.7, false).worldMatrices,
+    ).toEqual(pose.worldMatrices)
+    f.editor.getState().undo()
+    expect(f.editor.getState().asset.animations).toEqual(f.source.animations)
+    expect(f.editor.getState().canUndo).toBe(false)
   } finally {
     f.close()
   }

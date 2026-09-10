@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "o-jogo-do-meu-jeito",
   "lessonSlug": "aula-02",
   "title": "Desenhe a sua nave no Pinta",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Seu jogo está no Estúdio Completo. A nave ainda é a do Kit espaço, e você vai criar a sua própria arte.\n\nHoje você vai criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Seu jogo está no Estúdio Completo. A nave ainda é a do Kit espaço, e você vai criar a sua própria arte.\n\nHoje você vai criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -18,7 +18,7 @@
         "title": "Uma luz, dois lados",
         "instructions": "Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros?",
         "hints": ["Observe um objeto perto de você e perceba qual lado está mais iluminado."],
-        "required": false,
+        "required": true,
         "activity": {
           "type": "prediction",
           "choices": [
@@ -36,6 +36,25 @@
             }
           ],
           "outcome": "Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais."
+        },
+        "checkpoint": {
+          "prompt": "O que caracteriza pixel art ao ampliar a imagem?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Os pixels desaparecem do desenho salvo."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Os quadradinhos da grade ficam evidentes."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A imagem vira automaticamente uma curva vetorial."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Os quadradinhos da grade ficam evidentes."
         }
       }
     },
@@ -107,6 +126,264 @@
     {
       "key": "video-construir-5-1",
       "plannedVideo": "aula-02-passo-05: gravar a demonstração \"guardar o seu desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": [
+          "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia."
+        ],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Os quadradinhos da grade ficam evidentes."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que caracteriza pixel art ao ampliar a imagem?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Os quadradinhos da grade ficam evidentes."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A imagem vira automaticamente uma curva vetorial."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Os pixels desaparecem do desenho salvo."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Os quadradinhos da grade ficam evidentes."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: conhecer o Pinta e começar o desenho",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Pixel art, Personagem, 32 por 32."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Quais dados deve ter o novo asset nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Vetor, Cenário, 800 por 480."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Pixel art, Personagem, 64 por 64."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Pixel art, Personagem, 32 por 32."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Pixel art, Personagem, 32 por 32."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: o contorno da nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Para desenhar o fogo na próxima aula."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Por que deixar quatro linhas livres embaixo da nave?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Para cortar essa parte automaticamente ao salvar."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Para desenhar o fogo na próxima aula."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Para escrever o título do curso."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Para desenhar o fogo na próxima aula."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: pintar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Desligar o espelho quando necessário."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como fazer detalhes diferentes nos dois lados?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Desligar o espelho quando necessário."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Manter o espelho ligado e esperar resultados diferentes."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Apagar todo o contorno."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Desligar o espelho quando necessário."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: luz e sombra",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Escolher de onde vem a luz e respeitar esse lado."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como manter luz e sombra coerentes?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Clarear lados aleatórios sem observar a forma."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Usar sempre uma única cor obrigatória."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Escolher de onde vem a luz e respeitar esse lado."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Escolher de onde vem a luz e respeitar esse lado."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: guardar o seu desenho",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Esperar salvar e abrir novamente o cartão nave na galeria."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Como conferir que o desenho ficou guardado?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Criar outro desenho com o mesmo nome."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Esperar salvar e abrir novamente o cartão nave na galeria."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Fechar imediatamente sem olhar o estado de salvamento."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Esperar salvar e abrir novamente o cartão nave na galeria."
+        }
+      }
+    },
+    {
+      "key": "checar-fechamento",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: Teste e guarde sua criação",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Quatro linhas embaixo da nave."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que deve continuar livre para a animação da próxima aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Quatro linhas embaixo da nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Todo o centro da nave."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Apenas o nome do asset."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Quatro linhas embaixo da nave."
+        }
+      }
     }
   ],
   "sections": [
@@ -115,10 +392,14 @@
       "title": "A criação de hoje",
       "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -128,77 +409,109 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "conhecer o Pinta e começar o desenho",
       "objective": "Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32. Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "o contorno da nave",
       "objective": "Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica. Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "pintar",
       "objective": "Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado. Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "luz e sombra",
       "objective": "Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra. Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "guardar o seu desenho",
       "objective": "Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave. O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o asset.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "fechamento",
       "title": "Teste e guarde sua criação",
       "objective": "Confira nome nave, tipo Personagem, 32 × 32 e quatro linhas livres embaixo. Abra novamente pela galeria. Seu desenho pode ser muito diferente do exemplo.",
       "intent": "closing",
-      "blockKeys": ["fechamento"],
+      "blockKeys": ["fechamento", "checar-fechamento"],
       "workspaceKey": null,
       "externalTool": "pinta",
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-fechamento"]
+      }
     }
   ]
 }

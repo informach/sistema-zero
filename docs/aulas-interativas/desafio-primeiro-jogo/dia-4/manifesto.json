@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-4",
   "title": "Pontos, vidas e consequências",
@@ -8,7 +8,7 @@
       "key": "abertura",
       "content": {
         "kind": "rich_text",
-        "markdown": "Oi! Você já consegue destruir asteroides. Seu jogo ainda não mostra quantos acertou nem o efeito de uma batida na nave.\n\nHoje você vai separar o valor guardado, o evento que o altera e o desenho que o mostra.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+        "markdown": "Oi! Você já consegue destruir asteroides. Seu jogo ainda não mostra quantos acertou nem o efeito de uma batida na nave.\n\nHoje você vai separar o valor guardado, o evento que o altera e o desenho que o mostra.\n\nVocê pode voltar às seções concluídas pelo índice e pedir ajuda ao professor onde surgir a dúvida."
       }
     },
     {
@@ -131,6 +131,262 @@
     {
       "key": "video-construir-6-1",
       "plannedVideo": "dia-4-passo-06: gravar a demonstração \"hora de testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "checar-comeco",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: A criação de hoje",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Separar o valor guardado, o evento que o altera e o desenho que o mostra."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que vamos aprender a fazer nesta aula?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Passar pelas telas sem realizar as atividades."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Separar o valor guardado, o evento que o altera e o desenho que o mostra."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Comprar todas as peças do avatar antes de criar."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Separar o valor guardado, o evento que o altera e o desenho que o mostra."
+        }
+      }
+    },
+    {
+      "key": "checar-entenda",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: O que aconteceu?",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["O tiro acertar um asteroide."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Qual acontecimento deve aumentar os pontos?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O placar ser desenhado."
+            },
+            {
+              "id": "opcao-2",
+              "label": "O fundo aparecer."
+            },
+            {
+              "id": "opcao-3",
+              "label": "O tiro acertar um asteroide."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "O tiro acertar um asteroide."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-1",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: criar e somar os pontos",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["No fim da colisão entre tiro e asteroide."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Onde colocamos Somar 1 em pontos?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "No desenho dos corações."
+            },
+            {
+              "id": "opcao-2",
+              "label": "No fim da colisão entre tiro e asteroide."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Em cada quadro, mesmo sem acerto."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "No fim da colisão entre tiro e asteroide."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-2",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: mostrar o placar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Da variável pontos."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "De onde o placar lê seu número?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Da variável pontos."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Do tamanho da nave."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Da cor do texto."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "Da variável pontos."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-3",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: dar vidas à nave",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["3."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Quantas vidas a nave recebe ao iniciar?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "45."
+            },
+            {
+              "id": "opcao-2",
+              "label": "26."
+            },
+            {
+              "id": "opcao-3",
+              "label": "3."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "3."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-4",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: fazer a batida machucar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Evitar perder várias vidas pelos quadros do mesmo contato."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Para que servem os 45 quadros de proteção após uma batida?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Parar o jogo para sempre."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Evitar perder várias vidas pelos quadros do mesmo contato."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Somar 45 vidas."
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "Evitar perder várias vidas pelos quadros do mesmo contato."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-5",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: mostrar os corações",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["As vidas que ainda restam à nave."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "O que o desenho dos corações representa?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "As vidas que ainda restam à nave."
+            },
+            {
+              "id": "opcao-2",
+              "label": "A quantidade total de tiros criados."
+            },
+            {
+              "id": "opcao-3",
+              "label": "A velocidade dos asteroides."
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "As vidas que ainda restam à nave."
+        }
+      }
+    },
+    {
+      "key": "checar-construir-6",
+      "content": {
+        "kind": "interactive",
+        "title": "Confira: hora de testar",
+        "instructions": "Responda usando o que você acabou de observar ou construir. Você pode rever a explicação e tentar novamente.",
+        "hints": ["Parados no valor atual."],
+        "required": true,
+        "activity": {
+          "type": "checkpoint"
+        },
+        "checkpoint": {
+          "prompt": "Sem acertar nenhum asteroide, como devem ficar os pontos?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Subindo a cada quadro."
+            },
+            {
+              "id": "opcao-2",
+              "label": "Voltando a zero a cada desenho."
+            },
+            {
+              "id": "opcao-3",
+              "label": "Parados no valor atual."
+            }
+          ],
+          "correctChoiceId": "opcao-3",
+          "explanation": "Parados no valor atual."
+        }
+      }
     }
   ],
   "sections": [
@@ -139,10 +395,14 @@
       "title": "A criação de hoje",
       "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
       "intent": "presentation",
-      "blockKeys": ["abertura"],
+      "blockKeys": ["abertura", "checar-comeco"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-comeco"]
+      }
     },
     {
       "key": "descoberta",
@@ -152,77 +412,109 @@
       "blockKeys": ["descoberta"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["descoberta"]
+      }
     },
     {
       "key": "entenda",
       "title": "O que aconteceu?",
       "objective": "Separar o valor guardado, o evento que o altera e o desenho que o mostra.",
       "intent": "explanation",
-      "blockKeys": ["explicacao"],
+      "blockKeys": ["explicacao", "checar-entenda"],
       "workspaceKey": null,
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-entenda"]
+      }
     },
     {
       "key": "construir-1",
       "title": "criar e somar os pontos",
       "objective": "Em Programação, Variáveis, crie pontos com valor 0 em Ao iniciar. No final da colisão entre tiro e asteroide, coloque Somar 1 em pontos. Assim o acerto é o acontecimento que muda o valor.",
       "intent": "application",
-      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "blockKeys": ["construir-1", "video-construir-1-1", "checar-construir-1"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-1"]
+      }
     },
     {
       "key": "construir-2",
       "title": "mostrar o placar",
       "objective": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar abaixo da colisão. No valor, encaixe valor da variável pontos, de Programação, Valores. Use x 12, y 30, branco e tamanho 24. Acerte um asteroide para conferir.",
       "intent": "application",
-      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "blockKeys": ["construir-2", "video-construir-2-1", "checar-construir-2"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-2"]
+      }
     },
     {
       "key": "construir-3",
       "title": "dar vidas à nave",
       "objective": "Em Jogo 2D, Vida, encaixe Dar ao sprite de vida em Ao iniciar. Escolha nave e 3. Cada nova partida começa com essas três vidas.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "blockKeys": ["construir-3", "video-construir-3-1", "checar-construir-3"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-3"]
+      }
     },
     {
       "key": "construir-4",
       "title": "fazer a batida machucar",
       "objective": "Em Colisões, procure o encontro de cada sprite do grupo com a nave. Use asteroides e o apelido inimigo. Dentro, remova inimigo, solte a explosão, machuque nave em 1 com 45 quadros de proteção e trema a tela com intensidade 8.",
       "intent": "application",
-      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "blockKeys": ["construir-4", "video-construir-4-1", "checar-construir-4"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-4"]
+      }
     },
     {
       "key": "construir-5",
       "title": "mostrar os corações",
       "objective": "Em Vida, coloque Desenhar as vidas do sprite depois da batida. Escolha nave, corações, x 12, y 48, tamanho 22 e vermelho. Esse desenho mostra as vidas que ainda restam.",
       "intent": "application",
-      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "blockKeys": ["construir-5", "video-construir-5-1", "checar-construir-5"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-5"]
+      }
     },
     {
       "key": "construir-6",
       "title": "hora de testar",
       "objective": "Acerte um asteroide e observe o ponto. Depois deixe outro bater na nave: uma vida sai, a nave pisca e a tela treme. Fique alguns instantes sem acertar nada: os pontos devem ficar parados.",
       "intent": "application",
-      "blockKeys": ["construir-6", "video-construir-6-1"],
+      "blockKeys": ["construir-6", "video-construir-6-1", "checar-construir-6"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["checar-construir-6"]
+      }
     },
     {
       "key": "fechamento",
@@ -232,7 +524,11 @@
       "blockKeys": ["fechamento", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
-      "pendingMedia": []
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["projeto"]
+      }
     }
   ]
 }

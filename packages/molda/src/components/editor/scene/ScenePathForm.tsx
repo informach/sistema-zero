@@ -19,14 +19,21 @@ export function ScenePathForm({
   const [radius, setRadius] = useState(String(settings.radius))
   const [around, setAround] = useState(String(settings.around))
   const [endCaps, setEndCaps] = useState(settings.endCaps)
+  const [closed, setClosed] = useState(settings.closed ?? false)
   const validRadius = radius.trim() !== '' && Number.isFinite(Number(radius)) && Number(radius) > 0
   const validAround =
     around.trim() !== '' &&
     Number.isInteger(Number(around)) &&
     Number(around) >= PATH_LIMITS.around.min &&
     Number(around) <= PATH_LIMITS.around.max
-  const valid = validRadius && validAround && points >= 2 && points <= PATH_LIMITS.points
-  const next = { radius: Number(radius), around: Number(around), endCaps }
+  const valid =
+    validRadius && validAround && points >= (closed ? 3 : 2) && points <= PATH_LIMITS.points
+  const next = {
+    radius: Number(radius),
+    around: Number(around),
+    endCaps: !closed && endCaps,
+    closed,
+  }
   return (
     <form
       className="space-y-3"
@@ -81,9 +88,20 @@ export function ScenePathForm({
       ))}
       <label className="flex min-h-11 items-center gap-2 text-sm">
         <input
+          name="pathClosed"
+          type="checkbox"
+          checked={closed}
+          onChange={(event) => setClosed(event.target.checked)}
+          className="size-5 accent-mld-accent"
+        />
+        {COPY.scene.pathClosed}
+      </label>
+      <label className="flex min-h-11 items-center gap-2 text-sm">
+        <input
           name="pathEndCaps"
           type="checkbox"
-          checked={endCaps}
+          checked={!closed && endCaps}
+          disabled={closed}
           onChange={(event) => setEndCaps(event.target.checked)}
           className="size-5 accent-mld-accent"
         />

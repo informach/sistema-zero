@@ -1,9 +1,14 @@
 import type { UseStore } from 'idb-keyval'
 import type { MoldaAssetSummary } from '../core/assetSummary'
+import { readMoldaDocument } from '../core/documentReader'
+import { MoldaUnsupportedVersionError } from '../core/documentVersion'
 import { newId } from '../core/id'
 import { sceneToJson } from '../scene/documentJson'
+import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { readSceneDocument } from '../scene/readDocument'
+import { SceneValidationError } from '../scene/validation'
 import { getMoldaGenerationStore } from './persistence'
+import { adoptCloudScene } from './promoteScene'
 import { sceneCloudSummary } from './sceneGenerationSummary'
 import { createScenePersistence } from './scenePersistence'
 import type { SceneStorageChange } from './sceneStorageChannel'
@@ -24,6 +29,8 @@ export interface MoldaSceneCloudDocument {
 export interface MoldaSceneCloudSource {
   listSummaries(): Promise<MoldaAssetSummary[]>
   read(id: string): Promise<MoldaSceneCloudDocument | null>
+  /** Includes tombstones: an older remote document must never revive the v1 generation. */
+  owns(id: string): Promise<boolean>
   /**
    * Confere o que desceu SEM gravar: o host precisa do nome e do carimbo para decidir
    * nome único e comparação, e não pode tirá-los de um JSON não validado.
@@ -61,7 +68,7 @@ export function createMoldaSceneCloudSource(
 ): MoldaSceneCloudSource {
   const persistence = createScenePersistence(store)
   /** Um só portão de leitura de JSON: nada entra sem passar pelo leitor estrito da cena. */
-  const parse = (json: string) => {
+  const parse = (json: string, allowLegacy = false) => {
     let raw: unknown
     try {
       raw = JSON.parse(json)
@@ -69,13 +76,26 @@ export function createMoldaSceneCloudSource(
       return null
     }
     const read = readSceneDocument(raw)
-    return read.status === 'valid' ? read.document : null
+    if (read.status === 'valid') return read.document
+    if (allowLegacy) {
+      const legacy = readMoldaDocument(raw)
+      if (legacy.status === 'valid' && legacy.asset.kind === 'model')
+        return migrateLegacyModel(legacy.asset).document
+    }
+    return null
+  }
+  const currentRecord = async (id: string) => {
+    const read = await persistence.read(id)
+    if (read.status === 'unsupported') throw new MoldaUnsupportedVersionError(read.version)
+    if (read.status === 'invalid') throw new SceneValidationError(id, read.message)
+    return read
   }
   const active = async (id: string) => {
-    const read = await persistence.read(id)
+    const read = await currentRecord(id)
     return read.status === 'active' ? read : null
   }
   return {
+    owns: async (id) => (await currentRecord(id)).status !== 'missing',
     async listSummaries() {
       const { summaries } = await persistence.listSummaries()
       return summaries.map(sceneCloudSummary)
@@ -103,15 +123,25 @@ export function createMoldaSceneCloudSource(
       }
     },
     async saveIfUnchanged(id, json, expectedUpdatedAt, name) {
-      const read = parse(json)
+      const read = parse(json, true)
       // Formato futuro ou inválido não vira gravação: o espelho já o exclui da
       // reconciliação, e aqui a recusa é a segunda barreira.
       if (!read || read.id !== id) return false
-      const current = await active(id)
-      if ((current?.document.updatedAt ?? null) !== expectedUpdatedAt) return false
+      const current = await currentRecord(id)
       const document = name === undefined ? read : { ...read, name }
-      const result = await persistence.save(document, current?.summary.revision ?? null)
-      return result.status === 'saved'
+      if (current.status === 'active') {
+        if (current.document.updatedAt !== expectedUpdatedAt) return false
+        return (await persistence.save(document, current.summary.revision)).status === 'saved'
+      }
+      if (current.status === 'deleted') {
+        if (expectedUpdatedAt !== null) return false
+        return (await persistence.restore(document, current.tombstone.revision)).status === 'saved'
+      }
+      if (expectedUpdatedAt === null) {
+        const result = await persistence.save(document, null)
+        if (result.status === 'saved') return true
+      }
+      return (await adoptCloudScene(store, document, expectedUpdatedAt)).status === 'promoted'
     },
     async saveCopy(json, name, clock = () => Date.now()) {
       const read = parse(json)

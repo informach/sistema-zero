@@ -3,6 +3,7 @@ import type { PixelShape } from '../paint/shapeTexels'
 import type { BrushSize, Texel } from '../paint/skinPaint'
 import type { ScenePixelRegion } from '../scene/composite'
 import type { MoldaSceneDocument } from '../scene/document'
+import { sameSceneContent } from '../scene/documentContent'
 import { readSceneGradientOperation, type SceneGradientOperation } from '../scene/imageGradient'
 import type { SceneRgbaRaster } from '../scene/imageImport'
 import type { SceneImageOperation } from '../scene/imageOperations'
@@ -140,7 +141,7 @@ export function createScenePaintShapeGesture(
       try {
         const state = editor.getState()
         requireScene(
-          state.asset === source,
+          sameSceneContent(state.asset, source),
           'revision',
           'A imagem mudou. Comece o desenho novamente.',
         )

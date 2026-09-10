@@ -125,7 +125,7 @@ Na Aula 8, você publica essa versão e aprende uma rotina para continuar criand
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -135,3 +135,47 @@ Na Aula 8, você publica essa versão e aprende uma rotina para continuar criand
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Substituir um recurso mantendo o grupo, as posições e as regras que já fazem o jogo funcionar.
+
+### Troque sem perder a configuração
+
+Resolver a ordenação ou associação desta descoberta; a resposta é conferida no servidor.
+
+### O que aconteceu?
+
+**Checagem:** Por que retirar a criação antiga depois de conferir a nova?
+
+**Resposta e explicação:** Para não criar dois asteroides em cada disparo do relógio.
+
+### preparar a folha do asteroide
+
+**Checagem:** Qual tamanho de quadro usa folha-asteroide?
+
+**Resposta e explicação:** 64 por 64.
+
+### trocar o bloco que cria os asteroides
+
+**Checagem:** O que preservar ao substituir o bloco do kit?
+
+**Resposta e explicação:** Grupo, sorteio de x e parâmetros do movimento.
+
+### fazer os asteroides girarem
+
+**Checagem:** Quando cada novo asteroide deve receber girando?
+
+**Resposta e explicação:** Quando ele nasce, usando folha-asteroide.
+
+### Teste e guarde sua criação
+
+**Checagem:** Qual resultado confirma a troca completa?
+
+**Resposta e explicação:** Um nascimento por relógio, com queda, animação e colisões funcionando.

@@ -1,0 +1,7 @@
+feat(career): evolui jornada, prática e integração das ferramentas
+
+Preserva a Carreira do Criador como eixo de acesso e progressão, melhora retomada e publicação, adiciona prática por perfil e integra os planos do Pensa ao Molda.
+
+Inclui outbox de publicação, proteção de autoria, concessões de blocos, acompanhamento familiar, contexto de entregas no admin e as correções da revisão. Documenta as migrations e flags para implantação por fases.
+
+As alterações paralelas da evolução interna e da compatibilidade de documentos do Molda permanecem fora deste commit.

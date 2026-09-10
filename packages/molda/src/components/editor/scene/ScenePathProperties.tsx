@@ -24,7 +24,7 @@ export function ScenePathProperties({
       </summary>
       <div className="space-y-4">
         <ScenePathForm
-          key={`${geometry.radius}:${geometry.around}:${geometry.endCaps}`}
+          key={`${geometry.radius}:${geometry.around}:${geometry.endCaps}:${geometry.closed}`}
           settings={geometry}
           points={geometry.points.length}
           action={COPY.scene.applyPathSettings}

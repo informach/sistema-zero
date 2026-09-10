@@ -21,7 +21,7 @@ export function SceneSkinPanel({
   nodeId: string
   onClose: () => void
 }) {
-  const document = useStore(editor, (state) => state.asset),
+  const document = useStore(editor, (state) => state.content),
     index = useMemo(() => indexSceneDocument(document), [document]),
     locked = useMemo(
       () => evaluateSceneNodeFlags(index.scene).get(nodeId)?.locked,

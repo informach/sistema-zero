@@ -192,6 +192,11 @@ export const ptBR: Record<string, string> = {
   'moldaImport.loadError': 'Não consegui abrir a sua galeria do Molda agora.',
   'moldaImport.retry': 'Tentar de novo',
   'moldaImport.importError': 'Não consegui trazer essa criação agora. Tente de novo.',
+  'moldaImport.review.title': 'O que muda nesta cópia',
+  'moldaImport.review.hint':
+    'Confira antes de adicionar. Seu projeto original continua completo no Molda.',
+  'moldaImport.review.accept': 'Aceitar mudanças e adicionar',
+  'moldaImport.review.cancel': 'Cancelar',
   'moldaImport.empty': 'Sua galeria do Molda está vazia. Monte algo lá e volte aqui!',
   'moldaImport.noResults': 'Nenhuma criação combina com essa busca.',
   'moldaImport.add': 'Adicionar ao projeto',

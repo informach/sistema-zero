@@ -1,4 +1,5 @@
 import { srgbToLinear } from '../core/color'
+import { COPY } from '../core/copy'
 import { reverseRgbaRowsInPlace } from '../core/rgbaRows'
 import {
   compositeSceneImageRegion,
@@ -76,6 +77,11 @@ export class SceneGlbMaterials {
   private readonly materialIds = new Map<string, number>()
   private readonly textureIds = new Map<string, { index: number; transparent: boolean }>()
   private readonly flipbooks = new Set<string>()
+  private readonly staticPaints = new Set<string>()
+
+  omitAnimatedPaint(materialId: string) {
+    this.staticPaints.add(materialId)
+  }
 
   constructor(
     private readonly hierarchy: Hierarchy,
@@ -116,7 +122,7 @@ export class SceneGlbMaterials {
     requireScene(
       this.pixelBytes + width * height * 4 <= SCENE_LIMITS.pixelBytes,
       'export.textures',
-      'As texturas prontas para o GLB ultrapassam o orçamento de pixels.',
+      COPY.scene.glbExport.studio.textureBudget,
     )
     const rgba = render()
     reverseRgbaRowsInPlace(rgba, width, height)
@@ -156,7 +162,12 @@ export class SceneGlbMaterials {
       doubleSided: source.doubleSided,
     }
     if (color) {
-      const animated = this.animatedPaint && color.flipbook !== undefined
+      const unsafe = this.staticPaints.has(id)
+      const animated = this.animatedPaint && color.flipbook !== undefined && !unsafe
+      if (unsafe && color.flipbook && !this.flipbooks.has(color.id)) {
+        this.flipbooks.add(color.id)
+        this.issues.push({ code: 'flipbook-uv-first-frame', sourceId: color.id })
+      }
       const { width, height } = dimensions(color, animated)
       const preserveTransparentRgb = source.alphaMask !== undefined
       const texture = this.texture(

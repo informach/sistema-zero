@@ -9,8 +9,8 @@ export function prepareSceneGlbGeometry(
   geometry: SceneGeometry,
   binary: GlbBinary,
   issues: SceneGlbIssue[],
+  built = buildSceneGeometry(geometry),
 ) {
-  const built = buildSceneGeometry(geometry)
   for (const issue of built.issues)
     issues.push({
       code: 'face-omitted',

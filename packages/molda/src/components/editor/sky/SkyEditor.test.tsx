@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import type { MoldaAsset, MoldaSkyAsset } from '../../../core/model'
 import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
+import { openEveryDisclosure } from '../../../testing/domContract'
 import { installFakeSkyPreview } from '../../../testing/fakeSkyPreview'
 import { makeSky } from '../../../testing/fixtures'
 import { MoldaApp } from '../../MoldaApp'
@@ -154,6 +155,17 @@ describe('SkyEditor', () => {
 
   test('preset, cores, sortear nuvens e download', async () => {
     const persistence = await openSky()
+    // ⚠️ ATUALIZAÇÃO DELIBERADA (redesenho, 10/09/2026): Cores, Nuvens, Estrelas e Exposição
+    // passaram a NASCER RECOLHIDOS, porque são o ajuste fino do céu; abertos ficam só o céu
+    // pronto e o Sol. Recolhido, o `Panel` esconde as `actions` de propósito (elas agiriam
+    // num corpo fora de alcance), e é por isso que "Sortear nuvens" some daqui.
+    //
+    // Esta asserção descrevia ONDE o controle estava, não o que ele faz: é acoplamento de
+    // layout, e é o que o plano manda migrar. O que o teste prova continua igual, ele só
+    // abre os painéis antes, como a criança abre.
+    act(() => {
+      openEveryDisclosure(document.body)
+    })
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
     await waitFor(() => expect(skyOf(persistence.snapshot()[0]).params.preset).toBe('noite'), {
       timeout: 3000,

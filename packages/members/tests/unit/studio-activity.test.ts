@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'bun:test'
-import type { ClientCheckResult, LessonActivity } from '../../src/domain/course/studio-activity'
+import type {
+  ClientCheckResult,
+  LessonActivity,
+  StructureRule,
+} from '../../src/domain/course/studio-activity'
 import {
   evaluateStructureRule,
   gradeStudioActivity,
@@ -46,6 +50,63 @@ describe('evaluateStructureRule (recálculo no servidor)', () => {
   it('projeto sem ir → nega sem quebrar', () => {
     expect(evaluateStructureRule({ type: 'usesLoop' }, {})).toBe(false)
     expect(evaluateStructureRule({ type: 'usesLoop' }, null)).toBe(false)
+  })
+
+  it.each([
+    'molds',
+    'start',
+    'events',
+    'loops',
+  ])('avalia as quatro regras na área %s da IR atual', (area) => {
+    const rules: StructureRule[] = [
+      { type: 'usesLoop' },
+      { type: 'declaresVariable', name: 'pontos' },
+      { type: 'definesFunction', name: 'somar' },
+      { type: 'callsFunction', name: 'somar' },
+    ]
+    const current = {
+      ir: {
+        version: 2,
+        html: [],
+        css: [],
+        extensions: [],
+        behavior: {
+          molds: [],
+          start: [],
+          events: [],
+          loops: [],
+          [area]: [
+            { type: 'repeat', times: { type: 'num', value: 3 }, body: [] },
+            { type: 'var', name: 'pontos', value: { type: 'num', value: 0 } },
+            { type: 'funcDecl', name: 'somar', params: [], body: [] },
+            { type: 'callFunction', name: 'somar', args: [] },
+          ],
+        },
+      },
+    }
+    for (const rule of rules) expect(evaluateStructureRule(rule, current)).toBe(true)
+    expect(evaluateStructureRule({ type: 'declaresVariable', name: 'vidas' }, current)).toBe(false)
+    expect(evaluateStructureRule({ type: 'definesFunction', name: 'outra' }, current)).toBe(false)
+    expect(evaluateStructureRule({ type: 'callsFunction', name: 'outra' }, current)).toBe(false)
+  })
+
+  it('IR atual ignora js legado e dados fora das áreas de comportamento', () => {
+    const current = {
+      ir: {
+        version: 2,
+        js: [{ type: 'repeat' }],
+        behavior: {
+          start: [],
+          events: [],
+          loops: [],
+          metadata: [{ type: 'repeat' }],
+        },
+      },
+    }
+    expect(evaluateStructureRule({ type: 'usesLoop' }, current)).toBe(false)
+    expect(
+      evaluateStructureRule({ type: 'usesLoop' }, { ir: { version: 2, js: [{ type: 'repeat' }] } }),
+    ).toBe(false)
   })
 })
 

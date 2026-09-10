@@ -7,73 +7,44 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 238, full review de tudo o que a sessão fez.**
-Próximo lote: os dois primeiros achados abertos do review (download cruzado entre gerações
-e a perda silenciosa na ponte do Estúdio), depois o laço fechado nos caminhos de tubo e as
-lacunas do bbmodel, lote 239.
-A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
-Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
-cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
+**Retomada: lotes 239–244 implementados e verificados.** O histórico
+interrompido foi recuperado e as lacunas funcionais identificadas foram tratadas: sincronia
+v1/v2, miniaturas, perdas na ponte, cancelamento, recuperação de carregamento, caminhos
+fechados, referência/grade/snap, glTF/OBJ/PNG/apresentação e restauração do backup completo.
+O trabalho também corrigiu retenções de GPU/Three e a entrega ao projeto/instância corretos.
 
-| Fase | Situação | Principais pendências |
-| --- | --- | --- |
-| 1 — Segurança e medição | Proteções, migração interna, leitores compatíveis e a virada pública pronta e REVERSÍVEL (a chave governa a promoção, não o acesso) | Implantar na ordem do documento de rollout; homologação com abas reais e medições em hardware |
-| 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos; avisos act diagnosticados e corrigidos pela causa | Reduzir latência/memória dos blobs, dividir o chunk Three e medir caches/GPU em hardware |
-| 3 — Oficina e navegação | Oficina, começo rápido e retomada; ela É o editor de modelos do kids, com galeria de duas gerações, promoção ao abrir, miniatura, nuvem, ponte com o Estúdio nos dois sentidos e backup, verificados em navegador real | Revisão de toque e temas em aparelho FÍSICO; fronteira de erro no carregamento sob demanda da oficina |
-| 4 — Organização e modelagem | Ferramentas internas implementadas; chanfro em várias quinas separadas, atômico | Homologação; quinas vizinhas uma por vez (e a recusa delas só chega na última passada); laço fechado nos caminhos de tubo |
-| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Homologação visual e em aparelho físico; perda silenciosa na ponte do Estúdio (decisão de produto em aberto) |
-| 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada escolhida na oficina e tocando no runtime do Estúdio, com o relógio rebobinado a cada partida | Homologação em GPU e aparelho; custo do reenvio (o documento é serializado e reparseado a cada salvamento) |
-| 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
-| 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel e a compatibilidade glTF; `extensionsRequired` do `KHR_texture_transform` |
-| 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
+A matriz atual de cada fase, resultados frescos e limites estão em
+[`2026-09-10-molda-retomada.md`](2026-09-10-molda-retomada.md).
+O contrato de formatos, perdas e recursos ainda não decodificados está em
+[`2026-09-10-molda-compatibilidade.md`](2026-09-10-molda-compatibilidade.md).
+Os números e as pendências registrados nos lotes 1–238 abaixo são históricos.
 
-Molda: **2.850 testes, zero falhas, 381 arquivos, zero avisos act**, tipos e Biome no lote
-238; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Estúdio, kit Jogo 3D
-Avançado: **481 testes, zero falhas** no lote 238, tipos e Biome; a suíte inteira dele deu
-**7.956 testes, zero falhas, 506 arquivos** no lote 226. Kids: **623 testes, zero falhas**,
-tipos e build no lote 238.
-Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
-de integração Molda/Studio foram reexecutados com sucesso no lote 187.
-Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
-`staging` em cinco commits escopados, com todos os gates reexecutados antes. **O lote 238 é
-o full review de tudo isso**: seis revisores de leitura, cerca de quarenta achados, quinze
-defeitos corrigidos com regressão vermelha-antes-verde-depois, um investigado e descartado
-com o motivo, e doze registrados em aberto em `.audits/molda-evolution/full-review-l238.md`.
-⚠️ Ao ler uma integral: um teste sensível a TEMPO reprova junto de outra suíte pesada e passa
-sozinho (aconteceu de novo aqui), e um campo novo em `stats` muda as fixtures gravadas do
-Estúdio sem mudar um byte do GLB. Nenhum dos dois é regressão.
-Desde o lote 232 a suíte e2e roda em Chromium real: **14 de 14 specs passam**, incluindo
-tres novas da oficina integrada. Testes automatizados continuam sem homologar GPU, toque
-real ou usabilidade infantil. O chunk Three (579,29 kB) ainda gera o aviso de tamanho, e o
-teto continua onde estava: ele NÃO entra na primeira carga, e o que o aviso protege já está
-protegido (lote 236).
-A falha intermitente de foco registrada no lote 148 reapareceu no lote 149 e foi
-reproduzida: o DOM atualizava antes da restauração em efeito passivo. Correção no
-ciclo de vida, regressão determinística, 75 execuções focais e integral passaram;
-testes originais preservados. Detalhes no review do lote 149.
-**Os avisos `act` intermitentes registrados dos lotes 203 a 231 foram diagnosticados e
-corrigidos no lote 235.** A causa não era ordem de arquivos nem contenção: o palco falso
-devolvia uma foto por padrão, e com ela cada montagem do editor de modelos agendava um
-`setThumb` 700 ms depois; um teste mais lento que isso recebia a atualização fora do act.
-Uma sonda reproduziu a assinatura exata dos cinco componentes sob demanda e a apagou ao
-tirar a foto. Review `act-warnings-diagnosis-l235.md`.
-A integral do lote 155 encontrou outra janela: prévia de superfície concluída não
-fechava após revisão externa. Assinatura de revisão e ownership reentrante corrigidos;
-regressão local/worker, 40 repetições focais e integral passaram. Review do lote 155.
+Gates desta frente: **2.903 testes Molda, 7.966 Estúdio e 632 Kids**, zero falhas;
+tipos nos três pacotes, build Kids, lint Molda/alterações e **40 e2e aprovados**
+(39 Molda em três engines e 1 da ponte no Estúdio). Duas medições CDP são omitidas
+nas engines que não oferecem esse protocolo. Benchmarks repetidos após remover
+processos antigos de testes preservaram todos os hashes, com limites explicitados na retomada.
 
-Para acompanhar, mantenha este arquivo aberto na prévia Markdown do editor. Esta
-seção resume o estado; o **Registro de execução** abaixo detalha entregas, revisão,
-evidências e limitações de cada lote. Atualizar ambos ao encerrar um lote, mantendo
-os critérios de aceite das fases separados das tarefas já implementadas.
+| Frentes | Estado atual |
+| --- | --- |
+| Segurança, armazenamento e recuperação | Correções transacionais e entre gerações verificadas; servidor implantado/dois aparelhos ainda exigem homologação |
+| Modelagem, pintura, animação e intercâmbio | Lacunas funcionais implementadas; formatos limitados pelo contrato explícito de compatibilidade |
+| Arquitetura e desempenho | Cancelamento/cache/backup progressivo e descarte corrigidos; 20 ciclos medidos; orçamento de frame/entrada em hardware ainda não certificado |
+| Oficina e aprendizado | Recursos e jornadas em três engines; redesenho visual em outra sessão no mesmo diretório |
+| Homologação e implantação | Dispositivos físicos, crianças de 9–11 anos e rollout ainda pendentes |
 
-Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
-e abra `http://127.0.0.1:5198/?oficina=nova`. Para ver a INTEGRAÇÃO no app, com a galeria
-enxergando as duas gerações, use `?oficina=app`. Nenhum dos dois é a ativação pública do
-editor nem do formato novo na nuvem. No app do kids a capacidade `sceneWorkshop` está
-LIGADA desde o lote 233, e desligá-la é uma linha: ela governa a promoção, não o acesso.
-Próxima frente de implementação: a miniatura da geração seguinte e o ramo v2 da nuvem,
-que são os dois pré-requisitos de ligar a capacidade sem a criança perder nada; depois a
-ponte do Estúdio, os leitores compatíveis e só então o escritor novo.
+Portanto, **não há aceite integral das nove fases**. Isso é diferente de manter abertas as
+falhas funcionais já corrigidas: a matriz de retomada discrimina ambas as coisas. Não usar
+quantidade de lotes/testes como porcentagem de produto pronto. Nenhum commit, push, deploy
+ou migração foi executado nesta retomada; commits simultâneos da interface pertencem à
+outra sessão, confirmada pelo usuário.
+
+Para experimentar o app integrado, rode `bun run dev` em `packages/molda` e abra
+`http://127.0.0.1:5198/?oficina=app`. E2E usa `bun run e2e` com build/preview estável;
+`E2E_PORT` permite usar outra porta sem interromper uma sessão de interface. No Kids,
+`sceneWorkshop: true` governa a promoção dos modelos antigos. Desligar a chave conserva
+acesso aos já promovidos. Ordem de publicação e rollback em
+[`2026-09-10-molda-rollout.md`](2026-09-10-molda-rollout.md).
 
 ## Decisões aprovadas
 
@@ -5191,10 +5162,31 @@ conversão compartilhada continuam abertos na fase 5.
   Review `full-review-l238.md`, com os doze achados que ficam ABERTOS, ranqueados e com o
   motivo de cada um.
 
-### Próximo lote 239: laço fechado nos caminhos e as lacunas do bbmodel
+### Lote 239: retomada e sincronização entre gerações — verificado
 
-- Antes deles, os dois primeiros da lista aberta do review: o download cruzado entre
-  gerações, que trava em silêncio, e a perda silenciosa na ponte do Estúdio.
+- Recuperado o histórico da sessão Codex interrompida, inclusive os pedidos de 10/09 e
+  os casos que ela reproduziu antes de parar. Matriz e continuidade em
+  `2026-09-10-molda-retomada.md`.
+- A geração dona local decide a escrita, incluindo lápides. Documento v1 que desce sobre
+  uma cena é convertido pelo migrador existente; não recria a geração antiga. Cena v2
+  sobre v1 promove com preservação dos registros originais em uma transação.
+- Restauração usa a revisão da lápide. Formato futuro/ilegível não vira ausência nem
+  autoriza buscar um registro v1 por baixo. Falha de leitura durante exclusão não aborta
+  as outras criações; a marca da exclusão sobrevive até confirmar a restauração.
+- Cinco regressões de armazenamento e duas do reconciliador foram vermelhas antes da
+  correção. Cobertura adicional de concorrência, quota e quatro percursos do espelho com
+  o armazenamento transacional do harness. Sem mocks do writer de geração seguinte.
+- **2.858 testes Molda/0 falhas**, 382 arquivos; **632 Kids/0 falhas**; tipos dos dois,
+  Biome, build Kids e **14/14 e2e Chromium**. Logs em
+  `.audits/molda-evolution/retomada-l239/`. Nenhum commit, push, deploy ou migração executado.
+- Este lote fecha os achados 1 e 3 do review 238 na camada de código e regressão local.
+  Homologação com servidor/abas reais e os critérios restantes das nove fases seguem abertos.
+
+### Próximo lote 240: ponte, carregamento e miniatura; depois modelagem e intercâmbio
+
+- Primeiro, a perda silenciosa na ponte do Estúdio, recuperação de falha ao carregar a
+  oficina e a interferência da miniatura na animação. O download entre gerações foi
+  corrigido no lote 239; ainda precisa de homologação com servidor e abas reais.
 - Os caminhos de tubo aceitam só cadeias ABERTAS; um laço fechado precisa de um gerador
   que dê a volta.
 - Fase 8: ampliar clipes, camadas e PBR do bbmodel; compatibilidade glTF que ficou aberta.

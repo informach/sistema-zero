@@ -115,7 +115,7 @@ Na Aula 7, você vai separar o momento de jogar da tela de início.
 
 **Professor:** observar as relações escolhidas, os parâmetros testados e a aplicação no projeto. Uma previsão diferente é ponto de partida para conversar; não é diagnóstico de dificuldade. Responder ao pedido de ajuda na seção em que ocorreu.
 
-**Conclusão:** cumprir as atividades essenciais e as entregas já configuradas. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
+**Conclusão:** concluir as verificações de todas as seções e a entrega do fechamento, quando houver. Assistir ao vídeo inteiro não é requisito. Não adicionar XP, publicação ou desbloqueio ao clicar na experiência.
 
 ## Produção e importação
 
@@ -125,3 +125,53 @@ Na Aula 7, você vai separar o momento de jogar da tela de início.
 4. Remover cada pendência de mídia apenas depois de vincular e conferir o trecho. Fazer a prévia completa e testar a continuidade para a aula seguinte; publicar somente após essa revisão.
 
 Nenhuma URL, mídia ou minutagem foi inventada. Nenhuma aula publicada foi sobrescrita automaticamente.
+
+## Verificações para avançar nas seções
+
+O índice permite revisar seções concluídas. A próxima seção abre ao cumprir os critérios da atual. Pistas e novas tentativas não descontam progresso. A entrega do projeto fica no fechamento.
+
+### A criação de hoje
+
+**Checagem:** O que vamos aprender a fazer nesta aula?
+
+**Resposta e explicação:** Usar uma medida para investigar objetos invisíveis e verificar a remoção do grupo.
+
+### Quantos existem e quantos aparecem?
+
+**Checagem:** Se um cacto saiu da tela, isso prova que ele saiu do grupo?
+
+**Resposta e explicação:** Não, é preciso uma regra para removê-lo
+
+### O que aconteceu?
+
+**Checagem:** Um cacto saiu da tela. Ele necessariamente saiu do grupo?
+
+**Resposta e explicação:** Não; é preciso uma regra que remova os que saíram.
+
+### montar o medidor
+
+**Checagem:** O contador deve mostrar qual informação?
+
+**Resposta e explicação:** Quantos sprites existem no grupo cactos.
+
+### provocar o problema
+
+**Checagem:** O contador cresce mesmo com cactos fora da tela. O que isso indica?
+
+**Resposta e explicação:** Os objetos continuam guardados no grupo.
+
+### a faxina
+
+**Checagem:** Qual regra faz a faxina do grupo?
+
+**Resposta e explicação:** Tirar do grupo quem sair da tela.
+
+### testar dois ritmos, devolver o relógio e aposentar o medidor
+
+**Checagem:** O que deve permanecer ao finalizar o diagnóstico?
+
+**Resposta e explicação:** A limpeza, com o relógio em 1,4; o medidor pode sair.
+
+### Teste e guarde sua criação
+
+Entregar o projeto e atingir a nota mínima configurada, quando houver.

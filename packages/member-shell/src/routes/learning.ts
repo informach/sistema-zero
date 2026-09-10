@@ -24,6 +24,7 @@ export function createLearningRoutes({
     hintsUsed: z.number().int().min(0).max(10),
   }
   const learningSchemas = {
+    'project-check': z.object({ revision: z.uuid(), project: z.unknown() }).strict(),
     navigation: z.object({ sectionId: z.uuid() }).strict(),
     'section-help': z
       .object({ sectionId: z.uuid(), body: z.string().trim().min(1).max(8000) })
@@ -36,7 +37,7 @@ export function createLearningRoutes({
   function learningHandler(endpoint: keyof typeof learningSchemas, method: 'POST' | 'PUT') {
     return async (
       req: Request,
-      ctx: { params: Promise<{ lessonId: string; blockId?: string }> },
+      ctx: { params: Promise<{ lessonId: string; blockId?: string; sectionId?: string }> },
     ) => {
       const user = await session.getSession()
       if (!user)
@@ -70,14 +71,16 @@ export function createLearningRoutes({
           { status: 409 },
         )
       const params = await ctx.params
+      const needsSection = endpoint === 'project-check'
       const needsBlock = endpoint === 'learning-progress' || endpoint === 'learning-attempts'
       if (
         !z.uuid().safeParse(params.lessonId).success ||
+        (needsSection && !z.uuid().safeParse(params.sectionId).success) ||
         (needsBlock && !z.uuid().safeParse(params.blockId).success)
       )
         return invalidInput()
       const raw = await req.text()
-      if (new TextEncoder().encode(raw).length > 64000)
+      if (new TextEncoder().encode(raw).length > (needsSection ? 2 * 1024 * 1024 : 64000))
         return NextResponse.json(
           { error: { code: 'PAYLOAD_TOO_LARGE', message: 'Respostas excedem o limite.' } },
           { status: 413 },
@@ -90,7 +93,11 @@ export function createLearningRoutes({
       }
       const parsed = learningSchemas[endpoint].safeParse(input)
       if (!parsed.success) return invalidInput()
-      const blockPath = needsBlock ? `/blocks/${encodeURIComponent(params.blockId ?? '')}` : ''
+      const blockPath = needsBlock
+        ? `/blocks/${encodeURIComponent(params.blockId ?? '')}`
+        : needsSection
+          ? `/sections/${encodeURIComponent(params.sectionId ?? '')}`
+          : ''
       const { status, body } = await gateway.gatewayFetch(
         `/members/lessons/${encodeURIComponent(params.lessonId)}${blockPath}/${endpoint}`,
         { method, body: parsed.data },
@@ -106,5 +113,12 @@ export function createLearningRoutes({
   const learningAttempt = { POST: learningHandler('learning-attempts', 'POST') }
   const learningHelp = { POST: learningHandler('section-help', 'POST') }
 
-  return { learningNavigation, learningProgress, learningAttempt, learningHelp }
+  const learningProjectCheck = { POST: learningHandler('project-check', 'POST') }
+  return {
+    learningNavigation,
+    learningProgress,
+    learningAttempt,
+    learningHelp,
+    learningProjectCheck,
+  }
 }

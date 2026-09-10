@@ -2,6 +2,7 @@ import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
+import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
@@ -126,15 +127,40 @@ export class GetLessonService {
     if (hasComingSoonBlock(lesson.blocks) && !privileged)
       return { ...view, requirements: lessonCompletionRequirements(view) }
     const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)
+    const owner = { userId, accountId: accountId ?? userId }
+    const sectionProgress = privileged
+      ? undefined
+      : await this.learning.sections.read(owner, lesson)
+    if (sectionProgress && structure.revision !== sectionProgress.revision)
+      throw new LearningConflictError()
+    const accessible =
+      sectionProgress && !privileged
+        ? await this.learning.sections.accessibleBlockIds(lesson, sectionProgress)
+        : null
+    const sectionState = (id: string) => sectionProgress?.sections.find((s) => s.id === id)
+    const savedSection = structure.progress.sectionId
+    const sectionId =
+      sectionProgress && (!savedSection || sectionState(savedSection)?.status === 'locked')
+        ? (sectionProgress.sections.find((s) => s.status === 'available')?.id ??
+          sectionProgress.sections[0]?.id ??
+          null)
+        : savedSection
     return {
       ...view,
+      ...(sectionProgress ? { sectionProgress } : {}),
+      blocks: accessible ? view.blocks.filter((b) => accessible.has(b.id)) : view.blocks,
       sections: structure.sections.map(
-        ({ id, title, blockIds, workspaceBlockId, externalTool }) => ({
+        ({ id, title, blockIds, workspaceBlockId, externalTool, completion }) => ({
           id,
           title,
-          blockIds,
-          workspaceBlockId,
-          externalTool,
+          blockIds: !privileged && sectionState(id)?.status === 'locked' ? [] : blockIds,
+          workspaceBlockId:
+            !privileged && sectionState(id)?.status === 'locked' ? null : workspaceBlockId,
+          externalTool: !privileged && sectionState(id)?.status === 'locked' ? null : externalTool,
+          ...(completion &&
+          (!sectionProgress || privileged || sectionState(id)?.status !== 'locked')
+            ? { completion }
+            : {}),
         }),
       ),
       structureRevision: structure.revision,
@@ -142,9 +168,22 @@ export class GetLessonService {
       requirements: lessonCompletionRequirements({
         ...view,
         sections: structure.sections,
-        learningProgress: structure.progress,
+        learningProgress: {
+          ...structure.progress,
+          sectionId,
+          blocks: accessible
+            ? structure.progress.blocks.filter((b) => accessible.has(b.blockId))
+            : structure.progress.blocks,
+        },
+        sectionProgress,
       }),
-      learningProgress: structure.progress,
+      learningProgress: {
+        ...structure.progress,
+        sectionId,
+        blocks: accessible
+          ? structure.progress.blocks.filter((b) => accessible.has(b.blockId))
+          : structure.progress.blocks,
+      },
     }
   }
 }

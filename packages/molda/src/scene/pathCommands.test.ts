@@ -22,6 +22,47 @@ import { readSceneDocument } from './readDocument'
 
 const settings = { radius: 0.1, around: 8, endCaps: true }
 const chosen = [meshEdgeKey('v_000', 'v_010'), meshEdgeKey('v_010', 'v_110')]
+
+test('a selected loop is deterministic, stays parametric through save/edit and creates one undo entry', () => {
+  const { document, mesh } = setup()
+  const edges = [...chosen, meshEdgeKey('v_110', 'v_100'), meshEdgeKey('v_100', 'v_000')]
+  expect(meshPathPoints(mesh, edges, true)).toEqual(
+    meshPathPoints(mesh, [...edges].reverse(), true),
+  )
+  const created = createScenePath(
+    document,
+    'body',
+    edges,
+    { ...settings, closed: true, endCaps: false },
+    'Anel',
+  )
+  const node = created.nodes.at(-1)!
+  const shape = created.geometries.at(-1)!
+  expect(shape.kind === 'path' && shape.closed).toBe(true)
+  expect(readSceneDocument(sceneToJson(created)).status).toBe('valid')
+  const editor = createDocumentEditorStore({
+    asset: document,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => {} },
+    autosaveMs: 60_000,
+  })
+  try {
+    editor.getState().commit(created)
+    expect(buildSceneGeometry(shape).issues).toEqual([])
+    editor.getState().undo()
+    expect(editor.getState().asset.geometries).toEqual(document.geometries)
+    expect(editor.getState().canUndo).toBe(false)
+    editor.getState().redo()
+    const opened = editScenePath(editor.getState().asset, node.id, { ...settings, closed: false })
+    expect(
+      opened.geometries.at(-1)?.kind === 'path' &&
+        (opened.geometries.at(-1) as typeof shape & { closed: boolean }).closed,
+    ).toBe(false)
+    expect(readSceneDocument(sceneToJson(opened)).status).toBe('valid')
+  } finally {
+    editor.getState().dispose()
+  }
+})
 test('a path copied from an animated piece receives independent matching movement tracks', () => {
   const { document } = setup()
   document.animations = [sceneAnimationClip()]

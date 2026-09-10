@@ -51,7 +51,7 @@ export function readSceneGeometry(
     ...(kind === 'mesh'
       ? ['vertices', 'faces', 'looseEdges']
       : kind === 'path'
-        ? ['points', 'radius', 'around', 'endCaps', 'surfaces']
+        ? ['points', 'radius', 'around', 'endCaps', 'closed', 'surfaces']
         : ['from', 'to', 'surfaces']),
     ...(kind === 'cylinder' || kind === 'sphere' ? ['tessellation'] : []),
   ])
@@ -65,6 +65,7 @@ export function readSceneGeometry(
         radius: row.radius,
         around: row.around,
         endCaps: row.endCaps,
+        closed: row.closed,
       }),
       surfaces: readSurfaces(row.surfaces, path, ['side', 'top', 'bottom']),
     }

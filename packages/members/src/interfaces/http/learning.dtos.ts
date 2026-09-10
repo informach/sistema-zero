@@ -14,6 +14,7 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   activity: t.Union([
+    t.Object({ type: t.Literal('checkpoint') }),
     t.Object({
       type: t.Literal('prediction'),
       choices: Choices,
@@ -43,6 +44,29 @@ export const InteractiveBlockSchema = t.Object({
     }),
   ),
 })
+const SectionRule = t.Union([
+  t.Object({ type: t.Literal('usesLoop') }),
+  t.Object({ type: t.Literal('usesBlock'), blockType: t.String({ maxLength: 200 }) }),
+  ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
+    t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
+  ),
+])
+export const SectionCompletionSchema = t.Object({
+  version: t.Literal(1),
+  blockIds: t.Array(Id, { maxItems: 200 }),
+  projectChecks: t.Optional(
+    t.Array(
+      t.Object({
+        id: t.String({ minLength: 1, maxLength: 200 }),
+        label: t.String({ maxLength: 200 }),
+        rule: SectionRule,
+      }),
+      { maxItems: 20 },
+    ),
+  ),
+})
+export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
+export const SectionProjectBody = t.Object({ revision: Id, project: t.Unknown() })
 export const LessonSectionSchema = t.Object({
   id: Id,
   title: t.String({ minLength: 1, maxLength: 200 }),
@@ -58,6 +82,7 @@ export const LessonSectionSchema = t.Object({
   blockIds: t.Array(Id, { maxItems: 200 }),
   workspaceBlockId: t.Nullable(Id),
   externalTool: t.Nullable(t.Union([t.Literal('estudio'), t.Literal('pinta')])),
+  completion: t.Optional(SectionCompletionSchema),
   pendingMedia: t.Array(t.String({ minLength: 1, maxLength: 2000 }), { maxItems: 20 }),
 })
 export const LearningStructureBody = t.Object({

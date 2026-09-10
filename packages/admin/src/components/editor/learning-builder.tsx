@@ -22,6 +22,8 @@ const initialChoices = (): LearningChoice[] => [
 ]
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
+    case 'checkpoint':
+      return { type }
     case 'prediction':
       return { type, choices: initialChoices(), outcome: '' }
     case 'comparison':
@@ -134,15 +136,30 @@ export function LearningBuilder({
           onChange={(e) => {
             const type = e.target.value
             if (
+              type === 'checkpoint' ||
               type === 'prediction' ||
               type === 'comparison' ||
               type === 'sequence' ||
               type === 'experiment' ||
               type === 'html'
             )
-              activity(newLearningActivity(type))
+              onChange({
+                ...value,
+                activity: newLearningActivity(type),
+                ...(type === 'checkpoint' && !value.checkpoint
+                  ? {
+                      checkpoint: {
+                        prompt: '',
+                        choices: initialChoices(),
+                        correctChoiceId: 'first',
+                        explanation: '',
+                      },
+                    }
+                  : {}),
+              })
           }}
         >
+          <option value="checkpoint">Pergunta curta</option>
           <option value="prediction">Prever e observar</option>
           <option value="comparison">Comparar duas possibilidades</option>
           <option value="sequence">Ordenar ou associar</option>
@@ -318,6 +335,7 @@ export function LearningBuilder({
         <input
           type="checkbox"
           checked={Boolean(checkpoint)}
+          disabled={a.type === 'checkpoint'}
           onChange={(e) =>
             onChange({
               ...value,

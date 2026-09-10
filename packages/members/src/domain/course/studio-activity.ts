@@ -146,10 +146,21 @@ function someBlockType(blocksState: unknown, blockType: string): boolean {
   return false
 }
 
-/** Extrai `ir.js` e `blocksState` do projeto submetido (JSON opaco). */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+/** Espelha behaviorStatements do Estúdio: IR legada plana e IR atual por áreas. */
 function extractIr(project: unknown): { js: unknown; blocksState: unknown } {
-  const p = (project ?? {}) as Record<string, unknown>
-  const ir = (p.ir ?? {}) as Record<string, unknown>
+  const p = isRecord(project) ? project : {}
+  const ir = isRecord(p.ir) ? p.ir : {}
+  if (ir.version === 2 || 'behavior' in ir) {
+    const behavior = isRecord(ir.behavior) ? ir.behavior : {}
+    return {
+      js: [behavior.molds, behavior.start, behavior.events, behavior.loops].filter(Array.isArray),
+      blocksState: p.blocksState ?? null,
+    }
+  }
   return { js: ir.js ?? [], blocksState: p.blocksState ?? null }
 }
 

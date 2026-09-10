@@ -181,6 +181,11 @@ export function MoldaClient({
       // `getPersonalAsset` é a regra do recurso (igual ao Pinta): sem ela, TODA criação
       // cairia na biblioteca do Estúdio sozinha e o "Trazer do Molda" deixaria de ser a
       // decisão explícita que é hoje.
+      canResyncToStudio: async (id) => {
+        const namespace = viewerId ?? ''
+        const bridge = await import('@sistemazero/studio/personal-assets')
+        return Boolean(await bridge.getPersonalAsset(id, { namespace }))
+      },
       resyncToStudio: async (asset) => {
         const namespace = viewerId ?? ''
         const bridge = await import('@sistemazero/studio/personal-assets')

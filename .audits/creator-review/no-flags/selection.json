@@ -1,0 +1,50 @@
+{
+  "files": [
+    "docs/plans/2026-09-07-creator-journey-evolution.md",
+    "docs/plans/2026-09-07-creator-journey-review.md",
+    "docs/plans/creator-journey-members-audit.sql",
+    "docs/plans/creator-journey-rollout.md",
+    "packages/api-gateway/CLAUDE.md",
+    "packages/api-gateway/gateway.config.ts",
+    "packages/api-gateway/tests/unit/config.test.ts",
+    "packages/community-kids/CLAUDE.md",
+    "packages/community-kids/src/app/(app)/criar/page.tsx",
+    "packages/community-kids/src/app/(app)/layout.tsx",
+    "packages/community-kids/src/app/(app)/praticar/page.tsx",
+    "packages/community-kids/src/components/kids/app-sidebar.tsx",
+    "packages/community-kids/src/components/kids/mobile-nav.tsx",
+    "packages/community-kids/src/components/kids/nav.ts",
+    "packages/community-kids/src/components/kids/practice-workshop.tsx",
+    "packages/community-kids/src/server/creator-rollout.ts",
+    "packages/community-kids/src/server/practice.ts",
+    "packages/community-kids/tests/practice-workshop.test.tsx",
+    "packages/core/src/career/index.ts",
+    "packages/core/src/career/rollout.ts",
+    "packages/core/tests/creator-rollout.test.ts",
+    "packages/member-shell/CLAUDE.md",
+    "packages/members/CLAUDE.md",
+    "packages/members/src/application/practice/practice.service.ts",
+    "packages/members/src/composition-root.ts",
+    "packages/members/src/infrastructure/config/env.ts",
+    "packages/members/src/interfaces/http/routes/practice.routes.ts",
+    "packages/members/tests/helpers.ts",
+    "packages/members/tests/integration/practice.test.ts"
+  ],
+  "proof": [
+    {
+      "path": "packages/community-kids/CLAUDE.md",
+      "oid": "9a78197291832d9a204c893d782345f10d832468",
+      "preservedPrefix": "e84fa45ca0c561d2202432320c4ec52b3f1950e1a105b7c448d57e03c2052ce4"
+    },
+    {
+      "path": "packages/members/CLAUDE.md",
+      "oid": "d4fbd264f6412f247c1e993481e3eae192004086",
+      "preservedPrefix": "8659c6cae36d24be1e95df52a21fe63cf992f62028cd712d689abae6752a16ca"
+    },
+    {
+      "path": "packages/member-shell/CLAUDE.md",
+      "oid": "9dad1154fcc36ac690db86cf4818f9a0c4033222",
+      "preservedPrefix": "23ac4ac1f1b4c253200917696136c7d5197d0275814db1066cb750d4598d68a9"
+    }
+  ]
+}
