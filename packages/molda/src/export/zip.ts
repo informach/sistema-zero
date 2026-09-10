@@ -3,9 +3,9 @@
  * mais o backup completo re-importável e um LEIA-ME em português:
  *   modelos/<nome>.glb · texturas/<nome>.png · ceus/<nome>.hdr
  *   galeria.molda.json · LEIA-ME.txt
- * fflate carregado SOB DEMANDA (padrão do Pinta e do studio). O céu custa
- * ~0,5 s cada (render 1024×512 na CPU): quem chama mostra o "Preparando..." e
- * a montagem cede a thread entre uma criação e outra.
+ * fflate carregado SOB DEMANDA (padrão do Pinta e do studio). Cada céu roda em
+ * worker cancelável; os demais arquivos cedem a thread entre criações. O snapshot
+ * da galeria não é alterado nem transferido durante a preparação.
  *
  * Uma criação que o Estúdio não aceitaria (modelo sem peça, atlas cheio, acima
  * do teto) fica FORA dos arquivos prontos, mas DENTRO do backup: o "Trazer de
@@ -14,6 +14,7 @@
 import { COPY } from '../core/copy'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset, MoldaAssetKind } from '../core/model'
+import { exportSkyHdrInWorker } from '../workers/skyExport'
 import {
   MAX_BACKUP_FILE_BYTES,
   MAX_CLASSIC_ZIP_ENTRIES,
@@ -21,7 +22,7 @@ import {
 } from './backupFormat'
 import { exportModelGlb } from './modelGlb'
 import { galleryToJsonText } from './projectJson'
-import { exportSkyHdr } from './skyHdr'
+import type { SkyHdrResult } from './skyHdr'
 import { exportTexturePng } from './texturePng'
 
 export const GALLERY_ZIP_FILE_NAME = 'minhas-criacoes-3d-molda.zip'
@@ -108,11 +109,11 @@ type PreparedAsset =
   | { path: string; bytes: Uint8Array; readme: string }
   | { skipped: SkippedEntry; readme: string }
 
-function prepareAsset(
+async function prepareAsset(
   asset: MoldaAsset,
   entryName: string,
-  options: Pick<ZipGalleryOptions, 'skySize'>,
-): PreparedAsset {
+  options: Pick<ZipGalleryOptions, 'skySize' | 'signal'>,
+): Promise<PreparedAsset> {
   switch (asset.kind) {
     case 'model': {
       const result = exportModelGlb(asset)
@@ -148,7 +149,16 @@ function prepareAsset(
       }
     }
     case 'sky': {
-      const result = options.skySize ? exportSkyHdr(asset, options.skySize) : exportSkyHdr(asset)
+      let result: SkyHdrResult
+      try {
+        result = await exportSkyHdrInWorker(asset, {
+          size: options.skySize,
+          signal: options.signal,
+        })
+      } catch (error) {
+        throwIfAborted(options.signal)
+        throw error
+      }
       if (!result.ok) {
         return {
           skipped: { name: asset.name, kind: asset.kind, reason: result.reason },
@@ -174,15 +184,19 @@ export async function buildGalleryFileMap(
   const skipped: SkippedEntry[] = []
   const taken = new Set<string>()
 
+  throwIfAborted(options.signal)
+
   for (const [index, asset] of assets.entries()) {
     if (index > 0 && yieldBetween) await yieldBetween()
     const entryName = safeEntryName(asset.name, taken)
-    const prepared = prepareAsset(asset, entryName, options)
+    throwIfAborted(options.signal)
+    const prepared = await prepareAsset(asset, entryName, options)
     readme.push(prepared.readme)
     if ('skipped' in prepared) skipped.push(prepared.skipped)
     else files[prepared.path] = prepared.bytes
   }
 
+  throwIfAborted(options.signal)
   files[MOLDA_GALLERY_ZIP_ENTRY] = galleryToJsonText(assets)
   return { files, readme, skipped }
 }
@@ -265,7 +279,7 @@ async function buildGalleryZipChunks(
     for (const [index, asset] of assets.entries()) {
       if (index > 0 && yieldBetween) await yieldBetween()
       throwIfAborted(options.signal)
-      const prepared = prepareAsset(asset, safeEntryName(asset.name, taken), options)
+      const prepared = await prepareAsset(asset, safeEntryName(asset.name, taken), options)
       readme.push(prepared.readme)
       if (!('skipped' in prepared)) add(prepared.path, prepared.bytes)
       options.onProgress?.({

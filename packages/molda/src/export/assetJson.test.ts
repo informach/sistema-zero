@@ -14,12 +14,33 @@ describe('assetJson', () => {
   })
 
   test('as peles vão como base64 (string), não como objeto {0:..,1:..}', () => {
-    const json = assetToJson(makeModel()) as unknown as {
-      parts: Array<{ faces: Record<string, { data: unknown }> }>
-    }
+    const json = assetToJson(makeModel())
     expect(typeof json.parts[0]?.faces.py?.data).toBe('string')
-    const texture = assetToJson(makeTexture()) as unknown as { bitmap: { data: unknown } }
+    const texture = assetToJson(makeTexture())
     expect(typeof texture.bitmap.data).toBe('string')
+  })
+
+  test('o contrato nativo preserva a versão literal e estreita cada tipo de criação', () => {
+    for (const asset of [makeModel(), makeTexture(), makeSky()]) {
+      const json = assetToJson(asset)
+      const version: 1 = json.formatVersion
+      expect(version).toBe(1)
+      switch (json.kind) {
+        case 'model':
+          expect(json.parts[0]?.faces.py?.data).toBeTypeOf('string')
+          break
+        case 'texture':
+          expect(json.bitmap.data).toBeTypeOf('string')
+          break
+        case 'sky':
+          expect(json.params.clouds).toBeDefined()
+          break
+        default: {
+          const exhaustive: never = json
+          throw new Error(`Tipo nativo não coberto: ${exhaustive}`)
+        }
+      }
+    }
   })
 
   test('assetFromJson nunca lança', () => {
@@ -33,6 +54,20 @@ describe('assetJson', () => {
         bitmap: { width: 16, height: 16, data: 12 },
       }),
     ).toBeNull()
+  })
+
+  test('arestas de construção persistem no JSON da nuvem/backup', () => {
+    const model = makeModel()
+    const part = model.parts[0]
+    if (!part) throw new Error('sem peça')
+    part.shape = 'mesh'
+    part.mesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0] },
+      faces: {},
+      looseEdges: [['v_a', 'v_b']],
+    }
+    const back = assetFromJson(JSON.parse(JSON.stringify(assetToJson(model))))
+    expect(back?.kind === 'model' && back.parts[0]?.mesh?.looseEdges).toEqual([['v_a', 'v_b']])
   })
 })
 

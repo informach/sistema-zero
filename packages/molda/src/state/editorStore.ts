@@ -1,5 +1,5 @@
 /**
- * O editor de UMA criação: histórico por snapshots com orçamento em bytes e
+ * O editor de UMA criação: histórico por deltas com orçamento em bytes e
  * salvamento automático com debounce e laço de drenagem (uma gravação por vez;
  * se algo mudou enquanto gravava, grava de novo até alcançar). Um store por
  * criação aberta.
@@ -16,34 +16,43 @@ import { COPY } from '../core/copy'
 import { createHistory } from '../core/history'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset } from '../core/model'
+import { retainSnapshotDelta } from '../core/snapshotDelta'
 import { isStorageBudgetError, type MoldaPersistence } from './persistence'
 
 export type SaveState = 'saved' | 'dirty' | 'saving' | 'error'
 
-export interface EditorState {
-  asset: MoldaAsset
+export interface EditableDocument {
+  id: string
+  updatedAt: number
+  thumb?: string
+}
+
+export interface EditorState<T extends EditableDocument = MoldaAsset> {
+  asset: T
   /**
    * Versão monotônica do CONTEÚDO editável. Miniaturas e estado de salvamento não
    * avançam esta revisão; ações adiadas usam-na para não reaplicar snapshots velhos.
    */
   contentRevision: number
   /** A última versão que chegou ao disco. */
-  savedAsset: MoldaAsset
+  savedAsset: T
   saveState: SaveState
   saveError: string | null
   canUndo: boolean
   canRedo: boolean
 }
 
-export interface EditorActions {
-  commit(next: MoldaAsset): void
-  replace(next: MoldaAsset): void
-  commitGesture(before: MoldaAsset, after: MoldaAsset): void
+export interface EditorActions<T extends EditableDocument = MoldaAsset> {
+  commit(next: T): void
+  replace(next: T): void
+  commitGesture(before: T, after: T): void
+  /** Restore the captured content and persist the restoration if disk already changed. */
+  cancelGesture(before: T): void
   /**
    * Troca o estado ATUAL sem novo passo de desfazer (o painel "Ajustar" reexecuta
    * a última operação sobre o "antes" dela): um passo só no histórico, e salva.
    */
-  amend(next: MoldaAsset): void
+  amend(next: T): void
   /** Miniatura pronta (data URL) ou nenhuma: sem histórico, mas salva. */
   setThumb(thumb: string | undefined): void
   undo(): void
@@ -52,37 +61,65 @@ export interface EditorActions {
   dispose(): void
 }
 
-export type EditorStore = StoreApi<EditorState & EditorActions>
+export type EditorStore<T extends EditableDocument = MoldaAsset> = StoreApi<
+  EditorState<T> & EditorActions<T>
+>
 
-export interface CreateEditorStoreOptions {
-  asset: MoldaAsset
-  persistence: MoldaPersistence
-  onSaved?: (asset: MoldaAsset) => void
+export interface CreateDocumentEditorStoreOptions<T extends EditableDocument> {
+  asset: T
+  /** Infer the domain from asset, never from a broader counter or persistence port. */
+  persistence: { save(asset: NoInfer<T>): Promise<void> }
+  sizeOf(asset: NoInfer<T>): number
+  onSaved?: (asset: NoInfer<T>) => void
+  saveErrorMessage?: (error: unknown) => string | undefined
   autosaveMs?: number
   byteBudget?: number
   now?: () => number
 }
 
+export interface CreateEditorStoreOptions
+  extends Omit<CreateDocumentEditorStoreOptions<MoldaAsset>, 'sizeOf' | 'persistence'> {
+  persistence: MoldaPersistence
+}
+
 export const DEFAULT_AUTOSAVE_MS = 600
 
+/** Derived thumbnails must be regenerated, not retained as editable history content. */
+function historyAsset<T extends EditableDocument>(asset: T): T {
+  if (!Object.hasOwn(asset, 'thumb')) return asset
+  const content = { ...asset }
+  delete content.thumb
+  return content
+}
+
 export function createEditorStore(options: CreateEditorStoreOptions): EditorStore {
+  return createDocumentEditorStore({ ...options, sizeOf: assetBytes })
+}
+
+/** The same history/save engine serves legacy assets and the new scene domain. */
+export function createDocumentEditorStore<T extends EditableDocument>(
+  options: CreateDocumentEditorStoreOptions<T>,
+): EditorStore<T> {
   const { persistence, onSaved } = options
   const autosaveMs = options.autosaveMs ?? DEFAULT_AUTOSAVE_MS
   const now = options.now ?? (() => Date.now())
-  const history = createHistory<MoldaAsset>({
-    sizeOf: assetBytes,
+  const history = createHistory<T>({
+    sizeOf: options.sizeOf,
     byteBudget: options.byteBudget ?? MOLDA_LIMITS.undoBudgetBytes,
+    retain: retainSnapshotDelta,
   })
+  // Deltas apply to the last committed state, never to an interrupted live preview.
+  let historyCurrent = historyAsset(options.asset)
 
   let timer: ReturnType<typeof setTimeout> | null = null
   let inflight: Promise<void> | null = null
 
-  const store = createStore<EditorState & EditorActions>((set, get) => {
-    function historyFlags(): Pick<EditorState, 'canUndo' | 'canRedo'> {
+  const store = createStore<EditorState<T> & EditorActions<T>>((set, get) => {
+    function historyFlags(): Pick<EditorState<T>, 'canUndo' | 'canRedo'> {
       return { canUndo: history.canUndo(), canRedo: history.canRedo() }
     }
 
-    function stamp(asset: MoldaAsset): MoldaAsset {
+    function stamp(asset: T): T {
       return { ...asset, updatedAt: Math.max(now(), get().asset.updatedAt + 1) }
     }
 
@@ -96,17 +133,29 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
 
     async function drain(): Promise<void> {
       for (;;) {
-        const snapshot = get().asset
-        if (snapshot === get().savedAsset) return
+        const state = get()
+        if (state.asset === state.savedAsset) return
+        // `replace` mantém o carimbo estável durante um gesto ao vivo. Se a saída do
+        // editor interromper o gesto antes do `commitGesture`, o próprio limite de
+        // persistência precisa transformar aquele snapshot sujo numa versão nova.
+        // Sem isso, nuvem e Estúdio tratam conteúdo novo como cache já sincronizado.
+        const snapshot =
+          state.asset.updatedAt > state.savedAsset.updatedAt
+            ? state.asset
+            : {
+                ...state.asset,
+                updatedAt: Math.max(now(), state.savedAsset.updatedAt + 1),
+              }
+        if (snapshot !== state.asset) set({ asset: snapshot })
         set({ saveState: 'saving' })
         try {
           await persistence.save(snapshot)
         } catch (error) {
           set({
             saveState: 'error',
-            saveError: isStorageBudgetError(error)
-              ? COPY.gallery.storageBudget
-              : COPY.editor.saveError,
+            saveError:
+              options.saveErrorMessage?.(error) ??
+              (isStorageBudgetError(error) ? COPY.gallery.storageBudget : COPY.editor.saveError),
           })
           return
         }
@@ -133,7 +182,7 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
       return run
     }
 
-    function apply(next: MoldaAsset, contentChanged = true): void {
+    function apply(next: T, contentChanged = true): void {
       set((state) => ({
         asset: next,
         contentRevision: state.contentRevision + (contentChanged ? 1 : 0),
@@ -155,8 +204,11 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
       commit(next) {
         const current = get().asset
         if (next === current) return
-        history.record(current)
-        apply(stamp(next))
+        const stamped = stamp(next)
+        const previous = historyCurrent
+        historyCurrent = historyAsset(stamped)
+        history.record(previous, historyCurrent)
+        apply(stamped)
       },
 
       replace(next) {
@@ -164,38 +216,53 @@ export function createEditorStore(options: CreateEditorStoreOptions): EditorStor
         set((state) => ({
           asset: next,
           contentRevision: state.contentRevision + 1,
-          saveState: 'dirty',
+          saveState: next === state.savedAsset ? 'saved' : 'dirty',
         }))
       },
 
       commitGesture(before, after) {
-        history.record(before)
-        apply(stamp(after))
+        if (before === after) return
+        const stamped = stamp(after)
+        const previous = historyCurrent
+        historyCurrent = historyAsset(stamped)
+        history.record(previous, historyCurrent)
+        apply(stamped)
+      },
+
+      cancelGesture(before) {
+        get().replace(before)
+        if (get().asset !== get().savedAsset) schedule()
       },
 
       amend(next) {
         if (next === get().asset) return
-        apply(stamp(next))
+        const stamped = stamp(next)
+        history.amend(historyCurrent, historyAsset(stamped))
+        historyCurrent = historyAsset(stamped)
+        apply(stamped)
       },
 
       setThumb(thumb) {
         const current = get().asset
         if (current.thumb === thumb) return
-        const { thumb: _old, ...rest } = current
-        const next = (thumb ? { ...rest, thumb } : rest) as MoldaAsset
+        const next = { ...current }
+        if (thumb) next.thumb = thumb
+        else delete next.thumb
         apply(stamp(next), false)
       },
 
       undo() {
-        const previous = history.undo(get().asset)
+        const previous = history.undo(historyCurrent)
         if (!previous) return
-        apply(stamp(previous))
+        historyCurrent = stamp(previous)
+        apply(historyCurrent)
       },
 
       redo() {
-        const next = history.redo(get().asset)
+        const next = history.redo(historyCurrent)
         if (!next) return
-        apply(stamp(next))
+        historyCurrent = stamp(next)
+        apply(historyCurrent)
       },
 
       async flush() {

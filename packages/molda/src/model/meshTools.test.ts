@@ -8,6 +8,7 @@ import {
   applyMeshFix,
   connectVertices,
   createFace,
+  createFaceOrEdge,
   extrudeEdges,
   extrudeFaces,
   flipFaces,
@@ -72,6 +73,24 @@ describe('Puxar', () => {
     const mesh = meshOf(result.model)
     expect(Object.keys(mesh.faces)).toHaveLength(12)
     expect(isClosedMesh(mesh)).toBe(true)
+  })
+
+  test('uma aresta de construção é extrudada no eixo automático e vira uma face', () => {
+    const mesh: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0] },
+      faces: {},
+      looseEdges: [['v_a', 'v_b']],
+    }
+    const model = cubeModel(mesh)
+    const result = extrudeEdges(model, 'm', [['v_a', 'v_b']], 1)
+    if (!result) throw new Error('sem resultado')
+    const next = meshOf(result.model)
+    expect(next.looseEdges).toBeUndefined()
+    expect(Object.keys(next.faces)).toHaveLength(1)
+    expect(result.selection).toHaveLength(1)
+    for (const key of result.vertices) expect(next.vertices[key]?.[1]).toBe(1)
+    expect(extrudeEdges(model, 'm', [['v_a', 'v_b']], 1, 'x')).toBeNull()
+    expect(extrudeEdges(model, 'm', [['v_a', 'v_b']], 1, '-z')).not.toBeNull()
   })
 
   test('a pele da face puxada migra com ela', () => {
@@ -211,6 +230,40 @@ describe('Cortar no meio', () => {
       ),
     ).toBe(false)
   })
+
+  test('cria de 1 a 8 cortes; vários ficam uniformes e um respeita a posição', () => {
+    const positioned = loopCut(cubeModel(), 'm', ['v_010', 'v_011'], {
+      cuts: 1,
+      position: 25,
+    })
+    if (!positioned) throw new Error('sem corte posicionado')
+    expect(
+      positioned.vertices.some((key) => meshOf(positioned.model).vertices[key]?.[2] === 0.5),
+    ).toBe(true)
+
+    const multiple = loopCut(cubeModel(), 'm', ['v_010', 'v_011'], { cuts: 3 })
+    if (!multiple) throw new Error('sem cortes múltiplos')
+    expect(multiple.vertices).toHaveLength(12)
+    expect(Object.keys(meshOf(multiple.model).faces)).toHaveLength(18)
+    expect(multiple.selection).toHaveLength(12)
+    expect(isClosedMesh(meshOf(multiple.model))).toBe(true)
+    expect(loopCut(cubeModel(), 'm', ['v_010', 'v_011'], { cuts: 9 })).toBeNull()
+  })
+
+  test('divide uma aresta de construção e mantém os segmentos selecionáveis', () => {
+    const model = cubeModel({
+      vertices: { v_a: [0, 0, 0], v_b: [4, 0, 0] },
+      faces: {},
+      looseEdges: [['v_a', 'v_b']],
+    })
+    const result = loopCut(model, 'm', ['v_a', 'v_b'], { cuts: 2 })
+    if (!result) throw new Error('sem resultado')
+    const mesh = meshOf(result.model)
+    expect(result.vertices).toHaveLength(2)
+    expect(mesh.looseEdges).toHaveLength(3)
+    expect(result.selection).toHaveLength(3)
+    expect(Object.keys(mesh.faces)).toHaveLength(0)
+  })
 })
 
 describe('guardas das ferramentas de malha', () => {
@@ -274,6 +327,32 @@ describe('Juntar, Fechar, Virar, Dividir', () => {
 
     expect(createFace(model, 'm', ['v_a', 'v_b', 'v_c'])).toBeNull()
     expect(Object.keys(meshOf(model).faces)).toHaveLength(2)
+  })
+
+  test('Criar face ou aresta cobre 2, 3 e 4 pontos e consome arestas de contorno', () => {
+    const loose = createFaceOrEdge(cubeModel(), 'm', ['v_000', 'v_111'])
+    if (!loose) throw new Error('sem aresta')
+    expect(meshOf(loose.model).looseEdges).toEqual([['v_000', 'v_111']])
+    expect(createFaceOrEdge(loose.model, 'm', ['v_000', 'v_111'])).toBeNull()
+
+    const split = createFaceOrEdge(cubeModel(), 'm', ['v_010', 'v_011', 'v_111'])
+    if (!split) throw new Error('sem divisão')
+    expect(Object.keys(meshOf(split.model).faces)).toHaveLength(7)
+    expect(split.selection[0]?.kind).toBe('face')
+
+    const boundary: MoldaMesh = {
+      vertices: { v_a: [0, 0, 0], v_b: [2, 0, 0], v_c: [0, 2, 0] },
+      faces: {},
+      looseEdges: [
+        ['v_a', 'v_b'],
+        ['v_b', 'v_c'],
+        ['v_a', 'v_c'],
+      ],
+    }
+    const face = createFaceOrEdge(cubeModel(boundary), 'm', ['v_a', 'v_b', 'v_c'])
+    if (!face) throw new Error('sem face')
+    expect(Object.keys(meshOf(face.model).faces)).toHaveLength(1)
+    expect(meshOf(face.model).looseEdges).toBeUndefined()
   })
 
   test('virar face inverte a normal e espelha a pele (que fica no lugar); virar de novo desfaz', () => {

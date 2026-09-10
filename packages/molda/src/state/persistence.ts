@@ -4,33 +4,44 @@
  * - Um banco por NAMESPACE (`sistema-zero-molda-<ns>`): o host kids chama
  *   `setMoldaStorageNamespace(viewerId)` ANTES de montar o app, e cada perfil
  *   Netflix enxerga só a própria galeria.
- * - Um registro por criação (`molda:asset:<id>`), gravado por structured clone
+ * - Documento (`molda:record:<id>`) e resumo separados, gravados atomicamente por structured clone
  *   (o `Uint8Array` das peles atravessa inteiro).
  * - Escritas em FILA por banco e, quando disponível, sob Web Lock: duas abas ou
  *   dois stores não calculam o orçamento sobre o mesmo estado antigo.
- * - Orçamento em BYTES por inventário compartilhado por banco (`assetBytes`) e
- *   relido dentro do lock antes de gravar: estourar lança
- *   `MoldaStorageBudgetError` ANTES de tocar o banco.
+ * - Versão, orçamento em BYTES e gravação são conferidos na mesma transação IDB,
+ *   inclusive sem Web Locks. Originais legados ficam em `molda:recovery:<id>`.
  * - `BroadcastChannel` avisa as outras abas (`changed`); a mesma instância
  *   ignora o próprio eco pelo `senderId`.
  * - Todo registro passa por `sanitizeMoldaAsset` na leitura (migração lazy);
  *   registro ilegível some da lista sem derrubar os outros.
  */
+import { createStore, keys, type UseStore } from 'idb-keyval'
+import { type MoldaAssetSummary, readAssetSummary, summarizeAsset } from '../core/assetSummary'
 import {
-  createStore,
-  del,
-  delMany,
-  get,
-  getMany,
-  keys,
-  set,
-  setMany,
-  type UseStore,
-} from 'idb-keyval'
-import { assetBytes } from '../core/bytes'
+  type MoldaDocumentRead,
+  type MoldaReadIssue,
+  moldaReadIssue,
+  readMoldaDocumentForId,
+} from '../core/documentReader'
+import { MOLDA_DOCUMENT_WRITE_VERSION, MoldaUnsupportedVersionError } from '../core/documentVersion'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset } from '../core/model'
-import { sanitizeMoldaAsset } from '../core/sanitize'
+import { guardedWrite, MoldaStorageBudgetError, removeStoredDocuments } from './guardedWrite'
+import { readRecords } from './readRecords'
+import {
+  DOCUMENT_KEY_PREFIX,
+  DOCUMENT_PREFIXES,
+  documentKeys,
+  PREVIOUS_RECOVERY_KEY_PREFIX,
+  RECOVERY_KEY_PREFIX,
+  SCENE_DELETED_KEY_PREFIX,
+  SCENE_DOCUMENT_KEY_PREFIX,
+  SCENE_RECOVERY_KEY_PREFIX,
+  SUMMARY_KEY_PREFIX,
+  storedDocumentKey,
+} from './storageKeys'
+
+export { MoldaStorageBudgetError } from './guardedWrite'
 
 export type MoldaPersistenceEvent =
   | { type: 'sync-start' }
@@ -39,25 +50,28 @@ export type MoldaPersistenceEvent =
 
 export interface MoldaPersistence {
   loadAll(): Promise<MoldaAsset[]>
+  /** Lightweight listing. Legacy documents are read individually until the first explicit save. */
+  listSummaries?(): Promise<MoldaAssetSummary[]>
   /** UMA criação pelo id (`null` = não existe/ilegível). A nuvem do host relê o disco na hora de subir. */
   load(id: string): Promise<MoldaAsset | null>
+  /** Non-lossy inspection, including unsupported data, for recovery/export without opening. */
+  read?(id: string): Promise<MoldaDocumentRead | null>
+  /** Original retained by lazy migration (never passed through sanitize). */
+  loadRecovery?(id: string): Promise<unknown>
+  /** Issues from the latest loadAll, without another document scan. */
+  getReadIssues?(): readonly MoldaReadIssue[]
   save(asset: MoldaAsset): Promise<void>
+  /** Compare and write in one transaction; false leaves every record untouched. null = absent. */
+  saveIfUnchanged(asset: MoldaAsset, expectedUpdatedAt: number | null): Promise<boolean>
   /** Atômico: ou grava todos, ou nenhum. */
   saveMany(assets: readonly MoldaAsset[]): Promise<void>
   remove(id: string): Promise<void>
+  removeIfUnchanged(id: string, expectedUpdatedAt: number | null): Promise<boolean>
   removeMany(ids: readonly string[]): Promise<void>
   /** Opcional: avisos de mudança externa (outra aba, nuvem). */
   subscribe?(listener: (event: MoldaPersistenceEvent) => void): () => void
   /** Libera canais mantidos pela instância. Pode ser chamado mais de uma vez. */
   dispose?(): void
-}
-
-export class MoldaStorageBudgetError extends Error {
-  readonly code = 'storage-budget' as const
-  constructor(message = 'A galeria do Molda chegou ao limite de espaço.') {
-    super(message)
-    this.name = 'MoldaStorageBudgetError'
-  }
 }
 
 export function isStorageBudgetError(error: unknown): error is MoldaStorageBudgetError {
@@ -66,7 +80,6 @@ export function isStorageBudgetError(error: unknown): error is MoldaStorageBudge
 
 const DB_PREFIX = 'sistema-zero-molda'
 const STORE_NAME = 'assets'
-const KEY_PREFIX = 'molda:asset:'
 
 // ── Namespace ───────────────────────────────────────────────────────────────
 
@@ -124,35 +137,6 @@ function runExclusiveWrite<T>(dbName: string, task: () => Promise<T>): Promise<T
     if (!locks) return task()
     return locks.request(`${WRITE_LOCK_PREFIX}${dbName}`, task)
   })
-}
-
-interface InventoryState {
-  bytesById: Map<string, number>
-  loaded: boolean
-  totalBytes: number
-}
-
-const inventories = new Map<string, InventoryState>()
-
-function inventoryFor(dbName: string): InventoryState {
-  let inventory = inventories.get(dbName)
-  if (!inventory) {
-    inventory = { bytesById: new Map(), loaded: false, totalBytes: 0 }
-    inventories.set(dbName, inventory)
-  }
-  return inventory
-}
-
-function safeSanitize(raw: unknown): MoldaAsset | null {
-  try {
-    return sanitizeMoldaAsset(raw)
-  } catch {
-    return null
-  }
-}
-
-function keyFor(id: string): string {
-  return `${KEY_PREFIX}${id}`
 }
 
 // ── Registro de criações ABERTAS (editor) ───────────────────────────────────
@@ -227,49 +211,87 @@ export function createMoldaPersistence(
   let sender = openChannel(dbName)
   const receivers = new Set<BroadcastChannel>()
   let disposed = false
-
-  const inventory = inventoryFor(dbName)
-
-  function invalidateInventory(): void {
-    inventory.loaded = false
-  }
+  let readIssues: MoldaReadIssue[] = []
 
   async function readAll(): Promise<MoldaAsset[]> {
-    const allKeys = (await keys(store)).filter(
-      (key): key is string => typeof key === 'string' && key.startsWith(KEY_PREFIX),
-    )
-    const values = allKeys.length > 0 ? await getMany(allKeys, store) : []
-    inventory.bytesById.clear()
-    inventory.totalBytes = 0
+    const ids = new Set<string>()
+    for (const key of await keys(store)) {
+      if (typeof key !== 'string') continue
+      for (const prefix of DOCUMENT_PREFIXES) {
+        if (key.startsWith(prefix)) ids.add(key.slice(prefix.length))
+      }
+    }
+    // Read related keys together: no stale fallback during migration/deletion in another tab.
+    const allKeys = [...ids].flatMap(documentKeys)
+    const records = await readRecords(store, allKeys)
     const assets: MoldaAsset[] = []
-    for (const raw of values) {
-      const asset = safeSanitize(raw)
-      if (!asset) continue
-      const bytes = assetBytes(asset)
-      inventory.bytesById.set(asset.id, bytes)
-      inventory.totalBytes += bytes
+    readIssues = []
+    for (const id of ids) {
+      const key = storedDocumentKey(records, id)
+      // Deleted between the key scan and the read; absent is not a damaged document.
+      if (key === null) continue
+      const raw = records.get(key)
+      const read = readMoldaDocumentForId(raw, id)
+      if (read.status !== 'valid') {
+        readIssues.push(moldaReadIssue(id, read))
+        continue
+      }
+      const asset = read.asset
       assets.push(asset)
     }
-    inventory.loaded = true
     return assets
   }
 
-  function assertBudget(incoming: ReadonlyArray<{ id: string; bytes: number }>): void {
-    let projected = inventory.totalBytes
-    for (const item of incoming) {
-      projected -= inventory.bytesById.get(item.id) ?? 0
-      projected += item.bytes
+  async function listSummaries(): Promise<MoldaAssetSummary[]> {
+    const diskKeys = new Set(await keys(store))
+    const ids = new Set<string>()
+    for (const key of diskKeys) {
+      if (typeof key !== 'string') continue
+      for (const prefix of DOCUMENT_PREFIXES) {
+        if (key.startsWith(prefix)) ids.add(key.slice(prefix.length))
+      }
     }
-    if (projected > maxBytes) throw new MoldaStorageBudgetError()
+    // Only indexed storage writers know this generation, and update its summary atomically.
+    // Older records cannot have trustworthy cached summaries: old tabs may still edit them.
+    const summaries = await readRecords(
+      store,
+      [...ids]
+        .filter(
+          (id) =>
+            diskKeys.has(`${DOCUMENT_KEY_PREFIX}${id}`) &&
+            !diskKeys.has(`${SCENE_DOCUMENT_KEY_PREFIX}${id}`) &&
+            !diskKeys.has(`${SCENE_DELETED_KEY_PREFIX}${id}`),
+        )
+        .map((id) => `${SUMMARY_KEY_PREFIX}${id}`),
+    )
+    const result: MoldaAssetSummary[] = []
+    const issues: MoldaReadIssue[] = []
+    for (const id of ids) {
+      const raw = summaries.get(`${SUMMARY_KEY_PREFIX}${id}`)
+      const summary =
+        raw &&
+        typeof raw === 'object' &&
+        'formatVersion' in raw &&
+        raw.formatVersion === MOLDA_DOCUMENT_WRITE_VERSION
+          ? readAssetSummary(raw, id)
+          : null
+      if (summary) {
+        result.push(summary)
+        continue
+      }
+      // Migration/invalid index: retain at most ONE full document, without rewriting on read.
+      const read = await readOne(id)
+      if (read?.status === 'valid') result.push(summarizeAsset(read.asset))
+      else if (read) issues.push(moldaReadIssue(id, read))
+    }
+    readIssues = issues
+    return result
   }
 
-  function account(id: string, bytes: number | null): void {
-    inventory.totalBytes -= inventory.bytesById.get(id) ?? 0
-    if (bytes === null) inventory.bytesById.delete(id)
-    else {
-      inventory.bytesById.set(id, bytes)
-      inventory.totalBytes += bytes
-    }
+  async function readOne(id: string): Promise<MoldaDocumentRead | null> {
+    const records = await readRecords(store, documentKeys(id))
+    const key = storedDocumentKey(records, id)
+    return key === null ? null : readMoldaDocumentForId(records.get(key), id)
   }
 
   function broadcast(ids: string[]): void {
@@ -284,62 +306,73 @@ export function createMoldaPersistence(
 
   return {
     loadAll: () => readAll(),
+    listSummaries,
 
     async load(id) {
-      const raw = await get(keyFor(id), store)
-      return raw === undefined ? null : safeSanitize(raw)
+      const read = await readOne(id)
+      if (!read) return null
+      if (read.status === 'unsupported') throw new MoldaUnsupportedVersionError(read.version)
+      return read.status === 'valid' ? read.asset : null
     },
+
+    read: readOne,
+
+    async loadRecovery(id) {
+      const scene = `${SCENE_RECOVERY_KEY_PREFIX}${id}`
+      const current = `${RECOVERY_KEY_PREFIX}${id}`
+      const previous = `${PREVIOUS_RECOVERY_KEY_PREFIX}${id}`
+      const records = await readRecords(store, [scene, current, previous])
+      return records.get(records.has(scene) ? scene : records.has(current) ? current : previous)
+    },
+    getReadIssues: () => readIssues,
 
     save(asset) {
       return runExclusiveWrite(dbName, async () => {
-        // Outra aba pode ter gravado sem esta instância assinar o canal. A
-        // releitura dentro do lock é a autoridade do cálculo, não um cache local.
-        await readAll()
-        const bytes = assetBytes(asset)
-        assertBudget([{ id: asset.id, bytes }])
-        await set(keyFor(asset.id), asset, store)
-        account(asset.id, bytes)
+        await guardedWrite(store, [asset], maxBytes)
         broadcast([asset.id])
+      })
+    },
+
+    saveIfUnchanged(asset, expectedUpdatedAt) {
+      return runExclusiveWrite(dbName, async () => {
+        const written = await guardedWrite(
+          store,
+          [asset],
+          maxBytes,
+          new Map([[asset.id, expectedUpdatedAt]]),
+        )
+        if (written) broadcast([asset.id])
+        return written
       })
     },
 
     saveMany(assets) {
       return runExclusiveWrite(dbName, async () => {
         if (assets.length === 0) return
-        await readAll()
-        // O IndexedDB é chaveado por id e `setMany` preserva a última entrada
-        // repetida. Consolide o lote com a mesma semântica ANTES do orçamento,
-        // da gravação, do inventário e do aviso cross-tab.
-        const byId = new Map<string, MoldaAsset>()
-        for (const asset of assets) byId.set(asset.id, asset)
-        const batch = [...byId.values()]
-        const measured = batch.map((asset) => ({ id: asset.id, bytes: assetBytes(asset) }))
-        assertBudget(measured)
-        await setMany(
-          batch.map((asset) => [keyFor(asset.id), asset] as [string, MoldaAsset]),
-          store,
-        )
-        for (const item of measured) account(item.id, item.bytes)
-        broadcast(measured.map((item) => item.id))
+        await guardedWrite(store, assets, maxBytes)
+        broadcast([...new Set(assets.map((asset) => asset.id))])
       })
     },
 
     remove(id) {
       return runExclusiveWrite(dbName, async () => {
-        await del(keyFor(id), store)
-        account(id, null)
+        await removeStoredDocuments(store, [id])
         broadcast([id])
+      })
+    },
+
+    removeIfUnchanged(id, expectedUpdatedAt) {
+      return runExclusiveWrite(dbName, async () => {
+        const removed = await removeStoredDocuments(store, [id], new Map([[id, expectedUpdatedAt]]))
+        if (removed) broadcast([id])
+        return removed
       })
     },
 
     removeMany(ids) {
       return runExclusiveWrite(dbName, async () => {
         if (ids.length === 0) return
-        await delMany(
-          ids.map((id) => keyFor(id)),
-          store,
-        )
-        for (const id of ids) account(id, null)
+        await removeStoredDocuments(store, ids)
         broadcast([...ids])
       })
     },
@@ -352,7 +385,6 @@ export function createMoldaPersistence(
       const onMessage = (event: MessageEvent<unknown>): void => {
         const data = event.data as Partial<ChangedMessage> | null
         if (data?.type !== 'changed' || data.senderId === senderId) return
-        invalidateInventory()
         listener({ type: 'changed', ids: Array.isArray(data.ids) ? data.ids : undefined })
       }
       receiver.addEventListener('message', onMessage)
@@ -380,7 +412,7 @@ export function createMoldaPersistence(
 
 /**
  * UMA instância por namespace: quem lê a galeria (app, `studio-library`) e
- * quem grava (editor) enxergam o mesmo inventário de bytes.
+ * quem grava (editor) compartilham o mesmo banco e os avisos de recuperação.
  */
 export function getDefaultMoldaPersistence(): MoldaPersistence {
   const namespace = currentNamespace
@@ -398,6 +430,5 @@ export function resetMoldaPersistenceForTests(): void {
   defaults.clear()
   storeHandles.clear()
   writeQueues.clear()
-  inventories.clear()
   openAssets.clear()
 }

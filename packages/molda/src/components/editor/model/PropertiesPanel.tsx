@@ -92,6 +92,7 @@ export function PropertiesPanel({
               Object.keys(part.mesh.vertices).length,
               Object.keys(part.mesh.faces).length,
               partTriangleCount(part),
+              part.mesh.looseEdges?.length ?? 0,
             )}
           </p>
         ) : null}

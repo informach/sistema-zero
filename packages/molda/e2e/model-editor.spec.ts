@@ -612,6 +612,72 @@ test('a barra do editor mantém todas as ações dentro da tela de celular', asy
   }
 })
 
+test('Editar malha mantém a bancada e o Ajustar inteiros em desktop, tablet e celular', async ({
+  page,
+}) => {
+  test.setTimeout(60_000)
+  for (const [index, viewport] of [
+    { width: 1280, height: 720 },
+    { width: 768, height: 600 },
+    { width: 360, height: 640 },
+  ].entries()) {
+    await page.setViewportSize(viewport)
+    await page.goto('/')
+    const id = `mesh-layout-${index}`
+    await page.evaluate(
+      async ({ asset, id }) => window.__molda?.persistence.save({ ...asset, id, name: id }),
+      { asset: MODEL, id },
+    )
+    await page.goto(`/?criacao=${id}`)
+    const partButton = page.getByRole('button', { name: 'corpo, caixa' })
+    if (viewport.width < 1024) {
+      await page.getByRole('button', { name: 'Peças e cores' }).click()
+    }
+    await partButton.click()
+    if (viewport.width < 1024) {
+      await page.getByRole('button', { name: 'Recolher peças e propriedades' }).click()
+    }
+    await page.getByRole('button', { name: 'Transformar em malha' }).click()
+
+    const workbench = page.getByRole('complementary', { name: 'Editar malha' })
+    await expect(workbench).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Criar face ou aresta' })).toBeVisible()
+    await page.getByRole('button', { name: 'Faces', exact: true }).click()
+    await page.evaluate(() => {
+      const viewport = window.__molda?.viewport
+      const callbacks = viewport && Reflect.get(viewport, 'callbacks')
+      callbacks?.onMeshPick({ kind: 'face', key: 'f_py' }, false)
+    })
+    await page.getByRole('button', { name: 'Encolher dentro', exact: true }).click()
+
+    const adjust = page.getByRole('region', { name: 'Ajustar' })
+    await expect(adjust).toBeVisible()
+    const layout = await adjust.evaluate((element) => {
+      const rect = element.getBoundingClientRect()
+      const controlsFit = [...element.querySelectorAll('button, input')].every((control) => {
+        const item = control.getBoundingClientRect()
+        return item.left >= rect.left - 0.5 && item.right <= rect.right + 0.5
+      })
+      return {
+        left: rect.left,
+        right: rect.right,
+        viewportWidth: window.innerWidth,
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        controlsFit,
+        pageWidth: document.documentElement.scrollWidth,
+      }
+    })
+    expect(layout.left).toBeGreaterThanOrEqual(0)
+    expect(layout.right).toBeLessThanOrEqual(layout.viewportWidth)
+    expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth)
+    expect(layout.controlsFit).toBe(true)
+    expect(layout.pageWidth).toBe(layout.viewportWidth)
+    await page.getByRole('button', { name: 'Fechar ajustes' }).click()
+    await expect(adjust).toBeHidden()
+  }
+})
+
 /**
  * Malha no palco REAL: converter, escolher uma face pelo TOQUE (14 px de folga),
  * Encolher dentro, Puxar, pintar a face nova e girar a pele dela. O ponto do toque é

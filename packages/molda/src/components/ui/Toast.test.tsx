@@ -22,6 +22,23 @@ function Trigger({ onFix }: { onFix: () => void }): JSX.Element {
 }
 
 describe('Toast com ações', () => {
+  test('a região viva já existe e mantém a identidade quando a mensagem chega', () => {
+    const { container } = render(
+      <ToastProvider>
+        <Trigger onFix={() => undefined} />
+      </ToastProvider>,
+    )
+    const live = container.querySelector('[aria-live="polite"]')
+    expect(live).not.toBeNull()
+    expect(live?.textContent).toBe('')
+
+    fireEvent.click(screen.getByRole('button', { name: 'avisar' }))
+
+    expect(container.querySelector('[aria-live="polite"]')).toBe(live)
+    expect(live?.isConnected).toBe(true)
+    expect(live?.textContent).toBe('Face virada.')
+  })
+
   test('o botão da ação chama o conserto e fecha o toast', () => {
     let fixed = 0
     render(

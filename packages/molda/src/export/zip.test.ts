@@ -6,6 +6,7 @@ import { decodePng } from '../testing/pngDecode'
 import { decodeRgbe } from '../testing/rgbeDecode'
 import { MOLDA_GALLERY_ZIP_ENTRY } from './backupFormat'
 import { importMoldaJson } from './projectJson'
+import { exportSkyHdr } from './skyHdr'
 import {
   buildGalleryFileMap,
   GalleryZipError,
@@ -18,6 +19,27 @@ import {
 const SKY_SIZE = { width: 64, height: 32 }
 
 describe('"Baixar tudo" (o zip da galeria)', () => {
+  it('worker-produced HDR is identical inside the compressed archive', async () => {
+    const sky = makeSky()
+    const original = structuredClone(sky)
+    const expected = exportSkyHdr(sky, SKY_SIZE)
+    const bytes = await zipGallery([sky], { skySize: SKY_SIZE, yieldBetween: null })
+    const entries = unzipSync(bytes)
+    expect(expected.ok).toBe(true)
+    if (expected.ok)
+      expect(entries['ceus/fim-de-tarde.hdr']).toEqual(Uint8Array.from(expected.bytes))
+    expect(sky).toEqual(original)
+  })
+
+  it('aborts asynchronous sky preparation without returning partial files or archives', async () => {
+    for (const prepare of [buildGalleryFileMap, zipGallery]) {
+      const controller = new AbortController()
+      const pending = prepare([makeSky()], { signal: controller.signal, yieldBetween: null })
+      controller.abort()
+      await expect(pending).rejects.toMatchObject({ code: 'aborted' })
+    }
+  })
+
   it('um arquivo pronto por criação, separado por tipo, mais o backup completo e o LEIA-ME', async () => {
     const assets = [makeModel(), makeTexture(), makeSky()]
     const { files, readme, skipped } = await buildGalleryFileMap(assets, {

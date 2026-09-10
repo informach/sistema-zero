@@ -2,6 +2,25 @@ import { describe, expect, test } from 'bun:test'
 import { createSessionStore } from './sessionStore'
 
 describe('seleção múltipla de peças (sessionStore)', () => {
+  test('isolation requires selection, follows it and exits when the last selection disappears', () => {
+    const store = createSessionStore()
+    store.getState().toggleIsolation()
+    expect(store.getState().isolateSelection).toBe(false)
+    store.getState().select('a')
+    store.getState().toggleIsolation()
+    store.getState().toggleExtra('b')
+    expect(store.getState().isolateSelection).toBe(true)
+    store.getState().toggleExtra('a')
+    expect(store.getState().selectedId).toBe('b')
+    expect(store.getState().isolateSelection).toBe(true)
+    store.getState().toggleExtra('b')
+    expect(store.getState().isolateSelection).toBe(false)
+    store.getState().enterMeshEdit('a')
+    store.getState().toggleIsolation()
+    store.getState().select(null)
+    expect(store.getState().isolateSelection).toBe(false)
+  })
+
   test('toggleExtra soma/tira; sem principal vira a principal; tirar a principal promove a próxima', () => {
     const store = createSessionStore()
     store.getState().toggleExtra('a')

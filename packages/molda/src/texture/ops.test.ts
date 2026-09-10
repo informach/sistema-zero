@@ -19,6 +19,29 @@ import {
 } from './ops'
 
 describe('textura: pintura', () => {
+  test('shifted painting clips in view space before mapping pixels; fill and picker use the same space', () => {
+    const asset = createTextureAsset({ name: 't', size: 16 })
+    const offset = [8, 8] as const
+    const middle = paintTexture(asset, [[7, 7]], 3, 3, false, offset)
+    expect(sampleTexture(middle, 0, 0)).toBe(3)
+    expect(sampleTexture(middle, 8, 8, offset)).toBe(3)
+    expect(middle.bitmap.data.filter(Boolean)).toHaveLength(9)
+    const corner = paintTexture(asset, [[0, 0]], 3, 3, false, offset)
+    expect(corner.bitmap.data.filter(Boolean)).toHaveLength(4)
+    expect(sampleTexture(corner, 7, 7)).toBe(0)
+    const wall = paintTexture(
+      asset,
+      Array.from({ length: 16 }, (_, y) => [0, y] as [number, number]),
+      2,
+      1,
+      false,
+    )
+    const filled = floodFillTexture(wall, 0, 0, 5, false, offset)
+    expect(sampleTexture(filled, 15, 4)).toBe(5)
+    expect(sampleTexture(filled, 1, 4)).toBe(0)
+    expect(sampleTexture(filled, 0, 4)).toBe(2)
+  })
+
   test('paintTexture recorta sem wrap e dá a volta com wrap', () => {
     const asset = createTextureAsset({ name: 't', size: 16 })
     const clipped = paintTexture(asset, [[-1, 0]], 3, 1, false)

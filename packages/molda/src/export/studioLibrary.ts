@@ -9,27 +9,23 @@
  *   e assinatura): modelo (`.glb`, `model3d`), céu (`.hdr`, `environment3d`)
  *   e textura (`.png`, `image`).
  */
-import { assetBytes } from '../core/bytes'
-import type { MoldaAsset, MoldaAssetKind } from '../core/model'
+
+import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
+import { ByteLru } from '../core/byteLru'
+import { MOLDA_LIMITS } from '../core/limits'
+import type { MoldaAsset } from '../core/model'
 import {
   getDefaultMoldaPersistence,
   getMoldaStorageNamespace,
   type MoldaPersistence,
 } from '../state/persistence'
+import { exportSkyHdrInWorker } from '../workers/skyExport'
 import { exportModelGlb } from './modelGlb'
-import { exportSkyHdr } from './skyHdr'
 import { exportTexturePng } from './texturePng'
 
 export { getMoldaStorageNamespace, setMoldaStorageNamespace } from '../state/persistence'
 
-export interface MoldaLibraryItem {
-  id: string
-  name: string
-  kind: MoldaAssetKind
-  updatedAt: number
-  bytes: number
-  thumbDataUrl: string | null
-}
+export type MoldaLibraryItem = Omit<MoldaAssetSummary, 'createdAt'>
 
 /** O `ProjectAsset.kind` do Estúdio que cada criação vira. */
 export type StudioAssetKind = 'model3d' | 'image' | 'environment3d'
@@ -63,36 +59,20 @@ type CachedExport =
       ok: true
       encoded: Pick<MoldaExportedAsset, 'kind' | 'dataUrl' | 'bytes' | 'width' | 'height'>
     }
-const exportCaches = new WeakMap<MoldaPersistence, Map<string, CachedExport>>()
+const exportCaches = new WeakMap<MoldaPersistence, ByteLru<string, CachedExport>>()
 
-function cacheFor(persistence: MoldaPersistence): Map<string, CachedExport> {
+function cacheFor(persistence: MoldaPersistence): ByteLru<string, CachedExport> {
   let cache = exportCaches.get(persistence)
   if (!cache) {
-    cache = new Map()
+    cache = new ByteLru({
+      maxBytes: MOLDA_LIMITS.exportCacheBytes,
+      maxEntries: MAX_EXPORT_CACHE_ENTRIES,
+      sizeOf: (key, value) =>
+        128 + 2 * (key.length + (value.ok ? value.encoded.dataUrl.length : 0)),
+    })
     exportCaches.set(persistence, cache)
   }
   return cache
-}
-
-function readCachedExport(cache: Map<string, CachedExport>, key: string): CachedExport | undefined {
-  const cached = cache.get(key)
-  if (!cached) return undefined
-  cache.delete(key)
-  cache.set(key, cached)
-  return cached
-}
-
-function writeCachedExport(
-  cache: Map<string, CachedExport>,
-  key: string,
-  result: CachedExport,
-): void {
-  cache.set(key, result)
-  while (cache.size > MAX_EXPORT_CACHE_ENTRIES) {
-    const oldest = cache.keys().next().value
-    if (oldest === undefined) return
-    cache.delete(oldest)
-  }
 }
 
 function materializeExport(asset: MoldaAsset, cached: CachedExport): ExportForStudioResult {
@@ -117,17 +97,11 @@ function materializeExport(asset: MoldaAsset, cached: CachedExport): ExportForSt
 
 /** Do namespace corrente, ordenada da mais recente para a mais antiga. */
 export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
-  const assets = await getDefaultMoldaPersistence().loadAll()
-  return assets
-    .map((asset) => ({
-      id: asset.id,
-      name: asset.name,
-      kind: asset.kind,
-      updatedAt: asset.updatedAt,
-      bytes: assetBytes(asset),
-      thumbDataUrl: asset.thumb ?? null,
-    }))
-    .sort((a, b) => b.updatedAt - a.updatedAt)
+  const persistence = getDefaultMoldaPersistence()
+  const summaries = persistence.listSummaries
+    ? await persistence.listSummaries()
+    : (await persistence.loadAll()).map(summarizeAsset)
+  return summaries.sort((a, b) => b.updatedAt - a.updatedAt)
 }
 
 /** Separador das chaves do cache: `namespace` (o viewerId do host, um UUID), `id` e `updatedAt` nunca o contêm. */
@@ -138,18 +112,18 @@ const CACHE_KEY_SEPARATOR = String.fromCharCode(0)
  * Estúdio sem reler o armazenamento (`useStudioResync`). Cache por id + `updatedAt`
  * compartilhado com `exportAssetForStudio` (a mesma persistência é a dona do cache).
  */
-export function exportLoadedAssetForStudio(
+export async function exportLoadedAssetForStudio(
   asset: MoldaAsset,
   options: { persistence?: MoldaPersistence; namespace?: string } = {},
-): ExportForStudioResult {
+): Promise<ExportForStudioResult> {
   const namespace = options.namespace ?? getMoldaStorageNamespace()
   const persistence = options.persistence ?? getDefaultMoldaPersistence()
   const cache = cacheFor(persistence)
   const cacheKey = [namespace, asset.id, String(asset.updatedAt)].join(CACHE_KEY_SEPARATOR)
-  const cached = readCachedExport(cache, cacheKey)
+  const cached = cache.get(cacheKey)
   if (cached) return materializeExport(asset, cached)
   const finish = (result: CachedExport): ExportForStudioResult => {
-    writeCachedExport(cache, cacheKey, result)
+    cache.set(cacheKey, result)
     return materializeExport(asset, result)
   }
   if (asset.kind === 'model') {
@@ -166,7 +140,7 @@ export function exportLoadedAssetForStudio(
     })
   }
   if (asset.kind === 'sky') {
-    const result = exportSkyHdr(asset)
+    const result = await exportSkyHdrInWorker(asset)
     if (!result.ok) return finish({ ok: false, reason: 'asset-too-big' })
     return finish({
       ok: true,

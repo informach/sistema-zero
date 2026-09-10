@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { COPY } from '../core/copy'
 import type { MoldaAsset, MoldaSkyAsset } from '../core/model'
 import { skyPreset } from '../sky/params'
-import { makeSky } from '../testing/fixtures'
+import { makeModel, makeSky } from '../testing/fixtures'
 import { createEditorStore } from './editorStore'
 import { createMemoryPersistence } from './memoryPersistence'
 import { MoldaStorageBudgetError } from './persistence'
@@ -16,6 +16,46 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
 }
 
 describe('editorStore', () => {
+  test('a command interrupting a live preview keeps every undo delta on its committed base', () => {
+    const initial = makeSky()
+    const store = createEditorStore({ asset: initial, persistence: createMemoryPersistence() })
+    store.getState().commit({ ...initial, name: 'primeiro' })
+    const before = store.getState().asset as MoldaSkyAsset
+    store.getState().replace(withPreset(before, 'noite'))
+    store.getState().commit({ ...store.getState().asset, name: 'segundo' })
+    store.getState().undo()
+    expect(presetOf(store.getState().asset)).toBe(initial.params.preset)
+    expect(store.getState().asset.name).toBe('primeiro')
+    store.getState().undo()
+    expect(store.getState().asset).toEqual({
+      ...initial,
+      updatedAt: store.getState().asset.updatedAt,
+    })
+    store.getState().dispose()
+  })
+
+  test('returning a cancelled preview to the saved object does not leave a dirty indicator', () => {
+    const initial = makeSky()
+    const store = createEditorStore({ asset: initial, persistence: createMemoryPersistence() })
+    store.getState().replace(withPreset(initial, 'noite'))
+    store.getState().replace(initial)
+    expect(store.getState().saveState).toBe('saved')
+    expect(store.getState().canUndo).toBe(false)
+    store.getState().dispose()
+  })
+
+  test('derived thumbnails do not leak through several undo steps', () => {
+    const initial = makeSky()
+    const store = createEditorStore({ asset: initial, persistence: createMemoryPersistence() })
+    store.getState().commit({ ...initial, name: 'primeiro' })
+    store.getState().setThumb('foto-do-primeiro')
+    store.getState().commit({ ...store.getState().asset, name: 'segundo' })
+    store.getState().undo()
+    store.getState().undo()
+    expect(store.getState().asset.thumb).toBeUndefined()
+    expect(store.getState().asset.name).toBe(initial.name)
+    store.getState().dispose()
+  })
   test('commit registra undo, carimba updatedAt e salva depois do debounce', async () => {
     const initial = makeSky({ updatedAt: 100 })
     const p = createMemoryPersistence([initial])
@@ -95,6 +135,26 @@ describe('editorStore', () => {
     store.getState().dispose()
   })
 
+  test('flush carimba uma edição transitória interrompida antes do fim do gesto', async () => {
+    const initial = makeSky({ updatedAt: 100 })
+    const persistence = createMemoryPersistence([initial])
+    const store = createEditorStore({ asset: initial, persistence, now: () => 100 })
+
+    store.getState().replace(withPreset(initial, 'noite'))
+    expect(store.getState().asset.updatedAt).toBe(100)
+    expect(store.getState().canUndo).toBe(false)
+
+    await store.getState().flush()
+
+    expect(store.getState().asset.updatedAt).toBe(101)
+    expect(store.getState().savedAsset.updatedAt).toBe(101)
+    expect(persistence.snapshot()[0]).toMatchObject({
+      updatedAt: 101,
+      params: { preset: 'noite' },
+    })
+    expect(store.getState().canUndo).toBe(false)
+  })
+
   test('flush drena mudanças feitas DURANTE a gravação', async () => {
     const gate: { release: (() => void) | null } = { release: null }
     const p = createMemoryPersistence()
@@ -159,6 +219,36 @@ describe('editorStore', () => {
 })
 
 describe('amend (o "Ajustar" da malha)', () => {
+  test('amending new topology rebases undo; interrupted previews do not leak into old deltas', () => {
+    const initial = makeModel()
+    const store = createEditorStore({ asset: initial, persistence: createMemoryPersistence() })
+    store.getState().commit({ ...initial, name: 'primeira-edicao' })
+    const before = store.getState().asset
+    store.getState().commit({
+      ...initial,
+      parts: [...initial.parts, { ...initial.parts[0]!, id: 'first-new-id' }],
+    })
+    store.getState().amend({
+      ...initial,
+      parts: [...initial.parts, { ...initial.parts[0]!, id: 'replacement-id' }],
+    })
+    store.getState().undo()
+    expect(store.getState().asset).toEqual({
+      ...before,
+      updatedAt: store.getState().asset.updatedAt,
+    })
+    store.getState().redo()
+    expect(store.getState().asset).toMatchObject({
+      parts: [...initial.parts, { ...initial.parts[0]!, id: 'replacement-id' }],
+    })
+    store.getState().replace({ ...initial, name: 'preview', parts: [] })
+    store.getState().undo()
+    expect(store.getState().asset).toEqual({
+      ...before,
+      updatedAt: store.getState().asset.updatedAt,
+    })
+    store.getState().dispose()
+  })
   test('amend troca o asset SEM entrada de desfazer, carimba updatedAt e agenda o autosave', async () => {
     const persistence = createMemoryPersistence()
     const initial = makeSky({ updatedAt: 100 })

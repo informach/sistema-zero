@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, spyOn, test } from 'bun:test'
+import { summarizeAsset } from '../core/assetSummary'
 import type { MoldaAsset } from '../core/model'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
 import { CHANGED_RELOAD_DELAY_MS, cloneWithNewIds, createGalleryStore } from './galleryStore'
@@ -6,6 +7,36 @@ import { createMemoryPersistence } from './memoryPersistence'
 import { MoldaStorageBudgetError, markMoldaAssetClosed, markMoldaAssetOpen } from './persistence'
 
 describe('galleryStore', () => {
+  test('listing retains summaries only and CRUD reads just its target from the latest disk revision', async () => {
+    const p = createMemoryPersistence([makeModel(), makeSky()])
+    const listContent = spyOn(p, 'loadAll')
+    const read = spyOn(p, 'load')
+    const store = createGalleryStore(p, { now: () => 30 })
+    await store.getState().load()
+    await store.getState().reload()
+    expect(listContent).not.toHaveBeenCalled()
+    expect(read).not.toHaveBeenCalled()
+    expect(store.getState().assets).toEqual([makeSky(), makeModel()].map(summarizeAsset))
+    const latest = makeModel({ parts: [] })
+    p.seed([latest, makeSky()])
+    expect(await store.getState().rename('model-1', 'renomeado')).toBe('ok')
+    expect(read).toHaveBeenCalledTimes(1)
+    expect(p.snapshot().find((a) => a.id === 'model-1')).toEqual({
+      ...latest,
+      name: 'renomeado',
+      updatedAt: Math.max(30, latest.updatedAt + 1),
+    })
+    await store.getState().duplicate('sky-1')
+    expect(read).toHaveBeenCalledTimes(2)
+    expect(listContent).not.toHaveBeenCalled()
+    for (const summary of store.getState().assets) {
+      expect(summary).not.toHaveProperty('parts')
+      expect(summary).not.toHaveProperty('params')
+    }
+    read.mockRestore()
+    listContent.mockRestore()
+  })
+
   test('load ordena da mais recente para a mais antiga', async () => {
     const p = createMemoryPersistence([
       makeSky({ updatedAt: 1 }),
@@ -68,17 +99,34 @@ describe('galleryStore', () => {
     const p = createMemoryPersistence([makeSky()])
     const store = createGalleryStore(p)
     await store.getState().load()
-    p.save = async () => {
+    p.saveIfUnchanged = async () => {
       throw new MoldaStorageBudgetError()
     }
     expect(await store.getState().rename('sky-1', 'ceu-novo')).toBe('storage-budget')
     expect(store.getState().getById('sky-1')?.name).toBe('fim-de-tarde')
 
-    p.save = async () => {
+    p.saveIfUnchanged = async () => {
       throw new Error('disco indisponível')
     }
     expect(await store.getState().rename('sky-1', 'ceu-novo')).toBe('save-failed')
     expect(store.getState().getById('sky-1')?.name).toBe('fim-de-tarde')
+  })
+
+  test('rename rejects a stale revision and refreshes the summary without overwriting the edit', async () => {
+    const initial = makeModel()
+    const latest = { ...initial, updatedAt: initial.updatedAt + 10, parts: [] }
+    const p = createMemoryPersistence([initial])
+    const store = createGalleryStore(p)
+    await store.getState().load()
+    const load = p.load
+    p.load = async (id) => {
+      const old = await load(id)
+      p.seed([latest])
+      return old
+    }
+    expect(await store.getState().rename(initial.id, 'novo-nome')).toBe('changed')
+    expect(p.snapshot()).toEqual([latest])
+    expect(store.getState().getById(initial.id)).toEqual(summarizeAsset(latest))
   })
 
   test('duplicate cria ids novos (peças e gêmeos remapeados) com nome -2', async () => {

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, renderHook } from '@testing-library/react'
-import { createTextureAsset, type MoldaAsset } from '../../core/model'
+import { cleanup, renderHook, waitFor } from '@testing-library/react'
+import { createSkyAsset, createTextureAsset, type MoldaAsset } from '../../core/model'
 import type { MoldaExportedAsset } from '../../export/studioLibrary'
 import { useStudioResync } from './useStudioResync'
 
@@ -27,6 +27,31 @@ function harness(idleMs = 60) {
 }
 
 describe('useStudioResync', () => {
+  it('serializes worker export and delivery; flush waits for the newest saved sky', async () => {
+    const first = createSkyAsset({ name: 'ceu', now: 1 })
+    const delivered: string[] = []
+    let releaseFirst = (): void => {
+      throw new Error('Delivery gate not initialized')
+    }
+    const gate = new Promise<void>((resolve) => {
+      releaseFirst = resolve
+    })
+    const send = async (asset: MoldaExportedAsset) => {
+      delivered.push(asset.originalFileName)
+      if (delivered.length === 1) await gate
+      return { updated: true as const }
+    }
+    const { result } = renderHook(() =>
+      useStudioResync({ savedAsset: first, send, idleMs: 10_000 }),
+    )
+    const firstFlush = result.current.flush({ ...first, name: 'ceu-1', updatedAt: 2 })
+    const lastFlush = result.current.flush({ ...first, name: 'ceu-2', updatedAt: 3 })
+    await waitFor(() => expect(delivered).toEqual(['ceu-1.hdr']))
+    releaseFirst()
+    await Promise.all([firstFlush, lastFlush])
+    expect(delivered).toEqual(['ceu-1.hdr', 'ceu-2.hdr'])
+  })
+
   it('abrir não reenvia; salvar reenvia UMA vez depois da folga, no formato do Estúdio', async () => {
     const { sent, first, rerender } = harness()
     await wait(40)

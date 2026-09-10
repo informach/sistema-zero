@@ -26,20 +26,24 @@ import {
   sampleTexture,
   updateTextureColor,
 } from '../../../texture/ops'
+import { paintTextureShape, type TextureShape } from '../../../texture/shapes'
 import { prefersReducedMotion } from '../../../viewport/reducedMotion'
 import type { TexturePreviewLike } from '../../../viewport/TexturePreview'
 import { createTexturePreview } from '../../../viewport/texturePreviewFactory'
 import { Button, ToolButton } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
 import {
+  Circle,
   Download,
   Eraser,
   Grid3x3,
   type LucideIcon,
+  Minus,
   Move,
   PaintBucket,
   Pencil,
   Pipette,
+  Square,
 } from '../../ui/icons'
 import { interactiveChipClass, isTypingTarget } from '../../ui/interaction'
 import { Panel } from '../../ui/Panel'
@@ -47,23 +51,32 @@ import { useToast } from '../../ui/Toast'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { EditorTopBar } from '../EditorTopBar'
 import { ColorsPanel } from '../model/ColorsPanel'
+import { useEditorGesture } from '../useEditorGesture'
 import { PixelStage, TiledPreview } from './PixelStage'
 
-export type TextureTool = 'pencil' | 'eraser' | 'fill' | 'picker'
+export type TextureTool = 'pencil' | 'eraser' | 'fill' | 'picker' | TextureShape
 
 const TOOL_ICONS: Record<TextureTool, LucideIcon> = {
   pencil: Pencil,
   eraser: Eraser,
   fill: PaintBucket,
   picker: Pipette,
+  line: Minus,
+  rectangle: Square,
+  ellipse: Circle,
 }
 const TOOL_SHORTCUTS: Record<TextureTool, string> = {
   pencil: 'P',
   eraser: 'E',
   fill: 'G',
   picker: 'I',
+  line: 'L',
+  rectangle: 'R',
+  ellipse: 'O',
 }
-const TOOLS: TextureTool[] = ['pencil', 'eraser', 'fill', 'picker']
+const TOOLS = Object.keys(TOOL_ICONS) as TextureTool[]
+const isShapeTool = (tool: TextureTool): tool is TextureShape =>
+  tool === 'line' || tool === 'rectangle' || tool === 'ellipse'
 const SIZES: BrushSize[] = [1, 2, 3]
 
 function useTexturePreviewCanvas(): {
@@ -108,30 +121,37 @@ export function TextureEditor({
   const [brush, setBrush] = useState<BrushSize>(1)
   const [color, setColor] = useState(1)
   const [shifted, setShifted] = useState(false)
+  const [filled, setFilled] = useState(false)
   // O gesto do "+ Nova cor" (seletor nativo): o mesmo desenho do `ModelEditor`.
   const colorGesture = useRef<{
-    before: MoldaTextureAsset
     index: number | null
     full: boolean
   } | null>(null)
   const stroke = useRef<{
     pointerId: number
-    before: MoldaTextureAsset
     last: [number, number] | null
+    from: [number, number]
+    before: MoldaTextureAsset
+    tool: TextureTool
+    color: number
+    brush: BrushSize
+    filled: boolean
+    offset: [number, number]
   } | null>(null)
   const { canvasRef, preview, unsupported } = useTexturePreviewCanvas()
   const size = asset.bitmap.width
   const offset: [number, number] = shifted ? [size / 2, size / 2] : [0, 0]
 
   const current = useCallback(() => editor.getState().asset as MoldaTextureAsset, [editor])
+  const paintGesture = useEditorGesture(editor, current)
+  const colorEdits = useEditorGesture(editor, current)
   // O gesto do "+" fecha antes de qualquer outro commit ou traço (ver `ModelEditor`).
   const closeColorGesture = useCallback(() => {
     const gesture = colorGesture.current
     colorGesture.current = null
     if (!gesture) return
-    const after = editor.getState().asset as MoldaTextureAsset
-    if (after !== gesture.before) editor.getState().commitGesture(gesture.before, after)
-  }, [editor])
+    colorEdits.end()
+  }, [colorEdits])
   const commit = useCallback(
     (next: MoldaTextureAsset) => {
       closeColorGesture()
@@ -157,29 +177,61 @@ export function TextureEditor({
     const active = stroke.current
     if (!active) return
     const now = current()
-    const value = tool === 'eraser' ? 0 : color
+    if (isShapeTool(active.tool)) {
+      const next = paintTextureShape(active.before, {
+        shape: active.tool,
+        from: active.from,
+        to: [x, y],
+        color: active.color,
+        brush: active.brush,
+        filled: active.filled,
+        offset: active.offset,
+      })
+      active.last = [x, y]
+      if (next !== now) paintGesture.update(next)
+      return
+    }
+    const value = active.tool === 'eraser' ? 0 : active.color
     const texels = active.last
-      ? lineTexelsWrap(size, active.last[0], active.last[1], x, y, now.seamless)
+      ? lineTexelsWrap(size, active.last[0], active.last[1], x, y, active.before.seamless)
       : [[x, y] as [number, number]]
-    const next = paintTexture(now, texels, value, brush, now.seamless)
+    const next = paintTexture(
+      now,
+      texels,
+      value,
+      active.brush,
+      active.before.seamless,
+      active.offset,
+    )
     active.last = [x, y]
-    if (next !== now) editor.getState().replace(next)
+    if (next !== now) paintGesture.update(next)
   }
 
   function onDown(x: number, y: number, pointerId: number): void {
     const now = current()
     switch (tool) {
       case 'picker': {
-        const index = sampleTexture(now, x, y)
+        const index = sampleTexture(now, x, y, offset)
         if (index > 0) setColor(index)
         return
       }
       case 'fill':
-        commit(floodFillTexture(now, x, y, color, now.seamless))
+        commit(floodFillTexture(now, x, y, color, now.seamless, offset))
         return
       default:
         closeColorGesture()
-        stroke.current = { pointerId, before: current(), last: null }
+        paintGesture.begin()
+        stroke.current = {
+          pointerId,
+          last: null,
+          from: [x, y],
+          before: current(),
+          tool,
+          color,
+          brush,
+          filled,
+          offset: [...offset],
+        }
         paintAt(x, y)
     }
   }
@@ -194,9 +246,14 @@ export function TextureEditor({
     const active = stroke.current
     if (!active || active.pointerId !== pointerId) return
     stroke.current = null
-    const after = current()
-    if (after !== active.before) editor.getState().commitGesture(active.before, after)
+    paintGesture.end()
   }
+
+  const toggleShifted = useCallback(() => {
+    stroke.current = null
+    paintGesture.cancel()
+    setShifted((value) => !value)
+  }, [paintGesture])
 
   function download(): void {
     const result = exportTexturePng(current())
@@ -217,19 +274,14 @@ export function TextureEditor({
     function onKeyDown(event: KeyboardEvent): void {
       if (event.defaultPrevented || isMoldaDialogOpen() || isTypingTarget(event.target)) return
       if (event.ctrlKey || event.metaKey || event.altKey) return
+      const chosen = TOOLS.find(
+        (candidate) => TOOL_SHORTCUTS[candidate].toLowerCase() === event.key.toLowerCase(),
+      )
+      if (chosen) {
+        setTool(chosen)
+        return
+      }
       switch (event.key.toLowerCase()) {
-        case 'p':
-          setTool('pencil')
-          break
-        case 'e':
-          setTool('eraser')
-          break
-        case 'g':
-          setTool('fill')
-          break
-        case 'i':
-          setTool('picker')
-          break
         case '1':
         case '2':
         case '3':
@@ -239,7 +291,7 @@ export function TextureEditor({
           commit({ ...current(), seamless: !current().seamless })
           break
         case 'd':
-          setShifted((value) => !value)
+          toggleShifted()
           break
         default:
           return
@@ -247,7 +299,7 @@ export function TextureEditor({
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [commit, current])
+  }, [commit, current, toggleShifted])
 
   const colors = (
     <ColorsPanel
@@ -258,7 +310,8 @@ export function TextureEditor({
       onAddColor={(hex) => {
         // GESTO do seletor nativo (ver `ColorsPanel`): 1º passo cria a extra, os seguintes a
         // trocam no lugar ao vivo; `onAddColorEnd` fecha com UM desfazer.
-        const gesture = colorGesture.current ?? { before: current(), index: null, full: false }
+        if (!colorGesture.current) colorEdits.begin()
+        const gesture = colorGesture.current ?? { index: null, full: false }
         colorGesture.current = gesture
         if (gesture.full) return
         if (gesture.index !== null) {
@@ -266,13 +319,13 @@ export function TextureEditor({
           if (existing >= 0 && existing !== gesture.index) {
             // A cor escolhida já existe: a extra do gesto sai e o lápis aponta para ela.
             const next = removeTextureColor(current(), gesture.index) ?? current()
-            if (next !== current()) editor.getState().replace(next)
+            if (next !== current()) colorEdits.update(next)
             setColor(existing)
             gesture.index = null
             return
           }
           const next = updateTextureColor(current(), gesture.index, hex)
-          if (next !== current()) editor.getState().replace(next)
+          if (next !== current()) colorEdits.update(next)
           return
         }
         const before = current()
@@ -283,7 +336,7 @@ export function TextureEditor({
           return
         }
         if (result.asset !== before) {
-          editor.getState().replace(result.asset)
+          colorEdits.update(result.asset)
           gesture.index = result.index
         }
         setColor(result.index)
@@ -357,7 +410,7 @@ export function TextureEditor({
                 label={copy.shiftHalf}
                 shortcut="D"
                 active={shifted}
-                onClick={() => setShifted((value) => !value)}
+                onClick={toggleShifted}
               />
             </div>
           </fieldset>
@@ -380,6 +433,21 @@ export function TextureEditor({
               ))}
             </div>
           </fieldset>
+          {isShapeTool(tool) && (
+            <>
+              {tool !== 'line' && (
+                <Button
+                  variant="outline"
+                  aria-pressed={filled}
+                  onClick={() => setFilled((value) => !value)}
+                  className="min-h-11 px-1 text-xs"
+                >
+                  {copy.fillShape}
+                </Button>
+              )}
+              <p className="px-1 text-xs text-mld-text-soft">{copy.shapeHint}</p>
+            </>
+          )}
           <p className="px-1 text-[0.7rem] text-mld-muted">{copy.transparentHint}</p>
         </aside>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
@@ -391,6 +459,11 @@ export function TextureEditor({
                 onDown={onDown}
                 onMove={onMove}
                 onUp={onUp}
+                onCancel={(pointerId) => {
+                  if (stroke.current?.pointerId !== pointerId) return
+                  stroke.current = null
+                  paintGesture.cancel()
+                }}
               />
             </div>
             <div className="flex w-full flex-col gap-3 lg:w-56">

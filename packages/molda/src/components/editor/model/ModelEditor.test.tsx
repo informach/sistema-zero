@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import { MOLDA_LIMITS } from '../../../core/limits'
-import { createPart, type MoldaAsset, type MoldaModelAsset } from '../../../core/model'
+import {
+  createPart,
+  type MoldaAsset,
+  type MoldaMesh,
+  type MoldaModelAsset,
+} from '../../../core/model'
 import { getPalette } from '../../../core/palette'
 import { applySnapMove, snapSourceAnchors, snapTargetAnchors } from '../../../model/snap'
 import { mirrorTwinOf } from '../../../model/twins'
@@ -35,6 +40,37 @@ function modelOf(asset: MoldaAsset | undefined): MoldaModelAsset {
   return asset
 }
 
+function meshWithFaces(count: number): MoldaMesh {
+  const faces: MoldaMesh['faces'] = {}
+  for (let index = 0; index < count; index += 1) {
+    faces[`f_${index.toString(36)}`] = { v: ['v_a', 'v_b', 'v_c', 'v_d'] }
+  }
+  return {
+    vertices: {
+      v_a: [0, 0, 0],
+      v_b: [1, 0, 0],
+      v_c: [1, 1, 1],
+      v_d: [0, 1, 1],
+    },
+    faces,
+  }
+}
+
+function modelAtTriangleLimit(): MoldaModelAsset {
+  const parts = Array.from({ length: 10 }, (_unused, index) =>
+    createPart({
+      id: `mesh-${index}`,
+      name: `malha-${index}`,
+      shape: 'mesh',
+      from: [0, 0, 0],
+      to: [1, 1, 1],
+      color: 1,
+      mesh: meshWithFaces(index === 9 ? 784 : MOLDA_LIMITS.maxMeshFaces),
+    }),
+  )
+  return makeModel({ parts })
+}
+
 async function openModel(
   asset: MoldaModelAsset = makeModel(),
 ): Promise<ReturnType<typeof createMemoryPersistence>> {
@@ -46,6 +82,109 @@ async function openModel(
 }
 
 describe('ModelEditor (bancada Montar)', () => {
+  test('isolation follows selection, offers an explicit exit and never enters saved content/history', async () => {
+    await openModel()
+    const before = lastModel()
+    const isolate = screen.getByRole('button', {
+      name: COPY.editor.model.isolation.toggle,
+    }) as HTMLButtonElement
+    expect(isolate.disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.click(isolate)
+    expect(fake.instances[0]?.isolatedIds).toEqual(['body'])
+    expect(isolate.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'asa, rampa' }))
+    expect(fake.instances[0]?.isolatedIds).toEqual(['wing'])
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.isolation.showAll }))
+    expect(fake.instances[0]?.isolatedIds).toBeNull()
+    expect(lastModel().parts).toBe(before.parts)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('view controls show the active projection and frame the selection without changing the document', async () => {
+    await openModel()
+    const before = lastModel()
+    const selectedFrame = screen.getByRole('button', {
+      name: COPY.editor.model.views.selection,
+    }) as HTMLButtonElement
+    expect(selectedFrame.disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.views.front }))
+    expect(fake.instances[0]?.views.at(-1)).toBe('front')
+    expect(
+      screen
+        .getByRole('button', { name: COPY.editor.model.views.front })
+        .getAttribute('aria-pressed'),
+    ).toBe('true')
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    fireEvent.click(selectedFrame)
+    expect(fake.instances[0]?.views.at(-1)).toBe('selection')
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.views.free }))
+    expect(fake.instances[0]?.views.at(-1)).toBe('free')
+    expect(lastModel().parts).toBe(before.parts)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('Escape cancels a held arrow without creating history on its late keyup', async () => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const before = lastModel()
+    fireEvent.keyDown(document, { key: 'ArrowRight' })
+    fireEvent.keyDown(document, { key: 'ArrowRight', repeat: true })
+    expect(lastModel().parts).not.toEqual(before.parts)
+    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.keyUp(document, { key: 'ArrowRight' })
+    expect(lastModel().parts).toEqual(before.parts)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test.each([
+    'Escape',
+    'pointercancel',
+  ])('%s cancels the active viewport preview and ignores its late end', async (reason) => {
+    await openModel()
+    fireEvent.click(screen.getByRole('button', { name: 'corpo, caixa' }))
+    const before = lastModel()
+    act(() => {
+      fake.instances[0]?.callbacks.onDragStart('body')
+      fake.instances[0]?.callbacks.onDragMove({ id: 'body', from: [0, 0, 0], to: [4, 4, 4] })
+    })
+    expect(lastModel().parts[0]?.from).toEqual([0, 0, 0])
+    if (reason === 'Escape') {
+      fireEvent.keyDown(document, { key: 'Escape' })
+      expect(fake.instances[0]?.cancellations).toBe(1)
+    } else act(() => fake.instances[0]?.callbacks.onGestureCancel())
+    expect(lastModel().parts).toEqual(before.parts)
+    act(() => fake.instances[0]?.callbacks.onDragEnd(null))
+    expect(lastModel().parts).toEqual(before.parts)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('a late paint completion cannot overwrite a newer palette command', async () => {
+    await openModel()
+    const before = lastModel()
+    act(() => fake.instances[0]?.callbacks.onPaintStart())
+    fireEvent.change(screen.getByRole('combobox', { name: COPY.a11y.paletteSelect }), {
+      target: { value: 'pastel' },
+    })
+    await waitFor(() => expect(lastModel().paletteId).toBe('pastel'))
+    const edited = lastModel()
+    act(() => fake.instances[0]?.callbacks.onPaintEnd({ ...before, name: 'stale paint buffer' }))
+    expect(lastModel()).toBe(edited)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().paletteId).toBe(before.paletteId))
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
   test('uma criação com paleta personalizada pode voltar para uma paleta de fábrica', async () => {
     await openModel(
       makeModel({
@@ -184,6 +323,15 @@ describe('ModelEditor (bancada Montar)', () => {
     expect(fake.instances[0]?.views).toEqual(['top', 'frame'])
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.grid }))
     expect(fake.instances[0]?.gridVisible).toBe(false)
+  })
+
+  test('adicionar no teto de triângulos explica o limite correto', async () => {
+    await openModel(modelAtTriangleLimit())
+
+    fireEvent.keyDown(document, { key: 'b' })
+
+    await screen.findByText(COPY.editor.model.trianglesFull)
+    expect(lastModel().parts).toHaveLength(10)
   })
 
   test('um arrasto de mover é UM passo de desfazer; o de tamanho aplica a caixa no soltar', async () => {
@@ -400,6 +548,27 @@ describe('extras de 06/09: setas, arestas, pivô, trancar/esconder, seleção m�
     fireEvent.keyDown(document, { key: 'Delete' })
     await waitFor(() => expect(lastModel().parts).toHaveLength(0))
     expect(fake.instances[0]?.extraSelected).toEqual([])
+  })
+
+  test('duplicar uma seleção é atômico quando só parte do grupo caberia', async () => {
+    const parts = Array.from({ length: MOLDA_LIMITS.maxParts - 1 }, (_unused, index) =>
+      createPart({
+        id: `p-${index}`,
+        name: `peca-${index}`,
+        from: [0, 0, 0],
+        to: [1, 1, 1],
+        color: 1,
+      }),
+    )
+    await openModel(makeModel({ parts }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.partsAdditive }))
+    fireEvent.click(screen.getByRole('button', { name: 'peca-0, caixa' }))
+    fireEvent.click(screen.getByRole('button', { name: 'peca-1, caixa' }))
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.duplicate }))
+
+    await screen.findByText(COPY.editor.model.partsFull)
+    expect(lastModel().parts).toHaveLength(MOLDA_LIMITS.maxParts - 1)
   })
 
   test('Arrumar move o grupo atomicamente e Repetir mantém um único passo de desfazer ao ajustar', async () => {

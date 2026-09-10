@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
 import { createGalleryStore } from '../state/galleryStore'
 import { getDefaultMoldaPersistence, type MoldaPersistence } from '../state/persistence'
-import { MoldaAppProvider, type MoldaHostAdapter, useGallery } from './appContext'
+import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { ToastProvider, useToast } from './ui/Toast'
@@ -38,16 +38,18 @@ function InitialAssetOpener({
 }): null {
   const ready = useGallery((state) => state.loaded && !state.syncing)
   const exists = useGallery((state) => id !== undefined && state.assets.some((a) => a.id === id))
+  const { persistence } = useMoldaApp()
+  const unreadable = persistence.getReadIssues?.().some((issue) => issue.id === id) ?? false
   const { showToast } = useToast()
   const done = useRef(false)
   useEffect(() => {
     if (!id || done.current || !ready) return
     done.current = true
-    if (exists) onOpen(id)
+    if (exists && !unreadable) onOpen(id)
     // Criação que não está neste aparelho (nem desceu da nuvem): a galeria abre e AVISA,
     // em vez de ficar muda (o "Editar" do Estúdio chega por aqui).
-    else showToast(COPY.gallery.creationGone)
-  }, [id, ready, exists, onOpen, showToast])
+    else showToast(unreadable ? COPY.gallery.recoveryHint : COPY.gallery.creationGone)
+  }, [id, ready, exists, unreadable, onOpen, showToast])
   return null
 }
 

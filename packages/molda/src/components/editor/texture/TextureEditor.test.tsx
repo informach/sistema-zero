@@ -32,10 +32,153 @@ async function openTexture(
   const persistence = createMemoryPersistence([asset])
   render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'texture-1' }} />)
   await screen.findByRole('img', { name: COPY.editor.texture.stage })
+  await waitFor(() => expect(fake.instances[0]?.textures.length ?? 0).toBeGreaterThan(0))
   return persistence
 }
 
 describe('TextureEditor', () => {
+  test('rectangle preview replaces the previous preview, commits once and survives undo/redo', async () => {
+    const asset = makeTexture({ seamless: false })
+    asset.bitmap.data.fill(0)
+    const persistence = await openTexture(asset)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.tools.rectangle }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.fillShape }))
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    fireEvent.pointerDown(stage, { clientX: 2, clientY: 2, button: 0, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 6, clientY: 6, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 4, clientY: 4, pointerId: 1 })
+    const preview = fake.instances[0]?.textures.at(-1)?.rgba
+    expect(preview?.[(6 * 16 + 6) * 4 + 3]).toBe(0)
+    expect(preview?.[(3 * 16 + 3) * 4 + 3]).toBe(255)
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(
+      () =>
+        expect(textureOf(persistence.snapshot()[0]).bitmap.data.filter(Boolean)).toHaveLength(9),
+      { timeout: 3000 },
+    )
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(fake.instances[0]?.textures.at(-1)?.rgba.some(Boolean)).toBe(false)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    await waitFor(
+      () =>
+        expect(textureOf(persistence.snapshot()[0]).bitmap.data.filter(Boolean)).toHaveLength(9),
+      { timeout: 3000 },
+    )
+  })
+
+  test.each([
+    'line',
+    'rectangle',
+    'ellipse',
+  ] as const)('%s: Escape cancels the preview and discards late pointer events', async (tool) => {
+    const asset = makeTexture({ seamless: false })
+    asset.bitmap.data.fill(0)
+    await openTexture(asset)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.tools[tool] }))
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    const before = fake.instances[0]?.textures.at(-1)
+    fireEvent.pointerDown(stage, { clientX: 2, clientY: 2, button: 0, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 7, clientY: 7, pointerId: 1 })
+    expect(fake.instances[0]?.textures.at(-1)).not.toEqual(before)
+    fireEvent.keyDown(document, { key: 'Escape' })
+    fireEvent.pointerMove(stage, { clientX: 9, clientY: 9, pointerId: 1 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(fake.instances[0]?.textures.at(-1)).toEqual(before)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('tool changes cannot retarget a shape in progress; shifting the view cancels its uncommitted preview', async () => {
+    const asset = makeTexture({ seamless: false })
+    asset.bitmap.data.fill(0)
+    const persistence = await openTexture(asset)
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    fireEvent.keyDown(document, { key: 'l' })
+    fireEvent.pointerDown(stage, { clientX: 1, clientY: 1, button: 0, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 3, clientY: 1, pointerId: 1 })
+    fireEvent.keyDown(document, { key: 'r' })
+    fireEvent.pointerMove(stage, { clientX: 3, clientY: 3, pointerId: 1 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(
+      () =>
+        expect(textureOf(persistence.snapshot()[0]).bitmap.data.filter(Boolean)).toHaveLength(3),
+      { timeout: 3000 },
+    )
+    const before = fake.instances[0]?.textures.at(-1)
+    fireEvent.pointerDown(stage, { clientX: 5, clientY: 5, button: 0, pointerId: 2 })
+    fireEvent.pointerMove(stage, { clientX: 7, clientY: 7, pointerId: 2 })
+    fireEvent.keyDown(document, { key: 'd' })
+    fireEvent.pointerUp(stage, { pointerId: 2 })
+    expect(fake.instances[0]?.textures.at(-1)).toEqual(before)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(fake.instances[0]?.textures.at(-1)?.rgba.some(Boolean)).toBe(false)
+  })
+
+  test('a shifted view interpolates the visible short line even when seamless is off', async () => {
+    const asset = makeTexture({ seamless: false })
+    asset.bitmap.data.fill(0)
+    const persistence = await openTexture(asset)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.shiftHalf }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.tools.line }))
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    fireEvent.pointerDown(stage, { clientX: 7, clientY: 4, button: 0, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 8, clientY: 4, pointerId: 1 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    await waitFor(
+      () => expect(textureOf(persistence.snapshot()[0]).bitmap.data.some(Boolean)).toBe(true),
+      { timeout: 3000 },
+    )
+    const bitmap = textureOf(persistence.snapshot()[0]).bitmap
+    expect(bitmap.data.filter(Boolean)).toHaveLength(2)
+    expect(bitmap.data[12 * 16 + 15]).toBe(1)
+    expect(bitmap.data[12 * 16]).toBe(1)
+  })
+
+  test.each([
+    'Escape',
+    'pointercancel',
+    'lostpointercapture',
+  ])('%s restores the pixels and discards late pointer events', async (reason) => {
+    await openTexture()
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    const before = fake.instances[0]?.textures.at(-1)
+    fireEvent.click(screen.getByRole('button', { name: COPY.a11y.colorSwatch(2, '#ff2121') }))
+    fireEvent.pointerDown(stage, { clientX: 0, clientY: 0, button: 0, pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 3, clientY: 0, pointerId: 1 })
+    expect(fake.instances[0]?.textures.at(-1)).not.toEqual(before)
+    if (reason === 'Escape') fireEvent.keyDown(document, { key: 'Escape' })
+    else if (reason === 'pointercancel') fireEvent.pointerCancel(stage, { pointerId: 1 })
+    else fireEvent.lostPointerCapture(stage, { pointerId: 1 })
+    fireEvent.pointerMove(stage, { clientX: 8, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(fake.instances[0]?.textures.at(-1)).toEqual(before)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+  })
+
+  test('an unrelated undo invalidates the unfinished stroke without creating a redo entry', async () => {
+    await openTexture()
+    const stage = screen.getByRole('img', { name: COPY.editor.texture.stage })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.texture.seamless }))
+    fireEvent.pointerDown(stage, { clientX: 0, clientY: 0, button: 0, pointerId: 1 })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    const undone = fake.instances[0]?.textures.at(-1)
+    fireEvent.pointerMove(stage, { clientX: 3, clientY: 0, pointerId: 1 })
+    fireEvent.pointerUp(stage, { pointerId: 1 })
+    expect(fake.instances[0]?.textures.at(-1)).toEqual(undone)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.undo }) as HTMLButtonElement).disabled,
+    ).toBe(true)
+    expect(
+      (screen.getByRole('button', { name: COPY.editor.redo }) as HTMLButtonElement).disabled,
+    ).toBe(false)
+  })
+
   test('uma textura com paleta personalizada pode voltar para uma paleta de fábrica', async () => {
     const persistence = await openTexture(
       makeTexture({

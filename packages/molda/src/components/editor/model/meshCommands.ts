@@ -3,7 +3,6 @@ import type { MeshSelectMode } from '../../../state/sessionStore'
 export type MeshCommandId =
   | 'merge'
   | 'createFace'
-  | 'connect'
   | 'extrudeEdges'
   | 'loopCut'
   | 'extrudeFaces'
@@ -13,8 +12,7 @@ export type MeshCommandId =
 
 export type MeshSelectionRequirement =
   | 'two-or-more-points'
-  | 'three-or-four-points'
-  | 'two-opposite-points'
+  | 'two-to-four-points'
   | 'one-or-more-edges'
   | 'one-edge'
   | 'one-or-more-faces'
@@ -29,8 +27,7 @@ interface MeshCommandDefinition {
 
 const DEFINITIONS: readonly MeshCommandDefinition[] = [
   { id: 'merge', mode: 'vertex', requirement: 'two-or-more-points' },
-  { id: 'createFace', mode: 'vertex', requirement: 'three-or-four-points' },
-  { id: 'connect', mode: 'vertex', requirement: 'two-opposite-points' },
+  { id: 'createFace', mode: 'vertex', requirement: 'two-to-four-points' },
   { id: 'extrudeEdges', mode: 'edge', requirement: 'one-or-more-edges' },
   { id: 'loopCut', mode: 'edge', requirement: 'one-edge' },
   { id: 'extrudeFaces', mode: 'face', requirement: 'one-or-more-faces' },

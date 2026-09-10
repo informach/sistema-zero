@@ -5,6 +5,7 @@ import {
   type MoldaExportedAsset,
   type MoldaStudioResyncResult,
 } from '../../export/studioLibrary'
+import { getDefaultMoldaPersistence, getMoldaStorageNamespace } from '../../state/persistence'
 
 /** Folga depois do último salvamento antes de reenviar (a criança pinta em rajadas). */
 export const RESYNC_IDLE_MS = 1500
@@ -55,12 +56,14 @@ export function useStudioResync(options: {
     const deliver = sendRef.current
     if (!asset || !deliver) return chainRef.current
     pendingRef.current = null
-    const exported = exportLoadedAssetForStudio(asset)
-    // O que não cabe no Estúdio não é reenviado, em SILÊNCIO: a criação pode nem estar
-    // ligada a um jogo, e o teto já é avisado no "Baixar" e no "Trazer do Molda".
-    if (!exported.ok) return chainRef.current
+    // Bind the account before waiting in the queue; a profile switch cannot borrow its cache.
+    const persistence = getDefaultMoldaPersistence()
+    const namespace = getMoldaStorageNamespace()
     chainRef.current = chainRef.current.then(async () => {
       try {
+        const exported = await exportLoadedAssetForStudio(asset, { persistence, namespace })
+        // Size/geometry refusals remain distinct from a failed worker/host connection.
+        if (!exported.ok) return
         const result = await deliver(exported.asset)
         if (!result.updated && result.reason === 'failed') {
           onFailureRef.current?.(result.error)

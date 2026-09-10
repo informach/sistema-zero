@@ -2,13 +2,13 @@
  * O palco 3D (three.js cru, sem React dentro).
  *
  * - UM `MeshStandardMaterial` com o ATLAS como `map` e um `Mesh` por peça:
- *   128 peças = 128 draw calls, folga para 60 fps. A fusão em uma malha só
+ *   Uma chamada por peça; FPS depende do hardware e exige medição. A fusão em uma malha só
  *   acontece no export, onde valem os tetos do runtime do Estúdio.
  * - Render SOB DEMANDA: `requestFrame()` coalesce num rAF; o laço só continua
  *   enquanto o amortecimento da órbita assenta (desligado com
  *   `prefers-reduced-motion`).
- * - `setModel` é incremental por id: peça sem mudança de forma/tamanho/cor/
- *   layout mantém a geometria; só a transformação é reaplicada (barato). O
+ * - `setModel` é incremental por id: cor/layout atualizam UV separadamente de
+ *   posições/normais. `PartGeometryResource` mantém buffers e spans por face. O
  *   atlas só é reempacotado quando a LISTA de faces pintadas muda (face nova,
  *   tamanho de pele, número de cores); uma pincelada numa pele existente vira
  *   um re-raster da região + upload parcial da textura.
@@ -27,13 +27,9 @@
  */
 import {
   BackSide,
-  BufferGeometry,
-  DirectionalLight,
   DoubleSide,
   EdgesGeometry,
-  Float32BufferAttribute,
   GridHelper,
-  HemisphereLight,
   type Intersection,
   LineBasicMaterial,
   LineSegments,
@@ -41,7 +37,6 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
-  PerspectiveCamera,
   PlaneGeometry,
   Raycaster,
   Scene,
@@ -49,21 +44,12 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three'
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import type { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { TransformControls } from 'three/addons/controls/TransformControls.js'
 import { MOLDA_LIMITS } from '../core/limits'
-import type { FaceId, MoldaModelAsset, MoldaPart, ShapeId, Vec3 } from '../core/model'
-import { normalizeRotation, resolvePaletteColors } from '../core/sanitize'
-import {
-  type AtlasLayout,
-  atlasKey,
-  mapFaceUv,
-  packAtlas,
-  packAtlasFallback,
-  packAtlasIncremental,
-} from '../model/atlas'
-import { rasterAtlas, rasterFaceRegion } from '../model/atlasRaster'
-import { buildPartGeometry } from '../model/geometry'
+import type { MoldaModelAsset, MoldaPart, ShapeId, Vec3 } from '../core/model'
+import { normalizeRotation } from '../core/sanitize'
+import type { AtlasLayout } from '../model/atlas'
 import { verticesCenter } from '../model/meshSelection'
 import { updatePart } from '../model/partOps'
 import {
@@ -86,14 +72,14 @@ import {
   sampleColor,
 } from '../paint/stroke'
 import type { EditorMode, TransformTool } from '../state/sessionStore'
-import { AtlasTexture } from './atlasTexture'
-import { perspectiveFitDistance } from './cameraFit'
 import { DemandRenderLoop } from './demandRenderLoop'
 import {
   MESH_PICK_TOLERANCE_MOUSE_PX,
   MESH_PICK_TOLERANCE_TOUCH_PX,
   MeshEditOverlay,
 } from './meshEditOverlay'
+import { ModelAtlasResource } from './modelAtlasResource'
+import { PartGeometryResource } from './partGeometryResource'
 import { SnapOverlay } from './SnapOverlay'
 import { raycastSnapTarget } from './snapPicking'
 import type {
@@ -104,16 +90,19 @@ import type {
   ViewportOptions,
   ViewportSnapState,
 } from './types'
-import { deg, geometryHash, rad, roundTo, VIEW_DIRECTIONS } from './viewportMath'
+import { framingBounds, ViewportCamera } from './viewportCamera'
+import { deg, rad, roundTo } from './viewportMath'
+import { createViewportOrbit } from './viewportNavigation'
 import { ViewportThumbnail } from './viewportThumbnail'
+import { isPartVisible } from './viewVisibility'
+import { workshopLights } from './workshopLights'
 
 interface PartEntry {
   mesh: Mesh
-  geometryHash: string
+  resource: PartGeometryResource
   outline: LineSegments | null
   /** "Ver arestas": o contorno da peça (arestas com dobra ≥ 30°). */
   edges: LineSegments | null
-  faceOfTriangle: FaceId[]
 }
 
 interface Stroke {
@@ -140,8 +129,12 @@ const GIZMO_MODE: Record<Exclude<TransformTool, 'snap'>, 'translate' | 'rotate' 
 export class MoldaViewport implements MoldaViewportLike {
   private readonly renderer: WebGLRenderer
   private readonly scene = new Scene()
-  private readonly camera: PerspectiveCamera
-  private readonly orbit: OrbitControls
+  private readonly cameraRig = new ViewportCamera()
+  private readonly reducedMotion: boolean
+  private orbit: OrbitControls
+  private get camera() {
+    return this.cameraRig.camera
+  }
   private readonly gizmo: TransformControls
   private readonly gizmoHelper: ReturnType<TransformControls['getHelper']>
   private readonly grid: GridHelper
@@ -164,11 +157,7 @@ export class MoldaViewport implements MoldaViewportLike {
   private readonly renderLoop: DemandRenderLoop
   private readonly thumbnail: ViewportThumbnail
   private model: MoldaModelAsset | null = null
-  private layout: AtlasLayout | null = null
-  private layoutVersion = 0
-  private atlas: AtlasTexture | null = null
-  private atlasFull = false
-  private colorsSignature = ''
+  private readonly atlasResource = new ModelAtlasResource()
   private selectedId: string | null = null
   private mode: EditorMode = 'build'
   private tool: TransformTool = 'move'
@@ -179,7 +168,7 @@ export class MoldaViewport implements MoldaViewportLike {
   private dragging = false
   private dragPart: MoldaPart | null = null
   private dragStartPivot = new Vector3()
-  private pointerDown: { x: number; y: number; onGizmo: boolean } | null = null
+  private pointerDown: { x: number; y: number; pointerId: number; onGizmo: boolean } | null = null
   private stroke: Stroke | null = null
   // "Editar malha": o overlay é filho do mesh da peça; a alça de mover pega uma
   // ÂNCORA no centro da seleção (a `TransformControls` só sabe mover um Object3D).
@@ -198,6 +187,7 @@ export class MoldaViewport implements MoldaViewportLike {
   private groupStart = new Map<string, { from: Vec3; to: Vec3 }>()
   /** "Ver arestas" em todas as peças. */
   private edgesVisible = false
+  private isolatedIds: ReadonlySet<string> | null = null
   private readonly edgesMaterial = new LineBasicMaterial({
     color: 0x1b2a41,
     transparent: true,
@@ -228,15 +218,9 @@ export class MoldaViewport implements MoldaViewportLike {
       options.thumbBackground ?? DEFAULT_THUMB_BACKGROUND,
     )
 
-    this.camera = new PerspectiveCamera(45, 1, 0.1, 500)
-    this.camera.position.set(16, 12, 20)
+    this.reducedMotion = options.reducedMotion ?? false
 
-    const hemisphere = new HemisphereLight(0xffffff, 0x7f8fa8, 1.4)
-    const sun = new DirectionalLight(0xffffff, 2.2)
-    sun.position.set(12, 24, 10)
-    const fill = new DirectionalLight(0xffffff, 0.5)
-    fill.position.set(-14, 8, -12)
-    this.scene.add(hemisphere, sun, fill)
+    this.scene.add(...workshopLights())
 
     this.grid = new GridHelper(
       MOLDA_LIMITS.gridHalf * 2,
@@ -253,15 +237,12 @@ export class MoldaViewport implements MoldaViewportLike {
     this.floor.updateMatrixWorld(true)
     this.scene.add(this.floor)
 
-    this.orbit = new OrbitControls(this.camera, canvas)
-    this.orbit.enableDamping = !options.reducedMotion
-    this.orbit.dampingFactor = 0.08
-    this.orbit.maxPolarAngle = Math.PI / 2 - 0.04
-    this.orbit.minDistance = 3
-    this.orbit.maxDistance = 140
-    this.orbit.target.set(0, 2, 0)
-    this.orbit.update()
-    this.orbit.addEventListener('change', this.onOrbitChange)
+    this.orbit = createViewportOrbit(
+      this.canvas,
+      this.cameraRig,
+      this.reducedMotion,
+      this.onOrbitChange,
+    )
 
     this.gizmo = new TransformControls(this.camera, canvas)
     this.gizmo.setSize(1.5)
@@ -281,12 +262,13 @@ export class MoldaViewport implements MoldaViewportLike {
     canvas.addEventListener('pointerdown', this.onPointerDown)
     canvas.addEventListener('pointermove', this.onPointerMove)
     canvas.addEventListener('pointerup', this.onPointerUp)
-    canvas.addEventListener('pointercancel', this.onPointerUp)
+    canvas.addEventListener('pointercancel', this.onPointerCancel, { capture: true })
+    canvas.addEventListener('lostpointercapture', this.onLostPointerCapture)
     canvas.addEventListener('contextmenu', this.onContextMenu)
     canvas.addEventListener('webglcontextlost', this.onContextLost)
     canvas.addEventListener('webglcontextrestored', this.onContextRestored)
 
-    this.renderLoop = new DemandRenderLoop(canvas, this.renderer, this.camera, () => {
+    this.renderLoop = new DemandRenderLoop(canvas, this.renderer, this.cameraRig, () => {
       const moving = this.orbit.update()
       this.renderer.render(this.scene, this.camera)
       return moving
@@ -294,6 +276,26 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   // ── Modelo ────────────────────────────────────────────────────────────────
+
+  cancelGesture(): void {
+    const pointerId = this.stroke?.pointerId ?? this.pointerDown?.pointerId
+    this.stroke = null
+    this.pointerDown = null
+    this.dragging = false
+    this.meshDragging = false
+    this.groupDragging = false
+    this.dragPart = null
+    this.groupStart.clear()
+    // Reset may dispatch objectChange: clear our ownership before that callback.
+    if (this.gizmo.object) this.gizmo.reset()
+    this.gizmo.dragging = false
+    this.gizmo.axis = null
+    this.orbit.enabled = true
+    if (pointerId !== undefined && this.canvas.hasPointerCapture(pointerId)) {
+      this.canvas.releasePointerCapture(pointerId)
+    }
+    this.requestFrame()
+  }
 
   setModel(model: MoldaModelAsset): void {
     if (this.disposed) return
@@ -304,56 +306,14 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private applyModel(model: MoldaModelAsset): void {
-    const previous = this.model
-    const colors = resolvePaletteColors(model)
-    const colorsSignature = colors.join(',')
-    const paletteChanged = colorsSignature !== this.colorsSignature
-
-    // 1. Atlas: reempacota só quando a lista de faces pintadas muda.
-    const key = atlasKey(model)
-    let relayout = false
-    if (!this.layout || this.layout.key !== key) {
-      const packed = this.layout ? packAtlasIncremental(model, this.layout) : packAtlas(model)
-      if (packed.ok) {
-        this.layout = packed.layout
-        this.atlasFull = false
-        relayout = true
-      } else {
-        this.layout = packAtlasFallback(model)
-        this.atlasFull = true
-        relayout = true
-      }
-      this.callbacks.onAtlas({ size: this.layout.size, full: this.atlasFull })
-    }
-    const layout = this.layout
-    if (!layout) return
-
-    if (relayout || paletteChanged || !this.atlas) {
-      this.atlas?.dispose()
-      this.atlas = new AtlasTexture(rasterAtlas(model, layout), layout.size)
-      this.material.map = this.atlas.texture
+    const { layout, atlas, full, layoutChanged, textureChanged } = this.atlasResource.update(model)
+    if (layoutChanged) this.callbacks.onAtlas({ size: layout.size, full })
+    if (textureChanged) {
+      this.material.map = atlas.texture
       this.material.needsUpdate = true
-      this.layoutVersion += 1
-      this.colorsSignature = colorsSignature
-    } else if (previous) {
-      // 2. Re-raster só das peles que mudaram (a pincelada) e das faces de uma
-      //    peça que trocou de cor base (o índice 0 é a cor base).
-      const before = new Map(previous.parts.map((part) => [part.id, part]))
-      for (const part of model.parts) {
-        if (part.mirrorOf) continue
-        const old = before.get(part.id)
-        const colorChanged = old !== undefined && old.color !== part.color
-        for (const face of Object.keys(part.faces) as FaceId[]) {
-          const skin = part.faces[face]
-          if (!skin) continue
-          if (!colorChanged && old?.faces[face] === skin) continue
-          const rows = rasterFaceRegion(this.atlas.pixels, layout, colors, part, face)
-          if (rows) this.atlas.markRows(rows)
-        }
-      }
     }
 
-    // 3. Meshes.
+    // Spatial and UV buffers have their own lifetime, independent of atlas pixels.
     const seen = new Set<string>()
     let selectionDirty = false
     const previousById = new Map((this.model?.parts ?? []).map((part) => [part.id, part]))
@@ -372,20 +332,23 @@ export class MoldaViewport implements MoldaViewportLike {
       }
       const source =
         (part.mirrorOf ? model.parts.find((p) => p.id === part.mirrorOf) : undefined) ?? part
-      const hash = geometryHash(part, this.layoutVersion)
       let entry = this.entries.get(part.id)
-      if (entry && entry.geometryHash !== hash) {
-        this.disposeEntry(entry)
-        entry = undefined
+      if (entry?.resource.update(part, source, layout)) {
+        this.removeOutline(entry)
+        this.removeEdges(entry)
+        entry.mesh.geometry = entry.resource.geometry
+        if (this.edgesVisible) this.addEdges(entry)
+        if (groupIds.has(part.id) || (part.mirrorOf !== undefined && groupIds.has(part.mirrorOf)))
+          selectionDirty = true
       }
       if (!entry) {
-        entry = this.createEntry(part, source, layout, hash)
+        entry = this.createEntry(part, source, layout)
         this.entries.set(part.id, entry)
         if (this.edgesVisible) this.addEdges(entry)
         if (part.id === this.selectedId || part.mirrorOf === this.selectedId) selectionDirty = true
       }
       this.syncTransform(entry, part)
-      entry.mesh.visible = !part.hidden
+      entry.mesh.visible = isPartVisible(part, this.isolatedIds)
     }
     for (const [id, entry] of this.entries) {
       if (seen.has(id)) continue
@@ -394,7 +357,7 @@ export class MoldaViewport implements MoldaViewportLike {
       if (id === this.selectedId) selectionDirty = true
     }
     this.model = model
-    this.snapOverlay.setState(model, this.snapState)
+    this.snapOverlay.setState(this.displayModel(model), this.snapState)
     if (selectionDirty) this.applySelection()
     // O mesh da peça em edição pode ter sido recriado (malha nova): o overlay segue.
     this.syncMeshEdit()
@@ -424,7 +387,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.backMesh.geometry = entry.mesh.geometry
     if (this.backMesh.parent !== entry.mesh) entry.mesh.add(this.backMesh)
     const pivot = partPivot(part)
-    this.meshOverlay.setMesh(part.mesh, pivot, state.vertices)
+    this.meshOverlay.setMesh(part.mesh, pivot, state.vertices, state.selection)
     const center = verticesCenter(part.mesh, state.vertices)
     if (!center || this.mode !== 'build' || this.tool === 'snap' || this.meshDragging) {
       if (!center && this.gizmo.object === this.meshAnchor) this.gizmo.detach()
@@ -463,6 +426,31 @@ export class MoldaViewport implements MoldaViewportLike {
       else this.removeEdges(entry)
     }
     this.requestFrame()
+  }
+
+  setIsolation(ids: readonly string[] | null): void {
+    if ((!ids || ids.length === 0) && this.isolatedIds === null) return
+    if (
+      ids &&
+      this.isolatedIds?.size === ids.length &&
+      ids.every((id) => this.isolatedIds?.has(id))
+    )
+      return
+    this.isolatedIds = ids && ids.length > 0 ? new Set(ids) : null
+    if (!this.model) return
+    for (const part of this.model.parts) {
+      const entry = this.entries.get(part.id)
+      if (entry) entry.mesh.visible = isPartVisible(part, this.isolatedIds)
+    }
+    this.snapOverlay.setState(this.displayModel(this.model), this.snapState)
+    this.applySelection()
+    this.requestFrame()
+  }
+
+  private displayModel(model: MoldaModelAsset): MoldaModelAsset {
+    return this.isolatedIds
+      ? { ...model, parts: model.parts.filter((part) => isPartVisible(part, this.isolatedIds)) }
+      : model
   }
 
   setSelected(partId: string | null): void {
@@ -510,31 +498,32 @@ export class MoldaViewport implements MoldaViewportLike {
 
   setSnapState(state: ViewportSnapState): void {
     this.snapState = state
-    if (this.model) this.snapOverlay.setState(this.model, state)
+    if (this.model) this.snapOverlay.setState(this.displayModel(this.model), state)
     this.requestFrame()
   }
 
   setView(view: ViewName): void {
-    const bounds = this.model ? modelBounds(this.model) : null
-    const min = bounds?.min ?? [-2, 0, -2]
-    const max = bounds?.max ?? [2, 2, 2]
-    const center = new Vector3((min[0] + max[0]) / 2, (min[1] + max[1]) / 2, (min[2] + max[2]) / 2)
-    const radius = Math.max(
-      new Vector3(max[0] - min[0], max[1] - min[1], max[2] - min[2]).length() / 2,
-      1.5,
+    if (this.disposed) return
+    if (this.stroke || this.dragging || this.meshDragging || this.groupDragging) {
+      this.cancelGesture()
+      this.callbacks.onGestureCancel()
+    }
+    const selection =
+      view === 'selection' && this.selectedId ? [this.selectedId, ...this.extraIds] : undefined
+    const bounds = this.model ? framingBounds(this.displayModel(this.model), selection) : null
+    // New controls discard old damping/pan deltas and recompute their up-axis
+    // quaternion. Mutating camera.up on the existing controls cannot do this.
+    this.orbit.removeEventListener('change', this.onOrbitChange)
+    this.orbit.dispose()
+    if (view === 'frame' || view === 'selection') this.cameraRig.frame(bounds)
+    else this.cameraRig.setView(view, bounds)
+    this.orbit = createViewportOrbit(
+      this.canvas,
+      this.cameraRig,
+      this.reducedMotion,
+      this.onOrbitChange,
     )
-    const distance = Math.max(
-      perspectiveFitDistance(radius, this.camera.fov, this.camera.aspect) * 1.15,
-      4,
-    )
-    const direction =
-      view === 'frame'
-        ? this.camera.position.clone().sub(this.orbit.target).normalize()
-        : new Vector3(...VIEW_DIRECTIONS[view]).normalize()
-    if (direction.lengthSq() === 0) direction.set(0, 0.18, 1).normalize()
-    this.camera.position.copy(center).addScaledVector(direction, distance)
-    this.orbit.target.copy(center)
-    this.orbit.update()
+    this.gizmo.camera = this.camera
     this.requestFrame()
   }
 
@@ -548,6 +537,14 @@ export class MoldaViewport implements MoldaViewportLike {
     const bounds =
       visibleParts.length > 0 ? modelBounds({ ...this.model, parts: visibleParts }) : null
     if (!bounds) return null
+    // A thumbnail represents the saved creation, not the current solo session.
+    const visibility = new Map(
+      [...this.entries.values()].map((entry) => [entry, entry.mesh.visible]),
+    )
+    for (const part of this.model.parts) {
+      const entry = this.entries.get(part.id)
+      if (entry) entry.mesh.visible = !part.hidden
+    }
     try {
       return this.thumbnail.render(this.scene, bounds, [
         this.grid,
@@ -561,6 +558,7 @@ export class MoldaViewport implements MoldaViewportLike {
         ]),
       ])
     } finally {
+      for (const [entry, visible] of visibility) entry.mesh.visible = visible
       this.requestFrame()
     }
   }
@@ -575,7 +573,8 @@ export class MoldaViewport implements MoldaViewportLike {
     this.canvas.removeEventListener('pointerdown', this.onPointerDown)
     this.canvas.removeEventListener('pointermove', this.onPointerMove)
     this.canvas.removeEventListener('pointerup', this.onPointerUp)
-    this.canvas.removeEventListener('pointercancel', this.onPointerUp)
+    this.canvas.removeEventListener('pointercancel', this.onPointerCancel, { capture: true })
+    this.canvas.removeEventListener('lostpointercapture', this.onLostPointerCapture)
     this.canvas.removeEventListener('contextmenu', this.onContextMenu)
     this.canvas.removeEventListener('webglcontextlost', this.onContextLost)
     this.canvas.removeEventListener('webglcontextrestored', this.onContextRestored)
@@ -595,7 +594,7 @@ export class MoldaViewport implements MoldaViewportLike {
     ;(this.grid.material as LineBasicMaterial).dispose()
     this.floor.geometry.dispose()
     this.floor.material.dispose()
-    this.atlas?.dispose()
+    this.atlasResource.dispose()
     this.material.dispose()
     this.outlineMaterial.dispose()
     this.twinOutlineMaterial.dispose()
@@ -611,51 +610,16 @@ export class MoldaViewport implements MoldaViewportLike {
 
   // ── Peças ─────────────────────────────────────────────────────────────────
 
-  private createEntry(
-    part: MoldaPart,
-    source: MoldaPart,
-    layout: AtlasLayout,
-    hash: string,
-  ): PartEntry {
-    const built = buildPartGeometry(part)
-    const pivot = partPivot(part)
-    const positions = new Float32Array(built.positions.length)
-    for (let i = 0; i < built.positions.length; i += 3) {
-      positions[i] = (built.positions[i] as number) - pivot[0]
-      positions[i + 1] = (built.positions[i + 1] as number) - pivot[1]
-      positions[i + 2] = (built.positions[i + 2] as number) - pivot[2]
-    }
-    const uvs = new Float32Array(built.uvs.length)
-    for (let t = 0; t < built.triangleCount; t += 1) {
-      const face = built.faceOfTriangle[t]
-      if (!face) continue
-      for (let v = 0; v < 3; v += 1) {
-        const i = t * 6 + v * 2
-        const [u, w] = mapFaceUv(
-          layout,
-          part,
-          source,
-          face,
-          built.uvs[i] as number,
-          built.uvs[i + 1] as number,
-        )
-        uvs[i] = u
-        uvs[i + 1] = w
-      }
-    }
-    const geometry = new BufferGeometry()
-    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3))
-    geometry.setAttribute('normal', new Float32BufferAttribute(built.normals, 3))
-    geometry.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
-    const mesh = new Mesh(geometry, this.material)
+  private createEntry(part: MoldaPart, source: MoldaPart, layout: AtlasLayout): PartEntry {
+    const resource = new PartGeometryResource(part, source, layout)
+    const mesh = new Mesh(resource.geometry, this.material)
     mesh.userData.partId = part.id
     this.scene.add(mesh)
     return {
       mesh,
-      geometryHash: hash,
+      resource,
       outline: null,
       edges: null,
-      faceOfTriangle: built.faceOfTriangle,
     }
   }
 
@@ -680,7 +644,7 @@ export class MoldaViewport implements MoldaViewportLike {
     if (this.backMesh?.parent === entry.mesh) this.backMesh.removeFromParent()
     if (this.gizmo.object === entry.mesh) this.gizmo.detach()
     this.scene.remove(entry.mesh)
-    entry.mesh.geometry.dispose()
+    entry.resource.dispose()
   }
 
   private removeOutline(entry: PartEntry): void {
@@ -710,7 +674,7 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private isHidden(id: string | null): boolean {
-    return Boolean(id) && Boolean(this.model?.parts.find((part) => part.id === id)?.hidden)
+    return id !== null && !this.entries.get(id)?.mesh.visible
   }
 
   private addOutline(entry: PartEntry, material: LineBasicMaterial): void {
@@ -1005,7 +969,7 @@ export class MoldaViewport implements MoldaViewportLike {
     this.raycaster.setFromCamera(ndc, this.camera)
     return raycastSnapTarget(
       this.raycaster,
-      this.model,
+      this.displayModel(this.model),
       this.snapState.movingIds,
       (partId) => this.entries.get(partId)?.mesh,
     )
@@ -1041,7 +1005,7 @@ export class MoldaViewport implements MoldaViewportLike {
     const entry = partId ? this.entries.get(partId) : undefined
     const part = partId ? model.parts.find((item) => item.id === partId) : undefined
     if (!entry || !part || hit.faceIndex === undefined || hit.faceIndex === null) return null
-    const face = entry.faceOfTriangle[hit.faceIndex]
+    const face = entry.resource.faceOfTriangle[hit.faceIndex]
     if (!face) return null
     const local = worldToBox(part, [hit.point.x, hit.point.y, hit.point.z])
     const texel = faceTexelAt(part, face, local, model.texelsPerUnit)
@@ -1076,7 +1040,12 @@ export class MoldaViewport implements MoldaViewportLike {
       // continuar sendo um toque curto.
       event.stopImmediatePropagation()
       event.preventDefault()
-      this.pointerDown = { x: event.clientX, y: event.clientY, onGizmo: false }
+      this.pointerDown = {
+        x: event.clientX,
+        y: event.clientY,
+        pointerId: event.pointerId,
+        onGizmo: false,
+      }
       if (this.snapState.phase === 'target') this.updateSnapTarget(event)
       return
     }
@@ -1179,7 +1148,31 @@ export class MoldaViewport implements MoldaViewportLike {
   }
 
   private readonly onPointerDown = (event: PointerEvent): void => {
-    this.pointerDown = { x: event.clientX, y: event.clientY, onGizmo: this.gizmo.axis !== null }
+    if (
+      (this.dragging || this.meshDragging || this.groupDragging) &&
+      this.pointerDown &&
+      this.pointerDown.pointerId !== event.pointerId
+    )
+      return
+    this.pointerDown = {
+      x: event.clientX,
+      y: event.clientY,
+      pointerId: event.pointerId,
+      onGizmo: this.gizmo.axis !== null,
+    }
+  }
+
+  private readonly onPointerCancel = (event: PointerEvent): void => {
+    const active = this.stroke !== null || this.dragging || this.meshDragging || this.groupDragging
+    if (event.pointerId !== (this.stroke?.pointerId ?? this.pointerDown?.pointerId)) return
+    this.cancelGesture()
+    if (active) this.callbacks.onGestureCancel()
+  }
+
+  private readonly onLostPointerCapture = (event: PointerEvent): void => {
+    // TransformControls releases capture before announcing mouseUp. A normal
+    // release must still commit; cancellation has its own pointercancel event.
+    if (event.buttons !== 0) this.onPointerCancel(event)
   }
 
   private readonly onPointerUp = (event: PointerEvent): void => {
@@ -1231,7 +1224,7 @@ export class MoldaViewport implements MoldaViewportLike {
       const entry = this.entries.get(this.meshEdit.partId)
       const face =
         onPart && hit.faceIndex !== undefined && hit.faceIndex !== null
-          ? (entry?.faceOfTriangle[hit.faceIndex] ?? null)
+          ? (entry?.resource.faceOfTriangle[hit.faceIndex] ?? null)
           : null
       const tolerance =
         event.pointerType === 'touch' ? MESH_PICK_TOLERANCE_TOUCH_PX : MESH_PICK_TOLERANCE_MOUSE_PX
@@ -1288,10 +1281,13 @@ export class MoldaViewport implements MoldaViewportLike {
 
   private readonly onContextLost = (event: Event): void => {
     event.preventDefault()
+    const active = this.stroke !== null || this.dragging || this.meshDragging || this.groupDragging
+    this.cancelGesture()
+    if (active) this.callbacks.onGestureCancel()
   }
 
   private readonly onContextRestored = (): void => {
-    this.atlas?.markAll()
+    this.atlasResource.restore()
     this.requestFrame()
   }
 

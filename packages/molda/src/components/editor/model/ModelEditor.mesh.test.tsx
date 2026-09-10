@@ -51,6 +51,74 @@ async function openAndConvert(): Promise<ViewportCallbacks> {
 }
 
 describe('Editar malha (M2)', () => {
+  test('a selection shortcut cannot retarget the points owned by an in-flight drag', async () => {
+    const callbacks = await openAndConvert()
+    act(() => callbacks.onMeshPick({ kind: 'vertex', key: 'v_111' }, false))
+    act(() => callbacks.onMeshDragStart())
+    fireEvent.keyDown(document, { key: 'l' })
+    expect(fake.instances[0]?.meshEdit?.selection).toEqual([{ kind: 'vertex', key: 'v_111' }])
+    act(() => callbacks.onMeshDragMove([0, 1, 0]))
+    act(() => callbacks.onMeshDragEnd())
+    fireEvent.keyDown(document, { key: 'l' })
+    await screen.findByText(copy.selected(8, 'vertex'))
+  })
+
+  test('selection tools and shortcuts keep the current mode, share results and never enter undo history', async () => {
+    const callbacks = await openAndConvert()
+    const before = structuredClone(lastModel())
+    fireEvent.click(screen.getByRole('button', { name: copy.modes.face }))
+    fireEvent.click(screen.getByRole('button', { name: copy.selection.title }))
+    expect(
+      (screen.getByRole('button', { name: copy.selection.labels.connected }) as HTMLButtonElement)
+        .disabled,
+    ).toBe(true)
+    act(() => callbacks.onMeshPick({ kind: 'face', key: 'f_py' }, false))
+    fireEvent.click(screen.getByRole('button', { name: copy.selection.labels.grow }))
+    await screen.findByText(copy.selected(5, 'face'))
+    fireEvent.keyDown(document, { key: '-', code: 'Minus' })
+    await screen.findByText(copy.selected(1, 'face'))
+    fireEvent.keyDown(document, { key: 'l' })
+    await screen.findByText(copy.selected(6, 'face'))
+    fireEvent.click(screen.getByRole('button', { name: copy.selection.labels.none }))
+    await screen.findByText(copy.nothingSelected)
+    fireEvent.keyDown(document, { key: 'a', ctrlKey: true })
+    await screen.findByText(copy.selected(6, 'face'))
+    expect(fake.instances[0]?.meshEdit?.mode).toBe('face')
+    fireEvent.keyDown(document, { key: 'i', ctrlKey: true })
+    await screen.findByText(copy.nothingSelected)
+    await waitFor(() => expect(lastModel().thumb).toBe('data:image/jpeg;base64,AAAA'))
+    // Thumbnail metadata may finish while selecting. Compare every authorial field separately.
+    const { thumb: _beforeThumb, updatedAt: _beforeUpdated, ...beforeContent } = before
+    const { thumb: _afterThumb, updatedAt: _afterUpdated, ...afterContent } = lastModel()
+    expect(afterContent).toEqual(beforeContent)
+    // The only history entry is conversion, not the six intervening selection changes.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() => expect(lastModel().parts[0]?.shape).toBe('box'))
+  })
+
+  test('edge ring has the same button/keyboard result and help/typing do not trigger selection', async () => {
+    const callbacks = await openAndConvert()
+    fireEvent.click(screen.getByRole('button', { name: copy.modes.edge }))
+    fireEvent.click(screen.getByRole('button', { name: copy.selection.title }))
+    act(() => callbacks.onMeshPick({ kind: 'edge', keys: ['v_000', 'v_100'] }, false))
+    fireEvent.click(screen.getByRole('button', { name: copy.selection.labels.ring }))
+    await screen.findByText(copy.selected(4, 'edge'))
+    const ring = structuredClone(fake.instances[0]?.meshEdit?.selection)
+    act(() => callbacks.onMeshPick({ kind: 'edge', keys: ['v_100', 'v_000'] }, false))
+    fireEvent.keyDown(document, { key: 'k' })
+    await waitFor(() => expect(fake.instances[0]?.meshEdit?.selection).toEqual(ring))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.help.button }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText(copy.selection.help.ring)).toBeDefined()
+    fireEvent.keyDown(document, { key: 'a', ctrlKey: true })
+    expect(fake.instances[0]?.meshEdit?.selection).toEqual(ring)
+    fireEvent.click(within(dialog).getByRole('button', { name: COPY.a11y.closeDialog }))
+    const name = screen.getAllByRole('textbox')[0]
+    if (!name) throw new Error('Expected part name field')
+    fireEvent.keyDown(name, { key: 'a', ctrlKey: true })
+    expect(fake.instances[0]?.meshEdit?.selection).toEqual(ring)
+  })
+
   test('Transformar em malha: a caixa vira malha, o toast avisa e a bancada troca de caixa', async () => {
     await openAndConvert()
     expect(lastModel().parts[0]?.shape).toBe('mesh')
@@ -135,7 +203,6 @@ describe('ferramentas da malha (M3)', () => {
     await openAndConvert()
     screen.getByRole('button', { name: copy.tools.merge })
     screen.getByRole('button', { name: copy.tools.createFace })
-    screen.getByRole('button', { name: copy.tools.connect })
     expect(screen.queryByRole('button', { name: copy.tools.extrude })).toBeNull()
     expect(screen.queryByRole('button', { name: copy.tools.inset })).toBeNull()
 
@@ -151,7 +218,7 @@ describe('ferramentas da malha (M3)', () => {
     screen.getByRole('button', { name: copy.tools.flip })
     screen.getByRole('button', { name: copy.tools.split })
     expect(screen.queryByRole('button', { name: copy.tools.loopCut })).toBeNull()
-    screen.getByText(copy.modeHints.face)
+    screen.getByText((content) => content.includes(copy.modeHints.face))
   })
 
   test('Puxar a face de cima, Ajustar a distância (um desfazer só) e o toast de face virada', async () => {
@@ -206,6 +273,62 @@ describe('ferramentas da malha (M3)', () => {
     )
   })
 
+  test('Loop cut abre a bandeja larga, cria cortes múltiplos e mantém um desfazer', async () => {
+    const callbacks = await openAndConvert()
+    fireEvent.click(screen.getByRole('button', { name: copy.modes.edge }))
+    act(() => callbacks.onMeshPick({ kind: 'edge', keys: ['v_010', 'v_011'] }, false))
+    const loopButton = screen.getByRole('button', { name: copy.tools.loopCut })
+    expect(loopButton.textContent).toContain(copy.tools.loopCut)
+    fireEvent.click(loopButton)
+
+    const adjust = await screen.findByRole('region', { name: copy.adjust })
+    expect(within(adjust).getByRole('textbox', { name: copy.cuts })).toBeDefined()
+    expect(within(adjust).getByRole('textbox', { name: copy.cutPosition })).toBeDefined()
+    fireEvent.click(within(adjust).getByRole('button', { name: COPY.a11y.increase(copy.cuts) }))
+    await waitFor(() =>
+      expect(Object.keys(lastModel().parts[0]?.mesh?.faces ?? {})).toHaveLength(14),
+    )
+    expect(within(adjust).queryByRole('textbox', { name: copy.cutPosition })).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    await waitFor(() =>
+      expect(Object.keys(lastModel().parts[0]?.mesh?.faces ?? {})).toHaveLength(6),
+    )
+  })
+
+  test('Criar face ou aresta cria uma aresta solta, que pode ser puxada e direcionada', async () => {
+    const callbacks = await openAndConvert()
+    act(() => {
+      callbacks.onMeshPick({ kind: 'vertex', key: 'v_000' }, false)
+      callbacks.onMeshPick({ kind: 'vertex', key: 'v_111' }, true)
+    })
+    const create = screen.getByRole('button', { name: copy.tools.createFace })
+    expect(create.textContent).toContain(copy.tools.createFace)
+    fireEvent.click(create)
+    await waitFor(() => expect(lastModel().parts[0]?.mesh?.looseEdges).toHaveLength(1))
+    expect(fake.instances[0]?.meshEdit?.mode).toBe('edge')
+    const beforeExtrude = structuredClone(lastModel().parts[0]?.mesh)
+    const sourceEdge = beforeExtrude?.looseEdges?.[0]
+    if (!sourceEdge) throw new Error('sem aresta solta')
+    const expectedZ = sourceEdge.map((key) => (beforeExtrude.vertices[key]?.[2] as number) - 1)
+
+    fireEvent.click(screen.getByRole('button', { name: copy.tools.extrude }))
+    await waitFor(() => {
+      expect(lastModel().parts[0]?.mesh?.looseEdges).toBeUndefined()
+      expect(Object.keys(lastModel().parts[0]?.mesh?.faces ?? {})).toHaveLength(7)
+    })
+    const adjust = screen.getByRole('region', { name: copy.adjust })
+    const minusZ = within(adjust).getByRole('button', { name: copy.directions['-z'] })
+    fireEvent.click(minusZ)
+    await waitFor(() => {
+      const selected = fake.instances[0]?.meshEdit?.vertices ?? []
+      const selectedZ = selected
+        .map((key) => lastModel().parts[0]?.mesh?.vertices[key]?.[2])
+        .sort((a, b) => (a as number) - (b as number))
+      expect(selectedZ).toEqual([...expectedZ].sort((a, b) => a - b))
+    })
+  })
+
   test('Encolher dentro ajusta o percentual sobre a face original e desfaz em um passo', async () => {
     const callbacks = await openAndConvert()
     fireEvent.click(screen.getByRole('button', { name: copy.modes.face }))
@@ -235,21 +358,21 @@ describe('ferramentas da malha (M3)', () => {
     )
   })
 
-  test('Conectar pontos cria a diagonal escolhida e já muda para Arestas', async () => {
+  test('Criar face ou aresta cria a diagonal escolhida e já muda para Arestas', async () => {
     const callbacks = await openAndConvert()
     act(() => {
       callbacks.onMeshPick({ kind: 'vertex', key: 'v_010' }, false)
       callbacks.onMeshPick({ kind: 'vertex', key: 'v_111' }, true)
     })
     await waitFor(() => expect(fake.instances[0]?.meshEdit?.vertices).toHaveLength(2))
-    fireEvent.click(screen.getByRole('button', { name: copy.tools.connect }))
+    fireEvent.click(screen.getByRole('button', { name: copy.tools.createFace }))
     await waitFor(() => {
       expect(Object.keys(lastModel().parts[0]?.mesh?.faces ?? {})).toHaveLength(7)
       expect(fake.instances[0]?.meshEdit?.mode).toBe('edge')
     })
     screen.getByText(copy.selected(1, 'edge'))
     screen.getByRole('button', { name: copy.tools.extrude })
-    expect(screen.queryByRole('button', { name: copy.tools.connect })).toBeNull()
+    expect(screen.queryByRole('button', { name: copy.tools.createFace })).toBeNull()
   })
 })
 

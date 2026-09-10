@@ -5,34 +5,26 @@
  */
 import type { CSSProperties, JSX } from 'react'
 import { memo } from 'react'
+import type { MoldaAssetSummary } from '../../core/assetSummary'
 import { COPY } from '../../core/copy'
-import type { MoldaAsset } from '../../core/model'
+import type { GalleryPreviews } from '../../state/galleryPreviews'
 import { IconButton } from '../ui/Button'
 import { Copy, Pencil, Trash2 } from '../ui/icons'
 import { KIND_BORDER_VAR, KindChip } from './kinds'
-import { ModelThumb, SkyThumb, TextureThumb } from './thumbs'
+import { ProgressiveThumb } from './ProgressiveThumb'
 
 export interface AssetCardProps {
-  asset: MoldaAsset
+  asset: MoldaAssetSummary
+  previews: GalleryPreviews
   onOpen: (id: string) => void
-  onRename: (asset: MoldaAsset) => void
-  onDuplicate: (asset: MoldaAsset) => void
-  onRemove: (asset: MoldaAsset) => void
-}
-
-function Thumb({ asset }: { asset: MoldaAsset }): JSX.Element {
-  switch (asset.kind) {
-    case 'model':
-      return <ModelThumb asset={asset} />
-    case 'texture':
-      return <TextureThumb asset={asset} />
-    case 'sky':
-      return <SkyThumb params={asset.params} />
-  }
+  onRename: (asset: MoldaAssetSummary) => void
+  onDuplicate: (asset: MoldaAssetSummary) => void
+  onRemove: (asset: MoldaAssetSummary) => void
 }
 
 export const AssetCard = memo(function AssetCard({
   asset,
+  previews,
   onOpen,
   onRename,
   onDuplicate,
@@ -49,7 +41,7 @@ export const AssetCard = memo(function AssetCard({
         className="flex flex-1 flex-col text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-mld-accent"
       >
         <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-mld-bg">
-          <Thumb asset={asset} />
+          <ProgressiveThumb summary={asset} previews={previews} />
         </div>
         <div className="flex flex-col items-start gap-1 px-1 pt-1">
           <span className="w-full truncate text-base font-bold text-mld-text">{asset.name}</span>

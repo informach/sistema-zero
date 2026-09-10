@@ -6,6 +6,7 @@
  * nuvem). Um store zustand POR INSTÂNCIA do app (nada global).
  */
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
 import { createAsset, type MoldaAsset, type NewAssetInput } from '../core/model'
@@ -27,6 +28,7 @@ export type RenameResult =
   | 'taken'
   | 'missing'
   | 'open'
+  | 'changed'
   | GalleryPersistenceFailure
 export type RemoveResult = { ok: true } | { ok: false; reason: GalleryPersistenceFailure }
 
@@ -37,7 +39,7 @@ export interface ImportResult {
 
 export interface GalleryState {
   /** Da mais recente para a mais antiga. */
-  assets: MoldaAsset[]
+  assets: MoldaAssetSummary[]
   loaded: boolean
   loading: boolean
   /** A persistência está buscando fora (nuvem): a galeria mostra o aviso. */
@@ -59,7 +61,7 @@ export interface GalleryActions {
   importAssets(assets: readonly MoldaAsset[]): Promise<ImportResult>
   /** Liga a releitura por aviso externo; devolve o desligar. */
   attachPersistence(): () => void
-  getById(id: string): MoldaAsset | undefined
+  getById(id: string): MoldaAssetSummary | undefined
 }
 
 export type GalleryStore = StoreApi<GalleryState & GalleryActions>
@@ -67,15 +69,18 @@ export type GalleryStore = StoreApi<GalleryState & GalleryActions>
 /** Espera depois de um `changed` antes de reler (vários avisos seguidos viram uma leitura). */
 export const CHANGED_RELOAD_DELAY_MS = 250
 
-function sortAssets(assets: readonly MoldaAsset[]): MoldaAsset[] {
+function sortAssets(assets: readonly MoldaAssetSummary[]): MoldaAssetSummary[] {
   return [...assets].sort((a, b) => b.updatedAt - a.updatedAt || a.name.localeCompare(b.name))
 }
 
-function upsertSorted(assets: readonly MoldaAsset[], asset: MoldaAsset): MoldaAsset[] {
-  return sortAssets([...assets.filter((item) => item.id !== asset.id), asset])
+function upsertSorted(
+  assets: readonly MoldaAssetSummary[],
+  asset: MoldaAsset,
+): MoldaAssetSummary[] {
+  return sortAssets([...assets.filter((item) => item.id !== asset.id), summarizeAsset(asset)])
 }
 
-function takenNames(assets: readonly MoldaAsset[]): Set<string> {
+function takenNames(assets: readonly MoldaAssetSummary[]): Set<string> {
   return new Set(assets.map((asset) => asset.name))
 }
 
@@ -121,7 +126,9 @@ export function createGalleryStore(
 
   return createStore<GalleryState & GalleryActions>((set, get) => {
     async function readAndMerge(): Promise<void> {
-      const fresh = await persistence.loadAll()
+      const fresh = persistence.listSummaries
+        ? await persistence.listSummaries()
+        : (await persistence.loadAll()).map(summarizeAsset)
       const current = new Map(get().assets.map((asset) => [asset.id, asset]))
       // Uma criação ABERTA no editor tem a versão mais nova em memória: a
       // releitura não pode regredi-la para o que está no disco.
@@ -223,31 +230,41 @@ export function createGalleryStore(
           if (!name) return 'invalid'
           if (name === current.name) return 'ok'
           if (takenNames(get().assets).has(name)) return 'taken'
-          const renamed: MoldaAsset = { ...current, name, updatedAt: now() }
           try {
-            await persistence.save(renamed)
+            const source = await persistence.load(id)
+            if (!source) return 'missing'
+            if (isMoldaAssetOpen(id)) return 'open'
+            const renamed: MoldaAsset = {
+              ...source,
+              name,
+              updatedAt: Math.max(now(), source.updatedAt + 1),
+            }
+            if (!(await persistence.saveIfUnchanged(renamed, source.updatedAt))) {
+              await readAndMerge()
+              return 'changed'
+            }
+            set({ assets: upsertSorted(get().assets, renamed) })
           } catch (error) {
             return isStorageBudgetError(error) ? 'storage-budget' : 'save-failed'
           }
-          set({ assets: upsertSorted(get().assets, renamed) })
           return 'ok'
         })
       },
 
       duplicate(id) {
         return enqueue(async () => {
-          const source = get().assets.find((asset) => asset.id === id)
-          if (!source) return null
-          const name = uniqueAssetName(source.name, takenNames(get().assets))
-          if (!name) return null
-          const copy = cloneWithNewIds(source, name, now())
           try {
+            const source = await persistence.load(id)
+            if (!source) return null
+            const name = uniqueAssetName(source.name, takenNames(get().assets))
+            if (!name) return null
+            const copy = cloneWithNewIds(source, name, now())
             await persistence.save(copy)
+            set({ assets: upsertSorted(get().assets, copy) })
+            return copy
           } catch {
             return null
           }
-          set({ assets: upsertSorted(get().assets, copy) })
-          return copy
         })
       },
 

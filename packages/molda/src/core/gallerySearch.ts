@@ -38,9 +38,10 @@ export function searchTerms(query: string): string[] {
     .filter((term) => term.length > 0)
 }
 
-const searchableTextCache = new WeakMap<MoldaAsset, string>()
+type SearchableAsset = Pick<MoldaAsset, 'name' | 'kind'>
+const searchableTextCache = new WeakMap<SearchableAsset, string>()
 
-export function searchableText(asset: MoldaAsset): string {
+export function searchableText(asset: SearchableAsset): string {
   const cached = searchableTextCache.get(asset)
   if (cached !== undefined) return cached
   const text = [asset.name, COPY.kinds[asset.kind].title]
@@ -50,20 +51,20 @@ export function searchableText(asset: MoldaAsset): string {
   return text
 }
 
-export function matchesSearchTerms(asset: MoldaAsset, terms: readonly string[]): boolean {
+export function matchesSearchTerms(asset: SearchableAsset, terms: readonly string[]): boolean {
   if (terms.length === 0) return true
   const haystack = searchableText(asset)
   return terms.every((term) => haystack.includes(term))
 }
 
-export function matchesKindFilter(asset: MoldaAsset, kind: GalleryKindFilter): boolean {
+export function matchesKindFilter(asset: SearchableAsset, kind: GalleryKindFilter): boolean {
   return kind === 'all' || asset.kind === kind
 }
 
-export function filterGalleryAssets(
-  assets: readonly MoldaAsset[],
+export function filterGalleryAssets<T extends SearchableAsset>(
+  assets: readonly T[],
   filters: GalleryFilters,
-): MoldaAsset[] {
+): T[] {
   const terms = searchTerms(filters.query)
   return assets.filter(
     (asset) => matchesKindFilter(asset, filters.kind) && matchesSearchTerms(asset, terms),

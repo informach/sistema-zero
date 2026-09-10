@@ -1,6 +1,6 @@
 /** Canvas ampliável para qualquer bitmap indexado do Molda. */
 import type { JSX, PointerEvent as ReactPointerEvent } from 'react'
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { hexToRgb } from '../../../core/color'
 import type { MoldaSkin } from '../../../core/model'
 
@@ -28,6 +28,7 @@ export interface IndexedPixelStageProps {
   /** `null` avisa que o ponteiro saiu da área pintável e quebra o próximo segmento. */
   onMove: (point: IndexedPixelPoint | null, pointerId: number) => void
   onUp: (pointerId: number) => void
+  onCancel: (pointerId: number) => void
 }
 
 function modulo(value: number, size: number): number {
@@ -79,9 +80,34 @@ export function IndexedPixelStage({
   onDown,
   onMove,
   onUp,
+  onCancel,
 }: IndexedPixelStageProps): JSX.Element {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const activePointer = useRef<number | null>(null)
   const { width, height } = skin
+
+  const finishPointer = useCallback(
+    (pointerId: number, cancelled: boolean) => {
+      if (activePointer.current !== pointerId) return
+      activePointer.current = null
+      const canvas = canvasRef.current
+      if (canvas?.hasPointerCapture?.(pointerId)) canvas.releasePointerCapture(pointerId)
+      if (cancelled) onCancel(pointerId)
+      else onUp(pointerId)
+    },
+    [onCancel, onUp],
+  )
+
+  useEffect(() => {
+    const owner = canvasRef.current?.ownerDocument
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || activePointer.current === null) return
+      event.preventDefault()
+      finishPointer(activePointer.current, true)
+    }
+    owner?.addEventListener('keydown', cancel, { capture: true })
+    return () => owner?.removeEventListener('keydown', cancel, { capture: true })
+  }, [finishPointer])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -151,10 +177,11 @@ export function IndexedPixelStage({
       aria-label={ariaLabel}
       className={className}
       onPointerDown={(event) => {
-        if (event.button !== 0) return
+        if (event.button !== 0 || activePointer.current !== null) return
         const point = pointOf(event)
         if (!point) return
         event.preventDefault()
+        activePointer.current = event.pointerId
         try {
           event.currentTarget.setPointerCapture(event.pointerId)
         } catch {
@@ -162,9 +189,12 @@ export function IndexedPixelStage({
         }
         onDown(point, event.pointerId)
       }}
-      onPointerMove={(event) => onMove(pointOf(event), event.pointerId)}
-      onPointerUp={(event) => onUp(event.pointerId)}
-      onPointerCancel={(event) => onUp(event.pointerId)}
+      onPointerMove={(event) => {
+        if (activePointer.current === event.pointerId) onMove(pointOf(event), event.pointerId)
+      }}
+      onPointerUp={(event) => finishPointer(event.pointerId, false)}
+      onPointerCancel={(event) => finishPointer(event.pointerId, true)}
+      onLostPointerCapture={(event) => finishPointer(event.pointerId, true)}
     />
   )
 }

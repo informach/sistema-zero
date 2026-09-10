@@ -65,6 +65,9 @@ export interface MeshFace {
   v: readonly string[]
 }
 
+/** Uma aresta de construção sem face, guardada separadamente da superfície. */
+export type MeshLooseEdge = readonly [string, string]
+
 /**
  * A malha de uma peça `shape: 'mesh'`: vértices e faces em MAPAS por chave (nunca por
  * índice), em coordenadas da CAIXA da peça. `from`/`to` da peça são a caixa envolvente.
@@ -72,6 +75,8 @@ export interface MeshFace {
 export interface MoldaMesh {
   vertices: Record<string, Vec3>
   faces: Record<MeshFaceKey, MeshFace>
+  /** Arestas de construção. Ausente em assets antigos e omitido quando vazio. */
+  looseEdges?: readonly MeshLooseEdge[]
 }
 
 export const SNAPS = [1, 0.5] as const
