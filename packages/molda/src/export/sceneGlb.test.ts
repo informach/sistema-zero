@@ -321,6 +321,9 @@ test('empty and locator-only scenes use valid JSON-only GLB, without empty acces
   expect(view.getUint32(12, true) + 20).toBe(result.bytes.length)
 })
 
+// Pesado POR CONSTRUÇÃO: para provar o teto é preciso passar dele, e são nove materiais de
+// 1024×1024 RGBA (~36 MiB de pixels). É o teste mais lento da suíte, e o `--timeout` dos
+// lotes existe por causa dele e dos vizinhos: ver `package.json`.
 test('export budgets reject incompatible map grids, output pixel growth and oversized BIN/container', () => {
   const source = fixture()
   source.images = [image('a', 33, 1, () => [0, 0, 0, 255]), image('b', 32, 1, () => [0, 0, 0, 255])]

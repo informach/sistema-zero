@@ -120,8 +120,10 @@ test('os lotes de teste cobrem TODO o src, sem sobra e sem repetição', () => {
   expect(manifest.scripts.test).toBe(shards.map((name) => `bun run ${name}`).join(' && '))
   const covered = shards.flatMap((name) => {
     const script = manifest.scripts[name] ?? ''
-    expect(script.startsWith('bun test ')).toBe(true)
-    return script.slice('bun test '.length).trim().split(/\s+/)
+    // O teto de 20 s é do PACOTE, não de um teste: o runner divide dois núcleos com 21
+    // outros pacotes, e o padrão de 5 s reprovava o teste mais pesado por inanição.
+    expect(script.startsWith('bun test --timeout 20000 ')).toBe(true)
+    return script.slice('bun test --timeout 20000 '.length).trim().split(/\s+/)
   })
   expect(covered.length).toBe(new Set(covered).size)
   const present = readdirSync(resolve(import.meta.dir, '.'), { withFileTypes: true })

@@ -18,9 +18,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "dev": "vite --config playground/vite.config.ts",
-    "test:1": "bun test src/import src/workers src/export",
-    "test:2": "bun test src/scene src/components",
-    "test:3": "bun test src/accessibility-contract.test.ts src/host-conformance.test.ts src/assets src/core src/model src/paint src/sky src/state src/styles src/templates src/testing src/texture src/viewport"
+    "test:1": "bun test --timeout 20000 src/import src/workers src/export",
+    "test:2": "bun test --timeout 20000 src/scene src/components",
+    "test:3": "bun test --timeout 20000 src/accessibility-contract.test.ts src/host-conformance.test.ts src/assets src/core src/model src/paint src/sky src/state src/styles src/templates src/testing src/texture src/viewport"
   },
   "dependencies": {
     "clsx": "^2.1.1",
