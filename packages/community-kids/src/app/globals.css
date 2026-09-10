@@ -190,6 +190,14 @@
   /* L 0.56, e não 0.62: com 0.62 o número branco do pódio dava 3,64:1. */
   --medal-prata: oklch(0.56 0.02 255);
   --medal-bronze: oklch(0.53 0.09 55);
+  /* ⚠️ A TINTA de cada medalha vem em par, e não é a mesma nas três. O ouro é
+     claro e pede tinta escura (8,73:1; branco nele dá 1,48 e some); a prata e o
+     bronze são médios e pedem BRANCO (4,65 e 4,7:1) — tinta escura neles dava
+     2,78 e 2,39:1, que foi como o "2º" e o "3º" do pódio saíram na primeira
+     versão, com a mesma tinta das três. */
+  --medal-ouro-fg: var(--sz-kids-tinta);
+  --medal-prata-fg: oklch(1 0 0);
+  --medal-bronze-fg: oklch(1 0 0);
 
   /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
   --background: var(--sz-kids-ceu-suave);
@@ -374,9 +382,16 @@
   --porta-recados-texto: oklch(0.645 0.15 152);
   --porta-ranking-texto: oklch(0.67 0.13 70);
 
+  /* No escuro o metal CLAREIA, para não sumir contra o navy — e por isso a tinta
+     das três inverte junto: aqui as medalhas são todas claras e pedem tinta
+     escura. Deixar o branco do tema claro valendo aqui punha "2º" a 2,22:1 e "3º"
+     a 2,97:1, o que só apareceu porque a auditoria roda nos DOIS temas. */
   --medal-ouro: var(--sz-kids-amarelo);
   --medal-prata: oklch(0.75 0.02 255);
-  --medal-bronze: oklch(0.68 0.1 55);
+  /* 0.71, e não 0.68: com 0.68 o "3º" parava em 4,36:1 contra a tinta escura. */
+  --medal-bronze: oklch(0.71 0.1 55);
+  --medal-prata-fg: var(--sz-kids-tinta);
+  --medal-bronze-fg: var(--sz-kids-tinta);
 
   --background: var(--sz-kids-navy);
   --foreground: oklch(0.975 0.005 250);
