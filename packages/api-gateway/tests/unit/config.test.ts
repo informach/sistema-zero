@@ -354,9 +354,11 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
-  test('prática independente preserva JWT ativo, token interno e limites nas rotas explícitas', () => {
-    const routes = realConfig.routes.filter((route) => route.id.startsWith('members-practice-'))
-    expect(routes).toHaveLength(5)
+  test('seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas', () => {
+    const routes = realConfig.routes.filter(
+      (route) => route.id.startsWith('members-learning-') || route.id === 'members-section-help',
+    )
+    expect(routes).toHaveLength(4)
     for (const route of routes) {
       expect(route).toMatchObject({
         service: 'members',
@@ -366,7 +368,7 @@ describe('gateway.config.ts (configuração real)', () => {
       })
       expect(route.transforms).toBeDefined()
       expect(route.pathPattern).not.toContain('*')
-      if (route.methods.includes('POST')) expect(route.maxBodyBytes).toBeLessThanOrEqual(64 * 1024)
+      expect(route.maxBodyBytes).toBeLessThanOrEqual(64 * 1024)
     }
   })
   const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])

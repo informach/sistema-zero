@@ -1,0 +1,217 @@
+{
+  "version": 2,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-09",
+  "title": "Bateu, terminou, recomeçou",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! A tela de início funciona por teclado e toque. O dino ainda atravessa os cactos sem perder.\n\nHoje você vai definir a consequência da colisão e testar o ciclo completo da partida.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Monte o ciclo da partida",
+        "instructions": "Organize a experiência de alguém que perdeu uma partida e decidiu tentar de novo.",
+        "hints": ["O fim encerra uma partida; reiniciar prepara a próxima."],
+        "required": true,
+        "activity": {
+          "type": "sequence",
+          "mode": "order",
+          "items": [
+            {
+              "id": "peca-1",
+              "label": "Ver a tela de fim"
+            },
+            {
+              "id": "peca-2",
+              "label": "Começar na tela de início"
+            },
+            {
+              "id": "peca-3",
+              "label": "Jogar e colidir com um cacto"
+            },
+            {
+              "id": "peca-4",
+              "label": "Reiniciar e preparar outra partida"
+            }
+          ],
+          "solution": ["peca-2", "peca-3", "peca-1", "peca-4"],
+          "targets": []
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Detectar um encontro só faz diferença quando escolhemos sua consequência. A colisão pode produzir som, explosão, tremida e uma mudança de tela. Ao ir para fim, as ações protegidas por Se jogando deixam de executar. Reiniciar prepara uma partida nova, passando novamente pelas ações iniciais. Testar só a batida não basta: início, fim e reinício precisam formar um ciclo que o jogador entende."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto. Dentro, coloque Ir para a tela fim. Rode e bata.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela. Use Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas. Preserve o caminho de inicio para jogando que já existe.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter. Confira se o novo jogo volta ao estado inicial.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Complete o ciclo duas vezes, usando controles diferentes. O jogo deve parar ao perder e permitir uma nova tentativa. Envie seu projeto.\n\nNa Aula 10, você vai investigar por que algumas batidas parecem injustas."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-09-passo-01: gravar a demonstração \"a colisão que acaba o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-09-passo-02: gravar a demonstração \"a tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-09-passo-03: gravar a demonstração \"fazer você sentir a batida\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-09-passo-04: gravar a demonstração \"jogar de novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "aula-09-passo-05: gravar a demonstração \"testar do começo ao fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Monte o ciclo da partida",
+      "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "a colisão que acaba o jogo",
+      "objective": "Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto. Dentro, coloque Ir para a tela fim. Rode e bata.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "a tela de fim",
+      "objective": "No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela. Use Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "fazer você sentir a batida",
+      "objective": "Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-4",
+      "title": "jogar de novo",
+      "objective": "No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas. Preserve o caminho de inicio para jogando que já existe.",
+      "intent": "application",
+      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-5",
+      "title": "testar do começo ao fim",
+      "objective": "Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter. Confira se o novo jogo volta ao estado inicial.",
+      "intent": "application",
+      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Complete o ciclo duas vezes, usando controles diferentes. O jogo deve parar ao perder e permitir uma nova tentativa. Envie seu projeto.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

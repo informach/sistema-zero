@@ -181,7 +181,7 @@ describe('MoldaApp', () => {
     await waitFor(() =>
       expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('fim-de-tarde'),
     )
-    expect(isMoldaAssetOpen('sky-1')).toBe(true)
+    await waitFor(() => expect(isMoldaAssetOpen('sky-1')).toBe(true))
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
     await waitFor(() => expect(presetOf(persistence.snapshot()[0])).toBe('noite'), {
       timeout: 3000,
@@ -189,7 +189,7 @@ describe('MoldaApp', () => {
     expect(screen.getByRole('status').textContent).toBe(COPY.editor.saved)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.backToGallery }))
     await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    expect(isMoldaAssetOpen('sky-1')).toBe(false)
+    await waitFor(() => expect(isMoldaAssetOpen('sky-1')).toBe(false))
   })
 
   test('Voltar rechecks edits made during asynchronous Studio delivery before leaving', async () => {

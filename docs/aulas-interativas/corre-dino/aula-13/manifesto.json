@@ -1,0 +1,195 @@
+{
+  "version": 2,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-13",
+  "title": "Dificuldade que cresce com a partida",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Retome o projeto com placar e pequenas variações no nascimento dos cactos.\n\nHoje você vai acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Onde a aceleração para?",
+        "instructions": "Avance o relógio até chegar ao limite e tente mais uma vez. Observe o número e a distância para a esquerda.",
+        "hints": ["Compare o valor atual com o limite usando o sinal maior, não maior ou igual."],
+        "required": true,
+        "activity": {
+          "type": "html",
+          "html": "<h2>Acelerar tem um limite</h2>\n<p>A velocidade começa em −5. A cada passo, subtraímos 1 se ela ainda for maior que o limite. O cacto anda para a esquerda.</p>\n<label for=\"limit\">Limite <output id=\"value\">−9</output></label><input id=\"limit\" type=\"range\" min=\"-14\" max=\"-6\" step=\"1\" value=\"-9\">\n<button id=\"step\" type=\"button\">Passar 5 segundos</button><button id=\"reset\" type=\"button\">Recomeçar em −5</button>\n<svg viewBox=\"0 0 400 130\" role=\"img\" aria-label=\"Deslocamento para a esquerda durante um quadro\" style=\"display:block;width:100%;background:#fff;border-radius:12px\"><path id=\"distance\" d=\"M340 65H290\" stroke=\"#1762bc\" stroke-width=\"12\"/><text x=\"15\" y=\"30\" fill=\"#152746\" id=\"speed\">Velocidade: −5</text><text x=\"15\" y=\"115\" fill=\"#152746\">A linha mostra a distância percorrida em um quadro (ampliada).</text></svg>\n<p id=\"status\" aria-live=\"polite\">Compare o número com o comprimento do deslocamento.</p>\n<script>\n(()=>{let speed=-5,steps=0;const limit=document.getElementById('limit');function render(){document.getElementById('value').textContent=limit.value;document.getElementById('speed').textContent=`Velocidade: ${speed}`;document.getElementById('distance').setAttribute('d',`M340 65H${340+speed*15}`)}function save(){window.learning?.save({speed,limit:Number(limit.value),steps})}\nlimit.addEventListener('input',()=>{speed=-5;steps=0;render();save()});document.getElementById('step').addEventListener('click',()=>{if(speed>Number(limit.value))speed--;steps++;render();document.getElementById('status').textContent=speed===Number(limit.value)?'Chegou ao limite. Outro passo deve manter este valor.':'O número diminuiu; a distância por quadro aumentou.';save();if(speed===Number(limit.value)&&steps>Math.abs(Number(limit.value)+5))window.learning?.participated()});document.getElementById('reset').addEventListener('click',()=>{speed=-5;steps=0;render();save()});addEventListener('learning:restore',event=>{const s=event.detail;speed=Number.isFinite(s.speed)?s.speed:-5;limit.value=Number.isFinite(s.limit)?s.limit:-9;steps=Number.isFinite(s.steps)?s.steps:0;render()});render()})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "Com base −9 e regra “se velocidade > −9, somar −1”, o próximo passo…",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Muda a base para −10"
+            },
+            {
+              "id": "opcao-2",
+              "label": "Mantém a base em −9"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Muda o sinal para positivo"
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "No limite, −9 > −9 é falso. A condição impede outra redução da velocidade-base."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma variável permite mudar a velocidade-base dos próximos cactos. Ela começa em −5. A cada cinco segundos de partida, subtrair 1 leva a −6, −7, −8 e −9. No limite −9, a pergunta velocidade > −9 fica falsa e a base para de diminuir. O sorteio de 0 a 1 continua sendo subtraído: −9 é limite da base, não de todo vx final. Os cactos que já nasceram mantêm a velocidade que receberam; os novos usam o valor atualizado."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio. Rode: no começo deve parecer igual.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando. Dentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior. Só dentro do segundo Se coloque Somar menos 1 em velocidade.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos. Escolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Teste a evolução, o limite e o reinício. Para publicar, envie ao professor, use Compartilhar, escreva o resumo e confira a capa. Abra o link publicado e jogue do começo ao fim.\n\nVocê concluiu o Corre, Dino! A Ponte pode mostrar o código dos blocos. Confira na Carreira o próximo curso e as conquistas ligadas à conclusão e à publicação."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-13-passo-01: gravar a demonstração \"criar a caixinha da velocidade\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-13-passo-02: gravar a demonstração \"fazer o cacto obedecer a caixinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-13-passo-03: gravar a demonstração \"fazer a velocidade acelerar sozinha\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-13-passo-04: gravar a demonstração \"testar e ajustar o seu jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Onde a aceleração para?",
+      "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Acelerar progressivamente com uma variável, uma condição e um limite, e concluir a publicação.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "criar a caixinha da velocidade",
+      "objective": "Em Programação, Variáveis, crie velocidade com menos 5 em Ao iniciar, depois de pontos e antes da tela inicio. Essa será a base dos próximos cactos.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "fazer o cacto obedecer a caixinha",
+      "objective": "Na conta do vx do cacto, substitua só o menos 5 pelo valor da variável velocidade, de Programação, Valores. Preserve a subtração do sorteio. Rode: no começo deve parecer igual.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "fazer a velocidade acelerar sozinha",
+      "objective": "Em Tempo e repetição, adicione um relógio de 5 segundos. Dentro, Se a tela é jogando. Dentro dele, outro Se: velocidade maior que menos 9. Troque o sinal da comparação para maior. Só dentro do segundo Se coloque Somar menos 1 em velocidade.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-4",
+      "title": "testar e ajustar o seu jogo",
+      "objective": "Jogue partidas longas para sentir a mudança. Compare limites menos 7 e menos 14, e ritmos de 2 e 10 segundos. Escolha um desafio possível. Confira também uma partida nova, que deve voltar à base menos 5.",
+      "intent": "application",
+      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Teste a evolução, o limite e o reinício. Para publicar, envie ao professor, use Compartilhar, escreva o resumo e confira a capa. Abra o link publicado e jogue do começo ao fim.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

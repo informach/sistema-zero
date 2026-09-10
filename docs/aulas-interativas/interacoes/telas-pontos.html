@@ -1,0 +1,11 @@
+<h2>O relógio deve contar agora?</h2>
+<p>Escolha a tela e avance o relógio. Compare o contador protegido pela condição com o contador sem condição.</p>
+<label for="scene">Tela atual</label><select id="scene"><option value="inicio">Início</option><option value="jogando">Jogando</option><option value="fim">Fim</option></select>
+<button id="tick" type="button">Passar um segundo</button><button id="reset" type="button">Zerar contadores</button>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:16px"><div style="padding:20px;background:#fff;border-radius:12px">Se está jogando: <strong id="guarded">0</strong></div><div style="padding:20px;background:#fff;border-radius:12px">Sem condição: <strong id="always">0</strong></div></div>
+<p id="status" aria-live="polite">Escolha uma tela para começar a comparação.</p>
+<script>
+(()=>{let guarded=0,always=0,tested=[];const scene=document.getElementById('scene');function render(){document.getElementById('guarded').textContent=guarded;document.getElementById('always').textContent=always}function save(){window.learning?.save({scene:scene.value,guarded,always,testedScenes:tested})}
+document.getElementById('tick').addEventListener('click',()=>{always++;if(scene.value==='jogando')guarded++;tested=[...new Set([...tested,scene.value])];render();document.getElementById('status').textContent=scene.value==='jogando'?'Os dois contadores aumentam durante a partida.':'Só o contador sem condição aumentou fora da partida.';save();if(tested.includes('jogando')&&tested.some(s=>s!=='jogando'))window.learning?.participated()});
+scene.addEventListener('change',save);document.getElementById('reset').addEventListener('click',()=>{guarded=0;always=0;render();save()});addEventListener('learning:restore',event=>{const s=event.detail;guarded=Number.isFinite(s.guarded)?s.guarded:0;always=Number.isFinite(s.always)?s.always:0;scene.value=['inicio','jogando','fim'].includes(s.scene)?s.scene:'inicio';tested=Array.isArray(s.testedScenes)?s.testedScenes:[];render()})})();
+</script>

@@ -1,0 +1,204 @@
+{
+  "version": 2,
+  "courseSlug": "o-jogo-do-meu-jeito",
+  "lessonSlug": "aula-02",
+  "title": "Desenhe a sua nave no Pinta",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Seu jogo está no Estúdio Completo. A nave ainda é a do Kit espaço, e você vai criar a sua própria arte.\n\nHoje você vai criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Uma luz, dois lados",
+        "instructions": "Imagine a luz chegando pela esquerda da nave. Onde você começaria os detalhes mais claros?",
+        "hints": ["Observe um objeto perto de você e perceba qual lado está mais iluminado."],
+        "required": false,
+        "activity": {
+          "type": "prediction",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "No lado que recebe a luz"
+            },
+            {
+              "id": "opcao-2",
+              "label": "No lado oposto"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Em todos os pixels com a mesma cor"
+            }
+          ],
+          "outcome": "Começar pelo lado que recebe a luz ajuda a sugerir volume. O lado oposto pode receber sombras. Essa é uma escolha de desenho, não uma regra para deixar todas as naves iguais."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Pixel art constrói a imagem sobre uma grade de pequenos quadrados. Ao ampliar, esses quadrados ficam evidentes; isso faz parte do estilo. O espelho ajuda a construir duas metades parecidas, mas você pode desligá-lo para detalhes diferentes. Luz e sombra ficam mais coerentes quando você escolhe de que lado vem a luz. A forma e as cores são suas. O tamanho, o tipo do asset e o nome precisam combinar com os blocos que vão usar a imagem depois."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32. Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica. Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado. Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra. Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave. O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o asset.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Confira nome nave, tipo Personagem, 32 × 32 e quatro linhas livres embaixo. Abra novamente pela galeria. Seu desenho pode ser muito diferente do exemplo.\n\nNa Aula 3, o mesmo asset nave vai ganhar fogo em dois quadros. Não crie outro desenho."
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-02-passo-01: gravar a demonstração \"conhecer o Pinta e começar o desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-02-passo-02: gravar a demonstração \"o contorno da nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-02-passo-03: gravar a demonstração \"pintar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-02-passo-04: gravar a demonstração \"luz e sombra\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "aula-02-passo-05: gravar a demonstração \"guardar o seu desenho\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Uma luz, dois lados",
+      "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Criar um personagem em pixel art de 32 × 32, explorando forma, cor, luz e sombra com autonomia.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "conhecer o Pinta e começar o desenho",
+      "objective": "Abra Pinta no menu e escolha Criar novo. Use Pixel art, Personagem e Médio, 32 por 32. Escreva nave como nome. Esses dados serão usados no jogo; a aparência vai ser sua.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "o contorno da nave",
+      "objective": "Faça o contorno da nave com calma. Você pode usar o espelho para começar simétrica. Deixe quatro linhas livres na parte de baixo: ali vai entrar o fogo na próxima aula. O formato do Júlio é uma ideia, não um molde obrigatório.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "pintar",
+      "objective": "Escolha suas cores e preencha as áreas. Desligue o espelho se quiser detalhes diferentes de cada lado. Aumente o zoom para procurar pequenos espaços abertos e teste o preenchimento antes de continuar.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-4",
+      "title": "luz e sombra",
+      "objective": "Decida de onde vem a luz. No lado iluminado, experimente uma cor mais clara; no outro, uma sombra. Afaste o zoom para ver se esses detalhes ajudam a entender o formato da sua nave.",
+      "intent": "application",
+      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-5",
+      "title": "guardar o seu desenho",
+      "objective": "Espere o selo Salvo e confira também o estado de sincronização. Volte à galeria e abra o cartão nave. O desenho precisa continuar ali. Fechar a aula não é o mesmo que apagar o asset.",
+      "intent": "application",
+      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Confira nome nave, tipo Personagem, 32 × 32 e quatro linhas livres embaixo. Abra novamente pela galeria. Seu desenho pode ser muito diferente do exemplo.",
+      "intent": "closing",
+      "blockKeys": ["fechamento"],
+      "workspaceKey": null,
+      "externalTool": "pinta",
+      "pendingMedia": []
+    }
+  ]
+}

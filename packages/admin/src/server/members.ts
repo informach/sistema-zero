@@ -290,58 +290,11 @@ export function reorderLessons(
     body: { orderedIds },
   })
 }
-export function updateLesson(id: string, body: unknown): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/lessons/${enc(id)}`, { method: 'PATCH', body })
-}
 export function deleteLesson(id: string): Promise<GatewayResponse<unknown>> {
   return gatewayFetch(`/members/admin/lessons/${enc(id)}`, { method: 'DELETE' })
 }
 export function getLessonContent(id: string): Promise<GatewayResponse<LessonContentView>> {
   return gatewayFetch(`/members/admin/lessons/${enc(id)}/content`)
-}
-
-export function createBlock(lessonId: string, body: unknown): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/lessons/${enc(lessonId)}/blocks`, { method: 'POST', body })
-}
-export function reorderBlocks(
-  lessonId: string,
-  orderedIds: string[],
-): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/lessons/${enc(lessonId)}/blocks/reorder`, {
-    method: 'POST',
-    body: { orderedIds },
-  })
-}
-export function updateBlock(id: string, body: unknown): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/blocks/${enc(id)}`, { method: 'PATCH', body })
-}
-export function deleteBlock(id: string): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/blocks/${enc(id)}`, { method: 'DELETE' })
-}
-
-export function createAttachment(
-  lessonId: string,
-  body: unknown,
-): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/lessons/${enc(lessonId)}/attachments`, {
-    method: 'POST',
-    body,
-  })
-}
-export function reorderAttachments(
-  lessonId: string,
-  orderedIds: string[],
-): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/lessons/${enc(lessonId)}/attachments/reorder`, {
-    method: 'POST',
-    body: { orderedIds },
-  })
-}
-export function updateAttachment(id: string, body: unknown): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/attachments/${enc(id)}`, { method: 'PATCH', body })
-}
-export function deleteAttachment(id: string): Promise<GatewayResponse<unknown>> {
-  return gatewayFetch(`/members/admin/attachments/${enc(id)}`, { method: 'DELETE' })
 }
 
 // ── Entregas do Estúdio (acompanhamento do professor) ──

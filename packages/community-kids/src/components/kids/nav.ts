@@ -15,7 +15,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/criar',
     label: 'Criar',
     icon: Sparkles,
-    match: ['/pensa', '/pinta', '/molda', '/estudio', '/praticar'],
+    match: ['/pensa', '/pinta', '/molda', '/estudio'],
   },
   {
     href: '/comunidade',

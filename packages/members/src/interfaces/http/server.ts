@@ -15,12 +15,13 @@ import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type InternalRoutesDeps, internalRoutes } from './routes/internal.routes'
+import { type LearningRoutesDeps, learningRoutes } from './routes/learning.routes'
 import { type MembersRoutesDeps, membersRoutes } from './routes/members.routes'
 import { type PensaRoutesDeps, pensaRoutes } from './routes/pensa.routes'
-import { type PracticeRoutesDeps, practiceRoutes } from './routes/practice.routes'
 import { type WebhooksRoutesDeps, webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
+  learning: LearningRoutesDeps
   env: Env
   logger: Logger
   accountDeletionFence: AccountDeletionFence
@@ -28,7 +29,6 @@ export interface HttpDeps {
   readiness: ReadinessProbe
   members: MembersRoutesDeps
   pensa: PensaRoutesDeps
-  practice: PracticeRoutesDeps
   creations: CreationsRoutesDeps
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
@@ -65,7 +65,9 @@ function bodyLimitForPath(pathname: string, env: Env): number {
     PINTA_SUBMISSION_PATH.test(pathname) ||
     STUDIO_SUBMISSION_PATH.test(pathname) ||
     ADMIN_BLOCK_CREATE_PATH.test(pathname) ||
-    ADMIN_BLOCK_UPDATE_PATH.test(pathname)
+    ADMIN_BLOCK_UPDATE_PATH.test(pathname) ||
+    /^\/members\/admin\/lessons\/[^/]+\/draft$/.test(pathname) ||
+    /^\/members\/admin\/lessons\/[^/]+\/import-(preview|learning)$/.test(pathname)
   ) {
     return Math.max(env.MAX_STUDIO_BODY_BYTES, env.MAX_REQUEST_BODY_BYTES)
   }
@@ -152,8 +154,8 @@ export function createServer(deps: HttpDeps) {
   return app
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
+    .use(learningRoutes(deps.learning))
     .use(pensaRoutes(deps.pensa))
-    .use(practiceRoutes(deps.practice))
     .use(creationsRoutes(deps.creations))
     .use(
       creationCleanupRoutes({

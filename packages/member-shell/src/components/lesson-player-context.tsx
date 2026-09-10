@@ -1,13 +1,16 @@
 'use client'
 
+import type { LearningBlockProgress, LessonLearningProgress } from '@sistemazero/core/learning'
 import { createContext, useContext } from 'react'
 
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
  * por `LessonBlocks` → `BlockRenderer`). Fora do player (não acontece hoje) os
- * blocos degradam graciosamente (sem watermark/posição/auto-conclusão).
+ * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
+  learningProgress?: LessonLearningProgress
+  onLearningProgress?: (progress: LearningBlockProgress) => void
   lessonId: string
   courseSlug: string
   /**
@@ -26,11 +29,7 @@ export interface LessonPlayerContextValue {
   onVideoProgress?: (seconds: number, percent: number) => void
   /** Flush imediato da posição (pause/ended). */
   onVideoFlush?: (seconds: number) => void
-  /** Atingiu ~90% assistido → auto-conclusão (uma vez por aula). */
-  onVideoReachedThreshold?: () => void
-  /** Vídeo TERMINOU (100%) — o kids usa p/ abrir a celebração no fim de verdade. */
-  onVideoEnded?: () => void
-  /** Marca a aula como concluída (mesmo fluxo do botão). Usado pelo quiz. */
+  /** Atualiza o estado do quiz e o gate da aula após responder. */
   refreshAfterQuiz?: () => void
   /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */
   refreshAfterStudio?: () => void

@@ -15,8 +15,6 @@ import { GetAvatarsByProfilesService } from './application/avatar/get-avatars-by
 import { SetAvatarPhotoService } from './application/avatar/set-avatar-photo.service'
 import { GetChildrenStatsService } from './application/children-stats/get-children-stats.service'
 import {
-  AttachmentAdminService,
-  BlockAdminService,
   CourseAdminService,
   LessonAdminService,
   ModuleAdminService,
@@ -57,6 +55,8 @@ import { GetStudioCarryoverService } from './application/get-studio-carryover/ge
 import { GrantEntitlementService } from './application/grant-entitlement/grant-entitlement.service'
 import { GrantManualEntitlementService } from './application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { IssueCertificateService } from './application/issue-certificate/issue-certificate.service'
+import { LearningService } from './application/learning/learning.service'
+import { LearningImportService } from './application/learning/learning-import.service'
 import { ListCatalogService } from './application/list-catalog/list-catalog.service'
 import { ListMemberCertificatesService } from './application/list-member-certificates/list-member-certificates.service'
 import { ListMemberRatingsService } from './application/list-member-ratings/list-member-ratings.service'
@@ -82,7 +82,6 @@ import { UpdatePensaProjectService } from './application/pensa/update-project.se
 import { UpdatePensaTaskService } from './application/pensa/update-task.service'
 import { UpdatePensaTaskProgressService } from './application/pensa/update-task-progress.service'
 import { ValidatePensaArtifactService } from './application/pensa/validate-artifact.service'
-import { PracticeService } from './application/practice/practice.service'
 import { GetProfileAllowanceService } from './application/profile-allowance/get-profile-allowance.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from './application/profiles-overview/get-profiles-overview.service'
@@ -124,9 +123,10 @@ import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleEntitlementRepository } from './infrastructure/persistence/drizzle/entitlement.repository'
 import { DrizzleGamificationRepository } from './infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzleLearningRepository } from './infrastructure/persistence/drizzle/learning.repository'
+import { DrizzleLessonDraftRepository } from './infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleParentReportRepository } from './infrastructure/persistence/drizzle/parent-report.repository'
 import { DrizzlePensaRepository } from './infrastructure/persistence/drizzle/pensa.repository'
-import { DrizzlePracticeRepository } from './infrastructure/persistence/drizzle/practice.repository'
 import { DrizzleProcessedWebhookRepository } from './infrastructure/persistence/drizzle/processed-webhook.repository'
 import { DrizzleProgressRepository } from './infrastructure/persistence/drizzle/progress.repository'
 import { DrizzleQuizAttemptRepository } from './infrastructure/persistence/drizzle/quiz-attempt.repository'
@@ -141,6 +141,7 @@ import { DrizzleVideoPositionRepository } from './infrastructure/persistence/dri
 import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zappy.repository'
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
+import { parsePublishedLessonBlock } from './interfaces/http/lesson-draft.dtos'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -192,6 +193,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const clock = () => new Date()
 
   // Adapters
+  const learningRepository = new DrizzleLearningRepository(db)
   const courses = new DrizzleCourseRepository(db)
   const content = new DrizzleContentAdminRepository(db)
   const entitlements = new DrizzleEntitlementRepository(db)
@@ -255,6 +257,7 @@ export async function createApplication(env: Env): Promise<Application> {
     progress,
     studioSubmissions,
     accessCheck,
+    learningRepository,
     clock,
     hub,
   )
@@ -280,6 +283,7 @@ export async function createApplication(env: Env): Promise<Application> {
       ? new SendParentReportsService(
           gamificationRepo,
           studioSubmissions,
+          learningRepository,
           childrenStats,
           parentReports,
           authGateway,
@@ -343,6 +347,15 @@ export async function createApplication(env: Env): Promise<Application> {
     getMyCourse,
     clock,
   )
+  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
+  const learning = new LearningService(
+    learningRepository,
+    courses,
+    checkAccess,
+    progress,
+    clock,
+    teacherThreads,
+  )
   const getLesson = new GetLessonService(
     checkAccess,
     courses,
@@ -351,6 +364,7 @@ export async function createApplication(env: Env): Promise<Application> {
     quizAttempts,
     studioSubmissions,
     clock,
+    learning,
   )
   const resolveAttachment = new GetAttachmentDownloadService(checkAccess, courses, progress)
   const resolveEbook = new GetEbookDownloadService(checkAccess, courses, progress)
@@ -408,6 +422,7 @@ export async function createApplication(env: Env): Promise<Application> {
     studioSubmissions,
     awardGamification,
     clock,
+    learning,
   )
   const getProgress = new GetCourseProgressService(checkAccess, courses, progress)
   const savePosition = new SaveVideoPositionService(
@@ -434,7 +449,6 @@ export async function createApplication(env: Env): Promise<Application> {
     clock,
   )
   // Antes do submitStudio: o envio espelha o recado do aluno na conversa (histórico).
-  const teacherThreads = new TeacherThreadsService(new DrizzleTeacherThreadRepository(db), clock)
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
@@ -520,9 +534,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Autoria de conteúdo (painel)
   const courseAdmin = new CourseAdminService(content, courses)
   const moduleAdmin = new ModuleAdminService(content, courses)
-  const lessonAdmin = new LessonAdminService(content, courses)
-  const blockAdmin = new BlockAdminService(content)
-  const attachmentAdmin = new AttachmentAdminService(content)
+  const lessonAdmin = new LessonAdminService(content, courses, learning)
 
   // Gestão admin (painel)
   const listMembers = new ListMembersService(entitlements, clock)
@@ -575,16 +587,15 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
-    practice: {
-      practice: new PracticeService(
-        new DrizzlePracticeRepository(db),
-        checkAccess,
+    learning: {
+      learning,
+      imports: new LearningImportService(
+        new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
         courses,
-        progress,
-        quizAttempts,
-        clock,
       ),
+      drafts: new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
       internalToken: env.INTERNAL_API_TOKEN,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
     },
     env,
     logger,
@@ -712,8 +723,6 @@ export async function createApplication(env: Env): Promise<Application> {
       courses: courseAdmin,
       modules: moduleAdmin,
       lessons: lessonAdmin,
-      blocks: blockAdmin,
-      attachments: attachmentAdmin,
       studioSubmissions: studioSubmissionsAdmin,
       zappyKnowledge,
       zappyHistory: zappy,

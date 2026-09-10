@@ -1,4 +1,6 @@
+import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import { computeRetryAvailableAt } from '../../domain/course/quiz'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
@@ -6,6 +8,7 @@ import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repo
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { VideoPositionRepository } from '../../domain/ports/video-position-repository.port'
 import type { CheckAccessService } from '../access/check-access.service'
+import type { LearningService } from '../learning/learning.service'
 import { assertLessonUnlockedFromState } from '../lesson-locking/lesson-locking'
 import {
   type LessonDetailView,
@@ -24,6 +27,7 @@ export class GetLessonService {
     private readonly quizAttempts: QuizAttemptRepository,
     private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
+    private readonly learning: LearningService,
   ) {}
 
   async execute(
@@ -108,7 +112,7 @@ export class GetLessonService {
       })
     }
 
-    return toLessonDetailView(
+    const view = toLessonDetailView(
       lesson,
       course.slug,
       completedIds.includes(lessonId),
@@ -119,5 +123,28 @@ export class GetLessonService {
       // (é assim que a autoria confere a aula pelo "Ver como aluno").
       privileged,
     )
+    if (hasComingSoonBlock(lesson.blocks) && !privileged)
+      return { ...view, requirements: lessonCompletionRequirements(view) }
+    const structure = await this.learning.read({ userId, accountId: accountId ?? userId }, lesson)
+    return {
+      ...view,
+      sections: structure.sections.map(
+        ({ id, title, blockIds, workspaceBlockId, externalTool }) => ({
+          id,
+          title,
+          blockIds,
+          workspaceBlockId,
+          externalTool,
+        }),
+      ),
+      structureRevision: structure.revision,
+      supportBlockIds: structure.supportBlockIds ?? [],
+      requirements: lessonCompletionRequirements({
+        ...view,
+        sections: structure.sections,
+        learningProgress: structure.progress,
+      }),
+      learningProgress: structure.progress,
+    }
   }
 }

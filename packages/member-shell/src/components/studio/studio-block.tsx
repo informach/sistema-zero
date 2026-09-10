@@ -441,20 +441,25 @@ export function StudioBlockView({
             {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
             {expanded ? 'Reduzir' : 'Expandir'}
           </Button>
-          <Button
-            size="sm"
-            onClick={() => {
-              setTemplateWarning(
-                submitted &&
-                  isInitialTemplateProject(handleRef.current?.getProject(), content.initialProject),
-              )
-              setConfirmOpen(true)
-            }}
-            disabled={submitting || !ready}
-          >
-            {submitting ? <Spinner /> : <Send className="size-4" />}
-            {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
-          </Button>
+          {content.purpose !== 'experiment' && (
+            <Button
+              size="sm"
+              onClick={() => {
+                setTemplateWarning(
+                  submitted &&
+                    isInitialTemplateProject(
+                      handleRef.current?.getProject(),
+                      content.initialProject,
+                    ),
+                )
+                setConfirmOpen(true)
+              }}
+              disabled={submitting || !ready}
+            >
+              {submitting ? <Spinner /> : <Send className="size-4" />}
+              {submitted ? 'Reenviar ao professor' : 'Enviar para o professor'}
+            </Button>
+          )}
         </div>
       </div>
 

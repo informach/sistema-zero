@@ -1,4 +1,5 @@
 import { t } from 'elysia'
+import { InteractiveBlockSchema } from './learning.dtos'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -1117,8 +1118,17 @@ const StudioProjectSchema = t.Object(
   { additionalProperties: true },
 )
 // ── Atividade com auto-correção (fase 2) ────────────────────────────────────
-// Base de toda checagem. Valores esperados (testcase/globalEquals) são `Unknown`
-// (dados opacos echoados ao cliente; o teto de tamanho é do corpo/jsonb).
+// Values are JSON at both the HTTP boundary and in the domain.
+const ActivityJsonValue = t.Recursive((self) =>
+  t.Union([
+    t.String(),
+    t.Number(),
+    t.Boolean(),
+    t.Null(),
+    t.Array(self),
+    t.Record(t.String(), self),
+  ]),
+)
 const ActivityCheckBase = {
   id: t.String({ minLength: 1, maxLength: 64 }),
   label: t.String({ minLength: 1, maxLength: 200 }),
@@ -1146,7 +1156,7 @@ const BehaviorRuleSchema = t.Union([
   t.Object({
     type: t.Literal('globalEquals'),
     name: t.String({ maxLength: 80 }),
-    value: t.Unknown(),
+    value: ActivityJsonValue,
   }),
 ])
 const ActivityCheckSchema = t.Union([
@@ -1159,8 +1169,8 @@ const ActivityCheckSchema = t.Union([
     cases: t.Array(
       t.Object({
         id: t.Optional(t.String({ maxLength: 64 })),
-        args: t.Array(t.Unknown(), { maxItems: 20 }),
-        expected: t.Unknown(),
+        args: t.Array(ActivityJsonValue, { maxItems: 20 }),
+        expected: ActivityJsonValue,
       }),
       {
         maxItems: 50,
@@ -1182,6 +1192,7 @@ const StudioActivitySchema = t.Object({
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialProject: StudioProjectSchema,
   level: t.Optional(StudioLevelSchema),
   allowBlocks: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 500 })),
@@ -1232,6 +1243,7 @@ const PintaAssetSchema = t.Object(
 /** Bloco Pinta: ateliê de desenho embarcado na aula (ver domain/course/lesson-block.ts). */
 const PintaBlockSchema = t.Object({
   kind: t.Literal('pinta'),
+  purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialAsset: PintaAssetSchema,
   /** Curadoria da caixa de ferramentas (restritiva; vazia = a caixa inteira). */
   allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
@@ -1274,6 +1286,7 @@ const ComingSoonBlockSchema = t.Object({
 })
 
 export const LessonBlockContentSchema = t.Union([
+  InteractiveBlockSchema,
   RichTextBlockSchema,
   VideoBlockSchema,
   ImageBlockSchema,
@@ -1330,6 +1343,7 @@ const TEACHER_CONTEXT = t.Union([
   t.Literal('studio_submission'),
   t.Literal('mural_publication'),
   t.Literal('general'),
+  t.Literal('lesson_section'),
 ])
 /**
  * Corpo de uma mensagem (aluno responde / professor responde a uma conversa por id).

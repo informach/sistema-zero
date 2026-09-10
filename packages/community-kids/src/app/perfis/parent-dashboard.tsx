@@ -1,6 +1,7 @@
 'use client'
 
 import { type AiCreditsView, diaCivilPorExtenso } from '@sistemazero/core/ai-credits'
+import type { LearningTopicSummary } from '@sistemazero/core/learning'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { buttonVariants } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
@@ -335,7 +336,13 @@ function ChildStatsCard({
           </dl>
         </section>
       ) : null}
-      {child.week ? <ChildWeekBlock week={child.week} games={child.games ?? null} /> : null}
+      {child.week ? (
+        <ChildWeekBlock
+          week={child.week}
+          games={child.games ?? null}
+          topics={child.learningTopics ?? []}
+        />
+      ) : null}
     </div>
   )
 }
@@ -343,9 +350,11 @@ function ChildStatsCard({
 function ChildWeekBlock({
   week,
   games,
+  topics,
 }: {
   week: ChildWeekStatsView
   games: ChildWeekGameView[] | null
+  topics: LearningTopicSummary[]
 }) {
   const [cardGame, setCardGame] = useState<ChildWeekGameView | null>(null)
   const parts: string[] = []
@@ -379,8 +388,28 @@ function ChildWeekBlock({
       {parts.length > 0 ? (
         <p className="text-foreground text-sm">{parts.join(' · ')}</p>
       ) : (
-        <p className="text-muted-foreground text-sm">Sem novidades por enquanto.</p>
+        <p className="text-muted-foreground text-sm">
+          {topics.length ? 'Uma semana de descobertas nas aulas.' : 'Sem novidades por enquanto.'}
+        </p>
       )}
+      {topics.length > 0 ? (
+        <div className="mt-3 space-y-2">
+          <p className="font-semibold text-sm">O que explorou nas aulas</p>
+          {topics.map((lesson) => (
+            <div key={lesson.lessonId} className="text-sm">
+              <p className="font-medium">{lesson.lessonTitle}</p>
+              <ul className="ml-4 list-disc text-muted-foreground">
+                {lesson.topics.map((topic) => (
+                  <li key={topic}>{topic}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <p className="text-sm text-muted-foreground">
+            Para conversar: “Você pode me mostrar o que descobriu no seu jogo?”
+          </p>
+        </div>
+      ) : null}
       {weekGames.length > 0 ? (
         <ul className="mt-2 flex flex-col gap-1.5">
           {weekGames.map((game) => (

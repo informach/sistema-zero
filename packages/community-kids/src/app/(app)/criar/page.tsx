@@ -61,18 +61,6 @@ export default async function CriarPage() {
           Não conseguimos consultar seus cursos agora. Tente atualizar esta página.
         </p>
       )}
-      <Link
-        href="/praticar"
-        className="flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-primary/30 bg-primary/5 p-5"
-      >
-        <span>
-          <strong className="block">Praticar um pouco</strong>
-          <span className="text-sm text-muted-foreground">
-            Relembre o que aprendeu com perguntas curtas.
-          </span>
-        </span>
-        <ArrowRight aria-hidden="true" className="size-5 shrink-0" />
-      </Link>
       {available.length ? (
         <Suspense
           fallback={

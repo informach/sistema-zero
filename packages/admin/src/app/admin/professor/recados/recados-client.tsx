@@ -26,6 +26,7 @@ import { ThreadDialog } from './thread-dialog'
 const PAGE = 30
 
 const CONTEXT_LABELS: Record<TeacherThreadContext, string> = {
+  lesson_section: 'Dúvida na aula',
   studio_submission: 'Entrega',
   mural_publication: 'Mural',
   general: 'Recado',

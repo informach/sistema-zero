@@ -219,10 +219,12 @@ export function PintaBlockView({
           {expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           {expanded ? 'Reduzir' : 'Expandir'}
         </Button>
-        <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
-          {submitting ? <Spinner /> : <Send className="size-4" />}
-          {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
-        </Button>
+        {content.purpose !== 'experiment' && (
+          <Button size="sm" onClick={() => setConfirmOpen(true)} disabled={submitting || !ready}>
+            {submitting ? <Spinner /> : <Send className="size-4" />}
+            {submitted ? 'Enviar de novo' : 'Enviar para o professor'}
+          </Button>
+        )}
       </div>
 
       <div

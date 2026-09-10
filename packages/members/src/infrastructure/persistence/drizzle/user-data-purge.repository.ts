@@ -14,13 +14,15 @@ import {
   entitlements,
   gamificationProfiles,
   leagueMembership,
+  learningAttempts,
+  lessonBlockProgress,
   lessonCompletions,
+  lessonNavigation,
   lessonProgress,
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
   pensaProjects,
-  practiceSessions,
   quizAttempts,
   renewalRemindersSent,
   roomInventory,
@@ -114,16 +116,29 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           .where(inArray(renewalRemindersSent.entitlementId, entitlementIds))
       }
 
+      await tx
+        .delete(lessonNavigation)
+        .where(
+          or(inArray(lessonNavigation.userId, userIds), eq(lessonNavigation.accountId, accountId)),
+        )
+      await tx
+        .delete(lessonBlockProgress)
+        .where(
+          or(
+            inArray(lessonBlockProgress.userId, userIds),
+            eq(lessonBlockProgress.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(learningAttempts)
+        .where(
+          or(inArray(learningAttempts.userId, userIds), eq(learningAttempts.accountId, accountId)),
+        )
       // Tabelas só com `user_id`.
       await tx.delete(entitlements).where(inArray(entitlements.userId, userIds))
       await tx.delete(lessonCompletions).where(inArray(lessonCompletions.userId, userIds))
       await tx.delete(lessonProgress).where(inArray(lessonProgress.userId, userIds))
       await tx.delete(quizAttempts).where(inArray(quizAttempts.userId, userIds))
-      await tx
-        .delete(practiceSessions)
-        .where(
-          or(inArray(practiceSessions.userId, userIds), eq(practiceSessions.accountId, accountId)),
-        )
       await tx.delete(courseRatings).where(inArray(courseRatings.userId, userIds))
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))

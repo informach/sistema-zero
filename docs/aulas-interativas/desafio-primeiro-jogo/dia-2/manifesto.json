@@ -1,0 +1,237 @@
+{
+  "version": 2,
+  "courseSlug": "desafio-primeiro-jogo",
+  "lessonSlug": "dia-2",
+  "title": "Tiros que saem da nave",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Continue o projeto do Dia 1, com a nave se movendo e as estrelas ao fundo.\n\nHoje você vai relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Para onde o tiro vai?",
+        "instructions": "Teste uma velocidade positiva e outra negativa, mantendo o ponto de partida. Depois explique o que mudou.",
+        "hints": ["Olhe a seta do eixo y. Ela indica em que direção os valores aumentam."],
+        "required": true,
+        "activity": {
+          "type": "html",
+          "html": "<h2>Para onde vai o tiro?</h2>\n<p>Mantenha o ponto de partida e mude somente a velocidade vertical. Teste um número positivo e um negativo.</p>\n<label for=\"vy\">Velocidade vertical <output id=\"value\">-9</output></label>\n<input id=\"vy\" type=\"range\" min=\"-15\" max=\"15\" step=\"1\" value=\"-9\">\n<button id=\"test\" type=\"button\">Testar trajetória</button>\n<svg viewBox=\"0 0 400 250\" role=\"img\" aria-label=\"Trajetória vertical de um tiro a partir da nave\" style=\"display:block;width:100%;max-height:260px;background:#152746;border-radius:12px\">\n  <path d=\"M190 180L200 160L210 180Z\" fill=\"#6bd7ec\"/><path id=\"path\" d=\"M200 160L200 160\" stroke=\"#ffbe54\" stroke-width=\"4\" stroke-dasharray=\"6 4\"/>\n  <text x=\"12\" y=\"24\" fill=\"white\">y aumenta ↓</text><text x=\"12\" y=\"240\" fill=\"white\" id=\"result\">A nave está na mesma posição em todos os testes.</text>\n</svg>\n<p id=\"status\" aria-live=\"polite\">Ainda não há testes.</p>\n<script>\n(()=>{const input=document.getElementById('vy'),value=document.getElementById('value'),path=document.getElementById('path'),result=document.getElementById('result'),status=document.getElementById('status');let tested=[];\nconst save=()=>window.learning?.save({vy:Number(input.value),testedValues:tested});\ninput.addEventListener('input',()=>{value.textContent=input.value;save()});\ndocument.getElementById('test').addEventListener('click',()=>{const v=Number(input.value);tested=[...new Set([...tested,String(v)])];path.setAttribute('d',`M200 160L200 ${Math.max(30,Math.min(215,160+v*8))}`);result.textContent=v<0?'O tiro sobe.':v>0?'O tiro desce.':'O tiro não muda de altura.';status.textContent=`${tested.length} velocidades testadas.`;save();if(tested.some(v=>Number(v)<0)&&tested.some(v=>Number(v)>0))window.learning?.participated()});\naddEventListener('learning:restore',event=>{const s=event.detail;input.value=Number.isFinite(s.vy)?s.vy:-9;value.textContent=input.value;tested=Array.isArray(s.testedValues)?s.testedValues:[];status.textContent=`${tested.length} velocidades já testadas. Teste novamente para ver a trajetória.`})})();\n</script>\n"
+        },
+        "checkpoint": {
+          "prompt": "Para um tiro subir nessa tela, a velocidade vertical deve ser…",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "Positiva"
+            },
+            {
+              "id": "opcao-2",
+              "label": "Negativa"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Sempre zero"
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "O y da tela cresce para baixo; diminuir y move o tiro para cima."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Uma ação pode esperar um acontecimento: a tecla pressionada. Quando isso acontece, nasce um tiro no lugar em que a nave está agora. Um grupo reúne todos os tiros para mover, desenhar e remover cada um. Na tela, o eixo y cresce para baixo. Por isso uma velocidade vertical negativa move o tiro para cima. A velocidade é mudança de posição; não é o lugar onde ele nasce."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, abra Muitos. Coloque Criar grupo de sprites em Ao iniciar, abaixo da nave, e escreva tiros. Esse nome vai ligar os blocos que cuidam dos tiros.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Áreas do projeto, coloque Quando acontecer ao lado das outras áreas. Em Jogo 2D, Controles, encaixe Quando apertar a tecla dentro dele e escolha barra de espaço.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Muitos, coloque Criar tiro no grupo dentro do evento. Escolha tiros. No x encaixe o centro x da nave; no y, a posição y da nave, em Posição e tamanho. Use raio 5 e escolha uma cor.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "No tiro, deixe vx em 0 e vy em menos 9. Ele deve subir, como na descoberta. Em Kit espaço, coloque Tocar som de tiro logo abaixo, no mesmo evento.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-5",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Volte a A cada quadro. Abaixo do desenho da nave, em Muitos, encaixe Atualizar o grupo tiros, Tirar do grupo quem sair da tela e Desenhar o grupo tiros. O espaço fazer da limpeza fica vazio.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-6",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Mova a nave e aperte espaço de lugares diferentes. O tiro deve nascer junto dela. Compare vy menos 9 e menos 15: confirme o número clicando fora do campo antes de testar.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Atire da esquerda, do centro e da direita. Os tiros devem acompanhar a nave, subir e sair da tela. Confira os nomes do grupo e envie seu projeto.\n\nNo Dia 3, os tiros vão encontrar asteroides."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "dia-2-passo-01: gravar a demonstração \"criar o grupo dos tiros\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "dia-2-passo-02: gravar a demonstração \"a área que escuta o teclado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "dia-2-passo-03: gravar a demonstração \"fazer o tiro nascer na nave\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "dia-2-passo-04: gravar a demonstração \"a velocidade e o som do tiro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-5-1",
+      "plannedVideo": "dia-2-passo-05: gravar a demonstração \"fazer os tiros voarem pela tela\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-6-1",
+      "plannedVideo": "dia-2-passo-06: gravar a demonstração \"hora de atirar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Para onde o tiro vai?",
+      "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Relacionar a posição da nave, o evento de tecla e a direção da velocidade do tiro.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "criar o grupo dos tiros",
+      "objective": "Em Jogo 2D, abra Muitos. Coloque Criar grupo de sprites em Ao iniciar, abaixo da nave, e escreva tiros. Esse nome vai ligar os blocos que cuidam dos tiros.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "a área que escuta o teclado",
+      "objective": "Em Áreas do projeto, coloque Quando acontecer ao lado das outras áreas. Em Jogo 2D, Controles, encaixe Quando apertar a tecla dentro dele e escolha barra de espaço.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "fazer o tiro nascer na nave",
+      "objective": "Em Jogo 2D, Muitos, coloque Criar tiro no grupo dentro do evento. Escolha tiros. No x encaixe o centro x da nave; no y, a posição y da nave, em Posição e tamanho. Use raio 5 e escolha uma cor.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-4",
+      "title": "a velocidade e o som do tiro",
+      "objective": "No tiro, deixe vx em 0 e vy em menos 9. Ele deve subir, como na descoberta. Em Kit espaço, coloque Tocar som de tiro logo abaixo, no mesmo evento.",
+      "intent": "application",
+      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-5",
+      "title": "fazer os tiros voarem pela tela",
+      "objective": "Volte a A cada quadro. Abaixo do desenho da nave, em Muitos, encaixe Atualizar o grupo tiros, Tirar do grupo quem sair da tela e Desenhar o grupo tiros. O espaço fazer da limpeza fica vazio.",
+      "intent": "application",
+      "blockKeys": ["construir-5", "video-construir-5-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-6",
+      "title": "hora de atirar",
+      "objective": "Mova a nave e aperte espaço de lugares diferentes. O tiro deve nascer junto dela. Compare vy menos 9 e menos 15: confirme o número clicando fora do campo antes de testar.",
+      "intent": "application",
+      "blockKeys": ["construir-6", "video-construir-6-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Atire da esquerda, do centro e da direita. Os tiros devem acompanhar a nave, subir e sair da tela. Confira os nomes do grupo e envie seu projeto.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

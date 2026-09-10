@@ -7,6 +7,7 @@ import { apiGet } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadSummaryView } from '@/lib/types'
 
 const CONTEXT_LABEL: Record<TeacherThreadContext, string> = {
+  lesson_section: 'Dúvida na aula',
   studio_submission: 'Entrega',
   mural_publication: 'Comunidade',
   general: 'Recado',

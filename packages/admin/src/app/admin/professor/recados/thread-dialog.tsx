@@ -10,6 +10,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
+import { LessonLearningPanel } from '@/components/professor/lesson-learning-panel'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadView } from '@/lib/types'
@@ -151,9 +152,11 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
                 <span className="block text-xs text-muted-foreground">
                   {thread.contextType === 'studio_submission'
                     ? 'Conversa sobre uma entrega'
-                    : thread.contextType === 'mural_publication'
-                      ? 'Conversa sobre uma publicação'
-                      : 'Acompanhamento do aluno'}
+                    : thread.contextType === 'lesson_section'
+                      ? 'Dúvida em uma seção da aula'
+                      : thread.contextType === 'mural_publication'
+                        ? 'Conversa sobre uma publicação'
+                        : 'Acompanhamento do aluno'}
                 </span>
               </p>
               {thread.contextType === 'studio_submission' &&
@@ -166,6 +169,18 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
               ) : null}
             </div>
 
+            {thread.lessonId ? (
+              <LessonLearningPanel
+                lessonId={thread.lessonId}
+                userId={thread.userId}
+                accountId={thread.accountId ?? thread.userId}
+                sectionId={
+                  thread.contextType === 'lesson_section'
+                    ? thread.contextRef?.split(':')[1]
+                    : undefined
+                }
+              />
+            ) : null}
             <ul className="flex max-h-[50dvh] flex-col gap-2 overflow-y-auto">
               {thread.nextCursor ? (
                 <li className="self-center">

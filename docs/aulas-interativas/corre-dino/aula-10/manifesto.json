@@ -1,0 +1,194 @@
+{
+  "version": 2,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-10",
+  "title": "Uma colisão mais justa",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Seu jogo já tem começo, partida e fim. Em alguns saltos, o dino parece perder antes de encostar no desenho do cacto.\n\nHoje você vai distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "Quando as áreas se encontram?",
+        "instructions": "Compare dois tamanhos da área de colisão. Os desenhos ficam no mesmo lugar; só a área muda.",
+        "hints": ["Olhe as formas tracejadas e compare com a parte preenchida."],
+        "required": true,
+        "activity": {
+          "type": "experiment",
+          "preset": "collision",
+          "parameters": {
+            "radius": 25
+          }
+        },
+        "checkpoint": {
+          "prompt": "Por que pode existir colisão antes dos desenhos encostarem?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "A área usada pelo programa pode ser maior que a parte visível"
+            },
+            {
+              "id": "opcao-2",
+              "label": "O programa sempre compara cada pixel colorido"
+            }
+          ],
+          "correctChoiceId": "opcao-1",
+          "explanation": "A detecção usa a área configurada; o desenho e a área não precisam ter o mesmo contorno."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "O computador pode usar uma forma simples para detectar contatos, sem seguir cada detalhe do desenho. Essa área inclui espaços transparentes e pode tocar o obstáculo antes da imagem parecer encostar. Mostrar a caixa de colisão torna essa regra visível. Diminuir a área pode deixar o jogo mais justo, mas diminuir demais permite contatos que parecem impossíveis. O experimento usa círculos para comparar áreas; no seu jogo, confira os retângulos com o raio-X."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode. O contorno rosa vai mostrar a área que estava invisível.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa. Essa diferença explica a sensação de perder cedo.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80. Recomece e confira a caixa menor com o raio-X ainda ligado.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-4",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos. Ao terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Jogue com o raio-X para justificar sua escolha. Depois desligue o diagnóstico e confira se o jogo parece justo. Envie.\n\nNa Aula 11, você vai medir o resultado da partida com um placar."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-10-passo-01: gravar a demonstração \"ligar o raio-X\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-10-passo-02: gravar a demonstração \"por que a batida pareceu roubada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-10-passo-03: gravar a demonstração \"ajustar a área de colisão\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-4-1",
+      "plannedVideo": "aula-10-passo-04: gravar a demonstração \"você escolhe o quanto perdoar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "Quando as áreas se encontram?",
+      "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "ligar o raio-X",
+      "objective": "Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode. O contorno rosa vai mostrar a área que estava invisível.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "por que a batida pareceu roubada",
+      "objective": "Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa. Essa diferença explica a sensação de perder cedo.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "ajustar a área de colisão",
+      "objective": "Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80. Recomece e confira a caixa menor com o raio-X ainda ligado.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-4",
+      "title": "você escolhe o quanto perdoar",
+      "objective": "Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos. Ao terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão.",
+      "intent": "application",
+      "blockKeys": ["construir-4", "video-construir-4-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Jogue com o raio-X para justificar sua escolha. Depois desligue o diagnóstico e confira se o jogo parece justo. Envie.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

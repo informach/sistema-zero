@@ -1,0 +1,177 @@
+{
+  "version": 2,
+  "courseSlug": "corre-dino",
+  "lessonSlug": "aula-03",
+  "title": "Um salto que volta ao chão",
+  "blocks": [
+    {
+      "key": "abertura",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Oi! Seu dino já aparece correndo na floresta, mas ainda não responde a você.\n\nHoje você vai relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.\n\nVocê pode voltar às seções pelo índice e pedir ajuda ao professor onde surgir a dúvida."
+      }
+    },
+    {
+      "key": "descoberta",
+      "content": {
+        "kind": "interactive",
+        "title": "O que traz o salto de volta?",
+        "instructions": "Teste gravidade zero e depois um valor maior que zero. Compare a trajetória atual com a anterior.",
+        "hints": ["Na linha sem gravidade, observe se a direção vertical chega a se inverter."],
+        "required": true,
+        "activity": {
+          "type": "experiment",
+          "preset": "motion",
+          "parameters": {
+            "gravity": 0.6
+          }
+        },
+        "checkpoint": {
+          "prompt": "O que muda quando há gravidade neste modelo?",
+          "choices": [
+            {
+              "id": "opcao-1",
+              "label": "O personagem ganha uma cor diferente"
+            },
+            {
+              "id": "opcao-2",
+              "label": "A velocidade vertical muda e ele pode voltar ao chão"
+            },
+            {
+              "id": "opcao-3",
+              "label": "Todos os personagens caem automaticamente"
+            }
+          ],
+          "correctChoiceId": "opcao-2",
+          "explanation": "A gravidade muda a velocidade vertical. No seu projeto, o sprite precisa receber o bloco que aplica a gravidade."
+        }
+      }
+    },
+    {
+      "key": "explicacao",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Quando você joga uma bola para cima, ela sobe, perde velocidade, para por um instante e volta. No modelo da descoberta, a gravidade muda a velocidade a cada passo. No Estúdio, a gravidade do mundo só age nos sprites que recebem o bloco que a aplica. A força do pulo e a gravidade têm papéis diferentes: uma inicia o salto; a outra muda seu movimento e o traz de volta. Alterar um valor por vez ajuda a enxergar o efeito de cada um."
+      }
+    },
+    {
+      "key": "construir-1",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15. Teste espaço: ele ainda não está pronto para pular do chão.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-2",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino. Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "construir-3",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais. Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto.\n\nFaça esta etapa no seu projeto e teste o resultado antes de seguir. Se algo sair diferente, compare os nomes e os encaixes com a demonstração."
+      }
+    },
+    {
+      "key": "fechamento",
+      "content": {
+        "kind": "rich_text",
+        "markdown": "Teste um salto curto e um alto; depois escolha sua força. Confira se o dino volta ao chão e pode pular novamente. Envie o projeto.\n\nNa Aula 4, você vai ligar o som ao acontecimento certo."
+      }
+    },
+    {
+      "key": "projeto",
+      "existing": {
+        "kind": "studio",
+        "index": 0
+      }
+    },
+    {
+      "key": "video-construir-1-1",
+      "plannedVideo": "aula-03-passo-01: gravar a demonstração \"dar o comando de pulo ao dino\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-2-1",
+      "plannedVideo": "aula-03-passo-02: gravar a demonstração \"a gravidade traz o dino pro chão\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    },
+    {
+      "key": "video-construir-3-1",
+      "plannedVideo": "aula-03-passo-03: gravar a demonstração \"você escolhe a altura\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+    }
+  ],
+  "sections": [
+    {
+      "key": "comeco",
+      "title": "A criação de hoje",
+      "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
+      "intent": "presentation",
+      "blockKeys": ["abertura"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "descoberta",
+      "title": "O que traz o salto de volta?",
+      "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
+      "intent": "exploration",
+      "blockKeys": ["descoberta"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "entenda",
+      "title": "O que aconteceu?",
+      "objective": "Relacionar a gravidade à trajetória e ajustar a força do salto pelo resultado.",
+      "intent": "explanation",
+      "blockKeys": ["explicacao"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-1",
+      "title": "dar o comando de pulo ao dino",
+      "objective": "Em Jogo 2D, Kit dino, encaixe Controlar o dinossauro depois da floresta e antes do desenho do dino. Deixe a força em 15. Teste espaço: ele ainda não está pronto para pular do chão.",
+      "intent": "application",
+      "blockKeys": ["construir-1", "video-construir-1-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-2",
+      "title": "a gravidade traz o dino pro chão",
+      "objective": "Em Jogo 2D, Movimento, coloque Aplicar a gravidade do mundo ao sprite antes de Controlar o dinossauro. Troque jogador por dino. Rode e teste espaço, seta para cima e o clique na parte de cima do jogo. Ele precisa voltar ao chão.",
+      "intent": "application",
+      "blockKeys": ["construir-2", "video-construir-2-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "construir-3",
+      "title": "você escolhe a altura",
+      "objective": "Na força do pulo, compare 2 e 30. Um quase não sai do lugar, outro vai alto demais. Experimente 14 e depois valores de 12 a 18. Escolha pelo salto que deixa você jogar melhor, sem mudar a gravidade junto.",
+      "intent": "application",
+      "blockKeys": ["construir-3", "video-construir-3-1"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    },
+    {
+      "key": "fechamento",
+      "title": "Teste e guarde sua criação",
+      "objective": "Teste um salto curto e um alto; depois escolha sua força. Confira se o dino volta ao chão e pode pular novamente. Envie o projeto.",
+      "intent": "closing",
+      "blockKeys": ["fechamento", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": []
+    }
+  ]
+}

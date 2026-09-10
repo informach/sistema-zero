@@ -1,4 +1,10 @@
-import { sql } from 'drizzle-orm'
+import type {
+  LearningAnswers,
+  LearningResult,
+  LessonDraftDocument,
+  LessonSection,
+} from '@sistemazero/core/learning'
+import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
   boolean,
@@ -18,7 +24,7 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
-import type { LessonBlockContent, QuizBlock } from '../../../domain/course/lesson-block'
+import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type {
@@ -81,6 +87,7 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   // enxergar um enum divergente e propor recriá-lo — o que levaria junto a coluna que o usa.
   // Bloco do PINTA (migration `0065`) — o ateliê de desenho embarcado na aula.
   'pinta',
+  'interactive',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',
@@ -209,13 +216,121 @@ export const lessonBlocks = members.table(
     sortOrder: integer('sort_order').notNull().default(0),
     // União discriminada por `kind` (ver domain/course/lesson-block.ts).
     content: jsonb('content').$type<LessonBlockContent>().notNull(),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     // Token opaco da revisão do conteúdo. Muda somente em create/update do bloco;
     // ordenação não invalida extrações do Zappy.
     contentRevision: varchar('content_revision', { length: 32 })
       .notNull()
       .default(sql`md5(random()::text || clock_timestamp()::text)`),
   },
-  (t) => [uniqueIndex('lesson_blocks_lesson_sort_order_uq').on(t.lessonId, t.sortOrder)],
+  (t) => [
+    uniqueIndex('lesson_blocks_lesson_sort_order_uq')
+      .on(t.lessonId, t.sortOrder)
+      .where(isNull(t.archivedAt)),
+  ],
+)
+
+/** Student/content reads use the active view; teacher history keeps the underlying rows. */
+export const activeLessonBlocks = members
+  .view('active_lesson_blocks')
+  .as((qb) => qb.select().from(lessonBlocks).where(isNull(lessonBlocks.archivedAt)))
+
+export const lessonDrafts = members.table('lesson_drafts', {
+  lessonId: uuid('lesson_id')
+    .primaryKey()
+    .references(() => lessons.id, { onDelete: 'cascade' }),
+  revision: uuid('revision').notNull(),
+  publishedRevision: text('published_revision').notNull(),
+  document: jsonb('document').$type<LessonDraftDocument>().notNull(),
+  updatedBy: uuid('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const lessonDraftOperations = members.table(
+  'lesson_draft_operations',
+  {
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    operationId: uuid('operation_id').notNull(),
+    authorId: uuid('author_id').notNull(),
+    fingerprint: text('fingerprint').notNull(),
+    revision: uuid('revision').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.lessonId, t.operationId] })],
+)
+
+/** The complete section layout is replaced atomically with optimistic concurrency. */
+export const lessonStructures = members.table('lesson_structures', {
+  lessonId: uuid('lesson_id')
+    .primaryKey()
+    .references(() => lessons.id, { onDelete: 'cascade' }),
+  revision: uuid('revision').notNull(),
+  sections: jsonb('sections').$type<LessonSection[]>().notNull(),
+  supportBlockIds: jsonb('support_block_ids').$type<string[]>().notNull().default([]),
+})
+
+export const lessonNavigation = members.table(
+  'lesson_navigation',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    sectionId: uuid('section_id').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.lessonId] }),
+    index('lesson_navigation_account_idx').on(t.accountId),
+  ],
+)
+
+export const lessonBlockProgress = members.table(
+  'lesson_block_progress',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    positionSeconds: integer('position_seconds'),
+    answers: jsonb('answers').$type<LearningAnswers>().notNull().default({}),
+    hintsUsed: integer('hints_used').notNull().default(0),
+    attemptsCount: integer('attempts_count').notNull().default(0),
+    result: jsonb('result').$type<LearningResult>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.blockId] }),
+    index('lesson_block_progress_account_lesson_idx').on(t.accountId, t.lessonId),
+  ],
+)
+
+/** Historical snapshots survive content revisions; no FK to individual blocks. */
+export const learningAttempts = members.table(
+  'learning_attempts',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    lessonId: uuid('lesson_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    revision: varchar('revision', { length: 32 }).notNull(),
+    answers: jsonb('answers').$type<LearningAnswers>().notNull(),
+    hintsUsed: integer('hints_used').notNull(),
+    result: jsonb('result').$type<LearningResult>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('learning_attempts_owner_lesson_idx').on(t.userId, t.accountId, t.lessonId, t.createdAt),
+  ],
 )
 
 export const lessonAttachments = members.table(
@@ -291,29 +406,6 @@ export const lessonCompletions = members.table(
 // ── Tentativas de quiz (histórico; score calculado NO SERVIDOR) ─────────────
 // Sem UNIQUE: cada submit é uma linha. O estado derivado (última nota, cooldown,
 // já aprovou) é agregado por (user_id, block_id) ordenado por created_at.
-/** Independent practice history. Content references are snapshots, not cascading foreign keys. */
-export const practiceSessions = members.table(
-  'practice_sessions',
-  {
-    id: uuid('id').primaryKey(),
-    userId: uuid('user_id').notNull(),
-    accountId: uuid('account_id').notNull(),
-    courseId: uuid('course_id').notNull(),
-    courseSlug: text('course_slug').notNull(),
-    lessonId: uuid('lesson_id').notNull(),
-    blockId: uuid('block_id').notNull(),
-    title: text('title').notNull(),
-    quiz: jsonb('quiz').$type<QuizBlock>().notNull(),
-    answers: jsonb('answers').$type<QuizAnswers>(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-    completedAt: timestamp('completed_at', { withTimezone: true }),
-  },
-  (t) => [
-    index('practice_sessions_owner_created_idx').on(t.userId, t.accountId, t.createdAt),
-    index('practice_sessions_account_idx').on(t.accountId),
-  ],
-)
-
 export const quizAttempts = members.table(
   'quiz_attempts',
   {
@@ -1032,6 +1124,7 @@ export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'studio_submission',
   'mural_publication',
   'general',
+  'lesson_section',
 ])
 export const teacherMessageRoleEnum = members.enum('teacher_message_role', ['teacher', 'student'])
 
@@ -1425,12 +1518,18 @@ export const processedWebhooks = members.table(
 )
 
 export const schema = {
-  practiceSessions,
+  lessonDrafts,
+  lessonDraftOperations,
+  activeLessonBlocks,
   courses,
   modules,
   lessons,
   lessonBlocks,
   lessonAttachments,
+  lessonStructures,
+  lessonNavigation,
+  lessonBlockProgress,
+  learningAttempts,
   entitlements,
   lessonCompletions,
   lessonProgress,

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { SERIAL_RE } from '../../src/domain/certificate/certificate'
 import type { CertificateBlock } from '../../src/domain/course/lesson-block'
+import { publishBlock } from '../draft-authoring-helpers'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
@@ -79,23 +80,10 @@ const revoke = (app: App, id: string) =>
     }),
   )
 
-const createBlock = (app: App, lessonId: string, content: CertificateBlock) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/lessons/${lessonId}/blocks`, {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
-
-const updateBlock = (app: App, blockId: string, content: CertificateBlock) =>
-  app.handle(
-    new Request(`http://localhost/members/admin/blocks/${blockId}`, {
-      method: 'PATCH',
-      headers: authHeaders,
-      body: JSON.stringify({ content }),
-    }),
-  )
+const createBlock = (app: App, lessonId: string, content: { kind: string }) =>
+  publishBlock(app, lessonId, { content: { ...content } })
+const updateBlock = (app: App, lessonId: string, blockId: string, content: { kind: string }) =>
+  publishBlock(app, lessonId, { content: { ...content } }, {}, blockId)
 
 describe('Certificado — elegibilidade, emissão idempotente e validação', () => {
   test('não elegível enquanto faltam aulas (estado + 409 na emissão)', async () => {
@@ -303,13 +291,13 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     const { lessonIds, ebookBlockId } = seedSampleCourse(courses)
 
     const first = await createBlock(app, lessonIds[1], { kind: 'certificate' })
-    expect(first.status).toBe(201)
+    expect(first.status).toBe(200)
 
     const second = await createBlock(app, lessonIds[0], { kind: 'certificate' })
     expect(second.status).toBe(400)
     expect((await readJson(second)).error.code).toBe('VALIDATION_ERROR')
 
-    const update = await updateBlock(app, ebookBlockId, { kind: 'certificate' })
+    const update = await updateBlock(app, lessonIds[0], ebookBlockId, { kind: 'certificate' })
     expect(update.status).toBe(400)
     expect((await readJson(update)).error.code).toBe('VALIDATION_ERROR')
   })
@@ -321,14 +309,14 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     // lessonIds[0] tem 4 blocos NÃO-travantes (texto/vídeo/embed/ebook) → certificado OK
     // (regra relaxada: "encerramento com vídeo + certificado" é caso válido).
     const cert = await createBlock(app, lessonIds[0], { kind: 'certificate' })
-    expect(cert.status).toBe(201)
+    expect(cert.status, await cert.clone().text()).toBe(200)
 
     // Adicionar mais conteúdo livre (texto de parabéns) à aula do certificado → OK.
     const free = await createBlock(app, lessonIds[0], {
       kind: 'rich_text',
       markdown: 'Parabéns pela conquista!',
     } as never)
-    expect(free.status).toBe(201)
+    expect(free.status).toBe(200)
 
     // Mas um bloco que TRAVA a conclusão (estúdio) na aula do certificado → 400.
     const studio = await createBlock(app, lessonIds[0], {
@@ -361,7 +349,7 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     // Um quiz de FIXAÇÃO (sem nota de corte) NÃO trava → pode conviver com o certificado.
     const { lessonIds: l2 } = seedSampleCourse(courses, 'curso-2')
     const cert2 = await createBlock(app, l2[1], { kind: 'certificate' })
-    expect(cert2.status).toBe(201)
+    expect(cert2.status).toBe(200)
     const formativeQuiz = await createBlock(app, l2[1], {
       kind: 'quiz',
       questions: [
@@ -376,6 +364,6 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
         },
       ],
     } as never)
-    expect(formativeQuiz.status).toBe(201)
+    expect(formativeQuiz.status).toBe(200)
   })
 })

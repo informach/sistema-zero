@@ -1,3 +1,4 @@
+import { createLearningRoutes } from './learning'
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
@@ -1251,6 +1252,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     },
   }
 
+  const { learningNavigation, learningProgress, learningAttempt, learningHelp } =
+    createLearningRoutes({ session, gateway })
+
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
   const quizAttempts = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
@@ -1657,6 +1661,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     ambassadorMe,
     lessonPosition,
     quizAttempts,
+    learningNavigation,
+    learningProgress,
+    learningAttempt,
+    learningHelp,
     studioSubmit,
     studioCarryover,
     studioSubmissionGet,

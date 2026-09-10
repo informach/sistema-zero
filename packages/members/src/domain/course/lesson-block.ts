@@ -1,3 +1,7 @@
+import type { InteractiveBlock } from '@sistemazero/core/learning'
+
+export type { InteractiveBlock } from '@sistemazero/core/learning'
+
 import type { LessonActivity } from './studio-activity'
 
 /**
@@ -16,6 +20,7 @@ export const LESSON_BLOCK_KINDS = [
   'ebook',
   'studio',
   'pinta',
+  'interactive',
   'certificate',
   'coming_soon',
 ] as const
@@ -153,6 +158,7 @@ export type StudioMode = 'blocks' | 'bridge' | 'code'
  * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
  */
 export interface StudioBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'studio'
   /** Snapshot `Project` do Estúdio autorado pelo admin (JSON opaco aqui). */
   initialProject: unknown
@@ -256,6 +262,7 @@ export const MAX_PINTA_ASSET_CHARS = 1_800_000
  * `pintaAssetKindOf` — uma leitura de string, que não obriga o members a conhecer o formato.
  */
 export interface PintaBlock {
+  purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   /** Snapshot `PintaAsset` autorado pelo admin (JSON opaco aqui). */
   initialAsset: unknown
@@ -369,6 +376,7 @@ export interface ComingSoonBlock {
 
 /** União discriminada por `kind` — o conteúdo guardado na coluna `lesson_blocks.content`. */
 export type LessonBlockContent =
+  | InteractiveBlock
   | RichTextBlock
   | VideoBlock
   | ImageBlock
@@ -392,8 +400,8 @@ export type LessonBlockContent =
  * o aluno emitiria o diploma sem fazê-lo.
  */
 export function isCompletionGatingBlock(content: LessonBlockContent): boolean {
-  if (content.kind === 'studio') return true
-  if (content.kind === 'pinta') return true
+  if (content.kind === 'studio' || content.kind === 'pinta') return content.purpose !== 'experiment'
+  if (content.kind === 'interactive') return content.required
   if (content.kind === 'coming_soon') return true
   if (content.kind === 'quiz') return content.passingScore !== undefined
   return false
