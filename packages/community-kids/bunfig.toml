@@ -4,3 +4,8 @@ preload = ["./test-setup.ts"]
 coverageSkipTestFiles = true
 # Bun 1.3.x usa os nomes singulares neste parser (`line`/`function`).
 coverageThreshold = { line = 0.75, function = 0.65 }
+
+# `bun test` CRU varria o `e2e/` junto (specs do Playwright estouram fora do runner deles)
+# e a suíte terminava vermelha com tudo de verdade verde. `root` escopa a DESCOBERTA: o
+# `bun test tests` do package.json e os caminhos explícitos seguem iguais; o e2e roda por Playwright.
+root = "tests"

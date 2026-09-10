@@ -1,3 +1,11 @@
 [test]
 # happy-dom global (document/window) p/ os testes de componente e de Blockly.
 preload = ["./test-setup.ts"]
+
+# O `bun test` CRU (sem argumento) é o que qualquer um digita por instinto — e sem esta
+# linha ele varria o `e2e/` junto, onde moram 26 specs do Playwright. Chamar `test()` fora
+# do runner do Playwright estoura, então a suíte terminava "26 fail" com a suíte de verdade
+# inteira verde: ruído que ensina a ignorar o vermelho e mascara falha real.
+# `root` escopa a DESCOBERTA de testes; o `bun test src` do package.json e os caminhos
+# explícitos (`bun test src/foo.test.ts`) seguem funcionando. O e2e roda por `bun run e2e`.
+root = "src"
