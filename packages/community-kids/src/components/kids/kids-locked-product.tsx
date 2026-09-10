@@ -23,7 +23,7 @@ export function KidsLockedProduct({
 }) {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
-      <KidsMascot expression="thinking" className="mx-auto size-24" />
+      <KidsMascot expression="sleeping" className="mx-auto size-24" />
       <h1 className="mt-4 [font-family:var(--font-display)] font-bold text-2xl">{title}</h1>
       <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 font-bold text-muted-foreground text-sm">
         <Lock className="size-4" /> Ainda não liberado

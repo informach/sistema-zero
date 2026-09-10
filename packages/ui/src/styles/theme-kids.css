@@ -27,7 +27,12 @@
 :root {
   /* ── Fundos ─────────────────────────────────────────────── */
   --sz-kids-ceu: #e4f2ff; /* fundo das etapas do funil */
-  --sz-kids-ceu-suave: oklch(0.975 0.012 245); /* fundo do app kids (céu diluído) */
+  /* Fundo do app kids E dos quatro editores embarcados (ver tool-chrome.css). O
+     croma subiu de 0.012 para 0.030 em 09/2026: com o valor antigo o fundo era
+     branco com um sopro de azul, o cartão era branco puro e a criança via uma
+     folha de papel. Agora o cartão vira ILHA sobre o céu. ⚠️ Mexer aqui repinta
+     app e editores juntos, que é o ponto: tingir só o kids abriria emenda. */
+  --sz-kids-ceu-suave: oklch(0.965 0.03 240); /* fundo do app kids (céu) */
   --sz-kids-creme: #fff7e9; /* fundo da página de vendas */
   --sz-kids-navy: oklch(0.235 0.05 262); /* #0C1E3E — rodapé, noite do dark kids */
 
@@ -36,13 +41,15 @@
      embarcados assentarem no MESMO plano visual do host, e não só na mesma
      cor de acento. Ver community-kids/src/app/globals.css. */
   --sz-kids-branco: oklch(1 0 0); /* cartão/painel */
-  --sz-kids-branco-suave: oklch(0.955 0.006 250); /* superfície secundária, hover */
-  --sz-kids-linha: oklch(0.9 0.01 250); /* borda */
+  --sz-kids-branco-suave: oklch(0.945 0.024 245); /* superfície secundária, hover */
+  /* 148 bordas do app saem do cinza e ganham matiz de céu de uma vez só. */
+  --sz-kids-linha: oklch(0.88 0.035 245); /* borda */
 
   /* ── Superfícies da NOITE (sobre o navy) ────────────────── */
   --sz-kids-navy-superficie: oklch(0.28 0.05 260); /* cartão/painel */
   --sz-kids-navy-superficie-2: oklch(0.33 0.05 260); /* superfície secundária, hover */
-  --sz-kids-navy-linha: oklch(0.34 0.05 260); /* borda */
+  /* Na noite a borda antiga media 1,24:1 contra o cartão: praticamente invisível. */
+  --sz-kids-navy-linha: oklch(0.42 0.075 255); /* borda */
 
   /* ── Texto neutro da marca (sobre claro) ────────────────── */
   --sz-kids-tinta: #26314a;

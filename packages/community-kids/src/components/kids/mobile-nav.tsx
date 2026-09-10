@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { isNavActive } from './app-sidebar'
+import { KidsIconTile } from './kids-icon-tile'
 import { KidsLogo } from './kids-logo'
 import { MOBILE_NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
@@ -68,14 +69,9 @@ export function MobileTabbar() {
               active ? 'text-primary' : 'text-muted-foreground',
             )}
           >
-            <span
-              className={cn(
-                'rounded-xl px-3 py-0.5 transition-colors',
-                active && 'bg-(--kids-cyan-tint)',
-              )}
-            >
-              <Icon className="size-6" />
-            </span>
+            {/* Mesma cor por destino do menu do desktop: a criança memoriza cor +
+                forma antes de ler o rótulo, e nas duas telas bate. */}
+            <KidsIconTile icon={Icon} seed={item.href} active={active} />
             <span className="font-bold text-[0.65rem]">{item.label}</span>
           </Link>
         )

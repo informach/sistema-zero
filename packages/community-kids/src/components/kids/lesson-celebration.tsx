@@ -167,7 +167,7 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
           dizer "você abriu": isto virou convite, não recibo. */}
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">
-          <Gift className="size-4 text-(--kids-ouro)" />
+          <Gift className="size-4 text-(--kids-ouro-texto)" />
           Você terminou a unidade! Tem um baú te esperando na trilha.
         </p>
       ) : null}

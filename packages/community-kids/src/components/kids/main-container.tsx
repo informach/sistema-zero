@@ -84,9 +84,12 @@ export function MainContainer({ children }: { children: ReactNode }) {
       id="main-content"
       tabIndex={-1}
       className={
+        // `kids-field`: textura de pontinhos no fundo (CSS puro, zero DOM). Fora do
+        // ramo embarcado de propósito: dentro do Estúdio/Pinta quem manda no fundo
+        // é a ferramenta.
         isLessonPath(pathname)
-          ? 'w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
-          : 'mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
+          ? 'kids-field w-full flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
+          : 'kids-field mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 md:px-8 md:py-8 md:pb-8'
       }
     >
       {children}

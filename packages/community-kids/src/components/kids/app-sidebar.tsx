@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { useFocusMode } from './focus-mode'
+import { KidsIconTile } from './kids-icon-tile'
 import { KidsLogo } from './kids-logo'
 import { NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
@@ -85,7 +86,7 @@ export function AppSidebar({
                   : 'border-transparent text-muted-foreground hover:bg-muted/60 hover:text-foreground',
               )}
             >
-              <Icon className="size-6" />
+              <KidsIconTile icon={Icon} seed={item.href} active={active} />
               {item.label}
             </Link>
           )

@@ -106,11 +106,17 @@
   --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
   --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
   /* OURO = recompensa (baú, moeda, certificado). É o emprego que faltava para o
-     amarelo da marca, que estava só como "decoração". Tom escurecido no claro
-     para o texto branco por cima passar em AA. */
-  --kids-ouro: oklch(0.62 0.14 78);
-  --kids-ouro-fg: oklch(1 0 0);
-  --kids-ouro-tint: oklch(0.62 0.14 78 / 0.12);
+     amarelo da marca, que estava só como "decoração".
+     ⚠️ A tinta por cima é ESCURA, não branca: medido, branco sobre ouro dá 3,71:1
+     e reprova AA. Tinta escura sobre este ouro dá 6,40:1 — e ouro com traço escuro
+     é como um baú de verdade se parece. */
+  --kids-ouro: oklch(0.72 0.15 80);
+  --kids-ouro-fg: oklch(0.25 0.05 60);
+  --kids-ouro-tint: oklch(0.72 0.15 80 / 0.14);
+  /* Ouro como TINTA sobre superfície clara (ícone, número, rótulo). O ouro de
+     fundo tem 2,52:1 contra o branco e não serve de traço; este tem 4,98:1.
+     Segue a convenção de nomes da marca: `-texto` = passa AA sobre claro. */
+  --kids-ouro-texto: oklch(0.55 0.13 70);
 
   /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
   --background: var(--sz-kids-ceu-suave);
@@ -133,11 +139,16 @@
   --brand-gradient-start: var(--brand-cyan);
   --brand-gradient-end: var(--kids-cyan);
 
-  --secondary: oklch(0.955 0.006 250);
+  /* Apontam para os PRIMITIVOS, e não para cópias literais deles: os quatro
+     editores embarcados vestem os mesmos tokens (tool-chrome.css), e um lado
+     mudando sem o outro abre emenda entre o app e o Estúdio. */
+  --secondary: var(--sz-kids-branco-suave);
   --secondary-foreground: oklch(0.145 0.01 265);
 
-  --muted: oklch(0.955 0.006 250);
-  --muted-foreground: oklch(0.5 0.01 255);
+  --muted: var(--sz-kids-branco-suave);
+  /* A tinta secundária é a maior parte do texto da tela e era cinza NEUTRO.
+     Ganha matiz e um pouco mais de contraste ao mesmo tempo. */
+  --muted-foreground: oklch(0.48 0.045 255);
 
   --accent: var(--sz-kids-azul); /* azul vivo em detalhes (hierarquia: azul manda) */
   --accent-foreground: oklch(1 0 0);
@@ -149,8 +160,11 @@
   --success: oklch(0.45 0.13 150);
   --success-foreground: oklch(0.4 0.13 150);
 
-  --border: oklch(0.9 0.01 250);
-  --input: oklch(0.92 0.01 250);
+  --border: var(--sz-kids-linha);
+  /* ⚠️ CONSERTO, não estética: a borda de campo media 1,27:1 contra o branco e
+     reprovava a WCAG 1.4.11, que pede 3:1 para limite de componente. Ela era
+     praticamente invisível. */
+  --input: oklch(0.66 0.07 248);
   --ring: var(--sz-kids-azul-texto);
 
   --chart-1: var(--sz-kids-azul-texto);
@@ -243,6 +257,8 @@
   --kids-ouro: var(--sz-kids-amarelo);
   --kids-ouro-fg: oklch(0.2 0.04 262);
   --kids-ouro-tint: oklch(0.85 0.15 88 / 0.15);
+  /* Na noite o ouro vivo já é claro o bastante para ser traço. */
+  --kids-ouro-texto: var(--sz-kids-amarelo);
 
   --background: var(--sz-kids-navy);
   --foreground: oklch(0.975 0.005 250);
@@ -264,11 +280,11 @@
   --brand-gradient-start: var(--brand-cyan);
   --brand-gradient-end: oklch(0.85 0.09 235);
 
-  --secondary: oklch(0.3 0.045 260);
+  --secondary: var(--sz-kids-navy-superficie-2);
   --secondary-foreground: oklch(0.975 0.005 250);
 
-  --muted: oklch(0.3 0.045 260);
-  --muted-foreground: oklch(0.7 0.03 250);
+  --muted: var(--sz-kids-navy-superficie-2);
+  --muted-foreground: oklch(0.73 0.055 250);
 
   --accent: oklch(0.33 0.05 260);
   --accent-foreground: var(--brand-cyan);
@@ -279,8 +295,9 @@
   --success: oklch(0.33 0.05 260);
   --success-foreground: oklch(0.8 0.14 155);
 
-  --border: oklch(0.34 0.05 260);
-  --input: oklch(0.36 0.05 260);
+  --border: var(--sz-kids-navy-linha);
+  /* Mesmo conserto do claro: no escuro a borda de campo media ~1,3:1. */
+  --input: oklch(0.55 0.07 250);
   --ring: var(--sz-kids-azul-vivo);
 
   --chart-1: var(--sz-kids-azul-vivo);
@@ -633,13 +650,15 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
    (herda o tema claro/escuro).
    ============================================================ */
 :root {
-  --career-node: 11rem; /* diâmetro do medalhão */
-  --career-row: 16rem; /* altura por nível (medalhão + legenda + respiro) */
+  /* Encolhido em 09/2026: com 11rem/16rem os 8 níveis somavam ~2000px de rolagem
+     e a criança perdia o mapa de vista. Infantil vem da COR, não do tamanho. */
+  --career-node: 9rem; /* diâmetro do medalhão */
+  --career-row: 13rem; /* altura por nível (medalhão + legenda + respiro) */
 }
 @media (max-width: 640px) {
   :root {
-    --career-node: 8.5rem;
-    --career-row: 13rem;
+    --career-node: 7.5rem;
+    --career-row: 11rem;
   }
 }
 .career-ribbon {
@@ -656,10 +675,10 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-/* Trilha completa (o caminho à frente): neutra e apagada. */
+/* Trilha completa (o caminho à frente): discreta, mas é CAMINHO, não fio morto. */
 .career-ribbon__track {
-  stroke: var(--border);
-  opacity: 0.6;
+  stroke: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
+  opacity: 0.7;
 }
 @media (max-width: 640px) {
   .career-ribbon__track,
@@ -670,6 +689,16 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
 .career-medal {
   width: var(--career-node);
   height: var(--career-node);
+}
+
+/* Default do tema de unidade. Sem ele, um `.kids-card` fora de um `.kids-unit-*`
+   herda `currentColor` na borda e a sombra some: o componente parece quebrado sem
+   que ninguém erre nada. */
+:root {
+  --unit: var(--border);
+  --unit-fg: var(--foreground);
+  --unit-bg: var(--card);
+  --unit-bg-image: none;
 }
 
 .kids-unit-cyan {
@@ -727,190 +756,224 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --unit-fg: oklch(0.2 0.04 262);
 }
 
-.kids-unit-banner {
-  border-radius: calc(var(--radius) + 4px);
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
-}
+/* ============================================================
+   ILUSTRAÇÃO EM CSS — nada de asset novo.
+   ============================================================ */
+@layer components {
+  /* Textura do fundo do app: pontinhos do azul da marca, quase invisíveis um a um
+     e o suficiente para o fundo deixar de ser chapado. Zero DOM, zero peso. */
+  .kids-field {
+    background-image: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--sz-primary) 9%, transparent) 1.5px,
+      transparent 1.5px
+    );
+    background-size: 22px 22px;
+  }
 
-/* Card de curso vestindo o tema da unidade (borda + sombra dura coloridas). */
-.kids-card {
-  border: 2px solid var(--unit);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 35%, transparent);
-}
-
-.kids-node {
-  width: var(--trail-node);
-  height: var(--trail-node);
-  border-radius: 9999px;
-  display: grid;
-  place-items: center;
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease;
-}
-.kids-node--done {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-.kids-node--current {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-  animation: kids-ring 1.8s ease-out infinite;
-}
-.kids-node--todo {
-  background-color: var(--card);
-  color: var(--muted-foreground);
-  border: 2px solid var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-/* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
-   sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
-.kids-node--locked {
-  background-color: var(--muted);
-  color: var(--muted-foreground);
-  border: 2px dashed var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-  opacity: 0.85;
-}
-/* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
-   aberto = veste o tema da unidade (mesmos tokens dos nós done). */
-.kids-node--chest-closed {
-  background-color: var(--card);
-  color: var(--muted-foreground);
-  border: 2px dashed var(--border);
-  --node-shadow: var(--border);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-.kids-node--chest-open {
-  background-color: var(--unit-bg);
-  background-image: var(--unit-bg-image);
-  color: var(--unit-fg);
-  --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-}
-/* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
-.kids-node--chest-ready {
-  background-color: var(--unit-bg);
-  color: var(--unit-fg);
-  border: 2px solid var(--unit);
-  --node-shadow: color-mix(in oklab, var(--unit) 55%, black);
-  box-shadow: 0 5px 0 var(--node-shadow);
-  animation: kids-ring 2.4s ease-out infinite;
-}
-button:active > .kids-node--chest-ready {
-  transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--node-shadow);
-}
-/* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
-   de `prefers-reduced-motion` no fim do arquivo doma as duas. */
-@keyframes kids-chest-shake {
-  0%,
-  100% {
-    transform: none;
+  /* Tema kids da aula por SEÇÕES. O `LessonSections` do member-shell já aplicava
+     esta classe sob a flag `kids`, mas ela não existia em lugar nenhum do
+     repositório: era um gancho pronto e órfão. A comunidade adulta não importa
+     este arquivo, então o que entra aqui não vaza para lá. */
+  .sz-lesson-sections h2 {
+    color: var(--unit, var(--foreground));
   }
-  20% {
-    transform: rotate(-7deg) scale(1.04);
-  }
-  45% {
-    transform: rotate(7deg) scale(1.08);
-  }
-  70% {
-    transform: rotate(-3deg) scale(1.12);
-  }
-}
-@keyframes kids-chest-lid {
-  to {
-    transform: rotate(-58deg) translateY(-2px);
-  }
-}
-.kids-chest-opening {
-  animation: kids-chest-shake 0.52s ease-in-out;
-}
-.kids-chest-opening .chest-lid {
-  transform-origin: 20% 100%;
-  animation: kids-chest-lid 0.32s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
-}
-
-/* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
-.kids-node-link:active .kids-node {
-  transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--node-shadow);
-}
-@keyframes kids-ring {
-  0% {
-    outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);
-    outline-offset: 2px;
-  }
-  70%,
-  100% {
-    outline: 4px solid transparent;
-    outline-offset: 12px;
+  .sz-lesson-sections > div:first-of-type {
+    border-color: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
+    background: color-mix(in oklab, var(--sz-primary) 4%, var(--card));
   }
 }
 
-/* Balão "COMEÇAR/CONTINUAR" sobre o nó atual (o transform é DONO do
-   centering — keyframes incluem o translateX(-50%)). */
-.kids-balloon {
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  z-index: 10;
-  font-family: var(--font-display);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  background: var(--card);
-  color: var(--unit);
-  border: 2px solid var(--unit);
-  border-radius: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  animation: kids-bob 1.4s ease-in-out infinite;
-}
-.kids-balloon::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -0.4rem;
-  width: 0.65rem;
-  height: 0.65rem;
-  transform: translateX(-50%) rotate(45deg);
-  background: var(--card);
-  border-right: 2px solid var(--unit);
-  border-bottom: 2px solid var(--unit);
-}
-@keyframes kids-bob {
-  0%,
-  100% {
-    transform: translate(-50%, 0);
+/* Classes de COMPONENTE da trilha e dos cards. Ficam em `@layer components` de
+   propósito: CSS sem camada vence QUALQUER camada, inclusive as utilitárias do
+   Tailwind, e então `cn("kids-card", "border-4")` do call site viraria letra
+   morta em silêncio. Foi o mesmo defeito que o `.sz-btn-gradient` já teve. */
+@layer components {
+  .kids-unit-banner {
+    border-radius: calc(var(--radius) + 4px);
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+    box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
   }
-  50% {
-    transform: translate(-50%, -6px);
-  }
-}
 
-/* Conectores pontilhados entre nós consecutivos (posição inline). */
-.kids-trail-dot {
-  position: absolute;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 9999px;
-  background: var(--border);
-}
-.kids-trail-dot--done {
-  background: color-mix(in oklch, var(--unit) 55%, transparent);
+  /* Card de curso vestindo o tema da unidade (borda + sombra dura coloridas). */
+  .kids-card {
+    border: 2px solid var(--unit);
+    box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 35%, transparent);
+  }
+
+  .kids-node {
+    width: var(--trail-node);
+    height: var(--trail-node);
+    border-radius: 9999px;
+    display: grid;
+    place-items: center;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .kids-node--done {
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+    box-shadow: 0 5px 0 var(--node-shadow);
+  }
+  .kids-node--current {
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+    box-shadow: 0 5px 0 var(--node-shadow);
+    animation: kids-ring 1.8s ease-out infinite;
+  }
+  .kids-node--todo {
+    background-color: var(--card);
+    color: var(--muted-foreground);
+    border: 2px solid var(--border);
+    --node-shadow: var(--border);
+    box-shadow: 0 5px 0 var(--node-shadow);
+  }
+  /* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
+     sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
+  .kids-node--locked {
+    background-color: var(--muted);
+    color: var(--muted-foreground);
+    border: 2px dashed var(--border);
+    --node-shadow: var(--border);
+    box-shadow: 0 5px 0 var(--node-shadow);
+    opacity: 0.85;
+  }
+  /* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
+     aberto = veste o tema da unidade (mesmos tokens dos nós done). */
+  .kids-node--chest-closed {
+    background-color: var(--card);
+    color: var(--muted-foreground);
+    border: 2px dashed var(--border);
+    --node-shadow: var(--border);
+    box-shadow: 0 5px 0 var(--node-shadow);
+  }
+  .kids-node--chest-open {
+    background-color: var(--unit-bg);
+    background-image: var(--unit-bg-image);
+    color: var(--unit-fg);
+    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
+    box-shadow: 0 5px 0 var(--node-shadow);
+  }
+  /* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
+  .kids-node--chest-ready {
+    background-color: var(--unit-bg);
+    color: var(--unit-fg);
+    border: 2px solid var(--unit);
+    --node-shadow: color-mix(in oklab, var(--unit) 55%, black);
+    box-shadow: 0 5px 0 var(--node-shadow);
+    animation: kids-ring 2.4s ease-out infinite;
+  }
+  button:active > .kids-node--chest-ready {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--node-shadow);
+  }
+  /* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
+     de `prefers-reduced-motion` no fim do arquivo doma as duas. */
+  @keyframes kids-chest-shake {
+    0%,
+    100% {
+      transform: none;
+    }
+    20% {
+      transform: rotate(-7deg) scale(1.04);
+    }
+    45% {
+      transform: rotate(7deg) scale(1.08);
+    }
+    70% {
+      transform: rotate(-3deg) scale(1.12);
+    }
+  }
+  @keyframes kids-chest-lid {
+    to {
+      transform: rotate(-58deg) translateY(-2px);
+    }
+  }
+  .kids-chest-opening {
+    animation: kids-chest-shake 0.52s ease-in-out;
+  }
+  .kids-chest-opening .chest-lid {
+    transform-origin: 20% 100%;
+    animation: kids-chest-lid 0.32s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+  }
+
+  /* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
+  .kids-node-link:active .kids-node {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 var(--node-shadow);
+  }
+  @keyframes kids-ring {
+    0% {
+      outline: 4px solid color-mix(in oklch, var(--unit) 45%, transparent);
+      outline-offset: 2px;
+    }
+    70%,
+    100% {
+      outline: 4px solid transparent;
+      outline-offset: 12px;
+    }
+  }
+
+  /* Balão "COMEÇAR/CONTINUAR" sobre o nó atual (o transform é DONO do
+     centering — keyframes incluem o translateX(-50%)). */
+  .kids-balloon {
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    z-index: 10;
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    background: var(--card);
+    color: var(--unit);
+    border: 2px solid var(--unit);
+    border-radius: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    animation: kids-bob 1.4s ease-in-out infinite;
+  }
+  .kids-balloon::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -0.4rem;
+    width: 0.65rem;
+    height: 0.65rem;
+    transform: translateX(-50%) rotate(45deg);
+    background: var(--card);
+    border-right: 2px solid var(--unit);
+    border-bottom: 2px solid var(--unit);
+  }
+  @keyframes kids-bob {
+    0%,
+    100% {
+      transform: translate(-50%, 0);
+    }
+    50% {
+      transform: translate(-50%, -6px);
+    }
+  }
+
+  /* Conectores pontilhados entre nós consecutivos (posição inline). */
+  .kids-trail-dot {
+    position: absolute;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--border);
+  }
+  .kids-trail-dot--done {
+    background: color-mix(in oklch, var(--unit) 55%, transparent);
+  }
 }
 
 /* ============================================================

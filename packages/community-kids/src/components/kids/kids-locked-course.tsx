@@ -20,7 +20,7 @@ export function KidsLockedCourse({ reason }: { reason?: CareerLockReason }) {
   const tierReward = reason === 'tier-reward'
   return (
     <section className="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
+      <KidsMascot expression="sleeping" className="size-24" />
       <h1 className="mt-4 sz-display text-2xl">
         {tierReward
           ? 'Este curso é um prêmio!'
