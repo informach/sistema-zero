@@ -50,12 +50,19 @@ export async function apiSend<T>(
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   body?: unknown,
   headers?: Record<string, string>,
+  /**
+   * Sobrevive ao fechamento da aba (`keepalive` do fetch). Use em escrita que o
+   * aluno dispara e some logo em seguida, como trocar de seção e fechar a aula:
+   * sem isso o navegador CANCELA o pedido no unload e o lugar se perde.
+   */
+  options?: { keepalive?: boolean },
 ): Promise<T> {
   return handle<T>(
     await fetch(path, {
       method,
       headers: { 'content-type': 'application/json', ...headers },
       body: body !== undefined ? JSON.stringify(body) : undefined,
+      ...(options?.keepalive ? { keepalive: true } : {}),
     }),
   )
 }

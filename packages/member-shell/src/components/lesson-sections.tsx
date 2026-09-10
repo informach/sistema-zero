@@ -144,6 +144,39 @@ function BlockScope({
   )
 }
 
+/**
+ * Espelho LOCAL da seção atual, por perfil e por aula.
+ *
+ * A seção corrente é do servidor (`members.lesson_navigation`), e é ele quem
+ * manda. Mas a gravação pode falhar (rede da criança oscila), e aí um F5 devolvia
+ * a criança para a seção 1 sem aviso nenhum. A chave abaixo existe SÓ enquanto há
+ * escrita não confirmada: nasce ao navegar, morre no primeiro ok. Assim ela nunca
+ * atropela o que outro aparelho gravou depois.
+ */
+function sectionMirrorKey(viewerId: string | null, lessonId: string): string | null {
+  return viewerId ? `sz:lesson-section:${viewerId}:${lessonId}` : null
+}
+
+function readMirror(key: string | null): string | null {
+  if (!key) return null
+  try {
+    return localStorage.getItem(key)
+  } catch {
+    // modo privado ou storage cheio: sem espelho, o servidor decide sozinho.
+    return null
+  }
+}
+
+function writeMirror(key: string | null, value: string | null): void {
+  if (!key) return
+  try {
+    if (value === null) localStorage.removeItem(key)
+    else localStorage.setItem(key, value)
+  } catch {
+    // best-effort: nunca atrapalha a aula.
+  }
+}
+
 export function LessonSections({
   lesson,
   renderBlocks,
@@ -186,6 +219,7 @@ export function LessonSections({
       ),
   )
   const [error, setError] = useState('')
+  const [retryable, setRetryable] = useState(true)
   const [helpOpen, setHelpOpen] = useState(false)
   const [help, setHelp] = useState('')
   const [helpStatus, setHelpStatus] = useState('')
@@ -213,6 +247,31 @@ export function LessonSections({
     setDestination(null)
   }, [destination])
   const navigationQueue = useRef<Promise<void>>(Promise.resolve())
+  const mirrorKey = sectionMirrorKey(player?.viewerId ?? null, lesson.id)
+  const restored = useRef(false)
+  // Na MONTAGEM, e uma vez só: (1) se sobrou espelho local, houve uma escrita que
+  // não chegou ao servidor — a criança volta para onde ela estava de verdade;
+  // (2) registra a abertura, porque a navegação só grava em TRANSIÇÃO e quem
+  // abre a aula e fica na seção 1 nunca criava linha (o "continuar de onde
+  // parou" do card do curso sai justamente do `updated_at` dela).
+  //
+  // A leitura fica no efeito, e não no inicializador do useState, porque o
+  // servidor renderiza este componente e ler `localStorage` ali quebra a
+  // hidratação (React #418).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: montagem, uma vez só
+  useEffect(() => {
+    if (restored.current || preview) return
+    restored.current = true
+    const local = readMirror(mirrorKey)
+    const pendente = local && local !== selected && sections.some((s) => s.id === local)
+    if (pendente && local) {
+      setSelected(local)
+      saveSection(local)
+      return
+    }
+    if (local) writeMirror(mirrorKey, null)
+    if (selected) saveSection(selected, { silent: true })
+  }, [])
   if (!section) return null
   const activeIds = new Set([
     ...section.blockIds,
@@ -228,6 +287,7 @@ export function LessonSections({
     if (!next) return
     setSelected(next.id)
     setError('')
+    setRetryable(true)
     setHelpOpen(false)
     setHelp('')
     setHelpStatus('')
@@ -243,16 +303,39 @@ export function LessonSections({
     if (requirementsMenu.current) requirementsMenu.current.open = false
     setDestination(blockId ?? 'heading')
     if (preview) return
+    saveSection(next.id)
+  }
+  /**
+   * Grava a seção atual. `silent` é o registro de abertura da aula (bookkeeping:
+   * é o `updated_at` desta linha que alimenta o "continuar de onde parou" do
+   * card do curso), que não pode virar recado de erro na cara da criança.
+   */
+  function saveSection(sectionId: string, opts: { silent?: boolean } = {}) {
+    writeMirror(mirrorKey, sectionId)
     navigationQueue.current = navigationQueue.current.then(async () => {
       try {
         await apiSend(
           `/api/members/lessons/${encodeURIComponent(lesson.id)}/navigation`,
           'POST',
-          { sectionId: next.id },
+          { sectionId },
           { 'x-sz-viewer': player?.viewerId ?? '' },
+          // `keepalive`: trocar de seção e fechar a aba é comum, e sem isso o
+          // navegador cancela o pedido no unload.
+          { keepalive: true },
         )
-      } catch {
+        writeMirror(mirrorKey, null)
+      } catch (e) {
+        if (opts.silent) return
+        // Trocar de perfil no meio da aula devolve 409: aqui "tentar de novo"
+        // NUNCA funciona, então o recado é o do servidor e o botão não aparece.
+        const code = (e as { code?: string } | null)?.code
+        if (code === 'VIEWER_CHANGED') {
+          setError((e as { message?: string }).message ?? 'O perfil mudou. Abra a aula de novo.')
+          setRetryable(false)
+          return
+        }
         setError('Não foi possível salvar a seção atual. Você pode continuar e tentar novamente.')
+        setRetryable(true)
       }
     })
   }
@@ -532,10 +615,15 @@ export function LessonSections({
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}{' '}
-          <button type="button" className="underline" onClick={() => navigate(index)}>
-            Tentar novamente
-          </button>
+          {error}
+          {retryable && (
+            <>
+              {' '}
+              <button type="button" className="underline" onClick={() => navigate(index)}>
+                Tentar novamente
+              </button>
+            </>
+          )}
         </p>
       )}
       {index === sections.length - 1 && !lesson.completed && (

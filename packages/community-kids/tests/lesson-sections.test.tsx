@@ -241,6 +241,75 @@ describe('aula por seções', () => {
     expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
   })
 
+  test('rede fora ao trocar de seção: a criança volta onde estava, e o espelho some no primeiro ok', async () => {
+    // A seção corrente é do servidor. Mas se a gravação falha, um F5 devolvia a
+    // criança para a seção 1 sem aviso. O espelho local existe SÓ enquanto há
+    // escrita não confirmada, então nunca atropela o que outro aparelho gravou.
+    let derruba = true
+    globalThis.fetch = (async () => {
+      if (derruba) throw new TypeError('sem rede')
+      return Response.json({ ok: true })
+    }) as unknown as typeof fetch
+
+    const tela = render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await screen.findByRole('alert')
+    expect(localStorage.getItem('sz:lesson-section:child-a:lesson')).toBe('second')
+
+    // Um F5 no meio da queda: a aula reabre onde a criança estava de verdade.
+    tela.unmount()
+    derruba = false
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    expect(await screen.findByRole('heading', { name: 'Observar' })).toBeTruthy()
+    await waitFor(() => expect(localStorage.getItem('sz:lesson-section:child-a:lesson')).toBeNull())
+  })
+
+  test('trocar de perfil no meio da aula não oferece "tentar novamente"', async () => {
+    // 409 VIEWER_CHANGED: aqui repetir NUNCA funciona, então o recado é o do
+    // servidor e o botão some. Antes a criança lia "tentar novamente" para um
+    // erro que só passa reabrindo a aula.
+    globalThis.fetch = (async () =>
+      Response.json(
+        { error: { code: 'VIEWER_CHANGED', message: 'O perfil mudou. Abra a aula de novo.' } },
+        { status: 409 },
+      )) as unknown as typeof fetch
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    const aviso = await screen.findByRole('alert')
+    expect(aviso.textContent).toContain('O perfil mudou. Abra a aula de novo.')
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).toBeNull()
+  })
+
+  test('a troca de seção sobrevive ao fechamento da aba', async () => {
+    // Sem `keepalive` o navegador CANCELA o pedido no unload, e o lugar se perde
+    // justamente em quem troca de seção e fecha a aula em seguida.
+    const inits: RequestInit[] = []
+    globalThis.fetch = (async (_i: RequestInfo | URL, init?: RequestInit) => {
+      if (init) inits.push(init)
+      return Response.json({ ok: true })
+    }) as unknown as typeof fetch
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    await waitFor(() => expect(inits.length).toBeGreaterThan(0))
+    expect(inits.every((i) => i.keepalive === true)).toBe(true)
+  })
+
   test('retoma a seção salva e inclui seu contexto no pedido de ajuda', async () => {
     const requests: Array<{ url: string; body: unknown; viewer: string | null }> = []
     globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -268,6 +337,14 @@ describe('aula por seções', () => {
       {
         url: '/api/members/lessons/lesson/section-help',
         body: { sectionId: 'second', body: 'Por que ele cai?' },
+        viewer: 'child-a',
+      },
+      // Abrir a aula REGISTRA a seção onde a criança entrou. A navegação só grava
+      // em transição, então quem abre e fica na primeira seção nunca criava linha,
+      // e é o `updated_at` dela que alimenta o "continuar de onde parou".
+      {
+        url: '/api/members/lessons/lesson/navigation',
+        body: { sectionId: 'second' },
         viewer: 'child-a',
       },
     ])
