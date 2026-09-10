@@ -1,3 +1,6 @@
+import { Home } from 'lucide-react'
+import { KidsBand } from '@/components/kids/kids-band'
+import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { RoomBuilder } from '@/components/kids/room/room-builder'
 import { getAvatarReadonly } from '@/server/members'
 
@@ -13,14 +16,18 @@ export default async function QuartoPage() {
     avatarRes.status === 200 && avatarRes.body ? (avatarRes.body.photoUrl ?? null) : null
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div>
-        <h1 className="sz-display text-2xl">Meu quarto</h1>
-        <p className="mt-1 text-muted-foreground text-sm">
-          Monte do seu jeito! Arraste as peças e deixe tudo com a sua cara. 🏠
-        </p>
-      </div>
-      <RoomBuilder avatarPhotoUrl={avatarPhotoUrl} />
-    </div>
+    <>
+      <KidsBand tone="creme">
+        <KidsPageHeader
+          eyebrow="Meu espaço"
+          eyebrowIcon={Home}
+          title="Meu quarto"
+          subtitle="Monte do seu jeito! Arraste as peças e deixe tudo com a sua cara."
+        />
+      </KidsBand>
+      <KidsBand tone="lilas">
+        <RoomBuilder avatarPhotoUrl={avatarPhotoUrl} />
+      </KidsBand>
+    </>
   )
 }

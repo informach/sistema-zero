@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { KidsBand } from '@/components/kids/kids-band'
 import { PublicProfileView } from '@/components/kids/public-profile-view'
 import { getPublicProfile } from '@/server/public-profile'
 
@@ -20,5 +21,9 @@ export default async function PublicChildProfilePage({
   if (!UUID_RE.test(profileId)) notFound()
   const profile = await getPublicProfile(profileId)
   if (!profile) notFound()
-  return <PublicProfileView profile={profile} />
+  return (
+    <KidsBand tone="creme">
+      <PublicProfileView profile={profile} />
+    </KidsBand>
+  )
 }

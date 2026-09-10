@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
 import { reportClientError } from '@/lib/report-error'
 
@@ -26,8 +27,11 @@ export default function AppError({
   }, [error])
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
+    <KidsBand
+      tone="creme"
+      innerClassName="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center"
+    >
+      <KidsMascot expression="thinking" className="kid-float size-24" />
       <div>
         <h1 className="sz-display text-2xl">Ops! Algo deu errado</h1>
         <p className="mt-1 text-muted-foreground">
@@ -37,6 +41,6 @@ export default function AppError({
       <button type="button" onClick={() => reset()} className="sz-btn-gradient h-11 px-6 text-base">
         Tentar de novo
       </button>
-    </div>
+    </KidsBand>
   )
 }

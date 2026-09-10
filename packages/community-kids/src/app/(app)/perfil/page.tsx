@@ -1,9 +1,13 @@
 import { drawersForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
+import { Home, Smile, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { CareerTimeline } from '@/components/kids/career-timeline'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
+import { KidsBand } from '@/components/kids/kids-band'
+import { KidsFeatureCard } from '@/components/kids/kids-feature-card'
+import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
@@ -73,58 +77,78 @@ export default async function ProfilePage() {
   const studioFree = canOpenFreeStudio(ownsStudio, gamification?.level?.slug, session.role)
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <>
       {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
       <FocusRefresh />
-      <div>
-        <h1 className="sz-display text-2xl">Meu perfil</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Seu avatar, seu nome e seu telefone.</p>
-      </div>
-      <ProfileClient
-        profile={profile}
-        ranking={gamification?.ranking ?? null}
-        level={gamification?.level ?? null}
-        levelHint={levelHint}
-        avatarPhotoUrl={avatarPhotoUrl}
-      />
-      {gamification ? (
-        <CareerTimeline
-          gamification={gamification}
-          courses={courses}
-          showcaseStats={showcaseStats}
+      <KidsBand tone="creme">
+        <KidsPageHeader
+          eyebrow="Meu espaço"
+          eyebrowIcon={UserRound}
+          title="Meu perfil"
+          subtitle="Seu avatar, seu nome e seu telefone."
         />
+        <div className="mt-6">
+          <ProfileClient
+            profile={profile}
+            ranking={gamification?.ranking ?? null}
+            level={gamification?.level ?? null}
+            levelHint={levelHint}
+            avatarPhotoUrl={avatarPhotoUrl}
+          />
+        </div>
+      </KidsBand>
+
+      {gamification || ownsStudio ? (
+        <KidsBand tone="menta" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+          {gamification ? (
+            <CareerTimeline
+              gamification={gamification}
+              courses={courses}
+              showcaseStats={showcaseStats}
+            />
+          ) : null}
+          {ownsStudio ? <MyTools drawers={drawers} studioOwned={studioFree} /> : null}
+        </KidsBand>
       ) : null}
-      {ownsStudio ? <MyTools drawers={drawers} studioOwned={studioFree} /> : null}
-      <section className="grid gap-4 sm:grid-cols-2" aria-label="Meu espaço criativo">
-        <Link
-          href="/quarto"
-          prefetch={false}
-          className="rounded-2xl border border-border bg-card p-5"
-        >
-          <h2 className="sz-display text-xl">Meu quarto</h2>
-          <p className="mt-2 text-muted-foreground text-sm">
-            Decore seu cantinho com as conquistas da carreira.
-          </p>
-        </Link>
-        <Link
-          href="/meu-avatar"
-          prefetch={false}
-          className="rounded-2xl border border-border bg-card p-5"
-        >
-          <h2 className="sz-display text-xl">Meu avatar</h2>
-          <p className="mt-2 text-muted-foreground text-sm">
-            Escolha como você aparece para a turma.
-          </p>
-        </Link>
-      </section>
+
+      <KidsBand tone="lilas" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+        <h2 className="sz-display text-[clamp(1.4rem,3vw,1.9rem)]">Meu cantinho</h2>
+        <section className="grid gap-4 sm:grid-cols-2" aria-label="Meu espaço criativo">
+          <Link href="/quarto" prefetch={false} className="kid-pop">
+            <KidsFeatureCard
+              icon={Home}
+              title="Meu quarto"
+              description="Decore seu cantinho com as conquistas da carreira."
+              color="var(--porta-clube)"
+              ink="var(--porta-clube-texto)"
+              className="h-full"
+            />
+          </Link>
+          <Link href="/meu-avatar" prefetch={false} className="kid-pop">
+            <KidsFeatureCard
+              icon={Smile}
+              title="Meu avatar"
+              description="Escolha como você aparece para a turma."
+              color="var(--porta-ranking)"
+              ink="var(--porta-ranking-texto)"
+              className="h-full"
+            />
+          </Link>
+        </section>
+        {gamification ? (
+          <StreakProtection
+            freezesAvailable={gamification.streak.freezesAvailable ?? 0}
+            onVacation={gamification.streak.onVacation ?? false}
+            vacationUntil={gamification.streak.vacationUntil ?? null}
+          />
+        ) : null}
+      </KidsBand>
+
       {gamification ? (
-        <StreakProtection
-          freezesAvailable={gamification.streak.freezesAvailable ?? 0}
-          onVacation={gamification.streak.onVacation ?? false}
-          vacationUntil={gamification.streak.vacationUntil ?? null}
-        />
+        <KidsBand tone="ceu">
+          <BadgeShowcase gamification={gamification} />
+        </KidsBand>
       ) : null}
-      {gamification ? <BadgeShowcase gamification={gamification} /> : null}
-    </div>
+    </>
   )
 }

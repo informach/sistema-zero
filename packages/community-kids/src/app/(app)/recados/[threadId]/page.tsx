@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { KidsBand } from '@/components/kids/kids-band'
 import { getSession } from '@/server/session'
 import { RecadoThreadClient } from './recado-thread-client'
 
@@ -17,5 +18,9 @@ export default async function RecadoThreadPage({
   const session = await getSession()
   if (!session) redirect('/login')
   const { threadId } = await params
-  return <RecadoThreadClient threadId={threadId} />
+  return (
+    <KidsBand tone="menta">
+      <RecadoThreadClient threadId={threadId} />
+    </KidsBand>
+  )
 }
