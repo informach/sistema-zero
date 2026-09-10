@@ -51,6 +51,8 @@ export function VimeoPlayer({
 }: VimeoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
+  // A instância viva do SDK: o efeito da tela cheia precisa falar com ela.
+  const playerRef = useRef<Player | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   // Callbacks em refs: o Player é criado uma vez por vídeo; sem stale closures.
@@ -80,7 +82,14 @@ export function VimeoPlayer({
       portrait: false,
       dnt: true,
       playsinline: true,
+      // PISO da escada adaptativa. O Vimeo escolhe a qualidade pelo tamanho
+      // RENDERIZADO do iframe, e dentro da aula por seções ele nasce estreito
+      // (o editor divide a linha). Sem piso, ele assentava em 360p e a tela
+      // cheia esticava isso para a tela toda. 540p e não 720p de propósito:
+      // a criança pode estar no 4G da escola.
+      min_quality: '540p',
     })
+    playerRef.current = player
 
     const initial = initialPositionSeconds ?? 0
     if (initial > 2) {
@@ -110,13 +119,41 @@ export function VimeoPlayer({
     return () => {
       // `destroy()` remove o iframe que o PRÓPRIO SDK criou dentro do host —
       // o React nunca soube dele, então o próximo run cria um novo limpo.
+      if (playerRef.current === player) playerRef.current = null
       player.destroy().catch(() => {})
     }
   }, [vimeoId, vimeoHash, thresholdPercent])
 
-  // Sincroniza o estado do botão com a Fullscreen API (Esc, F11, etc.).
+  // Sincroniza o estado do botão com a Fullscreen API (Esc, F11, etc.) e avisa o
+  // player que o tamanho mudou.
+  //
+  // A tela cheia é do CONTAINER, não do iframe, de propósito: é o que mantém o
+  // watermark visível (ver o cabeçalho). O efeito colateral é que, para o player
+  // lá dentro, entrar em tela cheia é só um resize — o atalho interno do Vimeo
+  // "tela cheia logo a melhor qualidade" nunca dispara, e o adaptativo sobe
+  // devagar a partir do que já estava em buffer. Então a gente pede na mão.
   useEffect(() => {
-    const sync = () => setIsFullscreen(document.fullscreenElement === containerRef.current)
+    const sync = () => {
+      const cheia = document.fullscreenElement === containerRef.current
+      setIsFullscreen(cheia)
+      const player = playerRef.current
+      if (!player) return
+      // Melhor esforço: `setQuality` é restrito a contas Plus/PRO/Business, e
+      // numa conta sem ele a promessa só rejeita. Nunca pode derrubar a aula.
+      if (!cheia) {
+        player.setQuality('auto').catch(() => {})
+        return
+      }
+      player
+        .getQualities()
+        .then((qualidades: Array<{ id: string }>) => {
+          // A lista vem da melhor para a pior, com 'auto' junto; queremos a
+          // melhor CONCRETA.
+          const melhor = qualidades.find((q) => q.id !== 'auto')
+          if (melhor) return player.setQuality(melhor.id)
+        })
+        .catch(() => {})
+    }
     document.addEventListener('fullscreenchange', sync)
     return () => document.removeEventListener('fullscreenchange', sync)
   }, [])
