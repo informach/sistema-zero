@@ -240,7 +240,11 @@
   --success-foreground: oklch(0.4 0.13 150);
 
   --border: var(--sz-kids-linha);
-  --input: oklch(0.92 0.01 250);
+  /* ⚠️ 0.66, e não 0.92 (decisão da dona, 10/09/2026). A WCAG 1.4.11 pede 3:1
+     para o LIMITE de um componente, e com 0.92 a borda do campo media 1,27:1
+     contra o branco do cartão — invisível para quem enxerga pouco. 0.66 dá
+     3,11:1. Só a claridade mudou: matiz e croma são os mesmos de antes. */
+  --input: oklch(0.66 0.01 250);
   --ring: var(--sz-kids-azul-texto);
 
   --chart-1: var(--sz-kids-azul-texto);
@@ -431,7 +435,8 @@
   --success-foreground: oklch(0.8 0.14 155);
 
   --border: var(--sz-kids-navy-linha);
-  --input: oklch(0.36 0.05 260);
+  /* Mesma régua no escuro: 0.36 dava 1,34:1 contra o cartão navy; 0.555 dá 3,08:1. */
+  --input: oklch(0.555 0.05 260);
   --ring: var(--sz-kids-azul-vivo);
 
   --chart-1: var(--sz-kids-azul-vivo);

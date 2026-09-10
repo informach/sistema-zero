@@ -79,7 +79,12 @@
   );
   --sz-kids-cta-tinta: #3a2400; /* texto sobre o gradiente laranja vivo */
   /* Azul profundo: CTA da comunidade no light — pontas p/ texto BRANCO AA. */
-  --sz-kids-grad-cta-azul: linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255));
+  /* ⚠️ A parada de cima é 0.565, e não 0.58 (decisão da dona, 10/09/2026). Com
+     0.58 o rótulo BRANCO de 14px do botão media 4,28:1 e reprovava a AA por
+     pouco; 0.565 leva a 4,55:1. Mesmo matiz, mesmo croma — só a claridade desceu
+     um degrau, e lado a lado não dá para ver a diferença. A parada de baixo já
+     estava em 6,07:1 e não mudou. */
+  --sz-kids-grad-cta-azul: linear-gradient(90deg, oklch(0.565 0.145 250), oklch(0.5 0.15 255));
   /* Azul suave: CTA da comunidade no dark — claro, pede texto navy por cima. */
   --sz-kids-grad-cta-azul-suave: linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248));
   /* Laranjas 90deg (ponto de alegria em faixas/selos, se precisar). */
