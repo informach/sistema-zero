@@ -65,6 +65,22 @@ describe('costuras do redesenho da interface', () => {
     expect(() => openDisclosure(host, 'Não existe')).toThrow('Nenhuma revelação')
   })
 
+  test('abrir todas também abre painel recolhido, que é aria-expanded e não details', () => {
+    const host = render(`
+      <section>
+        <button type="button" aria-expanded="false" aria-controls="c">Cores</button>
+        <div id="c" hidden><button type="button">Apagar cor</button></div>
+      </section>`)
+    // O painel recolhido do `Panel` esconde com o atributo `hidden`: fora do alcance.
+    expect(controlInventory(host)).toEqual(['button: Cores'])
+    host.querySelector('button')?.addEventListener('click', () => {
+      host.querySelector('button')?.setAttribute('aria-expanded', 'true')
+      host.querySelector('#c')?.removeAttribute('hidden')
+    })
+    expect(openEveryDisclosure(host)).toBe(1)
+    expect(controlInventory(host)).toContain('button: Apagar cor')
+  })
+
   test('abrir todas alcança as aninhadas, que só existem depois de a mãe abrir', () => {
     const host = render(`
       <details><summary>Fora</summary>

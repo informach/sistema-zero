@@ -120,11 +120,18 @@ describe('inventário da oficina: o que a criança alcança', () => {
 
   test('o modo Animar troca o conjunto, e é a ÚNICA troca legítima', async () => {
     const { view } = mount(withPiece())
+    // ⚠️ ACHADO, e o redesenho precisa resolver: com os primeiros passos abertos existem DOIS
+    // botões chamados "Animar" (o modo e a aba de assunto da ajuda). Nome repetido no mesmo
+    // conjunto visível confunde a criança e o leitor de tela igual, e é o irmão da regra de
+    // "ícone único" que o registro de comandos vai cobrar. Aqui a referência é guardada ANTES
+    // de abrir tudo, para o teste falar do botão de MODO.
+    const animarMode = view.getByRole('button', { name: copy.animationMode })
+    const modelarMode = view.getByRole('button', { name: copy.modelMode })
     const modelar = inventory(view.container).expanded
     // Animar carrega clipes e linha do tempo sob demanda; sem drenar aqui, o módulo resolve
     // DEPOIS do teste e vira aviso de `act`. O pacote tem zero desses desde o lote 235.
     await act(async () => {
-      view.getByRole('button', { name: copy.animationMode }).click()
+      animarMode.click()
       await Promise.resolve()
     })
     const animar = inventory(view.container).expanded
@@ -135,7 +142,7 @@ describe('inventário da oficina: o que a criança alcança', () => {
     expect(names(animar)).not.toContain(`button: ${copy.remove}`)
     // E o caminho de volta devolve tudo: esconder em Animar não é perder.
     await act(async () => {
-      view.getByRole('button', { name: copy.modelMode }).click()
+      modelarMode.click()
       await Promise.resolve()
     })
     const devolta = names(inventory(view.container).expanded)
