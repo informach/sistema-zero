@@ -10,7 +10,6 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
-import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -187,14 +186,18 @@ export function LessonPlayer({
       >
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          {/* Header de "lição" (padrão Duolingo): voltar em círculo + progresso do CURSO. */}
+          {/* Header de "lição" (padrão Duolingo): voltar em círculo + modo foco.
+              O progresso do CURSO saiu daqui (09/2026): dentro da aula o que a
+              criança precisa é o progresso DA AULA, que agora vive em segmentos
+              logo acima das seções (`LessonProgress`). O do curso ela já vê na
+              trilha, no card do curso e na celebração. O chip "Aula N de M"
+              abaixo FICA: ele situa a aula no curso sem medir nada. */}
           <div className="flex items-center gap-3">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
             <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
-            <ProgressBar value={course.progress.percent} className="flex-1" />
-            <span className="sz-display text-sm">{course.progress.percent}%</span>
+            <div className="flex-1" />
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
             {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">

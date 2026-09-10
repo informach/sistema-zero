@@ -16,6 +16,7 @@ import { cn } from '../lib/cn'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
+import { LessonProgress } from './lesson-progress'
 
 export function useLessonLearning(lesson: LessonDetailView, viewerId: string | null) {
   const scope = `${viewerId}:${lesson.id}`
@@ -396,6 +397,12 @@ export function LessonSections({
     // ela cresce 568px sem a janela mudar de tamanho, então viewport é proxy ruim
     // para "cabe lado a lado". `sz-lesson-sections` é o gancho de tema do kids.
     <div className={cn('@container space-y-5', kids && 'sz-lesson-sections')}>
+      <LessonProgress
+        sections={sections}
+        index={index}
+        pendingSectionIds={new Set(pending.map((r) => r.sectionId).filter((id) => id !== null))}
+        kids={kids}
+      />
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
         <details ref={requirementsMenu} className="relative">
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">

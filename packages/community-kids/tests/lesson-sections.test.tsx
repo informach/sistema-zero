@@ -241,6 +241,24 @@ describe('aula por seções', () => {
     expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
   })
 
+  test('a barra do topo mede a AULA, e a seção com atividade pendente fica marcada', () => {
+    // Dentro da aula a criança precisa do progresso DA AULA; o do curso ela já vê
+    // na trilha. A régua é posicional porque seção expositiva não gera requisito
+    // nenhum, e uma régua por requisito diria "aula completa" no meio dela.
+    globalThis.fetch = (async () => Response.json({ ok: true })) as unknown as typeof fetch
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} kids />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.getByText(/Seção 1 de 3/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    expect(screen.getByText(/Seção 2 de 3/)).toBeTruthy()
+    // A aula tem um bloco de Estúdio obrigatório na seção 1: mesmo depois de
+    // avançar, a barra não pode dizer que está tudo resolvido.
+    expect(screen.getByText(/ainda tem atividade para fazer/)).toBeTruthy()
+  })
+
   test('rede fora ao trocar de seção: a criança volta onde estava, e o espelho some no primeiro ok', async () => {
     // A seção corrente é do servidor. Mas se a gravação falha, um F5 devolvia a
     // criança para a seção 1 sem aviso. O espelho local existe SÓ enquanto há
