@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 228, a oficina seguinte dentro do app, fase 3.**
-Próximo lote: miniatura da geração seguinte e ramo v2 da nuvem, fases 3/1, lote 229.
+**Último lote implementado e verificado: 229, miniatura da geração seguinte, fase 3.**
+Próximo lote: ramo v2 da nuvem, para promover sem tirar a criação do backup, lote 230.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -16,7 +16,7 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | --- | --- | --- |
 | 1 — Segurança e medição | Proteções e migração interna implementadas | Homologação com abas reais, medições em hardware e rollout |
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
-| 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações e promoção ao abrir, verificadas em navegador real | Miniatura da geração nova, nuvem v2, ponte Estúdio e revisão de toque/temas |
+| 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações, promoção ao abrir e miniatura da criação, verificadas em navegador real | Nuvem v2, "Baixar tudo", ponte Estúdio e revisão de toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
 | 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Integração pública e homologação |
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
@@ -24,10 +24,10 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.822 testes, zero falhas, 380 arquivos**, tipos, Biome e Vite (1,19 s)
-no lote 228; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.823 testes, zero falhas, 380 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 229; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
-Build Kids do lote 228: 3,9 s de compilação, 59 páginas, 616 testes. Os cinco testes
+Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
 Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
 `staging` em cinco commits escopados, com todos os gates reexecutados antes.
@@ -50,6 +50,8 @@ No lote 221, cinco avisos act em TextureEditor; não houve supressão nem corre�
 No lote 225 reapareceram cinco avisos act, nos mesmos componentes do lote 219 (LoadedEditor,
 EditorTopBar duas vezes, FacePaintDialog e ModelEditor); mesma pendência, agora com
 reprodução fresca para o lote de diagnóstico, sem supressão nem correção alegada.
+Nos lotes 227 e 228 a integral não emitiu act; no 229 os mesmos cinco reapareceram. A
+intermitência é do editor ANTIGO e não vem do código da oficina nova.
 A integral do lote 155 encontrou outra janela: prévia de superfície concluída não
 fechava após revisão externa. Assinatura de revisão e ownership reentrante corrigidos;
 regressão local/worker, 40 repetições focais e integral passaram. Review do lote 155.
@@ -5019,12 +5021,27 @@ conversão compartilhada continuam abertos na fase 5.
 - Miniatura, nuvem v2, "Baixar tudo" e ponte do Estúdio continuam abertos: são eles que
   decidem quando a capacidade pode ser ligada sem a criança perder nada.
 
-### Próximo lote 229: miniatura da geração seguinte e ramo v2 da nuvem
+### Lote 229: a miniatura da geração seguinte — verificado
 
-- Criação da geração nova aparece com o cubo de reserva na galeria: perda visível.
-- `assetToCloudJson` só serializa v1, então promover hoje tira a criação do espelho da
-  nuvem. Ligar a capacidade antes disso seria perder o backup da criança.
-- Só depois disso vale falar em leitores compatíveis e, por último, no escritor novo.
+- Toda criação da geração nova aparecia com o cubo de reserva. O documento v2 sempre
+  soube guardar `thumb`; faltava alguém tirar a foto.
+- Reusar o `ViewportThumbnail` do editor antigo, com o mesmo fundo: as duas gerações
+  aparecem lado a lado e precisam parecer a mesma galeria.
+- A foto é da criação GUARDADA, não da sessão: ajudas fora do quadro, e nada de retrato
+  pela metade enquanto o isolamento esconde peças. Foto é derivada, não edição: nenhum
+  passo de desfazer, nenhuma revisão de conteúdo a mais.
+- Fotografa só a revisão que o palco desenhou, o que também tornou real a dependência
+  que o Biome apontava, em vez de silenciar a regra. Review `scene-thumbnail-l229.md`.
+- Integral **2.823/0**; tipos, Biome, Vite e Kids passaram. No navegador, a criação volta
+  para a galeria com a foto do próprio WebGL. Cinco avisos act do editor ANTIGO
+  reapareceram; sem correção alegada.
+
+### Próximo lote 230: ramo v2 da nuvem
+
+- `assetToCloudJson` só serializa v1, então promover uma criação hoje a tira do espelho
+  da nuvem: o trabalho continua no aparelho e para de subir.
+- Ligar a capacidade antes disso seria perder o backup da criança. Depois dele vêm os
+  leitores compatíveis e, por último, o escritor novo.
 
 ### Situação do plano após esses lotes
 

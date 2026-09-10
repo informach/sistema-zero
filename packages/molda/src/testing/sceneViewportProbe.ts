@@ -32,6 +32,7 @@ export function sceneViewportProbe() {
       setSkinPaintEnabled: () => {},
       setSkinPaintPreview: () => {},
       cancelGesture: () => {},
+      renderThumb: () => null,
       dispose: () => {
         state.disposed++
       },

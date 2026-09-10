@@ -71,6 +71,7 @@ async function setup() {
           state.previews.push(preview)
         },
         cancelGesture: () => {},
+        renderThumb: () => null,
         dispose: () => {
           state.disposed = true
         },

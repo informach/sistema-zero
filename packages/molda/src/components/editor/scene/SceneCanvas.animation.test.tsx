@@ -73,6 +73,7 @@ function setup(transform?: SceneTransformActions) {
       setSkinPaintPreview: () => {},
       setImageFrame: () => {},
       cancelGesture: () => {},
+      renderThumb: () => null,
       dispose: () => {
         state.disposed = true
       },

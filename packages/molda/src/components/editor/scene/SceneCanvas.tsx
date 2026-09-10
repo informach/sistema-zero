@@ -46,6 +46,8 @@ interface Props {
   mode?: 'model' | 'animation'
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
+  /** Foto da criação para a galeria; o palco decide quando ela vale. */
+  onThumb?(thumb: string | undefined): void
 }
 
 const inactiveSubscription = () => () => {}
@@ -81,6 +83,7 @@ function SceneCanvasAttempt({
   paintTarget = null,
   onEndPaint,
   skinPaint,
+  onThumb,
 }: Props & { onRetry(): void }) {
   const [tool, setTool] = useState<SceneTransformTool | 'box' | 'lasso'>('select')
   const [through, setThrough] = useState(false)
@@ -188,6 +191,7 @@ function SceneCanvasAttempt({
     weightTarget,
     skinPaint,
     skinPaintSettings,
+    onThumb,
   })
   const cancelPaint = () => {
     skinPaint?.cancel()

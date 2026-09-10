@@ -11,6 +11,11 @@ import {
 } from 'three'
 import type { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { prepareSceneBounds, sceneBounds } from '../scene/bounds'
+import { ViewportThumbnail } from './viewportThumbnail'
+
+/** Mesmo papel claro do editor antigo: a galeria mostra as duas gerações lado a lado. */
+const SCENE_THUMB_BACKGROUND = '#e6f1ff'
+
 import type { MoldaSceneDocument } from '../scene/document'
 import { sameSceneContent } from '../scene/documentContent'
 import { indexSceneDocument } from '../scene/documentIndex'
@@ -105,6 +110,7 @@ export class SceneViewport implements SceneViewportPort {
     null
   private disposed = false
   private contextLost = false
+  private thumbnail: ViewportThumbnail | null = null
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -115,6 +121,10 @@ export class SceneViewport implements SceneViewportPort {
   ) {
     this.renderer = createRenderer(canvas)
     try {
+      // A miniatura reusa o mesmo alvo do editor antigo: um render próprio de 96 px,
+      // sem tocar no palco que a criança está vendo.
+      if (this.renderer instanceof WebGLRenderer)
+        this.thumbnail = new ViewportThumbnail(this.renderer, SCENE_THUMB_BACKGROUND)
       this.renderer.setPixelRatio(
         Math.min(canvas.ownerDocument.defaultView?.devicePixelRatio ?? 1, 2),
       )
@@ -556,6 +566,33 @@ export class SceneViewport implements SceneViewportPort {
     this.request()
   }
 
+  /**
+   * Foto da criação GUARDADA, não da sessão: grade, contorno, pivô, alças e apoios
+   * ficam fora do quadro. Enquanto o isolamento esconde peças, a foto anterior continua
+   * valendo, em vez de gravar um retrato pela metade da criação.
+   */
+  renderThumb(): string | null {
+    if (this.disposed || this.contextLost || this.isolated || !this.thumbnail) return null
+    if (typeof document === 'undefined' || !this.index) return null
+    const bounds = sceneBounds(
+      this.index,
+      { includeHidden: false, nodeLocalBounds: this.resource.skinLocalBounds(this.document) },
+      this.boundsCache ?? undefined,
+    )
+    if (!bounds) return null
+    return this.thumbnail.render(this.scene, bounds, [
+      this.grid,
+      this.outline,
+      this.pivot,
+      this.faces.root,
+      this.supports.root,
+      this.poseGuide.root,
+      this.weightPoints.root,
+      this.brushCursor.root,
+      ...(this.gizmo ? [this.gizmo.root] : []),
+    ])
+  }
+
   frame(selectionOnly = false): void {
     if (this.disposed) return
     this.cancelGesture()
@@ -849,6 +886,8 @@ export class SceneViewport implements SceneViewportPort {
   }
 
   dispose(): void {
+    this.thumbnail?.dispose()
+    this.thumbnail = null
     if (this.disposed) return
     this.disposed = true
     this.loop?.dispose()

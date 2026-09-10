@@ -1406,6 +1406,13 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Miniatura da oficina seguinte (lote 229): `SceneViewport.renderThumb()` reusa o
+  `ViewportThumbnail` do editor antigo (96 px, mesmo fundo) e entrou no `SceneViewportPort`,
+  então todo palco falso precisa respondê-lo. `useSceneViewport` agenda por `onThumb`
+  700 ms depois que o desenho assenta e só fotografa a revisão que o palco DESENHOU.
+  ⚠️ Com isolamento ativo devolve `null`: foto velha e inteira vale mais que uma nova pela
+  metade. A foto é derivada (`setThumb`): nenhum passo de desfazer, nenhuma revisão de
+  conteúdo. Criação que ficou para trás só ganha foto quando a criança a abre.
 - Oficina seguinte no app (lote 228): `MoldaHostAdapter.sceneWorkshop`, DESLIGADA por
   padrão. Ligada, a galeria lista as duas gerações numa lista só (`GallerySceneSource` no
   `createGalleryStore`) e a oficina É o editor de MODELOS: abrir um modelo antigo o PROMOVE.

@@ -375,6 +375,7 @@ export function SceneWorkshop({
             onSelect={workshop.select}
             onSelectMany={workshop.selectMany}
             factory={viewportFactory}
+            onThumb={(thumb) => workshop.editor.getState().setThumb(thumb)}
             transform={
               mode === 'animation'
                 ? workshop.animationPose.transformActions(selected)

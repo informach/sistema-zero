@@ -52,6 +52,7 @@ import { SceneWorkshop } from './SceneWorkshop'
 function setup(
   asset = migrateLegacyModel(makeModel()).document,
   persistedEditor?: SceneEditorStore,
+  options: { renderThumb?: () => string | null } = {},
 ) {
   const editor =
     persistedEditor ??
@@ -121,6 +122,7 @@ function setup(
         state.frames.push({ id, frame })
       },
       cancelGesture: () => {},
+      renderThumb: options.renderThumb ?? (() => null),
       frame: () => {},
       dispose: () => {
         state.disposed++
@@ -141,6 +143,31 @@ function setup(
 }
 
 describe('scene workshop integration', () => {
+  test('a foto da criação entra no documento sem virar passo de desfazer', async () => {
+    const photo = 'data:image/jpeg;base64,Zm90bw=='
+    const { editor, ports, view, openInspector } = setup(undefined, undefined, {
+      renderThumb: () => photo,
+    })
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      // A foto é derivada: sai depois que o desenho assenta, não a cada mudança.
+      expect(editor.getState().asset.thumb).toBeUndefined()
+      await waitFor(() => expect(editor.getState().asset.thumb).toBe(photo), { timeout: 3000 })
+      expect(editor.getState().canUndo).toBe(false)
+      const revision = editor.getState().contentRevision
+      openInspector()
+      // Uma edição de verdade continua sendo um passo; a foto não some nem duplica.
+      act(() => {
+        editor.getState().commit(addScenePrimitive(editor.getState().asset, 'box', 'Bloco'))
+      })
+      expect(editor.getState().canUndo).toBe(true)
+      expect(editor.getState().contentRevision).toBe(revision + 1)
+      await waitFor(() => expect(editor.getState().asset.thumb).toBe(photo), { timeout: 3000 })
+    } finally {
+      view.unmount()
+    }
+  })
+
   test('first steps follow painting without closing its session or forwarding model shortcuts', async () => {
     const { editor, view, ports, openInspector } = setup()
     try {

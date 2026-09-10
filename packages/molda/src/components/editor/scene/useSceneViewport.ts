@@ -20,6 +20,9 @@ import type {
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
 
+/** Espera o desenho assentar antes da foto; o mesmo ritmo do editor antigo. */
+const SCENE_THUMB_DELAY_MS = 700
+
 export function useSceneViewport({
   document,
   selection,
@@ -44,6 +47,7 @@ export function useSceneViewport({
   weightTarget = null,
   skinPaint,
   skinPaintSettings = null,
+  onThumb,
 }: {
   document: MoldaSceneDocument
   selection: readonly string[]
@@ -68,6 +72,8 @@ export function useSceneViewport({
   weightTarget?: SceneSkinWeightTarget | null
   skinPaint?: SceneSkinPaintSession
   skinPaintSettings?: SceneSkinPaintSettings | null
+  /** Foto da criação para a galeria. Chamado fora de gesto, sem histórico. */
+  onThumb?(thumb: string | undefined): void
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
@@ -225,6 +231,19 @@ export function useSceneViewport({
       setError(error instanceof SceneValidationError ? error.message : COPY.scene.failed3d)
     }
   }, [document, viewport, flipbook, lost])
+  const takeThumb = useRef(onThumb)
+  takeThumb.current = onThumb
+  useEffect(() => {
+    // A foto é derivada: sai depois que o desenho assenta e nunca durante um arrasto.
+    if (!viewport || lost || !takeThumb.current) return
+    const timer = setTimeout(() => {
+      // Fotografa só o que o palco realmente desenhou: uma revisão que falhou ao
+      // ser aplicada não vira retrato da criação guardada.
+      if (displayed.current !== document) return
+      takeThumb.current?.(viewport.renderThumb() ?? undefined)
+    }, SCENE_THUMB_DELAY_MS)
+    return () => clearTimeout(timer)
+  }, [document, viewport, lost])
   useEffect(() => {
     if (!viewport) return
     try {

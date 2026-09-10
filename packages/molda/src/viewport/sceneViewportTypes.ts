@@ -29,6 +29,8 @@ export interface SceneViewportPort {
   setSkinPaintEnabled(enabled: boolean, radius?: number): void
   setSkinPaintPreview(preview: SceneSkinPaintPreview | null): void
   cancelGesture(): void
+  /** Foto da criação guardada; `null` quando não há o que fotografar ou o palco não pode. */
+  renderThumb(): string | null
   dispose(): void
 }
 

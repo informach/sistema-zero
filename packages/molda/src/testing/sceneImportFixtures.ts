@@ -59,6 +59,7 @@ export function sceneImportRenderer() {
       setSkinPaintEnabled: () => {},
       setSkinPaintPreview: () => {},
       cancelGesture: () => {},
+      renderThumb: () => null,
     }
     return port
   }
