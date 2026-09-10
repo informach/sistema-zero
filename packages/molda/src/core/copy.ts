@@ -1032,7 +1032,7 @@ export const COPY = {
     dimensions: 'Medidas da forma',
     curveDetail: 'Detalhes da curva',
     planeCut: 'Cortar a peça por um plano',
-    bevel: 'Chanfrar uma quina',
+    bevel: 'Chanfrar quinas',
     pathCreate: 'Criar tubo pelo caminho',
     pathCreateTitle: 'Tubo a partir das linhas',
     pathCreateHint:
@@ -1105,7 +1105,7 @@ export const COPY = {
     pathPointHint:
       'Posição local do centro do tubo nesse ponto. O tubo acompanha o caminho; os ajustes só entram ao aplicar.',
     bevelHint:
-      'Escolha uma linha na quina de uma peça fechada. O chanfro apara esse canto com uma face plana, sem alcançar outros cantos. A nova face usa o material de um dos lados. Linhas soltas são mantidas.',
+      'Escolha uma ou mais linhas nas quinas de uma peça fechada. Cada quina é aparada com uma face plana, sem alcançar as outras. Quinas que se encostam precisam ser feitas separadas. A nova face usa o material de um dos lados, e as linhas soltas são mantidas.',
     bevelDepth: 'Profundidade do chanfro na peça',
     applyBevel: 'Aplicar chanfro',
     planeCutHint:

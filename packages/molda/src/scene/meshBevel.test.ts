@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { bevelMeshEdge } from './meshBevel'
+import { bevelMeshEdge, bevelMeshEdges } from './meshBevel'
 import { meshFaceFrame, requireMatchingFaceUv } from './meshFaceFrame'
 import { cutMeshByPlane } from './meshPlaneCut'
 import { indexMeshEdges, meshEdgeKey } from './meshTopology'
@@ -132,4 +132,52 @@ test('oversized, inward, flat, open, missing and invalid chamfers never publish 
   expect(() => bevelMeshEdge(inverted, [edge], 0.1, nextId)).toThrow('fora')
   expect(id).toBe(0)
   expect(mesh).toEqual(before)
+})
+
+test('duas quinas opostas do cubo são chanfradas na mesma ação, e o sólido continua fechado', () => {
+  const mesh = cube()
+  const keys = [...indexMeshEdges(mesh).edges.keys()]
+  // Duas linhas SEM ponto em comum: cada chanfro sobrevive ao anterior.
+  const [first] = keys
+  const firstEdge = indexMeshEdges(mesh).edges.get(first as string)![0]!
+  const opposite = keys.find((key) => {
+    const edge = indexMeshEdges(mesh).edges.get(key)![0]!
+    return ![edge.a, edge.b].some((id) => id === firstEdge.a || id === firstEdge.b)
+  })
+  const { mesh: result, edgeIds } = bevelMeshEdges(mesh, [first as string, opposite as string], 0.1)
+  expect(Object.keys(result.faces)).toHaveLength(8)
+  expect(edgeIds).toHaveLength(8)
+  // Fechado: toda linha continua com exatamente duas faces, em sentidos opostos.
+  for (const incident of indexMeshEdges(result).edges.values()) {
+    expect(incident).toHaveLength(2)
+    expect([incident[0]!.a, incident[0]!.b]).toEqual([incident[1]!.b, incident[1]!.a])
+  }
+  expect(readSceneGeometry({ ...result, id: 'g', kind: 'mesh' }).kind).toBe('mesh')
+  // A ordem não muda o resultado: chanfrar quinas separadas é comutativo.
+  const reversed = bevelMeshEdges(mesh, [opposite as string, first as string], 0.1)
+  expect(Object.keys(reversed.mesh.faces)).toHaveLength(8)
+})
+
+test('duas quinas vizinhas recusam a ação INTEIRA, sem deixar a peça pela metade', () => {
+  const mesh = cube()
+  const topology = indexMeshEdges(mesh)
+  const keys = [...topology.edges.keys()]
+  const first = keys[0] as string
+  const firstEdge = topology.edges.get(first)![0]!
+  // Vizinha: compartilha um ponto, então o primeiro chanfro consome a linha da segunda.
+  const neighbor = keys.find((key) => {
+    if (key === first) return false
+    const edge = topology.edges.get(key)![0]!
+    return [edge.a, edge.b].some((id) => id === firstEdge.a || id === firstEdge.b)
+  }) as string
+  const before = structuredClone(mesh)
+  expect(() => bevelMeshEdges(mesh, [first, neighbor], 0.1)).toThrow('quinas separadas')
+  expect(mesh).toEqual(before)
+})
+
+test('profundidade zero não muda nada, com uma quina ou com várias', () => {
+  const mesh = cube()
+  const keys = [...indexMeshEdges(mesh).edges.keys()].slice(0, 2)
+  expect(bevelMeshEdges(mesh, keys, 0).mesh).toBe(mesh)
+  expect(bevelMeshEdges(mesh, [keys[0] as string], 0).mesh).toBe(mesh)
 })

@@ -1406,6 +1406,11 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Chanfro em várias quinas (lote 237): `bevelMeshEdges` aplica UMA passada por quina,
+  sobre o resultado da anterior. ⚠️ Entre as passadas os IDS de linha mudam: a identidade
+  que atravessa é o PAR DE PONTOS. ⚠️ Quinas VIZINHAS recusam a ação inteira (a primeira
+  consome a linha da segunda) — atômico, nunca pela metade. Uma quina só continua indo pelo
+  `bevelMeshEdge` de sempre.
 - Peso da primeira tela (lote 236): ⚠️ `SceneWorkshopHost` é carregado sob demanda no
   `MoldaApp` (`lazy` + `Suspense`). Importá-lo estaticamente arrasta os 159 componentes da
   oficina para o bundle de ENTRADA: 364 → 568 kB, medido. Sob demanda a entrada é 351,55 kB.

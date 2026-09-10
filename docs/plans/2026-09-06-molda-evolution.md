@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 236, o peso da primeira tela, fase 2.**
-Próximo lote: as lacunas das fases 4 e 8, lote 237.
+**Último lote implementado e verificado: 237, chanfro em várias quinas, fase 4.**
+Próximo lote: laço fechado nos caminhos de tubo e as lacunas do bbmodel, lote 238.
 A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
@@ -18,15 +18,15 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 1 — Segurança e medição | Proteções, migração interna, leitores compatíveis e a virada pública pronta e REVERSÍVEL (a chave governa a promoção, não o acesso) | Implantar na ordem do documento de rollout; homologação com abas reais e medições em hardware |
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos; avisos act diagnosticados e corrigidos pela causa | Reduzir latência/memória dos blobs, dividir o chunk Three e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações, promoção ao abrir e miniatura da criação, verificadas em navegador real | Nuvem v2, "Baixar tudo", ponte Estúdio e revisão de toque/temas |
-| 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
+| 4 — Organização e modelagem | Ferramentas internas implementadas; chanfro em várias quinas separadas, atômico | Homologação; quinas vizinhas uma por vez e laço fechado nos caminhos de tubo |
 | 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Integração pública e homologação |
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
 | 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
 
-Molda: **2.836 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 235; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.839 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 237; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -5139,9 +5139,23 @@ conversão compartilhada continuam abertos na fase 5.
   sinal verdadeiro, e o que ele protege já está protegido. Review `bundle-weight-l236.md`.
 - Integral **2.836/0**, 14/14 e2e, tipos, Biome e build do Kids passaram.
 
-### Próximo lote 237: as lacunas das fases 4 e 8
+### Lote 237: chanfro em mais de uma quina — verificado
 
-- Fase 4: chanfro em mais de uma quina e caminhos abertos.
+- Uma passada por quina, sobre o resultado da anterior: cortar reescreve a topologia, e
+  fazer todas de uma vez exigiria reinventar as guardas do corte atual.
+- A identidade que atravessa as passadas é o PAR DE PONTOS, não o id da linha, que muda a
+  cada corte.
+- Quinas que se ENCOSTAM recusam a ação inteira: a primeira consome a linha da segunda, e
+  aplicar o que der deixaria a peça pela metade num único desfazer.
+- Duas quinas opostas do cubo saem juntas com o sólido fechado, **a ordem não muda o
+  resultado**, vizinhas lançam sem tocar na malha, e profundidade zero não muda nada.
+  Uma quina só continua pelo caminho de antes. Review `multi-bevel-l237.md`.
+- Integral **2.839/0**, tipos, Biome e build do Kids passaram.
+
+### Próximo lote 238: laço fechado nos caminhos e as lacunas do bbmodel
+
+- Os caminhos de tubo aceitam só cadeias ABERTAS; um laço fechado precisa de um gerador
+  que dê a volta.
 - Fase 8: ampliar clipes, camadas e PBR do bbmodel; compatibilidade glTF que ficou aberta.
 
 ### Situação do plano após esses lotes

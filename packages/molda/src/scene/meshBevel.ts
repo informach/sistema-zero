@@ -164,3 +164,44 @@ export function bevelMeshEdge(
     edgeIds: cycle.map((id, i) => meshEdgeKey(id, cycle[(i + 1) % cycle.length]!)),
   }
 }
+
+/**
+ * Chanfra várias quinas, uma de cada vez, sobre o resultado da anterior.
+ *
+ * ⚠️ Cada chanfro reescreve a topologia, então os IDS de linha mudam entre as passadas:
+ * a identidade que atravessa é o PAR DE PONTOS. Uma quina que desapareceu (porque a
+ * anterior a consumiu, o caso de duas quinas vizinhas) recusa a operação INTEIRA, em vez
+ * de deixar a peça pela metade. Multisseleção é atômica, como em todo o resto.
+ */
+export function bevelMeshEdges(
+  mesh: SceneMeshGeometry,
+  ids: readonly string[],
+  depth: number,
+  nextId: () => string = newId,
+) {
+  const chosen = [...new Set(ids)]
+  requireScene(chosen.length > 0, 'edges', 'Escolha uma linha para chanfrar.')
+  if (chosen.length === 1) return bevelMeshEdge(mesh, chosen, depth, nextId)
+  const topology = indexMeshEdges(mesh)
+  const pairs = chosen.map((id) => {
+    const incident = topology.edges.get(id)
+    requireScene(incident?.length === 2, 'edges', 'Escolha linhas entre duas faces da peça.')
+    return [incident![0]!.a, incident![0]!.b] as const
+  })
+  let current = mesh
+  const edgeIds: string[] = []
+  for (const [a, b] of pairs) {
+    if (depth === 0) break
+    const edges = indexMeshEdges(current).edges
+    const key = edges.has(meshEdgeKey(a, b)) ? meshEdgeKey(a, b) : null
+    requireScene(
+      key !== null,
+      'edges',
+      'Uma dessas quinas deixou de existir depois de chanfrar a anterior. Escolha quinas separadas.',
+    )
+    const result = bevelMeshEdge(current, [key!], depth, nextId)
+    current = result.mesh
+    edgeIds.push(...result.edgeIds)
+  }
+  return { mesh: current, edgeIds }
+}

@@ -14,7 +14,7 @@ export function SceneBevel({ count, onApply }: { count: number; onApply(depth: n
         className="space-y-3"
         onSubmit={(event) => {
           event.preventDefault()
-          if (valid && count === 1) onApply(depth)
+          if (valid && count > 0) onApply(depth)
         }}
       >
         <p id={`${prefix}-hint`} className="text-xs text-mld-muted">
@@ -35,7 +35,7 @@ export function SceneBevel({ count, onApply }: { count: number; onApply(depth: n
             className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-3 text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
           />
         </label>
-        <Button type="submit" disabled={!valid || count !== 1} className="w-full text-sm">
+        <Button type="submit" disabled={!valid || count < 1} className="w-full text-sm">
           {COPY.scene.applyBevel}
         </Button>
       </form>

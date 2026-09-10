@@ -6,7 +6,7 @@ import { editSceneMesh } from '../../../scene/commands'
 import type { MoldaSceneDocument, SceneMeshGeometry } from '../../../scene/document'
 import type { indexSceneDocument } from '../../../scene/documentIndex'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
-import { bevelMeshEdge } from '../../../scene/meshBevel'
+import { bevelMeshEdges } from '../../../scene/meshBevel'
 import {
   meshComponentIds,
   meshComponentVertices,
@@ -416,7 +416,7 @@ export function useSceneComponents({
     bevel: (depth: number) => {
       if (selection?.mode !== 'edge') return
       applyMesh((mesh) => {
-        const result = bevelMeshEdge(mesh, selection.ids, depth)
+        const result = bevelMeshEdges(mesh, selection.ids, depth)
         return { mesh: result.mesh, ids: result.edgeIds }
       })
     },
