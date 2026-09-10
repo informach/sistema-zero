@@ -356,6 +356,14 @@ export interface RichTextBlock {
   markdown?: string
   codeLanguageHints?: string[]
 }
+/** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
+export type DialoguePose = 'speaking' | 'happy' | 'thinking' | 'celebrating'
+/** Fala do mascote num balão, no lugar de contexto corrido. Texto SIMPLES. */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  pose?: DialoguePose
+  text: string
+}
 export interface VideoBlock {
   kind: 'video'
   provider: 'mux' | 'youtube' | 'vimeo' | 'file'
@@ -484,6 +492,7 @@ export interface ComingSoonBlock {
 }
 export type LessonBlockContent =
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock

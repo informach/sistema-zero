@@ -5,6 +5,7 @@ import type {
   AudioBlock,
   CertificateBlock,
   ComingSoonBlock,
+  DialogueBlock,
   EbookBlock,
   EmbedBlock,
   ImageBlock,
@@ -19,6 +20,7 @@ import type {
   VideoBlock,
 } from '../lib/types'
 import { CertificateBlockView } from './certificate-block'
+import { DialogueBlockView } from './dialogue-block'
 import { EbookBlockView } from './ebook/ebook-block'
 import { InteractiveLessonBlock } from './learning-activity'
 import { LessonVideo } from './lesson-video'
@@ -53,6 +55,9 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <InteractiveLessonBlock block={block} />
     case 'rich_text':
       return <RichText content={content as unknown as RichTextBlock} />
+    // Sem `mascot`: o mascote é asset do kids. Aqui o balão vira recado destacado.
+    case 'dialogue':
+      return <DialogueBlockView content={content as unknown as DialogueBlock} />
     case 'video':
       return <LessonVideo content={content as unknown as VideoBlock} />
     case 'image':

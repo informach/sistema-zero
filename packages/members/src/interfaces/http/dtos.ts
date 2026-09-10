@@ -1010,6 +1010,20 @@ const RichTextBlockSchema = t.Object({
   markdown: t.Optional(t.String({ maxLength: 200_000 })),
   codeLanguageHints: t.Optional(t.Array(t.String({ maxLength: 40 }))),
 })
+const DialogueBlockSchema = t.Object({
+  kind: t.Literal('dialogue'),
+  pose: t.Optional(
+    t.Union([
+      t.Literal('speaking'),
+      t.Literal('happy'),
+      t.Literal('thinking'),
+      t.Literal('celebrating'),
+    ]),
+  ),
+  // Texto SIMPLES (sem markdown) e curto de propósito: o balão existe para não ser
+  // parede de texto. Ver DIALOGUE_MAX_LENGTH no domínio.
+  text: t.String({ minLength: 1, maxLength: 400 }),
+})
 const VideoBlockSchema = t.Object({
   kind: t.Literal('video'),
   provider: t.Union([
@@ -1288,6 +1302,7 @@ const ComingSoonBlockSchema = t.Object({
 export const LessonBlockContentSchema = t.Union([
   InteractiveBlockSchema,
   RichTextBlockSchema,
+  DialogueBlockSchema,
   VideoBlockSchema,
   ImageBlockSchema,
   AudioBlockSchema,

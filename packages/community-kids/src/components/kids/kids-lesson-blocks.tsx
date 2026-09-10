@@ -1,6 +1,7 @@
 'use client'
 
 import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
 import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
 import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
@@ -16,6 +17,7 @@ import {
   Headphones,
   ListChecks,
   type LucideIcon,
+  MessageCircle,
   Palette,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -90,6 +92,18 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
   switch (content.kind) {
     case 'rich_text':
       return <RichText content={content} />
+    case 'dialogue':
+      return (
+        <div className="kids-unit-cyan flex flex-col gap-3">
+          <BlockChip icon={MessageCircle} label="O Zappy fala" themeClass="kids-unit-cyan" />
+          <DialogueBlockView
+            content={content}
+            mascot={
+              <KidsMascot expression={content.pose ?? 'speaking'} className="size-16 sm:size-24" />
+            }
+          />
+        </div>
+      )
     case 'video':
       return <Video content={content} />
     case 'image':

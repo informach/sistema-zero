@@ -450,7 +450,13 @@ export interface LearningManifest {
   lessonSlug: string
   title: string
   blocks: Array<
-    | { key: string; content: InteractiveBlock | { kind: 'rich_text'; markdown: string } }
+    | {
+        key: string
+        content:
+          | InteractiveBlock
+          | { kind: 'rich_text'; markdown: string }
+          | { kind: 'dialogue'; pose?: string; text: string }
+      }
     | { key: string; existing: { kind: string; index: number } }
     | { key: string; plannedVideo: string }
   >
@@ -493,7 +499,17 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
             (isInteractiveBlock(b.content) ||
               (record(b.content) &&
                 b.content.kind === 'rich_text' &&
-                text(b.content.markdown, 50000)))) ||
+                text(b.content.markdown, 50000)) ||
+              // Balão de fala do mascote: variante ADITIVA, sem bump de `version`
+              // (manifesto antigo nunca a emite, e o novo é lido pelos dois).
+              (record(b.content) &&
+                b.content.kind === 'dialogue' &&
+                text(b.content.text, 400) &&
+                (b.content.pose === undefined ||
+                  (typeof b.content.pose === 'string' &&
+                    ['speaking', 'happy', 'thinking', 'celebrating'].includes(
+                      b.content.pose,
+                    )))))) ||
           ('existing' in b &&
             !('plannedVideo' in b) &&
             !('content' in b) &&

@@ -451,6 +451,7 @@ export interface CourseTreeView extends CourseView {
 // Blocos: união discriminada por `kind` (espelha o domínio do members).
 export const LESSON_BLOCK_KINDS = [
   'rich_text',
+  'dialogue',
   'video',
   'image',
   'audio',
@@ -464,6 +465,19 @@ export const LESSON_BLOCK_KINDS = [
   'coming_soon',
 ] as const
 export type LessonBlockKind = (typeof LESSON_BLOCK_KINDS)[number]
+
+/** Poses que o balão de fala oferece (subconjunto do elenco do mascote). */
+export const DIALOGUE_POSES = ['speaking', 'happy', 'thinking', 'celebrating'] as const
+export type DialoguePose = (typeof DIALOGUE_POSES)[number]
+/** Régua editorial da fala: o balão existe para não ser parede de texto. */
+export const DIALOGUE_MAX_LENGTH = 400
+
+/** Fala do mascote num balão, no lugar de contexto corrido. Texto SIMPLES. */
+export interface DialogueBlock {
+  kind: 'dialogue'
+  pose?: DialoguePose
+  text: string
+}
 
 export interface RichTextBlock {
   kind: 'rich_text'
@@ -610,6 +624,7 @@ export interface PintaBlock {
 export type LessonBlockContent =
   | InteractiveBlock
   | RichTextBlock
+  | DialogueBlock
   | VideoBlock
   | ImageBlock
   | AudioBlock

@@ -575,6 +575,13 @@
       "when": 1788911752205,
       "tag": "0081_special_inertia",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1789045191919,
+      "tag": "0082_bloco_dialogo",
+      "breakpoints": true
     }
   ]
 }

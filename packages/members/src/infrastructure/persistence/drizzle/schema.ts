@@ -88,6 +88,9 @@ export const lessonBlockKindEnum = members.enum('lesson_block_kind', [
   // Bloco do PINTA (migration `0065`) — o ateliê de desenho embarcado na aula.
   'pinta',
   'interactive',
+  // Balão de fala do mascote (migration `0082`) — instrução para criança em vez de
+  // contexto corrido.
+  'dialogue',
 ])
 export const accessTypeEnum = members.enum('access_type', [
   'download',

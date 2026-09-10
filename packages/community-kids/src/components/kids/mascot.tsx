@@ -1,6 +1,6 @@
 import { cn } from '@/lib/cn'
 
-export type MascotExpression = 'happy' | 'celebrating' | 'thinking' | 'sleeping'
+export type MascotExpression = 'happy' | 'celebrating' | 'thinking' | 'sleeping' | 'speaking'
 
 /** Um sprite do Zappy por expressão (snapshots 3D, WebP com fundo transparente). */
 const ZAPPY_SRC: Record<MascotExpression, string> = {
@@ -8,6 +8,10 @@ const ZAPPY_SRC: Record<MascotExpression, string> = {
   celebrating: '/zappy/celebrating.webp',
   thinking: '/zappy/thinking.webp',
   sleeping: '/zappy/sleeping.webp',
+  // Acenando, cara de quem está falando: a pose do balão de diálogo. Veio do
+  // funil (onde já existia) e foi encaixada no mesmo canvas 300x300 das outras,
+  // senão o `size-*` do call site renderiza esta menor que as demais.
+  speaking: '/zappy/speaking.webp',
 }
 
 interface KidsMascotProps {
