@@ -41,6 +41,11 @@ export function ProCodeMode(): JSX.Element {
   const setProFileContent = useProjectStore((s) => s.setProFileContent)
   const studioConfig = useStudioConfig()
   const showPreview = useUIStore((s) => s.showPreview) && studioConfig.preview
+  // No ESTREITO (abas) o olhinho da Topbar não é renderizado, então `showPreview`
+  // ali é só uma preferência velha de desktop. Se ela apagasse a aba, quem
+  // desligou o preview no computador abriria no celular sem preview E sem botão
+  // para trazer de volta. A aba existe sempre que o host oferece preview.
+  const previewAvailable = studioConfig.preview
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const { isNarrow } = useStudioLayout()
@@ -130,7 +135,7 @@ export function ProCodeMode(): JSX.Element {
       <ProWebContainerProvider>
         <NarrowPanels
           editorPanes={[{ id: 'code', label: t('tab.code'), content: codeEditor }]}
-          preview={showPreview ? <ProPreview /> : undefined}
+          preview={previewAvailable ? <ProPreview /> : undefined}
           filesDrawer={(close) => (
             <ProFileTree
               activeFile={activeFile}

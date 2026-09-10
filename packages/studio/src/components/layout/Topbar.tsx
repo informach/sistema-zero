@@ -585,7 +585,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               )}
             </span>
           )}
-          {config.preview && (
+          {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
+              teria o que esconder e a criança clicaria achando que o app quebrou.
+              Some. Quem garante que a aba continua lá é o `previewAvailable` dos
+              modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
+          {config.preview && !isNarrow && (
             <IconButton
               label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
               active={showPreview}
