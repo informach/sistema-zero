@@ -251,14 +251,27 @@ describe('MoldaApp', () => {
       expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('fim-de-tarde'),
     )
     fireEvent.click(screen.getByRole('button', { name: COPY.skyPresets.noite }))
+    // Âncora antes do atalho: sem provar que o clique entrou, um "entardecer
+    // ainda ligado" passaria como se o desfazer já tivesse acontecido.
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true })
-    expect(
-      screen.getByRole('button', { name: COPY.skyPresets.entardecer }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    await waitFor(() =>
+      expect(
+        screen
+          .getByRole('button', { name: COPY.skyPresets.entardecer })
+          .getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
     fireEvent.keyDown(document, { key: 'z', ctrlKey: true, shiftKey: true })
-    expect(
-      screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: COPY.skyPresets.noite }).getAttribute('aria-pressed'),
+      ).toBe('true'),
+    )
   })
 
   test('renomear e apagar pela galeria', async () => {
