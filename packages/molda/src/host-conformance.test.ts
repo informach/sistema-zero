@@ -70,9 +70,12 @@ describe('host kids', () => {
     // The host groups creative tools under Criar; keep the complete discovery path covered.
     expect(nav).toContain("href: '/criar'")
     expect(nav).toContain("'/molda'")
-    expect(read('packages/community-kids/src/app/(app)/criar/page.tsx')).toMatch(
+    // Desde o redesenho do kids (10/09) nome, atalho, ícone e cor de cada oficina moram
+    // num mapa só, `TOOL_SIGNATURE`, e a página Criar o consome.
+    expect(read('packages/community-kids/src/lib/tool-signature.ts')).toMatch(
       /molda:\s*\{[^}]*href:\s*'\/molda'/,
     )
+    expect(read('packages/community-kids/src/app/(app)/criar/page.tsx')).toContain('TOOL_SIGNATURE')
   })
 })
 
