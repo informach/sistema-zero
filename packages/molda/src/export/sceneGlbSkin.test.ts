@@ -372,7 +372,12 @@ test.each([
   expect(document.animations![0]!.tracks.every((track) => track.channel === 'rotation')).toBe(true)
   expect(document.animations![0]!.tracks).toHaveLength(2)
   expect(document.animations![1]!.tracks).toHaveLength(6)
-  const result = await prepareSceneGlbInWorker({ document, documentId: document.id, revision: 7 })
+  const result = await prepareSceneGlbInWorker({
+    document,
+    documentId: document.id,
+    revision: 7,
+    animatedPaint: false,
+  })
   expect(result).toEqual(encodeSceneGlb(document, { allowLosses: true }))
   expect(result.issues).toContainEqual({ code: 'bend-limit-omitted', sourceId: 'lower' })
   expect(() => encodeSceneGlb(document)).toThrow(SceneGlbLossError)

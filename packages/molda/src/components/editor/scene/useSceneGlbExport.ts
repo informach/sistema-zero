@@ -78,7 +78,7 @@ export function useSceneGlbExport(
     }
   }, [editor, cancel, copy.changed, copy.interrupted])
 
-  async function prepare() {
+  async function prepare(animatedPaint: boolean) {
     if (activeEditor.current !== editor) return
     cancel()
     if (document.hidden) {
@@ -90,6 +90,7 @@ export function useSceneGlbExport(
       editor,
       documentId: source.asset.id,
       revision: source.contentRevision,
+      animatedPaint,
       name: source.asset.name,
       controller: new AbortController(),
     }
@@ -98,7 +99,12 @@ export function useSceneGlbExport(
     setState(initial)
     try {
       const result = await prepareSceneGlbInWorker(
-        { document: source.asset, documentId: owner.documentId, revision: owner.revision },
+        {
+          document: source.asset,
+          documentId: owner.documentId,
+          revision: owner.revision,
+          animatedPaint: owner.animatedPaint,
+        },
         {
           signal: owner.controller.signal,
           createWorker,

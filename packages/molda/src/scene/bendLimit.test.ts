@@ -217,6 +217,7 @@ test.each([
       document: committed,
       documentId: committed.id,
       revision: 0,
+      animatedPaint: false,
     })
   expect(worker).toEqual(result)
   expect(result.issues).toContainEqual({ code: 'bend-limit-omitted', sourceId: 'middle' })

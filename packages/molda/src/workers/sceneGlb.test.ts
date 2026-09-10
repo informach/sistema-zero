@@ -20,7 +20,7 @@ import type { TaskWorker } from './workerTask'
 
 function fixture(): SceneGlbRequest {
   const document = animatedScene()
-  return { document, documentId: document.id, revision: 7 }
+  return { document, documentId: document.id, revision: 7, animatedPaint: false }
 }
 test('real GLB worker returns identical bytes, stats and loss report without detaching or mutating source pixels', async () => {
   const request = fixture(),
@@ -145,7 +145,7 @@ test('real skin GLB worker keeps original inverse binds and weights owned and em
       input: { id, ...input },
     } = makeSceneSkinFixture(),
     document = createSceneSkin(base, input, () => id),
-    request = { document, documentId: document.id, revision: 5 }
+    request = { document, documentId: document.id, revision: 5, animatedPaint: false }
   document.nodes.find((node) => node.id === 'lower')!.hidden = true
   document.mirrors = [
     { id: 'mirror', name: 'Espelho', sourceId: input.nodeId, axis: 'x', offset: 1 },
@@ -222,8 +222,8 @@ test('clip manifests are bounded, exact, detached metadata with unique identitie
 })
 
 test('GLB protocol accepts only known progress and bounded error messages', () => {
-  const { documentId, revision } = fixture(),
-    token = { documentId, revision }
+  const { documentId, revision, animatedPaint } = fixture(),
+    token = { documentId, revision, animatedPaint }
   expect(readSceneGlbReply({ ...token, type: 'progress', progress: 'encoding' }, token)).toEqual({
     type: 'progress',
     progress: 'encoding',
@@ -236,8 +236,17 @@ test('GLB protocol accepts only known progress and bounded error messages', () =
     { type: 'error', message: 'x'.repeat(513) },
     { type: 'error', message: '' },
     { type: 'progress', progress: 'encoding', extra: true },
+    // O destino faz parte da identidade: a resposta da outra gravação não é esta.
+    { type: 'progress', progress: 'encoding', animatedPaint: true },
+    { type: 'error', message: 'Confira o projeto.', animatedPaint: true },
   ])
     expect(() => readSceneGlbReply({ ...token, ...patch }, token)).toThrow()
+  expect(
+    readSceneGlbReply(
+      { ...token, animatedPaint: true, type: 'progress', progress: 'encoding' },
+      { ...token, animatedPaint: true },
+    ),
+  ).toEqual({ type: 'progress', progress: 'encoding' })
 })
 test('GLB cancellation terminates CPU work once, ignores late output, never transfers live document buffers', async () => {
   const events = new EventTarget(),

@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 226, pintura animada no runtime do Estúdio, fases 5/8.**
-Próximo lote: destino "Usar no Estúdio" com pintura animada na oficina, fases 5/8, lote 227.
+**Último lote implementado e verificado: 227, destino da cópia na oficina, fases 5/8.**
+Próximo lote: integração pública da oficina no app, fase 3, lote 228.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -18,16 +18,16 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido vazio/templates e retomada disponíveis no playground | Integração pública e revisão visual/toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
-| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; contrato versionado de pintura animada produzido no Molda e consumido no runtime do Estúdio | Conexão da oficina e homologação |
+| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; pintura animada produzida no Molda, escolhida na oficina e tocando no runtime do Estúdio | Integração pública e homologação |
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
 | 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.813 testes, zero falhas, 378 arquivos**, tipos, Biome e Vite (1,63 s)
-no lote 225; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.814 testes, zero falhas, 378 arquivos**, tipos, Biome e Vite (1,36 s)
+no lote 227; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
-Build Kids do lote 225: 4,7 s de compilação, 59 páginas, 616 testes. Os cinco testes
+Build Kids do lote 227: 7,1 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
 Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
 `staging` em cinco commits escopados, com todos os gates reexecutados antes.
@@ -62,9 +62,9 @@ os critérios de aceite das fases separados das tarefas já implementadas.
 Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
 e abra `http://127.0.0.1:5198/?oficina=nova`. O playground usa armazenamento local
 separado; não é a ativação pública do editor nem do formato novo na nuvem.
-Próxima frente de implementação: o destino "Usar no Estúdio" na oficina levando a pintura
-animada, e depois a integração pública da oficina, mantendo importadores e homologação
-visíveis, sem ativar o formato público antes do rollout de guardas.
+Próxima frente de implementação: a integração pública da oficina no app do kids, com a
+galeria enxergando as duas gerações e a ponte do Estúdio roteando o documento v2, sem
+ativar o formato público antes do rollout de guardas.
 
 ## Decisões aprovadas
 
@@ -4981,12 +4981,29 @@ conversão compartilhada continuam abertos na fase 5.
 - Focal 10/0 nos três testes Molda/Estúdio; integral **7.956/0**, tipos e Biome passaram.
   Sem browser, aparência e `map.offset` desenhado seguem sem homologação.
 
-### Próximo lote 227: destino "Usar no Estúdio" na oficina
+### Lote 227: destino da cópia na oficina, com pintura animada — verificado
 
-- Conectar a gravação `animatedPaint` ao caminho que leva a criação ao Estúdio, com
-  prévia e relatório de perdas explícito, sem mudar o "Baixar .glb".
-- O worker de exportação precisa carregar a escolha com validação estrita, como todo o
-  resto do protocolo; opção nova não pode entrar por caminho frouxo.
+- A gravação existia desde o lote 225 e ninguém na oficina conseguia pedi-la. Dar a
+  escolha sem mudar o padrão: quem só baixa o `.glb` continua vendo o que via.
+- O destino faz parte da IDENTIDADE do pedido, não é parâmetro solto: entra no token, ao
+  lado de documento e revisão, e uma resposta da outra gravação é recusada.
+- Trocar o destino descarta a cópia preparada; consentimento não atravessa gravações.
+- Rádios com alvo de 44 px em `fieldset`/`legend`, nomes do que fazem e uma linha de
+  consequência real em cada um. Escolha atravessa o worker com validação estrita.
+- A revisão achou `sceneGlbReply` montando a resposta campo a campo e entregando-a sem o
+  destino: quatro casos do worker reprovaram antes da correção, que é o efeito esperado
+  de uma identidade estrita. Review `animated-paint-destination-l227.md`.
+- Focal 27/0; integral **2.814/0**, zero avisos act nesta execução; tipos, Biome, Vite e
+  Kids passaram. A oficina ainda entrega a cópia como download: levar direto à biblioteca
+  do Estúdio depende de rotear `studio-library` para o v2, na integração pública.
+
+### Próximo lote 228: integração pública da oficina no app
+
+- O `EditorScreen` despacha por `kind`, e o documento v2 é sempre `kind: 'model'`. O
+  discriminador tem que passar a ser a GERAÇÃO de armazenamento, não o tipo da criação.
+- Galeria precisa enxergar as duas gerações; nuvem e ponte do Estúdio precisam do ramo v2.
+- Nada disso ativa o formato público: leitores primeiro, escritor depois, na ordem do
+  rollout documentado.
 
 ### Situação do plano após esses lotes
 

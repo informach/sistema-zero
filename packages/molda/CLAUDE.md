@@ -1406,6 +1406,13 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Destino da cópia (lote 227): o painel de exportação escolhe entre "Para outros programas"
+  (padrão, GLB portátil) e "Para o Estúdio" (`animatedPaint`). ⚠️ O destino faz parte da
+  IDENTIDADE do pedido: entrou no `SceneGlbToken` e `readSceneGlbReply` recusa a resposta
+  da outra gravação, como recusa outra criação ou revisão. Trocar o destino DESCARTA a
+  cópia preparada (consentimento não atravessa gravações). ⚠️ `sceneGlbReply` monta a
+  resposta campo a campo, NÃO por espalhamento: campo novo no token exige acrescentar ali
+  também, senão o worker responde sem ele e a identidade reprova.
 - Pintura animada no GLB (lote 225): `encodeSceneGlb(doc, { animatedPaint: true })` é a
   gravação para o Estúdio; ausente, o GLB portátil continua no primeiro quadro com
   `flipbook-first-frame`. Ligada, a cor base leva a FOLHA INTEIRA, `KHR_texture_transform`

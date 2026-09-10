@@ -177,3 +177,47 @@ test('skin export uses the real worker, explains each conversion once and requir
     editor.getState().dispose()
   }
 })
+
+test('escolher o destino do Estúdio leva a pintura animada inteira e descarta a cópia anterior', async () => {
+  const asset = makeSceneGlbFixture(1, 1, 3, 2),
+    copy = COPY.scene.glbExport
+  asset.animations = []
+  asset.images[0]!.flipbook = { frameWidth: 1, frameHeight: 1, frames: [1, 3], fps: 4, loop: true }
+  expect(readSceneDocument(asset).status).toBe('valid')
+  const editor = createDocumentEditorStore({
+    asset,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => {} },
+  })
+  const view = render(
+      <StrictMode>
+        <SceneGlbExportPanel editor={editor} onClose={() => {}} />
+      </StrictMode>,
+    ),
+    panel = within(view.container)
+  try {
+    const download = panel.getByRole('radio', { name: new RegExp(copy.destinationDownload) })
+    const studio = panel.getByRole('radio', { name: new RegExp(copy.destinationStudio) })
+    expect((download as HTMLInputElement).checked).toBe(true)
+    // Destino de arquivo: a pintura animada fica no primeiro quadro, com aviso.
+    fireEvent.click(panel.getByRole('button', { name: copy.prepare }))
+    await waitFor(() =>
+      expect(panel.queryByRole('checkbox', { name: copy.accept }) !== null).toBe(true),
+    )
+    expect(panel.getByText(copy.issues['flipbook-first-frame'](1)) !== null).toBe(true)
+    // Trocar o destino descarta a cópia preparada: consentimento não atravessa gravações.
+    fireEvent.click(studio)
+    expect(panel.queryByRole('checkbox', { name: copy.accept })).toBe(null)
+    expect((studio as HTMLInputElement).checked).toBe(true)
+    fireEvent.click(panel.getByRole('button', { name: copy.prepare }))
+    await waitFor(() => expect(panel.queryByText(copy.noChanges) !== null).toBe(true))
+    expect(panel.queryByRole('checkbox', { name: copy.accept })).toBe(null)
+    expect((panel.getByRole('button', { name: copy.download }) as HTMLButtonElement).disabled).toBe(
+      false,
+    )
+    expect(editor.getState().asset).toBe(asset)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})

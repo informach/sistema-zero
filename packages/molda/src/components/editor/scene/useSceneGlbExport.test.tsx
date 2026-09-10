@@ -33,7 +33,7 @@ test('hidden tabs discard a ready result and cannot start another worker until v
   const descriptor = Object.getOwnPropertyDescriptor(document, 'hidden')
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     Object.defineProperty(document, 'hidden', { value: true, configurable: true })
     act(() => document.dispatchEvent(new Event('visibilitychange')))
@@ -42,12 +42,12 @@ test('hidden tabs discard a ready result and cannot start another worker until v
       message: COPY.scene.glbExport.interrupted,
     })
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     expect(view.result.current.state.status).toBe('idle')
     Object.defineProperty(document, 'hidden', { value: false, configurable: true })
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     expect(view.result.current.state.status).toBe('ready')
   } finally {
@@ -76,7 +76,7 @@ test('unavailable workers produce a recoverable error without falling back to ma
   try {
     for (let i = 0; i < 2; i++) {
       await act(async () => {
-        await view.result.current.prepare()
+        await view.result.current.prepare(false)
       })
       expect(view.result.current.state).toEqual({
         status: 'error',
@@ -106,7 +106,7 @@ test('export only downloads after an explicit click, matches real encoder, and w
   })
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     expect(view.result.current.state.status).toBe('ready')
     expect(blobs.length).toBe(0)
@@ -134,7 +134,7 @@ test('loss consent is explicit, revocable, and bound to the exact result; thumbn
   const anchor = spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(view.result.current.download)
     expect(url).toHaveBeenCalledTimes(0)
@@ -149,7 +149,7 @@ test('loss consent is explicit, revocable, and bound to the exact result; thumbn
     act(view.result.current.download)
     expect(url).toHaveBeenCalledTimes(1)
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(view.result.current.download)
     expect(url).toHaveBeenCalledTimes(1)
@@ -165,7 +165,7 @@ test('an edit, undo, restart, blur and unmount invalidate prepared bytes and cap
   const url = spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(() => view.result.current.accept(true))
     const oldDownload = view.result.current.download
@@ -177,7 +177,7 @@ test('an edit, undo, restart, blur and unmount invalidate prepared bytes and cap
     act(() => editor.getState().undo())
     act(oldDownload)
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(oldDownload)
     act(() => view.result.current.accept(true))
@@ -189,14 +189,14 @@ test('an edit, undo, restart, blur and unmount invalidate prepared bytes and cap
     })
     act(afterRestart)
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(() => view.result.current.accept(true))
     const afterClose = view.result.current.download,
       oldPrepare = view.result.current.prepare
     view.unmount()
     act(afterClose)
-    await oldPrepare()
+    await oldPrepare(false)
     expect(url).toHaveBeenCalledTimes(0)
   } finally {
     view.unmount()
@@ -214,7 +214,7 @@ test('pending real worker is discarded on cancel, content change and unmount, wi
     ]) {
       let pending: Promise<void> | undefined
       act(() => {
-        pending = view.result.current.prepare()
+        pending = view.result.current.prepare(false)
         stop()
       })
       await act(async () => {
@@ -224,7 +224,7 @@ test('pending real worker is discarded on cancel, content change and unmount, wi
     }
     let pending: Promise<void> | undefined
     act(() => {
-      pending = view.result.current.prepare()
+      pending = view.result.current.prepare(false)
     })
     view.unmount()
     await pending
@@ -243,14 +243,14 @@ test('switching stores for the same document id resets the session and rejects c
   const url = spyOn(URL, 'createObjectURL').mockReturnValue('blob:test')
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     const oldDownload = view.result.current.download,
       oldPrepare = view.result.current.prepare
     view.rerender(other)
     expect(view.result.current.state.status).toBe('idle')
     act(oldDownload)
-    await oldPrepare()
+    await oldPrepare(false)
     expect(view.result.current.state.status).toBe('idle')
     expect(url).toHaveBeenCalledTimes(0)
   } finally {
@@ -268,7 +268,7 @@ test('download failures retain the current report and allow explicit retry witho
   const anchor = spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   try {
     await act(async () => {
-      await view.result.current.prepare()
+      await view.result.current.prepare(false)
     })
     act(view.result.current.download)
     expect(view.result.current.state.status).toBe('ready')

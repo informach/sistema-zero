@@ -17,6 +17,8 @@ export type SceneGlbProgress = 'validating' | 'encoding'
 export interface SceneGlbToken {
   documentId: string
   revision: number
+  /** Destination encoding. Part of the identity: a reply for the other one is not this one. */
+  animatedPaint: boolean
 }
 export interface SceneGlbRequest extends SceneGlbToken {
   document: MoldaSceneDocument
@@ -37,10 +39,11 @@ export function readSceneGlbToken(raw: unknown): SceneGlbToken {
   return {
     documentId: row.documentId,
     revision: v.number(row.revision, 'revision', 0, Number.MAX_SAFE_INTEGER, true),
+    animatedPaint: v.boolean(row.animatedPaint, 'animatedPaint'),
   }
 }
 export function readSceneGlbRequest(raw: unknown): SceneGlbRequest {
-  const row = v.record(raw, 'request', ['documentId', 'revision', 'document']),
+  const row = v.record(raw, 'request', ['documentId', 'revision', 'animatedPaint', 'document']),
     token = readSceneGlbToken(row)
   const read = readSceneDocument(row.document)
   v.requireScene(
@@ -197,7 +200,13 @@ function readBytes(raw: unknown): Uint8Array<ArrayBuffer> {
 }
 
 export function sceneGlbReply(token: SceneGlbToken, result: ReturnType<typeof encodeSceneGlb>) {
-  return { documentId: token.documentId, revision: token.revision, type: 'result' as const, result }
+  return {
+    documentId: token.documentId,
+    revision: token.revision,
+    animatedPaint: token.animatedPaint,
+    type: 'result' as const,
+    result,
+  }
 }
 export function readSceneGlbReply(
   raw: unknown,
@@ -205,20 +214,22 @@ export function readSceneGlbReply(
 ): TaskReply<SceneGlbExportResult, SceneGlbProgress> {
   const row = v.record(raw, 'reply')
   v.requireScene(
-    row.documentId === expected.documentId && row.revision === expected.revision,
+    row.documentId === expected.documentId &&
+      row.revision === expected.revision &&
+      row.animatedPaint === expected.animatedPaint,
     'reply',
-    'Esse resultado pertence a outra criação ou revisão.',
+    'Esse resultado pertence a outra criação, revisão ou destino.',
   )
   const type = v.choice(row.type, ['result', 'progress', 'error'], 'type')
   if (type === 'error') {
-    v.record(row, 'reply', ['documentId', 'revision', 'type', 'message'])
+    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'message'])
     return { type, message: v.text(row.message, 'message', 512) }
   }
   if (type === 'progress') {
-    v.record(row, 'reply', ['documentId', 'revision', 'type', 'progress'])
+    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'progress'])
     return { type, progress: v.choice(row.progress, ['validating', 'encoding'], 'progress') }
   }
-  v.record(row, 'reply', ['documentId', 'revision', 'type', 'result'])
+  v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'type', 'result'])
   const result = v.record(row.result, 'result', ['bytes', 'issues', 'stats', 'clips'])
   const stats = v.record(result.stats, 'stats', Object.keys(STAT_LIMITS))
   const count = (key: keyof typeof STAT_LIMITS) =>

@@ -16,7 +16,7 @@ test('packed GLB keys roundtrip all channels, curves, empty clips and raw Double
     keys: [{ time: 0, value: [1, 1, 1], interpolation: 'step' }],
   })
   document.animations.push({ ...document.animations[0]!, id: 'empty', tracks: [] })
-  const request = { document, documentId: document.id, revision: 3 },
+  const request = { document, documentId: document.id, revision: 3, animatedPaint: false },
     before = structuredClone(request)
   const wire = packSceneGlbRequest(request),
     read = readSceneGlbWireRequest(wire)
@@ -38,13 +38,13 @@ test('absent animations and explicitly empty animations retain their original sh
   for (const animations of [undefined, []]) {
     const { animations: _old, ...base } = document
     const source = { ...base, ...(animations === undefined ? {} : { animations }) }
-    const request = { document: source, documentId: document.id, revision: 0 }
+    const request = { document: source, documentId: document.id, revision: 0, animatedPaint: false }
     expect(readSceneGlbWireRequest(packSceneGlbRequest(request))).toEqual(request)
   }
 })
 test('compact transport rejects malformed buffers, counts, unknown fields and invalid reconstructed animation data', () => {
   const document = animatedScene(),
-    request = { document, documentId: document.id, revision: 0 }
+    request = { document, documentId: document.id, revision: 0, animatedPaint: false }
   const wire = packSceneGlbRequest(request),
     packet = wire.animations!
   for (const patch of [
@@ -94,7 +94,7 @@ test('compact transport rejects malformed buffers, counts, unknown fields and in
 })
 test('packing cannot coerce or hide invalid key fields and checks aggregate budgets before buffer allocation', () => {
   const document = animatedScene(),
-    request = { document, documentId: document.id, revision: 0 }
+    request = { document, documentId: document.id, revision: 0, animatedPaint: false }
   const key = document.animations[0]!.tracks[0]!.keys[0]!
   for (const patch of [
     { extra: true },
@@ -113,7 +113,12 @@ test('packing cannot coerce or hide invalid key fields and checks aggregate budg
 })
 test('all 65536 authorial keys preserve the GLB golden through transport and the legacy hash apart from V reflection', () => {
   const document = makeSceneGlbFixture(128, 1, 512, 512)
-  const wire = packSceneGlbRequest({ document, documentId: document.id, revision: 1 })
+  const wire = packSceneGlbRequest({
+    document,
+    documentId: document.id,
+    revision: 1,
+    animatedPaint: true,
+  })
   expect(wire.animations!.values.byteLength).toBe(65_536 * 5 * 8)
   const read = readSceneGlbWireRequest(wire)
   expect(read.document).toEqual(document)
@@ -128,7 +133,7 @@ test('all 65536 authorial keys preserve the GLB golden through transport and the
 })
 test('reserved transport fields cannot hide unknown source request or track fields', () => {
   const document = animatedScene(),
-    request = { document, documentId: document.id, revision: 0 }
+    request = { document, documentId: document.id, revision: 0, animatedPaint: false }
   Object.assign(document.animations[0]!.tracks[0]!, { keyCount: 3 })
   expect(() => packSceneGlbRequest(request)).toThrow()
   const clean = animatedScene()

@@ -170,6 +170,13 @@ export const COPY = {
         'O GLB é uma cópia 3D com as peças, a pintura e os movimentos. Vamos conferir o que muda nessa cópia antes de baixar.',
       original:
         'Seu projeto no Molda não muda. Para guardar tudo e continuar editando depois, use também Baixar projeto na oficina.',
+      destination: 'Para onde vai esta cópia',
+      destinationDownload: 'Para outros programas',
+      destinationDownloadHint:
+        'Uma cópia que qualquer programa de 3D abre. Pintura que se mexe fica parada no primeiro quadro.',
+      destinationStudio: 'Para o Estúdio',
+      destinationStudioHint:
+        'Leva a folha inteira da pintura que se mexe, para ela continuar se mexendo no Jogo 3D Avançado.',
       prepare: 'Preparar GLB',
       validating: 'Conferindo a criação…',
       encoding: 'Preparando peças, pintura e movimentos…',

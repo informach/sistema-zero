@@ -12,7 +12,10 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     const request = readSceneGlbWireRequest(event.data)
     self.postMessage({ ...token, type: 'progress', progress: 'encoding' })
     // Preparing a review is not permission to download: UI must confirm the returned report.
-    const result = encodeSceneGlb(request.document, { allowLosses: true })
+    const result = encodeSceneGlb(request.document, {
+      allowLosses: true,
+      animatedPaint: request.animatedPaint,
+    })
     self.postMessage(sceneGlbReply(token, result), [result.bytes.buffer])
   } catch (error) {
     if (!token) throw error

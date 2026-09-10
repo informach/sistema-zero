@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneGlbIssue } from '../../../export/sceneGlbReport'
 import type { MoldaSceneDocument } from '../../../scene/document'
@@ -39,10 +39,48 @@ export function SceneGlbExportPanel({
   const task = useSceneGlbExport(editor)
   const { state } = task
   const copy = COPY.scene.glbExport
+  const [animatedPaint, setAnimatedPaint] = useState(false)
+  /** Trocar o destino descarta a cópia preparada: consentimento não atravessa gravações. */
+  function chooseDestination(next: boolean) {
+    if (next === animatedPaint) return
+    setAnimatedPaint(next)
+    if (state.status === 'busy' || state.status === 'ready') task.cancel()
+  }
   return (
     <div className="space-y-4">
       <p className="text-sm leading-relaxed">{copy.intro}</p>
       <p className="text-sm leading-relaxed text-mld-muted">{copy.original}</p>
+      <fieldset className="space-y-2 rounded-xl border border-mld-border bg-mld-bg p-4">
+        <legend className="px-1 font-bold">{copy.destination}</legend>
+        {[
+          {
+            value: false,
+            label: copy.destinationDownload,
+            hint: copy.destinationDownloadHint,
+          },
+          { value: true, label: copy.destinationStudio, hint: copy.destinationStudioHint },
+        ].map((option) => (
+          <label
+            key={String(option.value)}
+            className={clsx(
+              'flex min-h-11 cursor-pointer items-start gap-3 rounded-xl p-2 text-sm',
+              'focus-within:outline-2 focus-within:outline-mld-accent',
+            )}
+          >
+            <input
+              type="radio"
+              name="glbDestination"
+              className="mt-0.5 size-5 shrink-0 accent-mld-accent"
+              checked={animatedPaint === option.value}
+              onChange={() => chooseDestination(option.value)}
+            />
+            <span>
+              <span className="font-bold">{option.label}</span>
+              <span className="block text-mld-muted">{option.hint}</span>
+            </span>
+          </label>
+        ))}
+      </fieldset>
       <p role="status" aria-atomic="true" className="font-bold">
         {state.status === 'busy'
           ? copy[state.progress]
@@ -134,7 +172,7 @@ export function SceneGlbExportPanel({
             {copy.download}
           </Button>
         ) : (
-          <Button variant="primary" onClick={() => void task.prepare()}>
+          <Button variant="primary" onClick={() => void task.prepare(animatedPaint)}>
             {copy.prepare}
           </Button>
         )}
