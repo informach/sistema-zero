@@ -507,16 +507,19 @@ test('atlas cheio mantém as 128 peças visíveis pelas cores-base', async ({ pa
   await expect
     .poll(() =>
       page.evaluate(() => {
+        // O estado do atlas mora no recurso dele desde a extração do `ModelAtlasResource`.
         const viewport = window.__molda?.viewport as unknown as {
-          atlasFull?: boolean
           entries?: { size: number }
-          layout?: { faces: { size: number }; swatches: unknown[] }
+          atlasResource?: {
+            full?: boolean
+            layout?: { faces: { size: number }; swatches: unknown[] }
+          }
         }
         return {
-          full: viewport.atlasFull,
+          full: viewport.atlasResource?.full,
           entries: viewport.entries?.size,
-          faces: viewport.layout?.faces.size,
-          swatches: viewport.layout?.swatches.length,
+          faces: viewport.atlasResource?.layout?.faces.size,
+          swatches: viewport.atlasResource?.layout?.swatches.length,
         }
       }),
     )
@@ -546,7 +549,8 @@ test('Enquadrar mantém um modelo largo inteiro num palco em retrato', async ({ 
 
   const canvas = page.locator('canvas[aria-label="Palco 3D"]')
   await expect(canvas).toBeVisible()
-  await page.getByRole('button', { name: 'Enquadrar' }).click()
+  // "Enquadrar" e "Enquadrar seleção" convivem na barra: sem `exact` o seletor é ambíguo.
+  await page.getByRole('button', { name: 'Enquadrar', exact: true }).click()
 
   await expect
     .poll(() =>

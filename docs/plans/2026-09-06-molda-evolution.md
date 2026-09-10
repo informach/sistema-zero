@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 231, ponte do Estúdio para a geração seguinte, fases 3/5/8.**
-Próximo lote: a volta da ponte na oficina nova e o "Baixar tudo" das duas gerações, lote 232.
+**Último lote implementado e verificado: 232, homologação em navegador real, fases 3/9.**
+Próximo lote: a virada pública em duas partes, leitores implantados e depois o escritor, lote 233.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -22,7 +22,7 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
 | 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
-| 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
+| 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
 
 Molda: **2.832 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
 no lote 231; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
@@ -31,7 +31,8 @@ Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
 Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
 `staging` em cinco commits escopados, com todos os gates reexecutados antes.
-Testes automatizados não homologam GPU, toque
+Desde o lote 232 a suíte e2e roda em Chromium real: **14 de 14 specs passam**, incluindo
+tres novas da oficina integrada. Testes automatizados continuam sem homologar GPU, toque
 real ou usabilidade infantil; o chunk Three ainda gera aviso de tamanho (>500 kB).
 A falha intermitente de foco registrada no lote 148 reapareceu no lote 149 e foi
 reproduzida: o DOM atualizava antes da restauração em efeito passivo. Correção no
@@ -5066,12 +5067,27 @@ conversão compartilhada continuam abertos na fase 5.
 - Molda **2.832/0**, kids **619/0**, tipos e Biome passaram. A prova confere que o GLB sai
   com mais de um nó e com a identidade do documento, o que o caminho v1 não faria.
 
-### Próximo lote 232: a volta da ponte e o "Baixar tudo" das duas gerações
+### Lote 232: homologação em navegador real — verificado
 
-- A oficina nova ainda não reenvia ao Estúdio depois de salvar; por isso o aviso de que a
-  sincronização não está ligada continua certo.
-- O pacote de backup ainda é só da geração v1. A geração nova pode entrar com o arquivo
-  nativo dela, sem mexer no envelope antigo.
+- O gate que 224 lotes registraram como impossível: o browser não conectava e a suíte e2e
+  nunca rodou. Rodou.
+- **Ela estava vermelha, e ninguém sabia.** Duas provas do editor ANTIGO reprovavam desde
+  o lote grande: o seletor de "Enquadrar" virou ambíguo quando "Enquadrar seleção" entrou
+  na barra, e o estado do atlas mudou de lugar quando o `ModelAtlasResource` foi extraído.
+  Corrigidas sem mexer em comportamento.
+- `e2e/scene-workshop.spec.ts` cobre a oficina integrada: criar pelo fluxo de sempre abre
+  já promovido (provado pelas CHAVES do IndexedDB, não pela tela: cena, resumo, original
+  preservado e a lápide, sem nenhum registro v1 sobrevivente), a foto chega como imagem de
+  verdade, recarregar mantém a geração, modelar e desfazer valem um passo cada, e tablet e
+  celular não ganham barra horizontal. Todas reprovam se a página emitir um erro.
+- **14 de 14 specs verdes em Chromium real.** Review `browser-homologation-l232.md`.
+- Chromium só; emulação de tamanho não é toque; nenhuma criança usou. Esses seguem gates.
+
+### Próximo lote 233: a virada pública, em duas partes
+
+- 233a: os leitores já estão prontos e commitados (lote 230). Falta IMPLANTAR.
+- 233b: `MOLDA_DOCUMENT_WRITE_VERSION = 2` e a capacidade `sceneWorkshop` ligada no kids,
+  num commit isolado e fácil de reverter, só depois de 233a estar em produção.
 
 ### Situação do plano após esses lotes
 
