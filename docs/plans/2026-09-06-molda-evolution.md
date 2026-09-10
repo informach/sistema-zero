@@ -7,14 +7,15 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 232, homologação em navegador real, fases 3/9.**
-Próximo lote: a virada pública em duas partes, leitores implantados e depois o escritor, lote 233.
+**Último lote implementado e verificado: 233, a virada pública, fases 1/3.**
+Próximo lote: a volta da ponte com o Estúdio e o "Baixar tudo" da geração nova, lote 234.
+A implantação está descrita em `2026-09-10-molda-rollout.md` e é decisão da dona.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
 | Fase | Situação | Principais pendências |
 | --- | --- | --- |
-| 1 — Segurança e medição | Proteções, migração interna e LEITORES compatíveis com a geração seguinte, com a capacidade declarada casando com a real | Implantar os leitores antes de qualquer escritor; homologação com abas reais e medições em hardware |
+| 1 — Segurança e medição | Proteções, migração interna, leitores compatíveis e a virada pública pronta e REVERSÍVEL (a chave governa a promoção, não o acesso) | Implantar na ordem do documento de rollout; homologação com abas reais e medições em hardware |
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido e retomada; integração no app atrás de capacidade desligada, com galeria de duas gerações, promoção ao abrir e miniatura da criação, verificadas em navegador real | Nuvem v2, "Baixar tudo", ponte Estúdio e revisão de toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
@@ -24,8 +25,8 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada, dicas opcionais e e2e em Chromium real cobrindo criar, promover, modelar, desfazer, miniatura, recarregar, tablet e celular | Percursos progressivos, outros navegadores, dispositivos físicos e usabilidade com crianças |
 
-Molda: **2.832 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 231; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.833 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 233; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -5083,11 +5084,29 @@ conversão compartilhada continuam abertos na fase 5.
 - **14 de 14 specs verdes em Chromium real.** Review `browser-homologation-l232.md`.
 - Chromium só; emulação de tamanho não é toque; nenhuma criança usou. Esses seguem gates.
 
-### Próximo lote 233: a virada pública, em duas partes
+### Lote 233: a virada pública, e o que a tornou reversível — verificado
 
-- 233a: os leitores já estão prontos e commitados (lote 230). Falta IMPLANTAR.
-- 233b: `MOLDA_DOCUMENT_WRITE_VERSION = 2` e a capacidade `sceneWorkshop` ligada no kids,
-  num commit isolado e fácil de reverter, só depois de 233a estar em produção.
+- **Correção ao que este plano dizia**: `MOLDA_DOCUMENT_WRITE_VERSION` é o carimbo do
+  escritor V1 e tem que continuar 1. Virá-lo faria toda gravação v1 lançar; documento v1 é
+  v1 para sempre, e quem escreve o formato novo é a persistência de cena, que nunca passa
+  pelo portão do escritor v1. A virada é a capacidade do host, um sinal só.
+- A capacidade passou a governar só a PROMOÇÃO, não o acesso: quem já está na geração
+  seguinte continua listado e abrindo com ela desligada. Antes, desligar deixaria o
+  trabalho da criança preso num editor que não sabe lê-lo.
+- A mudança expôs um defeito de robustez: com a fonte da geração seguinte sempre ligada,
+  uma falha ao listar o inventário dela derrubava a galeria INTEIRA (17 provas reprovaram
+  mostrando "Tentar de novo"). Agora ela falha sozinha, sem levar a v1 junto.
+- `sceneWorkshop: true` no kids. Molda **2.833/0**, kids **619/0**, tipos, Biome, build do
+  Kids e **14/14 e2e em Chromium real**. Review `public-activation-l233.md`.
+- ⚠️ **Nada foi implantado.** A ordem está em `docs/plans/2026-09-10-molda-rollout.md`, com
+  a conferência pós-deploy e a volta atrás de uma linha.
+
+### Próximo lote 234: a volta da ponte e o "Baixar tudo" da geração nova
+
+- A oficina nova ainda não reenvia ao Estúdio depois de salvar; por isso o aviso de que a
+  sincronização não está ligada continua certo.
+- O pacote de backup ainda é só da geração v1 e já DIZ o que deixa de fora. Ela pode
+  entrar com o arquivo nativo dela, sem mexer no envelope antigo.
 
 ### Situação do plano após esses lotes
 

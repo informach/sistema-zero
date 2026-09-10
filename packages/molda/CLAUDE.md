@@ -1406,6 +1406,15 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   Octetos percent-encoded não são UTF-8; caminhos e Data URIs não fazem IO.
   MIME da URI/descritor e roles de accessors exigem conferência posterior. Não
   usar leitor só de buffers na montagem completa para contornar o teto de imagens.
+- Virada pública (lote 233): `MoldaHostAdapter.sceneWorkshop` governa a PROMOÇÃO, não o
+  acesso. ⚠️⚠️ Criação já na geração seguinte é listada e aberta na oficina SEMPRE, com a
+  chave ligada ou não: é isso que torna desligar reversível, senão voltar atrás deixaria o
+  trabalho da criança preso num editor que não sabe lê-lo. Modelo antigo só vai para a
+  oficina com a chave ligada. ⚠️ `MOLDA_DOCUMENT_WRITE_VERSION` continua 1 PARA SEMPRE: é o
+  carimbo do escritor v1 (`assertMoldaDocumentWritable`), e virá-lo faria toda gravação v1
+  lançar. Quem escreve o formato novo é a persistência de cena, que não passa por ele.
+  ⚠️ Falha ao listar o inventário da geração seguinte NÃO pode derrubar a galeria v1.
+  Rollout e volta atrás: `docs/plans/2026-09-10-molda-rollout.md`.
 - Nuvem das duas gerações (lote 230): `createMoldaSceneCloudSource` (exportado no barril)
   é o que o host usa para listar, ler, conferir (`inspect`, sem gravar), gravar com
   renomeação, copiar e apagar a geração seguinte. ⚠️⚠️ Promover TIRA o registro do

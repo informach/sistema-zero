@@ -165,6 +165,16 @@ export function MoldaClient({
       theme,
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
+      /**
+       * A oficina 3D nova é o editor de modelos. Abrir um modelo antigo por lá o PROMOVE
+       * para o formato seguinte, no aparelho e na nuvem.
+       *
+       * ⚠️ Depende dos leitores compatíveis já implantados (o espelho das duas gerações):
+       * sem eles, um cliente antigo veria a criação promovida como ilegível. Desligar de
+       * volta é seguro: quem já foi promovido continua listado e continua abrindo, porque
+       * a chave governa só a promoção, não o acesso.
+       */
+      sceneWorkshop: true,
       ...(initialAssetId ? { initialAssetId } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
       // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do

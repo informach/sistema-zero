@@ -70,24 +70,24 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
   const adapterValue = adapter ?? EMPTY_ADAPTER
   const [persist] = useState(() => persistence ?? getDefaultMoldaPersistence())
   // A oficina seguinte lê o MESMO banco do namespace: uma criação, uma identidade.
-  const [sceneStore] = useState(() =>
-    adapterValue.sceneWorkshop ? getMoldaGenerationStore() : null,
-  )
+  // Sempre ligada: quem já foi promovido precisa continuar visível e abrível, mesmo que
+  // a promoção de novos modelos seja desligada de novo.
+  const [sceneStore] = useState(() => getMoldaGenerationStore())
   const [gallery] = useState(() =>
-    createGalleryStore(persist, {
-      ...(sceneStore ? { scene: createGallerySceneSource(sceneStore) } : {}),
-    }),
+    createGalleryStore(persist, { scene: createGallerySceneSource(sceneStore) }),
   )
   const [screen, setScreen] = useState<Screen>({ type: 'gallery' })
   /**
-   * Com a oficina seguinte ligada ela É o editor de modelos: abrir um modelo antigo
-   * por lá o PROMOVE (`openSceneWorkshop`), e promover é escrever o formato novo no
-   * disco. Textura e céu continuam nos editores deles. Sem a capacidade, nada muda.
+   * Uma criação JÁ na geração seguinte abre na oficina, sempre. Um modelo ANTIGO só vai
+   * para lá com `sceneWorkshop` ligado, porque abrir por lá o PROMOVE
+   * (`openSceneWorkshop`) e promover é escrever o formato novo no disco. Textura e céu
+   * continuam nos editores deles.
    */
   function open(assetId: string): void {
     const summary = gallery.getState().getById(assetId)
-    const next = sceneStore && (summary?.formatVersion === 2 || summary?.kind === 'model') ? 2 : 1
-    setScreen({ type: 'editor', assetId, generation: next })
+    const promoted = summary?.formatVersion === 2
+    const promoting = adapterValue.sceneWorkshop === true && summary?.kind === 'model'
+    setScreen({ type: 'editor', assetId, generation: promoted || promoting ? 2 : 1 })
   }
 
   useEffect(() => {
@@ -120,7 +120,7 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
         <ToastProvider>
           {screen.type === 'gallery' ? (
             <GalleryScreen onOpen={open} />
-          ) : screen.generation === 2 && sceneStore ? (
+          ) : screen.generation === 2 ? (
             <SceneWorkshopHost
               key={screen.assetId}
               store={sceneStore}

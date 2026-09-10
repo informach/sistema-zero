@@ -55,19 +55,37 @@ test('com a oficina seguinte ligada, a galeria mostra as duas gerações numa li
   }
 })
 
-test('sem a oficina seguinte, a criação da geração nova não aparece e o app segue igual', async () => {
-  const db = await nativeDatabase()
-  const persistence = createScenePersistence(db.store)
-  await persistence.save(migrateLegacyModel({ ...makeModel(), name: 'nave' }).document, null)
-  // Sem a capacidade o app nem pede o banco da geração seguinte.
-  setMoldaGenerationStoreFactory(() => {
-    throw new Error('a oficina seguinte não deveria ser aberta')
-  })
-  const legacy = { ...makeModel(), id: 'antigo', name: 'carro' }
+test('sem a capacidade, o modelo antigo NÃO é promovido: abre no editor de sempre', async () => {
+  const { db } = await withGeneration()
+  const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
+  await db.seed(`${DOCUMENT_KEY_PREFIX}${legacy.id}`, { ...legacy, formatVersion: 1 })
   const view = render(<MoldaApp persistence={createMemoryPersistence([legacy])} />)
   try {
-    await screen.findByRole('button', { name: COPY.a11y.assetCard('carro', 'Modelo') })
-    expect(screen.queryByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })).toBe(null)
+    const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('carro', 'Modelo') })
+    fireEvent.click(card)
+    await waitFor(() =>
+      expect(screen.queryByRole('heading', { level: 1 })?.textContent).toBe('carro'),
+    )
+    await settle()
+    expect(screen.queryByText(COPY.scene.development)).toBe(null)
+    // Nada foi promovido: o registro v1 continua no lugar dele.
+    expect(await db.read(`${DOCUMENT_KEY_PREFIX}${legacy.id}`)).toBeTruthy()
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
+
+test('desligar a capacidade NÃO esconde o que já foi promovido: continua listado e abrindo', async () => {
+  const { db } = await withGeneration()
+  // Sem `sceneWorkshop`: quem já está na geração seguinte precisa continuar alcançável,
+  // senão voltar atrás deixaria o trabalho da criança preso num editor que não o lê.
+  const view = render(<MoldaApp persistence={createMemoryPersistence([])} />)
+  try {
+    const card = await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
+    fireEvent.click(card)
+    await waitFor(() => expect(screen.queryByText(COPY.scene.development) !== null).toBe(true))
+    await settle()
   } finally {
     view.unmount()
     db.close()

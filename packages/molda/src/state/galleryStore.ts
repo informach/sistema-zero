@@ -143,7 +143,18 @@ export function createGalleryStore(
         ? await persistence.listSummaries()
         : (await persistence.loadAll()).map(summarizeAsset)
       // A geração seguinte tem inventário próprio; a lista da criança é uma só.
-      const fresh = scene ? [...v1, ...(await scene.listSummaries()).summaries] : v1
+      //
+      // Falhar ao ler o inventário da geração seguinte NÃO pode derrubar a galeria v1.
+      // As duas vivem no mesmo banco, então na prática elas falham juntas e o erro de
+      // carga já cobre esse caso; o que este `catch` evita é o contrário, uma galeria
+      // inteira em branco por causa de um inventário que talvez nem exista ainda.
+      const next = scene
+        ? await scene
+            .listSummaries()
+            .then((result) => result.summaries)
+            .catch(() => [])
+        : []
+      const fresh = [...v1, ...next]
       const current = new Map(get().assets.map((asset) => [asset.id, asset]))
       // Uma criação ABERTA no editor tem a versão mais nova em memória: a
       // releitura não pode regredi-la para o que está no disco.
