@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 225, contrato de pintura animada, fases 5/8.**
-Próximo lote: consumidor da pintura animada no runtime do Estúdio, fases 5/8, lote 226.
+**Último lote implementado e verificado: 226, pintura animada no runtime do Estúdio, fases 5/8.**
+Próximo lote: destino "Usar no Estúdio" com pintura animada na oficina, fases 5/8, lote 227.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -18,15 +18,15 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 2 — Arquitetura e desempenho | Base parcial; persistência interna por hash e CSS medidos | Reduzir latência/memória dos blobs, ampliar tarefas canceláveis e medir caches/GPU em hardware |
 | 3 — Oficina e navegação | Oficina, começo rápido vazio/templates e retomada disponíveis no playground | Integração pública e revisão visual/toque/temas |
 | 4 — Organização e modelagem | Ferramentas internas implementadas | Homologação; chanfro restrito a uma quina e caminhos abertos |
-| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; contrato versionado de pintura animada no GLB do Estúdio | Consumidor no runtime Studio, conexão da oficina e homologação |
-| 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido | Integração Studio e homologação |
+| 5 — Pintura, UV e materiais | UV com abertura/cortes escolhidos, pintura/camadas, PNG/JPEG, mapas detalhados, recorte de transparência, atlas e flipbook 2D/3D internos; contrato versionado de pintura animada produzido no Molda e consumido no runtime do Estúdio | Conexão da oficina e homologação |
+| 6 — Animação e Estúdio | Reprodução, timeline, poses/presets, gestos/autokey e exportação GLB cancelável com transporte compacto medido; pintura animada tocando no runtime do Estúdio | Conexão da oficina, integração pública e homologação |
 | 7 — Esqueleto e skinning | Vínculos/pesos, forma-base, pintura/mapa de forças, GLB com skins, IK de dois segmentos com destino arrastável/faixa de flexão e conjuntos de poses locais; bake integrado verificado | Desempenho extremo, acabamento do pincel, integração pública Studio e homologação |
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
 Molda: **2.813 testes, zero falhas, 378 arquivos**, tipos, Biome e Vite (1,63 s)
 no lote 225; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
-**7.951 testes, zero falhas, 505 arquivos**, tipos e Biome passaram, reconferidos em 10/09.
+**7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 225: 4,7 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
 Em 10/09 os 224 lotes anteriores, que existiam apenas no disco, foram commitados na
@@ -62,9 +62,9 @@ os critérios de aceite das fases separados das tarefas já implementadas.
 Para experimentar a oficina interna, execute `bun run dev` em `packages/molda`
 e abra `http://127.0.0.1:5198/?oficina=nova`. O playground usa armazenamento local
 separado; não é a ativação pública do editor nem do formato novo na nuvem.
-Próxima frente de implementação: consumo da pintura animada no runtime do Estúdio e o
-destino "Usar no Estúdio" na oficina, mantendo importadores, integração e homologação
-visíveis, sem ativar o formato público.
+Próxima frente de implementação: o destino "Usar no Estúdio" na oficina levando a pintura
+animada, e depois a integração pública da oficina, mantendo importadores e homologação
+visíveis, sem ativar o formato público antes do rollout de guardas.
 
 ## Decisões aprovadas
 
@@ -4963,13 +4963,30 @@ conversão compartilhada continuam abertos na fase 5.
 - Sem browser, `map.offset` real da textura não foi observado; cinco avisos act
   reapareceram, sem correção alegada. Consumidor e oficina ficam nos lotes 226 e 227.
 
-### Próximo lote 226: consumidor da pintura animada no Estúdio
+### Lote 226: consumidor da pintura animada no Estúdio — verificado
 
-- Reproduzir por ENTIDADE, não por material do cache: materiais são compartilhados entre
-  todas as instâncias de todos os moldes, e mexer no `offset` do cache animaria tudo junto.
-- Qualquer clone por entidade entra na contabilidade de posse e revisão do lote 118
-  (`ownedMaterials`, `resourceCount`, `returnModelResource`, `disposeModelPools`).
-- Respeitar a pausa que os testes já exigem e não alterar bloco que a criança já usa.
+- Medir as duas reproduções antes de escolher. Relógio por entidade custa uma cópia da
+  FOLHA na GPU por boneco (1024² = 4 MiB cada); relógio por material custa uma folha e um
+  `offset` por quadro. Escolhido o segundo, com a sincronia declarada como contrato.
+- Guardar o MATERIAL e ler o mapa a cada passo, para que uma textura que chegue depois não
+  fique parada. Recusar em silêncio contrato desconhecido, grade vazia, fps não positivo
+  e célula fora da folha: adivinhar seria pior do que não animar.
+- Nenhum bloco novo e nenhum bloco alterado; a pausa do jogo tem que congelar a pintura.
+- `collectModelFlipbooks` no parse, `stepModelFlipbooks` dentro de `stepSystems` (ao lado
+  das faíscas, logo só em `jogando`), e `placeFlipbook` refazendo a conta do produtor.
+  Nada entra na posse do lote 118: a textura é do cache do modelo e morre com ele.
+- A prova achou um defeito antes da produção: marcar o passo antes de colocar a célula
+  travava a pintura quando a textura ainda não existia no primeiro quadro. O passo agora
+  só é registrado quando a colocação aconteceu. Review `animated-paint-runtime-l226.md`.
+- Focal 10/0 nos três testes Molda/Estúdio; integral **7.956/0**, tipos e Biome passaram.
+  Sem browser, aparência e `map.offset` desenhado seguem sem homologação.
+
+### Próximo lote 227: destino "Usar no Estúdio" na oficina
+
+- Conectar a gravação `animatedPaint` ao caminho que leva a criação ao Estúdio, com
+  prévia e relatório de perdas explícito, sem mudar o "Baixar .glb".
+- O worker de exportação precisa carregar a escolha com validação estrita, como todo o
+  resto do protocolo; opção nova não pode entrar por caminho frouxo.
 
 ### Situação do plano após esses lotes
 

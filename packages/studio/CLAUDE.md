@@ -3668,6 +3668,21 @@ Pinta: h1 display `t('projects.heroTitle')` ("Meus Jogos") + subtítulo `t('proj
 
 ## Contrato nativo Molda e recursos de skin (09/2026, lote 117)
 
+- **Pintura animada do Molda (lote 226)**: o contrato versionado chega em
+  `material.userData.molda.flipbook` (grade, sequência, fps, loop) e o
+  `KHR_texture_transform` do GLB já deixou a textura na primeira célula.
+  `collectModelFlipbooks` roda UMA vez no parse e guarda o **material**, não o mapa (uma
+  textura que chega depois continua sendo animada); `stepModelFlipbooks` entra em
+  `stepSystems`, ao lado das faíscas, então **a pausa congela a pintura** de graça.
+  ⭐ UMA linha do tempo por MATERIAL, compartilhada por todas as cópias do molde: a folha
+  é a mesma textura para todo mundo, e um relógio por entidade custaria uma cópia da folha
+  na GPU por boneco (1024² = 4 MiB cada). A sincronia é contrato, não acaso, e uma pintura
+  sem repetição toca uma vez por MODELO, não por boneco. Nada entra na posse do lote 118:
+  a textura é do cache e morre em `disposeCachedModels`. ⚠️ `placeFlipbook` devolve se
+  colocou, e o passo só é registrado quando colocou — marcar antes travava a pintura para
+  sempre quando a textura ainda não existia no primeiro quadro. Contrato diferente de 1,
+  grade vazia, fps não positivo ou célula fora da folha ficam PARADOS, sem adivinhação.
+
 - Lote Molda 187: data URLs das duas fixtures atualizados para a reflexão V da
   exportação corrigida. Prova byte a byte e hashes históricos no produtor confirmam
   que somente UV mudou nessas fixtures; poses, clipes e skin continuam idênticos.

@@ -1,0 +1,66 @@
+{
+  "producer": "Molda animated paint GLB, evolution lot 225",
+  "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADwBwAAtAYAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJNb2xkYSJ9LCJleHRlbnNpb25zVXNlZCI6WyJLSFJfdGV4dHVyZV90cmFuc2Zvcm0iXSwic2NlbmUiOjAsInNjZW5lcyI6W3sibmFtZSI6IlBpbnR1cmEgYW5pbWFkYSIsIm5vZGVzIjpbMF19XSwibm9kZXMiOlt7Im5hbWUiOiJjb3JwbyIsInRyYW5zbGF0aW9uIjpbMCwxLDBdLCJyb3RhdGlvbiI6WzAsMCwwLDFdLCJzY2FsZSI6WzEsMSwxXSwiZXh0cmFzIjp7Im1vbGRhIjp7InNvdXJjZUlkIjoicGFydC0wIiwicm9sZSI6Im5vZGUifX0sIm1lc2giOjB9XSwibWVzaGVzIjpbeyJuYW1lIjoiY29ycG8iLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowLCJOT1JNQUwiOjEsIlRFWENPT1JEXzAiOjJ9LCJpbmRpY2VzIjozLCJtYXRlcmlhbCI6MCwibW9kZSI6NH1dfV0sIm1hdGVyaWFscyI6W3sibmFtZSI6Ik1hdGVyaWFsIiwicGJyTWV0YWxsaWNSb3VnaG5lc3MiOnsiYmFzZUNvbG9yRmFjdG9yIjpbMSwxLDEsMV0sIm1ldGFsbGljRmFjdG9yIjowLCJyb3VnaG5lc3NGYWN0b3IiOjEsImJhc2VDb2xvclRleHR1cmUiOnsiaW5kZXgiOjAsImV4dGVuc2lvbnMiOnsiS0hSX3RleHR1cmVfdHJhbnNmb3JtIjp7Im9mZnNldCI6WzAuNSwwXSwic2NhbGUiOlswLjUsMC41XX19fX0sImFscGhhTW9kZSI6Ik9QQVFVRSIsImRvdWJsZVNpZGVkIjpmYWxzZSwiZXh0cmFzIjp7Im1vbGRhIjp7ImZsaXBib29rIjp7ImNvbnRyYWN0IjoxLCJzb3VyY2VJZCI6InBhaW50IiwiY29sdW1ucyI6Miwicm93cyI6MiwiZnJhbWVzIjpbMSwzLDAsM10sImZwcyI6OCwibG9vcCI6dHJ1ZX19fX1dLCJpbWFnZXMiOlt7ImJ1ZmZlclZpZXciOjQsIm1pbWVUeXBlIjoiaW1hZ2UvcG5nIn1dLCJ0ZXh0dXJlcyI6W3sic291cmNlIjowLCJzYW1wbGVyIjowfV0sInNhbXBsZXJzIjpbeyJtYWdGaWx0ZXIiOjk3MjgsIm1pbkZpbHRlciI6OTcyOCwid3JhcFMiOjMzMDcxLCJ3cmFwVCI6MzMwNzF9XSwiYWNjZXNzb3JzIjpbeyJidWZmZXJWaWV3IjowLCJjb21wb25lbnRUeXBlIjo1MTI2LCJ0eXBlIjoiVkVDMyIsImNvdW50Ijo2LCJtaW4iOlswLDAsMF0sIm1heCI6WzAuMjUsMC4yNSwwXX0seyJidWZmZXJWaWV3IjoxLCJjb21wb25lbnRUeXBlIjo1MTI2LCJ0eXBlIjoiVkVDMyIsImNvdW50Ijo2fSx7ImJ1ZmZlclZpZXciOjIsImNvbXBvbmVudFR5cGUiOjUxMjYsInR5cGUiOiJWRUMyIiwiY291bnQiOjZ9LHsiYnVmZmVyVmlldyI6MywiY29tcG9uZW50VHlwZSI6NTEyMywidHlwZSI6IlNDQUxBUiIsImNvdW50Ijo2fV0sImJ1ZmZlclZpZXdzIjpbeyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjAsImJ5dGVMZW5ndGgiOjcyLCJ0YXJnZXQiOjM0OTYyfSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6NzIsImJ5dGVMZW5ndGgiOjcyLCJ0YXJnZXQiOjM0OTYyfSx7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MTQ0LCJieXRlTGVuZ3RoIjo0OCwidGFyZ2V0IjozNDk2Mn0seyJidWZmZXIiOjAsImJ5dGVPZmZzZXQiOjE5MiwiYnl0ZUxlbmd0aCI6MTIsInRhcmdldCI6MzQ5NjN9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0IjoyMDQsImJ5dGVMZW5ndGgiOjgyfV0sImJ1ZmZlcnMiOlt7ImJ5dGVMZW5ndGgiOjI4OH1dLCJleHRyYXMiOnsibW9sZGEiOnsic291cmNlSWQiOiJtb2xkYS1zdHVkaW8tZmxpcGJvb2stY29udHJhY3QiLCJmb3JtYXRWZXJzaW9uIjoyfX19ICAgAQAAQklOAAAAAAAAAAAAAAAAAAAAgD4AAAAAAAAAAAAAgD4AAIA+AAAAAAAAAAAAAAAAAAAAAAAAgD4AAIA+AAAAAAAAAAAAAIA+AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAAAAAACAPwAAAAAAAIA/AACAPwAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAAAAAAAAAQACAAMABAAFAIlQTkcNChoKAAAADUlIRFIAAAAEAAAABAgGAAAAqfGefgAAABlJREFUeJxj+M/A8B+EkSCaAJQPBCACiwAAZhYj3bpLaNwAAAAASUVORK5CYIIAAA==",
+  "stats": {
+    "nodes": 1,
+    "bones": 0,
+    "meshes": 1,
+    "materials": 1,
+    "textures": 1,
+    "pixelBytes": 64,
+    "triangles": 2,
+    "drawCalls": 1,
+    "renderedParts": 1,
+    "clips": 0,
+    "animationKeys": 0,
+    "animationChannels": 0
+  },
+  "materialName": "Material",
+  "sheet": {
+    "width": 4,
+    "height": 4
+  },
+  "flipbook": {
+    "contract": 1,
+    "sourceId": "paint",
+    "columns": 2,
+    "rows": 2,
+    "frames": [1, 3, 0, 3],
+    "fps": 8,
+    "loop": true
+  },
+  "steps": [
+    {
+      "step": 0,
+      "frame": 1,
+      "seconds": 0,
+      "offset": [0.5, 0],
+      "scale": [0.5, 0.5],
+      "rgba": [0, 255, 0, 255]
+    },
+    {
+      "step": 1,
+      "frame": 3,
+      "seconds": 0.125,
+      "offset": [0.5, 0.5],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 255, 0, 255]
+    },
+    {
+      "step": 2,
+      "frame": 0,
+      "seconds": 0.25,
+      "offset": [0, 0],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 0, 0, 255]
+    },
+    {
+      "step": 3,
+      "frame": 3,
+      "seconds": 0.375,
+      "offset": [0.5, 0.5],
+      "scale": [0.5, 0.5],
+      "rgba": [255, 255, 0, 255]
+    }
+  ]
+}

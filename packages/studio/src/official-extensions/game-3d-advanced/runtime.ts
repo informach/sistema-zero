@@ -2907,6 +2907,8 @@ const gameKit3DRuntimeAfterModelSource = `
     // As faíscas só andam em 'jogando' — a pausa congela tudo, como no curso.
     stepEmitters(dt);
     stepParticles(dt);
+    // A pintura que se mexe congela junto: ela é do mundo, não da interface.
+    stepModelFlipbooks(dt);
   }
 
     /** phase: 0 = tudo · 1 = sólidos (plataformas potenciais) · 2 = o resto. */

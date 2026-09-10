@@ -322,6 +322,95 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
     _modelCache = null;
   }
 
+  /**
+   * 🎞️ Pintura animada do Molda. O contrato versionado viaja no GLB, em
+   * material.userData.molda.flipbook, e o KHR_texture_transform já deixou a
+   * textura na primeira célula da sequência. Aqui só se move o offset.
+   *
+   * ⭐ UMA linha do tempo POR MATERIAL, compartilhada por todas as cópias do
+   * molde: a folha é a MESMA textura para todo mundo (geometria e material vêm
+   * do cache), então um relógio por boneco exigiria uma cópia da folha na GPU
+   * por instância. Todas as cópias tocam juntas, e isso é contrato, não acaso.
+   *
+   * Guarda o MATERIAL, não o mapa: o mapa é lido a cada passo, então uma textura
+   * que chega depois (ou é trocada) continua sendo animada.
+   */
+  function collectModelFlipbooks(root) {
+    var found = [];
+    if (!root || !root.traverse) return found;
+    var seen = new Set();
+    root.traverse(function (o) {
+      if (!o || !o.material) return;
+      var list = Array.isArray(o.material) ? o.material : [o.material];
+      for (var i = 0; i < list.length; i++) {
+        var material = list[i];
+        if (!material || seen.has(material)) continue;
+        seen.add(material);
+        var molda = material.userData && material.userData.molda;
+        var book = molda && molda.flipbook;
+        // Contrato desconhecido não é palpite: fica parado, como qualquer pintura.
+        if (!book || book.contract !== 1) continue;
+        var columns = Math.round(num(book.columns, 0));
+        var rows = Math.round(num(book.rows, 0));
+        var fps = num(book.fps, 0);
+        var cells = columns * rows;
+        if (columns < 1 || rows < 1 || !(fps > 0)) continue;
+        var frames = [];
+        var raw = Array.isArray(book.frames) ? book.frames : [];
+        for (var f = 0; f < raw.length; f++) {
+          var cell = Math.round(num(raw[f], -1));
+          if (cell >= 0 && cell < cells) frames.push(cell);
+        }
+        if (frames.length !== raw.length || !frames.length) continue;
+        found.push({
+          material: material, columns: columns, rows: rows, frames: frames,
+          fps: fps, loop: book.loop !== false, t: 0, step: -1
+        });
+      }
+    });
+    return found;
+  }
+
+  /**
+   * Mesma conta do produtor: célula da sequência, origem no topo-esquerda da folha.
+   * Devolve se colocou de fato — sem textura ainda não é passo dado, senão uma
+   * folha que chega depois do primeiro quadro ficaria parada para sempre.
+   */
+  function placeFlipbook(book, step) {
+    var map = book.material && book.material.map;
+    if (!map || !map.offset || !map.repeat) return false;
+    var frame = book.frames[step];
+    map.repeat.set(1 / book.columns, 1 / book.rows);
+    map.offset.set(
+      (frame % book.columns) / book.columns,
+      Math.floor(frame / book.columns) / book.rows
+    );
+    return true;
+  }
+
+  function stepModelFlipbooks(dt) {
+    if (!_modelCache) return;
+    for (var key in _modelCache) {
+      var hit = _modelCache[key];
+      var books = hit && hit.flipbooks;
+      if (!books || !books.length) continue;
+      for (var i = 0; i < books.length; i++) {
+        var book = books[i];
+        book.t += dt;
+        var total = book.frames.length / book.fps;
+        var step;
+        if (book.loop) {
+          // O módulo no TEMPO evita perder precisão num jogo longo.
+          step = Math.floor((book.t % total) * book.fps) % book.frames.length;
+        } else {
+          step = Math.min(book.frames.length - 1, Math.floor(book.t * book.fps));
+        }
+        if (step === book.step) continue;
+        if (placeFlipbook(book, step)) book.step = step;
+      }
+    }
+  }
+
   function loadModel(name, onReady) {
     var k = text(name, '');
     if (!k || disposed) return null;
@@ -398,7 +487,10 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
             }
             // Guarda os CLIPES junto: são eles que dão vida ao boneco (a lição do
             // AnimatedObjectComponent do curso). Antes o gltf.animations ia no lixo.
-            _modelCache[k] = { scene: gltf.scene, clips: gltf.animations || [], metrics: metrics };
+            _modelCache[k] = {
+              scene: gltf.scene, clips: gltf.animations || [], metrics: metrics,
+              flipbooks: collectModelFlipbooks(gltf.scene)
+            };
             warmModel(gltf.scene);
             flush(_modelCache[k]);
           } else {
