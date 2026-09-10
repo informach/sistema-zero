@@ -1,5 +1,4 @@
 import { describe, expect, test } from 'bun:test'
-import { createHash } from 'node:crypto'
 import { Euler, Matrix3, Matrix4, Quaternion, Vector3 } from 'three'
 import type { Vec3 } from '../core/model'
 import {
@@ -22,17 +21,21 @@ function near(actual: ArrayLike<number>, expected: ArrayLike<number>, epsilon = 
 }
 
 describe('scene affine transforms', () => {
-  test('degree XYZ retains its pre-refactor bitwise golden for 1000 deterministic rotations', () => {
-    const bytes = new Uint8Array(1000 * 4 * 8)
-    const view = new DataView(bytes.buffer)
+  /**
+   * A conversão de graus não pode mudar de resultado num refactor. Era um SHA-256 dos bits
+   * dos 4.000 Float64, e isso NÃO se sustenta: `Math.sin`/`Math.cos` têm precisão definida
+   * pela implementação, e o Bun do Windows e o do Linux divergem no último bit — o golden
+   * gravado aqui reprovou na primeira vez que este arquivo rodou no CI (Linux). O que vale
+   * é a propriedade: a mesma matemática do oráculo independente, dentro de poucos ULP.
+   */
+  test('degree XYZ keeps matching the independent oracle across 1000 deterministic rotations', () => {
     for (let i = 0; i < 1000; i++) {
-      const rotation = quaternionFromEulerXYZ([i * 1.123, -i * 2.347, 89.99 + i / 7])
-      for (let axis = 0; axis < 4; axis++)
-        view.setFloat64((i * 4 + axis) * 8, rotation[axis]!, true)
+      const degrees: Vec3 = [i * 1.123, -i * 2.347, 89.99 + i / 7]
+      const rotation = quaternionFromEulerXYZ(degrees)
+      const radians = degrees.map((value) => (value * Math.PI) / 180) as unknown as Vec3
+      near(rotation, new Quaternion().setFromEuler(new Euler(...radians, 'XYZ')).toArray(), 1e-12)
+      expect(Math.abs(Math.hypot(...rotation) - 1)).toBeLessThan(1e-14)
     }
-    expect(createHash('sha256').update(bytes).digest('hex')).toBe(
-      '18a69dbff9303078d4bb9cb3058426d0214a02dfac80111442c6bd39af6ccb3a',
-    )
   })
   test('explicit XYZ/ZYX radian rotation matches the independent Three oracle', () => {
     expect(() => quaternionFromEulerRadians([0, 0, 0], JSON.parse('"ZXY"'))).toThrow(TypeError)

@@ -1,18 +1,27 @@
 import { expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { expectSameFixture } from './fixtureCompare'
+import { readGlb } from './glbRead'
 import { reflectFixtureGlbV } from './glbReflectUv'
 import { expectValidGlb } from './gltfValidation'
 import { makeSceneStudioContract } from './sceneStudioContract'
 import { makeSceneStudioFlipbookContract } from './sceneStudioFlipbookContract'
 import { makeSceneStudioSkinContract } from './sceneStudioSkinContract'
 
+/**
+ * ⚠️ O golden é do chunk BIN, não do arquivo inteiro. O chunk JSON carrega Float64 vindos de
+ * `Math.atan2`/`sin`/`cos`, cuja precisão é definida pela implementação: o mesmo GLB gerado no
+ * Windows e no Linux difere no último bit ali, e um hash do arquivo inteiro nunca poderia
+ * passar nos dois. O BIN é Float32 — o arredondamento absorve a diferença — e é exatamente
+ * onde a reflexão de V escreve, então é ele que este golden precisa prender.
+ */
 function expectLegacyUvGolden(dataUrl: string, golden: string) {
   // Buffer is deliberately accepted too: Uint8Array.slice would alias this source.
   const bytes: Uint8Array = Buffer.from(dataUrl.split(',')[1]!, 'base64'),
     before = new Uint8Array(bytes),
     reflected = reflectFixtureGlbV(bytes)
-  expect(new Bun.CryptoHasher('sha256').update(reflected).digest('hex')).toBe(golden)
+  expect(new Bun.CryptoHasher('sha256').update(readGlb(reflected).bin).digest('hex')).toBe(golden)
   expect(bytes).toEqual(before)
   expect(reflected.buffer).not.toBe(bytes.buffer)
 }
@@ -28,10 +37,10 @@ test('the actual Studio GLB fixture stays byte-identical to native export and it
       'utf8',
     ),
   )
-  expect(fixture).toEqual(recorded)
+  expectSameFixture(fixture, recorded)
   expectLegacyUvGolden(
     fixture.dataUrl,
-    '842d68c8021d97a8313a53a7dd7c166ee5b7947946f06c2fe987b66f6d84e2ed',
+    'f6c8c436f96ca8a58ffbb1040b6071e91d71ee4ea666a8aa4e9348f5c8bfadc0',
   )
   const bytes = new Uint8Array(Buffer.from(fixture.dataUrl.split(',')[1]!, 'base64'))
   await expectValidGlb(bytes)
@@ -59,10 +68,10 @@ test('the Studio skin fixture stays byte-identical to native export and its CPU 
         'utf8',
       ),
     )
-  expect(fixture).toEqual(recorded)
+  expectSameFixture(fixture, recorded)
   expectLegacyUvGolden(
     fixture.dataUrl,
-    '285d4bf449ce4b049880f21b3b95a7eb8610b3a38b6f4eede5cb985981435bf2',
+    '1d56115bb6d29e13f03b2c3d534d9a480082b7508b84d1faae9826cb8a2a27f9',
   )
   const bytes = new Uint8Array(Buffer.from(fixture.dataUrl.split(',')[1]!, 'base64'))
   await expectValidGlb(bytes, Array(3).fill('NODE_SKINNED_MESH_NON_ROOT'))
@@ -93,7 +102,7 @@ test('the Studio flipbook fixture stays byte-identical to native export, and pas
         'utf8',
       ),
     )
-  expect(fixture).toEqual(recorded)
+  expectSameFixture(fixture, recorded)
   const bytes = new Uint8Array(Buffer.from(fixture.dataUrl.split(',')[1]!, 'base64'))
   await expectValidGlb(bytes)
   // A tinta anda: é isso que o relatório de destino precisa enxergar como movimento.
