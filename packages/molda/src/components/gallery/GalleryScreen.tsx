@@ -94,10 +94,16 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
         signal: controller.signal,
         onProgress: ({ processed }) => setPackingProgress(processed),
       })
+      const started = triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
+      // O pacote é da geração v1. Dizer quantas ficaram de fora é melhor do que uma
+      // cópia de segurança que a criança acha completa e não é.
+      const skipped = assets.filter((asset) => asset.formatVersion === 2).length
       showToast(
-        triggerDownload(blob, GALLERY_ZIP_FILE_NAME)
-          ? COPY.gallery.downloadReady
-          : COPY.gallery.downloadFailed,
+        !started
+          ? COPY.gallery.downloadFailed
+          : skipped
+            ? COPY.gallery.downloadSkippedScene(skipped)
+            : COPY.gallery.downloadReady,
       )
     } catch (error) {
       showToast(

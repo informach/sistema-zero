@@ -14,11 +14,15 @@ import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 import { ByteLru } from '../core/byteLru'
 import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaAsset } from '../core/model'
+import { bytesToBase64 } from '../core/skinCodec'
+import { readSceneDocument } from '../scene/readDocument'
 import {
   getDefaultMoldaPersistence,
   getMoldaStorageNamespace,
   type MoldaPersistence,
 } from '../state/persistence'
+import { createMoldaSceneCloudSource } from '../state/sceneCloudSource'
+import { prepareSceneGlbInWorker } from '../workers/sceneGlb'
 import { exportSkyHdrInWorker } from '../workers/skyExport'
 import { exportModelGlb } from './modelGlb'
 import { exportTexturePng } from './texturePng'
@@ -75,7 +79,10 @@ function cacheFor(persistence: MoldaPersistence): ByteLru<string, CachedExport> 
   return cache
 }
 
-function materializeExport(asset: MoldaAsset, cached: CachedExport): ExportForStudioResult {
+function materializeExport(
+  asset: Pick<MoldaAsset, 'id' | 'name' | 'thumb'>,
+  cached: CachedExport,
+): ExportForStudioResult {
   if (!cached.ok) return cached
   const extension =
     cached.encoded.kind === 'model3d'
@@ -95,13 +102,47 @@ function materializeExport(asset: MoldaAsset, cached: CachedExport): ExportForSt
   }
 }
 
-/** Do namespace corrente, ordenada da mais recente para a mais antiga. */
+/** Do namespace corrente, ordenada da mais recente para a mais antiga, nas DUAS gerações. */
 export async function listGalleryForStudio(): Promise<MoldaLibraryItem[]> {
   const persistence = getDefaultMoldaPersistence()
-  const summaries = persistence.listSummaries
+  const v1 = persistence.listSummaries
     ? await persistence.listSummaries()
     : (await persistence.loadAll()).map(summarizeAsset)
-  return summaries.sort((a, b) => b.updatedAt - a.updatedAt)
+  // A criação promovida continua sendo a mesma criação para o Estúdio: some daqui e o
+  // "Trazer do Molda" deixaria de enxergar o que a criança acabou de modelar.
+  const scene = await createMoldaSceneCloudSource().listSummaries()
+  return [...v1, ...scene].sort((a, b) => b.updatedAt - a.updatedAt)
+}
+
+/**
+ * A geração seguinte vai pelo `encodeSceneGlb`, com a pintura animada: a hierarquia, os
+ * clipes e a folha inteira que o runtime avançado sabe tocar. Nunca pelo escritor v1, que
+ * funde tudo numa malha só. Perdas seguem o mesmo contrato do caminho v1 desta ponte:
+ * a cópia sai com o que dá para levar, e o relatório detalhado é do "Exportar GLB" da oficina.
+ */
+async function exportSceneForStudio(id: string): Promise<ExportForStudioResult> {
+  const found = await createMoldaSceneCloudSource().read(id)
+  if (!found) return { ok: false, reason: 'not-found' }
+  const read = readSceneDocument(JSON.parse(found.json))
+  if (read.status !== 'valid') return { ok: false, reason: 'encode-failed' }
+  const summary = { id, name: found.summary.name, thumb: found.summary.thumbDataUrl ?? undefined }
+  try {
+    const result = await prepareSceneGlbInWorker({
+      document: read.document,
+      documentId: id,
+      revision: 0,
+      animatedPaint: true,
+    })
+    const dataUrl = `data:model/gltf-binary;base64,${bytesToBase64(result.bytes)}`
+    if (dataUrl.length > MOLDA_LIMITS.studioMax3DChars)
+      return materializeExport(summary, { ok: false, reason: 'asset-too-big' })
+    return materializeExport(summary, {
+      ok: true,
+      encoded: { kind: 'model3d', dataUrl, bytes: result.bytes.length },
+    })
+  } catch {
+    return materializeExport(summary, { ok: false, reason: 'encode-failed' })
+  }
 }
 
 /** Separador das chaves do cache: `namespace` (o viewerId do host, um UUID), `id` e `updatedAt` nunca o contêm. */
@@ -165,6 +206,7 @@ export async function exportAssetForStudio(id: string): Promise<ExportForStudioR
   const namespace = getMoldaStorageNamespace()
   const persistence = getDefaultMoldaPersistence()
   const asset = await persistence.load(id)
-  if (!asset) return { ok: false, reason: 'not-found' }
+  // A geração seguinte responde depois: uma criação promovida não está mais no v1.
+  if (!asset) return exportSceneForStudio(id)
   return exportLoadedAssetForStudio(asset, { persistence, namespace })
 }

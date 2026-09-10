@@ -7,8 +7,8 @@ Referência estudada: `JannisX11/blockbench`, commit
 
 ## Acompanhamento — atualizado em 10/09/2026
 
-**Último lote implementado e verificado: 230, nuvem ciente das duas gerações, fases 1/3.**
-Próximo lote: ponte do Estúdio para o documento v2 e "Baixar tudo", lote 231.
+**Último lote implementado e verificado: 231, ponte do Estúdio para a geração seguinte, fases 3/5/8.**
+Próximo lote: a volta da ponte na oficina nova e o "Baixar tudo" das duas gerações, lote 232.
 Lotes são incrementos de trabalho, não fases nem percentuais. Nenhuma das nove fases
 cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 
@@ -24,8 +24,8 @@ cumpriu todos os critérios de aceite; as fases 1–3 ainda têm pendências.
 | 8 — Intercâmbio e reutilização | GLB/glTF, OBJ/MTL e bbmodel free com clipes locais e camadas inteiras adaptadas, workers, revisão, prévia e adoção interna | Ampliar clipes/camadas/PBR do bbmodel, compatibilidade glTF e ponte Studio |
 | 9 — Aprendizado e homologação | Galeria otimizada e dicas opcionais de montagem/pintura/animação | Percursos progressivos, testes em dispositivos e usabilidade com crianças |
 
-Molda: **2.829 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
-no lote 230; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
+Molda: **2.832 testes, zero falhas, 381 arquivos**, tipos, Biome e Vite (1,22 s)
+no lote 231; workers glTF, OBJ e bbmodel alcançáveis pela oficina interna. Studio no lote 118:
 **7.956 testes, zero falhas, 506 arquivos** no lote 226, tipos e Biome passaram.
 Build Kids do lote 229: 8,8 s de compilação, 59 páginas, 616 testes. Os cinco testes
 de integração Molda/Studio foram reexecutados com sucesso no lote 187.
@@ -5052,12 +5052,26 @@ conversão compartilhada continuam abertos na fase 5.
 - ⚠️ Este é o passo de LEITORES do rollout: **precisa estar em produção antes de qualquer
   escritor da geração nova**.
 
-### Próximo lote 231: ponte do Estúdio para o documento v2 e "Baixar tudo"
+### Lote 231: a ponte do Estúdio enxerga a geração seguinte — verificado
 
-- `exportLoadedAssetForStudio` só sabe o `exportModelGlb` de uma malha só; o documento v2
-  precisa ir pelo `encodeSceneGlb`, com a pintura animada que os lotes 225 a 227 fizeram.
-- "Baixar tudo" ainda não inclui a geração seguinte; ela tem o "Baixar projeto" próprio.
-- Só depois desses dois é que faz sentido virar o escritor.
+- Uma criação promovida sumia do "Trazer do Molda": a criança acabaria de modelar e o
+  Estúdio não veria o trabalho dela. A lista passa a somar as duas gerações.
+- A geração seguinte sai pelo `encodeSceneGlb` no worker, com `animatedPaint` ligado, e
+  não pelo exportador v1, que funde tudo numa malha só. Ela responde DEPOIS: quem não
+  está no v1 é procurado nela.
+- Perdas seguem o contrato desta ponte: o "Trazer do Molda" não tem tela de confirmação,
+  e o relatório detalhado continua no "Exportar GLB" da oficina.
+- "Baixar tudo" passa a DIZER quantas criações da geração nova ficaram de fora, com o
+  "Baixar projeto" delas como caminho. Review `studio-bridge-v2-l231.md`.
+- Molda **2.832/0**, kids **619/0**, tipos e Biome passaram. A prova confere que o GLB sai
+  com mais de um nó e com a identidade do documento, o que o caminho v1 não faria.
+
+### Próximo lote 232: a volta da ponte e o "Baixar tudo" das duas gerações
+
+- A oficina nova ainda não reenvia ao Estúdio depois de salvar; por isso o aviso de que a
+  sincronização não está ligada continua certo.
+- O pacote de backup ainda é só da geração v1. A geração nova pode entrar com o arquivo
+  nativo dela, sem mexer no envelope antigo.
 
 ### Situação do plano após esses lotes
 

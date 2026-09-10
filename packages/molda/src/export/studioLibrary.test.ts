@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, spyOn, test } from 'bun:test'
+import { migrateLegacyModel } from '../scene/migrateLegacy'
 import {
   createMoldaPersistence,
   getDefaultMoldaPersistence,
   resetMoldaPersistenceForTests,
+  setMoldaGenerationStoreFactory,
   setMoldaStorageNamespace,
 } from '../state/persistence'
+import { createScenePersistence } from '../state/scenePersistence'
 import { makeModel, makeSky, makeTexture } from '../testing/fixtures'
+import { readGlb } from '../testing/glbRead'
 import { clearIdbMock } from '../testing/idbMock'
+import { nativeDatabase } from '../testing/nativeDatabase'
 import { exportAssetForStudio, listGalleryForStudio } from './studioLibrary'
 
 beforeEach(() => {
@@ -85,5 +90,52 @@ describe('studio-library', () => {
     expect(first.ok && second.ok && second.asset.dataUrl).toBe(first.ok && first.asset.dataUrl)
     expect(second.ok && second.asset.originalFileName).toBe('nave-b.glb')
     expect(second.ok && second.asset.thumbDataUrl).toBe('data:image/jpeg;base64,BBBB')
+  })
+})
+
+describe('studio-library e a geração seguinte', () => {
+  test('a criação promovida continua na lista e sai pelo exportador de cena, não pelo v1', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    try {
+      const scene = migrateLegacyModel({ ...makeModel(), id: 'promovida', name: 'nave' }).document
+      await createScenePersistence(db.store).save(scene, null)
+      const persistence = createMoldaPersistence({ namespace: 'estudio' })
+      await persistence.saveMany([makeTexture()])
+
+      // Some da lista e o "Trazer do Molda" deixa de ver o que a criança acabou de modelar.
+      const list = await listGalleryForStudio()
+      expect(list.map((item) => item.id).sort()).toEqual(['promovida', 'texture-1'])
+
+      const exported = await exportAssetForStudio('promovida')
+      if (!exported.ok) throw new Error(`exportação falhou: ${exported.reason}`)
+      expect(exported.asset.kind).toBe('model3d')
+      expect(exported.asset.originalFileName).toBe('nave.glb')
+      expect(exported.asset.dataUrl.startsWith('data:model/gltf-binary;base64,')).toBe(true)
+      // O exportador de cena leva a hierarquia; o v1 funde tudo numa malha só.
+      const bytes = Uint8Array.from(atob(exported.asset.dataUrl.split(',')[1] as string), (c) =>
+        c.charCodeAt(0),
+      )
+      const json = readGlb(bytes).json as { nodes?: unknown[]; extras?: { molda?: unknown } }
+      expect((json.nodes?.length ?? 0) > 1).toBe(true)
+      expect(json.extras?.molda).toEqual({ sourceId: 'promovida', formatVersion: 2 })
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
+  })
+
+  test('id que não existe em nenhuma das duas gerações continua sendo not-found', async () => {
+    const db = await nativeDatabase()
+    setMoldaGenerationStoreFactory(() => db.store)
+    try {
+      expect(await exportAssetForStudio('nunca-existiu')).toEqual({
+        ok: false,
+        reason: 'not-found',
+      })
+    } finally {
+      setMoldaGenerationStoreFactory(null)
+      db.close()
+    }
   })
 })

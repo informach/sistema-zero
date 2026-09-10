@@ -1164,6 +1164,11 @@ export const COPY = {
     storageBudget:
       'Sua galeria chegou ao limite de 96 MB. Apague uma criação grande para continuar salvando.',
     downloadAll: 'Baixar tudo',
+    /** A geração seguinte tem o "Baixar projeto" próprio dentro da oficina. */
+    downloadSkippedScene: (count: number) =>
+      count === 1
+        ? 'Uma criação da oficina nova ficou de fora: guarde ela pelo "Baixar projeto", dentro da oficina.'
+        : `${count} criações da oficina nova ficaram de fora: guarde cada uma pelo "Baixar projeto", dentro da oficina.`,
     downloadPreparing: 'Preparando o seu pacote... Os céus demoram um pouquinho.',
     downloadCancelled: 'Parei de preparar o pacote.',
     downloadReady: 'Baixei a sua galeria! Procure o .zip na pasta de downloads.',

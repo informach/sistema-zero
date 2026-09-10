@@ -117,3 +117,25 @@ test('textura e céu continuam nos editores deles, mesmo com a oficina ligada', 
     db.close()
   }
 })
+
+test('o pacote "Baixar tudo" diz quantas criações da oficina nova ficaram de fora', async () => {
+  const { db } = await withGeneration()
+  const legacy = { ...makeModel(), id: 'antigo', name: 'carro', updatedAt: 1 }
+  const view = render(
+    <MoldaApp persistence={createMemoryPersistence([legacy])} adapter={{ sceneWorkshop: true }} />,
+  )
+  try {
+    await screen.findByRole('button', { name: COPY.a11y.assetCard('nave', 'Modelo') })
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.downloadAll }))
+    // Uma cópia de segurança que a criança acha completa e não é seria pior do que avisar.
+    await waitFor(
+      () => expect(screen.queryByText(COPY.gallery.downloadSkippedScene(1)) !== null).toBe(true),
+      { timeout: 5000 },
+    )
+    expect(screen.queryByText(COPY.gallery.downloadReady)).toBe(null)
+    await settle()
+  } finally {
+    view.unmount()
+    db.close()
+  }
+})
