@@ -8,7 +8,7 @@ import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { Lock, MessageCircle, Plus } from 'lucide-react'
+import { Images, Lock, MessageCircle, MessagesSquare, Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type {
   HubChannelView,
@@ -20,6 +20,8 @@ import type {
 import { channelPresentation } from './channel-presentation'
 import { ClubeActivityBell } from './clube-activity-bell'
 import { ClubeCombinados } from './clube-combinados'
+import { KidsBand } from './kids-band'
+import { KidsPageHeader } from './kids-page-header'
 import { GamePicker, ShowcaseCard, Tag, ThreadDetail } from './kids-space-detail'
 import { KidsMascot } from './mascot'
 import { AuthorBadge, type AuthorItem, authorText } from './space-author'
@@ -131,36 +133,31 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
 
   return (
     <>
-      <div className="w-full">
-        {!isWall ? (
-          <div className="mb-4 flex items-center gap-3 rounded-3xl border-2 border-border bg-(--kids-cyan-tint) p-4">
-            <KidsMascot expression="happy" className="size-14 shrink-0 md:size-16" />
-            <div className="min-w-0 flex-1">
-              <h1 className="[font-family:var(--font-display)] font-bold text-2xl">{space.name}</h1>
-              <p className="text-muted-foreground text-sm">
-                {space.description || 'Converse com a turma e mostre o que você criou! 🎉'}
-              </p>
-            </div>
-            <ClubeActivityBell
-              viewerId={viewerId}
-              channelIds={spaceChannelIds}
-              onOpenThread={context.onOpenThreadById}
-            />
-            <ClubeCombinados viewerId={viewerId} />
-          </div>
-        ) : (
-          <>
-            <h1 className="mb-1 [font-family:var(--font-display)] font-bold text-2xl">
-              {space.name}
-            </h1>
-            {space.description ? (
-              <p className="mb-4 text-muted-foreground text-sm">{space.description}</p>
+      {/* Faixa de cabeçalho na cor da PORTA que trouxe a criança até aqui: o Mural é
+          rosa e o Clube é o azul-céu, os mesmos do card em `/comunidade`. */}
+      <KidsBand tone="creme">
+        <KidsPageHeader
+          eyebrow={isWall ? 'Comunidade · vitrine da turma' : 'Comunidade · conversa'}
+          eyebrowIcon={isWall ? Images : MessagesSquare}
+          title={space.name}
+          subtitle={space.description || 'Converse com a turma e mostre o que você criou!'}
+          actions={
+            isWall ? (
+              <KidsMascot expression="celebrating" className="hidden size-20 md:block" />
             ) : (
-              <div className="mb-4" />
-            )}
-          </>
-        )}
-
+              <>
+                <ClubeActivityBell
+                  viewerId={viewerId}
+                  channelIds={spaceChannelIds}
+                  onOpenThread={context.onOpenThreadById}
+                />
+                <ClubeCombinados viewerId={viewerId} />
+              </>
+            )
+          }
+        />
+      </KidsBand>
+      <KidsBand tone={isWall ? 'rosa' : 'ceu'} className="min-h-[60vh]">
         <div className={`grid gap-4 ${isWall ? '' : 'md:grid-cols-[200px_1fr]'}`}>
           {!isWall ? (
             <aside className="flex gap-2 overflow-x-auto md:flex-col md:gap-1.5">
@@ -226,7 +223,7 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
             )}
           </main>
         </div>
-      </div>
+      </KidsBand>
 
       <ReportDialog report={report} />
     </>
@@ -295,7 +292,7 @@ function KidsSpaceFeedView({
             <button
               type="button"
               onClick={composer.onToggleNew}
-              className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm"
+              className="kids-marca inline-flex items-center gap-1 rounded-2xl px-4 py-2 font-bold text-sm"
             >
               <Plus className="size-4" /> Começar conversa
             </button>
@@ -310,14 +307,16 @@ function KidsSpaceFeedView({
       ) : null}
 
       {feed.threads.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed p-6 text-center text-muted-foreground text-sm">
-          <KidsMascot expression="happy" className="size-16" />
-          <p>
+        // Estado vazio de verdade, e não a caixa tracejada cinza: aqui o Zappy faz o
+        // papel do círculo colorido do `KidsEmptyState`, porque a fala é dele.
+        <div className="kids-carta flex flex-col items-center gap-2 px-6 py-10 text-center">
+          <KidsMascot expression="happy" className="kid-float size-20" />
+          <p className="sz-display mt-2 text-lg">
             {isWall
-              ? 'Os projetos dos criadores vão aparecer aqui! 🎨'
+              ? 'Os projetos dos criadores vão aparecer aqui!'
               : channel
                 ? channelPresentation(channel.slug).emptyState
-                : 'Nenhuma conversa ainda. Comece a primeira! ✨'}
+                : 'Nenhuma conversa ainda. Comece a primeira!'}
           </p>
         </div>
       ) : isWall ? (
@@ -336,7 +335,7 @@ function KidsSpaceFeedView({
             type="button"
             key={item.id}
             onClick={() => feed.onOpenThread(item)}
-            className="w-full rounded-2xl border-2 border-border bg-card p-3 text-left transition-colors hover:border-primary"
+            className="kids-carta kid-pop w-full p-3 text-left transition-colors hover:border-primary"
           >
             <div className="flex items-center gap-2">
               {item.isPinned ? <Tag>Fixado</Tag> : null}
