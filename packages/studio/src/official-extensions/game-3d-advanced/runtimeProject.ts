@@ -24,6 +24,7 @@ export const gameKit3DProjectRuntimeSource = `  // ---- Ciclo de vida do projeto
       _timer.on = false;
       _timer.left = 0;
       _shakeT = 0;
+      resetModelFlipbooks();
       if (projectFactory) {
         resetProjectRuntime();
         executeProjectFactory();

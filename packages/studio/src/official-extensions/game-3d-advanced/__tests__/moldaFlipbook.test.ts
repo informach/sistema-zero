@@ -57,6 +57,9 @@ function paintedMaterial(kit: Kit): PaintedMaterial {
   })
   const material = found[0]
   if (!material) throw new Error('material com pintura animada não encontrado')
+  // `found[0]` sozinho não prova o contrato: se uma cópia clonasse o material, a primeira
+  // continuaria sendo esta e o teste passaria enquanto as outras parassem de animar.
+  expect(found).toHaveLength(1)
   return material
 }
 
@@ -122,6 +125,27 @@ test('a pausa congela a pintura e continuar retoma de onde parou', async () => {
   })
 })
 
+test('"Jogar de novo" recomeça a pintura do primeiro quadro', async () => {
+  await inGame(async (kit, material) => {
+    kit.step(1)
+    kit.step(FRAMES_PER_STEP)
+    expect(placed(material)).toEqual([
+      ...(fixture.steps[1]?.offset as number[]),
+      ...(fixture.steps[1]?.scale as number[]),
+    ])
+    // O cache de GLB sobrevive ao reinício de propósito, e com ele sobrevivia o relógio da
+    // pintura: uma sequência de uma vez só já nascia travada no último quadro da partida
+    // anterior, e nenhum bloco a destrava.
+    kit.api.setState('fim')
+    kit.api.setState('jogando')
+    kit.step(1)
+    expect(placed(material)).toEqual([
+      ...(fixture.steps[0]?.offset as number[]),
+      ...(fixture.steps[0]?.scale as number[]),
+    ])
+  })
+})
+
 test('todas as cópias do molde compartilham a mesma folha e a mesma linha do tempo', async () => {
   await inGame(async (kit, material) => {
     const second = kit.api.spawn('bicho', 4, 0, 0)
@@ -172,9 +196,10 @@ test('contrato de uma versão futura deixa a pintura parada, sem adivinhação',
     material.map = new Texture()
     const start = placed(material)
     kit.step(FRAMES_PER_STEP * 4)
-    // Nem a folha foi recortada nem a sequência andou: a pintura fica como está.
+    // A sequência não andou: a pintura fica exatamente onde estava.
+    // (O recorte da folha vem do `KHR_texture_transform`, que o GLTFLoader aplica sozinho;
+    // aqui `start` é o padrão da Texture que o teste anexou, não uma medida do produto.)
     expect(placed(material)).toEqual(start)
-    expect(start).toEqual([0, 0, 1, 1])
     material.map?.dispose()
   } finally {
     window.dispatchEvent(new Event('pagehide'))

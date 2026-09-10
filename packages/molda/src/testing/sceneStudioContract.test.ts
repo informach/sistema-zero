@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { reflectFixtureGlbV } from './glbReflectUv'
 import { expectValidGlb } from './gltfValidation'
 import { makeSceneStudioContract } from './sceneStudioContract'
+import { makeSceneStudioFlipbookContract } from './sceneStudioFlipbookContract'
 import { makeSceneStudioSkinContract } from './sceneStudioSkinContract'
 
 function expectLegacyUvGolden(dataUrl: string, golden: string) {
@@ -76,4 +77,25 @@ test('the Studio skin fixture stays byte-identical to native export and its CPU 
   expect(fixture.rest.every((part) => part.points.length === 6)).toBe(true)
   for (const clip of fixture.clips) expect(clip.end).not.toEqual(fixture.rest)
   expect(fixture.clips[0]!.end).not.toEqual(fixture.clips[1]!.end)
+})
+
+// A fixture da pintura animada nasceu SEM esta guarda, ao contrário das duas irmãs: o
+// produtor e a cópia congelada podiam divergir com as duas suítes verdes, que é exatamente
+// o que a reflexão de V do lote 187 teria feito.
+test('the Studio flipbook fixture stays byte-identical to native export, and passes Khronos', async () => {
+  const fixture = makeSceneStudioFlipbookContract(),
+    recorded = JSON.parse(
+      readFileSync(
+        resolve(
+          import.meta.dir,
+          '../../../../packages/studio/src/official-extensions/game-3d-advanced/__tests__/fixtures/molda-flipbook.json',
+        ),
+        'utf8',
+      ),
+    )
+  expect(fixture).toEqual(recorded)
+  const bytes = new Uint8Array(Buffer.from(fixture.dataUrl.split(',')[1]!, 'base64'))
+  await expectValidGlb(bytes)
+  // A tinta anda: é isso que o relatório de destino precisa enxergar como movimento.
+  expect(fixture.stats).toMatchObject({ animatedPaints: 1, clips: 0 })
 })

@@ -170,6 +170,7 @@ export function encodeSceneGlb(
       triangles,
       drawCalls,
       renderedParts,
+      animatedPaints: materials.animatedPaints,
       clips: animation.animations.length,
       animationKeys: animation.keys,
       animationChannels: animation.channels,

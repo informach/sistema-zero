@@ -388,6 +388,29 @@ const gameKit3DModelAssetsRuntimeTemplate = `  // ---- 🧊 Modelos 3D de verdad
     return true;
   }
 
+  /**
+   * "Jogar de novo" recomeca a linha do tempo da pintura. O cache de GLB sobrevive de
+   * proposito (material e geometria sao dele) e, junto com ele, sobreviviam o relogio e o
+   * passo: uma pintura de UMA VEZ SO (loop desligado) ja comecava a partida nova travada
+   * no ultimo quadro, para sempre, sem bloco nenhum para destravar.
+   */
+  function resetModelFlipbooks() {
+    if (!_modelCache) return;
+    for (var key in _modelCache) {
+      var hit = _modelCache[key];
+      var books = hit && hit.flipbooks;
+      if (!books) continue;
+      for (var i = 0; i < books.length; i++) {
+        var book = books[i];
+        book.t = 0;
+        book.step = -1;
+        // Coloca o primeiro quadro JA: sem isso a partida nova comeca mostrando a celula
+        // em que a anterior parou, ate o primeiro passo. Sem textura ainda, o passo faz.
+        if (placeFlipbook(book, 0)) book.step = 0;
+      }
+    }
+  }
+
   function stepModelFlipbooks(dt) {
     if (!_modelCache) return;
     for (var key in _modelCache) {
