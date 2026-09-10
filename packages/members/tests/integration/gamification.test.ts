@@ -139,12 +139,13 @@ describe('Gamificação — XP e idempotência', () => {
     expect(again.gamification.badgesUnlocked).toEqual([])
   })
 
-  test('fechar a unidade AVISA do baú, mas quem paga é o clique da criança', async () => {
+  test('KIDS: fechar a unidade AVISA do baú, mas quem paga é o clique da criança', async () => {
     // Desde 09/2026 o XP de fim de unidade é o prêmio do BAÚ da trilha, e o baú é
     // clicável. Concluir a última aula do módulo passa a só ANUNCIAR que ele está
-    // esperando: `unitCompleted` virou convite, não recibo.
+    // esperando: `unitCompleted` virou convite, não recibo. Vale SÓ no kids: ver o
+    // teste do adulto logo abaixo.
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     await complete(app, course.lessonIds[0])
@@ -167,9 +168,21 @@ describe('Gamificação — XP e idempotência', () => {
     expect(denovo).toMatchObject({ xpAwarded: 0, totalXp: 45 })
   })
 
+  test('ADULTO: sem trilha e sem baú, o XP de unidade continua caindo no complete', async () => {
+    // A comunidade adulta não tem trilha, não tem baú e não tem tela que resgate.
+    // Tirar o award automático dela também teria feito os 25 XP + 15 moedas
+    // sumirem do produto, em silêncio e sem ninguém pedir.
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses, 'curso-adulto', 'published', 'adult')
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
+    await complete(app, course.lessonIds[0])
+    const done = await readJson(await complete(app, course.lessonIds[1]))
+    expect(done.gamification).toMatchObject({ xpAwarded: 35, totalXp: 45, unitCompleted: true })
+  })
+
   test('o baú recusa 409 enquanto a unidade não fechou, e 404 para unidade de outro curso', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     // O cliente NUNCA decide que a unidade fechou: o servidor reconta.
@@ -202,9 +215,9 @@ describe('Gamificação — XP e idempotência', () => {
     expect(second.gamification.badgesUnlocked.map((b: { slug: string }) => b.slug)).toEqual([
       'course-complete-2',
     ])
-    // Marco é evento de amount 0 — o XP do complete não muda (10 da aula; os 25 do
-    // baú ficam para o clique da criança na trilha).
-    expect(second.gamification.xpAwarded).toBe(10)
+    // Marco é evento de amount 0 — o XP do complete não muda. Cursos adultos, que
+    // não têm baú, seguem somando os 25 da unidade aqui mesmo.
+    expect(second.gamification.xpAwarded).toBe(35)
 
     const third = await finishCourse(c3)
     expect(third.gamification.badgesUnlocked.map((b: { slug: string }) => b.slug)).toEqual([
@@ -219,7 +232,7 @@ describe('Gamificação — XP e idempotência', () => {
 
   test('aula despublicada não conta p/ o baú (módulo fecha sobre as PUBLICADAS)', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     const draft = courses.lessons.find((l) => l.id === course.lessonIds[1])
     if (draft) draft.isPublished = false
@@ -727,7 +740,7 @@ describe('Gamificação — Zappy Coins (carteira)', () => {
 
   test('as moedas do baú entram no CLIQUE, não na aula que fecha o módulo', async () => {
     const { app, courses, entitlements } = buildApp()
-    const course = seedSampleCourse(courses)
+    const course = seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     await complete(app, course.lessonIds[0])
     const done = await readJson(await complete(app, course.lessonIds[1]))

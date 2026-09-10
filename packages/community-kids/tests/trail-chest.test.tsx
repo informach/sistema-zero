@@ -49,7 +49,7 @@ afterEach(() => {
   globalThis.fetch = originalFetch
 })
 
-function montar(chest: ModuleChestView) {
+function montar(chest: ModuleChestView | null) {
   return render(
     <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={chest} offset={0} />,
   )
@@ -62,11 +62,19 @@ describe('baú da trilha', () => {
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('fechado')
   })
 
-  test('liberado é botão e diz o prêmio antes de abrir', () => {
+  test('liberado é botão e diz o XP antes de abrir, sem prometer moeda', () => {
+    // O XP é fixo; a MOEDA passa pelo teto diário e pode sair zero. Anunciar "15
+    // moedas" num dia em que a criança já bateu o teto seria promessa falsa.
     montar(bau())
     const botao = screen.getByRole('button')
     expect(botao.getAttribute('aria-label')).toContain('25 XP')
-    expect(botao.getAttribute('aria-label')).toContain('15 moedas')
+    expect(botao.getAttribute('aria-label')).not.toContain('moedas')
+  })
+
+  test('sem estado do servidor o baú é decorativo, não promete zero', () => {
+    montar(null)
+    expect(screen.queryByRole('button')).toBeNull()
+    expect(screen.getByRole('img').getAttribute('aria-label')).toContain('fechado')
   })
 
   test('abrir chama o servidor, mostra a festa e re-sincroniza o topo', async () => {

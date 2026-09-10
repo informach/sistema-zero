@@ -143,6 +143,7 @@ export class MarkLessonCompleteService {
       moduleId: lesson.moduleId,
       courseId: course.id,
       audience: course.audience,
+      unitCompleted,
       courseCompleted,
       privileged,
     })

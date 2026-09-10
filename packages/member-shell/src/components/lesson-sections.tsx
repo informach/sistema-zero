@@ -178,6 +178,27 @@ function writeMirror(key: string | null, value: string | null): void {
   }
 }
 
+/** Largura da JANELA a partir da qual o lado a lado existe (o `2xl` do Tailwind). */
+const SPLIT_MIN_WIDTH_PX = 1536
+
+/**
+ * Só para DESABILITAR a divisória onde ela está escondida — o layout continua
+ * decidido pelo CSS, que não pisca. Começa em `false` e aplica o valor real num
+ * efeito: ler `matchMedia` no inicializador do estado quebra a hidratação
+ * (React #418), pisão já documentado no modo foco do kids.
+ */
+function useWideEnoughForSplit(): boolean {
+  const [wide, setWide] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(min-width: ${SPLIT_MIN_WIDTH_PX}px)`)
+    const sync = () => setWide(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  return wide
+}
+
 export function LessonSections({
   lesson,
   renderBlocks,
@@ -249,6 +270,9 @@ export function LessonSections({
   }, [destination])
   const navigationQueue = useRef<Promise<void>>(Promise.resolve())
   const mirrorKey = sectionMirrorKey(player?.viewerId ?? null, lesson.id)
+  /** Última seção que a criança PEDIU e que ainda não foi confirmada. */
+  const pendingSection = useRef<string | null>(null)
+  const wideEnough = useWideEnoughForSplit()
   const restored = useRef(false)
   // Na MONTAGEM, e uma vez só: (1) se sobrou espelho local, houve uma escrita que
   // não chegou ao servidor — a criança volta para onde ela estava de verdade;
@@ -283,6 +307,8 @@ export function LessonSections({
     (b) => (b.kind === 'studio' || b.kind === 'pinta') && !supportIds.has(b.id),
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
+  // A divisória só é interativa onde ela APARECE. Ver o comentário no handle.
+  const arrastavel = hasWorkspace && wideEnough
   function navigate(target: number, blockId?: string) {
     const next = sections[target]
     if (!next) return
@@ -307,12 +333,21 @@ export function LessonSections({
     saveSection(next.id)
   }
   /**
-   * Grava a seção atual. `silent` é o registro de abertura da aula (bookkeeping:
-   * é o `updated_at` desta linha que alimenta o "continuar de onde parou" do
-   * card do curso), que não pode virar recado de erro na cara da criança.
+   * Grava a seção atual.
+   *
+   * `silent` é o registro de ABERTURA da aula (bookkeeping: é o `updated_at`
+   * desta linha que alimenta o "continuar de onde parou" do card do curso). Ele
+   * não vira recado de erro na cara da criança e, principalmente, **não escreve
+   * no espelho**: o espelho existe para guardar uma INTENÇÃO da criança que não
+   * chegou ao servidor. Abrir a aula não é intenção de ir para lugar nenhum, e
+   * um espelho órfão de abertura sobrevive dias e depois puxa a criança de volta
+   * para a seção 1 num outro aparelho, sobrescrevendo o servidor.
    */
   function saveSection(sectionId: string, opts: { silent?: boolean } = {}) {
-    writeMirror(mirrorKey, sectionId)
+    if (!opts.silent) {
+      writeMirror(mirrorKey, sectionId)
+      pendingSection.current = sectionId
+    }
     navigationQueue.current = navigationQueue.current.then(async () => {
       try {
         await apiSend(
@@ -324,7 +359,14 @@ export function LessonSections({
           // navegador cancela o pedido no unload.
           { keepalive: true },
         )
-        writeMirror(mirrorKey, null)
+        // Só apaga o espelho se o que acabou de ser confirmado é a ÚLTIMA intenção.
+        // Dois cliques seguidos enfileiram dois POSTs: o ok do primeiro apagaria o
+        // valor do segundo, que ainda nem saiu, e uma queda de rede em seguida
+        // devolveria a criança para a seção errada.
+        if (pendingSection.current === sectionId) {
+          writeMirror(mirrorKey, null)
+          pendingSection.current = null
+        }
       } catch (e) {
         if (opts.silent) return
         // Trocar de perfil no meio da aula devolve 409: aqui "tentar de novo"
@@ -393,17 +435,28 @@ export function LessonSections({
     </div>
   )
   return (
-    // `@container` mede a COLUNA da aula, não a viewport: com o modo foco ligado
-    // ela cresce 568px sem a janela mudar de tamanho, então viewport é proxy ruim
-    // para "cabe lado a lado". `sz-lesson-sections` é o gancho de tema do kids.
-    <div className={cn('@container space-y-5', kids && 'sz-lesson-sections')}>
+    // ⚠️ NÃO volte a pôr `@container` aqui. Ele compila para
+    // `container-type: inline-size`, que implica `contain: layout`, e um elemento
+    // com layout containment vira BLOCO CONTENEDOR dos descendentes `position:
+    // fixed`. Os blocos de Estúdio e de Pinta viram tela cheia por CSS puro
+    // (`fixed inset-0 z-50`, sem portal): sob um container, o "Expandir" da
+    // criança passaria a preencher só a coluna da aula, rolando junto com a
+    // página, e com a rolagem do corpo travada por cima disso. Medir a coluna era
+    // melhor régua que a viewport, mas não a esse preço.
+    <div className={cn('space-y-5', kids && 'sz-lesson-sections')}>
       <LessonProgress
         sections={sections}
         index={index}
+        // Requisito sem `sectionId` (bloco alcançado só por `workspaceBlockId`) não
+        // tem segmento para marcar, mas também não pode sumir: a legenda avisa.
         pendingSectionIds={new Set(pending.map((r) => r.sectionId).filter((id) => id !== null))}
+        hasPendingWithoutSection={pending.some((r) => r.sectionId === null)}
         kids={kids}
       />
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
+      {/* `sz-lesson-toolbar`: gancho ESTÁVEL para o tema do kids. Por posição não
+          serve — o `LessonProgress` entrou antes desta barra, e some de novo em
+          aula de uma seção só. */}
+      <div className="sz-lesson-toolbar flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-3 sm:px-5">
         <details ref={requirementsMenu} className="relative">
           <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-3 text-sm font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring">
             O que falta para concluir · {pending.length}
@@ -478,10 +531,9 @@ export function LessonSections({
         className={cn(
           // A lib injeta `display:flex; height:100%; overflow:hidden` INLINE. A página
           // de aula é fluxo de documento (quem rola é a janela) e os painéis têm popover
-          // e `sticky` dentro, então os três precisam ser desfeitos. O flex só liga
-          // quando há ferramenta E a coluna passa de 1024px.
+          // e `sticky` dentro, então os três precisam ser desfeitos.
           'block! h-auto! items-start overflow-visible!',
-          hasWorkspace && '@5xl:flex!',
+          hasWorkspace && '2xl:flex!',
         )}
       >
         <Panel
@@ -525,14 +577,23 @@ export function LessonSections({
         </Panel>
         {/* SEMPRE montado, como os dois Panel: tirar e pôr um filho do PanelGroup
             reordena a árvore e REMONTA o editor da direita (Blockly caro, rascunho
-            re-semeado). Só as classes mudam. */}
+            re-semeado). Só as classes mudam.
+            ⚠️ Mas montado E escondido não basta: a lib registra a área de arrasto no
+            mount e a acha por `getBoundingClientRect()`, que num `display:none` é
+            {0,0,0,0} — e o guarda de "tem elemento por cima" usa comparação estrita,
+            então retângulo de área zero nunca é descartado. O resultado era uma zona
+            de arrasto FANTASMA no canto (0,0) da tela, com a folga de toque de 20px:
+            a criança encostava no canto do tablet, o `pointerdown` morria na captura
+            do body e um arrasto invisível gravava lixo na divisória do perfil. Por
+            isso `disabled`, que a lib respeita pulando o registro sem desmontar. */}
         <PanelResizeHandle
+          disabled={!arrastavel}
           // 24px de traço + 20 de folga de cada lado = alvo bem acima dos 44px da casa.
           hitAreaMargins={{ coarse: 20, fine: 6 }}
           className={cn(
             'group/split relative hidden w-6 shrink-0 cursor-col-resize rounded-full',
             'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
-            hasWorkspace && '@5xl:block',
+            hasWorkspace && '2xl:block',
           )}
         >
           <span
@@ -547,7 +608,7 @@ export function LessonSections({
           minSize={30}
           className={cn(
             // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
-            'mt-6 overflow-visible! @5xl:mt-0',
+            'mt-6 overflow-visible! 2xl:mt-0',
             hasWorkspace ? 'min-w-0 space-y-6' : 'hidden',
           )}
         >

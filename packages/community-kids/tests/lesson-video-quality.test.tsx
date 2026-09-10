@@ -72,9 +72,12 @@ afterEach(() => {
 })
 
 describe('resolução do vídeo da aula', () => {
-  test('o player nasce com piso de qualidade', () => {
+  test('o player NÃO nasce com piso de qualidade', () => {
+    // Piso parece proteger de imagem ruim e faz o contrário: proíbe o adaptativo
+    // de cair, e quem está no 4G da escola troca "borrado" por "travando".
     render(<VimeoPlayer vimeoId="123456" />)
-    expect(construidos[0]?.min_quality).toBe('540p')
+    expect(construidos[0]).not.toHaveProperty('min_quality')
+    expect(construidos[0]?.playsinline).toBe(true)
   })
 
   test('entrar em tela cheia pede a melhor qualidade concreta, e sair devolve o automático', async () => {

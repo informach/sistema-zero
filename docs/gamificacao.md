@@ -550,7 +550,7 @@ um projeto" eram diárias e ficavam travadas em 0 (eventos one-shot fora da jane
 |---|---|---|---|---|---|
 | weekly-aulas-5 | lesson_complete | 5 | 40 | 50 | — |
 | weekly-quizzes-3 | quiz_passed | 3 | 35 | 40 | — |
-| weekly-bau | unit_complete | 1 | 30 | 35 | — |
+| weekly-bau | unit_complete | 1 | 30 | 35 | conta o CLIQUE no baú (kids), não a última aula |
 | weekly-enviar-2 | studio_submitted | 2 | 40 | 45 | — |
 | weekly-publicar | course_showcased | 1 | 50 | 60 | — |
 | weekly-quarto | room_item_buy | 1 | 30 | **0** | — |
@@ -892,7 +892,7 @@ no código (06/2026).
 | `XP_VALUES.LESSON_COMPLETE` | 10 | `gamification/gamification.ts` | XP por aula |
 | `XP_VALUES.QUIZ_PASSED_BASE` | 20 | `gamification/gamification.ts` | XP base do quiz aprovado |
 | `XP_VALUES.QUIZ_SCORE_BONUS_MAX` | 10 | `gamification/gamification.ts` | Cap do bônus de nota (XP) |
-| `XP_VALUES.UNIT_COMPLETE` | 25 | `gamification/gamification.ts` | XP do baú de unidade |
+| `XP_VALUES.UNIT_COMPLETE` | 25 | `gamification/gamification.ts` | XP do baú de unidade. **Kids (09/2026): pago no CLIQUE no baú da trilha** (`POST /members/courses/:slug/units/:moduleId/chest/claim`), não mais no complete. No **adulto**, que não tem trilha, segue no complete |
 | `XP_VALUES.CLUBE_THREAD` | 5 | `gamification/gamification.ts` | XP por tópico do Clube aprovado (XP puro, sem moeda) |
 | `XP_VALUES.CLUBE_COMMENT` | 3 | `gamification/gamification.ts` | XP por comentário do Clube aprovado (XP puro, sem moeda) |
 | `CHALLENGE_ENTRY_XP` | 50 | `gamification/challenges.ts` | XP da entrada no Desafio do mês (1×/mês, move streak) |
@@ -907,7 +907,7 @@ no código (06/2026).
 | `COIN_VALUES.LESSON_COMPLETE` | 5 | `gamification/coins.ts` | Moeda por aula |
 | `COIN_VALUES.QUIZ_PASSED_BASE` | 10 | `gamification/coins.ts` | Moeda base do quiz |
 | `COIN_VALUES.QUIZ_SCORE_BONUS_MAX` | 5 | `gamification/coins.ts` | Cap do bônus de nota (moeda) |
-| `COIN_VALUES.UNIT_COMPLETE` | 15 | `gamification/coins.ts` | Moeda do baú de unidade |
+| `COIN_VALUES.UNIT_COMPLETE` | 15 | `gamification/coins.ts` | Moeda do baú de unidade (mesma régua do XP acima; passa pelo teto diário, então pode sair 0) |
 | `DAILY_COIN_CAP` | 100 | `gamification/coins.ts` | Teto diário de ganho de moeda |
 | `COIN_VALUES.STUDIO_PUBLISH_DAY` | 15 | `gamification/coins.ts` | Moeda diária de publicar no Mural standalone (no teto) |
 | `STREAK_COIN_MILESTONES` | 7→20,30→50,60→80,180→150,365→300 | `gamification/coins.ts` | Bônus de moeda dos marcos (exemptos do teto) |

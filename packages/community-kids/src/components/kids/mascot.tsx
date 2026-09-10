@@ -3,7 +3,8 @@ import { cn } from '@/lib/cn'
 export type MascotExpression = 'happy' | 'celebrating' | 'thinking' | 'sleeping' | 'speaking'
 
 /** Um sprite do Zappy por expressão (snapshots 3D, WebP com fundo transparente). */
-const ZAPPY_SRC: Record<MascotExpression, string> = {
+/** Exportado para o teste de conformidade dos assets (ver tests/mascot-assets). */
+export const ZAPPY_SRC: Record<MascotExpression, string> = {
   happy: '/zappy/happy.webp',
   celebrating: '/zappy/celebrating.webp',
   thinking: '/zappy/thinking.webp',

@@ -1,14 +1,27 @@
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/cn'
 
-/** Os cinco temas de cor da marca, na ordem em que a trilha os alterna. */
-const TEMAS = ['kids-unit-cyan', 'kids-unit-lime', 'kids-unit-rosa', 'kids-unit-verde'] as const
+/**
+ * Cor por DESTINO, escrita à mão.
+ *
+ * A primeira versão derivava a cor de um hash do href, e com quatro temas para
+ * cinco destinos a casa dos pombos garantia colisão: Início e Comunidade caíam
+ * os dois no verde, justamente nas duas telas que a criança mais alterna. Um mapa
+ * literal é mais longo e não mente — e o gradiente entra como quinto tema.
+ */
+const TEMA_POR_DESTINO: Record<string, string> = {
+  '/': 'kids-unit-cyan',
+  '/cursos': 'kids-unit-lime',
+  // "Criar" é o destino mais empolgante do menu e leva o gradiente da marca, o
+  // mesmo que os chips de "Crie" e "Brinque" na aula usam.
+  '/criar': 'kids-unit-grad',
+  '/comunidade': 'kids-unit-rosa',
+  '/perfil': 'kids-unit-verde',
+}
 
 /** Cor estável por DESTINO: a criança memoriza cor + forma antes de ler o rótulo. */
 export function tileTheme(seed: string): string {
-  let soma = 0
-  for (const ch of seed) soma = (soma + ch.charCodeAt(0)) % 997
-  return TEMAS[soma % TEMAS.length] as string
+  return TEMA_POR_DESTINO[seed] ?? 'kids-unit-cyan'
 }
 
 /**

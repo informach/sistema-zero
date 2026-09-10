@@ -82,12 +82,12 @@ export function VimeoPlayer({
       portrait: false,
       dnt: true,
       playsinline: true,
-      // PISO da escada adaptativa. O Vimeo escolhe a qualidade pelo tamanho
-      // RENDERIZADO do iframe, e dentro da aula por seções ele nasce estreito
-      // (o editor divide a linha). Sem piso, ele assentava em 360p e a tela
-      // cheia esticava isso para a tela toda. 540p e não 720p de propósito:
-      // a criança pode estar no 4G da escola.
-      min_quality: '540p',
+      // ⚠️ NÃO ponha `min_quality` aqui. Piso de qualidade parece proteger a
+      // criança de imagem ruim, mas faz o contrário do que o nome sugere: ele
+      // PROÍBE o adaptativo de cair, e quem está no 4G congestionado da escola
+      // troca "um pouco borrado" por "travando a cada dois segundos". O tamanho
+      // pequeno do player era o problema real, e quem resolve isso é a largura
+      // (a divisória arrastável) mais o pedido de qualidade na tela cheia.
     })
     playerRef.current = player
 

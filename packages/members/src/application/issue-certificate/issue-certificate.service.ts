@@ -181,12 +181,16 @@ export class IssueCertificateService {
 
     const completedIds =
       completedIdsBefore ?? (await this.progress.listCompletedLessonIds(input.userId, course.id))
-    // O fim de UNIDADE não é premiado aqui desde 09/2026: quem paga é o clique no
-    // baú da trilha. Emitir o certificado não abre baú de ninguém.
-    const [total, completed] = await Promise.all([
+    const [total, completed, moduleLessonIds] = await Promise.all([
       this.courses.countPublishedLessons(course.id),
       this.progress.countCompletedPublished(input.userId, course.id),
+      this.courses.listPublishedLessonIds(lesson.moduleId),
     ])
+    // Na vitrine KIDS isto não paga nada (o prêmio é o baú da trilha, no clique);
+    // na ADULTA, que não tem trilha, o comportamento antigo continua valendo.
+    const completedSet = new Set([...completedIds, input.lessonId])
+    const unitCompleted =
+      moduleLessonIds.length > 0 && moduleLessonIds.every((id) => completedSet.has(id))
     await this.gamification.awardLessonCompletion({
       userId: input.userId,
       accountId: input.accountId,
@@ -194,6 +198,7 @@ export class IssueCertificateService {
       moduleId: lesson.moduleId,
       courseId: course.id,
       audience: course.audience,
+      unitCompleted,
       courseCompleted: total > 0 && completed === total,
       privileged: input.privileged,
     })

@@ -177,14 +177,10 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                   courseSlug={course.slug}
                   moduleId={unit.module.id}
                   unitNumber={unitIndex + 1}
-                  chest={
-                    unit.module.chest ?? {
-                      unlocked: unit.module.lessons.every((l) => l.completed),
-                      claimed: false,
-                      xp: 0,
-                      coins: 0,
-                    }
-                  }
+                  // Sem `chest` do servidor (curso adulto, ou resposta de um
+                  // deploy anterior) o baú fica DECORATIVO: prometer "ganhe 0 XP"
+                  // num botão seria pior que não ter botão.
+                  chest={unit.module.chest}
                   offset={unit.chest.offset}
                 />
               </li>

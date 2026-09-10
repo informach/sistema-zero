@@ -646,14 +646,19 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
    ============================================================ */
 :root {
   /* Encolhido em 09/2026: com 11rem/16rem os 8 níveis somavam ~2000px de rolagem
-     e a criança perdia o mapa de vista. Infantil vem da COR, não do tamanho. */
+     e a criança perdia o mapa de vista. Infantil vem da COR, não do tamanho.
+     ⚠️ A LEGENDA vive no vão `row - node`, e ela não pode encolher junto: o vão
+     fica nos mesmos 5rem de antes (era 16-11), então o corte de 2rem por nível
+     sai todo do medalhão. Encolher `row` além disso enfia a legenda embaixo do
+     medalhão seguinte. */
   --career-node: 9rem; /* diâmetro do medalhão */
-  --career-row: 13rem; /* altura por nível (medalhão + legenda + respiro) */
+  --career-row: 14rem; /* altura por nível (medalhão + legenda + respiro) */
 }
 @media (max-width: 640px) {
   :root {
     --career-node: 7.5rem;
-    --career-row: 11rem;
+    /* Mesmo raciocínio: o vão de 4.5rem da legenda (era 13-8.5) fica de pé. */
+    --career-row: 12rem;
   }
 }
 .career-ribbon {
@@ -789,13 +794,30 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
      esta classe sob a flag `kids`, mas ela não existia em lugar nenhum do
      repositório: era um gancho pronto e órfão. A comunidade adulta não importa
      este arquivo, então o que entra aqui não vaza para lá. */
-  .sz-lesson-sections h2 {
-    color: var(--unit, var(--foreground));
-  }
-  .sz-lesson-sections > div:first-of-type {
+  /* ⚠️ NÃO pinte o `h2` daqui com `--unit`: fora de um `.kids-unit-*` ele cai no
+     default do `:root`, que é a cor de BORDA, e o título da seção sai a 1,25:1 —
+     invisível. O título herda `--foreground` e está certo assim.
+     O alvo é a barra do índice, por CLASSE e não por posição: o
+     `LessonProgress` entrou antes dela e roubaria um `:first-of-type` (e voltaria
+     a soltá-lo em aula de uma seção só, que é quando ele não renderiza). */
+  .sz-lesson-sections .sz-lesson-toolbar {
     border-color: color-mix(in oklab, var(--sz-primary) 22%, var(--border));
     background: color-mix(in oklab, var(--sz-primary) 4%, var(--card));
   }
+}
+
+/* ⚠️ `.kids-card` fica FORA de camada de propósito, ao contrário das irmãs.
+   A regra da casa ("classe ajustável no call site vai em `@layer components`")
+   vale para classe que precisa PERDER da utilitária. Esta precisa GANHAR: ela é
+   aplicada no `<Card>` do @sistemazero/ui, que assa `border border-border
+   shadow-sm` na própria classe. Dentro da camada ela perdia dessas utilitárias
+   e a borda colorida sumia do catálogo inteiro (medido no CSS compilado:
+   `.kids-card` no byte 25200, `.border-border` no 53915). Nenhum call site
+   ajusta borda ou sombra por cima dela, então ganhar aqui não mente para
+   ninguém. */
+.kids-card {
+  border: 2px solid var(--unit);
+  box-shadow: 0 4px 0 color-mix(in oklab, var(--unit) 35%, transparent);
 }
 
 /* Classes de COMPONENTE da trilha e dos cards. Ficam em `@layer components` de
@@ -809,12 +831,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
     box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
-  }
-
-  /* Card de curso vestindo o tema da unidade (borda + sombra dura coloridas). */
-  .kids-card {
-    border: 2px solid var(--unit);
-    box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 35%, transparent);
   }
 
   .kids-node {

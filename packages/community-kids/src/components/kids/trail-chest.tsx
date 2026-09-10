@@ -2,7 +2,7 @@
 
 import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import { ChestIcon } from './chest-icon'
@@ -29,14 +29,24 @@ export function TrailChest({
   courseSlug: string
   moduleId: string
   unitNumber: number
-  chest: ModuleChestView
+  /** `null` = o servidor não mandou estado (curso adulto): baú decorativo. */
+  chest: ModuleChestView | null
   offset: number
 }) {
   const router = useRouter()
   const [estado, setEstado] = useState<'parado' | 'abrindo'>('parado')
   const [premio, setPremio] = useState<{ xp: number; coins: number } | null>(null)
   const [abertoAgora, setAbertoAgora] = useState(false)
-  const aberto = chest.claimed || abertoAgora
+  // O botão DESMONTA ao abrir, então o `useModalA11y` do prêmio guarda o `<body>`
+  // como "foco anterior" e devolve o foco para lugar nenhum. Este contêiner é o
+  // destino: ele sobrevive à troca de estado e aceita foco programático.
+  const raiz = useRef<HTMLDivElement>(null)
+  const aberto = Boolean(chest?.claimed) || abertoAgora
+
+  function devolverFoco() {
+    setPremio(null)
+    raiz.current?.focus()
+  }
 
   async function abrir() {
     if (estado !== 'parado' || aberto) return
@@ -55,6 +65,13 @@ export function TrailChest({
         xpAwarded?: number
         coinsAwarded?: number
       } | null
+      if (body === null) {
+        // 200 com corpo ilegível: não dá para dizer que ela ganhou nada, e abrir o
+        // baú em silêncio seria mentira. Volta ao estado clicável com recado.
+        toast.error('Não consegui abrir o baú agora. Tente de novo!')
+        setEstado('parado')
+        return
+      }
       setAbertoAgora(true)
       // `xpAwarded: 0` = outra aba já abriu este baú. Fica aberto, sem festa: a
       // criança não ganhou nada AGORA e a festa mentiria.
@@ -72,16 +89,18 @@ export function TrailChest({
   const posicao = {
     left: `calc(50% + ${offset} * var(--trail-step))`,
   }
-  const legenda = aberto ? 'Baú aberto!' : chest.unlocked ? 'Abrir baú' : 'Baú da unidade'
+  const legenda = aberto ? 'Baú aberto!' : chest?.unlocked ? 'Abrir baú' : 'Baú da unidade'
 
   // Fechado e sem poder abrir NÃO é botão: seria uma parada de foco que não faz
   // nada. O estado inteiro vive no aria-label, como já era antes do lote.
-  if (!chest.unlocked && !aberto) {
+  if (!chest?.unlocked && !aberto) {
     return (
       <div
+        ref={raiz}
+        tabIndex={-1}
         role="img"
         aria-label={`Baú da unidade ${unitNumber}, fechado. Ele abre quando você concluir todas as aulas desta unidade.`}
-        className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
+        className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
         style={posicao}
       >
         <span className="kids-node kids-node--chest-closed">
@@ -98,9 +117,11 @@ export function TrailChest({
     return (
       <>
         <div
+          ref={raiz}
+          tabIndex={-1}
           role="img"
           aria-label={`Baú da unidade ${unitNumber}, aberto`}
-          className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5"
+          className="-ml-14 absolute top-0 flex w-28 flex-col items-center gap-1.5 outline-none"
           style={posicao}
         >
           <span className="kids-node kids-node--chest-open kids-unit-tesouro">
@@ -115,7 +136,7 @@ export function TrailChest({
             unitNumber={unitNumber}
             xp={premio.xp}
             coins={premio.coins}
-            onClose={() => setPremio(null)}
+            onClose={devolverFoco}
           />
         ) : null}
       </>
@@ -127,7 +148,7 @@ export function TrailChest({
       type="button"
       onClick={() => void abrir()}
       disabled={estado === 'abrindo'}
-      aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest.xp} XP e ${chest.coins} moedas`}
+      aria-label={`Abrir o baú da unidade ${unitNumber} e ganhar ${chest?.xp ?? 0} XP`}
       className="-ml-14 absolute top-0 flex min-h-11 w-28 flex-col items-center gap-1.5"
       style={posicao}
     >

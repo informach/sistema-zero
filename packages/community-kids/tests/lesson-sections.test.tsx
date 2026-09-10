@@ -235,10 +235,30 @@ describe('aula por seções', () => {
       </LessonPlayerProvider>,
     )
     const divisoria = screen.getByRole('separator')
-    expect(divisoria.tabIndex).toBe(0)
     expect(divisoria.getAttribute('data-panel-group-direction')).toBe('horizontal')
-    // desabilitada, a divisória seria só enfeite: o arrasto não moveria nada
-    expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
+    // ⚠️ O que este teste PRECISA morder é o par: a divisória existe sempre (senão
+    // o editor da direita remonta) mas só é interativa onde ela aparece. Montada e
+    // habilitada num layout empilhado, a lib registra uma zona de arrasto fantasma
+    // no canto (0,0) da tela, porque `display:none` mede {0,0,0,0}.
+    // Aqui a janela do happy-dom é estreita, então tem que estar DESABILITADA.
+    expect(divisoria.getAttribute('data-panel-resize-handle-enabled')).toBe('false')
+
+    // Larga o bastante: a divisória acorda.
+    window.matchMedia = ((q: string) => ({
+      matches: true,
+      media: q,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia
+    cleanup()
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections lesson={lesson} renderBlocks={() => null} />
+      </LessonPlayerProvider>,
+    )
+    const larga = screen.getByRole('separator')
+    expect(larga.tabIndex).toBe(0)
+    expect(larga.getAttribute('data-panel-resize-handle-enabled')).toBe('true')
   })
 
   test('a barra do topo mede a AULA, e a seção com atividade pendente fica marcada', () => {

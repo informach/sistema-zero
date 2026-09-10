@@ -19,11 +19,14 @@ export function LessonProgress({
   sections,
   index,
   pendingSectionIds,
+  hasPendingWithoutSection = false,
   kids = false,
 }: {
   sections: { id: string; title: string }[]
   index: number
   pendingSectionIds: Set<string>
+  /** Há atividade pendente que não pertence a nenhuma seção (sem segmento a marcar). */
+  hasPendingWithoutSection?: boolean
   kids?: boolean
 }) {
   if (sections.length < 2) return null
@@ -52,7 +55,9 @@ export function LessonProgress({
       </div>
       <p className="text-muted-foreground text-xs">
         Seção {index + 1} de {sections.length}
-        {pendingSectionIds.size > 0 ? ' · ainda tem atividade para fazer' : ''}
+        {pendingSectionIds.size > 0 || hasPendingWithoutSection
+          ? ' · ainda tem atividade para fazer'
+          : ''}
       </p>
     </div>
   )
