@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
 import { isLessonPath } from '@/lib/lesson-path'
-import { FocusModeToggle } from './focus-mode-toggle'
 
 /**
  * Container do conteúdo da área do aluno. TRÊS regimes:
@@ -61,21 +60,8 @@ export function MainContainer({ children }: { children: ReactNode }) {
     // desktop. O `pb-24` do mobile fica: a tab bar é `fixed` por cima. Os fundos
     // do app e das ferramentas são os MESMOS primitivos, então não há emenda.
     //
-    // ⚠️ INTERINO: o Molda ainda usa o puxador na calha + o selo acima (o pacote está
-    // em obra em outra sessão); some no lote 6b, quando o `molda-client` ganhar o
-    // `useHostChrome`.
-    if (pathname.startsWith('/molda')) {
-      return (
-        <main
-          id="main-content"
-          tabIndex={-1}
-          className="relative flex h-[calc(100dvh-3.5rem)] min-h-0 w-full flex-col overflow-hidden px-2 pt-4 pb-24 md:h-dvh md:min-h-[36rem] md:flex-none md:py-4 md:pr-4 md:pb-4 md:pl-9"
-        >
-          <FocusModeToggle target="nav" variant="edge" />
-          {children}
-        </main>
-      )
-    }
+    // O Molda entrou no mesmo regime no lote 6b (11/09/2026): o menu e o selo moram na
+    // barra dele também, e a calha com o puxador saiu.
     return (
       <main
         id="main-content"

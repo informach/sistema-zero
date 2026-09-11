@@ -4,6 +4,7 @@ import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import { Button } from '../../ui/Button'
 import { Dialog } from '../../ui/Dialog'
+import { ArrowLeft } from '../../ui/icons'
 
 export type SceneExitMode = 'saved' | 'discard'
 
@@ -85,15 +86,18 @@ export function SceneExitControl({
   }
   return (
     <>
-      <Button
+      {/* A pílula "← Meus projetos" da tela-modelo; abaixo de `sm` a seta fica sozinha. */}
+      <button
         ref={trigger}
-        className="text-sm"
+        type="button"
+        className="sz-tool-pill sz-tool-pill--quiet shrink-0 px-3.5 text-sm max-sm:w-(--sz-tool-hit) max-sm:px-0"
         onClick={() => {
           setState({ session, open: true, pending: false, error: null })
         }}
       >
-        {copy.open}
-      </Button>
+        <ArrowLeft aria-hidden="true" />
+        <span className="max-sm:sr-only">{copy.open}</span>
+      </button>
       <Dialog open={current.open} title={copy.title} onClose={close} returnFocusTo={trigger}>
         <p className="text-sm text-mld-text-soft">{copy.hint}</p>
         {current.error && (

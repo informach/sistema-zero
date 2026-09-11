@@ -526,8 +526,9 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `sr-only`, sempre montada) fica no HOST, irmã do app. ⚠️ O Provider TEM que vir do MESMO
   módulo do `import()` que montou o app, senão são duas instâncias de contexto e nada aparece.
   ⚠️ Nenhum texto do selo contém "Salvo" (o e2e do Studio usa `getByText('Salvo')` estrito).
-  **INTERINO:** `cloud-save-badge.tsx` (a camada acima do app) só existe para o `/molda`, até o
-  pacote sair da obra da outra sessão (lote 6b); ele lê a mesma função pura.
+  Desde o lote 6b (11/09/2026) o Molda também: o `molda-client` embrulha o app no
+  `mod.MoldaHostChromeProvider`, e o `cloud-save-badge.tsx` (a camada acima do app, que só o
+  `/molda` ainda usava) foi apagado.
 - **Seta e conta (11/09/2026, telas-modelo):** o contrato ganhou dois campos, os dois nulos no
   `EMPTY_HOST_CHROME`. **`back: {text, label, href, onNavigate}`** é a seta das GALERIAS de volta
   à seção-mãe, lida do `backToSection` do menu (`nav.ts`), nunca de lista paralela: `text` é o
@@ -838,7 +839,7 @@ altura à página (o `overflow-auto` interno dela nunca engatava), e o puxador d
 (`absolute top-1/2`) centrava no MEIO do main crescido — fora da tela.
 ⚠️⚠️ **Par obrigatório do travamento: `md:min-h-[36rem]` (full review 26/08)** = o piso
 `min-h-[34rem]` dos frames (`embedded-app-loading.tsx`) + 2rem de `md:py-4` — **desde 07/09/2026 o
-padding é ZERO e o par virou `md:min-h-[34rem]` (só o `/molda` interino segue em 36rem)**. Sem ele, janela
+padding é ZERO e o par virou `md:min-h-[34rem]`, o `/molda` incluso desde o lote 6b)**. Sem ele, janela
 desktop mais BAIXA que ~560px (snap de meia tela, zoom 175-200% — quem mais usa zoom é quem
 menos pode perder o controle) fazia o piso do frame estourar contra o `overflow-hidden` e o PÉ
 do app — a barra de seleção — ficava CLIPADO sem caminho de rolagem (medido: 2px visíveis a
@@ -1156,8 +1157,8 @@ regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacote
 receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`
 + `aria-hidden` (antes os 9 links ficavam no tab order invisíveis). Os fundos das quatro
 ferramentas e o `--background` do kids são os MESMOS primitivos, então sem padding não há emenda.
-⚠️ INTERINO: o `/molda` mantém calha + puxador `edge` + o selo acima (pacote em obra na outra
-sessão); some no lote 6b. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
+O `/molda` entrou no mesmo regime no lote 6b (11/09/2026): a calha, o puxador `edge` e o selo
+acima do app saíram. Contrato em `tests/main-container.test.tsx` e `tests/host-chrome.test.tsx`.
 
 `focus-mode.tsx` (`FocusModeProvider`/`useFocusMode`/`SidebarFallback`) guarda DUAS preferências
 independentes por PERFIL no localStorage — esconder o MENU esquerdo (`sz:kids:hide-nav:<perfil>`) e
@@ -1172,10 +1173,10 @@ navegações, então o estado atravessa a navegação.
   nunca some a barra em `/cursos`, `/perfil` etc. — quem decide é o `available`.
 - ⚠️ **A preferência do menu é UMA SÓ**, não uma por tela: esconder no Estúdio mantém escondido na
   aula e vice-versa. "Esconder o menu" é gosto da criança, não configuração de página.
-- **Duas roupas do MESMO botão** (`focus-mode-toggle.tsx`, prop `variant`): `header` (padrão) é o
-  círculo do cabeçalho da aula; **`edge`** é o PUXADOR colado na borda esquerda, para as três telas
-  de criação, que não têm cabeçalho nenhum onde pendurar o círculo. Mesmo rótulo, mesmo ícone,
-  mesmo `aria-pressed`.
+- ⚠️ HISTÓRICO (até 11/09/2026): o `focus-mode-toggle.tsx` tinha duas roupas, o círculo do
+  cabeçalho da aula e o PUXADOR `edge` colado na borda esquerda das telas de criação. O puxador
+  saiu no lote 6b (o Molda era o último a usá-lo): hoje o componente é só o quadrado da aula, e
+  nas quatro ferramentas o botão do menu é desenhado pela barra delas (contrato `hostChrome`).
 - ⚠️ **O puxador mora na CALHA do `MainContainer`** (`md:pl-9` contra `md:pr-4`), nunca flutuando
   sobre o app: no Estúdio a borda esquerda é a **caixa de blocos do Blockly**, e um puxador por cima
   cobriria uma categoria. Ele é IRMÃO do frame do app — a cerca `isolation: isolate` da raiz do
@@ -1420,8 +1421,8 @@ paletas; superfície `loadAll/load/save/saveMany/remove/removeMany/subscribe`; m
 `sz:creations-synced:molda:<perfil>`; a miniatura viaja SÓ no modelo e só até 12 000 chars; o
 registro de "aberta no editor" do pacote avisa SEM id, então o wrapper confere `isMoldaAssetOpen`
 nas puladas; os `changed` do próprio IndexedDB atravessam o embrulho) e o `molda-client` liga
-`createCreationsCloud({ tool: 'molda', viewerId, idleMs: 5_000 })` + `CloudSaveBadge` +
-`flush({timeoutMs: 5000})` no cleanup. ⚠️ O members precisa da migration `0072` (`creation_tool`
+`createCreationsCloud({ tool: 'molda', viewerId, idleMs: 5_000 })` + o selo pelo `useHostChrome`
+(dentro da barra do Molda desde o lote 6b) + `flush({timeoutMs: 5000})` no cleanup. ⚠️ O members precisa da migration `0072` (`creation_tool`
 + `molda`) ANTES do deploy do kids — sem ela a reserva falha e a fila retenta. Os espelhos do
 union (members domínio/schema/DTO/cache/contagem, core, member-shell, kids) são travados por
 `tests/molda-conformance.test.ts` (lê por texto + o `CREATION_TOOLS` puro do members).

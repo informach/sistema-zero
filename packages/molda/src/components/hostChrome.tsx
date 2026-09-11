@@ -117,8 +117,8 @@ const BAR_TONE_CLASSES: Record<MoldaHostChromeStatus['tone'], string> = {
  * O selo da nuvem. No cabeçalho da galeria (`variant="header"`) é a PÍLULA compartilhada
  * `.sz-tool-status` (a mesma do Pinta e do Estúdio), com a frase inteira. Na BARRA do editor
  * (`variant="bar"`) é a pílula pequena: em REPOUSO (guardado) só a nuvem, com o nome no `title`,
- * como nas telas-modelo; quando algo acontece, o rótulo curto e, abaixo de `lg`, só o ícone (a
- * barra quebra linha e uma segunda linha custaria altura); offline e erro mostram o texto sempre.
+ * como nas telas-modelo; guardando e buscando também só o ícone (com o rótulo a barra mudava de
+ * largura a cada salvamento); offline e erro mostram o texto sempre.
  * Quem ANUNCIA offline/erro ao leitor é a região viva do host (`aria-live="off"` aqui, de
  * propósito).
  */
@@ -143,7 +143,9 @@ export function HostCloudStatus({
       </span>
     )
   }
-  const repose = status.tone === 'ok'
+  // Só o que pede atenção (sem internet, não consegui) escreve na barra. Guardando e buscando
+  // ficam no ícone, com a frase no `title`: com o rótulo, a barra mudava de largura a cada
+  // salvamento automático e as pílulas ao lado trocavam de desenho junto.
   const attention = status.tone === 'warn' || status.tone === 'danger'
   return (
     <span
@@ -152,14 +154,12 @@ export function HostCloudStatus({
       title={status.text}
       className={clsx(
         'inline-flex min-h-8 items-center gap-1 rounded-full text-xs font-bold',
-        repose ? 'min-w-8 shrink-0 justify-center px-2' : 'min-w-0 shrink px-3',
+        attention ? 'min-w-0 shrink px-3' : 'min-w-8 shrink-0 justify-center px-2',
         BAR_TONE_CLASSES[status.tone],
       )}
     >
       <Icon aria-hidden="true" className="size-4 shrink-0" />
-      {repose ? null : (
-        <span className={clsx('truncate', !attention && 'hidden lg:inline')}>{status.label}</span>
-      )}
+      {attention ? <span className="truncate">{status.label}</span> : null}
     </span>
   )
 }

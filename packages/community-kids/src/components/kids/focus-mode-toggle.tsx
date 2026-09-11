@@ -14,22 +14,12 @@ import { useFocusMode } from './focus-mode'
  * `title` não vira NOME e sim DESCRIÇÃO — o leitor de tela diria "Esconder menu,
  * botão, Esconder menu". E no público tablet/celular tooltip nem aparece.
  *
- * Duas roupas para o MESMO controle (mesmo rótulo, mesmo ícone, mesmo estado):
- * - **`header`** (padrão): o quadrado creme da barra de cima da aula (telas-modelo de
- *   11/09/2026), ao lado do "voltar" e do progresso.
- * - **`edge`**: PUXADOR colado na borda esquerda. ⚠️ INTERINO (07/09/2026): só o
- *   `/molda` ainda o usa, na calha que o `MainContainer` reserva para ele. Estúdio,
- *   Pensa e Pinta ganharam o botão do menu DENTRO da própria barra (contrato
- *   `hostChrome`, `use-host-chrome.tsx`); o Molda segue quando o pacote sair da obra
- *   da outra sessão (lote 6b), e aí esta roupa some.
+ * Mora na barra de cima da AULA: o quadrado creme das telas-modelo (11/09/2026), ao lado
+ * do "voltar" e do progresso. Nas quatro ferramentas o botão do menu é desenhado pela
+ * PRÓPRIA ferramenta (contrato `hostChrome`, `use-host-chrome.tsx`); o puxador na borda
+ * (a roupa `edge`), que o Molda usava por último, saiu no lote 6b.
  */
-export function FocusModeToggle({
-  target,
-  variant = 'header',
-}: {
-  target: 'nav' | 'outline'
-  variant?: 'header' | 'edge'
-}) {
+export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
   const { navAvailable, outlineAvailable, navHidden, outlineHidden, toggleNav, toggleOutline } =
     useFocusMode()
   const available = target === 'nav' ? navAvailable : outlineAvailable
@@ -61,33 +51,15 @@ export function FocusModeToggle({
       aria-label={label}
       aria-pressed={hidden}
       className={cn(
-        'grid shrink-0 place-items-center border-2 transition-[color,background-color,border-color,box-shadow,transform]',
-        variant === 'edge'
-          ? // Pílula vertical presa à borda esquerda da área de conteúdo, centrada na
-            // altura. `z-30` basta: o puxador é IRMÃO do app (a raiz do Estúdio é uma
-            // cerca `isolation: isolate`, então os z-index de dentro dele — a toolbox
-            // é 70 — não escapam). O que é portalado p/ o `document.body` (menus da
-            // Topbar, dropdowns do Blockly) segue passando por cima, que é o certo.
-            //
-            // ⚠️ O anel de foco é INSET (`inset ... var(--ring)`), não o de fora. O
-            // puxador encosta EXATAMENTE na borda de recorte do `<main>` (que é
-            // `overflow-hidden`), então qualquer indicador desenhado PARA FORA perde o
-            // lado esquerdo — quem navega por teclado veria meio anel. A sombra dura
-            // (2px 2px) cresce p/ a direita e p/ baixo, por isso sobrevive ao recorte.
-            '-translate-y-1/2 absolute top-1/2 left-0 z-30 h-16 w-7 rounded-r-xl shadow-[2px_2px_0_var(--border)] focus-visible:shadow-[inset_0_0_0_3px_var(--ring),2px_2px_0_var(--border)] focus-visible:outline-none active:translate-x-[1px] active:shadow-[1px_2px_0_var(--border)]'
-          : // Na barra da aula: o QUADRADO creme de cantos redondos das telas-modelo
-            // (11/09/2026), sem borda nem sombra dura. Escondido = o azul clarinho da marca.
-            'size-11 rounded-[0.875rem] border-transparent active:translate-y-px',
-        variant === 'edge'
-          ? hidden
-            ? 'border-primary bg-(--kids-cyan-tint) text-primary'
-            : 'border-border bg-card text-muted-foreground hover:text-foreground'
-          : hidden
-            ? 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
-            : 'bg-(--band-creme) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-creme)_90%,var(--foreground))]',
+        // O QUADRADO creme de cantos redondos das telas-modelo (11/09/2026), sem borda nem
+        // sombra dura. Escondido = o azul clarinho da marca.
+        'grid size-11 shrink-0 place-items-center rounded-[0.875rem] border-2 border-transparent transition-[color,background-color,border-color,box-shadow,transform] active:translate-y-px',
+        hidden
+          ? 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
+          : 'bg-(--band-creme) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-creme)_90%,var(--foreground))]',
       )}
     >
-      <Icon className={variant === 'edge' ? 'size-4' : 'size-5'} />
+      <Icon className="size-5" />
     </button>
   )
 }

@@ -12,7 +12,7 @@ import { cleanup, render } from '@testing-library/react'
  *  - o ramo normal SEM o regime (páginas comuns rolam a janela, como sempre);
  *  - o PAR main ↔ frames: `md:min-h-[34rem]` do main = piso `min-h-[34rem]` dos frames + zero
  *    de padding — mexeu num, mexa no outro;
- *  - o INTERINO do Molda (calha + puxador + `36rem`), que some no lote 6b.
+ *  - o Molda no MESMO regime desde o lote 6b (11/09/2026): a calha e o puxador saíram.
  *
  * ⚠️ `mock.module` não é isolado por arquivo no bun: o mock ESPALHA o módulo atual (receita
  * do focus-mode.test.tsx) para nenhum outro arquivo perder export.
@@ -53,7 +53,7 @@ function mainFor(path: string): HTMLElement {
   return main
 }
 
-const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa']
+const EMBEDDED = ['/pinta', '/estudio', '/estudio/pro/abc', '/pensa', '/molda']
 
 describe('MainContainer: regime de altura + borda a borda dos apps embarcados', () => {
   it('rota embarcada trava a altura e fica de borda a borda (sem padding, calha ou puxador)', () => {
@@ -92,15 +92,6 @@ describe('MainContainer: regime de altura + borda a borda dos apps embarcados', 
       expect(main.querySelector('button')).toBeNull()
       cleanup()
     }
-  })
-
-  it('INTERINO: o Molda ainda usa a calha + o puxador (some no lote 6b)', () => {
-    const main = mainFor('/molda')
-    const cls = main.className
-    expect(cls).toContain('md:pl-9')
-    expect(cls).toContain('md:min-h-[36rem]')
-    expect(cls).toContain('md:h-dvh')
-    expect(cls).toContain('overflow-hidden')
   })
 
   it('página comum fica FORA do regime (a janela rola, como sempre)', () => {

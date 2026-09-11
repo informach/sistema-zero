@@ -7,6 +7,7 @@ import type { MoldaToolFamilyId } from '../../../core/toolFamilies'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { CircleHelp } from '../../ui/icons'
 
 /**
  * A família que cada assunto ensina: a ajuda não ensina ferramenta trancada. "Como articular"
@@ -19,8 +20,23 @@ const TOPIC_FAMILY: Readonly<Record<SceneFirstStepsTopic, MoldaToolFamilyId>> = 
   animation: 'animate.create',
 }
 
-/** Session-only reading state. Deliberately receives no editor or gesture actions. */
-export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) {
+/**
+ * Session-only reading state. Deliberately receives no editor or gesture actions.
+ *
+ * `side="right"` + `compact` é o lugar dela na casca das telas-modelo (11/09/2026): um círculo
+ * branco no pé do palco, à DIREITA, com o painel abrindo por cima dele. O canto de baixo à
+ * esquerda ficou para a pose do Animar: lá, "Gravar pose ajustada" caía em cima desta ajuda.
+ */
+export function SceneFirstSteps({
+  context,
+  side = 'left',
+  compact = false,
+}: {
+  context: SceneFirstStepsTopic
+  side?: 'left' | 'right'
+  /** O gatilho redondo, só com o ícone (o nome segue em `aria-label`). */
+  compact?: boolean
+}) {
   const [open, setOpen] = useState(false)
   const [chosen, setTopic] = useState(context)
   const { can } = useMoldaToolAccess()
@@ -61,8 +77,10 @@ export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) 
     <aside
       aria-label={copy.open}
       className={[
-        'absolute bottom-3 left-3 z-20 flex max-h-[calc(100%-1.5rem)]',
-        'max-w-[calc(100%-1.5rem)] flex-col items-start gap-2',
+        'absolute bottom-3 z-20 flex max-h-[calc(100%-1.5rem)]',
+        side === 'right'
+          ? 'right-3 max-w-[calc(100%-1.5rem)] flex-col-reverse items-end gap-2'
+          : 'left-3 max-w-[calc(100%-1.5rem)] flex-col items-start gap-2',
       ].join(' ')}
       onKeyDown={(event) => {
         if (!open || isMoldaDialogOpen()) return
@@ -74,23 +92,46 @@ export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) 
         }
       }}
     >
-      <Button
-        ref={trigger}
-        className="shrink-0 text-sm"
-        aria-expanded={open}
-        aria-controls={open ? panelId : undefined}
-        onClick={(event) => {
-          if (isMoldaDialogOpen()) return
-          if (open) close()
-          else {
-            event.currentTarget.focus()
-            setTopic(allowed(context) ?? context)
-            setOpen(true)
-          }
-        }}
-      >
-        {copy.open}
-      </Button>
+      {compact ? (
+        <button
+          ref={trigger}
+          type="button"
+          aria-label={copy.open}
+          title={copy.open}
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
+          onClick={(event) => {
+            if (isMoldaDialogOpen()) return
+            if (open) close()
+            else {
+              event.currentTarget.focus()
+              setTopic(allowed(context) ?? context)
+              setOpen(true)
+            }
+          }}
+          className="sz-tool-icon-btn sz-tool-icon-btn--round shrink-0 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg"
+        >
+          <CircleHelp aria-hidden="true" />
+        </button>
+      ) : (
+        <Button
+          ref={trigger}
+          className="shrink-0 text-sm"
+          aria-expanded={open}
+          aria-controls={open ? panelId : undefined}
+          onClick={(event) => {
+            if (isMoldaDialogOpen()) return
+            if (open) close()
+            else {
+              event.currentTarget.focus()
+              setTopic(allowed(context) ?? context)
+              setOpen(true)
+            }
+          }}
+        >
+          {copy.open}
+        </Button>
+      )}
       {open && (
         <section
           id={panelId}

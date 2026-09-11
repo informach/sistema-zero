@@ -33,12 +33,16 @@ export function SceneVectorForm({
         onApply([read('x'), read('y'), read('z')])
       }}
     >
-      <p id={`${prefix}-hint`} className="text-sm text-mld-muted">
+      <p id={`${prefix}-hint`} className="text-xs text-mld-muted">
         {hint}
       </p>
-      <div className="grid grid-cols-3 gap-2">
+      {/* X, Y e Z lado a lado, cada um numa caixa com a letra dentro (a tela-modelo). */}
+      <div className="grid grid-cols-3 gap-1.5">
         {(['x', 'y', 'z'] as const).map((axis, i) => (
-          <label key={axis} className="space-y-1 text-sm font-bold text-mld-text">
+          <label
+            key={axis}
+            className="flex min-h-11 min-w-0 items-center gap-1 rounded-lg border border-mld-border bg-mld-surface pl-2 text-xs font-bold text-mld-muted focus-within:outline-2 focus-within:outline-mld-accent"
+          >
             <span>{axis.toUpperCase()}</span>
             <input
               name={axis}
@@ -50,7 +54,7 @@ export function SceneVectorForm({
               disabled={disabled}
               min={min}
               defaultValue={values[i]}
-              className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-bg px-2 font-mono tabular-nums focus-visible:outline-2 focus-visible:outline-mld-accent disabled:opacity-50"
+              className="min-h-10 w-full min-w-0 bg-transparent pr-2 text-right font-mono text-sm text-mld-text tabular-nums outline-none disabled:opacity-50"
             />
           </label>
         ))}

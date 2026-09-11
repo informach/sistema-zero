@@ -65,7 +65,6 @@ import {
   Sparkles,
   Spline,
   Square,
-  SquarePlus,
   Trash2,
   Triangle,
   Undo2,
@@ -188,15 +187,8 @@ const COMMAND_DEFINITIONS = [
   },
 
   // ── trilho · Criar ──────────────────────────────────────────────────────────
-  {
-    id: 'add.menu',
-    label: scene.add,
-    icon: SquarePlus,
-    contexts: model,
-    slot: 'rail',
-    tier: 1,
-    group: 'create',
-  },
+  // As formas ficam À VISTA em ladrilhos desde a casca das telas-modelo (11/09/2026): o antigo
+  // "Adicionar forma ou ponto" deixou de ser um botão que abre a lista e virou o título dela.
   {
     id: 'add.box',
     label: COPY.shapes.box,

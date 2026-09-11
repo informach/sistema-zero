@@ -15,6 +15,7 @@ export function ReferenceImageGuide({
   disabled,
   available = true,
   triggerPlacement = 'top-3 left-3',
+  compactTrigger = false,
 }: {
   children: ReactNode
   view: CameraView
@@ -29,6 +30,11 @@ export function ReferenceImageGuide({
    * ferramentas flutuando nesse canto (z-20) e ali o gatilho ficava coberto e sem clique.
    */
   triggerPlacement?: string
+  /**
+   * O gatilho REDONDO só com o ícone, na pilha do pé do palco da oficina nova (as telas-modelo
+   * põem os botões do palco em círculos brancos). O nome continua o mesmo, em `aria-label`.
+   */
+  compactTrigger?: boolean
 }): JSX.Element {
   const reference = useReferenceImage()
   const [open, setOpen] = useState(false)
@@ -58,19 +64,33 @@ export function ReferenceImageGuide({
           onError={reference.remove}
         />
       )}
-      {available && (
-        <Button
-          ref={button}
-          variant="outline"
-          disabled={disabled}
-          onClick={() => setOpen(true)}
-          className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
-          aria-haspopup="dialog"
-        >
-          <ImageIcon aria-hidden="true" className="size-4" />
-          {copy.title}
-        </Button>
-      )}
+      {available &&
+        (compactTrigger ? (
+          <button
+            ref={button}
+            type="button"
+            disabled={disabled}
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={copy.title}
+            title={copy.title}
+            className={`sz-tool-icon-btn sz-tool-icon-btn--round absolute ${triggerPlacement} z-10 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg disabled:cursor-not-allowed disabled:opacity-50`}
+          >
+            <ImageIcon aria-hidden="true" />
+          </button>
+        ) : (
+          <Button
+            ref={button}
+            variant="outline"
+            disabled={disabled}
+            onClick={() => setOpen(true)}
+            className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
+            aria-haspopup="dialog"
+          >
+            <ImageIcon aria-hidden="true" className="size-4" />
+            {copy.title}
+          </Button>
+        ))}
       <Dialog open={available && open} onClose={close} title={copy.title} returnFocusTo={button}>
         <div className="flex flex-col gap-3">
           <p className="text-sm text-mld-text-soft">{copy.hint}</p>

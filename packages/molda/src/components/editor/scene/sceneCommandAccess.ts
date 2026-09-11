@@ -39,7 +39,6 @@ export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandF
   'app.save': 'always',
   'app.backup': 'always',
   'app.import': 'files.interop',
-  'add.menu': 'model.pieces',
   'add.box': 'model.pieces',
   'add.wedge': 'model.pieces',
   'add.cylinder': 'model.pieces',

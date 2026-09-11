@@ -47,7 +47,7 @@ function setViewportWidth(width: number): void {
 function renderNav(viewerId = 'perfil-1') {
   return render(
     <FocusModeProvider viewerId={viewerId}>
-      <FocusModeToggle target="nav" variant="edge" />
+      <FocusModeToggle target="nav" />
     </FocusModeProvider>,
   )
 }
@@ -111,7 +111,7 @@ describe('modo foco — o que as ferramentas leem (`navAvailable`)', () => {
 })
 
 describe('modo foco — onde o botão do menu é oferecido', () => {
-  it('aparece nos apps de criação (e no Estúdio Pro) — interino do Molda inclusive', () => {
+  it('está disponível nos apps de criação (e no Estúdio Pro), onde a ferramenta o desenha', () => {
     for (const route of ['/estudio', '/pensa', '/pinta', '/molda', '/estudio/pro/abc123']) {
       pathname = route
       const { unmount } = renderNav()
@@ -169,31 +169,12 @@ describe('modo foco — o controle em si', () => {
     expect(screen.getByRole('button', { name: 'Esconder menu' }).getAttribute('title')).toBeNull()
   })
 
-  it('o puxador tem anel de foco INSET (a borda de recorte do main cortaria o de fora)', () => {
-    pathname = '/estudio'
-    const { container } = renderNav()
-    const tab = container.querySelector('button')
-    // O `<main>` é `overflow-hidden` e o puxador encosta na borda de recorte.
-    expect(tab?.className).toContain('focus-visible:shadow-[inset_0_0_0_3px_var(--ring)')
-    // A sombra dura cresce p/ a direita/baixo — o lado que o recorte não come.
-    expect(tab?.className).toContain('shadow-[2px_2px_0_var(--border)]')
-  })
-
-  it('o puxador não usa o círculo do cabeçalho (as roupas não se misturam)', () => {
-    pathname = '/estudio'
-    const { container, unmount } = renderNav()
-    expect(container.querySelector('button.size-11')).toBeNull()
-    expect(container.querySelector('button.absolute.left-0')).not.toBeNull()
-    unmount()
-
+  it('é uma roupa só: o quadrado do cabeçalho, sem o puxador que flutuava na borda', () => {
+    // O puxador (`edge`) saiu no lote 6b: nas ferramentas quem desenha o botão é a barra delas.
     pathname = '/cursos/meu-curso/aulas/abc123'
-    const header = render(
-      <FocusModeProvider viewerId="perfil-1">
-        <FocusModeToggle target="nav" />
-      </FocusModeProvider>,
-    )
-    expect(header.container.querySelector('button.size-11')).not.toBeNull()
-    expect(header.container.querySelector('button.absolute')).toBeNull()
+    const { container } = renderNav()
+    expect(container.querySelector('button.size-11')).not.toBeNull()
+    expect(container.querySelector('button.absolute')).toBeNull()
   })
 })
 

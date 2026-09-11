@@ -14,6 +14,7 @@ import type { ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
+import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { SCENE_TOOL_ACCESS_COPY } from '../../../core/sceneToolAccessCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import {
@@ -167,12 +168,17 @@ describe('a oficina no nível de entrada', () => {
    * A CATRACA da criança. Medido em 11/09/2026 com o portão ligado: é o número da queixa dela
    * ("tudo à vista por igual"), agora na tela que a criança de fato encara. Só desce.
    *
-   * No padrão (tudo liberado) são 47/34 na abertura e 87/65 com uma peça
-   * (`SceneWorkshop.contract.test.tsx`). No básico, 42/30 e 73/59: somem a malha, o laço, o
+   * No padrão (tudo liberado) eram 47/34 na abertura e 87/65 com uma peça (hoje 47/32 e 88/59,
+   * `SceneWorkshop.contract.test.tsx`). No básico, 42/30 e 73/59: somem a malha, o laço, o
    * ponto de giro, as medidas, os ossos, o espelho em qualquer direção e o "Trazer arquivo 3D",
    * e entra UMA linha, "Ferramentas que vêm por aí". Das 59 encaradas com uma peça, 18 são as
    * cores e o acabamento, concretos e à vista como no editor antigo. O alvo do redesenho da
    * casca (≤ 30 encarados com uma peça) é medido AQUI, no nível de entrada.
+   *
+   * Na casca das telas-modelo (11/09): 42/30 na abertura e 74/55 com uma peça. As quatro formas
+   * à vista em ladrilhos (+3) foram pagas por "Mais ferramentas" (escolher várias e os grupos) e
+   * por "Isolar seleção" na lista das vistas (-3). Com uma peça, "Mais sobre a peça" recolhe o
+   * nome, mostrar, travar e o grupo (-4); o gatilho dele é o +1 dos montados.
    */
   test('a quantidade de controles que a criança encara, medida no básico', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
@@ -186,8 +192,8 @@ describe('a oficina no nível de entrada', () => {
     choosePiece(comPeca.view.container)
     const montadosPeca = controlInventory(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(73)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(59)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(74)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(55)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {
@@ -265,13 +271,16 @@ describe('a oficina no nível de entrada', () => {
     const { view, stage } = mount({ ...source, animations: [sceneAnimationClip(node.id)] }, soPecas)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     choosePiece(view.container)
-    // A ferramenta do palco (as propriedades têm outro "Mover", o dos números).
-    const palco = () => within(screen.getByRole('region', { name: copy.viewport }))
-    fireEvent.click(palco().getByRole('button', { name: copy.move }))
+    // A ferramenta do palco, que mora na coluna de ladrilhos (as propriedades têm outro "Mover",
+    // o dos números). No Animar ela mora no trilho da esquerda.
+    const ferramentas = (name: string) => within(screen.getByRole('region', { name }))
+    fireEvent.click(ferramentas(SCENE_SHELL_COPY.tools).getByRole('button', { name: copy.move }))
     expect(stage.tools.at(-1)).toBe('move')
     await openTab(copy.animationMode)
     expect(stage.tools.at(-1)).toBe('select')
-    expect(palco().queryByRole('button', { name: copy.move })).toBeNull()
+    expect(
+      ferramentas(SCENE_SHELL_COPY.animationTools).queryByRole('button', { name: copy.move }),
+    ).toBeNull()
     expect(screen.queryByRole('button', { name: copy.animationCreate })).toBeNull()
     // Reproduzir é leitura: continua lá.
     expect(await screen.findByRole('button', { name: copy.animationPlay })).toBeDefined()

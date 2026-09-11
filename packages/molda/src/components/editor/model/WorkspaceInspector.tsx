@@ -68,10 +68,11 @@ export function WorkspaceInspector({
           moveFocus.current = true
           setOpen(true)
         }}
-        className="absolute top-3 right-3 z-20 min-h-11 px-3 text-sm"
+        className="absolute top-3 right-3 z-20 min-h-11 px-3 text-sm max-md:min-w-11 max-md:px-0"
       >
         <Layers aria-hidden="true" className="size-4" />
-        {copy.open}
+        {/* No celular o gatilho fica só com o ícone: com o nome ele cobria a pilha do palco. */}
+        <span className="max-md:sr-only">{copy.open}</span>
       </Button>
       <aside
         id={panelId}

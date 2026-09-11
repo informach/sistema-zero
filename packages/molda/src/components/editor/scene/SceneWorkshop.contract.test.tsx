@@ -182,6 +182,13 @@ describe('inventário da oficina: o que a criança alcança', () => {
    * Pintar. Esta catraca mede o PADRÃO, tudo liberado; a medida da criança é a do nível de
    * entrada, sem malha, laço, pivô e medidas, em `SceneWorkshop.toolAccess.test.tsx`.
    *
+   * ⚠️ Em 11/09, na CASCA das telas-modelo: 47/32 na abertura e 88/59 com uma peça. As formas
+   * ficaram à vista em ladrilhos, como na imagem (+4 encarados: cinco ladrilhos no lugar de um
+   * `<summary>`), e quem pagou foi "Mais ferramentas", que recolheu a caixa, o laço, escolher
+   * várias, os grupos e a malha (-5), mais "Isolar seleção", que foi para a lista das vistas
+   * (-1). Com uma peça, "Mais sobre a peça" recolhe o nome, mostrar, travar e o grupo (-4
+   * encarados), e o gatilho dele é o +1 dos montados: é um `<summary>` NOVO, e nada saiu.
+   *
    * Alvo do redesenho: **≤30 encarados** com uma peça escolhida, medido no nível de entrada.
    */
   test('a quantidade de controles na tela não cresce, e a que a criança encara desce', () => {
@@ -191,17 +198,37 @@ describe('inventário da oficina: o que a criança alcança', () => {
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(34)
+    ).toBeLessThanOrEqual(32)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(87)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(88)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(65)
+    ).toBeLessThanOrEqual(59)
+  })
+
+  /**
+   * A catraca da aba PINTAR (pedida no review de 11/09: a 800px com a gaveta fechada eram 46
+   * controles à vista no Pintar, contra 26 no Modelar). Medida na casca das telas-modelo, com
+   * uma peça escolhida e o módulo "Mais jeitos de pintar" já carregado (sem esperar por ele, a
+   * conta mudaria com a pressa do teste). Só desce; subir exige a conta escrita aqui.
+   */
+  test('a aba Pintar tem a catraca dela, medida com o módulo carregado', async () => {
+    const { view } = mount(withPiece())
+    choosePiece(view.container)
+    await act(async () => {
+      view.getByRole('button', { name: SCENE_PAINT_COPY.tab }).click()
+      await Promise.resolve()
+    })
+    await view.findByText(SCENE_PAINT_COPY.more, { selector: 'summary' })
+    const montados = controlInventory(view.container)
+    const encarados = frontControls(view.container)
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(67)
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(49)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

@@ -2,8 +2,12 @@ import { useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPoseGesture'
 import { useMoldaToolAccess } from '../../toolAccess'
-import { Button } from '../../ui/Button'
+import { CircleDot, X } from '../../ui/icons'
 
+/**
+ * O cartão da POSE, no pé do palco do Animar (a tela-modelo, 11/09/2026): gravar ao soltar as
+ * alças, "Gravar pose ajustada" em pílula azul e "Cancelar ajuste da pose" em contorno.
+ */
 export function SceneAnimationPoseControls({
   gesture,
   enabled,
@@ -18,35 +22,38 @@ export function SceneAnimationPoseControls({
   return (
     <section
       aria-label={copy.animationPoseAdjust}
-      className="pointer-events-auto space-y-1 rounded-xl border border-mld-border bg-mld-surface/95 px-3 py-2 shadow-sm"
+      className="mld-stage-card pointer-events-auto space-y-2 px-4 py-3"
     >
+      <label className="flex min-h-11 items-center gap-2 text-sm font-bold text-mld-text">
+        <input
+          name="animationPoseAutoKey"
+          type="checkbox"
+          className="size-5 accent-mld-accent"
+          checked={snapshot.autoKey}
+          disabled={!enabled || snapshot.pending || snapshot.dragging}
+          onChange={(event) => gesture.setAutoKey(event.target.checked)}
+        />
+        {copy.animationPoseAutoKey}
+      </label>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex min-h-11 items-center gap-2 text-sm">
-          <input
-            name="animationPoseAutoKey"
-            type="checkbox"
-            className="size-5 accent-mld-accent"
-            checked={snapshot.autoKey}
-            disabled={!enabled || snapshot.pending || snapshot.dragging}
-            onChange={(event) => gesture.setAutoKey(event.target.checked)}
-          />
-          {copy.animationPoseAutoKey}
-        </label>
-        <Button
-          className="text-sm"
-          variant="primary"
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--primary text-sm disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!enabled || !snapshot.pending || snapshot.dragging || !!snapshot.error}
           onClick={gesture.record}
         >
+          <CircleDot aria-hidden="true" />
           {copy.animationPoseRecord}
-        </Button>
-        <Button
-          className="text-sm"
+        </button>
+        <button
+          type="button"
+          className="sz-tool-pill sz-tool-pill--outline text-sm disabled:cursor-not-allowed disabled:opacity-50"
           disabled={!snapshot.pose && !snapshot.error}
           onClick={gesture.cancel}
         >
+          <X aria-hidden="true" />
           {copy.animationPoseCancel}
-        </Button>
+        </button>
       </div>
       <p className="text-xs text-mld-muted">{copy.animationPoseAutoKeyHint}</p>
       {snapshot.pending && (

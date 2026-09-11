@@ -2,43 +2,41 @@ import { useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
+import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import { triggerDownload } from '../../../export/download'
 import { exportLoadedSceneForStudio, sameSceneStudioContent } from '../../../export/studioLibrary'
-import {
-  convertSceneNodesToMesh,
-  deleteSceneNodes,
-  duplicateSceneNodes,
-  groupSceneNodes,
-  ungroupSceneNodes,
-} from '../../../scene/commands'
+import { deleteSceneNodes, duplicateSceneNodes } from '../../../scene/commands'
 import { scenePalette } from '../../../scene/composite'
-import type { MoldaSceneDocument } from '../../../scene/document'
+import type { ModelSceneNode, MoldaSceneDocument } from '../../../scene/document'
 import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
-import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
+import { Focus, ListChecks } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { useMediaQuery } from '../../ui/useMediaQuery'
 import { DeferredModule } from '../DeferredEditor'
 import { WorkspaceInspector } from '../model/WorkspaceInspector'
 import { type ResyncToStudio, useStudioResync } from '../useStudioResync'
-import { SceneCanvas } from './SceneCanvas'
+import { SceneCanvas, type SceneCanvasSlots } from './SceneCanvas'
 import { SceneComponentTools } from './SceneComponentTools'
-import { SceneCreateMenu } from './SceneCreateMenu'
-import { SceneExitControl, type SceneExitMode } from './SceneExitControl'
+import type { SceneExitMode } from './SceneExitControl'
 import { SceneGlbExportPanel } from './SceneGlbExportPanel'
-import { SceneHierarchy } from './SceneHierarchy'
+import { SceneHierarchy, type SceneHierarchyShape } from './SceneHierarchy'
+import { SceneModelColumn } from './SceneModelColumn'
 import { SceneModeTabs } from './SceneModeTabs'
 import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
+import { SceneSurfaceStrip } from './SceneSurfaceStrip'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
+import { SceneWorkshopBar } from './SceneWorkshopBar'
 import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
 import { runScenePaintShortcut } from './scenePaintShortcuts'
 import { useSceneWorkshop } from './useSceneWorkshop'
@@ -51,7 +49,16 @@ const loadTimeline = () =>
 const loadAnimationInspector = () =>
   import('./SceneAnimationInspector').then((module) => module.SceneAnimationInspector)
 
-/** Internal workshop shared with the development host; no cloud writer activation here. */
+/**
+ * Internal workshop shared with the development host; no cloud writer activation here.
+ *
+ * O desenho é o das telas-modelo (11/09/2026): a barra do projeto (`SceneWorkshopBar`), a barra
+ * da aba (as abas e, no Modelar e no Pintar, olhar o modelo; no Animar, os movimentos), a coluna
+ * da esquerda (os ladrilhos do Modelar, as ferramentas de pintura, o trilho do Animar), o palco,
+ * o painel "Peças e propriedades" e a faixa de baixo de borda a borda (cor e acabamento, as cores
+ * da pintura, a linha do tempo). O palco continua DONO do estado das ferramentas e da vista: a
+ * casca só marca os LUGARES (`slots`) e ele desenha lá por portal.
+ */
 export function SceneWorkshop({
   editor,
   storage,
@@ -93,6 +100,12 @@ export function SceneWorkshop({
   const exportTrigger = useRef<HTMLButtonElement>(null)
   const exportPoseHintId = useId()
   const importPoseHintId = useId()
+  // Os LUGARES que a casca prepara para o palco (useState + callback ref: um `useRef` não
+  // avisaria o palco quando o lugar monta, e o portal nunca sairia).
+  const [toolsSlot, setToolsSlot] = useState<HTMLDivElement | null>(null)
+  const [areaToolsSlot, setAreaToolsSlot] = useState<HTMLDivElement | null>(null)
+  const [togglesSlot, setTogglesSlot] = useState<HTMLDivElement | null>(null)
+  const [viewSlot, setViewSlot] = useState<HTMLDivElement | null>(null)
   function hasPendingPose() {
     const { pending, dragging } = workshop.animationPose.getSnapshot()
     return pending || dragging
@@ -125,10 +138,6 @@ export function SceneWorkshop({
         : null,
     [paintData, paintPalette],
   )
-  const canUndo = useStore(editor, (state) => state.canUndo)
-  const canRedo = useStore(editor, (state) => state.canRedo)
-  const saveState = useStore(editor, (state) => state.saveState)
-  const saveError = useStore(editor, (state) => state.saveError)
   const copy = COPY.scene
   const docked = useMediaQuery('(min-width: 1024px)')
   const canConvert = document.nodes.some(
@@ -137,6 +146,18 @@ export function SceneWorkshop({
       workshop.covered.has(node.id) &&
       workshop.index.geometries.get(node.geometryId)?.kind !== 'mesh',
   )
+  const geometries = workshop.index.geometries
+  const shapeOf = (node: ModelSceneNode): SceneHierarchyShape => {
+    if (node.kind !== 'mesh') return node.kind
+    const kind = geometries.get(node.geometryId)?.kind
+    return kind === 'box' ||
+      kind === 'wedge' ||
+      kind === 'cylinder' ||
+      kind === 'sphere' ||
+      kind === 'path'
+      ? kind
+      : 'mesh'
+  }
   function backup() {
     try {
       const snapshot = editor.getState().asset
@@ -155,6 +176,34 @@ export function SceneWorkshop({
       return false
     }
   }
+  function openFromBar(open: (value: boolean) => void) {
+    if (hasPendingPose()) return
+    workshop.cancelGesture()
+    workshop.paint.close()
+    workshop.components.close()
+    if (hasPendingPose()) return
+    open(true)
+  }
+  // O Animar leva os movimentos na barra da aba: a vista e a grade flutuam no alto do palco.
+  const slots: SceneCanvasSlots =
+    mode === 'model'
+      ? { tools: toolsSlot, areaTools: areaToolsSlot, toggles: togglesSlot, view: viewSlot }
+      : mode === 'paint'
+        ? { toggles: togglesSlot, view: viewSlot }
+        : { tools: toolsSlot }
+  // "Isolar seleção" é um jeito de OLHAR: mora na lista das vistas, nas três abas.
+  const isolate = (
+    <Button
+      variant="ghost"
+      className="justify-start px-3 text-sm"
+      disabled={!selected.length && workshop.isolation === null}
+      aria-pressed={workshop.isolation !== null}
+      onClick={() => workshop.setIsolation(workshop.isolation ? null : selected)}
+    >
+      <Focus aria-hidden="true" className="size-4" />
+      {COPY.editor.model.isolation.toggle}
+    </Button>
+  )
   return (
     <section
       data-molda-theme={theme}
@@ -209,117 +258,60 @@ export function SceneWorkshop({
           if (can('model.mesh')) workshop.components.choose('all')
         }
       }}
-      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
+      // Rola na VERTICAL só quando a tela é baixa demais (o celular deitado): o palco tem um
+      // piso, e sem a rolagem ele sumia (0px a 844×390, medido). Na altura normal nada rola.
+      className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto bg-mld-bg text-mld-text"
     >
-      <header className="flex flex-wrap items-center gap-2 border-b border-mld-border px-3 py-2">
-        {onExit && (
-          <SceneExitControl
-            editor={editor}
-            onExit={onExit}
-            beforeExit={() => studioSync.prepareExit(editor.getState().savedAsset)}
-            backup={backup}
-            cancelPreview={() => {
-              workshop.cancelGesture()
-              workshop.releasePaintPreparation()
-              workshop.paint.close()
-              workshop.components.close()
-              workshop.flipbook.setImage(null)
-            }}
-          />
-        )}
-        <h1 tabIndex={-1} className="mld-display mr-auto truncate text-xl">
-          {document.name}
-        </h1>
+      <SceneWorkshopBar
+        editor={editor}
+        name={document.name}
+        onExit={onExit}
+        beforeExit={() => studioSync.prepareExit(editor.getState().savedAsset)}
+        backup={backup}
+        cancelPreview={() => {
+          workshop.cancelGesture()
+          workshop.releasePaintPreparation()
+          workshop.paint.close()
+          workshop.components.close()
+          workshop.flipbook.setImage(null)
+        }}
+        onUndo={() => {
+          workshop.cancelGesture()
+          editor.getState().undo()
+        }}
+        onRedo={() => {
+          workshop.cancelGesture()
+          editor.getState().redo()
+        }}
+        pendingPose={pendingPose}
+        exportTrigger={exportTrigger}
+        importTrigger={importTrigger}
+        exportHintId={exportPoseHintId}
+        importHintId={importPoseHintId}
+        onExport={() => openFromBar(setExportOpen)}
+        onImport={() => openFromBar(setImportOpen)}
+      />
+      {/* A barra da ABA: as abas e, à direita, o jeito de olhar (ou os movimentos, no Animar). */}
+      <div className="mld-bar flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2">
         <SceneModeTabs mode={mode} onChange={changeMode} />
-        <span role="status" className="text-sm text-mld-muted">
-          {saveState === 'saved'
-            ? COPY.editor.saved
-            : saveState === 'saving'
-              ? COPY.editor.saving
-              : (saveError ?? COPY.editor.dirty)}
-        </span>
-        <Button
-          className="text-sm"
-          disabled={!canUndo}
-          onClick={() => {
-            workshop.cancelGesture()
-            editor.getState().undo()
-          }}
-        >
-          {COPY.editor.undo}
-        </Button>
-        <Button
-          className="text-sm"
-          disabled={!canRedo}
-          onClick={() => {
-            workshop.cancelGesture()
-            editor.getState().redo()
-          }}
-        >
-          {COPY.editor.redo}
-        </Button>
-        <Button className="text-sm" onClick={() => void editor.getState().flush()}>
-          {copy.save}
-        </Button>
-        <Button className="text-sm" onClick={backup}>
-          {copy.backup}
-        </Button>
-        <RequiresTool family="files.export">
-          <Button
-            ref={exportTrigger}
-            className="text-sm"
-            disabled={pendingPose}
-            aria-describedby={pendingPose ? exportPoseHintId : undefined}
-            onClick={() => {
-              if (hasPendingPose()) return
-              workshop.cancelGesture()
-              workshop.paint.close()
-              workshop.components.close()
-              if (hasPendingPose()) return
-              setExportOpen(true)
-            }}
-          >
-            {copy.glbExport.open}
-          </Button>
-          {pendingPose && (
-            <p id={exportPoseHintId} className="text-xs text-mld-muted">
-              {copy.glbExport.pendingPose}
-            </p>
-          )}
-        </RequiresTool>
-        <RequiresTool family="files.interop">
-          <Button
-            ref={importTrigger}
-            className="text-sm"
-            disabled={pendingPose}
-            aria-describedby={pendingPose ? importPoseHintId : undefined}
-            onClick={() => {
-              if (hasPendingPose()) return
-              workshop.cancelGesture()
-              workshop.paint.close()
-              workshop.components.close()
-              if (hasPendingPose()) return
-              setImportOpen(true)
-            }}
-          >
-            {NATIVE_IMPORT_COPY.open}
-          </Button>
-          {pendingPose && (
-            <p id={importPoseHintId} className="text-xs text-mld-muted">
-              {NATIVE_IMPORT_COPY.pendingPose}
-            </p>
-          )}
-        </RequiresTool>
-      </header>
+        {mode === 'animation' ? (
+          <div className="min-w-0 flex-1">
+            <DeferredModule
+              load={loadClips}
+              props={{ workshop }}
+              onBack={() => changeMode('model')}
+              backLabel={copy.glbExport.close}
+            />
+          </div>
+        ) : (
+          <>
+            <span aria-hidden="true" className="hidden h-7 w-px bg-mld-border sm:block" />
+            <div ref={setTogglesSlot} className="flex flex-wrap items-center gap-2" />
+            <div ref={setViewSlot} className="flex flex-wrap items-center gap-2 sm:ml-auto" />
+          </>
+        )}
+      </div>
       {storage && <SceneStorageNotice observer={storage} />}
-      {mode === 'animation' && (
-        <DeferredModule
-          load={loadClips}
-          props={{ workshop }}
-          onBack={() => changeMode('model')}
-          backLabel={copy.glbExport.close}
-        />
-      )}
       {/* O erro da pintura mora na coluna da aba Pintar, junto das ferramentas. */}
       {workshop.message && (
         <p
@@ -329,84 +321,36 @@ export function SceneWorkshop({
           {workshop.message}
         </p>
       )}
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+      {/* O piso do palco: em tela baixa quem cede é a rolagem da oficina, nunca o palco. */}
+      <div className="relative flex min-h-72 flex-1 flex-col overflow-hidden lg:flex-row">
+        {mode === 'model' && (
+          <SceneModelColumn
+            workshop={workshop}
+            toolsSlot={setToolsSlot}
+            areaToolsSlot={setAreaToolsSlot}
+            faceToggle={faceToggle}
+            onToggleFaces={() =>
+              workshop.components.selection ? closeFaces() : workshop.components.open()
+            }
+            canConvert={canConvert}
+          />
+        )}
         {mode === 'paint' && (
-          <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
+          <div className="mld-bar flex shrink-0 flex-wrap gap-1 border-b p-2 lg:w-60 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0 lg:p-3">
             <ScenePaintColumn workshop={workshop} />
           </div>
         )}
-        {mode === 'model' && (
-          <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
-            <SceneCreateMenu run={run} />
-            <RequiresTool family="model.mesh">
-              <Button
-                ref={faceToggle}
-                className="text-sm"
-                disabled={!workshop.components.canEdit}
-                aria-pressed={workshop.components.selection !== null}
-                onClick={() =>
-                  workshop.components.selection ? closeFaces() : workshop.components.open()
-                }
-              >
-                {workshop.components.selection
-                  ? copy.finishFaces
-                  : selected.length === 1 && workshop.index.skinsByNode.has(selected[0]!)
-                    ? copy.editSkinBase
-                    : copy.editFaces}
-              </Button>
-              <Button
-                className="text-sm"
-                disabled={!canConvert}
-                title={copy.convertMeshHint}
-                onClick={() => run((source) => convertSceneNodesToMesh(source, selected))}
-              >
-                {copy.convertMesh}
-              </Button>
-            </RequiresTool>
-            <RequiresTool family="model.pieces">
-              <Button
-                className="text-sm"
-                disabled={!selected.length}
-                onClick={() =>
-                  run(
-                    (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
-                    'created',
-                  )
-                }
-              >
-                {copy.group}
-              </Button>
-              <Button
-                className="text-sm"
-                disabled={
-                  !selected.length ||
-                  selected.some((id) => workshop.index.scene.nodes.get(id)?.kind !== 'group')
-                }
-                onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
-              >
-                {copy.ungroup}
-              </Button>
-              <Button
-                className="text-sm"
-                disabled={!selected.length}
-                onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
-              >
-                {copy.duplicate}
-              </Button>
-              <Button
-                className="text-sm"
-                disabled={!selected.length || workshop.components.selection !== null}
-                onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-              >
-                {copy.remove}
-              </Button>
-            </RequiresTool>
-            <SceneUpcomingTools tabs={['model', 'files']} />
-          </div>
+        {mode === 'animation' && (
+          <section
+            aria-label={SCENE_SHELL_COPY.animationTools}
+            className="mld-bar mld-scroll-x flex shrink-0 overflow-x-auto border-b p-2 lg:w-24 lg:flex-col lg:overflow-x-hidden lg:overflow-y-auto lg:border-r lg:border-b-0"
+          >
+            <div ref={setToolsSlot} className="flex gap-1.5 max-lg:[&>*]:w-19 lg:flex-col" />
+          </section>
         )}
         {/*
          * Palco e inspetor num contêiner só: abaixo de lg a gaveta "Peças e cores" (e o gatilho
-         * dela, em cima à direita) se posiciona por ele, abaixo da faixa de comandos.
+         * dela, em cima à direita) se posiciona por ele.
          */}
         <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -459,42 +403,29 @@ export function SceneWorkshop({
               animation={workshop.animation}
               animationPose={workshop.animationPose}
               onEndPaint={workshop.endPaint}
+              slots={slots}
+              viewExtras={isolate}
             />
-            {mode === 'paint' && <ScenePaintPalette paint={workshop.paint} palette={document} />}
-            {mode === 'animation' && (
-              <DeferredModule
-                load={loadTimeline}
-                props={{ workshop }}
-                onBack={() => changeMode('model')}
-                backLabel={copy.glbExport.close}
-              />
-            )}
           </div>
           <WorkspaceInspector docked={docked} onBeforeClose={workshop.cancelGesture}>
-            <h3 className="mld-display text-lg">{copy.hierarchy}</h3>
-            {/* Em Pintar a escolha é de uma peça por vez: somar à seleção não tem sentido lá. */}
-            {mode !== 'paint' && (
+            <h3 className="mld-kicker px-1 pt-1">{copy.hierarchy}</h3>
+            {/* No Modelar ele mora em "Mais ferramentas"; em Pintar a escolha é de uma peça. */}
+            {mode === 'animation' && (
               <Button
                 className="w-full text-sm"
                 aria-pressed={workshop.additive}
                 onClick={() => workshop.setAdditive(!workshop.additive)}
               >
+                <ListChecks aria-hidden="true" className="size-4" />
                 {copy.addSelection}
               </Button>
             )}
-            <Button
-              className="w-full text-sm"
-              disabled={!selected.length && workshop.isolation === null}
-              aria-pressed={workshop.isolation !== null}
-              onClick={() => workshop.setIsolation(workshop.isolation ? null : selected)}
-            >
-              {COPY.editor.model.isolation.toggle}
-            </Button>
-            {!document.nodes.length && <p className="text-sm text-mld-muted">{copy.empty}</p>}
+            {!document.nodes.length && <p className="px-1 text-sm text-mld-muted">{copy.empty}</p>}
             <SceneHierarchy
               index={workshop.index.scene}
               selected={selected}
               onSelect={workshop.select}
+              shapeOf={shapeOf}
             />
             {mode === 'animation' ? (
               <>
@@ -529,6 +460,17 @@ export function SceneWorkshop({
           </WorkspaceInspector>
         </div>
       </div>
+      {/* A faixa de BAIXO, de borda a borda (a das telas-modelo). */}
+      {mode === 'model' && <SceneSurfaceStrip workshop={workshop} />}
+      {mode === 'paint' && <ScenePaintPalette paint={workshop.paint} palette={document} />}
+      {mode === 'animation' && (
+        <DeferredModule
+          load={loadTimeline}
+          props={{ workshop }}
+          onBack={() => changeMode('model')}
+          backLabel={copy.glbExport.close}
+        />
+      )}
       <Dialog
         open={exportOpen}
         title={copy.glbExport.title}

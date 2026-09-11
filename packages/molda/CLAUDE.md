@@ -2544,11 +2544,11 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
   `variant="bar"` = a pílula pequena ao lado do `SaveBadge`: em repouso só a nuvem, com o nome no
   `title`; aviso e erro escrevem na tinta do texto). A galeria usa os quatro; o `EditorTopBar`
   (textura, céu e o modelo antigo) põe o menu ANTES do Voltar e o selo depois do "Salvo", e ignora
-  a seta e a conta. Sem Provider nada aparece. ⚠️ **O lado do KIDS ainda NÃO está ligado** (o
-  `molda-client.tsx` com o Provider, o anúncio, a seta, e a saída do `CloudSaveBadge` e do ramo
-  `/molda` do `main-container.tsx`): ele entra depois do commit da sessão do Molda, que tem esses
-  arquivos abertos. Até lá o kids segue como estava. A barra da oficina nova (`SceneWorkshop`)
-  também recebe o chrome no passo da casca da oficina.
+  a seta e a conta. Sem Provider nada aparece. O lado do KIDS entrou junto da casca da oficina
+  (lote 6b): o `molda-client.tsx` embrulha o app no `MoldaHostChromeProvider`, a região viva fica
+  no host, e o `CloudSaveBadge`, o ramo `/molda` do `main-container.tsx` e a roupa `edge` do
+  `focus-mode-toggle.tsx` saíram. A barra da oficina nova (`SceneWorkshopBar`) desenha o menu e
+  o selo (ver a seção seguinte).
 - Playground: `?host=1` liga o chrome de mentira (menu que alterna, seta que loga, conta ligada e o
   selo percorrendo os estados a cada 4 s) e `?tema=escuro` monta no escuro.
 - Medido no playground (1172 × 900, que é 1440 com o menu do kids): faixa creme de 274px, cartões
@@ -2558,3 +2558,58 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
   rolável, o cartão, o cartão novo com nome próprio, os chips com ícone, os botões de cada lugar e
   a galeria vazia) e `MoldaApp.hostChrome.test.tsx` (sem Provider, menu e seta antes do título, a
   conta em repouso, a seta com Ctrl, o selo que vence a conta, e a barra do editor).
+
+## A casca da oficina das telas-modelo (11/09/2026)
+
+O Modelar e o Animar no desenho das duas telas-modelo dela (lote 8 do plano
+`o-design-da-plataforma-composed-gray.md`), sobre as funções que existem hoje (o modelo inventa
+algumas: céu, "Ver o meu mundo", as formas novas e os materiais não entraram). Regiões, de cima
+para baixo:
+
+- **Barra do projeto** (`SceneWorkshopBar.tsx`): [menu do host] [← Meus projetos] o cubo e o nome,
+  o "Salvo" em pílula menta (o mesmo `role="status"`), o selo da nuvem do host (só o ícone, menos
+  sem internet e erro) e desfazer/refazer só com o ícone; à direita guardar, baixar, exportar e
+  "Trazer arquivo 3D" (azul). ⚠️ As ações moram num `@container`: sem espaço ao lado do nome, as
+  três de contorno ficam só com o ícone (o nome segue no texto escondido). Pode porque não há
+  nada `fixed` ali dentro: os diálogos moram na raiz da oficina. ⚠️ O `SceneExitControl` tem o
+  Dialog DENTRO da barra: nunca pôr contenção, `transform` ou `backdrop-filter` na barra inteira.
+- **Barra da aba**: o segmentado das abas (`SceneModeTabs`, `.mld-seg`, com ícone) e, no Modelar e
+  no Pintar, "Mostrar grade" e "Mais ajustes do palco" à esquerda, "Vista: …" e "Enquadrar
+  seleção" (amarelo, `.mld-pill-sun`) à direita; no Animar, os movimentos (`SceneAnimationClips`
+  na barra, com o "Experimentar um movimento pronto" amarelo abrindo um painel que DESCE).
+- **Coluna da esquerda**: no Modelar, `SceneModelColumn` com "Ferramentas" em ladrilhos
+  (`SceneTile`, `.mld-tile`: o ícone em cima e o nome embaixo), "Mais ferramentas" recolhido (a
+  caixa, o laço, escolher várias, os grupos e a malha), as formas À VISTA em ladrilhos com a cor de
+  cada uma (`SceneCreateMenu`: o antigo "Adicionar forma ou ponto" virou o título, e o comando
+  `add.menu` saiu do registro) e a linha do que vem por aí; no Pintar, a coluna de pintura; no
+  Animar, o trilho de ladrilhos. Abaixo de `lg` a coluna deita numa fileira que rola de lado.
+- **Palco**: a pilha do alto (a vista no Animar, a dica do momento, os cartões da forma-base e
+  dos ossos), o cartão da pose embaixo à esquerda e, embaixo à direita, os círculos da imagem de
+  apoio e dos Primeiros passos (`compactTrigger` e `side="right"`). O canto de cima à direita é do
+  gatilho "Peças e cores".
+- **Painel da direita**: a lista de peças em cartões (o ladrilho na cor da forma, o nome, o tipo e
+  o olho, que é só indicador) e, embaixo, o ajuste (mover, girar, mudar tamanho e ponto de giro num
+  segmentado, X/Y/Z lado a lado), "Medidas da forma", os espelhos e "Mais sobre a peça" (nome,
+  mostrar, travar e o grupo, recolhidos).
+- **Faixa de baixo**, de borda a borda: no Modelar, `SceneSurfaceStrip` com o acabamento e as cores
+  da peça (MOVIDOS do painel, não copiados; sempre montada e com altura fixa, senão o palco mudaria
+  de tamanho a cada toque); no Pintar, as cores; no Animar, a linha do tempo.
+
+⭐⭐ **O palco continua DONO do estado** das ferramentas e da vista: a casca só marca os LUGARES
+(`SceneCanvasSlots`: `tools`, `areaTools`, `toggles`, `view`) e o `SceneCanvas` desenha lá por
+`createPortal`. Chave AUSENTE = o grupo fica sobre o palco (o teste que monta o palco sozinho e,
+no Animar, a vista); `null` = o lugar ainda não montou (nada aparece); elemento = portal. O lugar
+nasce de `useState` + callback ref (um `useRef` não avisaria o palco). O "Abrir o 3D de novo"
+segue zerando tudo, e o Esc do palco segue valendo: o evento do React sobe pela árvore de
+componentes, não pela do DOM. "Isolar seleção" entra na lista das vistas por `viewExtras`.
+
+A catraca (os dois testes) ficou em 47/32 e 88/59 no padrão, e 42/30 e 74/55 no básico: as formas
+à vista (+4) foram pagas por "Mais ferramentas" e por "Isolar seleção" na lista das vistas, e
+"Mais sobre a peça" tirou 4 da frente com uma peça (o +1 dos montados é o `<summary>` dele).
+
+Testes: os dois da catraca, o do registro (o `add.menu` saiu) e o `SceneWorkshop.toolAccess`
+(a ferramenta do palco agora é achada na região "Ferramentas", não no palco). O e2e de layout
+(`scene-workshop-layout.spec.ts`: nada coberto, palco com área e sem rolagem lateral a 1366, 1024,
+768 e 390) e o resto do e2e no Chromium passaram. A aba Pintar ganhou a catraca dela (67/49, com o
+módulo "Mais jeitos de pintar" carregado). Pendente com a outra sessão: os nomes embaixo dos ícones
+da `ScenePaintToolbox` (o arquivo é dela).

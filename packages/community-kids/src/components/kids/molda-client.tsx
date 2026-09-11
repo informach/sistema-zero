@@ -15,9 +15,9 @@ import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
 } from '@/lib/molda-cloud-persistence'
-import { CloudSaveBadge } from './cloud-save-badge'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { type MoldaGuidePersistence, MoldaTaskGuide } from './molda-task-guide'
+import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
 import { useMoldaTaskHandoff } from './use-pensa-task-handoff'
 
 // O pacote é client-only (zustand/WebGL/IndexedDB); carregamos DENTRO de um
@@ -238,6 +238,11 @@ export function MoldaClient({
     [theme, studioAvailable, router, initialAssetId, viewerId, stableAccess],
   )
 
+  // Botão do menu lateral, selo "Guardado na sua conta", a seta da galeria para Criar e o
+  // sinal da conta, desenhados DENTRO da barra do Molda (contrato `hostChrome`, lote 6b de
+  // 11/09/2026): antes o selo era uma linha acima do app e o menu, um puxador na calha.
+  const { chrome: hostChrome, announcement } = useHostChrome({ cloud, syncing })
+
   return (
     // ⚠️ A moldura é COMPARTILHADA com o `loading.tsx` da rota (ver
     // `embedded-app-loading.tsx`): sem card, porque o Molda é uma SEÇÃO da
@@ -300,16 +305,18 @@ export function MoldaClient({
               }
             />
           ) : null}
-          <div className="flex justify-end">
-            <CloudSaveBadge cloud={cloud} syncing={syncing} />
-          </div>
-          {/* O selo é irmão do app: o wrapper dá ao `h-full` do Molda uma altura definida. */}
+          {/* A região viva do selo fica no HOST (sempre montada; só offline/erro falam). */}
+          <HostChromeAnnouncer text={announcement} />
+          {/* O wrapper dá ao `h-full` do Molda uma altura definida. ⚠️ O Provider vem do MESMO
+              módulo do `import()` que montou o app: dois módulos seriam dois contextos. */}
           <div className="flex min-h-0 flex-1 flex-col">
-            <mod.MoldaApp
-              key={openRequest.revision}
-              adapter={adapter}
-              {...(persistence ? { persistence } : {})}
-            />
+            <mod.MoldaHostChromeProvider value={hostChrome}>
+              <mod.MoldaApp
+                key={openRequest.revision}
+                adapter={adapter}
+                {...(persistence ? { persistence } : {})}
+              />
+            </mod.MoldaHostChromeProvider>
           </div>
         </>
       )}

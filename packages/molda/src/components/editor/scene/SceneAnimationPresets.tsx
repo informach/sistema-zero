@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneAnimationPresetOptions } from '../../../scene/animationPresets'
 import { Button } from '../../ui/Button'
+import { Sparkles } from '../../ui/icons'
 import { sceneAnimationFormNumber } from './sceneAnimationForm'
 import { SCENE_APPEARANCE_FIELD as field } from './sceneAppearanceForm'
 import { useSceneAnimationPreset } from './useSceneAnimationPreset'
@@ -17,18 +18,21 @@ export function SceneAnimationPresets({
   const [open, setOpen] = useState(false)
   const copy = COPY.scene
   return (
+    // Na barra da aba (a tela-modelo do Animar): a pílula amarela no fim da barra, e o formulário
+    // num painel que DESCE sobre o palco, sem empurrar a oficina para baixo.
     <details
-      className="w-full rounded-lg border border-mld-border px-3"
+      className="relative"
       onToggle={(event) => {
         setOpen(event.currentTarget.open)
         if (!event.currentTarget.open) preview.cancel()
       }}
     >
-      <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
+      <summary className="sz-tool-pill mld-pill-sun list-none text-sm [&::-webkit-details-marker]:hidden">
+        <Sparkles aria-hidden="true" />
         {copy.animationPresetTitle}
       </summary>
       {open && (
-        <div className="space-y-3 pb-3">
+        <div className="mld-drop top-full right-0 mt-2 max-h-[70vh] w-[min(32rem,calc(100vw-1.5rem))] space-y-3 overflow-y-auto p-3">
           <p className="text-xs text-mld-muted">{copy.animationPresetHint}</p>
           <form
             className="space-y-3"
