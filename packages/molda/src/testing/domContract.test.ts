@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import { screen, within } from '@testing-library/react'
 import {
   accessibleName,
@@ -8,6 +8,13 @@ import {
   openEveryDisclosure,
   reachableControls,
 } from './domContract'
+
+// O `bun test src` roda os arquivos no mesmo processo: o último host daqui ("Passo do movimento"
+// com o botão "Livre") ficava no body e quebrava o ModelEditor e a faixa de chaves do Animar
+// ("Found multiple elements"). Limpar também no FIM de cada teste.
+afterEach(() => {
+  document.body.innerHTML = ''
+})
 
 function render(html: string): HTMLElement {
   document.body.innerHTML = ''
