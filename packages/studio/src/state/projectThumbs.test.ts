@@ -23,7 +23,12 @@ mock.module('idb-keyval', () => ({
     if (failThumbWrite && k.startsWith('sz:project-thumb:')) throw new Error('quota cheia')
     db.set(k, v)
   }),
+  // A capa é gravada por uma transação do próprio store, que aplica pelo `setMany` (ver
+  // `testing/fakeIdbStore.ts`): é aqui que o "disco cheio" recusa a capa.
   setMany: mock(async (pairs: Array<[string, unknown]>) => {
+    if (failThumbWrite && pairs.some(([k]) => k.startsWith('sz:project-thumb:'))) {
+      throw new Error('quota cheia')
+    }
     for (const [k, v] of pairs) db.set(k, v)
   }),
   update: mock(async () => undefined),

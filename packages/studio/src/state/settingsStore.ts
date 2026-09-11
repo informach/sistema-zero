@@ -1,5 +1,7 @@
 import { createStore, get, update } from 'idb-keyval'
 import { create } from 'zustand'
+import { readValue } from './idbTransaction'
+import { getProjectStorageScope } from './projectStorageRuntime'
 
 export const DEFAULT_AI_MODEL = '~anthropic/claude-sonnet-latest'
 
@@ -102,6 +104,18 @@ function sanitizePersistedSettings(value: unknown): PersistedSettings {
 }
 
 const SETTINGS_KEY = 'sz:settings'
+/**
+ * As preferências moram num banco PRÓPRIO (11/09/2026). Até ali elas dividiam o banco e o store
+ * dos projetos do namespace padrão (`sistema-zero-studio`/`kv`: aula, admin, comunidade adulta e
+ * playground), e são gravadas pelo `update` do idb-keyval, que lê e grava na MESMA transação: ela
+ * só termina se a página processar a leitura. Uma dessas aberta na saída da página trancava a
+ * gravação do projeto, que espera as transações anteriores do mesmo store (ver
+ * `idbTransaction.ts`). Em banco próprio, o `update` continua atômico (setters concorrentes não
+ * se perdem, nem entre abas) sem poder atrasar a gravação de um projeto.
+ * ⚠️ Nome fora da família `sistema-zero-studio-<namespace>` de propósito: um perfil chamado
+ * "settings" daria o mesmo banco.
+ */
+const SETTINGS_DB = 'sz-studio-settings'
 let store: ReturnType<typeof createStore> | null = null
 let storeInitFailed = false
 function getStore(): ReturnType<typeof createStore> | null {
@@ -115,7 +129,7 @@ function getStore(): ReturnType<typeof createStore> | null {
   // sem nunca chamar o get). O latch fica só p/ createStore que LANÇA.
   if (typeof indexedDB === 'undefined') return null
   try {
-    store = createStore('sistema-zero-studio', 'kv')
+    store = createStore(SETTINGS_DB, 'kv')
   } catch {
     storeInitFailed = true
     store = null
@@ -149,7 +163,37 @@ interface SettingsState {
 async function readPersisted(): Promise<PersistedSettings> {
   const kv = getStore()
   if (!kv) return {}
-  return sanitizePersistedSettings(await get<unknown>(SETTINGS_KEY, kv))
+  const current = await get<unknown>(SETTINGS_KEY, kv)
+  if (current !== undefined) return sanitizePersistedSettings(current)
+  return bringLegacySettings(kv)
+}
+
+/**
+ * A primeira carga depois da troca de banco traz as preferências de onde elas moravam (o banco
+ * dos projetos do namespace padrão). A leitura de lá é uma transação com commit explícito, como
+ * toda transação daquele banco. O original fica onde está: um bundle antigo ainda aberto noutra
+ * aba continua lendo de lá.
+ */
+async function bringLegacySettings(kv: ReturnType<typeof createStore>): Promise<PersistedSettings> {
+  const legacy = await readValue(getProjectStorageScope('').store, SETTINGS_KEY)
+  if (legacy === undefined) return {}
+  const settings = sanitizePersistedSettings(legacy)
+  // `update`, e não `set`: um setter que já tenha gravado aqui nesta carga vence o que veio
+  // de lá, campo a campo. A carga devolve o que ficou gravado, para a memória não desfazer
+  // esse setter.
+  let stored: unknown = settings
+  await update<unknown>(
+    SETTINGS_KEY,
+    (current) => {
+      stored =
+        current && typeof current === 'object' && !Array.isArray(current)
+          ? { ...settings, ...current }
+          : settings
+      return stored
+    },
+    kv,
+  )
+  return sanitizePersistedSettings(stored)
 }
 
 // load() é singleton: a 1ª carga hidrata a store a partir do IndexedDB, mas a

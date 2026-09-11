@@ -31,6 +31,9 @@ export function createLocalPersistenceAdapter(
     loadBlocksState: (project) =>
       loadSanitizedProjectBlocksStateById(project.id, project.installedExtensions, scope),
     save: (project) => persistProject(project, {}, scope),
+    // Cada `save` pede a sua transação na hora, e o IndexedDB as executa na ordem em que
+    // nascem: o serviço não precisa encadear os saves (ver `appliesSavesInCallOrder`).
+    appliesSavesInCallOrder: true,
     list: () => listAllProjects(scope),
     delete: (id) => deleteProject(id, scope),
   }

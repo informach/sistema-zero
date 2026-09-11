@@ -139,7 +139,7 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
 - **`persistProject(project, {silent, replace})`**: `silent` grava SEM acordar o espelho (o que
   acabou de descer não pode subir de novo); `replace` trata o snapshot como verdade COMPLETA —
   apaga a partição de blocos quando ele não traz `blocksState` (o canvas vazio sanitiza para
-  `null`) e a capa antiga, NA MESMA transação dos `put` (desde 11/09/2026, ver "Flush de saída";
+  `null`) e a capa antiga, NA MESMA transação dos `put` (desde 11/09/2026, ver "Gravação de saída";
   falha de quota aborta tudo e não deixa o local sem blocos). Sem `replace`, blocos apagados
   noutro computador ressuscitavam aqui e subiam por cima da nuvem.
 - **`restoreProjectFromCloud(raw, {expectedId})`** (`projects/importSnapshot.ts`) →
@@ -196,38 +196,74 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
   id/aberto, `updatedAt` dos assets, espelho `null`, `loadProjectAssetsSnapshotForCloud`, lista
   light sem capas, `PROJECT_CHANGED_EVENT`).
 
-## Flush de saída: UMA transação com `commit()` explícito (11/09/2026)
+## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
 
 O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
-mas morria com a troca de documento: o `setMany`/`delMany` do idb-keyval dependem do auto-commit,
-que só acontece depois que a página recebe o resultado de cada `put`. Recarregando logo depois de
-gravar um arquivo grande (o céu de 1,5 MB do Molda), a mudança voltou em 0 de 10 recargas no
-WebKit (o motor do iPad) e 8 de 10 no Firefox, trazendo os três arquivos do Molda, e em 4 de 10
-no Chromium com a CPU lenta, enviando só o céu (o `e2e/reload-flush.spec.ts`).
+mas morria com a troca de documento. Três mecanismos, os três consertados no mesmo dia:
 
-- **`state/idbTransaction.ts` `writeInOneTransaction(store, { puts, deletes })`**: uma transação
-  readwrite, `put` na ordem, `delete` depois, `commit()` explícito (auto-commit onde o navegador
-  não tem o método) e `abort()` quando um `put` LANÇA (sem ele, os pares de antes seriam gravados
-  pela metade). Rejeita com o motivo que chega no `abort` (`transaction.error`), nunca `null`.
-  Usado por `persistProject` (partições + as chaves velhas do `replace`/`bridgeCodeAhead` numa
-  transação só) e `deleteProject`. Com ele: 10 de 10, 10 de 10 e 30 de 30.
+1. **A gravação em auto-commit.** O `setMany`/`delMany` do idb-keyval só terminam depois que a
+   página recebe o resultado de cada `put`, e na saída a troca de documento chega antes.
+   Recarregando logo depois de gravar um arquivo grande, a mudança voltou em 0 de 10 recargas no
+   WebKit (o motor do iPad) e 8 de 10 no Firefox, trazendo os três arquivos do Molda, e em 4 de 10
+   no Chromium com a CPU lenta, enviando só o céu de 1,5 MB.
+2. **A leitura em auto-commit ainda aberta** no mesmo store: a gravação espera as transações
+   anteriores (regra do IndexedDB), a leitura só termina se a página processar o resultado, e as
+   duas morrem juntas. Trazer do Molda/Pinta grava na biblioteca pessoal e acorda a varredura dos
+   desenhos, que LÊ o banco: com o 1º conserto, o Chromium ainda perdia 2 de 46.
+3. **A fila que esperava o disco.** O flush entrava na fila atrás de um autosave em voo e só
+   pedia a própria gravação quando aquele terminasse, e na troca de página esse fim não chega.
+
+O que ficou:
+- **`state/idbTransaction.ts`** é o jeito de ler e gravar o banco dos projetos:
+  `writeInOneTransaction(store, { puts, deletes })`, `readValues`/`readValue`/`readAllKeys`. Tudo
+  passa por `inOneTransaction`: TODOS os pedidos dentro do callback, `commit()` explícito
+  (auto-commit onde o navegador não tem o método), `abort()` quando um pedido LANÇA (sem ele, os
+  de antes iriam ao disco pela metade), e a rejeição com o motivo do `abort`, nunca `null`.
+  ⭐ A regra: nenhuma transação deste banco pode depender da página continuar viva para terminar.
+  Quem LÊ para decidir o que gravar (renomear, a capa, a troca de desenho) faz duas transações na
+  fila por projeto; uma leitura e uma escrita presas na mesma transação só terminariam se a página
+  processasse a leitura. Por isso também o `persistProjectAssets` grava os assets e o `updatedAt`
+  do meta numa transação só (eram duas).
+- ⚠️⚠️ **O Chromium inverte `complete` e `success` numa leitura com `commit()`** quando o valor é
+  grande (medido: 0 de 5 até 1 MB; 5 de 5 com 1,5 MB e 5 MB, bloqueada ou não; Firefox e WebKit
+  seguem a especificação). Ler o `request.result` no `complete` lança InvalidStateError ("the
+  request has not finished"). A 1ª versão deste lote lia ali, e o e2e pegou: o editor não
+  reabria o projeto com o céu (o playground mostrava "Projeto não encontrado"). O protótipo da
+  medição anterior não viu porque só lia o banco cru. Hoje a leitura espera o `success` de cada
+  pedido E o `complete`. O fake de testes imita a inversão SEMPRE, com o `success` numa TAREFA
+  seguinte (numa microtask ele chegava antes de o código ler, e a sabotagem passava).
+- **Fila por projeto** (`projectStorageRuntime.ts` `runSerializedProjectWrite`): anda quando a
+  operação da frente PEDIU a sua escrita (a tarefa devolve `{ done }`), não quando o disco confirma.
+  A ordem fica com o IndexedDB (readwrite do mesmo store na ordem em que nascem; leitura nascida
+  depois de uma escrita espera por ela).
+- **Serviço**: o adapter que já aplica os saves na ordem das chamadas declara
+  `appliesSavesInCallOrder: true` (o local declara) e não é encadeado; um adapter remoto segue
+  encadeado (o POST antigo não pode confirmar por último).
+- **Teto do autosave**: o debounce (1 s) é só de borda final; com o teto, a gravação sai no máximo
+  5 s depois da PRIMEIRA edição ainda não gravada (`AUTOSAVE_MAX_WAIT_DEFAULT`,
+  `setAutosaveMaxWaitForTests`).
+- **Aba escondida**: `visibilitychange` → `hidden` faz o mesmo flush da saída (no iPad o Safari
+  descarta aba em segundo plano sem `pagehide`). O dedupe do `flushed` evita gravar de novo no
+  `pagehide` que vem depois.
+- **Preferências em banco próprio** (`settingsStore.ts`, `sz-studio-settings`): moravam no banco E
+  no store dos projetos do namespace padrão, gravadas por `update` (leitura e escrita presas na
+  mesma transação, que só termina se a página processar a leitura). A primeira carga traz de lá
+  (leitura com commit); o original fica. ⚠️ Nome fora da família `sistema-zero-studio-<ns>`.
 - É helper LOCAL de propósito, sem importar nada novo do idb-keyval (`promisifyRequest` incluso):
   um export novo que um dos mocks da suíte não tenha quebra o linker só na ordem de arquivos do CI.
-- ⚠️ **Segundo mecanismo, ainda SEM conserto:** no Chromium, uma LEITURA do idb-keyval
-  (auto-commit) ainda em voo no mesmo store tranca a escrita do flush (a readwrite espera as
-  transações anteriores, e a leitura só termina se a página processar os eventos dela). Trazer um
-  arquivo do Molda ou do Pinta grava na biblioteca pessoal e dispara a varredura dos desenhos, que
-  LÊ o banco; recarregando logo depois, com o conserto, o Chromium ainda perdeu cerca de 1 em 20, e
-  na rodada instrumentada a perda coincidiu com leitura pendente (15 salvas sem nenhuma). Protótipo
-  medido: `commit()` também nas leituras do banco do projeto deu 30 de 30. O Firefox não tranca; o
-  WebKit não teve leitura pendente no fluxo.
-- `renameProjectMeta`, `persistProjectAssets` e `writeProjectThumb` seguem no `get` + `set` do
-  idb-keyval (lê e depois grava): não rodam na saída da página, e juntar a leitura e a escrita numa
-  transação é outra mudança (atomicidade), não o flush.
-- e2e: `e2e/reload-flush.spec.ts` (o único spec que recarrega SEM esperar o "Salvo"). Envia o céu
-  pelo "Enviar modelo 3D", e não pelo "Trazer do Molda", para não disparar a varredura (o segundo
-  mecanismo); a CPU fica 6× mais lenta só na saída. Sem o conserto, 6 de 10 recargas perderam o
-  arquivo; com ele, 30 de 30.
+- Testes: `state/projectDatabaseInvariant.test.ts` roda toda operação que toca o banco e exige
+  `commit()` no fim de cada transação (com anti-vácuo), e trava os imports do idb-keyval no `src/`
+  (só `createStore` e os bancos próprios); `idbTransaction.test.ts` (leituras, a inversão do
+  Chromium, o escalonamento do fake); `persistence.test.ts` (a fila que anda no pedido, o rename
+  que lê depois do autosave em voo, o flush pedido com o autosave em voo); `service.test.ts` (o
+  adapter que ordena, o teto, a aba escondida); `settingsStore.test.ts` (o banco novo e a cópia).
+- e2e `e2e/reload-flush.spec.ts` (o único que recarrega SEM esperar o "Salvo"), com o autosave
+  SEGURADO pelo gancho `?autosave-ms=` do playground (sem ele, no WebKit o autosave chegava antes
+  do reload em metade das rodadas): o céu enviado com a CPU 6× lenta (1º mecanismo), os três
+  arquivos do Molda com a modal aberta (2º) e a aba escondida. Roda no Chromium e no WebKit (job
+  `studio-e2e-webkit` do CI; `bun run e2e:flush` local). Medido com tudo isto: Chromium 30 de 30
+  (10 de cada teste), WebKit 30 de 30, e o fluxo do Molda instrumentado 20 de 20, cinco delas com
+  uma leitura do banco ainda aberta no instante do `beforeunload` (o caso que antes perdia).
 
 ## Persistência do programa do aluno (guardar/ler que PERSISTE)
 
@@ -246,7 +282,9 @@ do projeto. Duas peças:
 **`src/state/persistence.ts`** virou **3 partições** por projeto no IndexedDB — `sz:project-meta:<id>` /
 `sz:project-files:<id>` / `sz:project-state:<id>` (legado `sz:project:<id>` em doc único). Escritas por
 namespace+id são **serializadas FIFO** (`runSerializedProjectWrite(scope, id, task)`) — autosave não intercala com rename
-(leitura+escrita não-atômica). **Cerca de exclusão** (`fenceGameStorageDelete`/`isGameStorageDeleted`,
+(leitura+escrita não-atômica). Desde 11/09/2026 a fila anda quando a operação da frente PEDE a sua
+escrita (a tarefa devolve `{ done }`), e não quando o disco confirma: ver "Gravação de saída" acima.
+**Cerca de exclusão** (`fenceGameStorageDelete`/`isGameStorageDeleted`,
 janela de graça ~60s + poda lazy): um flush de game-storage OU um autosave em voo que chegue DEPOIS do
 delete é descartado — **não ressuscita registro órfão**. O mesmo mutex cobre projeto e game-storage; o
 `settingsStore` agora CEGA a ausência de IndexedDB (modo privado/contexto restrito) — cai p/ defaults em
@@ -721,9 +759,9 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
    não é afetado.
 4. **Sem react-router**: navegação é do host. Páginas/cards recebem callbacks (`onOpenProject`, `onExit`).
 5. **Globais residuais de multi-instância**: WebContainer é singleton por aba; o atalho da busca de blocos (`startSearch`) fica com a última instância (PtSearchCategory desregistra antes de registrar — NÃO remover, era crash na 2ª instância). `deleteProject` cancela autosaves em voo somente nas instâncias do MESMO namespace via registro de serviços.
-6. **Testes = bun:test** (`bun test src`). O CI executa a suíte Playwright completa em Chromium, dividida em 3 shards, e os cenários de segurança/CSP em Firefox. Gotchas que esta suíte já paga:
+6. **Testes = bun:test** (`bun test src`). O CI executa a suíte Playwright completa em Chromium, dividida em 3 shards, os cenários de segurança/CSP em Firefox e a gravação de saída (`reload-flush.spec.ts`) em WebKit. Gotchas que esta suíte já paga:
    - `mock.module` NÃO é isolado por arquivo — capture os exports reais antes e restaure no `afterAll` (ver `BlocksMode.test.tsx`); mocks de idb-keyval ficam sem restore de propósito (IndexedDB não existe no happy-dom).
-   - ⚠️ **Todo mock de `idb-keyval` devolve `fakeUseStore(dbName)` no `createStore`** (`src/testing/fakeIdbStore.ts`, 11/09/2026) e exporta `setMany` E `delMany`. O `persistProject`/`deleteProject` abrem a transação pelo próprio `scope.store`, e o store fica em CACHE no escopo de armazenamento, que atravessa arquivos: um mock que devolvesse objeto não chamável quebraria a gravação só numa certa ordem de arquivos. A transação de mentira aplica o resultado pelo `setMany`/`delMany` do mock ATIVO (é por eles que cada arquivo guarda o que lê) e registra o que foi pedido: asserte no registro (`fakeIdbWrites`, `fakeIdbPuts`, `fakeIdbDeletes`), não no `setMany`. Falhas: `failNextFakeIdbWrite` (aborta), `holdNextFakeIdbWrite` (em voo), `throwOnNextFakeIdbPut` (put que lança). ⚠️ O bun congela o CONJUNTO de nomes do módulo mockado pelo PRIMEIRO mock da suíte (medido no 1.3.11): um nome ausente no mock atual aponta para a função VELHA de outro arquivo, sem erro.
+   - ⚠️ **Todo mock de `idb-keyval` devolve `fakeUseStore(dbName)` no `createStore`** (`src/testing/fakeIdbStore.ts`, 11/09/2026) e exporta `get`, `getMany`, `keys`, `setMany` E `delMany`. O banco dos projetos só é lido e gravado por transações abertas pelo próprio `scope.store` (`idbTransaction.ts`), e o store fica em CACHE no escopo de armazenamento, que atravessa arquivos: um mock que devolvesse objeto não chamável quebraria a persistência só numa certa ordem de arquivos. A transação de mentira RESPONDE pelas funções do mock ATIVO (`get` quando lê uma chave, `getMany` quando lê várias, `keys` para o `getAllKeys`, `setMany`/`delMany` para gravar), imita o ESCALONAMENTO do IndexedDB (a escrita espera as transações anteriores do banco; a leitura, as escritas anteriores) e registra o que foi pedido: asserte no registro (`fakeIdbTransactions`, `fakeIdbWrites`, `fakeIdbReads`, `fakeIdbPuts`, `fakeIdbDeletes`), não no `setMany`. ⚠️ Semeie a leitura na função que ela vai chamar (uma chave = `get`): uma semente `mockResolvedValueOnce` não consumida VAZA para o teste seguinte, e foi assim que um erro virou quatro em cadeia. Falhas: `failNextFakeIdbWrite` (aborta), `holdNextFakeIdbWrite` (em voo, e segura quem nasce depois), `throwOnNextFakeIdbPut` (put que lança). ⚠️ O bun congela o CONJUNTO de nomes do módulo mockado pelo PRIMEIRO mock da suíte (medido no 1.3.11): um nome ausente no mock atual aponta para a função VELHA de outro arquivo, sem erro.
    - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0). ⚠️ **Um teste que espera o debounce precisa DRENAR antes do próximo limpar os mocks** (`persistence.test.ts`, 19/08/2026): no runner de 2 vCPU do CI (22 pacotes juntos) a gravação de um caso ainda estava em voo quando o seguinte fazia `mockClear`, e caía no contador dele ("recebeu 1, esperava 0") — três casos antigos, local verde até sob carga. O `afterEach` dá um `waitForAutosave()` e a folga é 10× o delay, não 5×. Já tinha reprovado em `b0934ab0` e ficou mascarado por outro vermelho no mesmo run: quando um CI cai por um motivo, leia a lista INTEIRA de `(fail)`.
    - DOM via happy-dom no preload (`bunfig.toml` + `test-setup.ts`).
    - Componentes que rendem DENTRO de um `<Studio>` precisam de PROBE (mock do Shell lendo hooks) — as estáticas `getState` leem a store default, não a da instância.
@@ -3704,10 +3742,16 @@ isso, `setHitboxScale` é a válvula.
 - `bun run dev` — playground Vite (porta 5173; rota `/dual` = 2 instâncias lado a lado)
 - `bun run gen:server-examples` — regera o `__gen_serverExamplesIndex.ts` (ver seção acima)
 - `bun run typecheck` / `bun run test` / `bun run check`
-- `bun run e2e` — suíte Playwright completa em Chromium e cenários de segurança/CSP em Firefox
-- `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` — recortes locais rápidos
+- `bun run e2e` — suíte Playwright completa em Chromium, cenários de segurança/CSP em Firefox e a
+  gravação de saída em WebKit
+- `bun run e2e:smoke` / `e2e:gallery` / `e2e:security` / `e2e:a11y` / `e2e:flush` — recortes locais
+  rápidos (o `e2e:flush` roda o `reload-flush.spec.ts` no Chromium e no WebKit)
 - `bun run gen:game-3d-examples` / `check:game-3d-examples` — regenera ou valida a IR 3D
-- O CI roda Chromium em 3 shards e o projeto Firefox completo definido em `playwright.config.ts`.
+- O CI roda Chromium em 3 shards e os projetos Firefox e WebKit definidos em `playwright.config.ts`.
+- ⚠️ Se o servidor do e2e estourar os 120 s do `webServer`: suba-o à mão
+  (`E2E_PORT=5297 bun scripts/serve-e2e.ts`) e rode com `PW_REUSE_SERVER=1`. Em 11/09/2026 o
+  `webServer` esperou os 120 s sem resposta duas vezes seguidas, e à mão o build levou 6 s (causa
+  não achada). O servidor serve o BUILD: mudou o código, suba de novo.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
 
