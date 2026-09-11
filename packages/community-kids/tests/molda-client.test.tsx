@@ -234,3 +234,38 @@ test('o portão do posto chega ao adapter; sem ele, nada trancado', async () => 
   view.rerender(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={null} />)
   await waitFor(() => expect(lastAdapter && 'toolAccess' in lastAdapter).toBe(false))
 })
+
+test('o mesmo portão num objeto novo (outro render do servidor) não troca o adapter', async () => {
+  const access = () => ({
+    allow: ['model.pieces', 'paint.brush'],
+    upcoming: [{ when: 'Abrem no nível Lenda', families: ['model.skin'] }],
+  })
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access()} />)
+  await waitFor(() => expect(lastAdapter?.toolAccess).toEqual(access()))
+  const first = lastAdapter
+  view.rerender(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access()} />)
+  expect(lastAdapter).toBe(first)
+  view.rerender(
+    <MoldaClient
+      viewerId={null}
+      studioAvailable={false}
+      toolAccess={{ ...access(), allow: ['model.pieces'] }}
+    />,
+  )
+  await waitFor(() => expect(lastAdapter?.toolAccess?.allow).toEqual(['model.pieces']))
+  expect(lastAdapter).not.toBe(first)
+})
+
+test('limpar o deep link mantém a prévia da equipe (`?nivel=`) e a tarefa', async () => {
+  const asset = createModelAsset({ name: 'Carro da prévia' })
+  localAssets = [asset]
+  router.replace.mockClear()
+  query = new URLSearchParams({ criacao: asset.id, nivel: 'explorer' })
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda?nivel=explorer'))
+  view.unmount()
+  router.replace.mockClear()
+  query = new URLSearchParams({ criacao: asset.id })
+  render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  await waitFor(() => expect(router.replace).toHaveBeenCalledWith('/molda'))
+})

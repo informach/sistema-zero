@@ -89,19 +89,17 @@ async function CelebrationChrome({ session }: { session: Session }) {
   const ownsStudio =
     studioRes?.status === 200 && typeof studioAccess === 'boolean' ? studioAccess : null
   // O Molda é vendido à parte: a linha "No Molda" da comemoração só vai para quem tem o
-  // produto, e a pergunta só é feita nos postos em que uma faixa de ferramentas dele abre.
-  const moldaRes = moldaLevelGain(levelSlug)
-    ? await checkMoldaAccessReadonly().catch(() => null)
-    : null
-  const moldaAccess = moldaRes?.body?.access?.molda
-  const ownsMolda =
-    moldaRes?.status === 200 && typeof moldaAccess === 'boolean' ? moldaAccess : null
+  // produto, e a pergunta só é feita nos postos em que uma faixa de ferramentas dele abre (a
+  // ida é deduplicada com a da página /molda). O watcher recebe a frase pronta, ou `null`.
+  const gain = moldaLevelGain(levelSlug)
+  const moldaRes = gain ? await checkMoldaAccessReadonly().catch(() => null) : null
+  const moldaGain = moldaRes?.status === 200 && moldaRes.body?.access?.molda === true ? gain : null
   return (
     <CelebrationWatcher
       levelSlug={levelSlug}
       toolsRevision={toolsRevision}
       ownsStudio={ownsStudio}
-      ownsMolda={ownsMolda}
+      moldaGain={moldaGain}
       profileKey={session.id}
     />
   )

@@ -2,6 +2,7 @@
 
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import type { CSSProperties } from 'react'
+import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
 import { type ToolsGain, toolsGainInline } from '@/lib/tools-gain'
 import type { StudentLevelSlug } from '@/lib/types'
@@ -89,7 +90,12 @@ export function LevelUpCelebration({
           </p>
         ) : null}
         {molda ? (
-          <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
+          <p
+            className={cn(
+              tools ? 'mt-3' : 'mt-4',
+              'rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm',
+            )}
+          >
             🧊 No Molda: {molda}
           </p>
         ) : null}

@@ -69,11 +69,25 @@ export function MoldaClient({
   }))
   const initialAssetId = openRequest.assetId
   const [taskId] = useState(() => searchParams.get('tarefa'))
+  // A prévia da equipe (`?nivel=`) sobrevive à limpeza: sem ela, a URL nova voltaria a
+  // resolver tudo liberado no servidor e a oficina trocaria de ferramentas no meio.
+  const [previewLevel] = useState(() => searchParams.get('nivel'))
   const handoff = useMoldaTaskHandoff(taskId)
   useEffect(() => {
-    if (initialAssetId)
-      router.replace(taskId ? `/molda?tarefa=${encodeURIComponent(taskId)}` : '/molda')
-  }, [initialAssetId, router, taskId])
+    if (!initialAssetId) return
+    const keep = new URLSearchParams()
+    if (taskId) keep.set('tarefa', taskId)
+    if (previewLevel) keep.set('nivel', previewLevel)
+    const query = keep.toString()
+    router.replace(query ? `/molda?${query}` : '/molda')
+  }, [initialAssetId, router, taskId, previewLevel])
+  // O servidor manda um objeto novo a cada render (um `router.refresh`, a limpeza da URL):
+  // pelo CONTEÚDO, o adapter só muda quando as ferramentas mudam de fato.
+  const accessKey = toolAccess ? JSON.stringify(toolAccess) : null
+  const stableAccess = useMemo<MoldaToolAccess | null>(
+    () => (accessKey ? (JSON.parse(accessKey) as MoldaToolAccess) : null),
+    [accessKey],
+  )
 
   const loadMolda = useCallback(
     async (isCurrent?: () => boolean) => {
@@ -181,7 +195,7 @@ export function MoldaClient({
       sceneWorkshop: true,
       ...(initialAssetId ? { initialAssetId } : {}),
       // As ferramentas de profissional abrem por posto; trancar tira a autoria, nunca a leitura.
-      ...(toolAccess ? { toolAccess } : {}),
+      ...(stableAccess ? { toolAccess: stableAccess } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
       // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do
       // `getPersonalAsset` é a regra do recurso (igual ao Pinta): sem ela, TODA criação
@@ -221,7 +235,7 @@ export function MoldaClient({
         return { updated: true }
       },
     }),
-    [theme, studioAvailable, router, initialAssetId, viewerId, toolAccess],
+    [theme, studioAvailable, router, initialAssetId, viewerId, stableAccess],
   )
 
   return (

@@ -3,6 +3,7 @@
 import { Hammer } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { BEYOND_HORIZON_PHRASE } from '@/lib/career-horizon'
 import type { CareerPoint } from '@/lib/career-path'
 import { cn } from '@/lib/cn'
 import { LEVEL_INFO } from '@/lib/level-info'
@@ -87,7 +88,7 @@ export function CareerHorizonNode({
           </span>
           <span className="-translate-x-1/2 absolute top-full left-1/2 mt-3 flex w-44 flex-col items-center gap-1 text-center">
             <span className="sz-display text-(--tinta) text-base md:text-[1.0625rem]">
-              E tem muito mais pela frente
+              {BEYOND_HORIZON_PHRASE}
             </span>
             <span className="font-semibold text-[11px] text-muted-foreground">
               {levels.length === 1

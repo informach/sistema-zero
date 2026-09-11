@@ -5,12 +5,14 @@ import {
   MOLDA_TOOL_FAMILIES,
   moldaToolFamilyIds,
 } from '../../molda/src/core/toolFamilies'
+import { CAREER_REWARD_INFO } from '../src/lib/career-rewards'
 import { LEVEL_ORDER } from '../src/lib/level-info'
-import { moldaLevelGain } from '../src/lib/molda-level-gain'
+import { MOLDA_BAND_PROMISES, moldaFeatureList, moldaLevelGain } from '../src/lib/molda-level-gain'
 import {
   MOLDA_BEYOND_HORIZON,
   moldaPreviewLevel,
   moldaToolAccessFor,
+  moldaToolAccessRestricted,
 } from '../src/lib/molda-tool-access'
 
 /**
@@ -90,6 +92,24 @@ describe('moldaToolAccessFor', () => {
     ])
   })
 
+  test('catálogo desconhecido (null) não nomeia posto nenhum', () => {
+    const access = moldaToolAccessFor({ levelSlug: 'explorer', role: 'student', horizon: null })
+    expect(access?.upcoming).toEqual([
+      { when: MOLDA_BEYOND_HORIZON, families: [...intermediate, ...professional] },
+    ])
+    expect(access?.allow).toEqual(basic)
+  })
+
+  test('moldaToolAccessRestricted diz se há o que trancar (a página só espera o catálogo aí)', () => {
+    for (const levelSlug of LEVEL_ORDER) {
+      const restricted = moldaToolAccessRestricted({ levelSlug, role: 'student' })
+      expect(restricted, levelSlug).toBe(
+        moldaToolAccessFor({ levelSlug, role: 'student', horizon: 'god' }) !== undefined,
+      )
+    }
+    expect(moldaToolAccessRestricted({ levelSlug: 'explorer', role: 'admin' })).toBe(false)
+  })
+
   test('?nivel= só vale para a equipe, e só num posto em que o Molda abre', () => {
     expect(moldaPreviewLevel('explorer', 'superadmin')).toBe('explorer')
     expect(moldaPreviewLevel('architect', 'staff')).toBe('architect')
@@ -104,9 +124,34 @@ describe('moldaToolAccessFor', () => {
 describe('moldaLevelGain', () => {
   test('cada posto que abre uma faixa diz o que o Molda ganhou; os outros, nada', () => {
     expect(moldaLevelGain('explorer')).toContain('oficina 3D')
-    expect(moldaLevelGain('architect')).toContain('editar a malha')
-    expect(moldaLevelGain('god')).toContain('ossos')
+    expect(moldaLevelGain('architect')).toContain('a malha')
+    expect(moldaLevelGain('god')).toContain('os ossos')
     for (const slug of ['noob', 'coder', 'hacker', 'elite', 'champion', undefined, 'rei'])
       expect(moldaLevelGain(slug), String(slug)).toBeNull()
+  })
+})
+
+describe('a promessa do Molda é uma só e é verdade', () => {
+  test('cada família prometida abre de fato naquela faixa do pacote', () => {
+    for (const band of MOLDA_TOOL_BANDS) {
+      const promise = MOLDA_BAND_PROMISES[band]
+      expect(promise.features.length, band).toBe(promise.families.length)
+      for (const family of promise.families)
+        expect(moldaToolFamilyIds([band]) as readonly string[], `${band}: ${family}`).toContain(
+          family,
+        )
+    }
+  })
+
+  test('a comemoração e as recompensas da carreira dizem a mesma lista', () => {
+    for (const band of MOLDA_TOOL_BANDS) {
+      const level = MOLDA_TOOL_BAND_LEVELS[band]
+      expect(moldaLevelGain(level), band).toContain(moldaFeatureList(band))
+      if (band === 'basic') continue
+      expect(
+        CAREER_REWARD_INFO[level as keyof typeof CAREER_REWARD_INFO].description,
+        band,
+      ).toContain(moldaFeatureList(band))
+    }
   })
 })

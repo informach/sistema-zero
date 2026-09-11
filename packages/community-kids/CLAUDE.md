@@ -157,9 +157,9 @@ incluído (ver "O contador do medalhão" abaixo).
 
 ⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
 ferramenta é o CURSO; o posto entrega MODO (livre → Ponte → Pro) e PRODUTO (Estúdio+Pinta no
-Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). Por isso
-dois postos do meio (Mestre, Arquiteto(a)) anunciam só "um posto novo no mapa" — porque é o que
-eles dão de verdade.
+Construtor(a), Pensa+Zappy no Inventor(a), Molda no Explorador(a) de Mundos desde 05/09). O Mestre
+anuncia só "um posto novo no mapa", porque é o que ele dá de verdade. Desde 11/09 o Arquiteto(a) e a
+Lenda também citam as ferramentas do Molda que abrem neles (ver "Ferramentas do Molda por posto").
 `CAREER_REWARD_INFO` (`lib/career-rewards.ts`) é a copy e `tests/career-rewards-conformance.test.ts`
 trava as promessas contra o core E contra as constantes dos portões (inclusive proibindo nome de kit).
 
@@ -1469,6 +1469,35 @@ foi trazido, com `kind`/`origin: 'molda'`/`originalFileName`), e o Estúdio leva
 jogos (a `personalSync` do Studio cobre `.glb`/`.hdr` desde 06/09). O botão do Estúdio repara o
 registro pessoal no clique (a biblioteca é local por aparelho), então "Editar" funciona também num
 jogo que desceu da nuvem. Teste: `tests/molda-client.test.tsx` (guarda do `resyncToStudio`).
+
+### Ferramentas do Molda por posto (11/09/2026)
+
+Dentro da oficina, as ferramentas de profissional abrem pela carreira, em três faixas
+(`MOLDA_TOOL_BAND_LEVELS`, no core): básico no Explorador(a), intermediário no Arquiteto(a) de
+Mundos e profissional na Lenda. O Molda não conhece carreira: recebe `toolAccess` no adapter
+(`{allow, upcoming}` com as famílias de `@sistemazero/molda/tools`), e ausência = tudo liberado.
+- **`lib/molda-tool-access.ts`** é a régua pura: `moldaToolAccessFor({levelSlug, role, horizon})`
+  (equipe e Lenda = `undefined`) e `moldaToolAccessRestricted`. O `when` de cada grupo sai do
+  `LEVEL_INFO` ("Abrem no nível Arquiteto(a) de Mundos"); o que passa do horizonte do catálogo vira
+  `BEYOND_HORIZON_PHRASE` (a mesma frase do nó do mapa, fonte única em `career-horizon.ts`).
+  ⚠️ `horizon: null` = catálogo DESCONHECIDO: aí nenhuma faixa ganha nome de posto.
+- **A página só espera o catálogo quando há o que trancar**, e no máximo 1,5 s
+  (`CATALOG_WAIT_MS`): a equipe fora da prévia nem pergunta, e um catálogo lento não segura a
+  criança na porta.
+- **`?nivel=explorer|architect|…`** mostra à EQUIPE a oficina daquele posto (`moldaPreviewLevel`);
+  para quem não é da equipe o parâmetro não muda nada. O `molda-client` preserva o `?nivel=` ao
+  limpar o deep link (`?criacao=`) e compara o `toolAccess` pelo CONTEÚDO, para um render novo do
+  servidor não trocar o adapter.
+- **A promessa tem uma fonte só:** `MOLDA_BAND_PROMISES` (`lib/molda-level-gain.ts`) diz o que cada
+  faixa traz e quais famílias isso é. A comemoração de subir de posto ("🧊 No Molda: …") e as
+  recompensas do Arquiteto(a) e da Lenda (`career-rewards.ts`) montam o texto daqui, e
+  `tests/molda-tool-access.test.ts` exige que cada família prometida esteja de fato na faixa do
+  pacote (lendo `packages/molda/src/core/toolFamilies.ts` pelo caminho).
+- **A linha "No Molda" só vai para quem tem o produto:** o layout pergunta a posse só nos três
+  postos das faixas (a ida é deduplicada com a da página /molda) e passa ao `CelebrationWatcher` a
+  frase pronta (`moldaGain`), ou `null`.
+- ⚠️ O mapa da carreira (`career-timeline`) cita o Molda nas recompensas mesmo para quem não tem o
+  produto: é a copy do posto, igual à do Estúdio e do Pensa.
 
 ## Gamificação estilo Duolingo (Fase 2 + expansão Zappy/avatar — 6 fases)
 

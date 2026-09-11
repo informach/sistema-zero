@@ -225,30 +225,35 @@ describe('CelebrationWatcher', () => {
 })
 
 describe('CelebrationWatcher — a linha do Molda', () => {
-  it('subiu para um posto que abre ferramentas do Molda e tem o produto: "No Molda"', async () => {
+  // A frase chega pronta do servidor (`moldaLevelGain`, só com a posse do produto e só nos
+  // postos em que uma faixa abre): o watcher só a mostra na comemoração do posto dela.
+  const GAIN = 'chegaram a malha, as camadas de pintura e a pintura que se mexe.'
+
+  it('subiu para o posto e o servidor mandou a frase: "No Molda"', async () => {
     localStorage.setItem(levelKey, 'elite')
     render(
       <CelebrationWatcher
         levelSlug="architect"
         toolsRevision={null}
         ownsStudio={false}
-        ownsMolda={true}
+        moldaGain={GAIN}
         profileKey={PERFIL}
       />,
     )
     expect((await screen.findByRole('dialog')).getAttribute('aria-label')).toContain('Arquiteto')
-    expect(screen.getByText(/No Molda: editar a malha/)).toBeDefined()
+    expect(screen.getByText(/No Molda:/)).toBeDefined()
+    expect(screen.getByText(/chegaram a malha/)).toBeDefined()
   })
 
-  it('sem o produto (ou sem saber), a comemoração não fala do Molda', async () => {
-    for (const ownsMolda of [false, null]) {
+  it('sem a frase (sem o produto, sem saber ou posto sem faixa), a comemoração não fala do Molda', async () => {
+    for (const moldaGain of [null, undefined]) {
       localStorage.setItem(levelKey, 'elite')
       const view = render(
         <CelebrationWatcher
           levelSlug="architect"
           toolsRevision={null}
           ownsStudio={false}
-          ownsMolda={ownsMolda}
+          moldaGain={moldaGain}
           profileKey={PERFIL}
         />,
       )
@@ -258,18 +263,19 @@ describe('CelebrationWatcher — a linha do Molda', () => {
     }
   })
 
-  it('posto em que nenhuma faixa do Molda abre não ganha a linha', async () => {
-    localStorage.setItem(levelKey, 'explorer')
+  it('a frase não aparece sem subir de posto', async () => {
+    localStorage.setItem(levelKey, 'architect')
     render(
       <CelebrationWatcher
-        levelSlug="elite"
+        levelSlug="architect"
         toolsRevision={null}
         ownsStudio={false}
-        ownsMolda={true}
+        moldaGain={GAIN}
         profileKey={PERFIL}
       />,
     )
-    await screen.findByRole('dialog')
+    await new Promise((resolve) => setTimeout(resolve, 20))
+    expect(screen.queryByRole('dialog')).toBeNull()
     expect(screen.queryByText(/No Molda/)).toBeNull()
   })
 })

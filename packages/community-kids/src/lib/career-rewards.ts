@@ -1,3 +1,4 @@
+import { moldaFeatureList } from './molda-level-gain'
 import type { StudentLevelSlug } from './types'
 
 export interface CareerRewardInfo {
@@ -19,7 +20,8 @@ export interface CareerRewardInfo {
  * ele dá de verdade é o posto e a trilha nova, e é isso que a copy diz. O Explorador(a) anuncia
  * o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do modelo, é recompensa — decisão
  * dela, 05/09/2026), e o Arquiteto(a) e a Lenda anunciam as ferramentas do Molda que abrem neles
- * (`MOLDA_TOOL_BAND_LEVELS`, decisão dela de 11/09/2026). `tests/career-rewards-conformance.test.ts`
+ * (`MOLDA_TOOL_BAND_LEVELS`, decisão dela de 11/09/2026), com o texto da fonte única
+ * `MOLDA_BAND_PROMISES` (`molda-level-gain.ts`). `tests/career-rewards-conformance.test.ts`
  * trava as promessas contra o core e contra as constantes dos portões.
  */
 export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
@@ -48,8 +50,7 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   },
   architect: {
     title: 'Um posto novo no mapa',
-    description:
-      'Uma trilha nova, para construir cenários inteiros. E o Molda ganha ferramentas novas: editar a malha, camadas de pintura e pintura que se mexe.',
+    description: `Uma trilha nova, para construir cenários inteiros. E no Molda chegam ${moldaFeatureList('intermediate')}.`,
   },
   champion: {
     title: 'Modo Ponte',
@@ -57,8 +58,7 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   },
   god: {
     title: 'Modo Pro',
-    description:
-      'Escreva o jogo direto no código, como os criadores profissionais fazem. E o Molda abre tudo: ossos, curvas e as ferramentas avançadas de malha.',
+    description: `Escreva o jogo direto no código, como os criadores profissionais fazem. E no Molda chegam ${moldaFeatureList('professional')}.`,
   },
 }
 

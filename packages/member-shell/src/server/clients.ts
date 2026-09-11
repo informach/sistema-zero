@@ -348,6 +348,14 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { refs: STUDIO_ACCESS_REF, audience },
       }),
   )
+  // A página /molda e a comemoração do layout (nos postos em que o Molda ganha ferramentas)
+  // perguntam a mesma coisa no mesmo render: uma ida só.
+  const moldaAccessReadonlyCached = cache(
+    (): Promise<GatewayResponse<ProductAccessView>> =>
+      gw.gatewayFetchReadonly('/members/access', {
+        query: { refs: `${MOLDA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
+      }),
+  )
   const challengeReadonlyCached = cache(
     (): Promise<GatewayResponse<ChallengeMeView>> =>
       gw.gatewayFetchReadonly('/members/gamification/challenge', { query: { audience } }),
@@ -708,12 +716,10 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * "Esta conta tem acesso ao Molda?" — Server Component (sem refresh de
      * cookie), p/ gatear a página /molda. Mesmo molde do Pinta: a segunda ref
      * (`estudio-completo`) alimenta o `studioOwned` do adapter (atalho e dica do
-     * "Trazer do Molda" na galeria).
+     * "Trazer do Molda" na galeria). Deduplicada por request.
      */
     checkMoldaAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
-      return gw.gatewayFetchReadonly('/members/access', {
-        query: { refs: `${MOLDA_ACCESS_REF},${STUDIO_ACCESS_REF}`, audience },
-      })
+      return moldaAccessReadonlyCached()
     },
     /**
      * As TRÊS ferramentas de criação numa ida só, para a página /estudio decidir de

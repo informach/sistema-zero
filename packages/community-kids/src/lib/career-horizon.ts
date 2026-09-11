@@ -40,6 +40,13 @@ export interface CareerCatalogEntry {
   careerSlot?: number | null
 }
 
+/**
+ * A frase que fecha o mapa no lugar dos postos que o catálogo ainda não alcança. Fonte única: o
+ * nó do mapa (`career-horizon-node.tsx`) e o aviso de ferramentas do Molda
+ * (`molda-tool-access.ts`) dizem a mesma coisa, então leem daqui.
+ */
+export const BEYOND_HORIZON_PHRASE = 'E tem muito mais pela frente'
+
 /** Degraus na ordem da carreira, derivados da escada (sem espelho novo). */
 export const TIER_ORDER: readonly CourseTierSlug[] = [
   ...new Set(

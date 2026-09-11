@@ -15,10 +15,12 @@ describe('chrome global de comemoração', () => {
 })
 
 describe('a linha do Molda na comemoração', () => {
-  test('a posse do Molda chega ao watcher, perguntada só nos postos das faixas', () => {
-    expect(layoutSource).toContain('ownsMolda=')
+  test('a frase chega pronta ao watcher, e a posse só é perguntada nos postos das faixas', () => {
+    expect(layoutSource).toContain('moldaGain=')
     expect(layoutSource).toMatch(
-      /moldaLevelGain\(levelSlug\)\s*\?\s*await checkMoldaAccessReadonly\(\)/,
+      /const gain = moldaLevelGain\(levelSlug\)\s*const moldaRes = gain \? await checkMoldaAccessReadonly\(\)/,
     )
+    // A frase só passa com a posse CONFIRMADA (produtos vendidos à parte).
+    expect(layoutSource).toMatch(/access\?\.molda === true \? gain : null/)
   })
 })
