@@ -67,6 +67,11 @@ export function useMoldaApp(): MoldaAppContextValue {
   return value
 }
 
+/** O mesmo, ou `null` fora do app: a oficina montada sozinha (playground e testes) não tem galeria. */
+export function useOptionalMoldaApp(): MoldaAppContextValue | null {
+  return useContext(MoldaAppContext)
+}
+
 export function useGallery<T>(selector: (state: GalleryState & GalleryActions) => T): T {
   const { gallery } = useMoldaApp()
   return useStore(gallery, selector)

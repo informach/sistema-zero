@@ -12,6 +12,7 @@ import { MOLDA_LIMITS } from '../core/limits'
 import type {
   FaceId,
   MoldaModelAsset,
+  MoldaPaletteFields,
   MoldaPart,
   MoldaSkin,
   MoldaTextureAsset,
@@ -228,13 +229,14 @@ function colorDistance(a: string, b: string): number {
  * Índice USADO da textura → índice do modelo: mesma cor = mesmo índice; cor
  * que o modelo não tem entra como extra (até o teto); sem vaga, a cor mais
  * parecida. Índices ausentes de `sourceIndices` ficam em 0 e nunca reservam
- * uma extra. Devolve o modelo (talvez com extras novas) e a tabela.
+ * uma extra. Devolve o modelo (talvez com extras novas) e a tabela. Vale para qualquer dono de
+ * paleta: o modelo antigo e o documento da oficina nova usam os mesmos campos.
  */
-export function buildColorRemap(
+export function buildColorRemap<T extends MoldaPaletteFields>(
   sourceColors: readonly string[],
   sourceIndices: Iterable<number>,
-  model: MoldaModelAsset,
-): { model: MoldaModelAsset; map: number[] } {
+  model: T,
+): { model: T; map: number[] } {
   let next = model
   const map: number[] = Array.from({ length: sourceColors.length }, () => 0)
   const seen = new Set<number>([0])
@@ -272,7 +274,8 @@ export function buildColorRemap(
   return { model: next, map }
 }
 
-function sampleTextureSkin(
+/** A textura amostrada no tamanho pedido: repetida (x % lado) ou esticada (vizinho). */
+export function sampleTextureSkin(
   texture: MoldaTextureAsset,
   width: number,
   height: number,

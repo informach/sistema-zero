@@ -1,7 +1,8 @@
 /**
- * As ferramentas da aba Pintar à vista: Lápis, Borracha, Balde e Conta-gotas, e a largura do
- * traço. São as do editor antigo, em botões de 44 px. O resto (formas, área, degradê, carimbo,
- * folha inteira) mora em "Mais jeitos de pintar".
+ * As ferramentas da aba Pintar à vista: Lápis, Borracha, Balde e Conta-gotas, a largura do
+ * traço e os recursos do editor antigo (girar a pintura da face, pintar de perto, espelho e
+ * vestir com textura), em botões de 44 px. O resto (formas, área, degradê, carimbo, folha
+ * inteira) mora em "Mais jeitos de pintar".
  */
 import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
@@ -10,6 +11,7 @@ import { Button, ToolButton } from '../../ui/Button'
 import {
   Eraser,
   FlipHorizontal2,
+  ImageIcon,
   PaintBucket,
   Pencil,
   Pipette,
@@ -18,7 +20,14 @@ import {
 } from '../../ui/icons'
 import type { useScenePaint } from './useScenePaint'
 
-export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScenePaint> }) {
+export function ScenePaintToolbox({
+  paint,
+  onDress,
+}: {
+  paint: ReturnType<typeof useScenePaint>
+  /** "Vestir com textura": só quando há galeria (dentro do app) e uma peça para vestir. */
+  onDress?: () => void
+}) {
   const copy = COPY.scene
   const { eraser, fill, picker, rotate, closeupTool, shape, brush } = paint
   const pencil = !eraser && !fill && !shape && !picker && !rotate && !closeupTool
@@ -69,6 +78,14 @@ export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScene
           active={paint.mirror}
           onClick={() => paint.setMirror(!paint.mirror)}
         />
+        {onDress && (
+          <ToolButton
+            icon={ImageIcon}
+            label={COPY.editor.model.paint.apply.button}
+            aria-haspopup="dialog"
+            onClick={onDress}
+          />
+        )}
       </fieldset>
       {picker && <p className="text-xs text-mld-muted">{copy.paintPickerHint}</p>}
       {fill && <p className="text-xs text-mld-muted">{copy.paintFillHint}</p>}

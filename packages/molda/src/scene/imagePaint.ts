@@ -26,6 +26,8 @@ export interface ScenePaintTarget {
 export interface ScenePaintSample {
   point: Texel
   region: string
+  /** A face tocada no palco (a superfície da forma ou a chave da face da malha): o "de perto". */
+  faceId?: string
   /** Optional cell bounds from 3D picking; wide brushes/fills must not cross into adjacent frames. */
   bounds?: ScenePixelRegion
   /** Espelho de pintura: o ponto refletido no plano do meio, na MESMA peça e na mesma folha. */

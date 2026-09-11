@@ -7,7 +7,8 @@
  * pedia de 4 a 6 passos, por um painel fechado.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
@@ -16,16 +17,20 @@ import { addScenePrimitive, convertSceneNodesToMesh, editSceneMesh } from '../..
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
+import { sceneFaceViewTexel, scenePaintFaceView } from '../../../scene/paintFaceView'
 import { scenePaintFaceBounds } from '../../../scene/paintSurfaceBounds'
 import { createDocumentEditorStore } from '../../../state/editorStore'
+import { createGalleryStore } from '../../../state/galleryStore'
+import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { frontControls } from '../../../testing/domContract'
-import { makeModel } from '../../../testing/fixtures'
+import { makeModel, makeTexture } from '../../../testing/fixtures'
 import type {
   ScenePaintMode,
   SceneViewportCallbacks,
   SceneViewportFactory,
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
+import { MoldaAppProvider } from '../../appContext'
 import { SceneWorkshop } from './SceneWorkshop'
 
 afterEach(() => {
@@ -42,7 +47,7 @@ function twoBoxes() {
   return { document: two, door: one.nodes.at(-1)!.id, wall: two.nodes.at(-1)!.id }
 }
 
-function mount(asset: MoldaSceneDocument) {
+function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode = (node) => node) {
   const editor = createDocumentEditorStore({
     asset,
     sizeOf: structuredBytes,
@@ -88,7 +93,7 @@ function mount(asset: MoldaSceneDocument) {
     }
     return port
   }
-  const view = render(<SceneWorkshop editor={editor} viewportFactory={factory} />)
+  const view = render(wrap(<SceneWorkshop editor={editor} viewportFactory={factory} />))
   /** O toque no palco: é o viewport que decide peça e face, aqui dito direto. */
   const tap = (id: string, faceId = 'py') =>
     act(() => {
@@ -285,7 +290,12 @@ describe('pintar de perto', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUp }))
     expect(screen.getByText(SCENE_PAINT_COPY.closeUpHint)).toBeDefined()
     act(() => {
-      stage.callbacks!.paint!.begin({ point: [bounds.x0, bounds.y0], region: 'py', bounds })
+      stage.callbacks!.paint!.begin({
+        point: [bounds.x0, bounds.y0],
+        region: 'py',
+        faceId: 'py',
+        bounds,
+      })
     })
     // Escolher a face não pinta nada: o lápis volta, agora de perto.
     expect(editor.getState().canUndo).toBe(true)
@@ -297,9 +307,14 @@ describe('pintar de perto', () => {
     Object.assign(sheet, { setPointerCapture: () => {}, hasPointerCapture: () => false })
     fireEvent.pointerDown(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
     fireEvent.pointerUp(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
-    // O canto de cima, à esquerda, na tela é a última linha da face na folha (V para cima).
+    // A face em pé: o canto de cima, à esquerda, na tela é o canto de cima da face vista de fora.
+    // Na caixa, como no editor antigo, é a primeira linha da face na folha.
     const at = (x: number, y: number) => image().layers[0]!.pixels[y * image().width + x]
-    expect(at(bounds.x0, bounds.y1)).toBe(7)
+    expect(sceneFaceViewTexel(scenePaintFaceView(geometry, 'py', image())!, 0, 0)).toEqual([
+      bounds.x0,
+      bounds.y0,
+    ])
+    expect(at(bounds.x0, bounds.y0)).toBe(7)
     expect(editor.getState().asset).not.toBe(prepared)
     fireEvent.keyDown(view.getByRole('region', { name: COPY.scene.title }), { key: 'Escape' })
     expect(screen.queryByRole('region', { name: SCENE_PAINT_COPY.closeUp })).toBeNull()
@@ -371,6 +386,62 @@ describe('girar a pintura da face', () => {
     expect(at(bounds.x1, bounds.y0)).toBe(7)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.images).toEqual(painted.images)
+    editor.getState().dispose()
+  })
+})
+
+describe('vestir com textura', () => {
+  test('só aparece dentro do app, que tem a galeria das texturas', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    expect(stage.target?.nodeId).toBe(door)
+    expect(screen.queryByRole('button', { name: COPY.editor.model.paint.apply.button })).toBeNull()
+    editor.getState().dispose()
+  })
+
+  test('a textura da galeria veste a peça inteira, num passo de desfazer', async () => {
+    const texture = makeTexture()
+    const persistence = createMemoryPersistence([texture])
+    const gallery = createGalleryStore(persistence)
+    await gallery.getState().load()
+    const scene = {
+      listSummaries: async () => ({ summaries: [], issues: [] }),
+      readProject: async () => null,
+      rename: async () => false,
+      remove: async () => false,
+      duplicate: async () => null,
+      subscribe: () => () => {},
+    }
+    const { document, door, wall } = twoBoxes()
+    const { editor, stage, tap } = mount(document, (node) => (
+      <MoldaAppProvider value={{ adapter: {}, persistence, scene, gallery }}>
+        {node}
+      </MoldaAppProvider>
+    ))
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const imageId = stage.target!.imageId
+    const prepared = editor.getState().asset
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.paint.apply.button }))
+    const dialog = screen.getByRole('dialog', { name: COPY.editor.model.paint.apply.title })
+    fireEvent.click(within(dialog).getByRole('button', { name: texture.name }))
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: COPY.editor.model.paint.apply.apply }),
+    )
+    await waitFor(() => expect(editor.getState().asset).not.toBe(prepared))
+    const pixels = editor.getState().asset.images.find((entry) => entry.id === imageId)!
+      .layers[0]!.pixels
+    expect(pixels.some((value) => value !== 0)).toBe(true)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    // A outra peça não muda, e um desfazer tira a roupa inteira.
+    expect(material(editor.getState().asset, wall)).toEqual(material(prepared, wall))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.images).toEqual(prepared.images)
+    expect(stage.target?.nodeId).toBe(door)
     editor.getState().dispose()
   })
 })

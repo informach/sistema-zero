@@ -4,7 +4,6 @@ import { hexToRgb } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import type { BrushSize } from '../../../paint/skinPaint'
-import type { ScenePixelRegion } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneLayerColor } from '../../../scene/imageColor'
 import { captureSceneLayerRaster } from '../../../scene/imageImport'
@@ -17,6 +16,11 @@ import {
 } from '../../../scene/imagePaint'
 import { intersectImageRegions } from '../../../scene/imageRegion'
 import type { SceneStampSettings } from '../../../scene/imageStamp'
+import {
+  type ScenePaintFaceView,
+  scenePaintFaceView,
+  sceneSheetView,
+} from '../../../scene/paintFaceView'
 import { rotateScenePaintRegion } from '../../../scene/paintRegionRotate'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
@@ -67,9 +71,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const rotate = tool === 'rotate'
   /** Espelho de pintura: o traço pinta também o ponto refletido no meio, na mesma peça. */
   const [mirror, setMirror] = useState(false)
-  /** Pintar de perto: a face tocada, ampliada por cima do palco, com o traço preso a ela. */
+  /** Pintar de perto: a face tocada, ampliada e em pé por cima do palco, com o traço preso a ela. */
   const closeupTool = tool === 'closeup'
-  const [closeUp, setCloseUp] = useState<{ imageId: string; region: ScenePixelRegion } | null>(null)
+  const [closeUp, setCloseUp] = useState<{ imageId: string; view: ScenePaintFaceView } | null>(null)
   const [tolerance, setTolerance] = useState(0)
   const imageTask = useSceneImageTask(editor)
   const cancelImage = imageTask.cancel
@@ -256,14 +260,24 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (closeupTool) {
         // O toque escolhe a face; a pintura continua com o lápis, agora de perto.
+        const region = sample.bounds ?? {
+          x0: 0,
+          y0: 0,
+          x1: data.image.width - 1,
+          y1: data.image.height - 1,
+        }
+        const node = document.nodes.find((entry) => entry.id === session.target.nodeId)
+        const geometry =
+          node?.kind === 'mesh'
+            ? document.geometries.find((entry) => entry.id === node.geometryId)
+            : undefined
         setCloseUp({
           imageId: session.target.imageId,
-          region: sample.bounds ?? {
-            x0: 0,
-            y0: 0,
-            x1: data.image.width - 1,
-            y1: data.image.height - 1,
-          },
+          view:
+            (geometry &&
+              sample.faceId !== undefined &&
+              scenePaintFaceView(geometry, sample.faceId, data.image, region)) ||
+            sceneSheetView(region),
         })
         setTool('pencil')
         setError(null)
@@ -396,9 +410,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       closeUp &&
       data &&
       closeUp.imageId === data.image.id &&
-      closeUp.region.x1 < data.image.width &&
-      closeUp.region.y1 < data.image.height
-        ? closeUp.region
+      closeUp.view.region.x1 < data.image.width &&
+      closeUp.view.region.y1 < data.image.height
+        ? closeUp.view
         : null,
     closeCloseUp: () => {
       cancel()

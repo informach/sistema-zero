@@ -1,20 +1,22 @@
 /**
- * Pintar de perto: a folha mostrando SÓ a face tocada, ampliada, por cima do palco. As
- * ferramentas e as cores são as mesmas da aba (a coluna e a faixa continuam à vista), e o
- * traço fica preso à região da face (o limite vai em cada amostra).
+ * Pintar de perto: SÓ a face tocada, ampliada e em pé, por cima do palco. As ferramentas e as
+ * cores são as mesmas da aba (a coluna e a faixa continuam à vista), e o traço fica preso à
+ * região da face (o limite vai em cada amostra).
  *
  * É diferente da folha inteira ("Mais jeitos de pintar"), que mostra a imagem toda, confusa
- * para a criança: aqui é uma face só, do tamanho do palco.
+ * para a criança: aqui é uma face só, do tamanho do palco, do jeito que ela aparece de fora
+ * (`scene/paintFaceView.ts`), e não do jeito que a folha a guarda.
  */
 import { useEffect, useRef } from 'react'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { Texel } from '../../../paint/skinPaint'
-import {
-  compositeSceneImageRegion,
-  type ScenePixelRegion,
-  type SceneRgba,
-} from '../../../scene/composite'
+import { compositeSceneImageRegion, type SceneRgba } from '../../../scene/composite'
 import type { SceneImage } from '../../../scene/document'
+import {
+  type ScenePaintFaceView,
+  sceneFaceViewSize,
+  sceneFaceViewTexel,
+} from '../../../scene/paintFaceView'
 import { Button } from '../../ui/Button'
 import type { ScenePaintActions } from './useScenePaint'
 
@@ -22,7 +24,7 @@ export function ScenePaintCloseUp({
   image,
   palette,
   base,
-  region,
+  view,
   drawing,
   actions,
   onClose,
@@ -30,13 +32,13 @@ export function ScenePaintCloseUp({
   image: SceneImage
   palette: readonly SceneRgba[]
   base: SceneRgba
-  region: ScenePixelRegion
+  view: ScenePaintFaceView
   drawing: boolean
   actions: ScenePaintActions
   onClose(): void
 }) {
-  const width = region.x1 - region.x0 + 1
-  const height = region.y1 - region.y0 + 1
+  const { region } = view
+  const { width, height } = sceneFaceViewSize(view)
   const canvas = useRef<HTMLCanvasElement>(null)
   const pointer = useRef<number | null>(null)
   const live = useRef(actions)
@@ -44,16 +46,18 @@ export function ScenePaintCloseUp({
   useEffect(() => {
     const context = canvas.current?.getContext('2d')
     if (!context) return
-    const pixels = compositeSceneImageRegion(image, palette, base, region)
+    const pixels = compositeSceneImageRegion(image, palette, base, view.region)
+    const stride = view.region.x1 - view.region.x0 + 1
     const data = context.createImageData(width, height)
-    // Linha zero da folha é V = 0, embaixo; na tela, a de cima.
+    // Cada célula da tela puxa o texel dela: a face em pé, com a linha de cima em cima.
     for (let row = 0; row < height; row++)
-      data.data.set(
-        pixels.subarray(row * width * 4, (row + 1) * width * 4),
-        (height - 1 - row) * width * 4,
-      )
+      for (let column = 0; column < width; column++) {
+        const [x, y] = sceneFaceViewTexel(view, column, row)
+        const from = ((y - view.region.y0) * stride + (x - view.region.x0)) * 4
+        data.data.set(pixels.subarray(from, from + 4), (row * width + column) * 4)
+      }
     context.putImageData(data, 0, 0)
-  }, [image, palette, base, region, width, height])
+  }, [image, palette, base, view, width, height])
   useEffect(() => {
     if (!drawing && pointer.current !== null) {
       pointer.current = null
@@ -73,13 +77,14 @@ export function ScenePaintCloseUp({
     const scale = Math.min(box.width / width, box.height / height)
     const left = box.left + (box.width - width * scale) / 2
     const top = box.top + (box.height - height * scale) / 2
-    const u = (clientX - left) / (width * scale)
-    const v = 1 - (clientY - top) / (height * scale)
-    if (u < 0 || v < 0 || u > 1 || v > 1) return null
-    return [
-      region.x0 + Math.min(width - 1, Math.floor(u * width)),
-      region.y0 + Math.min(height - 1, Math.floor(v * height)),
-    ]
+    const across = (clientX - left) / (width * scale)
+    const down = (clientY - top) / (height * scale)
+    if (across < 0 || down < 0 || across > 1 || down > 1) return null
+    return sceneFaceViewTexel(
+      view,
+      Math.min(width - 1, Math.floor(across * width)),
+      Math.min(height - 1, Math.floor(down * height)),
+    )
   }
   const sample = (point: Texel) => ({ point, region: 'perto', bounds: region })
   function finish(commit: boolean) {

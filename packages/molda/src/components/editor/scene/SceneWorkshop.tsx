@@ -404,7 +404,7 @@ export function SceneWorkshop({
                       scenePalette(document),
                       workshop.paint.data.imageKind,
                     )}
-                    region={workshop.paint.closeUp}
+                    view={workshop.paint.closeUp}
                     drawing={workshop.paint.drawing}
                     actions={workshop.paint.actions}
                     onClose={workshop.paint.closeCloseUp}

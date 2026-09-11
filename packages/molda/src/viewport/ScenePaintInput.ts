@@ -99,6 +99,7 @@ export class ScenePaintInput {
           : null
     return {
       point,
+      faceId,
       ...(bounds ? { bounds } : {}),
       region: JSON.stringify(frame === null ? [instanceId, faceId] : [instanceId, faceId, frame]),
     }
