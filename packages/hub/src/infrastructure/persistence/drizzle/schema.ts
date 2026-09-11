@@ -188,6 +188,21 @@ export const threads = hub.table(
     index('threads_channel_challenge_idx')
       .on(t.channelId, t.challengeKey)
       .where(sql`${t.challengeKey} is not null`),
+    // Filtros do Mural (09/2026): "Novidades" e "Mais jogados", na mesma chave total do
+    // cursor. Parciais: só vitrine usa essas ordens (o fórum lista pela atividade).
+    // `nullsFirst` é o padrão do DESC no Postgres e casa com o `desc()` das consultas;
+    // o `.desc()` sozinho do drizzle emite NULLS LAST, e aí o índice não serve a ordem.
+    index('threads_showcase_recent_idx')
+      .on(t.channelId, t.createdAt.desc().nullsFirst(), t.id.desc().nullsFirst())
+      .where(sql`${t.isShowcase} = true`),
+    index('threads_showcase_plays_idx')
+      .on(
+        t.channelId,
+        t.playsCount.desc().nullsFirst(),
+        t.createdAt.desc().nullsFirst(),
+        t.id.desc().nullsFirst(),
+      )
+      .where(sql`${t.isShowcase} = true`),
   ],
 )
 

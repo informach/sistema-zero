@@ -36,6 +36,7 @@ import type {
   HubPage,
   HubResolvedAttachment,
   HubSpaceView,
+  HubThreadSort,
   HubThreadView,
   LeagueMeView,
   LessonCompleteResult,
@@ -1362,11 +1363,22 @@ export function createHubClient(gw: GatewayModule, opts: { audience: MembersAudi
     },
     listThreads(
       channelId: string,
-      params: { cursor?: string; limit?: number; challenge?: string } = {},
+      params: {
+        cursor?: string
+        limit?: number
+        challenge?: string
+        /** Filtros do Mural: `recent` (Novidades) e `plays` (Mais jogados); ausente = padrão. */
+        sort?: HubThreadSort
+      } = {},
     ): Promise<GatewayResponse<HubPage<HubThreadView>>> {
       return gw.gatewayFetch(`/hub/channels/${enc(channelId)}/threads`, {
         // `challenge` = prateleira do Desafio do mês (`m:YYYY-MM`) — só posts com a tag.
-        query: { cursor: params.cursor, limit: params.limit, challenge: params.challenge },
+        query: {
+          cursor: params.cursor,
+          limit: params.limit,
+          challenge: params.challenge,
+          sort: params.sort,
+        },
       })
     },
     createThread(

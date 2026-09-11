@@ -5,6 +5,7 @@ import {
   ChannelNotFoundError,
   CommentNotFoundError,
   ConcurrencyConflictError,
+  CursorSortMismatchError,
   PostingNotAllowedError,
   ThreadNotFoundError,
   TooManyAttachmentsError,
@@ -15,7 +16,7 @@ import type { AttachmentRepository } from '../../domain/ports/attachment-reposit
 import type { CommunityReadRepository } from '../../domain/ports/community-read-repository.port'
 import type { ModerationRepository } from '../../domain/ports/moderation-repository.port'
 import type { ReactionRepository } from '../../domain/ports/reaction-repository.port'
-import type { ThreadRepository } from '../../domain/ports/thread-repository.port'
+import type { ThreadRepository, ThreadSort } from '../../domain/ports/thread-repository.port'
 import { type Channel, effectiveRequiresApproval, type Space } from '../../domain/space/space'
 import type { Comment, Thread } from '../../domain/thread/thread'
 import type { AccessResolutionService, Actor } from '../access/access-resolution.service'
@@ -169,7 +170,12 @@ export class ThreadService {
     limit: number,
     /** Prateleira do desafio mensal (`m:YYYY-MM`) — filtra por `challenge_key`. */
     challengeKey: string | null = null,
+    /** Ordem da listagem (filtros do Mural); o padrão é a de sempre. */
+    sort: ThreadSort = 'activity',
   ): Promise<Page<ThreadView>> {
+    // Cursor de outra ordem pularia ou repetiria itens: a chave de posição dele não é
+    // a desta listagem. Recusa em vez de devolver uma página errada em silêncio.
+    if (cursor && (cursor.s ?? 'activity') !== sort) throw new CursorSortMismatchError()
     await this.requireChannelAccess(actor, channelId)
     const { items, hasMore } = await this.threads.listThreads(channelId, {
       viewerId: actor.userId,
@@ -177,13 +183,14 @@ export class ThreadService {
       cursor,
       limit,
       challengeKey,
+      sort,
     })
     const ids = items.map((t) => t.id)
     const [reactions, attachments] = await Promise.all([
       this.reactions.summarize('thread', ids, actor.userId),
       this.attachments.listByThreadIds(ids),
     ])
-    return toThreadPage(items, hasMore, reactions, attachments)
+    return toThreadPage(items, hasMore, reactions, attachments, sort)
   }
 
   /**

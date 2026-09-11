@@ -454,6 +454,36 @@ export class InMemoryThreadRepository implements ThreadRepository {
         visible(t) &&
         (!opts.challengeKey || t.challengeKey === opts.challengeKey),
     )
+    const sort = opts.sort ?? 'activity'
+    if (sort !== 'activity') {
+      // Espelho do repositório Drizzle: chave total (jogadas?, criação, id), sem fixados no topo.
+      const key = (t: Thread): [number, number, string] => [
+        sort === 'plays' ? t.playsCount : 0,
+        t.createdAt.getTime(),
+        t.id,
+      ]
+      const desc = (a: Thread, b: Thread) => {
+        const [ka, kb] = [key(a), key(b)]
+        return kb[0] - ka[0] || kb[1] - ka[1] || (ka[2] < kb[2] ? 1 : ka[2] > kb[2] ? -1 : 0)
+      }
+      let rows = [...all].sort(desc)
+      const c = opts.cursor
+      if (c) {
+        const pos: [number, number, string] = [
+          sort === 'plays' ? (c.n ?? 0) : 0,
+          c.t.getTime(),
+          c.id,
+        ]
+        rows = rows.filter((t) => {
+          const k = key(t)
+          return (
+            k[0] < pos[0] ||
+            (k[0] === pos[0] && (k[1] < pos[1] || (k[1] === pos[1] && k[2] < pos[2])))
+          )
+        })
+      }
+      return { items: rows.slice(0, opts.limit), hasMore: rows.length > opts.limit }
+    }
     const pinned = all.filter((t) => t.isPinned).sort(byActivityDesc)
     let rest = all.filter((t) => !t.isPinned).sort(byActivityDesc)
     if (opts.cursor) {

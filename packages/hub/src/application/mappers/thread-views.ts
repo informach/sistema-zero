@@ -1,7 +1,8 @@
 import type { Attachment } from '../../domain/attachment/attachment'
 import type { ReactionSummaryItem } from '../../domain/ports/reaction-repository.port'
+import type { ThreadSort } from '../../domain/ports/thread-repository.port'
 import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../../domain/thread/thread'
-import { encodeCursor } from '../cursor'
+import { type CursorPos, encodeCursor } from '../cursor'
 
 type ReactionMap = Map<string, ReactionSummaryItem[]>
 const reactionsFor = (map: ReactionMap | undefined, id: string): ReactionSummaryItem[] =>
@@ -155,18 +156,26 @@ export function toCommentView(
   }
 }
 
+/** A posição do último item da página NA CHAVE da ordem pedida (ver `ThreadSort`). */
+function threadCursorFor(t: Thread, sort: ThreadSort): CursorPos {
+  if (sort === 'recent') return { t: t.createdAt, id: t.id, s: 'recent' }
+  if (sort === 'plays') return { t: t.createdAt, id: t.id, s: 'plays', n: t.playsCount }
+  return { t: t.lastActivityAt, id: t.id }
+}
+
 export function toThreadPage(
   items: Thread[],
   hasMore: boolean,
   reactions?: ReactionMap,
   attachments?: AttachmentMap,
+  sort: ThreadSort = 'activity',
 ): Page<ThreadView> {
   const last = items[items.length - 1]
   return {
     items: items.map((t) =>
       toThreadView(t, reactionsFor(reactions, t.id), attachmentsFor(attachments, t.id)),
     ),
-    nextCursor: hasMore && last ? encodeCursor({ t: last.lastActivityAt, id: last.id }) : null,
+    nextCursor: hasMore && last ? encodeCursor(threadCursorFor(last, sort)) : null,
     hasMore,
   }
 }

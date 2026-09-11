@@ -25,6 +25,7 @@ import type {
 } from '@/lib/types'
 import { KidsLockedSpace } from './kids-locked-space'
 import { KidsSpaceContent, type KidsSpaceContentProps } from './kids-space-content'
+import { type MuralSort, sortQuery } from './mural-sort'
 import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
 import { useKidsSpaceReport } from './use-kids-space-report'
@@ -128,6 +129,7 @@ export function KidsSpaceViewClient({
 
   // Paginação por cursor — espaços acumulam conversas/respostas além da 1ª página.
   const [threadsCursor, setThreadsCursor] = useState<string | null>(null)
+  const [sort, setSort] = useState<MuralSort>('activity') // filtros do Mural; recarrega a lista
   const [threadsHasMore, setThreadsHasMore] = useState(false)
   const [loadingMoreThreads, setLoadingMoreThreads] = useState(false)
   const [commentsCursor, setCommentsCursor] = useState<string | null>(null)
@@ -285,23 +287,28 @@ export function KidsSpaceViewClient({
 
   // `isCurrent` evita a corrida de troca de canal: clicar A→B deixa os dois fetches
   // em voo; sem a guarda, se A resolve por último, as threads de A renderizam sob B.
-  const loadThreads = useCallback(async (channelId: string, isCurrent?: () => boolean) => {
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${enc(channelId)}/threads`,
-      )
-      if (isCurrent && !isCurrent()) return
-      setThreads(page.items)
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-      // Marca como visto só depois de uma carga bem-sucedida.
-      apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
-      setChannels((prev) => prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)))
-    } catch (err) {
-      if (isCurrent && !isCurrent()) return
-      toast.error((err as ApiError).message ?? 'Falha ao carregar.')
-    }
-  }, [])
+  const loadThreads = useCallback(
+    async (channelId: string, isCurrent?: () => boolean) => {
+      try {
+        const page = await apiGet<HubPage<HubThreadView>>(
+          `/api/hub/channels/${enc(channelId)}/threads${sortQuery(sort, '?')}`,
+        )
+        if (isCurrent && !isCurrent()) return
+        setThreads(page.items)
+        setThreadsCursor(page.nextCursor)
+        setThreadsHasMore(page.hasMore)
+        // Marca como visto só depois de uma carga bem-sucedida.
+        apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
+        setChannels((prev) =>
+          prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)),
+        )
+      } catch (err) {
+        if (isCurrent && !isCurrent()) return
+        toast.error((err as ApiError).message ?? 'Falha ao carregar.')
+      }
+    },
+    [sort],
+  )
 
   // Busca DEDICADA da prateleira do Desafio: `?challenge=<key>` faz o hub devolver SÓ
   // os posts do mês (independente da paginação da grade). Best-effort — sem toast: se
@@ -329,7 +336,7 @@ export function KidsSpaceViewClient({
     setLoadingMoreThreads(true)
     try {
       const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${enc(channel.id)}/threads?cursor=${enc(threadsCursor)}`,
+        `/api/hub/channels/${enc(channel.id)}/threads?cursor=${enc(threadsCursor)}${sortQuery(sort, '&')}`,
       )
       setThreads((prev) => [...prev, ...page.items])
       setThreadsCursor(page.nextCursor)
@@ -548,6 +555,7 @@ export function KidsSpaceViewClient({
   const contentProps: KidsSpaceContentProps = {
     context: {
       isWall,
+      isStaff,
       space,
       viewerId,
       spaceChannelIds,
@@ -599,6 +607,8 @@ export function KidsSpaceViewClient({
       threads,
       challengeThreads,
       challenge,
+      sort,
+      onSortChange: setSort,
       onOpenThread: openThread,
       threadsHasMore,
       loadingMoreThreads,

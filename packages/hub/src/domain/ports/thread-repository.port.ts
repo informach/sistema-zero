@@ -75,6 +75,15 @@ export interface CreateCommentInput {
   now: Date
 }
 
+/**
+ * Ordem da listagem de tópicos (filtros do Mural, 09/2026):
+ * - `activity` (padrão): FIXADOS primeiro na página 1, depois última atividade;
+ * - `recent`: data de publicação, mais novos primeiro ("Novidades");
+ * - `plays`: jogadas do link público, mais jogados primeiro ("Mais jogados").
+ * As duas alternativas NÃO puxam os fixados para o topo: a ordem é a promessa do filtro.
+ */
+export type ThreadSort = 'activity' | 'recent' | 'plays'
+
 export interface ListThreadsOpts {
   /** Vê os pendentes DESTE autor além dos visíveis (o autor vê o próprio aguardando). */
   viewerId: string
@@ -84,6 +93,8 @@ export interface ListThreadsOpts {
   limit: number
   /** Só posts do desafio (`m:YYYY-MM`) — prateleira do Mural; ausente = todos. */
   challengeKey?: string | null
+  /** Ordem da página; ausente = `activity` (o comportamento de sempre). */
+  sort?: ThreadSort
 }
 
 export interface ListCommentsOpts {

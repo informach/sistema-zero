@@ -319,7 +319,7 @@ os do gateway (`gateway.config.ts`).
 | GET | `/hub/spaces` | lista servidores visíveis (`?audience=adult\|kids`) | 300/min |
 | GET | `/hub/spaces/:slug` | detalhe do servidor | 300/min |
 | GET | `/hub/spaces/:slug/channels` | canais do servidor (com badge de novidades) | 300/min |
-| GET | `/hub/channels/:id/threads` | tópicos do canal (cursor `?cursor=&limit=`) | 300/min |
+| GET | `/hub/channels/:id/threads` | tópicos do canal (cursor `?cursor=&limit=`; ordem `?sort=activity\|recent\|plays`, ver "Filtros do Mural") | 300/min |
 | POST | `/hub/channels/:id/threads` | cria tópico `{title, body, playId?}` (pré-moderação; `playId` = cross-link Mural↔Clube, valida vitrine visível) | 60/min · 64KB |
 | GET | `/hub/threads/:id` | detalhe do tópico | 300/min |
 | PATCH | `/hub/threads/:id` | edita tópico (autor ou staff) `{body}` | 60/min · 64KB |
@@ -523,8 +523,32 @@ reescrita à mão com `IF NOT EXISTS` em tudo (no-op em banco vivo, cria em banc
 0009 cura a linhagem. **Regra, de novo e com mais força:** depois de `db:generate`, LEIA o SQL e
 compare com o banco de prod ANTES de commitar — o teste de DB pega num banco que já tem as colunas
 (`column already exists`), mas só se for rodado.
+**`0013_mural_sort_indexes` (filtros do Mural, 11/09/2026 — gerada e REESCRITA à mão com `IF NOT
+EXISTS`, journaled):** dois índices parciais `WHERE is_showcase = true` na chave total de cada ordem
+nova (`threads_showcase_recent_idx` e `threads_showcase_plays_idx`, ver "Filtros do Mural"). O
+`db:generate` desta vez NÃO trouxe drift (o snapshot 0009 curou a linhagem), mas a regra de ler o SQL
+vale igual. ⚠️ No `schema.ts` as colunas vão com `.desc().nullsFirst()`: o `.desc()` sozinho do
+drizzle emite `DESC NULLS LAST`, que não casa com o `ORDER BY ... desc` das consultas.
 `db:migrate` aplica tudo de forma idempotente (gateado pelo `when` do journal). Ao adicionar migration
 nova, CONFIRA o journal antes de gerar.
+
+## Filtros do Mural — ordem da listagem de tópicos (11/09/2026)
+
+`GET /hub/channels/:id/threads?sort=` aceita `activity` (padrão: fixados primeiro na página 1,
+depois `last_activity_at`), `recent` ("Novidades": `created_at`) e `plays` ("Mais jogados":
+`plays_count`, empate por `created_at`). As duas ordens novas NÃO puxam fixados para o topo e têm
+chave TOTAL (desempate final pelo `id`), então a paginação não pula nem repete. O cursor opaco
+carrega a ordem (`s`) e, em `plays`, as jogadas (`n`); a ordem padrão segue sem `s`, byte a byte o
+formato antigo. Cursor de uma ordem pedido em outra → **400 `VALIDATION_ERROR`**
+(`CursorSortMismatchError`), nunca uma página errada. Contrato em
+`tests/integration/thread-sort.test.ts` (fakes) e `tests/db/thread-sort-repository.test.ts`
+(Postgres real: a comparação de linha de três colunas e os casts).
+
+⚠️⚠️ **O teste SQL pegou um defeito ANTIGO:** a comparação de cursor da ordem padrão e a das
+respostas bindavam o `Date` cru dentro do `sql` (`… < (${cursor.t}, …)`), e o postgres.js recusa
+("Received an instance of Date") — reproduz LOCAL, ao contrário do que o gotcha 9 dizia. Ou seja:
+a 2ª página do Clube/Mural ("Carregar mais") e a das respostas morriam desde sempre. Consertado com
+ISO + cast explícito (`${t.toISOString()}::timestamptz`, `${id}::uuid`) nos dois lugares.
 Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), com retenção do
 `processed_webhooks` num ciclo de 6h sob **advisory xact-lock `51020304050607081`** (único no banco
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`

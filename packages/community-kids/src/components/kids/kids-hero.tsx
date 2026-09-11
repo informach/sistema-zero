@@ -24,6 +24,7 @@ export function KidsHero({
   icon: Icon,
   eyebrow,
   title,
+  titleAs: Title = 'h2',
   description,
   actions,
   footer,
@@ -35,6 +36,11 @@ export function KidsHero({
   icon?: LucideIcon
   eyebrow?: ReactNode
   title: ReactNode
+  /**
+   * `h1` quando o herói É o título da página (o Clube: na tela-modelo o nome do espaço
+   * mora dentro do azul, sem título solto acima). Padrão `h2`.
+   */
+  titleAs?: 'h1' | 'h2'
   description?: ReactNode
   actions?: ReactNode
   /** Linha de apoio abaixo do texto (o aviso de sequência/ranking no perfil). */
@@ -48,21 +54,22 @@ export function KidsHero({
     <div
       className={cn(
         'kids-marca relative overflow-hidden rounded-[1.75rem] shadow-(--sombra-heroi)',
-        alto ? 'p-6 md:p-7 md:pl-10' : 'px-5 py-5 md:px-8 md:py-6',
+        alto ? 'p-6 md:p-7 md:pl-10' : 'p-5 md:p-7',
         className,
       )}
     >
       <div
         className={cn(
-          'relative flex gap-6',
+          'relative flex',
           alto
-            ? 'flex-col items-start md:flex-row md:items-center md:justify-between'
-            : 'flex-col md:flex-row md:items-center',
+            ? 'flex-col items-start gap-6 md:flex-row md:items-center md:justify-between'
+            : 'flex-col gap-5 md:flex-row md:items-center md:gap-6',
         )}
       >
+        {/* Na FAIXA o ladrilho é o de 84px do herói do Clube (medido a 1440px). */}
         {!alto && Icon ? (
-          <span className="kids-marca-tile grid size-14 shrink-0 place-items-center rounded-2xl">
-            <Icon className="size-7" aria-hidden />
+          <span className="kids-marca-tile grid size-16 shrink-0 place-items-center rounded-[1.25rem] md:size-[5.25rem] md:rounded-[1.375rem]">
+            <Icon className="size-8 md:size-11" strokeWidth={1.75} aria-hidden />
           </span>
         ) : null}
         <div className={cn('min-w-0 flex-1', alto && 'md:py-3')}>
@@ -73,13 +80,11 @@ export function KidsHero({
               {eyebrow}
             </p>
           ) : null}
-          <h2
-            className={cn('sz-display', alto ? 'text-[clamp(1.6rem,2.8vw,2.25rem)]' : 'text-2xl')}
-          >
-            {title}
-          </h2>
+          <Title className="sz-display text-[clamp(1.6rem,2.8vw,2.25rem)]">{title}</Title>
           {description ? (
-            <p className="kids-marca-suave mt-4 max-w-prose text-base">{description}</p>
+            <p className={cn('kids-marca-suave max-w-prose text-base', alto ? 'mt-4' : 'mt-2.5')}>
+              {description}
+            </p>
           ) : null}
           {footer ? <div className="mt-3">{footer}</div> : null}
           {/* Na forma ALTA os botões moram na coluna de texto, como na referência:
@@ -88,9 +93,7 @@ export function KidsHero({
           {alto && actions ? <div className="mt-3.5 flex flex-wrap gap-2">{actions}</div> : null}
         </div>
         {!alto && actions ? (
-          <div className="flex shrink-0 flex-wrap gap-2 md:flex-col md:items-stretch">
-            {actions}
-          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>
         ) : null}
         {alto && art ? <div className="relative shrink-0">{art}</div> : null}
       </div>

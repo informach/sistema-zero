@@ -934,6 +934,26 @@ pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas
 `kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
 diferentes (não-produto) e seguem sem CTA.
 
+### Mural e Clube no desenho das telas-modelo (11/09/2026)
+
+As peças de moldura moram em `kids-space-sections.tsx` (cabeçalhos, painel "CANAIS", fechamentos);
+o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de 625 linhas do
+`component-boundaries`) ganhou apenas o estado do filtro.
+- **Filtros do Mural** ("Todos os jogos", "Mais jogados", "Novidades") são ORDENS de verdade no hub
+  (`?sort=`, ver o CLAUDE.md do hub); `mural-sort.ts` é a régua (a padrão é a AUSÊNCIA do parâmetro).
+  Trocar o filtro recarrega a lista do zero: o `loadThreads` depende do `sort`, e o cursor do hub
+  carrega a ordem. O "Da minha turma" da imagem ficou de fora: não existe turma no sistema.
+- **Faixas:** cabeçalho no creme, Mural no menta e Clube no azul-claro, fechamento no lilás. O
+  "Publicar um jogo" do fechamento do Mural usa a MESMA régua do remix (`onRemix` presente = posse do
+  Estúdio + Estúdio livre na carreira), para nunca levar a criança a uma tela trancada.
+- **Clube:** o nome do espaço mora DENTRO do herói azul (`KidsHero titleAs="h1"`), com o sino e os
+  Combinados em pílula branca (`ClubeCombinados variant="heroi"`). O estado vazio do canal usa
+  `emptyTitle`/`emptyText` (`channel-presentation.ts`): as MESMAS palavras do `emptyState`, partidas
+  em título e frase. A pílula creme "Escreva uma mensagem para a turma…" abre o mesmo formulário do
+  "Começar conversa". Os combinados (`COMBINADOS`, exportado) aparecem também no fechamento.
+- **Autor sem foto** mostra a INICIAL na bolinha (`AuthorBadge` passa `name`), e não o boneco
+  genérico igual para todo mundo.
+
 ### Hub/fórum (compartilhado)
 
 Porta kids do fórum compartilhado (`@sistemazero/hub` via member-shell). A LÓGICA do

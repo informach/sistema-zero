@@ -102,6 +102,13 @@ export class InvalidReorderError extends DomainError {
     super(message)
   }
 }
+/** Cursor emitido por OUTRA ordem da listagem (ex.: de "Novidades" pedido em "Mais jogados"). */
+export class CursorSortMismatchError extends DomainError {
+  readonly code = 'VALIDATION_ERROR'
+  constructor(message = 'Este cursor é de outra ordem da listagem; recomece da primeira página') {
+    super(message)
+  }
+}
 
 // ── Conflito (409) ───────────────────────────────────────────────────────────
 export class DuplicateSlugError extends DomainError {

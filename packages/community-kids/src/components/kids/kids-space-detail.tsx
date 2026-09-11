@@ -10,6 +10,7 @@ import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
 import { Copy, Flag, Gamepad2, Hammer, Lock, MessageCircle, Play, QrCode, Send } from 'lucide-react'
 import { memo, type ReactNode, useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { cn } from '@/lib/cn'
 import type { HubCommentView, HubMyThreadView, HubThreadView } from '@/lib/types'
 import { KidsBackButton } from './back-button'
 import { GameCardDialog } from './game-card-dialog'
@@ -116,6 +117,7 @@ function PlayLinkActions({
   coverImageUrl = null,
   onRemix = null,
   remixLock = null,
+  className,
 }: {
   playUrl: string
   title: string
@@ -128,6 +130,7 @@ function PlayLinkActions({
    * vivo — mostra o recado gentil (o handler checa antes de importar).
    */
   remixLock?: { levelLabel: string | null } | null
+  className?: string
 }) {
   const [cardOpen, setCardOpen] = useState(false)
   const shareOrCopy = useCallback(async () => {
@@ -155,32 +158,35 @@ function PlayLinkActions({
     }
   }, [playUrl, title])
 
+  // As pílulas do cartão do Mural nas telas-modelo (11/09/2026): "Jogar" azul de largura
+  // cheia; "Copiar link" de contorno com o QR num círculo ao lado; "Fazer a minha versão"
+  // na pílula creme. Todas com 44px (alvo de toque).
   return (
-    <div className="flex flex-col gap-2 border-border border-t-2 p-3">
-      <div className="flex items-center gap-2">
-        <a
-          href={playUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex min-h-[40px] flex-1 items-center justify-center gap-1.5 rounded-xl bg-primary px-3 font-bold text-primary-foreground text-sm"
-        >
-          <Play className="size-4" /> Jogar
-        </a>
+    <div className={cn('flex flex-col gap-2.5', className)}>
+      <a
+        href={playUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="sz-btn-gradient h-11 w-full gap-2"
+      >
+        <Play className="size-4" aria-hidden /> Jogar
+      </a>
+      <div className="flex items-center gap-2.5">
         <button
           type="button"
           onClick={shareOrCopy}
-          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+          className="sz-btn-gradient sz-btn-contorno h-11 min-w-0 flex-1 gap-2"
         >
-          <Copy className="size-4" /> Copiar link
+          <Copy className="size-4" aria-hidden /> Copiar link
         </button>
         <button
           type="button"
           onClick={() => setCardOpen(true)}
           aria-label={`Cartão do jogo ${title}`}
           title="Cartão do jogo (imprimir com QR)"
-          className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl border-2 border-border px-3 font-bold text-sm transition-colors hover:bg-muted/60"
+          className="sz-btn-gradient sz-btn-contorno size-11 shrink-0 px-0"
         >
-          <QrCode className="size-4" />
+          <QrCode className="size-4" aria-hidden />
         </button>
       </div>
       {onRemix ? (
@@ -189,18 +195,18 @@ function PlayLinkActions({
             type="button"
             onClick={onRemix}
             title="Continue a sua jornada de criador para remixar este jogo"
-            className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border border-dashed px-3 font-bold text-muted-foreground text-sm transition-colors hover:bg-muted/60"
+            className="sz-btn-gradient sz-btn-suave h-auto min-h-11 w-full gap-2 py-2 text-muted-foreground"
           >
-            <Lock className="size-4" /> Fazer a minha versão
+            <Lock className="size-4 shrink-0" aria-hidden /> Fazer a minha versão
             {remixLock.levelLabel ? ` · no nível ${remixLock.levelLabel}` : ''}
           </button>
         ) : (
           <button
             type="button"
             onClick={onRemix}
-            className="inline-flex min-h-[40px] w-full items-center justify-center gap-1.5 rounded-xl border-2 border-primary px-3 font-bold text-primary text-sm transition-colors hover:bg-(--kids-cyan-tint)"
+            className="sz-btn-gradient sz-btn-suave h-11 w-full gap-2"
           >
-            <Hammer className="size-4" /> Fazer a minha versão
+            <Hammer className="size-4" aria-hidden /> Fazer a minha versão
           </button>
         )
       ) : null}
@@ -232,10 +238,17 @@ export function ShowcaseCard({
 }) {
   const playUrl = playPathFor(thread)
   const plays = thread.playsCount ?? 0
+  // O cartão do Mural das telas-modelo (11/09/2026): branco liso, capa em cima (2:1),
+  // título em Baloo, autor com a bolinha, a descrição em até 4 linhas, os contadores e
+  // as pílulas de jogar embaixo.
   return (
-    <article className="group flex w-full flex-col overflow-hidden rounded-2xl border-2 border-border bg-card transition-colors hover:border-primary">
-      <button type="button" onClick={onOpen} className="flex w-full flex-col text-left">
-        <div className="aspect-video w-full overflow-hidden bg-(--kids-cyan-tint)">
+    <article className="kids-carta group flex w-full flex-col overflow-hidden">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex w-full flex-1 flex-col text-left focus-visible:outline-2 focus-visible:outline-ring focus-visible:-outline-offset-2"
+      >
+        <div className="aspect-[2/1] w-full overflow-hidden bg-(--band-ceu)">
           {thread.coverImageUrl ? (
             <img
               src={thread.coverImageUrl}
@@ -249,12 +262,12 @@ export function ShowcaseCard({
             <div className="grid size-full place-items-center text-3xl">🎮</div>
           )}
         </div>
-        <div className="space-y-1 p-3">
-          <p className="truncate font-bold">{thread.title}</p>
+        <div className="flex flex-1 flex-col p-5">
+          <p className="sz-display line-clamp-2 text-xl">{thread.title}</p>
           {/* Card é um <button> (abre o post) → não aninhar âncora aqui; o nome vira
               link clicável DENTRO do post aberto (ThreadDetail) e nos comentários. */}
           {thread.authorDisplayName ? (
-            <p className="flex items-center text-muted-foreground text-xs">
+            <p className="mt-2 flex items-center text-muted-foreground text-sm">
               <AuthorBadge
                 item={thread}
                 viewerId={viewerId}
@@ -267,21 +280,22 @@ export function ShowcaseCard({
               link) — seguro por construção. NÃO é "members-authoritative": se um dia
               fluir markdown aqui, use `renderUgcMarkdown` (restrito), como em
               ThreadDetail/CommentRow — nunca `renderMarkdown` cru. */}
-          <p className="line-clamp-2 text-muted-foreground text-sm">{thread.body}</p>
-          <p className="flex items-center gap-3 pt-1 text-muted-foreground text-xs">
-            <span className="inline-flex items-center gap-1">
-              <MessageCircle className="size-3" /> {thread.commentCount}
+          <p className="mt-3 line-clamp-4 text-muted-foreground text-sm">{thread.body}</p>
+          <p className="mt-auto flex items-center gap-4 pt-3 text-[0.8125rem] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <MessageCircle className="size-4" aria-hidden />
+              <span className="sr-only">Comentários:</span> {thread.commentCount}
             </span>
-            {plays > 0 ? (
-              <span className="inline-flex items-center gap-1">
-                <Gamepad2 className="size-3" /> {plays} {plays === 1 ? 'jogada' : 'jogadas'}
-              </span>
-            ) : null}
+            <span className="inline-flex items-center gap-1.5">
+              <Gamepad2 className="size-4" aria-hidden /> {plays}{' '}
+              {plays === 1 ? 'jogada' : 'jogadas'}
+            </span>
           </p>
         </div>
       </button>
       {playUrl ? (
         <PlayLinkActions
+          className="px-5 pb-5"
           playUrl={playUrl}
           title={thread.title}
           coverImageUrl={thread.coverImageUrl ?? null}
@@ -361,7 +375,7 @@ const CommentRow = memo(function CommentRow({
 }) {
   const body = useMemo(() => renderUgcMarkdown(comment.body), [comment.body])
   return (
-    <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+    <div className="kids-carta space-y-2 p-4">
       <p className="text-muted-foreground text-xs">
         {label}
         {comment.pending ? ' · aguardando ✅' : ''}
@@ -435,9 +449,9 @@ export function ThreadDetail({
         showLabel
       />
 
-      <div className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
+      <div className="kids-carta space-y-4 p-5 md:p-6">
         {isWall && thread.coverImageUrl ? (
-          <div className="aspect-video w-full overflow-hidden rounded-xl bg-(--kids-cyan-tint)">
+          <div className="aspect-[2/1] w-full overflow-hidden rounded-[1rem] bg-(--band-ceu)">
             <img
               src={thread.coverImageUrl}
               alt={thread.title}
@@ -447,7 +461,7 @@ export function ThreadDetail({
             />
           </div>
         ) : null}
-        <h2 className="[font-family:var(--font-display)] font-bold text-lg">{thread.title}</h2>
+        <h2 className="sz-display text-2xl">{thread.title}</h2>
         <p className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
           {authorLabel(thread)}
           {isWall && plays > 0 ? (
@@ -498,7 +512,7 @@ export function ThreadDetail({
             type="button"
             onClick={onLoadMoreComments}
             disabled={loadingMoreComments}
-            className="w-full rounded-2xl border-2 border-border border-dashed p-2.5 text-center font-bold text-muted-foreground text-sm transition-colors hover:border-primary hover:text-primary disabled:opacity-60"
+            className="sz-btn-gradient sz-btn-contorno mx-auto flex h-11 w-fit px-6 disabled:opacity-60"
           >
             {loadingMoreComments ? 'Carregando…' : 'Carregar mais respostas'}
           </button>
@@ -506,17 +520,17 @@ export function ThreadDetail({
       </div>
 
       {thread.isLocked ? (
-        <div className="rounded-2xl border-2 border-border border-dashed p-3 text-center text-muted-foreground text-sm">
+        <div className="kids-carta p-4 text-center font-semibold text-muted-foreground text-sm">
           Esta conversa está fechada para novas respostas.
         </div>
       ) : !canReply ? (
         // Canal "somente avisos" (ex.: Recados da equipe) p/ quem não é equipe: sem
         // caixa de resposta — a criança só lê e reage.
-        <div className="rounded-2xl border-2 border-border border-dashed p-3 text-center text-muted-foreground text-sm">
+        <div className="kids-carta p-4 text-center font-semibold text-muted-foreground text-sm">
           Aqui só a equipe escreve. Você pode reagir! 🙂
         </div>
       ) : (
-        <div className="space-y-2 rounded-2xl border-2 border-border bg-card p-3">
+        <div className="kids-carta space-y-2 p-4">
           <RichEditor value={replyBody} onChange={setReplyBody} ariaLabel="Resposta" compact />
           <AttachmentUploader
             value={replyAttachments}
@@ -526,7 +540,7 @@ export function ThreadDetail({
           <div className="flex justify-end">
             <button
               type="button"
-              className="inline-flex items-center gap-1 rounded-2xl bg-primary px-4 py-2 font-bold text-primary-foreground text-sm disabled:opacity-60"
+              className="sz-btn-gradient h-11 gap-2 px-6 disabled:opacity-60"
               onClick={onSend}
               disabled={busy || !replyBody.trim()}
             >

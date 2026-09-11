@@ -350,6 +350,10 @@ está instalado, então o campo deixou de influenciar a paleta.
   `challengeKey` no multipart (formato validado FROUXO na borda; posse+mês são do hub, com drop
   silencioso da tag) e o repassa ao `hub.createShowcaseThreadStudioStandalone`. O shim
   `GET /api/hub/channels/:id/threads` encaminha `?challenge=m:YYYY-MM` (prateleira do Mural).
+  **Filtros do Mural (11/09/2026):** o mesmo shim encaminha `?sort=recent|plays` (tipo
+  `HubThreadSort`; a ordem padrão é a AUSÊNCIA do parâmetro). Valor fora da lista cai na padrão
+  em vez de virar o 400 do hub: um filtro não pode derrubar a página. Teste em
+  `tests/hub-thread-sort.test.ts`.
 - **Cartões Pensa→Pinta/Estúdio:** `planner-contract.ts` exige `assetId` em cada arte 2D e
   `visualAssetIds` para modelo, mundo e material. O plano continua completo sem entitlement; o
   handoff informa o bloqueio. O Pinta exige asset vinculado e, quando configurado, envio ao

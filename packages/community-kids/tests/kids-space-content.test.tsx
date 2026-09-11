@@ -67,6 +67,7 @@ function contentProps(): KidsSpaceContentProps {
   return {
     context: {
       isWall: false,
+      isStaff: false,
       space: {
         id: 'space-1',
         slug: 'clube',
@@ -121,6 +122,8 @@ function contentProps(): KidsSpaceContentProps {
       threads: [thread],
       challengeThreads: [],
       challenge: null,
+      sort: 'activity',
+      onSortChange: noop,
       onOpenThread: noop,
       threadsHasMore: true,
       loadingMoreThreads: false,
@@ -247,6 +250,28 @@ describe('KidsSpaceContent — comportamento do boundary de apresentação', () 
     expect(onLoadMoreComments).toHaveBeenCalledTimes(1)
     expect(onReport).toHaveBeenCalledWith('threads', thread.id)
     expect(onSendReply).toHaveBeenCalledTimes(1)
+  })
+
+  test('os filtros do Mural pedem a ordem ao orquestrador e marcam a escolhida', () => {
+    const props = contentProps()
+    const onSortChange = mock((_sort: string) => {})
+    render(
+      <KidsSpaceContent
+        {...props}
+        context={{ ...props.context, isWall: true }}
+        feed={{ ...props.feed, sort: 'recent', onSortChange }}
+      />,
+    )
+    const grupo = screen.getByRole('group', { name: 'Ordem dos jogos' })
+    expect(grupo).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Novidades' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Mais jogados' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Todos os jogos' }))
+    expect(onSortChange.mock.calls).toEqual([['plays'], ['activity']])
+    // "Da minha turma" da imagem não existe no sistema: não pode aparecer como filtro.
+    expect(screen.queryByRole('button', { name: /minha turma/i })).toBeNull()
   })
 
   test('separa a prateleira do desafio e encaminha abertura e remix no Mural', () => {

@@ -442,6 +442,37 @@ export class DrizzleThreadRepository implements ThreadRepository {
     const vis = threadVisibility(opts)
     // Filtro do desafio mensal (prateleira do Mural): usa o índice parcial.
     const challenge = opts.challengeKey ? eq(threads.challengeKey, opts.challengeKey) : undefined
+    const sort = opts.sort ?? 'activity'
+    if (sort !== 'activity') {
+      // Filtros do Mural ("Novidades" e "Mais jogados"): ordem ÚNICA, sem puxar os
+      // fixados para o topo. Desempate sempre por `created_at` e depois `id`, então a
+      // chave é total e o cursor nunca pula nem repete um item entre páginas.
+      // ⚠️ Parâmetros do `sql` cru com CAST explícito e o timestamp em ISO: bindar um
+      // `Date` cru num `sql` já quebrou só no container de produção (ver o CLAUDE.md).
+      const where: SQL[] = [eq(threads.channelId, channelId), vis as SQL]
+      if (challenge) where.push(challenge)
+      const c = opts.cursor
+      if (c) {
+        const t = sql`${c.t.toISOString()}::timestamptz`
+        const id = sql`${c.id}::uuid`
+        where.push(
+          sort === 'plays'
+            ? sql`(${threads.playsCount}, ${threads.createdAt}, ${threads.id}) < (${c.n ?? 0}::int, ${t}, ${id})`
+            : sql`(${threads.createdAt}, ${threads.id}) < (${t}, ${id})`,
+        )
+      }
+      const order =
+        sort === 'plays'
+          ? [desc(threads.playsCount), desc(threads.createdAt), desc(threads.id)]
+          : [desc(threads.createdAt), desc(threads.id)]
+      const rows = await this.db
+        .select()
+        .from(threads)
+        .where(and(...where))
+        .orderBy(...order)
+        .limit(opts.limit + 1)
+      return { items: rows.slice(0, opts.limit).map(toThread), hasMore: rows.length > opts.limit }
+    }
     // Página 1 (sem cursor): os FIXADOS vêm primeiro (sempre visíveis).
     const pinned =
       opts.cursor === null
@@ -458,8 +489,11 @@ export class DrizzleThreadRepository implements ThreadRepository {
     if (challenge) where.push(challenge)
     if (opts.cursor) {
       // Row comparison: (last_activity_at, id) < (cursor) → próxima página (desc).
+      // ⚠️ ISO + cast, NUNCA o `Date` cru: o postgres.js recusa `Date` como parâmetro de
+      // `sql` ("Received an instance of Date"). A 2ª página do Clube e do Mural caía aqui
+      // desde sempre; o teste SQL das ordens (tests/db) foi quem pegou, em 09/2026.
       where.push(
-        sql`(${threads.lastActivityAt}, ${threads.id}) < (${opts.cursor.t}, ${opts.cursor.id})`,
+        sql`(${threads.lastActivityAt}, ${threads.id}) < (${opts.cursor.t.toISOString()}::timestamptz, ${opts.cursor.id}::uuid)`,
       )
     }
     const rows = await this.db
@@ -623,7 +657,11 @@ export class DrizzleThreadRepository implements ThreadRepository {
   ): Promise<{ items: Comment[]; hasMore: boolean }> {
     const where: SQL[] = [eq(comments.threadId, threadId), commentVisibility(opts) as SQL]
     if (opts.after) {
-      where.push(sql`(${comments.createdAt}, ${comments.id}) > (${opts.after.t}, ${opts.after.id})`)
+      // ISO + cast pelo mesmo motivo da listagem de tópicos: `Date` cru num `sql` quebra
+      // no postgres.js, e o "Carregar mais respostas" morria na 2ª página.
+      where.push(
+        sql`(${comments.createdAt}, ${comments.id}) > (${opts.after.t.toISOString()}::timestamptz, ${opts.after.id}::uuid)`,
+      )
     }
     const rows = await this.db
       .select()

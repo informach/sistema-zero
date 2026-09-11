@@ -1667,6 +1667,13 @@ export interface HubPage<T> {
   hasMore: boolean
 }
 
+/**
+ * Ordens ALTERNATIVAS da listagem de tópicos (filtros do Mural, 09/2026): `recent` =
+ * "Novidades", `plays` = "Mais jogados". A padrão (atividade, fixados primeiro) é a
+ * AUSÊNCIA do parâmetro. O cursor carrega a ordem: trocar de ordem = recomeçar a lista.
+ */
+export type HubThreadSort = 'recent' | 'plays'
+
 // ── Pensa (planejador de jogos — metodologia ZERO) ──────────────────────────
 // Mirror do contrato público de `members`. O Pensa descreve e audita o plano;
 // Pinta e Estúdio são os únicos donos da execução e do progresso.
