@@ -1,7 +1,6 @@
 'use client'
 
 import { Button } from '@sistemazero/ui/button'
-import { Card, CardContent } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
@@ -73,6 +72,13 @@ export function ProfileClient({
   )
 }
 
+/**
+ * O herói azul do Meu perfil (telas-modelo de 11/09/2026, medido a 1440px): o avatar num
+ * QUADRADO de cantos redondos (104px) à esquerda, o nome em Baloo com o selo AMARELO do
+ * nível real, a frase do próximo marco, a pílula de vidro do ranking e, à direita, os dois
+ * botões empilhados (branco para personalizar, vidro para editar). A tinta é o par da
+ * marca (`.kids-marca`), que troca de lado no escuro sozinho.
+ */
 function IdentityCard({
   profile,
   ranking,
@@ -92,77 +98,88 @@ function IdentityCard({
 }) {
   const hint = levelHint
   return (
-    <Card>
-      {/* Sem CardHeader: o pt-0 default do CardContent deixaria o card sem topo. */}
-      <CardContent className="pt-6">
-        <div className="flex flex-wrap items-center gap-5">
-          {/* Clicar no avatar abre o guarda-roupa (único caminho de personalização). */}
-          <button
-            type="button"
-            aria-label="Personalizar avatar"
-            title="Personalizar avatar"
-            onClick={onCustomize}
-            className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+    <section
+      aria-label="Meu cartão de criador"
+      className="kids-marca rounded-[1.75rem] p-5 shadow-[0_18px_40px_-26px_color-mix(in_oklab,var(--sz-primary)_70%,transparent)] md:px-[1.625rem] md:py-6"
+    >
+      <div className="flex flex-col gap-5 md:flex-row md:items-center md:gap-[1.625rem]">
+        {/* Clicar no avatar abre o configurador 3D (único caminho de personalização). */}
+        <button
+          type="button"
+          aria-label="Personalizar avatar"
+          title="Personalizar avatar"
+          onClick={onCustomize}
+          className="group relative w-fit shrink-0 cursor-pointer rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sz-primary-fg)"
+        >
+          <AvatarWithAura
+            photoUrl={avatarPhotoUrl}
+            name={profile.name}
+            size="xl"
+            // O quadrado de vidro das telas-modelo, e não o círculo: sobre o azul do
+            // herói, a inicial no círculo azul da marca sumiria.
+            className="kids-marca-vidro size-24 rounded-[1.5rem] md:size-[6.5rem]"
+            label={`Avatar de ${profile.name}`}
+          />
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center rounded-[1.5rem] bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
           >
-            <AvatarWithAura
-              photoUrl={avatarPhotoUrl}
-              levelSlug={level?.slug}
-              size="xl"
-              label={`Avatar de ${profile.name}`}
-            />
-            <span
-              aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/45 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
-            >
-              <Sparkles className="size-6 text-white" />
-            </span>
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-semibold">{profile.name}</p>
-              <LevelBadge levelSlug={level?.slug} />
-            </div>
-            {profile.whatsapp ? (
-              <p className="truncate text-muted-foreground text-sm">{profile.whatsapp}</p>
-            ) : null}
-            {hint ? <p className="mt-1.5 text-muted-foreground text-sm">{hint}</p> : null}
+            <Sparkles className="size-6 text-white" />
+          </span>
+        </button>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <p className="sz-display min-w-0 break-words text-[2rem] md:text-[2.25rem]">
+              {profile.name}
+            </p>
+            <LevelBadge levelSlug={level?.slug} variant="destaque" />
+          </div>
+          {profile.whatsapp ? (
+            <p className="kids-marca-suave mt-1 truncate font-semibold text-sm">
+              {profile.whatsapp}
+            </p>
+          ) : null}
+          {hint ? (
+            <p className="kids-marca-suave mt-3 max-w-xl text-[0.9375rem] leading-relaxed">
+              {hint}
+            </p>
+          ) : null}
+          <Link
+            href="/ranking"
+            className="kids-marca-vidro mt-4 inline-flex min-h-9 w-fit items-center gap-2 rounded-full px-3.5 py-1.5 font-bold text-[0.8125rem] transition-colors hover:shadow-[inset_0_0_0_2px_color-mix(in_oklab,var(--sz-primary-fg)_70%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sz-primary-fg) any-pointer-coarse:min-h-11"
+          >
+            <Trophy className="size-4 shrink-0" aria-hidden />
             {ranking ? (
-              <Link
-                href="/ranking"
-                className="mt-1.5 flex w-fit items-center gap-1.5 rounded-lg text-sm hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                <Trophy className="size-4 shrink-0 text-primary" />
-                <span className="font-bold [font-family:var(--font-display)]">
-                  {ranking.position}º lugar
-                </span>
-                <span className="text-muted-foreground">
-                  no ranking{ranking.totalStudents ? ` de ${ranking.totalStudents}` : ''}
-                </span>
-              </Link>
+              <span>
+                <span className="sz-display text-sm">{ranking.position}º lugar</span> no ranking
+                {ranking.totalStudents ? ` de ${ranking.totalStudents}` : ''}
+              </span>
             ) : (
               // Sem colocação ainda (sem XP / vitrine sem ranking) → convite, não vazio.
-              <Link
-                href="/ranking"
-                className="mt-1.5 flex w-fit items-center gap-1.5 rounded-lg text-muted-foreground text-sm hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-              >
-                <Trophy className="size-4 shrink-0" />
-                <span>Continue praticando para entrar no ranking!</span>
-              </Link>
+              <span>Continue praticando para entrar no ranking!</span>
             )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button type="button" onClick={onCustomize}>
-              <Sparkles className="size-4" />
-              Personalizar avatar
-            </Button>
-            <Button type="button" variant="outline" onClick={onEdit}>
-              <Pencil className="size-4" />
-              Editar perfil
-            </Button>
-          </div>
+          </Link>
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex flex-col gap-2 sm:flex-row md:w-56 md:flex-col">
+          <button
+            type="button"
+            onClick={onCustomize}
+            className="sz-btn-gradient sz-btn-inverso h-12 gap-2 px-5 sm:flex-1 md:w-full md:flex-none"
+          >
+            <Sparkles className="size-4" aria-hidden />
+            Personalizar avatar
+          </button>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="kids-marca-vidro inline-flex h-12 items-center justify-center gap-2 rounded-full px-5 font-extrabold text-[0.9375rem] transition-colors hover:shadow-[inset_0_0_0_2px_color-mix(in_oklab,var(--sz-primary-fg)_70%,transparent)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sz-primary-fg) sm:flex-1 md:w-full md:flex-none"
+          >
+            <Pencil className="size-4" aria-hidden />
+            Editar perfil
+          </button>
+        </div>
+      </div>
+    </section>
   )
 }
 

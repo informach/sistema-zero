@@ -934,6 +934,25 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   mover/renomear aquele arquivo quebra este teste, e não o typecheck. O jogo publicado no Mural só
   vira fonte para quem abre o Estúdio livre (`canOpenFreeStudio`: posse + nível).
 
+### Meu perfil no desenho das telas-modelo (11/09/2026)
+
+- **Faixas:** creme (cabeçalho + herói azul) → menta (carreira, feitos e "Minhas ferramentas") →
+  azul-claro ("Meu cantinho" + "Proteja sua sequência") → lilás ("Minhas conquistas"). Sem
+  gamificação as conquistas somem e o cantinho vira a faixa lilás (a última é sempre lilás).
+- **Herói:** o avatar num quadrado de vidro (`.kids-marca-vidro`: a tinta da marca a 10% e um fio de
+  35%). ⚠️ Não usar o `.kids-marca-tile` (20%) atrás de TEXTO: o branco caía para 3,7:1; o vidro dá
+  4,58:1 no claro e 5,87:1 no escuro. O hover das pílulas de vidro engrossa o FIO em vez de clarear o
+  fundo, pelo mesmo motivo.
+- **Carreira:** linhas-cartão (o posto atual com contorno azul e "Você está aqui", o seguinte com
+  "Próximo nível", os que o catálogo não alcança numa linha "Em construção"). O ladrilho dos outros
+  postos é a cor do nível com a tinta `var(--card)`: branca no claro, navy no escuro (onde as cores
+  de nível clareiam), sem par novo.
+- **Feitos:** o ladrilho colorido sai de `badgeTone(slug)` (`badges.ts`), pela FAMÍLIA do slug, para
+  conquista nova já nascer colorida. A grade de conquistas é de cinco colunas, a conquistada com o
+  contorno azul e a travada num cartão branco comum (sem tracejado nem transparência).
+- **Cantinho:** o cartão inteiro é o link; a pílula creme só vai para a direita quando o PRÓPRIO
+  cartão tem 28rem (`@container` + `@md:`), porque a largura dele vem da grade de duas colunas.
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,

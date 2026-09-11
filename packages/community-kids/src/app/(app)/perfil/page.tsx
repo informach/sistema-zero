@@ -1,13 +1,13 @@
 import { drawersForBlocks } from '@sistemazero/member-shell/server/studio-unlocks'
-import { Home, Smile, UserRound } from 'lucide-react'
+import { ChevronRight, type LucideIcon, Smile, Sofa, UserRound } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeShowcase } from '@/components/kids/badge-showcase'
 import { CareerTimeline } from '@/components/kids/career-timeline'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
-import { KidsFeatureCard } from '@/components/kids/kids-feature-card'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
+import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { MyTools } from '@/components/kids/my-tools'
 import { StreakProtection } from '@/components/kids/streak-protection'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
@@ -76,6 +76,10 @@ export default async function ProfilePage() {
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true
   const studioFree = canOpenFreeStudio(ownsStudio, gamification?.level?.slug, session.role)
 
+  // "Minhas ferramentas" some sem gaveta nenhuma (ver `MyTools`), então a faixa menta só
+  // existe quando há carreira OU ferramenta de verdade para mostrar.
+  const showTools = ownsStudio && drawers.length > 0
+
   return (
     <>
       {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
@@ -87,7 +91,7 @@ export default async function ProfilePage() {
           title="Meu perfil"
           subtitle="Seu avatar, seu nome e seu telefone."
         />
-        <div className="mt-6">
+        <div className="mt-7">
           <ProfileClient
             profile={profile}
             ranking={gamification?.ranking ?? null}
@@ -98,8 +102,10 @@ export default async function ProfilePage() {
         </div>
       </KidsBand>
 
-      {gamification || ownsStudio ? (
-        <KidsBand tone="menta" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+      {/* A ordem das telas-modelo (11/09/2026): carreira no menta, o cantinho no azul-claro
+          e as conquistas fechando no lilás. */}
+      {gamification || showTools ? (
+        <KidsBand tone="menta">
           {gamification ? (
             <CareerTimeline
               gamification={gamification}
@@ -107,48 +113,116 @@ export default async function ProfilePage() {
               showcaseStats={showcaseStats}
             />
           ) : null}
-          {ownsStudio ? <MyTools drawers={drawers} studioOwned={studioFree} /> : null}
+          {showTools ? (
+            <MyTools
+              drawers={drawers}
+              studioOwned={studioFree}
+              className={gamification ? 'mt-8' : undefined}
+            />
+          ) : null}
         </KidsBand>
       ) : null}
 
-      <KidsBand tone="lilas" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
-        <h2 className="sz-display text-[clamp(1.4rem,3vw,1.9rem)]">Meu cantinho</h2>
-        <section className="grid gap-4 sm:grid-cols-2" aria-label="Meu espaço criativo">
-          <Link href="/quarto" prefetch={false} className="kid-pop">
-            <KidsFeatureCard
-              icon={Home}
-              title="Meu quarto"
-              description="Decore seu cantinho com as conquistas da carreira."
-              color="var(--porta-clube)"
-              ink="var(--porta-clube-texto)"
-              className="h-full"
-            />
-          </Link>
-          <Link href="/meu-avatar" prefetch={false} className="kid-pop">
-            <KidsFeatureCard
-              icon={Smile}
-              title="Meu avatar"
-              description="Escolha como você aparece para a turma."
-              color="var(--porta-ranking)"
-              ink="var(--porta-ranking-texto)"
-              className="h-full"
-            />
-          </Link>
-        </section>
-        {gamification ? (
-          <StreakProtection
-            freezesAvailable={gamification.streak.freezesAvailable ?? 0}
-            onVacation={gamification.streak.onVacation ?? false}
-            vacationUntil={gamification.streak.vacationUntil ?? null}
+      {/* Sem gamificação a vitrine de conquistas some, e o cantinho passa a ser a última
+          faixa da página: a última é sempre a lilás. */}
+      <KidsBand tone={gamification ? 'ceu' : 'lilas'}>
+        <section aria-labelledby="meu-cantinho">
+          <KidsSectionHeader
+            id="meu-cantinho"
+            title="Meu cantinho"
+            subtitle="Deixe o seu espaço com a sua cara e cuide da sua sequência de dias."
           />
-        ) : null}
+          <ul className="grid gap-4 md:grid-cols-2 md:gap-6">
+            <li>
+              <CantinhoLink
+                href="/quarto"
+                icon={Sofa}
+                tone={{ fundo: 'var(--tool-molda)', tinta: 'var(--tool-molda-fg)' }}
+                title="Meu quarto"
+                description="Decore seu cantinho com as conquistas da carreira."
+                action="Arrumar o quarto"
+              />
+            </li>
+            <li>
+              <CantinhoLink
+                href="/meu-avatar"
+                icon={Smile}
+                tone={{ fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-fg)' }}
+                title="Meu avatar"
+                description="Escolha como você aparece para a turma."
+                action="Trocar avatar"
+              />
+            </li>
+          </ul>
+          {gamification ? (
+            <StreakProtection
+              className="mt-4 md:mt-6"
+              freezesAvailable={gamification.streak.freezesAvailable ?? 0}
+              onVacation={gamification.streak.onVacation ?? false}
+              vacationUntil={gamification.streak.vacationUntil ?? null}
+            />
+          ) : null}
+        </section>
       </KidsBand>
 
       {gamification ? (
-        <KidsBand tone="ceu">
+        <KidsBand tone="lilas">
           <BadgeShowcase gamification={gamification} />
         </KidsBand>
       ) : null}
     </>
+  )
+}
+
+/**
+ * Cartão-linha do "Meu cantinho" (telas-modelo de 11/09/2026): ladrilho colorido, título e
+ * frase, e a pílula creme com a ação à direita. O cartão INTEIRO é o link (alvo grande
+ * para mão pequena); a pílula é só o desenho do convite.
+ *
+ * A pílula só vai para a direita quando o PRÓPRIO cartão tem largura para isso (consulta
+ * de contêiner, `@md` = 28rem): a largura dele depende da grade de duas colunas, e não da
+ * janela. Numa régua de janela, o texto espremia até uma palavra por linha no celular.
+ */
+function CantinhoLink({
+  href,
+  icon: Icon,
+  tone,
+  title,
+  description,
+  action,
+}: {
+  href: string
+  icon: LucideIcon
+  tone: { fundo: string; tinta: string }
+  title: string
+  description: string
+  action: string
+}) {
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      className="kid-pop kids-carta @container block h-full p-5 md:p-7"
+    >
+      <span className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 @md:grid-cols-[auto_minmax(0,1fr)_auto]">
+        <span
+          aria-hidden="true"
+          className="grid size-14 shrink-0 place-items-center rounded-2xl"
+          style={{ backgroundColor: tone.fundo, color: tone.tinta }}
+        >
+          <Icon className="size-7" />
+        </span>
+        <span className="min-w-0">
+          <span className="sz-display block text-xl md:text-[1.375rem]">{title}</span>
+          <span className="mt-1.5 block font-medium text-[0.8125rem] text-muted-foreground leading-relaxed">
+            {description}
+          </span>
+        </span>
+        <span className="sz-btn-gradient sz-btn-suave col-start-2 h-10 w-fit gap-1 px-4 text-[0.8125rem] @md:col-start-auto">
+          {action}
+          <ChevronRight className="size-4" aria-hidden />
+        </span>
+      </span>
+    </Link>
   )
 }

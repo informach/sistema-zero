@@ -77,7 +77,11 @@ const FONTE: Record<
 > = {
   aula: { icone: GraduationCap, fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-fg)' },
   publicar: { icone: Rocket, fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-fg)' },
-  quiz: { icone: ListChecks, fundo: 'var(--sz-kids-verde-profundo)', tinta: 'oklch(1 0 0)' },
+  quiz: {
+    icone: ListChecks,
+    fundo: 'var(--sz-kids-verde-profundo)',
+    tinta: 'var(--sz-tool-on-sig)',
+  },
   // O baú é o desenho da trilha (grade de 32, traço 2): no tamanho do lucide ele sai fino.
   bau: {
     icone: ChestIcon,

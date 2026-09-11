@@ -190,3 +190,46 @@ export const BADGE_INFO: Record<BadgeSlug, BadgeInfo> = {
 export function badgeInfo(slug: string): BadgeInfo | null {
   return (BADGE_INFO as Record<string, BadgeInfo | undefined>)[slug] ?? null
 }
+
+/** Fundo e tinta do ladrilho de uma conquista. */
+export interface BadgeTone {
+  fundo: string
+  tinta: string
+}
+
+const TOM_AZUL: BadgeTone = { fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-fg)' }
+const TOM_AMBAR: BadgeTone = { fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-fg)' }
+const TOM_ROXO: BadgeTone = { fundo: 'var(--tool-molda)', tinta: 'var(--tool-molda-fg)' }
+const TOM_CORAL: BadgeTone = { fundo: 'var(--tool-pinta)', tinta: 'var(--tool-pinta-fg)' }
+const TOM_VERDE: BadgeTone = {
+  fundo: 'var(--sz-kids-verde-profundo)',
+  tinta: 'var(--sz-tool-on-sig)',
+}
+
+const TOM_DO_MURAL = new Set(['first-showcase', 'remix-first', 'mural-commenter-10'])
+
+/**
+ * A cor do LADRILHO de uma conquista nos "Feitos da jornada" do Meu perfil (telas-modelo
+ * de 11/09/2026: cada feito com o seu quadrado colorido). Os pares são os das oficinas,
+ * que já passam AA (tinta escura no âmbar), e o verde é o profundo da paleta, fundo que
+ * não segue o tema. A cor sai da FAMÍLIA do slug, para uma conquista nova já nascer
+ * colorida sem ninguém lembrar de pintá-la: fogo em coral, nota e ideia em âmbar, Mural e
+ * enfeites em roxo, Clube em verde, aula, curso e Estúdio em azul.
+ */
+export function badgeTone(slug: string): BadgeTone {
+  if (slug.startsWith('streak-')) return TOM_CORAL
+  if (slug.startsWith('quiz-') || slug.startsWith('pensa-') || slug.startsWith('coins-')) {
+    return TOM_AMBAR
+  }
+  if (slug.startsWith('clube-')) return TOM_VERDE
+  if (
+    TOM_DO_MURAL.has(slug) ||
+    slug.startsWith('plays-') ||
+    slug.startsWith('challenge-') ||
+    slug.startsWith('room-') ||
+    slug.startsWith('avatar-')
+  ) {
+    return TOM_ROXO
+  }
+  return TOM_AZUL
+}

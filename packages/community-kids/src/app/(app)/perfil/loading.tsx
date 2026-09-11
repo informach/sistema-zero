@@ -1,37 +1,49 @@
-import { Card, CardContent } from '@sistemazero/ui/card'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { KidsBand } from '@/components/kids/kids-band'
 
+// Chaves estáveis dos blocos-fantasma (evita usar o índice do array como key).
+const POSTOS = ['p1', 'p2', 'p3']
+const CONQUISTAS = ['c1', 'c2', 'c3', 'c4', 'c5']
+
 /**
- * Esqueleto da página "Meu perfil" (fallback de Suspense do Next) — casa com o card
- * de identidade (foto + nome + ranking + botão editar), melhor que a grade genérica
- * do `(app)/loading.tsx`. `aria-busy` + sr-only.
+ * Esqueleto da página "Meu perfil" (fallback de Suspense do Next). Imita a página que vem
+ * (telas-modelo de 11/09/2026): o cabeçalho e o herói azul no creme, a carreira no menta
+ * e as conquistas no lilás, com as faixas já na cor certa para a tela não "pular".
  */
 export default function ProfileLoading() {
   return (
-    // Faixa creme já no esqueleto: sem ela a tela pisca branca até a página
-    // real chegar, e o salto de cor é bem visível.
-    <KidsBand tone="creme">
-      <div aria-busy="true" className="flex w-full flex-col gap-6">
-        <span className="sr-only">Carregando…</span>
-        <div>
-          <Skeleton className="h-7 w-40" />
-          <Skeleton className="mt-2 h-4 w-56 max-w-full" />
+    <div aria-busy="true" className="contents">
+      <span role="status" className="sr-only">
+        Carregando…
+      </span>
+      <KidsBand tone="creme">
+        <Skeleton className="h-[1.875rem] w-36 rounded-full" />
+        <Skeleton className="mt-3 h-12 w-64 max-w-full" />
+        <Skeleton className="mt-3 h-5 w-72 max-w-full" />
+        <Skeleton className="mt-7 h-56 w-full rounded-[1.75rem] md:h-48" />
+      </KidsBand>
+      <KidsBand tone="menta">
+        <div className="pt-3">
+          <Skeleton className="h-9 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-5 w-full max-w-lg" />
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap items-center gap-5">
-              <Skeleton className="size-20 shrink-0 rounded-full" />
-              <div className="min-w-0 flex-1 space-y-2">
-                <Skeleton className="h-5 w-40" />
-                <Skeleton className="h-4 w-28" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <Skeleton className="h-9 w-28 rounded-xl" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </KidsBand>
+        <div className="kids-carta mt-6 space-y-3 p-4 md:p-6">
+          {POSTOS.map((k) => (
+            <Skeleton key={k} className="h-24 rounded-[1.25rem]" />
+          ))}
+        </div>
+      </KidsBand>
+      <KidsBand tone="lilas">
+        <div className="pt-3">
+          <Skeleton className="h-9 w-60 max-w-full" />
+          <Skeleton className="mt-3 h-5 w-72 max-w-full" />
+        </div>
+        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3 lg:grid-cols-5">
+          {CONQUISTAS.map((k) => (
+            <Skeleton key={k} className="h-44 rounded-[1.5rem]" />
+          ))}
+        </div>
+      </KidsBand>
+    </div>
   )
 }

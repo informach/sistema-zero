@@ -1,4 +1,4 @@
-import { Check, Gamepad2, Hammer, Lock } from 'lucide-react'
+import { Check, Gamepad2, Hammer } from 'lucide-react'
 import Link from 'next/link'
 import {
   type CatalogInput,
@@ -12,7 +12,8 @@ import { cn } from '@/lib/cn'
 import { LEVEL_INFO } from '@/lib/level-info'
 import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { GamificationMeView, StudentLevelSlug } from '@/lib/types'
-import { badgeInfo } from './badges'
+import { badgeInfo, badgeTone } from './badges'
+import { KidsSectionHeader } from './kids-section-header'
 
 /**
  * Badges de PRODUTO (bônus dos apps criativos vendidos à parte: Pensa/Pinta/
@@ -37,40 +38,56 @@ function formatUnlockDate(iso: string): string {
   }
 }
 
+/** A etiqueta miúda ao lado do nome do posto ("Você está aqui", "Próximo nível"). */
+const ETIQUETA = 'rounded-full px-2.5 py-0.5 font-extrabold text-[0.6875rem] leading-tight'
+
+/**
+ * Um feito conquistado: cartão branco com o ladrilho colorido da família do feito
+ * (`badgeTone`), título em Baloo, a frase e a data. O desenho é o das telas-modelo.
+ */
 function FeatCard({ slug, unlockedAt }: { slug: string; unlockedAt: string }) {
   const info = badgeInfo(slug)
   if (!info) return null
   const Icon = info.icon
+  const tom = badgeTone(slug)
   return (
-    <li className="flex items-start gap-3 rounded-2xl border-2 border-border bg-card p-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+    <li className="kids-carta flex items-start gap-3.5 rounded-[1.25rem] p-5">
+      <span
+        aria-hidden="true"
+        className="grid size-11 shrink-0 place-items-center rounded-[0.75rem]"
+        style={{ backgroundColor: tom.fundo, color: tom.tinta }}
+      >
         <Icon className="size-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="font-bold text-sm [font-family:var(--font-display)]">{info.title}</p>
-        <p className="text-muted-foreground text-xs leading-snug">{info.description}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-2 text-muted-foreground text-xs">
-          <span>{formatUnlockDate(unlockedAt)}</span>
-          {TROPHY_BADGE_SLUGS.has(slug) ? (
-            <Link
-              href="/quarto"
-              prefetch={false}
-              className="font-bold text-primary underline-offset-2 hover:underline"
-            >
-              🏆 Veja o troféu no seu quarto
-            </Link>
-          ) : null}
+        <p className="sz-display text-lg leading-tight">{info.title}</p>
+        <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
+          {info.description}
         </p>
+        <p className="mt-1.5 font-bold text-xs">{formatUnlockDate(unlockedAt)}</p>
+        {TROPHY_BADGE_SLUGS.has(slug) ? (
+          <Link
+            href="/quarto"
+            prefetch={false}
+            className="mt-1.5 inline-flex min-h-8 items-center gap-1 font-extrabold text-primary text-xs underline-offset-2 hover:underline any-pointer-coarse:min-h-11"
+          >
+            🏆 Veja o troféu no seu quarto
+          </Link>
+        ) : null}
       </div>
     </li>
   )
 }
 
 /**
- * Linha do tempo da CARREIRA no /perfil (07/2026): a escada universal
- * Faísca→Lenda (rung atual + o que falta) e os FEITOS conquistados como
- * cartões — universais primeiro, bônus dos apps criativos agrupados depois.
- * Só apresentação; os dados vêm do `getGamificationReadonly` da página.
+ * Linha do tempo da CARREIRA no /perfil: a escada universal Faísca→Lenda (posto atual +
+ * o que falta) e os FEITOS conquistados — universais primeiro, bônus dos apps criativos
+ * agrupados depois. Só apresentação; os dados vêm do `getGamificationReadonly` da página.
+ *
+ * Desenho das telas-modelo (11/09/2026): a escada vira linhas-cartão dentro de um cartão
+ * branco (o posto atual com o contorno azul e "Você está aqui", o próximo com "Próximo
+ * nível", o resto que o catálogo ainda não alcança numa linha só "em construção"), e os
+ * feitos saem do cartão para uma grade de cartões com ladrilho colorido.
  */
 export function CareerTimeline({
   gamification,
@@ -104,119 +121,132 @@ export function CareerTimeline({
   const product = unlocked.filter((b) => isProductBadge(b.slug))
 
   return (
-    <section
-      aria-label="Minha carreira"
-      className="rounded-3xl border-2 border-border bg-card p-5 md:p-6"
-    >
-      <h2 className="sz-display text-xl">Minha carreira</h2>
-      <p className="mt-1 text-muted-foreground text-sm">
-        Sua jornada de criador: cada projeto concluído e publicado sobe a escada.
-      </p>
+    <section aria-labelledby="minha-carreira">
+      <KidsSectionHeader
+        id="minha-carreira"
+        title="Minha carreira"
+        subtitle="Sua jornada de criador: cada projeto concluído e publicado sobe a escada."
+      />
 
-      {/* Escada Faísca → Lenda (universal). */}
-      <ol className="mt-4 flex flex-col gap-0.5">
-        {visible.map((slug, index) => {
-          const info = LEVEL_INFO[slug]
-          const Icon = info.icon
-          const reward = CAREER_REWARD_INFO[slug]
-          const done = index < currentIndex
-          const current = index === currentIndex
-          return (
-            <li key={slug} className="flex gap-3">
-              <div className="flex flex-col items-center">
-                <span
-                  className={cn(
-                    'grid size-9 shrink-0 place-items-center rounded-full border-2',
-                    current
-                      ? 'border-transparent text-white'
-                      : done
-                        ? 'border-transparent bg-primary/15 text-primary'
-                        : 'border-border border-dashed text-muted-foreground',
-                  )}
-                  style={current ? { backgroundColor: info.colorVar } : undefined}
-                >
-                  {done ? <Check className="size-4" /> : <Icon className="size-4" />}
-                </span>
-                {index < visible.length - 1 || beyond.length > 0 ? (
-                  <span
-                    aria-hidden="true"
-                    className={cn('w-0.5 flex-1', done ? 'bg-primary/40' : 'bg-border')}
-                  />
-                ) : null}
-              </div>
-              <div className={cn('pb-4', !current && !done && 'opacity-60')}>
-                <p className="flex flex-wrap items-center gap-2 font-bold text-sm [font-family:var(--font-display)]">
-                  {info.label}
-                  {current ? (
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary text-xs">
-                      Você está aqui
-                    </span>
-                  ) : null}
-                  {!current && !done ? <Lock className="size-3.5" /> : null}
-                </p>
-                {current ? (
-                  <p className="mt-0.5 text-muted-foreground text-xs leading-snug">
-                    {hint ?? info.blurb}
-                  </p>
-                ) : null}
-                <p className="mt-1 text-xs leading-snug">
-                  <span className="font-bold text-primary">
-                    {done || current ? 'Liberado: ' : 'Ao chegar aqui: '}
-                  </span>
-                  <span className="text-muted-foreground">{reward.title}</span>
-                </p>
-                {(done || current) && (
-                  <p className="mt-0.5 text-muted-foreground text-xs leading-snug">
-                    {reward.description}
-                  </p>
+      <div className="kids-carta p-4 md:p-6">
+        {/* Escada Faísca → Lenda (universal). */}
+        <ol className="flex flex-col gap-3">
+          {visible.map((slug, index) => {
+            const info = LEVEL_INFO[slug]
+            const Icon = info.icon
+            const reward = CAREER_REWARD_INFO[slug]
+            const done = index < currentIndex
+            const current = index === currentIndex
+            const next = index === currentIndex + 1
+            return (
+              <li
+                key={slug}
+                className={cn(
+                  'flex items-start gap-4 rounded-[1.25rem] p-4 md:p-5',
+                  current
+                    ? 'bg-[color-mix(in_oklab,var(--primary)_7%,var(--card))] ring-2 ring-primary ring-inset'
+                    : 'bg-background',
                 )}
+              >
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    'grid size-12 shrink-0 place-items-center rounded-[0.875rem] md:size-14',
+                    current && 'kids-marca',
+                  )}
+                  // O posto atual é o azul da marca; os outros, a cor do próprio nível, com a
+                  // tinta do CARTÃO: branca no claro (as cores de nível são médias) e navy no
+                  // escuro (onde elas clareiam), então o par vira sozinho com o tema.
+                  style={
+                    current ? undefined : { backgroundColor: info.colorVar, color: 'var(--card)' }
+                  }
+                >
+                  {done ? <Check className="size-6" /> : <Icon className="size-6" />}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                    <span className="sz-display text-lg md:text-xl">{info.label}</span>
+                    {current ? (
+                      <span className={cn(ETIQUETA, 'kids-marca')}>Você está aqui</span>
+                    ) : null}
+                    {next ? (
+                      <span className={cn(ETIQUETA, 'bg-muted text-muted-foreground')}>
+                        Próximo nível
+                      </span>
+                    ) : null}
+                  </p>
+                  {current ? (
+                    <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
+                      {hint ?? info.blurb}
+                    </p>
+                  ) : null}
+                  <p className="mt-1 text-[0.8125rem] leading-snug">
+                    <span className="font-bold">
+                      {done || current ? 'Liberado: ' : 'Ao chegar aqui: '}
+                    </span>
+                    <span className="text-muted-foreground">{reward.title}</span>
+                  </p>
+                  {done || current ? (
+                    <p className="mt-0.5 text-muted-foreground text-xs leading-snug">
+                      {reward.description}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            )
+          })}
+          {/* Os postos que o catálogo ainda não alcança viram UMA linha. Fileira de cadeados
+              aqui diria à criança que ela está devendo; o que falta é curso gravado. */}
+          {beyond.length > 0 ? (
+            <li className="flex items-start gap-4 rounded-[1.25rem] bg-background p-4 md:p-5">
+              <span
+                aria-hidden="true"
+                className="grid size-12 shrink-0 place-items-center rounded-[0.875rem] bg-muted-foreground text-card md:size-14"
+              >
+                <Hammer className="size-6" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                  <span className="sz-display text-lg md:text-xl">
+                    {beyond.length === 1
+                      ? 'Mais 1 posto está sendo construído'
+                      : `Mais ${beyond.length} postos estão sendo construídos`}
+                  </span>
+                  <span className={cn(ETIQUETA, 'bg-muted text-muted-foreground')}>
+                    Em construção
+                  </span>
+                </p>
+                <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
+                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando os cursos ficarem
+                  prontos!
+                </p>
               </div>
             </li>
-          )
-        })}
-        {/* Os postos que o catálogo ainda não alcança viram UMA linha. Fileira de cadeados
-            aqui diria à criança que ela está devendo; o que falta é curso gravado. */}
-        {beyond.length > 0 ? (
-          <li className="flex gap-3">
-            <div className="flex flex-col items-center">
-              <span className="grid size-9 shrink-0 place-items-center rounded-full border-2 border-border border-dashed text-muted-foreground">
-                <Hammer className="size-4" />
-              </span>
-            </div>
-            <div className="pb-4">
-              <p className="font-bold text-muted-foreground text-sm [font-family:var(--font-display)]">
-                {beyond.length === 1
-                  ? 'Mais 1 posto está sendo construído'
-                  : `Mais ${beyond.length} postos estão sendo construídos`}
-              </p>
-              <p className="mt-0.5 text-muted-foreground text-xs leading-snug">
-                {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando os cursos ficarem
-                prontos!
-              </p>
-            </div>
-          </li>
-        ) : null}
-      </ol>
+          ) : null}
+        </ol>
 
-      {showcaseStats && showcaseStats.published > 0 ? (
-        <p className="mt-1 flex items-center gap-2 rounded-2xl bg-primary/5 px-3 py-2 text-sm">
-          <Gamepad2 className="size-4 shrink-0 text-primary" />
-          {showcaseStats.published === 1
-            ? 'Você tem 1 jogo no Mural'
-            : `Você tem ${showcaseStats.published} jogos no Mural`}
-          {showcaseStats.plays === 1
-            ? ', jogado 1 vez!'
-            : `, jogados ${showcaseStats.plays} vezes!`}
-        </p>
-      ) : null}
+        {showcaseStats && showcaseStats.published > 0 ? (
+          <p className="mt-3 flex items-center gap-3 rounded-[1rem] bg-(--band-menta) px-4 py-3 font-bold text-[0.8125rem]">
+            <Gamepad2 className="size-5 shrink-0" aria-hidden />
+            <span>
+              {showcaseStats.published === 1
+                ? 'Você tem 1 jogo no Mural'
+                : `Você tem ${showcaseStats.published} jogos no Mural`}
+              {showcaseStats.plays === 1
+                ? ', jogado 1 vez!'
+                : `, jogados ${showcaseStats.plays} vezes!`}
+            </span>
+          </p>
+        ) : null}
+      </div>
 
       {/* Feitos conquistados: universais primeiro, bônus dos apps criativos depois. */}
       {universal.length > 0 ? (
-        <div className="mt-5">
-          <h3 className="font-bold text-muted-foreground text-xs uppercase tracking-wide [font-family:var(--font-display)]">
+        <div className="mt-8">
+          <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
             Feitos da jornada
           </h3>
-          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
             {universal.map((b) => (
               <FeatCard key={b.slug} slug={b.slug} unlockedAt={b.unlockedAt} />
             ))}
@@ -224,11 +254,11 @@ export function CareerTimeline({
         </div>
       ) : null}
       {product.length > 0 ? (
-        <div className="mt-5">
-          <h3 className="font-bold text-muted-foreground text-xs uppercase tracking-wide [font-family:var(--font-display)]">
+        <div className="mt-8">
+          <h3 className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
             Bônus dos apps criativos
           </h3>
-          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-5 grid gap-4 sm:grid-cols-2 lg:gap-6">
             {product.map((b) => (
               <FeatCard key={b.slug} slug={b.slug} unlockedAt={b.unlockedAt} />
             ))}

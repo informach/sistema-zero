@@ -2,7 +2,6 @@ import {
   groupDrawersByFamily,
   type StudioDrawer,
 } from '@sistemazero/member-shell/server/studio-unlocks'
-import { buttonVariants } from '@sistemazero/ui/button'
 import { ChevronDown, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
@@ -35,44 +34,53 @@ import { familyLabel } from '@/lib/studio-family'
  * aberto/fechado sem uma linha de JS, então esta seção continua sendo Server Component.
  * Trocar por um acordeão em `'use client'` custaria hidratação por uma coisa que o HTML
  * já faz.
+ *
+ * Não aparece nas telas-modelo de 11/09/2026, mas é conteúdo: fica, na mesma roupa dos
+ * cartões da carreira (cartão branco, ladrilho azul, linhas claras sem borda).
  */
 export function MyTools({
   drawers,
   studioOwned,
+  className,
 }: {
   drawers: readonly StudioDrawer[]
   /** Estúdio Completo comprado (produto à parte)? Só então o atalho aparece. */
   studioOwned: boolean
+  className?: string
 }) {
   if (drawers.length === 0) return null
   const total = drawers.reduce((sum, drawer) => sum + drawer.count, 0)
   const families = groupDrawersByFamily(drawers)
 
   return (
-    <section
-      aria-label="Minhas ferramentas"
-      className="rounded-3xl border-2 border-border bg-card p-5 md:p-6"
-    >
-      <h2 className="sz-display flex items-center gap-2 text-xl">
-        <Wrench className="size-5 text-primary" aria-hidden />
-        Minhas ferramentas
-      </h2>
-      <p className="mt-1 text-muted-foreground text-sm">
-        {drawers.length === 1
-          ? `Você conquistou 1 gaveta com ${total} ${total === 1 ? 'bloco' : 'blocos'} no seu Estúdio.`
-          : `Você conquistou ${drawers.length} gavetas com ${total} blocos no seu Estúdio.`}
-      </p>
+    <section aria-label="Minhas ferramentas" className={cn('kids-carta p-5 md:p-6', className)}>
+      <div className="flex items-start gap-3.5">
+        <span
+          aria-hidden="true"
+          className="kids-marca grid size-11 shrink-0 place-items-center rounded-[0.75rem]"
+        >
+          <Wrench className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <h2 className="sz-display text-xl md:text-[1.375rem]">Minhas ferramentas</h2>
+          <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground">
+            {drawers.length === 1
+              ? `Você conquistou 1 gaveta com ${total} ${total === 1 ? 'bloco' : 'blocos'} no seu Estúdio.`
+              : `Você conquistou ${drawers.length} gavetas com ${total} blocos no seu Estúdio.`}
+          </p>
+        </div>
+      </div>
 
-      <ul className="mt-4 flex flex-col gap-2">
+      <ul className="mt-5 flex flex-col gap-2">
         {families.map((group, index) => (
           <li key={group.family}>
             <details
               /* A primeira (a mais cheia) já vem aberta: a criança vê conquista de cara em
                  vez de uma fileira de caixas fechadas. As outras ficam a um toque. */
               open={index === 0}
-              className="group rounded-2xl border-2 border-border bg-background"
+              className="group rounded-[1.25rem] bg-background"
             >
-              <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-4 py-2 font-bold text-sm [&::-webkit-details-marker]:hidden">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 rounded-[1.25rem] px-4 py-2 font-extrabold text-[0.9375rem] [&::-webkit-details-marker]:hidden">
                 <span className="truncate">{familyLabel(group.family)}</span>{' '}
                 {/* ⚠️ O espaço acima é LOAD-BEARING: sem ele o texto acessível do resumo sai
                     grudado ("Jogo 2D13 gavetas") e o leitor de tela lê "2D13" como um só token. */}
@@ -90,10 +98,10 @@ export function MyTools({
                 {group.drawers.map((drawer) => (
                   <li
                     key={drawer.key}
-                    className="inline-flex items-center gap-2 rounded-full border-2 border-border bg-card px-3 py-1.5 font-bold text-sm"
+                    className="inline-flex items-center gap-2 rounded-full bg-card px-3 py-1.5 font-bold text-sm ring-1 ring-border ring-inset"
                   >
                     {drawer.label}
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary text-xs">
+                    <span className="kids-marca rounded-full px-2 py-0.5 font-extrabold text-xs">
                       {drawer.count}
                     </span>
                   </li>
@@ -105,11 +113,7 @@ export function MyTools({
       </ul>
 
       {studioOwned ? (
-        <Link
-          href="/estudio"
-          prefetch={false}
-          className={cn(buttonVariants({ variant: 'default' }), 'mt-4 h-11 rounded-full px-6')}
-        >
+        <Link href="/estudio" prefetch={false} className="sz-btn-gradient mt-5 px-6">
           Abrir o Estúdio
         </Link>
       ) : null}

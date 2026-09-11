@@ -1101,6 +1101,14 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   .kids-marca-tile {
     background-color: color-mix(in oklab, var(--sz-primary-fg) 20%, transparent);
   }
+  /* Pílula de VIDRO com TEXTO dentro do herói ("Editar perfil", o chip do ranking do
+     Meu perfil). A tinta a 10%, e não os 20% do ladrilho: com 20% o rótulo branco caía
+     para 3,7:1; com 10% fica em 4,58:1 no claro e 5,87:1 no escuro (medido com a
+     mistura). O fio de 35% é o que desenha a pílula sobre o azul. */
+  .kids-marca-vidro {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 10%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--sz-primary-fg) 35%, transparent);
+  }
   /* Botão INVERTIDO dentro do herói (o "Continuar" branco da referência). */
   .kids-marca-inverso {
     background-color: var(--sz-primary-fg);
