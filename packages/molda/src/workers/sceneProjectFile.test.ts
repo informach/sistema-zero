@@ -3,6 +3,7 @@ import { sceneToJson } from '../scene/documentJson'
 import { makeSceneGlbFixture } from '../testing/sceneGlbFixture'
 import { prepareSceneProjectFileInWorker } from './sceneProjectFile'
 import { readSceneProjectFileReply, sceneProjectFileReply } from './sceneProjectFileProtocol'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 class ControlledWorker extends EventTarget implements TaskWorker {
@@ -63,6 +64,7 @@ test('native backup task snapshots before posting, owns replies and cancellation
   })
   source.bytes.fill(32)
   expect(worker.requests).toEqual([{ taskId: source.taskId, bytes: before }])
+  worker.reply(WORKER_LOADED_MESSAGE)
   abort.abort()
   await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
   expect(worker.stopped).toBe(1)

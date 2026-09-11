@@ -4,6 +4,7 @@ import { convertObjDocument } from '../import/objNativeDocument'
 import { SceneValidationError } from '../scene/validation'
 import { type ObjImportResult, objImportReply } from './objImportProtocol'
 import { type ObjImportToken, readObjImportRequest, readObjImportToken } from './objImportRequest'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 
@@ -45,3 +46,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

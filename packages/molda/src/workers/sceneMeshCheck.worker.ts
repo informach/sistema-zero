@@ -3,6 +3,7 @@ import { readSceneGeometry } from '../scene/readGeometry'
 import { SceneValidationError } from '../scene/validation'
 import { type MeshCheckRequest, readMeshCheckRequest } from './sceneMeshCheckProtocol'
 import { packSceneMesh, sceneMeshPacketTransfers } from './sceneMeshPacket'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 self.onmessage = (event: MessageEvent<unknown>) => {
@@ -36,3 +37,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

@@ -1,3 +1,5 @@
+import { isWorkerLoadedMessage, ownWorker } from './workerHandshake'
+
 /** One owned worker per task: cancel stops the CPU work, not only its promise. */
 export type TaskWorker = Pick<
   Worker,
@@ -28,6 +30,8 @@ export function runWorkerTask<Result, Progress>(options: {
       reject(error)
       return
     }
+    // Before the protocol listeners: the stop waits for the worker's first sign of life.
+    const owned = ownWorker(worker)
     let settled = false
     const cleanup = (): boolean => {
       if (settled) return false
@@ -36,7 +40,7 @@ export function runWorkerTask<Result, Progress>(options: {
       worker.removeEventListener('message', onMessage)
       worker.removeEventListener('error', onError)
       worker.removeEventListener('messageerror', onMessageError)
-      worker.terminate()
+      owned.release()
       return true
     }
     const fail = (error: unknown): void => {
@@ -49,7 +53,7 @@ export function runWorkerTask<Result, Progress>(options: {
     }
     const onMessageError = (): void => fail(new Error('Worker response could not be read'))
     const onMessage = (event: MessageEvent<unknown>): void => {
-      if (settled) return
+      if (settled || isWorkerLoadedMessage(event.data)) return
       try {
         const reply = options.readReply(event.data)
         if (!reply) throw new Error('Unexpected worker response')

@@ -2,6 +2,7 @@ import { encodeSceneFile } from '../export/sceneFile'
 import { SceneValidationError } from '../scene/validation'
 import { readSceneGlbToken, type SceneGlbToken, sceneGlbReply } from './sceneGlbProtocol'
 import { readSceneGlbWireRequest } from './sceneGlbRequest'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 self.onmessage = async (event: MessageEvent<unknown>) => {
@@ -30,3 +31,4 @@ self.onmessage = async (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

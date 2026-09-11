@@ -3,6 +3,7 @@ import { autoMeshUv } from '../scene/meshUvAuto'
 import { unfoldMeshUv } from '../scene/meshUvUnfold'
 import { SceneValidationError } from '../scene/validation'
 import { readSceneUvRequest, type SceneUvRequest, sceneUvReply } from './sceneUvProtocol'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 self.onmessage = (event: MessageEvent<unknown>) => {
@@ -30,3 +31,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

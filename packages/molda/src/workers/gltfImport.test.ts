@@ -23,6 +23,7 @@ import {
   MAX_GLTF_IMPORT_WIRE_BYTES,
   readGltfImportRequest,
 } from './gltfImportRequest'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 const json = (value: Record<string, unknown>) => new TextEncoder().encode(JSON.stringify(value))
@@ -335,6 +336,11 @@ test('pre-abort, posting failure, unreadable replies and failing progress consum
         progress: 'reading',
       })
     await expect(promise).rejects.toBeInstanceOf(Error)
+    if (kind === 'post') {
+      // Nothing came back yet: the stop waits for the hello instead of racing a loading module.
+      expect(controlled.stopped).toBe(0)
+      controlled.reply(WORKER_LOADED_MESSAGE)
+    }
     expect(controlled.stopped).toBe(1)
   }
 })

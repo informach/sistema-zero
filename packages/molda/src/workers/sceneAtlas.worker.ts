@@ -5,6 +5,7 @@ import {
   type SceneAtlasRequest,
   sceneAtlasReply,
 } from './sceneAtlasProtocol'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 self.onmessage = (event: MessageEvent<unknown>) => {
@@ -26,3 +27,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

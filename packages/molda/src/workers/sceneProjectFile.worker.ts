@@ -4,6 +4,7 @@ import {
   readSceneProjectFileTaskId,
   sceneProjectFileReply,
 } from './sceneProjectFileProtocol'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 self.onmessage = (event: MessageEvent<unknown>) => {
@@ -19,3 +20,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     self.postMessage({ taskId, type: 'error', reason: error.reason })
   }
 }
+announceWorkerLoaded()

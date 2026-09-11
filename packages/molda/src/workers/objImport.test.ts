@@ -5,6 +5,7 @@ import { directObjImport, objImportFixture, objText } from '../testing/objImport
 import { prepareObjImportInWorker } from './objImport'
 import { objImportReply, readObjImportReply } from './objImportProtocol'
 import { readObjImportRequest } from './objImportRequest'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 class ControlledWorker extends EventTarget implements TaskWorker {
@@ -271,6 +272,9 @@ test('OBJ cancellation terminates real CPU work and ignores late messages; cance
     }),
   ).rejects.toMatchObject({ name: 'AbortError' })
   expect(factoryWorker.requests).toEqual([])
+  // Released before it said anything: the stop waits for its hello, never for a loading module.
+  expect(factoryWorker.stopped).toBe(0)
+  factoryWorker.reply(WORKER_LOADED_MESSAGE)
   expect(factoryWorker.stopped).toBe(1)
   let created = false
   await expect(
@@ -334,5 +338,7 @@ test('OBJ lifecycle rejects stale ownership before touching payload, clone/worke
   await expect(prepareObjImportInWorker(input, { createWorker: () => worker })).rejects.toThrow(
     'clone failed',
   )
+  expect(worker.stopped).toBe(0)
+  worker.reply(WORKER_LOADED_MESSAGE)
   expect(worker.stopped).toBe(1)
 })
