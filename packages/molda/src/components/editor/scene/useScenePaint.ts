@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
+import { hexToRgb } from '../../../core/color'
 import { COPY } from '../../../core/copy'
+import { resolvePaletteColors } from '../../../core/sanitize'
 import type { BrushSize } from '../../../paint/skinPaint'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneLayerColor } from '../../../scene/imageColor'
@@ -22,6 +24,7 @@ import {
   type ScenePaintDraft,
   type ScenePaintScope,
 } from '../../../state/scenePaintShapeGesture'
+import { createScenePaletteGesture } from '../../../state/scenePaletteGesture'
 import type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
 import { useSceneImageTask } from './useSceneImageTask'
 import { useSceneRasterFile } from './useSceneRasterFile'
@@ -99,7 +102,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       ),
     [editor],
   )
-  const cancel = useCallback(() => {
+  const palette = useMemo(() => createScenePaletteGesture(editor), [editor])
+  /** Só o traço e o trabalho em andamento; o gesto de cor segue (o seletor nativo tira o foco). */
+  const stopStroke = useCallback(() => {
     cancelImage()
     cancelFile()
     shapeGesture.cancel()
@@ -107,6 +112,12 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     gesture.cancel()
     setDrawing(false)
   }, [gesture, cancelImage, cancelFile, shapeGesture])
+  const cancel = useCallback(() => {
+    // O gesto do "+ Nova cor" fecha ANTES de qualquer outra coisa (a lição do editor antigo):
+    // o Esc no seletor não manda `change`, e um passo velho entraria no histórico depois.
+    palette.end()
+    stopStroke()
+  }, [palette, stopStroke])
   const close = useCallback(() => {
     cancel()
     clearFile()
@@ -128,12 +139,14 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       ? selection.region
       : undefined
   // Undo/import can change encoding while this panel remains open. Tool state is not image data.
+  // Desfazer a cor nova tira a extra da paleta: o lápis volta à cor de sempre, que existe.
+  const colorCount = resolvePaletteColors(document).length
   const color: ScenePaintColor =
     data?.image.encoding === 'rgba'
       ? typeof chosenColor === 'number'
         ? [120, 220, 82, 255]
         : chosenColor
-      : typeof chosenColor === 'number'
+      : typeof chosenColor === 'number' && chosenColor < colorCount
         ? chosenColor
         : 7
   useEffect(() => {
@@ -151,22 +164,25 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         stroke.current &&
         !publishing.current
       )
-        cancel()
+        stopStroke()
     })
     const hidden = () => {
-      if (window.document.hidden) cancel()
+      if (window.document.hidden) stopStroke()
     }
-    window.addEventListener('blur', cancel)
+    // Abrir o seletor nativo de cor tira o foco da janela: o blur cancela o traço, não o gesto
+    // da cor nova, que fecha pelo `change` (ou pelo blur) do próprio campo.
+    window.addEventListener('blur', stopStroke)
     window.document.addEventListener('visibilitychange', hidden)
     return () => {
       unsubscribe()
-      window.removeEventListener('blur', cancel)
+      window.removeEventListener('blur', stopStroke)
       window.document.removeEventListener('visibilitychange', hidden)
       stroke.current = null
       gesture.cancel()
       shapeGesture.cancel()
+      palette.end()
     }
-  }, [editor, gesture, shapeGesture, cancel])
+  }, [editor, gesture, shapeGesture, stopStroke, palette])
   const publish = (sample: ScenePaintSample) => {
     const current = stroke.current
     if (!current) return false
@@ -188,6 +204,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   }
   const actions: ScenePaintActions = {
     begin(sample) {
+      palette.end()
       if (
         stroke.current ||
         shapeGesture.active() ||
@@ -333,10 +350,31 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     cancel,
     setColor: (value: ScenePaintColor) => {
       if (!stroke.current && !imageTask.busy) {
+        palette.end()
         setColor(value)
         if (eraser || picker) setTool('pencil')
       }
     },
+    /** Um passo do seletor do "+ Nova cor": a cor nova já vira a cor do lápis. */
+    newColorStep: (hex: string) => {
+      if (stroke.current || imageTask.busy) return
+      const step = palette.step(hex)
+      if (!step) return
+      if ('full' in step) {
+        setError(COPY.editor.model.colorsFull)
+        return
+      }
+      const chosen = resolvePaletteColors(editor.getState().asset)[step.index] ?? hex
+      setColor(
+        data?.image.encoding === 'rgba'
+          ? ([...hexToRgb(chosen), 255] as ScenePaintRgba)
+          : step.index,
+      )
+      if (eraser || picker) setTool('pencil')
+      setError(null)
+    },
+    /** O seletor fechou: UM passo de desfazer para a cor nova. */
+    newColorEnd: () => palette.end(),
     setBrush: (value: BrushSize) => {
       if (!stroke.current) setBrush(value)
     },

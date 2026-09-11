@@ -262,6 +262,44 @@ describe('a aba Pintar', () => {
   })
 })
 
+describe('"+ Nova cor" na aba Pintar', () => {
+  test('N passos do seletor viram UMA cor, que vira a do lápis, e UM desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap, drag, view } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const colors = resolvePaletteColors(editor.getState().asset).length
+    const input = view.container.querySelector<HTMLInputElement>(
+      'input[name="molda-scene-new-color"]',
+    )!
+    // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
+    fireEvent.input(input, { target: { value: '#123456' } })
+    fireEvent.input(input, { target: { value: '#234567' } })
+    fireEvent.input(input, { target: { value: '#345678' } })
+    expect(editor.getState().asset.extraColors).toEqual(['#345678'])
+    expect(swatch(editor.getState().asset, colors).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.change(input, { target: { value: '#345678' } })
+    await act(async () => {
+      await Promise.resolve()
+    })
+    drag([
+      [9, 9],
+      [10, 9],
+    ])
+    const painted = editor.getState().asset.images.at(-1)!.layers[0]!.pixels
+    expect(painted.includes(colors)).toBe(true)
+    // Desfazer o traço, e depois a cor: um passo cada. O lápis volta a uma cor que existe.
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.extraColors).toBeUndefined()
+    drag([[9, 9]])
+    expect(editor.getState().asset.images.at(-1)!.layers[0]!.pixels.includes(colors)).toBe(false)
+    expect(screen.queryByRole('alert')).toBeNull()
+    editor.getState().dispose()
+  })
+})
+
 describe('a cor e o acabamento da peça, no Modelar', () => {
   test('tocar numa cor pinta só a peça escolhida, mesmo com o material dividido', async () => {
     const { document, door, wall } = twoBoxes()
