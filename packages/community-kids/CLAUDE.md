@@ -528,6 +528,19 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   ⚠️ Nenhum texto do selo contém "Salvo" (o e2e do Studio usa `getByText('Salvo')` estrito).
   **INTERINO:** `cloud-save-badge.tsx` (a camada acima do app) só existe para o `/molda`, até o
   pacote sair da obra da outra sessão (lote 6b); ele lê a mesma função pura.
+- **Seta e conta (11/09/2026, telas-modelo):** o contrato ganhou dois campos, os dois nulos no
+  `EMPTY_HOST_CHROME`. **`back: {text, label, href, onNavigate}`** é a seta das GALERIAS de volta
+  à seção-mãe, lida do `backToSection` do menu (`nav.ts`), nunca de lista paralela: `text` é o
+  nome curto que a ferramenta mostra ao lado da seta ("Criar"), `label` a frase falada ("Voltar
+  para Criar"), e o `text` está CONTIDO no `label` por construção (quando a frase não contém o
+  nome da seção, como "Voltar ao mapa", o `text` é a frase). O `<a href>` da ferramenta chama
+  `onNavigate` (`router.push`) no clique simples e deixa o navegador cuidar do Ctrl/Cmd/meio. O
+  editor e o bloco de aula ignoram o campo. **`account: {label}`** diz que a nuvem da CONTA está
+  ligada (há fila e o navegador guarda; `unsupported` = `null`): a galeria mostra a pílula
+  "Guardado na sua conta" em REPOUSO (a imagem-modelo mostra assim) e diz "na sua conta" ×
+  "neste aparelho" na contagem. É memoizado por um BOOLEANO: o guardando↔guardado mexe no
+  `status`, nunca na identidade de `account` nem de `back` (travado em `tests/host-chrome.test.tsx`).
+  O Pensa espelha só `menu` e `back`. A tabela rota → seção está em `tests/nav-back.test.ts`.
 - Só com PERFIL (`viewerId`): sem sessão de perfil não há dono na nuvem e os apps abrem só-local.
   Miniaturas dos cards NÃO viajam (capa vazia no outro aparelho até abrir o jogo).
 - **Medição (19/08):** `src/lib/perf.ts` (`perfSpan`/`perfSpanAsync`/`perfMark`; liga com

@@ -66,14 +66,25 @@ export function isNavActive(pathname: string, href: string, match?: string | str
  * de uma seção ganha a volta certa sem ninguém lembrar de mais nada.
  *
  * `null` na página principal (ali não há para onde voltar) e fora de qualquer seção.
+ *
+ * `label` é a frase inteira ("Voltar para Criar"), que as páginas do app mostram; `text` é
+ * a versão curta, para quem divide a linha com outros controles (a seta das galerias das
+ * ferramentas, contrato `hostChrome`): o nome da seção quando a frase o contém, senão a
+ * frase inteira ("Voltar ao mapa" não contém "Carreira"). Assim o `label` CONTÉM o `text`
+ * por construção, e o nome falado sempre começa pelo que se vê (WCAG 2.5.3).
  */
-export function backToSection(pathname: string): { href: string; label: string } | null {
+export function backToSection(
+  pathname: string,
+): { href: string; label: string; text: string } | null {
   for (const item of NAV_ITEMS) {
     if (pathname === item.href) return null
     const inside =
       isNavActive(pathname, item.href, item.match) ||
       (item.inner ?? []).some((prefix) => underPrefix(pathname, prefix))
-    if (inside) return { href: item.href, label: item.backLabel }
+    if (inside) {
+      const text = item.backLabel.includes(item.label) ? item.label : item.backLabel
+      return { href: item.href, label: item.backLabel, text }
+    }
   }
   return null
 }
