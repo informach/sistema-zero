@@ -72,11 +72,13 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
-      # O molda fica FORA deste job: ele roda no job `molda-tests`, num runner WINDOWS (ver o
-      # comentário de lá). `--filter '!pkg'` sozinho = todos MENOS ele; combinar com
-      # `--filter '*'` faz UNIÃO e traz o molda de volta.
-      - name: Testes (todos os pacotes, menos o molda)
-        run: bun run --filter '!@sistemazero/molda' test
+      # O molda voltou a rodar aqui (10/09/2026). Ele passou um dia num job Windows porque o Bun
+      # 1.3.11 segfaultava neste runner dentro de `SceneWorkshop.test.tsx`: `terminate()` num
+      # Worker cujo módulo ainda transpilava no pool de threads (oven-sh/bun#33936, corrigido no
+      # Bun 1.4.0). O conserto no código é o aperto de mão de `packages/molda/src/workers/
+      # workerHandshake.ts` (nenhum worker é encerrado antes de anunciar que carregou).
+      - name: Testes (todos os pacotes)
+        run: bun run --filter '*' test
 
       - name: Verificar IR gerada dos exemplos 3D
         working-directory: packages/studio
@@ -127,31 +129,6 @@ jobs:
 
       - name: Typecheck (todos os pacotes)
         run: bun run --filter '*' typecheck
-
-  # O molda roda no WINDOWS. No runner Linux o Bun (1.3.11 e 1.3.12) morre com
-  # "panic: Segmentation fault ... oh no: Bun has crashed" no meio de
-  # `SceneWorkshop.test.tsx` (sobe Workers de verdade): 5 runs seguidos em 10/09, com o
-  # molda junto dos outros pacotes ou num passo isolado, e num teste diferente a cada vez
-  # (não é um teste específico). Num container Linux local com o mesmo Bun não reproduz
-  # (97/97 duas vezes, com 2 CPUs e carga artificial). No Windows, onde o pacote é
-  # desenvolvido, `test:2` fecha 824/824. Enquanto o Bun não corrige, o molda é testado
-  # aqui e o `deploy-staging` espera por este job.
-  molda-tests:
-    name: molda-tests
-    runs-on: windows-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.11'
-
-      - name: Instalar dependências (lockfile congelado)
-        run: bun install --frozen-lockfile
-
-      - name: Testes do molda (Windows)
-        run: bun run --filter '@sistemazero/molda' test
 
   community-kids-e2e:
     name: community-kids-e2e
@@ -252,7 +229,7 @@ jobs:
 
   deploy-staging:
     name: deploy-staging
-    needs: [ci, molda-tests, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox]
+    needs: [ci, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/staging')
     runs-on: ubuntu-latest
