@@ -4,6 +4,22 @@ export const AI_APPS_MIN_LEVEL: CareerLevelSlug = 'hacker'
 export const FREE_CREATION_MIN_LEVEL: CareerLevelSlug = 'coder'
 export const THREE_D_CREATION_MIN_LEVEL: CareerLevelSlug = 'explorer'
 
+/**
+ * As faixas de ferramentas do Molda por posto da carreira. O Molda não conhece carreira: o host
+ * traduz o posto da criança numa lista de famílias liberadas e passa ao pacote.
+ *
+ * A régua é a mesma que pôs o Molda no Explorador(a): a oficina libera o que o Estúdio consegue
+ * usar. Os três postos fecham os três cursos 3D (iniciante, intermediário, avançado), e o que se
+ * mexe só toca no Jogo 3D Avançado, que chega no Arquiteto(a). Os nomes das faixas são o contrato
+ * com o pacote (`MOLDA_TOOL_BANDS`, em `@sistemazero/molda/tools`); o kids confere os dois lados.
+ */
+export type MoldaToolBand = 'basic' | 'intermediate' | 'professional'
+export const MOLDA_TOOL_BAND_LEVELS: Readonly<Record<MoldaToolBand, CareerLevelSlug>> = {
+  basic: THREE_D_CREATION_MIN_LEVEL,
+  intermediate: 'architect',
+  professional: 'god',
+}
+
 export const CREATIVE_TOOL_LEVELS = {
   'estudio-completo': FREE_CREATION_MIN_LEVEL,
   pinta: FREE_CREATION_MIN_LEVEL,

@@ -1,10 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CAREER_LEVEL_SLUGS,
+  type CareerLevelSlug,
   careerCourseQualified,
   courseJourneyState,
   creativeToolAvailability,
   type JourneyCourse,
+  MOLDA_TOOL_BAND_LEVELS,
   nextCareerCourse,
+  THREE_D_CREATION_MIN_LEVEL,
 } from '../src/career'
 
 const course = (overrides: Partial<JourneyCourse> = {}): JourneyCourse => ({
@@ -64,5 +68,23 @@ describe('creator journey', () => {
     expect(creativeToolAvailability({ tool: 'pensa', owned: null, level: 'god' })).toBe(
       'unavailable',
     )
+  })
+})
+
+describe('faixas de ferramentas do Molda', () => {
+  test('a faixa de entrada é o próprio portão do Molda, e os postos crescem estritamente', () => {
+    expect(MOLDA_TOOL_BAND_LEVELS.basic).toBe(THREE_D_CREATION_MIN_LEVEL)
+    const levels: readonly CareerLevelSlug[] = [
+      MOLDA_TOOL_BAND_LEVELS.basic,
+      MOLDA_TOOL_BAND_LEVELS.intermediate,
+      MOLDA_TOOL_BAND_LEVELS.professional,
+    ]
+    const order = levels.map((slug) => CAREER_LEVEL_SLUGS.indexOf(slug))
+    expect(order.every((index) => index >= 0)).toBe(true)
+    for (let i = 1; i < order.length; i++) expect(order[i]!).toBeGreaterThan(order[i - 1]!)
+  })
+
+  test('as faixas são as três de sempre, na ordem: o molda confere o outro lado pelo nome', () => {
+    expect(Object.keys(MOLDA_TOOL_BAND_LEVELS)).toEqual(['basic', 'intermediate', 'professional'])
   })
 })
