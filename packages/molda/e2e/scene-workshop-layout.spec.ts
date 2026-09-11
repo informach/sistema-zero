@@ -141,6 +141,31 @@ test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada
 })
 
 /**
+ * A aba Animar: os movimentos na barra da aba e a vista flutuando no palco, com o cartão da pose
+ * embaixo. No celular em pé os movimentos ficavam espremidos ao lado das abas (fora da tela) e o
+ * cartão da pose cobria o "Mais ajustes do palco" (full review do lote 10, 11/09/2026).
+ */
+test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  await openFreshModel(page, 'layout-anima-e2e')
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.getByRole('button', { name: 'Animar', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Criar movimento' })).toBeVisible()
+  await checkEverySize(page, 'Animar')
+  for (const size of SIZES) {
+    await page.setViewportSize(size)
+    const create = await page.getByRole('button', { name: 'Criar movimento' }).boundingBox()
+    expect(create, `Animar ${size.width}px: "Criar movimento" na tela`).not.toBeNull()
+    expect(
+      (create?.x ?? 0) + (create?.width ?? 0),
+      `Animar ${size.width}px: cabe`,
+    ).toBeLessThanOrEqual(size.width)
+  }
+  expect(pageErrors).toEqual([])
+})
+
+/**
  * O nível de entrada (`?nivel=explorer`, o portão por carreira): o que a criança de fato encara.
  * Somem a malha, o laço, o ponto de giro, os ossos e o "Trazer arquivo 3D", e entra a linha
  * "Ferramentas que vêm por aí". Nada coberto, em nenhum tamanho, nas duas abas.

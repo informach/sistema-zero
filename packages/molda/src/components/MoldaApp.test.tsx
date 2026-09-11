@@ -53,6 +53,28 @@ describe('MoldaApp', () => {
     expect(await screen.findByRole('dialog')).toBeDefined()
   })
 
+  // Full review do lote 10 (11/09/2026): com as faixas, "Trazer de volta" foi morar no cartão
+  // lilás, que só existe com a galeria carregada. Sem ele no erro, a criança ficava só com o
+  // "Tentar de novo" e sem jeito de restaurar o backup.
+  test('galeria que não carregou ainda oferece trazer as criações de volta', async () => {
+    const persistence = createMemoryPersistence([makeModel()])
+    const failing = {
+      ...persistence,
+      listSummaries: async () => {
+        throw new Error('indexeddb fora')
+      },
+      loadAll: async () => {
+        throw new Error('indexeddb fora')
+      },
+    }
+    render(<MoldaApp persistence={failing} />)
+    expect(await screen.findByText(COPY.gallery.loadError)).toBeDefined()
+    expect(screen.getByRole('button', { name: COPY.gallery.retry })).toBeDefined()
+    expect(screen.getByRole('button', { name: COPY.gallery.importJson })).toBeDefined()
+    // O cartão lilás (com a contagem) não aparece sem a galeria: o botão é o do erro.
+    expect(document.querySelector('[data-mld-band="lilas"]')).toBeNull()
+  })
+
   test('lista as criações com selo do tipo, busca e filtro', async () => {
     const persistence = createMemoryPersistence([makeModel(), makeTexture(), makeSky()])
     render(<MoldaApp persistence={persistence} />)

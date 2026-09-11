@@ -295,7 +295,9 @@ export function SceneWorkshop({
       <div className="mld-bar flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2">
         <SceneModeTabs mode={mode} onChange={changeMode} />
         {mode === 'animation' ? (
-          <div className="min-w-0 flex-1">
+          // Base de 20rem, e não `flex-1`: com base zero o bloco sempre "cabia" nos 12px que
+          // sobram ao lado das abas e ficava espremido, com os botões fora da tela no celular.
+          <div className="min-w-0 flex-[1_1_20rem]">
             <DeferredModule
               load={loadClips}
               props={{ workshop }}

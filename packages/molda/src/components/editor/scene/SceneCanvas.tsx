@@ -473,9 +473,20 @@ function SceneCanvasAttempt({
     ? 'sz-tool-pill sz-tool-pill--outline list-none px-3 text-[0.8125rem] [&::-webkit-details-marker]:hidden'
     : 'flex min-h-11 cursor-pointer items-center rounded-xl px-3 font-bold text-mld-text text-sm hover:bg-mld-border/40'
   // Na barra de cima o menu DESCE; flutuando sobre o palco (o desenho antigo, no pé), ele SOBE.
-  const dropClass = (align: 'left' | 'right') =>
+  // `right` = o grupo da direita da barra, que só vai para a direita a partir de `sm`: abaixo
+  // disso ele cai numa linha própria, colado à esquerda, e o menu ancorado à direita abria com
+  // os rótulos fora da tela. `left` estreita no celular: o resumo não começa na borda, e os
+  // 240px do menu passavam da tela.
+  // `stage` = a vista flutuando no palco (o Animar): o palco recorta o que passa do pé dele, e
+  // no celular em pé as sete vistas em fila passavam; em duas colunas elas cabem.
+  const DROP_ALIGN = {
+    right: 'left-0 sm:right-0 sm:left-auto',
+    left: 'left-0 max-sm:w-52',
+    stage: 'left-0 grid w-[min(18rem,calc(100vw-2rem))] grid-cols-2',
+  } as const
+  const dropClass = (align: keyof typeof DROP_ALIGN) =>
     shell
-      ? `mld-drop top-full mt-2 ${align === 'right' ? 'right-0' : 'left-0'}`
+      ? `mld-drop top-full mt-2 ${DROP_ALIGN[align]}`
       : 'absolute right-0 bottom-full z-30 mb-1 flex w-56 flex-col gap-1 rounded-xl border border-mld-border bg-mld-surface p-2 shadow-lg'
   const cameraMenu = (
     // As seis vistas atrás de UM botão: deitadas elas pediam 432px. O rótulo leva a vista ATUAL.
@@ -485,7 +496,8 @@ function SceneCanvasAttempt({
         {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
-      <div className={dropClass('right')}>
+      {/* Flutuando no palco (o Animar) o grupo fica à ESQUERDA: o menu abre para a direita. */}
+      <div className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}>
         {CAMERA_VIEWS.map((name) => (
           <Button
             key={name}
@@ -709,20 +721,28 @@ function SceneCanvasAttempt({
       {shell ? (
         <>
           {/*
-           * A PILHA do alto do palco: a vista (no Animar), a dica do momento e os cartões que
-           * aparecem por um tempo (forma-base, forças dos ossos). O canto de cima à direita é do
-           * gatilho "Peças e cores"; o pé é da pose (à esquerda) e da ajuda (à direita).
+           * A COLUNA da esquerda do palco, de cima a baixo: a vista (no Animar), a dica do momento
+           * e os cartões que aparecem por um tempo (forma-base, forças dos ossos) em cima; a pose
+           * embaixo. O canto de cima à direita é do gatilho "Peças e cores" e o pé da direita, da
+           * ajuda. É UMA coluna de propósito: no celular em pé, com a pilha e a pose em caixas
+           * separadas, a pose cobria o "Mais ajustes do palco". Quem cede no aperto é a parte que
+           * rola (a dica e os cartões); a vista flutuante fica FORA dela, porque um contêiner de
+           * rolagem recorta o menu que abre da vista.
            */}
-          <div className="pointer-events-none absolute top-3 left-3 z-20 flex max-h-[calc(100%-5.5rem)] max-w-[calc(100%-4.25rem)] flex-col items-start gap-2 overflow-y-auto md:max-w-[calc(100%-13.5rem)]">
-            {floatingView}
-            {hintCard}
-            {stageCards}
-          </div>
-          {poseCard && (
-            <div className="pointer-events-none absolute bottom-3 left-3 z-20 flex max-h-[calc(100%-1.5rem)] max-w-[calc(100%-4.25rem)] flex-col items-start overflow-y-auto">
-              {poseCard}
+          <div className="pointer-events-none absolute top-3 bottom-3 left-3 z-20 flex max-w-[calc(100%-4.25rem)] flex-col items-start justify-between gap-2 md:max-w-[calc(100%-13.5rem)]">
+            <div className="flex min-h-0 max-w-full flex-col items-start gap-2">
+              {floatingView}
+              <div className="flex min-h-0 max-w-full flex-col items-start gap-2 overflow-y-auto">
+                {hintCard}
+                {stageCards}
+              </div>
             </div>
-          )}
+            {poseCard && (
+              <div className="flex max-h-[60%] max-w-full shrink-0 flex-col items-start overflow-y-auto">
+                {poseCard}
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <>

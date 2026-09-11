@@ -2617,3 +2617,18 @@ dela, senão o palco de um celular em pé caía para 190px) e a largura do traç
 iguais numa linha. Seguem o `data-paint-tool` (o "de perto" devolve o foco por ele), o
 `aria-pressed`, o `aria-keyshortcuts` e o `steadyWhileDrawing`, que agora recebe a classe do
 contêiner (o `opacity-100` é utilitária e vence o esmaecido do `.mld-tile`).
+
+**Full review do lote 10 (11/09/2026), o que mudou na casca:**
+- Os movimentos do Animar têm base de 20rem (`flex-[1_1_20rem]`): com `flex-1` (base zero) eles
+  "cabiam" nos 12px ao lado das abas e ficavam fora da tela no celular em pé.
+- A coluna da esquerda do palco é UMA só (a pilha em cima, a pose embaixo, `justify-between`):
+  separadas, a pose cobria o "Mais ajustes do palco". A vista flutuante fica FORA da parte que
+  rola, porque um contêiner de rolagem recorta o menu que abre dela.
+- Os menus da vista: na barra, `left-0` abaixo de `sm` (o grupo cai numa linha própria, colado à
+  esquerda) e `right-0` acima; flutuando no palco, abrem para a direita em duas colunas (o palco
+  recorta o que passa do pé dele). O "Mais ajustes do palco" é mais estreito no celular.
+- O erro de salvar encolhe com reticências (a frase inteira no `title` e na região viva): rígido,
+  ele empurrava desfazer e refazer para fora da barra.
+- "Trazer de volta" também aparece quando a galeria não carregou, junto do "Tentar de novo".
+- Testes: o e2e de layout ganhou a aba Animar (os movimentos cabem na tela em todo tamanho) e o
+  `MoldaApp.test.tsx`, a galeria que não carregou.

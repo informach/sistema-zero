@@ -67,6 +67,9 @@ export function SceneWorkshopBar({
   const saving = saveState === 'saving'
   const saved = saveState === 'saved'
   const SaveIcon = saved ? Check : saving ? Loader2 : null
+  // O erro fala a frase inteira (pode passar de 600px): encolhe com reticências, e o texto todo
+  // fica no `title` e na região viva. Rígido, ele empurrava desfazer e refazer para fora.
+  const failed = !saved && !saving && !!saveError
   return (
     <header className="mld-bar flex shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b px-3 py-2.5">
       {/* O nome vem antes das ações: no aperto, quem encolhe primeiro são as pílulas da direita. */}
@@ -91,8 +94,10 @@ export function SceneWorkshopBar({
         {/* O "Salvo" da tela-modelo: menta quando guardou; o erro fala na tinta do perigo. */}
         <span
           role="status"
+          title={failed ? saveError : undefined}
           className={clsx(
-            'inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-sm font-extrabold max-sm:px-2',
+            'inline-flex min-h-8 items-center gap-1.5 rounded-full px-2.5 text-sm font-extrabold max-sm:px-2',
+            failed ? 'min-w-0 shrink' : 'shrink-0',
             saved
               ? 'bg-(--sz-tool-ok-tint) text-(--sz-tool-ok)'
               : saveError
@@ -110,7 +115,7 @@ export function SceneWorkshopBar({
             />
           )}
           {/* No celular o selo fica só com o ícone: o nome da criação precisa do espaço. */}
-          <span className={clsx(SaveIcon && 'max-sm:sr-only')}>
+          <span className={clsx(SaveIcon && 'max-sm:sr-only', failed && 'truncate')}>
             {saved
               ? COPY.editor.saved
               : saving

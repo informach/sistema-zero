@@ -265,6 +265,26 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const ready = loaded && !error
   const empty = ready && assets.length === 0 && readIssues.length === 0
 
+  // "Trazer de volta": no cartão lilás e, se a galeria não carregou, junto do "Tentar de novo"
+  // (antes do desenho das faixas ele morava no cabeçalho e estava sempre à mão).
+  const restoreButton = (
+    <button
+      type="button"
+      className="sz-tool-pill sz-tool-pill--creme"
+      disabled={restoring}
+      aria-busy={restoring}
+      title={COPY.gallery.importHint}
+      onClick={() => fileInputRef.current?.click()}
+    >
+      {restoring ? (
+        <Loader2 aria-hidden="true" className="animate-spin motion-reduce:animate-none" />
+      ) : (
+        <Upload aria-hidden="true" />
+      )}
+      {COPY.gallery.importJson}
+    </button>
+  )
+
   // O cartão amarelo que abre a grade (a imagem-modelo): um BOTÃO de verdade com nome próprio
   // (título + dica), diferente do "Criar novo" do cabeçalho, que os e2e acham pelo nome. Some
   // com busca ou filtro (no meio de um resultado ele seria ruído). `min-h-40` e não a altura do
@@ -422,13 +442,17 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
               {error ? (
                 <div className="flex flex-col items-start gap-3">
                   <p className="font-semibold text-base text-mld-muted">{error}</p>
-                  <button
-                    type="button"
-                    className="sz-tool-pill sz-tool-pill--primary"
-                    onClick={() => void gallery.getState().load()}
-                  >
-                    {COPY.gallery.retry}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--primary"
+                      onClick={() => void gallery.getState().load()}
+                    >
+                      {COPY.gallery.retry}
+                    </button>
+                    {/* O cartão lilás não aparece sem a galeria: o backup continua à mão. */}
+                    {restoreButton}
+                  </div>
                 </div>
               ) : empty ? (
                 // Primeiro uso: o recado e o cartão "Nova criação" sozinho na grade (o convite
@@ -566,24 +590,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
                           : COPY.gallery.downloadAll}
                       </button>
                     ) : null}
-                    <button
-                      type="button"
-                      className="sz-tool-pill sz-tool-pill--creme"
-                      disabled={restoring}
-                      aria-busy={restoring}
-                      title={COPY.gallery.importHint}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {restoring ? (
-                        <Loader2
-                          aria-hidden="true"
-                          className="animate-spin motion-reduce:animate-none"
-                        />
-                      ) : (
-                        <Upload aria-hidden="true" />
-                      )}
-                      {COPY.gallery.importJson}
-                    </button>
+                    {restoreButton}
                   </div>
                 </div>
               </div>
