@@ -15,7 +15,22 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
+// Só para os e2e da gravação de SAÍDA (`?autosave-ms=600000`): segura o autosave do editor
+// (o debounce e o teto), para o spec provar a gravação de quando a página vai embora ou a aba
+// fica escondida, e não a do debounce, que no WebKit chegava antes do reload em metade das
+// rodadas. Lido uma vez, na carga, como o `?host=1`: a navegação da lista para o editor é por
+// `pushState` e o parâmetro some da URL, mas não daqui. Sem o parâmetro, nada muda.
+const E2E_AUTOSAVE_MS = Number(new URLSearchParams(window.location.search).get('autosave-ms'))
+
 const StudioEditor = lazy(async () => {
+  if (E2E_AUTOSAVE_MS > 0) {
+    // Pelo caminho RELATIVO, como o `hostChromeDemo.tsx`: é o mesmo módulo que o editor usa.
+    const { setAutosaveDelayForTests, setAutosaveMaxWaitForTests } = await import(
+      '../src/persistence/service'
+    )
+    setAutosaveDelayForTests(E2E_AUTOSAVE_MS)
+    setAutosaveMaxWaitForTests(E2E_AUTOSAVE_MS)
+  }
   const module = await import('@sistemazero/studio/editor')
   return { default: module.StudioEditor }
 })

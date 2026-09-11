@@ -97,9 +97,10 @@ por cima a partir de derivados antigos.
 **Botões de saída do projeto** (controlados por `features`, default ON; o `<StudioLesson>` desliga
 `export` e `download`): **Salvar** (persiste + dispara `onSave`), **Baixar** (`features.download`) gera um ZIP
 de FONTE legível pra continuar no VSCode, e **Exportar** (`features.export`, no menu ⋯) gera o ZIP de deploy
-(Railway). Os três são independentes; o autosave (IndexedDB, ~1s) é separado do Salvar.
+(Railway). Os três são independentes; o autosave (IndexedDB, ~1s depois da última edição, e no
+máximo 5 s depois da primeira edição ainda não gravada) é separado do Salvar.
 
-**Adapters remotos e flush no fechamento:** `onChange` recebe um 2º argumento OPCIONAL `ctx?: { reason: 'autosave' | 'flush' }`. No fechamento da aba (pagehide/beforeunload), no unmount e no "Salvar" explícito o Studio emite com `reason: 'flush'` — e um `fetch` normal é ABORTADO pela navegação, perdendo a última edição. Para um backend remoto, use um transporte com keepalive no flush:
+**Adapters remotos e flush no fechamento:** `onChange` recebe um 2º argumento OPCIONAL `ctx?: { reason: 'autosave' | 'flush' }`. No fechamento da aba (pagehide/beforeunload), quando a aba fica escondida (`visibilitychange` → `hidden`: no iPad o Safari descarta aba em segundo plano sem aviso), no unmount e no "Salvar" explícito o Studio emite com `reason: 'flush'` — e um `fetch` normal é ABORTADO pela navegação, perdendo a última edição. Para um backend remoto, use um transporte com keepalive no flush:
 
 ```tsx
 onChange={(p, ctx) =>
@@ -110,6 +111,8 @@ onChange={(p, ctx) =>
 ```
 
 A biblioteca não chama `sendBeacon` sozinha (endpoint/credenciais são do host). Hosts `persistence="local"` não precisam disso (o IndexedDB já ordena as escritas).
+
+Um adapter próprio (`persistence={{ load, save, ... }}`) tem os `save` do mesmo projeto ENCADEADOS: o próximo só é chamado quando o anterior termina, para um POST antigo não confirmar por último. Se o seu armazenamento já aplica os saves na ordem em que foram chamados, mesmo com vários em voo (como o IndexedDB do adapter local), declare `appliesSavesInCallOrder: true`: o Studio passa a chamar o `save` na hora, e o flush de saída não fica preso atrás de um autosave em voo.
 
 `<ProjectList onOpenProject={(id) => ...} />` — lista/gerência de projetos do IndexedDB local (por ora acoplada ao adapter local; hosts com backend devem listar pelos próprios dados). Tem **Exportar** (baixa o projeto inteiro como `*.szproject.json`) e **Importar** (lê o JSON e cria um projeto NOVO). O import saneia tudo pelas mesmas cotas do load e mostra **avisos** quando algo não cabe (imagens/extras/extensões fora da cota, ou blocos de uma versão mais nova) — o projeto importa mesmo assim, sem perder o resto em silêncio.
 

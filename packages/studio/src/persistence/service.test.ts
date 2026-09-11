@@ -26,6 +26,7 @@ const {
   cancelPendingAutosavesFor,
   createPersistenceService,
   setAutosaveDelayForTests,
+  setAutosaveMaxWaitForTests,
   setBlocksHydrationTimeoutForTests,
 } = await import('./service')
 
@@ -144,6 +145,204 @@ describe('PersistenceService — mutex por id (ordem de confirmação)', () => {
     await saveB
 
     expect(gate.committed).toEqual(['v1', 'v2'])
+  })
+})
+
+describe('PersistenceService — adapter que já aplica os saves na ordem (o local)', () => {
+  beforeEach(() => {
+    setAutosaveDelayForTests(AUTOSAVE_TEST_DELAY_MS)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  afterEach(() => {
+    setAutosaveDelayForTests(null)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('o flush de saída chega ao adapter NA HORA, mesmo com o autosave anterior ainda em voo', async () => {
+    // Encadeado, o flush esperava o autosave terminar para só então salvar, e na troca de
+    // página esse fim nunca chega: a edição feita durante o autosave se perdia. O armazenamento
+    // que aplica os saves na ordem das chamadas (o IndexedDB) não precisa da cadeia.
+    const gate = gatedAdapter()
+    const service = createPersistenceService(useProjectStore, {
+      ...gate.adapter,
+      appliesSavesInCallOrder: true,
+    })
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-ordered', 'autosave'))
+    await waitForAutosave()
+    expect(gate.calledWith.map((project) => project.name)).toEqual(['autosave'])
+
+    useProjectStore.getState().rename('flush')
+    window.dispatchEvent(new Event('pagehide'))
+    expect(gate.calledWith.map((project) => project.name)).toEqual(['autosave', 'flush'])
+
+    gate.release(0)
+    gate.release(1)
+    await Bun.sleep(0)
+    expect(useProjectStore.getState().isDirty).toBe(false)
+
+    detach()
+  })
+
+  it('sem a marca (um backend remoto), o flush continua esperando o save anterior', async () => {
+    const gate = gatedAdapter()
+    const service = createPersistenceService(useProjectStore, gate.adapter)
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-remote', 'autosave'))
+    await waitForAutosave()
+    useProjectStore.getState().rename('flush')
+    window.dispatchEvent(new Event('pagehide'))
+    await Bun.sleep(0)
+    // O POST antigo poderia confirmar por último num backend remoto: a cadeia segura o novo.
+    expect(gate.calledWith.map((project) => project.name)).toEqual(['autosave'])
+
+    gate.release(0)
+    await Bun.sleep(0)
+    expect(gate.calledWith.map((project) => project.name)).toEqual(['autosave', 'flush'])
+    gate.release(1)
+    await Bun.sleep(0)
+
+    detach()
+  })
+})
+
+describe('PersistenceService — teto do autosave', () => {
+  /** Edita sem parar (a cada `everyMs`) por `forMs` e devolve quantos autosaves saíram. */
+  async function editContinuously(forMs: number, everyMs: number): Promise<number> {
+    let saves = 0
+    const service = createPersistenceService(useProjectStore, null)
+    service.handlers = {
+      onChange: (_project, ctx) => {
+        if (ctx?.reason === 'autosave') saves += 1
+      },
+    }
+    const detach = service.attach()
+    useProjectStore.getState().setProject(createEmptyProject('project-teto', 'Teto'))
+    const start = Date.now()
+    let turn = 0
+    while (Date.now() - start < forMs) {
+      turn += 1
+      useProjectStore.getState().setFile('script.js', `console.log(${turn});\n`)
+      await Bun.sleep(everyMs)
+    }
+    const during = saves
+    service.handlers = {}
+    detach()
+    return during
+  }
+
+  beforeEach(() => {
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  afterEach(() => {
+    setAutosaveDelayForTests(null)
+    setAutosaveMaxWaitForTests(null)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  it('quem edita sem parar grava mesmo assim: no máximo o teto depois da 1ª edição não gravada', async () => {
+    // O debounce (aqui longo, 5 s) sozinho nunca sairia durante a edição contínua.
+    setAutosaveDelayForTests(5000)
+    setAutosaveMaxWaitForTests(100)
+
+    expect(await editContinuously(450, 20)).toBeGreaterThanOrEqual(2)
+  })
+
+  it('anti-vácuo: sem o teto, a mesma edição contínua não grava nada até parar', async () => {
+    setAutosaveDelayForTests(5000)
+    setAutosaveMaxWaitForTests(60_000)
+
+    expect(await editContinuously(450, 20)).toBe(0)
+  })
+})
+
+describe('PersistenceService — aba escondida', () => {
+  /** O `document.visibilityState` do happy-dom, trocado na instância e devolvido depois. */
+  function setVisibility(state: DocumentVisibilityState): void {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => state })
+    document.dispatchEvent(new Event('visibilitychange'))
+  }
+
+  beforeEach(() => {
+    // Debounce LONGO: aqui só o flush pode gravar, então nenhum resultado depende de o
+    // autosave ainda não ter saído (um `sleep(0)` lento no CI o deixaria sair).
+    setAutosaveDelayForTests(5000)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  afterEach(() => {
+    delete (document as { visibilityState?: unknown }).visibilityState
+    setAutosaveDelayForTests(null)
+    useProjectStore.setState({ project: null, isDirty: false, saveError: null })
+  })
+
+  function recordingService() {
+    const saves: string[] = []
+    const reasons: Array<string | undefined> = []
+    const service = createPersistenceService(useProjectStore, {
+      load: async () => null,
+      save: async (project) => {
+        saves.push(project.name)
+      },
+    })
+    service.handlers = { onChange: (_project, ctx) => reasons.push(ctx?.reason) }
+    return { service, saves, reasons }
+  }
+
+  it("esconder a aba grava o que está pendente NA HORA, com reason 'flush'", async () => {
+    // No iPad o Safari pode descartar uma aba em segundo plano sem `pagehide`: o
+    // `visibilitychange` para `hidden` é o último evento com que dá para contar.
+    const { service, saves, reasons } = recordingService()
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-hidden', 'escondida'))
+    setVisibility('hidden')
+    await Bun.sleep(0)
+
+    expect(reasons).toEqual(['flush'])
+    expect(saves).toEqual(['escondida'])
+    // O que estava pendente foi drenado: fechar a página em seguida não grava de novo.
+    window.dispatchEvent(new Event('pagehide'))
+    await Bun.sleep(0)
+    expect(saves).toEqual(['escondida'])
+
+    detach()
+  })
+
+  it('voltar para a aba não grava nada; esconder e depois fechar grava UMA vez', async () => {
+    const { service, saves } = recordingService()
+    const detach = service.attach()
+
+    useProjectStore.getState().setProject(createEmptyProject('project-volta', 'v1'))
+    setVisibility('visible')
+    await Bun.sleep(0)
+    expect(saves).toEqual([])
+
+    setVisibility('hidden')
+    window.dispatchEvent(new Event('pagehide'))
+    window.dispatchEvent(new Event('beforeunload'))
+    await Bun.sleep(0)
+    expect(saves).toEqual(['v1'])
+
+    detach()
+  })
+
+  it('depois do detach, esconder a aba não aciona o serviço', async () => {
+    const { service, saves } = recordingService()
+    const detach = service.attach()
+    useProjectStore.getState().setProject(createEmptyProject('project-detach', 'antes'))
+    detach()
+    const flushedOnDetach = saves.length
+
+    useProjectStore.getState().rename('depois')
+    setVisibility('hidden')
+    await Bun.sleep(0)
+
+    expect(saves).toHaveLength(flushedOnDetach)
   })
 })
 

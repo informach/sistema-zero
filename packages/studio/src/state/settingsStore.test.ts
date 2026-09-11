@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { fakeUseStore } from '../testing/fakeIdbStore'
+import { fakeIdbReads, fakeUseStore, resetFakeIdb } from '../testing/fakeIdbStore'
 
 // settingsStore agora faz bail cedo se `indexedDB` não existir (igual ao
 // gameStorage.ts — Firefox modo privado, contextos restritos). O happy-dom não
@@ -39,25 +39,38 @@ globalWithIdb.indexedDB = globalWithIdb.indexedDB ?? {}
 // update() modela a transação atômica do idb-keyval real: read-modify-write
 // SERIALIZADO por chave (cada chamada espera a anterior na cauda da promise),
 // para o teste de setters concorrentes provar que nenhum patch se perde.
+//
+// Dois bancos (11/09/2026): `memory` é o banco PRÓPRIO das preferências
+// (`sz-studio-settings`), onde elas moram agora; `legacy` é o banco dos projetos do
+// namespace padrão (`sistema-zero-studio`), de onde a primeira carga as traz. A leitura
+// de lá é uma transação do próprio store (`testing/fakeIdbStore.ts`), que responde pelo
+// `get` deste mock com o store no argumento: é pelo `.name` dele que se escolhe o Map.
 const memory = new Map<unknown, unknown>()
+const legacy = new Map<unknown, unknown>()
+const LEGACY_DB = 'sistema-zero-studio'
+const mapOf = (store: unknown) =>
+  (store as { name?: string } | undefined)?.name === LEGACY_DB ? legacy : memory
 let updateChain: Promise<void> = Promise.resolve()
 const idb = {
   createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
-  get: mock(async (key: unknown): Promise<unknown> => memory.get(key)),
+  get: mock(async (key: unknown, store?: unknown): Promise<unknown> => mapOf(store).get(key)),
   getMany: mock(async (): Promise<unknown[]> => []),
   keys: mock(async (): Promise<unknown[]> => []),
   set: mock(async (key: unknown, value: unknown) => {
     memory.set(key, value)
   }),
   setMany: mock(async () => undefined),
-  update: mock((key: unknown, updater: (old: unknown) => unknown): Promise<void> => {
-    updateChain = updateChain.then(() => {
-      memory.set(key, updater(memory.get(key)))
-    })
-    return updateChain
-  }),
+  update: mock(
+    (key: unknown, updater: (old: unknown) => unknown, store?: unknown): Promise<void> => {
+      updateChain = updateChain.then(() => {
+        const kv = mapOf(store)
+        kv.set(key, updater(kv.get(key)))
+      })
+      return updateChain
+    },
+  ),
 }
 
 // Fábrica reaplicável: o beforeEach chama de novo p/ re-ligar os imports vivos
@@ -108,6 +121,8 @@ describe('useSettingsStore persistence', () => {
     idb.set.mockClear()
     idb.update.mockClear()
     memory.clear()
+    legacy.clear()
+    resetFakeIdb()
     updateChain = Promise.resolve()
     // Reseta o SINGLETON do settingsStore (loaded:false força o load() a hidratar
     // de novo em vez de sair cedo por causa de estado vazado de outro arquivo).
@@ -126,6 +141,7 @@ describe('useSettingsStore persistence', () => {
     // caia neste mock residual antes de aplicar o seu (todos reaplicam, mas o
     // custo é nulo e o estado fica limpo p/ depuração).
     memory.clear()
+    legacy.clear()
     updateChain = Promise.resolve()
     idb.get.mockClear()
     idb.set.mockClear()
@@ -230,6 +246,67 @@ describe('useSettingsStore persistence', () => {
     expect(state.aiModel).toBe(DEFAULT_AI_MODEL)
     expect(state.theme).toBe('dark')
     expect(state.codeFontSize).toBe(CODE_FONT_SIZE_DEFAULT)
+  })
+
+  it('as preferências moram no banco PRÓPRIO, fora do banco dos projetos', async () => {
+    await useSettingsStore.getState().setTheme('light')
+
+    const store = idb.update.mock.calls.at(-1)?.[2] as { name?: string } | undefined
+    expect(store?.name).toBe('sz-studio-settings')
+    expect(legacy.size).toBe(0)
+  })
+
+  it('a primeira carga traz as preferências do lugar antigo, por uma leitura com commit explícito', async () => {
+    // O lugar antigo é o banco dos projetos do namespace padrão: toda transação dele fecha
+    // com commit (ver `idbTransaction.ts`), inclusive esta.
+    legacy.set('sz:settings', {
+      aiApiKey: 'sk-or-v1-antiga',
+      aiApiKeyStorage: 'persistent',
+      theme: 'light',
+      codeFontSize: 18,
+    })
+
+    await useSettingsStore.getState().load()
+
+    const state = useSettingsStore.getState()
+    expect(state.aiApiKey).toBe('sk-or-v1-antiga')
+    expect(state.theme).toBe('light')
+    expect(state.codeFontSize).toBe(18)
+    expect(memory.get('sz:settings')).toEqual({
+      aiApiKey: 'sk-or-v1-antiga',
+      aiApiKeyStorage: 'persistent',
+      theme: 'light',
+      codeFontSize: 18,
+    })
+    const legacyReads = fakeIdbReads().filter((read) => read.db === LEGACY_DB)
+    expect(legacyReads.map((read) => read.steps)).toEqual([
+      [{ type: 'get', key: 'sz:settings' }, { type: 'commit' }],
+    ])
+    // O original fica onde estava: um bundle antigo ainda aberto noutra aba lê de lá.
+    expect(legacy.has('sz:settings')).toBe(true)
+  })
+
+  it('com o banco próprio preenchido, não olha o lugar antigo', async () => {
+    memory.set('sz:settings', { theme: 'light', codeFontSize: 20 })
+    legacy.set('sz:settings', { theme: 'dark', codeFontSize: 11 })
+
+    await useSettingsStore.getState().load()
+
+    expect(useSettingsStore.getState().codeFontSize).toBe(20)
+    expect(fakeIdbReads().filter((read) => read.db === LEGACY_DB)).toHaveLength(0)
+  })
+
+  it('um setter que gravou durante a primeira carga vence o que veio de lá, campo a campo', async () => {
+    legacy.set('sz:settings', { theme: 'dark', codeFontSize: 18 })
+    // A leitura do lugar antigo segura a carga; o setter entra antes de ela terminar.
+    const loading = useSettingsStore.getState().load()
+    await useSettingsStore.getState().setCodeFontSize(22)
+    await loading
+
+    expect(memory.get('sz:settings')).toMatchObject({ theme: 'dark', codeFontSize: 22 })
+    // E a memória fica com o que foi gravado, não com o que veio de lá.
+    expect(useSettingsStore.getState().codeFontSize).toBe(22)
+    expect(useSettingsStore.getState().theme).toBe('dark')
   })
 
   it('persiste os dois patches quando setters concorrentes se sobrepõem', async () => {

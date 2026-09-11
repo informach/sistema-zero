@@ -1,5 +1,5 @@
-import { del, get, set } from 'idb-keyval'
 import { sanitizePreviewStorageData } from '#preview'
+import { readValue, writeInOneTransaction } from './idbTransaction'
 import {
   captureProjectStorageScope,
   GAME_STORAGE_KEY_PREFIX,
@@ -11,16 +11,24 @@ import {
 
 export { GAME_STORAGE_KEY_PREFIX, gameStorageKey }
 
+/**
+ * O backend do armazenamento. ⚠️ `set` e `delete` precisam chegar ao disco na ORDEM em que
+ * foram chamados, mesmo com um ainda em voo: a fila por projeto libera a próxima escrita assim
+ * que esta foi PEDIDA (`runSerializedProjectWrite`), sem esperar a confirmação. O IndexedDB
+ * garante isso (transações readwrite do mesmo store rodam na ordem em que nascem).
+ */
 export interface GameStoragePersistence {
   get(key: string, scope: ProjectStorageScope): Promise<unknown>
   set(key: string, value: Record<string, string>, scope: ProjectStorageScope): Promise<void>
   delete(key: string, scope: ProjectStorageScope): Promise<void>
 }
 
+// O banco dos projetos, pelas transações com commit explícito (`idbTransaction.ts`): o jogo da
+// criança pode estar gravando o placar no instante em que ela recarrega a página.
 const indexedDbPersistence: GameStoragePersistence = {
-  get: (key, scope) => get<unknown>(key, scope.store),
-  set: (key, value, scope) => set(key, value, scope.store),
-  delete: (key, scope) => del(key, scope.store),
+  get: (key, scope) => readValue(scope.store, key),
+  set: (key, value, scope) => writeInOneTransaction(scope.store, { puts: [[key, value]] }),
+  delete: (key, scope) => writeInOneTransaction(scope.store, { deletes: [key] }),
 }
 
 /**
@@ -34,6 +42,15 @@ const indexedDbPersistence: GameStoragePersistence = {
  * Tudo é BEST-EFFORT e à prova de ambiente sem IndexedDB (happy-dom dos testes):
  * qualquer falha vira no-op / `{}`, nunca derruba o preview.
  */
+
+/** Best-effort: quota cheia / sem IndexedDB não pode quebrar o preview, nem lançando na hora. */
+function bestEffort(write: () => Promise<void>): Promise<void> {
+  try {
+    return write().catch(() => undefined)
+  } catch {
+    return Promise.resolve()
+  }
+}
 
 function getScope(): ProjectStorageScope | null {
   // Sem IndexedDB (happy-dom dos testes, contextos restritos) não há o que abrir:
@@ -81,19 +98,23 @@ export function createGameStorageRepository(
     if (!scope) return
     await runSerializedProjectWrite(scope, projectId, async () => {
       // Apagado enquanto este write esperava na fila (ou já enfileirado após o
-      // delMany): descarta — não recria o registro do projeto que não existe mais.
-      if (isGameStorageDeleted(scope, projectId)) return
-      try {
-        const clean = sanitizePreviewStorageData(data)
-        if (Object.keys(clean).length === 0) {
-          await persistence.delete(gameStorageKey(projectId), scope)
-          return
-        }
-        await persistence.set(gameStorageKey(projectId), clean, scope)
-      } catch {
-        // best-effort: quota cheia / sem IndexedDB não pode quebrar o preview.
-      }
+      // delete): descarta — não recria o registro do projeto que não existe mais.
+      if (isGameStorageDeleted(scope, projectId)) return undefined
+      return { done: bestEffort(() => pickWrite(projectId, data, scope)) }
     })
+  }
+
+  /** O registro vazio some (clear/removeItem que esvazia); o resto é gravado sanitizado. */
+  function pickWrite(
+    projectId: string,
+    data: Record<string, string>,
+    scope: ProjectStorageScope,
+  ): Promise<void> {
+    const clean = sanitizePreviewStorageData(data)
+    if (Object.keys(clean).length === 0) {
+      return persistence.delete(gameStorageKey(projectId), scope)
+    }
+    return persistence.set(gameStorageKey(projectId), clean, scope)
   }
 
   /** Remove o armazenamento do projeto (chamado quando o projeto é apagado). No
@@ -102,13 +123,9 @@ export function createGameStorageRepository(
     if (!projectId) return
     const scope = getScope()
     if (!scope) return
-    await runSerializedProjectWrite(scope, projectId, async () => {
-      try {
-        await persistence.delete(gameStorageKey(projectId), scope)
-      } catch {
-        // best-effort.
-      }
-    })
+    await runSerializedProjectWrite(scope, projectId, async () => ({
+      done: bestEffort(() => persistence.delete(gameStorageKey(projectId), scope)),
+    }))
   }
 
   return Object.freeze({ load, write, delete: remove })

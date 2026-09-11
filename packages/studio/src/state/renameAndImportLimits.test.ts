@@ -93,10 +93,10 @@ describe('renameProject (escrita só-metadado, #4)', () => {
 
     // 1) A escrita no disco foi SÓ no registro de meta — nunca a gravação do projeto
     //    inteiro (que reescreveria meta+files+state a partir do snapshot estale do disco).
-    expect(fakeIdbWrites()).toHaveLength(0)
-    expect(idb.set).toHaveBeenCalledTimes(1)
-    const [key, value] = idb.set.mock.calls[0] as unknown as [string, Record<string, unknown>]
-    expect(key).toBe('sz:project-meta:p-rename')
+    expect(fakeIdbWrites()).toHaveLength(1)
+    const puts = fakeIdbPuts(fakeIdbWrites()[0])
+    expect([...puts.keys()]).toEqual(['sz:project-meta:p-rename'])
+    const value = puts.get('sz:project-meta:p-rename') as Record<string, unknown>
     expect(value.name).toBe('Nome novo')
     // O registro de meta NÃO carrega files/state — eles ficam intocados no disco.
     expect(value).not.toHaveProperty('files')

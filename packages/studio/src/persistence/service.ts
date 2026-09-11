@@ -11,10 +11,25 @@ let autosaveDelay = AUTOSAVE_DELAY_DEFAULT
 
 /**
  * Encurta o debounce do autosave em testes — bun:test não tem fake timers,
- * então os testes usam timers reais com um delay curto.
+ * então os testes usam timers reais com um delay curto. O playground também o
+ * usa, só com `?autosave-ms=`, para os e2e do flush de saída (ver `App.tsx`).
  */
 export function setAutosaveDelayForTests(ms: number | null): void {
   autosaveDelay = ms ?? AUTOSAVE_DELAY_DEFAULT
+}
+
+/**
+ * TETO da espera do autosave (11/09/2026). O debounce é só de borda final: cada edição a menos
+ * de 1 s da anterior empurra a gravação, e quem edita sem parar nunca grava. Se o navegador
+ * fecha sem avisar a página (a aba descartada no iPad, um travamento), o trecho inteiro se
+ * perde. Com o teto, a gravação sai no máximo 5 s depois da PRIMEIRA edição ainda não gravada.
+ */
+const AUTOSAVE_MAX_WAIT_DEFAULT = 5000
+let autosaveMaxWait = AUTOSAVE_MAX_WAIT_DEFAULT
+
+/** O teto do autosave em testes (e no `?autosave-ms=` do playground), como o debounce. */
+export function setAutosaveMaxWaitForTests(ms: number | null): void {
+  autosaveMaxWait = ms ?? AUTOSAVE_MAX_WAIT_DEFAULT
 }
 
 // Teto da restauração em 2º plano dos blocos: passado disso o status vira
@@ -44,7 +59,10 @@ export interface PersistenceHandlers {
 
 export interface PersistenceService {
   handlers: PersistenceHandlers
-  /** Liga autosave (subscribe no store) + flush em pagehide/beforeunload. Devolve o detach. */
+  /**
+   * Liga autosave (subscribe no store) + flush em pagehide/beforeunload e quando a aba fica
+   * escondida. Devolve o detach.
+   */
   attach(): () => void
   /** Restaura partes pesadas omitidas pelo load rápido, sem bloquear a abertura. */
   hydrateAfterLoad(project: Project): void
@@ -62,6 +80,8 @@ export interface PersistenceCoordination {
 interface PendingAutosave {
   timer: ReturnType<typeof setTimeout>
   project: Project
+  /** Quando veio a PRIMEIRA edição ainda não gravada (a régua do teto do autosave). */
+  since: number
 }
 
 interface ServiceInternals {
@@ -141,12 +161,13 @@ function formatPersistenceError(err: unknown): string {
 
 /**
  * Agendador de persistência de UMA instância do <Studio>. Observa o
- * projectStore e, a cada mutação, agenda um autosave debounced que:
+ * projectStore e, a cada mutação, agenda um autosave debounced (1 s, com teto
+ * de 5 s desde a primeira edição não gravada) que:
  *   1. emite `onChange` com o snapshot completo (SEMPRE — inclusive com
  *      persistence 'none', é assim que o host persiste no backend);
  *   2. persiste no adapter (se houver) e marca salvo/erro no store.
  * Qualquer adapter ganha o autosave de graça; o flush roda em
- * pagehide/beforeunload/detach e no salvar explícito.
+ * pagehide/beforeunload/detach, quando a aba fica escondida e no salvar explícito.
  */
 export function createPersistenceService(
   store: ProjectStoreApi,
@@ -155,11 +176,12 @@ export function createPersistenceService(
 ): PersistenceService {
   const serviceScopeIdentity = adapter?.scopeIdentity ?? 'external'
   const pending = new Map<string, PendingAutosave>()
-  // Capturado no attach: duas instâncias já ligadas não mudam de debounce se
-  // outra instância (ou outro arquivo de teste concorrente) ajustar o default.
-  // Em produção o valor continua 1 s; nos testes elimina interferência global
-  // entre serviços que exercitam corridas temporais em paralelo.
+  // Capturados no attach: duas instâncias já ligadas não mudam de debounce (nem
+  // de teto) se outra instância (ou outro arquivo de teste concorrente) ajustar o
+  // default. Em produção os valores continuam 1 s e 5 s; nos testes elimina
+  // interferência global entre serviços que exercitam corridas temporais em paralelo.
   let attachedAutosaveDelay = autosaveDelay
+  let attachedAutosaveMaxWait = autosaveMaxWait
 
   // Dedupe de flush no unload: `flushPending` está registrado em pagehide E
   // beforeunload (ambos podem disparar num único fechamento) — sem isto cada
@@ -173,14 +195,18 @@ export function createPersistenceService(
   // Mutex por id de projeto: encadeia os `adapter.save` do MESMO projeto para
   // não correrem entre si. Sem isso, quando um debounce dispara e uma edição
   // seguinte agenda outro save antes do primeiro resolver, um adapter remoto/BFF
-  // pode confirmar o POST antigo POR ÚLTIMO e perder a edição mais nova. O
-  // caminho IndexedDB default já é correto (transações readwrite do mesmo store
-  // rodam na ordem em que nascem), mas a cadeia torna qualquer adapter remoto
-  // seguro. A entrada é removida quando a própria cauda termina, para o Map não
-  // crescer.
+  // pode confirmar o POST antigo POR ÚLTIMO e perder a edição mais nova. A entrada
+  // é removida quando a própria cauda termina, para o Map não crescer.
+  //
+  // ⭐ O adapter que já aplica os saves na ordem das chamadas (o local: o IndexedDB
+  // executa as transações do mesmo store na ordem em que nascem) NÃO é encadeado
+  // (11/09/2026). Encadeado, o flush de saída esperava o autosave em voo terminar
+  // para só então pedir a própria gravação, e na troca de página esse fim nunca
+  // chega: a edição feita durante o autosave se perdia.
   const saveChains = new Map<string, Promise<void>>()
 
   function runSerialized(projectId: string, task: () => Promise<void>): Promise<void> {
+    if (adapter?.appliesSavesInCallOrder === true) return task()
     const prev = saveChains.get(projectId)
     // SEM save anterior em voo: roda JÁ (síncrono até o 1º await), preservando o
     // comportamento histórico — adapter.save é iniciado de imediato, não adiado
@@ -403,10 +429,15 @@ export function createPersistenceService(
     // continua sendo digitado após o delete de outra instância re-persistia o id.
     // A cerca é tirada SÓ nos caminhos legítimos de re-criação/persistência (ver
     // `save` e os clears de create/persist), e auto-expira pela janela de graça.
+    // O teto conta da PRIMEIRA edição ainda não gravada: lida antes de o timer
+    // anterior sair, porque é ele que a guarda.
+    const now = Date.now()
+    const since = pending.get(project.id)?.since ?? now
     internals.clearTimerFor(project.id)
     // Edição genuína: re-arma o flush (um flush anterior já drenou, mas há algo
     // novo a salvar no próximo fechamento).
     flushed = false
+    const wait = Math.max(0, Math.min(attachedAutosaveDelay, since + attachedAutosaveMaxWait - now))
     const timer = setTimeout(() => {
       const entry = pending.get(project.id)
       if (entry?.timer === timer) pending.delete(project.id)
@@ -415,8 +446,8 @@ export function createPersistenceService(
       // pode gravar um blocksState quase-vazio/derivado por cima do real.
       emitChange(snapshotForSave(project), 'autosave')
       void persistAndMark(project)
-    }, attachedAutosaveDelay)
-    pending.set(project.id, { timer, project })
+    }, wait)
+    pending.set(project.id, { timer, project, since })
   }
 
   function flushPending(): void {
@@ -449,6 +480,7 @@ export function createPersistenceService(
 
   function attach(): () => void {
     attachedAutosaveDelay = autosaveDelay
+    attachedAutosaveMaxWait = autosaveMaxWait
     const unsub = store.subscribe((state, prev) => {
       if (!state.project) return
       if (state.project === prev.project) return
@@ -460,14 +492,24 @@ export function createPersistenceService(
       schedule(state.project)
     })
     const flushOnPageExit = () => flushPending()
-    // `pagehide`/`beforeunload` só existem no browser. O Studio é browser-only
-    // (`ssr:false`), mas instanciar o serviço fora do DOM (SSR, testes sem DOM)
-    // não pode lançar — cai no padrão "degrada sem a API ausente" do pacote.
+    // Aba ESCONDIDA (trocar de app ou bloquear a tela no iPad, trocar de aba): o
+    // navegador pode descartar uma página em segundo plano sem `pagehide` nenhum (o
+    // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
+    // com que dá para contar. Grava o que estiver pendente, como na saída. Voltar para
+    // a aba não faz nada: o dedupe do `flushed` só re-arma com uma edição nova.
+    const flushWhenHidden = () => {
+      if (document.visibilityState === 'hidden') flushPending()
+    }
+    // `pagehide`/`beforeunload`/`visibilitychange` só existem no browser. O Studio é
+    // browser-only (`ssr:false`), mas instanciar o serviço fora do DOM (SSR, testes sem
+    // DOM) não pode lançar — cai no padrão "degrada sem a API ausente" do pacote.
     const hasWindow = typeof window !== 'undefined'
+    const hasDocument = typeof document !== 'undefined'
     if (hasWindow) {
       window.addEventListener('pagehide', flushOnPageExit)
       window.addEventListener('beforeunload', flushOnPageExit)
     }
+    if (hasDocument) document.addEventListener('visibilitychange', flushWhenHidden)
     liveServices.add(internals)
 
     return () => {
@@ -479,6 +521,7 @@ export function createPersistenceService(
         window.removeEventListener('pagehide', flushOnPageExit)
         window.removeEventListener('beforeunload', flushOnPageExit)
       }
+      if (hasDocument) document.removeEventListener('visibilitychange', flushWhenHidden)
       liveServices.delete(internals)
       clearAllTimers()
     }

@@ -5,6 +5,8 @@ import {
   failNextFakeIdbWrite,
   fakeIdbDeletes,
   fakeIdbPuts,
+  fakeIdbReads,
+  fakeIdbTransactions,
   fakeIdbWrites,
   fakeUseStore,
   holdNextFakeIdbWrite,
@@ -18,10 +20,13 @@ import {
 // O mock de idb-keyval NÃO é restaurado no afterAll de propósito: o registry
 // de módulos é compartilhado pela suíte toda e o IndexedDB real não existe no
 // happy-dom — o no-op é a opção segura para os arquivos seguintes.
-// Desde 11/09/2026 o `persistProject`/`deleteProject` gravam por UMA transação
-// com commit explícito, aberta no próprio store (`testing/fakeIdbStore.ts`). O que
-// eles PEDIRAM se lê no registro dela (`fakeIdbWrites`); o `setMany`/`delMany`
-// abaixo ficam porque é por eles que a transação de mentira aplica o resultado.
+// Desde 11/09/2026 o banco dos projetos só é lido e gravado por transações com
+// commit explícito, abertas no próprio store (`testing/fakeIdbStore.ts`). O que foi
+// PEDIDO se lê no registro dela (`fakeIdbWrites`, `fakeIdbReads`); os mocks abaixo
+// ficam porque é por eles que a transação de mentira responde: `get` para uma
+// chave, `getMany` para várias, `keys` para o `getAllKeys`, `setMany`/`delMany`
+// para aplicar a gravação. ⚠️ Semeie a leitura na função que ela vai chamar: uma
+// semente não consumida (`mockResolvedValueOnce`) vaza para o teste seguinte.
 const idb = {
   createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
@@ -411,6 +416,38 @@ describe('PersistenceService', () => {
     detach()
   })
 
+  it('com o autosave EM VOO, o pagehide já PEDE a gravação do flush, que chega ao disco por último', async () => {
+    // Antes o flush esperava o autosave terminar (as duas filas esperavam a confirmação), e na
+    // troca de página esse fim nunca chega: a edição feita durante o autosave se perdia.
+    const inFlight = holdNextFakeIdbWrite()
+    const detach = service.attach()
+    useProjectStore.getState().setProject(createEmptyProject('project-voo', 'Projeto'))
+    await waitForAutosave()
+    expect(fakeIdbWrites()).toHaveLength(1)
+    expect(lastFakeIdbWrite()?.outcome).toBe('pending')
+
+    useProjectStore.getState().setFile('script.js', 'console.log("durante o autosave");\n')
+    window.dispatchEvent(new Event('pagehide'))
+    // A transação do flush nasce no mesmo turno do evento (os pedidos saem na microtask).
+    expect(fakeIdbWrites()).toHaveLength(2)
+    await Promise.resolve()
+    expect(fakeIdbWrites()[1]?.steps.at(-1)).toEqual({ type: 'commit' })
+
+    inFlight.release()
+    await Bun.sleep(0)
+    const [autosave, flush] = fakeIdbWrites()
+    expect(autosave?.outcome).toBe('complete')
+    expect(flush?.outcome).toBe('complete')
+    expect(
+      (written('sz:project-files:project-voo', flush) as { files: Record<string, string> }).files[
+        'script.js'
+      ],
+    ).toBe('console.log("durante o autosave");\n')
+    expect(useProjectStore.getState().isDirty).toBe(false)
+
+    detach()
+  })
+
   it('mantém o projeto sujo e registra erro quando o autosave falha', async () => {
     failNextFakeIdbWrite(new DOMException('Sem espaço no disco.', 'QuotaExceededError'))
 
@@ -735,61 +772,138 @@ describe('renameProjectMeta — serializado contra persistProject (mesmo id)', (
     resetFakeIdb()
   })
 
-  it('o get-then-set do rename NÃO intercala com um persistProject em voo do mesmo id', async () => {
-    // A transação do persistProject fica EM VOO (pedidos feitos, `complete` segurado). O
-    // renameProjectMeta do MESMO id deve ficar ENFILEIRADO na cadeia de escrita por id — sem
-    // chamar `get` até o persist resolver.
+  afterEach(() => {
+    // Uma semente não consumida (`mockResolvedValueOnce`) ou uma implementação trocada
+    // vazaria para os testes seguintes do arquivo, que leem pelos mesmos mocks.
+    idb.get.mockReset()
+    idb.get.mockImplementation(async (): Promise<unknown> => undefined)
+    idb.setMany.mockReset()
+    idb.setMany.mockImplementation(async () => undefined)
+  })
+
+  it('o rename lê o meta DEPOIS de um persistProject em voo do mesmo id, e grava por cima dele', async () => {
+    // A transação do persistProject fica EM VOO (pedidos feitos, `complete` segurado).
     const inFlight = holdNextFakeIdbWrite()
 
     const persisting = persistProject({
       ...createEmptyProject('rename-race', 'v1'),
     })
     await Bun.sleep(0)
-    // O persist está em voo.
     expect(fakeIdbWrites()).toHaveLength(1)
     expect(lastFakeIdbWrite()?.outcome).toBe('pending')
 
-    // Dispara o rename: encadeado atrás do persist, ainda não leu o meta.
+    // A fila anda assim que o persist PEDIU a gravação, então a leitura do rename já nasceu;
+    // mas, como no navegador, uma leitura nascida depois de uma escrita espera por ela.
     const renaming = renameProjectMeta('rename-race', 'v2')
     await Bun.sleep(0)
+    expect(fakeIdbReads()).toHaveLength(1)
+    expect(fakeIdbReads()[0]?.outcome).toBe('pending')
     expect(idb.get).not.toHaveBeenCalled()
-    expect(idb.set).not.toHaveBeenCalled()
 
-    // Libera o persist → só então o rename roda seu get-then-set.
+    // Libera o persist: só então a leitura do rename acontece, e vê o meta que ele gravou.
     idb.get.mockResolvedValueOnce({ id: 'rename-race', name: 'v1' })
     inFlight.release()
     await persisting
     await renaming
 
     expect(idb.get).toHaveBeenCalledTimes(1)
-    expect(idb.set).toHaveBeenCalledTimes(1)
-    // O set grava o nome novo por cima do meta lido DEPOIS do persist (não antes).
-    const setArgs = idb.set.mock.calls.at(-1) as unknown as unknown[]
-    expect((setArgs?.[1] as { name?: string })?.name).toBe('v2')
+    const [persistWrite, renameWrite] = fakeIdbWrites()
+    expect(persistWrite?.outcome).toBe('complete')
+    expect(writtenKeys(renameWrite)).toEqual(['sz:project-meta:rename-race'])
+    expect(written('sz:project-meta:rename-race', renameWrite)?.name).toBe('v2')
   })
 
-  it('renames concorrentes do mesmo id serializam (último vence, sem perder leitura)', async () => {
-    // Dois renames em sequência imediata: cada um lê o meta corrente e grava.
-    // Sem serialização, ambos leriam o MESMO meta e o 2º get poderia rodar antes
-    // do 1º set. Com a cadeia, a ordem é get1→set1→get2→set2.
+  it('renames concorrentes do mesmo id serializam: o 2º lê o que o 1º GRAVOU (último vence)', async () => {
+    // Dois renames em sequência imediata. A fila segura o 2º até o 1º PEDIR a gravação, e a
+    // leitura do 2º, nascida depois dessa gravação, só começa quando ela termina. Sem isso os
+    // dois leriam o mesmo meta de antes.
+    const disk = new Map<string, unknown>([
+      ['sz:project-meta:rename-seq', { id: 'rename-seq', name: 'base', updatedAt: 1 }],
+    ])
+    // A ordem em que o "disco" é tocado: é ela que prova que a 2ª leitura veio depois da
+    // 1ª gravação (o nome final seria "b" de qualquer jeito).
     const order: string[] = []
-    idb.get.mockImplementation(async () => {
+    idb.get.mockImplementation(async (...args: unknown[]) => {
       order.push('get')
-      return { id: 'rename-seq', name: 'base' }
+      return disk.get(String(args[0]))
     })
-    idb.set.mockImplementation(async () => {
+    idb.setMany.mockImplementation(async (...args: unknown[]) => {
       order.push('set')
-      return undefined
+      for (const [key, value] of args[0] as Array<[unknown, unknown]>) disk.set(String(key), value)
     })
 
     await Promise.all([renameProjectMeta('rename-seq', 'a'), renameProjectMeta('rename-seq', 'b')])
 
     expect(order).toEqual(['get', 'set', 'get', 'set'])
+    expect(fakeIdbTransactions().map((transaction) => transaction.mode)).toEqual([
+      'readonly',
+      'readwrite',
+      'readonly',
+      'readwrite',
+    ])
+    expect(fakeIdbTransactions().every((transaction) => transaction.outcome === 'complete')).toBe(
+      true,
+    )
+    expect((disk.get('sz:project-meta:rename-seq') as { name?: string }).name).toBe('b')
+  })
 
-    idb.get.mockReset()
-    idb.set.mockReset()
-    idb.get.mockImplementation(async (): Promise<unknown> => undefined)
-    idb.set.mockImplementation(async () => undefined)
+  it('a gravação seguinte do mesmo projeto é PEDIDA sem esperar a anterior terminar, e o disco recebe na ordem', async () => {
+    // É o que tira o flush de saída de trás de um autosave em voo: na troca de página, o
+    // "depois que terminar" nunca chega. A ordem fica com o IndexedDB, que executa as
+    // transações do mesmo store na ordem em que nascem.
+    const landed: string[] = []
+    idb.setMany.mockImplementation(async (...args: unknown[]) => {
+      for (const [key, value] of args[0] as Array<[unknown, unknown]>) {
+        if (String(key).startsWith('sz:project-meta:'))
+          landed.push(String((value as { name: string }).name))
+      }
+    })
+    const inFlight = holdNextFakeIdbWrite()
+
+    const first = persistProject(createEmptyProject('ordem-da-fila', 'autosave'))
+    const second = persistProject({ ...createEmptyProject('ordem-da-fila', 'flush'), updatedAt: 2 })
+    await Bun.sleep(0)
+    expect(fakeIdbWrites().map((write) => write.outcome)).toEqual(['pending', 'pending'])
+
+    inFlight.release()
+    await Promise.all([first, second])
+    expect(landed).toEqual(['autosave', 'flush'])
+  })
+
+  it('quem LÊ para decidir (renomear) segura a fila até PEDIR a própria gravação', async () => {
+    // Senão um autosave pedido entre a leitura e a gravação do rename seria desfeito pelo
+    // meta velho que o rename grava por cima.
+    idb.get.mockResolvedValue({ id: 'fila-rename', name: 'antes', updatedAt: 1 })
+    const inFlight = holdNextFakeIdbWrite()
+
+    const persisting = persistProject(createEmptyProject('fila-rename', 'antes'))
+    await Bun.sleep(0)
+    const renaming = renameProjectMeta('fila-rename', 'renomeado')
+    await Bun.sleep(0)
+    const autosave = persistProject({
+      ...createEmptyProject('fila-rename', 'depois'),
+      updatedAt: 3,
+    })
+    await Bun.sleep(0)
+    // A leitura do rename espera o persist em voo, e o autosave seguinte espera o rename:
+    // nenhuma gravação nova nasceu.
+    expect(fakeIdbTransactions().map((transaction) => transaction.mode)).toEqual([
+      'readwrite',
+      'readonly',
+    ])
+
+    inFlight.release()
+    await Promise.all([persisting, renaming, autosave])
+    // A gravação do rename nasceu ANTES da do autosave seguinte: é o autosave que vale no fim.
+    const transactions = fakeIdbTransactions()
+    expect(transactions.map((transaction) => transaction.mode)).toEqual([
+      'readwrite',
+      'readonly',
+      'readwrite',
+      'readwrite',
+    ])
+    expect(written('sz:project-meta:fila-rename', transactions[2])?.name).toBe('renomeado')
+    expect(written('sz:project-meta:fila-rename', transactions[3])?.name).toBe('depois')
   })
 })
 
@@ -1272,12 +1386,13 @@ describe('listAllProjects', () => {
 
   it('mantém fallback para projetos legados sem summary indexado', async () => {
     idb.keys.mockResolvedValueOnce(['sz:project:legacy'])
-    idb.getMany.mockResolvedValueOnce([{ name: 'Legado', createdAt: 1, updatedAt: 2 }])
+    // UMA chave legada: a transação lê uma chave só, então a resposta vem do `get`.
+    idb.get.mockResolvedValueOnce({ name: 'Legado', createdAt: 1, updatedAt: 2 })
 
     await expect(listAllProjects()).resolves.toEqual([
       { id: 'legacy', name: 'Legado', createdAt: 1, updatedAt: 2, mode: 'blocks' },
     ])
-    expect(idb.getMany).toHaveBeenCalledWith(['sz:project:legacy'], expect.anything())
+    expect(idb.get).toHaveBeenCalledWith('sz:project:legacy', expect.anything())
   })
 
   it('a lista LEVE (`listProjectSummariesLight`) não lê as capas; `loadProjectSummaryById` relê meta + capa de UM projeto', async () => {
@@ -1408,19 +1523,18 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
     useProjectStore.setState({ project: null })
   })
 
-  it('persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem)', async () => {
+  it('persistProjectAssets avisa o espelho E bumpa o `updatedAt` do meta (é a régua da nuvem), numa transação só com os assets', async () => {
     const changed: string[] = []
     setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
-    idb.set.mockClear()
     idb.get.mockResolvedValueOnce({ id: 'assets-sync', name: 'Nave', updatedAt: 1 })
     const before = Date.now()
     await persistProjectAssets('assets-sync', [])
     expect(changed).toEqual(['assets-sync'])
-    const metaWrite = idb.set.mock.calls.find(
-      (call) => (call as unknown[])[0] === 'sz:project-meta:assets-sync',
-    ) as unknown[] | undefined
-    expect(metaWrite).toBeDefined()
-    const meta = metaWrite?.[1] as { updatedAt: number; name: string }
+    // Os assets e o meta chegam juntos ao disco (antes eram duas gravações separadas: uma
+    // podia ir sem a outra).
+    expect(fakeIdbWrites()).toHaveLength(1)
+    expect(writtenKeys()).toEqual(['sz:project-assets:assets-sync', 'sz:project-meta:assets-sync'])
+    const meta = written('sz:project-meta:assets-sync') as { updatedAt: number; name: string }
     expect(meta.name).toBe('Nave')
     expect(meta.updatedAt).toBeGreaterThanOrEqual(before)
   })
@@ -1435,10 +1549,9 @@ describe('espelho da nuvem ("guardado na sua conta")', () => {
   it('persistProjectAssets NÃO recria a partição de um projeto que já foi apagado (meta ausente): nada gravado, espelho não acordado', async () => {
     const changed: string[] = []
     setStudioCloudMirror({ onChanged: (id) => changed.push(id), onDeleted: () => {} })
-    idb.set.mockClear()
     idb.get.mockResolvedValueOnce(undefined) // meta não existe mais
     await persistProjectAssets('apagado-no-meio', [])
-    expect(idb.set).not.toHaveBeenCalled()
+    expect(fakeIdbWrites()).toHaveLength(0)
     expect(changed).toEqual([])
   })
 

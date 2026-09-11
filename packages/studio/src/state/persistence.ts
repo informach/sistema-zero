@@ -1,4 +1,3 @@
-import { get, getMany, keys, set } from 'idb-keyval'
 import {
   IDE_MODES,
   type IDEMode,
@@ -8,12 +7,13 @@ import {
 } from '#core'
 import { perfSpanAsync } from '../core/perf'
 import { cancelPendingAutosavesFor } from '../persistence/service'
-import { writeInOneTransaction } from './idbTransaction'
+import { readAllKeys, readValue, readValues, writeInOneTransaction } from './idbTransaction'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
   gameStorageKey,
   type ProjectStorageScope,
+  type RequestedProjectWrite,
   runSerializedProjectWrite,
   scopedProjectIdentity,
   setProjectStorageNamespace,
@@ -148,20 +148,25 @@ function getStore(scope?: ProjectStorageScope) {
 // O AGENDAMENTO (autosave debounced/flush/salvar explícito) vive em
 // src/persistence/service.ts (PersistenceService, por instância do <Studio>).
 // Este módulo mantém só as operações PURAS de IndexedDB — que são exatamente o
-// adapter 'local' (ver src/persistence/local.ts).
+// adapter 'local' (ver src/persistence/local.ts). Toda leitura e toda escrita daqui
+// é uma transação com commit explícito (`idbTransaction.ts`).
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
 
 // Cadeia de ESCRITA por id de projeto: encadeia persistProject/renameProjectMeta/
-// deleteProject do MESMO id para não correrem entre si. O `renameProjectMeta` faz
-// um get-then-set NÃO-ATÔMICO do registro de meta — sem esta serialização, um
-// `persistProject` (autosave do editor aberto) do mesmo id intercalado entre o
-// `get` e o `set` do rename perderia o nome novo (o set do rename gravaria por
-// cima com base num meta lido ANTES do persist, ou o persist gravaria por cima do
-// rename). A entrada é removida quando a própria cauda termina, para o Map não
-// crescer. Vive aqui (módulo, não por instância) porque as escritas de IDB também
-// vêm de create/import/duplicate, fora do mutex por instância do service.
+// deleteProject do MESMO id. O `renameProjectMeta` LÊ o meta e depois grava (duas
+// transações, ver `idbTransaction.ts`) — sem esta serialização, um `persistProject`
+// (autosave do editor aberto) do mesmo id pedido entre a leitura e a gravação do rename
+// seria desfeito pelo meta velho que o rename grava por cima. A fila anda assim que a
+// operação da frente PEDE a sua escrita (`runSerializedProjectWrite`), então cada tarefa
+// devolve `{ done }` na hora em que pede. Vive aqui (módulo, não por instância) porque as
+// escritas de IDB também vêm de create/import/duplicate, fora do mutex por instância do
+// service.
 function runSerializedWrite(
   id: string,
-  task: (scope: ProjectStorageScope) => Promise<void>,
+  task: (scope: ProjectStorageScope) => Promise<RequestedProjectWrite | undefined>,
   scope?: ProjectStorageScope,
 ): Promise<void> {
   const captured = scope ?? captureProjectStorageScope()
@@ -247,12 +252,16 @@ export async function persistProject(
       // UMA transação com commit EXPLÍCITO (ver `writeInOneTransaction`): é o que faz o
       // flush de saída (`pagehide`/`beforeunload`) sobreviver à troca de documento, e o que
       // torna gravar e apagar uma coisa só. Os `put` são pedidos no MESMO turno de JS em que
-      // o flush chama isto, então a transação nasce antes de a página ir embora.
-      await writeInOneTransaction(scope.store, { puts: pairs, deletes: stale })
-      // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota
-      // cheia), a partição não foi gravada e a próxima tentativa precisa reescrevê-la —
-      // manter a ref antiga (ou não registrar) garante isso.
-      lastPersistedAssetsRef.set(scopedId, project.assets)
+      // o flush chama isto (nada é esperado antes), então a transação nasce antes de a
+      // página ir embora, mesmo com um autosave anterior ainda em voo.
+      const done = writeInOneTransaction(scope.store, { puts: pairs, deletes: stale }).then(() => {
+        // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota
+        // cheia), a partição não foi gravada e a próxima tentativa precisa reescrevê-la —
+        // manter a ref antiga (ou não registrar) garante isso. Com um save anterior ainda
+        // em voo, este reescreve os assets à toa em vez de confiar num que pode abortar.
+        lastPersistedAssetsRef.set(scopedId, project.assets)
+      })
+      return { done }
     },
     storageScope,
   )
@@ -265,22 +274,19 @@ export async function loadProjectById(
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
   const kvStore = getStore(storageScope)
-  const [meta, files, state, blocks, assets] = await getMany<unknown[]>(
-    [
-      projectMetaKey(id),
-      projectFilesKey(id),
-      projectStateKey(id),
-      projectBlocksKey(id),
-      projectAssetsKey(id),
-    ],
-    kvStore,
-  )
+  const [meta, files, state, blocks, assets] = await readValues(kvStore, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectStateKey(id),
+    projectBlocksKey(id),
+    projectAssetsKey(id),
+  ])
   if (meta && files && state) {
     // `assets` é a 4ª partição (opcional): ausente em projetos legados/pré-feature.
     return assembleProjectRecord(id, meta, files, state, assets, blocks)
   }
 
-  return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+  return ((await readValue(kvStore, legacyProjectKey(id))) ?? null) as Project | null
 }
 
 /**
@@ -296,15 +302,16 @@ export async function loadProjectShellById(
   storageScope?: ProjectStorageScope,
 ): Promise<Project | null> {
   const kvStore = getStore(storageScope)
-  const [meta, files, assets] = await getMany<unknown[]>(
-    [projectMetaKey(id), projectFilesKey(id), projectAssetsKey(id)],
-    kvStore,
-  )
+  const [meta, files, assets] = await readValues(kvStore, [
+    projectMetaKey(id),
+    projectFilesKey(id),
+    projectAssetsKey(id),
+  ])
   if (meta && files) {
     return assembleProjectRecord(id, meta, files, { id, ir: null, blocksState: null }, assets)
   }
 
-  return ((await get<Project>(legacyProjectKey(id), kvStore)) ?? null) as Project | null
+  return ((await readValue(kvStore, legacyProjectKey(id))) ?? null) as Project | null
 }
 
 /**
@@ -319,14 +326,10 @@ export async function loadProjectMetaById(
   storageScope?: ProjectStorageScope,
 ): Promise<Record<string, unknown> | null> {
   const kvStore = getStore(storageScope)
-  const meta = await get<unknown>(projectMetaKey(id), kvStore)
-  if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
-    return meta as Record<string, unknown>
-  }
-  const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
-  if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
-    return legacy as Record<string, unknown>
-  }
+  const meta = await readValue(kvStore, projectMetaKey(id))
+  if (isRecord(meta)) return meta
+  const legacy = await readValue(kvStore, legacyProjectKey(id))
+  if (isRecord(legacy)) return legacy
   return null
 }
 
@@ -335,26 +338,17 @@ export async function loadProjectBlocksById(
   storageScope?: ProjectStorageScope,
 ): Promise<unknown | null> {
   const kvStore = getStore(storageScope)
-  const fromPartition = await get<unknown>(projectBlocksKey(id), kvStore)
+  const fromPartition = await readValue(kvStore, projectBlocksKey(id))
   if (fromPartition != null) return fromPartition
   // Fallback p/ projetos LEGADOS (salvos ANTES do split de partições): o
   // `blocksState` ficava DENTRO de `sz:project-state` (junto do IR) ou no doc único
   // `sz:project`. Sem este fallback, o restore em segundo plano devolveria null e o
   // 1º autosave gravaria vazio por cima — perdendo os blocos de projetos antigos.
   // Devolve o registro INTEIRO; o chamador lê `record.blocksState` e valida `id`.
-  const state = await get<Record<string, unknown>>(projectStateKey(id), kvStore)
-  if (state && typeof state === 'object' && !Array.isArray(state) && state.blocksState != null) {
-    return state
-  }
-  const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
-  if (
-    legacy &&
-    typeof legacy === 'object' &&
-    !Array.isArray(legacy) &&
-    legacy.blocksState != null
-  ) {
-    return legacy
-  }
+  const state = await readValue(kvStore, projectStateKey(id))
+  if (isRecord(state) && state.blocksState != null) return state
+  const legacy = await readValue(kvStore, legacyProjectKey(id))
+  if (isRecord(legacy) && legacy.blocksState != null) return legacy
   return null
 }
 
@@ -372,9 +366,9 @@ export async function loadProjectAssetsById(
   id: string,
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectAsset[]> {
-  const record = await get<unknown>(projectAssetsKey(id), getStore(storageScope))
-  if (!record || typeof record !== 'object' || Array.isArray(record)) return []
-  return sanitizeProjectAssets((record as { assets?: unknown }).assets)
+  const record = await readValue(getStore(storageScope), projectAssetsKey(id))
+  if (!isRecord(record)) return []
+  return sanitizeProjectAssets(record.assets)
 }
 
 /**
@@ -397,22 +391,29 @@ export async function persistProjectAssets(
     async (scope) => {
       const kvStore = scope.store
       // O meta PRIMEIRO: se o projeto foi apagado entre a leitura da varredura e esta gravação
-      // (o `delMany` entrou na mesma fila antes), gravar recriaria uma partição de assets
+      // (o delete entrou na mesma fila antes), gravar recriaria uma partição de assets
       // ÓRFÃ (MBs que nenhuma tela alcança) e acordaria a nuvem para um projeto morto.
-      const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
-      if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return
-      await set(projectAssetsKey(id), { id, assets }, kvStore)
-      // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
-      // `persistProject`. Gravamos por fora dele: manter a referência antiga
-      // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
-      // é o lado seguro — no máximo custa uma reescrita da partição.
-      lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
-      // O conteúdo do projeto MUDOU (o desenho novo do Pinta): bumpa `updatedAt` no meta,
-      // como o rename faz. É a régua do "quem é mais novo" da nuvem — sem isso a revisão
-      // subia com o mesmo `updatedAt`, o outro computador via "iguais" e nunca baixava a
-      // troca de desenho (e, se editasse lá, apagava o desenho novo por cima).
-      await set(projectMetaKey(id), { ...meta, updatedAt: Date.now() }, kvStore)
-      written = true
+      const meta = await readValue(kvStore, projectMetaKey(id))
+      if (!isRecord(meta)) return undefined
+      // Os assets e o `updatedAt` do meta numa transação SÓ: o conteúdo do projeto MUDOU (o
+      // desenho novo do Pinta), e o `updatedAt` é a régua do "quem é mais novo" da nuvem.
+      // Sem ele a revisão subia com o mesmo `updatedAt`, o outro computador via "iguais" e
+      // nunca baixava a troca de desenho (e, se editasse lá, apagava o desenho novo por
+      // cima). Juntos, um não chega ao disco sem o outro.
+      const done = writeInOneTransaction(kvStore, {
+        puts: [
+          [projectAssetsKey(id), { id, assets }],
+          [projectMetaKey(id), { ...meta, updatedAt: Date.now() }],
+        ],
+      }).then(() => {
+        // O `lastPersistedAssetsRef` é o dirty-check POR REFERÊNCIA do
+        // `persistProject`. Gravamos por fora dele: manter a referência antiga
+        // registrada faria o Map mentir sobre o que está no disco. Esquecer o id
+        // é o lado seguro — no máximo custa uma reescrita da partição.
+        lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+        written = true
+      })
+      return { done }
     },
     captured,
   )
@@ -436,16 +437,11 @@ export async function deleteProject(
   // Cerca o armazenamento do programa do aluno ANTES de apagar: um flush do
   // preview já em voo (writeGameStorage) que chegue depois é descartado.
   fenceGameStorageDelete(scope, id)
-  // Esquece a referência de assets persistida deste id: a transação apaga a
-  // partição, e se o id voltar (improvável, mas duplicate/import mintam ulid
-  // novo) o 1º persist precisa re-materializar a partição de assets. Também
-  // evita o Map crescer sem limite por exclusão.
-  lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
   // No MESMO mutex de escrita do id: apagar não pode intercalar com um
-  // persist/rename em voo do mesmo projeto. Uma transação com commit explícito, como
+  // persist/rename do mesmo projeto. Uma transação com commit explícito, como
   // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
-  await runSerializedProjectWrite(scope, id, () =>
-    writeInOneTransaction(scope.store, {
+  await runSerializedProjectWrite(scope, id, async () => {
+    const done = writeInOneTransaction(scope.store, {
       deletes: [
         projectMetaKey(id),
         projectFilesKey(id),
@@ -457,8 +453,16 @@ export async function deleteProject(
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
       ],
-    }),
-  )
+    }).then(() => {
+      // Esquece a referência de assets persistida deste id DEPOIS que a partição sumiu: um
+      // persist anterior ainda em voo termina antes (o IndexedDB respeita a ordem) e
+      // registraria a referência de novo se ela fosse esquecida já no pedido. Se o id
+      // voltar (improvável: duplicate/import mintam ulid novo), o 1º persist precisa
+      // re-materializar a partição de assets; e o Map não cresce por exclusão.
+      lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
+    })
+    return { done }
+  })
   if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
   notifyProjectChanged(id, true)
 }
@@ -472,15 +476,18 @@ export async function deleteProject(
  * meta (projeto inexistente ou só no formato legado).
  */
 export async function renameProjectMeta(id: string, name: string): Promise<void> {
-  // get-then-set SERIALIZADO contra persistProject/deleteProject do mesmo id: a
-  // leitura e a gravação do meta correm como uma unidade, sem um autosave do
-  // editor aberto intercalar entre elas e perder o nome novo (ou ser sobrescrito).
+  // Ler e gravar o meta SERIALIZADO contra persistProject/deleteProject do mesmo id: até
+  // a gravação do rename ser pedida, nenhuma outra escrita do projeto passa na fila, então
+  // um autosave do editor aberto não é desfeito pelo meta que o rename leu antes dele.
   await runSerializedWrite(id, async (scope) => {
     const kvStore = scope.store
-    const meta = await get<Record<string, unknown>>(projectMetaKey(id), kvStore)
-    if (meta && typeof meta === 'object' && !Array.isArray(meta)) {
-      await set(projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }, kvStore)
-      return
+    const meta = await readValue(kvStore, projectMetaKey(id))
+    if (isRecord(meta)) {
+      return {
+        done: writeInOneTransaction(kvStore, {
+          puts: [[projectMetaKey(id), { ...meta, name, updatedAt: Date.now() }]],
+        }),
+      }
     }
     // Sem partição de meta: projeto no formato LEGADO (`sz:project:<id>`, doc único
     // anterior à migração 3-partições) que nunca foi aberto/editado — só ganha
@@ -488,9 +495,12 @@ export async function renameProjectMeta(id: string, name: string): Promise<void>
     // (loadProjectById/listAllProjects), então o rename PRECISA persistir; senão a
     // ProjectList reverte o nome ao reler o disco. Regrava o nome no PRÓPRIO doc
     // legado (mesma chave), dentro do mesmo runSerializedWrite.
-    const legacy = await get<Record<string, unknown>>(legacyProjectKey(id), kvStore)
-    if (legacy && typeof legacy === 'object' && !Array.isArray(legacy)) {
-      await set(legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }, kvStore)
+    const legacy = await readValue(kvStore, legacyProjectKey(id))
+    if (!isRecord(legacy)) return undefined
+    return {
+      done: writeInOneTransaction(kvStore, {
+        puts: [[legacyProjectKey(id), { ...legacy, name, updatedAt: Date.now() }]],
+      }),
     }
   })
   notifyMirrorChanged(id)
@@ -522,10 +532,14 @@ export async function writeProjectThumb(id: string, dataUrl: string): Promise<bo
   try {
     await runSerializedWrite(id, async (scope) => {
       const kvStore = scope.store
-      const meta = await get<unknown>(projectMetaKey(id), kvStore)
-      if (!meta) return
-      await set(projectThumbKey(id), { id, dataUrl }, kvStore)
-      stored = true
+      const meta = await readValue(kvStore, projectMetaKey(id))
+      if (!meta) return undefined
+      const done = writeInOneTransaction(kvStore, {
+        puts: [[projectThumbKey(id), { id, dataUrl }]],
+      }).then(() => {
+        stored = true
+      })
+      return { done }
     })
   } catch {
     // Quota cheia / IndexedDB indisponível: o card só fica sem capa.
@@ -587,10 +601,10 @@ export async function loadProjectSummaryById(
   storageScope?: ProjectStorageScope,
 ): Promise<ProjectSummary | null> {
   const kvStore = getStore(storageScope)
-  const [meta, thumb] = await getMany<unknown>([projectMetaKey(id), projectThumbKey(id)], kvStore)
+  const [meta, thumb] = await readValues(kvStore, [projectMetaKey(id), projectThumbKey(id)])
   let summary = toProjectSummary(id, meta)
   if (!summary) {
-    const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
+    const legacy = await readValue(kvStore, legacyProjectKey(id))
     summary = toProjectSummary(id, legacy)
   }
   if (!summary) return null
@@ -610,16 +624,16 @@ export async function loadProjectSummariesByIds(
 ): Promise<Array<ProjectSummary | null>> {
   if (ids.length === 0) return []
   const kvStore = getStore(storageScope)
-  const values = await getMany<unknown>(
-    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
+  const values = await readValues(
     kvStore,
+    ids.flatMap((id) => [projectMetaKey(id), projectThumbKey(id)]),
   )
   const out: Array<ProjectSummary | null> = []
   for (let index = 0; index < ids.length; index += 1) {
     const id = ids[index] as string
     let summary = toProjectSummary(id, values[index * 2])
     if (!summary) {
-      const legacy = await get<unknown>(legacyProjectKey(id), kvStore)
+      const legacy = await readValue(kvStore, legacyProjectKey(id))
       summary = toProjectSummary(id, legacy)
     }
     if (summary) {
@@ -636,11 +650,11 @@ async function listAllProjectsInternal(
   options: { withThumbs: boolean },
 ): Promise<ProjectSummary[]> {
   const kvStore = getStore(storageScope)
-  const allKeys = await keys(kvStore)
+  const allKeys = await readAllKeys(kvStore)
   const metaKeys = allKeys.filter(
     (key): key is string => typeof key === 'string' && key.startsWith(PROJECT_META_KEY_PREFIX),
   )
-  const metaValues = metaKeys.length > 0 ? await getMany<unknown[]>(metaKeys, kvStore) : []
+  const metaValues = await readValues(kvStore, metaKeys)
   const summaries = metaKeys
     .map((key, index) =>
       toProjectSummary(key.slice(PROJECT_META_KEY_PREFIX.length), metaValues[index]),
@@ -649,9 +663,9 @@ async function listAllProjectsInternal(
 
   // Anexa as miniaturas (partição própria) aos summaries que têm uma.
   if (options.withThumbs && summaries.length > 0) {
-    const thumbValues = await getMany<unknown[]>(
-      summaries.map((summary) => projectThumbKey(summary.id)),
+    const thumbValues = await readValues(
       kvStore,
+      summaries.map((summary) => projectThumbKey(summary.id)),
     )
     for (let index = 0; index < summaries.length; index += 1) {
       const summary = summaries[index]
@@ -668,7 +682,7 @@ async function listAllProjectsInternal(
       !indexedIds.has(key.slice(LEGACY_PROJECT_KEY_PREFIX.length)),
   )
   if (legacyKeys.length > 0) {
-    const legacyValues = await getMany<unknown[]>(legacyKeys, kvStore)
+    const legacyValues = await readValues(kvStore, legacyKeys)
     for (let index = 0; index < legacyKeys.length; index += 1) {
       const key = legacyKeys[index]
       if (!key) continue
