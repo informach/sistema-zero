@@ -3,6 +3,7 @@ import { KidsCareerLockedPinta } from '@/components/kids/kids-career-locked-pint
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
 import { checkPintaAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -29,12 +30,13 @@ export default async function PintaPage() {
     getSession(),
     getGamificationReadonly().catch(() => null),
   ])
-  if (res.status !== 200) return <KidsPintaUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   const hasAccess = res.body?.access?.pinta === true
-  if (!hasAccess) return <KidsLockedPinta />
-  if (gam?.status !== 200) return <KidsPintaUnavailable />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
-    return <KidsCareerLockedPinta />
+    return <ToolRouteRecado screen={KidsCareerLockedPinta} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,

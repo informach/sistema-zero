@@ -5,6 +5,7 @@ import { KidsCareerLockedPensa } from '@/components/kids/kids-career-locked-pens
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
 import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
 import {
   checkCreativeToolsAccessReadonly,
@@ -40,12 +41,13 @@ export default async function PensaPage({
     getGamificationReadonly().catch(() => null),
     getSession(),
   ])
-  if (res.status !== 200) return <KidsPensaUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   const hasAccess = res.body?.access?.pensa === true
-  if (!hasAccess) return <KidsLockedPensa />
-  if (gam?.status !== 200) return <KidsPensaUnavailable />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPensa} />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   if (!meetsAiAppsLevel(gam.body?.level?.slug, session?.role)) {
-    return <KidsCareerLockedPensa />
+    return <ToolRouteRecado screen={KidsCareerLockedPensa} />
   }
   const pintaOwned = toolsRes?.status === 200 && toolsRes.body?.access?.pinta === true
   const studioAvailable = canOpenPensaStudioTask({

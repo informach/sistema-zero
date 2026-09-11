@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioProClient } from '@/components/kids/studio-pro-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { checkStudioAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { resolveStudioProAccess } from '@/server/studio-pro-access'
@@ -31,14 +32,19 @@ export default async function EstudioProPage({ params }: { params: Promise<{ id:
     getSession(),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
   ])
-  if (res.status !== 200 || gam?.status !== 200) return <KidsStudioUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200 || gam?.status !== 200) {
+    return <ToolRouteRecado screen={KidsStudioUnavailable} />
+  }
   const levelSlug = gam.body?.level?.slug
   const access = resolveStudioProAccess({
     session,
     studioAccess: res.body?.access?.['estudio-completo'] === true,
     levelSlug,
   })
-  if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') return <KidsLockedStudio />
+  if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') {
+    return <ToolRouteRecado screen={KidsLockedStudio} />
+  }
   // A página é protegida pelo proxy, mas mantém o redirect defensivo para URL direta.
   if (!access.allowed) redirect('/estudio')
 

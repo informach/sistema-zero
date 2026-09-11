@@ -1095,6 +1095,17 @@ cascas `kids-*-unavailable`). Antes cada uma escrevia a coluna à mão, e quatro
 (duas sem faixa, três tamanhos de título, dois botões). ⚠️ O `KidsAccessUnavailable` fica SEM a
 pílula do motivo, de propósito: é a nossa conexão que tropeçou, não algo a festejar nem a explicar.
 
+⚠️ **Nas rotas de ferramenta (Estúdio, Pinta, Pensa, Molda) o recado vai dentro do
+`ToolRouteRecado`** (`tool-route-recado.tsx`, `<ToolRouteRecado screen={KidsLockedPinta} />`).
+Essas rotas travam a altura na janela e cortam o que passa (o regime dos apps embarcados do
+`MainContainer`), e o recado não rola por dentro: sem a caixa, medido na conferência, 440px do
+produto bloqueado ficavam cortados sem rolagem num celular de 390×700, e 370px numa janela desktop
+de 560px de altura (full review de 11/09/2026). No celular a caixa desce por baixo da barra de abas
+e reserva o espaço dela (`-mb-24 pb-24`), que a última faixa devolve e pinta
+(`last:-mb-24 last:pb-24`): o mesmo par do `<main>` das páginas comuns, sem rolagem à toa numa
+janela alta. `tests/tool-route-recado.test.tsx` trava o par e varre as cinco páginas: nenhuma
+devolve um `Kids*` solto.
+
 ### As telas fora do `(app)` e os estados de erro (11/09/2026)
 
 Também sem imagem-modelo, na mesma régua. Uma tela INTEIRA fora do grupo `(app)` (a grade de

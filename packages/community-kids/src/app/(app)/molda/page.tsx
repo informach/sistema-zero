@@ -4,6 +4,7 @@ import { KidsCareerLockedMolda } from '@/components/kids/kids-career-locked-mold
 import { KidsLockedMolda } from '@/components/kids/kids-locked-molda'
 import { KidsMoldaUnavailable } from '@/components/kids/kids-molda-unavailable'
 import { MoldaClient } from '@/components/kids/molda-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { careerHorizon } from '@/lib/career-horizon'
 import {
   moldaPreviewLevel,
@@ -71,12 +72,13 @@ export default async function MoldaPage({
     checkMoldaAccessReadonly(),
     getGamificationReadonly().catch(() => null),
   ])
-  if (res.status !== 200) return <KidsMoldaUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
   const hasAccess = res.body?.access?.molda === true
-  if (!hasAccess) return <KidsLockedMolda />
-  if (gam?.status !== 200) return <KidsMoldaUnavailable />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedMolda} />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsMoldaUnavailable} />
   if (!meetsThreeDCreationLevel(gam.body?.level?.slug, session?.role)) {
-    return <KidsCareerLockedMolda />
+    return <ToolRouteRecado screen={KidsCareerLockedMolda} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,

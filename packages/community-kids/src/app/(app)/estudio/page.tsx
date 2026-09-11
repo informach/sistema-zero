@@ -5,6 +5,7 @@ import { KidsCareerLockedStudio } from '@/components/kids/kids-career-locked-stu
 import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
+import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import {
   checkChallengeAccessReadonly,
   checkCreativeToolsAccessReadonly,
@@ -62,14 +63,15 @@ export default async function EstudioPage({
     // `resolveStudioTier` cai no perfil do NÍVEL quando a lista vem vazia.
     getStudioUnlocksReadonly().catch(() => null),
   ])
-  if (res.status !== 200) return <KidsStudioUnavailable />
+  // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
+  if (res.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  if (!hasAccess) return <KidsLockedStudio />
+  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedStudio} />
   const pintaOwned = res.body?.access?.pinta === true
   const moldaOwned = res.body?.access?.molda === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
-  if (gam?.status !== 200) return <KidsStudioUnavailable />
+  if (gam?.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const levelSlug = gam.body?.level?.slug ?? 'noob'
   // A paleta vem do CURRÍCULO (08/2026): o nível decide o MODO (livre/Ponte/Pro) e os
   // cursos conquistados decidem os BLOCOS. As extensões saem dos próprios blocos.
@@ -80,7 +82,7 @@ export default async function EstudioPage({
   })
   // O produto pode estar comprado pela conta, mas a criação livre só começa após
   // concluir+publicar o primeiro curso. Dentro das aulas, o Estúdio segue disponível.
-  if (!tier.freeStudio) return <KidsCareerLockedStudio />
+  if (!tier.freeStudio) return <ToolRouteRecado screen={KidsCareerLockedStudio} />
   const challengeEligible =
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
