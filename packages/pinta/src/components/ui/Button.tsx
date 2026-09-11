@@ -17,6 +17,9 @@ export type ButtonVariant =
   | 'pill'
   | 'pillPrimary'
   | 'pillSoft'
+  | 'barPrimary'
+  | 'barOutline'
+  | 'barQuiet'
 
 /**
  * As PÍLULAS chapadas das telas-modelo (11/09/2026): a receita `.sz-tool-pill` de
@@ -30,6 +33,12 @@ const PILL_CLASSES = {
   pill: 'sz-tool-pill sz-tool-pill--quiet',
   pillPrimary: 'sz-tool-pill sz-tool-pill--primary',
   pillSoft: 'sz-tool-pill sz-tool-pill--creme',
+  /* A BARRA DO EDITOR (11/09/2026): as mesmas pílulas chapadas, mas nas receitas `.pin-bar-btn`
+     do `pinta.css`, porque o editor roda também na aula e no admin, onde a folha compartilhada não
+     existe. Azul (a ação principal), branca com o fio (as outras) e a pequena do tamanho. */
+  barPrimary: 'pin-bar-btn pin-bar-btn--primary',
+  barOutline: 'pin-bar-btn pin-bar-btn--outline',
+  barQuiet: 'pin-bar-btn pin-bar-btn--quiet',
 } as const
 
 function isPillVariant(variant: ButtonVariant): variant is keyof typeof PILL_CLASSES {
@@ -85,13 +94,21 @@ export function Button({
   )
 }
 
-/** Botão quadrado só-ícone (toolbar), mesmo alvo mínimo de 44px. */
+/**
+ * Botão quadrado só-ícone (toolbar), mesmo alvo mínimo de 44px. `tone="quiet"` é o quadrado
+ * de fundo claro das telas-modelo (o dos atalhos, na barra do editor); o padrão segue
+ * transparente, como os botões das caixas de ferramenta.
+ */
 export function IconButton({
   active = false,
+  tone = 'ghost',
   className,
   type,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }): JSX.Element {
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  active?: boolean
+  tone?: 'ghost' | 'quiet'
+}): JSX.Element {
   return (
     <button
       type={type ?? 'button'}
@@ -101,7 +118,9 @@ export function IconButton({
         'disabled:cursor-not-allowed disabled:opacity-40',
         active
           ? 'pin-tool-active bg-pin-accent text-pin-accent-fg'
-          : 'text-pin-text hover:bg-pin-border/40',
+          : tone === 'quiet'
+            ? 'bg-pin-bg text-pin-text hover:bg-pin-border/60'
+            : 'text-pin-text hover:bg-pin-border/40',
         className,
       )}
       {...props}

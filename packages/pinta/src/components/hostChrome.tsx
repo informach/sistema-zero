@@ -104,20 +104,15 @@ const STATUS_ICONS: Record<PintaHostChromeStatus['icon'], LucideIcon> = {
   alert: TriangleAlert,
 }
 
-const STATUS_TONES: Record<PintaHostChromeStatus['tone'], string> = {
-  muted: 'text-pin-muted',
-  ok: 'text-pin-ok',
-  warn: 'text-pin-warn',
-  danger: 'text-pin-danger',
-}
-
 /**
- * O selo da nuvem. Na BARRA do editor (`variant="bar"`) é o idioma do `SaveBadge` (texto
- * forte, sem pílula): rótulo curto e, abaixo de `lg`, só o ícone — a barra é `flex-wrap` e
- * uma 2ª linha custaria altura; offline/erro mostram o texto sempre. No cabeçalho da galeria
- * (`variant="header"`) é a PÍLULA compartilhada `.sz-tool-status` (a mesma do Estúdio), com a
- * frase inteira. Quem ANUNCIA offline/erro ao leitor é a região viva do host (`aria-live="off"`
- * aqui, de propósito).
+ * O selo da nuvem. Na BARRA do editor (`variant="bar"`) é a pílula pequena do `SaveBadge`
+ * (`.pin-bar-seal` do `pinta.css`, porque o editor roda também na aula e no admin): em REPOUSO
+ * (guardado) só a nuvem no círculo menta, sem frase, como na tela-modelo; quando algo acontece,
+ * o rótulo curto e, abaixo de `lg`, só o ícone (a barra é `flex-wrap` e uma 2ª linha custaria
+ * altura); offline/erro mostram o texto sempre. No cabeçalho da galeria (`variant="header"`) é a
+ * PÍLULA compartilhada `.sz-tool-status` (a mesma do Estúdio), com a frase inteira. O nome do
+ * status vem do `title`, que também é a dica do mouse. Quem ANUNCIA offline/erro ao leitor é a
+ * região viva do host (`aria-live="off"` aqui, de propósito).
  */
 export function HostCloudStatus({
   status,
@@ -140,18 +135,27 @@ export function HostCloudStatus({
       </span>
     )
   }
+  if (status.tone === 'ok') {
+    return (
+      <span
+        role="status"
+        aria-live="off"
+        title={status.text}
+        className="pin-bar-seal pin-bar-seal--ok pin-bar-seal--icon"
+      >
+        <Icon aria-hidden="true" />
+      </span>
+    )
+  }
   const attention = status.tone === 'warn' || status.tone === 'danger'
   return (
     <span
       role="status"
       aria-live="off"
       title={status.text}
-      className={clsx(
-        'inline-flex min-w-0 items-center gap-1 font-bold text-sm',
-        STATUS_TONES[status.tone],
-      )}
+      className={clsx('pin-bar-seal min-w-0', `pin-bar-seal--${status.tone}`)}
     >
-      <Icon aria-hidden="true" className="size-4 shrink-0" />
+      <Icon aria-hidden="true" />
       <span className={clsx('truncate', !attention && 'hidden lg:inline')}>{status.label}</span>
     </span>
   )

@@ -1,8 +1,9 @@
 /**
  * Tela do editor de UM asset: cria as stores (editor + sessão), liga o flush
  * do autosave em pagehide/unmount/voltar e monta o layout por tipo de asset.
- * Topbar: voltar · nome · desfazer/refazer · badge de salvo · Baixar ·
- * Usar no Estúdio (só quando o host dá o callback).
+ * Barra de cima (11/09/2026, a tela-modelo): [menu][voltar] · o ícone do papel e o nome ·
+ * tamanho · desfazer/refazer · "Salvo" · a nuvem do host; à direita atalhos · Baixar · Jogar
+ * meu mapa · Usar no Estúdio (os dois últimos só quando o host dá o callback).
  *
  * Layout (desktop, ≥768px): coluna ESQUERDA de altura inteira (ferramentas em
  * cima, cores embaixo), e à direita dela uma coluna com o palco + a prévia lado
@@ -18,7 +19,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { resizeTargetOf } from '../../core/assetResize'
 import { COPY } from '../../core/copy'
 import { isTextEntryTarget } from '../../core/dom'
-import { assetStyle, type PintaAsset } from '../../core/project'
+import { assetRole, assetStyle, type PintaAsset, type PintaAssetRole } from '../../core/project'
 import { type ShortcutEditor, shortcut } from '../../core/shortcuts'
 import { filterTools } from '../../core/toolCuration'
 import {
@@ -43,16 +44,23 @@ import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
-import { Button, IconButton, ToolButton } from '../ui/Button'
+import { Button, IconButton } from '../ui/Button'
 import {
   ArrowLeft,
+  Check,
   ChevronDown,
   Download,
   Gamepad2,
+  Image as ImageIcon,
   Keyboard,
+  type LucideIcon,
+  Map as MapIcon,
+  PersonStanding,
+  Puzzle,
   Redo2,
   Rocket,
   Scaling,
+  TriangleAlert,
   Undo2,
 } from '../ui/icons'
 import { useToast } from '../ui/Toast'
@@ -85,6 +93,11 @@ import { VectorToolbox } from './vector/VectorToolbox'
 import { TOOLS as VECTOR_TOOLS } from './vector/vectorTools'
 import { ZoomControls } from './ZoomControls'
 
+/**
+ * O salvamento local na pílula da tela-modelo: menta com o visto quando está salvo, quieta
+ * enquanto salva e vermelha (com o recado do erro) quando falhou. O texto mora DIRETO na região
+ * viva (`role="status"`), que é como o leitor anuncia e como os testes a encontram.
+ */
 function SaveBadge(): JSX.Element {
   const saveState = useEditor((state) => state.saveState)
   const saveError = useEditor((state) => state.saveError)
@@ -94,22 +107,33 @@ function SaveBadge(): JSX.Element {
       : saveState !== 'error'
         ? COPY.editor.saving
         : (saveError ?? COPY.editor.saveError)
-  const tone =
-    saveState === 'saved'
-      ? 'text-pin-ok'
-      : saveState !== 'error'
-        ? 'text-pin-muted'
-        : 'text-pin-danger'
+  const tone = saveState === 'saved' ? 'ok' : saveState !== 'error' ? 'muted' : 'danger'
   return (
     <span
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      className={`text-sm font-bold ${tone}`}
+      className={`pin-bar-seal pin-bar-seal--${tone}`}
     >
+      {tone === 'ok' ? <Check aria-hidden="true" /> : null}
+      {tone === 'danger' ? <TriangleAlert aria-hidden="true" /> : null}
       {label}
     </span>
   )
+}
+
+/** O ícone de linha de cada PAPEL (os mesmos dos filtros da galeria), na cor do papel. */
+const ROLE_ICON: Record<PintaAssetRole, LucideIcon> = {
+  sprite: PersonStanding,
+  background: ImageIcon,
+  tileset: Puzzle,
+  tilemap: MapIcon,
+}
+const ROLE_ICON_TONE: Record<PintaAssetRole, string> = {
+  sprite: 'text-pin-kind-sprite',
+  background: 'text-pin-kind-background',
+  tileset: 'text-pin-kind-tileset',
+  tilemap: 'text-pin-kind-tilemap',
 }
 
 /** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas. */
@@ -350,7 +374,11 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
     onFailure: (message) => showToast(message ?? COPY.editor.studioSyncFailed),
   })
 
-  const kind = COPY.kinds[asset.kind]
+  const role = assetRole(asset.kind)
+  const RoleIcon = ROLE_ICON[role]
+  // A pílula azul é UMA: o "Usar no Estúdio" (desenho de um jogo do Pensa) quando ele aparece;
+  // senão, o "Baixar".
+  const sendsToStudio = Boolean(adapter.sendToStudio && asset.projectRef)
 
   /**
    * O que atravessa a ponte "Usar no Estúdio" (PNG achatado na v1): montado em
@@ -469,31 +497,34 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
   }
 
   return (
-    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-pin-border bg-pin-surface px-3 py-2">
+    <header className="pin-bar shrink-0">
       {/* Numa aula não há para onde voltar (nem menu da comunidade a esconder): o desenho é
           a tela inteira do bloco. Fora dela, o botão do menu do HOST vem primeiro — é o
           canto mais perto do painel que ele controla. */}
       {lesson ? null : (
         <div className="flex shrink-0 items-center gap-1">
           {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <ToolButton
-            icon={ArrowLeft}
-            label={COPY.editor.back}
+          <IconButton
+            tone="quiet"
+            aria-label={COPY.editor.back}
+            title={COPY.editor.back}
             disabled={closing}
             aria-busy={closing}
             onClick={onBack}
-          />
+          >
+            <ArrowLeft aria-hidden="true" className="size-5" />
+          </IconButton>
         </div>
       )}
-      <span aria-hidden="true" className="text-xl">
-        {kind.emoji}
-      </span>
-      <span className="pin-display mr-2 truncate text-lg" title={asset.name}>
-        {asset.name}
+      <span className="pin-bar-name">
+        <RoleIcon aria-hidden="true" className={ROLE_ICON_TONE[role]} />
+        <span className="pin-bar-name__text" title={asset.name}>
+          {asset.name}
+        </span>
       </span>
       {resizeTarget ? (
-        <Button onClick={() => setResizeOpen(true)}>
-          <Scaling aria-hidden="true" className="size-4" />
+        <Button variant="barQuiet" onClick={() => setResizeOpen(true)}>
+          <Scaling aria-hidden="true" />
           {COPY.editor.resize.button(resizeTarget.width, resizeTarget.height)}
         </Button>
       ) : null}
@@ -523,8 +554,9 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           {COPY.sendToStudio.resynced}
         </span>
       ) : null}
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex flex-wrap items-center gap-2">
         <IconButton
+          tone="quiet"
           aria-label={COPY.shortcuts.button}
           title={`${COPY.shortcuts.button} (?)`}
           aria-haspopup="dialog"
@@ -533,23 +565,26 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
           <Keyboard aria-hidden="true" className="size-5" />
         </IconButton>
         {canExport ? (
-          <Button onClick={() => setExportOpen(true)}>
-            <Download aria-hidden="true" className="size-4" />
+          <Button
+            variant={sendsToStudio ? 'barOutline' : 'barPrimary'}
+            onClick={() => setExportOpen(true)}
+          >
+            <Download aria-hidden="true" />
             {COPY.editor.download}
           </Button>
         ) : null}
         {asset.kind === 'tilemap' && adapter.sendGameToStudio ? (
-          <Button disabled={sending} onClick={() => void handlePlayMap()}>
-            <Gamepad2 aria-hidden="true" className="size-4" />
+          <Button variant="barOutline" disabled={sending} onClick={() => void handlePlayMap()}>
+            <Gamepad2 aria-hidden="true" />
             {COPY.tiles.playMap}
           </Button>
         ) : null}
         {/* O foguete só existe em desenho DE UM JOGO do Pensa (projectRef): é
             onde ele marca o progresso da missão. Desenho avulso chega ao
             Estúdio pelo "Trazer do Pinta" de lá (decisão da dona, 08/2026). */}
-        {adapter.sendToStudio && asset.projectRef ? (
-          <Button variant="primary" disabled={sending} onClick={() => void handleSendToStudio()}>
-            <Rocket aria-hidden="true" className="size-4" />
+        {sendsToStudio ? (
+          <Button variant="barPrimary" disabled={sending} onClick={() => void handleSendToStudio()}>
+            <Rocket aria-hidden="true" />
             {sending ? COPY.sendToStudio.sending : COPY.editor.sendToStudio}
           </Button>
         ) : null}

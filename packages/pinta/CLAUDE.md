@@ -71,10 +71,11 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   **ABA colada na linha da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos
   de 12px dentro do padding (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu da barra
   do editor e do cabeçalho da galeria. `HostCloudStatus`:
-  na barra (`variant="bar"`) o idioma do `SaveBadge` (texto forte + ícone lucide; rótulo curto e,
-  abaixo de `lg`, só o ícone; offline/erro mostram texto sempre); no cabeçalho (`variant="header"`)
-  a PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem
-  anuncia é o host.
+  na barra (`variant="bar"`) a pílula pequena do `SaveBadge` (`.pin-bar-seal`, ver §"A barra do
+  editor das telas-modelo"): em REPOUSO (tom ok) só a nuvem no círculo menta, com o nome no
+  `title`; com algo acontecendo, o rótulo curto e, abaixo de `lg`, só o ícone (offline/erro
+  mostram o texto sempre); no cabeçalho (`variant="header"`) a PÍLULA compartilhada
+  `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem anuncia é o host.
 - Editor: menu ANTES do Voltar (agrupados num `flex shrink-0 items-center gap-1`); status logo
   depois do `<SaveBadge />`. Galeria: ver §"A galeria das telas-modelo (11/09/2026)" (menu + seta
   de volta para Criar + a pílula do selo, com a conta em repouso); a linha `COPY.gallery.syncing`
@@ -140,6 +141,42 @@ rolam juntas dentro de `[data-pin-scroll-root]` (`.sz-tool-bands`, receitas de
   capa, o lilás com e sem desenhos), `gallerySelectionUi.test.tsx` (barra irmã, cartão desligado)
   e `hostChromeUi.test.tsx` (seta com Ctrl-clique, seta sem menu, conta em repouso x aparelho, o
   selo vence a conta, o editor ignora a seta).
+
+## A barra do editor das telas-modelo (11/09/2026)
+
+A barra de cima do editor virou o desenho da tela-modelo dela (plano
+`o-design-da-plataforma-composed-gray.md`, lote 7, passo 11). Da esquerda para a direita:
+[menu][voltar] · o ícone do papel e o nome · a pílula do tamanho · desfazer e refazer · o "Salvo"
+· a nuvem do host; à direita os atalhos, "Baixar", "Jogar meu mapa" e "Usar no Estúdio".
+
+- ⭐ **As receitas moram no `pinta.css` (`.pin-bar-*`), NÃO no `tool-chrome.css`**: o editor roda
+  também no bloco de aula e no admin, que não importam a folha compartilhada. Elas pintam com os
+  `--color-pin-*` (que já herdam a cor do host) e usam os `--sz-tool-*` só como primeira escolha
+  da cadeia (`--sz-tool-ok-tint`, `--sz-tool-on-cta`). Mesmo formato do arquivo: sem `@layer`,
+  prefixadas por `[data-pinta-theme]`. Altura: 60px (`min-height: 3.75rem`), borda de 1px.
+- **Os botões da barra** são variantes do `Button` sem as utilitárias da base (a utilitária
+  venceria a receita): `barPrimary` (a pílula azul), `barOutline` (branca com o fio) e `barQuiet`
+  (a pílula pequena do tamanho, 36px no mouse e 44px no toque). As pílulas grandes têm 40px no
+  mouse e 44px no toque (`--pin-bar-hit`). `IconButton` ganhou `tone="quiet"`: o quadrado claro
+  (`bg-pin-bg`) do voltar e dos atalhos; desfazer e refazer seguem transparentes.
+- ⭐ **UMA pílula azul só**: o "Usar no Estúdio" quando ele aparece (desenho de um jogo do Pensa,
+  com `sendToStudio`); senão, o "Baixar". Com o "Usar no Estúdio" na tela, o "Baixar" fica branco.
+  "Jogar meu mapa" é sempre branco.
+- **O papel em ícone de linha** (os mesmos dos filtros da galeria: PersonStanding, Image, Puzzle,
+  Map) na cor do papel (`text-pin-kind-*`), decorativo; o emoji saiu. O `title` com o nome EXATO
+  continua no texto (`pintaLessonUi` usa `getByTitle('nave')`). O nome é Baloo 800 e é quem
+  encolhe com reticências, nunca um botão.
+- **O "Salvo" é pílula menta com o visto**, salvando é a quieta e o erro é a vermelha com o
+  triângulo. O texto mora DIRETO na região viva (`role="status"`), como antes: é como o leitor
+  anuncia e como os testes a encontram.
+- **Contraste** (texto de 13 a 15px em negrito, régua de 4,5:1): o verde e o vermelho da barra
+  levam um quinto da tinta do texto (`color-mix(in oklab, <tom> 80%, var(--color-pin-text))`), o
+  que os escurece no claro e os clareia no escuro. Medido no playground em quatro cenários (kids
+  claro e escuro; sem os primitivos do kids, claro e escuro): mínimo de 5,02:1.
+- Testes: `components/editor/editorBarUi.test.tsx` (a estrutura, os tons, a pílula azul única, o
+  mapa e a nuvem em repouso x com aviso). Seguem valendo `hostChromeUi` (menu antes do voltar),
+  `PintaApp.test` (o "Salvo" com `role="status"`), `pintaLessonUi` (os `title`), `resizeUi`
+  (o nome do botão do tamanho) e `shortcutsUi`.
 
 ## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
 

@@ -157,6 +157,183 @@
   --pin-panel-head: color-mix(in oklab, var(--color-pin-accent) 16%, var(--color-pin-surface));
 }
 
+/*
+ * ── A BARRA DO EDITOR (11/09/2026, a tela-modelo do Pinta, medida a 1440px com o menu aberto) ──
+ * 60px: [menu][voltar] o ícone do papel e o nome, a pílula do tamanho, desfazer e refazer, o
+ * "Salvo" em pílula menta e a nuvem do host; à direita os atalhos e a pílula azul da ação
+ * principal. O editor roda também no bloco de aula e no admin, que não importam o
+ * `tool-chrome.css`: por isso as receitas moram AQUI e pintam com os `--color-pin-*` (que já
+ * herdam a cor do host), com os `--sz-tool-*` só como primeira escolha da cadeia.
+ * Contraste (texto de 13 a 15px em negrito, régua de 4,5:1): o verde e o vermelho da barra levam
+ * um quinto da tinta do texto, que os escurece no claro e os clareia no escuro.
+ */
+[data-pinta-theme] {
+  --pin-bar-hit: 2.5rem;
+}
+@media (any-pointer: coarse) {
+  [data-pinta-theme] {
+    --pin-bar-hit: 2.75rem;
+  }
+}
+[data-pinta-theme] .pin-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  min-height: 3.75rem;
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid var(--color-pin-border);
+  background: var(--color-pin-surface);
+}
+/* O ícone do papel e o nome: o nome é quem encolhe (reticências), nunca um botão. */
+[data-pinta-theme] .pin-bar-name {
+  display: flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+[data-pinta-theme] .pin-bar-name > svg {
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+[data-pinta-theme] .pin-bar-name__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-pin-text);
+}
+
+/* Os botões da barra: pílulas chapadas (o 3D saiu, como no resto das telas-modelo). */
+[data-pinta-theme] .pin-bar-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--pin-bar-hit);
+  padding-inline: 1.125rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+[data-pinta-theme] .pin-bar-btn > svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+}
+[data-pinta-theme] .pin-bar-btn:focus-visible {
+  outline: 2px solid var(--color-pin-accent);
+  outline-offset: 2px;
+}
+[data-pinta-theme] .pin-bar-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+/* A ação principal: o azul da marca. */
+[data-pinta-theme] .pin-bar-btn--primary {
+  background: var(--pin-cta);
+  color: var(--sz-tool-on-cta, var(--color-pin-accent-fg));
+}
+[data-pinta-theme] .pin-bar-btn--primary:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--pin-cta) 88%, var(--color-pin-text));
+}
+/* As outras ações: branca com o fio. */
+[data-pinta-theme] .pin-bar-btn--outline {
+  border-color: var(--color-pin-border);
+  background: var(--color-pin-surface);
+  color: var(--color-pin-text);
+}
+[data-pinta-theme] .pin-bar-btn--outline:hover:not(:disabled) {
+  background: var(--color-pin-bg);
+}
+/* A pílula pequena do tamanho do desenho ("Tamanho: 128 x 128"). */
+[data-pinta-theme] .pin-bar-btn--quiet {
+  gap: 0.375rem;
+  min-height: 2.25rem;
+  padding-inline: 0.75rem;
+  border-color: var(--color-pin-border);
+  background: var(--color-pin-bg);
+  color: var(--color-pin-text);
+  font-size: 0.8125rem;
+}
+[data-pinta-theme] .pin-bar-btn--quiet:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-pin-bg) 90%, var(--color-pin-text));
+}
+@media (any-pointer: coarse) {
+  [data-pinta-theme] .pin-bar-btn--quiet {
+    min-height: 2.75rem;
+  }
+}
+
+/* O "Salvo" local e a nuvem do host: pílulas pequenas de tom. */
+[data-pinta-theme] .pin-bar-seal {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+[data-pinta-theme] .pin-bar-seal > svg {
+  flex: none;
+  width: 0.875rem;
+  height: 0.875rem;
+}
+[data-pinta-theme] .pin-bar-seal--ok {
+  background: var(
+    --sz-tool-ok-tint,
+    color-mix(in oklab, var(--color-pin-ok) 12%, var(--color-pin-surface))
+  );
+  color: color-mix(in oklab, var(--sz-tool-ok, var(--color-pin-ok)) 80%, var(--color-pin-text));
+}
+[data-pinta-theme] .pin-bar-seal--muted {
+  background: var(--color-pin-bg);
+  color: var(--color-pin-muted);
+}
+[data-pinta-theme] .pin-bar-seal--warn {
+  border-color: color-mix(in oklab, var(--color-pin-warn) 45%, var(--color-pin-surface));
+  background: var(--color-pin-surface);
+  color: color-mix(in oklab, var(--color-pin-warn) 80%, var(--color-pin-text));
+}
+[data-pinta-theme] .pin-bar-seal--danger {
+  border-color: color-mix(in oklab, var(--color-pin-danger) 45%, var(--color-pin-surface));
+  background: var(--color-pin-surface);
+  color: color-mix(in oklab, var(--color-pin-danger) 80%, var(--color-pin-text));
+}
+/* A nuvem em repouso: só o ícone, no círculo menta. */
+[data-pinta-theme] .pin-bar-seal--icon {
+  justify-content: center;
+  width: 1.75rem;
+  padding: 0;
+}
+[data-pinta-theme] .pin-bar-seal--icon > svg {
+  width: 1rem;
+  height: 1rem;
+}
+
 /* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
 [data-pinta-theme] .pin-display {
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
