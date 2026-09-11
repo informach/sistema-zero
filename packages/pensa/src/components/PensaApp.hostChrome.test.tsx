@@ -29,7 +29,10 @@ function adapter(): PensaHostAdapter {
 describe('PensaApp × chrome do host', () => {
   test('a home desenha o botão do menu (receita compartilhada, aria-pressed, sem title) e o clique é do host', async () => {
     const onToggle = mock(() => {})
-    const chrome: PensaHostChrome = { menu: { hidden: false, label: 'Esconder menu', onToggle } }
+    const chrome: PensaHostChrome = {
+      menu: { hidden: false, label: 'Esconder menu', onToggle },
+      back: null,
+    }
     render(
       <PensaHostChromeProvider value={chrome}>
         <PensaApp adapter={adapter()} />
@@ -52,6 +55,7 @@ describe('PensaApp × chrome do host', () => {
   test('menu escondido = pressionado com a tinta suave do acento', async () => {
     const chrome: PensaHostChrome = {
       menu: { hidden: true, label: 'Mostrar menu', onToggle: () => {} },
+      back: null,
     }
     render(
       <PensaHostChromeProvider value={chrome}>
@@ -72,7 +76,7 @@ describe('PensaApp × chrome do host', () => {
     unmount()
 
     render(
-      <PensaHostChromeProvider value={{ menu: null }}>
+      <PensaHostChromeProvider value={{ menu: null, back: null }}>
         <PensaApp adapter={adapter()} />
       </PensaHostChromeProvider>,
     )

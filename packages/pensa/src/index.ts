@@ -10,6 +10,7 @@ export type {
   PensaCycleView,
   PensaHostAdapter,
   PensaHostChrome,
+  PensaHostChromeBack,
   PensaHostChromeMenu,
   PensaMascotPose,
   PensaMoldaTaskContext,

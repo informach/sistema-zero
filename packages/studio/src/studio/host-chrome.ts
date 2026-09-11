@@ -2,9 +2,11 @@ import { createContext, useContext } from 'react'
 
 /**
  * CHROME DO HOST na Topbar e na lista de projetos (07/09/2026): o botão de esconder o
- * menu lateral da comunidade e o selo "Guardado na sua conta". O host (community-kids)
- * só manda DADOS — o Studio desenha com os próprios `IconButton`/`Badge` e, abaixo do
- * tier wide, encolhe o selo para uma bolinha, como faz com o "Salvo". Espelho
+ * menu lateral da comunidade e o selo "Guardado na sua conta"; desde 11/09 também a seta
+ * da lista de volta à seção do host e o sinal da nuvem da conta (só a lista os lê). O
+ * host (community-kids) só manda DADOS — o Studio desenha com os próprios
+ * `IconButton`/`Badge` e, abaixo do tier wide, encolhe o selo para uma bolinha, como faz
+ * com o "Salvo". Espelho
  * ESTRUTURAL do `HostChrome` do kids (zero import entre pacotes, mesma regra do
  * `pinta-library.ts`).
  *
@@ -30,9 +32,34 @@ export interface StudioHostChromeStatus {
   text: string
 }
 
+/**
+ * A seta da LISTA de projetos de volta à seção do host (11/09/2026: "← Criar"). Só a lista
+ * desenha; o editor já volta para a lista pela marca da Topbar. É um `<a href>`: o clique
+ * simples chama `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o navegador.
+ */
+export interface StudioHostChromeBack {
+  /** O nome curto, visível ao lado da seta ("Criar"). */
+  text: string
+  /** O nome acessível inteiro ("Voltar para Criar"); CONTÉM o `text`. Nunca vira `title`. */
+  label: string
+  href: string
+  onNavigate: () => void
+}
+
+/**
+ * A nuvem da CONTA está ligada (11/09/2026). A lista mostra a pílula `label` em repouso,
+ * quando o `status` não tem nada a dizer, e conta os projetos "na sua conta" em vez de
+ * "neste aparelho". A Topbar não lê este campo (ali só o `status` fala).
+ */
+export interface StudioHostChromeAccount {
+  label: string
+}
+
 export interface StudioHostChrome {
   menu: StudioHostChromeMenu | null
   status: StudioHostChromeStatus | null
+  back: StudioHostChromeBack | null
+  account: StudioHostChromeAccount | null
 }
 
 const StudioHostChromeContext = createContext<StudioHostChrome | null>(null)

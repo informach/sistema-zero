@@ -36,6 +36,8 @@ function chromeWith(overrides: Partial<PintaHostChrome> = {}): {
         label: 'Guardado na sua conta',
         text: 'Guardado na sua conta',
       },
+      back: null,
+      account: null,
       ...overrides,
     },
   }

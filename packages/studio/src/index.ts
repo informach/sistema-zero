@@ -126,9 +126,12 @@ export type {
 } from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 // Chrome do HOST na Topbar/lista (07/09/2026): o kids embrulha `<ProjectList>`, `<StudioEditor>`
-// e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta".
+// e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta"
+// (e, desde 11/09, a seta "← Criar" e a nuvem da conta, que só a lista desenha).
 export {
   type StudioHostChrome,
+  type StudioHostChromeAccount,
+  type StudioHostChromeBack,
   type StudioHostChromeMenu,
   StudioHostChromeProvider,
   type StudioHostChromeStatus,

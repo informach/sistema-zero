@@ -67,6 +67,8 @@ describe('ProjectList × chrome do host', () => {
         label: 'Buscando…',
         text: 'Buscando o que você guardou na sua conta…',
       },
+      back: null,
+      account: null,
     }
     const { container } = render(
       <StudioHostChromeProvider value={chrome}>

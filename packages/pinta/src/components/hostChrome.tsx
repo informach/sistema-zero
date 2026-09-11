@@ -1,7 +1,8 @@
 /**
  * Chrome do HOST dentro do Pinta (07/09/2026): o botão de esconder o menu lateral da
  * comunidade e o selo "Guardado na sua conta" entram na barra do editor e no cabeçalho
- * da galeria, desenhados com os botões e os tons do PRÓPRIO Pinta. O host
+ * da galeria, desenhados com os botões e os tons do PRÓPRIO Pinta. Desde 11/09 o contrato
+ * também traz a seta da galeria de volta à seção do host e o sinal da nuvem da conta. O host
  * (community-kids) só manda DADOS pelo `PintaHostChromeProvider` — nunca um elemento
  * pronto: é o que impede o selo de chegar "colado por cima" com tokens de outra paleta.
  * Sem Provider (bloco de aula, playground, adulto) o contexto é `null` e nada aparece.

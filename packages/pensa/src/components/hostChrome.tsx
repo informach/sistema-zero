@@ -1,7 +1,8 @@
 /**
  * Chrome do HOST dentro do Pensa (07/09/2026): o botão de esconder o menu lateral da
  * comunidade entra nos dois cabeçalhos (home e detalhe do plano), com a receita compartilhada
- * das ferramentas (`.sz-tool-btn-menu`). O host (community-kids) só manda DADOS pelo
+ * das ferramentas (`.sz-tool-btn-menu`). Desde 11/09 o contrato também traz a seta da home
+ * de volta à seção do host. O host (community-kids) só manda DADOS pelo
  * `PensaHostChromeProvider`; sem Provider (playground) nada aparece.
  *
  * Os cabeçalhos rolam com o conteúdo (o `.pensa-planner` é o rolável), como nas galerias

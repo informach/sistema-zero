@@ -269,7 +269,32 @@ export interface PintaHostChromeStatus {
   text: string
 }
 
+/**
+ * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"). Só a galeria desenha;
+ * o editor já volta para a galeria pela seta dele. É um `<a href>`: o clique simples chama
+ * `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o navegador.
+ */
+export interface PintaHostChromeBack {
+  /** O nome curto, visível ao lado da seta ("Criar"). */
+  text: string
+  /** O nome acessível inteiro ("Voltar para Criar"); CONTÉM o `text`. Nunca vira `title`. */
+  label: string
+  href: string
+  onNavigate: () => void
+}
+
+/**
+ * A nuvem da CONTA está ligada (11/09/2026). A galeria mostra a pílula `label` em repouso,
+ * quando o `status` não tem nada a dizer, e conta os desenhos "na sua conta" em vez de
+ * "neste aparelho". O editor não lê este campo (ali só o `status` fala).
+ */
+export interface PintaHostChromeAccount {
+  label: string
+}
+
 export interface PintaHostChrome {
   menu: PintaHostChromeMenu | null
   status: PintaHostChromeStatus | null
+  back: PintaHostChromeBack | null
+  account: PintaHostChromeAccount | null
 }

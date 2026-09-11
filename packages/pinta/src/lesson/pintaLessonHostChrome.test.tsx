@@ -29,6 +29,8 @@ describe('<PintaLesson> × chrome do host', () => {
         label: 'Guardado na sua conta',
         text: 'Guardado na sua conta',
       },
+      back: null,
+      account: null,
     }
     render(
       <PintaHostChromeProvider value={chrome}>

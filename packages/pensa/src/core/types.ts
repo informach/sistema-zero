@@ -235,6 +235,22 @@ export interface PensaHostChromeMenu {
   onToggle: () => void
 }
 
+/**
+ * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"). Só a home dos planos
+ * desenha; o detalhe de um plano já volta para a home pelo "voltar" dele. É um `<a href>`: o
+ * clique simples chama `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o
+ * navegador. O Pensa espelha só `menu` e `back` (sem nuvem de conta: o plano vive no servidor).
+ */
+export interface PensaHostChromeBack {
+  /** O nome curto, visível ao lado da seta ("Criar"). */
+  text: string
+  /** O nome acessível inteiro ("Voltar para Criar"); CONTÉM o `text`. Nunca vira `title`. */
+  label: string
+  href: string
+  onNavigate: () => void
+}
+
 export interface PensaHostChrome {
   menu: PensaHostChromeMenu | null
+  back: PensaHostChromeBack | null
 }

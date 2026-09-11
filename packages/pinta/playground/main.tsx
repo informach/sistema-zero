@@ -5,8 +5,11 @@
  *
  * `?host=1` liga um chrome de HOST de mentira (07/09/2026): o botão de esconder
  * o menu (alterna o estado local) e o selo "Guardado na sua conta" percorrendo
- * os estados a cada 4 s — é como se vê, sem o kids, o que o Pinta desenha na
- * barra do editor e no cabeçalho da galeria. Sem o parâmetro nada muda.
+ * os estados a cada 4 s, começando pelo REPOUSO (selo nulo: a galeria mostra a
+ * pílula da conta). Desde 11/09 também a seta "← Criar" da galeria (loga no
+ * console em vez de navegar) e a conta ligada. É como se vê, sem o kids, o que
+ * o Pinta desenha na barra do editor e no cabeçalho da galeria. Sem o parâmetro
+ * nada muda.
  */
 
 import {
@@ -25,7 +28,8 @@ setPintaStorageNamespace('playground')
 const root = document.getElementById('root')
 if (!root) throw new Error('#root não encontrado')
 
-const DEMO_STATUSES: PintaHostChromeStatus[] = [
+const DEMO_STATUSES: Array<PintaHostChromeStatus | null> = [
+  null,
   { tone: 'muted', icon: 'upload', label: 'Guardando…', text: 'Guardando na sua conta…' },
   { tone: 'ok', icon: 'cloud', label: 'Guardado na sua conta', text: 'Guardado na sua conta' },
   {
@@ -42,6 +46,15 @@ const DEMO_STATUSES: PintaHostChromeStatus[] = [
   },
 ]
 
+// Fora do componente: identidade estável, como a do host de verdade (`useHostChrome`).
+const DEMO_BACK: PintaHostChrome['back'] = {
+  text: 'Criar',
+  label: 'Voltar para Criar',
+  href: '#criar',
+  onNavigate: () => console.log('[playground] voltar para Criar'),
+}
+const DEMO_ACCOUNT: PintaHostChrome['account'] = { label: 'Guardado na sua conta' }
+
 function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
   const [hidden, setHidden] = useState(false)
   const [step, setStep] = useState(0)
@@ -56,6 +69,8 @@ function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
       onToggle: () => setHidden((h) => !h),
     },
     status: DEMO_STATUSES[step] ?? null,
+    back: DEMO_BACK,
+    account: DEMO_ACCOUNT,
   }
   return <PintaHostChromeProvider value={chrome}>{children}</PintaHostChromeProvider>
 }
