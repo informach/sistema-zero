@@ -29,6 +29,7 @@ import { type MuralSort, sortQuery } from './mural-sort'
 import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
 import { useKidsSpaceReport } from './use-kids-space-report'
+import { useThreadPages } from './use-thread-pages'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
 export type SpaceViewMode = 'forum' | 'wall'
@@ -100,7 +101,6 @@ export function KidsSpaceViewClient({
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
-  const [threads, setThreads] = useState<HubThreadView[]>([])
   // Prateleira do Desafio do mês: busca DEDICADA (`?challenge=<key>`) → TODAS as
   // entradas do mês, independente da paginação da grade. Best-effort (falha/vazio →
   // cai no filtro client-side das threads já carregadas).
@@ -128,10 +128,10 @@ export function KidsSpaceViewClient({
   const [replyAttachments, setReplyAttachments] = useState<UploadedAttachment[]>([])
 
   // Paginação por cursor — espaços acumulam conversas/respostas além da 1ª página.
-  const [threadsCursor, setThreadsCursor] = useState<string | null>(null)
   const [sort, setSort] = useState<MuralSort>('activity') // filtros do Mural; recarrega a lista
-  const [threadsHasMore, setThreadsHasMore] = useState(false)
-  const [loadingMoreThreads, setLoadingMoreThreads] = useState(false)
+  // A lista de tópicos: cada recarga (canal, filtro) é uma VEZ nova (ver `useThreadPages`).
+  const threadPages = useThreadPages(channel?.id ?? null, sort)
+  const { threads, restart: restartThreads, isTurn, showFirstPage } = threadPages
   const [commentsCursor, setCommentsCursor] = useState<string | null>(null)
   const [commentsHasMore, setCommentsHasMore] = useState(false)
   const [loadingMoreComments, setLoadingMoreComments] = useState(false)
@@ -289,25 +289,25 @@ export function KidsSpaceViewClient({
   // em voo; sem a guarda, se A resolve por último, as threads de A renderizam sob B.
   const loadThreads = useCallback(
     async (channelId: string, isCurrent?: () => boolean) => {
+      const turn = restartThreads()
+      const stale = () => (isCurrent ? !isCurrent() : false) || !isTurn(turn)
       try {
         const page = await apiGet<HubPage<HubThreadView>>(
           `/api/hub/channels/${enc(channelId)}/threads${sortQuery(sort, '?')}`,
         )
-        if (isCurrent && !isCurrent()) return
-        setThreads(page.items)
-        setThreadsCursor(page.nextCursor)
-        setThreadsHasMore(page.hasMore)
+        if (stale()) return
+        showFirstPage(page)
         // Marca como visto só depois de uma carga bem-sucedida.
         apiSend(`/api/hub/channels/${enc(channelId)}/seen`, 'POST', {}).catch(() => {})
         setChannels((prev) =>
           prev.map((c) => (c.id === channelId ? { ...c, hasUnread: false } : c)),
         )
       } catch (err) {
-        if (isCurrent && !isCurrent()) return
+        if (stale()) return
         toast.error((err as ApiError).message ?? 'Falha ao carregar.')
       }
     },
-    [sort],
+    [sort, restartThreads, isTurn, showFirstPage],
   )
 
   // Busca DEDICADA da prateleira do Desafio: `?challenge=<key>` faz o hub devolver SÓ
@@ -330,23 +330,6 @@ export function KidsSpaceViewClient({
     },
     [isWall, challengeKey],
   )
-
-  async function loadMoreThreads() {
-    if (!channel || !threadsCursor || loadingMoreThreads) return
-    setLoadingMoreThreads(true)
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${enc(channel.id)}/threads?cursor=${enc(threadsCursor)}${sortQuery(sort, '&')}`,
-      )
-      setThreads((prev) => [...prev, ...page.items])
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar mais.')
-    } finally {
-      setLoadingMoreThreads(false)
-    }
-  }
 
   useEffect(() => {
     if (!channel) return
@@ -610,9 +593,9 @@ export function KidsSpaceViewClient({
       sort,
       onSortChange: setSort,
       onOpenThread: openThread,
-      threadsHasMore,
-      loadingMoreThreads,
-      onLoadMoreThreads: loadMoreThreads,
+      threadsHasMore: threadPages.hasMore,
+      loadingMoreThreads: threadPages.loadingMore,
+      onLoadMoreThreads: threadPages.loadMore,
     },
     report: reportProps,
     busy,

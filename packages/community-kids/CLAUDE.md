@@ -1140,6 +1140,13 @@ o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de
   (`?sort=`, ver o CLAUDE.md do hub); `mural-sort.ts` é a régua (a padrão é a AUSÊNCIA do parâmetro).
   Trocar o filtro recarrega a lista do zero: o `loadThreads` depende do `sort`, e o cursor do hub
   carrega a ordem. O "Da minha turma" da imagem ficou de fora: não existe turma no sistema.
+  ⚠️ A paginação dos tópicos mora em `use-thread-pages.ts` (full review de 11/09/2026): cada
+  recomeço (canal, filtro, recarga depois de postar) abre uma VEZ nova, e uma página pedida na
+  vez anterior que chega depois é descartada. Antes, um "Carregar mais" em voo na ordem antiga
+  emendava a página dele na lista nova; e até a primeira página nova chegar o botão seguia com o
+  cursor antigo, que o hub recusa na ordem nova (hoje ele some nesse intervalo). A falha do
+  "Carregar mais" mostra recado de criança, nunca a mensagem do hub
+  (`tests/mural-sort-race.test.tsx`, que monta o Mural com respostas adiadas).
 - **Faixas:** cabeçalho no creme, Mural no menta e Clube no azul-claro, fechamento no lilás. O
   "Publicar um jogo" do fechamento do Mural usa a MESMA régua do remix (`onRemix` presente = posse do
   Estúdio + Estúdio livre na carreira), para nunca levar a criança a uma tela trancada.
