@@ -89,7 +89,9 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
         return (
           <section key={unit.module.id} className={UNIT_THEME_CLASS[unit.theme]}>
             <header className="kids-unit-banner px-5 py-4 md:px-6">
-              <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest opacity-80">
+              {/* Sem `opacity-*` no texto da faixa: a tinta a 80% caía para 4,04:1 no azul e
+                  3,45:1 na laranja (medido na paleta do Pen, 11/09/2026). */}
+              <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest">
                 Unidade {unitIndex + 1}
               </p>
               <div className="flex items-end justify-between gap-3">
@@ -98,9 +100,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
                   {doneCount}/{unit.module.lessons.length} aulas
                 </span>
               </div>
-              {unit.module.summary ? (
-                <p className="mt-1 text-sm opacity-85">{unit.module.summary}</p>
-              ) : null}
+              {unit.module.summary ? <p className="mt-1 text-sm">{unit.module.summary}</p> : null}
             </header>
 
             <ol className="relative mt-10">

@@ -144,7 +144,7 @@ export function CatalogCourseCard({
     // apagado não-tocável (o card é um <div>, não pode parecer botão).
     foundationFirst ? (
       <span className="sz-btn-gradient-block">
-        <span className="font-normal text-[11px] opacity-90">Comece por este:</span>
+        <span className="font-normal text-[11px]">Comece por este:</span>
         <span className="flex items-center gap-1.5">
           <span className="line-clamp-1 flex-1 font-semibold text-sm">
             {foundationTitle ?? 'O primeiro curso'}

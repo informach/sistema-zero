@@ -128,7 +128,7 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
             <Trophy className="size-6" />
             Quiz concluído{lastScore !== null ? ` com ${lastScore}%` : ''}!
           </p>
-          {result ? <p className="text-sm opacity-90">Mandou bem demais!</p> : null}
+          {result ? <p className="text-sm">Mandou bem demais!</p> : null}
           {/* Recompensas REAIS do backend (vêm na resposta do submit aprovado). */}
           {result?.gamification ? (
             <div className="flex flex-wrap items-center justify-center gap-2">

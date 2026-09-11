@@ -173,7 +173,7 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
                           mine ? 'kids-marca rounded-br-md' : 'rounded-bl-md bg-background'
                         }`}
                       >
-                        <p className="mb-1 font-bold text-xs opacity-80">
+                        <p className="mb-1 font-bold text-xs">
                           {mine ? 'Você' : m.authorName || 'Professor(a)'}
                         </p>
                         {mine ? (
