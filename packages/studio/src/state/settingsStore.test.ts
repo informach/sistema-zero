@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // settingsStore agora faz bail cedo se `indexedDB` não existir (igual ao
 // gameStorage.ts — Firefox modo privado, contextos restritos). O happy-dom não
@@ -41,7 +42,7 @@ globalWithIdb.indexedDB = globalWithIdb.indexedDB ?? {}
 const memory = new Map<unknown, unknown>()
 let updateChain: Promise<void> = Promise.resolve()
 const idb = {
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (key: unknown): Promise<unknown> => memory.get(key)),

@@ -1,12 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import type { Project } from '#core'
+import {
+  fakeIdbPuts,
+  fakeIdbWrites,
+  fakeUseStore,
+  lastFakeIdbWrite,
+  resetFakeIdb,
+} from '../testing/fakeIdbStore'
 
 // Mesmo arranjo de mock de persistence.test.ts: bun:test não hoista mocks, então
 // declaramos o objeto antes do mock.module e importamos os módulos sob teste
 // DEPOIS, dinamicamente. O mock de idb-keyval NÃO é restaurado (registry global
 // compartilhado; IndexedDB real não existe no happy-dom — no-op é seguro).
 const idb = {
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),
@@ -38,6 +45,7 @@ function clearIdbMocks() {
   idb.keys.mockClear()
   idb.set.mockClear()
   idb.setMany.mockClear()
+  resetFakeIdb()
 }
 
 describe('renameProject (escrita só-metadado, #4)', () => {
@@ -83,9 +91,9 @@ describe('renameProject (escrita só-metadado, #4)', () => {
 
     await useProjectStore.getState().renameProject('p-rename', 'Nome novo')
 
-    // 1) A escrita no disco foi SÓ no registro de meta — nunca setMany (que
-    //    reescreveria meta+files+state a partir do snapshot estale do disco).
-    expect(idb.setMany).not.toHaveBeenCalled()
+    // 1) A escrita no disco foi SÓ no registro de meta — nunca a gravação do projeto
+    //    inteiro (que reescreveria meta+files+state a partir do snapshot estale do disco).
+    expect(fakeIdbWrites()).toHaveLength(0)
     expect(idb.set).toHaveBeenCalledTimes(1)
     const [key, value] = idb.set.mock.calls[0] as unknown as [string, Record<string, unknown>]
     expect(key).toBe('sz:project-meta:p-rename')
@@ -108,7 +116,7 @@ describe('renameProject (escrita só-metadado, #4)', () => {
     await useProjectStore.getState().renameProject('inexistente', 'Qualquer')
 
     expect(idb.set).not.toHaveBeenCalled()
-    expect(idb.setMany).not.toHaveBeenCalled()
+    expect(fakeIdbWrites()).toHaveLength(0)
   })
 })
 
@@ -153,9 +161,7 @@ describe('importProjectFromJSON (teto combinado no import, #5)', () => {
 
     // E o que foi PERSISTIDO casa com o que foi devolvido (registro no disco já
     // aparado — não há divergência a aflorar no reopen).
-    const lastArgs = idb.setMany.mock.calls.at(-1) as unknown as unknown[]
-    const records = (lastArgs?.[0] ?? []) as [string, unknown][]
-    const filesRecord = records.find(([k]) => k.startsWith('sz:project-files:'))?.[1] as
+    const filesRecord = fakeIdbPuts(lastFakeIdbWrite()).get(`sz:project-files:${imported.id}`) as
       | { extraFiles?: Array<{ name: string }> }
       | undefined
     expect(filesRecord?.extraFiles?.map((f) => f.name)).toEqual(['um.js'])

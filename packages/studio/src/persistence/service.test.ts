@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test'
 import type { Project } from '#core'
 import { createEmptyProject } from '#core'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 import type { StudioPersistenceAdapter } from './types'
 
 // bun:test não isola module mocks por arquivo, e o registro é compartilhado pela
@@ -8,7 +9,7 @@ import type { StudioPersistenceAdapter } from './types'
 // importá-lo aqui não toque o IndexedDB (inexistente no happy-dom). Sem restore
 // de propósito, igual aos demais arquivos de persistência.
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),

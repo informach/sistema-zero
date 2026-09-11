@@ -139,9 +139,9 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
 - **`persistProject(project, {silent, replace})`**: `silent` grava SEM acordar o espelho (o que
   acabou de descer não pode subir de novo); `replace` trata o snapshot como verdade COMPLETA —
   apaga a partição de blocos quando ele não traz `blocksState` (o canvas vazio sanitiza para
-  `null`) e a capa antiga, DEPOIS do `setMany` no mesmo mutex (falha de quota não deixa o local
-  sem blocos). Sem `replace`, blocos apagados noutro computador ressuscitavam aqui e subiam por
-  cima da nuvem.
+  `null`) e a capa antiga, NA MESMA transação dos `put` (desde 11/09/2026, ver "Flush de saída";
+  falha de quota aborta tudo e não deixa o local sem blocos). Sem `replace`, blocos apagados
+  noutro computador ressuscitavam aqui e subiam por cima da nuvem.
 - **`restoreProjectFromCloud(raw, {expectedId})`** (`projects/importSnapshot.ts`) →
   `projectStore.restoreProjectSnapshot`, e **`validateCloudProjectSnapshot`** (o mesmo, SEM
   gravar — o adaptador confere no `fetch`, antes de fazer cópia de conflito): o MESMO saneamento
@@ -195,6 +195,39 @@ que falta em outro computador (`community-kids/src/lib/studio-cloud.ts`; design 
 - Testes: `state/persistence.test.ts` ("espelho da nuvem": avisos, `silent`, `replace`, guardas de
   id/aberto, `updatedAt` dos assets, espelho `null`, `loadProjectAssetsSnapshotForCloud`, lista
   light sem capas, `PROJECT_CHANGED_EVENT`).
+
+## Flush de saída: UMA transação com `commit()` explícito (11/09/2026)
+
+O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
+mas morria com a troca de documento: o `setMany`/`delMany` do idb-keyval dependem do auto-commit,
+que só acontece depois que a página recebe o resultado de cada `put`. Recarregando logo depois de
+gravar um arquivo grande (o céu de 1,5 MB do Molda), a mudança voltou em 0 de 10 recargas no
+WebKit (o motor do iPad) e 8 de 10 no Firefox, trazendo os três arquivos do Molda, e em 4 de 10
+no Chromium com a CPU lenta, enviando só o céu (o `e2e/reload-flush.spec.ts`).
+
+- **`state/idbTransaction.ts` `writeInOneTransaction(store, { puts, deletes })`**: uma transação
+  readwrite, `put` na ordem, `delete` depois, `commit()` explícito (auto-commit onde o navegador
+  não tem o método) e `abort()` quando um `put` LANÇA (sem ele, os pares de antes seriam gravados
+  pela metade). Rejeita com o motivo que chega no `abort` (`transaction.error`), nunca `null`.
+  Usado por `persistProject` (partições + as chaves velhas do `replace`/`bridgeCodeAhead` numa
+  transação só) e `deleteProject`. Com ele: 10 de 10, 10 de 10 e 30 de 30.
+- É helper LOCAL de propósito, sem importar nada novo do idb-keyval (`promisifyRequest` incluso):
+  um export novo que um dos mocks da suíte não tenha quebra o linker só na ordem de arquivos do CI.
+- ⚠️ **Segundo mecanismo, ainda SEM conserto:** no Chromium, uma LEITURA do idb-keyval
+  (auto-commit) ainda em voo no mesmo store tranca a escrita do flush (a readwrite espera as
+  transações anteriores, e a leitura só termina se a página processar os eventos dela). Trazer um
+  arquivo do Molda ou do Pinta grava na biblioteca pessoal e dispara a varredura dos desenhos, que
+  LÊ o banco; recarregando logo depois, com o conserto, o Chromium ainda perdeu cerca de 1 em 20, e
+  na rodada instrumentada a perda coincidiu com leitura pendente (15 salvas sem nenhuma). Protótipo
+  medido: `commit()` também nas leituras do banco do projeto deu 30 de 30. O Firefox não tranca; o
+  WebKit não teve leitura pendente no fluxo.
+- `renameProjectMeta`, `persistProjectAssets` e `writeProjectThumb` seguem no `get` + `set` do
+  idb-keyval (lê e depois grava): não rodam na saída da página, e juntar a leitura e a escrita numa
+  transação é outra mudança (atomicidade), não o flush.
+- e2e: `e2e/reload-flush.spec.ts` (o único spec que recarrega SEM esperar o "Salvo"). Envia o céu
+  pelo "Enviar modelo 3D", e não pelo "Trazer do Molda", para não disparar a varredura (o segundo
+  mecanismo); a CPU fica 6× mais lenta só na saída. Sem o conserto, 6 de 10 recargas perderam o
+  arquivo; com ele, 30 de 30.
 
 ## Persistência do programa do aluno (guardar/ler que PERSISTE)
 
@@ -690,7 +723,8 @@ no `StudioShareDisabledContext` (NÃO latchado, lido ao vivo no Topbar via `useS
 5. **Globais residuais de multi-instância**: WebContainer é singleton por aba; o atalho da busca de blocos (`startSearch`) fica com a última instância (PtSearchCategory desregistra antes de registrar — NÃO remover, era crash na 2ª instância). `deleteProject` cancela autosaves em voo somente nas instâncias do MESMO namespace via registro de serviços.
 6. **Testes = bun:test** (`bun test src`). O CI executa a suíte Playwright completa em Chromium, dividida em 3 shards, e os cenários de segurança/CSP em Firefox. Gotchas que esta suíte já paga:
    - `mock.module` NÃO é isolado por arquivo — capture os exports reais antes e restaure no `afterAll` (ver `BlocksMode.test.tsx`); mocks de idb-keyval ficam sem restore de propósito (IndexedDB não existe no happy-dom).
-   - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0). ⚠️ **Um teste que espera o debounce precisa DRENAR antes do próximo limpar os mocks** (`persistence.test.ts`, 19/08/2026): no runner de 2 vCPU do CI (22 pacotes juntos) o `setMany` de um caso ainda estava em voo quando o seguinte fazia `mockClear`, e caía no contador dele ("recebeu 1, esperava 0") — três casos antigos, local verde até sob carga. O `afterEach` dá um `waitForAutosave()` e a folga é 10× o delay, não 5×. Já tinha reprovado em `b0934ab0` e ficou mascarado por outro vermelho no mesmo run: quando um CI cai por um motivo, leia a lista INTEIRA de `(fail)`.
+   - ⚠️ **Todo mock de `idb-keyval` devolve `fakeUseStore(dbName)` no `createStore`** (`src/testing/fakeIdbStore.ts`, 11/09/2026) e exporta `setMany` E `delMany`. O `persistProject`/`deleteProject` abrem a transação pelo próprio `scope.store`, e o store fica em CACHE no escopo de armazenamento, que atravessa arquivos: um mock que devolvesse objeto não chamável quebraria a gravação só numa certa ordem de arquivos. A transação de mentira aplica o resultado pelo `setMany`/`delMany` do mock ATIVO (é por eles que cada arquivo guarda o que lê) e registra o que foi pedido: asserte no registro (`fakeIdbWrites`, `fakeIdbPuts`, `fakeIdbDeletes`), não no `setMany`. Falhas: `failNextFakeIdbWrite` (aborta), `holdNextFakeIdbWrite` (em voo), `throwOnNextFakeIdbPut` (put que lança). ⚠️ O bun congela o CONJUNTO de nomes do módulo mockado pelo PRIMEIRO mock da suíte (medido no 1.3.11): um nome ausente no mock atual aponta para a função VELHA de outro arquivo, sem erro.
+   - Sem fake timers — debounce do autosave encurta via `setAutosaveDelayForTests` (`src/persistence/service.ts`); relógio via `setSystemTime` (que RESETA se receber epoch 0). ⚠️ **Um teste que espera o debounce precisa DRENAR antes do próximo limpar os mocks** (`persistence.test.ts`, 19/08/2026): no runner de 2 vCPU do CI (22 pacotes juntos) a gravação de um caso ainda estava em voo quando o seguinte fazia `mockClear`, e caía no contador dele ("recebeu 1, esperava 0") — três casos antigos, local verde até sob carga. O `afterEach` dá um `waitForAutosave()` e a folga é 10× o delay, não 5×. Já tinha reprovado em `b0934ab0` e ficou mascarado por outro vermelho no mesmo run: quando um CI cai por um motivo, leia a lista INTEIRA de `(fail)`.
    - DOM via happy-dom no preload (`bunfig.toml` + `test-setup.ts`).
    - Componentes que rendem DENTRO de um `<Studio>` precisam de PROBE (mock do Shell lendo hooks) — as estáticas `getState` leem a store default, não a da instância.
 7. **Vite playground** (`bun run dev`): `optimizeDeps.entries`/`include` precisam casar com os imports REAIS (sufixo `.js` nos deep imports do Monaco; paths com forward slash — backslash do Windows não casa no glob e o Vite re-otimiza com full reload no meio da navegação). Headers COOP/COEP do dev server são obrigatórios p/ o Terminal.

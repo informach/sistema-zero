@@ -174,9 +174,10 @@ export function createPersistenceService(
   // não correrem entre si. Sem isso, quando um debounce dispara e uma edição
   // seguinte agenda outro save antes do primeiro resolver, um adapter remoto/BFF
   // pode confirmar o POST antigo POR ÚLTIMO e perder a edição mais nova. O
-  // caminho IndexedDB default já é correto (setMany serializa no idb), mas a
-  // cadeia torna qualquer adapter remoto seguro. A entrada é removida quando a
-  // própria cauda termina, para o Map não crescer.
+  // caminho IndexedDB default já é correto (transações readwrite do mesmo store
+  // rodam na ordem em que nascem), mas a cadeia torna qualquer adapter remoto
+  // seguro. A entrada é removida quando a própria cauda termina, para o Map não
+  // crescer.
   const saveChains = new Map<string, Promise<void>>()
 
   function runSerialized(projectId: string, task: () => Promise<void>): Promise<void> {

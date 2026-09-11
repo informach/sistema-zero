@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import type { InstalledExtension } from '#core'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // idb-keyval é mockado (IndexedDB não existe no happy-dom) — mesmo no-op padrão
 // de persistence.test.ts / extensionImportConsent.test.ts.
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),

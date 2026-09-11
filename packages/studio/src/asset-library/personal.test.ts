@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL (Map por DB) do idb-keyval — o IndexedDB não existe no
 // happy-dom. Como nos demais arquivos da suíte, o mock NÃO é restaurado (o
@@ -18,7 +19,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => kvOf(store).get(key),
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => kvOf(store).get(key)),
