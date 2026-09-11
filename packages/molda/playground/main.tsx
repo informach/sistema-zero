@@ -18,6 +18,7 @@ import type { SkyPreviewLike } from '../src/viewport/SkyPreview'
 import type { TexturePreviewLike } from '../src/viewport/TexturePreview'
 import type { MoldaViewportLike } from '../src/viewport/types'
 import './styles.css'
+import { playgroundToolAccess } from './toolAccess'
 
 setMoldaStorageNamespace('playground')
 
@@ -26,6 +27,8 @@ if (!root) throw new Error('#root não encontrado')
 
 const params = new URLSearchParams(window.location.search)
 const initialAssetId = params.get('criacao')
+// `?nivel=explorer|architect|god`: o portão por nível de carreira, como o kids calcula.
+const toolAccess = playgroundToolAccess(params.get('nivel'))
 const ScenePlayground = lazy(() => import('./ScenePlayground'))
 
 const persistence = getDefaultMoldaPersistence()
@@ -145,7 +148,7 @@ void installPreviewTracking().then(() =>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         {params.get('oficina') === 'nova' ? (
           <Suspense fallback={<p role="status">{COPY.scene.starting}</p>}>
-            <ScenePlayground id={initialAssetId} />
+            <ScenePlayground id={initialAssetId} toolAccess={toolAccess} />
           </Suspense>
         ) : (
           <MoldaApp
@@ -158,6 +161,7 @@ void installPreviewTracking().then(() =>
               // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
               // do app, com a galeria enxergando as duas. Não é ativação de produto.
               ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
+              ...(toolAccess ? { toolAccess } : {}),
             }}
           />
         )}

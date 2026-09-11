@@ -9,6 +9,7 @@ import {
 } from '../../../scene/commands'
 import { editScenePath } from '../../../scene/pathCommands'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
+import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
 import { SceneCurveDetails } from './SceneCurveDetails'
@@ -27,7 +28,15 @@ export function SceneNodeProperties({
 }) {
   const copy = COPY.scene
   const nameId = useId()
-  const [mode, setMode] = useState<SceneAdjustment>('move')
+  const [chosenMode, setMode] = useState<SceneAdjustment>('move')
+  // O portão: mover, girar e mudar tamanho são `model.pieces`; o ponto de giro e as medidas,
+  // `model.precise`. Trancado não aparece.
+  const { can } = useMoldaToolAccess()
+  const modes = (['move', 'rotate', 'scale', 'pivot'] as const).filter((name) =>
+    can(name === 'pivot' ? 'model.precise' : 'model.pieces'),
+  )
+  const mode = modes.includes(chosenMode) ? chosenMode : modes[0]
+  const precise = can('model.precise')
   const { primary, selected, run, document, index, covered } = workshop
   const groups = document.nodes.filter((node) => node.kind === 'group' && !covered.has(node.id))
   const geometry = primary?.kind === 'mesh' ? index.geometries.get(primary.geometryId) : undefined
@@ -101,27 +110,31 @@ export function SceneNodeProperties({
           <ScenePieceFinish workshop={workshop} />
         </>
       )}
-      <div className="grid grid-cols-2 gap-1">
-        {(['move', 'rotate', 'scale', 'pivot'] as const).map((name) => (
-          <Button
-            key={name}
-            variant="ghost"
-            className="px-2 text-sm"
-            aria-pressed={mode === name}
-            disabled={name === 'pivot' && selected.length !== 1}
-            onClick={() => setMode(name)}
-          >
-            {copy[name]}
-          </Button>
-        ))}
-      </div>
-      <SceneAdjustmentForm
-        key={`${mode}-${selected.join(',')}-${document.updatedAt}`}
-        mode={mode}
-        disabled={mode === 'pivot' && selected.length !== 1}
-        onApply={(values) => run((source) => adjustScene(source, selected, mode, values))}
-      />
-      {primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
+      {mode && (
+        <>
+          <div className="grid grid-cols-2 gap-1">
+            {modes.map((name) => (
+              <Button
+                key={name}
+                variant="ghost"
+                className="px-2 text-sm"
+                aria-pressed={mode === name}
+                disabled={name === 'pivot' && selected.length !== 1}
+                onClick={() => setMode(name)}
+              >
+                {copy[name]}
+              </Button>
+            ))}
+          </div>
+          <SceneAdjustmentForm
+            key={`${mode}-${selected.join(',')}-${document.updatedAt}`}
+            mode={mode}
+            disabled={mode === 'pivot' && selected.length !== 1}
+            onApply={(values) => run((source) => adjustScene(source, selected, mode, values))}
+          />
+        </>
+      )}
+      {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className="rounded-xl border border-mld-border p-2">
           <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
             {copy.dimensions}
@@ -140,7 +153,7 @@ export function SceneNodeProperties({
           />
         </details>
       )}
-      {primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
+      {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
         <details className="rounded-xl border border-mld-border p-2">
           <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold text-mld-text">
             {copy.curveDetail}
@@ -168,30 +181,32 @@ export function SceneNodeProperties({
       {primary?.kind === 'mesh' && geometry?.kind === 'mesh' && (
         <SceneSkinTools key={`skin:${document.id}:${primary.id}`} workshop={workshop} />
       )}
-      <details className="rounded-xl border border-mld-border p-2">
-        <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold text-mld-text">
-          {copy.organize}
-        </summary>
-        <div className="space-y-1">
-          <Button
-            className="w-full text-sm"
-            disabled={selected.every((id) => index.scene.nodes.get(id)?.parentId === null)}
-            onClick={() => run((source) => reparentSceneNodes(source, selected, null))}
-          >
-            {copy.root}
-          </Button>
-          {groups.map((group) => (
+      <RequiresTool family="model.pieces">
+        <details className="rounded-xl border border-mld-border p-2">
+          <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold text-mld-text">
+            {copy.organize}
+          </summary>
+          <div className="space-y-1">
             <Button
-              key={group.id}
-              className="w-full justify-start text-sm"
-              onClick={() => run((source) => reparentSceneNodes(source, selected, group.id))}
+              className="w-full text-sm"
+              disabled={selected.every((id) => index.scene.nodes.get(id)?.parentId === null)}
+              onClick={() => run((source) => reparentSceneNodes(source, selected, null))}
             >
-              {group.name}
+              {copy.root}
             </Button>
-          ))}
-          {groups.length === 0 && <p className="p-2 text-sm text-mld-muted">{copy.noGroups}</p>}
-        </div>
-      </details>
+            {groups.map((group) => (
+              <Button
+                key={group.id}
+                className="w-full justify-start text-sm"
+                onClick={() => run((source) => reparentSceneNodes(source, selected, group.id))}
+              >
+                {group.name}
+              </Button>
+            ))}
+            {groups.length === 0 && <p className="p-2 text-sm text-mld-muted">{copy.noGroups}</p>}
+          </div>
+        </details>
+      </RequiresTool>
     </div>
   )
 }

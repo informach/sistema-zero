@@ -3,14 +3,19 @@
  * de trabalho em andamento, o erro da pintura e o consentimento das faces tortas. A faixa de
  * cores (`ScenePaintPalette`) fica embaixo do palco, onde o Animar tem a linha do tempo.
  */
-import { useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
+import { scenePalette } from '../../../scene/composite'
+import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { dressScenePaintTarget } from '../../../scene/pieceTexture'
 import { useOptionalMoldaApp } from '../../appContext'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ApplyTextureDialog } from '../model/ApplyTextureDialog'
+import { SceneFlipbookPreview } from './SceneFlipbookPreview'
 import { ScenePaintToolbox } from './ScenePaintToolbox'
+import { SceneUpcomingTools } from './SceneUpcomingTools'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
 export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
@@ -23,6 +28,15 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
   const latest = useRef(target)
   latest.current = target
   const canDress = !!app && !!target && (target.imageKind ?? 'color') === 'color'
+  // A pintura que se mexe é leitura, sempre livre. Com `paint.flipbook`, a prévia mora em "Mais
+  // jeitos de pintar"; sem ele, a criança ainda assiste daqui.
+  const { can } = useMoldaToolAccess()
+  const { paletteId, customPalette, extraColors } = workshop.document
+  const palette = useMemo(
+    () => scenePalette({ paletteId, customPalette, extraColors }),
+    [paletteId, customPalette, extraColors],
+  )
+  const flipbook = !can('paint.flipbook') && paint.data?.image.flipbook ? paint.data : null
   return (
     <>
       <ScenePaintToolbox
@@ -49,6 +63,16 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
           }}
         />
       )}
+      {flipbook && (
+        <SceneFlipbookPreview
+          image={flipbook.image}
+          palette={palette}
+          base={sceneMaterialImageBase(flipbook.material, palette, flipbook.imageKind)}
+          player={workshop.flipbook}
+          disabled={paint.drawing || paint.busy}
+          beforeChange={paint.cancel}
+        />
+      )}
       {paint.busy && (
         <div role="status" className="flex flex-wrap items-center gap-2">
           <p className="text-sm">
@@ -72,6 +96,8 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
           </Button>
         </div>
       )}
+      {/* No celular a coluna vira faixa em cima do palco; mais uma fileira cobriria os controles. */}
+      <SceneUpcomingTools tabs={['paint']} className="hidden md:block" />
     </>
   )
 }

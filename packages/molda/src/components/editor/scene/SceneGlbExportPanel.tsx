@@ -6,6 +6,7 @@ import type { SceneGlbIssue } from '../../../export/sceneGlbReport'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneViewportPort } from '../../../viewport/sceneViewportTypes'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ScenePhotoExportPanel } from './ScenePhotoExportPanel'
 import { SceneStudioCompatibility } from './SceneStudioCompatibility'
@@ -45,7 +46,11 @@ export function SceneGlbExportPanel({
   const { state } = task
   const copy = COPY.scene.glbExport
   const [format, setFormat] = useState<SceneFileFormat | 'png' | 'presentation'>('glb')
-  const [animatedPaint, setAnimatedPaint] = useState(false)
+  const [chosenStudio, setAnimatedPaint] = useState(false)
+  // O portão: GLB, foto e apresentação são `files.export` (o básico); glTF, OBJ e a cópia "para
+  // outros programas" são `files.interop`. Sem ele, o GLB vai para o Estúdio, sem escolha.
+  const interop = useMoldaToolAccess().can('files.interop')
+  const animatedPaint = interop ? chosenStudio : true
   /** Trocar o destino descarta a cópia preparada: consentimento não atravessa gravações. */
   function chooseDestination(next: boolean) {
     if (next === animatedPaint) return
@@ -65,7 +70,7 @@ export function SceneGlbExportPanel({
         }}
       >
         {Object.entries({
-          ...copy.formats,
+          ...(interop ? copy.formats : { glb: copy.formats.glb }),
           png: COPY.scene.photoExport.png,
           presentation: COPY.scene.photoExport.presentation,
         }).map(([value, label]) => (
@@ -96,7 +101,7 @@ export function SceneGlbExportPanel({
       {formatControl}
       {format === 'obj' ? (
         <p className="text-sm">{copy.objHint}</p>
-      ) : (
+      ) : !interop ? null : (
         <fieldset className="space-y-2 rounded-xl border border-mld-border bg-mld-bg p-4">
           <legend className="px-1 font-bold">{copy.destination}</legend>
           {[

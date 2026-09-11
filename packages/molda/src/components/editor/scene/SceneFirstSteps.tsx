@@ -3,13 +3,32 @@ import {
   SCENE_FIRST_STEPS_COPY as copy,
   type SceneFirstStepsTopic,
 } from '../../../core/sceneFirstStepsCopy'
+import type { MoldaToolFamilyId } from '../../../core/toolFamilies'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { isMoldaDialogOpen } from '../../ui/Dialog'
+
+/**
+ * A família que cada assunto ensina: a ajuda não ensina ferramenta trancada. "Como articular"
+ * pede ossos, apoios e malha, e os ossos (a faixa profissional) trazem os outros dois junto.
+ */
+const TOPIC_FAMILY: Readonly<Record<SceneFirstStepsTopic, MoldaToolFamilyId>> = {
+  model: 'model.pieces',
+  paint: 'paint.brush',
+  skin: 'model.skin',
+  animation: 'animate.create',
+}
 
 /** Session-only reading state. Deliberately receives no editor or gesture actions. */
 export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) {
   const [open, setOpen] = useState(false)
-  const [topic, setTopic] = useState(context)
+  const [chosen, setTopic] = useState(context)
+  const { can } = useMoldaToolAccess()
+  const topics = (Object.keys(copy.tracks) as SceneFirstStepsTopic[]).filter((name) =>
+    can(TOPIC_FAMILY[name]),
+  )
+  const allowed = (name: SceneFirstStepsTopic) => (topics.includes(name) ? name : topics[0])
+  const topic = allowed(chosen) ?? context
   const [positions, setPositions] = useState({ model: 0, paint: 0, animation: 0, skin: 0 })
   const trigger = useRef<HTMLButtonElement>(null)
   const heading = useRef<HTMLHeadingElement>(null)
@@ -37,6 +56,7 @@ export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) 
     }))
   }
 
+  if (!topics.length) return null
   return (
     <aside
       aria-label={copy.open}
@@ -64,7 +84,7 @@ export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) 
           if (open) close()
           else {
             event.currentTarget.focus()
-            setTopic(context)
+            setTopic(allowed(context) ?? context)
             setOpen(true)
           }
         }}
@@ -85,7 +105,7 @@ export function SceneFirstSteps({ context }: { context: SceneFirstStepsTopic }) 
           </h2>
           <p className="text-sm text-mld-muted">{copy.hint}</p>
           <fieldset aria-label={copy.topics} className="flex flex-wrap gap-1">
-            {(Object.keys(copy.tracks) as SceneFirstStepsTopic[]).map((name) => (
+            {topics.map((name) => (
               <Button
                 key={name}
                 variant={topic === name ? 'primary' : 'ghost'}

@@ -105,8 +105,8 @@ async function checkEverySize(page: Page, label: string) {
   }
 }
 
-async function openFreshModel(page: Page, name: string) {
-  await page.goto('/?oficina=app')
+async function openFreshModel(page: Page, name: string, query = '') {
+  await page.goto(`/?oficina=app${query}`)
   await createModel(page, name)
   await expect(page.getByRole('button', { name: 'Meus projetos' })).toBeVisible()
   // O aviso "… criado!" some sozinho em segundos; enquanto dura, a pílula dele recebe clique.
@@ -137,5 +137,26 @@ test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
   await checkEverySize(page, 'Pintar')
+  expect(pageErrors).toEqual([])
+})
+
+/**
+ * O nível de entrada (`?nivel=explorer`, o portão por carreira): o que a criança de fato encara.
+ * Somem a malha, o laço, o ponto de giro, os ossos e o "Trazer arquivo 3D", e entra a linha
+ * "Ferramentas que vêm por aí". Nada coberto, em nenhum tamanho, nas duas abas.
+ */
+test('no nível de entrada, a oficina com o portão ligado não cobre nada', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  await openFreshModel(page, 'layout-explorador-e2e', '&nivel=explorer')
+  await expect(page.getByText('Ferramentas que vêm por aí')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Editar malha' })).toHaveCount(0)
+  await checkEverySize(page, 'Modelar no básico')
+  await page.getByText('Adicionar forma').click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await checkEverySize(page, 'Pintar no básico')
   expect(pageErrors).toEqual([])
 })

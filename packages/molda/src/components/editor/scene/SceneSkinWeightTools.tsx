@@ -1,14 +1,17 @@
 import { lazy, Suspense, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { useMoldaToolAccess } from '../../toolAccess'
 import type { SceneSkinWeightEditorProps } from './SceneSkinWeightEditor'
 
 const SceneSkinWeightEditor = lazy(() =>
   import('./SceneSkinWeightEditor').then((module) => ({ default: module.SceneSkinWeightEditor })),
 )
 
+/** A força dos ossos nos pontos escolhidos (`model.skin`, profissional). */
 export function SceneSkinWeightTools(props: SceneSkinWeightEditorProps) {
   const [open, setOpen] = useState(false),
     summary = useRef<HTMLElement>(null)
+  if (!useMoldaToolAccess().can('model.skin')) return null
   return (
     <details
       className="rounded-xl border border-mld-border p-2"

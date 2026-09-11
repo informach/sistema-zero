@@ -13,11 +13,17 @@ export function ReferenceImageGuide({
   children,
   view,
   disabled,
+  available = true,
   triggerPlacement = 'top-3 left-3',
 }: {
   children: ReactNode
   view: CameraView
   disabled: boolean
+  /**
+   * `false` quando a imagem de apoio está trancada (o portão da oficina nova): o palco
+   * continua, sem o gatilho, a caixa e a imagem. O editor antigo não passa, e fica igual.
+   */
+  available?: boolean
   /**
    * Onde o gatilho fica no palco. O editor antigo usa o canto de cima; a oficina nova tem as
    * ferramentas flutuando nesse canto (z-20) e ali o gatilho ficava coberto e sem clique.
@@ -38,7 +44,7 @@ export function ReferenceImageGuide({
   return (
     <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_50%_30%,color-mix(in_oklab,var(--color-mld-surface)_70%,var(--color-mld-bg)),var(--color-mld-bg))]">
       {children}
-      {reference.image && placement.visible && boundView === view && !disabled && (
+      {available && reference.image && placement.visible && boundView === view && !disabled && (
         <img
           aria-hidden="true"
           alt=""
@@ -52,18 +58,20 @@ export function ReferenceImageGuide({
           onError={reference.remove}
         />
       )}
-      <Button
-        ref={button}
-        variant="outline"
-        disabled={disabled}
-        onClick={() => setOpen(true)}
-        className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
-        aria-haspopup="dialog"
-      >
-        <ImageIcon aria-hidden="true" className="size-4" />
-        {copy.title}
-      </Button>
-      <Dialog open={open} onClose={close} title={copy.title} returnFocusTo={button}>
+      {available && (
+        <Button
+          ref={button}
+          variant="outline"
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+          className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
+          aria-haspopup="dialog"
+        >
+          <ImageIcon aria-hidden="true" className="size-4" />
+          {copy.title}
+        </Button>
+      )}
+      <Dialog open={available && open} onClose={close} title={copy.title} returnFocusTo={button}>
         <div className="flex flex-col gap-3">
           <p className="text-sm text-mld-text-soft">{copy.hint}</p>
           <p className="text-xs text-mld-muted">{copy.formats}</p>

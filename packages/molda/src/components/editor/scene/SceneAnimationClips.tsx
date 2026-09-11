@@ -6,6 +6,7 @@ import {
   duplicateSceneAnimation,
   renameSceneAnimation,
 } from '../../../scene/animationCommands'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneAnimationPresets } from './SceneAnimationPresets'
 import { SCENE_APPEARANCE_FIELD as field } from './sceneAppearanceForm'
@@ -24,6 +25,9 @@ export function SceneAnimationClips({
   )
   const clip = document.animations?.find((clip) => clip.id === source?.clip.id)
   const copy = COPY.scene
+  // Escolher e reproduzir um movimento é leitura, sempre livre; criar, copiar, apagar, renomear
+  // e os movimentos prontos são `animate.create`.
+  const create = useMoldaToolAccess().can('animate.create')
   function choose(id: string | null) {
     try {
       animation.setClip(id ? editor.getState().content : null, id)
@@ -54,30 +58,32 @@ export function SceneAnimationClips({
           </select>
         </label>
       )}
-      <form
-        className="flex flex-wrap items-end gap-2"
-        onSubmit={(event) => {
-          event.preventDefault()
-          const name = new FormData(event.currentTarget).get('animationName')
-          const next = run((source) => createSceneAnimation(source, String(name ?? '')))
-          if (next) choose(next.animations!.at(-1)!.id)
-        }}
-      >
-        <label className="space-y-1 text-sm">
-          <span>{copy.animationName}</span>
-          <input
-            className={field}
-            name="animationName"
-            maxLength={48}
-            required
-            defaultValue={copy.animationNewName}
-          />
-        </label>
-        <Button type="submit" variant="primary" className="text-sm">
-          {copy.animationCreate}
-        </Button>
-      </form>
-      {clip && (
+      {create && (
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(event) => {
+            event.preventDefault()
+            const name = new FormData(event.currentTarget).get('animationName')
+            const next = run((source) => createSceneAnimation(source, String(name ?? '')))
+            if (next) choose(next.animations!.at(-1)!.id)
+          }}
+        >
+          <label className="space-y-1 text-sm">
+            <span>{copy.animationName}</span>
+            <input
+              className={field}
+              name="animationName"
+              maxLength={48}
+              required
+              defaultValue={copy.animationNewName}
+            />
+          </label>
+          <Button type="submit" variant="primary" className="text-sm">
+            {copy.animationCreate}
+          </Button>
+        </form>
+      )}
+      {create && clip && (
         <>
           <Button
             className="text-sm"
@@ -129,7 +135,7 @@ export function SceneAnimationClips({
           </details>
         </>
       )}
-      <SceneAnimationPresets workshop={workshop} />
+      {create && <SceneAnimationPresets workshop={workshop} />}
     </section>
   )
 }

@@ -2,6 +2,7 @@ import { useMemo, useSyncExternalStore } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { sceneAnimationKeySelection } from '../../../scene/animationKeySelection'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneAnimationKeyStrip } from './SceneAnimationKeyStrip'
 import { SceneAnimationKeyTools } from './SceneAnimationKeyTools'
@@ -19,6 +20,8 @@ export function SceneAnimationTimeline({
   const snapshot = useSyncExternalStore(player.subscribe, player.getSnapshot, player.getSnapshot)
   const clip = snapshot.source?.clip
   const copy = COPY.scene
+  // A linha do tempo é leitura, sempre livre; ajustar várias chaves de uma vez é `animate.pro`.
+  const pro = useMoldaToolAccess().can('animate.pro')
   const selection = useMemo(
     () => (clip ? sceneAnimationKeySelection(clip, selected) : null),
     [clip, selected],
@@ -147,7 +150,7 @@ export function SceneAnimationTimeline({
           {snapshot.error}
         </p>
       )}
-      {!snapshot.playing && !snapshot.source?.preview && selection && (
+      {pro && !snapshot.playing && !snapshot.source?.preview && selection && (
         <SceneAnimationKeyTools
           key={JSON.stringify([revision, clip.id, selected])}
           workshop={workshop}

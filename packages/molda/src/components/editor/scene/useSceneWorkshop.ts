@@ -10,6 +10,7 @@ import { ensureScenePaintSurface } from '../../../scene/paintSurface'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { useSceneAnimationPlayer } from './useSceneAnimationPlayer'
 import { useSceneAnimationPoseGesture } from './useSceneAnimationPoseGesture'
 import { useSceneComponents } from './useSceneComponents'
@@ -44,6 +45,9 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const closePaint = paint.close
   const cancelPaint = paint.cancel
   const retargetPaint = paint.retarget
+  // Sem o pincel liberado (`paint.brush`), escolher a peça em Pintar só escolhe: nada de preparar
+  // a tinta, que muda o documento.
+  const brush = useMoldaToolAccess().can('paint.brush')
   const gesture = useMemo(
     () =>
       createSceneTransformGesture(editor, (error) =>
@@ -80,6 +84,10 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       const source = editor.getState().asset
       if (!source.nodes.some((node) => node.id === nodeId)) return
       setChosen([nodeId])
+      if (!brush) {
+        closePaint()
+        return
+      }
       try {
         const result = ensureScenePaintSurface(source, {
           nodeId,
@@ -103,7 +111,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         setMessage(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
       }
     },
-    [editor, gesture, closePaint, retargetPaint, animation, animationPose, skinPaint],
+    [editor, gesture, closePaint, retargetPaint, animation, animationPose, skinPaint, brush],
   )
   const select = useCallback(
     (id: string | null, add: boolean, faceId?: string) => {

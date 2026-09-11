@@ -3,6 +3,7 @@ import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
 import type { ScenePathGeometry } from '../../../scene/document'
 import type { ScenePathSettings } from '../../../scene/pathCommands'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { ScenePathForm } from './ScenePathForm'
 import { SceneVectorForm } from './SceneVectorForm'
 
@@ -17,6 +18,8 @@ export function ScenePathProperties({
 }) {
   const [chosen, setPoint] = useState(geometry.points[0]!.id)
   const point = geometry.points.find((p) => p.id === chosen) ?? geometry.points[0]!
+  // Raio, lados e pontos do tubo são medidas exatas (`model.precise`).
+  if (!useMoldaToolAccess().can('model.precise')) return null
   return (
     <details>
       <summary className="min-h-11 cursor-pointer py-3 text-sm font-bold">

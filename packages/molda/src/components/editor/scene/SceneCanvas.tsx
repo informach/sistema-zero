@@ -19,6 +19,7 @@ import type {
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
 import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
@@ -167,8 +168,18 @@ function SceneCanvasAttempt({
     () => canAnimate && animationPose?.getSnapshot().kind === 'pose-set',
     () => false,
   )
+  // O portão: Mover, Girar e Mudar tamanho são `model.pieces` no Modelar e as alças de pose do
+  // Animar (`animate.create`); a caixa e o laço, `model.area-select`. Uma ferramenta guardada
+  // de outra aba nunca acende a alça numa família trancada (o estado não vaza).
+  const { can } = useMoldaToolAccess()
+  const allowedTool = (name: SceneTransformTool | 'box' | 'lasso') =>
+    name === 'select' ||
+    (name === 'box' || name === 'lasso'
+      ? can('model.area-select')
+      : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
   const activeTool =
     mode === 'paint' ||
+    !allowedTool(tool) ||
     reviewingSet ||
     (mode === 'animation' && (!canAnimate || tool === 'box' || tool === 'lasso')) ||
     facePreviewOpen ||
@@ -243,167 +254,179 @@ function SceneCanvasAttempt({
         }
       }}
     >
-      <div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-10rem)] lg:max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
-        {mode === 'paint' && !paintTarget && (
-          <p className="text-sm font-bold">{SCENE_PAINT_COPY.choosePiece}</p>
-        )}
-        {paintTarget && (
-          <>
-            <Button
-              className="text-sm"
-              aria-pressed={!look}
-              disabled={!view.viewport}
-              onClick={() => {
-                view.viewport?.cancelGesture()
-                setLook(false)
-              }}
-            >
-              {copy.paintOnModel}
-            </Button>
-            <Button
-              className="text-sm"
-              aria-pressed={look}
-              disabled={!view.viewport}
-              onClick={() => {
-                view.viewport?.cancelGesture()
-                setLook(true)
-              }}
-            >
-              {copy.paintLook}
-            </Button>
-            {/* No celular a dica ocuparia o palco: ela mora nos Primeiros passos também. */}
-            <p className="hidden text-xs text-mld-muted md:block">
-              {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
-            </p>
-          </>
-        )}
-        {mode !== 'paint' &&
-          !paintTarget &&
-          (['select', 'box', 'lasso', 'move', 'rotate', 'scale'] as const)
-            .filter((name) => mode === 'model' || (name !== 'box' && name !== 'lasso'))
-            .map((name) => (
+      {/*
+       * Uma PILHA flutuante no canto do palco: as ferramentas e, abaixo delas, as faixas do
+       * momento (gravar pose, forma-base, forças dos ossos). Antes as faixas ficavam no fluxo, no
+       * alto do palco, e as ferramentas flutuantes as cobriam: "Gravar pose ajustada" não recebia
+       * clique. A pilha deixa passar o toque onde não há cartão.
+       */}
+      <div className="pointer-events-none absolute top-3 left-3 z-20 flex max-h-[calc(100%-1.5rem)] max-w-[calc(100%-10rem)] flex-col items-start gap-1 overflow-y-auto lg:max-w-[calc(100%-1.5rem)]">
+        <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
+          {mode === 'paint' && !paintTarget && (
+            <p className="text-sm font-bold">{SCENE_PAINT_COPY.choosePiece}</p>
+          )}
+          {paintTarget && (
+            <>
               <Button
-                key={name}
-                variant="ghost"
-                className="px-3 text-sm"
-                aria-pressed={!skinPaintSettings && activeTool === name}
-                disabled={
-                  !view.viewport ||
-                  (reviewingSet && name !== 'select') ||
-                  (assisting && (name === 'rotate' || name === 'scale')) ||
-                  (mode === 'animation' && name !== 'select' && !canAnimate) ||
-                  (facePreviewOpen && name !== 'select') ||
-                  ((name === 'move' || name === 'rotate' || name === 'scale') &&
-                    !transformTools.includes(name)) ||
-                  (componentSelection !== null &&
-                    (name === 'move' || name === 'rotate' || name === 'scale') &&
-                    !componentSelection.ids.length) ||
-                  ((name === 'move' || name === 'rotate' || name === 'scale') && !selection.length)
-                }
+                className="text-sm"
+                aria-pressed={!look}
+                disabled={!view.viewport}
                 onClick={() => {
-                  cancelPaint()
-                  setBrushMode('off')
-                  setTool(name)
+                  view.viewport?.cancelGesture()
+                  setLook(false)
                 }}
               >
-                {name === 'select'
-                  ? copy.selectTool
-                  : name === 'box'
-                    ? copy.selectBox
-                    : name === 'lasso'
-                      ? copy.selectLasso
-                      : copy[name]}
+                {copy.paintOnModel}
               </Button>
-            ))}
+              <Button
+                className="text-sm"
+                aria-pressed={look}
+                disabled={!view.viewport}
+                onClick={() => {
+                  view.viewport?.cancelGesture()
+                  setLook(true)
+                }}
+              >
+                {copy.paintLook}
+              </Button>
+              {/* No celular a dica ocuparia o palco: ela mora nos Primeiros passos também. */}
+              <p className="hidden text-xs text-mld-muted md:block">
+                {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
+              </p>
+            </>
+          )}
+          {mode !== 'paint' &&
+            !paintTarget &&
+            (['select', 'box', 'lasso', 'move', 'rotate', 'scale'] as const)
+              .filter(
+                (name) =>
+                  (mode === 'model' || (name !== 'box' && name !== 'lasso')) && allowedTool(name),
+              )
+              .map((name) => (
+                <Button
+                  key={name}
+                  variant="ghost"
+                  className="px-3 text-sm"
+                  aria-pressed={!skinPaintSettings && activeTool === name}
+                  disabled={
+                    !view.viewport ||
+                    (reviewingSet && name !== 'select') ||
+                    (assisting && (name === 'rotate' || name === 'scale')) ||
+                    (mode === 'animation' && name !== 'select' && !canAnimate) ||
+                    (facePreviewOpen && name !== 'select') ||
+                    ((name === 'move' || name === 'rotate' || name === 'scale') &&
+                      !transformTools.includes(name)) ||
+                    (componentSelection !== null &&
+                      (name === 'move' || name === 'rotate' || name === 'scale') &&
+                      !componentSelection.ids.length) ||
+                    ((name === 'move' || name === 'rotate' || name === 'scale') &&
+                      !selection.length)
+                  }
+                  onClick={() => {
+                    cancelPaint()
+                    setBrushMode('off')
+                    setTool(name)
+                  }}
+                >
+                  {name === 'select'
+                    ? copy.selectTool
+                    : name === 'box'
+                      ? copy.selectBox
+                      : name === 'lasso'
+                        ? copy.selectLasso
+                        : copy[name]}
+                </Button>
+              ))}
 
-        {mode !== 'paint' && !paintTarget && (
-          <span className="text-mld-muted text-xs">
-            {skinPaintSettings
-              ? copy.skinPaint.hint
-              : mode === 'animation'
-                ? reviewingSet
-                  ? copy.poseSet.review
-                  : assisting
-                    ? copy.twoBone.drag
-                    : copy.animationViewportHint
+          {mode !== 'paint' && !paintTarget && (
+            <span className="text-mld-muted text-xs">
+              {skinPaintSettings
+                ? copy.skinPaint.hint
+                : mode === 'animation'
+                  ? reviewingSet
+                    ? copy.poseSet.review
+                    : assisting
+                      ? copy.twoBone.drag
+                      : copy.animationViewportHint
+                  : componentSelection
+                    ? areaTool !== 'point'
+                      ? copy.componentAreaHint
+                      : activeTool === 'select'
+                        ? componentSelection.mode === 'face'
+                          ? copy.faceHint
+                          : copy.componentPickHints[componentSelection.mode]
+                        : copy.componentTransformHint
+                    : areaTool === 'point'
+                      ? copy.gizmoHint
+                      : copy.areaHint}
+            </span>
+          )}
+          {(areaTool !== 'point' || componentSelection) && (
+            <label className="flex min-h-11 items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="selectThrough"
+                checked={through}
+                onChange={(event) => setThrough(event.target.checked)}
+                className="size-5 accent-mld-accent"
+              />
+              {skinPaintSettings
+                ? copy.skinPaint.through
                 : componentSelection
-                  ? areaTool !== 'point'
-                    ? copy.componentAreaHint
-                    : activeTool === 'select'
-                      ? componentSelection.mode === 'face'
-                        ? copy.faceHint
-                        : copy.componentPickHints[componentSelection.mode]
-                      : copy.componentTransformHint
-                  : areaTool === 'point'
-                    ? copy.gizmoHint
-                    : copy.areaHint}
-          </span>
+                  ? copy.componentThrough
+                  : copy.selectThrough}
+            </label>
+          )}
+        </div>
+        {componentSelection &&
+          document.skins?.some((skin) => skin.nodeId === componentSelection.nodeId) && (
+            <p
+              role="status"
+              className="pointer-events-auto rounded-xl border border-mld-border bg-mld-surface/95 p-3 text-sm text-mld-muted shadow-sm"
+            >
+              {copy.skinBaseHint}
+            </p>
+          )}
+        {mode === 'animation' && animationPose && (
+          <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
         )}
-        {(areaTool !== 'point' || componentSelection) && (
-          <label className="flex min-h-11 items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              name="selectThrough"
-              checked={through}
-              onChange={(event) => setThrough(event.target.checked)}
-              className="size-5 accent-mld-accent"
-            />
-            {skinPaintSettings
-              ? copy.skinPaint.through
-              : componentSelection
-                ? copy.componentThrough
-                : copy.selectThrough}
-          </label>
+        {weightSkin && mode === 'model' && !paintTarget && (
+          <SceneSkinWeightMapControls
+            skin={weightSkin}
+            nodes={document.nodes}
+            jointId={weightTarget?.jointId ?? null}
+            painting={brushMode !== 'off'}
+            onChange={(jointId) => {
+              cancelPaint()
+              setWeightFocus(
+                jointId ? { documentId: document.id, nodeId: weightSkin.nodeId, jointId } : null,
+              )
+            }}
+          />
+        )}
+        {weightTarget && skinPaint && !facePreviewOpen && (
+          <SceneSkinPaintControls
+            session={skinPaint}
+            mode={brushMode}
+            radius={brushRadius}
+            strength={brushStrength}
+            enabled={!!view.viewport && !view.error && !view.lost}
+            onMode={(mode) => {
+              cancelPaint()
+              setTool('select')
+              setBrushMode(mode)
+            }}
+            onRadius={(radius) => {
+              cancelPaint()
+              setBrushRadius(radius)
+            }}
+            onStrength={(strength) => {
+              cancelPaint()
+              setBrushStrength(strength)
+            }}
+          />
         )}
       </div>
-      {componentSelection &&
-        document.skins?.some((skin) => skin.nodeId === componentSelection.nodeId) && (
-          <p
-            role="status"
-            className="border-b border-mld-border bg-mld-surface p-3 text-sm text-mld-muted"
-          >
-            {copy.skinBaseHint}
-          </p>
-        )}
-      {mode === 'animation' && animationPose && (
-        <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
-      )}
-      {weightSkin && mode === 'model' && !paintTarget && (
-        <SceneSkinWeightMapControls
-          skin={weightSkin}
-          nodes={document.nodes}
-          jointId={weightTarget?.jointId ?? null}
-          painting={brushMode !== 'off'}
-          onChange={(jointId) => {
-            cancelPaint()
-            setWeightFocus(
-              jointId ? { documentId: document.id, nodeId: weightSkin.nodeId, jointId } : null,
-            )
-          }}
-        />
-      )}
-      {weightTarget && skinPaint && !facePreviewOpen && (
-        <SceneSkinPaintControls
-          session={skinPaint}
-          mode={brushMode}
-          radius={brushRadius}
-          strength={brushStrength}
-          enabled={!!view.viewport && !view.error && !view.lost}
-          onMode={(mode) => {
-            cancelPaint()
-            setTool('select')
-            setBrushMode(mode)
-          }}
-          onRadius={(radius) => {
-            cancelPaint()
-            setBrushRadius(radius)
-          }}
-          onStrength={(strength) => {
-            cancelPaint()
-            setBrushStrength(strength)
-          }}
-        />
-      )}
       <section
         className="absolute right-3 bottom-3 z-20 flex max-w-[calc(100%-12rem)] flex-wrap items-center justify-end gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm"
         aria-label={COPY.editor.model.viewControls}
@@ -504,6 +527,7 @@ function SceneCanvasAttempt({
         <ReferenceImageGuide
           view={camera}
           disabled={!view.viewport || !!view.error || view.lost}
+          available={can('model.reference')}
           // Em cima de "Primeiros passos": o canto de cima é das ferramentas flutuantes.
           triggerPlacement="bottom-16 left-3"
         >

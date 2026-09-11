@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneBevel } from './SceneBevel'
 import { SceneFacePreview } from './SceneFacePreview'
@@ -58,7 +59,13 @@ export type SceneComponentToolsProps = Pick<
   | 'weights'
 >
 
-/** Contextual controls only; topology and history are owned by the scene commands. */
+/**
+ * Contextual controls only; topology and history are owned by the scene commands.
+ *
+ * O portão: escolher pontos, linhas e faces, mover, Puxar faces, Criar borda e apagar são
+ * `model.mesh` (quem abre este painel já passou por ele). O resto da malha é `model.mesh-pro`, e
+ * encaixar a pintura é `paint.uv`. Trancado não aparece.
+ */
 export function SceneComponentTools({
   selection,
   choose,
@@ -92,6 +99,8 @@ export function SceneComponentTools({
     previous.current = preview.tool
   }, [preview.tool])
   const copy = COPY.scene
+  const { can } = useMoldaToolAccess()
+  const pro = can('model.mesh-pro')
   if (!selection) return null
   const count = selection.ids.length
   const isFace = selection.mode === 'face'
@@ -144,12 +153,12 @@ export function SceneComponentTools({
       <p className="text-xs text-mld-muted">
         {isFace ? copy.faceTransformHint : copy.componentTransformHint}
       </p>
-      <SceneMeshCheck check={check} />
+      {pro && <SceneMeshCheck check={check} />}
       <fieldset disabled={blocked} className="space-y-3">
         <legend className="sr-only">{title}</legend>
-        {uv && <SceneUvTools {...uv} />}
+        {uv && can('paint.uv') && <SceneUvTools {...uv} />}
         {weights && <SceneSkinWeightTools {...weights} />}
-        {selection.mode === 'vertex' && (
+        {pro && selection.mode === 'vertex' && (
           <div className="space-y-2">
             <label className="flex min-h-11 items-center gap-2 text-sm">
               <input
@@ -186,7 +195,7 @@ export function SceneComponentTools({
             )}
           </div>
         )}
-        {selection.mode === 'vertex' && weld && (
+        {pro && selection.mode === 'vertex' && weld && (
           <div className="space-y-1">
             <Button
               className="w-full text-sm"
@@ -204,7 +213,8 @@ export function SceneComponentTools({
             </p>
           </div>
         )}
-        {selection.mode === 'vertex' &&
+        {pro &&
+          selection.mode === 'vertex' &&
           (['cut', 'line'] as const).map((action) => (
             <div key={action} className="space-y-1">
               <Button
@@ -217,7 +227,7 @@ export function SceneComponentTools({
               <p className="text-xs text-mld-muted">{copy.connectPointsHints[action]}</p>
             </div>
           ))}
-        {selection.mode === 'edge' && (
+        {pro && selection.mode === 'edge' && (
           <div className="space-y-1">
             <Button className="w-full text-sm" disabled={!count} onClick={splitEdges}>
               {copy.splitEdges}
@@ -235,7 +245,10 @@ export function SceneComponentTools({
         )}
         {isFace && (
           <div className="flex flex-col gap-2">
-            {(['extrude', 'inset', 'thickness', 'subdivide'] as const).map((tool) => (
+            {(pro
+              ? (['extrude', 'inset', 'thickness', 'subdivide'] as const)
+              : (['extrude', 'inset'] as const)
+            ).map((tool) => (
               <Button
                 key={tool}
                 ref={(element) => {
@@ -250,8 +263,8 @@ export function SceneComponentTools({
             ))}
           </div>
         )}
-        {selection.mode === 'edge' && <SceneBevel count={count} onApply={bevel} />}
-        {selection.mode === 'edge' && (
+        {pro && selection.mode === 'edge' && <SceneBevel count={count} onApply={bevel} />}
+        {pro && selection.mode === 'edge' && (
           <details>
             <summary className="min-h-11 cursor-pointer py-3 text-sm">
               {copy.pathCreateTitle}
@@ -265,7 +278,7 @@ export function SceneComponentTools({
             />
           </details>
         )}
-        <ScenePlaneCut onApply={cutPlane} />
+        {pro && <ScenePlaneCut onApply={cutPlane} />}
         <div className="flex flex-col gap-2">
           <Button className="text-sm" onClick={() => choose('all')}>
             {selection.mode === 'face' ? copy.faceAll : copy.componentAll[selection.mode]}
@@ -277,34 +290,39 @@ export function SceneComponentTools({
             {isFace ? copy.faceConnected : copy.componentConnected}
           </Button>
         </div>
-        <details>
-          <summary className="min-h-11 cursor-pointer py-3 text-sm">
-            {copy.componentMoreSelection}
-          </summary>
-          <div className="space-y-3">
-            {(
-              [
-                'grow',
-                'shrink',
-                'invert',
-                ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
-              ] as const
-            ).map((action) => (
-              <div key={action} className="space-y-1">
-                <Button
-                  className="w-full text-sm"
-                  disabled={action !== 'invert' && !count}
-                  onClick={() => choose(action)}
-                >
-                  {copy.componentSelectionActions[action]}
-                </Button>
-                <p className="text-xs text-mld-muted">{copy.componentSelectionHints[action]}</p>
-              </div>
-            ))}
-          </div>
-        </details>
+        {pro && (
+          <details>
+            <summary className="min-h-11 cursor-pointer py-3 text-sm">
+              {copy.componentMoreSelection}
+            </summary>
+            <div className="space-y-3">
+              {(
+                [
+                  'grow',
+                  'shrink',
+                  'invert',
+                  ...(selection.mode === 'edge' ? (['ring', 'loop'] as const) : []),
+                ] as const
+              ).map((action) => (
+                <div key={action} className="space-y-1">
+                  <Button
+                    className="w-full text-sm"
+                    disabled={action !== 'invert' && !count}
+                    onClick={() => choose(action)}
+                  >
+                    {copy.componentSelectionActions[action]}
+                  </Button>
+                  <p className="text-xs text-mld-muted">{copy.componentSelectionHints[action]}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
         {isFace &&
-          (['merge', 'detach', 'triangulate', 'flip', 'remove'] as const).map((action) => (
+          (pro
+            ? (['merge', 'detach', 'triangulate', 'flip', 'remove'] as const)
+            : (['remove'] as const)
+          ).map((action) => (
             <div key={action} className="space-y-1">
               <Button
                 className="w-full text-sm"

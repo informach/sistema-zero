@@ -21,7 +21,7 @@ export function SceneSkinWeightMapControls({
   const names = useMemo(() => new Map(nodes.map((node) => [node.id, node.name])), [nodes]),
     copy = COPY.scene.weightMap
   return (
-    <fieldset className="space-y-2 border-b border-mld-border bg-mld-surface px-3 pb-3">
+    <fieldset className="pointer-events-auto space-y-2 rounded-xl border border-mld-border bg-mld-surface/95 px-3 pt-2 pb-3 shadow-sm">
       <legend className="sr-only">{copy.title}</legend>
       <label className="flex flex-wrap items-center gap-2 text-sm font-bold">
         {copy.title}

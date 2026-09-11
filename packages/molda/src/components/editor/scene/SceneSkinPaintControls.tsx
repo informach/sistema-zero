@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import type { SceneSkinPaintSession } from '../../../state/sceneSkinPaintSession'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 
 export type SceneSkinBrushMode = SceneSkinPaintSettings['mode'] | 'off'
@@ -29,9 +30,12 @@ export function SceneSkinPaintControls({
   const copy = COPY.scene.skinPaint,
     snapshot = useSyncExternalStore(session.subscribe, session.getSnapshot, session.getSnapshot),
     stats = snapshot.stats,
-    validRadius = Number.isFinite(Number(radius)) && Number(radius) > 0
+    validRadius = Number.isFinite(Number(radius)) && Number(radius) > 0,
+    // O pincel de forças muda os pesos (`model.skin`); ver a força de um osso segue livre.
+    allowed = useMoldaToolAccess().can('model.skin')
+  if (!allowed) return null
   return (
-    <fieldset className="space-y-2 border-b border-mld-border bg-mld-surface px-3 py-2">
+    <fieldset className="pointer-events-auto space-y-2 rounded-xl border border-mld-border bg-mld-surface/95 px-3 py-2 shadow-sm">
       <legend className="sr-only">{copy.title}</legend>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-bold text-mld-text">{copy.title}</span>

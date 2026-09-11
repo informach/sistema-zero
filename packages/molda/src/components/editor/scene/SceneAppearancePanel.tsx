@@ -12,6 +12,7 @@ import {
   sceneMaterialImageBase,
 } from '../../../scene/materialImages'
 import { requireScene } from '../../../scene/validation'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneFlipbookTools } from './SceneFlipbookTools'
 import { SceneImageAtlasTools } from './SceneImageAtlasTools'
@@ -34,7 +35,14 @@ export function SceneAppearancePanel({
   const cancelTask = imageTask.cancel
   useEffect(() => () => cancelTask(), [cancelTask])
   const [materialId, setMaterialId] = useState<string | null>(null)
-  const [imageKind, setImageKind] = useState<SceneMaterialImageKind>('color')
+  const [chosenKind, setImageKind] = useState<SceneMaterialImageKind>('color')
+  // O portão, dentro de "Materiais e camadas" (`paint.layers`): o material avançado e juntar as
+  // pinturas são `paint.material`; relevo, brilho e metal, `paint.maps`; os quadros da pintura
+  // que se mexe, `paint.flipbook`. Sem os mapas, pinta-se só a cor.
+  const { can } = useMoldaToolAccess()
+  const materialTools = can('paint.material')
+  const maps = can('paint.maps')
+  const imageKind = maps ? chosenKind : 'color'
   const usage = useMemo(() => sceneAppearanceUsage(document), [document])
   const ids = primary ? [...(usage.byNode.get(primary.id) ?? [])] : []
   const material = usage.index.materials.get(
@@ -73,11 +81,13 @@ export function SceneAppearancePanel({
   }
   return (
     <div className="space-y-4">
-      <SceneImageAtlasTools
-        workshop={workshop}
-        nodeId={primary.id}
-        disabled={!!usage.flags.get(primary.id)?.locked || imageTask.busy}
-      />
+      {materialTools && (
+        <SceneImageAtlasTools
+          workshop={workshop}
+          nodeId={primary.id}
+          disabled={!!usage.flags.get(primary.id)?.locked || imageTask.busy}
+        />
+      )}
       {/* O aviso de trabalho em andamento (e o cancelar) fica na coluna da aba Pintar. */}
       <label className="block space-y-1 text-sm">
         <span>{copy.materialChoose}</span>
@@ -106,46 +116,54 @@ export function SceneAppearancePanel({
           {copy.materialLocked}
         </p>
       )}
-      <Button
-        className="w-full text-sm"
-        disabled={usage.flags.get(primary.id)?.locked}
-        onClick={() => {
-          const next = apply((source) => copySceneMaterialForNode(source, primary.id, material.id))
-          if (next) {
-            setMaterialId(next.materials.at(-1)!.id)
-          }
-        }}
-      >
-        {copy.materialCopy}
-      </Button>
-      <SceneMaterialSettings
-        material={material}
-        colors={colors}
-        lockedMaterial={lockedMaterial}
-        apply={apply}
-      />
-      <label className="block space-y-1 text-sm">
-        <span>{copy.materialImageKind}</span>
-        <select
-          name="materialImageKind"
-          value={imageKind}
-          className={field}
-          onChange={(event) => {
-            const next = SCENE_MATERIAL_IMAGE_KINDS.find((kind) => kind === event.target.value)
-            if (!next) return
-            cancelTask()
-            workshop.paint.close()
-            workshop.flipbook.setImage(null)
-            setImageKind(next)
-          }}
-        >
-          {SCENE_MATERIAL_IMAGE_KINDS.map((kind) => (
-            <option key={kind} value={kind}>
-              {copy.materialImageKinds[kind]}
-            </option>
-          ))}
-        </select>
-      </label>
+      {materialTools && (
+        <>
+          <Button
+            className="w-full text-sm"
+            disabled={usage.flags.get(primary.id)?.locked}
+            onClick={() => {
+              const next = apply((source) =>
+                copySceneMaterialForNode(source, primary.id, material.id),
+              )
+              if (next) {
+                setMaterialId(next.materials.at(-1)!.id)
+              }
+            }}
+          >
+            {copy.materialCopy}
+          </Button>
+          <SceneMaterialSettings
+            material={material}
+            colors={colors}
+            lockedMaterial={lockedMaterial}
+            apply={apply}
+          />
+        </>
+      )}
+      {maps && (
+        <label className="block space-y-1 text-sm">
+          <span>{copy.materialImageKind}</span>
+          <select
+            name="materialImageKind"
+            value={imageKind}
+            className={field}
+            onChange={(event) => {
+              const next = SCENE_MATERIAL_IMAGE_KINDS.find((kind) => kind === event.target.value)
+              if (!next) return
+              cancelTask()
+              workshop.paint.close()
+              workshop.flipbook.setImage(null)
+              setImageKind(next)
+            }}
+          >
+            {SCENE_MATERIAL_IMAGE_KINDS.map((kind) => (
+              <option key={kind} value={kind}>
+                {copy.materialImageKinds[kind]}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <SceneMaterialImageTools
         key={`${material.id}:${imageKind}`}
         material={material}
@@ -162,7 +180,7 @@ export function SceneAppearancePanel({
         disabled={lockedMaterial || imageTask.busy}
         apply={apply}
       />
-      {image && (
+      {image && can('paint.flipbook') && (
         <SceneFlipbookTools
           key={`flipbook:${image.id}:${imageKind}`}
           image={image}

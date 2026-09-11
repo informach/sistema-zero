@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPoseGesture'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 
 export function SceneAnimationPoseControls({
@@ -12,10 +13,12 @@ export function SceneAnimationPoseControls({
 }) {
   const snapshot = useSyncExternalStore(gesture.subscribe, gesture.getSnapshot, gesture.getSnapshot)
   const copy = COPY.scene
+  // Gravar pose é criar movimento (`animate.create`); sem ele, as alças de pose nem aparecem.
+  if (!useMoldaToolAccess().can('animate.create')) return null
   return (
     <section
       aria-label={copy.animationPoseAdjust}
-      className="space-y-1 border-b border-mld-border bg-mld-surface px-3 py-2"
+      className="pointer-events-auto space-y-1 rounded-xl border border-mld-border bg-mld-surface/95 px-3 py-2 shadow-sm"
     >
       <div className="flex flex-wrap items-center gap-2">
         <label className="flex min-h-11 items-center gap-2 text-sm">

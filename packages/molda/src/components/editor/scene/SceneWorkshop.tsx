@@ -18,7 +18,7 @@ import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
-import { useMoldaToolAccess } from '../../toolAccess'
+import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import { isTypingTarget } from '../../ui/interaction'
@@ -38,6 +38,7 @@ import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
+import { SceneUpcomingTools } from './SceneUpcomingTools'
 import { runScenePaintShortcut } from './scenePaintShortcuts'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -159,9 +160,25 @@ export function SceneWorkshop({
           workshop.animation.pause()
           workshop.animationPose.cancel()
         } else if (mode === 'model' && event.key === 'Delete' && selected.length) {
+          // Atalho de família trancada é da oficina: não age, e o navegador não o recebe.
           event.preventDefault()
-          if (workshop.components.selection) workshop.components.remove()
-          else run((source) => deleteSceneNodes(source, selected), 'clear')
+          if (workshop.components.selection) {
+            if (can('model.mesh')) workshop.components.remove()
+          } else if (can('model.pieces'))
+            run((source) => deleteSceneNodes(source, selected), 'clear')
+        } else if (
+          mode === 'model' &&
+          !workshop.components.selection &&
+          (event.ctrlKey || event.metaKey) &&
+          !event.shiftKey &&
+          !event.altKey &&
+          event.key.toLowerCase() === 'd'
+        ) {
+          // Ctrl+D duplica, como no editor antigo (o registro já o prometia); sem isso, o
+          // navegador guardava a página nos favoritos.
+          event.preventDefault()
+          if (can('model.pieces') && selected.length)
+            run((source) => duplicateSceneNodes(source, selected), 'created')
         } else if (workshop.paint.session && event.key === 'Escape') {
           event.preventDefault()
           workshop.endPaint()
@@ -176,7 +193,7 @@ export function SceneWorkshop({
           event.key.toLowerCase() === 'a'
         ) {
           event.preventDefault()
-          workshop.components.choose('all')
+          if (can('model.mesh')) workshop.components.choose('all')
         }
       }}
       className="flex min-h-0 flex-1 flex-col overflow-hidden bg-mld-bg text-mld-text"
@@ -233,48 +250,52 @@ export function SceneWorkshop({
         <Button className="text-sm" onClick={backup}>
           {copy.backup}
         </Button>
-        <Button
-          ref={exportTrigger}
-          className="text-sm"
-          disabled={pendingPose}
-          aria-describedby={pendingPose ? exportPoseHintId : undefined}
-          onClick={() => {
-            if (hasPendingPose()) return
-            workshop.cancelGesture()
-            workshop.paint.close()
-            workshop.components.close()
-            if (hasPendingPose()) return
-            setExportOpen(true)
-          }}
-        >
-          {copy.glbExport.open}
-        </Button>
-        {pendingPose && (
-          <p id={exportPoseHintId} className="text-xs text-mld-muted">
-            {copy.glbExport.pendingPose}
-          </p>
-        )}
-        <Button
-          ref={importTrigger}
-          className="text-sm"
-          disabled={pendingPose}
-          aria-describedby={pendingPose ? importPoseHintId : undefined}
-          onClick={() => {
-            if (hasPendingPose()) return
-            workshop.cancelGesture()
-            workshop.paint.close()
-            workshop.components.close()
-            if (hasPendingPose()) return
-            setImportOpen(true)
-          }}
-        >
-          {NATIVE_IMPORT_COPY.open}
-        </Button>
-        {pendingPose && (
-          <p id={importPoseHintId} className="text-xs text-mld-muted">
-            {NATIVE_IMPORT_COPY.pendingPose}
-          </p>
-        )}
+        <RequiresTool family="files.export">
+          <Button
+            ref={exportTrigger}
+            className="text-sm"
+            disabled={pendingPose}
+            aria-describedby={pendingPose ? exportPoseHintId : undefined}
+            onClick={() => {
+              if (hasPendingPose()) return
+              workshop.cancelGesture()
+              workshop.paint.close()
+              workshop.components.close()
+              if (hasPendingPose()) return
+              setExportOpen(true)
+            }}
+          >
+            {copy.glbExport.open}
+          </Button>
+          {pendingPose && (
+            <p id={exportPoseHintId} className="text-xs text-mld-muted">
+              {copy.glbExport.pendingPose}
+            </p>
+          )}
+        </RequiresTool>
+        <RequiresTool family="files.interop">
+          <Button
+            ref={importTrigger}
+            className="text-sm"
+            disabled={pendingPose}
+            aria-describedby={pendingPose ? importPoseHintId : undefined}
+            onClick={() => {
+              if (hasPendingPose()) return
+              workshop.cancelGesture()
+              workshop.paint.close()
+              workshop.components.close()
+              if (hasPendingPose()) return
+              setImportOpen(true)
+            }}
+          >
+            {NATIVE_IMPORT_COPY.open}
+          </Button>
+          {pendingPose && (
+            <p id={importPoseHintId} className="text-xs text-mld-muted">
+              {NATIVE_IMPORT_COPY.pendingPose}
+            </p>
+          )}
+        </RequiresTool>
       </header>
       {storage && <SceneStorageNotice observer={storage} />}
       {mode === 'animation' && (
@@ -303,65 +324,70 @@ export function SceneWorkshop({
         {mode === 'model' && (
           <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
             <SceneCreateMenu run={run} />
-            <Button
-              ref={faceToggle}
-              className="text-sm"
-              disabled={!workshop.components.canEdit}
-              aria-pressed={workshop.components.selection !== null}
-              onClick={() =>
-                workshop.components.selection ? closeFaces() : workshop.components.open()
-              }
-            >
-              {workshop.components.selection
-                ? copy.finishFaces
-                : selected.length === 1 && workshop.index.skinsByNode.has(selected[0]!)
-                  ? copy.editSkinBase
-                  : copy.editFaces}
-            </Button>
-            <Button
-              className="text-sm"
-              disabled={!canConvert}
-              title={copy.convertMeshHint}
-              onClick={() => run((source) => convertSceneNodesToMesh(source, selected))}
-            >
-              {copy.convertMesh}
-            </Button>
-            <Button
-              className="text-sm"
-              disabled={!selected.length}
-              onClick={() =>
-                run(
-                  (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
-                  'created',
-                )
-              }
-            >
-              {copy.group}
-            </Button>
-            <Button
-              className="text-sm"
-              disabled={
-                !selected.length ||
-                selected.some((id) => workshop.index.scene.nodes.get(id)?.kind !== 'group')
-              }
-              onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
-            >
-              {copy.ungroup}
-            </Button>
-            <Button
-              className="text-sm"
-              disabled={!selected.length}
-              onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
-            >
-              {copy.duplicate}
-            </Button>
-            <Button
-              className="text-sm"
-              disabled={!selected.length || workshop.components.selection !== null}
-              onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-            >
-              {copy.remove}
-            </Button>
+            <RequiresTool family="model.mesh">
+              <Button
+                ref={faceToggle}
+                className="text-sm"
+                disabled={!workshop.components.canEdit}
+                aria-pressed={workshop.components.selection !== null}
+                onClick={() =>
+                  workshop.components.selection ? closeFaces() : workshop.components.open()
+                }
+              >
+                {workshop.components.selection
+                  ? copy.finishFaces
+                  : selected.length === 1 && workshop.index.skinsByNode.has(selected[0]!)
+                    ? copy.editSkinBase
+                    : copy.editFaces}
+              </Button>
+              <Button
+                className="text-sm"
+                disabled={!canConvert}
+                title={copy.convertMeshHint}
+                onClick={() => run((source) => convertSceneNodesToMesh(source, selected))}
+              >
+                {copy.convertMesh}
+              </Button>
+            </RequiresTool>
+            <RequiresTool family="model.pieces">
+              <Button
+                className="text-sm"
+                disabled={!selected.length}
+                onClick={() =>
+                  run(
+                    (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
+                    'created',
+                  )
+                }
+              >
+                {copy.group}
+              </Button>
+              <Button
+                className="text-sm"
+                disabled={
+                  !selected.length ||
+                  selected.some((id) => workshop.index.scene.nodes.get(id)?.kind !== 'group')
+                }
+                onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
+              >
+                {copy.ungroup}
+              </Button>
+              <Button
+                className="text-sm"
+                disabled={!selected.length}
+                onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
+              >
+                {copy.duplicate}
+              </Button>
+              <Button
+                className="text-sm"
+                disabled={!selected.length || workshop.components.selection !== null}
+                onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
+              >
+                {copy.remove}
+              </Button>
+            </RequiresTool>
+            <SceneUpcomingTools tabs={['model', 'files']} />
           </div>
         )}
         {/*
@@ -459,12 +485,16 @@ export function SceneWorkshop({
               onSelect={workshop.select}
             />
             {mode === 'animation' ? (
-              <DeferredModule
-                load={loadAnimationInspector}
-                props={{ workshop }}
-                onBack={() => changeMode('model')}
-                backLabel={copy.glbExport.close}
-              />
+              <>
+                <DeferredModule
+                  load={loadAnimationInspector}
+                  props={{ workshop }}
+                  onBack={() => changeMode('model')}
+                  backLabel={copy.glbExport.close}
+                />
+                {/* No painel, que rola: na barra de cima ela roubaria altura do palco. */}
+                <SceneUpcomingTools tabs={['animate']} />
+              </>
             ) : mode === 'paint' ? (
               <DeferredModule
                 load={loadPaint}
