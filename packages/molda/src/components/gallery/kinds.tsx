@@ -6,17 +6,23 @@ import { clsx } from 'clsx'
 import type { JSX } from 'react'
 import { COPY } from '../../core/copy'
 import type { MoldaAssetKind } from '../../core/model'
+import { Box, CloudSun, Grid3x3, type LucideIcon } from '../ui/icons'
+
+/**
+ * O ÍCONE DE LINHA de cada tipo, o dos chips de filtro da galeria (as telas-modelo trocaram os
+ * emojis dos filtros por ícones de linha, como no Estúdio e no Pinta): o cubo do modelo, a
+ * grade de pixels da textura e o sol com nuvem do céu.
+ */
+export const KIND_ICONS: Record<MoldaAssetKind, LucideIcon> = {
+  model: Box,
+  texture: Grid3x3,
+  sky: CloudSun,
+}
 
 export const KIND_CHIP_CLASSES: Record<MoldaAssetKind, string> = {
   model: 'bg-mld-kind-model/15 text-mld-kind-model',
   texture: 'bg-mld-kind-texture/15 text-mld-kind-texture',
   sky: 'bg-mld-kind-sky/15 text-mld-kind-sky',
-}
-
-export const KIND_BORDER_VAR: Record<MoldaAssetKind, string> = {
-  model: 'var(--color-mld-kind-model)',
-  texture: 'var(--color-mld-kind-texture)',
-  sky: 'var(--color-mld-kind-sky)',
 }
 
 export function KindChip({

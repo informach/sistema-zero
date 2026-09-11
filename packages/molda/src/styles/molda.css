@@ -226,10 +226,11 @@
   display: none;
 }
 
-/* Cards da galeria: o navegador só mede/pinta os cards perto da janela. */
+/* Cards da galeria: o navegador só mede/pinta os cards perto da janela. O tamanho reservado é
+   o do cartão das telas-modelo (~246 × 272 px a 1440 com o menu aberto). */
 [data-molda-theme] .mld-gallery-card {
   content-visibility: auto;
-  contain-intrinsic-size: auto 164px 232px;
+  contain-intrinsic-size: auto 246px 272px;
 }
 
 /* A viewport 3D ocupa a caixa inteira e não deixa o navegador rolar/zoomar por

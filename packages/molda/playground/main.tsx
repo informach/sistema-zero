@@ -3,15 +3,24 @@
  * monta o <MoldaApp> com um adapter de demonstração. `window.__molda` expõe a
  * persistência, um contador de gravações, o palco e as prévias 3D abertas,
  * para o QA (Playwright, console).
+ *
+ * `?host=1` liga um chrome de HOST de mentira (11/09/2026, o mesmo dos playgrounds do Pinta, do
+ * Estúdio e do Pensa): o botão de esconder o menu (alterna o estado local), a seta "Voltar para
+ * Criar" da galeria (loga no console em vez de navegar), a conta ligada e o selo da nuvem
+ * percorrendo os estados a cada 4 s, começando pelo REPOUSO. `?tema=escuro` monta no tema
+ * escuro. Sem os parâmetros nada muda.
  */
 
 import {
   getDefaultMoldaPersistence,
   MoldaApp,
+  type MoldaHostChrome,
+  MoldaHostChromeProvider,
+  type MoldaHostChromeStatus,
   type MoldaPersistence,
   setMoldaStorageNamespace,
 } from '@sistemazero/molda'
-import { lazy, StrictMode, Suspense } from 'react'
+import { type JSX, lazy, StrictMode, Suspense, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { COPY } from '../src/core/copy'
 import type { SkyPreviewLike } from '../src/viewport/SkyPreview'
@@ -30,6 +39,55 @@ const initialAssetId = params.get('criacao')
 // `?nivel=explorer|architect|god`: o portão por nível de carreira, como o kids calcula.
 const toolAccess = playgroundToolAccess(params.get('nivel'))
 const ScenePlayground = lazy(() => import('./ScenePlayground'))
+
+const DEMO_STATUSES: Array<MoldaHostChromeStatus | null> = [
+  null,
+  { tone: 'muted', icon: 'upload', label: 'Guardando…', text: 'Guardando na sua conta…' },
+  { tone: 'ok', icon: 'cloud', label: 'Guardado na sua conta', text: 'Guardado na sua conta' },
+  {
+    tone: 'warn',
+    icon: 'offline',
+    label: 'Sem internet agora',
+    text: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
+  },
+  {
+    tone: 'danger',
+    icon: 'alert',
+    label: 'Não consegui guardar',
+    text: 'Não consegui guardar na sua conta.',
+  },
+]
+
+// Fora do componente: identidade estável, como a do host de verdade (`useHostChrome`).
+const DEMO_BACK: MoldaHostChrome['back'] = {
+  label: 'Voltar para Criar',
+  href: '#criar',
+  onNavigate: () => console.log('[playground] voltar para Criar'),
+}
+const DEMO_ACCOUNT: MoldaHostChrome['account'] = { label: 'Guardado na sua conta' }
+
+function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
+  const [hidden, setHidden] = useState(false)
+  const [step, setStep] = useState(0)
+  useEffect(() => {
+    const id = window.setInterval(() => setStep((s) => (s + 1) % DEMO_STATUSES.length), 4000)
+    return () => window.clearInterval(id)
+  }, [])
+  const chrome: MoldaHostChrome = {
+    menu: {
+      hidden,
+      label: hidden ? 'Mostrar menu' : 'Esconder menu',
+      onToggle: () => setHidden((h) => !h),
+    },
+    status: DEMO_STATUSES[step] ?? null,
+    back: DEMO_BACK,
+    account: DEMO_ACCOUNT,
+  }
+  return <MoldaHostChromeProvider value={chrome}>{children}</MoldaHostChromeProvider>
+}
+
+const hostDemo = params.get('host') === '1'
+const theme = params.get('tema') === 'escuro' ? 'dark' : 'light'
 
 const persistence = getDefaultMoldaPersistence()
 const debug = { saves: 0, lastSaved: null as string | null, errors: [] as string[] }
@@ -142,6 +200,23 @@ async function installPreviewTracking(): Promise<void> {
   })
 }
 
+const app = (
+  <MoldaApp
+    persistence={tracked}
+    adapter={{
+      theme,
+      studioOwned: true,
+      onOpenStudio: () => console.log('[playground] onOpenStudio'),
+      // Deep link de teste: `?criacao=<id>` abre direto uma criação.
+      ...(initialAssetId ? { initialAssetId } : {}),
+      // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
+      // do app, com a galeria enxergando as duas. Não é ativação de produto.
+      ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
+      ...(toolAccess ? { toolAccess } : {}),
+    }}
+  />
+)
+
 void installPreviewTracking().then(() =>
   createRoot(root).render(
     <StrictMode>
@@ -150,20 +225,10 @@ void installPreviewTracking().then(() =>
           <Suspense fallback={<p role="status">{COPY.scene.starting}</p>}>
             <ScenePlayground id={initialAssetId} toolAccess={toolAccess} />
           </Suspense>
+        ) : hostDemo ? (
+          <DemoHostChrome>{app}</DemoHostChrome>
         ) : (
-          <MoldaApp
-            persistence={tracked}
-            adapter={{
-              studioOwned: true,
-              onOpenStudio: () => console.log('[playground] onOpenStudio'),
-              // Deep link de teste: `?criacao=<id>` abre direto uma criação.
-              ...(initialAssetId ? { initialAssetId } : {}),
-              // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
-              // do app, com a galeria enxergando as duas. Não é ativação de produto.
-              ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
-              ...(toolAccess ? { toolAccess } : {}),
-            }}
-          />
+          app
         )}
       </div>
     </StrictMode>,

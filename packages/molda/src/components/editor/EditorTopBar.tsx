@@ -2,6 +2,10 @@
  * A barra de cima de todo editor: Voltar, nome + selo do tipo, um espaço no
  * meio (abas Montar/Pintar do modelo), desfazer/refazer e o estado do
  * salvamento.
+ *
+ * Com o chrome do host (o kids), o botão do menu lateral vem ANTES do Voltar e o selo da nuvem
+ * logo depois do "Salvo". O editor ignora a seta de volta para Criar e a conta: quem volta do
+ * editor é o Voltar dele, para a galeria.
  */
 import { clsx } from 'clsx'
 import type { JSX, ReactNode } from 'react'
@@ -9,6 +13,7 @@ import { useStore } from 'zustand'
 import { COPY } from '../../core/copy'
 import type { EditorStore, SaveState } from '../../state/editorStore'
 import { KindChip } from '../gallery/kinds'
+import { HostCloudStatus, HostMenuButton, useMoldaHostChrome } from '../hostChrome'
 import { Button, IconButton } from '../ui/Button'
 import { ArrowLeft, Check, Loader2, Redo2, Undo2 } from '../ui/icons'
 
@@ -64,12 +69,16 @@ export function EditorTopBar({
   const saveError = useStore(editor, (state) => state.saveError)
   const canUndo = useStore(editor, (state) => state.canUndo)
   const canRedo = useStore(editor, (state) => state.canRedo)
+  const hostChrome = useMoldaHostChrome()
   return (
     <header className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 border-b-2 border-mld-border bg-mld-surface px-3 py-2 sm:flex">
-      <Button variant="ghost" onClick={onBack} aria-label={COPY.editor.backToGallery}>
-        <ArrowLeft aria-hidden="true" className="size-5" />
-        <span className="hidden sm:inline">{COPY.editor.back}</span>
-      </Button>
+      <div className="flex shrink-0 items-center gap-1">
+        {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+        <Button variant="ghost" onClick={onBack} aria-label={COPY.editor.backToGallery}>
+          <ArrowLeft aria-hidden="true" className="size-5" />
+          <span className="hidden sm:inline">{COPY.editor.back}</span>
+        </Button>
+      </div>
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <h1 className="mld-display truncate text-lg text-mld-text">{asset.name}</h1>
         <KindChip kind={asset.kind} className="hidden sm:inline-flex" />
@@ -94,6 +103,7 @@ export function EditorTopBar({
           <Redo2 aria-hidden="true" className="size-5" />
         </IconButton>
         <SaveBadge state={saveState} error={saveError} />
+        {hostChrome?.status ? <HostCloudStatus status={hostChrome.status} variant="bar" /> : null}
       </div>
     </header>
   )

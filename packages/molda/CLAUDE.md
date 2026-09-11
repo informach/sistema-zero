@@ -311,9 +311,11 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   `Toast` (um por vez, `aria-live`). Tokens `mld-*` no `styles/molda.css` (tema por
   `[data-molda-theme]` no ROOT, nunca no `<html>` do host; tokens só-CSS FORA do `@theme`, que o
   Tailwind poda; `color-mix in oklab`, nunca `in oklch`).
-- Galeria: busca (nome + tipo) + chips de tipo, cards memoizados com a cor do tipo na borda
-  (`--mld-panel-border`), miniaturas: modelo = `thumb` guardado no asset (precisa de WebGL) ou
-  emoji; textura = canvas 2D (sem canvas, emoji); céu = gradiente CSS dos parâmetros. "Criar
+- Galeria (desde 11/09/2026 no desenho das telas-modelo: ver §"A galeria das telas-modelo e o
+  chrome do host"): busca (nome + tipo) + chips de tipo, cards memoizados (a cor do tipo na borda
+  SAIU: o tipo fica no selo ao lado do nome), miniaturas: modelo = `thumb` guardado no asset
+  (precisa de WebGL) ou emoji; textura = canvas 2D (sem canvas, emoji); céu = gradiente CSS dos
+  parâmetros. "Criar
   novo" em 3 passos (tipo → opções → nome), renomear (bloqueado com a criação ABERTA), duplicar,
   apagar (confirmação), "Baixar tudo" (`galeria.molda.json`, writer do envelope `molda-gallery`
   v2; reader aceita v1 e v2) e "Trazer de volta" (`importMoldaJson` nunca lança; aceita criação
@@ -374,7 +376,9 @@ typecheck:kids` + `bun run test:kids` na raiz.
   sai no blur. QA real no Chrome (06/09): 3 passos → 16 swatches (era 15) e um desfazer volta a 15.
   Testes: `partOps.test.ts`/`ops.test.ts` (`update*Color`), `ModelEditor.test.tsx` e
   `TextureEditor.test.tsx` ("N passos viram UMA extra e UM desfazer").
-- **Galeria = cabeçalho de SEÇÃO** (a "faixa branca" que destoava do Pinta/Estúdio): o `<header>`
+- **Galeria = cabeçalho de SEÇÃO** (⚠️ HISTÓRICO: substituído em 11/09/2026 pelas três faixas, ver
+  §"A galeria das telas-modelo e o chrome do host"; a grade de 164px, o `mld-pop` do cartão e a
+  raiz com `p-4` não existem mais) (a "faixa branca" que destoava do Pinta/Estúdio): o `<header>`
   perdeu fundo/borda e virou `mb-5 flex flex-wrap items-end justify-between gap-3` com `h1
   text-3xl md:text-4xl`, DENTRO da raiz rolável `flex min-h-0 flex-1 flex-col overflow-y-auto p-4
   sm:p-6` (a mesma do Pinta); o `<main>` próprio saiu (o host tem o dele). O **hover cortado** era
@@ -2450,3 +2454,61 @@ as abas, a pintura do editor antigo e esconde o que é de profissional até o po
   cartões abaixo das ferramentas flutuantes. No fluxo, a barra flutuante as cobria.
 - ⚠️ E2E: a porta 5199 costuma ser o playground do Pinta de outra sessão. Use `E2E_PORT=5202+` e
   nunca encerre um servidor que você não subiu.
+
+## A galeria das telas-modelo e o chrome do host (11/09/2026)
+
+A galeria virou o MESMO desenho da "Meus Jogos" do Estúdio e da galeria do Pinta (a imagem-modelo
+dela; plano `o-design-da-plataforma-composed-gray.md`, lote 8): três FAIXAS de borda a borda que
+rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
+`@sistemazero/ui/tool-chrome.css`, que o kids e o playground importam; o Molda só roda nos dois).
+Âncoras de teste: `data-mld-band="creme|ceu|lilas"`.
+
+- **creme** (`<header>`): [menu][seta] + h1 `.sz-tool-title` + `.sz-tool-subtitle`; à direita a
+  pílula do selo (`status ?? account` em repouso), "Abrir o Estúdio" (pílula quieta, só com a posse)
+  e "Criar novo" (pílula primária, o `ref` de sempre). Linha 2 (`.sz-tool-toolbar mt-7`, só com
+  criações): os chips de tipo com ÍCONES DE LINHA (`KIND_ICONS` em `gallery/kinds.tsx`: cubo, grade,
+  sol com nuvem; "Todos" sem ícone; o rótulo é o PLURAL do tipo) e a busca (Esc limpa). ⚠️ A barra
+  de busca e chips DEIXOU de ser `sticky` (ela agora mora na faixa creme, que rola junto: é o
+  desenho do Pinta e do Estúdio). O `<input type=file>` do "Trazer de volta" mora aqui, sempre
+  montado (o botão que o aciona fica no cartão lilás, que não existe carregando).
+- **céu**: `RecoveryNotice`, a grade `.sz-tool-grid` compartilhada (`<ul>` de sempre, com o mesmo
+  `aria-label`) com o cartão **"Nova criação"** como PRIMEIRO item (`<li data-mld-new-card>`); some
+  com busca ou filtro. ⚠️ O nome é DIFERENTE do "Criar novo" do cabeçalho de propósito: os e2e
+  (`scene-workshop*.spec.ts`) acham o botão do cabeçalho por `getByRole('button', { name: 'Criar
+  novo' })`, e o Playwright casa por PEDAÇO do nome. Os testes contam as criações por
+  `creations(grid)`, que pula o cartão novo. Galeria vazia: o recado e o cartão sozinho numa grade
+  (`div`, não lista; o botão "Começar minha primeira criação" saiu). Rodapé: o contador ("6
+  criações", "1 de 3") é o ÚNICO `role="status"` da galeria, montado sempre e vazio sem criações;
+  o "buscando" da nuvem sai dele quando o selo do host já o diz no cabeçalho.
+- **lilás** (sempre que a galeria carregou, INCLUSIVE vazia): `.sz-tool-cta-card` com o ladrilho
+  amarelo do cubo, "N criações guardadas na sua conta" (só com `account`) ou "neste aparelho", e o
+  arquivo das criações em pílulas creme: "Baixar tudo" (com criações; cancelar com o progresso,
+  como antes) e "Trazer de volta". Os dois SAÍRAM do cabeçalho, como no Pinta. Textos novos em
+  `core/galleryShellCopy.ts` (o `copy.ts` é editado por mais de uma frente).
+- **Cartão** (`AssetCard`): `.sz-tool-card` (branco, 20px, sem borda aparente e sem o pulo do
+  `mld-pop`), o nome em cima (`.sz-tool-card-title`) com o `KindChip` ao lado, a miniatura na caixa
+  `.sz-tool-cover` 4:3 (é o botão que abre, com o `aria-label` de sempre) e as três ações de 44px
+  embaixo. A borda na cor do tipo (`KIND_BORDER_VAR`) saiu. `.mld-gallery-card` reserva 246 × 272.
+- **Chrome do host (lote 6b, lado do PACOTE)**: contrato de DADOS `core/hostChrome.ts`
+  (`MoldaHostChrome` = `menu`/`status`/`back`/`account`, todos `| null`; espelho estrutural do
+  `HostChrome` do kids e cópia por valor do do Pinta) e `components/hostChrome.tsx`
+  (`MoldaHostChromeProvider` + `useMoldaHostChrome`, exportados no `index.ts`; `HostMenuButton` =
+  `.sz-tool-btn-menu`, `HostBackLink` = `.sz-tool-back` com clique simples → `onNavigate` e
+  Ctrl/Cmd/meio para o navegador, `HostCloudStatus` com `variant="header"` = `.sz-tool-status` e
+  `variant="bar"` = a pílula pequena ao lado do `SaveBadge`: em repouso só a nuvem, com o nome no
+  `title`; aviso e erro escrevem na tinta do texto). A galeria usa os quatro; o `EditorTopBar`
+  (textura, céu e o modelo antigo) põe o menu ANTES do Voltar e o selo depois do "Salvo", e ignora
+  a seta e a conta. Sem Provider nada aparece. ⚠️ **O lado do KIDS ainda NÃO está ligado** (o
+  `molda-client.tsx` com o Provider, o anúncio, a seta, e a saída do `CloudSaveBadge` e do ramo
+  `/molda` do `main-container.tsx`): ele entra depois do commit da sessão do Molda, que tem esses
+  arquivos abertos. Até lá o kids segue como estava. A barra da oficina nova (`SceneWorkshop`)
+  também recebe o chrome no passo da casca da oficina.
+- Playground: `?host=1` liga o chrome de mentira (menu que alterna, seta que loga, conta ligada e o
+  selo percorrendo os estados a cada 4 s) e `?tema=escuro` monta no escuro.
+- Medido no playground (1172 × 900, que é 1440 com o menu do kids): faixa creme de 274px, cartões
+  de 242 × 272, busca de 280 e "Criar novo" 135 × 40; escuro e 375px conferidos, sem rolagem
+  lateral. No celular a grade tem uma coluna (revisar no lote 9, como no Pinta).
+- Testes: `MoldaApp.test.tsx` §"galeria: o desenho das telas-modelo" (as três faixas na mesma raiz
+  rolável, o cartão, o cartão novo com nome próprio, os chips com ícone, os botões de cada lugar e
+  a galeria vazia) e `MoldaApp.hostChrome.test.tsx` (sem Provider, menu e seta antes do título, a
+  conta em repouso, a seta com Ctrl, o selo que vence a conta, e a barra do editor).

@@ -6,10 +6,18 @@
  */
 export * from './assets/index'
 export type { MoldaHostAdapter } from './components/appContext'
+export { MoldaHostChromeProvider, useMoldaHostChrome } from './components/hostChrome'
 export type { MoldaAppProps } from './components/MoldaApp'
 export { MoldaApp } from './components/MoldaApp'
 export type { MoldaCopy } from './core/copy'
 export { COPY } from './core/copy'
+export type {
+  MoldaHostChrome,
+  MoldaHostChromeAccount,
+  MoldaHostChromeBack,
+  MoldaHostChromeMenu,
+  MoldaHostChromeStatus,
+} from './core/hostChrome'
 export type { MemoryPersistence } from './state/memoryPersistence'
 export { createMemoryPersistence } from './state/memoryPersistence'
 export type {

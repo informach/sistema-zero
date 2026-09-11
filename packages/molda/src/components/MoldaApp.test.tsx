@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { COPY } from '../core/copy'
+import { GALLERY_SHELL_COPY } from '../core/galleryShellCopy'
 import type { MoldaAsset } from '../core/model'
 import { galleryToJsonText } from '../export/projectJson'
 import { zipGallery } from '../export/zip'
@@ -25,6 +26,19 @@ function presetOf(asset: MoldaAsset | undefined): string | null {
   return asset?.kind === 'sky' ? asset.params.preset : null
 }
 
+/** O nome acessível do cartão que abre a grade: título + dica. */
+const NEW_CARD_NAME = `${GALLERY_SHELL_COPY.newCardTitle} ${GALLERY_SHELL_COPY.newCardHint}`
+
+/**
+ * As CRIAÇÕES da grade. O primeiro item é o cartão "Nova criação" (11/09/2026, as telas-modelo)
+ * e fica fora da conta de propósito: ele não é uma criação.
+ */
+function creations(grid: HTMLElement): HTMLElement[] {
+  return within(grid)
+    .queryAllByRole('listitem')
+    .filter((item) => !item.hasAttribute('data-mld-new-card'))
+}
+
 describe('MoldaApp', () => {
   test('galeria vazia mostra o convite e o tema no root', async () => {
     const { container } = render(
@@ -33,23 +47,26 @@ describe('MoldaApp', () => {
     await settle()
     expect(container.querySelector('[data-molda-theme="dark"]')).not.toBeNull()
     expect(await screen.findByText(COPY.gallery.empty)).toBeDefined()
-    expect(screen.getByRole('button', { name: COPY.gallery.emptyCta })).toBeDefined()
+    // O convite da galeria vazia é o cartão "Nova criação" sozinho na grade (o botão grande do
+    // meio da tela saiu), e ele abre o "Criar novo".
+    fireEvent.click(screen.getByRole('button', { name: NEW_CARD_NAME }))
+    expect(await screen.findByRole('dialog')).toBeDefined()
   })
 
   test('lista as criações com selo do tipo, busca e filtro', async () => {
     const persistence = createMemoryPersistence([makeModel(), makeTexture(), makeSky()])
     render(<MoldaApp persistence={persistence} />)
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(3))
+    await waitFor(() => expect(creations(grid)).toHaveLength(3))
     expect(screen.getByRole('status').textContent).toContain('3 criações')
 
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'céu' } })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(1))
+    await waitFor(() => expect(creations(grid)).toHaveLength(1))
     expect(screen.getByRole('status').textContent).toContain('1 de 3')
 
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.searchClear }))
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.filterAria.texture }))
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(1))
+    await waitFor(() => expect(creations(grid)).toHaveLength(1))
     expect(within(grid).getByText('grama')).toBeDefined()
 
     fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzz' } })
@@ -57,9 +74,7 @@ describe('MoldaApp', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.searchClearAll }))
     // O estado vazio desmonta a grade: a referência antiga ficou solta, buscar de novo.
     await waitFor(() =>
-      expect(
-        within(screen.getByRole('list', { name: COPY.a11y.galleryGrid })).getAllByRole('listitem'),
-      ).toHaveLength(3),
+      expect(creations(screen.getByRole('list', { name: COPY.a11y.galleryGrid }))).toHaveLength(3),
     )
   })
 
@@ -70,11 +85,11 @@ describe('MoldaApp', () => {
     render(<MoldaApp persistence={createMemoryPersistence(assets)} />)
 
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(60))
+    await waitFor(() => expect(creations(grid)).toHaveLength(60))
 
     fireEvent.click(screen.getByRole('button', { name: COPY.gallery.loadMore }))
 
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(61))
+    await waitFor(() => expect(creations(grid)).toHaveLength(61))
     expect(screen.queryByRole('button', { name: COPY.gallery.loadMore })).toBeNull()
   })
 
@@ -278,7 +293,7 @@ describe('MoldaApp', () => {
     const persistence = createMemoryPersistence([makeSky(), makeTexture()])
     render(<MoldaApp persistence={persistence} />)
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(2))
+    await waitFor(() => expect(creations(grid)).toHaveLength(2))
 
     fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.rename} grama` }))
     const rename = await screen.findByRole('dialog')
@@ -290,7 +305,7 @@ describe('MoldaApp', () => {
     fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.remove} terra` }))
     const confirm = await screen.findByRole('dialog')
     fireEvent.click(within(confirm).getByRole('button', { name: COPY.gallery.removeConfirm }))
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(1))
+    await waitFor(() => expect(creations(grid)).toHaveLength(1))
     expect(persistence.snapshot()).toHaveLength(1)
   })
 
@@ -325,7 +340,7 @@ describe('MoldaApp', () => {
     const persistence = createMemoryPersistence([makeModel()])
     render(<MoldaApp persistence={persistence} />)
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(1))
+    await waitFor(() => expect(creations(grid)).toHaveLength(1))
     fireEvent.click(screen.getByRole('button', { name: `${COPY.gallery.duplicate} nave` }))
     await waitFor(() => expect(within(grid).getByText('nave-2')).toBeDefined())
   })
@@ -417,7 +432,7 @@ describe('MoldaApp', () => {
       },
     })
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(2))
+    await waitFor(() => expect(creations(grid)).toHaveLength(2))
     expect(
       persistence
         .snapshot()
@@ -434,27 +449,109 @@ describe('MoldaApp', () => {
         ],
       },
     })
-    await waitFor(() => expect(within(grid).getAllByRole('listitem')).toHaveLength(3))
+    await waitFor(() => expect(creations(grid)).toHaveLength(3))
     expect(persistence.snapshot().some((asset) => asset.name === 'nave')).toBe(true)
   })
 })
 
-describe('galeria: cabeçalho de seção (06/09)', () => {
-  test('o cabeçalho é de SEÇÃO (sem faixa própria) e mora na raiz rolável, junto da grade', async () => {
+describe('galeria: o desenho das telas-modelo (11/09)', () => {
+  test('três faixas de borda a borda rolam juntas: cabeçalho creme, grade no céu, fechamento lilás', async () => {
     render(<MoldaApp persistence={createMemoryPersistence([makeModel()])} />)
     const heading = await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
-    const header = heading.closest('header')
-    if (!header) throw new Error('sem header')
-    expect(header.className).not.toContain('bg-mld-surface')
-    expect(header.className).not.toContain('border-b')
-    const scrollRoot = header.parentElement
-    if (!scrollRoot) throw new Error('sem raiz')
-    expect(scrollRoot.className).toContain('overflow-y-auto')
-    // A folga de cima é a do `p-4`: o hover (`.mld-pop`) do 1º card cresce para cima sem cortar.
-    expect(scrollRoot.className).toContain('p-4')
+    const creme = heading.closest('[data-mld-band]')
+    if (!creme) throw new Error('sem faixa creme')
+    expect(creme.tagName).toBe('HEADER')
+    expect(creme.getAttribute('data-mld-band')).toBe('creme')
+    expect(creme.className).toContain('sz-tool-band--creme')
     const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
-    expect(grid.parentElement).toBe(scrollRoot)
+    expect(grid.closest('[data-mld-band]')?.getAttribute('data-mld-band')).toBe('ceu')
+    const lilas = screen.getByRole('region', { name: GALLERY_SHELL_COPY.savedDevice(1) })
+    expect(lilas.getAttribute('data-mld-band')).toBe('lilas')
+    // As três moram na MESMA área rolável: o cabeçalho rola junto, nada preso em cima. E nada de
+    // `<main>` próprio: o host já tem o dele.
+    const scrollRoot = creme.closest('[data-mld-scroll-root]')
+    if (!scrollRoot) throw new Error('sem raiz rolável')
+    expect(scrollRoot.className).toContain('overflow-y-auto')
+    expect(grid.closest('[data-mld-scroll-root]')).toBe(scrollRoot)
+    expect(lilas.closest('[data-mld-scroll-root]')).toBe(scrollRoot)
     expect(screen.queryByRole('main')).toBeNull()
+  })
+
+  test('o cartão da criação: nome em cima, a capa cinza-clara abre, e sem a borda do tipo', async () => {
+    render(<MoldaApp persistence={createMemoryPersistence([makeModel()])} />)
+    const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+    await waitFor(() => expect(creations(grid)).toHaveLength(1))
+    const card = creations(grid)[0]
+    if (!card) throw new Error('sem cartão')
+    expect(card.className).toContain('sz-tool-card')
+    expect(card.className).not.toContain('mld-pop')
+    expect(card.getAttribute('style')).toBeNull()
+    const title = card.querySelector('.sz-tool-card-title')
+    expect(title?.textContent).toBe('nave')
+    const open = within(card).getByRole('button', {
+      name: COPY.a11y.assetCard('nave', COPY.kinds.model.title),
+    })
+    expect(open.className).toContain('sz-tool-cover')
+    // O nome vem ANTES da capa.
+    expect(title?.compareDocumentPosition(open)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+  })
+
+  test('o cartão "Nova criação" abre a grade, tem nome próprio e some com busca ou filtro', async () => {
+    render(<MoldaApp persistence={createMemoryPersistence([makeModel(), makeSky()])} />)
+    const grid = await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+    await waitFor(() => expect(creations(grid)).toHaveLength(2))
+    expect(within(grid).getAllByRole('listitem')[0]?.hasAttribute('data-mld-new-card')).toBe(true)
+    // O "Criar novo" do cabeçalho segue sendo o ÚNICO botão com esse pedaço de nome: os e2e o
+    // acham pelo nome, e o Playwright casa por pedaço.
+    expect(NEW_CARD_NAME.includes(COPY.gallery.create)).toBe(false)
+    expect(screen.getAllByRole('button', { name: COPY.gallery.create })).toHaveLength(1)
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'nave' } })
+    await waitFor(() => expect(screen.queryByRole('button', { name: NEW_CARD_NAME })).toBeNull())
+    fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Escape' })
+    expect(await screen.findByRole('button', { name: NEW_CARD_NAME })).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.filterAria.sky }))
+    await waitFor(() => expect(screen.queryByRole('button', { name: NEW_CARD_NAME })).toBeNull())
+  })
+
+  test('os chips de tipo levam ícones de linha no lugar dos emojis ("Todos" sem ícone)', async () => {
+    render(<MoldaApp persistence={createMemoryPersistence([makeModel()])} />)
+    await screen.findByRole('list', { name: COPY.a11y.galleryGrid })
+    const all = screen.getByRole('button', { name: COPY.gallery.filterAria.all })
+    expect(all.querySelector('svg')).toBeNull()
+    for (const kind of ['model', 'texture', 'sky'] as const) {
+      const chip = screen.getByRole('button', { name: COPY.gallery.filterAria[kind] })
+      expect(chip.querySelector('svg')).not.toBeNull()
+      expect(chip.textContent).toBe(COPY.kinds[kind].plural)
+    }
+  })
+
+  test('Baixar tudo e Trazer de volta moram no cartão lilás; o cabeçalho fica com o Criar novo', async () => {
+    render(
+      <MoldaApp
+        persistence={createMemoryPersistence([makeModel()])}
+        adapter={{ studioOwned: true, onOpenStudio: () => {} }}
+      />,
+    )
+    const heading = await screen.findByRole('heading', { level: 1, name: COPY.gallery.title })
+    const header = heading.closest('header')
+    if (!header) throw new Error('sem cabeçalho')
+    expect(within(header).getByRole('button', { name: COPY.gallery.create })).toBeDefined()
+    expect(within(header).getByRole('button', { name: COPY.gallery.openStudio })).toBeDefined()
+    expect(within(header).queryByRole('button', { name: COPY.gallery.downloadAll })).toBeNull()
+    expect(within(header).queryByRole('button', { name: COPY.gallery.importJson })).toBeNull()
+    const lilas = await screen.findByRole('region', { name: GALLERY_SHELL_COPY.savedDevice(1) })
+    expect(within(lilas).getByRole('button', { name: COPY.gallery.downloadAll })).toBeDefined()
+    expect(within(lilas).getByRole('button', { name: COPY.gallery.importJson })).toBeDefined()
+  })
+
+  test('galeria vazia: o fechamento lilás aparece (trazer de volta num aparelho novo), sem o Baixar tudo', async () => {
+    render(<MoldaApp persistence={createMemoryPersistence()} />)
+    const lilas = await screen.findByRole('region', { name: GALLERY_SHELL_COPY.savedDevice(0) })
+    expect(within(lilas).queryByRole('button', { name: COPY.gallery.downloadAll })).toBeNull()
+    expect(within(lilas).getByRole('button', { name: COPY.gallery.importJson })).toBeDefined()
+    // Sem criações não há o que contar: o contador (a região viva) fica montado e vazio.
+    expect(screen.getByRole('status').textContent).toBe('')
   })
 })
 

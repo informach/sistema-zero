@@ -1,16 +1,21 @@
 /**
- * Um card da galeria: miniatura + nome + selo do tipo (o botão grande abre a
- * criação) e a linha de ações embaixo. Memoizado: a galeria não tem teto de
- * criações, e cada card só re-renderiza quando o SEU asset muda.
+ * Um card da galeria: o nome e o selo do tipo em cima, a miniatura (o botão grande que abre a
+ * criação) e as três ações embaixo. Memoizado: a galeria não tem teto de criações, e cada card
+ * só re-renderiza quando o SEU asset muda.
+ *
+ * ⭐ 11/09/2026: o cartão das telas-modelo, o MESMO da galeria "Meus Jogos" do Estúdio e do
+ * Pinta (`.sz-tool-card`: branco, cantos de 20px, sem borda aparente e sem o pulo do hover),
+ * com o nome no Baloo extra-negrito e a miniatura na caixa cinza-clara (`.sz-tool-cover`). A
+ * borda na cor do TIPO saiu: o tipo fica no selo ao lado do nome (e no nome acessível).
  */
-import type { CSSProperties, JSX } from 'react'
+import type { JSX } from 'react'
 import { memo } from 'react'
 import type { MoldaAssetSummary } from '../../core/assetSummary'
 import { COPY } from '../../core/copy'
 import type { GalleryPreviews } from '../../state/galleryPreviews'
 import { IconButton } from '../ui/Button'
 import { Copy, Pencil, Trash2 } from '../ui/icons'
-import { KIND_BORDER_VAR, KindChip } from './kinds'
+import { KindChip } from './kinds'
 import { ProgressiveThumb } from './ProgressiveThumb'
 
 export interface AssetCardProps {
@@ -31,24 +36,23 @@ export const AssetCard = memo(function AssetCard({
   onRemove,
 }: AssetCardProps): JSX.Element {
   const kindTitle = COPY.kinds[asset.kind].title
-  const style = { '--mld-panel-border': KIND_BORDER_VAR[asset.kind] } as CSSProperties
   return (
-    <li className="mld-gallery-card mld-panel mld-pop flex flex-col gap-1 p-2" style={style}>
+    <li className="mld-gallery-card sz-tool-card gap-2.5 p-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="sz-tool-card-title min-w-0 flex-1 truncate" title={asset.name}>
+          {asset.name}
+        </span>
+        <KindChip kind={asset.kind} className="shrink-0" />
+      </div>
       <button
         type="button"
         onClick={() => onOpen(asset.id)}
         aria-label={COPY.a11y.assetCard(asset.name, kindTitle)}
-        className="flex flex-1 flex-col text-left focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-mld-accent"
+        className="sz-tool-cover aspect-[4/3] w-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
       >
-        <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-mld-bg">
-          <ProgressiveThumb summary={asset} previews={previews} />
-        </div>
-        <div className="flex flex-col items-start gap-1 px-1 pt-1">
-          <span className="w-full truncate text-base font-bold text-mld-text">{asset.name}</span>
-          <KindChip kind={asset.kind} />
-        </div>
+        <ProgressiveThumb summary={asset} previews={previews} />
       </button>
-      <div className="flex items-center justify-end gap-0.5">
+      <div className="flex items-center justify-between gap-1">
         <IconButton
           aria-label={`${COPY.gallery.rename} ${asset.name}`}
           onClick={() => onRename(asset)}
