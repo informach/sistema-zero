@@ -9,6 +9,7 @@
     ".": "./src/index.ts",
     "./assets": "./src/assets/index.ts",
     "./studio-library": "./src/export/studioLibrary.ts",
+    "./tools": "./src/core/toolFamilies.ts",
     "./styles.css": "./src/styles/molda.css"
   },
   "scripts": {

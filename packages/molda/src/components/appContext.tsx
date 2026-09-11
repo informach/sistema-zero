@@ -4,6 +4,7 @@
  */
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
+import type { MoldaToolAccess } from '../core/toolFamilies'
 import type { MoldaExportedAsset, MoldaStudioResyncResult } from '../export/studioLibrary'
 import type { GallerySceneSource } from '../state/gallerySceneSource'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
@@ -40,6 +41,12 @@ export interface MoldaHostAdapter {
    * leitores compatíveis (lote 230) estiverem implantados.
    */
   sceneWorkshop?: boolean
+  /**
+   * As famílias de ferramentas que a criança pode USAR: o portão por nível de carreira, que o
+   * host calcula (o Molda não conhece carreira). Ausente = tudo liberado. Trancar tira a
+   * autoria, nunca a leitura: ver `core/toolFamilies.ts`.
+   */
+  toolAccess?: MoldaToolAccess
 }
 
 export interface MoldaAppContextValue {

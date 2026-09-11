@@ -67,6 +67,7 @@ describe('pureza das faces sem UI', () => {
   for (const entry of [
     'assets/index.ts',
     'export/studioLibrary.ts',
+    'core/toolFamilies.ts',
     'scene/readDocument.ts',
     'scene/documentJson.ts',
     'scene/migrateLegacy.ts',

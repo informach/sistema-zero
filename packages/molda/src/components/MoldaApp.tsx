@@ -21,8 +21,8 @@ import {
 import { MoldaAppProvider, type MoldaHostAdapter, useGallery, useMoldaApp } from './appContext'
 import { DeferredModule } from './editor/DeferredEditor'
 import { EditorScreen } from './editor/EditorScreen'
-
 import { GalleryScreen } from './gallery/GalleryScreen'
+import { MoldaToolAccessProvider } from './toolAccess'
 import { ToastProvider, useToast } from './ui/Toast'
 
 export interface MoldaAppProps {
@@ -125,39 +125,41 @@ export function MoldaApp({ adapter, persistence, className }: MoldaAppProps): JS
       )}
     >
       <MoldaAppProvider value={context}>
-        <ToastProvider>
-          {screen.type === 'gallery' ? (
-            <GalleryScreen onOpen={open} />
-          ) : screen.generation === 2 ? (
-            <DeferredModule
-              reloadPage
-              key={screen.assetId}
-              load={loadSceneWorkshop}
-              onBack={() => setScreen({ type: 'gallery' })}
-              props={{
-                store: sceneStore,
-                initialId: screen.assetId,
-                theme: adapterValue.theme ?? 'light',
-                ...(adapterValue.resyncToStudio
-                  ? {
-                      resyncToStudio: adapterValue.resyncToStudio,
-                      canResyncToStudio: adapterValue.canResyncToStudio,
-                    }
-                  : {}),
-                onRouteChange: (id: string | null) => {
-                  if (id === null) setScreen({ type: 'gallery' })
-                },
-              }}
-            />
-          ) : (
-            <EditorScreen
-              key={screen.assetId}
-              assetId={screen.assetId}
-              onBack={() => setScreen({ type: 'gallery' })}
-            />
-          )}
-          <InitialAssetOpener id={adapterValue.initialAssetId} onOpen={open} />
-        </ToastProvider>
+        <MoldaToolAccessProvider access={adapterValue.toolAccess}>
+          <ToastProvider>
+            {screen.type === 'gallery' ? (
+              <GalleryScreen onOpen={open} />
+            ) : screen.generation === 2 ? (
+              <DeferredModule
+                reloadPage
+                key={screen.assetId}
+                load={loadSceneWorkshop}
+                onBack={() => setScreen({ type: 'gallery' })}
+                props={{
+                  store: sceneStore,
+                  initialId: screen.assetId,
+                  theme: adapterValue.theme ?? 'light',
+                  ...(adapterValue.resyncToStudio
+                    ? {
+                        resyncToStudio: adapterValue.resyncToStudio,
+                        canResyncToStudio: adapterValue.canResyncToStudio,
+                      }
+                    : {}),
+                  onRouteChange: (id: string | null) => {
+                    if (id === null) setScreen({ type: 'gallery' })
+                  },
+                }}
+              />
+            ) : (
+              <EditorScreen
+                key={screen.assetId}
+                assetId={screen.assetId}
+                onBack={() => setScreen({ type: 'gallery' })}
+              />
+            )}
+            <InitialAssetOpener id={adapterValue.initialAssetId} onOpen={open} />
+          </ToastProvider>
+        </MoldaToolAccessProvider>
       </MoldaAppProvider>
     </div>
   )

@@ -15,6 +15,9 @@
  * - `group`: a `<legend>` visível do trilho. Cinco glifos sob "Criar" são cinco jeitos de
  *   criar; sem a legenda são cinco desenhos soltos.
  *
+ * A FAMÍLIA de cada comando (o portão por nível de carreira) não é campo daqui: mora no mapa
+ * irmão `sceneCommandAccess.ts`, e o `can` opcional das funções abaixo a aplica.
+ *
  * ⚠️ Este arquivo nasce como CARACTERIZAÇÃO: `tier` descreve onde cada comando está HOJE, não
  * onde ele deveria estar. Assim o registro entra verde, com o teste provando que ele conta a
  * verdade sobre a tela atual, e a hierarquização vira uma mudança de coluna depois, revisável
@@ -61,6 +64,7 @@ import {
   Ungroup,
   Upload,
 } from '../../ui/icons'
+import { type SceneToolCheck, sceneCommandAllowed } from './sceneCommandAccess'
 
 export type SceneCommandContext =
   | 'global'
@@ -484,17 +488,22 @@ export function bindSceneCommand(
  * ⚠️ Em Animar os destrutivos de modelagem somem, inclusive o Apagar. A invariante já estava
  * escrita no `CLAUDE.md`; aqui ela é o próprio filtro, então não dá para esquecer dela ao
  * montar uma zona nova.
+ * ⚠️ Com `can` (o do `useMoldaToolAccess()`), comando de família trancada também some: não
+ * vira botão desligado. Sem `can`, tudo liberado.
  */
 export function contextualSceneCommands(
   context: SceneCommandContext,
   slot: SceneCommandSlot,
   states: Partial<Record<SceneCommandId, SceneCommandState>> = {},
+  can?: SceneToolCheck,
 ): ResolvedSceneCommand[] {
   return SCENE_COMMANDS.filter(
     (command) =>
       command.slot === slot &&
       command.contexts.includes(context) &&
-      !(context === 'animate' && command.destructive),
+      !(context === 'animate' && command.destructive) &&
+      isSceneCommandId(command.id) &&
+      sceneCommandAllowed(command.id, can),
   ).map((command) => {
     const state = isSceneCommandId(command.id) ? states[command.id] : undefined
     return {
@@ -521,18 +530,32 @@ export const SCENE_GROUP_ORDER: readonly SceneCommandGroup[] = [
 export function sceneRailGroups(
   context: SceneCommandContext,
   states: Partial<Record<SceneCommandId, SceneCommandState>> = {},
+  can?: SceneToolCheck,
 ): Array<{ group: SceneCommandGroup; commands: ResolvedSceneCommand[] }> {
-  const rail = contextualSceneCommands(context, 'rail', states)
+  const rail = contextualSceneCommands(context, 'rail', states, can)
   return SCENE_GROUP_ORDER.map((group) => ({
     group,
     commands: rail.filter((command) => command.group === group),
   })).filter((entry) => entry.commands.length > 0)
 }
 
-export function sceneCommandForShortcut(
+type ShortcutEvent = Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>
+
+export interface SceneShortcutMatch {
+  id: SceneCommandId
+  /** `false` = o atalho é da oficina, mas a família está trancada. */
+  allowed: boolean
+}
+
+/**
+ * O comando do atalho, e se a criança pode usá-lo. ⚠️ Atalho de família trancada continua sendo
+ * da oficina: quem chama dá `preventDefault` e não age, senão o Ctrl+D do navegador dispara.
+ */
+export function matchSceneShortcut(
   context: SceneCommandContext,
-  event: Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey'>,
-): SceneCommandId | null {
+  event: ShortcutEvent,
+  can?: SceneToolCheck,
+): SceneShortcutMatch | null {
   const pressed = event.key.toLowerCase()
   const primaryPressed = event.ctrlKey || event.metaKey
   const command = SCENE_COMMANDS.find((candidate) => {
@@ -544,5 +567,16 @@ export function sceneCommandForShortcut(
     if (shortcut.modifier === 'primary') return primaryPressed && !event.shiftKey
     return !primaryPressed
   })
-  return command && isSceneCommandId(command.id) ? command.id : null
+  if (!command || !isSceneCommandId(command.id)) return null
+  return { id: command.id, allowed: sceneCommandAllowed(command.id, can) }
+}
+
+/** O comando que o atalho executa; trancado ou sem comando = `null`. */
+export function sceneCommandForShortcut(
+  context: SceneCommandContext,
+  event: ShortcutEvent,
+  can?: SceneToolCheck,
+): SceneCommandId | null {
+  const match = matchSceneShortcut(context, event, can)
+  return match?.allowed ? match.id : null
 }
