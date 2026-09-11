@@ -51,8 +51,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    `.sz-tool-toolbar(__start|__end)`. Os controles novos medem `--sz-tool-hit`: 40px no mouse (a
    imagem) e 44px com `any-pointer: coarse` (a régua da casa). O fundo dos controles quietos é
    `--sz-tool-quiet`: céu diluído sobre barra branca, branco dentro de uma faixa. As receitas
-   ANTIGAS (`.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-panel`/`.sz-tool-pop`) seguem
-   até a limpeza do lote. Quem importa: o community-kids (`globals.css`, DEPOIS do
+   ANTIGAS (`.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-panel`/`.sz-tool-pop`) SAÍRAM na
+   limpeza do lote (11/09/2026), junto com os tokens que só elas liam (`--sz-tool-control` e as
+   sombras duras `--sz-tool-shadow-*`/`-shade`); o contrato trava a ausência e VARRE o código dos
+   pacotes consumidores (classe sem receita não quebra teste nenhum: o botão só sai sem desenho).
+   Ficaram `--sz-tool-border`/`--sz-tool-radius-card` (o `.pin-panel` do Pinta lê) e o
+   `--sz-tool-cta-gradient` (pinta.css e pensa.css leem). Quem importa: o community-kids (`globals.css`, DEPOIS do
    `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda/pensa; admin e
    community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
    pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`

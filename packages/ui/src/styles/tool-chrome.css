@@ -28,14 +28,13 @@
 
 /* == geometria e constantes == (não mudam com o tema) */
 :root {
-  --sz-tool-control: 2.75rem; /* 44px: alvo de toque de mão pequena (receitas antigas) */
   /* O alvo das receitas NOVAS: 40px no mouse (a medida das telas-modelo) e 44px quando algum
      ponteiro é o dedo (o bloco `any-pointer: coarse` logo abaixo). O alvo de toque da casa
      continua 44; no mouse o desenho manda. */
   --sz-tool-hit: 2.5rem;
-  --sz-tool-border: 2px;
+  --sz-tool-border: 2px; /* o fio do cartão `.pin-panel` do Pinta, que o lê com reserva */
   --sz-tool-radius-control: 0.75rem; /* 12px: quadrado do menu, ladrilho, capa */
-  --sz-tool-radius-card: 1rem; /* receitas antigas (o painel dos jogos prontos) */
+  --sz-tool-radius-card: 1rem; /* o canto do mesmo cartão `.pin-panel` do Pinta */
   --sz-tool-radius-card-md: 1.25rem; /* 20px: o cartão de projeto das galerias (medido) */
   --sz-tool-radius-card-lg: 1.5rem; /* 24px: o cartão que fecha a página, o do plano */
   --sz-tool-radius-pill: 9999px;
@@ -113,11 +112,6 @@
   /* derivados */
   --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
   --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
-  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
-  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
-  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
 }
 
 /* == escuro == DEPOIS do claro de propósito: no <html class="dark"> os dois seletores (:root e
@@ -154,11 +148,6 @@
   --sz-tool-quiet: var(--sz-tool-bg);
   --sz-tool-accent-tint: color-mix(in oklab, var(--sz-tool-accent) 15%, transparent);
   --sz-tool-accent-line: color-mix(in oklab, var(--sz-tool-accent) 45%, transparent);
-  --sz-tool-line-shade: color-mix(in oklab, var(--sz-tool-line) 45%, transparent);
-  --sz-tool-cta-shade: color-mix(in oklab, var(--sz-tool-cta) 60%, black);
-  --sz-tool-shadow-control: 0 2px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-card: 0 3px 0 var(--sz-tool-line-shade);
-  --sz-tool-shadow-cta: 0 4px 0 var(--sz-tool-cta-shade);
 }
 
 /* == receitas == */
@@ -776,100 +765,9 @@
     color: var(--sz-tool-muted);
   }
 
-  /* ── RECEITAS ANTIGAS (07/09) ─────────────────────────────────────────────────────────
-     Ainda usadas enquanto as ferramentas trocam de desenho; saem na limpeza do lote. */
-  .sz-tool-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: var(--sz-tool-control);
-    padding-inline: 1rem;
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
-    border-radius: var(--sz-tool-radius-control);
-    background: var(--sz-tool-surface);
-    color: var(--sz-tool-ink);
-    font-weight: 700;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    touch-action: manipulation;
-    box-shadow: var(--sz-tool-shadow-control);
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      border-color 0.12s ease,
-      background-color 0.12s ease;
-  }
-  .sz-tool-btn:hover:not(:disabled) {
-    border-color: var(--sz-tool-accent);
-    background: color-mix(in oklab, var(--sz-tool-line) 25%, var(--sz-tool-surface));
-  }
-  .sz-tool-btn:active:not(:disabled) {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
-  .sz-tool-btn--icon {
-    min-width: var(--sz-tool-control);
-    padding-inline: 0;
-    flex-shrink: 0;
-  }
-  .sz-tool-btn--icon > svg {
-    flex: none;
-  }
-  .sz-tool-btn-3d {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    min-height: var(--sz-tool-control);
-    padding-inline: 1.25rem;
-    border: 0;
-    border-radius: var(--sz-tool-radius-pill);
-    background-image: var(--sz-tool-cta-gradient);
-    color: var(--sz-tool-on-cta);
-    font-weight: 700;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    touch-action: manipulation;
-    box-shadow: var(--sz-tool-shadow-cta);
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
-  }
-  .sz-tool-btn-3d:hover:not(:disabled) {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
-    box-shadow: 0 5px 0 var(--sz-tool-cta-shade);
-  }
-  .sz-tool-btn-3d:active:not(:disabled) {
-    transform: translateY(3px);
-    box-shadow: 0 1px 0 var(--sz-tool-cta-shade);
-  }
-  .sz-tool-btn-3d > svg {
-    flex: none;
-    stroke: currentColor;
-  }
-  .sz-tool-panel {
-    border: var(--sz-tool-border) solid var(--sz-tool-line);
-    border-radius: var(--sz-tool-radius-card);
-    background: var(--sz-tool-surface);
-    box-shadow: var(--sz-tool-shadow-card);
-  }
-  .sz-tool-pop {
-    transition: transform 0.18s ease-out;
-  }
-  .sz-tool-pop:hover {
-    transform: translateY(-2px) scale(1.02);
-  }
-
   /* Desabilitado, igual em todo o chrome. O cartão "novo" também: no modo seleção do Pinta ele
      fica no lugar, desligado, para a grade não andar uma casa. */
-  .sz-tool-btn:disabled,
   .sz-tool-btn-menu:disabled,
-  .sz-tool-btn-3d:disabled,
   .sz-tool-icon-btn:disabled,
   .sz-tool-pill:disabled,
   .sz-tool-chip:disabled,
@@ -879,9 +777,7 @@
   }
 
   /* Foco: anel único de todo o chrome. Depois do :focus da busca (mesma especificidade). */
-  .sz-tool-btn:focus-visible,
   .sz-tool-btn-menu:focus-visible,
-  .sz-tool-btn-3d:focus-visible,
   .sz-tool-icon-btn:focus-visible,
   .sz-tool-back:focus-visible,
   .sz-tool-pill:focus-visible,
@@ -894,19 +790,15 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sz-tool-btn,
     .sz-tool-btn-menu,
-    .sz-tool-btn-3d,
     .sz-tool-icon-btn,
     .sz-tool-back,
     .sz-tool-pill,
     .sz-tool-chip,
-    .sz-tool-card--new,
-    .sz-tool-pop {
+    .sz-tool-card--new {
       transition: none;
     }
-    .sz-tool-pill:active:not(:disabled),
-    .sz-tool-pop:hover {
+    .sz-tool-pill:active:not(:disabled) {
       transform: none;
     }
   }

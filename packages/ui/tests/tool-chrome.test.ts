@@ -173,12 +173,59 @@ describe('tool-chrome.css: receitas', () => {
     }
   })
 
+  it('as receitas ANTIGAS saíram na limpeza do lote (11/09/2026), com os tokens que só elas liam', () => {
+    // O secundário de borda 2px com sombra dura, a pílula 3D, o painel e o pulo no hover.
+    expect(semComentarios).not.toMatch(/\.sz-tool-btn(?!-menu)/)
+    expect(semComentarios).not.toContain('.sz-tool-panel')
+    expect(semComentarios).not.toContain('.sz-tool-pop')
+    for (const token of [
+      '--sz-tool-control:',
+      '--sz-tool-shadow-control',
+      '--sz-tool-shadow-card',
+      '--sz-tool-shadow-cta',
+      '--sz-tool-cta-shade',
+      '--sz-tool-line-shade',
+    ]) {
+      expect(semComentarios).not.toContain(token)
+    }
+    // Anti-vácuo: o botão do menu (o único `sz-tool-btn-*` que ficou) continua de pé.
+    expect(semComentarios).toContain('.sz-tool-btn-menu')
+  })
+
   it('o chip ativo é o azul da marca cheio, e continua cheio no hover', () => {
     const ativo = bloco('.sz-tool-chip[aria-pressed="true"],')
     expect(ativo.seletor).toContain(':hover')
     expect(ativo.corpo).toContain('background: var(--sz-tool-cta)')
     expect(ativo.corpo).toContain('color: var(--sz-tool-on-cta)')
   })
+})
+
+describe('nenhum pacote usa uma receita que a folha não tem mais', () => {
+  // Classe sem receita não quebra nada em teste nenhum: o botão só aparece sem desenho. Por isso
+  // a varredura lê o código-fonte de quem consome a folha (como texto, sem importar nada).
+  const PACOTES = ['studio', 'pinta', 'pensa', 'molda', 'community-kids']
+  const REMOVIDAS = [/\bsz-tool-btn(?!-menu)\b/, /\bsz-tool-panel\b/, /\bsz-tool-pop\b/]
+  for (const pacote of PACOTES) {
+    it(`${pacote}: sem .sz-tool-btn, -3d, .sz-tool-panel nem .sz-tool-pop`, async () => {
+      const raiz = join(HERE, '../..', pacote, 'src')
+      const achados: string[] = []
+      let lidos = 0
+      for await (const arquivo of new Bun.Glob('**/*.{ts,tsx,css}').scan({ cwd: raiz })) {
+        // Teste não é consumidor de estilo (e é lá que se confere a AUSÊNCIA da classe).
+        if (/\.test\.tsx?$/.test(arquivo)) continue
+        lidos++
+        // Comentário também não (a história de uma receita que saiu pode citar o nome dela).
+        const texto = (await Bun.file(join(raiz, arquivo)).text())
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .replace(/(^|[^:])\/\/.*$/gm, '$1')
+        for (const re of REMOVIDAS) {
+          if (re.test(texto)) achados.push(`${pacote}/src/${arquivo} (${re.source})`)
+        }
+      }
+      expect(lidos).toBeGreaterThanOrEqual(5) // anti-vácuo: a pasta existe e tem código (o pensa tem 10)
+      expect(achados).toEqual([])
+    })
+  }
 })
 
 describe('quem embarca ferramentas importa a folha na ordem certa', () => {

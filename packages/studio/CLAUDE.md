@@ -3715,7 +3715,9 @@ SAÍRAM (o `tokens.test.ts` trava que nenhuma regra volte). Detalhes que custara
   aparelho, o selo vence a conta).
 
 ⭐⭐ **07/09/2026 — cabeçalho de DUAS linhas (imagem-modelo dela; "o cabeçalho ocupa espaço
-demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
+demais").** (⚠️ HISTÓRICO: as receitas `.sz-tool-btn`, `.sz-tool-btn-3d` e `.sz-tool-panel` citadas
+aqui saíram da folha compartilhada em 11/09/2026; a galeria de hoje é a das telas-modelo, na seção
+acima.) Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
 Jogos" + subtítulo à esquerda; à direita o selo do host (`.sz-tool-status`), o `ThemeToggle`
 (`sz-tool-btn sz-tool-btn--icon`, nome "Mudar tema" intacto), "Importar" (`ImportButton` =
 `<button class="sz-tool-btn">` com `IconUpload`) e "+ Novo projeto" (`.sz-tool-btn-3d`). Linha 2

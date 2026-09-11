@@ -34,8 +34,9 @@ MESMA do Pinta e do Estúdio (o círculo de 46px `.pensa-round-btn` da primeira 
 do mesmo dia: ela reclamou que os três tinham saído diferentes). ⚠️ Foi uma **ABA colada na linha
 da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos de 12px dentro do
 conteúdo (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu dos dois cabeçalhos. O
-"voltar" do detalhe usa `.sz-tool-btn.sz-tool-btn--icon` (`ArrowLeftIcon` inline) para não
-destoar do menu ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
+"voltar" do detalhe usa o quadrado `.sz-tool-icon-btn` (`ArrowLeftIcon` inline; até 11/09/2026 era
+o `.sz-tool-btn.sz-tool-btn--icon`, que saiu da folha na limpeza do lote) para não destoar do menu
+ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
 `.pensa-project-header > button` morreu, e o `:focus-visible` global tem `:not(.sz-tool-*)`),
 senão ela vence a receita em `@layer components`. O contrato é `PensaHostChrome` (`core/types.ts`,
 só `menu: {hidden, label, onToggle} | null` — o Pensa persiste no servidor, então não há selo de
@@ -237,7 +238,8 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
 - ⭐⭐ **07/09/2026, cabeçalho compacto ("o cabeçalho ocupa espaço demais"):** o que mudou das
   decisões acima, por pedido dela: (a) o **Zappy pequeno SAIU do cabeçalho** (segue no vazio, no
   chat e no aprovado); (b) `.pensa-create` deixou de ser faixa sempre visível e virou linha 2 SOB
-  DEMANDA: o **"+ Novo plano"** (`.sz-tool-btn-3d`, à direita do título, `aria-expanded` +
+  DEMANDA: o **"+ Novo plano"** (`.sz-tool-btn-3d` naquela época; desde 11/09/2026 a pílula chapada
+  `.sz-tool-pill--primary`, à direita do título, `aria-expanded` +
   `aria-controls="pensa-create"`) abre o campo "Nome do novo jogo" logo abaixo (com foco), Esc/
   "Cancelar" fecham e devolvem o foco ao botão, criar navega, erro mantém o campo com o nome; a
   home nasce com ele ABERTO só no primeiro uso (0 planos); (c) `.pensa-section-heading` ("Meus

@@ -240,7 +240,8 @@ borda, sem o respiro `p-2` e sem os cartões flutuando no fundo.
 ## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
 
 > ⚠️ HISTÓRICO: substituída em 11/09/2026 pela seção acima (os cinco botões, a grade de 164px, o
-> espaçador `mt-auto` e a barra sticky não existem mais).
+> espaçador `mt-auto` e a barra sticky não existem mais; as variantes `tool`/`tool3d` do `Button`
+> saíram na limpeza do lote, junto com as receitas `.sz-tool-btn`/`-3d` da folha).
 
 Pedido dela, com a imagem-modelo do Estúdio: **linha 1** = menu do host + h1 "Meus desenhos" +
 subtítulo à esquerda; à direita o selo do host e os **cinco botões** ("Trazer de volta", "Trazer
