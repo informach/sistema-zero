@@ -20,27 +20,22 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
     return false
   }
 
+  // A barra do topo é a âncora escura do Pen (o adulto não tem menu lateral): fundo `--topo`,
+  // item ativo na pílula da cor de ação, os outros claros sobre o escuro.
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-(--topo-borda) border-b bg-(--topo)">
       <div className="relative flex h-14 items-center justify-between gap-4 px-4 md:px-6">
         {/* `prefetch={false}` PROPOSITAL (mesmo motivo do kids): rotas `force-dynamic` + ida ao
             gateway numa réplica ÚNICA — o prefetch automático do Next de todos os links do header
             a cada página vira tempestade de RSC/gateway. Navegação passa a buscar sob demanda. */}
         <Link href="/" className="flex shrink-0 items-center" aria-label="Início" prefetch={false}>
+          {/* A versão de letras claras, feita para fundo escuro, nos dois temas. */}
           <Image
             src="/logo_dark.svg"
             width={515}
             height={75}
             alt="Comunidade Sistema Zero"
-            className="hidden h-auto w-[130px] md:w-[150px] dark:block"
-            priority
-          />
-          <Image
-            src="/logo_white.svg"
-            width={515}
-            height={72}
-            alt="Comunidade Sistema Zero"
-            className="block h-auto w-[130px] md:w-[150px] dark:hidden"
+            className="block h-auto w-[130px] md:w-[150px]"
             priority
           />
         </Link>
@@ -56,27 +51,28 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
                 href={item.href}
                 prefetch={false}
                 className={cn(
-                  'flex items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors',
+                  'flex items-center gap-2 rounded-full px-4 py-2 text-sm transition-colors',
                   active
-                    ? 'bg-muted font-semibold text-foreground'
-                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                    ? 'bg-primary font-semibold text-primary-foreground'
+                    : 'text-(--topo-texto) hover:bg-(--topo-vidro) hover:text-white',
                 )}
               >
-                <Icon className="size-4" />
+                <Icon className={cn('size-4', !active && 'text-(--topo-icone)')} />
                 {item.label}
               </Link>
             )
           })}
         </nav>
 
-        <div className="flex shrink-0 items-center">
+        <div className="flex shrink-0 items-center gap-2">
           <RecadosBell />
           <UserMenu user={user} />
         </div>
       </div>
 
-      {/* Nav compacto (mobile) */}
-      <nav className="flex items-center gap-1 overflow-x-auto border-t border-border px-4 py-1.5 md:hidden">
+      {/* Nav compacto (mobile). `scrollbar-subtle`: a barra de rolagem clara do navegador ficava
+          riscada sobre o fundo escuro; o item cortado na borda já mostra que a fileira rola. */}
+      <nav className="scrollbar-subtle flex items-center gap-1 overflow-x-auto border-(--topo-borda) border-t px-4 py-1.5 md:hidden">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.href, item.match)
           return (
@@ -85,8 +81,10 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
               href={item.href}
               prefetch={false}
               className={cn(
-                'whitespace-nowrap rounded-lg px-3 py-1 text-sm transition-colors',
-                active ? 'bg-muted font-semibold text-foreground' : 'text-muted-foreground',
+                'whitespace-nowrap rounded-full px-3 py-1 text-sm transition-colors',
+                active
+                  ? 'bg-primary font-semibold text-primary-foreground'
+                  : 'text-(--topo-texto) hover:bg-(--topo-vidro) hover:text-white',
               )}
             >
               {item.label}

@@ -14,8 +14,8 @@ App que o **aluno** acessa: login/recuperação de senha, **meus cursos** (consu
 IA" via members — módulos, aulas em blocos, progresso), **todos os cursos** (`/cursos` — catálogo
 com cadeado), **perfil** (nome/telefone/**foto** + trocar senha) e **minhas compras**. Front-end
 **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é um **BFF** que **chama o API
-Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referência
-`comunidade-sistema-zero` (tokens OKLch dual light/dark + utilities `sz-*`). Porta **3007**.
+Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **Padrão** e **Pink**
+(ver §Tema; o claro/escuro herdado do `comunidade-sistema-zero` saiu em 11/09/2026). Porta **3007**.
 
 > Estado: **MVP da área do aluno** (login/logout, esqueci/definir senha — mesma página serve o 1º
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
@@ -46,6 +46,47 @@ Gateway** (NUNCA os serviços direto). Design/tema portado do projeto de referê
 > (`packages/member-shell/tests`); aqui ficou `tests/cookies.test.ts` (trava os nomes
 > `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
 > incluem `/packages/member-shell/**` como gatilho de deploy deste app.
+
+## Tema: a paleta do Pen, temas Padrão e Pink (11/09/2026)
+
+O visual segue as telas-modelo do Pen (`esboço plataforma.pen`, quadro "Paleta"): **um fundo só por
+página**, a **barra do topo escura** (a âncora do Pen; o adulto não tem menu lateral) e o verde
+**`#0B7A54`** como cor de ação. Não existe mais claro/escuro: são dois temas, **Padrão** e **Pink**
+(no Pink, o rosa entra no lugar do verde). Só design mudou: estrutura, textos e função seguem iguais.
+
+- **Tokens** (`globals.css`): primitivos `--pen-*` (chão, chão alternativo, cartão, superfície 2,
+  linha, tinta, tinta suave, ação e hover, sobre-ação, campo, sucesso, ok-texto, alerta) e
+  `--topo-*` (barra). Os semânticos (`--background`, `--primary`, `--muted`…) apontam para eles, e
+  o Pink (`:root[data-tema="pink"]`) redefine só primitivos. ⚠️ **`--pen-sucesso` NÃO segue o
+  tema:** o `accent` só marca estado de sucesso (✓ de aula concluída, "Aula concluída", acerto do
+  quiz, entrega aprovada no member-shell); no Pink a ação vira rosa e o sucesso fica verde.
+- **next-themes:** `attribute="data-tema"`, `themes=['padrao','pink']`, `defaultTheme="padrao"`,
+  `enableSystem={false}` e **`storageKey="sz-tema"` (chave NOVA de propósito):** o script sem flash
+  aplica o valor guardado sem conferir a lista, e quem tinha `theme=dark` salvo ficaria preso num
+  tema inexistente. "Mudar tema" (menu do avatar) alterna Padrão ⇄ Pink.
+- ⚠️ **`@custom-variant dark (&:is(.dark *))` FICA:** sem ela o Tailwind v4 volta ao
+  `prefers-color-scheme` e os `dark:` do `@sistemazero/ui` e do member-shell passariam a seguir o
+  modo escuro do sistema operacional. Como não existe `.dark` em lugar nenhum, eles ficam inertes.
+- **Botões:** o override `button/a.bg-primary.text-primary-foreground` (FORA de camada, para vencer
+  as utilitárias do `Button`) é a pílula chapada do Pen. `.sz-btn-gradient` virou a mesma pílula e
+  mora em `@layer components`: o `h-*`/`px-*` de quem usa voltou a valer (a armadilha que o kids
+  já tinha corrigido). `--radius: 1.25rem` e `--shadow-sm` zerado deixam o cartão plano.
+- **Aula:** `.sz-app:has(.sz-aula-adulto)` troca o chão da página para o alternativo. Sob
+  `.sz-aula-adulto`, os ganchos `sz-lesson-*` do member-shell viram cartões brancos, com regras
+  FORA de camada (mesmo motivo do kids). Só o bloco de TEXTO vira cartão (`> div > .lesson-prose`),
+  porque quiz, materiais e recado já trazem o deles; o título da seção abre o cartão do texto.
+- **Avatar da barra:** sem foto, o `UserAvatar` do member-shell é tinta escura sobre verde a 15%, e
+  as iniciais sumiam na barra escura. O botão do menu aplica `[&>span]:bg-primary
+  [&>span]:text-primary-foreground`: o seletor de filho vence as classes do componente
+  compartilhado, que o menu suspenso (fundo branco) continua usando como estão.
+- **Estúdio e Pinta dentro da aula:** o `:root` declara os `--sz-tool-*` (fundo e ação dos dois
+  temas); no escuro próprio do Estúdio (`[data-sz-theme="dark"]`) eles voltam a `initial`.
+- **Conferência visual** (o app exige banco e login): `tmp/`, fora do git, tem `compila-css.ts`
+  (pipeline real; rodar DE DENTRO do pacote), `renderiza.tsx` (as páginas reais dentro do layout
+  real, com stubs; um HTML por página, `?tema=pink`), `servidor.ts` (:4802) e
+  `auditoria-contraste.js`. Medido em 11/09: todo texto habilitado passa (4,5:1; 3:1 no grande)
+  nas oito páginas, nos dois temas.
+- ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
 
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 

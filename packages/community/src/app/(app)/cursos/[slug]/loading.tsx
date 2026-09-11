@@ -34,7 +34,7 @@ export default function CourseLoading() {
       <div className="flex flex-col gap-6">
         {MODULE_KEYS.map((m) => (
           <Card key={m} className="overflow-hidden p-0">
-            <div className="border-border border-b bg-muted/40 px-5 py-3">
+            <div className="border-border border-b bg-muted px-5 py-3">
               <Skeleton className="h-4 w-48" />
             </div>
             <ul>

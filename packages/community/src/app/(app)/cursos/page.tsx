@@ -26,7 +26,7 @@ export default async function CatalogPage() {
       </div>
 
       {courses.length === 0 ? (
-        <section className="flex flex-col items-center gap-3 rounded-xl border border-border border-dashed px-6 py-16 text-center">
+        <section className="flex flex-col items-center gap-3 rounded-[1.75rem] border-2 border-border border-dashed bg-card px-6 py-16 text-center">
           <BookOpen className="size-8 text-muted-foreground" />
           <p className="text-sm text-muted-foreground">Nenhum curso publicado ainda.</p>
         </section>

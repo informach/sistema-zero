@@ -125,7 +125,9 @@ export function LessonPlayer({
 
   return (
     <LessonPlayerProvider value={playerContext}>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+      {/* `sz-aula-adulto`: gancho do fundo alternativo da aula (a régua do Pen), aplicado no
+          invólucro do app pelo `globals.css` sem mexer no layout. */}
+      <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
@@ -156,9 +158,9 @@ export function LessonPlayer({
           ) : null}
 
           {/* Ações: concluir + navegação */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+          <div className="flex flex-wrap items-center gap-3 rounded-[1.5rem] bg-card p-4 md:p-5">
             {lesson.completed ? (
-              <span className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
+              <span className="inline-flex items-center gap-2 font-semibold text-accent text-sm">
                 <CheckCircle2 className="size-4" />
                 Aula concluída
               </span>
@@ -220,7 +222,7 @@ export function LessonPlayer({
               <p className="text-sm font-semibold">{course.title}</p>
               <div className="mt-2 flex items-center gap-2">
                 <ProgressBar value={course.progress.percent} className="flex-1" />
-                <span className="sz-display text-xs">{course.progress.percent}%</span>
+                <span className="sz-display text-primary text-xs">{course.progress.percent}%</span>
               </div>
               {/* Classificação do curso: o link some quando myRating != null. */}
               <CourseRatingFlow
@@ -233,7 +235,7 @@ export function LessonPlayer({
             <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
               {course.modules.map((module) => (
                 <div key={module.id}>
-                  <p className="bg-muted/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <p className="bg-muted px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {module.title}
                   </p>
                   <ul>
@@ -259,14 +261,16 @@ export function LessonPlayer({
                             href={`${courseHref}/aulas/${encodeURIComponent(item.id)}`}
                             className={cn(
                               'flex items-center gap-2 px-4 py-2 text-sm transition-colors',
+                              // Aula atual: o tom da linha de cartão com a barrinha na cor de
+                              // ação à esquerda (o "você está aqui" do Pen).
                               active
-                                ? 'bg-muted font-medium text-foreground'
+                                ? 'bg-muted font-medium text-foreground shadow-[inset_3px_0_0_var(--primary)]'
                                 : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                             )}
                             aria-current={active ? 'page' : undefined}
                           >
                             {item.completed ? (
-                              <CheckCircle2 className="size-3.5 shrink-0 text-accent dark:text-primary" />
+                              <CheckCircle2 className="size-3.5 shrink-0 text-accent" />
                             ) : (
                               <Circle className="size-3.5 shrink-0" />
                             )}

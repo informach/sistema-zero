@@ -18,6 +18,10 @@
 @source "../../../studio/src";
 @source "../../../pinta/src";
 
+/* O tema escuro deixou de existir (11/09/2026: temas Padrão e Pink), mas o `@sistemazero/ui` e o
+   member-shell ainda trazem `dark:` nas classes. Esta variante FICA: sem ela o Tailwind v4 volta
+   ao padrão dele (`prefers-color-scheme`) e esses `dark:` passariam a seguir o modo escuro do
+   sistema operacional. Com ela, e sem `.dark` em lugar nenhum, eles não fazem nada. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -61,58 +65,92 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Cartão plano, como no Pen: o `shadow-sm` do `Card` do @sistemazero/ui some sem mexer no
+   componente (que o admin também usa). */
+@theme {
+  --shadow-sm: 0 0 #0000;
+}
+
 /* ============================================================
-   SISTEMA ZERO — LIGHT MODE (cyan-first, off-white quente)
+   SISTEMA ZERO — TEMA PADRÃO
+   A paleta do Pen (`esboço plataforma.pen`, 11/09/2026) com o verde de destaque do adulto.
+   O tema Pink (abaixo) redefine só os primitivos `--pen-*` e `--topo-*`; os tokens
+   semânticos apontam para eles. Contraste medido: texto ≥ 4,5:1, borda de campo ≥ 3:1.
    ============================================================ */
 :root {
-  --brand-lime: oklch(0.875 0.215 122);
-  --brand-cyan: oklch(0.84 0.13 192);
+  color-scheme: light;
 
-  --background: oklch(0.985 0.004 100);
-  --foreground: oklch(0.105 0.01 265);
+  --pen-chao: #e9eef6;
+  --pen-chao-alt: #dde5f0;
+  --pen-cartao: #ffffff;
+  --pen-sup2: #eff3f9;
+  --pen-linha: #d6deea;
+  --pen-tinta: #0f1a33;
+  --pen-tinta-suave: #46536e;
+  --pen-acao: #0b7a54;
+  --pen-acao-hover: #086446;
+  /* Texto sobre a cor de ação quando não é branco puro (sobretítulo do herói). */
+  --pen-sobre-acao: #e8f5ee;
+  --pen-campo: #74829f;
+  /* Sucesso do Pen: é ESTADO (concluído, acertou), então não segue o tema. No Padrão ele coincide
+     com a cor de ação; no Pink continua verde enquanto a ação vira rosa. */
+  --pen-sucesso: #0b7a54;
+  --pen-ok-texto: #096b4a;
+  --pen-alerta: #d92d34;
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.105 0.01 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.105 0.01 265);
+  /* Barra do topo escura: a âncora do Pen (o adulto não tem menu lateral). */
+  --topo: #121a30;
+  --topo-borda: #1b2540;
+  --topo-texto: #cbd4e8;
+  --topo-icone: #8e9bba;
+  --topo-vidro: rgb(255 255 255 / 0.08);
 
-  --primary: oklch(0.52 0.14 200);
-  --primary-foreground: oklch(1 0 0);
+  --background: var(--pen-chao);
+  --background-alt: var(--pen-chao-alt);
+  --foreground: var(--pen-tinta);
 
-  --link: oklch(0.44 0.14 210);
-  --link-hover: oklch(0.38 0.15 210);
+  --card: var(--pen-cartao);
+  --card-foreground: var(--pen-tinta);
+  --popover: var(--pen-cartao);
+  --popover-foreground: var(--pen-tinta);
+
+  --primary: var(--pen-acao);
+  --primary-foreground: #ffffff;
+  --primary-hover: var(--pen-acao-hover);
+  --on-primary-soft: var(--pen-sobre-acao);
+
+  --link: var(--pen-acao);
+  --link-hover: var(--pen-acao-hover);
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
-  /* Gradient CTA — cyan → lime no light. */
-  --brand-gradient-start: var(--brand-cyan);
-  --brand-gradient-end: var(--brand-lime);
+  --secondary: var(--pen-sup2);
+  --secondary-foreground: var(--pen-tinta);
 
-  --secondary: oklch(0.955 0.004 255);
-  --secondary-foreground: oklch(0.145 0.01 265);
+  --muted: var(--pen-sup2);
+  --muted-foreground: var(--pen-tinta-suave);
 
-  --muted: oklch(0.955 0.004 255);
-  --muted-foreground: oklch(0.5 0.01 255);
+  /* `accent` só marca estado de sucesso: o ✓ de aula concluída, "Aula concluída", a resposta
+     certa do quiz e a entrega aprovada do Estúdio/Pinta (member-shell). */
+  --accent: var(--pen-sucesso);
+  --accent-foreground: #ffffff;
 
-  --accent: oklch(0.62 0.18 135);
-  --accent-foreground: oklch(1 0 0);
+  --destructive: var(--pen-alerta);
+  --destructive-foreground: #ffffff;
 
-  --destructive: oklch(0.55 0.22 27);
-  --destructive-foreground: oklch(1 0 0);
+  /* Badge `success` do @sistemazero/ui: `bg-success/15` + a tinta própria do selo. */
+  --success: var(--pen-ok-texto);
+  --success-foreground: var(--pen-ok-texto);
 
-  /* Sucesso (badge `success` do @sistemazero/ui) — verde escuro AA no light (igual ao admin). */
-  --success: oklch(0.45 0.13 150);
-  --success-foreground: oklch(0.4 0.13 150);
+  --border: var(--pen-linha);
+  --input: var(--pen-campo);
+  --ring: var(--pen-acao);
 
-  --border: oklch(0.9 0.005 255);
-  --input: oklch(0.92 0.005 255);
-  --ring: oklch(0.52 0.14 200);
-
-  --chart-1: oklch(0.52 0.14 200);
-  --chart-2: oklch(0.62 0.18 135);
-  --chart-3: oklch(0.58 0.16 170);
-  --chart-4: oklch(0.55 0.22 27);
-  --chart-5: oklch(0.5 0.01 255);
+  --chart-1: var(--pen-acao);
+  --chart-2: #1b5cf3;
+  --chart-3: #6d3bf5;
+  --chart-4: var(--pen-alerta);
+  --chart-5: var(--pen-tinta-suave);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -121,73 +159,109 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
 
-  --radius: 0.5rem;
-
-  /* Signature meta-tokens (gradiente CTA, hot badge). */
-  --sz-primary: oklch(0.52 0.14 200);
-  --sz-primary-fg: oklch(1 0 0);
-  --sz-accent: oklch(0.62 0.18 135);
-  --sz-hot: oklch(0.55 0.22 27);
-  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
-  --sz-gradient: linear-gradient(90deg, oklch(0.42 0.22 140), oklch(0.44 0.14 210));
+  /* Cartão com 24 px e botão do `Button` em pílula (a régua do Pen). */
+  --radius: 1.25rem;
 }
 
 /* ============================================================
-   SISTEMA ZERO — DARK MODE (#0D1117, neon lime/cyan)
+   SISTEMA ZERO — TEMA PINK (aprovado por ela em 11/09/2026)
    ============================================================ */
-.dark {
-  --background: oklch(0.103 0.01 265);
-  --foreground: oklch(0.975 0.003 255);
+:root[data-tema="pink"] {
+  --pen-chao: #f4ecf2;
+  --pen-chao-alt: #ecdde8;
+  --pen-sup2: #f8f1f6;
+  --pen-linha: #e7d5e1;
+  --pen-tinta: #1f1026;
+  --pen-tinta-suave: #5a4760;
+  --pen-acao: #c8246f;
+  --pen-acao-hover: #a81d5d;
+  --pen-sobre-acao: #fff0f6;
+  --pen-campo: #9a7892;
 
-  --card: oklch(0.14 0.01 265);
-  --card-foreground: oklch(0.975 0.003 255);
-  --popover: oklch(0.17 0.01 265);
-  --popover-foreground: oklch(0.975 0.003 255);
+  --topo: #25132b;
+  --topo-borda: #331d3a;
+  --topo-texto: #e6d3e1;
+  --topo-icone: #b08fab;
+}
 
-  --primary: var(--brand-lime);
-  --primary-foreground: oklch(0.103 0.01 265);
+/* ============================================================
+   ESTÚDIO E PINTA DENTRO DA AULA
+   Os dois pacotes leem os `--sz-tool-*` como primeira escolha (a cadeia de dois degraus deles):
+   aqui eles recebem o fundo e a cor de ação do tema, nos dois temas. O Estúdio tem um escuro
+   próprio (o aluno escolhe dentro dele) e o bloco escuro dele TAMBÉM lê estes tokens; lá eles
+   voltam a não existir (`initial`), e o Estúdio usa os valores de sempre em vez de um claro pela
+   metade.
+   ============================================================ */
+:root {
+  --sz-tool-bg: var(--pen-chao);
+  --sz-tool-surface: var(--pen-cartao);
+  --sz-tool-surface-2: var(--pen-sup2);
+  --sz-tool-line: var(--pen-linha);
+  --sz-tool-ink: var(--pen-tinta);
+  --sz-tool-muted: var(--pen-tinta-suave);
+  --sz-tool-accent: var(--pen-acao);
+  --sz-tool-on-accent: #ffffff;
+  --sz-tool-cta: var(--pen-acao);
+  --sz-tool-on-cta: #ffffff;
+  --sz-tool-cta-gradient: linear-gradient(90deg, var(--pen-acao), var(--pen-acao));
+}
+[data-sz-theme="dark"],
+[data-pinta-theme="dark"] {
+  --sz-tool-bg: initial;
+  --sz-tool-surface: initial;
+  --sz-tool-surface-2: initial;
+  --sz-tool-line: initial;
+  --sz-tool-ink: initial;
+  --sz-tool-muted: initial;
+  --sz-tool-accent: initial;
+  --sz-tool-on-accent: initial;
+  --sz-tool-cta: initial;
+  --sz-tool-on-cta: initial;
+  --sz-tool-cta-gradient: initial;
+}
 
-  --link: oklch(0.875 0.215 122);
-  --link-hover: oklch(0.92 0.2 125);
-  --interactive-text: var(--link);
-  --interactive-text-hover: var(--link-hover);
+/* A aula mora no fundo alternativo do Pen: o chão da página inteira troca quando o player está
+   na tela. `:has()` para não mexer no layout do app só por isso. */
+.sz-app:has(.sz-aula-adulto) {
+  background-color: var(--background-alt);
+}
 
-  /* Gradient CTA — lime → cyan no dark. */
-  --brand-gradient-start: var(--brand-lime);
-  --brand-gradient-end: var(--brand-cyan);
-
-  --secondary: oklch(0.185 0.01 265);
-  --secondary-foreground: oklch(0.975 0.003 255);
-
-  --muted: oklch(0.185 0.01 265);
-  --muted-foreground: oklch(0.6 0.012 235);
-
-  --accent: oklch(0.21 0.01 265);
-  --accent-foreground: oklch(0.84 0.13 192);
-
-  --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.975 0.003 255);
-
-  /* Sucesso no dark: bg-accent/15 + fg ciano (igual ao admin). */
-  --success: oklch(0.21 0.01 265);
-  --success-foreground: oklch(0.84 0.13 192);
-
-  --border: oklch(0.21 0.01 265);
-  --input: oklch(0.23 0.01 265);
-  --ring: oklch(0.875 0.215 122);
-
-  --chart-1: oklch(0.875 0.215 122);
-  --chart-2: oklch(0.84 0.13 192);
-  --chart-3: oklch(0.858 0.172 157);
-  --chart-4: oklch(0.64 0.215 27);
-  --chart-5: oklch(0.6 0.012 235);
-
-  --sz-primary: oklch(0.875 0.215 122);
-  --sz-primary-fg: oklch(0.103 0.01 265);
-  --sz-accent: oklch(0.84 0.13 192);
-  --sz-hot: oklch(0.704 0.191 22);
-  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
-  --sz-gradient: linear-gradient(90deg, oklch(0.875 0.215 122), oklch(0.84 0.13 192));
+/* ── A AULA NO DESENHO DO PEN ─────────────────────────────────────────────────────────────
+   Sobre o fundo alternativo, cada pedaço da aula é um cartão branco. FORA de camada, de
+   propósito: o `LessonSections` do member-shell pinta estes elementos com utilitárias
+   (`rounded-2xl border bg-card`, o `space-y-6` do painel), e regra em camada perde para elas.
+   Tudo mira os ganchos estáveis `sz-lesson-*` (criados no member-shell, sem regra lá) sob a
+   raiz do player do adulto, então o kids e a prévia do admin não são tocados.
+   Só o bloco de TEXTO vira cartão (`> div > .lesson-prose`, o formato do `RichText`): quiz,
+   materiais e recado já trazem o cartão deles, e cartão dentro de cartão o Pen não tem. O título
+   da seção abre o cartão do texto logo abaixo dele. Sem borda nem sombra: o anel de foco do
+   bloco é `box-shadow`. */
+.sz-aula-adulto .sz-lesson-toolbar {
+  border-color: transparent;
+  border-radius: 1.5rem;
+}
+.sz-aula-adulto .sz-lesson-section-head:has(+ .sz-lesson-block > div > .lesson-prose) {
+  margin-block-end: 0;
+  border-radius: 1.5rem 1.5rem 0 0;
+  background: var(--card);
+  padding: 1.5rem 1.5rem 0.5rem;
+}
+.sz-aula-adulto .sz-lesson-block:has(> div > .lesson-prose) {
+  border-radius: 1.5rem;
+  background: var(--card);
+  padding: 1.5rem;
+}
+.sz-aula-adulto .sz-lesson-section-head + .sz-lesson-block:has(> div > .lesson-prose) {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+  padding-top: 0.5rem;
+}
+/* O rodapé das seções (Anterior, Preciso de ajuda, Próxima seção) no cartão, como as ações. */
+.sz-aula-adulto .sz-lesson-nav {
+  border: 0;
+  border-radius: 1.5rem;
+  background: var(--card);
+  padding: 0.75rem 1rem;
 }
 
 @layer base {
@@ -218,145 +292,70 @@
 /* ============================================================
    UTILITÁRIOS DE MARCA — Sistema Zero
    ============================================================ */
-.brand-gradient-text {
-  background: linear-gradient(90deg, var(--brand-gradient-start), var(--brand-gradient-end));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
 
-/* Promove o Button variant="default" a CTA gradiente. */
+/* O `Button` variant="default" vira a pílula chapada do Pen. FORA de camada de propósito: tem de
+   vencer as utilitárias do componente (`rounded-lg`, `[a]:hover:bg-primary/80`). */
 button.bg-primary.text-primary-foreground,
 a.bg-primary.text-primary-foreground {
-  background-image: var(--sz-gradient);
-  background-color: transparent;
-  color: var(--sz-primary-fg);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
+  background-image: none;
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 6px 16px color-mix(in oklch, var(--sz-primary) 30%, transparent);
+  background-color: var(--primary-hover);
 }
 
-.dark .brand-glow {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-lime) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-lime) 15%, transparent);
-}
-
-/* Glow cyan para destaque secundário */
-.dark .brand-glow-cyan {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-cyan) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
-}
-
-/* CTA gradiente standalone — mesmo visual do Button default, fora do Button */
-.sz-btn-gradient {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 0.875rem;
-  padding: 0 1.125rem;
-  height: 2.5rem;
-  border-radius: 0.625rem;
-  border: 0;
-  background-image: var(--sz-gradient);
-  color: var(--sz-primary-fg);
-  cursor: pointer;
-  box-shadow:
-    0 1px 2px oklch(0 0 0 / 0.15),
-    0 0 0 1px oklch(0 0 0 / 0.05) inset;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease,
-    filter 0.15s ease;
-}
-.sz-btn-gradient:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 6px 16px color-mix(in oklch, var(--sz-primary) 30%, transparent);
-}
-.sz-btn-gradient svg {
-  stroke: currentColor;
-}
-
-/* Hot badge — red promovido, ≠ destructive, com pulso sutil */
-.sz-hot-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.1875rem 0.625rem 0.1875rem 0.5rem;
-  border-radius: 9999px;
-  background: var(--sz-hot-tint);
-  color: var(--sz-hot);
-  border: 1px solid color-mix(in oklch, var(--sz-hot) 35%, transparent);
-}
-.sz-hot-badge .dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--sz-hot);
-  animation: sz-pulse 1.6s ease-in-out infinite;
-}
-@keyframes sz-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
+@layer components {
+  /* CTA fora do `Button` (links e spans), com o mesmo desenho. Em `@layer components` para o
+     `h-*`/`px-*`/`text-*` de quem usa valer: solta no arquivo, a classe vencia as utilitárias em
+     silêncio (a mesma armadilha que o kids já corrigiu). */
+  .sz-btn-gradient {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0 1.125rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 0;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
   }
-  50% {
-    opacity: 0.55;
-    transform: scale(1.3);
+  .sz-btn-gradient:hover {
+    background-color: var(--primary-hover);
+  }
+  .sz-btn-gradient svg {
+    stroke: currentColor;
   }
 }
 
-/* Badges de categoria/nível sobre a capa do curso */
-.course-meta-badge {
-  color: oklch(1 0 0);
-  border-color: color-mix(in oklch, var(--brand-lime) 25%, transparent);
-  background-color: color-mix(in oklch, black 42%, transparent);
-  backdrop-filter: blur(10px);
-}
-
-/* Progress bar gradiente (cards de curso + player) */
+/* Barra de progresso (cards de curso + player): trilho claro e preenchimento na cor de ação. */
 .sz-progress {
   position: relative;
   height: 0.375rem;
-  background: color-mix(in oklch, var(--muted) 60%, transparent);
+  background: var(--muted);
   border-radius: 9999px;
   overflow: hidden;
 }
 .sz-progress > span {
   display: block;
   height: 100%;
-  background-image: var(--sz-gradient);
+  background-color: var(--primary);
   border-radius: inherit;
 }
 
-/* Divider — hairline em gradiente */
+/* Divisória simples na cor da linha do Pen. */
 .sz-divider {
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in oklch, var(--sz-primary) 40%, transparent) 20%,
-    color-mix(in oklch, var(--sz-accent) 40%, transparent) 80%,
-    transparent 100%
-  );
+  background: var(--border);
   border: 0;
   margin: 1.5rem 0;
 }
@@ -368,11 +367,9 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   letter-spacing: -0.03em;
   line-height: 1;
 }
+/* Número em destaque (nota do quiz, número do módulo): na cor de ação, sem degradê. */
 .sz-display-grad {
-  background-image: var(--sz-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary);
 }
 
 /* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */
@@ -439,14 +436,14 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .lesson-prose code {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background: color-mix(in oklch, var(--muted) 80%, transparent);
+  background: var(--muted);
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
 }
 .lesson-prose pre {
-  background: color-mix(in oklch, var(--muted) 80%, transparent);
+  background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 0.75rem;
   padding: 1rem;
   overflow-x: auto;
   margin: 1em 0;
@@ -456,7 +453,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   padding: 0;
 }
 .lesson-prose blockquote {
-  border-left: 3px solid color-mix(in oklch, var(--sz-primary) 50%, transparent);
+  border-left: 3px solid color-mix(in oklab, var(--primary) 50%, transparent);
   padding-left: 1rem;
   margin: 1em 0;
   color: var(--muted-foreground);
@@ -465,7 +462,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
 .lesson-prose img {
   max-width: 100%;
   height: auto;
-  border-radius: var(--radius);
+  border-radius: 0.75rem;
   margin: 0.75em 0;
 }
 /* O espaçamento entre blocos vem do gap do container — sem margens vazando nas bordas */
@@ -508,7 +505,7 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   scrollbar-color: transparent transparent;
 }
 .scrollbar-subtle:hover {
-  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
+  scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;
 }
 .scrollbar-subtle::-webkit-scrollbar {
   width: 6px;
@@ -519,10 +516,10 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
   border-radius: 9999px;
 }
 .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 18%, transparent);
+  background: color-mix(in oklab, var(--foreground) 18%, transparent);
 }
 
-/* Toast — contraste garantido em ambos os modos */
+/* Toast — contraste garantido nos dois temas */
 [data-sonner-toast] {
   background: var(--popover) !important;
   color: var(--popover-foreground) !important;

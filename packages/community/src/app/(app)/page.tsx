@@ -17,33 +17,36 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="sz-display text-2xl">
+        <h1 className="sz-display text-2xl md:text-3xl">
           Olá{user?.firstName ? `, ${user.firstName}` : ''} 👋
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-2 text-muted-foreground">
           Continue de onde parou — seus cursos estão aqui.
         </p>
       </div>
 
       {next ? (
-        <section className="rounded-2xl border border-primary/25 bg-card p-6">
-          <p className="font-semibold text-primary text-sm">Sua próxima aula</p>
-          <h2 className="sz-display mt-2 text-2xl">{next.title}</h2>
-          <p className="mt-2 text-muted-foreground text-sm">
+        // O herói do Pen: fundo na cor de ação, texto claro e o botão branco.
+        <section className="rounded-[2rem] bg-primary p-6 text-primary-foreground shadow-[0_10px_24px_color-mix(in_oklab,var(--primary)_22%,transparent)] md:p-7">
+          <p className="font-bold text-(--on-primary-soft) text-xs uppercase tracking-[0.1em]">
+            Sua próxima aula
+          </p>
+          <h2 className="sz-display mt-3 text-2xl md:text-3xl">{next.title}</h2>
+          <p className="mt-2 text-(--on-primary-soft) text-sm">
             {next.progress.completedLessons} de {next.progress.totalLessons} aulas concluídas
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-4">
+          <div className="mt-5 flex flex-wrap items-center gap-4">
             <Link
               href={`/cursos/${encodeURIComponent(next.courseSlug)}${next.continueLessonId ? `/aulas/${encodeURIComponent(next.continueLessonId)}` : ''}`}
               prefetch={false}
-              className="inline-flex min-h-11 items-center rounded-lg bg-primary px-5 font-semibold text-primary-foreground"
+              className="inline-flex min-h-11 items-center rounded-full bg-white px-6 font-semibold text-primary transition-colors hover:bg-white/90"
             >
               Continuar aprendendo
             </Link>
             <Link
               href="/recados"
               prefetch={false}
-              className="inline-flex min-h-11 items-center font-semibold text-primary"
+              className="inline-flex min-h-11 items-center font-semibold text-white underline-offset-4 hover:underline"
             >
               Ver devolutivas
             </Link>
@@ -51,7 +54,7 @@ export default async function HomePage() {
         </section>
       ) : null}
       {!next && courses.length > 0 ? (
-        <section className="rounded-2xl border border-border bg-card p-6">
+        <section className="rounded-[1.75rem] bg-card p-6">
           <h2 className="text-lg font-semibold">Continue a conversa sobre suas criações</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Consulte as devolutivas do professor e retome um curso sempre que quiser revisar.
@@ -66,9 +69,9 @@ export default async function HomePage() {
         </section>
       ) : null}
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Meus cursos</h2>
+        <h2 className="font-semibold text-xl tracking-tight">Meus cursos</h2>
         {courses.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-16 text-center">
+          <div className="flex flex-col items-center gap-3 rounded-[1.75rem] border-2 border-border border-dashed bg-card py-16 text-center">
             <BookOpen className="size-10 text-muted-foreground" />
             <div>
               <p className="font-medium">Nenhum curso liberado ainda</p>

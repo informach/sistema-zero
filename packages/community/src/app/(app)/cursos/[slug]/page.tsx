@@ -35,14 +35,14 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Cabeçalho do curso */}
-      <div className="flex flex-col gap-6 md:flex-row md:items-start">
-        <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-lg bg-muted md:w-80">
+      {/* Cabeçalho do curso: o cartão branco do Pen, com capa, progresso e a pílula. */}
+      <div className="flex flex-col gap-6 rounded-[1.75rem] bg-card p-5 md:flex-row md:items-start md:p-6">
+        <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-muted md:w-80">
           {course.coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={course.coverImageUrl} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="h-full w-full bg-gradient-to-br from-secondary to-muted" />
+            <div className="h-full w-full bg-muted" />
           )}
         </div>
         <div className="flex flex-1 flex-col gap-3">
@@ -61,7 +61,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                 {course.progress.completedLessons} de {course.progress.totalLessons} aulas
                 concluídas
               </span>
-              <span className="sz-display">{course.progress.percent}%</span>
+              <span className="sz-display text-primary">{course.progress.percent}%</span>
             </div>
             <ProgressBar value={course.progress.percent} />
           </div>
@@ -80,7 +80,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
       <div className="flex flex-col gap-6">
         {course.modules.map((module, mi) => (
           <Card key={module.id} className="overflow-hidden p-0">
-            <div className="border-b border-border bg-muted/40 px-5 py-3">
+            <div className="border-b border-border bg-muted px-5 py-3">
               <h2 className="text-sm font-semibold">
                 <span className="sz-display-grad mr-2">{String(mi + 1).padStart(2, '0')}</span>
                 {module.title}
@@ -95,7 +95,7 @@ export default async function CoursePage({ params }: { params: Promise<{ slug: s
                 const rowInner = (
                   <>
                     {lesson.completed ? (
-                      <CheckCircle2 className="size-4 shrink-0 text-accent dark:text-primary" />
+                      <CheckCircle2 className="size-4 shrink-0 text-accent" />
                     ) : lesson.locked ? (
                       <Lock className="size-4 shrink-0 text-muted-foreground" />
                     ) : (

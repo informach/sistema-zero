@@ -1,7 +1,7 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, Moon, Receipt, Sun, User } from 'lucide-react'
+import { LogOut, Palette, Receipt, User } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
@@ -15,11 +15,8 @@ import { getUserDisplayName } from '@/lib/user-display'
 export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { resolvedTheme, setTheme } = useTheme()
-
-  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
@@ -41,15 +38,21 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
     }
   }
 
-  const isDark = resolvedTheme === 'dark'
+  // Padrão ⇄ Pink. O ícone é um só, então não precisa esperar a hidratação (o do Sol/Lua dependia
+  // do tema guardado e só aparecia depois de montar).
+  const isPink = resolvedTheme === 'pink'
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
   return (
     <div className="relative" ref={ref}>
+      {/* Sem foto, o avatar é um círculo com as iniciais, em tinta escura sobre a cor de ação a
+          15%: na barra escura as iniciais somem. Aqui ele vira o avatar do menu do Pen (cor de
+          ação, iniciais brancas). O seletor de filho vence as classes do componente
+          compartilhado, que o menu suspenso (fundo branco) continua usando como estão. */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="rounded-full transition-opacity hover:opacity-85"
+        className="rounded-full transition-opacity hover:opacity-85 [&>span]:bg-primary [&>span]:text-primary-foreground"
         aria-label="Conta"
         aria-expanded={open}
       >
@@ -87,8 +90,8 @@ export function UserMenu({ user }: { user: SessionUserWithAvatar }) {
             <Receipt className="size-4" />
             Compras
           </Link>
-          <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className={itemClass}>
-            {mounted && !isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          <button onClick={() => setTheme(isPink ? 'padrao' : 'pink')} className={itemClass}>
+            <Palette className="size-4" />
             Mudar tema
           </button>
           <div className="border-t border-border" />

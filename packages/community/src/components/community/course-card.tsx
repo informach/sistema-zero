@@ -12,7 +12,7 @@ export function CourseCard({ course }: { course: MyCourseView }) {
 
   return (
     <Link href={`/cursos/${encodeURIComponent(course.courseSlug)}`} className="group block">
-      <Card className="overflow-hidden p-0 transition-shadow group-hover:shadow-lg dark:group-hover:brand-glow">
+      <Card className="overflow-hidden p-0 transition-shadow group-hover:shadow-lg">
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
           {course.coverImageUrl ? (
             // Capa pode ser URL externa arbitrária (autoria) → <img> simples,
@@ -24,7 +24,7 @@ export function CourseCard({ course }: { course: MyCourseView }) {
               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-secondary to-muted">
+            <div className="flex h-full w-full items-center justify-center bg-muted">
               <BookOpen className="size-10 text-muted-foreground" />
             </div>
           )}
@@ -41,7 +41,7 @@ export function CourseCard({ course }: { course: MyCourseView }) {
               <span>
                 {progress.completedLessons} de {progress.totalLessons} aulas
               </span>
-              <span className="sz-display">{progress.percent}%</span>
+              <span className="sz-display text-primary">{progress.percent}%</span>
             </div>
             <ProgressBar value={progress.percent} />
           </div>
