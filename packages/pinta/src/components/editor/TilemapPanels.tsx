@@ -122,7 +122,9 @@ export function TilemapToolbar({
         role="toolbar"
         aria-label={COPY.a11y.tools}
         aria-orientation="vertical"
-        className="flex min-h-0 shrink-0 flex-col items-center gap-2 overflow-y-auto p-2"
+        // `flex-1` e não `shrink-0`: dentro da coluna, o `shrink-0` travava a altura no conteúdo
+        // e o `overflow-y-auto` nunca rolava (as últimas ferramentas ficavam atrás da barra).
+        className="pin-scroll-y flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto p-2"
       >
         {drawNodes}
         {/* Divisor só existe entre dois grupos que existem. */}

@@ -636,9 +636,21 @@ export function GalleryScreen(): JSX.Element {
               {loadError ? (
                 <div className="flex flex-col items-center gap-3 py-12">
                   <p className="font-semibold text-base text-pin-muted">{loadError}</p>
-                  <Button variant="pillPrimary" onClick={() => void gallery.getState().load()}>
-                    {COPY.gallery.retry}
-                  </Button>
+                  <div className="flex flex-wrap items-center justify-center gap-2.5">
+                    <Button variant="pillPrimary" onClick={() => void gallery.getState().load()}>
+                      {COPY.gallery.retry}
+                    </Button>
+                    {/* O cartão lilás não aparece sem a galeria: o backup continua à mão. */}
+                    <Button
+                      variant="pillSoft"
+                      disabled={restoring}
+                      aria-busy={restoring}
+                      onClick={openRestore}
+                    >
+                      <Upload aria-hidden="true" />
+                      {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
+                    </Button>
+                  </div>
                 </div>
               ) : null}
 

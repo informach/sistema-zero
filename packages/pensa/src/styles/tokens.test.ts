@@ -81,3 +81,22 @@ describe('pensa.css lê os tokens compartilhados', () => {
     expect(css).not.toMatch(/color-mix\(in oklch/)
   })
 })
+
+// Full review de 11/09/2026: o "Continuar" do cartão do plano estica a área clicável para o
+// cartão inteiro por um `::after`. Se o botão andar (`transform` do aperto da pílula, ou o
+// `translate` do relevo das galerias), ele vira o bloco de referência do `::after`, que encolhe
+// para o tamanho da pílula no meio do gesto: o clique solta no cartão e o plano não abre
+// (medido no navegador). A regra que o segura fica FORA de camada, para vencer as receitas.
+describe('o cartão do plano abre em qualquer ponto', () => {
+  it('o botão com a área esticada não anda no hover nem no aperto', () => {
+    const regra = bloco('.pensa-project-card__open:is(:hover, :active) {')
+    expect(regra).toMatch(/transform:\s*none/)
+    expect(regra).toMatch(/translate:\s*none/)
+    expect(css).toContain('.pensa-project-card__open::after {')
+    // Nenhuma `@layer` de verdade antes da regra (os comentários citam a camada das receitas).
+    const antes = css
+      .slice(0, css.indexOf('.pensa-project-card__open:is(:hover, :active)'))
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(antes).not.toMatch(/@layer\s+[\w-]+\s*\{/)
+  })
+})
