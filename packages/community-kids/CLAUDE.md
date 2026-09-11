@@ -1003,7 +1003,9 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   texto continua na página) e desenha as faixas: creme (cabeçalho + `KidsTabs`), menta (o conteúdo
   da aba) e lilás. O estado da aba precisa estar nas duas faixas, por isso o hub é dono delas.
 - **Pódio:** um cartão branco com 2º, 1º e 3º (ordem de DESENHO por `order-*`; a `<ol>` segue 1-2-3
-  para o leitor), bloco de metal com a ALTURA da posição. A cor e a altura saem da `position`, não do
+  para o leitor), bloco de metal com a ALTURA da posição. ⚠️ O lugar é DITO (`sr-only` "Nº lugar",
+  full review de 11/09/2026): a `<ol>` numera pela ordem no DOM e o placar é por competição, então
+  num empate (1º, 1º, 3º) a contagem da lista nem bate com o que está na tela. A cor e a altura saem da `position`, não do
   índice (o ranking empata). A própria criança aparece pelo NOME com a pílula azul "você" (antes era
   "Você" no lugar do nome), aqui e na liga.
 - **"Placar em pausa"** usa o `KidsEmptyState tone="pausa"` (círculo creme, ícone cinza) e o
@@ -1048,6 +1050,11 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   selo branco, e o travado também diz quantas aventuras a trilha dele tem.
 - **Trilha:** cartões grandes de duas colunas (`CatalogCourseCard`, sem cor de unidade: o prop `theme`
   saiu) e, na trilha ATUAL, o cartão lilás "Próximo nível" (o que ele libera + N de M prontas).
+  ⚠️ O cartão só aparece quando o catálogo LEVA até o posto (`promisedNextLevel`, full review de
+  11/09/2026): com o degrau pela metade o mapa fecha com "E tem muito mais pela frente" e a frase de
+  quanto falta cala, então prometer o posto aqui seria a mesma falsa esperança por outro caminho.
+  E o cartão de curso COM barra ao vivo (as "Aventuras da trilha") mostra só o selo pendente, como
+  o da home: o marco é congelado e a barra não, então "Pronta!" apareceria ao lado de 90%.
 - **Trilha de aulas:** nós e faixas de unidade CHAPADOS (a sombra dura de 5px e o `--node-shadow`
   saíram); o aperto virou `translateY(2px) scale(.97)`.
 
@@ -1154,7 +1161,8 @@ o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de
   Combinados em pílula branca (`ClubeCombinados variant="heroi"`). O estado vazio do canal usa
   `emptyTitle`/`emptyText` (`channel-presentation.ts`): as MESMAS palavras do `emptyState`, partidas
   em título e frase. A pílula creme "Escreva uma mensagem para a turma…" abre o mesmo formulário do
-  "Começar conversa". Os combinados (`COMBINADOS`, exportado) aparecem também no fechamento.
+  "Começar conversa" e leva o FOCO ao título dele: ela fica no pé da lista e o formulário abre no
+  topo do cartão, então sem isso a criança clicava e, na vista dela, nada acontecia. Os combinados (`COMBINADOS`, exportado) aparecem também no fechamento.
 - **Autor sem foto** mostra a INICIAL na bolinha (`AuthorBadge` passa `name`), e não o boneco
   genérico igual para todo mundo.
 - ⚠️ **O sino mora no herói, e o herói não pode cortar** (full review de 11/09/2026): só a forma

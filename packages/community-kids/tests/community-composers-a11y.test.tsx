@@ -186,6 +186,26 @@ describe('nomes acessíveis dos compositores da comunidade', () => {
   )
 
   test(
+    'a pílula do pé abre o formulário COM o foco no título',
+    async () => {
+      // O formulário abre no TOPO do cartão e a pílula fica no PÉ da lista de conversas:
+      // sem levar o foco (e a tela) até o campo, a criança clicava e, na vista dela, não
+      // acontecia nada (full review de 11/09/2026).
+      render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)
+
+      const pilula = await screen.findByRole(
+        'button',
+        { name: 'Escreva uma mensagem para a turma…' },
+        ESPERA,
+      )
+      fireEvent.click(pilula)
+      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      expect(document.activeElement).toBe(title)
+    },
+    TETO_DO_CASO_MS,
+  )
+
+  test(
     'o corpo da nova conversa expõe o editor rico como campo nomeado',
     async () => {
       render(<KidsSpaceViewClient slug="clube" viewerId="profile-1" />)

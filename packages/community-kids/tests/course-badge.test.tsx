@@ -95,6 +95,42 @@ describe('selo no card da trilha', () => {
   })
 })
 
+describe('selo no card das "Aventuras da trilha" (com a barra ao vivo)', () => {
+  test('com o progresso na tela vale só o pendente, como na home', () => {
+    // O marco é congelado e a barra é ao vivo: um curso que ganhou aula nova mostraria
+    // "Pronta!" ao lado de uma barra em 90% (full review de 11/09/2026).
+    const { rerender, container } = render(
+      <CatalogCourseCard
+        course={catalogCourse({ careerSlot: 2, milestones: PRONTO })}
+        salesUrl={null}
+        layout="linha"
+        mine={myCourse({ progress: { completedLessons: 9, totalLessons: 10, percent: 90 } })}
+      />,
+    )
+    expect(container.textContent).not.toContain('Pronta!')
+    expect(container.textContent).toContain('9 de 10 aulas')
+
+    // O que falta continua sendo dito, e sem o progresso o "Pronta!" volta (anti-vácuo).
+    rerender(
+      <CatalogCourseCard
+        course={catalogCourse({ careerSlot: 2, milestones: SO_CONCLUIDO })}
+        salesUrl={null}
+        layout="linha"
+        mine={myCourse({})}
+      />,
+    )
+    expect(screen.getByText('Publique no Mural')).toBeTruthy()
+
+    rerender(
+      <CatalogCourseCard
+        course={catalogCourse({ careerSlot: 2, milestones: PRONTO })}
+        salesUrl={null}
+      />,
+    )
+    expect(screen.getByText('Pronta!')).toBeTruthy()
+  })
+})
+
 describe('selo no card da home', () => {
   test('mostra só o pendente: "pronta" já é dito pela barra em 100% e pelo CTA', () => {
     const { rerender, container } = render(

@@ -9,7 +9,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { Bot, ChevronRight, MessageCircle, Plus, Send } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import type {
   HubChannelView,
   HubCommentView,
@@ -401,6 +401,13 @@ function ForumChannel({
 }
 
 function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy: boolean }) {
+  const tituloRef = useRef<HTMLInputElement | null>(null)
+  // O formulário abre no TOPO do cartão, e a pílula "Escreva uma mensagem…" que também o abre
+  // fica no PÉ da lista de conversas: numa lista comprida a criança clicava e, na vista dela,
+  // não acontecia nada. O foco leva a tela junto (full review de 11/09/2026).
+  useEffect(() => {
+    tituloRef.current?.focus()
+  }, [])
   return (
     <div className="space-y-3 rounded-[1.25rem] bg-background p-4">
       <div className="flex flex-wrap gap-1.5">
@@ -419,6 +426,7 @@ function ThreadComposer({ composer, busy }: { composer: KidsSpaceComposer; busy:
         Título da conversa
       </label>
       <input
+        ref={tituloRef}
         id="new-thread-title"
         name="threadTitle"
         className="w-full rounded-xl border-2 border-input bg-card px-3 py-2 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"

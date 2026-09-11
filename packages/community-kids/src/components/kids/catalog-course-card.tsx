@@ -101,8 +101,15 @@ export function CatalogCourseCard({
         </div>
       ) : null}
       {/* DEPOIS do círculo de bloqueado, de propósito: o selo conta o que a criança já fez
-          e não pode sumir se o acesso vencer depois de ela ter concluído. */}
-      <CourseBadgeChip course={course} className="absolute top-2 left-2" />
+          e não pode sumir se o acesso vencer depois de ela ter concluído.
+          Com o progresso na tela (a barra ao vivo), vale só o "Publique no Mural", como na
+          home: o marco é congelado e a barra é ao vivo, então um curso que ganhou aula nova
+          mostraria "Pronta!" ao lado de uma barra em 90% (full review de 11/09/2026). */}
+      <CourseBadgeChip
+        course={course}
+        className="absolute top-2 left-2"
+        only={mine ? 'publicar' : undefined}
+      />
     </div>
   )
 

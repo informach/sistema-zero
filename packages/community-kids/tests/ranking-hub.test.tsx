@@ -82,6 +82,31 @@ describe('central de ranking kids', () => {
     expect(screen.getAllByText('você')).toHaveLength(1)
   })
 
+  test('o pódio DIZ o lugar de cada um (o desenho troca a ordem e o placar tem empate)', () => {
+    // O pódio desenha 2º, 1º, 3º (`order-*`) e a contagem do `<ol>` é a do DOM, que num
+    // empate (1º, 1º, 3º) nem bate com a posição real: o lugar precisa ser dito.
+    const empate: RankingLeaderboardView = {
+      ...ranking,
+      items: [
+        { position: 1, xp: 900, isMe: false, firstName: 'Bia', photoUrl: null, levelSlug: 'coder' },
+        { position: 1, xp: 900, isMe: false, firstName: 'Caio', photoUrl: null, levelSlug: 'noob' },
+        {
+          position: 3,
+          xp: 600,
+          isMe: false,
+          firstName: 'Duda',
+          photoUrl: null,
+          levelSlug: 'hacker',
+        },
+      ],
+    }
+    render(<RankingHub initialRanking={empate} league={league} />)
+    expect(screen.getAllByText('1º lugar')).toHaveLength(2)
+    expect(screen.getByText('3º lugar')).toBeTruthy()
+    // O número do bloco de metal é só desenho (o leitor não o lê duas vezes).
+    expect(screen.getByText('3º').getAttribute('aria-hidden')).toBe('true')
+  })
+
   test('sem placar, "Placar em pausa" oferece tentar de novo', () => {
     render(<RankingHub initialRanking={null} league={league} />)
     expect(screen.getByText('Placar em pausa')).toBeTruthy()

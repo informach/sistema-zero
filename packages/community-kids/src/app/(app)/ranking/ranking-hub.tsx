@@ -275,6 +275,10 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
               entries.length === 1 && 'col-start-2',
             )}
           >
+            {/* A posição é DITA aqui: o `<ol>` conta pela ordem no DOM, e o placar é por
+                competição (dois empatados em 1º levam o 3º ao terceiro lugar), então a
+                contagem da lista divergiria do que está na tela. */}
+            <span className="sr-only">{entry.position}º lugar</span>
             {entry.position === 1 ? (
               <Crown
                 aria-hidden
@@ -307,8 +311,7 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
               )}
               style={{ backgroundColor: metal.fundo, color: metal.tinta }}
             >
-              {/* O número já está no nome acessível da posição (a lista é ordenada),
-                  então aqui ele é só desenho. */}
+              {/* O número já foi dito lá em cima ("Nº lugar"): aqui ele é só desenho. */}
               <span aria-hidden="true" className="sz-display text-2xl md:text-[1.875rem]">
                 {entry.position}º
               </span>

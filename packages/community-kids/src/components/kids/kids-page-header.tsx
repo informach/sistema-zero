@@ -55,8 +55,13 @@ export function KidsPageHeader({
             </KidsEyebrow>
           ) : null}
           {/* O peso 800 vem da própria `.sz-display` (fora de camada: `font-*` e
-              `leading-*` aqui seriam letra morta). */}
-          <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">{title}</h1>
+              `leading-*` aqui seriam letra morta).
+              `overflow-wrap: anywhere`: o título de algumas páginas é NOME dado por criança
+              (a conversa de recado leva o nome do projeto entregue), e um nome comprido sem
+              espaço estourava a faixa e fazia a página rolar de lado no celular. */}
+          <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)] [overflow-wrap:anywhere]">
+            {title}
+          </h1>
           {subtitle ? (
             <p
               className={cn(

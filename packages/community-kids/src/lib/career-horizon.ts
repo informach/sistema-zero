@@ -241,3 +241,19 @@ export function nextLevelHintWithin(
   const progress = careerProgress(level, courses)
   return progress.kind === 'pending' ? progress.hint : null
 }
+
+/**
+ * O próximo posto que a TRILHA pode prometer no cartão de fechamento. Só quando ele existe e o
+ * catálogo LEVA até lá: com o degrau pela metade, o mapa fecha com "E tem muito mais pela
+ * frente" e a frase de quanto falta cala (`hint` nulo), então prometer o posto aqui seria a
+ * mesma falsa esperança por outro caminho. Quem já fez tudo o que existe (`up-to-date`) também
+ * não o vê: ali o recado é de espera, não de próximo passo (full review de 11/09/2026).
+ */
+export function promisedNextLevel(
+  level: StudentLevelView | null | undefined,
+  courses: CatalogInput,
+): StudentLevelSlug | null {
+  const progress = careerProgress(level, courses)
+  if (progress.kind !== 'pending' || !progress.hint) return null
+  return (level?.next as StudentLevelSlug | undefined) ?? null
+}

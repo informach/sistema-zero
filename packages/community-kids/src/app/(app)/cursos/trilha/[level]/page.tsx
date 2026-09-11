@@ -5,7 +5,7 @@ import { KidsBackButton } from '@/components/kids/back-button'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
-import { careerHorizon, nextLevelHintWithin } from '@/lib/career-horizon'
+import { careerHorizon, nextLevelHintWithin, promisedNextLevel } from '@/lib/career-horizon'
 import { coursesForLevel, LEVEL_TIER, tierCompletionByLevel, trilhaLocked } from '@/lib/career-map'
 import { CAREER_REWARD_INFO } from '@/lib/career-rewards'
 import { cn } from '@/lib/cn'
@@ -139,9 +139,9 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   // O hint do próximo nível só aparece quando ESTA é a trilha que o aluno estuda agora.
   // Conta só os cursos que EXISTEM (horizonte do catálogo) — a mesma frase do mapa.
   const hint = level && isCurrent ? nextLevelHintWithin(level, all) : null
-  // O cartão "Próximo nível" é da trilha ATUAL (é para onde ela leva) e só quando há
-  // um próximo posto de verdade.
-  const next = isCurrent && level?.next ? (level.next as StudentLevelSlug) : null
+  // O cartão "Próximo nível" é da trilha ATUAL (é para onde ela leva) e só quando o catálogo
+  // LEVA até lá: ver `promisedNextLevel`.
+  const next = isCurrent ? promisedNextLevel(level, all) : null
   const trilha = tierCompletionByLevel(all)[levelSlug]
 
   return (

@@ -5,6 +5,7 @@ import {
   hasHorizonNode,
   levelsBeyondHorizon,
   nextLevelHintWithin,
+  promisedNextLevel,
   readySlotsByTier,
   TIER_ORDER,
   visibleCareerLevels,
@@ -306,6 +307,28 @@ describe('nextLevelHintWithin', () => {
     const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
     expect(nextLevelHintWithin(level, [entrada()])).toBeNull()
     expect(nextLevelHintWithin(studentLevel('god', null), fullCatalog())).toBeNull()
+  })
+})
+
+describe('promisedNextLevel (o cartão "Próximo nível" da trilha)', () => {
+  test('promete o posto quando o degrau está todo publicado e ainda falta curso', () => {
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 3 })
+    expect(promisedNextLevel(level, fullTier('iniciante', '2d'))).toBe('hacker')
+  })
+
+  test('cala com o degrau pela metade: o mapa esconde o posto e o cartão não pode prometê-lo', () => {
+    const level = studentLevel('coder', 'hacker', { 'iniciante-2d': 3 })
+    // Metade dos cursos do degrau publicados: o `hint` já cala por isso.
+    const meio = [entrada(), course('iniciante', '2d', 1), course('iniciante', '2d', 2)]
+    expect(nextLevelHintWithin(level, meio)).toBeNull()
+    expect(promisedNextLevel(level, meio)).toBeNull()
+  })
+
+  test('quem já fez tudo o que existe, e o topo, também não veem o cartão', () => {
+    const emDia = studentLevel('coder', 'hacker', { 'iniciante-2d': 7 })
+    expect(promisedNextLevel(emDia, [entrada()])).toBeNull()
+    expect(promisedNextLevel(studentLevel('god', null), fullCatalog())).toBeNull()
+    expect(promisedNextLevel(null, fullCatalog())).toBeNull()
   })
 })
 
