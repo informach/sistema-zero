@@ -365,18 +365,41 @@ test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fo
   await page.mouse.up()
   const painted = await nativeProject(page)
   expect(colorImageOf(painted, box)!.layers).not.toEqual(sheet!.layers)
-  // Arrastar a partir do canto é o vazio: a câmera gira e a tinta fica como estava.
-  await page.mouse.move(area.x + 12, area.y + 12)
+  // Arrastar a partir do vazio: a câmera gira e a tinta fica como estava. O ponto de partida é
+  // conferido: tem de ser o próprio palco (e não um cartão flutuante por cima dele), e a imagem
+  // do palco tem de mudar, senão "a câmera gira" não estaria provado.
+  const empty = await page.evaluate(
+    ({ x, y, width, height, label }) => {
+      for (const [fx, fy] of [
+        [0.9, 0.85],
+        [0.85, 0.9],
+        [0.9, 0.6],
+        [0.6, 0.9],
+      ]) {
+        const px = x + width * fx
+        const py = y + height * fy
+        const hit = document.elementFromPoint(px, py)
+        if (hit?.getAttribute('aria-label') === label) return { x: px, y: py }
+      }
+      return null
+    },
+    { ...area, label: COPY.scene.viewport },
+  )
+  expect(empty).not.toBeNull()
+  const before = await stage.screenshot()
+  await page.mouse.move(empty!.x, empty!.y)
   await page.mouse.down()
-  await page.mouse.move(area.x + 80, area.y + 40, { steps: 6 })
+  await page.mouse.move(empty!.x - 90, empty!.y - 40, { steps: 8 })
   await page.mouse.up()
+  await expect.poll(async () => (await stage.screenshot()).equals(before)).toBe(false)
   expect(colorImageOf(await nativeProject(page), box)!.layers).toEqual(
     colorImageOf(painted, box)!.layers,
   )
-  // Dois desfazer: o traço, e depois o lugar da tinta. Sem alerta.
-  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  // O lugar da tinta e o primeiro traço são UM passo: um desfazer volta para "sem imagem", sem
+  // alerta.
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
   expect(colorImageOf(await nativeProject(page), box)).toBeUndefined()
+  await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   await expect(page.getByText(SCENE_PAINT_COPY.choosePiece)).toBeVisible()
   await expect(page.getByRole('alert')).toHaveCount(0)
   expect(errors).toEqual([])

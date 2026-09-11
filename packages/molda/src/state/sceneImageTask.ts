@@ -24,7 +24,15 @@ export function createSceneImageTask(
   }
   return {
     cancel,
-    async run(source: MoldaSceneDocument, imageId: string, operation: SceneImageOperation) {
+    /**
+     * Uma operação, ou várias em sequência na MESMA imagem (o balde com o espelho enche os dois
+     * lados): todas no worker, um commit só, um passo de desfazer.
+     */
+    async run(
+      source: MoldaSceneDocument,
+      imageId: string,
+      operation: SceneImageOperation | readonly SceneImageOperation[],
+    ) {
       cancel()
       let current: NonNullable<typeof pending> | null = null
       try {
@@ -40,8 +48,15 @@ export function createSceneImageTask(
         requireScene(image, 'image', 'Essa imagem não existe mais.')
         requireEditableAppearance(usage, usage.images.get(imageId) ?? [])
         const palette = scenePalette(source)
-        const chosen = readSceneImageOperation(operation, image, palette.length)
-        if (chosen.kind === 'rgba') {
+        const operations = (
+          Array.isArray(operation) ? operation : [operation]
+        ) as readonly SceneImageOperation[]
+        requireScene(operations.length > 0, 'operation', 'Nada para fazer na imagem.')
+        const chosen = operations.map((entry) =>
+          readSceneImageOperation(entry, image, palette.length),
+        )
+        if (chosen.some((entry) => entry.kind === 'rgba')) {
+          requireScene(chosen.length === 1, 'operation', 'Converter a imagem vai sozinho.')
           if (image.encoding === 'rgba') return true
           requireScenePaintCapacity(source, image.width * image.height * image.layers.length * 3)
         }
@@ -54,16 +69,19 @@ export function createSceneImageTask(
         }
         pending = current
         onState(true)
-        const result = await operateImageInWorker(
-          { documentId: source.id, revision, image, palette, operation: chosen },
-          controller.signal,
-        )
-        if (
-          pending !== current ||
-          controller.signal.aborted ||
-          editor.getState().contentRevision !== revision
-        )
-          return false
+        let result = image
+        for (const entry of chosen) {
+          result = await operateImageInWorker(
+            { documentId: source.id, revision, image: result, palette, operation: entry },
+            controller.signal,
+          )
+          if (
+            pending !== current ||
+            controller.signal.aborted ||
+            editor.getState().contentRevision !== revision
+          )
+            return false
+        }
         pending = null
         current.unsubscribe()
         if (result !== image)

@@ -11,9 +11,8 @@ import { SceneFlipbookPreview } from './SceneFlipbookPreview'
 import { ScenePaintCanvas } from './ScenePaintCanvas'
 import { ScenePaintStampTools } from './ScenePaintStampTools'
 import { SceneRgbaColorInput } from './SceneRgbaColorInput'
+import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
 import type { useSceneWorkshop } from './useSceneWorkshop'
-
-const ADVANCED = ['paint.shapes', 'paint.sheet', 'paint.flipbook', 'paint.layers'] as const
 
 /**
  * "Mais jeitos de pintar": o caminho avançado da aba Pintar, recolhido. Formas, área, degradê,
@@ -30,7 +29,7 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
     () => scenePalette({ paletteId, customPalette, extraColors }),
     [paletteId, customPalette, extraColors],
   )
-  if (!ADVANCED.some((family) => access.can(family))) return null
+  if (!SCENE_PAINT_ADVANCED_FAMILIES.some((family) => access.can(family))) return null
   const copy = COPY.scene
   const rgba: ScenePaintRgba = typeof color === 'number' ? [0, 0, 0, 255] : color
   return (
@@ -39,6 +38,9 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
         {SCENE_PAINT_COPY.more}
       </summary>
       <div className="space-y-3 pt-2">
+        {!data && primary?.kind !== 'mesh' && (
+          <p className="text-sm text-mld-muted">{SCENE_PAINT_COPY.moreChoose}</p>
+        )}
         {data && (
           <section className="space-y-3" aria-label={copy.paintTitle}>
             <h3 className="mld-display text-lg">{copy.paintTitle}</h3>

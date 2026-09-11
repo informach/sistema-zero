@@ -21,6 +21,8 @@ import type {
 import { CAMERA_VIEWS, type CameraView } from '../../../viewport/types'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
+import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { isTypingTarget } from '../../ui/interaction'
 import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
 import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
@@ -241,17 +243,22 @@ function SceneCanvasAttempt({
       aria-label={componentSelection ? copy.componentViewport : copy.viewport}
       className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
       onKeyDown={(event) => {
-        if (event.key === 'Escape' && !event.defaultPrevented) {
-          if (mode === 'animation') {
-            animation?.pause()
-            animationPose?.cancel()
-          }
-          cancelPaint()
-          if (brushMode !== 'off') setBrushMode('off')
-          else if (mode === 'paint' || paintTarget) onEndPaint?.()
-          else if (componentSelection) onEndFaces?.()
-          event.preventDefault()
+        if (event.key !== 'Escape' || event.defaultPrevented) return
+        // O Esc de um diálogo aberto por cima do palco (a "Imagem de apoio") é do diálogo, e o de
+        // um campo (o "Passo do movimento") é do campo: soltar a peça atrás deles é surpresa.
+        if (isMoldaDialogOpen() || isTypingTarget(event.target)) return
+        let handled = false
+        if (mode === 'animation') {
+          animation?.pause()
+          animationPose?.cancel()
+          handled = true
         }
+        cancelPaint()
+        if (brushMode !== 'off') setBrushMode('off')
+        else if (mode === 'paint' || paintTarget) onEndPaint?.()
+        else if (componentSelection) onEndFaces?.()
+        else if (!handled) return
+        event.preventDefault()
       }}
     >
       {/*

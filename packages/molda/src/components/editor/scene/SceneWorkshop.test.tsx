@@ -3351,6 +3351,13 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       const initial = editor.getState().asset
       const image = initial.images[0]!
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      // O corpo já tem pintura só dele: entrar em Pintar não muda nada. A pintura passa a ser
+      // dividida com a asa travada DEPOIS, e é esse estado que o painel precisa explicar
+      // (entrar com ela já dividida isolaria a do corpo, sem nada a explicar).
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      expect(editor.getState().asset).toBe(initial)
       act(() =>
         editor.getState().commit({
           ...initial,
@@ -3362,13 +3369,6 @@ describe('scene workshop integration', () => {
           nodes: initial.nodes.map((n) => (n.id === 'wing' ? { ...n, locked: true } : n)),
         }),
       )
-      openInspector()
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      // Entrar em Pintar isola a pintura dividida com a asa (um passo de desfazer). Desfazer
-      // volta ao estado dividido, que é o que o painel precisa explicar.
-      expect(editor.getState().canUndo).toBe(true)
-      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(screen.queryByRole('alert')).toBeNull()
       const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {

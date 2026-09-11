@@ -21,6 +21,12 @@ import type { EditorStore } from './editorStore'
 
 export type ScenePaletteStep = { index: number } | { full: true } | null
 
+function samePalette(a: MoldaSceneDocument, b: MoldaSceneDocument): boolean {
+  const key = (document: MoldaSceneDocument) =>
+    JSON.stringify([document.paletteId, document.customPalette ?? null, document.extraColors ?? []])
+  return key(a) === key(b)
+}
+
 export function createScenePaletteGesture(editor: EditorStore<MoldaSceneDocument>) {
   const gestures = createGestureCoordinator({
     current: () => editor.getState().asset,
@@ -72,11 +78,17 @@ export function createScenePaletteGesture(editor: EditorStore<MoldaSceneDocument
       }
       return { index: result.index }
     },
-    /** O seletor fechou (ou outra ação começou): UM passo de desfazer. Idempotente. */
+    /**
+     * O seletor fechou (ou outra ação começou): UM passo de desfazer. Idempotente. Se a paleta
+     * terminou igual à do começo (a criança criou a cor e arrastou até uma que já existia), não
+     * há passo nenhum: nada mudou, e o documento nem é salvo de novo.
+     */
     end() {
       const gesture = active
       active = null
-      if (gesture) gestures.commit(gesture.token)
+      if (!gesture) return
+      if (samePalette(editor.getState().asset, gesture.token.before)) gestures.cancel(gesture.token)
+      else gestures.commit(gesture.token)
     },
   }
 }

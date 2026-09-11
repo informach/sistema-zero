@@ -61,6 +61,18 @@ test('arrastar até uma cor que já existe tira a extra do gesto e aponta para a
   editor.getState().dispose()
 })
 
+test('criar a cor e voltar até uma que já existe não deixa desfazer vazio', () => {
+  const { editor, gesture, asset } = fixture()
+  const colors = resolvePaletteColors(asset)
+  const before = editor.getState().asset
+  expect(gesture.step('#abcdef')).toEqual({ index: colors.length })
+  expect(gesture.step(colors[6]!)).toEqual({ index: 6 })
+  gesture.end()
+  expect(editor.getState().asset).toBe(before)
+  expect(editor.getState().canUndo).toBe(false)
+  editor.getState().dispose()
+})
+
 test('teto batido no meio do gesto: um aviso, e os passos seguintes são ignorados', () => {
   const full: MoldaSceneDocument = {
     ...migrateLegacyModel(makeModel({ parts: [] })).document,

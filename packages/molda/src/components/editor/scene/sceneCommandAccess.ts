@@ -20,6 +20,17 @@ export type SceneCommandFamily = MoldaToolFamilyId | 'always'
 /** O `can` do `useMoldaToolAccess()`. */
 export type SceneToolCheck = (family: MoldaToolFamilyId) => boolean
 
+/**
+ * O que mora em "Mais jeitos de pintar". Aqui, e não no painel (que carrega sob demanda), para a
+ * casca saber sem baixar o módulo que, no nível de entrada, o painel ficaria vazio.
+ */
+export const SCENE_PAINT_ADVANCED_FAMILIES = [
+  'paint.shapes',
+  'paint.sheet',
+  'paint.flipbook',
+  'paint.layers',
+] as const satisfies readonly MoldaToolFamilyId[]
+
 export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandFamily>> = {
   'app.exit': 'always',
   'app.undo': 'always',

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import type { SceneMeshGeometry, ScenePrimitiveGeometry, Vec2 } from './document'
 import { sceneImageTexel } from './imageCoordinates'
-import { scenePaintFaceBounds } from './paintSurfaceBounds'
+import { scenePaintFaceBounds, scenePaintFaceFillsBounds } from './paintSurfaceBounds'
 
 const box = (surfaces: ScenePrimitiveGeometry['surfaces'] = {}): ScenePrimitiveGeometry => ({
   id: 'caixa',
@@ -120,4 +120,57 @@ test('malha com UV contínua: o limite é a ilha inteira, não o triângulo; com
   expect(scenePaintFaceBounds(quad(false), 'right', image)).toEqual(island)
   expect(scenePaintFaceBounds(quad(true), 'left', image)).toEqual(island)
   expect(scenePaintFaceBounds(quad(true), 'right', image)).toEqual({ x0: 6, y0: 1, x1: 8, y1: 4 })
+})
+
+test('na pintura que se mexe, o limite é a face DENTRO do quadro, não o quadro inteiro', () => {
+  const image = { width: 16, height: 64 }
+  const slot = { origin: [0.25, 0.5] as Vec2, u: [0.25, 0] as Vec2, v: [0, 0.25] as Vec2 }
+  // A UV corre pela célula: o quadro de baixo (16 × 32) a partir de y = 0; o de cima, de y = 32.
+  const cell = { x0: 0, y0: 32, x1: 15, y1: 63 }
+  expect(scenePaintFaceBounds(box({ px: { uv: slot } }), 'px', image, cell)).toEqual({
+    x0: 4,
+    y0: 48,
+    x1: 7,
+    y1: 55,
+  })
+  // Sem quadro, a mesma UV mede a folha inteira.
+  expect(scenePaintFaceBounds(box({ px: { uv: slot } }), 'px', image)).toEqual({
+    x0: 4,
+    y0: 32,
+    x1: 7,
+    y1: 47,
+  })
+})
+
+test('girar só vale na face que enche o retângulo dela: a forma e o quadrado da malha', () => {
+  expect(scenePaintFaceFillsBounds(box(), 'px')).toBe(true)
+  const quad: SceneMeshGeometry = {
+    id: 'quadrado',
+    kind: 'mesh',
+    vertices: { a: [0, 0, 0], b: [1, 0, 0], c: [1, 1, 0], d: [0, 1, 0] },
+    faces: {
+      q: {
+        corners: [
+          { vertexId: 'a', uv: [0.1, 0.1] },
+          { vertexId: 'b', uv: [0.5, 0.1] },
+          { vertexId: 'c', uv: [0.5, 0.5] },
+          { vertexId: 'd', uv: [0.1, 0.5] },
+        ],
+      },
+    },
+    looseEdges: [],
+  }
+  expect(scenePaintFaceFillsBounds(quad, 'q')).toBe(true)
+  // Um triângulo enche metade do retângulo: girar embaralharia a pintura.
+  expect(
+    scenePaintFaceFillsBounds(
+      triangle([
+        [0.1, 0.1],
+        [0.5, 0.1],
+        [0.1, 0.5],
+      ]),
+      'f',
+    ),
+  ).toBe(false)
+  expect(scenePaintFaceFillsBounds(quad, 'nenhuma')).toBe(false)
 })

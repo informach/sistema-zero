@@ -213,7 +213,15 @@ describe('a oficina no nível de entrada', () => {
   test('uma linha "Ferramentas que vêm por aí" por aba, com o posto de cada grupo', async () => {
     const { view } = mount(withPiece())
     choosePiece(view.container)
-    const linhas = () => screen.queryAllByText(SCENE_TOOL_ACCESS_COPY.upcoming)
+    // Uma linha por tamanho de tela: em Pintar ela tem duas cópias, a da coluna (computador,
+    // `hidden md:block`) e a da gaveta (celular, `md:hidden`), e só uma aparece em cada um.
+    const todas = () => screen.queryAllByText(SCENE_TOOL_ACCESS_COPY.upcoming)
+    const linhas = () => {
+      const computador = todas().filter((el) => !el.closest('.md\\:hidden'))
+      const celular = todas().filter((el) => !el.closest('.hidden'))
+      expect(celular).toHaveLength(computador.length)
+      return computador
+    }
     expect(linhas()).toHaveLength(1)
     expect(view.container.textContent).toContain('Abrem no nível Arquiteto(a) de Mundos')
     expect(view.container.textContent).toContain('Editar a malha: pontos, linhas e faces')

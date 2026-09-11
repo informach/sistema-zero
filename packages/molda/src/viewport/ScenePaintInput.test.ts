@@ -118,6 +118,8 @@ test.each([
     f.input.setTarget(target)
     f.event('pointerdown', 1, 206.25, 206.25)
     expect(f.begins).toHaveLength(0)
+    // Trocar o alvo cancela o traço, não os dedos: o primeiro sai do vidro antes do segundo.
+    f.event('pointerup', 1, 206.25, 206.25)
     f.input.setTarget({ ...target, imageKind })
     f.event('pointerdown', 2, 206.25, 206.25)
     expect(f.begins).toHaveLength(1)

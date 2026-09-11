@@ -13,7 +13,7 @@ import type { ScenePaintTarget } from './imagePaint'
 import { migrateLegacyModel } from './migrateLegacy'
 import { sceneFaceViewSize, sceneFaceViewTexel, scenePaintFaceView } from './paintFaceView'
 import { ensureScenePaintSurface } from './paintSurface'
-import { dressScenePaintTarget } from './pieceTexture'
+import { dressScenePaintTarget, dressScenePiece } from './pieceTexture'
 import { readSceneDocument } from './readDocument'
 
 const BOX_FACES = ['px', 'nx', 'py', 'ny', 'pz', 'nz'] as const
@@ -173,5 +173,63 @@ describe('vestir a peça com uma textura', () => {
     expect(() =>
       dressScenePaintTarget(document, { ...target, imageKind: 'normal' }, makeTexture(), 'tile'),
     ).toThrow()
+  })
+})
+
+describe('vestir a peça inteira', () => {
+  test('a peça do editor antigo (um material por face pintada) veste todas as faces', () => {
+    const document = migrateLegacyModel(makeModel()).document
+    const body = document.nodes.find((node) => node.name === 'corpo')
+    if (body?.kind !== 'mesh') throw new Error('Peça ausente.')
+    let n = 0
+    const dressed = dressScenePiece(document, body.id, makeTexture(), 'tile', () => `vestir${++n}`)
+    expect(readSceneDocument(sceneToJson(dressed)).status).toBe('valid')
+    const node = dressed.nodes.find((entry) => entry.id === body.id)
+    if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+    const geometry = dressed.geometries.find((entry) => entry.id === node.geometryId)!
+    if (geometry.kind === 'mesh' || geometry.kind === 'path') throw new Error('Esperava a caixa.')
+    const shown = new Set<string>()
+    for (const face of BOX_FACES) {
+      const materialId = geometry.surfaces[face]?.materialId ?? node.materialId
+      const material = dressed.materials.find((entry) => entry.id === materialId)!
+      const image = dressed.images.find((entry) => entry.id === material.colorImageId)
+      expect(image, face).toBeDefined()
+      const view = scenePaintFaceView(geometry, face, image!)!
+      const { width, height } = sceneFaceViewSize(view)
+      let painted = 0
+      for (let row = 0; row < height; row++)
+        for (let column = 0; column < width; column++) {
+          const [x, y] = sceneFaceViewTexel(view, column, row)
+          if (image!.layers[0]!.pixels[y * image!.width + x] !== 0) painted++
+        }
+      expect(painted, face).toBeGreaterThan(0)
+      shown.add(materialId)
+    }
+    // Havia mais de um material na peça, e todos vestiram.
+    expect(shown.size).toBeGreaterThan(1)
+  })
+
+  test('a pintura que se mexe recusa: vestir apagaria os quadros', () => {
+    const { document, target } = prepared()
+    const withFrames: MoldaSceneDocument = {
+      ...document,
+      images: document.images.map((image) =>
+        image.id === target.imageId
+          ? {
+              ...image,
+              flipbook: {
+                frameWidth: image.width,
+                frameHeight: image.height,
+                frames: [0],
+                fps: 4,
+                loop: true,
+              },
+            }
+          : image,
+      ),
+    }
+    expect(() => dressScenePaintTarget(withFrames, target, makeTexture(), 'tile')).toThrow(
+      'quadros',
+    )
   })
 })

@@ -3,7 +3,7 @@ import type { indexSceneDocument } from '../scene/documentIndex'
 import { sceneFlipbookRegion, sceneFlipbookTexel } from '../scene/imageFlipbook'
 import type { ScenePaintSample, ScenePaintTarget } from '../scene/imagePaint'
 import { SCENE_MATERIAL_IMAGE_FIELDS } from '../scene/materialImages'
-import { scenePaintFaceBounds } from '../scene/paintSurfaceBounds'
+import { scenePaintFaceBounds, scenePaintIslandKey } from '../scene/paintSurfaceBounds'
 import { CapturedPaintInput } from './CapturedPaintInput'
 import type { SceneRenderResource } from './sceneRenderResource'
 import { sceneSurfaceHit } from './sceneSurfaceHit'
@@ -87,21 +87,20 @@ export class ScenePaintInput {
     const frame = this.resource.frameForImage(image.id)
     const point = sceneFlipbookTexel(image, [hit.uv.x, hit.uv.y], frame ?? 0)
     if (!point) return null
-    // Pintura que se mexe: o quadro. Folha comum: a face tocada, para o carimbo largo e o balde
-    // não vazarem para a face do lado quando várias dividem a folha.
+    // O limite é a face tocada, para o carimbo largo e o balde não vazarem para a face do lado
+    // quando várias dividem a folha; na pintura que se mexe, a face DENTRO do quadro.
     const node = source.scene.nodes.get(target.nodeId)
     const geometry = node?.kind === 'mesh' ? source.geometries.get(node.geometryId) : undefined
-    const bounds =
-      frame !== null
-        ? sceneFlipbookRegion(image, frame)
-        : geometry
-          ? scenePaintFaceBounds(geometry, faceId, image)
-          : null
+    const cell = frame !== null ? sceneFlipbookRegion(image, frame) : undefined
+    const bounds = (geometry && scenePaintFaceBounds(geometry, faceId, image, cell)) || cell
+    // O traço liga as amostras da mesma ILHA de UV: numa malha com a UV contínua ele não quebra
+    // em cada polígono (a emenda do cilindro e da bola continua cortando, pelo `crossesSeam`).
+    const island = geometry ? scenePaintIslandKey(geometry, faceId) : faceId
     return {
       point,
       faceId,
       ...(bounds ? { bounds } : {}),
-      region: JSON.stringify(frame === null ? [instanceId, faceId] : [instanceId, faceId, frame]),
+      region: JSON.stringify(frame === null ? [instanceId, island] : [instanceId, island, frame]),
     }
   }
   /**
@@ -139,6 +138,10 @@ export class ScenePaintInput {
   }
   interrupt() {
     this.input.interrupt()
+  }
+  /** A janela perdeu o foco: os dedos no vidro deixam de valer (o `pointerup` pode não vir). */
+  forget() {
+    this.input.forget()
   }
   dispose() {
     if (this.disposed) return

@@ -40,6 +40,9 @@ export function runScenePaintShortcut(
 ): boolean {
   const match = matchSceneShortcut('paint', event, can)
   if (!match || !isPaintAction(match.id)) return false
-  if (match.allowed && !paint.drawing && !paint.busy) SCENE_PAINT_ACTIONS[match.id](paint)
+  // Segurar a tecla repete o evento: o M ligaria e desligaria o espelho sem parar.
+  const repeat = 'repeat' in event && event.repeat === true
+  if (match.allowed && !repeat && !paint.drawing && !paint.busy)
+    SCENE_PAINT_ACTIONS[match.id](paint)
   return true
 }

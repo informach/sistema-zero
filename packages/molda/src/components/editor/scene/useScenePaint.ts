@@ -3,7 +3,9 @@ import { useStore } from 'zustand'
 import { hexToRgb } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
-import type { BrushSize } from '../../../paint/skinPaint'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
+import type { BrushSize, Texel } from '../../../paint/skinPaint'
+import type { ScenePixelRegion } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneLayerColor } from '../../../scene/imageColor'
 import { captureSceneLayerRaster } from '../../../scene/imageImport'
@@ -21,7 +23,8 @@ import {
   scenePaintFaceView,
   sceneSheetView,
 } from '../../../scene/paintFaceView'
-import { rotateScenePaintRegion } from '../../../scene/paintRegionRotate'
+import { rotateScenePaintFace } from '../../../scene/paintRegionRotate'
+import { scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createScenePaintGesture } from '../../../state/scenePaintGesture'
@@ -40,18 +43,22 @@ export type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
 /** A região das amostras que vêm da face de perto (`ScenePaintCloseUp`), e não do palco. */
 export const SCENE_CLOSE_UP_REGION = 'perto'
 
+/** As superfícies que dão a volta (o lado do cilindro e do tubo, a bola): a UV corre em volta. */
+const WRAPS = new Set(['side', 'around'])
+
 /**
  * ⚠️ A volta do cilindro e da bola é UMA face com emenda: de um lado a UV vale quase 1, do outro
- * quase 0. Ligar esses dois pontos riscaria a folha inteira; um salto de mais de meia face
- * entre duas amostras seguidas é a emenda, e o traço recomeça do outro lado.
+ * quase 0. Ligar esses dois pontos riscaria a folha inteira; um salto de mais de meia face na
+ * direção que dá a volta é a emenda, e o traço recomeça do outro lado. Só nessas superfícies e só
+ * nessa direção: na caixa, ou de cima a baixo, o salto é um rabisco rápido e o traço continua.
  */
+const sameRegion = (a: ScenePixelRegion, b: ScenePixelRegion) =>
+  a.x0 === b.x0 && a.y0 === b.y0 && a.x1 === b.x1 && a.y1 === b.y1
+
 export function crossesSeam(previous: ScenePaintSample, next: ScenePaintSample): boolean {
   const bounds = next.bounds
-  if (!bounds) return false
-  return (
-    Math.abs(previous.point[0] - next.point[0]) * 2 > bounds.x1 - bounds.x0 + 1 ||
-    Math.abs(previous.point[1] - next.point[1]) * 2 > bounds.y1 - bounds.y0 + 1
-  )
+  if (!bounds || next.faceId === undefined || !WRAPS.has(next.faceId)) return false
+  return Math.abs(previous.point[0] - next.point[0]) * 2 > bounds.x1 - bounds.x0 + 1
 }
 
 export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
@@ -149,6 +156,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     clearFile()
     setCloseUp(null)
     setSession(null)
+    // O aviso era da pintura que fechou (a paleta cheia, por exemplo): não fica na tela.
+    setError(null)
   }, [cancel, clearFile])
   const data = useMemo(() => {
     if (!session || session.documentId !== document.id) return null
@@ -266,41 +275,57 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         setTool('pencil')
         return false
       }
-      if (closeupTool) {
+      // Girar e "Pintar de perto" são da FACE: sem o limite dela (a folha inteira do caminho
+      // avançado), girariam a imagem toda ou abririam a folha crua.
+      if ((closeupTool || rotate) && !sample.bounds) {
+        setError(SCENE_PAINT_COPY.faceOnly)
+        return false
+      }
+      const node = document.nodes.find((entry) => entry.id === session.target.nodeId)
+      const geometry =
+        node?.kind === 'mesh'
+          ? document.geometries.find((entry) => entry.id === node.geometryId)
+          : undefined
+      if (closeupTool && sample.bounds) {
         // O toque escolhe a face; a pintura continua com o lápis, agora de perto.
-        const region = sample.bounds ?? {
-          x0: 0,
-          y0: 0,
-          x1: data.image.width - 1,
-          y1: data.image.height - 1,
-        }
-        const node = document.nodes.find((entry) => entry.id === session.target.nodeId)
-        const geometry =
-          node?.kind === 'mesh'
-            ? document.geometries.find((entry) => entry.id === node.geometryId)
-            : undefined
+        const region = sample.bounds
+        // Na pintura que se mexe a UV corre pela célula: o em pé é medido no tamanho dela.
+        const cell = data.image.flipbook
+          ? { width: data.image.flipbook.frameWidth, height: data.image.flipbook.frameHeight }
+          : data.image
         setCloseUp({
           imageId: session.target.imageId,
           view:
             (geometry &&
               sample.faceId !== undefined &&
-              scenePaintFaceView(geometry, sample.faceId, data.image, region)) ||
+              scenePaintFaceView(geometry, sample.faceId, cell, region)) ||
             sceneSheetView(region),
         })
         setTool('pencil')
         setError(null)
         return false
       }
-      if (rotate) {
-        // Um toque gira a pintura da face tocada, em todas as camadas: um passo de desfazer.
+      if (rotate && sample.bounds) {
+        // Um toque gira a pintura da face tocada, em todas as camadas e nos mapas do material:
+        // um passo de desfazer. Com o espelho, o outro lado gira no sentido oposto, como no
+        // editor antigo.
+        const fills = (faceId?: string) =>
+          !geometry || faceId === undefined || scenePaintFaceFillsBounds(geometry, faceId)
+        if (!fills(sample.faceId)) {
+          setError(SCENE_PAINT_COPY.rotateOnlyRect)
+          return false
+        }
         try {
           const source = editor.getState().asset
-          const whole = { x0: 0, y0: 0, x1: data.image.width - 1, y1: data.image.height - 1 }
-          const next = rotateScenePaintRegion(
-            source,
-            session.target.imageId,
-            sample.bounds ?? whole,
+          const face = { materialId: session.target.materialId, imageId: session.target.imageId }
+          let next = rotateScenePaintFace(source, face, sample.bounds)
+          const reflected = sample.mirror
+          if (
+            reflected?.bounds &&
+            !sameRegion(reflected.bounds, sample.bounds) &&
+            fills(reflected.faceId)
           )
+            next = rotateScenePaintFace(next, face, reflected.bounds, 3)
           if (next !== source) editor.getState().commit(next)
           setError(null)
         } catch (error) {
@@ -365,14 +390,22 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (fill) {
         setError(null)
-        void imageTask.run(document, session.target.imageId, {
-          kind: 'fill',
+        const fillAt = (point: Texel, area?: ScenePixelRegion) => ({
+          kind: 'fill' as const,
           layerId: session.target.layerId,
-          point: sample.point,
+          point,
           color: chosen,
           tolerance: data.image.encoding === 'indexed' ? 0 : tolerance,
-          ...(region ? { region } : {}),
+          ...(area ? { region: area } : {}),
         })
+        const operations = [fillAt(sample.point, region)]
+        // Com o espelho, o balde enche também o outro lado, no mesmo passo de desfazer.
+        const reflected = sample.mirror
+        const other =
+          reflected?.bounds &&
+          (scope ? intersectImageRegions(reflected.bounds, scope) : reflected.bounds)
+        if (reflected && other) operations.push(fillAt(reflected.point, other))
+        void imageTask.run(document, session.target.imageId, operations)
         return false
       }
       if (!gesture.begin(session.target, chosen, brush, data.image, scope)) return false
@@ -477,7 +510,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
           ? ([...hexToRgb(chosen), 255] as ScenePaintRgba)
           : step.index,
       )
-      if (eraser || picker) setTool('pencil')
+      // A mesma regra da amostra: escolher uma cor é querer pintar com ela.
+      if (eraser || picker || rotate || closeupTool) setTool('pencil')
       setError(null)
     },
     /** O seletor fechou: UM passo de desfazer para a cor nova. */

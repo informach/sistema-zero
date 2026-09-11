@@ -7,7 +7,7 @@
  * para a criança: aqui é uma face só, do tamanho do palco, do jeito que ela aparece de fora
  * (`scene/paintFaceView.ts`), e não do jeito que a folha a guarda.
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { Texel } from '../../../paint/skinPaint'
 import { compositeSceneImageRegion, type SceneRgba } from '../../../scene/composite'
@@ -40,6 +40,8 @@ export function ScenePaintCloseUp({
   const { region } = view
   const { width, height } = sceneFaceViewSize(view)
   const canvas = useRef<HTMLCanvasElement>(null)
+  const root = useRef<HTMLElement>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
   const pointer = useRef<number | null>(null)
   const live = useRef(actions)
   live.current = actions
@@ -70,6 +72,21 @@ export function ScenePaintCloseUp({
     },
     [],
   )
+  // Abrir leva o foco ao título (o leitor anuncia onde a criança está); fechar devolve o foco à
+  // ferramenta "Pintar de perto". Sem isso o botão "Voltar ao modelo" sumia com o foco, que caía
+  // no body, e os atalhos (P, E, Ctrl+Z, Esc) paravam até o próximo clique.
+  useLayoutEffect(() => {
+    const section = root.current
+    heading.current?.focus({ preventScroll: true })
+    return () => {
+      const active = window.document.activeElement
+      if (active && active !== window.document.body && !section?.contains(active)) return
+      section
+        ?.closest('[data-molda-theme]')
+        ?.querySelector<HTMLElement>('[data-paint-tool="paint.closeup"]')
+        ?.focus({ preventScroll: true })
+    }
+  }, [])
   /** O texel sob o dedo, contando a margem do `object-contain` quando a face não tem o formato do palco. */
   function texel(clientX: number, clientY: number): Texel | null {
     const box = canvas.current?.getBoundingClientRect()
@@ -96,11 +113,14 @@ export function ScenePaintCloseUp({
   }
   return (
     <section
+      ref={root}
       aria-label={SCENE_PAINT_COPY.closeUp}
       className="absolute inset-0 z-30 flex flex-col gap-2 bg-mld-bg p-3"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="mld-display text-lg">{SCENE_PAINT_COPY.closeUp}</h2>
+        <h2 ref={heading} tabIndex={-1} className="mld-display text-lg outline-none">
+          {SCENE_PAINT_COPY.closeUp}
+        </h2>
         <Button className="text-sm" onClick={onClose}>
           {SCENE_PAINT_COPY.closeUpBack}
         </Button>

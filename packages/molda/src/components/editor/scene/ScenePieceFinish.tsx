@@ -5,7 +5,6 @@
  * ⚠️ Pela peça (`patchScenePieceAppearance`), nunca pelo material: o material pode ser dividido,
  * e mudar a porta de azul não pode mudar junto toda peça que usa o mesmo material.
  */
-import { clsx } from 'clsx'
 import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
@@ -17,6 +16,7 @@ import {
 } from '../../../scene/pieceAppearance'
 import { RequiresTool } from '../../toolAccess'
 import { Button } from '../../ui/Button'
+import { swatchClass } from '../../ui/interaction'
 import { scenePaletteSwatches } from './ScenePaintPalette'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -49,14 +49,7 @@ export function ScenePieceFinish({ workshop }: { workshop: ReturnType<typeof use
                     }),
                   )
                 }
-                className={clsx(
-                  'aspect-square min-h-11 min-w-11 rounded-md border-2 transition',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
-                  'disabled:cursor-not-allowed disabled:opacity-40',
-                  active
-                    ? 'scale-110 border-mld-text'
-                    : 'border-mld-border/60 hover:border-mld-text',
-                )}
+                className={swatchClass(active)}
                 style={{ backgroundColor: hex }}
               />
             )

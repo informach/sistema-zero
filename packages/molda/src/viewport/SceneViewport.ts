@@ -848,6 +848,9 @@ export class SceneViewport implements SceneViewportPort {
       return
     const rect = this.canvas.getBoundingClientRect()
     if (rect.width <= 0 || rect.height <= 0) return
+    // Um toque curto com tremida já girou a câmera antes do próximo quadro: a escolha usa a
+    // câmera de AGORA, como o `sceneSurfaceHit` (em Pintar, o toque é o que troca de peça).
+    this.rig.camera.updateWorldMatrix(true, false)
     const ray = new Raycaster()
     ray.setFromCamera(
       new Vector2(
@@ -946,6 +949,8 @@ export class SceneViewport implements SceneViewportPort {
   private readonly onBlur = () => {
     if (this.poseGuide.hide()) this.request()
     this.cancelGesture()
+    this.paint?.forget()
+    this.skinPaint?.forget()
     this.gizmo?.setEnabled(false)
     this.area?.setEnabled(false)
     this.pointers.clear()

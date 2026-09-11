@@ -8,7 +8,7 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { scenePalette } from '../../../scene/composite'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
-import { dressScenePaintTarget } from '../../../scene/pieceTexture'
+import { dressScenePiece } from '../../../scene/pieceTexture'
 import { useOptionalMoldaApp } from '../../appContext'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
@@ -36,7 +36,20 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
     () => scenePalette({ paletteId, customPalette, extraColors }),
     [paletteId, customPalette, extraColors],
   )
-  const flipbook = !can('paint.flipbook') && paint.data?.image.flipbook ? paint.data : null
+  // Sem sessão (peça travada, pintura de outra peça), a prévia ainda sai da imagem de cor da peça
+  // escolhida: assistir é leitura.
+  const shown = useMemo(() => {
+    if (paint.data) return paint.data
+    const node = workshop.primary
+    if (node?.kind !== 'mesh') return null
+    const material = workshop.index.materials.get(node.materialId)
+    const image =
+      material?.colorImageId === undefined
+        ? undefined
+        : workshop.index.images.get(material.colorImageId)
+    return material && image ? { material, image, imageKind: 'color' as const } : null
+  }, [paint.data, workshop.primary, workshop.index])
+  const flipbook = !can('paint.flipbook') && shown?.image.flipbook ? shown : null
   return (
     <>
       <ScenePaintToolbox
@@ -59,7 +72,7 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
             const current = latest.current
             // A peça de agora: a textura chega depois de ler o disco, e o alvo pode ter mudado.
             if (current)
-              workshop.run((source) => dressScenePaintTarget(source, current, texture, mode))
+              workshop.run((source) => dressScenePiece(source, current.nodeId, texture, mode))
           }}
         />
       )}
@@ -72,6 +85,11 @@ export function ScenePaintColumn({ workshop }: { workshop: ReturnType<typeof use
           disabled={paint.drawing || paint.busy}
           beforeChange={paint.cancel}
         />
+      )}
+      {paint.mirror && (
+        <p className="text-xs text-mld-muted">
+          {paint.closeUp ? SCENE_PAINT_COPY.mirrorCloseUp : SCENE_PAINT_COPY.mirrorOn}
+        </p>
       )}
       {paint.busy && (
         <div role="status" className="flex flex-wrap items-center gap-2">

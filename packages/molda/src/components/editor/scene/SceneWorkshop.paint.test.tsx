@@ -137,8 +137,9 @@ describe('a aba Pintar', () => {
     fireEvent.click(tab)
     expect(stage.mode).toBe('paint')
     expect(stage.target?.nodeId).toBe(door)
-    // A superfície nasceu num passo só, sem mudar a aparência.
+    // A superfície nasceu sem mudar a aparência e ainda sem passo de desfazer.
     const prepared = editor.getState().asset
+    expect(editor.getState().canUndo).toBe(false)
     expect(material(prepared, door).colorImageId).toBeDefined()
     expect(prepared.images).toHaveLength(document.images.length + 1)
     expect(prepared.images.at(-1)!.layers[0]!.pixels.every((value) => value === 0)).toBe(true)
@@ -151,19 +152,44 @@ describe('a aba Pintar', () => {
     const painted = editor.getState().asset.images.at(-1)!.layers[0]!.pixels
     expect(painted.some((value) => value !== 0)).toBe(true)
     expect(view.container.querySelectorAll('details[open]')).toHaveLength(0)
-    // Dois desfazer voltam para "sem imagem", e a pintura fecha sem alerta.
-    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-    expect(
-      editor
-        .getState()
-        .asset.images.at(-1)!
-        .layers[0]!.pixels.every((v) => v === 0),
-    ).toBe(true)
+    // O preparo e o primeiro traço são UM passo: um desfazer volta para "sem imagem", e a
+    // pintura fecha sem alerta.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(material(editor.getState().asset, door).colorImageId).toBeUndefined()
+    expect(editor.getState().asset.images).toEqual(document.images)
+    expect(editor.getState().canUndo).toBe(false)
     await waitFor(() => expect(stage.target).toBeNull())
     expect(screen.queryByRole('alert')).toBeNull()
     expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    editor.getState().dispose()
+  })
+
+  test('olhar a aba Pintar não apaga o Refazer nem muda a criação', async () => {
+    const { document, door, wall } = twoBoxes()
+    const { editor, stage, tap, drag } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    // Um passo no Modelar, desfeito: há o que refazer.
+    fireEvent.click(swatch(document, 3))
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().canRedo).toBe(true)
+    const looked = editor.getState().asset
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    expect(stage.target?.nodeId).toBe(door)
+    expect(editor.getState().canRedo).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.modelMode }))
+    expect(editor.getState().asset).toBe(looked)
+    expect(editor.getState().canRedo).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+    expect(material(editor.getState().asset, door).baseColor).toEqual({ kind: 'palette', index: 3 })
+    // Em Pintar: desfazer um traço e tocar noutra peça, ainda sem tinta, também não apaga.
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    drag([[9, 9]])
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().canRedo).toBe(true)
+    tap(wall)
+    expect(stage.target?.nodeId).toBe(wall)
+    expect(editor.getState().canRedo).toBe(true)
     editor.getState().dispose()
   })
 
@@ -207,14 +233,29 @@ describe('a aba Pintar', () => {
     })
     expect(editor.getState().asset).not.toBe(prepared)
     const shell = view.getByRole('region', { name: COPY.scene.title })
+    console.log(
+      'DBG before esc',
+      editor.getState().asset.images.length,
+      prepared.images.length,
+      document.images.length,
+    )
     fireEvent.keyDown(shell, { key: 'Escape' })
+    console.log(
+      'DBG after esc',
+      editor.getState().asset.images.length,
+      editor.getState().asset === prepared,
+      editor.getState().asset === document,
+      editor.getState().canUndo,
+    )
     expect(editor.getState().asset.images).toEqual(prepared.images)
     expect(stage.target?.nodeId).toBe(door)
     fireEvent.keyDown(shell, { key: 'Escape' })
     await waitFor(() => expect(stage.target).toBeNull())
     expect(stage.mode).toBe('paint')
     expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
-    expect(editor.getState().asset).toBe(prepared)
+    // Soltar a peça sem pintar devolve a criação como estava, sem passo de desfazer.
+    expect(editor.getState().asset).toBe(document)
+    expect(editor.getState().canUndo).toBe(false)
     editor.getState().dispose()
   })
 
@@ -267,6 +308,14 @@ describe('a aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.split }))
     expect(stage.target?.nodeId).toBe(id)
     expect(screen.queryByRole('button', { name: SCENE_PAINT_COPY.split })).toBeNull()
+    expect(editor.getState().asset.geometries).not.toEqual(bent.geometries)
+    // Dividir e o primeiro traço são UM passo de desfazer.
+    act(() => {
+      const paint = stage.callbacks!.paint!
+      paint.begin({ point: [1, 1], region: 'face' })
+      paint.end(true)
+    })
+    expect(editor.getState().canUndo).toBe(true)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.geometries).toEqual(bent.geometries)
     expect(editor.getState().canUndo).toBe(false)
@@ -300,7 +349,7 @@ describe('pintar de perto', () => {
       })
     })
     // Escolher a face não pinta nada: o lápis volta, agora de perto.
-    expect(editor.getState().canUndo).toBe(true)
+    expect(editor.getState().canUndo).toBe(false)
     const prepared = editor.getState().asset
     const sheet = screen.getByRole('img', { name: SCENE_PAINT_COPY.closeUpSheet })
     const width = bounds.x1 - bounds.x0 + 1
@@ -357,7 +406,9 @@ describe('espelho de pintura', () => {
     const row = (x: number) => image().layers[0]!.pixels[2 * image().width + x]
     expect([row(2), row(3), row(4), row(5)]).toEqual([7, 7, 7, 7])
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-    expect(editor.getState().asset.images).toEqual(prepared.images)
+    expect(editor.getState().asset.images).toEqual(document.images)
+    expect(editor.getState().canUndo).toBe(false)
+    expect(prepared.images).toHaveLength(document.images.length + 1)
     fireEvent.click(toggle)
     expect(stage.mirror).toBe(false)
     editor.getState().dispose()
@@ -448,11 +499,11 @@ describe('vestir com textura', () => {
       .layers[0]!.pixels
     expect(pixels.some((value) => value !== 0)).toBe(true)
     expect(screen.queryByRole('dialog')).toBeNull()
-    // A outra peça não muda, e um desfazer tira a roupa inteira.
+    // A outra peça não muda, e um desfazer tira a roupa inteira (com o preparo da tinta).
     expect(material(editor.getState().asset, wall)).toEqual(material(prepared, wall))
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-    expect(editor.getState().asset.images).toEqual(prepared.images)
-    expect(stage.target?.nodeId).toBe(door)
+    expect(editor.getState().asset.images).toEqual(document.images)
+    expect(editor.getState().canUndo).toBe(false)
     editor.getState().dispose()
   })
 })
@@ -492,8 +543,6 @@ describe('atalhos do editor antigo na aba Pintar', () => {
     expect(pressed(SCENE_PAINT_COPY.closeUp)).toBe(true)
     // Tecla que não é da aba segue para o navegador, e nenhuma delas muda o documento.
     expect(press('k')).toBe(true)
-    expect(editor.getState().canUndo).toBe(true)
-    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().canUndo).toBe(false)
     editor.getState().dispose()
   })
@@ -563,12 +612,18 @@ describe('"+ Nova cor" na aba Pintar', () => {
     ])
     const painted = editor.getState().asset.images.at(-1)!.layers[0]!.pixels
     expect(painted.includes(colors)).toBe(true)
-    // Desfazer o traço, e depois a cor: um passo cada. O lápis volta a uma cor que existe.
+    // Desfazer o traço, e depois a cor (que levou junto o preparo da tinta): um passo cada.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.extraColors).toBeUndefined()
+    expect(editor.getState().asset.images).toEqual(document.images)
+    expect(editor.getState().canUndo).toBe(false)
+    // O lápis volta a uma cor que existe, e o traço pinta de verdade.
+    tap(door)
     drag([[9, 9]])
-    expect(editor.getState().asset.images.at(-1)!.layers[0]!.pixels.includes(colors)).toBe(false)
+    const again = editor.getState().asset.images.at(-1)!
+    expect(again.layers[0]!.pixels.includes(colors)).toBe(false)
+    expect(again.layers[0]!.pixels[9 * again.width + 9]).toBe(7)
     expect(screen.queryByRole('alert')).toBeNull()
     editor.getState().dispose()
   })
@@ -606,6 +661,115 @@ describe('a cor e o acabamento da peça, no Modelar', () => {
     expect(editor.getState().asset.materials).toEqual(shared.materials)
     expect(editor.getState().asset.nodes).toEqual(shared.nodes)
     expect(editor.getState().canUndo).toBe(false)
+    editor.getState().dispose()
+  })
+})
+
+describe('o review da aba Pintar', () => {
+  test('girar e "de perto" sem a face (a folha inteira) só explicam, sem mexer na imagem', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const prepared = editor.getState().asset
+    for (const tool of [SCENE_PAINT_COPY.rotate, SCENE_PAINT_COPY.closeUp]) {
+      fireEvent.click(screen.getByRole('button', { name: tool }))
+      act(() => {
+        stage.callbacks!.paint!.begin({ point: [1, 1], region: 'folha' })
+      })
+      expect(screen.getByRole('alert').textContent).toBe(SCENE_PAINT_COPY.faceOnly)
+      expect(editor.getState().asset).toBe(prepared)
+    }
+    expect(screen.queryByRole('region', { name: SCENE_PAINT_COPY.closeUp })).toBeNull()
+    editor.getState().dispose()
+  })
+
+  test('com o espelho, o balde enche os dois lados num passo de desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.mirror }))
+    expect(screen.getByText(SCENE_PAINT_COPY.mirrorOn)).toBeDefined()
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintFill }))
+    const imageId = stage.target!.imageId
+    const image = () => editor.getState().asset.images.find((entry) => entry.id === imageId)!
+    const node = editor.getState().asset.nodes.find((entry) => entry.id === door)
+    if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+    const geometry = editor
+      .getState()
+      .asset.geometries.find((entry) => entry.id === node.geometryId)!
+    const px = scenePaintFaceBounds(geometry, 'px', image())!
+    const nx = scenePaintFaceBounds(geometry, 'nx', image())!
+    act(() => {
+      stage.callbacks!.paint!.begin({
+        point: [px.x0, px.y0],
+        region: 'px',
+        faceId: 'px',
+        bounds: px,
+        mirror: { point: [nx.x0, nx.y0], region: 'nx', faceId: 'nx', bounds: nx },
+      })
+    })
+    await waitFor(() => expect(editor.getState().asset).not.toBe(document))
+    await waitFor(() => expect(image().layers[0]!.pixels[nx.y0 * image().width + nx.x0]).toBe(7))
+    expect(image().layers[0]!.pixels[px.y0 * image().width + px.x0]).toBe(7)
+    // Só as duas faces: a de cima continua sem tinta.
+    const py = scenePaintFaceBounds(geometry, 'py', image())!
+    expect(image().layers[0]!.pixels[py.y0 * image().width + py.x0]).toBe(0)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.images).toEqual(document.images)
+    editor.getState().dispose()
+  })
+
+  test('com o foco no seletor de cor escondido, os atalhos continuam valendo', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap, view } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const input = view.container.querySelector<HTMLInputElement>(
+      'input[name="molda-scene-new-color"]',
+    )!
+    input.focus()
+    fireEvent.keyDown(input, { key: 'e' })
+    expect(
+      screen.getByRole('button', { name: COPY.scene.paintEraser }).getAttribute('aria-pressed'),
+    ).toBe('true')
+    editor.getState().dispose()
+  })
+
+  test('no nível de entrada, o erro que aponta o caminho avançado diz o que dá para fazer', async () => {
+    const { document, door } = twoBoxes()
+    const relief = {
+      id: 'relevo',
+      name: 'relevo',
+      width: 4,
+      height: 4,
+      encoding: 'rgba' as const,
+      layers: [
+        { id: 'r', name: 'r', visible: true, opacity: 1, pixels: new Uint8Array(4 * 4 * 4) },
+      ],
+    }
+    const doorMaterial = material(document, door)
+    const withMap: MoldaSceneDocument = {
+      ...document,
+      images: [...document.images, relief],
+      materials: document.materials.map((entry) =>
+        entry.id === doorMaterial.id ? { ...entry, normalImageId: 'relevo' } : entry,
+      ),
+    }
+    const basic = { allow: moldaToolFamilyIds(['basic']) }
+    const { editor, stage, tap } = mount(withMap, (node) => (
+      <MoldaToolAccessProvider access={basic}>{node}</MoldaToolAccessProvider>
+    ))
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    tap(door)
+    expect(stage.target).toBeNull()
+    expect(screen.getByRole('alert').textContent).toBe(SCENE_PAINT_COPY.lockedMaps)
+    expect(editor.getState().asset).toBe(withMap)
     editor.getState().dispose()
   })
 })

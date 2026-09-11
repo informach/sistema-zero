@@ -330,3 +330,13 @@ describe('scene authoring commands', () => {
     }
   })
 })
+
+test('o mesmo espelho duas vezes não desenha duas cópias uma em cima da outra: nada muda', () => {
+  const source = addSceneMirror(fixture(), 'body', { axis: 'x', offset: 0, nextId: () => 'mirror' })
+  expect(addSceneMirror(source, 'body', { axis: 'x', offset: 0, nextId: () => 'outro' })).toBe(
+    source,
+  )
+  expect(
+    addSceneMirror(source, 'body', { axis: 'x', offset: 1, nextId: () => 'outro' }).mirrors,
+  ).toHaveLength(2)
+})

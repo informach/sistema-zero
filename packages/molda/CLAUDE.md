@@ -2412,7 +2412,8 @@ as abas, a pintura do editor antigo e esconde o que é de profissional até o po
 - **Abas Modelar | Pintar | Animar** (`SceneModeTabs`; o modo mora em `useSceneWorkshop`). Em
   Pintar e Animar somem os destrutivos de modelagem (o próprio registro filtra).
 - **Pintar no clique** (`scene/paintSurface.ts`, `ensureScenePaintSurface`): tocar na peça prepara
-  o lugar da tinta num passo de desfazer, sem mudar a aparência (índice 0 = cor base). Uma região
+  o lugar da tinta sem mudar a aparência (índice 0 = cor base); desde o full review o preparo é
+  PENDENTE e vira passo de desfazer junto do primeiro traço (ver abaixo). Uma região
   por face, no tamanho da regra do editor antigo (`skinDim`); formas por `packSceneShelves`, malha
   por `autoMeshUv`; face torta pede consentimento para dividir em triângulos. O limite de cada
   face vale POR AMOSTRA (`scenePaintFaceBounds`): o traço atravessa faces, carimbo e balde não
@@ -2454,6 +2455,51 @@ as abas, a pintura do editor antigo e esconde o que é de profissional até o po
   cartões abaixo das ferramentas flutuantes. No fluxo, a barra flutuante as cobria.
 - ⚠️ E2E: a porta 5199 costuma ser o playground do Pinta de outra sessão. Use `E2E_PORT=5202+` e
   nunca encerre um servidor que você não subiu.
+
+### Full review do plano (11/09/2026)
+
+Seis revisores (kids e core, portão, domínio da pintura, palco, estado da oficina, UX e testes).
+Nada crítico; o que era real foi corrigido com teste que falha sem o conserto. Regras que ficaram:
+
+- ⭐⭐ **O preparo da tinta é PENDENTE** (`useSceneWorkshop.choosePaint`): escolher a peça em Pintar
+  aplica o preparo com `replace` (sem histórico). O primeiro traço, balde, giro, vestir ou cor nova
+  faz o commit, e o histórico grava a partir do último estado GRAVADO (o de antes do preparo), então
+  os dois viram UM passo. Sair sem pintar (outra peça, Esc, outra aba, sair da oficina) devolve o
+  documento de antes (`releasePrep`, com `cancelGesture` para salvar a volta). Antes o preparo era
+  commit: entrar em Pintar apagava o Refazer, e só olhar a aba mudava a criação (a regra de ouro do
+  básico). ⚠️ Dois fios na casca: o `cancelPreview` da saída chama `releasePaintPreparation()` e o
+  `onThumb` só grava com `!paintPreparationPending()`. Os testes pedem UM desfazer onde eram dois.
+- ⭐ **Dedo engolido é nosso até sair do vidro** (`CapturedPaintInput.swallowed`): o mover, o soltar
+  e o cancelar dele também são engolidos, e com um desses no vidro os dedos novos também. O
+  OrbitControls ouve o `pointermove` do documento sem olhar o `pointerId`, e o dedo do balde (ou o
+  segundo dedo, ou o traço cancelado) virava o dedo que gira: a câmera pulava. `cancel()` e
+  `interrupt()` cancelam o TRAÇO, não os dedos; só `forget()` (blur e aba escondida) e `dispose()`
+  esquecem os contatos.
+- **Limite da face:** na pintura que se mexe é a face DENTRO do quadro (`scenePaintFaceBounds(...,
+  within)`), não o quadro inteiro. O traço liga as amostras da mesma ILHA de UV
+  (`scenePaintIslandKey`), e o `crossesSeam` só corta nas superfícies que dão a volta (`side`,
+  `around`) e só no eixo da volta. O retângulo de cada ilha é medido UMA vez por geometria (antes o
+  Vestir era quadrático numa malha com UV contínua).
+- **Girar a pintura** só vale na face que ENCHE o retângulo dela (`scenePaintFaceFillsBounds`: as
+  formas e o quadrado da malha; triângulo e ilha em L recusam) e gira junto os mapas do material
+  (`rotateScenePaintFace`). Girar e "de perto" exigem o limite da face: pela folha inteira só
+  explicam. Com o espelho, o outro lado gira no sentido contrário e o balde enche os dois lados
+  (`sceneImageTask.run` aceita várias operações num commit).
+- **Vestir com textura veste a PEÇA inteira** (`dressScenePiece`): cada material que ela mostra
+  ganha o preparo e a textura, numa revisão só (a criação do editor antigo tem um material por face
+  pintada). Recusa a pintura que se mexe.
+- `isTypingTarget` não trata color, checkbox, radio e botões como campo de texto: o seletor de cor
+  cancelado deixava o foco no campo escondido e os atalhos morriam. O Esc do palco ignora diálogo
+  aberto e campo focado. `ui/Button`: `aria-pressed` tem visual (fundo tingido e anel) no `ghost` e
+  no `outline`; amostras de cor usam `swatchClass()` (anel duplo, visível na cor escura).
+- No básico: o espelho do meio é um só (`addSceneMirror` ignora o espelho repetido) e os erros que
+  apontam o caminho avançado viram o que a criança pode fazer (`SCENE_PAINT_COPY.lockedMaps` e
+  `lockedLayers`). "Mais jeitos de pintar" nem é montado sem família avançada
+  (`SCENE_PAINT_ADVANCED_FAMILIES`).
+- Ficou com a sessão da casca (lote 8 dela): o Animar a 390 px (pilha de cartões por cima dos
+  Primeiros passos), o palco pequeno do Pintar em tela baixa, a catraca própria da aba Pintar e o
+  cabeçalho com dois `mr-auto`. Ficou para depois: a folha da malha que a aba prepara é uma ilha
+  por face (balde de um triângulo só numa esfera convertida) e a pinça em cima da peça não dá zoom.
 
 ## A galeria das telas-modelo e o chrome do host (11/09/2026)
 

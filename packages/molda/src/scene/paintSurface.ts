@@ -44,7 +44,7 @@ import { sceneMaterialImageIds } from './materialImages'
 import { inspectMeshFaceFrame } from './meshFaceFrame'
 import { editMeshFaces } from './meshFaces'
 import { autoMeshUv } from './meshUvAuto'
-import { parametricMesh } from './parametricGeometry'
+import { cachedParametricMesh } from './parametricGeometry'
 import { triangulateFace } from './triangulate'
 import { requireScene } from './validation'
 
@@ -91,7 +91,7 @@ function paintNode(document: MoldaSceneDocument, nodeId: string) {
 }
 
 function surfaceIds(geometry: ScenePrimitiveGeometry | ScenePathGeometry): ShapeFaceId[] {
-  return [...new Set(parametricMesh(geometry).surfaceByFace.values())]
+  return [...new Set(cachedParametricMesh(geometry).surfaceByFace.values())]
 }
 
 /** Cada face (malha) ou superfície (forma e tubo) com o material que ela mostra de fato. */
@@ -356,7 +356,7 @@ export function ensureScenePaintSurface(
   const images = sceneMaterialImageIds(material)
   requireScene(
     material.colorImageId !== undefined || images.size === 0,
-    'material',
+    'material.maps',
     'Esta peça tem relevo, brilho ou metal pintados. Pinte nela pelo caminho avançado.',
   )
   let next = document

@@ -17,7 +17,7 @@ import type { Texel } from '../paint/skinPaint'
 import type { ScenePixelRegion } from './composite'
 import type { SceneGeometry, SceneImage, SceneMeshGeometry, Vec2 } from './document'
 import { scenePaintFaceBounds } from './paintSurfaceBounds'
-import { parametricMesh } from './parametricGeometry'
+import { cachedParametricMesh } from './parametricGeometry'
 
 export interface ScenePaintFaceView {
   readonly region: ScenePixelRegion
@@ -47,17 +47,9 @@ export function sceneFaceViewTexel(view: ScenePaintFaceView, column: number, row
   return [view.flipX ? x1 - a : x0 + a, view.flipY ? y1 - b : y0 + b]
 }
 
-/** Por identidade: a geometria é imutável em cada revisão. */
-const derived = new WeakMap<SceneGeometry, ReturnType<typeof parametricMesh>>()
-
 function meshOf(geometry: SceneGeometry) {
   if (geometry.kind === 'mesh') return { mesh: geometry, surfaceByFace: null }
-  let found = derived.get(geometry)
-  if (!found) {
-    found = parametricMesh(geometry)
-    derived.set(geometry, found)
-  }
-  return found
+  return cachedParametricMesh(geometry)
 }
 
 interface Corner {

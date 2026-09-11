@@ -714,12 +714,21 @@ export function addSceneMirror(
   editable(selected)
   const source = selected.index.scene.nodes.get(nodeId)
   requireScene(source?.kind === 'mesh', `nodes.${nodeId}`, 'Escolha uma peça para espelhar.')
+  const axis = choice(options.axis, ['x', 'y', 'z'], 'axis')
+  const offset = number(options.offset, 'offset')
+  // O mesmo espelho duas vezes desenharia duas cópias uma em cima da outra: nada muda.
+  if (
+    document.mirrors.some(
+      (mirror) => mirror.sourceId === nodeId && mirror.axis === axis && mirror.offset === offset,
+    )
+  )
+    return document
   const mirror: SceneMirror = {
     id: allocateId(document, options.nextId ?? newId)(),
     name: source.name,
     sourceId: nodeId,
-    axis: choice(options.axis, ['x', 'y', 'z'], 'axis'),
-    offset: number(options.offset, 'offset'),
+    axis,
+    offset,
   }
   return finish({ ...document, mirrors: [...document.mirrors, mirror] })
 }

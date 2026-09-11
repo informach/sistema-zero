@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
@@ -47,7 +48,8 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const retargetPaint = paint.retarget
   // Sem o pincel liberado (`paint.brush`), escolher a peça em Pintar só escolhe: nada de preparar
   // a tinta, que muda o documento.
-  const brush = useMoldaToolAccess().can('paint.brush')
+  const { can } = useMoldaToolAccess()
+  const brush = can('paint.brush')
   const gesture = useMemo(
     () =>
       createSceneTransformGesture(editor, (error) =>
@@ -65,17 +67,45 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     [selected, index],
   )
   /**
-   * Pintar no clique: escolher a peça prepara o lugar da tinta (um passo de desfazer, sem mudar
-   * a aparência) e abre a pintura nela, mantendo a cor, a ferramenta e a largura da criança.
+   * O preparo da tinta que ainda não virou passo de desfazer. Escolher a peça prepara o lugar da
+   * tinta com `replace` (sem histórico). O primeiro traço, balde, giro ou vestir faz o commit, e o
+   * histórico grava a partir do último estado GRAVADO (o de antes do preparo): os dois viram UM
+   * passo. Sair sem pintar devolve o documento de antes. Assim olhar a aba Pintar não apaga o
+   * Refazer nem muda a criação, o que vale também para a regra de ouro do nível de entrada.
+   */
+  const pendingPrep = useRef<{
+    nodeId: string
+    base: MoldaSceneDocument
+    prepared: MoldaSceneDocument
+  } | null>(null)
+  /** Desfaz o preparo que ninguém usou (`keep`: a peça que continua sendo o alvo). */
+  const releasePrep = useCallback(
+    (keep?: string) => {
+      const pending = pendingPrep.current
+      if (!pending || pending.nodeId === keep) return
+      pendingPrep.current = null
+      const state = editor.getState()
+      // Um traço, uma cor ou um comando por cima já levou o preparo junto no passo dele.
+      if (state.content === pending.prepared) state.cancelGesture(pending.base)
+    },
+    [editor],
+  )
+  useEffect(() => () => releasePrep(), [releasePrep])
+  /**
+   * Pintar no clique: escolher a peça prepara o lugar da tinta (sem mudar a aparência) e abre a
+   * pintura nela, mantendo a cor, a ferramenta e a largura da criança.
    */
   const choosePaint = useCallback(
     (nodeId: string | null, faceId?: string, split = false) => {
+      // O gesto da cor nova fecha antes de tudo, no passo dele (a lição do editor antigo).
+      cancelPaint()
       skinPaint.cancel()
       animationPose.cancel()
       animation.cancelPreview()
       animation.pause()
       gesture.cancel()
       setPaintIssue(null)
+      releasePrep(nodeId ?? undefined)
       if (nodeId === null) {
         closePaint()
         setChosen([])
@@ -103,15 +133,44 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
           })
           return
         }
-        if (result.created) editor.getState().commit(result.document)
+        if (result.created) {
+          const state = editor.getState()
+          const pending = pendingPrep.current
+          const base =
+            pending?.nodeId === nodeId && state.content === pending.prepared ? pending.base : source
+          state.replace(result.document)
+          pendingPrep.current = { nodeId, base, prepared: result.document }
+        }
         setMessage(null)
         retargetPaint(result.target)
       } catch (error) {
         closePaint()
-        setMessage(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+        setMessage(
+          error instanceof SceneValidationError
+            ? // O erro aponta o caminho avançado ("pinte pelo caminho avançado", "mostre uma
+              // camada"): trancado, ele diz o que a criança pode fazer agora.
+              error.path === 'material.maps' && !can('paint.maps')
+              ? SCENE_PAINT_COPY.lockedMaps
+              : error.path === 'layer' && !can('paint.layers')
+                ? SCENE_PAINT_COPY.lockedLayers
+                : error.message
+            : COPY.scene.paintFailed,
+        )
       }
     },
-    [editor, gesture, closePaint, retargetPaint, animation, animationPose, skinPaint, brush],
+    [
+      editor,
+      gesture,
+      closePaint,
+      cancelPaint,
+      retargetPaint,
+      releasePrep,
+      animation,
+      animationPose,
+      skinPaint,
+      brush,
+      can,
+    ],
   )
   const select = useCallback(
     (id: string | null, add: boolean, faceId?: string) => {
@@ -216,6 +275,15 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     run,
   })
+  // O portão pode fechar com a oficina aberta (a prévia da equipe, um posto que muda): o modo de
+  // malha trancado fecha, em vez de continuar aberto sem os botões dele.
+  const meshAllowed = can('model.mesh')
+  const componentsOpen = components.selection !== null
+  const closeComponents = useRef(components.close)
+  closeComponents.current = components.close
+  useEffect(() => {
+    if (!meshAllowed && componentsOpen) closeComponents.current()
+  }, [meshAllowed, componentsOpen])
   function cancelGesture() {
     skinPaint.cancel()
     animationPose.cancel()
@@ -232,6 +300,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   function changeMode(next: SceneWorkshopMode) {
     if (next === mode) return
     cancelGesture()
+    releasePrep()
     closePaint()
     components.close()
     flipbook.setImage(null)
@@ -271,9 +340,17 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         return
       }
       closePaint()
+      releasePrep()
       setPaintIssue(null)
       setChosen([])
     },
+    /** O preparo da tinta ainda sem traço: a foto do cartão espera (nada mudou à vista). */
+    paintPreparationPending: () => {
+      const pending = pendingPrep.current
+      return pending !== null && editor.getState().content === pending.prepared
+    },
+    /** Sair da oficina: o preparo que ninguém usou não vai para o disco. */
+    releasePaintPreparation: () => releasePrep(),
     paint,
     skinPaint,
     flipbook,
@@ -296,6 +373,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         setMode('paint')
       }
       setPaintIssue(null)
+      releasePrep(target.nodeId)
       setChosen([target.nodeId])
       return paint.open(target)
     },

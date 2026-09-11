@@ -45,11 +45,17 @@ export function SceneGlbExportPanel({
   const task = useSceneGlbExport(editor)
   const { state } = task
   const copy = COPY.scene.glbExport
-  const [format, setFormat] = useState<SceneFileFormat | 'png' | 'presentation'>('glb')
+  const [chosenFormat, setFormat] = useState<SceneFileFormat | 'png' | 'presentation'>('glb')
   const [chosenStudio, setAnimatedPaint] = useState(false)
   // O portão: GLB, foto e apresentação são `files.export` (o básico); glTF, OBJ e a cópia "para
   // outros programas" são `files.interop`. Sem ele, o GLB vai para o Estúdio, sem escolha.
   const interop = useMoldaToolAccess().can('files.interop')
+  // O portão pode fechar com o painel aberto (a prévia da equipe, um posto que muda): o formato
+  // escolhido que trancou volta ao GLB, em vez de exportar pelo caminho trancado.
+  const format =
+    interop || chosenFormat === 'glb' || chosenFormat === 'png' || chosenFormat === 'presentation'
+      ? chosenFormat
+      : 'glb'
   const animatedPaint = interop ? chosenStudio : true
   /** Trocar o destino descarta a cópia preparada: consentimento não atravessa gravações. */
   function chooseDestination(next: boolean) {

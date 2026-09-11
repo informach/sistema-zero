@@ -461,3 +461,75 @@ test('sem engolir os erros: só o toque que acerta é da pintura; o resto segue 
     f.close()
   }
 })
+
+/** Tudo que chega à câmera (que ouve depois da pintura, no próprio palco). */
+function cameraLog(canvas: HTMLCanvasElement) {
+  const seen: string[] = []
+  for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel'])
+    canvas.addEventListener(type, (event) =>
+      seen.push(`${type}:${(event as PointerEvent).pointerId}`),
+    )
+  return seen
+}
+
+test('o dedo que a pintura engoliu não vira câmera depois do traço (a câmera pulava)', () => {
+  const f = setup({ begin: () => true, move: () => {}, end: () => {} })
+  const camera = cameraLog(f.canvas)
+  try {
+    f.input.setClaimMisses(false)
+    f.event('pointerdown', 1, 10)
+    // O segundo dedo cancela o traço; os dois continuam no vidro e continuam nossos.
+    f.event('pointerdown', 2, 10)
+    f.event('pointermove', 1, 11)
+    f.event('pointermove', 2, 12)
+    // O primeiro levanta e volta com o segundo ainda apoiado: também é nosso.
+    f.event('pointerup', 1, 11)
+    f.event('pointerdown', 1, 30)
+    f.event('pointermove', 1, 31)
+    f.event('pointerup', 1, 31)
+    f.event('pointerup', 2, 12)
+    expect(camera).toEqual([])
+    // Sem dedo nosso no vidro, o toque que erra a peça volta a ser da câmera.
+    f.event('pointerdown', 3, -5)
+    expect(camera).toEqual(['pointerdown:3'])
+  } finally {
+    f.close()
+  }
+})
+
+test('ferramenta que não abre traço (o balde): o dedo que tocou a peça segue nosso', () => {
+  const f = setup({ begin: () => false, move: () => {}, end: () => {} })
+  const camera = cameraLog(f.canvas)
+  try {
+    f.input.setClaimMisses(false)
+    f.event('pointerdown', 1, 10)
+    f.event('pointerdown', 2, -5)
+    f.event('pointermove', 1, 11)
+    f.event('pointermove', 2, -6)
+    f.event('pointerup', 2, -6)
+    f.event('pointerup', 1, 11)
+    expect(camera).toEqual([])
+  } finally {
+    f.close()
+  }
+})
+
+test('cancelar o traço não esquece os dedos; perder o foco da janela esquece', () => {
+  const f = setup({ begin: () => true, move: () => {}, end: () => {} })
+  const camera = cameraLog(f.canvas)
+  try {
+    f.input.setClaimMisses(false)
+    f.event('pointerdown', 1, 10)
+    // Um quadro da pintura que se mexe, o espelho ou outra peça cancelam no meio.
+    f.input.cancel()
+    f.event('pointermove', 1, 11)
+    f.event('pointerdown', 2, -5)
+    expect(camera).toEqual([])
+    // A janela perdeu o foco: os `pointerup` podem nunca chegar.
+    f.input.forget()
+    f.event('pointerdown', 3, -5)
+    expect(camera).toEqual(['pointerdown:3'])
+  } finally {
+    f.close()
+  }
+})

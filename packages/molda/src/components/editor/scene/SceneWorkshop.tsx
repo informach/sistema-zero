@@ -1,4 +1,4 @@
-import { useId, useRef, useState, useSyncExternalStore } from 'react'
+import { useId, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { NATIVE_IMPORT_COPY } from '../../../core/nativeImportCopy'
@@ -39,6 +39,7 @@ import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
+import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
 import { runScenePaintShortcut } from './scenePaintShortcuts'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -114,6 +115,16 @@ export function SceneWorkshop({
     else closeFaces()
   }
   const { document, selected, run } = workshop
+  // A face de perto redesenha quando a paleta ou a cor base mudam de verdade, não a cada render.
+  const paintPalette = useMemo(() => scenePalette(document), [document])
+  const paintData = workshop.paint.data
+  const paintBase = useMemo(
+    () =>
+      paintData
+        ? sceneMaterialImageBase(paintData.material, paintPalette, paintData.imageKind)
+        : null,
+    [paintData, paintPalette],
+  )
   const canUndo = useStore(editor, (state) => state.canUndo)
   const canRedo = useStore(editor, (state) => state.canRedo)
   const saveState = useStore(editor, (state) => state.saveState)
@@ -179,7 +190,9 @@ export function SceneWorkshop({
           event.preventDefault()
           if (can('model.pieces') && selected.length)
             run((source) => duplicateSceneNodes(source, selected), 'created')
-        } else if (workshop.paint.session && event.key === 'Escape') {
+        } else if ((mode === 'paint' || workshop.paint.session) && event.key === 'Escape') {
+          // O mesmo Esc do palco, venha de onde vier o foco: com a pergunta da face torta aberta
+          // e sem pintura, ele solta a peça (antes só o palco fazia isso).
           event.preventDefault()
           workshop.endPaint()
         } else if (mode === 'paint' && runScenePaintShortcut(workshop.paint, event, can)) {
@@ -207,6 +220,7 @@ export function SceneWorkshop({
             backup={backup}
             cancelPreview={() => {
               workshop.cancelGesture()
+              workshop.releasePaintPreparation()
               workshop.paint.close()
               workshop.components.close()
               workshop.flipbook.setImage(null)
@@ -405,7 +419,9 @@ export function SceneWorkshop({
               onSelect={workshop.select}
               onSelectMany={workshop.selectMany}
               factory={viewportFactory}
-              onThumb={(thumb) => workshop.editor.getState().setThumb(thumb)}
+              onThumb={(thumb) => {
+                if (!workshop.paintPreparationPending()) workshop.editor.getState().setThumb(thumb)
+              }}
               transform={
                 mode === 'animation'
                   ? workshop.animationPose.transformActions(selected)
@@ -429,12 +445,8 @@ export function SceneWorkshop({
                 mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
                   <ScenePaintCloseUp
                     image={workshop.paint.data.image}
-                    palette={scenePalette(document)}
-                    base={sceneMaterialImageBase(
-                      workshop.paint.data.material,
-                      scenePalette(document),
-                      workshop.paint.data.imageKind,
-                    )}
+                    palette={paintPalette}
+                    base={paintBase ?? [0, 0, 0, 0]}
                     view={workshop.paint.closeUp}
                     drawing={workshop.paint.drawing}
                     actions={workshop.paint.actions}
@@ -496,12 +508,19 @@ export function SceneWorkshop({
                 <SceneUpcomingTools tabs={['animate']} />
               </>
             ) : mode === 'paint' ? (
-              <DeferredModule
-                load={loadPaint}
-                props={{ workshop }}
-                onBack={() => changeMode('model')}
-                backLabel={copy.glbExport.close}
-              />
+              <>
+                {/* No nível de entrada o painel ficaria vazio: nem baixa o módulo. */}
+                {SCENE_PAINT_ADVANCED_FAMILIES.some((family) => can(family)) && (
+                  <DeferredModule
+                    load={loadPaint}
+                    props={{ workshop }}
+                    onBack={() => changeMode('model')}
+                    backLabel={copy.glbExport.close}
+                  />
+                )}
+                {/* No celular a linha mora aqui, na gaveta; no computador, no fim da coluna. */}
+                <SceneUpcomingTools tabs={['paint']} className="md:hidden" />
+              </>
             ) : workshop.components.selection ? (
               <SceneComponentTools {...workshop.components} />
             ) : (

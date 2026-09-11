@@ -72,9 +72,12 @@ export function SceneMirrors({ workshop }: { workshop: ReturnType<typeof useScen
             />
           </>
         )}
-        <Button type="submit" className="w-full text-sm">
-          {copy.addMirror}
-        </Button>
+        {/* No básico o espelho do meio é um só: com ele criado, fica só o "Tirar". */}
+        {(anyAxis || mirrors.length === 0) && (
+          <Button type="submit" className="w-full text-sm">
+            {copy.addMirror}
+          </Button>
+        )}
       </form>
       {mirrors.length > 0 && (
         <ul className="mt-2 space-y-1">

@@ -17,6 +17,7 @@ import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { IconButton } from '../../ui/Button'
 import { Plus } from '../../ui/icons'
+import { swatchClass } from '../../ui/interaction'
 import type { useScenePaint } from './useScenePaint'
 
 /** As cores que a criança pode escolher: sem o índice reservado e sem vagas vazias. */
@@ -61,8 +62,43 @@ export function ScenePaintPalette({
       {/* No celular, uma fileira que rola de lado: duas fileiras de cores roubavam o palco. */}
       <section
         aria-label={SCENE_PAINT_COPY.colors}
-        className="mld-scroll-x flex shrink-0 gap-1 overflow-x-auto border-mld-border border-t bg-mld-surface p-2 lg:flex-wrap lg:overflow-x-visible"
+        className={clsx(
+          'mld-scroll-x flex shrink-0 gap-1 overflow-x-auto border-mld-border border-t bg-mld-surface p-2 lg:flex-wrap lg:overflow-x-visible',
+          // No traço as cores ficam desligadas sem esmaecer (a faixa piscava a cada traço).
+          paint.drawing && !paint.busy && '[&_button:disabled]:opacity-100',
+        )}
       >
+        {/* O "+" abre a faixa, como o cartão "Nova criação" abre a galeria: no celular a fileira
+            rola de lado, e no fim dela ele ficava fora da tela. O campo escondido mora junto
+            dele, então o seletor nativo abre ao lado do "+". */}
+        <span className="relative shrink-0">
+          <IconButton
+            ref={plus}
+            aria-label={COPY.editor.model.addColor}
+            title={full ? COPY.editor.model.colorsFull : undefined}
+            disabled={full || busy}
+            onClick={() => {
+              const element = input.current
+              if (!element) return
+              // Foco de verdade no campo: o blur dele é a rede quando o seletor fecha sem `change`.
+              element.focus()
+              element.click()
+            }}
+            className="border-2 border-mld-border border-dashed"
+          >
+            <Plus aria-hidden="true" className="size-5" />
+          </IconButton>
+          <input
+            ref={input}
+            type="color"
+            name="molda-scene-new-color"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="sr-only"
+            onChange={(event) => paint.newColorStep(event.target.value)}
+            onBlur={() => paint.newColorEnd()}
+          />
+        </span>
         {scenePaletteSwatches(palette).map(({ index, hex }) => {
           const [r, g, b] = hexToRgb(hex)
           const active =
@@ -82,42 +118,11 @@ export function ScenePaintPalette({
               aria-pressed={active}
               disabled={busy}
               onClick={() => paint.setColor(rgba ? [r, g, b, 255] : index)}
-              className={clsx(
-                'aspect-square min-h-11 min-w-11 rounded-md border-2 transition',
-                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent',
-                'disabled:cursor-not-allowed disabled:opacity-40',
-                active ? 'scale-110 border-mld-text' : 'border-mld-border/60 hover:border-mld-text',
-              )}
+              className={swatchClass(active)}
               style={{ backgroundColor: hex }}
             />
           )
         })}
-        <IconButton
-          ref={plus}
-          aria-label={COPY.editor.model.addColor}
-          title={full ? COPY.editor.model.colorsFull : COPY.editor.model.addColor}
-          disabled={full || busy}
-          onClick={() => {
-            const element = input.current
-            if (!element) return
-            // Foco de verdade no campo: o blur dele é a rede quando o seletor fecha sem `change`.
-            element.focus()
-            element.click()
-          }}
-          className="shrink-0 border-2 border-mld-border border-dashed"
-        >
-          <Plus aria-hidden="true" className="size-5" />
-        </IconButton>
-        <input
-          ref={input}
-          type="color"
-          name="molda-scene-new-color"
-          aria-hidden="true"
-          tabIndex={-1}
-          className="sr-only"
-          onChange={(event) => paint.newColorStep(event.target.value)}
-          onBlur={() => paint.newColorEnd()}
-        />
       </section>
     </RequiresTool>
   )
