@@ -233,20 +233,7 @@ describe('a aba Pintar', () => {
     })
     expect(editor.getState().asset).not.toBe(prepared)
     const shell = view.getByRole('region', { name: COPY.scene.title })
-    console.log(
-      'DBG before esc',
-      editor.getState().asset.images.length,
-      prepared.images.length,
-      document.images.length,
-    )
     fireEvent.keyDown(shell, { key: 'Escape' })
-    console.log(
-      'DBG after esc',
-      editor.getState().asset.images.length,
-      editor.getState().asset === prepared,
-      editor.getState().asset === document,
-      editor.getState().canUndo,
-    )
     expect(editor.getState().asset.images).toEqual(prepared.images)
     expect(stage.target?.nodeId).toBe(door)
     fireEvent.keyDown(shell, { key: 'Escape' })
