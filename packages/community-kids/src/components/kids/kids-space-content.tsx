@@ -188,7 +188,10 @@ export function KidsSpaceContent(props: KidsSpaceContentProps) {
         {isWall ? (
           (detail ?? <WallFeed feed={feed} viewerId={viewerId} discussion={discussion} />)
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
+          // `grid-cols-1` (= `minmax(0,1fr)`) no celular: a coluna `auto` de sempre crescia até
+          // a fileira INTEIRA de canais (a lista rola de lado dentro do painel, mas o painel
+          // não encolhia), e a página rolava 62px de lado a 390px (full review de 11/09/2026).
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[18.75rem_minmax(0,1fr)]">
             <ChannelsPanel
               channels={channels}
               channel={channel}

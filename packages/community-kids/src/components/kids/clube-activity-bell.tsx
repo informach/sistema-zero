@@ -53,6 +53,8 @@ export function ClubeActivityBell({
   const [allThreads, setAllThreads] = useState<HubMyThreadView[]>([])
   const [fresh, setFresh] = useState<HubMyThreadView[]>([])
   const [open, setOpen] = useState(false)
+  /** O que era novo NA HORA de abrir: a lista mostra isso enquanto está aberta. */
+  const [shown, setShown] = useState<HubMyThreadView[] | null>(null)
 
   useEffect(() => {
     if (!viewerId) return
@@ -92,11 +94,17 @@ export function ClubeActivityBell({
   }, [threads, viewerId])
 
   const toggle = () => {
-    setOpen((v) => {
-      const next = !v
-      if (next && fresh.length > 0) markSeen()
-      return next
-    })
+    if (open) {
+      setOpen(false)
+      setShown(null)
+      return
+    }
+    // Abrir marca como visto, mas a lista guarda o que ERA novo: marcar zerava as novas no
+    // mesmo clique, e o sino abria com "Suas conversas" (todas), nunca com as respostas que
+    // ele tinha acabado de anunciar (full review de 11/09/2026).
+    setShown(fresh.length > 0 ? fresh : null)
+    if (fresh.length > 0) markSeen()
+    setOpen(true)
   }
 
   // Sem nada novo E sem histórico → não renderiza (não polui o cabeçalho).
@@ -107,8 +115,15 @@ export function ClubeActivityBell({
       <button
         type="button"
         onClick={toggle}
-        aria-label={fresh.length > 0 ? `${fresh.length} novas respostas` : 'Suas conversas'}
-        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card transition-colors hover:border-primary"
+        aria-label={
+          fresh.length > 0
+            ? `${fresh.length} ${fresh.length === 1 ? 'nova resposta' : 'novas respostas'}`
+            : 'Suas conversas'
+        }
+        // `text-foreground` no botão E na lista: o sino mora no herói azul, onde a tinta
+        // herdada é a branca da marca, e o ícone e os títulos das conversas saíam brancos
+        // sobre o cartão branco (visto na conferência, 11/09/2026).
+        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full border-2 border-border bg-card text-foreground transition-colors hover:border-primary"
       >
         <Bell className="size-4" />
         {fresh.length > 0 ? (
@@ -118,12 +133,15 @@ export function ClubeActivityBell({
         ) : null}
       </button>
       {open ? (
-        <div className="absolute right-0 z-20 mt-2 w-64 rounded-2xl border-2 border-border bg-card p-2 shadow-[0_4px_0_var(--border)]">
+        // No celular o sino fica à ESQUERDA do herói (as ações descem para baixo do texto):
+        // a lista abre para a direita. Do md em diante ele encosta na borda direita, e a lista
+        // abre para a esquerda. Ancorada à direita no celular, ela saía da tela.
+        <div className="absolute left-0 z-20 mt-2 w-64 rounded-2xl border-2 border-border bg-card p-2 text-foreground shadow-[0_4px_0_var(--border)] md:right-0 md:left-auto">
           <p className="px-2 py-1 font-bold text-muted-foreground text-xs">
-            {fresh.length > 0 ? 'Novas respostas 💬' : 'Suas conversas'}
+            {shown ? 'Novas respostas 💬' : 'Suas conversas'}
           </p>
           <ul className="flex flex-col">
-            {(fresh.length > 0 ? fresh : threads).slice(0, 6).map((t) => (
+            {(shown ?? threads).slice(0, 6).map((t) => (
               <li key={t.id}>
                 <button
                   type="button"

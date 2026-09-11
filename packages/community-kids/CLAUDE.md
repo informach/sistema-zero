@@ -1150,6 +1150,17 @@ o `kids-space-content.tsx` só compõe e o `kids-space-view-client.tsx` (teto de
   "Começar conversa". Os combinados (`COMBINADOS`, exportado) aparecem também no fechamento.
 - **Autor sem foto** mostra a INICIAL na bolinha (`AuthorBadge` passa `name`), e não o boneco
   genérico igual para todo mundo.
+- ⚠️ **O sino mora no herói, e o herói não pode cortar** (full review de 11/09/2026): só a forma
+  `alto` do `KidsHero` tem `overflow-hidden` (a ilustração); na `faixa` a lista do sino sumia no
+  meio do azul. A lista abre para a DIREITA no celular (lá o sino fica à esquerda, e ancorada à
+  direita ela saía da tela) e para a esquerda do `md` em diante. O botão e a lista pintam
+  `text-foreground`: dentro do herói a tinta herdada é a branca da marca, e o ícone e os títulos
+  saíam brancos sobre o cartão branco. Abrir mostra as respostas NOVAS (guardadas na hora do
+  clique) e só então as marca como vistas; antes, marcar zerava a lista no mesmo clique.
+- **O Clube não rola de lado no celular:** a grade é `grid-cols-1` (a coluna `auto` crescia até
+  a fileira inteira de canais) e a fileira é `relative` (o "com novidades" `sr-only` é absoluto e
+  escapava do recorte). Medido a 390px: a página rolava 62px de lado. Testes:
+  `tests/clube-activity-bell.test.tsx` e `tests/kids-space-content.test.tsx`.
 
 ### Hub/fórum (compartilhado)
 

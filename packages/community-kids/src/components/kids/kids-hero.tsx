@@ -53,8 +53,11 @@ export function KidsHero({
   return (
     <div
       className={cn(
-        'kids-marca relative overflow-hidden rounded-[1.75rem] shadow-(--sombra-heroi)',
-        alto ? 'p-6 md:p-7 md:pl-10' : 'p-5 md:p-7',
+        'kids-marca relative rounded-[1.75rem] shadow-(--sombra-heroi)',
+        // Só a forma ALTA corta o que passa (a ilustração nos cantos). A FAIXA não pode: o
+        // sino do Clube abre a lista dele para fora do azul, e cortada ela sumia no meio do
+        // herói (full review de 11/09/2026).
+        alto ? 'overflow-hidden p-6 md:p-7 md:pl-10' : 'p-5 md:p-7',
         className,
       )}
     >

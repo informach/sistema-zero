@@ -139,7 +139,10 @@ export function ChannelsPanel({
       <p className="font-extrabold text-muted-foreground text-xs uppercase tracking-[0.12em]">
         Canais
       </p>
-      <ul className="mt-3 flex gap-2 overflow-x-auto lg:flex-col">
+      {/* `relative`: o "com novidades" só para leitor de tela é `sr-only` (absoluto), e sem
+          um ancestral posicionado DENTRO da fileira que rola ele escapava do recorte e fazia a
+          página inteira rolar de lado no celular (full review de 11/09/2026). */}
+      <ul className="relative mt-3 flex gap-2 overflow-x-auto lg:flex-col">
         {channels.map((item) => {
           const active = channel?.id === item.id
           const Icon = item.postingPolicy === 'staff_only' ? Megaphone : Hash
