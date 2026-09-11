@@ -132,6 +132,15 @@
   --band-rosa: var(--sz-kids-rosa-bg); /* #fff0f7 */
   --band-amarelo: var(--sz-kids-amarelo-bg); /* #fff6dc */
 
+  /* ── TINTA do texto ───────────────────────────────────────────────────────
+     Nas telas-modelo (11/09/2026) o texto forte é o NAVY da marca, e não o quase
+     preto do `--foreground`: medido #16224b nos títulos, #132232 nas pílulas e
+     #1c243a no menu, todos colados no `--sz-kids-navy`. É a cor que já existe
+     aparecendo em mais lugares (a lei da cor), e por isso é um apelido novo, sem
+     trocar o valor de `--foreground`, que o ui e o member-shell também leem.
+     No escuro a tinta volta a ser o `--foreground` (ver `.dark`). */
+  --tinta: var(--sz-kids-navy);
+
   /* ── CARTA das páginas de oferta ─────────────────────────────────────────
      O canto e a sombra do cartão do funil. O canto é bem maior que o `--radius`
      do app (10px) porque no funil o cartão é o objeto principal da tela; a
@@ -375,6 +384,10 @@
   --band-rosa: oklch(0.3 0.055 350);
   --band-amarelo: oklch(0.31 0.05 90);
 
+  /* O navy do dia seria texto escuro sobre o navy da noite: no escuro a tinta é a
+     do tema. */
+  --tinta: var(--foreground);
+
   /* No escuro a areia clara viraria um fio aceso em volta do cartão; quem separa
      ali é a borda navy que o tema já tem. */
   --linha-carta: var(--border);
@@ -517,7 +530,9 @@
       var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
     font-family: var(--font-sans);
-    @apply bg-background text-foreground;
+    @apply bg-background;
+    /* A tinta navy das telas-modelo (ver `--tinta`); no escuro é o `--foreground`. */
+    color: var(--tinta);
   }
   a[href],
   button:not(:disabled),
@@ -567,6 +582,8 @@ a.bg-primary.text-primary-foreground {
   color: var(--sz-primary-fg);
   border-radius: 9999px;
   box-shadow: none;
+  /* O mesmo extra-negrito do `.sz-btn-gradient`: os dois são o botão da marca. */
+  font-weight: 800;
   transition:
     background-color 0.12s ease,
     transform 0.12s ease;
@@ -600,7 +617,9 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     justify-content: center;
     gap: 0.5rem;
     font-family: inherit;
-    font-weight: 700;
+    /* 800: o rótulo dos botões das telas-modelo é o extra-negrito do Nunito (medido:
+       "Explorar mural" com 113px no modelo contra 110px no 700, no mesmo corpo). */
+    font-weight: 800;
     font-size: 0.9375rem;
     padding: 0 1.375rem;
     /* Default de 44px = alvo de toque mínimo para mão de criança (a mesma régua do
@@ -645,7 +664,7 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
      tom acima, então o par segue o tema sozinho. */
   .sz-btn-suave {
     background-color: var(--band-creme);
-    color: var(--foreground);
+    color: var(--tinta);
   }
   .sz-btn-suave:hover {
     background-color: color-mix(in oklab, var(--band-creme) 90%, var(--foreground));
@@ -655,7 +674,7 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
      INTERNA, e não `border`, para a pílula ter a mesma altura das irmãs. */
   .sz-btn-contorno {
     background-color: var(--card);
-    color: var(--foreground);
+    color: var(--tinta);
     box-shadow: inset 0 0 0 1px var(--border);
   }
   .sz-btn-contorno:hover {
@@ -769,11 +788,16 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   margin: 1.5rem 0;
 }
 
-/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números */
+/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números.
+   Peso 800 desde 11/09/2026: nas telas-modelo TODO título em Baloo é o extra-negrito
+   (medido a 1440px: "Onde a turma se encontra" sai com 371px no modelo contra 336px
+   no 700 de antes, no mesmo corpo). E sem o espaçamento negativo de antes: com ele
+   todo título saía uns 2% mais estreito que o do modelo, sempre na conta exata de
+   -0,01em por letra. ⚠️ A classe fica FORA de camada, então `font-*`, `tracking-*` e
+   `leading-*` no call site continuam sem efeito sobre ela. */
 .sz-display {
   font-family: var(--font-display);
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-weight: 800;
   line-height: 1.1;
 }
 .sz-display-grad {

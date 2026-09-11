@@ -9,8 +9,8 @@ import { KidsEyebrow } from './kids-eyebrow'
  * pílula de contexto, título e subtítulo. Existe para as ~20 rotas pararem de
  * escrever o mesmo trio à mão com escalas diferentes.
  *
- * A escala é a das telas-modelo (11/09/2026, medida a 1440px): o título em Baloo
- * extra-negrito chega a 44px, 12px abaixo da pílula, e o subtítulo tem 16px.
+ * A escala é a das telas-modelo (11/09/2026, medida pixel a pixel a 1440px): o título
+ * em Baloo extra-negrito chega a 45px, logo abaixo da pílula, e o subtítulo tem 17px.
  */
 export function KidsPageHeader({
   back,
@@ -50,23 +50,19 @@ export function KidsPageHeader({
       >
         <div className={cn('min-w-0', centro && 'flex flex-col items-center')}>
           {eyebrow ? (
-            <KidsEyebrow icon={eyebrowIcon} className="mb-3">
+            <KidsEyebrow icon={eyebrowIcon} className="mb-2">
               {eyebrow}
             </KidsEyebrow>
           ) : null}
-          {/* Peso 800 por estilo INLINE, e não `font-extrabold`: a `.sz-display` fica
-              fora de camada e fixa 700, então venceria a utilitária sem avisar (a
-              armadilha registrada no CLAUDE.md). O Baloo 2 é variável, o 800 existe. */}
-          <h1
-            className="sz-display text-[clamp(2rem,3.4vw,2.75rem)] text-foreground leading-[1.1]"
-            style={{ fontWeight: 800 }}
-          >
-            {title}
-          </h1>
+          {/* O peso 800 vem da própria `.sz-display` (fora de camada: `font-*` e
+              `leading-*` aqui seriam letra morta). */}
+          <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">{title}</h1>
           {subtitle ? (
             <p
               className={cn(
-                'mt-3 max-w-prose font-medium text-base text-muted-foreground',
+                // `max-w-3xl`: nas telas-modelo a frase do cabeçalho corre numa linha só
+                // a 1440px (~700px); o `max-w-prose` quebrava em 520px.
+                'mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground',
                 centro && 'mx-auto',
               )}
             >

@@ -2,7 +2,9 @@ import { Mail } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
+import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsStepCard } from '@/components/kids/kids-step-card'
+import { backToSection } from '@/components/kids/nav'
 import { listTeacherThreadsReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
 import { RecadosClient } from './recados-client'
@@ -26,8 +28,9 @@ const PASSOS = [
 ]
 
 /**
- * Caixa de entrada dos "Recados do professor" (canal de retorno). Server Component:
- * busca as conversas do aluno (readonly, sem refresh de cookie) e entrega ao client.
+ * Caixa de entrada dos "Recados do professor" (canal de retorno), no desenho da
+ * tela-modelo (11/09/2026): creme, azul-claro e lilás. Server Component: busca as
+ * conversas do aluno (readonly, sem refresh de cookie) e entrega ao client.
  */
 export default async function RecadosPage() {
   const session = await getSession()
@@ -38,24 +41,33 @@ export default async function RecadosPage() {
     <>
       <KidsBand tone="creme">
         <KidsPageHeader
+          back={backToSection('/recados')}
           eyebrow="Comunidade"
           eyebrowIcon={Mail}
           title="Recados do professor"
           subtitle="De vez em quando o professor deixa um recado para você aqui."
         />
       </KidsBand>
-      <KidsBand tone="menta">
+      <KidsBand tone="ceu">
         <RecadosClient initialThreads={threads} initialNextOffset={res.body?.nextOffset ?? null} />
       </KidsBand>
       <KidsBand tone="lilas">
-        <h2 className="sz-display text-[clamp(1.4rem,3vw,1.9rem)]">Como funciona um recado</h2>
-        <div className="kids-unit-verde mt-5 grid gap-3">
-          {PASSOS.map((passo, i) => (
-            <KidsStepCard key={passo.title} step={i + 1} title={passo.title}>
-              {passo.text}
-            </KidsStepCard>
-          ))}
-        </div>
+        <section aria-labelledby="como-funciona-heading">
+          <KidsSectionHeader
+            id="como-funciona-heading"
+            title="Como funciona um recado"
+            subtitle="Nada se perde: todo recado do professor fica guardado nesta página."
+          />
+          <ol className="grid gap-5 md:grid-cols-3">
+            {PASSOS.map((passo, i) => (
+              <li key={passo.title} className="flex">
+                <KidsStepCard step={i + 1} title={passo.title} className="w-full">
+                  {passo.text}
+                </KidsStepCard>
+              </li>
+            ))}
+          </ol>
+        </section>
       </KidsBand>
     </>
   )

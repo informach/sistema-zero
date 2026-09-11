@@ -44,11 +44,12 @@ export function RecadosBell({ variant = 'bell' }: { variant?: 'bell' | 'pill' })
         href="/recados"
         prefetch={false}
         aria-current={active ? 'page' : undefined}
+        // 38px e canto de 16px, a pílula do rodapé do modelo (1440px), na tinta navy.
         className={cn(
-          'flex h-10 items-center gap-2.5 rounded-xl px-3.5 font-semibold text-sm transition-colors',
+          'flex h-[2.375rem] items-center gap-2.5 rounded-2xl px-3.5 font-semibold text-sm transition-colors',
           active
             ? 'kids-marca'
-            : 'bg-(--band-lilas) text-foreground hover:bg-[color-mix(in_oklab,var(--band-lilas)_88%,var(--foreground))]',
+            : 'bg-(--band-lilas) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-lilas)_88%,var(--foreground))]',
         )}
       >
         <Mail className="size-4 shrink-0" aria-hidden />

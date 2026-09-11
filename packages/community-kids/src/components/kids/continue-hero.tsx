@@ -31,9 +31,9 @@ export function pickContinueCourse(courses: MyCourseView[]): MyCourseView | null
  * importante. Agora ele é o bloco azul da referência, com a capa do curso à
  * direita em vez de escondida no `md:`.
  *
- * ⚠️ O CTA continua sendo o `.sz-btn-gradient` laranja, e não o botão branco da
- * referência: é o botão de ação da marca, está em 25 lugares, e laranja sobre azul
- * é o par de maior contraste que a paleta tem.
+ * Desenho das telas-modelo (11/09/2026): a capa fica à direita SEM rotação, no
+ * formato 5:3 de cantos redondos da imagem, e o botão é a pílula BRANCA com o rótulo
+ * azul (`sz-btn-inverso`), porque sobre o azul o botão da marca sumiria.
  */
 export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
   const course = pickContinueCourse(courses)
@@ -69,7 +69,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
       footer={
         <div className="flex items-center gap-3">
           <div
-            className="h-2.5 max-w-72 flex-1 overflow-hidden rounded-full"
+            className="h-2 max-w-[26rem] flex-1 overflow-hidden rounded-full"
             // Trilho e enchimento saem da TINTA do herói e do ouro da marca, e não
             // de `bg-muted`/`bg-primary`: aqui o fundo é o azul, e os dois somem
             // nele. O ouro é a cor de maior contraste que a paleta tem sobre azul.
@@ -82,7 +82,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
               style={{ width: `${course.progress.percent}%` }}
             />
           </div>
-          <span className="kids-marca-suave font-semibold text-sm">
+          <span className="kids-marca-suave shrink-0 font-bold text-sm">
             {course.progress.completedLessons}/{course.progress.totalLessons} aulas
           </span>
         </div>
@@ -96,14 +96,14 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
       }
       art={
         course.coverImageUrl ? (
-          <div className="w-48 rotate-2 overflow-hidden rounded-2xl shadow-lg md:w-56">
+          <div className="w-full max-w-[22.5rem] overflow-hidden rounded-2xl md:w-[22.5rem]">
             {/* Capa pode ser URL externa arbitrária (autoria) → <img> simples. */}
             <img
               src={course.coverImageUrl}
               alt=""
-              width={224}
-              height={126}
-              className="aspect-video w-full object-cover"
+              width={360}
+              height={216}
+              className="aspect-[5/3] w-full object-cover"
             />
           </div>
         ) : undefined

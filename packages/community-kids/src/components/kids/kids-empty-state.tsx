@@ -7,9 +7,10 @@ import { cn } from '@/lib/cn'
  * saída. Substitui a caixa tracejada cinza que se repetia em umas quinze telas do
  * kids e que, para a criança, lia como erro.
  *
- * Desenho das telas-modelo (11/09/2026): o círculo é o AMARELO da marca (96px) com o
- * ícone em tinta escura, dentro de uma carta branca de canto grande. O amarelo é cor
- * de fundo e não segue o tema; a tinta escura dá 8,73:1 nele.
+ * Desenho das telas-modelo (11/09/2026, medido a 1440px nos Recados): o círculo é o
+ * AMARELO da marca (96px) com o ícone de 40px no navy, título de 32px 19px abaixo do
+ * círculo, frase de 17px numa coluna de ~560px e o botão logo embaixo. O amarelo é cor
+ * de fundo e não segue o tema, e o navy também não: a dupla fica igual nos dois temas.
  */
 export function KidsEmptyState({
   icon: Icon,
@@ -35,13 +36,15 @@ export function KidsEmptyState({
         aria-hidden="true"
         className="grid size-24 place-items-center rounded-full bg-(--sz-kids-amarelo)"
       >
-        <Icon className="size-11 text-(--sz-kids-tinta)" />
+        <Icon className="size-10 text-(--sz-kids-navy)" />
       </span>
-      <h3 className="sz-display mt-6 text-2xl md:text-[1.75rem]">{title}</h3>
+      <h3 className="sz-display mt-4 text-2xl md:text-[2rem]">{title}</h3>
       {description ? (
-        <p className="mt-3 max-w-md font-medium text-base text-muted-foreground">{description}</p>
+        <p className="mt-4 max-w-xl font-medium text-[1.0625rem] text-muted-foreground leading-[1.6]">
+          {description}
+        </p>
       ) : null}
-      {action ? <div className="mt-6">{action}</div> : null}
+      {action ? <div className="mt-4">{action}</div> : null}
     </div>
   )
 }

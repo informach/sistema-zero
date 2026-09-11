@@ -127,15 +127,15 @@ export function UserMenu({
             )}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-bold text-[0.9375rem] leading-tight">
+            <span className="block truncate font-extrabold text-[0.9375rem] leading-tight">
               {displayName}
             </span>
             {isProfile && levelSlug ? (
-              <span className="mt-0.5 block truncate text-muted-foreground text-xs">
+              <span className="mt-0.5 block truncate text-[0.8125rem] text-muted-foreground">
                 {levelInfo(levelSlug).label}
               </span>
             ) : subtitle ? (
-              <span className="mt-0.5 block truncate text-muted-foreground text-xs">
+              <span className="mt-0.5 block truncate text-[0.8125rem] text-muted-foreground">
                 {subtitle}
               </span>
             ) : null}

@@ -43,7 +43,19 @@ export function KidsBand({
   innerClassName?: string
 }) {
   return (
-    <div className={cn('w-full', FUNDO[tone], className)}>
+    <div
+      className={cn(
+        'w-full',
+        // A ÚLTIMA faixa vai até o fim: cresce até o pé da janela quando a página é curta
+        // (o `<main>` é `flex-col`) e desce por baixo da barra de abas do celular. O
+        // `<main>` reserva 96px (`pb-24`) para a barra fixa, e sem isto esse vão aparecia
+        // como uma tira do fundo da página abaixo do lilás: a margem negativa devolve o
+        // espaço e o padding pinta a cor nele; o conteúdo continua acima da barra.
+        'last:grow last:-mb-24 last:pb-24 md:last:mb-0 md:last:pb-0',
+        FUNDO[tone],
+        className,
+      )}
+    >
       <div
         className={cn(
           // 48px de respiro vertical: o chip do cabeçalho e o primeiro cartão das faixas

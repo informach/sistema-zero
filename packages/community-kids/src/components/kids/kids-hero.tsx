@@ -66,24 +66,26 @@ export function KidsHero({
           </span>
         ) : null}
         <div className={cn('min-w-0 flex-1', alto && 'md:py-3')}>
+          {/* Respiros medidos pixel a pixel no herói do Mural (1440px): ~23px de tinta a
+              tinta entre sobretítulo, título e texto, e ~18px do texto ao botão. */}
           {eyebrow ? (
-            <p className="kids-marca-suave mb-3 font-bold text-xs uppercase tracking-[0.12em]">
+            <p className="kids-marca-suave mb-3.5 font-bold text-[0.8125rem] uppercase tracking-[0.12em]">
               {eyebrow}
             </p>
           ) : null}
           <h2
-            className={cn('sz-display', alto ? 'text-[clamp(1.6rem,2.8vw,2.15rem)]' : 'text-2xl')}
+            className={cn('sz-display', alto ? 'text-[clamp(1.6rem,2.8vw,2.25rem)]' : 'text-2xl')}
           >
             {title}
           </h2>
           {description ? (
-            <p className="kids-marca-suave mt-3 max-w-prose font-medium text-base">{description}</p>
+            <p className="kids-marca-suave mt-4 max-w-prose text-base">{description}</p>
           ) : null}
           {footer ? <div className="mt-3">{footer}</div> : null}
           {/* Na forma ALTA os botões moram na coluna de texto, como na referência:
               copy à esquerda com o CTA no fim dela, ilustração à direita. Na FAIXA
               eles são irmãos do texto e encostam na borda direita. */}
-          {alto && actions ? <div className="mt-6 flex flex-wrap gap-2">{actions}</div> : null}
+          {alto && actions ? <div className="mt-3.5 flex flex-wrap gap-2">{actions}</div> : null}
         </div>
         {!alto && actions ? (
           <div className="flex shrink-0 flex-wrap gap-2 md:flex-col md:items-stretch">

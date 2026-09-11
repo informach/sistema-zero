@@ -1,10 +1,12 @@
 'use client'
 
 import { renderMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import { Send } from 'lucide-react'
+import { Mail, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import { KidsBackButton } from '@/components/kids/back-button'
+import { KidsBand } from '@/components/kids/kids-band'
+import { KidsEmptyState } from '@/components/kids/kids-empty-state'
+import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadView } from '@/lib/types'
 
@@ -98,104 +100,135 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
     }
   }
 
+  const voltar = { href: '/recados', label: 'Voltar aos recados' }
+
   if (state === 'notfound') {
     return (
-      <div className="mx-auto w-full max-w-2xl px-4 py-10 text-center">
-        <p className="font-bold">Recado não encontrado</p>
-        <Link href="/recados" className="mt-3 inline-block text-primary underline">
-          Voltar aos recados
-        </Link>
-      </div>
+      <>
+        <KidsBand tone="creme">
+          <KidsPageHeader back={voltar} eyebrow="Recado" eyebrowIcon={Mail} title="Recados" />
+        </KidsBand>
+        <KidsBand tone="ceu">
+          <KidsEmptyState
+            icon={Mail}
+            title="Recado não encontrado"
+            description="Ele pode ter sido apagado. Os outros recados continuam na sua caixa."
+            action={
+              <Link
+                href="/recados"
+                prefetch={false}
+                className="sz-btn-gradient h-[3.125rem] px-6 text-base"
+              >
+                Voltar aos recados
+              </Link>
+            }
+          />
+        </KidsBand>
+      </>
     )
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-4">
-      <div className="mb-3 flex items-center gap-3">
-        <KidsBackButton href="/recados" label="Voltar aos recados" />
-        <div className="min-w-0">
-          <p className="font-bold text-primary text-xs uppercase tracking-wide">
-            {thread ? CONTEXT_LABEL[thread.contextType] : ''}
-          </p>
-          <p className="truncate font-bold [font-family:var(--font-display)]">
-            {thread?.title ?? 'Conversa com o professor'}
-          </p>
-        </div>
-      </div>
-
-      <div className="max-h-[60vh] overflow-y-auto rounded-2xl border-2 border-border bg-card p-3">
-        {error ? <p className="mb-3 text-destructive text-sm">{error}</p> : null}
-        {state === 'loading' ? (
-          <p className="py-8 text-center text-muted-foreground text-sm">Carregando…</p>
-        ) : thread && thread.messages.length > 0 ? (
-          <ul className="flex flex-col gap-2">
-            {thread.nextCursor ? (
-              <li className="self-center">
-                <button
-                  type="button"
-                  onClick={loadOlder}
-                  disabled={loadingOlder}
-                  className="rounded-full border-2 border-border px-3 py-1 font-bold text-xs hover:border-primary disabled:opacity-50"
-                >
-                  {loadingOlder ? 'Carregando…' : 'Ver mensagens anteriores'}
-                </button>
-              </li>
-            ) : null}
-            {thread.messages.map((m) => {
-              const mine = m.authorRole === 'student'
-              return (
-                <li key={m.id} className={`max-w-[85%] ${mine ? 'self-end' : 'self-start'}`}>
-                  <div
-                    className={`rounded-2xl px-3 py-2 text-sm ${
-                      mine ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                    }`}
-                  >
-                    <p className="mb-0.5 font-bold text-[0.7rem] opacity-80">
-                      {mine ? 'Você' : m.authorName || 'Professor(a)'}
-                    </p>
-                    {mine ? (
-                      <p className="whitespace-pre-wrap break-words">{m.body}</p>
-                    ) : (
-                      // Recado do professor formatado (negrito/listas/print/código).
-                      <div className="lesson-prose break-words text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:max-h-72 [&_img]:rounded-lg">
-                        {renderMarkdown(m.body)}
-                      </div>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        ) : (
-          <p className="py-8 text-center text-muted-foreground text-sm">Sem mensagens.</p>
-        )}
-        <div ref={endRef} />
-      </div>
-
-      <div className="mt-3 flex items-end gap-2">
-        <label htmlFor="teacher-reply" className="sr-only">
-          Resposta para o professor
-        </label>
-        <textarea
-          id="teacher-reply"
-          name="reply"
-          value={reply}
-          onChange={(e) => setReply(e.target.value)}
-          placeholder="Escreva uma resposta…"
-          maxLength={1000}
-          rows={2}
-          className="flex-1 resize-none rounded-2xl border-2 border-border bg-card p-3 text-sm outline-none focus:border-primary focus-visible:ring-2 focus-visible:ring-ring"
+    <>
+      <KidsBand tone="creme">
+        <KidsPageHeader
+          back={voltar}
+          eyebrow={thread ? CONTEXT_LABEL[thread.contextType] : 'Recado'}
+          eyebrowIcon={Mail}
+          title={thread?.title ?? 'Conversa com o professor'}
         />
-        <button
-          type="button"
-          onClick={send}
-          disabled={!reply.trim() || sending}
-          aria-label="Enviar resposta"
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform hover:scale-105 disabled:opacity-40"
-        >
-          <Send className="size-5" />
-        </button>
-      </div>
-    </div>
+      </KidsBand>
+      <KidsBand tone="ceu">
+        <div className="kids-carta rounded-[1.75rem] p-4 md:p-6">
+          <div className="max-h-[60vh] overflow-y-auto pr-1">
+            {error ? (
+              <p role="alert" className="mb-3 font-semibold text-destructive text-sm">
+                {error}
+              </p>
+            ) : null}
+            {state === 'loading' ? (
+              <p role="status" className="py-8 text-center text-muted-foreground text-sm">
+                Carregando…
+              </p>
+            ) : thread && thread.messages.length > 0 ? (
+              <ul className="flex flex-col gap-3">
+                {thread.nextCursor ? (
+                  <li className="self-center">
+                    <button
+                      type="button"
+                      onClick={loadOlder}
+                      disabled={loadingOlder}
+                      className="sz-btn-gradient sz-btn-contorno h-10 text-sm disabled:opacity-50"
+                    >
+                      {loadingOlder ? 'Carregando…' : 'Ver mensagens anteriores'}
+                    </button>
+                  </li>
+                ) : null}
+                {thread.messages.map((m) => {
+                  const mine = m.authorRole === 'student'
+                  return (
+                    <li key={m.id} className={`max-w-[85%] ${mine ? 'self-end' : 'self-start'}`}>
+                      <div
+                        className={`rounded-[1.25rem] px-4 py-3 text-[0.9375rem] ${
+                          mine ? 'kids-marca rounded-br-md' : 'rounded-bl-md bg-background'
+                        }`}
+                      >
+                        <p className="mb-1 font-bold text-xs opacity-80">
+                          {mine ? 'Você' : m.authorName || 'Professor(a)'}
+                        </p>
+                        {mine ? (
+                          <p className="whitespace-pre-wrap break-words">{m.body}</p>
+                        ) : (
+                          // Recado do professor formatado (negrito/listas/print/código).
+                          // Corpo e entrelinha por estilo INLINE: a `.lesson-prose` fica fora
+                          // de camada (17px/1.8, a escala da aula) e venceria a utilitária;
+                          // na bolha o recado tem o mesmo corpo da resposta da criança.
+                          <div
+                            className="lesson-prose break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:max-h-72 [&_img]:rounded-lg"
+                            style={{ fontSize: '0.9375rem', lineHeight: 1.6 }}
+                          >
+                            {renderMarkdown(m.body)}
+                          </div>
+                        )}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <p className="py-8 text-center text-muted-foreground text-sm">Sem mensagens.</p>
+            )}
+            <div ref={endRef} />
+          </div>
+
+          {/* A caixa de resposta é a pílula creme com o botão redondo azul: o campo do
+              Clube na tela-modelo. O anel de foco fica na PÍLULA inteira. */}
+          <div className="mt-4 flex items-end gap-2 rounded-[1.5rem] bg-(--band-creme) p-2 pl-4 focus-within:ring-2 focus-within:ring-ring">
+            <label htmlFor="teacher-reply" className="sr-only">
+              Resposta para o professor
+            </label>
+            <textarea
+              id="teacher-reply"
+              name="reply"
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Escreva uma resposta…"
+              maxLength={1000}
+              rows={2}
+              className="flex-1 resize-none bg-transparent py-2 text-[0.9375rem] outline-none placeholder:text-muted-foreground"
+            />
+            <button
+              type="button"
+              onClick={send}
+              disabled={!reply.trim() || sending}
+              aria-label="Enviar resposta"
+              className="kids-marca inline-flex size-11 shrink-0 items-center justify-center rounded-full transition-transform hover:scale-105 disabled:opacity-40"
+            >
+              <Send className="size-5" />
+            </button>
+          </div>
+        </div>
+      </KidsBand>
+    </>
   )
 }

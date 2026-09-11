@@ -23,8 +23,10 @@ export function KidsEyebrow({
       className={cn(
         // 30px de altura, a pílula das telas-modelo (11/09/2026, medida a 1440px).
         'inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-3.5 py-[0.3125rem]',
-        // Tinta escura sobre o âmbar: medido 8,73:1. Branco daria 1,48 e sumiria.
-        'font-bold text-(--sz-kids-tinta) text-sm',
+        // Tinta MARROM do ouro, a mesma do baú: medida no modelo (#2b2000), ela é o
+        // traço que o amarelo pede, e fica escura nos dois temas porque o amarelo não
+        // muda de tema. Contraste 10,88:1.
+        'font-extrabold text-(--kids-ouro-fg) text-sm',
         className,
       )}
     >

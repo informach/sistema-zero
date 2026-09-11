@@ -63,7 +63,9 @@ export function KidsFeatureCard({
       <div className="flex min-h-[5.5rem] items-center justify-between gap-3 bg-(--card-cor) px-5 py-5">
         {/* O ladrilho é branco TRANSLÚCIDO nos quatro fundos (inclusive no âmbar), como
             nas telas-modelo; o que muda por oficina é só a tinta do ícone. */}
-        <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-white/25">
+        {/* Canto de 12px, medido. (`rounded-xl` no kids é 20px: o `--radius` daqui é
+            maior que o do Tailwind, então os cantos da régua vão por valor.) */}
+        <span className="grid size-12 shrink-0 place-items-center rounded-[0.75rem] bg-white/25">
           <Icon className="size-6 text-(--card-fg)" aria-hidden />
         </span>
         {badge ? (
@@ -72,8 +74,10 @@ export function KidsFeatureCard({
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col px-5 pt-4 pb-5">
-        <h3 className="sz-display text-[1.375rem] leading-tight">{title}</h3>
+      <div className="flex flex-1 flex-col px-5 pt-5 pb-5">
+        {/* 24px no extra-negrito da `.sz-display`: medido 216px para "Clube dos
+            Criadores" no modelo (a 22px/700 dava 191px). */}
+        <h3 className="sz-display text-2xl">{title}</h3>
         {description ? (
           <p className="mt-2 font-medium text-muted-foreground text-sm">{description}</p>
         ) : null}

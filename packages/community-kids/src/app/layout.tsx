@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-background text-foreground antialiased"
+        className="min-h-screen bg-background text-(--tinta) antialiased"
       >
         <Providers>{children}</Providers>
       </body>

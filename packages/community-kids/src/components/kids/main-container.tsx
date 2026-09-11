@@ -109,7 +109,9 @@ export function MainContainer({ children }: { children: ReactNode }) {
       id="main-content"
       tabIndex={-1}
       // O `pb-24` fica: a barra de abas do celular é `fixed` por cima do conteúdo.
-      className="w-full flex-1 pb-24 md:pb-0"
+      // `flex-col`: a última `KidsBand` cresce (`last:grow`) até o pé da janela, então
+      // página curta termina na cor da última faixa, e não numa tira do fundo.
+      className="flex w-full flex-1 flex-col pb-24 md:pb-0"
     >
       {children}
     </main>

@@ -1,6 +1,6 @@
 'use client'
 
-import { Mail } from 'lucide-react'
+import { ChevronRight, Mail, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
@@ -52,42 +52,61 @@ export function RecadosClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
+    <div className="w-full">
       {threads.length === 0 ? (
-        <div className="kids-unit-verde">
-          <KidsEmptyState
-            icon={Mail}
-            title="Tudo tranquilo por aqui"
-            description="Continue criando e enviando seus projetos. Se o professor quiser te falar alguma coisa, o recado aparece aqui."
-          />
-        </div>
+        <KidsEmptyState
+          icon={Mail}
+          title="Tudo tranquilo por aqui"
+          description="Continue criando e enviando seus projetos. Se o professor quiser te falar alguma coisa, o recado aparece aqui."
+          action={
+            <Link
+              href="/criar"
+              prefetch={false}
+              className="sz-btn-gradient h-[3.125rem] gap-2.5 px-6 text-base"
+            >
+              <Sparkles className="size-[1.125rem]" aria-hidden />
+              Continuar criando
+            </Link>
+          }
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {threads.map((t) => (
             <li key={t.id}>
               <Link
                 href={`/recados/${t.id}`}
-                className="kids-carta kid-pop block p-4 transition-colors hover:border-(--porta-recados)"
+                className="kids-carta kid-pop flex items-center gap-4 rounded-[1.25rem] p-5 transition-shadow hover:ring-2 hover:ring-primary"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-(--porta-recados-texto) text-xs uppercase tracking-wide">
-                    {CONTEXT_LABEL[t.contextType]}
+                {/* O ladrilho âmbar é a cor da porta dos Recados na Comunidade: a
+                    criança chega aqui por ela e reconhece o lugar. */}
+                <span
+                  aria-hidden="true"
+                  className="grid size-12 shrink-0 place-items-center rounded-[0.75rem] bg-(--tool-pensa) text-(--tool-pensa-fg)"
+                >
+                  <Mail className="size-6" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-(--band-ceu) px-2.5 py-0.5 font-bold text-primary text-xs">
+                      {CONTEXT_LABEL[t.contextType]}
+                    </span>
+                    {t.unread ? (
+                      <span className="kids-marca rounded-full px-2.5 py-0.5 font-bold text-xs">
+                        NOVO
+                      </span>
+                    ) : null}
                   </span>
-                  {t.unread ? (
-                    <span className="kids-marca rounded-full px-2 py-0.5 font-bold text-[10px]">
-                      NOVO
+                  <span className="sz-display mt-1.5 block truncate text-lg">
+                    {t.title ?? 'Conversa com o professor'}
+                  </span>
+                  {t.lastMessagePreview ? (
+                    <span className="mt-0.5 block truncate font-medium text-muted-foreground text-sm">
+                      {t.lastMessageRole === 'student' ? 'Você: ' : ''}
+                      {t.lastMessagePreview}
                     </span>
                   ) : null}
-                </div>
-                <p className="sz-display mt-1 truncate text-base">
-                  {t.title ?? 'Conversa com o professor'}
-                </p>
-                {t.lastMessagePreview ? (
-                  <p className="mt-0.5 truncate font-semibold text-muted-foreground text-sm">
-                    {t.lastMessageRole === 'student' ? 'Você: ' : ''}
-                    {t.lastMessagePreview}
-                  </p>
-                ) : null}
+                </span>
+                <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden />
               </Link>
             </li>
           ))}
@@ -99,7 +118,7 @@ export function RecadosClient({
           type="button"
           onClick={loadMore}
           disabled={loadingMore}
-          className="mt-4 rounded-full border-(--linha-carta) border-2 bg-card px-4 py-2 font-bold text-sm hover:border-primary disabled:opacity-50"
+          className="sz-btn-gradient sz-btn-contorno mt-5 disabled:opacity-50"
         >
           {loadingMore ? 'Carregando…' : 'Ver mais recados'}
         </button>

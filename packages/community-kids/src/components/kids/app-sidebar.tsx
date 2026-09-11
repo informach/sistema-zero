@@ -81,12 +81,19 @@ export function AppSidebar({
               href={item.href}
               prefetch={false}
               aria-current={active ? 'page' : undefined}
+              // Medidas do modelo (1440px): item de 46px, canto de 12px (`rounded-xl` aqui é
+              // 20px, o `--radius` do kids é maior que o do Tailwind), rótulo de 16px na
+              // tinta navy e o ícone de traço fino no cinza do tema.
               className={cn(
-                'flex h-[2.875rem] shrink-0 items-center gap-3 rounded-xl px-3.5 font-semibold text-[0.9375rem] transition-colors',
-                active ? 'kids-marca' : 'text-foreground hover:bg-muted',
+                'flex h-[2.875rem] shrink-0 items-center gap-3.5 rounded-[0.75rem] px-3.5 font-semibold text-base transition-colors',
+                active ? 'kids-marca' : 'text-(--tinta) hover:bg-muted',
               )}
             >
-              <Icon className="size-5 shrink-0" aria-hidden />
+              <Icon
+                className={cn('size-5 shrink-0', !active && 'text-muted-foreground')}
+                strokeWidth={1.75}
+                aria-hidden
+              />
               {item.label}
             </Link>
           )
