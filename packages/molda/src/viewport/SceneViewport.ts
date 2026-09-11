@@ -51,6 +51,7 @@ import { sceneSkinPaintSpacing } from './sceneSkinPaintSpacing'
 import { prepareSceneSupports, type SceneSupportPoint } from './sceneSupports'
 import { prepareSceneTwoBoneGuide } from './sceneTwoBoneGuide'
 import type {
+  ScenePaintMode,
   SceneTransformTool,
   SceneViewportCallbacks,
   SceneViewportPort,
@@ -93,6 +94,8 @@ export class SceneViewport implements SceneViewportPort {
   private area: SceneAreaSelection | null = null
   private paint: ScenePaintInput | null = null
   private paintTarget: ScenePaintTarget | null = null
+  /** `null` = quem chama não conhece a aba Pintar: a pintura é deduzida do alvo, como antes. */
+  private paintMode: ScenePaintMode | null = null
   private skinPaint: CapturedPaintInput<SceneSkinPaintSample> | null = null
   private skinPaintEnabled = false
   private skinPaintRadius: number | null = null
@@ -146,7 +149,7 @@ export class SceneViewport implements SceneViewportPort {
         this.pivot,
         ...workshopLights(),
       )
-      this.orbit = createViewportOrbit(canvas, this.rig, reducedMotion, this.onCameraChange)
+      this.orbit = this.makeOrbit()
       this.area = new SceneAreaSelection(
         canvas,
         (points) => callbacks.areaChanged?.(points),
@@ -345,12 +348,7 @@ export class SceneViewport implements SceneViewportPort {
     index: ReturnType<typeof indexSceneDocument>,
     target = this.weightTarget,
   ) {
-    if (
-      !target ||
-      this.componentSelection?.nodeId !== target.nodeId ||
-      this.paintTarget ||
-      this.pose
-    )
+    if (!target || this.componentSelection?.nodeId !== target.nodeId || this.painting || this.pose)
       return null
     const flags = evaluateSceneNodeFlags(index.scene).get(target.nodeId)
     return flags && !flags.hidden && !flags.locked ? this.weightPoints.prepare(index, target) : null
@@ -397,7 +395,7 @@ export class SceneViewport implements SceneViewportPort {
       !this.pose &&
       this.skinPaint &&
       this.skinPaintEnabled &&
-      !this.paintTarget &&
+      !this.painting &&
       this.index &&
       this.weightTarget
         ? pickSceneSkinPaint(
@@ -428,6 +426,27 @@ export class SceneViewport implements SceneViewportPort {
       return
     }
     this.pickSkinPaint(event)
+  }
+
+  /** Pintando, ou olhando na aba Pintar: a caixa de ferramentas de modelagem sai do palco. */
+  private get painting() {
+    return (this.paintMode ?? (this.paintTarget ? 'paint' : 'off')) !== 'off'
+  }
+
+  /**
+   * ⚠️ Na aba Pintar a órbita não tem amortecimento: cada quadro do amortecimento avisa que a
+   * câmera mudou, e isso interrompe a pintura. O traço começado logo depois de girar seria
+   * cancelado pela câmera que ainda estava parando.
+   */
+  private makeOrbit() {
+    const orbit = createViewportOrbit(
+      this.canvas,
+      this.rig,
+      this.reducedMotion,
+      this.onCameraChange,
+    )
+    orbit.enableDamping = !this.reducedMotion && this.paintMode !== 'paint'
+    return orbit
   }
 
   private readonly onCameraChange = () => {
@@ -473,7 +492,7 @@ export class SceneViewport implements SceneViewportPort {
         this.componentSelection = null
     }
     this.resource.setFormBase(this.componentSelection?.nodeId ?? null)
-    if (this.supportGuides && this.index && !this.componentSelection && !this.paintTarget) {
+    if (this.supportGuides && this.index && !this.componentSelection && !this.painting) {
       this.displayedSupports = preparedSupports ?? this.prepareSupports(this.index)
       this.supports.update(this.displayedSupports)
     } else {
@@ -510,7 +529,7 @@ export class SceneViewport implements SceneViewportPort {
     if (!this.componentSelection) this.weightTarget = null
     if (!this.weightTarget) this.skinPaintEnabled = false
     this.weightPoints.show(
-      this.componentSelection && !this.paintTarget && this.index
+      this.componentSelection && !this.painting && this.index
         ? preparedWeights === undefined
           ? this.prepareWeightPoints(this.index)
           : preparedWeights
@@ -562,7 +581,7 @@ export class SceneViewport implements SceneViewportPort {
     this.orbit?.dispose()
     this.rig.setView(view, this.bounds(false))
     this.gizmo?.setCamera(this.rig.camera)
-    this.orbit = createViewportOrbit(this.canvas, this.rig, this.reducedMotion, this.onCameraChange)
+    this.orbit = this.makeOrbit()
     this.orbit.enabled = !this.contextLost
     this.request()
   }
@@ -666,18 +685,31 @@ export class SceneViewport implements SceneViewportPort {
     this.paint?.setTarget(target)
     this.updateVisibility()
   }
+  /**
+   * A aba Pintar. Com o modo dito, o toque que não acerta a peça escolhida fica com a câmera, e
+   * o toque em outra peça a escolhe (com a face). Sem ele, o palco deduz a pintura do alvo.
+   */
+  setPaintMode(mode: ScenePaintMode): void {
+    if (this.disposed || mode === this.paintMode) return
+    this.cancelGesture()
+    this.paintMode = mode
+    this.paint?.setClaimMisses(false)
+    if (this.orbit) this.orbit.enableDamping = !this.reducedMotion && mode !== 'paint'
+    this.updateEditingEnabled()
+    this.updateVisibility()
+  }
   private updateEditingEnabled() {
     const enabled = !this.contextLost && !this.pose
     this.gizmo?.setEnabled(
       !this.contextLost &&
         (!this.pose || this.animationEditing) &&
-        !this.paintTarget &&
+        !this.painting &&
         !this.skinPaintEnabled,
     )
-    this.area?.setEnabled(enabled && !this.paintTarget && !this.skinPaintEnabled)
-    this.paint?.setEnabled(enabled)
-    this.skinPaint?.setEnabled(enabled && !this.paintTarget && this.skinPaintEnabled)
-    if (!enabled || this.paintTarget || !this.skinPaintEnabled) this.clearBrushCursor()
+    this.area?.setEnabled(enabled && !this.painting && !this.skinPaintEnabled)
+    this.paint?.setEnabled(enabled && this.paintMode !== 'look' && this.paintMode !== 'off')
+    this.skinPaint?.setEnabled(enabled && !this.painting && this.skinPaintEnabled)
+    if (!enabled || this.painting || !this.skinPaintEnabled) this.clearBrushCursor()
   }
   setAnimationEditing(enabled: boolean): void {
     if (this.disposed || enabled === this.animationEditing) return
@@ -693,7 +725,7 @@ export class SceneViewport implements SceneViewportPort {
       !guide ||
       !this.index ||
       this.contextLost ||
-      this.paintTarget ||
+      this.painting ||
       this.componentSelection ||
       this.selected.length !== 1 ||
       this.selected[0] !== guide.chain[2]
@@ -846,8 +878,20 @@ export class SceneViewport implements SceneViewportPort {
       )
       return
     }
+    if (this.paintMode === 'paint' || this.paintMode === 'look') {
+      // Na aba Pintar, tocar numa peça a escolhe, com a face; tocar no vazio ou numa peça
+      // travada não muda nada (quem arrastou girou a câmera). A peça travada à frente encobre.
+      const hit = ray
+        .intersectObjects(this.resource.root.children, false)
+        .find((h) => h.object.visible)
+      const instance = hit ? this.resource.instanceFor(hit.object) : null
+      if (!hit || !instance || instance.locked) return
+      const faceId = hit.faceIndex == null ? null : this.resource.faceFor(hit.object, hit.faceIndex)
+      this.callbacks.select(instance.sourceNodeId, false, faceId ? { faceId } : undefined)
+      return
+    }
     const support =
-      this.areaTool === 'point' && !this.paintTarget
+      this.areaTool === 'point' && !this.painting
         ? this.supports.pick(this.rig.camera, {
             x: event.clientX - rect.left,
             y: event.clientY - rect.top,
@@ -888,7 +932,7 @@ export class SceneViewport implements SceneViewportPort {
     this.contextLost = false
     this.updateEditingEnabled()
     this.orbit?.dispose()
-    this.orbit = createViewportOrbit(this.canvas, this.rig, this.reducedMotion, this.onCameraChange)
+    this.orbit = this.makeOrbit()
     this.callbacks.contextLost(false)
     this.request()
   }
@@ -902,9 +946,7 @@ export class SceneViewport implements SceneViewportPort {
     this.area?.setEnabled(false)
     this.pointers.clear()
     this.orbit?.dispose()
-    this.orbit = this.contextLost
-      ? null
-      : createViewportOrbit(this.canvas, this.rig, this.reducedMotion, this.onCameraChange)
+    this.orbit = this.contextLost ? null : this.makeOrbit()
     if (!this.contextLost) {
       this.updateEditingEnabled()
     }

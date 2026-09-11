@@ -6,12 +6,19 @@ export interface CapturedPaintActions<Sample> {
   end(commit: boolean): void
 }
 
-/** One captured pointer owns one paint gesture. Sampling remains specific to the active medium. */
+/**
+ * One captured pointer owns one paint gesture. Sampling remains specific to the active medium.
+ *
+ * `claimMisses` (padrão `true`, o de sempre, que a pintura de pesos usa): todo toque primário no
+ * palco é da pintura, acerte ou não. Com `false`, só o toque que acerta onde pintar é engolido;
+ * o resto segue para a câmera e para a escolha de peça, que ouvem depois.
+ */
 export class CapturedPaintInput<Sample> {
   private enabled = false
   private disposed = false
   private owner: { pointerId: number; previous: PaintPointerPoint; started: boolean } | null = null
   private readonly pointers = new Set<number>()
+  private claimMisses: boolean
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly pick: (event: PaintPointerPoint) => Sample | null,
@@ -20,7 +27,9 @@ export class CapturedPaintInput<Sample> {
       from: PaintPointerPoint,
       to: PaintPointerPoint,
     ) => Iterable<PaintPointerPoint>,
+    options: { claimMisses?: boolean } = {},
   ) {
+    this.claimMisses = options.claimMisses ?? true
     canvas.addEventListener('pointerdown', this.down, true)
     canvas.addEventListener('pointermove', this.move, true)
     canvas.addEventListener('pointerup', this.up, true)
@@ -34,12 +43,20 @@ export class CapturedPaintInput<Sample> {
     this.enabled = enabled
     if (!enabled) this.cancel()
   }
+  setClaimMisses(value: boolean) {
+    this.claimMisses = value
+  }
   private readonly down = (event: PointerEvent) => {
     if (this.disposed || !this.enabled || event.button !== 0) return
-    event.preventDefault()
-    event.stopImmediatePropagation()
+    const claim = () => {
+      event.preventDefault()
+      event.stopImmediatePropagation()
+    }
+    if (this.claimMisses) claim()
     this.pointers.add(event.pointerId)
     if (this.pointers.size > 1) {
+      // O segundo dedo de um traço nosso também é nosso; o de um giro de câmera é da câmera.
+      if (!this.claimMisses && this.owner?.started) claim()
       this.finish(false)
       return
     }
@@ -57,6 +74,7 @@ export class CapturedPaintInput<Sample> {
       this.owner = null
       return
     }
+    if (!this.claimMisses) claim()
     owner.started = true
     if (!this.actions.begin(sample)) {
       if (this.owner === owner) this.owner = null

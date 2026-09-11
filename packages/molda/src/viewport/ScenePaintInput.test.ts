@@ -1,10 +1,13 @@
 import { expect, test } from 'bun:test'
 import { OrthographicCamera } from 'three'
 import { createSceneMaterialImage } from '../scene/appearanceCommands'
+import { addScenePrimitive } from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
 import type { ScenePaintSample } from '../scene/imagePaint'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { ensureScenePaintSurface } from '../scene/paintSurface'
+import { scenePaintFaceBounds } from '../scene/paintSurfaceBounds'
 import { makeModel } from '../testing/fixtures'
 import { ScenePaintInput } from './ScenePaintInput'
 import { SceneRenderResource } from './sceneRenderResource'
@@ -305,5 +308,87 @@ test('capture failure cancels the stroke and allows the next pointer to start cl
     expect(f.ends).toEqual([false, true])
   } finally {
     f.close()
+  }
+})
+
+test('na folha que a aba Pintar prepara, cada amostra leva o limite da face tocada', () => {
+  let n = 0
+  const base = migrateLegacyModel(makeModel({ parts: [] })).document
+  const withBox = addScenePrimitive(base, 'box', 'caixa', () => `p${++n}`)
+  const nodeId = withBox.nodes.at(-1)!.id
+  const prepared = ensureScenePaintSurface(withBox, { nodeId }, () => `p${++n}`)
+  if (prepared.status !== 'ready') throw new Error('Superfície ausente.')
+  const document = prepared.document
+  const index = indexSceneDocument(document)
+  const resource = new SceneRenderResource()
+  resource.update(document)
+  const canvas = window.document.createElement('canvas')
+  canvas.setPointerCapture = () => {}
+  canvas.hasPointerCapture = () => false
+  canvas.releasePointerCapture = () => {}
+  canvas.getBoundingClientRect = () => new DOMRect(0, 0, 400, 400)
+  window.document.body.append(canvas)
+  const camera = new OrthographicCamera(-4, 4, 4, -4, 0.1, 100)
+  camera.position.set(0, 20, 0)
+  camera.up.set(0, 0, -1)
+  camera.lookAt(0, 0, 0)
+  camera.updateMatrixWorld(true)
+  const begins: ScenePaintSample[] = []
+  const input = new ScenePaintInput(
+    canvas,
+    () => camera,
+    () => index,
+    resource,
+    {
+      begin: (sample) => {
+        begins.push(sample)
+        return true
+      },
+      move: () => {},
+      end: () => {},
+    },
+  )
+  const others: number[] = []
+  canvas.addEventListener('pointerdown', (event) => others.push(event.pointerId))
+  try {
+    input.setTarget(prepared.target)
+    input.setClaimMisses(false)
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        pointerId: 1,
+        clientX: 206.25,
+        clientY: 206.25,
+        button: 0,
+      }),
+    )
+    const image = document.images.find((entry) => entry.id === prepared.target.imageId)!
+    const node = index.scene.nodes.get(nodeId)
+    if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+    const geometry = document.geometries.find((entry) => entry.id === node.geometryId)!
+    expect(begins).toHaveLength(1)
+    expect(begins[0]!.bounds).toEqual(scenePaintFaceBounds(geometry, 'py', image)!)
+    expect(begins[0]!.bounds).not.toEqual({
+      x0: 0,
+      y0: 0,
+      x1: image.width - 1,
+      y1: image.height - 1,
+    })
+    const [x, y] = begins[0]!.point
+    const bounds = begins[0]!.bounds!
+    expect(x >= bounds.x0 && x <= bounds.x1 && y >= bounds.y0 && y <= bounds.y1).toBe(true)
+    expect(others).toEqual([])
+    canvas.dispatchEvent(
+      new PointerEvent('pointerup', { pointerId: 1, clientX: 206.25, clientY: 206.25 }),
+    )
+    // Fora da peça: não é engolido, a câmera recebe.
+    canvas.dispatchEvent(
+      new PointerEvent('pointerdown', { pointerId: 2, clientX: 20, clientY: 20, button: 0 }),
+    )
+    expect(begins).toHaveLength(1)
+    expect(others).toEqual([2])
+  } finally {
+    input.dispose()
+    resource.dispose()
+    canvas.remove()
   }
 })

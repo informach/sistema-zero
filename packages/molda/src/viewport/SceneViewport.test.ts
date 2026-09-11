@@ -13,11 +13,12 @@ import {
 } from 'three'
 import { createModelAsset } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
-import { convertSceneNodesToMesh, transformSceneNodes } from '../scene/commands'
+import { addScenePrimitive, convertSceneNodesToMesh, transformSceneNodes } from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
 import { type AffineMatrix, identityMatrix, transformPoint } from '../scene/matrix'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
+import { ensureScenePaintSurface } from '../scene/paintSurface'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
 import { createSceneSkin, setSceneSkinWeights } from '../scene/skinCommands'
 import { prepareSceneTwoBonePose } from '../scene/twoBonePose'
@@ -36,6 +37,7 @@ import { makeSceneTwoBoneFixture } from '../testing/sceneTwoBone'
 import { SceneViewport } from './SceneViewport'
 import type {
   ScenePaintActions,
+  SceneSelectDetail,
   SceneSkinPaintActions,
   SceneTransformActions,
 } from './sceneViewportTypes'
@@ -67,6 +69,7 @@ function setup(
   paint?: ScenePaintActions,
   skinPaint?: SceneSkinPaintActions,
   gpuCapture = false,
+  reducedMotion = true,
 ) {
   const host = document.createElement('div')
   Object.defineProperties(host, { clientWidth: { value: 320 }, clientHeight: { value: 180 } })
@@ -83,6 +86,7 @@ function setup(
   let camera: Camera | undefined
   let scene: Scene | undefined
   const picks: Array<string | null> = []
+  const details: Array<SceneSelectDetail | null> = []
   const faces: Array<string | null> = []
   const contexts: boolean[] = []
   const groups: Array<readonly string[]> = []
@@ -90,7 +94,10 @@ function setup(
   const viewport = new SceneViewport(
     canvas,
     {
-      select: (id) => picks.push(id),
+      select: (id, _additive, detail) => {
+        picks.push(id)
+        details.push(detail ?? null)
+      },
       selectComponent: (id) => faces.push(id),
       selectComponents: (ids) => components.push(ids),
       selectMany: (ids) => groups.push(ids),
@@ -99,7 +106,7 @@ function setup(
       paint,
       skinPaint,
     },
-    true,
+    reducedMotion,
     () =>
       Object.assign(Object.create(gpuCapture ? WebGLRenderer.prototype : Object.prototype), {
         setPixelRatio: () => {},
@@ -146,6 +153,7 @@ function setup(
     viewport,
     source,
     picks,
+    details,
     faces,
     contexts,
     groups,
@@ -1513,6 +1521,87 @@ describe('scene viewport lifecycle and picking', () => {
       expect(errors).toEqual([])
     } finally {
       unsubscribe()
+      f.close()
+      editor.getState().dispose()
+    }
+  })
+  test('aba Pintar: tocar na peça pinta; em outra, escolhe com a face; no vazio, nada; câmera sem amortecimento', () => {
+    let n = 0
+    const nextId = () => `pinta${++n}`
+    const base = migrateLegacyModel(makeModel({ parts: [] })).document
+    const one = addScenePrimitive(base, 'box', 'porta', nextId)
+    const doorId = one.nodes.at(-1)!.id
+    const two = addScenePrimitive(one, 'box', 'parede', nextId)
+    const wallId = two.nodes.at(-1)!.id
+    const left = identityMatrix()
+    left[12] = -2
+    const right = identityMatrix()
+    right[12] = 2
+    const placed = transformSceneNodes(transformSceneNodes(two, [doorId], left), [wallId], right)
+    const prepared = ensureScenePaintSurface(placed, { nodeId: doorId }, nextId)
+    if (prepared.status !== 'ready') throw new Error('Superfície ausente.')
+    const editor = createDocumentEditorStore({
+      asset: prepared.document,
+      sizeOf: structuredBytes,
+      persistence: { save: async () => undefined },
+      autosaveMs: 60_000,
+    })
+    const errors: unknown[] = []
+    const paint = createScenePaintGesture(editor, (error) => errors.push(error))
+    const ends: boolean[] = []
+    const f = setup(
+      undefined,
+      {
+        begin: (sample) =>
+          paint.begin(prepared.target, 7, 1) &&
+          paint.segment(sample.point, sample.point, sample.bounds),
+        move: (sample) => {
+          if (sample) paint.segment(sample.point, sample.point, sample.bounds)
+        },
+        end: (commit) => {
+          ends.push(commit)
+          paint.end(commit)
+        },
+      },
+      undefined,
+      false,
+      false,
+    )
+    const orbit = () =>
+      (f.viewport as unknown as { orbit: { enableDamping: boolean } | null }).orbit!
+    try {
+      f.viewport.setDocument(prepared.document)
+      f.viewport.setView('top')
+      expect(orbit().enableDamping).toBe(true)
+      f.viewport.setPaintMode('paint')
+      f.viewport.setPaintTarget(prepared.target)
+      f.tick()
+      const at = (x: number, z: number) => {
+        const p = new Vector3(x, 2, z).project(f.count().camera!)
+        return { clientX: (p.x + 1) * 160, clientY: (1 - p.y) * 90 }
+      }
+      f.pointer('pointerdown', 1, at(-2.1, 0.1))
+      f.pointer('pointerup', 1, at(-2.1, 0.1))
+      expect(ends).toEqual([true])
+      expect(editor.getState().asset.images).not.toEqual(prepared.document.images)
+      expect(f.picks).toEqual([])
+      const painted = editor.getState().asset.images
+      f.pointer('pointerdown', 2, at(2.1, 0.1))
+      f.pointer('pointerup', 2, at(2.1, 0.1))
+      expect(f.picks).toEqual([wallId])
+      expect(f.details).toEqual([{ faceId: 'py' }])
+      expect(editor.getState().asset.images).toBe(painted)
+      f.pointer('pointerdown', 3, at(0, 0))
+      f.pointer('pointerup', 3, at(0, 0))
+      expect(f.picks).toEqual([wallId])
+      // A câmera que ainda estava parando interromperia o traço começado logo depois de girar.
+      expect(orbit().enableDamping).toBe(false)
+      f.viewport.setView('free')
+      expect(orbit().enableDamping).toBe(false)
+      f.viewport.setPaintMode('off')
+      expect(orbit().enableDamping).toBe(true)
+      expect(errors).toEqual([])
+    } finally {
       f.close()
       editor.getState().dispose()
     }

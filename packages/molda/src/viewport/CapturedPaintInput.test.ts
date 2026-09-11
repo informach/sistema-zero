@@ -430,3 +430,34 @@ test('a contact released outside the canvas after losing capture cannot block fu
     f.close()
   }
 })
+
+test('sem engolir os erros: só o toque que acerta é da pintura; o resto segue para a câmera', () => {
+  const ends: boolean[] = []
+  const f = setup({ begin: () => true, move: () => {}, end: (commit) => ends.push(commit) })
+  const camera: number[] = []
+  f.canvas.addEventListener('pointerdown', (event) => camera.push(event.pointerId))
+  try {
+    // O de sempre: todo toque primário é da pintura, acerte ou não.
+    f.event('pointerdown', 1, -5)
+    f.event('pointerup', 1, -5)
+    expect(camera).toEqual([])
+    f.input.setClaimMisses(false)
+    f.event('pointerdown', 2, -5)
+    expect(camera).toEqual([2])
+    // Segundo dedo de um giro de câmera é da câmera (pinça), e não começa traço nenhum.
+    f.event('pointerdown', 3, 10)
+    expect(camera).toEqual([2, 3])
+    expect(ends).toEqual([])
+    f.event('pointerup', 3, 10)
+    f.event('pointerup', 2, -5)
+    // O toque que acerta continua sendo da pintura, e o segundo dedo encerra o traço.
+    f.event('pointerdown', 4, 10)
+    expect(camera).toEqual([2, 3])
+    expect(f.captured.has(4)).toBe(true)
+    f.event('pointerdown', 5, 10)
+    expect(camera).toEqual([2, 3])
+    expect(ends).toEqual([false])
+  } finally {
+    f.close()
+  }
+})

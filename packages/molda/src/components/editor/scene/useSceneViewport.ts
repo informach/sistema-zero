@@ -13,6 +13,8 @@ import type { SceneAreaTool } from '../../../viewport/SceneAreaSelection'
 import type { SceneSkinWeightTarget } from '../../../viewport/SceneSkinWeightOverlay'
 import type {
   ScenePaintActions,
+  ScenePaintMode,
+  SceneSelectDetail,
   SceneSkinPaintActions,
   SceneTransformActions,
   SceneTransformTool,
@@ -48,11 +50,13 @@ export function useSceneViewport({
   skinPaint,
   skinPaintSettings = null,
   onThumb,
+  paintMode,
 }: {
   document: MoldaSceneDocument
   selection: readonly string[]
   isolation: readonly string[] | null
-  select(id: string | null, additive: boolean): void
+  /** Em Pintar, `detail.faceId` diz em que face a peça foi tocada. */
+  select(id: string | null, additive: boolean, detail?: SceneSelectDetail): void
   selectMany?(ids: readonly string[], additive: boolean): void
   factory?: SceneViewportFactory
   transform?: SceneTransformActions
@@ -74,6 +78,8 @@ export function useSceneViewport({
   skinPaintSettings?: SceneSkinPaintSettings | null
   /** Foto da criação para a galeria. Chamado fora de gesto, sem histórico. */
   onThumb?(thumb: string | undefined): void
+  /** A aba Pintar. Ausente: o palco deduz a pintura do alvo, como antes. */
+  paintMode?: ScenePaintMode
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
@@ -132,8 +138,10 @@ export function useSceneViewport({
       }
       if (cancelled) return
       const callbacks = {
-        select: (id: string | null, additive: boolean) => {
-          if (!cancelled) onSelect.current(id, additive)
+        select: (id: string | null, additive: boolean, detail?: SceneSelectDetail) => {
+          if (cancelled) return
+          if (detail) onSelect.current(id, additive, detail)
+          else onSelect.current(id, additive)
         },
         selectMany: (ids: readonly string[], additive: boolean) => {
           if (!cancelled) onSelectMany.current?.(ids, additive)
@@ -268,6 +276,9 @@ export function useSceneViewport({
   useEffect(() => {
     viewport?.setAreaTool(areaTool, through)
   }, [viewport, areaTool, through])
+  useEffect(() => {
+    if (paintMode) viewport?.setPaintMode?.(paintMode)
+  }, [viewport, paintMode])
   useEffect(() => {
     viewport?.setPaintTarget(paintTarget)
   }, [viewport, paintTarget])

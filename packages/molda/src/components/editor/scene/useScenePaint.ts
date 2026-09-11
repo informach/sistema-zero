@@ -28,6 +28,20 @@ import { useSceneRasterFile } from './useSceneRasterFile'
 
 export type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
 
+/**
+ * ⚠️ A volta do cilindro e da bola é UMA face com emenda: de um lado a UV vale quase 1, do outro
+ * quase 0. Ligar esses dois pontos riscaria a folha inteira; um salto de mais de meia face
+ * entre duas amostras seguidas é a emenda, e o traço recomeça do outro lado.
+ */
+export function crossesSeam(previous: ScenePaintSample, next: ScenePaintSample): boolean {
+  const bounds = next.bounds
+  if (!bounds) return false
+  return (
+    Math.abs(previous.point[0] - next.point[0]) * 2 > bounds.x1 - bounds.x0 + 1 ||
+    Math.abs(previous.point[1] - next.point[1]) * 2 > bounds.y1 - bounds.y0 + 1
+  )
+}
+
 export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const document = useStore(editor, (state) => state.content)
   const [session, setSession] = useState<{ documentId: string; target: ScenePaintTarget } | null>(
@@ -154,7 +168,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     if (!current) return false
     publishing.current = true
     try {
-      const from = current.last?.region === sample.region ? current.last.point : sample.point
+      const last = current.last
+      const from =
+        last?.region === sample.region && !crossesSeam(last, sample) ? last.point : sample.point
       // O limite vale por amostra: o traço atravessa faces e cada pedaço fica na face dele.
       if (!gesture.segment(from, sample.point, sample.bounds)) {
         cancel()

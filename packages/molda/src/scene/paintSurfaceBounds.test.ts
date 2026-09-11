@@ -90,3 +90,34 @@ test('UV fora da folha é presa à borda; UV achatada vira uma coluna; inválida
   expect(scenePaintFaceBounds(triangle([[0, 0]]), 'outra', image)).toBeNull()
   expect(scenePaintFaceBounds(box(), 'inventada', image)).toBeNull()
 })
+
+test('malha com UV contínua: o limite é a ilha inteira, não o triângulo; com costura, cada um', () => {
+  const image = { width: 10, height: 10 }
+  const quad = (seam: boolean): SceneMeshGeometry => ({
+    id: seam ? 'costura' : 'continua',
+    kind: 'mesh',
+    vertices: { a: [0, 0, 0], b: [1, 0, 0], c: [1, 1, 0], d: [0, 1, 0] },
+    faces: {
+      left: {
+        corners: [
+          { vertexId: 'a', uv: [0.1, 0.1] },
+          { vertexId: 'b', uv: [0.5, 0.1] },
+          { vertexId: 'c', uv: [0.5, 0.5] },
+        ],
+      },
+      right: {
+        corners: [
+          { vertexId: 'a', uv: seam ? [0.6, 0.1] : [0.1, 0.1] },
+          { vertexId: 'c', uv: seam ? [0.9, 0.5] : [0.5, 0.5] },
+          { vertexId: 'd', uv: seam ? [0.6, 0.5] : [0.1, 0.5] },
+        ],
+      },
+    },
+    looseEdges: [],
+  })
+  const island = { x0: 1, y0: 1, x1: 4, y1: 4 }
+  expect(scenePaintFaceBounds(quad(false), 'left', image)).toEqual(island)
+  expect(scenePaintFaceBounds(quad(false), 'right', image)).toEqual(island)
+  expect(scenePaintFaceBounds(quad(true), 'left', image)).toEqual(island)
+  expect(scenePaintFaceBounds(quad(true), 'right', image)).toEqual({ x0: 6, y0: 1, x1: 8, y1: 4 })
+})

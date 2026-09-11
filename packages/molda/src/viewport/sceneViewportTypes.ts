@@ -11,6 +11,17 @@ import type { SceneSkinWeightTarget } from './SceneSkinWeightOverlay'
 import type { SceneDrawIssue } from './sceneRenderResource'
 import type { CameraView } from './types'
 
+/**
+ * A aba Pintar no palco. `paint`: tocar na peça escolhida pinta, tocar em outra peça a escolhe e
+ * arrastar fora dela gira a câmera. `look`: só olhar, a pintura desligada. `off`: fora da aba.
+ */
+export type ScenePaintMode = 'off' | 'look' | 'paint'
+
+/** O que o toque escolheu além da peça: em Pintar, a face (a superfície da forma ou a da malha). */
+export interface SceneSelectDetail {
+  faceId?: string
+}
+
 export interface SceneViewportPort {
   setDocument(document: MoldaSceneDocument): SceneDrawIssue[]
   setSelection(ids: readonly string[]): void
@@ -23,6 +34,8 @@ export interface SceneViewportPort {
   setAreaTool(tool: SceneAreaTool, through: boolean): void
   setComponentSelection(selection: SceneComponentSelection | null): void
   setPaintTarget(target: ScenePaintTarget | null): void
+  /** Opcional: sem ele, o palco deduz a pintura do alvo, como antes. */
+  setPaintMode?(mode: ScenePaintMode): void
   setImageFrame(imageId: string, frame: number | null): void
   setPose(pose: SceneAnimationPose | null): void
   setAnimationEditing(enabled: boolean): void
@@ -39,7 +52,7 @@ export interface SceneViewportPort {
 }
 
 export interface SceneViewportCallbacks {
-  select(id: string | null, additive: boolean): void
+  select(id: string | null, additive: boolean, detail?: SceneSelectDetail): void
   contextLost(lost: boolean): void
   transform?: SceneTransformActions
   paint?: ScenePaintActions
