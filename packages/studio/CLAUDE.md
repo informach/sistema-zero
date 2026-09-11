@@ -3591,6 +3591,43 @@ isso, `setHitboxScale` é a válvula.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
 
+⭐⭐⭐ **11/09/2026 — o desenho das telas-modelo (a imagem "Meus Jogos" dela, medida a 1440px).**
+A lista virou TRÊS FAIXAS de borda a borda que rolam juntas (o cabeçalho deixou de ficar preso em
+cima): **creme** (`<header>`: [menu][seta "Voltar para Criar"] + h1 `sz-tool-title` + subtítulo;
+à direita a pílula do selo, o tema só no playground, "Importar" e "+ Novo projeto"; linha 2 com os
+chips de ícone de linha `IconBlocks`/`IconCode`, "Ver os jogos prontos" com `IconGamepad`, a busca
+e o ordenar com a seta desenhada) → **céu** (`<section aria-labelledby>`: o painel dos jogos
+prontos como cartão, a grade `.sz-tool-grid` com o cartão **"Novo projeto"** PRIMEIRO e o rodapé
+"Mostrando N de M") → **lilás** (só com projetos: `.sz-tool-cta-card` com o ladrilho amarelo da
+câmera, "N projetos guardados na sua conta" / "neste aparelho" e a pílula creme "Importar um
+jogo"). Tudo são receitas de `@sistemazero/ui/tool-chrome.css`; as `sz-home-*` do `studio.css`
+SAÍRAM (o `tokens.test.ts` trava que nenhuma regra volte). Detalhes que custaram medida:
+- O **cartão "Novo projeto"** é um `<button>` com nome próprio ("Novo projeto Comece do zero no
+  Estúdio."), então o "+ Novo projeto" do cabeçalho segue ÚNICO para os e2e (que usam o nome
+  exato); some quando a lista está filtrada; `min-h-40` (numa fileira a grade o estica até os
+  288px dos projetos, sozinho no celular ele não fica com 288px vazios).
+- **Um import só**: `ImportButton` ganhou `ref` com `open()` (`ImportButtonHandle`); o cartão
+  lilás chama o MESMO input e o MESMO modal de aviso. Teste: um `input[type=file]` na página.
+- **A pílula do cabeçalho** mostra o `status` do host (o que acontece agora) e, com ele nulo, a
+  conta em repouso (`account`: "Guardado na sua conta", tom ok). A frase do cartão lilás diz
+  "na sua conta" só com `account`; sem ela, "neste aparelho" (nunca promete nuvem que não há).
+- **Seta de voltar** (`components/layout/HostBackLink.tsx`): o quadrado `.sz-tool-back` com
+  `IconArrowLeft` ao lado do menu, `<a href>` com o nome no `aria-label`; clique simples chama
+  `back.onNavigate()` (sem recarregar), com Ctrl/Cmd/Shift/Alt ou botão do meio o navegador cuida.
+- **Cartão do projeto**: `.sz-tool-card` (branco, 20px, sem borda aparente), título
+  `.sz-tool-card-title` (Baloo 800 de 15px, a receita comum das galerias), "⋯" com `-mt-2.5 -mr-2.5`
+  para os pontinhos ficarem na 1ª linha do nome, capa `.sz-tool-cover` (o aviso ganhou o
+  `IconImage` de linha no lugar do 📷), "Abrir" em `.sz-tool-pill--primary` de largura inteira com
+  `IconFolderOpen` (o nome segue "Abrir"). Chaves i18n novas: `projects.newCard.hint`,
+  `projects.saved.{account,accountOne,device,deviceOne,hint}`, `projects.importCta`; saiu
+  `kits.scratch` (o cartão "Novo projeto" é o "começar do zero"). Nada de `<main>` próprio: a
+  lista mora dentro do `<main>` do host.
+- Medido no playground a 1172px (= 1440 com o menu de 268): faixa creme de 218px (a imagem tem
+  215), cartões de 246×288 (244×284), busca de 280px (277), "Abrir" de 212×40 (212×41).
+- Testes: `ProjectList.test.tsx` (cartão novo, lista vazia sem faixa lilás, um import só) e
+  `ProjectList.hostChrome.test.tsx` (seta + clique com Ctrl, seta sem menu, conta em repouso ×
+  aparelho, o selo vence a conta).
+
 ⭐⭐ **07/09/2026 — cabeçalho de DUAS linhas (imagem-modelo dela; "o cabeçalho ocupa espaço
 demais").** Linha 1 (`<header class="sz-tool-header px-6 pt-4 pb-7">`): menu do host + h1 "Meus
 Jogos" + subtítulo à esquerda; à direita o selo do host (`.sz-tool-status`), o `ThemeToggle`

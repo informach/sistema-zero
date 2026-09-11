@@ -51,11 +51,12 @@ describe('studio.css lê os tokens compartilhados', () => {
     }
   })
 
-  it('a pílula 3D da home lê o gradiente e o CTA compartilhados nos dois temas', () => {
-    for (const chave of ['--sz-home-gradient', '--sz-home-cta']) {
-      const usos = [...css.matchAll(new RegExp(`${chave}:\\s*var\\(\\s*(--sz-tool-[\\w-]+)`, 'g'))]
-      expect(usos.length).toBe(2)
-    }
+  it('a home não tem mais receita própria: usa as compartilhadas das ferramentas', () => {
+    // A pílula 3D, o painel de sombra dura e o pulo no hover (`sz-home-*`) saíram em
+    // 11/09/2026: a lista "Meus Jogos" é feita das receitas de `tool-chrome.css`. O comentário
+    // que conta a história fica; nenhuma REGRA pode voltar.
+    const semComentarios = css.replace(/\/\*[\s\S]*?\*\//g, '')
+    expect(semComentarios).not.toMatch(/\.sz-home-|--sz-home-/)
   })
 
   it('o @theme (escuro-default em :root) NÃO aponta para --sz-tool-*', () => {

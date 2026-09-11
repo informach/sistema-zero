@@ -4,6 +4,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 /**
  * Chrome do HOST no cabeçalho da lista de projetos (07/09/2026): o botão de esconder o menu
  * da comunidade vem antes do título e o selo "Guardado na sua conta" é o 1º item das ações.
+ * Desde 11/09/2026 (as telas-modelo) também a seta de volta para Criar, ao lado do menu, e a
+ * nuvem da conta em repouso (a pílula e a frase do cartão da faixa lilás).
  * Arquivo próprio pelo mesmo motivo dos irmãos: o mock de idb-keyval é por arquivo.
  */
 type KV = Map<IDBValidKey, unknown>
@@ -46,7 +48,8 @@ mock.module('idb-keyval', () => ({
   },
 }))
 
-const { t } = await import('#core')
+const { t, createEmptyProject } = await import('#core')
+const { persistProject } = await import('../state/persistence')
 const { ProjectList } = await import('./ProjectList')
 const { StudioHostChromeProvider } = await import('../studio/host-chrome')
 type StudioHostChrome = import('../studio/host-chrome').StudioHostChrome
@@ -101,6 +104,121 @@ describe('ProjectList × chrome do host', () => {
     const novos = screen.getAllByRole('button', { name: '+ Novo projeto' })
     expect(novos.some((b) => header?.contains(b))).toBe(true)
     expect(screen.getByRole('button', { name: 'Importar' })).toBeTruthy()
+  })
+
+  it('a seta de volta para Criar vem logo depois do menu, e o clique simples é do host', async () => {
+    const onNavigate = mock(() => {})
+    const chrome: StudioHostChrome = {
+      menu: { hidden: false, label: 'Esconder menu', onToggle: () => {} },
+      status: null,
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate },
+      account: null,
+    }
+    const { container } = render(
+      <StudioHostChromeProvider value={chrome}>
+        <ProjectList onOpenProject={() => {}} theme="light" />
+      </StudioHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByText(t('projects.empty'))).toBeTruthy()
+    })
+    const seta = screen.getByRole('link', { name: 'Voltar para Criar' })
+    // Um LINK de verdade (abre noutra aba com Ctrl), no quadrado das barras, sem `title`.
+    expect(seta.getAttribute('href')).toBe('/criar')
+    expect(seta.className).toBe('sz-tool-back')
+    expect(seta.getAttribute('title')).toBeNull()
+    // [menu][voltar], nessa ordem, no grupo antes do título.
+    const nav = container.querySelector('.sz-tool-header__nav')
+    expect(nav?.children[0]?.getAttribute('aria-label')).toBe('Esconder menu')
+    expect(nav?.children[1]).toBe(seta)
+    // Com Ctrl (ou Cmd) o navegador cuida: nada de navegação do host.
+    fireEvent.click(seta, { ctrlKey: true })
+    expect(onNavigate).toHaveBeenCalledTimes(0)
+    const simples = new MouseEvent('click', { bubbles: true, cancelable: true, button: 0 })
+    seta.dispatchEvent(simples)
+    expect(onNavigate).toHaveBeenCalledTimes(1)
+    // O clique simples não segue o `href` (a página não recarrega).
+    expect(simples.defaultPrevented).toBe(true)
+  })
+
+  it('sem o menu (tela sem sidebar) a seta aparece sozinha no grupo', async () => {
+    const chrome: StudioHostChrome = {
+      menu: null,
+      status: null,
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate: () => {} },
+      account: null,
+    }
+    const { container } = render(
+      <StudioHostChromeProvider value={chrome}>
+        <ProjectList onOpenProject={() => {}} theme="light" />
+      </StudioHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByText(t('projects.empty'))).toBeTruthy()
+    })
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+    const nav = container.querySelector('.sz-tool-header__nav')
+    expect(nav?.children).toHaveLength(1)
+    expect(screen.getByRole('link', { name: 'Voltar para Criar' })).toBeTruthy()
+  })
+
+  it('a nuvem da conta em REPOUSO vira a pílula menta e a frase "na sua conta"', async () => {
+    await persistProject(createEmptyProject('01J00000000000000000000AAA', 'Nave'))
+    await persistProject(createEmptyProject('01J00000000000000000000BBB', 'Pong'))
+    const comConta: StudioHostChrome = {
+      menu: null,
+      status: null,
+      back: null,
+      account: { label: 'Guardado na sua conta' },
+    }
+    const { unmount } = render(
+      <StudioHostChromeProvider value={comConta}>
+        <ProjectList onOpenProject={() => {}} theme="light" />
+      </StudioHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: '2 projetos guardados na sua conta' }),
+      ).toBeTruthy()
+    })
+    // Em repouso, a mesma pílula do "guardado" (tom ok): nada acontecendo e a conta ligada.
+    const pilula = screen.getByRole('status', { name: 'Guardado na sua conta' })
+    expect(pilula.className).toContain('sz-tool-status--ok')
+    unmount()
+
+    // Sem a conta (sem perfil, playground), a frase não promete nuvem nenhuma.
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: '2 projetos guardados neste aparelho' }),
+      ).toBeTruthy()
+    })
+    expect(screen.queryByText(/na sua conta/)).toBeNull()
+  })
+
+  it('o que acontece AGORA vence a conta em repouso (o selo do host manda na pílula)', async () => {
+    const chrome: StudioHostChrome = {
+      menu: null,
+      status: {
+        tone: 'muted',
+        icon: 'upload',
+        label: 'Guardando…',
+        text: 'Guardando na sua conta…',
+      },
+      back: null,
+      account: { label: 'Guardado na sua conta' },
+    }
+    render(
+      <StudioHostChromeProvider value={chrome}>
+        <ProjectList onOpenProject={() => {}} theme="light" />
+      </StudioHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByText(t('projects.empty'))).toBeTruthy()
+    })
+    expect(screen.getAllByRole('status').map((s) => s.getAttribute('title'))).toEqual([
+      'Guardando na sua conta…',
+    ])
   })
 
   it('sem Provider nada do host aparece e a marca segue como sempre', async () => {

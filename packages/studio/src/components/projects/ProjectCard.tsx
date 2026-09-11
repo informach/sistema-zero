@@ -1,7 +1,7 @@
 import type { JSX, KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { memo, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Button, ConfirmDialog } from '#ui'
+import { ConfirmDialog, IconFolderOpen, IconImage } from '#ui'
 import { downloadProjectAsJSON } from '../../export/download'
 import { prefetchMode } from '../../modes/lazyModes'
 import type { ProjectSummary } from '../../state/persistence'
@@ -219,22 +219,23 @@ export const ProjectCard = memo(function ProjectCard({
 
   return (
     <>
-      {/* Painel no padrão do Pinta (borda 2 + sombra dura + pop no hover);
-          h-72 acomoda a capa em tamanho de capa + o "Abrir" com alvo de 44px. */}
+      {/* O cartão das telas-modelo (11/09/2026): branco, cantos de 20px, sem borda aparente e
+          sem sombra (`.sz-tool-card` de `@sistemazero/ui/tool-chrome.css`). h-72 acomoda a capa
+          em tamanho de capa + o "Abrir" de largura inteira. */}
       <article
         onPointerEnter={prefetch}
         // ⚠️ `h-72` e não `h-48`: a capa é `flex-1`, então a altura do card é o
         // que sobra para ela. Com 192px a foto do jogo virava uma tira de ~60px,
         // achatada a ponto de não dar para reconhecer o jogo; com 288px ela ganha
-        // ~122px e volta a ser uma capa (proporção ~1.9:1, perto de um 16:9).
-        className="sz-home-panel sz-home-pop sz-project-card group relative z-0 flex h-72 flex-col p-4 text-left"
+        // ~122px e volta a ser uma capa (a imagem-modelo tem 284px e capa de 119px).
+        className="sz-tool-card sz-project-card group relative z-0 h-72 p-4 text-left"
       >
         <button
           type="button"
           // Anel de foco POR DENTRO (`ring-inset`): o card tem `content-visibility: auto`
           // (= `contain: paint`), que recorta tudo o que escapa do padding box — e este botão
           // ocupa o card inteiro, então um anel desenhado por fora sumia para quem navega por Tab.
-          className="absolute inset-0 z-0 cursor-pointer rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sz-accent/70"
+          className="absolute inset-0 z-0 cursor-pointer rounded-[1.25rem] outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sz-accent/70"
           aria-label={`Abrir projeto ${summary.name}`}
           onPointerDown={prefetch}
           onClick={openProject}
@@ -281,10 +282,10 @@ export const ProjectCard = memo(function ProjectCard({
                 setEditing(true)
               }}
               onClick={(e) => e.stopPropagation()}
-              // `sz-ui-display`: o nome do jogo é o título do card e tem que sair
-              // na MESMA fonte dos títulos da página (Baloo 2 700), não em
-              // Nunito 600 — lado a lado com o h1 "Meus Jogos" a diferença lia
-              // como fonte errada.
+              // `sz-tool-card-title`: o nome do jogo é o título do card e sai no Baloo
+              // extra-negrito de 15px da imagem-modelo, a MESMA receita dos cartões das
+              // galerias do Pinta e do Molda (antes era o `sz-ui-display` 700, mais leve
+              // que o da imagem).
               // `line-clamp-2` e não `truncate`: medido, o card perde 88px fixos
               // (padding + o ⋯ de 44px), sobrando ~139–163px para o título — e
               // nomes reais chegam a 174px ("Cenário do meu desenho"). Numa linha
@@ -292,12 +293,14 @@ export const ProjectCard = memo(function ProjectCard({
               // entre os pisos 225 e 250 o número de colunas em 1366 é o mesmo, e
               // subir mais custaria a 5ª coluna. Em duas linhas o nome cabe
               // inteiro, e o card em `h-72` tem a altura para isso.
-              className="sz-ui-display line-clamp-2 flex-1 text-left text-base text-sz-fg"
+              className="sz-tool-card-title line-clamp-2 flex-1 text-left"
             >
               {summary.name}
             </button>
           )}
-          <div className="relative">
+          {/* O "⋯" sobe e encosta na direita para os pontinhos ficarem na altura da 1ª linha
+              do nome, como na imagem; o alvo continua de 44px. */}
+          <div className="-mt-2.5 -mr-2.5 relative">
             <button
               ref={triggerRef}
               type="button"
@@ -385,7 +388,8 @@ export const ProjectCard = memo(function ProjectCard({
           // a ausência lia como "a feature quebrou" em vez de "ainda não tem foto".
           // Com o espaço reservado, todos os cards têm a MESMA altura e a capa que
           // chega depois (a captura é assíncrona) não empurra o grid.
-          <div className="pointer-events-none mt-2 min-h-0 flex-1 overflow-hidden rounded-md border border-sz-border-soft">
+          // A caixa cinza-clara de cantos de 12px das telas-modelo (`.sz-tool-cover`).
+          <div className="sz-tool-cover pointer-events-none mt-2 min-h-0 flex-1">
             {summary.thumbDataUrl ? (
               <img
                 src={summary.thumbDataUrl}
@@ -398,11 +402,10 @@ export const ProjectCard = memo(function ProjectCard({
             ) : (
               // Com o card em `h-72` a faixa passou de ~60px para ~122px, então
               // a frase inteira cabe sem ser cortada pelo `overflow-hidden` — e o
-              // recado deixa de depender de passar o mouse para ser lido.
-              <div className="grid h-full w-full place-items-center gap-1 bg-sz-bg px-3 text-center text-sm text-sz-fg-mute">
-                <span aria-hidden className="text-lg opacity-60">
-                  📷
-                </span>
+              // recado deixa de depender de passar o mouse para ser lido. O ícone de
+              // imagem de linha e a tinta suave são os da imagem-modelo (4,76:1 sobre a caixa).
+              <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 px-3 text-center text-sz-fg-soft text-xs">
+                <IconImage size={20} />
                 <span>A foto aparece quando você sai do editor</span>
               </div>
             )}
@@ -415,12 +418,13 @@ export const ProjectCard = memo(function ProjectCard({
             monitor de 1366. Com a data numa linha SÓ dela sobra espaço de sobra
             (183px cabem nos ~219px úteis de um card de 5 colunas), e a criança
             ainda ganha um "Abrir" de largura inteira, mais fácil de acertar. */}
-        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sm text-sz-fg-soft">
+        <div className="relative z-10 mt-auto flex flex-col items-stretch gap-2 pt-2 text-sz-fg-soft text-xs">
           <span className="whitespace-nowrap">Atualizado em {formatDate(summary.updatedAt)}</span>
-          <Button
-            variant="primary"
-            size="sm"
-            className="sz-home-btn3d"
+          {/* A pílula azul chapada de largura inteira, com a pasta aberta (a imagem-modelo). O
+              nome acessível segue "Abrir" (o e2e usa) — o ícone é decorativo. */}
+          <button
+            type="button"
+            className="sz-tool-pill sz-tool-pill--primary w-full"
             disabled={opening}
             onPointerDown={prefetch}
             onClick={(e) => {
@@ -429,14 +433,17 @@ export const ProjectCard = memo(function ProjectCard({
             }}
           >
             {opening ? (
-              <span className="flex items-center gap-1.5">
+              <>
                 <Spinner className="h-3.5 w-3.5" />
                 Abrindo…
-              </span>
+              </>
             ) : (
-              'Abrir'
+              <>
+                <IconFolderOpen />
+                Abrir
+              </>
             )}
-          </Button>
+          </button>
         </div>
       </article>
       <ConfirmDialog

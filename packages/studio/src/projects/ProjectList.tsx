@@ -11,16 +11,25 @@ import {
 } from 'react'
 import {
   IconAlert,
+  IconBlocks,
+  IconCamera,
+  IconChevronDown,
   IconCloud,
   IconCloudDownload,
   IconCloudOff,
   IconCloudUpload,
+  IconCode,
+  IconGamepad,
+  IconPlus,
+  type IconProps,
   IconSearch,
+  IconUpload,
 } from '#ui'
 import { listProTemplates } from '../components/code/pro-templates'
+import { HostBackLink } from '../components/layout/HostBackLink'
 import { HostMenuButton } from '../components/layout/HostMenuButton'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
-import { ImportButton } from '../components/projects/ImportButton'
+import { ImportButton, type ImportButtonHandle } from '../components/projects/ImportButton'
 import {
   type NewProjectCreateOptions,
   NewProjectModal,
@@ -82,30 +91,24 @@ export interface ProjectListProps {
   showExamples?: boolean
 }
 
-/**
- * ⚠️ `auto-fill` + `minmax` no lugar de `sm:2 lg:3 xl:4`: com o teto de 4 colunas
- * o card ENGORDAVA conforme a tela crescia (~456px num monitor de 1920), porque
- * a largura sobrando era dividida entre sempre as mesmas 4 faixas. Agora a
- * largura do card fica estável (~250–290px) e é a QUANTIDADE de colunas que
- * acompanha a tela — é a mesma linha da galeria do Pinta (`GalleryScreen.tsx`,
- * `minmax(164px, 1fr)`), com o piso maior porque o card daqui tem `h-72` e nome,
- * data e ações. `auto-fill` (não `auto-fit`) mantém as faixas vazias de pé, então
- * dois projetos numa tela larga continuam com o tamanho de card, não de faixa.
- *
- * Piso medido, não chutado (largura da grade = viewport − 48px do px-6):
- * 1280→4 · 1366→5 · 1440→5 · 1600→6 · 1920→7 · 2560→9 colunas, com o card sempre
- * entre ~245 e ~300px. É o mesmo piso do `.pensa-project-grid`, de propósito: com
- * a mesma receita nos dois, os cards do Estúdio e do Pensa saem do mesmo tamanho
- * sem ninguém precisar sincronizar número mágico.
- * ⚠️ Os 240px vêm do PENSA, onde são conteúdo e não gosto: a linha de etapa mais
- * longa ("Versão 20 · Plano aprovado") exige 239px de card para não quebrar em
- * duas linhas. Aqui eles sobram — a data precisa de 215px —, mas o piso é comum
- * de propósito, senão as duas home voltam a ter cards de tamanhos diferentes.
- */
 /** Um comparador por módulo (o `localeCompare(.., 'pt-BR')` criava um Collator por comparação). */
 const COLLATOR = new Intl.Collator('pt-BR')
 
-const PROJECT_GRID_CLASS = 'grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(240px,1fr))]'
+/**
+ * Os chips de modo, com os ícones de linha da imagem-modelo (os emojis 🧩/💻 saíram). A grade
+ * dos cartões é a `.sz-tool-grid` compartilhada (auto-fill de 13,75rem: 4 colunas de ~245px a
+ * 1440px com o menu aberto, a medida da imagem; a largura do cartão fica estável e é a
+ * QUANTIDADE de colunas que acompanha a tela). É a mesma grade das galerias do Pinta e do Molda.
+ */
+const MODE_FILTERS: ReadonlyArray<{
+  value: ProjectModeFilter
+  label: string
+  icon?: (props: IconProps) => JSX.Element
+}> = [
+  { value: 'all', label: 'projects.filterAll' },
+  { value: 'blocks', label: 'projects.filterBlocks', icon: IconBlocks },
+  { value: 'code', label: 'projects.filterCode', icon: IconCode },
+]
 
 /** Ícone do selo de nuvem do host por estado (o vocabulário do `lib/host-chrome.ts` do kids). */
 const HOST_STATUS_ICON: Record<StudioHostChromeStatus['icon'], typeof IconCloud> = {
@@ -346,9 +349,34 @@ export function ProjectList({
     onOpenProject(id)
   }
 
-  // Botão do menu lateral + selo "Guardado na sua conta" do host (community-kids); null fora dele.
+  // O chrome do host (community-kids): o menu lateral, a seta de volta para Criar, o selo da nuvem
+  // e o sinal da conta. `null` fora dele (playground, adulto).
   const hostChrome = useStudioHostChrome()
   const hasProjects = Boolean(projects && projects.length > 0)
+  // A pílula do cabeçalho diz o que acontece AGORA (o selo do host) ou, em repouso, que a nuvem
+  // da conta está ligada: a imagem-modelo mostra "Guardado na sua conta" sem nada acontecendo.
+  const pill: StudioHostChromeStatus | null =
+    hostChrome?.status ??
+    (hostChrome?.account
+      ? {
+          tone: 'ok',
+          icon: 'cloud',
+          label: hostChrome.account.label,
+          text: hostChrome.account.label,
+        }
+      : null)
+  // O cartão da faixa lilás diz ONDE os projetos estão: na conta (com a nuvem ligada) ou só
+  // neste aparelho (sem perfil, no playground). Nunca promete a nuvem que não existe.
+  const savedCount = projects?.length ?? 0
+  const savedText = hostChrome?.account
+    ? savedCount === 1
+      ? t('projects.saved.accountOne')
+      : t('projects.saved.account', { count: savedCount })
+    : savedCount === 1
+      ? t('projects.saved.deviceOne')
+      : t('projects.saved.device', { count: savedCount })
+  // O "Importar um jogo" do cartão usa o MESMO input e o MESMO aviso do "Importar" do cabeçalho.
+  const importRef = useRef<ImportButtonHandle | null>(null)
   // O painel dos kits abre entre a linha de ferramentas e a grade; "Precisa de ajuda para
   // começar?" (rodapé) abre e rola até ele.
   const kitsRef = useRef<HTMLDivElement | null>(null)
@@ -368,6 +396,26 @@ export function ProjectList({
         : t('projects.searchCount', { shown: filtered.length, total: projects.length })
       : ''
 
+  // O cartão "Novo projeto" que abre a grade (a imagem-modelo): creme com o fio amarelo e o "+"
+  // num círculo amarelo. É um BOTÃO de verdade, com nome próprio (título + dica), diferente do
+  // "+ Novo projeto" do cabeçalho, que os e2e usam por nome exato. Some quando a lista está
+  // filtrada: no meio de um resultado de busca ele seria ruído.
+  // `min-h-40` e não `h-72`: numa fileira com projetos a grade o estica até a altura deles; sozinho
+  // numa coluna (celular) ele não precisa de 288px vazios.
+  const newCard = (
+    <button
+      type="button"
+      className="sz-tool-card sz-tool-card--new min-h-40"
+      onClick={() => setModalOpen(true)}
+    >
+      <span className="sz-tool-new-dot" aria-hidden="true">
+        <IconPlus />
+      </span>
+      <span className="sz-tool-card-title text-base">{t('projects.new')}</span>
+      <span className="text-sz-fg-soft text-xs">{t('projects.newCard.hint')}</span>
+    </button>
+  )
+
   return (
     <StudioThemeProvider value={theme}>
       <div
@@ -375,212 +423,260 @@ export function ProjectList({
         className="flex h-full flex-col bg-sz-bg text-sz-fg"
         style={{ fontFamily: 'var(--font-family-sans)' }}
       >
-        {/* Cabeçalho de DUAS linhas (07/09/2026, imagem-modelo dela), o MESMO do Pinta e do
-            Pensa: linha 1 = menu do host + título/subtítulo à esquerda, selo/tema/Importar/
-            "+ Novo projeto" à direita; linha 2 (no <main>) = filtros + jogos prontos à esquerda,
-            busca + ordenação à direita. As receitas `sz-tool-*` vêm de
-            `@sistemazero/ui/tool-chrome.css` (o host importa; ver docs/embedding.md). */}
-        {/* Respiro vertical = o da galeria do Molda, que ela aprovou (07/09, "não tão
-            embolado"): 28px do cabeçalho para a linha dos filtros (`pb-7`) e 48px dos filtros para
-            a grade (`mb-12`), o mesmo ritmo do Pinta e do Pensa. */}
-        <header className="sz-tool-header px-6 pt-4 pb-7">
-          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1: o
-              quadrado das telas-modelo, dentro do padding. */}
-          <div className="sz-tool-header__lead">
-            {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-            <div className="sz-tool-header__title">
-              <h1 className="sz-ui-display text-3xl md:text-4xl">{t('projects.heroTitle')}</h1>
-              <p className="mt-1 text-sm text-sz-fg-soft md:text-base">{t('projects.subtitle')}</p>
-            </div>
-          </div>
-          <div className="sz-tool-header__actions">
-            {hostChrome?.status ? <HostStatusPill status={hostChrome.status} /> : null}
-            {themeProp === undefined && <ThemeToggle className="sz-tool-btn sz-tool-btn--icon" />}
-            <ImportButton onImported={handleImported} allowedExtensions={allowedExtensions} />
-            <button type="button" className="sz-tool-btn-3d" onClick={() => setModalOpen(true)}>
-              + {t('projects.new')}
-            </button>
-          </div>
-        </header>
-
-        {/* Largura TOTAL, como a galeria do Pinta (sem teto de max-w). */}
-        <main className="flex-1 overflow-auto px-6 pb-6">
-          <div>
-            {/* O heading da seção segue no DOM para o leitor de tela; visualmente o título da
-                página já diz tudo (um "Meus projetos" a 20px de "Meus Jogos" era o cabeçalho
-                ocupando espaço). */}
-            <h2 className="sr-only">{t('projects.title')}</h2>
-            <div className="sz-tool-toolbar mb-12">
-              <div className="sz-tool-toolbar__start">
-                {/* Filtro de modo (só com projetos). A legend fica para o leitor de tela
-                    (o `role="group"` "Modo"); o trilho de chips é autoexplicativo. */}
-                {hasProjects ? (
-                  <fieldset className="sz-tool-chips">
-                    <legend className="sr-only">{t('projects.filterMode')}</legend>
-                    {(
-                      [
-                        { value: 'all', label: t('projects.filterAll') },
-                        { value: 'blocks', label: t('projects.filterBlocks'), emoji: '🧩' },
-                        { value: 'code', label: t('projects.filterCode'), emoji: '💻' },
-                      ] as ReadonlyArray<{
-                        value: ProjectModeFilter
-                        label: string
-                        emoji?: string
-                      }>
-                    ).map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        aria-pressed={option.value === modeFilter}
-                        onClick={() => setModeFilter(option.value)}
-                        className="sz-tool-chip"
-                      >
-                        {option.emoji ? <span aria-hidden>{option.emoji}</span> : null}
-                        {option.label}
-                      </button>
-                    ))}
-                  </fieldset>
-                ) : null}
-                {showExamples && hasProjects ? (
-                  <button
-                    type="button"
-                    className="sz-tool-btn"
-                    aria-expanded={kitsOpen}
-                    aria-controls="sz-kits-panel"
-                    onClick={() => setKitsOpen((value) => !value)}
-                  >
-                    <span aria-hidden>🎮</span> {kitsOpen ? t('kits.hide') : t('kits.show')}
-                  </button>
-                ) : null}
-              </div>
-              <div className="sz-tool-toolbar__end">
-                <label className="sz-tool-search-wrap">
-                  <IconSearch />
-                  <input
-                    name="project-search"
-                    type="search"
-                    aria-label={t('projects.search')}
-                    autoComplete="off"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Escape' && search) {
-                        e.preventDefault()
-                        setSearch('')
-                      }
-                    }}
-                    placeholder={t('projects.search')}
-                    className="sz-tool-search"
-                  />
-                </label>
-                <select
-                  name="project-sort"
-                  aria-label={t('projects.sort')}
-                  value={projectSort}
-                  onChange={(e) => void setProjectSort(e.target.value as ProjectSortOrder)}
-                  className="sz-tool-select"
-                >
-                  <option value="recent">{t('projects.sortRecent')}</option>
-                  <option value="name">{t('projects.sortName')}</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Os jogos prontos abrem ENTRE a linha de ferramentas e a grade (dentro do
-                rolável). No primeiro uso a galeria já vem aberta no painel do estado vazio. */}
-            {showExamples && hasProjects && kitsOpen ? (
-              <div id="sz-kits-panel" ref={kitsRef} className="sz-tool-panel mb-6 p-4">
-                <Suspense
-                  fallback={
-                    <p role="status" className="text-sm text-sz-fg-soft">
-                      {t('kits.loading')}
-                    </p>
-                  }
-                >
-                  <LazyKitGallery onOpenProject={onOpenProject} />
-                </Suspense>
-              </div>
-            ) : null}
-
-            {filtered === null ? (
-              // Skeleton na MESMA grade dos cards (h-72): sem layout shift nem
-              // tela "travada" enquanto o IndexedDB responde.
-              <output aria-label="Carregando projetos" className="block">
-                <div className={PROJECT_GRID_CLASS}>
-                  {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="h-72 animate-pulse rounded-2xl border-2 border-sz-border bg-sz-panel motion-reduce:animate-none"
+        {/* A galeria no desenho das telas-modelo (11/09/2026): três faixas de borda a borda que
+            rolam JUNTAS (creme com o cabeçalho de duas linhas, céu com a grade, lilás com o cartão
+            de fechamento), as mesmas das páginas do kids e das galerias do Pinta, do Pensa e do
+            Molda. As receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o host importa;
+            ver docs/embedding.md). Nada de `<main>`: a lista mora dentro do `<main>` do host. */}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <div className="sz-tool-bands">
+            <header className="sz-tool-band sz-tool-band--creme">
+              {/* 48px em cima e 36px embaixo a partir de 1024px: o respiro medido na imagem
+                  (o título desce um pouco mais que o das outras faixas). */}
+              <div className="sz-tool-band__inner lg:pt-12 lg:pb-9">
+                <div className="sz-tool-header">
+                  <div className="sz-tool-header__lead">
+                    {/* O menu da comunidade e a seta de volta para Criar vêm ANTES do título, no
+                        quadrado das barras da imagem. */}
+                    {hostChrome?.menu || hostChrome?.back ? (
+                      <div className="sz-tool-header__nav">
+                        {hostChrome.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+                        {hostChrome.back ? <HostBackLink back={hostChrome.back} /> : null}
+                      </div>
+                    ) : null}
+                    <div className="sz-tool-header__title">
+                      <h1 className="sz-tool-title">{t('projects.heroTitle')}</h1>
+                      <p className="sz-tool-subtitle">{t('projects.subtitle')}</p>
+                    </div>
+                  </div>
+                  <div className="sz-tool-header__actions">
+                    {pill ? <HostStatusPill status={pill} /> : null}
+                    {themeProp === undefined && <ThemeToggle className="sz-tool-icon-btn" />}
+                    <ImportButton
+                      ref={importRef}
+                      onImported={handleImported}
+                      allowedExtensions={allowedExtensions}
                     />
-                  ))}
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--primary"
+                      onClick={() => setModalOpen(true)}
+                    >
+                      + {t('projects.new')}
+                    </button>
+                  </div>
                 </div>
-              </output>
-            ) : filtered.length === 0 && projects?.length === 0 ? (
-              // Primeiro uso: com exemplos liberados (playground) a vitrine É o
-              // onboarding, com o "começar do zero" como alternativa. Para clientes
-              // (sem exemplos), o "criar do zero" vira a ação principal.
-              <div className="flex flex-col gap-6 rounded-2xl border-2 border-dashed border-sz-border bg-sz-panel/40 p-6">
-                <p className="text-base text-sz-fg-soft">{t('projects.empty')}</p>
-                {showExamples ? (
-                  <Suspense
-                    fallback={
-                      <p role="status" className="text-sm text-sz-fg-soft">
-                        {t('kits.loading')}
-                      </p>
-                    }
-                  >
-                    <LazyKitGallery onOpenProject={onOpenProject} />
-                  </Suspense>
-                ) : null}
-                <div>
-                  <button
-                    type="button"
-                    className={showExamples ? 'sz-tool-btn' : 'sz-tool-btn-3d'}
-                    onClick={() => setModalOpen(true)}
-                  >
-                    + {showExamples ? t('kits.scratch') : t('projects.new')}
-                  </button>
-                </div>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-start gap-3">
-                <p className="text-base text-sz-fg-soft">{t('projects.emptySearch')}</p>
-                <button type="button" className="sz-tool-btn" onClick={clearFilters}>
-                  {t('projects.searchClearAll')}
-                </button>
-              </div>
-            ) : (
-              <div className={PROJECT_GRID_CLASS}>
-                {filtered.map((summary) => (
-                  <ProjectCard
-                    key={summary.id}
-                    summary={summary}
-                    takenNames={takenNames}
-                    onChanged={refreshProject}
-                    onOpen={onOpenProject}
-                  />
-                ))}
-              </div>
-            )}
 
-            {/* Rodapé: o contador (frase permanente; `role="status"` só ao filtrar) e a
-                ajuda, que abre os jogos prontos (só quando eles existem). */}
-            {hasProjects && filtered ? (
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-sm text-sz-fg-soft">
-                {filtering ? <p role="status">{countText}</p> : <p>{countText}</p>}
-                {showExamples ? (
-                  <button
-                    type="button"
-                    className="font-bold text-sz-accent hover:underline"
-                    onClick={openKits}
-                  >
-                    {t('projects.help')}
-                  </button>
+                {/* Linha 2: os filtros de modo e os jogos prontos à esquerda, a busca e a
+                    ordenação à direita. 28px abaixo do título, como na imagem. */}
+                <div className="sz-tool-toolbar mt-7">
+                  <div className="sz-tool-toolbar__start">
+                    {/* Filtro de modo (só com projetos). A legend fica para o leitor de tela
+                        (o `role="group"` "Modo"); o trilho de chips é autoexplicativo. */}
+                    {hasProjects ? (
+                      <fieldset className="sz-tool-chips">
+                        <legend className="sr-only">{t('projects.filterMode')}</legend>
+                        {MODE_FILTERS.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            aria-pressed={option.value === modeFilter}
+                            onClick={() => setModeFilter(option.value)}
+                            className="sz-tool-chip"
+                          >
+                            {option.icon ? <option.icon /> : null}
+                            {t(option.label)}
+                          </button>
+                        ))}
+                      </fieldset>
+                    ) : null}
+                    {showExamples && hasProjects ? (
+                      <button
+                        type="button"
+                        className="sz-tool-chip"
+                        aria-expanded={kitsOpen}
+                        aria-controls="sz-kits-panel"
+                        onClick={() => setKitsOpen((value) => !value)}
+                      >
+                        <IconGamepad />
+                        {kitsOpen ? t('kits.hide') : t('kits.show')}
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="sz-tool-toolbar__end">
+                    <label className="sz-tool-search-wrap">
+                      <IconSearch />
+                      <input
+                        name="project-search"
+                        type="search"
+                        aria-label={t('projects.search')}
+                        autoComplete="off"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Escape' && search) {
+                            e.preventDefault()
+                            setSearch('')
+                          }
+                        }}
+                        placeholder={t('projects.search')}
+                        className="sz-tool-search"
+                      />
+                    </label>
+                    <span className="sz-tool-select-wrap">
+                      <select
+                        name="project-sort"
+                        aria-label={t('projects.sort')}
+                        value={projectSort}
+                        onChange={(e) => void setProjectSort(e.target.value as ProjectSortOrder)}
+                        className="sz-tool-select"
+                      >
+                        <option value="recent">{t('projects.sortRecent')}</option>
+                        <option value="name">{t('projects.sortName')}</option>
+                      </select>
+                      <IconChevronDown />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <section aria-labelledby="sz-projects-title" className="sz-tool-band sz-tool-band--ceu">
+              <div className="sz-tool-band__inner">
+                {/* O heading da seção segue no DOM para o leitor de tela; visualmente o título
+                    da página já diz tudo. */}
+                <h2 id="sz-projects-title" className="sr-only">
+                  {t('projects.title')}
+                </h2>
+
+                {/* Os jogos prontos abrem ENTRE a linha de ferramentas e a grade. No primeiro
+                    uso a galeria já vem aberta, junto do recado da lista vazia. */}
+                {showExamples && hasProjects && kitsOpen ? (
+                  <div id="sz-kits-panel" ref={kitsRef} className="sz-tool-card mb-6 p-5">
+                    <Suspense
+                      fallback={
+                        <p role="status" className="text-sm text-sz-fg-soft">
+                          {t('kits.loading')}
+                        </p>
+                      }
+                    >
+                      <LazyKitGallery onOpenProject={onOpenProject} />
+                    </Suspense>
+                  </div>
+                ) : null}
+
+                {filtered === null ? (
+                  // Skeleton na MESMA grade dos cartões (h-72): sem layout shift nem tela
+                  // "travada" enquanto o IndexedDB responde.
+                  <output aria-label="Carregando projetos" className="block">
+                    <div className="sz-tool-grid">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="h-72 animate-pulse rounded-[1.25rem] bg-sz-panel motion-reduce:animate-none"
+                        />
+                      ))}
+                    </div>
+                  </output>
+                ) : filtered.length === 0 && projects?.length === 0 ? (
+                  // Primeiro uso: o recado, os jogos prontos (só onde os exemplos estão
+                  // liberados, o playground) e o cartão "Novo projeto" sozinho na grade.
+                  <div className="flex flex-col gap-6">
+                    <p className="font-semibold text-base text-sz-fg-soft">{t('projects.empty')}</p>
+                    {showExamples ? (
+                      <div className="sz-tool-card p-5">
+                        <Suspense
+                          fallback={
+                            <p role="status" className="text-sm text-sz-fg-soft">
+                              {t('kits.loading')}
+                            </p>
+                          }
+                        >
+                          <LazyKitGallery onOpenProject={onOpenProject} />
+                        </Suspense>
+                      </div>
+                    ) : null}
+                    <div className="sz-tool-grid">{newCard}</div>
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div className="flex flex-col items-start gap-3">
+                    <p className="font-semibold text-base text-sz-fg-soft">
+                      {t('projects.emptySearch')}
+                    </p>
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--quiet"
+                      onClick={clearFilters}
+                    >
+                      {t('projects.searchClearAll')}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="sz-tool-grid">
+                    {filtering ? null : newCard}
+                    {filtered.map((summary) => (
+                      <ProjectCard
+                        key={summary.id}
+                        summary={summary}
+                        takenNames={takenNames}
+                        onChanged={refreshProject}
+                        onOpen={onOpenProject}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Rodapé: o contador (frase permanente; `role="status"` só ao filtrar) e a
+                    ajuda, que abre os jogos prontos (só quando eles existem). */}
+                {hasProjects && filtered ? (
+                  <div className="mt-6 flex flex-wrap items-center justify-between gap-2 font-semibold text-sm text-sz-fg-soft">
+                    {filtering ? <p role="status">{countText}</p> : <p>{countText}</p>}
+                    {showExamples ? (
+                      <button
+                        type="button"
+                        className="font-bold text-sz-accent hover:underline"
+                        onClick={openKits}
+                      >
+                        {t('projects.help')}
+                      </button>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
+            </section>
+
+            {/* O fechamento da página (faixa lilás, só com projetos): onde eles estão guardados
+                e o segundo caminho do import, a pílula creme da imagem. */}
+            {hasProjects ? (
+              <section
+                aria-labelledby="sz-projects-saved"
+                className="sz-tool-band sz-tool-band--lilas"
+              >
+                <div className="sz-tool-band__inner">
+                  <div className="sz-tool-cta-card">
+                    <span className="sz-tool-tile sz-tool-tile--new" aria-hidden="true">
+                      <IconCamera />
+                    </span>
+                    <div className="sz-tool-cta-card__body">
+                      <h2 id="sz-projects-saved" className="sz-tool-cta-card__title">
+                        {savedText}
+                      </h2>
+                      <p className="sz-tool-cta-card__text">{t('projects.saved.hint')}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="sz-tool-pill sz-tool-pill--creme"
+                      onClick={() => importRef.current?.open()}
+                    >
+                      <IconUpload />
+                      {t('projects.importCta')}
+                    </button>
+                  </div>
+                </div>
+              </section>
             ) : null}
           </div>
-        </main>
+        </div>
 
         <NewProjectModal
           open={modalOpen}

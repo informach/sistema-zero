@@ -216,13 +216,14 @@
 
   /* ── CABEÇALHO de duas linhas (só layout) ─────────────────────────────────────────────
      Linha 1 = .sz-tool-header: [menu][voltar][título+subtítulo] ... [status][ações].
-     Linha 2 = .sz-tool-toolbar: [chips] ... [busca][ordenar]. Tudo alinha pelo TOPO: na
-     imagem o quadrado do menu e as pílulas da direita começam na mesma altura. Abaixo de md as
-     pontas direitas descem para a própria linha. */
+     Linha 2 = .sz-tool-toolbar: [chips] ... [busca][ordenar]. Tudo CENTRALIZA no bloco do
+     título: na imagem o quadrado do menu e as pílulas da direita ficam no meio da altura do
+     título com o subtítulo (medido, os três centros a 1px um do outro). Abaixo de md as pontas
+     direitas descem para a própria linha. */
   .sz-tool-header {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1rem;
   }
@@ -230,7 +231,7 @@
     display: flex;
     flex: 1 1 16rem;
     min-width: 0;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.75rem;
   }
   /* O grupo [menu][voltar], antes do título. */
@@ -539,10 +540,14 @@
   .sz-tool-search::-webkit-search-cancel-button {
     appearance: none;
   }
+  /* A LARGURA explícita não é enfeite: sem ela a contribuição intrínseca do campo (~180px) é
+     menor que a base de 17,5rem, a ponta direita se mede pequena demais e a quebra de linha
+     joga o ordenar para baixo da busca (medido na galeria do Estúdio). */
   .sz-tool-search-wrap {
     position: relative;
     display: flex;
     flex: 0 1 17.5rem;
+    width: 17.5rem;
     min-width: 0;
     align-items: center;
   }
@@ -578,27 +583,30 @@
   @media (max-width: 47.99rem) {
     .sz-tool-search-wrap {
       flex: 1 1 12rem;
+      width: auto;
     }
   }
 
   /* ── SELO da nuvem ("Guardado na sua conta") ──────────────────────────────────────────
      Pílula da altura dos botões ao lado, tom por modificador: o menta com o verde de texto é o
-     da imagem (4,96:1). */
+     da imagem (4,96:1). O texto QUEBRA em vez de vazar: a frase do "sem internet" é longa, e
+     num celular de 375px ela empurrava a página inteira para o lado (medido). O recado é o que
+     importa ali, então ele fica inteiro em duas linhas em vez de cortado com reticências. */
   .sz-tool-status {
     display: inline-flex;
     align-items: center;
     gap: 0.4375rem;
     min-width: 0;
+    max-width: 100%;
     min-height: var(--sz-tool-hit);
-    padding-inline: 1rem;
+    padding: 0.375rem 1rem;
     border: 1px solid var(--sz-tool-card-edge);
     border-radius: var(--sz-tool-radius-pill);
     background: var(--sz-tool-quiet);
     color: var(--sz-tool-muted);
     font-weight: 800;
     font-size: 0.875rem;
-    line-height: 1;
-    white-space: nowrap;
+    line-height: 1.25;
   }
   .sz-tool-status > svg {
     flex: none;
@@ -640,6 +648,15 @@
     border: 1px solid var(--sz-tool-card-edge);
     border-radius: var(--sz-tool-radius-card-md);
     background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+  }
+  /* O título de um cartão (o nome do jogo, "Novo projeto"): o Baloo extra-negrito de 15px da
+     imagem, igual nas galerias das quatro ferramentas. */
+  .sz-tool-card-title {
+    font-family: var(--sz-tool-font-display);
+    font-weight: 800;
+    font-size: 0.9375rem;
+    line-height: 1.3;
     color: var(--sz-tool-ink);
   }
   /* O cartão "Novo projeto": creme com o fio amarelo e o "+" num círculo amarelo. É um botão

@@ -43,7 +43,8 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    outline|creme` (sem gradiente nem sombra dura); `.sz-tool-chips`/`.sz-tool-chip` (o ativo é o
    azul da marca cheio), `.sz-tool-search(-wrap)`, `.sz-tool-select(-wrap)` (desenha a seta),
    `.sz-tool-status(--ok|--warn|--danger)` em pílula; `.sz-tool-grid` (auto-fill de 13,75rem:
-   4 colunas a 1440 com o menu aberto), `.sz-tool-card(--new)` + `.sz-tool-new-dot`,
+   4 colunas a 1440 com o menu aberto), `.sz-tool-card(--new)` + `.sz-tool-card-title` (Baloo 800 de
+   15px) + `.sz-tool-new-dot`,
    `.sz-tool-cover`, `.sz-tool-tile--new|ok|estudio|pinta|molda|pensa` e `.sz-tool-cta-card`
    (`__body|__title|__text`); e o layout `.sz-tool-header(__lead|__nav|__title|__actions)` /
    `.sz-tool-toolbar(__start|__end)`. Os controles novos medem `--sz-tool-hit`: 40px no mouse (a

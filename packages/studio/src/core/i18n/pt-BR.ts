@@ -101,6 +101,16 @@ export const ptBR: Record<string, string> = {
   'projects.searchCount': 'Mostrando {shown} de {total} projetos',
   'projects.searchCountOne': 'Mostrando 1 de {total} projetos',
   'projects.help': 'Precisa de ajuda para começar?',
+  // Galeria no desenho das telas-modelo (11/09/2026): o cartão "Novo projeto" no começo da
+  // grade e o cartão da faixa lilás, que diz onde os projetos estão guardados.
+  'projects.newCard.hint': 'Comece do zero no Estúdio.',
+  'projects.saved.account': '{count} projetos guardados na sua conta',
+  'projects.saved.accountOne': '1 projeto guardado na sua conta',
+  'projects.saved.device': '{count} projetos guardados neste aparelho',
+  'projects.saved.deviceOne': '1 projeto guardado neste aparelho',
+  'projects.saved.hint':
+    'Tudo é guardado sozinho enquanto você cria. A foto da capa aparece quando você sai do editor.',
+  'projects.importCta': 'Importar um jogo',
   'projects.filterMode': 'Modo',
   'projects.filterAll': 'Todos',
   'projects.filterBlocks': 'Blocos',
@@ -135,7 +145,6 @@ export const ptBR: Record<string, string> = {
   'kits.subtitle': 'Escolha um jogo pronto para abrir, jogar e mexer do seu jeito.',
   'kits.show': 'Ver os jogos prontos',
   'kits.hide': 'Esconder os jogos prontos',
-  'kits.scratch': 'Quero começar do zero',
   'kits.creating': 'Criando…',
   'kits.error': 'Não consegui criar o projeto agora. Tente de novo.',
   'kits.loading': 'Carregando jogos prontos…',

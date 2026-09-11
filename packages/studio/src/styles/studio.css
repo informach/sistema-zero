@@ -213,89 +213,11 @@
 }
 
 /*
- * ── Home do Estúdio no padrão do Pinta (SÓ a ProjectList; o editor não usa) ──
- * Nomes `sz-home-*` de propósito: `.sz-display`/`.sz-btn-gradient` são classes
- * GLOBAIS do community-kids e colidiriam ("última definição vence"). Tudo que
- * importa vive NA CLASSE ([data-sz-theme] .x vence utilitário por
- * especificidade), porque o cn() do Button é um join simples — sem
- * tailwind-merge para resolver conflito entre utilitários.
+ * ── Home do Estúdio ("Meus Jogos") ──
+ * Desde 11/09/2026 (o desenho das telas-modelo) a lista usa só as receitas COMPARTILHADAS de
+ * `@sistemazero/ui/tool-chrome.css` (faixas, `.sz-tool-card`, pílulas chapadas): as `sz-home-*`
+ * (a pílula 3D do "Abrir", o painel com sombra dura e o pulo no hover) saíram daqui.
  */
-[data-sz-theme] {
-  --sz-home-gradient: var(
-    --sz-tool-cta-gradient,
-    var(
-      --sz-kids-grad-cta-azul-suave,
-      linear-gradient(90deg, oklch(0.78 0.11 240), oklch(0.7 0.125 248))
-    )
-  );
-  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-vivo, oklch(0.72 0.13 245)));
-}
-[data-sz-theme="light"] {
-  --sz-home-gradient: var(
-    --sz-tool-cta-gradient,
-    var(
-      --sz-kids-grad-cta-azul,
-      linear-gradient(90deg, oklch(0.565 0.145 250), oklch(0.5 0.15 255))
-    )
-  );
-  --sz-home-cta: var(--sz-tool-cta, var(--sz-kids-azul-texto, oklch(0.52 0.15 252)));
-}
-
-/* Pílula "3D" do CARD "Abrir" (espelho do .pin-btn-3d do Pinta e da `.sz-tool-btn-3d`
-   compartilhada, que o cabeçalho da lista usa desde 07/09/2026; alvo 44px).
-   ⚠️ `color-mix` SEMPRE `in oklab`: em oklch a mistura gira o matiz e passa pelo magenta. */
-[data-sz-theme] .sz-home-btn3d {
-  min-height: var(--sz-tool-control, 2.75rem);
-  border: 0;
-  border-radius: var(--sz-tool-radius-pill, 9999px);
-  padding-inline: 1.25rem;
-  font-size: 1rem;
-  font-weight: 700;
-  background-image: var(--sz-home-gradient);
-  color: var(--sz-tool-on-cta, var(--color-sz-bg));
-  box-shadow: 0 4px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
-}
-[data-sz-theme] .sz-home-btn3d:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-}
-[data-sz-theme] .sz-home-btn3d:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklab, var(--sz-home-cta) 60%, black);
-}
-
-/* O secundário da home (`.sz-home-btn-ghost`) foi APOSENTADO em 07/09/2026: "Importar",
-   "Ver os jogos prontos" e os botões dos estados vazios usam a `.sz-tool-btn` compartilhada. */
-
-/* Painel de card (espelho do .pin-panel: borda 2px + sombra dura da borda). */
-[data-sz-theme] .sz-home-panel {
-  border: var(--sz-tool-border, 2px) solid var(--color-sz-border);
-  border-radius: var(--sz-tool-radius-card, 1rem);
-  background: var(--color-sz-panel);
-  box-shadow: 0 3px 0 color-mix(in oklab, var(--color-sz-border) 45%, transparent);
-}
-
-/* Hover pop dos cards (espelho do .pin-pop). */
-[data-sz-theme] .sz-home-pop {
-  transition: transform 0.18s ease-out;
-}
-[data-sz-theme] .sz-home-pop:hover {
-  transform: translateY(-2px) scale(1.02);
-}
-@media (prefers-reduced-motion: reduce) {
-  [data-sz-theme] .sz-home-pop,
-  [data-sz-theme] .sz-home-btn3d {
-    transition: none;
-  }
-  [data-sz-theme] .sz-home-pop:hover {
-    transform: none;
-  }
-}
 
 /* Highlight cruzado bloco ↔ linha no Monaco (ver useCrossHighlight). */
 .sz-highlight-line {

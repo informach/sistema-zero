@@ -1,18 +1,33 @@
-import type { JSX } from 'react'
-import { useRef, useState } from 'react'
+import type { JSX, Ref } from 'react'
+import { useImperativeHandle, useRef, useState } from 'react'
 import { Button, IconUpload, Modal } from '#ui'
 import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
 import { useT } from '../../studio/i18n'
+
+/**
+ * Abre o seletor de arquivo de fora do botão. É o que deixa um SEGUNDO gatilho (o "Importar um
+ * jogo" do cartão da faixa lilás, 11/09/2026) usar o MESMO input e o MESMO aviso: dois inputs
+ * seriam dois caminhos de import para manter iguais, e dois modais disputariam o foco.
+ */
+export interface ImportButtonHandle {
+  open: () => void
+}
 
 export interface ImportButtonProps {
   onImported: (id: string) => void
   /** IDs conquistados na carreira; projeto não é destruído, mas incompatibilidades são avisadas. */
   allowedExtensions?: readonly string[]
+  ref?: Ref<ImportButtonHandle>
 }
 
-export function ImportButton({ onImported, allowedExtensions }: ImportButtonProps): JSX.Element {
+export function ImportButton({
+  onImported,
+  allowedExtensions,
+  ref,
+}: ImportButtonProps): JSX.Element {
   const t = useT()
   const inputRef = useRef<HTMLInputElement | null>(null)
+  useImperativeHandle(ref, () => ({ open: () => inputRef.current?.click() }), [])
   const [error, setError] = useState<string | null>(null)
   // Avisos não-fatais do import (cota/permissão/bloco desconhecido): o projeto FOI
   // criado, mas mostramos o que ficou de fora antes de abrir. A navegação
@@ -102,9 +117,13 @@ export function ImportButton({ onImported, allowedExtensions }: ImportButtonProp
           if (file) void handleFile(file)
         }}
       />
-      {/* O secundário COMPARTILHADO das ferramentas (`.sz-tool-btn`, 07/09/2026): 44px,
-          cantos xl, borda 2px, sombra dura. O nome acessível segue "Importar". */}
-      <button type="button" className="sz-tool-btn" onClick={() => inputRef.current?.click()}>
+      {/* A pílula branca das telas-modelo (`.sz-tool-pill--quiet` de
+          `@sistemazero/ui/tool-chrome.css`). O nome acessível segue "Importar" (os e2e usam). */}
+      <button
+        type="button"
+        className="sz-tool-pill sz-tool-pill--quiet"
+        onClick={() => inputRef.current?.click()}
+      >
         <IconUpload />
         {t('projects.import')}
       </button>

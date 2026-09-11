@@ -329,6 +329,67 @@ describe('ProjectList — cabeçalho de duas linhas', () => {
     })
   })
 
+  it('o cartão "Novo projeto" abre a grade, tem nome próprio e some quando a lista é filtrada', async () => {
+    await seedProjects()
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(3)
+    })
+    const novo = screen.getByRole('button', { name: /^Novo projeto Comece do zero no Estúdio\.$/ })
+    // O PRIMEIRO da grade, antes dos projetos.
+    const grade = novo.parentElement as HTMLElement
+    expect(grade.className).toContain('sz-tool-grid')
+    expect(grade.firstElementChild).toBe(novo)
+    // Nome diferente do botão do cabeçalho: o "+ Novo projeto" dos e2e continua único.
+    expect(screen.getAllByRole('button', { name: '+ Novo projeto' })).toHaveLength(1)
+    fireEvent.click(novo)
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.cancel') }))
+
+    const modos = screen.getByRole('group', { name: t('projects.filterMode') })
+    fireEvent.click(within(modos).getByRole('button', { name: /Código/ }))
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(1)
+    })
+    expect(screen.queryByRole('button', { name: /^Novo projeto Comece/ })).toBeNull()
+  })
+
+  it('a lista vazia mostra o recado e o cartão "Novo projeto" sozinho, sem a faixa lilás', async () => {
+    render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(screen.getByText(t('projects.empty'))).toBeTruthy()
+    })
+    expect(screen.getByRole('button', { name: /^Novo projeto Comece/ })).toBeTruthy()
+    // "N projetos guardados" só faz sentido com projetos.
+    expect(
+      screen.queryByRole('heading', { name: /guardados? (na sua conta|neste aparelho)/ }),
+    ).toBeNull()
+  })
+
+  it('"Importar um jogo" do cartão lilás usa o MESMO input do "Importar" do cabeçalho', async () => {
+    await seedProjects()
+    const { container } = render(<ProjectList onOpenProject={() => {}} theme="light" />)
+    await waitFor(() => {
+      expect(cardNames()).toHaveLength(3)
+    })
+    // Um input só na página inteira: dois seriam dois caminhos de import para manter iguais.
+    const inputs = container.querySelectorAll('input[type="file"]')
+    expect(inputs).toHaveLength(1)
+    const input = inputs[0] as HTMLInputElement
+    let aberturas = 0
+    input.addEventListener('click', (event) => {
+      aberturas += 1
+      event.preventDefault()
+    })
+    expect(
+      screen.getByRole('heading', { name: '3 projetos guardados neste aparelho' }),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: t('projects.importCta') }))
+    expect(aberturas).toBe(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Importar' }))
+    expect(aberturas).toBe(2)
+  })
+
   it('sem os jogos prontos (cliente) não há botão nem ajuda', async () => {
     await seedProjects()
     render(<ProjectList onOpenProject={() => {}} theme="light" />)
