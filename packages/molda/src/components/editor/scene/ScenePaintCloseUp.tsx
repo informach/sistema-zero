@@ -18,7 +18,7 @@ import {
   sceneFaceViewTexel,
 } from '../../../scene/paintFaceView'
 import { Button } from '../../ui/Button'
-import type { ScenePaintActions } from './useScenePaint'
+import { SCENE_CLOSE_UP_REGION, type ScenePaintActions } from './useScenePaint'
 
 export function ScenePaintCloseUp({
   image,
@@ -86,7 +86,7 @@ export function ScenePaintCloseUp({
       Math.min(height - 1, Math.floor(down * height)),
     )
   }
-  const sample = (point: Texel) => ({ point, region: 'perto', bounds: region })
+  const sample = (point: Texel) => ({ point, region: SCENE_CLOSE_UP_REGION, bounds: region })
   function finish(commit: boolean) {
     const id = pointer.current
     pointer.current = null

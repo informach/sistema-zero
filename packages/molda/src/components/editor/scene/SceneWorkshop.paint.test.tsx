@@ -13,6 +13,7 @@ import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
+import { moldaToolFamilyIds } from '../../../core/toolFamilies'
 import { addScenePrimitive, convertSceneNodesToMesh, editSceneMesh } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
@@ -31,6 +32,7 @@ import type {
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
 import { MoldaAppProvider } from '../../appContext'
+import { MoldaToolAccessProvider } from '../../toolAccess'
 import { SceneWorkshop } from './SceneWorkshop'
 
 afterEach(() => {
@@ -316,6 +318,15 @@ describe('pintar de perto', () => {
     ])
     expect(at(bounds.x0, bounds.y0)).toBe(7)
     expect(editor.getState().asset).not.toBe(prepared)
+    // "Pintar de perto" de novo, já de perto: o toque na face ampliada só devolve o lápis.
+    const painted = editor.getState().asset
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUp }))
+    fireEvent.pointerDown(sheet, { pointerId: 2, button: 0, clientX: 15, clientY: 5 })
+    expect(editor.getState().asset).toBe(painted)
+    expect(screen.getByRole('img', { name: SCENE_PAINT_COPY.closeUpSheet })).toBe(sheet)
+    expect(
+      screen.getByRole('button', { name: COPY.scene.paintPencil }).getAttribute('aria-pressed'),
+    ).toBe('true')
     fireEvent.keyDown(view.getByRole('region', { name: COPY.scene.title }), { key: 'Escape' })
     expect(screen.queryByRole('region', { name: SCENE_PAINT_COPY.closeUp })).toBeNull()
     expect(stage.target?.nodeId).toBe(door)
@@ -443,6 +454,85 @@ describe('vestir com textura', () => {
     expect(editor.getState().asset.images).toEqual(prepared.images)
     expect(stage.target?.nodeId).toBe(door)
     editor.getState().dispose()
+  })
+})
+
+describe('atalhos do editor antigo na aba Pintar', () => {
+  const pressed = (name: string) =>
+    screen.getByRole('button', { name }).getAttribute('aria-pressed') === 'true'
+
+  test('P, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap, view } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const shell = view.getByRole('region', { name: COPY.scene.title })
+    const press = (key: string) => fireEvent.keyDown(shell, { key })
+    expect(screen.getByRole('button', { name: COPY.scene.paintPencil }).title).toContain('(P)')
+    expect(press('e')).toBe(false)
+    expect(pressed(COPY.scene.paintEraser)).toBe(true)
+    press('g')
+    expect(pressed(COPY.scene.paintFill)).toBe(true)
+    press('i')
+    expect(pressed(COPY.scene.paintPicker)).toBe(true)
+    press('p')
+    expect(pressed(COPY.scene.paintPencil)).toBe(true)
+    press('3')
+    expect(pressed(SCENE_PAINT_COPY.width[3])).toBe(true)
+    press('1')
+    expect(pressed(SCENE_PAINT_COPY.width[1])).toBe(true)
+    press('m')
+    expect(stage.mirror).toBe(true)
+    press('m')
+    expect(stage.mirror).toBe(false)
+    press('r')
+    expect(pressed(SCENE_PAINT_COPY.rotate)).toBe(true)
+    press('f')
+    expect(pressed(SCENE_PAINT_COPY.closeUp)).toBe(true)
+    // Tecla que não é da aba segue para o navegador, e nenhuma delas muda o documento.
+    expect(press('k')).toBe(true)
+    expect(editor.getState().canUndo).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().canUndo).toBe(false)
+    editor.getState().dispose()
+  })
+
+  test('no meio do traço a tecla não troca nada; trancada, também não, e o navegador não a recebe', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap, view } = mount(document, (node) => (
+      <MoldaToolAccessProvider
+        access={{
+          allow: moldaToolFamilyIds(['basic', 'intermediate', 'professional']).filter(
+            (id) => id !== 'paint.brush',
+          ),
+        }}
+      >
+        {node}
+      </MoldaToolAccessProvider>
+    ))
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const shell = view.getByRole('region', { name: COPY.scene.title })
+    expect(fireEvent.keyDown(shell, { key: 'm' })).toBe(false)
+    expect(stage.mirror).toBe(false)
+    cleanup()
+    editor.getState().dispose()
+    const open = mount(document)
+    await waitFor(() => expect(open.stage.callbacks).not.toBeNull())
+    open.tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    act(() => {
+      open.stage.callbacks!.paint!.begin({ point: [9, 9], region: 'face' })
+    })
+    const shellAgain = open.view.getByRole('region', { name: COPY.scene.title })
+    expect(fireEvent.keyDown(shellAgain, { key: 'm' })).toBe(false)
+    expect(open.stage.mirror).toBe(false)
+    act(() => {
+      open.stage.callbacks!.paint!.end(true)
+    })
+    open.editor.getState().dispose()
   })
 })
 

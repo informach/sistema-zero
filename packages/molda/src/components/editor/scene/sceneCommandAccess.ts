@@ -57,6 +57,17 @@ export const SCENE_COMMAND_ACCESS: Readonly<Record<SceneCommandId, SceneCommandF
   'mesh.inset': 'model.mesh',
   'mesh.plane-cut': 'model.mesh-pro',
   'mesh.uv': 'paint.uv',
+  'paint.pencil': 'paint.brush',
+  'paint.eraser': 'paint.brush',
+  'paint.fill': 'paint.brush',
+  'paint.picker': 'paint.brush',
+  'paint.rotate': 'paint.brush',
+  'paint.closeup': 'paint.brush',
+  'paint.mirror': 'paint.brush',
+  'paint.dress': 'paint.brush',
+  'paint.width-1': 'paint.brush',
+  'paint.width-2': 'paint.brush',
+  'paint.width-3': 'paint.brush',
 }
 
 /** Sem `can`, tudo liberado: é o mesmo padrão do host que não manda `toolAccess`. */

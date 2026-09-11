@@ -55,7 +55,7 @@ describe('registro de comandos da oficina', () => {
   })
 
   test('atalho único por contexto, contando o modificador', () => {
-    for (const context of ['global', 'model', 'mesh-face', 'animate'] as const) {
+    for (const context of ['global', 'model', 'mesh-face', 'animate', 'paint'] as const) {
       const vistos = new Map<string, string>()
       for (const command of SCENE_COMMANDS) {
         if (!command.shortcut || !command.contexts.includes(context)) continue
@@ -88,6 +88,35 @@ describe('registro de comandos da oficina', () => {
         altKey: false,
       }),
     ).toBeNull()
+  })
+
+  /** As teclas do Pintar do editor antigo, as mesmas que as crianças já sabem. */
+  test('na aba Pintar valem os atalhos do editor antigo, e só nela', () => {
+    const tecla = (key: string) => ({
+      key,
+      ctrlKey: false,
+      metaKey: false,
+      shiftKey: false,
+      altKey: false,
+    })
+    const esperado = {
+      p: 'paint.pencil',
+      e: 'paint.eraser',
+      g: 'paint.fill',
+      i: 'paint.picker',
+      '1': 'paint.width-1',
+      '2': 'paint.width-2',
+      '3': 'paint.width-3',
+      m: 'paint.mirror',
+      r: 'paint.rotate',
+      f: 'paint.closeup',
+    }
+    for (const [key, id] of Object.entries(esperado)) {
+      expect(sceneCommandForShortcut('paint', tecla(key)), key).toBe(id as never)
+      expect(sceneCommandForShortcut('model', tecla(key)), key).toBeNull()
+    }
+    // Com Ctrl, a tecla é do navegador (Ctrl+P imprime), não da oficina.
+    expect(sceneCommandForShortcut('paint', { ...tecla('p'), ctrlKey: true })).toBeNull()
   })
 
   /** A invariante do CLAUDE.md deixa de ser prosa: quem filtra é o próprio registro. */

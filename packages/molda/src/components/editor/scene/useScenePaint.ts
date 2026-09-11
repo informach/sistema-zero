@@ -37,6 +37,9 @@ import { useSceneRasterFile } from './useSceneRasterFile'
 
 export type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
 
+/** A região das amostras que vêm da face de perto (`ScenePaintCloseUp`), e não do palco. */
+export const SCENE_CLOSE_UP_REGION = 'perto'
+
 /**
  * ⚠️ A volta do cilindro e da bola é UMA face com emenda: de um lado a UV vale quase 1, do outro
  * quase 0. Ligar esses dois pontos riscaria a folha inteira; um salto de mais de meia face
@@ -257,6 +260,11 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         const clipped = scope ? intersectImageRegions(sample.bounds, scope) : sample.bounds
         if (!clipped) return false
         region = clipped
+      }
+      if (closeupTool && sample.region === SCENE_CLOSE_UP_REGION) {
+        // Já está de perto: o toque na própria face ampliada só devolve o lápis.
+        setTool('pencil')
+        return false
       }
       if (closeupTool) {
         // O toque escolhe a face; a pintura continua com o lápis, agora de perto.

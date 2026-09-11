@@ -18,6 +18,7 @@ import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import { isTypingTarget } from '../../ui/interaction'
@@ -37,6 +38,7 @@ import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
+import { runScenePaintShortcut } from './scenePaintShortcuts'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
 const loadPaint = () => import('./ScenePaintEditor').then((module) => module.ScenePaintEditor)
@@ -81,6 +83,7 @@ export function SceneWorkshop({
     onFailure: (message) => setWorkshopMessage(message ?? COPY.editor.studioSyncFailed),
   })
   const { mode, changeMode } = workshop
+  const { can } = useMoldaToolAccess()
   const [exportViewport, setExportViewport] = useState<SceneViewportPort | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
@@ -162,6 +165,8 @@ export function SceneWorkshop({
         } else if (workshop.paint.session && event.key === 'Escape') {
           event.preventDefault()
           workshop.endPaint()
+        } else if (mode === 'paint' && runScenePaintShortcut(workshop.paint, event, can)) {
+          event.preventDefault()
         } else if (workshop.components.selection && event.key === 'Escape') {
           event.preventDefault()
           escapeFaces()
