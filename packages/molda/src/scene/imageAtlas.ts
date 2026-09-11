@@ -21,34 +21,38 @@ export interface SceneAtlasLayout {
   slots: SceneAtlasSlot[]
 }
 
-/** Deterministic shelves, one pixel of replicated edge padding, no rotation or resampling. */
-export function packSceneImageAtlas(
-  images: readonly Pick<SceneImage, 'id' | 'width' | 'height'>[],
-  tiles: readonly SceneAtlasTile[],
-): SceneAtlasLayout {
-  v.requireScene(
-    tiles.length > 0 && tiles.length <= SCENE_LIMITS.materials,
-    'tiles',
-    'Escolha pinturas para juntar.',
-  )
-  const index = v.uniqueById(images, 'images')
-  const sizes = tiles
-    .map((tile, order) => {
-      const image = index.get(tile.imageId)
-      v.requireScene(image, 'imageId', 'Imagem ausente.')
-      const width = v.number(image.width, 'width', 1, SCENE_LIMITS.imageSide, true)
-      const height = v.number(image.height, 'height', 1, SCENE_LIMITS.imageSide, true)
-      return { tile, order, width, height }
-    })
+export interface SceneShelfSlot {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+export interface SceneShelfLayout {
+  width: number
+  height: number
+  slots: SceneShelfSlot[]
+}
+
+/**
+ * Deterministic power-of-two shelves shared by the atlas and the paint surface: one pixel of
+ * padding around each rectangle, no rotation or resampling. Slots keep the input order; the
+ * smallest area wins and ties keep the narrower sheet. `null` when they cannot fit.
+ */
+export function packSceneShelves(
+  sizes: readonly Pick<SceneShelfSlot, 'width' | 'height'>[],
+): SceneShelfLayout | null {
+  if (!sizes.length) return null
+  const ordered = sizes
+    .map(({ width, height }, order) => ({ order, width, height }))
     .sort((a, b) => b.height - a.height || b.width - a.width || a.order - b.order)
-  let best: SceneAtlasLayout | null = null
+  let best: SceneShelfLayout | null = null
   for (let width = 4; width <= SCENE_LIMITS.imageSide; width *= 2) {
     let x = 0,
       y = 0,
       rowHeight = 0
-    const slots: SceneAtlasSlot[] = []
+    const slots: SceneShelfSlot[] = []
     let fits = true
-    for (const entry of sizes) {
+    for (const entry of ordered) {
       const w = entry.width + 2,
         h = entry.height + 2
       if (x + w > width) {
@@ -60,13 +64,7 @@ export function packSceneImageAtlas(
         fits = false
         break
       }
-      slots[entry.order] = {
-        ...entry.tile,
-        x: x + 1,
-        y: y + 1,
-        width: entry.width,
-        height: entry.height,
-      }
+      slots[entry.order] = { x: x + 1, y: y + 1, width: entry.width, height: entry.height }
       x += w
       rowHeight = Math.max(rowHeight, h)
     }
@@ -74,12 +72,38 @@ export function packSceneImageAtlas(
     const height = 2 ** Math.ceil(Math.log2(y + rowHeight))
     if (!best || width * height < best.width * best.height) best = { width, height, slots }
   }
+  return best
+}
+
+/** Deterministic shelves, one pixel of replicated edge padding, no rotation or resampling. */
+export function packSceneImageAtlas(
+  images: readonly Pick<SceneImage, 'id' | 'width' | 'height'>[],
+  tiles: readonly SceneAtlasTile[],
+): SceneAtlasLayout {
   v.requireScene(
-    best,
+    tiles.length > 0 && tiles.length <= SCENE_LIMITS.materials,
+    'tiles',
+    'Escolha pinturas para juntar.',
+  )
+  const index = v.uniqueById(images, 'images')
+  const sizes = tiles.map((tile) => {
+    const image = index.get(tile.imageId)
+    v.requireScene(image, 'imageId', 'Imagem ausente.')
+    const width = v.number(image.width, 'width', 1, SCENE_LIMITS.imageSide, true)
+    const height = v.number(image.height, 'height', 1, SCENE_LIMITS.imageSide, true)
+    return { width, height }
+  })
+  const layout = packSceneShelves(sizes)
+  v.requireScene(
+    layout,
     'images',
     'As pinturas não couberam juntas sem reduzir pixels. Use imagens menores.',
   )
-  return best
+  return {
+    width: layout.width,
+    height: layout.height,
+    slots: layout.slots.map((slot, i) => ({ ...tiles[i]!, ...slot })),
+  }
 }
 
 export function sceneAtlasUv(layout: SceneAtlasLayout, slot: SceneAtlasSlot, uv: Vec2): Vec2 {

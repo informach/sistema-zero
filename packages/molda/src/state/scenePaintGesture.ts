@@ -10,7 +10,7 @@ import {
   type ScenePaintTarget,
   validateScenePaintColor,
 } from '../scene/imagePaint'
-import { readImageRegion } from '../scene/imageRegion'
+import { intersectImageRegions, readImageRegion } from '../scene/imageRegion'
 import { requireScene, SceneValidationError } from '../scene/validation'
 import type { EditorStore } from './editorStore'
 
@@ -77,7 +77,11 @@ export function createScenePaintGesture(
         return false
       }
     },
-    segment(from: Texel, to: Texel) {
+    /**
+     * `clip` é o limite desta AMOSTRA (a face tocada, o quadro da pintura que se mexe), somado à
+     * área escolhida do começo do traço. O traço atravessa faces, e cada pedaço fica na sua.
+     */
+    segment(from: Texel, to: Texel, clip?: ScenePixelRegion) {
       if (!active) return false
       if (active.revision !== editor.getState().contentRevision) {
         cancel()
@@ -89,13 +93,20 @@ export function createScenePaintGesture(
         )
         return false
       }
+      const region = clip
+        ? active.region
+          ? intersectImageRegions(active.region, clip)
+          : clip
+        : active.region
+      // Pedaço fora da área escolhida: nada a pintar, e o traço segue.
+      if (clip && !region) return true
       try {
         const next = paintSceneImage(editor.getState().asset, active.target, {
           from,
           to,
           color: active.color,
           brush: active.brush,
-          ...(active.region ? { region: active.region } : {}),
+          ...(region ? { region } : {}),
         })
         if (!gestures.preview(active.token, next)) {
           active = null

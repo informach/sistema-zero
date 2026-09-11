@@ -155,7 +155,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     publishing.current = true
     try {
       const from = current.last?.region === sample.region ? current.last.point : sample.point
-      if (!gesture.segment(from, sample.point)) {
+      // O limite vale por amostra: o traço atravessa faces e cada pedaço fica na face dele.
+      if (!gesture.segment(from, sample.point, sample.bounds)) {
         cancel()
         return false
       }
@@ -249,7 +250,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         })
         return false
       }
-      if (!gesture.begin(session.target, chosen, brush, data.image, region)) return false
+      if (!gesture.begin(session.target, chosen, brush, data.image, scope)) return false
       stroke.current = { last: null }
       setError(null)
       setDrawing(true)

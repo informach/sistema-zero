@@ -2,10 +2,10 @@ import type { Vec3 } from '../core/model'
 import { dot, sub, triangleUnitNormal } from '../model/vec'
 import type { SceneMeshGeometry, Vec2 } from './document'
 import { triangulateFace } from './triangulate'
-import { requireScene } from './validation'
+import { requireScene, SceneValidationError } from './validation'
 
 /** Relative, derived plane. It never snaps authorial points to a plane. */
-export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
+function measureMeshFace(mesh: SceneMeshGeometry, id: string) {
   const face = mesh.faces[id]
   requireScene(Object.hasOwn(mesh.faces, id) && face, 'faces', 'Essa face não existe mais.')
   const points = face.corners.map(({ vertexId }) => {
@@ -14,11 +14,11 @@ export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
     return point
   })
   const triangles = triangulateFace(points)
-  requireScene(
-    triangles.status === 'ok',
-    'faces',
-    'A face se cruza ou não tem área. Ajuste seus pontos primeiro.',
-  )
+  if (triangles.status !== 'ok')
+    return {
+      status: 'degenerate' as const,
+      message: 'A face se cruza ou não tem área. Ajuste seus pontos primeiro.',
+    }
   const first = triangles.triangles[0]!
   const origin = points[first[0]]!
   const normal = triangleUnitNormal(origin, points[first[1]]!, points[first[2]]!)
@@ -30,22 +30,19 @@ export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
       (p[2] - origin[2]) / extent,
     ],
   )
-  requireScene(
-    local.every((p) => Math.abs(dot(p, normal)) <= 1e-10),
-    'faces',
-    'Escolha faces planas para esse ajuste. Você pode dividir a face em triângulos.',
-  )
+  if (!local.every((p) => Math.abs(dot(p, normal)) <= 1e-10))
+    return {
+      status: 'crooked' as const,
+      message: 'Escolha faces planas para esse ajuste. Você pode dividir a face em triângulos.',
+    }
   const axis = normal.map(Math.abs).indexOf(Math.max(...normal.map(Math.abs)))
   const flatten = (p: Vec3): Vec2 =>
     axis === 0 ? [p[1], p[2]] : axis === 1 ? [p[0], p[2]] : [p[0], p[1]]
   const flat = local.map(flatten)
   const minimum = [0, 1].map((axis) => Math.min(...flat.map((p) => p[axis]!)))
   const span = [0, 1].map((axis) => Math.max(...flat.map((p) => p[axis]!)) - minimum[axis]!)
-  requireScene(
-    span.every((value) => value > 0),
-    'faces',
-    'A face não tem área suficiente.',
-  )
+  if (!span.every((value) => value > 0))
+    return { status: 'degenerate' as const, message: 'A face não tem área suficiente.' }
   const project = (point: Vec3): Vec2 => {
     const p = flatten([
       (point[0] - origin[0]) / extent,
@@ -55,7 +52,27 @@ export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
     return [(p[0] - minimum[0]!) / span[0]!, (p[1] - minimum[1]!) / span[1]!]
   }
   const projected = points.map(project)
-  return { face, points, normal, origin, extent, projected, first, project }
+  return {
+    status: 'ok' as const,
+    frame: { face, points, normal, origin, extent, projected, first, project },
+  }
+}
+
+export function meshFaceFrame(mesh: SceneMeshGeometry, id: string) {
+  const measured = measureMeshFace(mesh, id)
+  if (measured.status !== 'ok') throw new SceneValidationError('faces', measured.message)
+  return measured.frame
+}
+
+/**
+ * The same checks as `meshFaceFrame`, without throwing: `crooked` is a face that is not flat
+ * (dividing it into triangles fixes it); `degenerate` crosses itself or has no area.
+ */
+export function inspectMeshFaceFrame(
+  mesh: SceneMeshGeometry,
+  id: string,
+): 'ok' | 'crooked' | 'degenerate' {
+  return measureMeshFace(mesh, id).status
 }
 
 export const faceTurn = (a: Vec2, b: Vec2, c: Vec2) =>
