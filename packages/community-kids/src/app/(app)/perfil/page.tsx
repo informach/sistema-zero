@@ -130,7 +130,13 @@ export default async function ProfilePage() {
           <KidsSectionHeader
             id="meu-cantinho"
             title="Meu cantinho"
-            subtitle="Deixe o seu espaço com a sua cara e cuide da sua sequência de dias."
+            // A sequência só é citada quando ela está na tela: sem gamificação o cartão de
+            // proteger a sequência não aparece, e a frase prometia o que não tem.
+            subtitle={
+              gamification
+                ? 'Deixe o seu espaço com a sua cara e cuide da sua sequência de dias.'
+                : 'Deixe o seu espaço com a sua cara.'
+            }
           />
           <ul className="grid gap-4 md:grid-cols-2 md:gap-6">
             <li>

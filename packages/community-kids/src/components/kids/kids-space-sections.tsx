@@ -32,6 +32,13 @@ import { backToSection } from './nav'
  * orquestrador (`kids-space-view-client`); aqui é só apresentação.
  */
 
+/**
+ * A frase de reserva quando o espaço não tem descrição no hub. É a MESMA dos dois espaços, e
+ * é a que existia antes do redesenho: a frase do Mural tinha virado copy nova, e texto é
+ * conteúdo (full review de 11/09/2026). Quem escreve a descrição de verdade é o admin.
+ */
+const SEM_DESCRICAO = 'Converse com a turma e mostre o que você criou!'
+
 /** Cabeçalho do Mural: seta para a Comunidade, título do espaço e os filtros. */
 export function MuralHeader({
   space,
@@ -49,7 +56,7 @@ export function MuralHeader({
         eyebrow="Comunidade · vitrine da turma"
         eyebrowIcon={Images}
         title={space.name}
-        subtitle={space.description || 'Jogue as criações da turma e ajude quem criou.'}
+        subtitle={space.description || SEM_DESCRICAO}
       />
       <div role="group" aria-label="Ordem dos jogos" className="mt-6 flex flex-wrap gap-2.5">
         {MURAL_SORTS.map((option) => (
@@ -96,7 +103,7 @@ export function ClubeHeader({
         icon={Bot}
         titleAs="h1"
         title={space.name}
-        description={space.description || 'Converse com a turma e mostre o que você criou!'}
+        description={space.description || SEM_DESCRICAO}
         actions={
           <>
             <ClubeActivityBell

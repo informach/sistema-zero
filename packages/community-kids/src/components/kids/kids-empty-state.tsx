@@ -25,6 +25,7 @@ const CIRCULO = {
 export function KidsEmptyState({
   icon: Icon,
   title,
+  titleAs: Title = 'h3',
   description,
   action,
   tone = 'amarelo',
@@ -32,6 +33,12 @@ export function KidsEmptyState({
 }: {
   icon: LucideIcon
   title: ReactNode
+  /**
+   * `h2` quando o vazio É a seção (ele vem logo abaixo do h1 da página, sem um título de
+   * seção no meio): com o `h3` de sempre, a página pulava um nível para quem navega por
+   * títulos (full review de 11/09/2026).
+   */
+  titleAs?: 'h2' | 'h3'
   description?: ReactNode
   action?: ReactNode
   tone?: keyof typeof CIRCULO
@@ -51,7 +58,7 @@ export function KidsEmptyState({
       >
         <Icon className={cn('size-10', circulo.icone)} />
       </span>
-      <h3 className="sz-display mt-4 text-2xl md:text-[2rem]">{title}</h3>
+      <Title className="sz-display mt-4 text-2xl md:text-[2rem]">{title}</Title>
       {description ? (
         <p className="mt-4 max-w-xl font-medium text-[1.0625rem] text-muted-foreground leading-[1.6]">
           {description}

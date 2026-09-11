@@ -12,7 +12,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import Link from 'next/link'
-import { type ComponentType, type ReactNode, useState } from 'react'
+import { type ComponentType, type ReactNode, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AvatarWithAura } from '@/components/kids/avatar-with-aura'
 import { ChestIcon } from '@/components/kids/chest-icon'
@@ -28,6 +28,18 @@ import type { LeagueMeView, RankingEntryView, RankingLeaderboardView } from '@/l
 import { type XpSourceId, xpSources } from '@/lib/xp-sources'
 
 const PAGE_SIZE = 20
+
+/** A aba da liga no hash: é o que sobrevive ao "Tentar de novo", que recarrega a página. */
+const ABA_LIGA = 'liga'
+
+function recarregarNaAba(tab: 'general' | 'league') {
+  window.history.replaceState(
+    null,
+    '',
+    tab === 'league' ? `#${ABA_LIGA}` : window.location.pathname,
+  )
+  window.location.reload()
+}
 
 /**
  * O pódio das telas-modelo (11/09/2026, medido a 1440px): três colunas de 313px dentro
@@ -106,6 +118,12 @@ export function RankingHub({
   canPublish?: boolean
 }) {
   const [tab, setTab] = useState<'general' | 'league'>('general')
+  // O "Tentar de novo" RECARREGA a página (o placar vem do servidor), e a aba viajava junto:
+  // quem estava na liga voltava no geral. Ela vai no hash, lido DEPOIS da montagem — ler
+  // `location` no estado inicial diverge do HTML do servidor (full review de 11/09/2026).
+  useEffect(() => {
+    if (window.location.hash === `#${ABA_LIGA}`) setTab('league')
+  }, [])
   const [items, setItems] = useState(initialRanking?.items ?? [])
   const [nextCursor, setNextCursor] = useState(initialRanking?.nextCursor ?? null)
   const [total, setTotal] = useState(initialRanking?.total ?? 0)
@@ -158,7 +176,10 @@ export function RankingHub({
         ) : league ? (
           <LeagueBoard league={league} />
         ) : (
-          <Unavailable message="Sua liga não pôde ser carregada agora." />
+          <Unavailable
+            message="Sua liga não pôde ser carregada agora."
+            onRetry={() => recarregarNaAba('league')}
+          />
         )}
       </KidsBand>
 
@@ -186,11 +207,19 @@ function GeneralRanking({
   loadingMore: boolean
   onLoadMore: () => void
 }) {
-  if (!available) return <Unavailable message="O ranking geral não pôde ser carregado agora." />
+  if (!available) {
+    return (
+      <Unavailable
+        message="O ranking geral não pôde ser carregado agora."
+        onRetry={() => recarregarNaAba('general')}
+      />
+    )
+  }
   if (items.length === 0) {
     return (
       <KidsEmptyState
         icon={Sparkles}
+        titleAs="h2"
         title="O placar está só começando!"
         description="Complete uma atividade que dá XP para aparecer aqui junto com os outros criadores."
       />
@@ -385,19 +414,17 @@ function ParticipantName({ entry, className }: { entry: RankingEntryView; classN
  * creme do tom `pausa` (o amarelo é o de festejar), e o botão recarrega a página: o
  * placar vem do servidor, e um `router.refresh()` não refaria o estado já montado aqui.
  */
-function Unavailable({ message }: { message: string }) {
+function Unavailable({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <KidsEmptyState
       tone="pausa"
       icon={Trophy}
+      // O recado É a seção da faixa (vem logo abaixo do h1 da página).
+      titleAs="h2"
       title="Placar em pausa"
       description={`${message} Tente novamente em instantes.`}
       action={
-        <button
-          type="button"
-          onClick={() => window.location.reload()}
-          className="sz-btn-gradient gap-2.5 px-6"
-        >
+        <button type="button" onClick={onRetry} className="sz-btn-gradient gap-2.5 px-6">
           <RefreshCw className="size-[1.125rem]" aria-hidden />
           Tentar de novo
         </button>
@@ -419,7 +446,8 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
           <Link
             href="/cursos"
             prefetch={false}
-            className="sz-btn-gradient sz-btn-inverso h-10 gap-1.5 px-5 text-sm"
+            // 44px, o alvo de toque da casa (estava em 40).
+            className="sz-btn-gradient sz-btn-inverso h-11 gap-1.5 px-5 text-sm"
           >
             Ver a minha carreira
             <ArrowRight className="size-4" aria-hidden />

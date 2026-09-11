@@ -286,10 +286,14 @@ export function ShowcaseCard({
               <MessageCircle className="size-4" aria-hidden />
               <span className="sr-only">Comentários:</span> {thread.commentCount}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Gamepad2 className="size-4" aria-hidden /> {plays}{' '}
-              {plays === 1 ? 'jogada' : 'jogadas'}
-            </span>
+            {/* Jogo recém-publicado não anuncia "0 jogadas": era assim antes do redesenho, e
+                o zero na cara de quem acabou de publicar não ajuda em nada. */}
+            {plays > 0 ? (
+              <span className="inline-flex items-center gap-1.5">
+                <Gamepad2 className="size-4" aria-hidden /> {plays}{' '}
+                {plays === 1 ? 'jogada' : 'jogadas'}
+              </span>
+            ) : null}
           </p>
         </div>
       </button>

@@ -17,7 +17,7 @@ import type {
   HubSpaceView,
   HubThreadView,
 } from '@/lib/types'
-import { channelPresentation } from './channel-presentation'
+import { channelPresentation, emptyStateParts } from './channel-presentation'
 import { KidsBand } from './kids-band'
 import { GamePicker, ShowcaseCard, Tag, ThreadDetail } from './kids-space-detail'
 import {
@@ -294,6 +294,8 @@ function ForumChannel({
   busy: boolean
 }) {
   const presentation = channelPresentation(channel?.slug ?? '')
+  // O título e a frase do vazio saem do MESMO convite (ver `emptyStateParts`).
+  const vazio = emptyStateParts(presentation.emptyState)
   const staffOnly = channel?.postingPolicy === 'staff_only'
   const canCompose = Boolean(channel) && composer.canComposeInChannel
   return (
@@ -303,13 +305,11 @@ function ForumChannel({
           <h2 id="canal-heading" className="sz-display text-2xl">
             {channel ? `#${channel.slug}` : 'Escolha um canal'}
           </h2>
-          {channel ? (
-            <p className="mt-1 text-muted-foreground text-sm">
-              {channel.topic ||
-                (staffOnly
-                  ? 'A equipe escreve por aqui. Você pode ler e reagir.'
-                  : 'Toda a turma pode conversar por aqui.')}
-            </p>
+          {/* A frase do canal é a que o admin escreveu (`topic`). Sem ela não há frase: as
+              duas de reserva que o redesenho pôs aqui eram copy nova no lugar de conteúdo
+              (full review de 11/09/2026). Quem pode escrever já está dito no painel de canais. */}
+          {channel?.topic ? (
+            <p className="mt-1 text-muted-foreground text-sm">{channel.topic}</p>
           ) : null}
         </div>
         {canCompose ? (
@@ -336,8 +336,10 @@ function ForumChannel({
             <span className="grid size-[4.75rem] place-items-center rounded-full bg-(--band-ceu)">
               <Bot className="size-9" strokeWidth={1.5} aria-hidden />
             </span>
-            <p className="sz-display mt-4 text-xl">{presentation.emptyTitle}</p>
-            <p className="mt-2 text-[0.9375rem] text-muted-foreground">{presentation.emptyText}</p>
+            <p className="sz-display mt-4 text-xl">{vazio.title}</p>
+            {vazio.text ? (
+              <p className="mt-2 text-[0.9375rem] text-muted-foreground">{vazio.text}</p>
+            ) : null}
           </div>
         ) : (
           <ul className="space-y-2">
@@ -487,7 +489,7 @@ function WallFeed({
       // papel do círculo colorido do `KidsEmptyState`, porque a fala é dele.
       <div className="kids-carta flex flex-col items-center gap-2 px-6 py-12 text-center">
         <KidsMascot expression="happy" className="kid-float size-20" />
-        <p className="sz-display mt-2 text-xl">{channelPresentation('parede').emptyText}</p>
+        <p className="sz-display mt-2 text-xl">{channelPresentation('parede').emptyState}</p>
       </div>
     )
   }

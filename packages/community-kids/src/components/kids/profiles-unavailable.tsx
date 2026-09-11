@@ -109,7 +109,9 @@ export function ProfilesNotIncluded() {
               href={COMUNIDADE_OFERTA_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="sz-btn-gradient h-12 w-full px-6 text-base"
+              // Altura MÍNIMA, não fixa: o rótulo é longo e, no celular, quebra em duas
+              // linhas dentro da pílula (full review de 11/09/2026).
+              className="sz-btn-gradient h-auto min-h-12 w-full px-6 py-3 text-base"
             >
               Conhecer a Comunidade dos Criadores
             </a>

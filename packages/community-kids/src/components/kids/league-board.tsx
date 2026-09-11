@@ -69,7 +69,10 @@ export function LeagueBoard({ league }: { league: LeagueMeView }) {
               )}
               <AvatarWithAura
                 photoUrl={e.photoUrl}
-                name={name}
+                // A inicial é do NOME de verdade: com "Colega" de reserva, a liga inteira
+                // ficava com bolinhas "C" iguais, que não é a inicial de ninguém (full review
+                // de 11/09/2026). Sem nome, vale o personagem padrão.
+                name={e.firstName ?? null}
                 size="sm"
                 className="size-9"
                 label={e.isMe ? 'Seu avatar' : `Avatar de ${name}`}

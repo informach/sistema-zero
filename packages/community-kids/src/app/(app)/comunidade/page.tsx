@@ -44,7 +44,9 @@ const PORTAS = [
   },
   {
     href: '/ranking',
-    title: 'Conquistas da turma',
+    // A porta diz o NOME do lugar que ela abre (a página se chama "Ranking dos Criadores"):
+    // com um nome só dela, a criança clicava em "Conquistas" e chegava noutro lugar.
+    title: 'Ranking dos Criadores',
     icon: Trophy,
     text: 'Conheça os criadores e acompanhe as ligas.',
     tom: 'molda',

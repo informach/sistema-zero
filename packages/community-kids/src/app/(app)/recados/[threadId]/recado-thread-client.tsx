@@ -5,8 +5,8 @@ import { Mail, Send } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { KidsBand } from '@/components/kids/kids-band'
-import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsPageHeader } from '@/components/kids/kids-page-header'
+import { KidsRecado } from '@/components/kids/kids-recado'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { TeacherThreadContext, TeacherThreadView } from '@/lib/types'
 
@@ -103,28 +103,24 @@ export function RecadoThreadClient({ threadId }: { threadId: string }) {
   const voltar = { href: '/recados', label: 'Voltar aos recados' }
 
   if (state === 'notfound') {
+    // O molde das telas de recado (`KidsRecado`): o título É o recado, e a volta é UMA só.
+    // Antes o cabeçalho trazia a seta e o vazio repetia o MESMO link logo abaixo, com uma
+    // frase de consolo que não existia antes do redesenho (full review de 11/09/2026).
     return (
-      <>
-        <KidsBand tone="creme">
-          <KidsPageHeader back={voltar} eyebrow="Recado" eyebrowIcon={Mail} title="Recados" />
-        </KidsBand>
-        <KidsBand tone="ceu">
-          <KidsEmptyState
-            icon={Mail}
-            title="Recado não encontrado"
-            description="Ele pode ter sido apagado. Os outros recados continuam na sua caixa."
-            action={
-              <Link
-                href="/recados"
-                prefetch={false}
-                className="sz-btn-gradient h-[3.125rem] px-6 text-base"
-              >
-                Voltar aos recados
-              </Link>
-            }
-          />
-        </KidsBand>
-      </>
+      <KidsRecado
+        chip="Recado"
+        chipIcon={Mail}
+        title="Recado não encontrado"
+        actions={
+          <Link
+            href="/recados"
+            prefetch={false}
+            className="sz-btn-gradient h-[3.125rem] px-6 text-base"
+          >
+            Voltar aos recados
+          </Link>
+        }
+      />
     )
   }
 

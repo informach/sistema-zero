@@ -213,7 +213,16 @@ export function CatalogCourseCard({
     </div>
   )
 
-  return <CardShell course={course} available={available} salesUrl={salesUrl} body={body} />
+  return (
+    <CardShell
+      course={course}
+      available={available}
+      salesUrl={salesUrl}
+      body={body}
+      // Falta publicar no Mural: o cartão leva direto ao trecho da publicação, como o da home.
+      hash={mine && courseJourneyState(mine) === 'publish' ? '#publicar' : ''}
+    />
+  )
 }
 
 /** O "N de M aulas", a barra verde e o botão do próximo passo, no cartão deitado. */
@@ -233,21 +242,30 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
   const primary = state === 'publish' || (started && state !== 'review')
   return (
     <div>
-      <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
-        <span>
-          {progress.completedLessons} de {progress.totalLessons} aulas
-        </span>
-        <span
-          className={cn('font-extrabold', progress.percent > 0 && 'text-(--success-foreground)')}
-        >
-          {progress.percent}%
-        </span>
-      </div>
-      {/* Desenho: o número acima já diz o progresso, e dentro do link um `progressbar` só
-          alongaria o nome dele. */}
-      <div className="sz-progress mt-2" aria-hidden="true">
-        <span style={{ width: `${progress.percent}%` }} />
-      </div>
+      {/* Curso ainda sem aula publicada (a autora está montando): "0 de 0 aulas" com uma barra
+          vazia não diz nada, então fica só o botão (full review de 11/09/2026). */}
+      {progress.totalLessons > 0 ? (
+        <>
+          <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
+            <span>
+              {progress.completedLessons} de {progress.totalLessons} aulas
+            </span>
+            <span
+              className={cn(
+                'font-extrabold',
+                progress.percent > 0 && 'text-(--success-foreground)',
+              )}
+            >
+              {progress.percent}%
+            </span>
+          </div>
+          {/* Desenho: o número acima já diz o progresso, e dentro do link um `progressbar` só
+              alongaria o nome dele. */}
+          <div className="sz-progress mt-2" aria-hidden="true">
+            <span style={{ width: `${progress.percent}%` }} />
+          </div>
+        </>
+      ) : null}
       <span className={cn('sz-btn-gradient mt-3.5 w-full gap-2', !primary && 'sz-btn-suave')}>
         {primary ? (
           <Play className="size-4" aria-hidden />
@@ -266,17 +284,20 @@ function CardShell({
   available,
   salesUrl,
   body,
+  hash = '',
 }: {
   course: CatalogCourseView
   available: boolean
   salesUrl: string | null
   body: ReactNode
+  /** Âncora do destino (`#publicar` quando o que falta é publicar no Mural). */
+  hash?: string
 }) {
   const careerLocked = course.hasAccess && course.careerLock?.locked === true
   if (available) {
     return (
       <Link
-        href={`/cursos/${encodeURIComponent(course.courseSlug)}`}
+        href={`/cursos/${encodeURIComponent(course.courseSlug)}${hash}`}
         className="group kid-pop block h-full"
       >
         {body}
