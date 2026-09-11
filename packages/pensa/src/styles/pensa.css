@@ -75,7 +75,12 @@
 .pensa-planner *::after {
   box-sizing: border-box;
 }
-.pensa-planner button,
+/* ⚠️ As receitas compartilhadas (`.sz-tool-*`, em `@layer components`) ficam FORA das regras
+   de elemento deste arquivo, que não têm camada e por isso venceriam qualquer uma delas: um
+   `font: inherit` apagaria o peso e o tamanho da pílula, e o `min-height: 44px` abaixo deixaria o
+   quadrado do menu com 40x44. O `:where()` não soma especificidade (o resto do arquivo segue
+   medindo força com o mesmo `button` de antes). */
+.pensa-planner button:where(:not([class*="sz-tool-"])),
 .pensa-planner input,
 .pensa-planner textarea,
 .pensa-planner select {
@@ -100,14 +105,17 @@
    ao lado de um `<h1 className="sz-ui-display">` do Estúdio em Baloo 2 700.
    Os spans decorativos ficam de fora: vários já declaram peso por conta própria e
    os demais não devem engordar.
-   ⚠️ "É heading" não é o mesmo que "é título": o nome do plano no card é um
-   `<strong>`, ficou de fora deste seletor e por isso saía na fonte do corpo — a
-   regra dele está em `.pensa-project-card strong`. `headingFont.test.ts` trava
-   os dois casos. */
-.pensa-planner h1,
-.pensa-planner h2,
-.pensa-planner h3,
-.pensa-planner h4 {
+   ⚠️ "É heading" não é o mesmo que "é título": o nome do plano no card já foi um
+   `<strong>`, ficou de fora deste seletor e saía na fonte do corpo. Hoje ele é o h3
+   `.pensa-project-card__name`, que declara a família na regra dele também.
+   `headingFont.test.ts` trava os dois casos.
+   11/09/2026: os títulos das telas-modelo (`.sz-tool-title`, `.sz-tool-section-title`,
+   `.sz-tool-card-title`) são da receita COMPARTILHADA, em Baloo 800 sem tracking, iguais aos das
+   galerias do Estúdio e do Pinta, e por isso ficam fora desta regra. */
+.pensa-planner h1:where(:not([class*="sz-tool-"])),
+.pensa-planner h2:where(:not([class*="sz-tool-"])),
+.pensa-planner h3:where(:not([class*="sz-tool-"])),
+.pensa-planner h4:where(:not([class*="sz-tool-"])) {
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
@@ -129,7 +137,7 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
-.pensa-planner button {
+.pensa-planner button:where(:not([class*="sz-tool-"])) {
   min-height: 44px;
   cursor: pointer;
 }
@@ -139,11 +147,10 @@
 }
 /* O chrome compartilhado (`.sz-tool-*`, em camada `components`) é dono do PRÓPRIO anel de
    foco: esta regra sem camada venceria a dele. */
-.pensa-planner :focus-visible:not(.sz-tool-btn-menu, .sz-tool-btn, .sz-tool-btn-3d) {
+.pensa-planner :focus-visible:where(:not([class*="sz-tool-"])) {
   outline: 3px solid var(--pz-accent);
   outline-offset: 3px;
 }
-.pensa-home,
 .pensa-workspace,
 .pensa-project-header,
 .pensa-map {
@@ -151,65 +158,50 @@
      lateral. ⚠️ 48px = **24px de cada lado**, que é o `sm:p-6` da galeria do
      Pinta e o `px-6` da `ProjectList` do Estúdio. Com os 32px de antes o
      conteúdo do Pensa encostava na borda visivelmente mais que o dos irmãos.
-     (⚠️ regra compartilhada home+detalhe — mexer aqui desloca os @container
-     820/560; re-verificar os dois pontos de quebra.) */
+     (⚠️ regra compartilhada do detalhe — mexer aqui desloca os @container
+     820/560; re-verificar os dois pontos de quebra.) A HOME saiu daqui em 11/09/2026: ela é
+     a pilha de faixas de borda a borda, e o respiro vem do `.sz-tool-band__inner`. */
   width: calc(100% - 48px);
   margin-inline: auto;
 }
-.pensa-home {
-  /* 16px no TOPO = o `pt-4` da `ProjectList` e o `sm:pt-4` da galeria do Pinta (07/09/2026,
-     cabeçalho compacto). Com 8px o título nascia colado na borda de cima. */
-  padding: 16px 0 32px;
-}
-/* Cabeçalho de SEÇÃO no padrão do Pinta e do Estúdio — e agora seguindo de
-   verdade. Os pares, para conferir sem caçar:
-     `GalleryScreen.tsx` → <h1 className="pin-display text-3xl md:text-4xl">
-     `ProjectList.tsx`   → <h1 className="sz-ui-display text-3xl md:text-4xl">
-   ou seja: display + 1.875rem, subindo para 2.25rem a partir de 768px. Este
-   comentário já prometia "o padrão do Pinta" sem citar a fonte, e foi assim que
-   a divergência (peso 400, tamanho travado) passou despercebida. */
-/* O layout da linha (flex, wrap, `flex-end`, `space-between`) vem da `.sz-tool-header`
-   compartilhada (07/09/2026); aqui fica só o respiro até a linha seguinte (o campo de criar
-   sob demanda, ou a grade). */
-.pensa-home-header {
-  /* 28px até a linha seguinte (o campo de criar ou a grade): o respiro da galeria do Molda, que
-     ela aprovou (07/09, "não tão embolado"), o mesmo do Estúdio e do Pinta. */
-  margin-bottom: 28px;
-}
-.pensa-home-header h1 {
-  margin: 0;
-  /* Par do `text-3xl` do Tailwind (o tracking mora no `.pensa-display`). */
-  font-size: 1.875rem;
-  line-height: 1.2;
-}
-/* Par do `md:text-4xl`. ⚠️ `@media` de VIEWPORT de propósito: o `md:` do Tailwind
-   é viewport, então este é o espelho fiel — e não encosta nos `@container`
-   820/560 do arquivo, cujo deslocamento exige re-verificar 1366 e 1920. */
-@media (min-width: 48rem) {
-  .pensa-home-header h1 {
-    font-size: 2.25rem;
-    line-height: 1.11;
+/* ── HOME (11/09/2026): as três faixas das telas-modelo ──────────────────────────────────
+   A home é a pilha `.sz-tool-bands` de `@sistemazero/ui/tool-chrome.css`, a MESMA das galerias do
+   Estúdio e do Pinta: creme com o cabeçalho, céu com os planos, lilás com as oficinas. O layout
+   do cabeçalho (`.sz-tool-header`), o título (`.sz-tool-title`), as pílulas e os cartões vêm de
+   lá; aqui fica só o que é do Pensa. */
+/* 48px em cima e 36px embaixo a partir de 1024px de janela: o respiro medido na imagem, o
+   `lg:pt-12 lg:pb-9` do Estúdio (aqui não há Tailwind). */
+@media (min-width: 64rem) {
+  .pensa-home-top {
+    padding-top: 3rem;
+    padding-bottom: 2.25rem;
   }
 }
-.pensa-home-header p {
-  max-width: 650px;
-  /* 10px: com os 4px do `mt-1` do Estúdio o subtítulo colava na base do título,
-     que aqui é maior (36px em Baloo) e pede mais ar embaixo. */
-  margin: 10px 0 0;
-  color: var(--pz-muted);
-  font-size: 1rem;
+/* O selo "Pensa · sua oficina de planos" em cima do título: a pílula AMARELA dos cabeçalhos das
+   páginas do kids (a mesma cor do cartão "novo"), com a tinta escura por cima nos dois temas. */
+.pensa-home-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 10px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: var(--sz-tool-new, #ffce3a);
+  color: var(--sz-tool-on-new, oklch(0.25 0.05 60));
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
-/* SEM painel: na home o "criar" é uma faixa solta sobre o fundo da página, e não
-   um cartão. Embrulhá-lo dava a ele o mesmo peso visual dos planos já criados,
-   competindo com a lista — que é o que a criança vem ver. Desde 07/09/2026 a faixa
-   só existe SOB DEMANDA: o "+ Novo plano" do cabeçalho a abre (a home nasce com ela
-   aberta só no primeiro uso). */
+/* SEM painel: na home o "criar" é uma linha solta, e não um cartão. Embrulhá-lo dava a ele o
+   mesmo peso visual dos planos já criados, competindo com a lista, que é o que a criança vem
+   ver. Só existe SOB DEMANDA: o "+ Novo plano" do cabeçalho (ou o cartão "Novo plano" do fim da
+   grade) a abre, e a home nasce com ela aberta só no primeiro uso. Desde 11/09/2026 ela mora na
+   faixa creme, 28px abaixo do título (o ritmo da linha dos filtros do Estúdio). */
 .pensa-create {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* 48px até a grade: o mesmo respiro "filtros → cards" do Molda e dos irmãos. */
-  margin: 0 0 48px;
+  margin: 28px 0 0;
   max-width: 680px;
   padding: 0;
 }
@@ -227,7 +219,6 @@
   align-items: center;
   gap: 10px;
 }
-.pensa-create input,
 .pensa-task-edit input,
 .pensa-task-edit textarea,
 .pensa-task-edit select,
@@ -243,15 +234,18 @@
   background: var(--pz-bg);
   padding: 13px 16px;
 }
-/* O campo do nome é a ação principal da home: texto um pouco maior que os campos do
-   detalhe, e a altura ALINHADA aos 44px dos botões ao lado (12px + 1.0625rem + 2px de borda).
-   ⚠️ Escopado em `.pensa-create` — a regra de input acima é COMPARTILHADA com o
-   editor de tarefa e os formulários do plano, que não devem engordar junto. */
+/* O campo do nome é a ação principal da home: a pílula branca da busca das galerias, na mesma
+   altura das pílulas ao lado. ⚠️ Fora da regra de input acima, que é COMPARTILHADA com o
+   editor de tarefa e os formulários do plano. */
 .pensa-create input {
   flex: 1 1 260px;
-  width: auto;
-  padding: 12px 16px;
-  font-size: 1.0625rem;
+  min-height: var(--sz-tool-hit, 2.75rem);
+  border: 1px solid var(--pz-line);
+  border-radius: 9999px;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  padding: 0 18px;
+  font-size: 1rem;
 }
 .pensa-inline-error {
   margin: 8px 0 0;
@@ -322,94 +316,198 @@
   transform: translateY(3px);
   box-shadow: 0 1px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
 }
-/* Rodapé da home (07/09/2026): "Mostrando N planos", o par do "Mostrando N de M projetos"
-   do Estúdio. O antigo cabeçalho "Meus planos" + contador (40px de margem em cima) virou um
-   h2 `.pensa-sr-only` para o leitor de tela; o que se vê é a grade logo abaixo do cabeçalho. */
+/* Rodapé da faixa céu: "Mostrando N planos", o par do "Mostrando N de M projetos" do Estúdio. */
 .pensa-home-footer {
-  margin: 16px 0 0;
+  margin: 24px 0 0;
   color: var(--pz-muted);
   font-size: 0.875rem;
+  font-weight: 600;
 }
-/* ⚠️ `auto-fill` (não `auto-fit`) é o que permite o `1fr` aqui: com `auto-fit` as
-   faixas VAZIAS colapsam e dois planos numa tela larga viravam dois cards de
-   ~600px. Com `auto-fill` as faixas vazias ficam de pé e seguram a largura — é a
-   mesma linha da galeria do Pinta (`GalleryScreen.tsx`, minmax(164px, 1fr)), só
-   que com o piso maior que um cartão de três linhas de texto pede. */
+/* A grade dos planos: 3 colunas, 2 no tablet e 1 no celular, pelas container queries do
+   `.pensa-planner` (a imagem-modelo tem três cartões por fileira a 1440 com o menu aberto). */
 .pensa-project-grid {
   display: grid;
-  /* Piso IDÊNTICO ao `PROJECT_GRID_CLASS` da `ProjectList` do Estúdio: com a
-     mesma receita nos dois, os cards saem do mesmo tamanho em qualquer tela, sem
-     número mágico para manter em sincronia.
-     ⚠️ 240px NÃO é estético, é o mínimo que o conteúdo exige: a linha mais longa
-     possível ("Versão 20 · Plano aprovado", com o teto de 20 ciclos) mede 173px em
-     Nunito 14px, e o card perde 66px fixos para padding + ícone + gap → 239px. Com
-     menos que isso a etapa quebra em duas linhas. Como `auto-fill` garante faixa
-     >= o piso, 240 vale para QUALQUER largura de tela.
-     Medido: 1280→4 · 1366→5 · 1440→5 · 1600→6 · 1920→7 colunas. */
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
+/* O cartão do plano (a imagem-modelo): branco, cantos de 24px, sem borda aparente. O botão
+   "Continuar" estica a área clicável para o cartão INTEIRO (o `::after`), por isso o cartão é o
+   `position: relative`; o rodapé vai sempre ao pé (os cartões de uma fileira têm a mesma
+   altura). */
 .pensa-project-card {
-  /* Três linhas na coluna do texto (nome / versão / continuar) e o ícone só na
-     PRIMEIRA, ao lado do nome. Antes o ícone era um bloco de 52px atravessando
-     as três linhas e o card tinha piso de 160px — um retângulo alto com muito
-     ar para três linhas curtas. */
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px 10px;
-  padding: 16px;
-  text-align: left;
-  /* A aresta é uma VARIÁVEL para que a sombra siga a borda no hover, como o
-     `--pin-panel-border` do `.pin-panel`. */
-  --pz-card-edge: var(--pz-line);
-  border: 2px solid var(--pz-card-edge);
-  border-radius: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
   color: var(--pz-ink);
   background: var(--pz-surface);
-  box-shadow: 0 3px 0 color-mix(in oklab, var(--pz-card-edge) 45%, transparent);
-  transition:
-    transform 0.18s ease-out,
-    border-color 0.18s ease-out,
-    box-shadow 0.18s ease-out;
 }
-.pensa-project-card:hover {
-  transform: translateY(-2px) scale(1.02);
-  --pz-card-edge: var(--pz-accent);
+.pensa-project-card__head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 10px;
 }
 .pensa-project-orbit {
-  grid-column: 1;
-  grid-row: 1;
-  display: grid;
+  display: inline-grid;
+  flex: none;
   place-items: center;
-  width: 20px;
-  height: 20px;
   color: var(--pz-accent);
-  font-size: 1.05rem;
 }
-/* O nome do plano é o TÍTULO do card: mesma fonte dos títulos da página (o par
-   é o nome do jogo no `ProjectCard` do Estúdio, que usa `sz-ui-display`). */
-.pensa-project-card strong {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: center;
+/* O nome do plano é o TÍTULO do cartão: a receita dos títulos de cartão das galerias
+   (`.sz-tool-card-title`, Baloo 800), maior aqui porque o cartão do plano é maior. A família fica
+   declarada também neste arquivo: é título aos olhos da criança (`headingFont.test.ts`). */
+.pensa-project-card__name {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-size: 1.375rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pensa-project-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+/* Os selos do cartão, com tinta que passa no contraste nos dois temas: "Versão N" cinza com a
+   tinta do texto, "Plano aprovado" no menta do "Guardado na sua conta" e "Etapa X" no âmbar do
+   aviso (a tinta de texto do âmbar, mais escura que o laranja do Pensa, que não passaria). */
+.pensa-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  color: var(--pz-ink);
+  background: var(--pz-surface-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.pensa-chip.is-approved {
+  color: var(--sz-tool-ok, var(--pz-green));
+  background: var(--sz-tool-ok-tint, color-mix(in oklab, var(--pz-green) 14%, var(--pz-surface)));
+}
+.pensa-chip.is-stage {
+  color: var(--sz-tool-warn, oklch(0.52 0.14 58));
+  background: color-mix(in oklab, var(--sz-tool-warn, oklch(0.52 0.14 58)) 14%, var(--pz-surface));
+}
+/* A trilha Z-E-R-O: a etapa vencida é o azul da marca cheio, a atual leva o fio azul e a futura
+   fica apagada. A letra é enfeite (o nome de cada etapa vai só para o leitor de tela). */
+.pensa-zero-track {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-zero-track li {
+  display: grid;
+  min-height: 40px;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 10px;
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
   font-size: 1rem;
-  letter-spacing: -0.01em;
+  font-weight: 800;
 }
-/* As duas linhas de baixo alinham com o NOME, não com o ícone. */
-.pensa-project-card > span:not(.pensa-project-orbit) {
-  grid-column: 2;
-  grid-row: 2;
+.pensa-zero-track li.is-complete {
+  color: var(--sz-tool-on-cta, var(--pz-on-fill));
+  background: var(--sz-tool-cta, var(--pz-cta));
+}
+.pensa-zero-track li.is-current {
+  border-color: var(--pz-accent);
+  color: var(--pz-accent);
+  background: var(--pz-surface);
+}
+.pensa-zero-track li.is-next {
+  color: var(--pz-muted);
+  background: var(--pz-surface-2);
+}
+.pensa-project-card__progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  color: var(--pz-accent);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.pensa-project-card__progress svg {
+  flex: none;
+}
+.pensa-project-card__progress.is-done {
+  color: var(--sz-tool-ok, var(--pz-green));
+}
+.pensa-project-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+}
+.pensa-project-card__edited {
   color: var(--pz-muted);
   font-size: 0.875rem;
 }
-.pensa-project-card i {
-  grid-column: 2;
-  grid-row: 3;
-  margin-top: 4px;
-  color: var(--pz-accent);
-  font-style: normal;
-  font-weight: 700;
+/* A área clicável do "Continuar" é o cartão inteiro. */
+.pensa-project-card__open::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+}
+/* O cartão "Novo plano" que fecha a grade (a receita `.sz-tool-card--new`, creme com o fio
+   amarelo), nos cantos dos cartões do plano. */
+.pensa-new-plan-card {
+  min-height: 12rem;
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+}
+.pensa-new-plan-card__title {
+  font-size: 1.125rem;
+}
+.pensa-new-plan-card__hint {
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+/* A faixa lilás: as oficinas para onde os cartões vão, em cartões brancos informativos. */
+.pensa-workshops {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-workshop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+  background: var(--pz-surface);
+}
+.pensa-workshop h3 {
+  margin: 18px 0 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.pensa-workshop p {
+  margin: 8px 0 0;
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 .pensa-empty,
 .pensa-status {
@@ -434,6 +532,14 @@
 }
 .pensa-empty p {
   margin: 5px 0;
+}
+/* O vazio do primeiro uso, dentro da faixa céu: o cartão branco (o tracejado era da home de
+   antes, sobre o fundo da página). */
+.pensa-home .pensa-empty {
+  min-height: 240px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
+  background: var(--pz-surface);
 }
 .pensa-project-header {
   display: flex;
@@ -1371,6 +1477,10 @@ button.pensa-map-node:hover {
 }
 
 @container (max-width: 820px) {
+  /* Duas colunas no tablet. */
+  .pensa-project-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .pensa-map {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1382,7 +1492,6 @@ button.pensa-map-node:hover {
   }
 }
 @container (max-width: 560px) {
-  .pensa-home,
   .pensa-workspace,
   .pensa-project-header,
   .pensa-map,
@@ -1390,18 +1499,21 @@ button.pensa-map-node:hover {
     /* 16px de cada lado = o `p-4` do Pinta no estreito (era 10px). */
     width: calc(100% - 32px);
   }
-  .pensa-home {
-    padding-top: 16px;
-  }
   .pensa-home-header {
     align-items: flex-start;
+  }
+  /* No celular o [menu][voltar] fica numa linha só dele e o bloco do título desce inteiro: ao
+     lado dos dois quadrados o selo "Pensa · sua oficina de planos" quebrava em duas linhas. */
+  .pensa-home-lead {
+    flex-wrap: wrap;
   }
   .pensa-create div {
     flex-direction: column;
     align-items: stretch;
   }
-  /* Sem o teto da faixa, o card não pode estourar o contêiner estreito. */
-  .pensa-project-grid {
+  /* Uma coluna no celular: os planos e as oficinas. */
+  .pensa-project-grid,
+  .pensa-workshops {
     grid-template-columns: 1fr;
   }
   .pensa-map {

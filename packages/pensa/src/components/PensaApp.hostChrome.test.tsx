@@ -9,7 +9,7 @@ afterEach(cleanup)
 /**
  * Chrome do HOST nos cabeçalhos do Pensa (07/09/2026): o botão de esconder o menu da
  * comunidade vem antes do título na home, desenhado com o círculo do próprio Pensa. Sem
- * Provider nada aparece (playground).
+ * Provider nada aparece.
  */
 function adapter(): PensaHostAdapter {
   return {
@@ -69,7 +69,34 @@ describe('PensaApp × chrome do host', () => {
     expect(botao.className).toBe('sz-tool-btn-menu')
   })
 
-  test('sem Provider (playground) e com menu null nada aparece', async () => {
+  test('a seta de volta para Criar vem DEPOIS do menu; o clique simples é do host', async () => {
+    const onNavigate = mock(() => {})
+    const chrome: PensaHostChrome = {
+      menu: { hidden: false, label: 'Esconder menu', onToggle: () => {} },
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate },
+    }
+    render(
+      <PensaHostChromeProvider value={chrome}>
+        <PensaApp adapter={adapter()} />
+      </PensaHostChromeProvider>,
+    )
+    await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
+    const seta = screen.getByRole('link', { name: 'Voltar para Criar' })
+    expect(seta.className).toBe('sz-tool-back')
+    expect(seta.getAttribute('href')).toBe('/criar')
+    expect(seta.getAttribute('title')).toBeNull()
+    const menu = screen.getByRole('button', { name: 'Esconder menu' })
+    expect(menu.parentElement).toBe(seta.parentElement)
+    expect(menu.compareDocumentPosition(seta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Com Ctrl o navegador abre outra aba: o host não navega por baixo.
+    expect(fireEvent.click(seta, { ctrlKey: true })).toBe(true)
+    expect(onNavigate).not.toHaveBeenCalled()
+    // O clique simples troca de rota sem recarregar (o padrão do link é cancelado).
+    expect(fireEvent.click(seta)).toBe(false)
+    expect(onNavigate).toHaveBeenCalledTimes(1)
+  })
+
+  test('sem Provider (o playground sem `?host=1`) e com menu null nada aparece', async () => {
     const { unmount } = render(<PensaApp adapter={adapter()} />)
     await waitFor(() => screen.getByRole('heading', { name: 'Meus projetos' }))
     expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()

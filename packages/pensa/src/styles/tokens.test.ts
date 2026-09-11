@@ -46,8 +46,30 @@ describe('pensa.css lê os tokens compartilhados', () => {
     expect(css).not.toContain('.pensa-project-header > button')
   })
 
-  it('o anel de foco global cede a vez ao chrome compartilhado', () => {
-    expect(css).toContain(':focus-visible:not(.sz-tool-btn-menu')
+  it('as regras de ELEMENTO (sem camada) cedem a vez ao chrome compartilhado', () => {
+    // Todas as receitas `.sz-tool-*` ficam fora, e pelo `:where()` (sem somar especificidade).
+    // Sem isso, o `font: inherit` apagaria o peso das pílulas, o `min-height: 44px` deixaria o
+    // quadrado do menu com 40x44 e a regra dos títulos tiraria o 800 do título da galeria.
+    const fora = ':where(:not([class*="sz-tool-"]))'
+    expect(css).toContain(`.pensa-planner :focus-visible${fora} {`)
+    expect(css).toContain(`.pensa-planner button${fora} {`)
+    expect(css).toContain(`.pensa-planner button${fora},\n.pensa-planner input,`)
+    for (const tag of ['h1', 'h2', 'h3', 'h4']) {
+      expect(css).toContain(`.pensa-planner ${tag}${fora}`)
+    }
+    // E nenhuma regra de botão, título ou foco SEM a exclusão: toda ocorrência do seletor de
+    // elemento vem com ela (uma regra nova esquecida venceria as receitas em silêncio).
+    const vezes = (texto: string) => css.split(texto).length - 1
+    for (const seletor of [
+      '.pensa-planner button',
+      '.pensa-planner :focus-visible',
+      '.pensa-planner h1',
+      '.pensa-planner h2',
+      '.pensa-planner h3',
+      '.pensa-planner h4',
+    ]) {
+      expect(vezes(`${seletor}${fora}`)).toBe(vezes(`${seletor}`) - vezes(`${seletor}:disabled`))
+    }
   })
 
   it('nenhum cabeçalho desconta mais o respiro: o menu é o quadrado dentro do conteúdo', () => {

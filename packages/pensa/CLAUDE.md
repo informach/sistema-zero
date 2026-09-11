@@ -40,11 +40,67 @@ destoar do menu ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses bo
 senão ela vence a receita em `@layer components`. O contrato é `PensaHostChrome` (`core/types.ts`,
 só `menu: {hidden, label, onToggle} | null` — o Pensa persiste no servidor, então não há selo de
 nuvem) e chega pelo **`PensaHostChromeProvider`** (exportado no index, com `usePensaHostChrome`),
-que o kids renderiza em volta do `<PensaApp>`; sem Provider (não há playground) nada aparece. Na
-home o botão mora no `.pensa-home-lead` (âncora do teste do host), antes do h1; no detalhe ele vem
-antes do "voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`).
+que o kids renderiza em volta do `<PensaApp>`; sem Provider (os testes, o playground sem
+`?host=1`) nada aparece. Desde 11/09/2026 o contrato também traz `back` ("Voltar para Criar"):
+a home desenha o `HostBackLink` (o quadrado `.sz-tool-back`, `<a href>`: clique simples chama
+`onNavigate`, com Ctrl/Cmd/Shift/Alt fica com o navegador) logo DEPOIS do menu, e o detalhe o
+ignora (lá o "voltar" leva à home). Na home os dois moram no `.sz-tool-header__nav` dentro do
+`.pensa-home-lead` (âncora do teste do host), antes do h1; no detalhe o menu vem antes do
+"voltar" e o bloco do título é `.pensa-project-title` (por classe, não por `nth-child`).
 Os cabeçalhos rolam com o conteúdo, como nas galerias do Pinta/Molda. Testes:
 `components/PensaApp.hostChrome.test.tsx`, `styles/tokens.test.ts`.
+
+## A home das telas-modelo (11/09/2026)
+
+A home "Meus projetos" segue a imagem-modelo dela (plano `o-design-da-plataforma-composed-gray.md`,
+lote 7, passo 7), no MESMO desenho das galerias do Estúdio e do Pinta: três FAIXAS de borda a borda
+(`.pensa-home.sz-tool-bands`, receitas de `@sistemazero/ui/tool-chrome.css`) que rolam juntas dentro
+do `.pensa-planner`.
+- **creme** (`<header>`): [menu][voltar] + o selo amarelo **"Pensa · sua oficina de planos"**
+  (`.pensa-home-chip`, lâmpada) em cima do h1 `.sz-tool-title` "Meus projetos" e do subtítulo;
+  à direita a pílula primária **"+ Novo plano"** (nome exato mantido para os testes). O campo de
+  criar sob demanda mora nesta faixa, 28px abaixo, como pílula branca; "Criar meu plano" e
+  "Cancelar" viraram pílulas. No celular (`@container 560`) o [menu][voltar] fica numa linha só
+  dele (ao lado deles o selo quebrava em duas linhas).
+- **céu** (região "Meus planos", h2 `.pensa-sr-only`): a grade `.pensa-project-grid` em **3
+  colunas, 2 no `@container 820` e 1 no `560`** (o `auto-fill` de 240px saiu), com o **cartão do
+  plano** (`PlanCard`, um `<article>`): alvo + nome (h3 `.pensa-project-card__name` com
+  `.sz-tool-card-title`, 22px), selos "Versão N" e "Plano aprovado" (menta) ou "Etapa X" (âmbar do
+  aviso, a tinta que passa no contraste), a **trilha Z-E-R-O** em ladrilhos (`.pensa-zero-track`:
+  vencida = azul cheio, atual = fio azul, futura = apagada; o nome de cada etapa em `sr-only`), a
+  linha do andamento com a bandeirinha ("Etapa atual: …" azul / "Todas as 4 etapas concluídas"
+  verde), "Editado há…" (`core/relativeTime.ts`, `Intl.RelativeTimeFormat` pt-BR: "agora" e "ontem"
+  como palavra, o resto em número; nada de "anteontem"/"semana passada") e o **"Continuar"** em
+  pílula primária cujo `::after` estica a área clicável para o cartão INTEIRO; o nome acessível é
+  "Continuar o plano <nome>" (os testes acham o plano por ele). O **cartão "Novo plano"**
+  (`.sz-tool-card--new`) FECHA a grade: abre o mesmo campo lá em cima e o foco volta a QUEM abriu
+  (`openerRef`); com o campo já aberto só leva o foco até ele. Rodapé "Mostrando N planos". Sem
+  planos: o convite `.pensa-empty` em cartão branco e o campo já aberto (sem o cartão "Novo plano").
+- **lilás**: "Cada Cartão de Criação vai para o lugar certo" (`.sz-tool-section-title`) + as três
+  oficinas (Estúdio, Pinta, Molda) em cartões INFORMATIVOS com o ladrilho da assinatura
+  (`.sz-tool-tile--estudio|pinta|molda`), sem link nem o selo "N cartões" da imagem (a lista não
+  traz a contagem).
+- ⚠️⚠️ **As regras de ELEMENTO do `pensa.css` não têm camada e venciam as receitas**: `font:
+  inherit` (apagava o peso das pílulas), `button { min-height: 44px }` (o quadrado do menu saía
+  40x44), a regra dos títulos (tirava o 800 do `.sz-tool-title`) e o anel de foco. Todas agora
+  deixam de fora `:where(:not([class*="sz-tool-"]))`, sem somar especificidade; o `tokens.test.ts`
+  trava que nenhuma regra de botão/título/foco nova apareça sem a exclusão. Os títulos PRÓPRIOS do
+  Pensa seguem em 700; os das telas-modelo vêm da receita em 800 (o `headingFont.test.ts` foi
+  reescrito para isso). Ícones de traço inline em `components/icons.tsx` (o pacote não depende do
+  `lucide-react`).
+- **Playground** (`packages/pensa/playground`, `bun run dev` = Vite em **:5201**, entrada
+  `pensa-playground` no `.claude/launch.json`): monta o `<PensaApp>` com um SERVIDOR EM MEMÓRIA
+  (o "Runo" aprovado com cartões para as três oficinas e o "Guardiões da Lua" na etapa R; criar
+  funciona e o chat do Zappy responde em pedaços); `?host=1` liga o menu e a seta, `?theme=dark` o
+  escuro e `?vazio=1` o primeiro uso. O que ele não simula responde com erro legível. As folhas
+  entram na ordem do host (theme-kids, tool-chrome, pensa.css; o teste de ordem do `@sistemazero/ui`
+  lê o arquivo) e não há Tailwind (o Pensa não usa). Deps de dev: `vite` e `@vitejs/plugin-react`.
+- Medido no playground a 1172px (= 1440 com o menu de 268): faixa creme de 189px (a imagem tem
+  ~200), cartões de 327x267 (332x273), quadrados de 40px; escuro, 375px e o vazio conferidos.
+- Testes: `components/PensaApp.home.test.tsx` (as faixas, o cartão do plano, o "Continuar", o
+  cartão "Novo plano" e o foco, o vazio), `core/relativeTime.test.ts`,
+  `components/PensaApp.hostChrome.test.tsx` (a seta), `styles/tokens.test.ts` e
+  `styles/headingFont.test.ts`.
 
 ## Cartão de Criação
 
@@ -129,7 +185,8 @@ apontam para os primitivos `--sz-kids-*`; o que faltava era o resto da moldura:
   `text-base` nos componentes do kids; o Pinta na mesma proporção). Para um produto infantil o
   piso é 12px e o texto de corpo é 14px; nada de valores intermediários "quase iguais" que somados
   fazem o app inteiro ler menor que os irmãos ao lado.
-- Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
+- (⚠️ HISTÓRICO: a home de 11/09/2026 está na seção "A home das telas-modelo"; a grade de 240px,
+  o cabeçalho de 1.875rem e a faixa de criar abaixo do cabeçalho mudaram.) Arranjo da home, pareado com `ProjectList.tsx`/`GalleryScreen.tsx`: `.pensa-create` **sem
   painel** (faixa solta; embrulhá-lo dava a ele o peso dos planos já criados), campo de ~440px ao
   lado do botão, 44px de respiro do subtítulo até a label; `.pensa-section-heading` h2 em
   **1.125rem** (`text-lg`) com `margin: 40px 0 24px` (`mb-6`); grade

@@ -187,6 +187,7 @@ describe('quem embarca ferramentas importa a folha na ordem certa', () => {
     ['../../pinta/playground/styles.css', 'pinta.css'],
     ['../../studio/playground/styles.css', 'studio.css'],
     ['../../molda/playground/styles.css', 'molda.css'],
+    ['../../pensa/playground/styles.css', 'pensa.css'],
   ]
   for (const [arquivo, cssDoPacote] of hosts) {
     it(`${arquivo}: theme-kids -> tool-chrome -> ${cssDoPacote}`, async () => {

@@ -92,7 +92,7 @@ describe('PensaApp × "+ Novo plano"', () => {
     expect(screen.queryByRole('textbox', { name: 'Nome do novo jogo' })).toBeNull()
     const novo = screen.getByRole('button', { name: '+ Novo plano' })
     expect(novo.getAttribute('aria-expanded')).toBe('false')
-    expect(novo.className).toBe('sz-tool-btn-3d')
+    expect(novo.className).toBe('sz-tool-pill sz-tool-pill--primary')
     fireEvent.click(novo)
     const campo = screen.getByRole('textbox', { name: 'Nome do novo jogo' })
     expect(novo.getAttribute('aria-expanded')).toBe('true')
