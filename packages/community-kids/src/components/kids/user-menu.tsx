@@ -1,7 +1,7 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { LogOut, Moon, Sun, User, Users } from 'lucide-react'
+import { LogOut, Palette, User, Users } from 'lucide-react'
 import Link from 'next/link'
 import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
@@ -42,11 +42,8 @@ export function UserMenu({
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const { resolvedTheme, setTheme } = useTheme()
-
-  useEffect(() => setMounted(true), [])
 
   useEffect(() => {
     if (!open) return
@@ -76,7 +73,9 @@ export function UserMenu({
     }
   }
 
-  const isDark = resolvedTheme === 'dark'
+  // Padrão ⇄ Pink. O ícone é um só, então não precisa esperar a hidratação (o Sol/Lua de antes
+  // dependia do tema guardado e só aparecia depois de montar).
+  const isPink = resolvedTheme === 'pink'
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
@@ -185,10 +184,10 @@ export function UserMenu({
           </Link>
           <button
             type="button"
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            onClick={() => setTheme(isPink ? 'padrao' : 'pink')}
             className={itemClass}
           >
-            {mounted && !isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            <Palette className="size-4" />
             Mudar tema
           </button>
           <div className="border-t border-border" />

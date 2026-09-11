@@ -39,6 +39,7 @@ import {
 } from '../../blockly/fields/FieldSpritePicker'
 import { SearchAwareHorizontalFlyout } from '../../blockly/searchHorizontalFlyout'
 import { useCrossHighlight } from '../../hooks/useCrossHighlight'
+import { useHostAppearanceRevision } from '../../hooks/useHostAppearanceRevision'
 import { primeCanonicalSourceMap } from '../../state/canonicalSourceMap'
 import { useDiagnosticsStoreApi } from '../../state/diagnosticsStore'
 import { installExtension, reregisterInstalledExtensions } from '../../state/extensionsAdapter'
@@ -316,6 +317,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const pendingEditorEdits = usePendingEditorEdits()
   const editorHistory = useEditorHistory()
   const studioTheme = useStudioTheme()
+  // Sobe quando o HOST troca de aparência (Padrão ⇄ Pink no kids e no adulto): os dois temas são
+  // "claro" para o Estúdio, então só isto manda o canvas reler a paleta.
+  const hostAppearance = useHostAppearanceRevision()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
   studioThemeRef.current = studioTheme
@@ -1120,10 +1124,14 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
 
   // Troca de tema ao vivo (toggle do Topbar/host): o Theme cobre workspace,
   // toolbox e flyout; só a cor da grade fica da injeção inicial (detalhe sutil).
+  // A troca de aparência do HOST (`hostAppearance`) também relê; `szThemeFor` devolve o MESMO
+  // objeto para a mesma paleta, então só re-pinta quando a cor de fato mudou.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `hostAppearance` é o GATILHO da releitura (o valor não entra na conta)
   useEffect(() => {
     if (!workspace) return
-    workspace.setTheme(szThemeFor(studioTheme, blocklyRef.current))
-  }, [workspace, studioTheme])
+    const proximo = szThemeFor(studioTheme, blocklyRef.current)
+    if (workspace.getTheme() !== proximo) workspace.setTheme(proximo)
+  }, [workspace, studioTheme, hostAppearance])
 
   // Enquanto a partição de blocos hidrata em 2º plano (reabertura rápida), o
   // canvas está VAZIO mas os blocos salvos estão a caminho: cobre com o overlay

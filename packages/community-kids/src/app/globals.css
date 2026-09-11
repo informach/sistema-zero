@@ -36,6 +36,11 @@
 @source "../../../pinta/src";
 /* O stylesheet do Molda registra apenas suas fontes de UI, excluindo testes. */
 
+/* O tema escuro deixou de existir (11/09/2026: temas Padrão e Pink), mas o `@sistemazero/ui`,
+   o member-shell e alguns componentes daqui ainda trazem `dark:` nas classes. Esta variante
+   FICA: sem ela o Tailwind v4 volta ao padrão dele (`prefers-color-scheme`) e esses `dark:`
+   passariam a seguir o modo escuro do sistema operacional. Com ela, e sem `.dark` em lugar
+   nenhum, eles não fazem nada. */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -80,14 +85,130 @@
 }
 
 /* ============================================================
-   SISTEMA ZERO KIDS — LIGHT MODE (default)
-   PALETA DA MARCA KIDS (a mesma do Funil Kids, para o aluno sentir
-   que continua no MESMO lugar da oferta → comunidade): azul-céu +
-   azul #1E88E5 · laranja CTA #FF9A1F · acentos rosa/verde/amarelo ·
-   vermelho hot. No light os sólidos são versões ESCURECIDAS (AA
-   sobre branco); os vivos ficam para o .dark. A vibe kids
-   (Duolingo×Brilliant) segue vindo do USO: tints, gradientes,
-   sombras duras 3D, radius 1rem.
+   A PALETA DO PEN (11/09/2026) — temas PADRÃO e PINK
+   As telas do Pen (`esboço plataforma.pen`, quadro "★ Paleta — Sistema Zero Kids 9+")
+   viraram a paleta padrão, por decisão dela, e o claro/escuro deu lugar a dois temas:
+   Padrão (o azul de ação) e Pink (o rosa no lugar do azul). Isto REVOGA duas leis
+   antigas da casa: "cor não muda de valor, só aparece mais" e "o fundo não segue o
+   tema, só a tinta". Agora a página tem UM fundo (o chão), o menu é a âncora escura,
+   e o Pink troca chão, menu, tinta e ação de propósito.
+
+   Como entra: os primitivos do Pen (`--pen-*`, `--menu-*`, `--chao*`) moram aqui, e o
+   Pink (`:root[data-tema="pink"]`) redefine só eles. Os `--sz-kids-*` NEUTROS (chão,
+   superfícies, linha, tinta) são redefinidos logo abaixo para apontar para o Pen: é o
+   caminho que chega às quatro ferramentas, cujos escopos claros re-declaram os
+   `--sz-tool-*` a partir desses primitivos. ⚠️ NUNCA no `theme-kids.css`: o funil
+   importa o mesmo arquivo e ficaria com a paleta nova.
+   As cores de IDENTIDADE (o azul do Estúdio e do nível Construtor(a), o amarelo da
+   moeda, o vermelho do Pinta, o roxo do Molda) são do Pen e NÃO seguem o tema. A cor de
+   AÇÃO é outra coisa (botão, link, item ativo, "você está aqui"): mora em `--pen-acao`
+   e vira rosa no Pink. Por isso o azul de ação e o azul de identidade são tokens
+   separados, mesmo sendo o mesmo #1B5CF3 no Padrão.
+   Contraste medido (script, os dois temas): texto ≥ 4,5:1, borda de campo ≥ 3:1.
+   ============================================================ */
+:root {
+  /* Chão único da página (`$bg`) e o alternativo (`$bg-alt`): a última faixa de cada
+     página e a aula inteira. */
+  --pen-chao: #e9eef6;
+  --pen-chao-alt: #dde5f0;
+  --pen-cartao: #ffffff;
+  /* Superfície 2: linhas dentro de cartão e o botão suave. */
+  --pen-sup2: #eff3f9;
+  --pen-linha: #d6deea;
+  --pen-tinta: #0f1a33;
+  --pen-tinta-suave: #46536e;
+  /* Borda de campo: a WCAG 1.4.11 pede 3:1 contra o fundo (3,72:1 no branco). */
+  --pen-campo: #74829f;
+  /* A cor de AÇÃO e o degrau do 3D dela (a borda de baixo do botão, no Brilliant). */
+  --pen-acao: #1b5cf3;
+  --pen-acao-degrau: #1343b8;
+  /* A ação sobre o ESCURO (o menu): o `$blue-light` do Pen. */
+  --pen-acao-clara: #6e9bff;
+  /* O sobretítulo do herói (texto pequeno sobre a cor de ação). */
+  --pen-sobre-acao: #e2ebff;
+  /* Degraus do 3D: o botão branco sobre o herói e o cartão clicável. */
+  --pen-degrau-branco: #0f3fb0;
+  --pen-degrau-cartao: #b9c6d9;
+
+  /* O MENU: a âncora escura do Pen (menu lateral, barra do topo e barra de abas do
+     celular). O rodapé e os chips dele são branco a 8%. */
+  --menu: #121a30;
+  --menu-2: #1b2540;
+  --menu-texto: #cbd4e8;
+  --menu-icone: #8e9bba;
+  --menu-vidro: rgb(255 255 255 / 0.08);
+  /* O ZERO da logo do kids. */
+  --logo-zero: #0074fc;
+
+  /* Os nomes que o resto do arquivo usa. */
+  --chao: var(--pen-chao);
+  --chao-alt: var(--pen-chao-alt);
+
+  /* ── Primitivos da marca redefinidos para o Pen ─────────────────────────────
+     NEUTROS: seguem o tema (apontam para os `--pen-*`). */
+  --sz-kids-ceu-suave: var(--pen-chao);
+  --sz-kids-ceu: var(--pen-chao-alt);
+  --sz-kids-branco: var(--pen-cartao);
+  --sz-kids-branco-suave: var(--pen-sup2);
+  --sz-kids-linha: var(--pen-linha);
+  --sz-kids-tinta: var(--pen-tinta);
+  --sz-kids-tinta-suave: var(--pen-tinta-suave);
+  /* A ação das ferramentas: o `tool-chrome.css` lê este antes do azul de identidade. */
+  --sz-kids-acao: var(--pen-acao);
+  /* O CTA é chapado (o 3D vem do degrau, não de gradiente): o "gradiente" é a cor lisa. */
+  --sz-kids-grad-cta-azul: linear-gradient(90deg, var(--pen-acao), var(--pen-acao));
+  /* IDENTIDADE: os valores do Pen, iguais nos dois temas. */
+  --sz-kids-azul-texto: #1b5cf3;
+  --sz-kids-azul: #1b5cf3;
+  --sz-kids-azul-vivo: #6e9bff;
+  --sz-kids-azul-profundo: #0a2a7a;
+  --sz-kids-amarelo: #ffc02e;
+  --sz-kids-vermelho: #cf3f36;
+  --sz-kids-roxo: #6d3bf5;
+  --sz-kids-verde-profundo: #0b7a54;
+  /* Os tons de APOIO do Pen (pílulas e ladrilhos tintados). */
+  --sz-kids-menta-bg: #dcf0e4;
+  --sz-kids-lilas-bg: #e5e0f7;
+  /* O Pensa da paleta do Pen: âmbar com tinta escura por cima (branco nele reprova). */
+  --sz-tool-sig-pensa: #e8a317;
+}
+
+/* O TEMA PINK (estimado da imagem dela e aprovado em 11/09/2026). Só primitivos: o que
+   deriva deles segue sozinho. O Estúdio vira o verde-azulado da imagem, porque o azul
+   dele sobre o rosa brigava com a cor de ação. */
+:root[data-tema="pink"] {
+  --pen-chao: #f4ecf2;
+  --pen-chao-alt: #ecdde8;
+  --pen-sup2: #f8f1f6;
+  --pen-linha: #e7d5e1;
+  --pen-tinta: #1f1026;
+  --pen-tinta-suave: #5a4760;
+  --pen-campo: #9a7892;
+  --pen-acao: #c8246f;
+  --pen-acao-degrau: #8e1650;
+  --pen-acao-clara: #ff7ab6;
+  --pen-sobre-acao: #fff0f6;
+  --pen-degrau-branco: #7e1146;
+  --pen-degrau-cartao: #d2b6c8;
+
+  --menu: #25132b;
+  --menu-2: #331d3a;
+  --menu-texto: #e6d3e1;
+  --menu-icone: #b08fab;
+  --logo-zero: #e2489a;
+
+  --sz-tool-sig-estudio: #0e7c86;
+  /* O Estúdio como TEXTO (link e selo sobre o branco e o chão rosado): o verde-azulado
+     escurecido até passar AA nos dois (6,3:1 no branco, 5,4:1 no chão). */
+  --tool-estudio-texto: #0b6a73;
+  --tool-estudio-selo: #0b6a73;
+}
+
+/* ============================================================
+   SISTEMA ZERO KIDS — os tokens semânticos
+   Os nomes são os de sempre (o ui e o member-shell os leem); os valores apontam para
+   a paleta do Pen acima. As cores das unidades da trilha, dos níveis, das portas e
+   das medalhas são identidade e continuam as mesmas nos dois temas.
    ============================================================ */
 :root {
   color-scheme: light;
@@ -100,10 +221,11 @@
   --kids-lime: var(--sz-kids-laranja-profunda); /* laranja profundo */
   --kids-rosa: var(--sz-kids-rosa-funda); /* rosa */
   --kids-verde: var(--sz-kids-verde-profundo); /* verde */
-  --kids-cyan-tint: oklch(0.52 0.15 252 / 0.1);
+  /* O azul e o verde passaram aos valores do Pen: o tinto mistura o próprio sólido. */
+  --kids-cyan-tint: color-mix(in oklab, var(--kids-cyan) 10%, transparent);
   --kids-lime-tint: oklch(0.58 0.15 55 / 0.12);
   --kids-rosa-tint: oklch(0.6 0.19 356 / 0.1);
-  --kids-verde-tint: oklch(0.55 0.15 152 / 0.1);
+  --kids-verde-tint: color-mix(in oklab, var(--kids-verde) 10%, transparent);
   /* OURO = recompensa (baú, moeda, certificado). NÃO é cor nova: é o
      `--sz-kids-amarelo` da marca, que estava documentado como "estrelas,
      decorações" e não aparecia em lugar nenhum do app. O que muda é o EMPREGO.
@@ -119,27 +241,24 @@
      "passa AA sobre claro". */
   --kids-ouro-texto: oklch(0.55 0.13 70);
 
-  /* ── FAIXAS de seção (redesenho 09/2026) ─────────────────────────────────
-     A página deixa de ser um bloco branco e passa a ter ritmo: cada seção pinta
-     a largura toda e o conteúdo se centraliza por dentro. Os valores são os das
-     PÁGINAS DE OFERTA, que é a régua que a dona mandou seguir. A primeira faixa
-     é sempre creme e a última sempre lilás; as do meio variam por página.
-     ⚠️ São fundos de FAIXA, não de cartão: o cartão continua branco por cima. */
-  --band-creme: var(--sz-kids-creme); /* #fff7e9 */
-  --band-menta: var(--sz-kids-menta-bg); /* #e6f8ec */
-  --band-ceu: var(--sz-kids-ceu); /* #e4f2ff */
-  --band-lilas: var(--sz-kids-lilas-bg); /* #efe7ff */
+  /* ── TONS DE APOIO (eram as FAIXAS de seção) ──────────────────────────────
+     Desde a paleta do Pen (11/09/2026) a página tem UM fundo: toda faixa é o chão
+     (`--chao`) e a de fechamento, o chão alternativo (quem decide é o `KidsBand`).
+     Estes nomes ficaram para as pílulas, os chips e os ladrilhos tintados que já os
+     usam, agora com os tons de apoio do Pen: o "creme" é o botão suave (a superfície
+     2), o céu é o chão alternativo, e menta e lilás são os tons do Pen, iguais nos
+     dois temas. ⚠️ Não use estes nomes para pintar faixa: use o `KidsBand`. */
+  --band-creme: var(--pen-sup2);
+  --band-menta: var(--sz-kids-menta-bg); /* #dcf0e4 */
+  --band-ceu: var(--pen-chao-alt);
+  --band-lilas: var(--sz-kids-lilas-bg); /* #e5e0f7 */
   --band-rosa: var(--sz-kids-rosa-bg); /* #fff0f7 */
   --band-amarelo: var(--sz-kids-amarelo-bg); /* #fff6dc */
 
   /* ── TINTA do texto ───────────────────────────────────────────────────────
-     Nas telas-modelo (11/09/2026) o texto forte é o NAVY da marca, e não o quase
-     preto do `--foreground`: medido #16224b nos títulos, #132232 nas pílulas e
-     #1c243a no menu, todos colados no `--sz-kids-navy`. É a cor que já existe
-     aparecendo em mais lugares (a lei da cor), e por isso é um apelido novo, sem
-     trocar o valor de `--foreground`, que o ui e o member-shell também leem.
-     No escuro a tinta volta a ser o `--foreground` (ver `.dark`). */
-  --tinta: var(--sz-kids-navy);
+     A tinta forte do Pen (`$ink`), a mesma do `--foreground`: o apelido ficou porque
+     os componentes do kids já o usam. */
+  --tinta: var(--pen-tinta);
 
   /* ── CARTA das páginas de oferta ─────────────────────────────────────────
      O canto e a sombra do cartão do funil. O canto é bem maior que o `--radius`
@@ -148,17 +267,14 @@
      Fica aqui, e não nos primitivos de `@sistemazero/ui`, porque as quatro
      ferramentas embarcadas compartilham aquele arquivo e não vestem esta carta. */
   --raio-carta: 24px;
-  /* Linha de AREIA: divisórias e contornos DENTRO das faixas (sobre o creme um
-     cinza neutro some). Não é mais a borda do cartão, ver `--borda-carta`. */
-  --linha-carta: var(--sz-kids-linha-areia);
-  /* O cartão das telas-modelo (11/09/2026) é branco LISO: medido nas imagens, o
-     pixel já volta à cor da faixa a 6px da borda, então sem borda e sem sombra.
-     No escuro a borda volta (ver `.dark`): cartão e faixa têm claridade parecida. */
+  /* A linha do Pen: divisórias e contornos DENTRO das faixas. Não é a borda do
+     cartão, ver `--borda-carta`. */
+  --linha-carta: var(--pen-linha);
+  /* O cartão do Pen é branco LISO, sem borda e sem sombra. */
   --borda-carta: transparent;
   --sombra-carta-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
-  /* O herói azul é a ÚNICA peça com sombra nas telas-modelo: difusa, uns 30px,
-     escurecendo o creme logo abaixo dele (medido). */
-  --sombra-heroi: 0 18px 36px -12px rgba(12, 30, 62, 0.34);
+  /* O herói é a ÚNICA peça com sombra no Pen: `0 10 24` na própria cor de ação a 20%. */
+  --sombra-heroi: 0 10px 24px color-mix(in oklab, var(--pen-acao) 20%, transparent);
 
   /* ── COR DE ASSINATURA por oficina ───────────────────────────────────────
      Cada oficina tem a sua, como nas telas-modelo. A FONTE é única e mora no
@@ -227,20 +343,20 @@
   --medal-prata-fg: oklch(1 0 0);
   --medal-bronze-fg: oklch(1 0 0);
 
-  /* Fundo com um sopro de azul-céu (o céu do funil, bem diluído). */
-  --background: var(--sz-kids-ceu-suave);
-  --foreground: oklch(0.105 0.01 265);
+  /* O chão único do Pen. */
+  --background: var(--chao);
+  --foreground: var(--pen-tinta);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.105 0.01 265);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.105 0.01 265);
+  --card: var(--pen-cartao);
+  --card-foreground: var(--pen-tinta);
+  --popover: var(--pen-cartao);
+  --popover-foreground: var(--pen-tinta);
 
-  --primary: var(--sz-kids-azul-texto);
+  --primary: var(--pen-acao);
   --primary-foreground: oklch(1 0 0);
 
-  --link: oklch(0.46 0.14 255);
-  --link-hover: oklch(0.4 0.15 255);
+  --link: var(--pen-acao);
+  --link-hover: color-mix(in oklab, var(--pen-acao) 82%, var(--pen-tinta));
   --interactive-text: var(--link);
   --interactive-text-hover: var(--link-hover);
 
@@ -251,35 +367,37 @@
   /* Apontam para os PRIMITIVOS, e não para cópias literais deles: os quatro
      editores embarcados vestem os mesmos tokens (tool-chrome.css), e um lado
      mudando sem o outro abre emenda entre o app e o Estúdio. */
-  --secondary: var(--sz-kids-branco-suave);
-  --secondary-foreground: oklch(0.145 0.01 265);
+  --secondary: var(--pen-sup2);
+  --secondary-foreground: var(--pen-tinta);
 
-  --muted: var(--sz-kids-branco-suave);
-  --muted-foreground: oklch(0.5 0.01 255);
+  --muted: var(--pen-sup2);
+  --muted-foreground: var(--pen-tinta-suave);
 
-  --accent: var(--sz-kids-azul); /* azul vivo em detalhes (hierarquia: azul manda) */
+  /* `accent` só aparece nos blocos compartilhados do member-shell, marcando SUCESSO (a
+     entrega aprovada do Estúdio, o desenho enviado do Pinta): é o `$sucesso` do Pen,
+     estado, então não segue o tema. */
+  --accent: #0b7a54;
   --accent-foreground: oklch(1 0 0);
 
-  --destructive: oklch(0.55 0.22 27);
+  /* O `$alerta` do Pen (branco por cima dá 4,8:1). */
+  --destructive: #d92d34;
   --destructive-foreground: oklch(1 0 0);
 
-  /* Sucesso (badge `success` do @sistemazero/ui) — igual community/admin. */
-  --success: oklch(0.45 0.13 150);
-  --success-foreground: oklch(0.4 0.13 150);
+  /* Sucesso (badge `success` do @sistemazero/ui): o `$sucesso` do Pen, e a tinta do
+     selo um tom abaixo, porque sobre o menta o próprio #0B7A54 dava 4,49:1. */
+  --success: #0b7a54;
+  --success-foreground: #096b4a;
 
-  --border: var(--sz-kids-linha);
-  /* ⚠️ 0.66, e não 0.92 (decisão da dona, 10/09/2026). A WCAG 1.4.11 pede 3:1
-     para o LIMITE de um componente, e com 0.92 a borda do campo media 1,27:1
-     contra o branco do cartão — invisível para quem enxerga pouco. 0.66 dá
-     3,11:1. Só a claridade mudou: matiz e croma são os mesmos de antes. */
-  --input: oklch(0.66 0.01 250);
-  --ring: var(--sz-kids-azul-texto);
+  --border: var(--pen-linha);
+  /* A borda de campo tem de dar 3:1 contra o fundo (WCAG 1.4.11): 3,72:1 no branco. */
+  --input: var(--pen-campo);
+  --ring: var(--pen-acao);
 
   --chart-1: var(--sz-kids-azul-texto);
   --chart-2: var(--sz-kids-verde-profundo);
   --chart-3: var(--sz-kids-rosa-funda);
-  --chart-4: oklch(0.55 0.22 27);
-  --chart-5: oklch(0.5 0.01 255);
+  --chart-4: #d92d34;
+  --chart-5: var(--pen-tinta-suave);
 
   --font-sans:
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -291,21 +409,18 @@
   /* Cards bem arredondados (os --radius-sm/md/lg/xl derivam daqui). */
   --radius: 1rem;
 
-  /* Signature meta-tokens (gradiente CTA, hot badge) — nomes preservados.
-     Hierarquia (diretriz 07/2026): o CTA e a identidade do app são AZUIS
-     (o papel que era do verde-lima); verde é sinal de progresso/conclusão;
-     laranja e amarelo são só pontos de alegria. Pontas do gradiente
-     ESCURECIDAS no light p/ texto branco AA. `--sz-cta` é a cor sólida
-     representativa do CTA (sombra dura 3D e nó gradiente da trilha). */
-  --sz-primary: var(--sz-kids-azul-texto);
+  /* Os meta-tokens da marca (nomes preservados: o member-shell os lê). O botão da
+     marca é a cor de AÇÃO do Pen, chapada (`--sz-gradient` virou a cor lisa); o 3D do
+     Brilliant vem do degrau `--pen-acao-degrau`, não de gradiente. */
+  --sz-primary: var(--pen-acao);
   --sz-primary-fg: oklch(1 0 0);
   --sz-accent: var(--sz-kids-azul-vivo);
-  --sz-hot: oklch(0.55 0.22 27);
-  --sz-hot-tint: oklch(0.55 0.22 27 / 0.1);
-  /* Texto sobre o sólido --sz-hot (botões "Resgatar"/"Tirar"): branco passa AA no
-     vermelho escuro do tema claro. No dark o hot é mais claro → texto navy (ver .dark). */
+  /* O vermelho quente (fogo da sequência, "Resgatar", "Tirar"): o `$alerta` do Pen. */
+  --sz-hot: #d92d34;
+  --sz-hot-tint: color-mix(in oklab, #d92d34 10%, transparent);
+  /* Texto sobre o sólido --sz-hot: branco (4,8:1). */
   --sz-hot-fg: oklch(1 0 0);
-  --sz-cta: var(--sz-kids-azul-texto);
+  --sz-cta: var(--pen-acao);
   --sz-gradient: var(--sz-kids-grad-cta-azul);
 
   /* Console da página pública de jogar: a FORMA é a do Super Nintendo (cruz à
@@ -333,8 +448,8 @@
   --snes-y: var(--kids-verde);
 
   /* Níveis do aluno (carreira de 8, reforma 2D/3D) — cor da AURA + insígnia.
-     Versões AA p/ texto branco no light; o dark clareia (ver .dark). Cada nível
-     tem sua cor, na ordem da escada. */
+     Versões AA p/ texto branco. Cada nível tem sua cor, na ordem da escada, e ela é
+     identidade: não muda no Pink. */
   --level-noob: oklch(0.55 0.02 255); /* cinza neutro (começo) */
   --level-coder: var(--sz-kids-azul-texto); /* azul da marca */
   --level-hacker: var(--sz-kids-laranja-profunda); /* laranja */
@@ -343,175 +458,6 @@
   --level-architect: oklch(0.48 0.16 356); /* rosa profundo (constrói mundos) */
   --level-champion: oklch(0.45 0.19 265); /* índigo (quase Lenda) */
   --level-god: oklch(0.66 0.16 75); /* dourado */
-}
-
-/* ============================================================
-   SISTEMA ZERO KIDS — DARK MODE (a NOITE do tema kids: navy
-   #0C1E3E do funil, laranja vivo como primary, azul claro como
-   acento; o toggle continua no menu do avatar)
-   ============================================================ */
-.dark {
-  color-scheme: dark;
-  /* No dark os sólidos kids SÃO os vivos da marca (texto navy por cima). */
-  --kids-cyan: var(--brand-cyan);
-  --kids-lime: var(--brand-lime);
-  --kids-rosa: var(--sz-kids-rosa-viva);
-  --kids-verde: var(--sz-kids-verde-vivo);
-  --kids-cyan-tint: oklch(0.72 0.13 245 / 0.15);
-  --kids-lime-tint: oklch(0.8 0.15 70 / 0.15);
-  --kids-rosa-tint: oklch(0.75 0.16 356 / 0.15);
-  --kids-verde-tint: oklch(0.78 0.15 152 / 0.15);
-  /* Na noite o mesmo amarelo já é claro o bastante para servir de traço. */
-  --kids-ouro-fg: oklch(0.2 0.04 262);
-  --kids-ouro-tint: oklch(0.85 0.15 88 / 0.15);
-  --kids-ouro-texto: var(--sz-kids-amarelo);
-
-  /* Na noite as faixas não podem ser pastel: cada uma vira o navy do fundo com
-     um SOPRO do próprio matiz, para o ritmo da página sobreviver sem gritar. */
-  /* ⚠️ LITERAIS, e não `color-mix` como no resto do arquivo, por duas razões
-     medidas. (1) O Lightning CSS emite um FALLBACK com a cor CRUA para browsers
-     sem `color-mix` — numa borda tintada isso é aceitável, mas numa faixa de borda
-     a borda seria o amarelo #ffce3a inteiro no lugar de 7% dele. (2) Misturar 7 a
-     9% sobre um navy já cromático não move o matiz: as seis saíam entre 244° e
-     280°, ou seja, seis tons do MESMO azul, e a faixa perdia a função de separar
-     seção. Aqui cada uma nasce no matiz dela, um pouco mais clara que o fundo.
-     Medido contra o fundo navy e as duas tintas do tema: 12,2 a 13,0:1 com
-     `--foreground` e 5,3 a 5,7:1 com a tinta suave. */
-  --band-creme: oklch(0.3 0.045 262); /* a de descanso: o próprio navy, um tom acima */
-  --band-menta: oklch(0.3 0.055 165);
-  --band-ceu: oklch(0.31 0.06 245);
-  --band-lilas: oklch(0.3 0.065 292);
-  --band-rosa: oklch(0.3 0.055 350);
-  --band-amarelo: oklch(0.31 0.05 90);
-
-  /* O navy do dia seria texto escuro sobre o navy da noite: no escuro a tinta é a
-     do tema. */
-  --tinta: var(--foreground);
-
-  /* No escuro a areia clara viraria um fio aceso em volta do cartão; quem separa
-     ali é a borda navy que o tema já tem. */
-  --linha-carta: var(--border);
-  /* No escuro o cartão (0.28) e as faixas (~0.30) quase se confundem: a borda do
-     tema é o que separa um do outro. */
-  --borda-carta: var(--border);
-  /* A sombra azulada desaparece contra o navy: vira preta e mais funda, que é como
-     sombra se lê num fundo escuro. */
-  --sombra-carta-sm: 0 8px 22px rgba(0, 0, 0, 0.38);
-  --sombra-heroi: 0 18px 36px -12px rgba(0, 0, 0, 0.55);
-
-  /* ⚠️ `--tool-*` (o FUNDO do cabeçalho) NÃO muda no escuro, e isso é deliberado.
-     A primeira versão clareava as quatro aqui, como se faz com cor de tinta — e o
-     cabeçalho virava um bloco pastel com texto BRANCO por cima, medido em 2,1 a
-     2,6:1. Cor de fundo não segue o tema: ela carrega o branco por cima em
-     qualquer um dos dois. Quem clareia é a TINTA, abaixo. */
-  /* Tinta sobre o CORPO do cartão, que no escuro é navy: aí sim a cor viva. */
-  --tool-estudio-texto: var(--sz-kids-azul-vivo);
-  --tool-pinta-texto: oklch(0.72 0.16 25);
-  --tool-pensa-texto: var(--sz-kids-laranja-viva);
-  --tool-molda-texto: oklch(0.74 0.16 300);
-  /* Só a TINTA das portas clareia; o fundo delas fica onde está (ver o comentário
-     no `:root`).
-     ⚠️ Medido contra o CARTÃO (`oklch(0.28 0.05 260)`), e não contra o fundo da
-     página: o rodapé "Explorar" mora dentro do cartão, que no escuro é MAIS CLARO
-     que o navy do fundo. Calibrado contra o fundo, o rodapé saía a 4,03–4,10:1 nas
-     quatro portas — perto o bastante para eu não desconfiar sem medir.
-     Agora: 4,71 a 4,79:1 no cartão e 5,40 a 5,50:1 direto na página. */
-  --porta-mural-texto: oklch(0.69 0.19 355);
-  --porta-clube-texto: oklch(0.65 0.105 212);
-  --porta-recados-texto: oklch(0.645 0.15 152);
-  --porta-ranking-texto: oklch(0.67 0.13 70);
-
-  /* No escuro o metal CLAREIA, para não sumir contra o navy — e por isso a tinta
-     das três inverte junto: aqui as medalhas são todas claras e pedem tinta
-     escura. Deixar o branco do tema claro valendo aqui punha "2º" a 2,22:1 e "3º"
-     a 2,97:1, o que só apareceu porque a auditoria roda nos DOIS temas. */
-  --medal-ouro: var(--sz-kids-amarelo);
-  --medal-prata: oklch(0.75 0.02 255);
-  /* 0.71, e não 0.68: com 0.68 o "3º" parava em 4,36:1 contra a tinta escura. */
-  --medal-bronze: oklch(0.71 0.1 55);
-  --medal-prata-fg: var(--sz-kids-tinta);
-  --medal-bronze-fg: var(--sz-kids-tinta);
-
-  --background: var(--sz-kids-navy);
-  --foreground: oklch(0.975 0.005 250);
-
-  --card: oklch(0.28 0.05 260);
-  --card-foreground: oklch(0.975 0.005 250);
-  --popover: oklch(0.31 0.05 260);
-  --popover-foreground: oklch(0.975 0.005 250);
-
-  --primary: var(--brand-cyan);
-  --primary-foreground: oklch(0.22 0.05 262);
-
-  --link: var(--sz-kids-azul-vivo);
-  --link-hover: oklch(0.8 0.11 240);
-  --interactive-text: var(--link);
-  --interactive-text-hover: var(--link-hover);
-
-  /* Gradiente de TEXTO da marca — tons de azul também na noite. */
-  --brand-gradient-start: var(--brand-cyan);
-  --brand-gradient-end: oklch(0.85 0.09 235);
-
-  /* ⚠️ Literal de propósito: no escuro o primitivo `navy-superficie-2` é 0.33 e
-     o app usa 0.3. Apontar para ele aqui MUDARIA a cor, e o lote não muda cor. */
-  --secondary: oklch(0.3 0.045 260);
-  --secondary-foreground: oklch(0.975 0.005 250);
-
-  --muted: oklch(0.3 0.045 260);
-  --muted-foreground: oklch(0.7 0.03 250);
-
-  --accent: oklch(0.33 0.05 260);
-  --accent-foreground: var(--brand-cyan);
-
-  --destructive: oklch(0.64 0.215 27);
-  --destructive-foreground: oklch(0.975 0.005 250);
-
-  --success: oklch(0.33 0.05 260);
-  --success-foreground: oklch(0.8 0.14 155);
-
-  --border: var(--sz-kids-navy-linha);
-  /* Mesma régua no escuro: 0.36 dava 1,34:1 contra o cartão navy; 0.555 dá 3,08:1. */
-  --input: oklch(0.555 0.05 260);
-  --ring: var(--sz-kids-azul-vivo);
-
-  --chart-1: var(--sz-kids-azul-vivo);
-  --chart-2: var(--sz-kids-verde-vivo);
-  --chart-3: var(--sz-kids-rosa-viva);
-  --chart-4: oklch(0.64 0.215 27);
-  --chart-5: oklch(0.65 0.03 250);
-
-  --sz-primary: var(--sz-kids-azul-vivo);
-  --sz-primary-fg: oklch(0.22 0.05 262);
-  --sz-accent: oklch(0.8 0.11 240);
-  --sz-hot: oklch(0.704 0.191 22);
-  --sz-hot-tint: oklch(0.704 0.191 22 / 0.15);
-  /* Hot mais CLARO no dark → texto branco falharia; usa navy escuro (contraste ~5:1). */
-  --sz-hot-fg: oklch(0.18 0.04 262);
-  --sz-cta: var(--sz-kids-azul-vivo);
-  --sz-gradient: var(--sz-kids-grad-cta-azul-suave);
-
-  /* Console de jogar no dark: o corpo vira navy-noite e a cruz clareia, senão
-     ela some no fundo. As quatro casas já são as versões vivas do dark. */
-  --snes-body: color-mix(in oklab, var(--background) 72%, var(--brand-cyan));
-  --snes-body-deep: color-mix(in oklab, var(--background) 88%, black);
-  --snes-body-edge: color-mix(in oklab, var(--background) 55%, black);
-  --snes-cross: color-mix(in oklab, var(--background) 40%, var(--brand-cyan));
-  /* No escuro a cruz CLAREIA, então a seta escurece — o contraste vem do par,
-     não de uma cor fixa. */
-  --snes-cross-ink: oklch(0.2 0.04 258);
-  --snes-cross-edge: color-mix(in oklab, var(--background) 78%, black);
-  --snes-strip: color-mix(in oklab, var(--background) 45%, var(--brand-cyan));
-  --snes-ink: oklch(0.96 0.01 255);
-
-  /* Níveis no dark: vivos/claros (a aura aparece sobre o navy-noite). */
-  --level-noob: oklch(0.72 0.02 255);
-  --level-coder: var(--brand-cyan);
-  --level-hacker: var(--brand-lime);
-  --level-explorer: oklch(0.78 0.13 195);
-  --level-elite: oklch(0.7 0.18 300);
-  --level-architect: oklch(0.75 0.16 356);
-  --level-champion: oklch(0.72 0.15 265);
-  --level-god: oklch(0.82 0.15 82);
 }
 
 @layer base {
@@ -555,18 +501,6 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-}
-
-/* Glow da marca p/ elevação em dark mode (portado do community). */
-.dark .brand-glow {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-lime) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-lime) 15%, transparent);
-}
-.dark .brand-glow-cyan {
-  box-shadow:
-    0 0 12px color-mix(in oklch, var(--brand-cyan) 35%, transparent),
-    0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
 }
 
 /* Button variant="default" = a PÍLULA AZUL CHAPADA das telas-modelo (11/09/2026).
@@ -975,13 +909,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   --unit-bg: var(--muted);
   --unit-bg-image: none;
 }
-/* No dark os sólidos são vivos → texto navy por cima. */
-.dark .kids-unit-cyan,
-.dark .kids-unit-lime,
-.dark .kids-unit-rosa,
-.dark .kids-unit-verde {
-  --unit-fg: oklch(0.2 0.04 262);
-}
 
 /* ============================================================
    ILUSTRAÇÃO EM CSS — nada de asset novo.
@@ -1039,8 +966,8 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   }
 
   /* (As bolhas, o brilho e as estrelas flutuando das faixas saíram em 11/09/2026:
-     as telas-modelo não têm decoração nenhuma no fundo, e a `.kids-blob` do auth é
-     outra coisa, que continua logo abaixo.) */
+     as telas-modelo não têm decoração nenhuma no fundo. As bolhas do login também, no
+     lote 9: o painel de marca virou o herói `.kids-marca`.) */
 
   /* HERÓI e PÍLULA CHEIA da marca.
      ⚠️ Existem porque `text-white` sobre `--sz-primary` está ERRADO metade do
@@ -1292,18 +1219,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     transform: translateY(110vh) rotate(720deg);
     opacity: 0;
   }
-}
-
-/* Blobs decorativos do auth (fundo lúdico em cores da marca). */
-.kids-blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(60px);
-  opacity: 0.25;
-  pointer-events: none;
-}
-.dark .kids-blob {
-  opacity: 0.18;
 }
 
 /* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */

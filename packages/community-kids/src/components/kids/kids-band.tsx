@@ -4,9 +4,11 @@ import { cn } from '@/lib/cn'
 /**
  * Faixa de seção que pinta a LARGURA TODA e centraliza o conteúdo por dentro.
  *
- * É a peça que dá ritmo à página, no lugar do bloco branco contínuo: a primeira
- * faixa de toda página é creme, a última é lilás, e as do meio variam. A régua
- * vem das páginas de oferta, onde o creme é o descanso e a cor é a exceção.
+ * Desde a paleta do Pen (11/09/2026) a página tem UM fundo só: toda faixa é o chão
+ * (`--chao`), e a de FECHAMENTO, que por convenção é a `lilas`, é o chão alternativo
+ * (`--chao-alt`), como a última faixa das telas do Pen. Os tons `creme`, `menta`,
+ * `ceu`, `rosa` e `amarelo` ficaram no tipo para as páginas não mudarem: todos viram o
+ * chão. O ritmo da página agora vem do respiro e dos cartões brancos, não da cor.
  *
  * ⚠️ A cor sangra até a borda, mas o TEXTO não fica mais largo: o container
  * interno tem régua própria. E a faixa mede a coluna à direita do menu, não a
@@ -20,12 +22,12 @@ import { cn } from '@/lib/cn'
 export type BandTone = 'creme' | 'menta' | 'ceu' | 'lilas' | 'rosa' | 'amarelo' | 'branco'
 
 const FUNDO: Record<BandTone, string> = {
-  creme: 'bg-(--band-creme)',
-  menta: 'bg-(--band-menta)',
-  ceu: 'bg-(--band-ceu)',
-  lilas: 'bg-(--band-lilas)',
-  rosa: 'bg-(--band-rosa)',
-  amarelo: 'bg-(--band-amarelo)',
+  creme: 'bg-(--chao)',
+  menta: 'bg-(--chao)',
+  ceu: 'bg-(--chao)',
+  rosa: 'bg-(--chao)',
+  amarelo: 'bg-(--chao)',
+  lilas: 'bg-(--chao-alt)',
   branco: 'bg-card',
 }
 

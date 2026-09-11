@@ -87,7 +87,9 @@ export function RecadosClient({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-(--band-ceu) px-2.5 py-0.5 font-bold text-primary text-xs">
+                    {/* Rótulo, e não ação: tinta sobre o céu. O azul de ação dava 4,27:1 no
+                        céu do Pen (4,08 no Pink); a cor de ação fica para o "NOVO". */}
+                    <span className="rounded-full bg-(--band-ceu) px-2.5 py-0.5 font-bold text-foreground text-xs">
                       {CONTEXT_LABEL[t.contextType]}
                     </span>
                     {t.unread ? (

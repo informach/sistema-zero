@@ -19,11 +19,13 @@
  * escuro re-declara TODOS, inclusive os derivados, com o mesmo texto. O teste exige igualdade
  * entre os conjuntos de tokens do claro e do escuro.
  *
- * O DESENHO (11/09/2026) é o das telas-modelo dela, medido a 1440px: galerias em FAIXAS de
- * borda a borda (creme no cabeçalho, céu na grade, lilás no fechamento), cartões brancos sem
- * borda aparente, botões em pílula CHAPADA (acabou a sombra dura do 3D), controles de 40px no
+ * O DESENHO (11/09/2026) é o das telas-modelo dela, medido a 1440px, na PALETA DO PEN: galerias
+ * em faixas de borda a borda sobre UM chão só (o cabeçalho e a grade no chão, o fechamento no
+ * chão alternativo), cartões brancos sem borda aparente, botões em pílula, controles de 40px no
  * mouse e 44px no toque, e o botão do menu como um QUADRADO dentro do conteúdo (deixou de ser a
- * aba colada na barra lateral). É a mesma régua das páginas do community-kids.
+ * aba colada na barra lateral). É a mesma régua das páginas do community-kids, que redefine os
+ * primitivos `--sz-kids-*` neutros para o Pen (temas Padrão e Pink) e dá a cor de ação em
+ * `--sz-kids-acao`.
  */
 
 /* == geometria e constantes == (não mudam com o tema) */
@@ -83,23 +85,34 @@
   --sz-tool-line: var(--sz-kids-linha, oklch(0.9 0.01 250)); /* = --border */
   --sz-tool-ink: var(--sz-kids-tinta, #26314a);
   --sz-tool-muted: var(--sz-kids-tinta-suave, #5c6b85);
-  --sz-tool-accent: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --primary */
+  /* A cor de AÇÃO vem do host (`--sz-kids-acao`: o azul no tema Padrão do kids, o rosa no
+     Pink); sem ela, o azul da marca de sempre (playgrounds). Não é o azul de IDENTIDADE: esse
+     continua azul no Pink (o Estúdio, o nível Construtor(a)). */
+  --sz-tool-accent: var(
+    --sz-kids-acao,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* = --primary */
   --sz-tool-on-accent: oklch(1 0 0); /* = --primary-foreground */
   --sz-tool-cta-gradient: var(
     --sz-kids-grad-cta-azul,
     linear-gradient(90deg, oklch(0.58 0.145 250), oklch(0.5 0.15 255))
   );
-  --sz-tool-cta: var(--sz-kids-azul-texto, oklch(0.52 0.15 252)); /* = --sz-cta */
+  --sz-tool-cta: var(
+    --sz-kids-acao,
+    var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
+  ); /* = --sz-cta */
   --sz-tool-on-cta: oklch(1 0 0); /* = --sz-primary-fg */
   /* Tons de status como TEXTO (14px, bold): precisam de AA sobre branco. Ancorados nos que o
      Estúdio já mede (#047857 / #b45309); os verdes/laranjas de fundo do kids não passam. */
   --sz-tool-ok: oklch(0.5 0.13 160);
   --sz-tool-warn: oklch(0.52 0.14 58);
   --sz-tool-danger: oklch(0.55 0.22 27); /* = --destructive */
-  /* As FAIXAS das galerias: os mesmos fundos das faixas do kids (`--band-*`). */
-  --sz-tool-band-creme: var(--sz-kids-creme, #fff7e9);
-  --sz-tool-band-ceu: var(--sz-kids-ceu, #e4f2ff);
-  --sz-tool-band-lilas: var(--sz-kids-lilas-bg, #efe7ff);
+  /* As FAIXAS das galerias, na régua do Pen (11/09/2026): UM chão só (o cabeçalho e a grade),
+     e a faixa de fechamento no chão alternativo. Os nomes `creme`/`ceu`/`lilas` ficaram dos
+     tempos das faixas coloridas; o que vale é o PAPEL (cabeçalho, grade, fechamento). */
+  --sz-tool-band-creme: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --sz-tool-band-ceu: var(--sz-kids-ceu-suave, oklch(0.975 0.012 245));
+  --sz-tool-band-lilas: var(--sz-kids-ceu, #e4f2ff);
   /* O fio do cartão: some no claro (o branco já se separa da faixa) e aparece no escuro, onde
      cartão e faixa têm claridade parecida. É a `--borda-carta` do kids. */
   --sz-tool-card-edge: transparent;
