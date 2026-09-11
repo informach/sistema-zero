@@ -128,7 +128,8 @@ describe('MainContainer: regime de altura + borda a borda dos apps embarcados', 
   it('a AULA guarda o padding: ela não foi convertida em faixas', () => {
     const main = mainFor('/cursos/meu-curso/aulas/aula-1')
     expect(main.className).toContain('w-full')
-    expect(main.className).toContain('kids-field')
+    // Fundo LISO (telas-modelo de 11/09/2026): a textura de pontinhos saiu.
+    expect(main.className).not.toContain('kids-field')
     // A PELE da aula (fundo azul-claro + cartas brancas) pende inteira deste gancho:
     // a aula é do member-shell e o kids só a veste por CSS a partir daqui.
     expect(main.className).toContain('kids-aula')

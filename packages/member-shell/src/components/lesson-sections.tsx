@@ -368,10 +368,17 @@ function LessonSectionsContent({
       key={`${block.id}:${block.blockRevision ?? ''}`}
       id={`lesson-block-${block.id}`}
       tabIndex={-1}
-      className="space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      // `sz-lesson-block`: gancho ESTÁVEL do tema do kids (cada bloco vira um cartão
+      // lá). Sem regra aqui: a comunidade adulta não carrega aquele CSS.
+      className="sz-lesson-block space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       {requirements.some((r) => r.blockId === block.id) && (
-        <p className="text-sm font-medium text-muted-foreground">
+        // `sz-lesson-requirement` + `data-done`: ganchos do tema do kids (a concluída
+        // vira verde com o ✓ lá). O texto é o mesmo nos dois apps.
+        <p
+          className="sz-lesson-requirement text-sm font-medium text-muted-foreground"
+          data-done={requirements.find((r) => r.blockId === block.id)?.complete || undefined}
+        >
           {requirements.find((r) => r.blockId === block.id)?.complete
             ? 'Atividade concluída'
             : 'Atividade obrigatória'}
@@ -527,7 +534,9 @@ function LessonSectionsContent({
             minSize={30}
             className="min-w-0 space-y-6 overflow-visible!"
           >
-            <header className="space-y-2 px-1">
+            {/* `sz-lesson-section-head`: gancho ESTÁVEL do tema do kids, onde o título
+                abre o primeiro cartão da seção. */}
+            <header className="sz-lesson-section-head space-y-2 px-1">
               <h2
                 ref={heading}
                 tabIndex={-1}
@@ -625,6 +634,7 @@ function LessonSectionsContent({
         <div className="sz-lesson-nav flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
           <Button
             variant="outline"
+            className="sz-lesson-nav-prev"
             disabled={index === 0 || navigating}
             onClick={() => navigate(index - 1)}
           >
@@ -634,6 +644,7 @@ function LessonSectionsContent({
           {!preview && (
             <Button
               variant="ghost"
+              className="sz-lesson-nav-help"
               onClick={() => setHelpOpen((open) => !open)}
               aria-expanded={helpOpen}
             >
@@ -642,6 +653,7 @@ function LessonSectionsContent({
             </Button>
           )}
           <Button
+            className="sz-lesson-nav-next"
             disabled={
               index === sections.length - 1 || navigating || locked(sections[index + 1]?.id ?? '')
             }

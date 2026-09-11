@@ -60,7 +60,11 @@ export function KidsLessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
   )
 }
 
-/** Chip de atividade (cores da marca via temas de unidade — mapa literal). */
+/**
+ * Chip de atividade (cores da marca via temas de unidade — mapa literal). Desenho das
+ * telas-modelo (11/09/2026): cor SÓLIDA por tipo de atividade (Assista azul, Responda
+ * laranja, Crie verde), sem o gradiente que o "Crie" usava, e o rótulo em Nunito.
+ */
 function BlockChip({
   icon: Icon,
   label,
@@ -68,17 +72,17 @@ function BlockChip({
 }: {
   icon: LucideIcon
   label: string
-  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-grad' | 'kids-unit-muted'
+  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-verde' | 'kids-unit-muted'
 }) {
   return (
     <span
       className={cn(
         themeClass,
-        'inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1 font-bold text-xs uppercase tracking-wide',
-        '[font-family:var(--font-display)] [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)',
+        'inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 font-extrabold text-xs uppercase tracking-[0.08em]',
+        '[background-color:var(--unit-bg)] text-(--unit-fg)',
       )}
     >
-      <Icon className="size-3.5" />
+      <Icon className="size-3.5" aria-hidden />
       {label}
     </span>
   )
@@ -137,8 +141,8 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
       return <StudioBlockKids block={block} content={content} />
     case 'pinta':
       return (
-        <div className="kids-unit-grad flex flex-col gap-3">
-          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-grad" />
+        <div className="kids-unit-verde flex flex-col gap-3">
+          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-verde" />
           <PintaBlockView
             blockId={block.id}
             content={content}
@@ -162,10 +166,9 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
 function ComingSoon({ content }: { content: ComingSoonBlock }) {
   return (
     <div className="kids-unit-muted flex flex-col gap-3">
-      {/* Chip NEUTRO de propósito: `kids-unit-grad` é o gradiente de "Crie"/"Brinque"
-          (os blocos mais empolgantes) e é o mesmo da pílula "AULA N DE M" logo acima —
-          duas pílulas gêmeas na mesma dobra, com o visual de maior ênfase do sistema
-          num estado em que não há nada a fazer. A moldura tracejada já diz "em obras". */}
+      {/* Chip NEUTRO de propósito: os coloridos são de ATIVIDADE (Assista, Responda,
+          Crie), e dar a um deles o estado em que não há nada a fazer seria prometer
+          uma. A moldura tracejada já diz "em obras". */}
       <BlockChip icon={Hammer} label="Em breve" themeClass="kids-unit-muted" />
       <div className="flex flex-col items-center gap-3 rounded-2xl border-(--unit) border-2 border-dashed bg-card px-6 py-10 text-center">
         {/* Dormindo, não pensativo: aqui não há dúvida a resolver, a aula ainda
@@ -212,8 +215,8 @@ function StudioBlockKids({
     router.refresh()
   }
   return (
-    <div className={cn('kids-unit-grad flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
-      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-grad" />
+    <div className={cn('kids-unit-verde flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
+      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-verde" />
       <StudioBlockView
         blockId={block.id}
         content={content}
@@ -235,16 +238,14 @@ function RichText({ content }: { content: RichTextBlock }) {
 }
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
-/** Moldura kids dos players: borda COLORIDA e cantos arredondados, mas sem
- *  engrossar. Era `border-4 rounded-3xl` (09/2026): o infantil vem da cor, e os
- *  4px a menos de traço voltam como largura útil para o vídeo. */
+/** Moldura kids dos players: só os cantos redondos. O vídeo já mora num cartão
+ *  branco (telas-modelo de 11/09/2026), e o fio colorido com a sombra dura de antes
+ *  sobrava ali dentro; a largura que ele comia volta para o vídeo. */
 function VideoFrame({ children }: { children: React.ReactNode }) {
   return (
     <div className="kids-unit-cyan flex flex-col gap-3">
       <BlockChip icon={Clapperboard} label="Assista" themeClass="kids-unit-cyan" />
-      <div className="overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
-        {children}
-      </div>
+      <div className="overflow-hidden rounded-2xl">{children}</div>
     </div>
   )
 }
@@ -264,7 +265,7 @@ function ImageView({ content }: { content: ImageBlock }) {
     <figure className="kids-unit-lime">
       {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS) empurrando
           o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
-      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={content.url}
@@ -286,7 +287,7 @@ function ImageView({ content }: { content: ImageBlock }) {
 function Audio({ content }: { content: AudioBlock }) {
   if (!content.url) return null
   return (
-    <div className="kids-unit-lime flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4 shadow-[0_4px_0_var(--border)]">
+    <div className="kids-unit-lime flex flex-col gap-3">
       <BlockChip icon={Headphones} label="Escute" themeClass="kids-unit-lime" />
       {/* biome-ignore lint/a11y/useMediaCaption: áudio de aula sem faixa de legenda disponível */}
       <audio controls preload="metadata" src={content.url} className="w-full" />
@@ -301,9 +302,9 @@ function Audio({ content }: { content: AudioBlock }) {
 function Embed({ content }: { content: EmbedBlock }) {
   if (!content.html) return <UnsupportedBlock label="Conteúdo interativo não suportado" />
   return (
-    <div className="kids-unit-grad flex flex-col gap-3">
-      <BlockChip icon={Gamepad2} label="Brinque" themeClass="kids-unit-grad" />
-      <div className="overflow-hidden rounded-2xl border-(--unit) border-2 shadow-[0_5px_0_color-mix(in_oklch,var(--unit)_45%,transparent)]">
+    <div className="kids-unit-verde flex flex-col gap-3">
+      <BlockChip icon={Gamepad2} label="Brinque" themeClass="kids-unit-verde" />
+      <div className="overflow-hidden rounded-2xl">
         <iframe
           srcDoc={content.html}
           title="Conteúdo interativo"

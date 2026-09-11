@@ -1,19 +1,15 @@
 'use client'
 
-import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+import { lessonCompletionRequirements, type SectionProgressView } from '@sistemazero/core/learning'
 
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
 } from '@sistemazero/member-shell/components/lesson-player-context'
-import { LessonProgressBar } from '@sistemazero/member-shell/components/lesson-progress-bar'
 import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
-import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { Button, buttonVariants } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, ArrowRight, Check, CheckCircle2, Lock } from 'lucide-react'
 import Link from 'next/link'
@@ -58,6 +54,39 @@ interface Props {
   ratingViewer: RatingViewer
   /** Página de vendas do curso (Compartilhar) — `null` oculta o botão. */
   shareUrl: string | null
+}
+
+/**
+ * O progresso da AULA na barra de cima (telas-modelo de 11/09/2026): a barra verde e a
+ * porcentagem em negrito. A contagem de seções continua para o leitor de tela (no
+ * `aria-valuetext` e numa região viva, como no componente do member-shell, que segue
+ * servindo o adulto).
+ */
+function KidsLessonProgress({ progress }: { progress?: SectionProgressView }) {
+  if (!progress) return <div className="flex-1" />
+  const percent = Math.round(progress.percent)
+  const sections = `${progress.completed} de ${progress.total} seções concluídas`
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-3">
+      <div
+        className="sz-progress flex-1"
+        role="progressbar"
+        aria-label="Progresso da aula"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-valuetext={sections}
+      >
+        <span style={{ width: `${progress.percent}%` }} />
+      </div>
+      <span aria-hidden="true" className="shrink-0 font-extrabold text-[0.9375rem] tabular-nums">
+        {percent}%
+      </span>
+      <span className="sr-only" aria-live="polite">
+        {sections}
+      </span>
+    </div>
+  )
 }
 
 export function LessonPlayer({
@@ -196,12 +225,12 @@ export function LessonPlayer({
               aula o que a criança precisa medir é a AULA. O do curso ela já vê na
               trilha, no card do curso e na celebração. O chip "Aula N de M" abaixo
               FICA: ele situa a aula no curso sem medir nada. */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 rounded-[1.25rem] border border-(--borda-carta) bg-card px-3 py-2.5 md:gap-4 md:px-4">
             {/* "Voltar ao CURSO", não "à trilha": desde que a página do curso ganhou
                 a própria setinha (que vai à trilha do NÍVEL), a mesma palavra levaria
                 a dois lugares em telas seguidas. */}
             <KidsBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
-            <LessonProgressBar progress={lesson.sectionProgress} />
+            <KidsLessonProgress progress={lesson.sectionProgress} />
             {/* Modo foco: esconder o menu / a lista de aulas p/ mais área útil. */}
             {navAvailable || outlineAvailable ? (
               <div className="flex items-center gap-2">
@@ -213,10 +242,10 @@ export function LessonPlayer({
 
           {/* mb-2: título → 1º bloco fica um pouco maior que o gap entre blocos */}
           <div className="mb-2">
-            <span className="inline-block rounded-full px-3 py-1 font-bold text-xs uppercase tracking-widest [background-image:var(--sz-gradient)] [font-family:var(--font-display)] text-(--sz-primary-fg)">
+            <span className="kids-marca inline-block rounded-full px-3 py-1 font-extrabold text-xs uppercase tracking-[0.12em]">
               Aula {lessonNumber} de {flatLessons.length}
             </span>
-            <h1 className="sz-display mt-3 text-2xl md:text-3xl">{lesson.title}</h1>
+            <h1 className="sz-display mt-3 text-[clamp(1.875rem,3vw,2.25rem)]">{lesson.title}</h1>
           </div>
 
           <LessonSections
@@ -235,24 +264,23 @@ export function LessonPlayer({
           ) : null}
 
           {/* Ações: concluir + navegação */}
-          <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
+          <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] border border-(--borda-carta) bg-card px-4 py-3.5 md:px-5">
             {lesson.completed ? (
-              <span className="inline-flex items-center gap-2 text-sm text-accent dark:text-primary">
-                <CheckCircle2 className="size-4" />
+              <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
+                <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
                 Aula concluída
               </span>
             ) : (
-              <div className="flex flex-col gap-1">
-                {/* CTA 3D grande (o seletor global do Button default já aplica
-                    a sombra dura + afunda no clique). */}
-                <Button
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
                   onClick={() => complete()}
                   disabled={completing || completeBlocked}
-                  className="h-12 rounded-full px-8 text-base"
+                  className="sz-btn-gradient h-12 gap-2 self-start px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
                 >
-                  {completing ? <Spinner /> : <CheckCircle2 className="size-5" />}
+                  {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
                   Concluir aula
-                </Button>
+                </button>
                 {blockedByLearning ? (
                   <p className="text-sm text-muted-foreground">
                     Termine as atividades essenciais das seções para concluir a aula.
@@ -288,21 +316,15 @@ export function LessonPlayer({
             )}
             <div className="ml-auto flex items-center gap-2">
               {prevHref ? (
-                <Link
-                  href={prevHref}
-                  className={cn(buttonVariants({ variant: 'outline' }), 'h-11 rounded-full px-5')}
-                >
-                  <ArrowLeft className="size-4" />
+                <Link href={prevHref} className="sz-btn-gradient sz-btn-suave gap-2 px-5">
+                  <ArrowLeft className="size-4" aria-hidden />
                   Anterior
                 </Link>
               ) : null}
               {nextHref ? (
-                <Link
-                  href={nextHref}
-                  className={cn(buttonVariants({ variant: 'outline' }), 'h-11 rounded-full px-5')}
-                >
+                <Link href={nextHref} className="sz-btn-gradient gap-2 px-5">
                   Próxima
-                  <ArrowRight className="size-4" />
+                  <ArrowRight className="size-4" aria-hidden />
                 </Link>
               ) : null}
             </div>
@@ -322,40 +344,53 @@ export function LessonPlayer({
               : 'lg:w-72 lg:opacity-100',
           )}
         >
-          <Card className="overflow-hidden p-0">
-            {/* O índice lateral mantém o progresso geral do curso. */}
-            <div className="border-border border-b px-4 py-3">
-              <p className="sz-display text-sm">{course.title}</p>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Progresso do curso · {course.progress.percent}%
-              </p>
-              <ProgressBar value={course.progress.percent} />
+          <div className="overflow-hidden rounded-[1.25rem] border border-(--borda-carta) bg-card">
+            {/* O índice lateral mantém o progresso geral do curso, compacto. */}
+            <div className="px-5 pt-5 pb-3">
+              <p className="sz-display text-lg leading-tight">{course.title}</p>
               <CourseRatingFlow
                 courseSlug={course.slug}
                 initialRating={course.myRating}
                 shareUrl={shareUrl}
                 viewer={ratingViewer}
               />
+              <div className="mt-3.5 flex items-center justify-between font-semibold text-muted-foreground text-xs">
+                <span>Progresso do curso</span>
+                <span className="font-extrabold">{course.progress.percent}%</span>
+              </div>
+              <div
+                className="sz-progress mt-1.5"
+                role="progressbar"
+                aria-label="Progresso do curso"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={course.progress.percent}
+              >
+                <span style={{ width: `${course.progress.percent}%` }} />
+              </div>
             </div>
-            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto">
+            <nav className="scrollbar-subtle max-h-[28rem] overflow-y-auto px-3 pb-4">
               {modules.map((module, moduleIndex) => (
                 <div key={module.id} className={UNIT_THEME_CLASS[unitThemeAt(moduleIndex)]}>
-                  <p className="bg-muted/40 px-4 py-1.5 font-bold text-(--unit) text-xs uppercase tracking-wide [font-family:var(--font-display)]">
+                  <p
+                    className="px-2 pt-3 pb-1.5 font-extrabold text-[0.6875rem] uppercase tracking-[0.12em]"
+                    // A cor da unidade como tinta miúda reprova AA; puxada para o texto do
+                    // tema, mantém o matiz e passa (a régua do chip de etiqueta).
+                    style={{ color: 'color-mix(in oklab, var(--unit) 62%, var(--foreground))' }}
+                  >
                     {module.title}
                   </p>
-                  <ul>
+                  <ul className="flex flex-col gap-0.5">
                     {module.lessons.map((item, lessonIndex) => {
                       const active = item.id === lesson.id
                       const number = (moduleStartIndexes[moduleIndex] ?? 0) + lessonIndex + 1
                       const numberBadge = (
                         <span
                           className={cn(
-                            'grid size-6 shrink-0 place-items-center rounded-full border-2 font-bold text-[0.65rem] [font-family:var(--font-display)]',
+                            'grid size-6 shrink-0 place-items-center rounded-full font-extrabold text-[0.6875rem] tabular-nums',
                             item.completed
-                              ? 'border-transparent [background-color:var(--unit-bg)] [background-image:var(--unit-bg-image)] text-(--unit-fg)'
-                              : active
-                                ? 'border-(--unit) text-(--unit)'
-                                : 'border-border',
+                              ? '[background-color:var(--unit-bg)] text-(--unit-fg)'
+                              : 'bg-muted text-muted-foreground',
                           )}
                         >
                           {item.completed ? (
@@ -373,7 +408,7 @@ export function LessonPlayer({
                           <li key={item.id}>
                             <div
                               aria-disabled="true"
-                              className="flex cursor-not-allowed items-center gap-2.5 px-4 py-2 text-muted-foreground text-sm opacity-70"
+                              className="flex cursor-not-allowed items-center gap-3 rounded-xl px-2.5 py-2 font-semibold text-muted-foreground text-sm opacity-70"
                             >
                               {numberBadge}
                               <span className="truncate">{item.title}</span>
@@ -393,10 +428,12 @@ export function LessonPlayer({
                           <Link
                             href={`${courseHref}/aulas/${encodeURIComponent(item.id)}`}
                             className={cn(
-                              'flex items-center gap-2.5 px-4 py-2 text-sm transition-colors',
+                              'flex min-h-10 items-center gap-3 rounded-xl px-2.5 py-2 font-semibold text-sm transition-colors',
+                              // A aula de agora: o creme com o traço laranja à esquerda, como
+                              // nas telas-modelo. O traço é sombra INTERNA (não mexe no layout).
                               active
-                                ? 'bg-[color-mix(in_oklch,var(--unit)_12%,transparent)] font-semibold text-foreground'
-                                : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                                ? 'bg-(--band-creme) text-(--tinta) shadow-[inset_3px_0_0_var(--sz-kids-laranja-texto)]'
+                                : 'text-(--tinta) hover:bg-muted',
                             )}
                             aria-current={active ? 'page' : undefined}
                           >
@@ -410,7 +447,7 @@ export function LessonPlayer({
                 </div>
               ))}
             </nav>
-          </Card>
+          </div>
         </aside>
       </div>
 

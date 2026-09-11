@@ -970,6 +970,20 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 - **Trilha de aulas:** nós e faixas de unidade CHAPADOS (a sombra dura de 5px e o `--node-shadow`
   saíram); o aperto virou `translateY(2px) scale(.97)`.
 
+### A aula no desenho das telas-modelo (11/09/2026)
+
+A aula é do member-shell (compartilhada com o adulto), então o kids a veste por CSS a partir dos
+GANCHOS de lá (lista no CLAUDE.md do member-shell, invariante 8). ⚠️ As regras ficam FORA de camada
+no `globals.css` (bloco "A AULA NO DESENHO DAS TELAS-MODELO"): o member-shell pinta com utilitárias,
+e dentro de `@layer components` elas perdiam (era por isso que o raio da barra do índice nunca
+mudava). Cada bloco vira cartão branco; o título da seção abre o primeiro (seletor de irmão
+`.sz-lesson-section-head + .sz-lesson-block`); a borda é a `--borda-carta` e NÃO sombra, porque o
+bloco usa o anel de foco em `box-shadow`. A barra de cima (`KidsLessonProgress`, com a contagem de
+seções no `aria-valuetext` e numa região viva), o chip "AULA N DE M", o índice da direita e o pé
+moram no `lesson-player-client.tsx`. Chips das atividades em cor sólida (Crie/Brinque/Desenhe no
+verde, sem o gradiente) e o quiz sem cartão dentro de cartão (painel `bg-background`; aprovado =
+bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos saiu).
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,

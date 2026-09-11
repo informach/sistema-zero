@@ -860,6 +860,14 @@ na hora, mas voltaria). O que mudou, e é contrato:
 7. **Exports map: subpaths de componente levam EXTENSÃO** (`"./components/ebook/*":
    "./src/components/ebook/*.tsx"`) — padrão sem extensão resolve no Turbopack mas NÃO no `tsc`
    (o typecheck do consumidor quebra com "Cannot find module").
+8. **Ganchos de tema da aula (`LessonSections`) são SÓ classe, sem regra aqui.** O kids veste a
+   aula por CSS dele a partir destes nomes, e a comunidade adulta não carrega aquele CSS:
+   `sz-lesson-sections` (raiz, só com a flag `kids`), `sz-lesson-toolbar`, `sz-lesson-section-head`
+   (o `<header>` do título da seção), `sz-lesson-block` (cada bloco), `sz-lesson-requirement` +
+   `data-done` (a linha "Atividade concluída/obrigatória"), `sz-lesson-nav` e os três botões
+   dele (`sz-lesson-nav-prev|help|next`). Renomear um deles quebra o desenho do kids em silêncio
+   (nenhum teste de lá mira a classe); mudar a ESTRUTURA (ex.: o bloco deixar de ser irmão logo
+   depois do cabeçalho) também — o kids junta os dois num cartão só pelo seletor de irmão.
 
 **Ranking geral (full review 06/09/2026):** o BFF valida `limit`, encaminha `cursor` sem
 interpretá-lo e espelha `nextCursor` no contrato compartilhado. A primeira página server-side não

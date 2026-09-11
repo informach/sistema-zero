@@ -15,8 +15,8 @@ import { useFocusMode } from './focus-mode'
  * botão, Esconder menu". E no público tablet/celular tooltip nem aparece.
  *
  * Duas roupas para o MESMO controle (mesmo rótulo, mesmo ícone, mesmo estado):
- * - **`header`** (padrão): círculo do cabeçalho da aula, no estilo 3D do
- *   `KidsBackButton`, ao lado do "voltar" e do progresso.
+ * - **`header`** (padrão): o quadrado creme da barra de cima da aula (telas-modelo de
+ *   11/09/2026), ao lado do "voltar" e do progresso.
  * - **`edge`**: PUXADOR colado na borda esquerda. ⚠️ INTERINO (07/09/2026): só o
  *   `/molda` ainda o usa, na calha que o `MainContainer` reserva para ele. Estúdio,
  *   Pensa e Pinta ganharam o botão do menu DENTRO da própria barra (contrato
@@ -75,10 +75,16 @@ export function FocusModeToggle({
             // lado esquerdo — quem navega por teclado veria meio anel. A sombra dura
             // (2px 2px) cresce p/ a direita e p/ baixo, por isso sobrevive ao recorte.
             '-translate-y-1/2 absolute top-1/2 left-0 z-30 h-16 w-7 rounded-r-xl shadow-[2px_2px_0_var(--border)] focus-visible:shadow-[inset_0_0_0_3px_var(--ring),2px_2px_0_var(--border)] focus-visible:outline-none active:translate-x-[1px] active:shadow-[1px_2px_0_var(--border)]'
-          : 'size-11 rounded-full shadow-[0_3px_0_var(--border)] active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]',
-        hidden
-          ? 'border-primary bg-(--kids-cyan-tint) text-primary'
-          : 'border-border bg-card text-muted-foreground hover:text-foreground',
+          : // Na barra da aula: o QUADRADO creme de cantos redondos das telas-modelo
+            // (11/09/2026), sem borda nem sombra dura. Escondido = o azul clarinho da marca.
+            'size-11 rounded-[0.875rem] border-transparent active:translate-y-px',
+        variant === 'edge'
+          ? hidden
+            ? 'border-primary bg-(--kids-cyan-tint) text-primary'
+            : 'border-border bg-card text-muted-foreground hover:text-foreground'
+          : hidden
+            ? 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
+            : 'bg-(--band-creme) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-creme)_90%,var(--foreground))]',
       )}
     >
       <Icon className={variant === 'edge' ? 'size-4' : 'size-5'} />
