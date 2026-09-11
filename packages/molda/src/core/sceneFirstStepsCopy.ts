@@ -1,5 +1,6 @@
 import { COPY } from './copy'
 import { SCENE_PAINT_COPY } from './scenePaintCopy'
+import { SCENE_TOOL_ACCESS_COPY } from './sceneToolAccessCopy'
 
 const scene = COPY.scene
 
@@ -20,7 +21,9 @@ export const SCENE_FIRST_STEPS_COPY = {
       steps: [
         {
           title: 'Comece com uma peça',
-          text: `Em “${scene.add}”, escolha “${COPY.shapes.box}”. Você pode começar só com ela e acrescentar outras formas depois.`,
+          // “Adicionar forma” é o começo do nome nos dois portões (no básico o ponto de apoio não
+          // aparece, e o botão se chama só assim): a criança acha o botão pelo que lê aqui.
+          text: `Em “${SCENE_TOOL_ACCESS_COPY.addShape}”, escolha “${COPY.shapes.box}”. Você pode começar só com ela e acrescentar outras formas depois.`,
         },
         {
           title: 'Dê forma à sua ideia',
