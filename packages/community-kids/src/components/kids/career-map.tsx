@@ -1,7 +1,6 @@
 'use client'
 
 import { creativeToolAvailability } from '@sistemazero/core/career'
-import { buttonVariants } from '@sistemazero/ui/button'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useId, useState } from 'react'
@@ -18,7 +17,7 @@ import {
 import { careerNodeState, LEVEL_TIER, nodeShowsCheck, type TierCompletion } from '@/lib/career-map'
 import { buildCareerGeometry, type CareerGeometry, type CareerPoint } from '@/lib/career-path'
 import { cn } from '@/lib/cn'
-import { LEVEL_INFO, levelInfo } from '@/lib/level-info'
+import { LEVEL_INFO } from '@/lib/level-info'
 import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
 import { CareerHorizonNode } from './career-horizon-node'
 import { useWiggle } from './use-wiggle'
@@ -58,7 +57,6 @@ export function CareerMap({
   /** Estúdio Completo comprado? Só com posse o estado "em dia" oferece o atalho de criar. */
   studioOwned?: boolean
 }) {
-  const current = levelInfo(level.slug)
   const progress = careerProgress(level, courses)
   /**
    * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da carreira. O `careerProgress` só
@@ -76,20 +74,9 @@ export function CareerMap({
   const geo = buildCareerGeometry(nodeCount, currentIndex)
 
   return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-col items-center gap-2 text-center">
-        <span
-          className="inline-flex items-center gap-2 rounded-full border-2 bg-card px-4 py-1.5 font-bold text-sm shadow-sm"
-          style={{ borderColor: current.colorVar }}
-        >
-          <current.icon className="size-4" style={{ color: current.colorVar }} aria-hidden />
-          Você é {current.label}
-        </span>
-        {progress.kind === 'pending' ? (
-          <p className="max-w-md text-muted-foreground text-sm">{progress.hint}</p>
-        ) : null}
-      </div>
-
+    // O chip "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO da página
+    // (telas-modelo de 11/09/2026); aqui fica só o mapa.
+    <section aria-label="Mapa da carreira" className="flex flex-col gap-8">
       {/* `mb-10` reserva o espaço da legenda do ÚLTIMO nó, que é absoluta e cai ~42px
           ABAIXO da caixa da lista. Sem isso o bloco "Você está em dia" (irmão seguinte)
           entra por cima dela — medido em 10px de sobreposição. Margem, não padding: os
@@ -140,17 +127,19 @@ export function CareerMap({
  */
 function UpToDate({ studioOwned }: { studioOwned: boolean }) {
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3 rounded-3xl border-2 border-border border-dashed bg-card p-5 text-center">
-      <Sparkles className="size-7 text-primary" aria-hidden />
-      <p className="sz-display text-lg">Você está em dia!</p>
-      <p className="text-muted-foreground text-sm">
+    <div className="kids-carta mx-auto flex w-full max-w-md flex-col items-center p-6 text-center md:p-7">
+      <span
+        aria-hidden="true"
+        className="grid size-14 place-items-center rounded-2xl bg-(--sz-kids-amarelo)"
+      >
+        <Sparkles className="size-7 text-(--kids-ouro-fg)" />
+      </span>
+      <p className="sz-display mt-4 text-xl md:text-2xl">Você está em dia!</p>
+      <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
         Você já fez tudo que está pronto por aqui. Novas aventuras estão sendo criadas!
       </p>
       {studioOwned ? (
-        <Link
-          href="/estudio"
-          className={cn(buttonVariants({ variant: 'default' }), 'h-11 rounded-full px-6')}
-        >
+        <Link href="/estudio" className="sz-btn-gradient mt-5 px-6">
           Criar um jogo meu
         </Link>
       ) : null}
@@ -226,8 +215,11 @@ function CareerRibbon({
  */
 const MAX_PROGRESS_DOTS = 12
 
-/** Bolinhas do degrau: uma por curso que EXISTE, cheia quando já foi concluído. */
-function ProgressDots({ done, total }: { done: number; total: number }) {
+/**
+ * Bolinhas do degrau: uma por curso que EXISTE, cheia (na cor do nível) quando já foi
+ * concluído; as que faltam ficam no cinza do texto de apoio, como nas telas-modelo.
+ */
+function ProgressDots({ done, total, color }: { done: number; total: number; color: string }) {
   if (total > MAX_PROGRESS_DOTS) return null
   return (
     <span className="flex items-center gap-1" aria-hidden>
@@ -238,10 +230,8 @@ function ProgressDots({ done, total }: { done: number; total: number }) {
             // biome-ignore lint/suspicious/noArrayIndexKey: lista puramente posicional
             index
           }
-          className={cn(
-            'size-2 rounded-full',
-            index < done ? 'bg-current' : 'bg-current opacity-25',
-          )}
+          className={cn('size-2 rounded-full', index < done ? null : 'bg-current opacity-35')}
+          style={index < done ? { backgroundColor: color } : undefined}
         />
       ))}
     </span>
@@ -283,13 +273,24 @@ function CareerNode({
     >
       <span
         className={cn(
-          'grid h-full w-full place-items-center overflow-hidden rounded-full border-4 bg-card shadow-lg',
-          locked && 'opacity-80 grayscale',
+          'grid h-full w-full place-items-center overflow-hidden rounded-full border-4',
+          // Telas-modelo (11/09/2026): o posto atual ganha o anel AZUL da marca (o mesmo
+          // azul do "Você está aqui"); os vencidos, a cor do nível; o travado é um círculo
+          // claro sem borda, com a arte apagada. Nada de sombra: o mapa é chapado.
+          state === 'current'
+            ? 'border-primary bg-card'
+            : locked
+              ? 'border-transparent bg-muted'
+              : 'bg-card',
         )}
-        style={{ borderColor: locked ? 'var(--border)' : info.colorVar }}
+        style={state === 'done' ? { borderColor: info.colorVar } : undefined}
       >
         {artBroken ? (
-          <Icon className="size-16" style={{ color: info.colorVar }} aria-hidden />
+          <Icon
+            className={cn('size-16', locked && 'text-muted-foreground')}
+            style={locked ? undefined : { color: info.colorVar }}
+            aria-hidden
+          />
         ) : (
           // Ilustração dos personagens (Dedé/Debinha) — pode ainda não existir no
           // deploy: onError cai no ícone do nível (o mapa nunca quebra sem arte).
@@ -301,17 +302,17 @@ function CareerNode({
             height={112}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover"
+            className={cn('h-full w-full object-cover', locked && 'opacity-45 grayscale')}
             onError={() => setArtBroken(true)}
           />
         )}
       </span>
       {locked ? (
-        <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-background text-muted-foreground shadow-md ring-1 ring-border">
-          <Lock className="size-5" aria-hidden />
+        <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-card text-muted-foreground shadow-sm">
+          <Lock className="size-[1.125rem]" aria-hidden />
         </span>
       ) : showCheck ? (
-        <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-md ring-2 ring-card">
+        <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-card">
           <Check className="size-5" strokeWidth={3} aria-hidden />
         </span>
       ) : null}
@@ -326,11 +327,11 @@ function CareerNode({
         </span>
       ) : null}
       {medal}
-      <span className="-translate-x-1/2 absolute top-full left-1/2 mt-3 flex w-44 flex-col items-center gap-0.5 text-center">
+      <span className="-translate-x-1/2 absolute top-full left-1/2 mt-3 flex w-44 flex-col items-center gap-1 text-center">
         <span
           className={cn(
-            'font-bold text-sm leading-tight',
-            locked ? 'text-muted-foreground' : 'text-foreground',
+            'sz-display text-base md:text-[1.0625rem]',
+            locked ? 'text-muted-foreground' : 'text-(--tinta)',
           )}
         >
           {info.label}
@@ -348,10 +349,9 @@ function CareerNode({
         {completion && completion.total > 0 && (state === 'current' || state === 'done') ? (
           <span
             id={progressDescriptionId}
-            className="mt-0.5 flex flex-col items-center gap-1 font-semibold text-[11px]"
-            style={{ color: info.colorVar }}
+            className="flex flex-col items-center gap-1 font-semibold text-[11px] text-muted-foreground"
           >
-            <ProgressDots done={completion.done} total={completion.total} />
+            <ProgressDots done={completion.done} total={completion.total} color={info.colorVar} />
             {completion.done} de {completion.total}{' '}
             {completion.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
             {state === 'done' && completion.done < completion.total ? (
@@ -361,8 +361,15 @@ function CareerNode({
             ) : null}
           </span>
         ) : state === 'current' && progress.kind === 'up-to-date' ? (
-          <span className="font-semibold text-[11px]" style={{ color: info.colorVar }}>
+          <span className="font-semibold text-[11px] text-muted-foreground">
             Você está em dia! 🎉
+          </span>
+        ) : locked && completion && completion.total > 0 ? (
+          // O posto travado também diz o tamanho da trilha dele (telas-modelo): quantas
+          // aventuras existem lá, todas por fazer. Conta só o que o catálogo TEM.
+          <span className="flex flex-col items-center gap-1 font-semibold text-[11px] text-muted-foreground">
+            <ProgressDots done={0} total={completion.total} color={info.colorVar} />
+            {completion.total} {completion.total === 1 ? 'aventura' : 'aventuras'}
           </span>
         ) : null}
       </span>

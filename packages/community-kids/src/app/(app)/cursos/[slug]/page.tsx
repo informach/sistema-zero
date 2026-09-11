@@ -1,5 +1,4 @@
-import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
-import { PlayCircle } from 'lucide-react'
+import { BookOpen, Play } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
@@ -62,57 +61,75 @@ export default async function CoursePage({
   return (
     <>
       <KidsBand tone="creme">
-        {/* A setinha vive AGRUPADA com o cabeçalho (gap-3), não como irmã dele no
-          `gap-8`: solta, ela empurrava a capa ~76px no mobile e jogava o "Continuar"
-          abaixo da dobra. É o mesmo agrupamento da página da trilha. */}
-        <div className="flex flex-col gap-3">
-          <KidsBackButton href={back.href} label={back.label} showLabel />
+        {/* A setinha fica colada no cabeçalho: solta, ela empurrava a capa ~76px no
+          mobile e jogava o "Continuar" abaixo da dobra. Mesmo agrupamento da trilha. */}
+        <KidsBackButton href={back.href} label={back.label} showLabel className="mb-6" />
 
-          {/* Cabeçalho do curso */}
-          <div className="flex flex-col gap-6 md:flex-row md:items-start">
-            <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-2xl bg-muted md:w-80">
-              {course.coverImageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={course.coverImageUrl}
-                  alt=""
-                  width={16}
-                  height={9}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="kids-cover-fallback h-full w-full" />
-              )}
-            </div>
-            <div className="flex flex-1 flex-col gap-3">
-              <div>
-                <h1 className="sz-display text-2xl md:text-3xl">{course.title}</h1>
-                {course.subtitle ? (
-                  <p className="mt-1 text-muted-foreground">{course.subtitle}</p>
-                ) : null}
+        {/* Cabeçalho do curso, na régua das telas-modelo (11/09/2026): a capa de cantos
+            redondos à esquerda, o título em Baloo na escala dos cabeçalhos, a barra verde
+            dos cartões de curso e o botão da marca. */}
+        <div className="flex flex-col gap-6 md:flex-row md:items-center md:gap-8">
+          <div className="relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-[1.25rem] bg-muted md:w-[22.5rem]">
+            {course.coverImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={course.coverImageUrl}
+                alt=""
+                width={16}
+                height={9}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <BookOpen className="size-12" strokeWidth={1.75} aria-hidden />
               </div>
-              {course.description ? (
-                <p className="text-muted-foreground text-sm">{course.description}</p>
-              ) : null}
-              <div className="mt-1 flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-muted-foreground text-xs">
-                  <span>
-                    {course.progress.completedLessons} de {course.progress.totalLessons} aulas
-                    concluídas
-                  </span>
-                  <span className="sz-display">{course.progress.percent}%</span>
-                </div>
-                <ProgressBar value={course.progress.percent} />
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="sz-display text-[clamp(1.875rem,3vw,2.5rem)]">{course.title}</h1>
+            {course.subtitle ? (
+              <p className="mt-2 font-medium text-[1.0625rem] text-muted-foreground">
+                {course.subtitle}
+              </p>
+            ) : null}
+            {course.description ? (
+              <p className="mt-2 max-w-2xl font-medium text-[0.9375rem] text-muted-foreground">
+                {course.description}
+              </p>
+            ) : null}
+            <div className="mt-5 max-w-md">
+              <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
+                <span>
+                  {course.progress.completedLessons} de {course.progress.totalLessons} aulas
+                  concluídas
+                </span>
+                <span
+                  className={
+                    course.progress.percent > 0
+                      ? 'font-extrabold text-(--success-foreground)'
+                      : 'font-extrabold'
+                  }
+                >
+                  {course.progress.percent}%
+                </span>
               </div>
-              {next && !pendingPublication ? (
-                <Link href={lessonHref(next)} className="sz-btn-gradient mt-2 self-start">
-                  <PlayCircle className="size-4" />
-                  {course.progress.completedLessons > 0
-                    ? 'Continuar de onde parei'
-                    : 'Começar agora'}
-                </Link>
-              ) : null}
+              <div
+                className="sz-progress mt-2"
+                role="progressbar"
+                aria-label="Progresso do curso"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={course.progress.percent}
+              >
+                <span style={{ width: `${course.progress.percent}%` }} />
+              </div>
             </div>
+            {next && !pendingPublication ? (
+              <Link href={lessonHref(next)} className="sz-btn-gradient mt-5 gap-2 px-6">
+                <Play className="size-4" aria-hidden />
+                {course.progress.completedLessons > 0 ? 'Continuar de onde parei' : 'Começar agora'}
+              </Link>
+            ) : null}
           </div>
         </div>
       </KidsBand>
@@ -124,9 +141,13 @@ export default async function CoursePage({
         </KidsBand>
       ) : pendingPublication ? (
         <KidsBand tone="amarelo">
-          <section id="publicar" className="kids-carta scroll-mt-20 p-6">
-            <p className="font-bold text-primary text-sm">Aulas concluídas · publicação pendente</p>
-            <h2 className="sz-display mt-2 text-xl">Seu projeto também faz parte da conquista</h2>
+          <section id="publicar" className="kids-carta scroll-mt-20 p-6 md:p-7">
+            <p className="font-extrabold text-primary text-xs uppercase tracking-[0.12em]">
+              Aulas concluídas · publicação pendente
+            </p>
+            <h2 className="sz-display mt-2 text-xl md:text-[1.625rem]">
+              Seu projeto também faz parte da conquista
+            </h2>
             {deliveryState == null ? (
               <p role="status" className="mt-3 text-sm text-muted-foreground">
                 Se você acabou de compartilhar, a confirmação pode estar a caminho. Ainda não
@@ -140,7 +161,7 @@ export default async function CoursePage({
             {course.showcaseLessonId ? (
               <Link
                 href={`/cursos/${encodeURIComponent(course.slug)}/aulas/${encodeURIComponent(course.showcaseLessonId)}`}
-                className="sz-btn-gradient mt-4 inline-flex min-h-11 items-center"
+                className="sz-btn-gradient mt-5 px-6"
               >
                 Abrir projeto para publicar
               </Link>

@@ -998,24 +998,9 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     background-size: 22px 22px;
   }
 
-  /* Capa de curso SEM imagem. Era `from-secondary to-muted`: cinza sobre cinza, no
-     maior retângulo do card. Passa a vestir a cor da unidade que o card já
-     calcula, com o mesmo padrão de pontinhos do fundo por cima. Nenhuma cor nova:
-     é o `--unit` que já estava ali, agora usado. */
-  .kids-cover-fallback {
-    background-color: color-mix(in oklab, var(--unit) 14%, var(--card));
-    background-image:
-      radial-gradient(
-        circle,
-        color-mix(in oklab, var(--unit) 22%, transparent) 1.5px,
-        transparent 1.5px
-      ),
-      linear-gradient(135deg, color-mix(in oklab, var(--unit) 10%, transparent), transparent 70%);
-    background-size:
-      18px 18px,
-      100% 100%;
-    color: color-mix(in oklab, var(--unit) 72%, var(--foreground));
-  }
+  /* (A `.kids-cover-fallback`, a capa sem imagem na cor da unidade, saiu em 11/09/2026:
+     as telas-modelo pedem a caixa clara com o livro cinza, e os três cartões de curso
+     passaram a desenhá-la com `bg-muted` + o ícone.) */
 
   /* Tema kids da aula por SEÇÕES. O `LessonSections` do member-shell já aplicava
      esta classe sob a flag `kids`, mas ela não existia em lugar nenhum do
@@ -1142,12 +1127,13 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
    Tailwind, e então `cn("kids-card", "border-4")` do call site viraria letra
    morta em silêncio. Foi o mesmo defeito que o `.sz-btn-gradient` já teve. */
 @layer components {
+  /* Chapada desde 11/09/2026: a sombra dura de 4px embaixo era o relevo 3D do
+     Duolingo, e as telas-modelo trocaram o relevo por cor (o mesmo que saiu dos botões). */
   .kids-unit-banner {
     border-radius: calc(var(--radius) + 4px);
     background-color: var(--unit-bg);
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
-    box-shadow: 0 4px 0 color-mix(in oklch, var(--unit) 55%, black);
   }
 
   .kids-node {
@@ -1156,31 +1142,23 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     border-radius: 9999px;
     display: grid;
     place-items: center;
-    transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease;
+    transition: transform 0.12s ease;
   }
   .kids-node--done {
     background-color: var(--unit-bg);
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
-    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-    box-shadow: 0 5px 0 var(--node-shadow);
   }
   .kids-node--current {
     background-color: var(--unit-bg);
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
-    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-    box-shadow: 0 5px 0 var(--node-shadow);
     animation: kids-ring 1.8s ease-out infinite;
   }
   .kids-node--todo {
     background-color: var(--card);
     color: var(--muted-foreground);
     border: 2px solid var(--border);
-    --node-shadow: var(--border);
-    box-shadow: 0 5px 0 var(--node-shadow);
   }
   /* Aula travada (trava sequencial estilo Duolingo): cadeado neutro tracejado,
      sem brilho — sinaliza "ainda não liberada"; o nó não é clicável. */
@@ -1188,8 +1166,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     background-color: var(--muted);
     color: var(--muted-foreground);
     border: 2px dashed var(--border);
-    --node-shadow: var(--border);
-    box-shadow: 0 5px 0 var(--node-shadow);
     opacity: 0.85;
   }
   /* Baú de fim de unidade (gamificação): fechado = tracejado neutro;
@@ -1198,28 +1174,21 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     background-color: var(--card);
     color: var(--muted-foreground);
     border: 2px dashed var(--border);
-    --node-shadow: var(--border);
-    box-shadow: 0 5px 0 var(--node-shadow);
   }
   .kids-node--chest-open {
     background-color: var(--unit-bg);
     background-image: var(--unit-bg-image);
     color: var(--unit-fg);
-    --node-shadow: color-mix(in oklch, var(--unit) 55%, black);
-    box-shadow: 0 5px 0 var(--node-shadow);
   }
   /* Baú LIBERADO: chama a criança sem gritar. Mesmo anel de atenção do nó atual. */
   .kids-node--chest-ready {
     background-color: var(--unit-bg);
     color: var(--unit-fg);
     border: 2px solid var(--unit);
-    --node-shadow: color-mix(in oklab, var(--unit) 55%, black);
-    box-shadow: 0 5px 0 var(--node-shadow);
     animation: kids-ring 2.4s ease-out infinite;
   }
   button:active > .kids-node--chest-ready {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 var(--node-shadow);
+    transform: translateY(2px) scale(0.97);
   }
   /* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
      de `prefers-reduced-motion` no fim do arquivo doma as duas. */
@@ -1252,9 +1221,9 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   }
 
   /* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
+  /* O aperto sem relevo: o nó desce um tiquinho e encolhe, em vez de afundar na sombra. */
   .kids-node-link:active .kids-node {
-    transform: translateY(4px);
-    box-shadow: 0 1px 0 var(--node-shadow);
+    transform: translateY(2px) scale(0.97);
   }
   @keyframes kids-ring {
     0% {

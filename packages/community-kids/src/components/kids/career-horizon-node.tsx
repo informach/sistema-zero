@@ -62,7 +62,9 @@ export function CareerHorizonNode({
         <span className={cn('block', wiggling && 'kid-wiggle')}>
           {/* Mesmo wrapper dos demais nós: o badge fica FORA do círculo que recorta. */}
           <span className="career-medal relative z-10 block shrink-0">
-            <span className="grid h-full w-full place-items-center overflow-hidden rounded-full border-4 border-dashed bg-card opacity-90 shadow-lg">
+            {/* A mesma pele do posto travado (telas-modelo de 11/09/2026): círculo claro,
+                arte apagada e o selo branco; o martelo no lugar do cadeado diz "em obras". */}
+            <span className="grid h-full w-full place-items-center overflow-hidden rounded-full border-4 border-transparent bg-muted">
               {artBroken ? (
                 <Icon className="size-16 text-muted-foreground" aria-hidden />
               ) : (
@@ -74,20 +76,20 @@ export function CareerHorizonNode({
                   height={112}
                   loading="lazy"
                   decoding="async"
-                  className="h-full w-full object-cover opacity-70"
+                  className="h-full w-full object-cover opacity-45 grayscale"
                   onError={() => setArtBroken(true)}
                 />
               )}
             </span>
-            <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-background text-muted-foreground shadow-md ring-1 ring-border">
-              <Hammer className="size-5" aria-hidden />
+            <span className="absolute right-1 bottom-1 z-20 grid size-9 place-items-center rounded-full bg-card text-muted-foreground shadow-sm">
+              <Hammer className="size-[1.125rem]" aria-hidden />
             </span>
           </span>
-          <span className="-translate-x-1/2 absolute top-full left-1/2 mt-3 flex w-44 flex-col items-center gap-0.5 text-center">
-            <span className="font-bold text-foreground text-sm leading-tight">
+          <span className="-translate-x-1/2 absolute top-full left-1/2 mt-3 flex w-44 flex-col items-center gap-1 text-center">
+            <span className="sz-display text-(--tinta) text-base md:text-[1.0625rem]">
               E tem muito mais pela frente
             </span>
-            <span className="text-[11px] text-muted-foreground">
+            <span className="font-semibold text-[11px] text-muted-foreground">
               {levels.length === 1
                 ? 'Mais 1 posto está sendo construído'
                 : `Mais ${levels.length} postos estão sendo construídos`}

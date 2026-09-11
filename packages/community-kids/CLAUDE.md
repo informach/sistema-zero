@@ -953,6 +953,23 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 - **Cantinho:** o cartão inteiro é o link; a pílula creme só vai para a direita quando o PRÓPRIO
   cartão tem 28rem (`@container` + `@md:`), porque a largura dele vem da grade de duas colunas.
 
+### Início, Carreira, Trilha e curso no desenho das telas-modelo (11/09/2026)
+
+- **Início:** o "Como funciona?" sobe para o canto do cabeçalho pelo `header` do `ChildGuide` (os
+  balões seguem entre o cabeçalho e o herói). Missões por grupo (`kids-unit-cyan|rosa|verde`) no fio,
+  no ladrilho e no "Resgatar"; ⚠️ o fundo do Resgatar é a cor do grupo puxada 14% para a tinta, porque
+  a rosa pura dava 4,37:1 com o branco. ⚠️ Item de grade com texto `truncate` precisa de `min-w-0`:
+  sem ele o cartão da missão vazava a tela no celular.
+- **Carreira:** o chip amarelo "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO (o
+  `CareerMap` não os desenha mais). A página fecha com as "Aventuras da trilha" em
+  `CatalogCourseCard layout="linha"`, com o progresso vindo de `listMyCourses` (o catálogo não sabe as
+  aulas feitas). No mapa: o posto atual com o anel azul da marca, o travado claro sem borda e com o
+  selo branco, e o travado também diz quantas aventuras a trilha dele tem.
+- **Trilha:** cartões grandes de duas colunas (`CatalogCourseCard`, sem cor de unidade: o prop `theme`
+  saiu) e, na trilha ATUAL, o cartão lilás "Próximo nível" (o que ele libera + N de M prontas).
+- **Trilha de aulas:** nós e faixas de unidade CHAPADOS (a sombra dura de 5px e o `--node-shadow`
+  saíram); o aperto virou `translateY(2px) scale(.97)`.
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
