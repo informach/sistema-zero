@@ -336,7 +336,7 @@ export function SceneWorkshop({
           />
         )}
         {mode === 'paint' && (
-          <div className="mld-bar flex shrink-0 flex-wrap gap-1 border-b p-2 lg:w-60 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0 lg:p-3">
+          <div className="mld-bar flex shrink-0 flex-wrap gap-3 border-b p-2 lg:w-60 lg:flex-col lg:flex-nowrap lg:gap-4 lg:overflow-y-auto lg:border-r lg:border-b-0 lg:p-3">
             <ScenePaintColumn workshop={workshop} />
           </div>
         )}

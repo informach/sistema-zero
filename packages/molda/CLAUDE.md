@@ -2611,5 +2611,9 @@ Testes: os dois da catraca, o do registro (o `add.menu` saiu) e o `SceneWorkshop
 (a ferramenta do palco agora é achada na região "Ferramentas", não no palco). O e2e de layout
 (`scene-workshop-layout.spec.ts`: nada coberto, palco com área e sem rolagem lateral a 1366, 1024,
 768 e 390) e o resto do e2e no Chromium passaram. A aba Pintar ganhou a catraca dela (67/49, com o
-módulo "Mais jeitos de pintar" carregado). Pendente com a outra sessão: os nomes embaixo dos ícones
-da `ScenePaintToolbox` (o arquivo é dela).
+módulo "Mais jeitos de pintar" carregado). As ferramentas do Pintar também viraram ladrilhos com
+o nome embaixo do ícone (`ScenePaintToolbox`, a grade do Modelar; a fileira deitada rola dentro
+dela, senão o palco de um celular em pé caía para 190px) e a largura do traço, três pílulas
+iguais numa linha. Seguem o `data-paint-tool` (o "de perto" devolve o foco por ele), o
+`aria-pressed`, o `aria-keyshortcuts` e o `steadyWhileDrawing`, que agora recebe a classe do
+contêiner (o `opacity-100` é utilitária e vence o esmaecido do `.mld-tile`).
