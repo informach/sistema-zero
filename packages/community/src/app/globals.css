@@ -105,6 +105,12 @@
   --topo-icone: #8e9bba;
   --topo-vidro: rgb(255 255 255 / 0.08);
 
+  /* O ZERO da logo oficial (`brand-logo.tsx`): o degradê da marca, um por fundo. */
+  --logo-zero-escuro-de: #c4f042;
+  --logo-zero-escuro-ate: #42e8e0;
+  --logo-zero-claro-de: #0891a8;
+  --logo-zero-claro-ate: #c4f042;
+
   --background: var(--pen-chao);
   --background-alt: var(--pen-chao-alt);
   --foreground: var(--pen-tinta);
@@ -182,6 +188,13 @@
   --topo-borda: #331d3a;
   --topo-texto: #e6d3e1;
   --topo-icone: #b08fab;
+
+  /* No Pink o ZERO fica rosa (decisão dela, a mesma da logo do kids): sobre a barra escura, do
+     rosa sobre o escuro ao rosa da logo; sobre o claro, da cor de ação ao rosa da logo. */
+  --logo-zero-escuro-de: #ff7ab6;
+  --logo-zero-escuro-ate: #e2489a;
+  --logo-zero-claro-de: #c8246f;
+  --logo-zero-claro-ate: #e2489a;
 }
 
 /* ============================================================

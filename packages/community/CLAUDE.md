@@ -81,6 +81,11 @@ página**, a **barra do topo escura** (a âncora do Pen; o adulto não tem menu 
   compartilhado, que o menu suspenso (fundo branco) continua usando como estão.
 - **Estúdio e Pinta dentro da aula:** o `:root` declara os `--sz-tool-*` (fundo e ação dos dois
   temas); no escuro próprio do Estúdio (`[data-sz-theme="dark"]`) eles voltam a `initial`.
+- **Logo:** `brand-logo.tsx` (`<BrandLogo fundo="escuro" | "claro">`) é a logo oficial em SVG
+  EMBUTIDO, gerada a partir de `public/logo_dark.svg`/`logo_white.svg` (que continuam lá): por
+  `<img>` o CSS não alcança o degradê do ZERO, e no Pink ele fica rosa (decisão dela, 11/09). As
+  cores são os tokens `--logo-zero-{escuro,claro}-{de,ate}`; as letras de "SISTEMA" não seguem o
+  tema. Não edite os caminhos à mão: regenere a partir dos SVGs se a marca mudar.
 - **Conferência visual** (o app exige banco e login): `tmp/`, fora do git, tem `compila-css.ts`
   (pipeline real; rodar DE DENTRO do pacote), `renderiza.tsx` (as páginas reais dentro do layout
   real, com stubs; um HTML por página, `?tema=pink`), `servidor.ts` (:4802) e

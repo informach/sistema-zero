@@ -1,10 +1,10 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
+import { BrandLogo } from './brand-logo'
 import { NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
 import { UserMenu } from './user-menu'
@@ -29,15 +29,9 @@ export function CommunityTopnav({ user }: { user: SessionUserWithAvatar }) {
             gateway numa réplica ÚNICA — o prefetch automático do Next de todos os links do header
             a cada página vira tempestade de RSC/gateway. Navegação passa a buscar sob demanda. */}
         <Link href="/" className="flex shrink-0 items-center" aria-label="Início" prefetch={false}>
-          {/* A versão de letras claras, feita para fundo escuro, nos dois temas. */}
-          <Image
-            src="/logo_dark.svg"
-            width={515}
-            height={75}
-            alt="Comunidade Sistema Zero"
-            className="block h-auto w-[130px] md:w-[150px]"
-            priority
-          />
+          {/* A versão de letras claras, feita para fundo escuro, nos dois temas (no Pink o ZERO
+              fica rosa). */}
+          <BrandLogo fundo="escuro" className="block h-auto w-[130px] md:w-[150px]" />
         </Link>
 
         {/* Menu principal CENTRALIZADO (como na referência) */}
