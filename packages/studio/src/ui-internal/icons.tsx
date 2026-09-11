@@ -400,6 +400,25 @@ export function IconCheck(p: IconProps): JSX.Element {
   )
 }
 
+/** Desfazer e refazer da barra: o "undo-2" e o "redo-2" do Lucide. */
+export function IconUndo(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" />
+    </Base>
+  )
+}
+
+export function IconRedo(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m15 14 5-5-5-5" />
+      <path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13" />
+    </Base>
+  )
+}
+
 /** A Ponte (blocos ⇄ código): o "arrow-left-right" do Lucide. */
 export function IconArrowLeftRight(p: IconProps): JSX.Element {
   return (

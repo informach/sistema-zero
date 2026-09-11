@@ -395,7 +395,9 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               type="button"
               className="rounded border border-sz-border px-2 py-1 text-xs text-sz-fg"
               onClick={() => workspace?.undo(false)}
-              aria-label="Desfazer"
+              // "no mundo": a barra do editor já tem um "Desfazer", e dois botões com o mesmo
+              // nome confundem o leitor de tela (e os testes que procuram pelo nome).
+              aria-label="Desfazer no mundo"
             >
               ↶
             </button>
@@ -403,7 +405,7 @@ export function WorldComposerPanel({ workspace }: WorldComposerPanelProps): JSX.
               type="button"
               className="rounded border border-sz-border px-2 py-1 text-xs text-sz-fg"
               onClick={() => workspace?.undo(true)}
-              aria-label="Refazer"
+              aria-label="Refazer no mundo"
             >
               ↷
             </button>

@@ -348,7 +348,8 @@ Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-too
 (`initial`), que é o que o admin e o adulto veem.
 
 - **Três grupos** (`.sz-bar__start|__center|__end`): à esquerda [menu do host][← marca][nome ✎]
-  [Salvo][nuvem]; no meio o segmentado dos modos; à direita [Zappy][olho][⋯][Compartilhar]. O
+  [Salvo][nuvem]; no meio o segmentado dos modos; à direita [Zappy][desfazer][refazer][olho][⋯]
+  [Compartilhar] (desfazer e refazer desde o passo 10, abaixo). O
   segmentado fica no meio do espaço LIVRE entre as pontas (margens automáticas), que é o que a
   imagem mede (a 1440px ele começa em 668, não no centro exato). ⚠️ A primeira versão tinha as
   duas pontas crescendo por igual: a esquerda ficava presa na metade dela e o NOME do projeto
@@ -378,6 +379,48 @@ Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-too
 - Testes: `components/layout/Topbar.test.tsx` (os grupos, a marca que vira `sr-only`, a marca
   estática, o segmentado, o "Salvo" nos três tons e no compacto, o foco do nome, o Zappy e o
   Compartilhar com e sem motivo de bloqueio, além dos casos do chrome do host).
+
+### Desfazer e refazer na barra (11/09/2026, lote 7, passo 10)
+
+Os dois círculos da tela-modelo entre o Zappy e o olho da prévia (no compacto, a seção "Editar"
+do "⋯"). Nome acessível fixo "Desfazer"/"Refazer"; a dica diz ONDE ("Desfazer nos blocos
+(Ctrl+Z)", "no código"; ⌘Z no Mac); sem nada a desfazer, desligados.
+
+- **Registro por instância** `state/editorHistory.ts` (no molde do `pendingEditorEdits`, dentro das
+  `StudioStores`, `useEditorHistory()`; `null` fora de um <Studio>, e aí a barra não mostra os
+  botões): cada editor REGISTRA um adaptador com a pilha dele (`undo`/`redo`/`canUndo`/`canRedo`/
+  `subscribe`), e a barra lê pelo `useSyncExternalStore` (`topbar/UndoRedo.tsx`, `useUndoRedo`).
+  A saída de um editor antigo não derruba o novo do mesmo alvo (a remontagem wide ⇄ narrow).
+- **O alvo** (`historyTargetFor`): os blocos no modo Blocos, o código no Código e, na Ponte, o
+  ÚLTIMO editor tocado (os blocos até a criança tocar no código). Só um gesto dela troca:
+  `pointerdown`/`focusin` no contêiner do Blockly, `onDidFocusEditorText` do Monaco e, no
+  estreito, escolher a aba (`NarrowEditorPane.onSelect`). Clicar na barra ou uma mudança feita
+  por programa não troca.
+- **Blocos** (`components/blocks/blocklyHistory.ts`): a pilha do próprio Blockly (a mesma do
+  Ctrl+Z): `workspace.undo(false|true)` depois do `hideChaff`, fora de arrasto e de workspace só
+  de leitura; a barra só re-renderiza quando o TAMANHO de uma pilha muda. ⭐ **O Blockly nunca
+  limpa a pilha sozinho** (nem `load` nem `clear` chamam `clearUndo`, conferido no
+  `blockly_compressed`): depois que a Ponte reconstruía os blocos a partir do código, o desfazer
+  (inclusive o Ctrl+Z de antes deste lote) repetia passos de ANTES da recarga. O `BlocklyPanel`
+  chama `forgetBlocklyHistory` (`clearPendingUndo` + `clearUndo`) só nas recargas vindas de FORA
+  do canvas (o efeito de restauração, que já ignora o que o próprio workspace gravou). Provado no
+  e2e: sem o esquecimento, o botão seguia ligado depois da recarga.
+- **Código** (`monaco/monacoHistory.ts`, importado pelo CAMINHO para não arrastar o Monaco para o
+  chunk dos modos; `components/code/useCodeHistory.ts` + o `onEditorReady` novo do `MonacoTabs`,
+  ligado no `BridgeMode` e no `ProCodeMode`): o Ctrl+Z do Monaco é `editor.getModel().undo()`
+  (`CoreEditingCommands.Undo`), e é o que se chama, direto no modelo DESTE editor. ⚠️ O comando
+  global (`editor.trigger(…, 'undo')`) sem o foco no editor manda o desfazer para o último editor
+  ATIVO da página. O TextModel da 0.52 tem `canUndo`/`canRedo` (fora do `.d.ts`); sem eles, cai
+  no comando e o botão fica sempre ligado. ⚠️ O Monaco agrupa a digitação por palavra: cada
+  clique desfaz um grupo, como o Ctrl+Z. O `setValue` que a Ponte faz quando os blocos mudam o
+  código zera a pilha do código, então cada editor desfaz só enquanto é ele quem manda.
+- Os ↶↷ do `WorldComposerPanel` passaram a se chamar "Desfazer no mundo"/"Refazer no mundo" (dois
+  "Desfazer" na mesma tela confundiam o leitor e os testes).
+- Testes: `state/editorHistory.test.ts`, `components/blocks/blocklyHistory.test.ts` (workspace
+  headless de verdade, com o `load` e o `clear` que não limpam a pilha), `monaco/__tests__/
+  monacoHistory.test.ts`, `components/layout/Topbar.test.tsx` (os círculos, a dica por alvo, a
+  Ponte, o modo Código e o compacto) e o e2e `e2e/topbar-undo.spec.ts` (Blocos, Ponte com o
+  código, a recarga que esquece e o celular).
 
 ## Compartilhar (publicar no Mural dos Criadores)
 

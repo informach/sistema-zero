@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import type { ReactElement } from 'react'
 import { createEmptyProject } from '#core'
 import { useProjectStore } from '../../state/projectStore'
+import { StudioStoresContext } from '../../state/storesContext'
+import { createStudioStores } from '../../state/studioStores'
 import { type StudioHostChrome, StudioHostChromeProvider } from '../../studio/host-chrome'
 import { type StudioLayout, StudioLayoutProvider } from '../../studio/layoutContext'
 import {
@@ -397,5 +399,134 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(screen.getByRole('tooltip').textContent).toBe(motivo)
     fireEvent.click(botao)
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('Topbar × desfazer e refazer', () => {
+  /** Uma pilha falsa que a barra lê pelo registro da instância (o `editorHistory` das stores). */
+  function fakeHistory(canUndo: boolean, canRedo: boolean) {
+    const listeners = new Set<() => void>()
+    const state = { canUndo, canRedo }
+    return {
+      state,
+      undo: mock(() => {}),
+      redo: mock(() => {}),
+      canUndo: () => state.canUndo,
+      canRedo: () => state.canRedo,
+      subscribe(listener: () => void) {
+        listeners.add(listener)
+        return () => {
+          listeners.delete(listener)
+        }
+      },
+      emit() {
+        for (const listener of listeners) listener()
+      },
+    }
+  }
+
+  function mountInStudio(width: number, mode: 'blocks' | 'bridge' | 'code' = 'blocks') {
+    const stores = createStudioStores({ persistence: 'none' })
+    const project = createEmptyProject('01J00000000000000000000UND', 'Meu jogo')
+    stores.project.setState({ project: { ...project, mode }, isDirty: false, saveError: null })
+    const view = render(
+      <StudioStoresContext.Provider value={stores}>
+        <StudioLayoutProvider value={layoutFor(width)}>
+          <Topbar onExit={() => {}} />
+        </StudioLayoutProvider>
+      </StudioStoresContext.Provider>,
+    )
+    return { stores, view }
+  }
+
+  it('fora de um Studio (sem editor) a barra não mostra os botões', () => {
+    mount(1440, null)
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull()
+  })
+
+  it('no largo: dois círculos entre o Zappy e o olho, nome fixo e a dica diz onde', () => {
+    const { stores } = mountInStudio(1440)
+    const blocos = fakeHistory(true, false)
+    act(() => {
+      stores.editorHistory.register('blocks', blocos)
+    })
+    const desfazer = screen.getByRole('button', { name: 'Desfazer' })
+    const refazer = screen.getByRole('button', { name: 'Refazer' })
+    expect(desfazer.className).toBe('sz-bar-icon-btn')
+    expect(desfazer.getAttribute('title')).toBe('Desfazer nos blocos (Ctrl+Z)')
+    expect(refazer.getAttribute('title')).toBe('Refazer nos blocos (Ctrl+Y)')
+    expect((desfazer as HTMLButtonElement).disabled).toBe(false)
+    expect((refazer as HTMLButtonElement).disabled).toBe(true)
+    // A ordem da tela-modelo: desfazer e refazer antes do olho, do "⋯" e do Compartilhar.
+    const fim = desfazer.closest('.sz-bar__end') as HTMLElement
+    const nomes = within(fim)
+      .getAllByRole('button')
+      .map((b) => b.getAttribute('aria-label'))
+    expect(nomes.slice(0, 4)).toEqual([
+      'Desfazer',
+      'Refazer',
+      'Ocultar pré-visualização',
+      'Mais opções',
+    ])
+
+    fireEvent.click(desfazer)
+    expect(blocos.undo).toHaveBeenCalledTimes(1)
+    // A pilha mudou (o adaptador avisa): o refazer liga.
+    blocos.state.canRedo = true
+    act(() => blocos.emit())
+    fireEvent.click(screen.getByRole('button', { name: 'Refazer' }))
+    expect(blocos.redo).toHaveBeenCalledTimes(1)
+  })
+
+  it('com o editor ainda carregando (nada registrado), os botões aparecem desligados', () => {
+    mountInStudio(1440)
+    const desfazer = screen.getByRole('button', { name: 'Desfazer' })
+    expect((desfazer as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('na Ponte o alvo é o último editor tocado: blocos até a criança tocar no código', () => {
+    const { stores } = mountInStudio(1440, 'bridge')
+    const blocos = fakeHistory(true, false)
+    const codigo = fakeHistory(true, true)
+    act(() => {
+      stores.editorHistory.register('blocks', blocos)
+      stores.editorHistory.register('code', codigo)
+    })
+    const desfazer = () => screen.getByRole('button', { name: 'Desfazer' })
+    expect(desfazer().getAttribute('title')).toBe('Desfazer nos blocos (Ctrl+Z)')
+
+    act(() => stores.editorHistory.markActive('code'))
+    expect(desfazer().getAttribute('title')).toBe('Desfazer no código (Ctrl+Z)')
+    fireEvent.click(desfazer())
+    expect(codigo.undo).toHaveBeenCalledTimes(1)
+    expect(blocos.undo).not.toHaveBeenCalled()
+  })
+
+  it('no modo Código o alvo é sempre o código', () => {
+    const { stores } = mountInStudio(1440, 'code')
+    const codigo = fakeHistory(true, false)
+    act(() => {
+      stores.editorHistory.register('code', codigo)
+      // Um toque antigo nos blocos (de outro modo) não muda o alvo aqui.
+      stores.editorHistory.markActive('blocks')
+    })
+    const desfazer = screen.getByRole('button', { name: 'Desfazer' })
+    expect(desfazer.getAttribute('title')).toBe('Desfazer no código (Ctrl+Z)')
+  })
+
+  it('no compacto os dois saem da barra e entram no "⋯", numa seção Editar', () => {
+    const { stores } = mountInStudio(390)
+    const blocos = fakeHistory(true, false)
+    act(() => {
+      stores.editorHistory.register('blocks', blocos)
+    })
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    const editar = screen.getByRole('group', { name: 'Editar' })
+    const itens = within(editar).getAllByRole('menuitem')
+    expect(itens.map((item) => item.textContent)).toEqual(['Desfazer', 'Refazer'])
+    expect((itens[1] as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(itens[0] as HTMLElement)
+    expect(blocos.undo).toHaveBeenCalledTimes(1)
   })
 })

@@ -46,11 +46,12 @@ import { useHighlightStore } from '../../state/highlightStore'
 import { isBlockTypeKnown, useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
-import { usePendingEditorEdits } from '../../state/studioStores'
+import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
+import { createBlocklyHistory, forgetBlocklyHistory } from './blocklyHistory'
 import { openTutorCategory } from './tutorCategory'
 
 ensureBlocklyInitialized()
@@ -313,6 +314,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const projectStoreApi = useProjectStoreApi()
   const diagnosticsStoreApi = useDiagnosticsStoreApi()
   const pendingEditorEdits = usePendingEditorEdits()
+  const editorHistory = useEditorHistory()
   const studioTheme = useStudioTheme()
   // Ref para a injeção (efeito de mount único) usar o tema vigente sem re-injetar.
   const studioThemeRef = useRef(studioTheme)
@@ -550,6 +552,30 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     if (!pendingEditorEdits) return
     return pendingEditorEdits.register(flushScheduledRegeneration)
   }, [pendingEditorEdits, flushScheduledRegeneration])
+
+  // Desfazer/refazer da barra do editor: a pilha dos blocos entra no registro da instância, e
+  // tocar (ou focar) o canvas faz dos blocos o alvo da Ponte. Um gesto na barra ou uma mudança
+  // feita por programa não passa por aqui, então não troca o alvo.
+  useEffect(() => {
+    if (!workspace || !editorHistory) return
+    const adapter = createBlocklyHistory(workspace)
+    const unregister = editorHistory.register('blocks', adapter)
+    return () => {
+      unregister()
+      adapter.dispose()
+    }
+  }, [workspace, editorHistory])
+  useEffect(() => {
+    const container = blocklyRef.current
+    if (!container || !editorHistory) return
+    const markBlocks = () => editorHistory.markActive('blocks')
+    container.addEventListener('pointerdown', markBlocks, true)
+    container.addEventListener('focusin', markBlocks)
+    return () => {
+      container.removeEventListener('pointerdown', markBlocks, true)
+      container.removeEventListener('focusin', markBlocks)
+    }
+  }, [editorHistory])
 
   const persistWorkspaceLayout = useCallback(
     (targetWorkspace: Blockly.Workspace) => {
@@ -881,6 +907,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       // Cerca de carga: `clear()` emite um BLOCK_DELETE por bloco; sem a cerca,
       // cada bloco-mutador varreria o workspace a cada remoção (O(N·M)).
       withWorkspaceLoad(() => workspace.clear())
+      // O canvas foi trocado POR FORA: a pilha de desfazer de antes não vale mais.
+      forgetBlocklyHistory(workspace)
       lastAppliedBlocksStateRef.current = JSON.stringify(
         markLifecycleBlocksState(Blockly.serialization.workspaces.save(workspace)),
       )
@@ -927,6 +955,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         withWorkspaceLoad(() =>
           Blockly.serialization.workspaces.load(stateToLoad as Record<string, unknown>, workspace),
         )
+        // Esta carga veio de FORA do canvas (a Ponte reconstruindo os blocos a partir do código,
+        // outro projeto): "Desfazer nos blocos" não pode repetir passos de antes dela.
+        forgetBlocklyHistory(workspace)
         scheduleBlocklyResize(workspace as Blockly.WorkspaceSvg)
         // `FINISHED_LOADING` é quem normalmente zera o guard e ressincroniza o
         // snapshot com o estado REAL salvo. O microtask é só um fallback (caso o

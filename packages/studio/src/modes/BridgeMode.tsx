@@ -14,6 +14,7 @@ import { PREVIEW_MESSAGE_SOURCE } from '#preview'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
 import { FontSizeControls } from '../components/code/FontSizeControls'
 import { MonacoTabs } from '../components/code/LazyMonacoTabs'
+import { useCodeHistory } from '../components/code/useCodeHistory'
 import { useFormatIssueLogger } from '../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
@@ -27,6 +28,7 @@ import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
+import { useEditorHistory } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useT } from '../studio/i18n'
@@ -110,6 +112,10 @@ export function BridgeMode(): JSX.Element {
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
   const onFormatIssue = useFormatIssueLogger()
+  // Desfazer/refazer da barra: a pilha do código entra no registro da instância, e trocar de aba
+  // no estreito conta como tocar naquele editor (é ele que a criança passa a ver).
+  const onCodeEditorReady = useCodeHistory()
+  const editorHistory = useEditorHistory()
   const codeFontSize = useSettingsStore((s) => s.codeFontSize)
   const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
@@ -651,6 +657,7 @@ export function BridgeMode(): JSX.Element {
         // apenas seleciona e SÓ recentraliza o canvas se o bloco estiver fora
         // da viewport, então o acoplamento não sacode a edição.
         onCursorChange={handleCursorChange}
+        onEditorReady={onCodeEditorReady}
       />
     </Suspense>
   )
@@ -662,8 +669,18 @@ export function BridgeMode(): JSX.Element {
         <div className="min-h-0 flex-1">
           <NarrowPanels
             editorPanes={[
-              { id: 'blocks', label: t('tab.blocks'), content: <BlocklyPanel /> },
-              { id: 'code', label: t('tab.code'), content: codeEditor },
+              {
+                id: 'blocks',
+                label: t('tab.blocks'),
+                content: <BlocklyPanel />,
+                onSelect: () => editorHistory?.markActive('blocks'),
+              },
+              {
+                id: 'code',
+                label: t('tab.code'),
+                content: codeEditor,
+                onSelect: () => editorHistory?.markActive('code'),
+              },
             ]}
             preview={previewAvailable ? <PreviewIframe /> : undefined}
           />

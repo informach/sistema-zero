@@ -5,6 +5,7 @@ import { createPersistenceService, type PersistenceService } from '../persistenc
 import { resolvePersistenceAdapter, type StudioPersistence } from '../persistence/types'
 import { createChecksStore } from './checksStore'
 import { createDiagnosticsStore } from './diagnosticsStore'
+import { createEditorHistory, type EditorHistory } from './editorHistory'
 import { createHighlightStore } from './highlightStore'
 import { createLogsStore } from './logsStore'
 import { createPendingEditorEdits, type PendingEditorEdits } from './pendingEditorEdits'
@@ -32,6 +33,8 @@ export interface StudioStores {
   checks: ReturnType<typeof createChecksStore>
   diagnostics: ReturnType<typeof createDiagnosticsStore>
   pendingEditorEdits: PendingEditorEdits
+  /** As pilhas de desfazer dos editores desta instância (os botões da barra). */
+  editorHistory: EditorHistory
   persistence: PersistenceService
 }
 
@@ -66,6 +69,7 @@ export function createStudioStores(options: CreateStudioStoresOptions = {}): Stu
     checks: createChecksStore(),
     diagnostics: createDiagnosticsStore(),
     pendingEditorEdits,
+    editorHistory: createEditorHistory(),
     persistence: createPersistenceService(project, adapter, {
       flushPendingEditorEdits: () => pendingEditorEdits.flush(),
     }),
@@ -90,4 +94,12 @@ export function useStudioPersistence(): PersistenceService {
 /** Buffers de edição que devem ser materializados antes de expor um snapshot. */
 export function usePendingEditorEdits(): PendingEditorEdits | null {
   return useContext(StudioStoresContext)?.pendingEditorEdits ?? null
+}
+
+/**
+ * As pilhas de desfazer dos editores desta instância. `null` fora de um <Studio> (a lista de
+ * projetos, testes de componente isolados): ali não há editor e a barra não mostra os botões.
+ */
+export function useEditorHistory(): EditorHistory | null {
+  return useContext(StudioStoresContext)?.editorHistory ?? null
 }

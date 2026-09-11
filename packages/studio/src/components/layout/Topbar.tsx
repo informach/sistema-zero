@@ -50,6 +50,7 @@ import { HostStatusSeal } from './topbar/HostStatusSeal'
 import { ModeSegment } from './topbar/ModeSegment'
 import { ProjectNameField } from './topbar/ProjectNameField'
 import { SavePill, type SaveTone } from './topbar/SavePill'
+import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -63,7 +64,8 @@ export interface TopbarProps {
 /**
  * A barra do editor no desenho da tela-modelo do Estúdio (11/09/2026): TRÊS grupos numa linha.
  * À esquerda [menu do host][← marca][nome ✎][Salvo][nuvem]; no MEIO o segmentado dos modos; à
- * direita [Zappy][olho da prévia][⋯][Compartilhar]. As regras visuais são as `.sz-bar-*` do
+ * direita [Zappy][desfazer][refazer][olho da prévia][⋯][Compartilhar] (no compacto desfazer e
+ * refazer moram no "⋯"). As regras visuais são as `.sz-bar-*` do
  * `studio.css`: é o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
  * comunidade adulta, e só o kids importa o `tool-chrome.css`.
  *
@@ -117,6 +119,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // Baixar), sem assinar re-render a cada edição. Fora de um <Studio> (null), o
   // fallback lê a store default via a estática. Ver storesContext.ts.
   const stores = useContext(StudioStoresContext)
+  // Desfazer/refazer do editor em uso (os blocos, o código ou, na Ponte, o último tocado).
+  const undoRedo = useUndoRedo(projectMode)
 
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
@@ -334,6 +338,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   }
 
   const sections: MenuSection[] = [
+    // No compacto desfazer e refazer não cabem na barra: abrem o "⋯".
+    {
+      id: 'edit',
+      label: t('topbar.group.edit'),
+      items: undoRedo && isCompact ? undoRedoMenuItems(undoRedo, t) : [],
+    },
     { id: 'file', label: t('topbar.group.file'), items: fileItems },
     { id: 'view', label: t('topbar.group.view'), items: viewItems },
     { id: 'account', label: t('topbar.group.account'), items: accountItems },
@@ -395,6 +405,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               {!iconOnly ? <span>Zappy</span> : null}
             </button>
           ) : null}
+          {undoRedo && !isCompact ? <UndoRedo state={undoRedo} /> : null}
           {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
               teria o que esconder e a criança clicaria achando que o app quebrou.
               Some. Quem garante que a aba continua lá é o `previewAvailable` dos

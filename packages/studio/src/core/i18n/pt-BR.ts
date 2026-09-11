@@ -29,6 +29,13 @@ export const ptBR: Record<string, string> = {
   'topbar.group.view': 'Exibição',
   'topbar.group.account': 'Conta',
   'topbar.modes': 'Modo de edição',
+  'topbar.undo': 'Desfazer',
+  'topbar.redo': 'Refazer',
+  'topbar.undoBlocks': 'Desfazer nos blocos ({keys})',
+  'topbar.redoBlocks': 'Refazer nos blocos ({keys})',
+  'topbar.undoCode': 'Desfazer no código ({keys})',
+  'topbar.redoCode': 'Refazer no código ({keys})',
+  'topbar.group.edit': 'Editar',
 
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',
