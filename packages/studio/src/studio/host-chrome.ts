@@ -4,8 +4,8 @@ import { createContext, useContext } from 'react'
  * CHROME DO HOST na Topbar e na lista de projetos (07/09/2026): o botão de esconder o
  * menu lateral da comunidade e o selo "Guardado na sua conta"; desde 11/09 também a seta
  * da lista de volta à seção do host e o sinal da nuvem da conta (só a lista os lê). O
- * host (community-kids) só manda DADOS — o Studio desenha com os próprios
- * `IconButton`/`Badge` e, abaixo do tier wide, encolhe o selo para uma bolinha, como faz
+ * host (community-kids) só manda DADOS — o Studio desenha com as próprias peças (na barra do
+ * editor, o `HostStatusSeal`) e, abaixo do tier wide, encolhe o selo para uma bolinha, como faz
  * com o "Salvo". Espelho
  * ESTRUTURAL do `HostChrome` do kids (zero import entre pacotes, mesma regra do
  * `pinta-library.ts`).
@@ -68,12 +68,6 @@ export const StudioHostChromeProvider = StudioHostChromeContext.Provider
 export function useStudioHostChrome(): StudioHostChrome | null {
   return useContext(StudioHostChromeContext)
 }
-
-/** Tom do `Badge` para cada tom do host. */
-export const HOST_STATUS_BADGE_TONE: Record<
-  StudioHostChromeStatus['tone'],
-  'neutral' | 'success' | 'warn' | 'error'
-> = { muted: 'neutral', ok: 'success', warn: 'warn', danger: 'error' }
 
 /** Cor da BOLINHA (tiers narrow/compact) para cada tom do host. */
 export const HOST_STATUS_DOT_CLASS: Record<StudioHostChromeStatus['tone'], string> = {

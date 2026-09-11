@@ -380,6 +380,54 @@ export function IconCloudOff(p: IconProps): JSX.Element {
   )
 }
 
+/* Ícones da barra do editor (11/09/2026, a tela-modelo do Estúdio): o lápis da pílula do nome,
+   o visto do "Salvo", as setas da Ponte e a bolinha do "não salvo". */
+
+export function IconPencil(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+      <path d="m15 5 4 4" />
+    </Base>
+  )
+}
+
+export function IconCheck(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M20 6 9 17l-5-5" />
+    </Base>
+  )
+}
+
+/** A Ponte (blocos ⇄ código): o "arrow-left-right" do Lucide. */
+export function IconArrowLeftRight(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M8 3 4 7l4 4" />
+      <path d="M4 7h16" />
+      <path d="m16 21 4-4-4-4" />
+      <path d="M20 17H4" />
+    </Base>
+  )
+}
+
+/** Bolinha cheia ("Alterações não salvas"): usa `fill`, como o `IconMore`. */
+export function IconDot({ className, size = 16 }: IconProps): JSX.Element {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="5" />
+    </svg>
+  )
+}
+
 /** Triângulo de alerta (Lucide "triangle-alert"). */
 export function IconAlert(p: IconProps): JSX.Element {
   return (

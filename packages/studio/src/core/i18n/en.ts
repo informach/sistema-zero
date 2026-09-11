@@ -26,6 +26,7 @@ export const en: Record<string, string> = {
   'topbar.group.file': 'File',
   'topbar.group.view': 'View',
   'topbar.group.account': 'Account',
+  'topbar.modes': 'Editing mode',
   'tab.blocks': 'Blocks',
   'tab.code': 'Code',
   'tab.preview': 'Preview',

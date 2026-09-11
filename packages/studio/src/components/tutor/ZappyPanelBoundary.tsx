@@ -37,7 +37,7 @@ function TutorErrorFallback({
         'absolute z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg shadow-2xl',
         isNarrow
           ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
-          : 'bottom-0 right-0 top-[3.25rem] w-[min(26rem,42%)] border-l',
+          : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
       )}
     >
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">

@@ -371,11 +371,13 @@ export function ZappyPanel(): JSX.Element | null {
       role="dialog"
       aria-modal={isNarrow}
       aria-labelledby={titleId}
+      // No largo o painel começa logo abaixo da barra do editor, que mede 68px (4.25rem) desde a
+      // tela-modelo de 11/09/2026; no estreito a barra tem 52px e o painel desce 16px além dela.
       className={cn(
         'absolute z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg shadow-2xl motion-reduce:transition-none',
         isNarrow
           ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
-          : 'bottom-0 right-0 top-[3.25rem] w-[min(26rem,42%)] border-l',
+          : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
       )}
     >
       <header className="flex items-center gap-3 border-b border-sz-border px-4 py-3">

@@ -321,12 +321,12 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
   três tinham saído diferentes). ⚠️ Foi uma **ABA colada na linha da sidebar** até 11/09/2026;
   desde as telas-modelo é o QUADRADO de cantos de 12px DENTRO do padding (40px no mouse, 44px no
   toque), e o `--sz-tool-inset` saiu da Topbar e da `ProjectList`. Mora ali, e não em `studio/host-chrome.ts`, porque aquele é o
-  contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO filho do `<header>`
-  (antes da marca); a barra ficou `min-h-13` + `py-1` (52px com e sem o botão de 44). O status vem
-  logo após o bloco do "Salvo": `Badge` no tier wide e **BOLINHA** (`h-2.5 w-2.5`, texto no
-  `aria-label`/`title`) em narrow E compact — a Topbar não tem wrap, e o chip do host cede antes
-  do "Salvo" (`HOST_STATUS_BADGE_TONE`/`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`). Ícones
-  `IconPanelLeftClose/Open`.
+  contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO botão do `<header>`
+  (antes da marca). O status vem logo após o "Salvo": desde 11/09/2026 só a NUVEM em repouso e a
+  frase curta quando algo acontece (ver "A barra do editor das telas-modelo"), e a **BOLINHA**
+  (`h-2.5 w-2.5`, texto no `aria-label`/`title`) em narrow E compact — a Topbar não tem wrap, e o
+  selo do host cede antes do "Salvo" (`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`; o
+  `HOST_STATUS_BADGE_TONE` saiu com o `Badge`). Ícones `IconPanelLeftClose/Open`.
 - `ProjectList`: menu antes do bloco do h1 (`.sz-tool-header__lead`), status como 1º item das
   ações na PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira (o `title` é o nome).
 - ⚠️ Nenhum texto do host contém "Salvo": `e2e/smoke.spec.ts` usa `getByText('Salvo')` estrito.
@@ -335,6 +335,49 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
 - Testes: `components/layout/Topbar.test.tsx` (o primeiro teste da Topbar: wide/narrow/compact,
   sem Provider), `projects/ProjectList.hostChrome.test.tsx` e `styles/tokens.test.ts` (a ponte
   `--color-sz-*` → `--sz-tool-*` nos dois blocos de tema; o `@theme` intocado).
+
+## A barra do editor das telas-modelo (11/09/2026)
+
+A `Topbar` segue a imagem-modelo do Estúdio dela (plano `o-design-da-plataforma-composed-gray.md`,
+lote 7, passo 9). É o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
+comunidade adulta, então o desenho vale em todos, cada um com as cores dele: as regras são as
+**`.sz-bar-*` do `studio.css`** (na `@layer components`), pintadas com os `--color-sz-*`. Onde a
+imagem pede um tom que só o kids tem, a cadeia tenta o `--sz-tool-*` e cai num `--color-sz-*`
+(o círculo creme do voltar é o `--color-sz-panel-soft` fora do kids, nunca um creme literal).
+Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-tool-*` anulados
+(`initial`), que é o que o admin e o adulto veem.
+
+- **Três grupos** (`.sz-bar__start|__center|__end`): à esquerda [menu do host][← marca][nome ✎]
+  [Salvo][nuvem]; no meio o segmentado dos modos; à direita [Zappy][olho][⋯][Compartilhar]. O
+  segmentado fica no meio do espaço LIVRE entre as pontas (margens automáticas), que é o que a
+  imagem mede (a 1440px ele começa em 668, não no centro exato). ⚠️ A primeira versão tinha as
+  duas pontas crescendo por igual: a esquerda ficava presa na metade dela e o NOME do projeto
+  sumia com a direita sobrando (visto no playground). Sem espaço, só o nome encolhe.
+- **Largo** (a partir de 1024px) = 68px; **estreito e compacto** = 52px, com o segmentado, o Zappy
+  e o Compartilhar só no ícone (o rótulo vira `sr-only` e o nome acessível não muda; o modo ganha
+  `title`). Quem abre o painel do Zappy no largo agora começa em `top-[4.25rem]`.
+- Peças em `components/layout/topbar/`: **`BackBrand`** (UM botão, o círculo da seta + a marca
+  "Sistema Zero Studio"; nome e `title` "Voltar à lista de projetos" intactos para os e2e; abaixo
+  de **`STUDIO_BRAND_MIN_PX` = 1360** a marca vira `sr-only` e a divisória sai, porque com o menu
+  do host, a nuvem, o Zappy e o Compartilhar ela comia o nome; sem `onExit` é a marca estática, só
+  quando cabe), **`ProjectNameField`** (a pílula com o lápis, sem o lápis no compacto; clicar
+  leva o FOCO ao campo com o texto selecionado, Enter grava e Esc desiste, os dois devolvendo o
+  foco à pílula; antes o botão sumia e o foco caía no `body`), **`SavePill`** (a pílula menta
+  com o visto; "não salvo" e erro sobre o painel com o fio; SEM `role` no largo e no estreito, a
+  bolinha com `role="status"` no compacto), **`HostStatusSeal`** (em repouso só a nuvem, nome no
+  `title`; com algo acontecendo a frase curta; bolinha abaixo do largo), **`ModeSegment`** (um
+  `fieldset` com a legenda `sr-only` "Modo de edição", ícones `IconBlocks`/`IconArrowLeftRight`/
+  `IconCode`, o ativo no azul da marca) e **`BarIconButton`** (o círculo quieto do olho). O "⋯" é
+  o `Menu` com `triggerVariant="bar"` (o `cn` daqui não tem tailwind-merge, então trocar a classe
+  de base pedia uma variante). O mapa de ícones do selo mora em `layout/hostStatusIcons.ts`,
+  compartilhado com a `ProjectList`.
+- Contraste medido nos quatro cenários (kids e sem kids, claro e escuro), régua 4,5:1 para o texto
+  de 13 a 15px em negrito: o pior par é o "Salvo" sem kids no claro (4,69). Os fundos tingidos
+  misturam pouco do tom (10% no "Salvo", 8% no Zappy), e o vermelho do erro leva um quarto da
+  tinta do texto: puro, ele dava 3,9:1 sobre o painel navy do kids.
+- Testes: `components/layout/Topbar.test.tsx` (os grupos, a marca que vira `sr-only`, a marca
+  estática, o segmentado, o "Salvo" nos três tons e no compacto, o foco do nome, o Zappy e o
+  Compartilhar com e sem motivo de bloqueio, além dos casos do chrome do host).
 
 ## Compartilhar (publicar no Mural dos Criadores)
 

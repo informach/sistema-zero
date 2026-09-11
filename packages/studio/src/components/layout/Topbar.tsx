@@ -1,9 +1,8 @@
-import type { JSX, ReactNode } from 'react'
-import { useContext, useEffect, useState } from 'react'
+import type { JSX } from 'react'
+import { useContext, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import { modesForKind, type Project } from '#core'
 import {
-  Badge,
   ConfirmDialog,
   cn,
   IconDownload,
@@ -35,11 +34,7 @@ import { useStudioPersistence } from '../../state/studioStores'
 import { resolveConsoleVisibility, useUIStore } from '../../state/uiStore'
 import { useStudioCloudSync } from '../../studio/cloud-sync'
 import { useStudioConfig } from '../../studio/config'
-import {
-  HOST_STATUS_BADGE_TONE,
-  HOST_STATUS_DOT_CLASS,
-  useStudioHostChrome,
-} from '../../studio/host-chrome'
+import { useStudioHostChrome } from '../../studio/host-chrome'
 import { useT } from '../../studio/i18n'
 import { useStudioLayout } from '../../studio/layoutContext'
 import { useStudioShare, useStudioShareDisabledReason } from '../../studio/share'
@@ -47,7 +42,14 @@ import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
+import { STUDIO_BRAND_MIN_PX } from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
+import { BackBrand } from './topbar/BackBrand'
+import { BarIconButton } from './topbar/BarIconButton'
+import { HostStatusSeal } from './topbar/HostStatusSeal'
+import { ModeSegment } from './topbar/ModeSegment'
+import { ProjectNameField } from './topbar/ProjectNameField'
+import { SavePill, type SaveTone } from './topbar/SavePill'
 
 export interface TopbarProps {
   /** Sai do editor (host decide o destino). Sem ela, logo vira estático e o item "Projetos" some. */
@@ -59,49 +61,17 @@ export interface TopbarProps {
 }
 
 /**
- * A marca escrita (nome próprio, não traduzido). O logo saiu de propósito: com
- * ele o Estúdio parecia outro produto dentro da comunidade.
+ * A barra do editor no desenho da tela-modelo do Estúdio (11/09/2026): TRÊS grupos numa linha.
+ * À esquerda [menu do host][← marca][nome ✎][Salvo][nuvem]; no MEIO o segmentado dos modos; à
+ * direita [Zappy][olho da prévia][⋯][Compartilhar]. As regras visuais são as `.sz-bar-*` do
+ * `studio.css`: é o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
+ * comunidade adulta, e só o kids importa o `tool-chrome.css`.
+ *
+ * Largo (a partir de 1024px) = 68px; estreito e compacto = 52px, com o segmentado e as pílulas
+ * da direita só no ícone (o nome acessível não muda). O segmentado fica no meio do espaço livre
+ * entre as pontas (como na tela-modelo); quando não sobra espaço, quem encolhe é o NOME do
+ * projeto (reticências), nunca um botão.
  */
-const BRAND_NAME = 'Sistema Zero Studio'
-/** Na barra compacta (<440px) só o essencial cabe. */
-const BRAND_SHORT = 'Studio'
-
-/**
- * Botão de ação só-ícone, com tooltip — o padrão da Topbar compacta. (O botão do menu do
- * host NÃO passa por aqui: é o `HostMenuButton`, a receita compartilhada das ferramentas.)
- */
-function IconButton({
-  label,
-  onClick,
-  active,
-  disabled,
-  children,
-}: {
-  label: string
-  onClick: () => void
-  active?: boolean
-  disabled?: boolean
-  children: ReactNode
-}): JSX.Element {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      aria-pressed={active}
-      disabled={disabled}
-      onClick={onClick}
-      style={{ touchAction: 'manipulation' }}
-      className={cn(
-        'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-xl text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60 disabled:cursor-not-allowed disabled:opacity-50',
-        active && 'bg-sz-accent/15 text-sz-accent hover:bg-sz-accent/20',
-      )}
-    >
-      {children}
-    </button>
-  )
-}
-
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
   const { hasProject, projectName, projectMode, projectKind } = useProjectStore(
@@ -132,7 +102,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const setShowAI = useUIStore((s) => s.setShowAI)
   const config = useStudioConfig()
   const showConsole = resolveConsoleVisibility(projectMode, consoleVisibilityOverride)
-  const { isNarrow, isCompact } = useStudioLayout()
+  const { width, isNarrow, isCompact } = useStudioLayout()
   const theme = useStudioTheme()
   const setTheme = useSettingsStore((s) => s.setTheme)
   const share = useStudioShare()
@@ -148,8 +118,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // fallback lê a store default via a estática. Ver storesContext.ts.
   const stores = useContext(StudioStoresContext)
 
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState(projectName)
   const [saving, setSaving] = useState(false)
   const [downloading, setDownloading] = useState(false)
   const [showShare, setShowShare] = useState(false)
@@ -160,10 +128,6 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   const availableModes = modesForKind(projectKind).filter(
     (m) => projectKind === 'pro' || config.allowedModes.includes(m),
   )
-
-  useEffect(() => {
-    if (!editing) setDraft(projectName)
-  }, [editing, projectName])
 
   if (!hasProject) return <div />
 
@@ -375,162 +339,49 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     { id: 'account', label: t('topbar.group.account'), items: accountItems },
   ].filter((s) => s.items.length > 0)
 
-  const nameMaxW = isCompact ? 'max-w-[7rem]' : isNarrow ? 'max-w-[12rem]' : 'max-w-[20rem]'
+  const saveTone: SaveTone = saveError ? 'danger' : isDirty ? 'warn' : 'ok'
   const saveStatusLabel = saveError
     ? 'Erro ao salvar'
     : isDirty
       ? t('project.unsaved')
       : t('project.saved')
+  // A marca escrita só quando sobra espaço para o NOME do projeto (ver `STUDIO_BRAND_MIN_PX`);
+  // abaixo disso fica o círculo da seta, com a marca no nome acessível.
+  const showBrand = width >= STUDIO_BRAND_MIN_PX
+  // Abaixo do largo as pílulas da direita e o segmentado ficam só no ícone.
+  const iconOnly = isNarrow || isCompact
 
   return (
     <>
-      <header
-        className={cn(
-          // `min-h-13` (52px) + `py-1`: a barra mede o MESMO com e sem o botão do menu do
-          // host (40px no mouse, 44px no toque); com `py-2` ela cresceria só dentro do kids. O
-          // menu é o quadrado das telas-modelo, DENTRO do padding (deixou de ser a aba colada
-          // na linha da sidebar em 11/09/2026).
-          'flex min-h-13 items-center border-sz-border border-b-2 bg-sz-panel text-sm',
-          isCompact ? 'gap-1.5 px-2 py-1' : 'gap-3 px-4 py-1',
-        )}
-      >
-        {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
-            perto do painel que ele controla, na receita compartilhada das ferramentas. */}
-        {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-        {/* A marca é TEXTO, não logo (pedido da dona): o Estúdio é uma seção da
-            comunidade e o wordmark o fazia parecer outro produto. Na barra
-            compacta cabe só "Studio" — o nome do projeto é o que importa lá. */}
-        {onExit ? (
-          <button
-            type="button"
-            onClick={() => void exitToProjects()}
-            className="sz-touch-target sz-ui-display flex shrink-0 items-center gap-1.5 rounded-lg px-1.5 py-1 text-base text-sz-fg hover:bg-sz-panel-soft hover:opacity-80"
-            title="Voltar à lista de projetos"
-          >
-            {/* ⚠️ O ícone existe para o botão PARECER um botão. Quando a marca
-                virou texto puro (08/2026), o canto superior esquerdo deixou de
-                ler como clicável — e como é ele que dispara a captura da capa do
-                card, a miniatura parou de ser tirada junto. */}
-            <IconGrid size={16} />
-            {isCompact ? BRAND_SHORT : BRAND_NAME}
-          </button>
-        ) : (
-          <span className="sz-ui-display flex shrink-0 items-center text-base text-sz-fg">
-            {isCompact ? BRAND_SHORT : BRAND_NAME}
-          </span>
-        )}
-        {!isCompact && <span className="shrink-0 text-sz-fg-mute">/</span>}
-        {editing ? (
-          <input
-            name="project-name"
-            aria-label="Nome do projeto"
-            autoComplete="off"
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onBlur={() => {
-              rename(draft.trim() || 'Sem título')
-              setEditing(false)
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-              if (e.key === 'Escape') {
-                setDraft(projectName)
-                setEditing(false)
-              }
-            }}
-            className={cn(
-              'sz-touch-target min-w-0 rounded-lg border border-sz-border bg-sz-bg px-2.5 py-1 text-sm text-sz-fg',
-              nameMaxW,
-            )}
+      <header className={cn('sz-bar', iconOnly && 'sz-bar--tight', isCompact && 'sz-bar--compact')}>
+        <div className="sz-bar__start">
+          {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
+              perto do painel que ele controla, na receita compartilhada das ferramentas. */}
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <BackBrand
+            onExit={onExit ? () => void exitToProjects() : undefined}
+            showName={showBrand}
           />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(projectName)
-              setEditing(true)
-            }}
-            className={cn('sz-touch-target min-w-0 truncate text-sz-fg hover:underline', nameMaxW)}
-            title={t('topbar.rename')}
-          >
-            {projectName}
-          </button>
-        )}
-        {isCompact ? (
-          <span
-            role="status"
-            aria-label={saveStatusLabel}
-            title={saveError ?? saveStatusLabel}
-            className={cn(
-              'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
-              saveError ? 'bg-sz-error' : isDirty ? 'bg-sz-warn' : 'bg-sz-success',
-            )}
-          />
-        ) : (
-          <span className="shrink-0" title={saveError ?? undefined}>
-            <Badge tone={saveError ? 'error' : isDirty ? 'warn' : 'success'}>
-              {saveStatusLabel}
-            </Badge>
-          </span>
-        )}
-        {/* "Guardado na sua conta" (host), ao lado do "Salvo" local. Fora do tier wide
-            vira bolinha, como o próprio "Salvo": a Topbar não tem wrap e o selo do host
-            cede espaço primeiro. Quem ANUNCIA offline/erro é a região viva do host. */}
-        {hostChrome?.status ? (
-          isNarrow || isCompact ? (
-            <span
-              role="status"
-              aria-live="off"
-              aria-label={hostChrome.status.text}
-              title={hostChrome.status.text}
-              className={cn(
-                'inline-block h-2.5 w-2.5 shrink-0 rounded-full',
-                HOST_STATUS_DOT_CLASS[hostChrome.status.tone],
-              )}
+          {showBrand ? <span aria-hidden="true" className="sz-bar-divider" /> : null}
+          <ProjectNameField name={projectName} onRename={rename} showPencil={!isCompact} />
+          <SavePill tone={saveTone} label={saveStatusLabel} error={saveError} dot={isCompact} />
+          {/* "Guardado na sua conta" (host), ao lado do "Salvo" local: só a nuvem em repouso,
+              a frase curta quando algo acontece, a bolinha abaixo do largo. */}
+          {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
+        </div>
+
+        {availableModes.length > 0 ? (
+          <div className="sz-bar__center">
+            <ModeSegment
+              modes={availableModes}
+              active={projectMode}
+              onSelect={setMode}
+              iconOnly={iconOnly}
             />
-          ) : (
-            <span role="status" aria-live="off" className="shrink-0" title={hostChrome.status.text}>
-              <Badge tone={HOST_STATUS_BADGE_TONE[hostChrome.status.tone]}>
-                {hostChrome.status.label}
-              </Badge>
-            </span>
-          )
+          </div>
         ) : null}
 
-        {availableModes.length > 0 && (
-          <div
-            className={cn(
-              'flex shrink-0 rounded-xl border border-sz-border bg-sz-bg p-0.5',
-              isCompact ? 'ml-0.5' : 'ml-4',
-            )}
-          >
-            {availableModes.map((m) => {
-              const active = projectMode === m
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => setMode(m)}
-                  style={{ touchAction: 'manipulation' }}
-                  className={cn(
-                    'sz-touch-target rounded-lg text-sm leading-none transition-colors',
-                    isCompact ? 'px-2.5 py-1.5' : 'px-4 py-1.5',
-                    active
-                      ? 'bg-sz-accent font-bold text-sz-bg shadow-sm'
-                      : 'font-medium text-sz-fg-soft hover:bg-sz-bg/60 hover:text-sz-fg',
-                  )}
-                >
-                  {t(`mode.${m}`)}
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        <div
-          className={cn('ml-auto flex shrink-0 items-center', isCompact ? 'gap-0.5' : 'gap-1.5')}
-        >
+        <div className="sz-bar__end">
           {tutor.config ? (
             <button
               type="button"
@@ -538,18 +389,34 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               aria-expanded={tutor.open}
               aria-controls="sz-zappy-panel"
               onClick={() => tutor.setOpen(!tutor.open)}
-              className={cn(
-                'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 font-bold text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-                tutor.open
-                  ? 'bg-sz-accent text-sz-bg'
-                  : 'bg-sz-accent/10 text-sz-accent hover:bg-sz-accent/20',
-              )}
+              className={cn('sz-bar-pill sz-bar-pill--soft', iconOnly && 'sz-bar-pill--icon')}
             >
               <IconSparkles />
-              {!isCompact ? <span>Zappy</span> : null}
+              {!iconOnly ? <span>Zappy</span> : null}
             </button>
           ) : null}
-          {share && (
+          {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
+              teria o que esconder e a criança clicaria achando que o app quebrou.
+              Some. Quem garante que a aba continua lá é o `previewAvailable` dos
+              modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
+          {config.preview && !isNarrow ? (
+            <BarIconButton
+              label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
+              pressed={showPreview}
+              onClick={() => setShowPreview(!showPreview)}
+            >
+              {showPreview ? <IconEye /> : <IconEyeOff />}
+            </BarIconButton>
+          ) : null}
+          {sections.length > 0 ? (
+            <Menu
+              trigger={<IconMore size={18} />}
+              label={t('topbar.more')}
+              sections={sections}
+              triggerVariant="bar"
+            />
+          ) : null}
+          {share ? (
             // Wrapper `group` recebe hover/foco MESMO com o botão inerte (botão
             // `disabled` engole os eventos → a dica nunca aparecia, e nunca no toque).
             <span className="group relative inline-flex">
@@ -562,18 +429,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 // mantém o botão focável/tocável p/ revelar a bolha de dica.
                 aria-disabled={Boolean(shareDisabledReason)}
                 aria-label={shareDisabledReason ?? t('share.action')}
-                style={{ touchAction: 'manipulation' }}
-                className={cn(
-                  'sz-touch-target inline-flex h-9 items-center gap-1.5 rounded-xl px-2.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-                  shareDisabledReason
-                    ? 'cursor-not-allowed text-sz-fg-mute opacity-50'
-                    : 'text-sz-accent hover:bg-sz-accent/15',
-                )}
+                className={cn('sz-bar-pill sz-bar-pill--primary', iconOnly && 'sz-bar-pill--icon')}
               >
                 <IconShare />
-                {!isCompact && <span className="text-sm font-medium">{t('share.action')}</span>}
+                {!iconOnly ? <span>{t('share.action')}</span> : null}
               </button>
-              {shareDisabledReason && (
+              {shareDisabledReason ? (
                 // Bolha visível (não depende do `title` nativo): aparece no hover/foco/toque.
                 <span
                   role="tooltip"
@@ -581,25 +442,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 >
                   {shareDisabledReason}
                 </span>
-              )}
+              ) : null}
             </span>
-          )}
-          {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
-              teria o que esconder e a criança clicaria achando que o app quebrou.
-              Some. Quem garante que a aba continua lá é o `previewAvailable` dos
-              modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
-          {config.preview && !isNarrow && (
-            <IconButton
-              label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
-              active={showPreview}
-              onClick={() => setShowPreview(!showPreview)}
-            >
-              {showPreview ? <IconEye /> : <IconEyeOff />}
-            </IconButton>
-          )}
-          {sections.length > 0 && (
-            <Menu trigger={<IconMore size={18} />} label={t('topbar.more')} sections={sections} />
-          )}
+          ) : null}
         </div>
       </header>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />

@@ -30,6 +30,12 @@ export interface MenuProps {
   align?: 'left' | 'right'
   className?: string
   triggerClassName?: string
+  /**
+   * `bar` = o círculo quieto da barra do editor (`.sz-bar-icon-btn` do `studio.css`, o "⋯" da
+   * tela-modelo), no lugar das utilitárias de sempre: o `cn` daqui só junta classes (sem
+   * tailwind-merge), então um `triggerClassName` não TIRARIA as de base.
+   */
+  triggerVariant?: 'default' | 'bar'
 }
 
 interface PanelPos {
@@ -53,6 +59,7 @@ export function Menu({
   align = 'right',
   className,
   triggerClassName,
+  triggerVariant = 'default',
 }: MenuProps): JSX.Element {
   const [open, setOpen] = useState(false)
   const [pos, setPos] = useState<PanelPos | null>(null)
@@ -145,8 +152,12 @@ export function Menu({
           }
         }}
         className={cn(
-          'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
-          open && 'bg-sz-bg text-sz-fg',
+          triggerVariant === 'bar'
+            ? 'sz-bar-icon-btn'
+            : cn(
+                'sz-touch-target inline-flex h-9 w-9 items-center justify-center rounded-md text-sz-fg-soft transition-colors hover:bg-sz-bg hover:text-sz-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-sz-accent/60',
+                open && 'bg-sz-bg text-sz-fg',
+              ),
           triggerClassName,
         )}
       >

@@ -28,6 +28,7 @@ export const ptBR: Record<string, string> = {
   'topbar.group.file': 'Arquivo',
   'topbar.group.view': 'Exibição',
   'topbar.group.account': 'Conta',
+  'topbar.modes': 'Modo de edição',
 
   'tab.blocks': 'Blocos',
   'tab.code': 'Código',

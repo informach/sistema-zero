@@ -10,14 +10,9 @@ import {
   useState,
 } from 'react'
 import {
-  IconAlert,
   IconBlocks,
   IconCamera,
   IconChevronDown,
-  IconCloud,
-  IconCloudDownload,
-  IconCloudOff,
-  IconCloudUpload,
   IconCode,
   IconGamepad,
   IconPlus,
@@ -28,6 +23,7 @@ import {
 import { listProTemplates } from '../components/code/pro-templates'
 import { HostBackLink } from '../components/layout/HostBackLink'
 import { HostMenuButton } from '../components/layout/HostMenuButton'
+import { HOST_STATUS_ICON } from '../components/layout/hostStatusIcons'
 import { ThemeToggle } from '../components/layout/ThemeToggle'
 import { ImportButton, type ImportButtonHandle } from '../components/projects/ImportButton'
 import {
@@ -109,15 +105,6 @@ const MODE_FILTERS: ReadonlyArray<{
   { value: 'blocks', label: 'projects.filterBlocks', icon: IconBlocks },
   { value: 'code', label: 'projects.filterCode', icon: IconCode },
 ]
-
-/** Ícone do selo de nuvem do host por estado (o vocabulário do `lib/host-chrome.ts` do kids). */
-const HOST_STATUS_ICON: Record<StudioHostChromeStatus['icon'], typeof IconCloud> = {
-  upload: IconCloudUpload,
-  download: IconCloudDownload,
-  cloud: IconCloud,
-  offline: IconCloudOff,
-  alert: IconAlert,
-}
 
 /**
  * "Guardado na sua conta" do host como a PÍLULA compartilhada (`.sz-tool-status`, a mesma do
