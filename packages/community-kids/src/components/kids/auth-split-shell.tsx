@@ -20,7 +20,7 @@ export function AuthSplitShell({ children }: { children: ReactNode }) {
           <div className="w-full max-w-[432px]">
             <div className="mb-[30px] flex justify-center">
               <Link href="/" aria-label="Sistema Zero Kids">
-                <KidsLogo size="auth" priority />
+                <KidsLogo size="auth" />
               </Link>
             </div>
             {children}

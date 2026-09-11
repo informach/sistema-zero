@@ -13,6 +13,8 @@ import { UserMenu } from './user-menu'
 /**
  * Top bar do mobile: logo + streak/XP compactos + menu do avatar (tema/sair
  * acessíveis fora do desktop). `gamification` é best-effort (`null` esconde).
+ * Escura como o menu do desktop (a âncora do Pen, 11/09/2026): no celular é ela que faz
+ * o papel do menu, então a página continua com um fundo só e a âncora em cima.
  */
 export function MobileTopbar({
   user,
@@ -25,11 +27,11 @@ export function MobileTopbar({
   avatarPhotoUrl?: string | null
 }) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-border border-b bg-background/80 px-3 backdrop-blur md:hidden">
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-(--menu-2) border-b bg-(--menu) px-3 text-(--menu-texto) md:hidden">
       {/* `shrink-0`: sem ele o bloco da direita espremia o logo e o selo "kids" escapava
           por baixo dos números (medido a 375px: logo em 104px para um conteúdo de 150). */}
       <Link href="/" aria-label="Início" className="flex shrink-0 items-center" prefetch={false}>
-        <KidsLogo priority />
+        <KidsLogo fundo="escuro" />
       </Link>
       <div className="flex min-w-0 items-center gap-2">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
@@ -44,7 +46,9 @@ export function MobileTopbar({
  * Tab bar inferior do mobile (estilo Duolingo): 5 abas grandes ícone + label
  * (07/2026 — eram os 9 itens da sidebar, alvos minúsculos p/ mãos pequenas;
  * o resto vive no hub "Criar"). Mesmo desenho do menu do desktop (telas-modelo de
- * 11/09/2026): ícone de TRAÇO, e a aba ativa numa pílula azul atrás do ícone.
+ * 11/09/2026): escura, ícone de TRAÇO, e a aba ativa numa pílula na cor de ação atrás
+ * do ícone, com o rótulo na ação clara (a de sobre o escuro: a cor de ação crua dava
+ * 3,2:1 no navy).
  */
 export function MobileTabbar() {
   const pathname = usePathname()
@@ -52,7 +56,7 @@ export function MobileTabbar() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-border border-t bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex items-stretch justify-around border-(--menu-2) border-t bg-(--menu) pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {/* `prefetch={false}`: mesmo motivo da sidebar — rotas `force-dynamic` + gateway numa réplica
           única não aguentam o prefetch de todos os itens a cada página (tempestade de 502/ERR_HTTP2). */}
@@ -67,7 +71,7 @@ export function MobileTabbar() {
             aria-current={active ? 'page' : undefined}
             className={cn(
               'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 py-1.5 transition-colors',
-              active ? 'text-primary' : 'text-foreground',
+              active ? 'text-(--pen-acao-clara)' : 'text-(--menu-texto)',
             )}
           >
             <span

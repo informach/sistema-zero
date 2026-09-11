@@ -4,14 +4,15 @@ import type { GamificationMeView } from '@/lib/types'
 import { ZappyCoin } from './zappy-coin'
 
 /**
- * Sequência + XP + moedas Zappy (rodapé do menu no desktop e top bar do celular).
- * Sem hooks: funciona dentro de Server e Client Components. Fogo ACESO (laranja,
- * cheio) = já houve atividade hoje; apagado = só o traço azul, convite a estudar. O
- * saldo de moedas é opcional (tolera members antigo sem `coins`).
+ * Sequência + XP + moedas Zappy (rodapé do menu no desktop e top bar do celular), os
+ * dois sobre a âncora ESCURA do Pen. Sem hooks: funciona dentro de Server e Client
+ * Components. Fogo ACESO (amarelo, cheio) = já houve atividade hoje; apagado = só o
+ * traço, no cinza do menu, convite a estudar. O saldo de moedas é opcional (tolera
+ * members antigo sem `coins`).
  *
- * No menu (telas-modelo de 11/09/2026) cada número é um CHIP separado: o fogo no
- * creme, o XP no azul-claro. As moedas não aparecem na imagem, mas são conteúdo, e
- * entram como um terceiro chip na linha de baixo, da largura do menu.
+ * No menu cada número é um CHIP separado, branco a 8% com o número em branco e o ícone
+ * no amarelo da moeda, como no rodapé do Pen. As moedas não aparecem na imagem, mas são
+ * conteúdo, e entram como um terceiro chip na linha de baixo, da largura do menu.
  */
 export function StreakWidget({
   gamification,
@@ -31,11 +32,11 @@ export function StreakWidget({
       ? ''
       : ` ${coinsUnlimited ? 'moedas Zappy ilimitadas' : `${coins} moedas Zappy`}.`
   const ariaLabel = `${streakLabel}. ${xp} pontos de experiência.${coinsLabel}`
-  // Apagado = o traço AZUL das telas-modelo (o fogo do rodapé é azul lá); aceso = o
-  // laranja da marca, cheio, que é o que diz "hoje já valeu" sem precisar de texto.
+  // Aceso = o amarelo da marca, CHEIO, que é o que diz "hoje já valeu" sem precisar de
+  // texto; apagado = só o traço, no cinza do menu. O azul de ação dava 2,6:1 no chip escuro.
   const flameClass = streak.activeToday
-    ? 'fill-current text-(--sz-kids-laranja-texto)'
-    : 'text-primary'
+    ? 'fill-current text-(--sz-kids-amarelo)'
+    : 'text-(--menu-icone)'
 
   if (compact) {
     // Top bar do celular: o fogo fica SEMPRE; o XP e as moedas só aparecem quando
@@ -43,13 +44,17 @@ export function StreakWidget({
     // logo). Os dois continuam no Início e no Meu espaço, e o nome falado do grupo
     // diz os três em qualquer largura.
     return (
-      <span role="group" className="flex items-center gap-2.5 text-sm" aria-label={ariaLabel}>
+      <span
+        role="group"
+        className="flex items-center gap-2.5 text-sm text-white"
+        aria-label={ariaLabel}
+      >
         <span className="inline-flex items-center gap-1 font-bold">
           <Flame className={cn('size-4', flameClass)} aria-hidden />
           {streak.current}
         </span>
-        <span className="hidden items-center gap-1 font-bold text-primary min-[390px]:inline-flex">
-          <Sparkles className="size-4" aria-hidden />
+        <span className="hidden items-center gap-1 font-bold min-[390px]:inline-flex">
+          <Sparkles className="size-4 text-(--sz-kids-amarelo)" aria-hidden />
           {xp}
         </span>
         {coins !== undefined ? (
@@ -62,25 +67,25 @@ export function StreakWidget({
     )
   }
 
-  // Números na tinta navy e ícones no azul, como no rodapé do modelo (1440px).
+  // Números em branco e ícones no amarelo, sobre o branco a 8% do rodapé do Pen (1440px).
   const chip =
-    'inline-flex h-[2.375rem] items-center justify-center gap-2 rounded-xl px-3 text-(--tinta)'
+    'inline-flex h-[2.375rem] items-center justify-center gap-2 rounded-xl bg-(--menu-vidro) px-3 text-white'
   return (
     <div
       role="group"
       className="grid grid-cols-2 gap-2 font-extrabold text-sm"
       aria-label={ariaLabel}
     >
-      <span className={cn(chip, 'bg-(--band-creme)')}>
+      <span className={chip}>
         <Flame className={cn('size-4 shrink-0', flameClass)} aria-hidden />
         {streak.current}
       </span>
-      <span className={cn(chip, 'bg-(--band-ceu)')}>
-        <Sparkles className="size-4 shrink-0 text-primary" aria-hidden />
+      <span className={chip}>
+        <Sparkles className="size-4 shrink-0 text-(--sz-kids-amarelo)" aria-hidden />
         <span className="truncate">{xp} XP</span>
       </span>
       {coins !== undefined ? (
-        <span className={cn(chip, 'col-span-2 bg-(--band-amarelo)')}>
+        <span className={cn(chip, 'col-span-2')}>
           <ZappyCoin className="size-4 shrink-0" />
           {coinsDisplay} {coinsUnlimited ? 'moedas' : coins === 1 ? 'moeda' : 'moedas'}
         </span>

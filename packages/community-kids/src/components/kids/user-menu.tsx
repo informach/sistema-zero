@@ -14,16 +14,24 @@ import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
 
 /**
+ * As iniciais do responsável (sessão da CONTA, sem foto) no `UserAvatar` do member-shell são
+ * tinta escura sobre a ação a 15%, e sumiam na âncora escura. As classes do componente vêm
+ * DEPOIS do `className`, então quem vence é o seletor de filho, aplicado só onde ele pousa no
+ * escuro (o cabeçalho do menu suspenso, branco, continua como é).
+ */
+const AVATAR_SOBRE_O_ESCURO = '[&>span]:bg-primary [&>span]:text-primary-foreground'
+
+/**
  * Menu do avatar: cabeçalho com foto + nome + colocação no ranking/XP (NÃO o
  * e-mail dos pais — decisão 06/2026), itens Meu perfil/Mudar tema e Sair. SEM
  * "Compras" (decisão da v1 kids: a compra é do RESPONSÁVEL — histórico financeiro
  * não aparece na área da criança). Dropdown custom.
  *
- * Duas roupas do MESMO botão:
+ * Duas roupas do MESMO botão, as duas sobre a âncora escura do Pen:
  *  - `avatar` (top bar do celular): só o círculo, abre para baixo;
- *  - `card` (rodapé do menu, telas-modelo de 11/09/2026): o cartão creme INTEIRO é o
- *    botão, com o avatar, o nome e o nível de verdade (`LEVEL_INFO`, nunca o rótulo
- *    da imagem), e o menu abre para cima, na largura do cartão.
+ *  - `card` (rodapé do menu, telas-modelo de 11/09/2026): o cartão INTEIRO, em branco a
+ *    8%, é o botão, com o avatar, o nome e o nível de verdade (`LEVEL_INFO`, nunca o
+ *    rótulo da imagem), e o menu abre para cima, na largura do cartão.
  */
 export function UserMenu({
   user,
@@ -108,12 +116,14 @@ export function UserMenu({
           onClick={() => setOpen((v) => !v)}
           aria-haspopup="menu"
           aria-expanded={open}
-          className="flex h-16 w-full items-center gap-3 rounded-2xl bg-(--band-creme) px-3 text-left transition-colors hover:bg-[color-mix(in_oklab,var(--band-creme)_92%,var(--foreground))] focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+          // O cartão do rodapé do menu escuro do Pen: branco a 8%, nome em branco e o nível
+          // no cinza do menu.
+          className="flex h-16 w-full items-center gap-3 rounded-2xl bg-(--menu-vidro) px-3 text-left text-white transition-colors hover:bg-white/12 focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
         >
           {/* O nome falado é o que está escrito no cartão, com o papel do botão antes:
               "Menu da conta, Lipe, Construtor(a)". */}
           <span className="sr-only">Menu da conta, </span>
-          <span className="shrink-0">
+          <span className={cn('shrink-0', !isProfile && AVATAR_SOBRE_O_ESCURO)}>
             {isProfile ? (
               <AvatarWithAura
                 photoUrl={avatarPhotoUrl}
@@ -130,11 +140,11 @@ export function UserMenu({
               {displayName}
             </span>
             {isProfile && levelSlug ? (
-              <span className="mt-0.5 block truncate text-[0.8125rem] text-muted-foreground">
+              <span className="mt-0.5 block truncate text-(--menu-icone) text-[0.8125rem]">
                 {levelInfo(levelSlug).label}
               </span>
             ) : subtitle ? (
-              <span className="mt-0.5 block truncate text-[0.8125rem] text-muted-foreground">
+              <span className="mt-0.5 block truncate text-(--menu-icone) text-[0.8125rem]">
                 {subtitle}
               </span>
             ) : null}
@@ -144,7 +154,10 @@ export function UserMenu({
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="rounded-full transition-opacity hover:opacity-85"
+          className={cn(
+            'rounded-full transition-opacity hover:opacity-85',
+            !isProfile && AVATAR_SOBRE_O_ESCURO,
+          )}
           aria-label="Conta"
           aria-haspopup="menu"
           aria-expanded={open}

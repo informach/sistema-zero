@@ -13,8 +13,8 @@ const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito' })
 export const metadata: Metadata = {
   title: 'Sistema Zero Kids',
   description: 'Plataforma de cursos infanto-juvenil do Sistema Zero',
-  // Favicons HERDADOS do community DE PROPÓSITO (decisão de marca: mesmo
-  // favicon). Logo = wordmark oficial + selo "kids" (KidsLogo/logo_kids_*.svg).
+  // Favicons do PackLogo do kids (11/09/2026: o O com a estrela), gerados do favicon.svg
+  // do pacote; o favicon.ico em src/app/ é o do próprio pacote. A logo é a `KidsLogo`.
   icons: {
     icon: [
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -25,12 +25,12 @@ export const metadata: Metadata = {
   },
 }
 
+// Os temas Padrão e Pink são os dois claros (o escuro saiu em 11/09/2026). A barra do
+// navegador no celular fica na cor do menu, a âncora escura que no celular é a barra do topo
+// (o navy do Padrão; no Pink o menu é ameixa, e o meta não segue o tema sem script).
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f4f9ff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0c1e3e' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#121a30',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

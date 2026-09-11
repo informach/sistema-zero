@@ -146,7 +146,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex min-w-0 flex-1 flex-col">
             <Suspense
               fallback={
-                <div className="sticky top-0 z-40 h-14 border-border border-b bg-background/80 backdrop-blur md:hidden" />
+                <div className="sticky top-0 z-40 h-14 border-(--menu-2) border-b bg-(--menu) md:hidden" />
               }
             >
               <TopbarChrome session={session} />

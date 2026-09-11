@@ -166,6 +166,10 @@
   --sz-kids-vermelho: #cf3f36;
   --sz-kids-roxo: #6d3bf5;
   --sz-kids-verde-profundo: #0b7a54;
+  /* A laranja das unidades e do nível Inventor(a), um tico abaixo da do funil
+     (oklch 0.58 0.15 55 = #BB5D00): o branco nela dava 4,49:1 no "0/N aulas" e no chip
+     "Responda"; aqui dá 4,74:1. */
+  --sz-kids-laranja-profunda: #b55a00;
   /* Os tons de APOIO do Pen (pílulas e ladrilhos tintados). */
   --sz-kids-menta-bg: #dcf0e4;
   --sz-kids-lilas-bg: #e5e0f7;
