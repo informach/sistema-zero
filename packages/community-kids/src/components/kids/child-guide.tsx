@@ -51,8 +51,16 @@ export function ChildGuide({
   hasAvatar,
   hasCourseActivity,
   startAvailable,
+  header,
   children,
 }: {
+  /**
+   * O cabeçalho da página (a saudação da home). Com ele, o "Como funciona?" sobe para o
+   * canto direito do cabeçalho, como nas telas-modelo (11/09/2026); sem ele, o botão fica
+   * embaixo do conteúdo, como sempre foi. Os balões continuam ENTRE o cabeçalho e o
+   * herói, porque o do "Começar" aponta para baixo, direto no botão do herói.
+   */
+  header?: ReactNode
   /** Id do PERFIL ativo (a home sempre roda em sessão de perfil). */
   profileKey: string
   childName: string | null
@@ -129,8 +137,16 @@ export function ChildGuide({
     trackOnboardingEvent({ audience: 'child', action: 'welcome_opened', step: 'welcome' })
   }
 
+  const reopen = <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />
+
   return (
     <ChildGuideStartContext.Provider value={step === 'start' ? 'child-start-guide' : undefined}>
+      {header ? (
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4 md:mb-7">
+          <div className="min-w-0">{header}</div>
+          {reopen}
+        </div>
+      ) : null}
       {step === 'avatar' ? (
         <GuideBalloon
           arrow="none"
@@ -200,9 +216,7 @@ export function ChildGuide({
         // pode dizer "Vamos lá!".
         continueLabel={hasActionableWelcomeStep(welcomeSteps) ? undefined : 'Entendi!'}
       />
-      <div className="flex justify-end">
-        <GuideReopenButton buttonRef={reopenRef} onClick={reopenGuide} />
-      </div>
+      {header ? null : <div className="flex justify-end">{reopen}</div>}
     </ChildGuideStartContext.Provider>
   )
 }

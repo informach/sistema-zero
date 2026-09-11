@@ -1,42 +1,64 @@
 'use client'
 
-import { Gift, Sparkles } from 'lucide-react'
+import {
+  BookOpen,
+  Brain,
+  Gamepad2,
+  Gift,
+  MessageCircle,
+  MessagesSquare,
+  Rocket,
+  Send,
+  Shirt,
+  Shuffle,
+  Sofa,
+  Sparkles,
+  Star,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { type CSSProperties, useState } from 'react'
+import { type ComponentType, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import type { MissionsMeView, MissionView } from '@/lib/types'
+import { ChestIcon } from './chest-icon'
+import { KidsSectionHeader } from './kids-section-header'
 import { ZappyCoin } from './zappy-coin'
 
-/** Emoji da missão — identidade visual rápida por tipo de meta (decorativo). */
-function missionEmoji(m: MissionView): string {
+/**
+ * Ícone da missão — identidade visual rápida por tipo de meta (decorativo). Eram emojis;
+ * as telas-modelo (11/09/2026) pedem o ícone de linha num ladrilho da cor do grupo. O
+ * baú é o desenho da trilha, e não o presente do lucide: a criança aprende a ler o baú
+ * pela forma dele.
+ */
+function missionIcon(m: MissionView): ComponentType<{ className?: string }> {
   switch (m.goalType) {
     case 'lesson_complete':
-      return '📖'
+      return BookOpen
     case 'quiz_passed':
-      return '🧠'
+      return Brain
     case 'unit_complete':
-      return '🎁'
+      return ChestIcon
     case 'studio_submitted':
-      return '📨'
+      return Send
     case 'studio_passed':
-      return '🚀'
+      return Gamepad2
     case 'course_showcased':
     case 'studio_published':
-      return '🌟'
+      return Rocket
     case 'course_rated':
-      return '⭐'
+      return Star
     case 'room_item_buy':
-      return '🏠'
+      return Sofa
     case 'avatar_part_buy':
-      return '🧢'
+      return Shirt
     case 'mural_comment':
+      return MessageCircle
     case 'clube_thread':
-      return '💬'
+      return MessagesSquare
     case 'studio_remix':
-      return '🎮'
+      return Shuffle
     default:
-      return '✨'
+      return Sparkles
   }
 }
 
@@ -82,8 +104,18 @@ function missionLabel(m: MissionView): string {
  * `initial`, no Promise.all da home — sem fetch/waterfall pós-hidratação); o cliente
  * só cuida do resgate (POST idempotente). `initial` nulo (gamificação indisponível)
  * → placeholder gentil (a home não "encolhe" sem explicação; era sumir em silêncio).
+ *
+ * Desenho das telas-modelo (11/09/2026): cada grupo tem a sua cor (Hoje azul, Esta semana
+ * rosa, Este mês verde) no fio de 2px do cartão, no ladrilho e no "Resgatar"; o contador
+ * simples à direita e a barra verde embaixo.
  */
-export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
+export function MissionsPanel({
+  initial,
+  className,
+}: {
+  initial: MissionsMeView | null
+  className?: string
+}) {
   const [data, setData] = useState<MissionsMeView | null>(initial)
   const [claiming, setClaiming] = useState<string | null>(null)
   const router = useRouter()
@@ -125,14 +157,18 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
     }
   }
 
+  const titulo = (
+    <span className="inline-flex items-center gap-2.5">
+      <Sparkles className="size-7 shrink-0 text-primary" aria-hidden /> Missões
+    </span>
+  )
+
   if (!data) {
     return (
-      <section className="space-y-3">
-        <h2 className="sz-display flex items-center gap-2 text-lg">
-          <Sparkles className="size-5 text-primary" /> Missões
-        </h2>
-        <div className="rounded-3xl border-2 border-border border-dashed px-5 py-6 text-center">
-          <p className="text-muted-foreground text-sm">
+      <section aria-labelledby="missoes" className={className}>
+        <KidsSectionHeader id="missoes" title={titulo} />
+        <div className="kids-carta px-5 py-6 text-center">
+          <p className="font-medium text-[0.9375rem] text-muted-foreground">
             As missões estão tirando uma soneca… volte daqui a pouquinho! 💤
           </p>
         </div>
@@ -143,11 +179,9 @@ export function MissionsPanel({ initial }: { initial: MissionsMeView | null }) {
   if (all.length === 0) return null
 
   return (
-    <section className="space-y-3">
-      <h2 className="sz-display flex items-center gap-2 text-lg">
-        <Sparkles className="size-5 text-primary" /> Missões
-      </h2>
-      <div className="space-y-4">
+    <section aria-labelledby="missoes" className={className}>
+      <KidsSectionHeader id="missoes" title={titulo} />
+      <div className="space-y-7">
         <MissionGroup
           title="Hoje"
           unitClass="kids-unit-cyan"
@@ -186,7 +220,7 @@ function MissionGroup({
   label,
 }: {
   title: string
-  /** Tema kids-unit-* do grupo: pinta borda/sombra dos cards e o chip do título. */
+  /** Tema kids-unit-* do grupo: pinta o fio dos cartões, os ladrilhos e o "Resgatar". */
   unitClass: string
   missions: MissionView[]
   claiming: string | null
@@ -195,37 +229,41 @@ function MissionGroup({
 }) {
   if (missions.length === 0) return null
   return (
-    <div className={cn('space-y-2', unitClass)}>
-      <p className="flex items-center gap-2 font-bold text-muted-foreground text-xs uppercase tracking-wide">
+    <div className={unitClass}>
+      <p
+        className="flex items-center gap-2 font-extrabold text-xs uppercase tracking-[0.12em]"
+        // A cor do grupo como TINTA miúda reprova AA (a rosa dava 3,9:1 no azul-claro):
+        // misturada com o texto do tema ela mantém o matiz e passa.
+        style={{ color: 'color-mix(in oklab, var(--unit) 60%, var(--foreground))' }}
+      >
         <span aria-hidden className="size-2 rounded-full bg-(--unit)" />
         {title}
       </p>
-      <div className="grid gap-2.5">
+      <ul className="mt-3.5 grid gap-4">
         {missions.map((m) => {
           const pct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0
-          const ready = m.completed && !m.claimed
+          const Icone = missionIcon(m)
           return (
-            <div
+            <li
               key={m.slug}
               className={cn(
-                'kids-card rounded-2xl bg-card p-3.5',
+                // `min-w-0`: item de grade nasce com a largura mínima do conteúdo, e o nome
+                // da missão (`truncate`, sem quebra) empurrava o cartão para fora da tela
+                // no celular em vez de ganhar as reticências.
+                'min-w-0 rounded-[1.25rem] bg-card px-4 py-4 ring-(--unit) ring-2 ring-inset md:px-5',
                 m.claimed && 'opacity-60 saturate-50',
               )}
-              // Missão pronta p/ resgatar veste o vermelho "hot" pela MESMA
-              // indireção --unit do kids-card (borda + sombra acompanham).
-              style={ready ? ({ '--unit': 'var(--sz-hot)' } as CSSProperties) : undefined}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3.5">
                 <span
                   aria-hidden
-                  className="grid size-10 shrink-0 place-items-center rounded-xl text-xl"
-                  style={{ background: 'color-mix(in oklch, var(--unit) 14%, transparent)' }}
+                  className="grid size-10 shrink-0 place-items-center rounded-[0.75rem] bg-(--unit) text-(--unit-fg)"
                 >
-                  {missionEmoji(m)}
+                  <Icone className="size-5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold text-sm">{label(m)}</p>
-                  <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+                  <p className="truncate font-extrabold text-[0.9375rem]">{label(m)}</p>
+                  <span className="mt-0.5 inline-flex items-center gap-1 font-semibold text-muted-foreground text-xs">
                     <ZappyCoin className="size-3.5" /> {m.rewardCoins} · {m.rewardXp} XP
                   </span>
                 </div>
@@ -238,25 +276,31 @@ function MissionGroup({
                     type="button"
                     onClick={() => onClaim(m)}
                     disabled={claiming === m.slug}
-                    className="kid-pop inline-flex shrink-0 items-center gap-1 rounded-full bg-(--sz-hot) px-3 py-1.5 font-bold text-(--sz-hot-fg) text-xs disabled:opacity-60"
+                    // O fundo é a cor do grupo puxada 14% para a tinta do tema: a rosa pura
+                    // dava 4,37:1 com o branco (reprovava por pouco); assim passa nos dois
+                    // temas, escurecendo no claro e clareando no escuro.
+                    className="sz-btn-gradient h-9 shrink-0 gap-1.5 px-4 text-(--unit-fg) text-[0.8125rem] hover:brightness-95 disabled:opacity-60"
+                    style={{
+                      backgroundColor: 'color-mix(in oklab, var(--unit) 86%, var(--foreground))',
+                    }}
                   >
-                    <Gift className="size-3.5" /> Resgatar
+                    <Gift className="size-4" aria-hidden /> Resgatar
                   </button>
                 ) : (
-                  <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 font-bold text-muted-foreground text-xs tabular-nums">
+                  <span className="shrink-0 font-extrabold text-muted-foreground text-sm tabular-nums">
                     {m.progress}/{m.target}
                   </span>
                 )}
               </div>
               {!m.claimed && (
-                <div className="sz-progress mt-2.5">
+                <div className="sz-progress mt-3.5" aria-hidden="true">
                   <span style={{ width: `${pct}%` }} />
                 </div>
               )}
-            </div>
+            </li>
           )
         })}
-      </div>
+      </ul>
     </div>
   )
 }

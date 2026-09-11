@@ -13,9 +13,9 @@ import { CreatorCareerCard } from '@/components/kids/creator-career-card'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
+import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsMascot } from '@/components/kids/mascot'
 import { MissionsPanel } from '@/components/kids/missions-panel'
-import { unitThemeAt } from '@/components/kids/unit-theme'
 import { nextLevelHintWithin } from '@/lib/career-horizon'
 import {
   checkChallengeAccessReadonly,
@@ -104,58 +104,65 @@ export default async function HomePage() {
   const challengeRes = challengeEligible ? await getChallengeReadonly().catch(() => null) : null
   const challengeData = challengeRes?.status === 200 ? (challengeRes.body ?? null) : null
 
+  // A saudação das telas-modelo (11/09/2026): o Zappy num ladrilho amarelo, o "Olá" em
+  // Baloo e a frase. Com o guia ligado, o "Como funciona?" fica à direita dela.
+  const saudacao = (
+    <div className="flex items-center gap-4 md:gap-5">
+      <span
+        aria-hidden="true"
+        className="grid size-16 shrink-0 place-items-center rounded-[1.25rem] bg-(--sz-kids-amarelo) md:size-[4.5rem] md:rounded-[1.375rem]"
+      >
+        <KidsMascot
+          expression={courses.length === 0 ? 'thinking' : 'happy'}
+          className="size-12 md:size-14"
+        />
+      </span>
+      <div className="min-w-0">
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">
+          Olá{greetName ? `, ${greetName}` : ''}!
+        </h1>
+        <p className="mt-1.5 font-medium text-[1.0625rem] text-muted-foreground">
+          Vamos dar o próximo passo na sua criação?
+        </p>
+      </div>
+    </div>
+  )
+
   return (
     <>
       {/* Re-sincroniza ranking/nível/foguinho ao voltar pra tela (sem deslogar). */}
       <FocusRefresh />
       <KidsBand tone="creme">
-        <div className="flex items-center gap-4">
-          <KidsMascot
-            expression={courses.length === 0 ? 'thinking' : 'happy'}
-            className="kid-float size-14 md:size-20"
-          />
-          <div>
-            <h1 className="sz-display text-[clamp(1.75rem,4.4vw,2.6rem)]">
-              Olá{greetName ? `, ${greetName}` : ''}!
-            </h1>
-            <p className="mt-1 font-semibold text-base text-muted-foreground">
-              Vamos dar o próximo passo na sua criação?
-            </p>
-          </div>
-        </div>
-
         {/* Tutorial guiado da CRIANÇA (fase 2): boas-vindas 1×, convite ao avatar e o
           aponte do "Começar" logo abaixo — tudo derivado do estado que a página já
           buscou (zero fetch novo). A home roda sempre em sessão de perfil (o proxy
           manda conta sem `pfl` p/ /perfis), então `user.id` é o PERFIL. */}
-        <div className="mt-6">
-          {childGuideEnabled && user?.id ? (
-            <ChildGuide
-              profileKey={user.id}
-              childName={greetName ?? null}
-              hasAvatar={avatarState === null ? null : avatarPhotoUrl !== null}
-              hasCourseActivity={hasCourseActivity}
-              startAvailable={startAvailable}
-            >
-              <ContinueHero courses={courses} />
-            </ChildGuide>
-          ) : (
+        {childGuideEnabled && user?.id ? (
+          <ChildGuide
+            profileKey={user.id}
+            childName={greetName ?? null}
+            hasAvatar={avatarState === null ? null : avatarPhotoUrl !== null}
+            hasCourseActivity={hasCourseActivity}
+            startAvailable={startAvailable}
+            header={saudacao}
+          >
             <ContinueHero courses={courses} />
-          )}
-        </div>
+          </ChildGuide>
+        ) : (
+          <>
+            <div className="mb-6 md:mb-7">{saudacao}</div>
+            <ContinueHero courses={courses} />
+          </>
+        )}
 
         {/* Gamificação fora → os cards mostram placeholder gentil (não somem em silêncio). */}
         {!startAvailable && courses.length > 0 ? (
-          <section className="kids-carta mt-6 p-6">
-            <h2 className="sz-display text-xl">Espaço para sua próxima ideia</h2>
-            <p className="mt-2 font-semibold text-muted-foreground text-sm">
+          <section className="kids-carta mt-6 p-6 md:p-7">
+            <h2 className="sz-display text-xl md:text-[1.625rem]">Espaço para sua próxima ideia</h2>
+            <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
               Explore as ferramentas liberadas na sua oficina ou revisite um projeto dos cursos.
             </p>
-            <Link
-              href="/criar"
-              prefetch={false}
-              className="sz-btn-gradient mt-4 inline-flex min-h-11 items-center"
-            >
+            <Link href="/criar" prefetch={false} className="sz-btn-gradient mt-4 px-6">
               Abrir minha oficina
             </Link>
           </section>
@@ -168,6 +175,7 @@ export default async function HomePage() {
             gamification={gamification}
             levelHint={levelHint}
             avatarPhotoUrl={avatarPhotoUrl}
+            name={greetName ?? null}
             showcaseStats={showcaseStats}
           />
         </KidsBand>
@@ -177,33 +185,37 @@ export default async function HomePage() {
           só existe quando há o que pôr dentro dela: faixa vazia é uma tarja de cor
           sem conteúdo, que fica pior do que não ter faixa nenhuma. */}
       {challengeData || courses.length > 0 ? (
-        <KidsBand tone="ceu" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+        <KidsBand tone="ceu">
           {challengeData ? <ChallengeCard data={challengeData} /> : null}
-          {courses.length > 0 ? <MissionsPanel initial={missionsData} /> : null}
+          {courses.length > 0 ? (
+            <MissionsPanel initial={missionsData} className={challengeData ? 'mt-8' : undefined} />
+          ) : null}
         </KidsBand>
       ) : null}
 
       <KidsBand tone="lilas">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="sz-display text-[clamp(1.4rem,3vw,1.9rem)]">Meus cursos</h2>
-          <Link
-            href="/cursos"
-            className="kids-carta inline-flex shrink-0 items-center gap-1 rounded-full px-4 py-2 font-bold text-sm transition-colors hover:text-primary"
-          >
-            Ver o mapa da carreira <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        {courses.length === 0 ? (
-          <div className="kids-unit-cyan">
+        <section aria-labelledby="meus-cursos">
+          <KidsSectionHeader
+            id="meus-cursos"
+            title="Meus cursos"
+            actions={
+              <Link
+                href="/cursos"
+                prefetch={false}
+                className="sz-btn-gradient sz-btn-inverso h-10 gap-1.5 px-5 text-sm"
+              >
+                Ver o mapa da carreira <ArrowRight className="size-4" aria-hidden />
+              </Link>
+            }
+          />
+          {courses.length === 0 ? (
             <KidsEmptyState
               icon={BookOpen}
               title="Nenhum curso liberado ainda"
               description="Assim que sua compra for confirmada, seu acesso aparece aqui."
             />
-          </div>
-        ) : unlocked.length === 0 ? (
-          // Defensivo (tudo travado pela carreira): aponta o mapa em vez de sumir.
-          <div className="kids-unit-lime">
+          ) : unlocked.length === 0 ? (
+            // Defensivo (tudo travado pela carreira): aponta o mapa em vez de sumir.
             <KidsEmptyState
               icon={MapIcon}
               title="Seus próximos cursos estão no mapa!"
@@ -214,14 +226,16 @@ export default async function HomePage() {
                 </Link>
               }
             />
-          </div>
-        ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {unlocked.map((course, i) => (
-              <CourseCard key={course.courseSlug} course={course} theme={unitThemeAt(i)} />
-            ))}
-          </div>
-        )}
+          ) : (
+            // Quatro colunas só a partir de 1280px: com o menu de 268px, a 1024 cada
+            // cartão ficaria com 140px.
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {unlocked.map((course) => (
+                <CourseCard key={course.courseSlug} course={course} />
+              ))}
+            </div>
+          )}
+        </section>
       </KidsBand>
     </>
   )

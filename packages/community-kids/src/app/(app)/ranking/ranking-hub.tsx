@@ -416,7 +416,7 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
           <Link
             href="/cursos"
             prefetch={false}
-            className="sz-btn-gradient sz-btn-contorno gap-2 px-5"
+            className="sz-btn-gradient sz-btn-inverso h-10 gap-1.5 px-5 text-sm"
           >
             Ver a minha carreira
             <ArrowRight className="size-4" aria-hidden />

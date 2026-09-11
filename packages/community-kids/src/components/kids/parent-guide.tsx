@@ -2,7 +2,7 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
-import { HelpCircle } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { KidsMascot } from '@/components/kids/mascot'
 import type { GuideWelcomeStep } from '@/lib/guide'
 
@@ -242,6 +242,11 @@ export function GuideWelcomeDialog({
  * "Como funciona?" — reabre o tutorial a qualquer momento (precedente: o botão
  * "📋 Combinados" do Clube). Fica na fileira de ações da grade.
  */
+/**
+ * "Como funciona?": reabre o guia. É a pílula BRANCA com o ícone de informação das
+ * telas-modelo (11/09/2026), no canto do cabeçalho da home. Era um botão fantasma de
+ * 32px embaixo do herói, pequeno demais para mão de criança e fácil de não ver.
+ */
 export function GuideReopenButton({
   onClick,
   buttonRef,
@@ -250,8 +255,13 @@ export function GuideReopenButton({
   buttonRef?: React.Ref<HTMLButtonElement>
 }) {
   return (
-    <Button ref={buttonRef} variant="ghost" onClick={onClick}>
-      <HelpCircle className="size-4" /> Como funciona?
-    </Button>
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={onClick}
+      className="sz-btn-gradient sz-btn-contorno gap-2 px-4 text-sm"
+    >
+      <Info className="size-4" aria-hidden /> Como funciona?
+    </button>
   )
 }
