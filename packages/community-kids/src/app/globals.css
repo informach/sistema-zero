@@ -139,30 +139,49 @@
      Fica aqui, e não nos primitivos de `@sistemazero/ui`, porque as quatro
      ferramentas embarcadas compartilham aquele arquivo e não vestem esta carta. */
   --raio-carta: 24px;
-  /* Borda de AREIA: sobre o creme das faixas um cinza neutro some, e o cartão
-     perde o contorno justamente onde ele mais precisa dele. */
+  /* Linha de AREIA: divisórias e contornos DENTRO das faixas (sobre o creme um
+     cinza neutro some). Não é mais a borda do cartão, ver `--borda-carta`. */
   --linha-carta: var(--sz-kids-linha-areia);
-  --sombra-carta: 0 14px 40px rgba(28, 48, 90, 0.12);
+  /* O cartão das telas-modelo (11/09/2026) é branco LISO: medido nas imagens, o
+     pixel já volta à cor da faixa a 6px da borda, então sem borda e sem sombra.
+     No escuro a borda volta (ver `.dark`): cartão e faixa têm claridade parecida. */
+  --borda-carta: transparent;
   --sombra-carta-sm: 0 8px 22px rgba(28, 48, 90, 0.1);
+  /* O herói azul é a ÚNICA peça com sombra nas telas-modelo: difusa, uns 30px,
+     escurecendo o creme logo abaixo dele (medido). */
+  --sombra-heroi: 0 18px 36px -12px rgba(12, 30, 62, 0.34);
 
   /* ── COR DE ASSINATURA por oficina ───────────────────────────────────────
-     Hoje as quatro herdam o mesmo azul do chrome compartilhado, e a criança não
-     tem como reconhecer a oficina antes de ler o nome. Cada uma passa a ter a
-     sua, como na referência. */
-  --tool-estudio: var(--sz-kids-azul);
-  --tool-pinta: var(--sz-kids-vermelho);
-  --tool-pensa: var(--sz-kids-laranja-texto-forte);
-  --tool-molda: var(--sz-kids-roxo);
-  /* ⚠️ As quatro acima são cor de FUNDO. Medido: com texto branco pequeno elas dão
-     3,68 a 4,23:1 e reprovam AA. Servem para o cabeçalho do cartão com ícone branco
-     (não-texto, régua 3:1, que todas passam) e nunca para tinta miúda. Quando a cor
-     precisa VIRAR TEXTO (o selo, o "Abrir minha oficina"), use o par `-texto`, que é
-     o mesmo matiz escurecido até passar sobre branco E sobre o creme das faixas
-     (5,1 a 5,7:1). É a convenção da marca: `-texto` quer dizer "passa AA no claro". */
+     Cada oficina tem a sua, como nas telas-modelo. A FONTE é única e mora no
+     `tool-chrome.css` (`--sz-tool-sig-*`), porque as galerias das ferramentas usam
+     as mesmas cores: um lado mudando sem o outro abriria emenda entre o Criar e a
+     galeria. Estúdio no azul da marca, Pensa no âmbar (decisão dela, 11/09/2026). */
+  --tool-estudio: var(--sz-tool-sig-estudio);
+  --tool-pinta: var(--sz-tool-sig-pinta);
+  --tool-pensa: var(--sz-tool-sig-pensa);
+  --tool-molda: var(--sz-tool-sig-molda);
+  /* A tinta que vai POR CIMA do fundo (ícone do ladrilho, número do passo). Branca
+     em três e ESCURA no Pensa: branco sobre o âmbar dá ~2,2:1 e o ícone sumiria. */
+  --tool-estudio-fg: var(--sz-tool-on-sig);
+  --tool-pinta-fg: var(--sz-tool-on-sig);
+  --tool-pensa-fg: var(--sz-tool-on-sig-pensa);
+  --tool-molda-fg: var(--sz-tool-on-sig);
+  /* ⚠️ As quatro do topo são cor de FUNDO, e o branco miúdo por cima reprova AA em
+     três delas. Quando a cor precisa VIRAR TEXTO (o "Abrir minha oficina"), use o
+     par `-texto`, que é o mesmo matiz escurecido até passar sobre branco E sobre o
+     creme das faixas (5,1 a 5,7:1). É a convenção da marca: `-texto` quer dizer
+     "passa AA no claro". */
   --tool-estudio-texto: oklch(0.52 0.16 250);
   --tool-pinta-texto: oklch(0.52 0.16 25);
   --tool-pensa-texto: oklch(0.52 0.17 50);
   --tool-molda-texto: oklch(0.52 0.2 295);
+  /* A tinta do SELO branco no canto do cabeçalho ("Liberado", "4 conversas novas").
+     A pílula é branca nos DOIS temas, então esta tinta também não muda: é o valor
+     claro do `-texto`. Usar o `-texto` cru aqui clareava no escuro e sumia no branco. */
+  --tool-estudio-selo: oklch(0.52 0.16 250);
+  --tool-pinta-selo: oklch(0.52 0.16 25);
+  --tool-pensa-selo: oklch(0.52 0.17 50);
+  --tool-molda-selo: oklch(0.52 0.2 295);
 
   /* ── COR DE ASSINATURA por PORTA da Comunidade ───────────────────────────
      Mesmo contrato dos `--tool-*`: o FUNDO não muda de tema (cor de fundo carrega
@@ -359,10 +378,13 @@
   /* No escuro a areia clara viraria um fio aceso em volta do cartão; quem separa
      ali é a borda navy que o tema já tem. */
   --linha-carta: var(--border);
-  /* A sombra azulada do funil desaparece contra o navy: vira preta e mais funda,
-     que é como sombra se lê num fundo escuro. */
-  --sombra-carta: 0 14px 40px rgba(0, 0, 0, 0.45);
+  /* No escuro o cartão (0.28) e as faixas (~0.30) quase se confundem: a borda do
+     tema é o que separa um do outro. */
+  --borda-carta: var(--border);
+  /* A sombra azulada desaparece contra o navy: vira preta e mais funda, que é como
+     sombra se lê num fundo escuro. */
   --sombra-carta-sm: 0 8px 22px rgba(0, 0, 0, 0.38);
+  --sombra-heroi: 0 18px 36px -12px rgba(0, 0, 0, 0.55);
 
   /* ⚠️ `--tool-*` (o FUNDO do cabeçalho) NÃO muda no escuro, e isso é deliberado.
      A primeira versão clareava as quatro aqui, como se faz com cor de tinta — e o
@@ -532,29 +554,30 @@
     0 0 24px color-mix(in oklch, var(--brand-cyan) 15%, transparent);
 }
 
-/* Button variant="default" vira o CTA "3D" kids (sombra dura + afunda no clique).
-   A sombra deriva de --sz-cta (o sólido do gradiente azul do CTA). */
+/* Button variant="default" = a PÍLULA AZUL CHAPADA das telas-modelo (11/09/2026).
+   Era o CTA "3D" (gradiente + sombra dura + pulo no hover); a referência nova é
+   chapada, e o azul chapado ainda dá mais contraste que o degrau mais claro do
+   gradiente (4,55:1). O PAR da marca troca de tinta no escuro sozinho.
+   O hover mistura a cor com o TEXTO do tema: no claro escurece, no escuro clareia,
+   e a tinta por cima continua passando nos dois. */
 button.bg-primary.text-primary-foreground,
 a.bg-primary.text-primary-foreground {
-  background-image: var(--sz-gradient);
-  background-color: transparent;
+  background-image: none;
+  background-color: var(--sz-primary);
   color: var(--sz-primary-fg);
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  border-radius: 9999px;
+  box-shadow: none;
   transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
+    background-color 0.12s ease,
+    transform 0.12s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
 }
 button.bg-primary.text-primary-foreground:active:not(:disabled),
 a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
+  transform: translateY(1px);
 }
 
 /* CTA gradiente standalone — mesmo visual do Button default, fora do Button.
@@ -568,6 +591,9 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
  * Regra para as classes DESTE arquivo: se ela existe para ser ajustada no call site
  * (tamanho, espaçamento, tipografia), ela pertence a `@layer components`. */
 @layer components {
+  /* ⚠️ O NOME ficou do tempo do gradiente (24 arquivos o usam); o visual agora é a
+     pílula azul CHAPADA das telas-modelo. Renomear seria mexer em todo call site
+     sem ganho nenhum para a criança. */
   .sz-btn-gradient {
     display: inline-flex;
     align-items: center;
@@ -575,51 +601,73 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     gap: 0.5rem;
     font-family: inherit;
     font-weight: 700;
-    font-size: 0.875rem;
-    padding: 0 1.125rem;
+    font-size: 0.9375rem;
+    padding: 0 1.375rem;
     /* Default de 44px = alvo de toque mínimo para mão de criança (a mesma régua do
        `size-11` dos botões do avatar/quarto). Call site sem `h-*` já nasce acessível. */
     height: 2.75rem;
     border-radius: 9999px;
     border: 0;
-    background-image: var(--sz-gradient);
+    background-color: var(--sz-primary);
+    background-image: none;
     color: var(--sz-primary-fg);
     cursor: pointer;
-    box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
     transition:
-      transform 0.12s ease,
-      box-shadow 0.12s ease,
-      filter 0.12s ease;
+      background-color 0.12s ease,
+      transform 0.12s ease;
   }
   .sz-btn-gradient:hover {
-    transform: translateY(-1px);
-    filter: brightness(1.05);
+    background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+  }
+  .sz-btn-gradient:active {
+    transform: translateY(1px);
   }
   .sz-btn-gradient svg {
     stroke: currentColor;
   }
 
-  /* Variante do CTA para quando o botão fica EM CIMA do azul da marca (o herói).
-     ⚠️ O `.sz-btn-gradient` do kids é um gradiente AZUL — no funil o botão 3D é
-     laranja, aqui não —, então sobre o herói ele ficava azul sobre azul, separado
-     do fundo só pelo degrau da sombra. Esta inverte o par do tema: a tinta do
-     herói vira o preenchimento e o azul vira o rótulo. É o botão branco da
-     referência, e funciona nos dois temas porque os dois lados são o mesmo par.
-     Vai JUNTO com o `.sz-btn-gradient` (herda a forma) e depois dele no arquivo,
-     que é o que faz o fundo e a sombra vencerem dentro da mesma camada. */
+  /* As três variantes abaixo vão JUNTO com o `.sz-btn-gradient` (herdam a forma)
+     e DEPOIS dele no arquivo: é o que faz o fundo delas vencer dentro da mesma
+     camada. */
+
+  /* Sobre o azul da marca (o herói): a pílula BRANCA com o rótulo azul. Inverte o
+     par do tema, então vale nos dois temas sem nenhuma cor nova. */
   .sz-btn-inverso {
-    background-image: none;
     background-color: var(--sz-primary-fg);
     color: var(--sz-primary);
-    box-shadow: 0 4px 0 color-mix(in oklab, var(--sz-primary-fg) 74%, var(--sz-primary));
+  }
+  .sz-btn-inverso:hover {
+    background-color: color-mix(in oklab, var(--sz-primary-fg) 90%, var(--sz-primary));
+  }
+
+  /* SUAVE: a pílula creme com tinta do texto ("Fazer a minha versão", "Começar
+     agora", "Anterior"). É o fundo da faixa creme, que no escuro já é o navy um
+     tom acima, então o par segue o tema sozinho. */
+  .sz-btn-suave {
+    background-color: var(--band-creme);
+    color: var(--foreground);
+  }
+  .sz-btn-suave:hover {
+    background-color: color-mix(in oklab, var(--band-creme) 90%, var(--foreground));
+  }
+
+  /* CONTORNO: branca com o fio da borda do tema ("Copiar link"). O fio é sombra
+     INTERNA, e não `border`, para a pílula ter a mesma altura das irmãs. */
+  .sz-btn-contorno {
+    background-color: var(--card);
+    color: var(--foreground);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .sz-btn-contorno:hover {
+    background-color: var(--muted);
   }
 }
 
-/* Variante em BLOCO do CTA gradiente: largura total, altura AUTOMÁTICA e duas
-   linhas (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e
-   altura fixa (2.5rem, sem padding vertical) — enfiar duas linhas nela deixa um
-   vão no meio e o texto colado nas bordas. Usada no CTA "Comece por este:
-   <nome>" dos cards bloqueados pela carreira. */
+/* Variante em BLOCO do CTA: largura total, altura AUTOMÁTICA e duas linhas
+   (legenda + destino). O `.sz-btn-gradient` é pílula de linha única e altura fixa
+   — enfiar duas linhas nela deixa um vão no meio e o texto colado nas bordas.
+   Usada no CTA "Comece por este: <nome>" dos cards bloqueados pela carreira.
+   Chapada, como o botão da marca. */
 .sz-btn-gradient-block {
   display: flex;
   flex-direction: column;
@@ -628,18 +676,14 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   padding: 0.625rem 1rem;
   border-radius: 1rem;
   border: 0;
-  background-image: var(--sz-gradient);
+  background-color: var(--sz-primary);
   color: var(--sz-primary-fg);
   font-family: inherit;
   text-align: left;
-  box-shadow: 0 4px 0 color-mix(in oklch, var(--sz-cta) 60%, black);
-  transition:
-    transform 0.12s ease,
-    filter 0.12s ease;
+  transition: background-color 0.12s ease;
 }
 .sz-btn-gradient-block:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
+  background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
 }
 .sz-btn-gradient-block svg {
   stroke: currentColor;
@@ -1003,51 +1047,16 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
    sombra larga e fraca em vez do degrau.
    ============================================================ */
 @layer components {
+  /* Branco liso das telas-modelo: canto de 24px, sem sombra, borda só no escuro. */
   .kids-carta {
     border-radius: var(--raio-carta);
-    border: 1px solid var(--linha-carta);
+    border: 1px solid var(--borda-carta);
     background: var(--card);
-    box-shadow: var(--sombra-carta);
   }
 
-  /* Bolha de cor NÍTIDA atrás de uma seção: círculo pastel com um blur de 2px só
-     para tirar a serrilha. É o truque do funil para o fundo ter profundidade sem
-     asset nenhum.
-     ⚠️ NÃO é o `.kids-blob` do auth, que continua existindo logo abaixo e é outra
-     coisa: aquele é um halo de 60px de blur a 25% de opacidade. Nome separado de
-     propósito — o `.kids-blob` está FORA de camada e venceria esta regra sem dar
-     erro nenhum, deixando a bolha nova borrada e quase invisível. */
-  .kids-bolha {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(2px);
-    opacity: 0.6;
-    pointer-events: none;
-  }
-
-  /* Brilho radial atrás da ilustração do herói (o `.glow` do funil). */
-  .kids-glow {
-    position: absolute;
-    inset: -12%;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle at 50% 45%,
-      color-mix(in oklab, var(--sz-kids-amarelo) 55%, transparent),
-      transparent 62%
-    );
-    pointer-events: none;
-  }
-
-  /* Variações de ritmo do `.kid-float` que já existia (4s). O funil usa três
-     velocidades para as decorações não subirem todas juntas, o que é o que
-     denuncia a animação. O reset global de `prefers-reduced-motion` no fim
-     deste arquivo já para as três. */
-  .kid-float-lento {
-    animation: kids-float 7s ease-in-out infinite;
-  }
-  .kid-float-rev {
-    animation-direction: reverse;
-  }
+  /* (As bolhas, o brilho e as estrelas flutuando das faixas saíram em 11/09/2026:
+     as telas-modelo não têm decoração nenhuma no fundo, e a `.kids-blob` do auth é
+     outra coisa, que continua logo abaixo.) */
 
   /* HERÓI e PÍLULA CHEIA da marca.
      ⚠️ Existem porque `text-white` sobre `--sz-primary` está ERRADO metade do
@@ -1072,16 +1081,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   .kids-marca-inverso {
     background-color: var(--sz-primary-fg);
     color: var(--sz-primary);
-  }
-  /* Ladrilho de pontinhos por cima do azul chapado: mesma textura do fundo do
-     app, invertida. Dá relevo ao herói sem introduzir cor nenhuma. */
-  .kids-marca-pontos {
-    background-image: radial-gradient(
-      circle,
-      color-mix(in oklab, var(--sz-primary-fg) 18%, transparent) 1.5px,
-      transparent 1.5px
-    );
-    background-size: 22px 22px;
   }
 
   /* Recorte de ilustração: NUNCA canto arredondado nem `box-shadow` (a sombra

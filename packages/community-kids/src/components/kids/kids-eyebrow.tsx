@@ -21,7 +21,8 @@ export function KidsEyebrow({
   return (
     <p
       className={cn(
-        'inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-1.5',
+        // 30px de altura, a pílula das telas-modelo (11/09/2026, medida a 1440px).
+        'inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-3.5 py-[0.3125rem]',
         // Tinta escura sobre o âmbar: medido 8,73:1. Branco daria 1,48 e sumiria.
         'font-bold text-(--sz-kids-tinta) text-sm',
         className,

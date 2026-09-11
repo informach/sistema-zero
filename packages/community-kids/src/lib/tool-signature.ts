@@ -17,6 +17,10 @@ import { Blocks, Box, Lightbulb, type LucideIcon, Palette } from 'lucide-react'
  *
  * Os valores vivem no CSS (`--tool-*` em globals.css) porque precisam de par no
  * tema escuro; aqui ficam só os nomes das variáveis.
+ *
+ * Desde as telas-modelo de 11/09/2026 são QUATRO: `fg` é a tinta do ícone POR CIMA
+ * do fundo (branca, e escura no âmbar do Pensa) e `selo` é a tinta do selo branco do
+ * cabeçalho (fixa nos dois temas, porque a pílula é branca nos dois).
  */
 export interface ToolSignature {
   nome: string
@@ -24,6 +28,8 @@ export interface ToolSignature {
   icone: LucideIcon
   fundo: string
   tinta: string
+  fg: string
+  selo: string
 }
 
 /**
@@ -40,6 +46,8 @@ export const TOOL_SIGNATURE: Record<CreativeToolId, ToolSignature> = {
     icone: Blocks,
     fundo: 'var(--tool-estudio)',
     tinta: 'var(--tool-estudio-texto)',
+    fg: 'var(--tool-estudio-fg)',
+    selo: 'var(--tool-estudio-selo)',
   },
   pinta: {
     nome: 'Pinta',
@@ -47,6 +55,8 @@ export const TOOL_SIGNATURE: Record<CreativeToolId, ToolSignature> = {
     icone: Palette,
     fundo: 'var(--tool-pinta)',
     tinta: 'var(--tool-pinta-texto)',
+    fg: 'var(--tool-pinta-fg)',
+    selo: 'var(--tool-pinta-selo)',
   },
   pensa: {
     nome: 'Pensa',
@@ -54,6 +64,8 @@ export const TOOL_SIGNATURE: Record<CreativeToolId, ToolSignature> = {
     icone: Lightbulb,
     fundo: 'var(--tool-pensa)',
     tinta: 'var(--tool-pensa-texto)',
+    fg: 'var(--tool-pensa-fg)',
+    selo: 'var(--tool-pensa-selo)',
   },
   molda: {
     nome: 'Molda',
@@ -61,6 +73,8 @@ export const TOOL_SIGNATURE: Record<CreativeToolId, ToolSignature> = {
     icone: Box,
     fundo: 'var(--tool-molda)',
     tinta: 'var(--tool-molda-texto)',
+    fg: 'var(--tool-molda-fg)',
+    selo: 'var(--tool-molda-selo)',
   },
 }
 

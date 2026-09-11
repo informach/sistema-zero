@@ -4,10 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/cn'
 import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
-import { isNavActive } from './app-sidebar'
-import { KidsIconTile } from './kids-icon-tile'
 import { KidsLogo } from './kids-logo'
-import { MOBILE_NAV_ITEMS } from './nav'
+import { isNavActive, MOBILE_NAV_ITEMS } from './nav'
 import { RecadosBell } from './recados-bell'
 import { StreakWidget } from './streak-widget'
 import { UserMenu } from './user-menu'
@@ -27,11 +25,13 @@ export function MobileTopbar({
   avatarPhotoUrl?: string | null
 }) {
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-border border-b bg-background/80 px-4 backdrop-blur md:hidden">
-      <Link href="/" aria-label="Início" className="flex items-center" prefetch={false}>
+    <header className="sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-border border-b bg-background/80 px-3 backdrop-blur md:hidden">
+      {/* `shrink-0`: sem ele o bloco da direita espremia o logo e o selo "kids" escapava
+          por baixo dos números (medido a 375px: logo em 104px para um conteúdo de 150). */}
+      <Link href="/" aria-label="Início" className="flex shrink-0 items-center" prefetch={false}>
         <KidsLogo priority />
       </Link>
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-2">
         {gamification ? <StreakWidget gamification={gamification} compact /> : null}
         <RecadosBell />
         <UserMenu user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
@@ -43,7 +43,8 @@ export function MobileTopbar({
 /**
  * Tab bar inferior do mobile (estilo Duolingo): 5 abas grandes ícone + label
  * (07/2026 — eram os 9 itens da sidebar, alvos minúsculos p/ mãos pequenas;
- * o resto vive no hub "Criar").
+ * o resto vive no hub "Criar"). Mesmo desenho do menu do desktop (telas-modelo de
+ * 11/09/2026): ícone de TRAÇO, e a aba ativa numa pílula azul atrás do ícone.
  */
 export function MobileTabbar() {
   const pathname = usePathname()
@@ -65,14 +66,20 @@ export function MobileTabbar() {
             prefetch={false}
             aria-current={active ? 'page' : undefined}
             className={cn(
-              'flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors',
-              active ? 'text-primary' : 'text-muted-foreground',
+              'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 py-1.5 transition-colors',
+              active ? 'text-primary' : 'text-foreground',
             )}
           >
-            {/* Mesma cor por destino do menu do desktop: a criança memoriza cor +
-                forma antes de ler o rótulo, e nas duas telas bate. */}
-            <KidsIconTile icon={Icon} seed={item.href} active={active} />
-            <span className="font-bold text-[0.65rem]">{item.label}</span>
+            <span
+              aria-hidden="true"
+              className={cn(
+                'grid h-8 w-12 place-items-center rounded-full transition-colors',
+                active && 'kids-marca',
+              )}
+            >
+              <Icon className="size-5" />
+            </span>
+            <span className="font-bold text-[0.68rem]">{item.label}</span>
           </Link>
         )
       })}

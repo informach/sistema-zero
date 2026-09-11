@@ -38,6 +38,17 @@
     var(--font-baloo, sz-none), "Baloo 2", "Nunito", ui-rounded, ui-sans-serif, system-ui,
     sans-serif;
   --sz-tool-font-sans: var(--font-nunito, sz-none), "Nunito", ui-sans-serif, system-ui, sans-serif;
+  /* Cor de ASSINATURA de cada oficina (11/09/2026, telas-modelo da dona: "seguir a imagem, com
+     tons que já existem"). É cor de FUNDO (cabeçalho do cartão, ladrilho do ícone): fundo não
+     segue o tema, carrega a tinta por cima nos dois, então mora aqui, entre as constantes. Fonte
+     ÚNICA: os `--tool-*` do kids leem daqui, e as galerias das ferramentas também. O Pensa é o
+     âmbar da paleta com tinta ESCURA: branco sobre âmbar reprova (~2,2:1). */
+  --sz-tool-sig-estudio: var(--sz-kids-azul-texto, oklch(0.52 0.15 252));
+  --sz-tool-sig-pinta: var(--sz-kids-vermelho, #e05353);
+  --sz-tool-sig-pensa: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
+  --sz-tool-sig-molda: var(--sz-kids-roxo, #8b5cf6);
+  --sz-tool-on-sig: oklch(1 0 0);
+  --sz-tool-on-sig-pensa: var(--sz-kids-cta-tinta, #3a2400);
 }
 
 /* == claro == (:root + o root de toda ferramenta que se declara clara; .pensa-theme-light por

@@ -13,15 +13,18 @@ interface KidsLogoProps {
  * `public/logo_dark|white.svg` — cópias LOCAIS re-tematizadas p/ o tema kids:
  * ZERO azul + faísca laranja; o wordmark lima→ciano segue intacto no adulto)
  * + selo "kids" composto em HTML — SVG via <img> roda em documento isolado e
- * NÃO enxerga as webfonts da página (Baloo 2), então o selo vive no DOM e
- * veste o tema (gradiente + contraste light/dark) sozinho.
+ * NÃO enxerga as webfonts da página (Baloo 2), então o selo vive no DOM.
+ * O selo é a pílula AMARELA com tinta navy das telas-modelo (11/09/2026). O
+ * amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele.
  * `public/logo_kids_*.svg` são o fallback estático de marca (letras
  * desenhadas em paths) p/ uso FORA do app.
  */
 export function KidsLogo({ size = 'nav', priority = false, className }: KidsLogoProps) {
-  const imgClass = size === 'auth' ? 'w-[280px] max-w-full' : 'w-[118px] md:w-[132px]'
+  // No celular o logo divide a barra com fogo, XP, sino e avatar: 104px é o que cabe a
+  // 390px sem nada passar por cima do selo (medido).
+  const imgClass = size === 'auth' ? 'w-[280px] max-w-full' : 'w-[104px] md:w-[140px]'
   // Sem translate: o selo fica centralizado na altura do wordmark (alinhado à logo).
-  const pillClass = size === 'auth' ? 'px-3 py-1 text-base' : 'px-2 py-0.5 text-[0.7rem]'
+  const pillClass = size === 'auth' ? 'px-3 py-1 text-base' : 'px-2.5 py-1 text-[0.72rem]'
 
   return (
     <span className={cn('inline-flex items-center gap-1.5', className)}>
@@ -44,7 +47,7 @@ export function KidsLogo({ size = 'nav', priority = false, className }: KidsLogo
       <span
         className={cn(
           'inline-block rounded-full font-bold lowercase leading-none',
-          '[font-family:var(--font-display)] [background-image:var(--sz-gradient)] text-(--sz-primary-fg)',
+          '[font-family:var(--font-display)] bg-(--sz-kids-amarelo) text-(--sz-kids-tinta)',
           pillClass,
         )}
       >

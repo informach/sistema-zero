@@ -7,17 +7,14 @@ import { cn } from '@/lib/cn'
  * aula, círculo chapado nos Recados, link de texto na trilha, botão fantasma nas
  * compras...) e o app parecia costurado de retalhos. Agora todos saem daqui.
  *
- * O visual é o botão 3D da marca — mesmo relevo do CTA e do `FocusModeToggle`
- * (sombra dura + afunda no clique). Duas variantes só:
- *  - `default`: sobre fundo de página.
- *  - `overlay`: flutuando sobre a cena 3D do avatar, onde a sombra dura some no
- *    fundo escuro e o botão precisa do véu translúcido para ficar legível.
- *
- * `showLabel` liga o texto ao lado do círculo. A regra, para não voltar ao
- * "cada um de um jeito": LIGADO quando o botão está sozinho numa linha de
- * cabeçalho (a criança lê para onde vai), DESLIGADO quando divide a linha com
- * outros controles (aula, avatar). O botão em si é idêntico nos dois casos, e o
- * `label` vai SEMPRE no `aria-label`/`title`.
+ * O desenho é o do "Voltar ao mapa" das telas-modelo (11/09/2026):
+ *  - com `showLabel`: a PÍLULA branca, com a seta dentro de um círculo creme e o
+ *    texto ao lado. É a seta das páginas internas, sozinha na linha do cabeçalho;
+ *  - sem rótulo: só o círculo creme de 44px, para quando o botão divide a linha
+ *    com outros controles (aula, avatar);
+ *  - `overlay`: flutuando sobre a cena 3D do avatar, onde o creme some no fundo e o
+ *    botão precisa do véu translúcido para ficar legível.
+ * O `label` vai SEMPRE no nome acessível.
  */
 interface KidsBackButtonBase {
   /** Para onde volta, em 2ª pessoa. Ex.: "Voltar ao mapa". */
@@ -51,24 +48,31 @@ export function KidsBackButton({
   variant = 'default',
   className,
 }: KidsBackButtonProps) {
-  const circle = cn(
-    'grid size-11 shrink-0 place-items-center rounded-full transition-[color,background-color,border-color,box-shadow,transform]',
-    variant === 'overlay'
-      ? 'bg-card/90 text-foreground shadow-md backdrop-blur active:scale-90'
-      : 'border-2 border-border bg-card text-muted-foreground shadow-[0_3px_0_var(--border)] hover:text-foreground active:translate-y-[2px] active:shadow-[0_1px_0_var(--border)]',
-  )
+  const pill = showLabel && variant !== 'overlay'
 
-  const content = (
+  const content = pill ? (
     <>
-      <span className={circle}>
-        <ArrowLeft className="size-5" />
+      {/* O círculo creme dentro da pílula branca: o creme é o da faixa, que no
+          escuro já é o navy um tom acima, então o par segue o tema sozinho. */}
+      <span
+        aria-hidden="true"
+        className="grid size-8 shrink-0 place-items-center rounded-full bg-(--band-creme) text-foreground transition-colors group-hover:bg-[color-mix(in_oklab,var(--band-creme)_85%,var(--foreground))]"
+      >
+        <ArrowLeft className="size-4" />
       </span>
-      {showLabel ? (
-        <span className="font-semibold text-muted-foreground text-sm transition-colors group-hover:text-foreground">
-          {label}
-        </span>
-      ) : null}
+      <span className="font-bold text-[0.9375rem] text-foreground">{label}</span>
     </>
+  ) : (
+    <span
+      className={cn(
+        'grid size-11 shrink-0 place-items-center rounded-full transition-[color,background-color,transform]',
+        variant === 'overlay'
+          ? 'bg-card/90 text-foreground shadow-md backdrop-blur active:scale-90'
+          : 'bg-(--band-creme) text-foreground hover:bg-[color-mix(in_oklab,var(--band-creme)_85%,var(--foreground))] active:translate-y-px',
+      )}
+    >
+      <ArrowLeft className="size-5" />
+    </span>
   )
 
   // SEM `title`, nunca. Um `title` igual ao nome acessível vira DESCRIÇÃO pela
@@ -76,13 +80,16 @@ export function KidsBackButton({
   // recados" — e o público é tablet/celular, onde tooltip nem aparece: custo sem
   // benefício. O nome vem do texto (com rótulo) ou do `aria-label` (sem ele).
   const shared = {
-    'aria-label': showLabel ? undefined : label,
+    'aria-label': pill ? undefined : label,
     className: cn(
       // `rounded-full` no elemento FOCÁVEL: o anel de foco do navegador segue a
       // borda dele, não do círculo interno — sem isto sai um retângulo em volta de
       // um botão redondo (e, no `overlay`, por cima da cena 3D).
-      'group inline-flex w-fit items-center gap-2.5 rounded-full',
+      'group inline-flex w-fit items-center rounded-full',
       'focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
+      // A pílula tem 52px de altura, a do "Voltar ao mapa" (medido); o fio só aparece
+      // no escuro, onde a pílula e a faixa quase se confundem.
+      pill && 'h-13 gap-2.5 bg-card pr-5 pl-2.5 ring-1 ring-(--borda-carta)',
       className,
     ),
   }

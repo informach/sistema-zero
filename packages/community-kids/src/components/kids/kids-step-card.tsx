@@ -1,10 +1,19 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
+/** As cores dos passos, na ordem das telas-modelo: azul, âmbar, roxo, coral. */
+const TONS = [
+  { fundo: 'var(--tool-estudio)', tinta: 'var(--tool-estudio-fg)' },
+  { fundo: 'var(--tool-pensa)', tinta: 'var(--tool-pensa-fg)' },
+  { fundo: 'var(--tool-molda)', tinta: 'var(--tool-molda-fg)' },
+  { fundo: 'var(--tool-pinta)', tinta: 'var(--tool-pinta-fg)' },
+] as const
+
 /**
- * Card NUMERADO com selo colorido — os passos dos Recados e dos Combinados do
- * Clube. O número mora num selo circular da cor da unidade em volta, no lugar do
- * marcador de lista cinza que existe hoje.
+ * Card NUMERADO — os passos dos Recados e dos Combinados do Clube. Desenho das
+ * telas-modelo (11/09/2026): o número num QUADRADO colorido no alto, o título e o
+ * texto embaixo dele. Cada passo tem a sua cor, na ordem azul, âmbar, roxo; o par da
+ * cor é o das oficinas, que já passa AA (tinta escura no âmbar).
  *
  * ⚠️ A palavra "etapa" é proibida na copy da plataforma (guarda
  * `copy-vocabulario`): aqui é "passo", e o número é decorativo — quem numera de
@@ -21,21 +30,20 @@ export function KidsStepCard({
   children?: ReactNode
   className?: string
 }) {
+  const tom = TONS[(Math.max(1, step) - 1) % TONS.length] ?? TONS[0]
   return (
-    <div className={cn('kids-carta flex gap-4 p-5', className)}>
+    <div className={cn('kids-carta p-6', className)}>
       <span
         aria-hidden="true"
-        className="sz-display grid size-9 shrink-0 place-items-center rounded-full text-base"
-        style={{ backgroundColor: 'var(--unit)', color: 'var(--unit-fg)' }}
+        className="sz-display grid size-11 place-items-center rounded-[0.625rem] text-xl"
+        style={{ backgroundColor: tom.fundo, color: tom.tinta }}
       >
         {step}
       </span>
-      <div className="min-w-0 flex-1">
-        <h3 className="sz-display text-base leading-tight">{title}</h3>
-        {children ? (
-          <div className="mt-1 font-semibold text-muted-foreground text-sm">{children}</div>
-        ) : null}
-      </div>
+      <h3 className="sz-display mt-4 text-xl leading-tight">{title}</h3>
+      {children ? (
+        <div className="mt-2 font-medium text-muted-foreground text-sm">{children}</div>
+      ) : null}
     </div>
   )
 }

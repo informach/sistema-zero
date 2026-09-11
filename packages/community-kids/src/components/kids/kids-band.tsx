@@ -9,9 +9,13 @@ import { cn } from '@/lib/cn'
  * vem das páginas de oferta, onde o creme é o descanso e a cor é a exceção.
  *
  * ⚠️ A cor sangra até a borda, mas o TEXTO não fica mais largo: o container
- * interno mantém a mesma largura de leitura de sempre. E a faixa mede a coluna à
- * direita do menu, não a janela — por isso `w-full` e nunca `100vw`, que
- * estouraria a largura da barra lateral.
+ * interno tem régua própria. E a faixa mede a coluna à direita do menu, não a
+ * janela — por isso `w-full` e nunca `100vw`, que estouraria a largura da barra
+ * lateral.
+ *
+ * A régua é a das telas-modelo (11/09/2026), medida a 1440px: a coluna à direita do
+ * menu de 268px tem 1172px (`73.25rem`) e o conteúdo fica a 64px das bordas dela,
+ * o que dá 1044px de linha útil. Em tela maior a régua para ali e centraliza.
  */
 export type BandTone = 'creme' | 'menta' | 'ceu' | 'lilas' | 'rosa' | 'amarelo' | 'branco'
 
@@ -40,7 +44,14 @@ export function KidsBand({
 }) {
   return (
     <div className={cn('w-full', FUNDO[tone], className)}>
-      <div className={cn('mx-auto w-full max-w-5xl px-4 py-8 md:px-8 md:py-12', innerClassName)}>
+      <div
+        className={cn(
+          // 48px de respiro vertical: o chip do cabeçalho e o primeiro cartão das faixas
+          // ficam a essa distância do topo nas telas-modelo (medido).
+          'mx-auto w-full max-w-[73.25rem] px-5 py-10 md:px-10 md:py-12 lg:px-16',
+          innerClassName,
+        )}
+      >
         {children}
       </div>
     </div>

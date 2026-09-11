@@ -150,7 +150,7 @@ export function FocusModeProvider({
     const onLesson = isLessonPath(pathname)
     // O menu também some nos apps de criação (Estúdio/Pensa/Pinta): são as telas
     // que mais pedem área útil (Blockly + preview, kanban, canvas) e o menu de
-    // 240px não serve a nada enquanto a criança cria. A PREFERÊNCIA é a mesma da
+    // 268px não serve a nada enquanto a criança cria. A PREFERÊNCIA é a mesma da
     // aula (uma só por perfil) — "esconder o menu" é gosto da criança, não de tela.
     const navAvailable = (onLesson || isEmbeddedAppPath(pathname)) && isTablet
     // A lista de aulas é EXCLUSIVA da aula: nos apps embarcados ela nem existe.
@@ -178,7 +178,9 @@ export function useFocusMode(): LessonChromeContextValue {
  * Fallback do `<Suspense>` da sidebar no layout `(app)` (a chrome carrega avatar +
  * gamificação por trás). Espelha o esqueleto antigo, mas REAGE a `navCollapsed` para
  * já vir recolhido no 1º paint quando a preferência do perfil é "esconder o menu" —
- * senão piscaria a barra em `w-60` antes da barra real montar.
+ * senão piscaria a barra aberta antes da barra real montar. ⚠️ A largura acompanha a
+ * do `AppSidebar` (16.75rem, as telas-modelo de 11/09/2026): diferente, a página pula
+ * de lado quando o menu real chega.
  */
 export function SidebarFallback() {
   const { navCollapsed } = useFocusMode()
@@ -187,9 +189,9 @@ export function SidebarFallback() {
       inert={navCollapsed}
       aria-hidden={navCollapsed}
       className={cn(
-        'sticky top-0 hidden h-screen shrink-0 overflow-hidden border-border bg-card md:block',
+        'sticky top-0 hidden h-screen shrink-0 overflow-hidden border-border/70 bg-card md:block',
         'transition-[width,border,opacity] duration-300 ease-in-out motion-reduce:transition-none',
-        navCollapsed ? 'w-0 border-r-0 opacity-0' : 'w-60 border-r opacity-100',
+        navCollapsed ? 'w-0 border-r-0 opacity-0' : 'w-[16.75rem] border-r opacity-100',
       )}
     />
   )

@@ -2,17 +2,23 @@ import { cn } from '@/lib/cn'
 import { levelInfo } from '@/lib/level-info'
 
 /**
- * Insígnia do NÍVEL do aluno: selo com ícone + nome na cor do nível. Cor inline
- * (`--level-<slug>` do globals.css). `size="lg"` para o destaque do perfil; `sm`
- * para chips em listas/cabeçalhos.
+ * Insígnia do NÍVEL do aluno: selo com ícone + nome. O nome sai SEMPRE do
+ * `LEVEL_INFO` (as telas-modelo erram os nomes; vale o do sistema). Duas roupas:
+ *  - `lista` (padrão): na cor do nível, para listas e cabeçalhos;
+ *  - `destaque`: a pílula AMARELA das telas-modelo (11/09/2026), para heróis e
+ *    cartões de carreira. O amarelo é cor de fundo e não segue o tema; a tinta
+ *    escura dá 8,73:1 nele.
+ * `size="lg"` para o destaque do perfil; `sm` para chips em listas/cabeçalhos.
  */
 export function LevelBadge({
   levelSlug,
   size = 'md',
+  variant = 'lista',
   className,
 }: {
   levelSlug?: string
   size?: 'sm' | 'md' | 'lg'
+  variant?: 'lista' | 'destaque'
   className?: string
 }) {
   const info = levelInfo(levelSlug)
@@ -24,6 +30,20 @@ export function LevelBadge({
         ? 'gap-1 px-2 py-0.5 text-xs'
         : 'gap-1.5 px-3 py-1 text-sm'
   const iconSize = size === 'lg' ? 18 : size === 'sm' ? 12 : 14
+  if (variant === 'destaque') {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full bg-(--sz-kids-amarelo) font-bold text-(--sz-kids-tinta)',
+          pad,
+          className,
+        )}
+      >
+        <Icon size={iconSize} aria-hidden />
+        {info.label}
+      </span>
+    )
+  }
   return (
     <span
       className={cn(

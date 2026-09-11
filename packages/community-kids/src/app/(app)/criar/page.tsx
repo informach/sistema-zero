@@ -69,6 +69,8 @@ export default async function CriarPage() {
                     badge="Liberado"
                     color={oficina.fundo}
                     ink={oficina.tinta}
+                    fg={oficina.fg}
+                    seloInk={oficina.selo}
                     footer={
                       <span className="flex items-center gap-2">
                         Abrir minha oficina <ArrowRight className="size-4" aria-hidden />
