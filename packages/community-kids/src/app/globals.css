@@ -105,6 +105,8 @@
    e vira rosa no Pink. Por isso o azul de ação e o azul de identidade são tokens
    separados, mesmo sendo o mesmo #1B5CF3 no Padrão.
    Contraste medido (script, os dois temas): texto ≥ 4,5:1, borda de campo ≥ 3:1.
+   ⚠️ Os comentários mais antigos deste arquivo que falam em "no escuro" ou "no dark"
+   descrevem o tema escuro que saiu nesta data: leia como história, não como regra viva.
    ============================================================ */
 :root {
   /* Chão único da página (`$bg`) e o alternativo (`$bg-alt`): a última faixa de cada

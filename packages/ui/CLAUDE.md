@@ -39,8 +39,8 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    pé); `.sz-tool-title`/`-subtitle`/`-section-title`/`-section-text`/`-kicker`; o QUADRADO de
    ícone `.sz-tool-icon-btn(--round)`, que é também o `.sz-tool-btn-menu` (o menu do host
    DEIXOU de ser a aba colada na barra lateral: agora é um quadrado dentro do conteúdo, e o
-   `--sz-tool-inset` saiu) e a `.sz-tool-back`; pílulas CHAPADAS `.sz-tool-pill--primary|quiet|
-   outline|creme` (sem gradiente nem sombra dura); `.sz-tool-chips`/`.sz-tool-chip` (o ativo é o
+   `--sz-tool-inset` saiu) e a `.sz-tool-back`; pílulas `.sz-tool-pill--primary|quiet|
+   outline|creme` (sem gradiente; chapadas nos editores e com o 3D só nas galerias, ver abaixo); `.sz-tool-chips`/`.sz-tool-chip` (o ativo é o
    azul da marca cheio), `.sz-tool-search(-wrap)`, `.sz-tool-select(-wrap)` (desenha a seta),
    `.sz-tool-status(--ok|--warn|--danger)` em pílula; `.sz-tool-grid` (auto-fill de 13,75rem:
    4 colunas a 1440 com o menu aberto), `.sz-tool-card(--new)` + `.sz-tool-card-title` (Baloo 800 de
@@ -56,7 +56,17 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    sombras duras `--sz-tool-shadow-*`/`-shade`); o contrato trava a ausência e VARRE o código dos
    pacotes consumidores (classe sem receita não quebra teste nenhum: o botão só sai sem desenho).
    Ficaram `--sz-tool-border`/`--sz-tool-radius-card` (o `.pin-panel` do Pinta lê) e o
-   `--sz-tool-cta-gradient` (pinta.css e pensa.css leem). Quem importa: o community-kids (`globals.css`, DEPOIS do
+   `--sz-tool-cta-gradient` (pinta.css e pensa.css leem).
+   ⭐ **Paleta do Pen (11/09/2026):** `--sz-tool-accent`/`--sz-tool-cta` leem `--sz-kids-acao`
+   ANTES do azul de identidade (o kids dá a cor de ação do tema: azul no Padrão, rosa no Pink;
+   sem host, o azul de sempre), e as faixas seguem o chão do Pen (cabeçalho e grade no
+   `--sz-kids-ceu-suave`, fechamento no `--sz-kids-ceu`). **O 3D do Brilliant só nas GALERIAS:**
+   dentro de `.sz-tool-bands`, as pílulas, os quadrados (menu, seta, ícone) e o cartão
+   `--new` ganham a borda de baixo sólida por sombra (`--sz-tool-cta-degrau` na primária,
+   `--sz-tool-degrau` no resto, tokens nos dois temas que o host alimenta; `--sz-3d-*` é o estado
+   de cada peça, não token); no hover sobem 1px e no aperto afundam, por `translate`. Os
+   EDITORES e os chips (que são abas) ficam planos. O contrato trava: nenhuma regra de pílula
+   fora das faixas tem sombra, e existe UMA regra de relevo, sem os chips. Quem importa: o community-kids (`globals.css`, DEPOIS do
    `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda/pensa; admin e
    community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
    pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`

@@ -6,17 +6,17 @@
 
 Plataforma de cursos **KIDS/infanto-juvenil (8–13 anos)** do Sistema Zero — segundo app de área
 do aluno, irmão do [`@sistemazero/community`](../community/CLAUDE.md). Next.js 16 + React 19 +
-Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) com a **PALETA DO TEMA
-KIDS** (re-tema 07/2026, a mesma do funil kids — ver `design-tema-kids.md` no fluxo-criativo):
-light = AZUL `oklch(0.52 0.15 252)` primário sobre azul-céu + LARANJA CTA (gradiente 3D
-`--sz-gradient` com pontas escurecidas p/ texto claro AA) + acentos rosa/verde/amarelo; dark =
-navy `#0C1E3E` com laranja claro `oklch(0.8 0.15 70)` primário e azul claro de apoio. ⚠️ Os
+Tailwind v4, porta **3008**. Visual "estilo Duolingo" (redesign 06/2026) que desde 11/09/2026
+veste a **PALETA DO PEN** (as telas-modelo dela): um fundo só por página, o menu como âncora
+ESCURA, a cor de ação AZUL `#1B5CF3` e dois temas, **Padrão** e **Pink** (não existe mais
+claro/escuro), com o 3D do Brilliant nos botões e cartões clicáveis. Ver
+§"Tema: a paleta do Pen" logo abaixo. ⚠️ Os
 tokens `--brand-lime`/`--brand-cyan`/`--kids-lime`/`--kids-cyan` mantêm os NOMES históricos com
 VALORES novos (lime→laranja, cyan→azul) — **trocar valor é ok, RENOMEAR é proibido** (ui e
 member-shell consomem os nomes; idem `--primary`, `.brand-gradient-text`, `.sz-progress`,
 `button.bg-primary…`). Radius 1rem,
-fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), CTA "botão 3D" (sombra
-dura + afunda no clique), microinterações `kid-pop`/`kid-wiggle`/`kid-float` com
+fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microinterações
+`kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`). **Nav (lote UX 07/2026):** a sidebar
 segue com os 9 `NAV_ITEMS`; a TAB BAR mobile usa **`MOBILE_NAV_ITEMS` (5 abas)** — Início, Cursos,
@@ -116,9 +116,76 @@ o app segue nos demais controles). Não era specificity: as duas são `(0,1,0)` 
 Agora ela vive em **`@layer components`** e o default virou **44px** (call site sem `h-*` já nasce
 acessível). **Regra para este arquivo:** classe que existe para ser ajustada no call site (tamanho,
 espaçamento, tipografia) pertence a `@layer components`; deixá-la solta transforma todo `className`
-do consumidor em mentira silenciosa. ⚠️ O mesmo defeito segue no `.sz-btn-gradient` do
-**community adulto** (`packages/community/src/app/globals.css`) — lá só 1 dos 4 usos passa altura,
-então o estrago é pequeno, mas a armadilha é a mesma.
+do consumidor em mentira silenciosa. (O `.sz-btn-gradient` do **community adulto** tinha o mesmo
+defeito e foi para `@layer components` em 11/09/2026, no `994f2eac`.)
+
+## Tema: a paleta do Pen, temas Padrão e Pink, menu escuro e o 3D do Brilliant (11/09/2026)
+
+Pedido dela, só de design (função, estrutura, textos e imagens iguais): as telas do Pen
+(`esboço plataforma.pen`, quadro "★ Paleta") viraram a paleta padrão do kids e da comunidade
+adulta. Plano: `~/.claude/plans/eu-estou-mexendo-na-golden-forest.md`. Isto REVOGA três leis
+antigas: "cor não muda de valor, só aparece mais", "o fundo não segue o tema, só a tinta" e
+"pílulas chapadas, sem sombra dura". Commits: `c04b0bdf` (paleta, temas e chão), `d117ee3b` (menu
+escuro e logo) e `52de024f` (3D).
+
+- **Temas:** next-themes com `attribute="data-tema"`, `themes=['padrao','pink']`,
+  `defaultTheme="padrao"`, `enableSystem={false}` e **`storageKey="sz-kids-tema"` (chave NOVA):**
+  o script sem flash aplicaria o `dark` guardado sem conferir a lista. "Mudar tema" (menu do avatar)
+  alterna Padrão ⇄ Pink. `resolvedTheme` agora é `'padrao'` ou `'pink'`. ⚠️ O
+  `@custom-variant dark (&:is(.dark *))` FICA: sem ele os `dark:` do ui e do member-shell passariam
+  a seguir o modo escuro do sistema operacional; como não existe `.dark`, eles ficam inertes.
+- **Tokens** (`globals.css`, seção "A PALETA DO PEN"): primitivos `--pen-*` (chão, chão
+  alternativo, cartão, superfície 2, linha, tinta, tinta suave, campo, ação e os degraus do 3D) e
+  `--menu-*` no `:root`; o Pink (`:root[data-tema="pink"]`) redefine só primitivos. ⚠️ Os
+  `--sz-kids-*` NEUTROS são redefinidos AQUI para apontar para o Pen, **nunca** no
+  `theme-kids.css` (o funil importa o mesmo arquivo). É por eles que a paleta chega às quatro
+  ferramentas, cujos escopos claros re-declaram os `--sz-tool-*` a partir dos primitivos.
+- ⚠️⚠️ **Identidade × ação.** O azul de IDENTIDADE (`--sz-kids-azul-texto`, `--kids-cyan`, o
+  Estúdio, o nível Construtor(a), as unidades e grupos de missão) não muda no Pink; a cor de AÇÃO
+  (botão, link, item ativo, "você está aqui") é `--pen-acao` → `--primary` e `--sz-kids-acao`, e
+  vira rosa no Pink. As ferramentas leem `--sz-kids-acao` primeiro. No Pink o Estúdio vira o
+  verde-azulado `#0E7C86` (o azul dele brigava com o rosa). Cores dos grupos, das oficinas,
+  moeda, sucesso e alerta não mudam.
+- **Um fundo só:** toda `KidsBand` pinta o chão (`--chao`) e a de fechamento (`lilas`, por
+  convenção a última), o chão alternativo (`--chao-alt`). Os tons do tipo `BandTone` ficaram para
+  as páginas não mudarem: as seções abaixo que falam em "faixa creme/menta/céu" descrevem o TOM
+  passado ao componente, não uma cor na tela. Os `--band-*` viraram tons de APOIO (chips,
+  ladrilhos): `creme` = superfície 2, `ceu` = chão alternativo, `menta` e `lilas` do Pen. ⚠️ Texto
+  na cor de ação sobre esses tons reprova (4,27:1 no céu): rótulo em tinta, ação só em ação.
+- **Menu escuro** (`app-sidebar.tsx`, `mobile-nav.tsx`, `SidebarFallback`, o fallback da top
+  bar no `(app)/layout.tsx`): `--menu` (navy no Padrão, ameixa no Pink), rótulo `--menu-texto`,
+  ícone `--menu-icone`, ativo na pílula da cor de ação (`.kids-marca`). O rodapé (Recados, fogo e
+  XP, moedas, cartão do perfil) é branco a 8% (`--menu-vidro`) com números em branco e ícones no
+  amarelo da moeda; o fogo apagado fica no cinza do menu e o aceso, amarelo cheio. Barra de abas:
+  rótulo ativo na ação clara (`--pen-acao-clara`; a ação crua dava 3,2:1 no navy). As iniciais do
+  responsável (sessão da conta) ganham o par da ação por `[&>span]` (as classes do `UserAvatar`
+  vêm depois do `className`). Viewport: `colorScheme: 'light'`, `themeColor` na cor do menu.
+- **Logo e favicons (PackLogo):** `kids-logo.tsx` é SVG EMBUTIDO gerado de
+  `public/logo_kids_dark.svg` (fundo escuro) e `logo_kids_white.svg` (fundo claro), com
+  `fundo="escuro" | "claro"` (padrão claro) e `size="nav" | "auth"`. O azul da logo lê
+  `--logo-zero` e fica rosa no Pink (no fundo claro o selo "kids" também, porque é o mesmo azul);
+  SISTEMA, a estrela e o selo amarelo do fundo escuro não mudam. Não edite os caminhos à mão:
+  troque os SVGs e gere de novo. Favicons: o `favicon.ico` do pacote em `src/app/` e os PNGs
+  gerados do `favicon.svg` (o apple-touch-icon sobre branco). A decisão antiga "mesmo favicon do
+  adulto" caiu com a logo nova.
+- **O 3D do Brilliant** (seção "O 3D DO BRILLIANT" do `globals.css`): a borda de baixo é uma
+  sombra dura num tom mais escuro da própria cor (o layout não anda); no hover sobe 1px e a borda
+  cresce, no aperto afunda até quase sumir, com a base sempre no mesmo lugar. Movimento por
+  `translate` (compõe com o que já gira); com menos movimento, nada anda. Onde entra: o override do
+  `Button` e as variantes contorno, secundário e apagar do ui (foco em CONTORNO, porque a sombra
+  apagaria o anel do `Button`); as `.sz-btn-*` (a `.sz-btn-inverso` pega o degrau da ação só dentro
+  de `.kids-marca`); os cartões clicáveis por seletor (`a.kids-carta`, `button.kids-carta`,
+  `a.kid-pop > .kids-carta`: fio de 2px e degrau cinza, no lugar do pulo do `kid-pop`); os nós da
+  trilha que abrem aula e o baú liberado; e peças soltas com `.kids-3d` (+ `--carta`, `--acao`,
+  `--sol`), com o movimento vindo do link ou botão em volta. Cor própria? Declare `--k3d-degrau`
+  na peça (o "Resgatar" faz no `style`). ⚠️ As `--k3d-*` são declaradas em CADA peça, nunca
+  herdadas: um cartão em hover em volta de um botão mexeria no degrau dele. Planos de propósito:
+  o menu, as abas e os chips de filtro (decisão dela), o nó travado e o baú fechado. Nas
+  ferramentas o relevo vale só nas galerias (ver o CLAUDE.md do ui).
+- **Conferência visual** (o app exige banco e login): `tmp/pen/` (fora do git) tem uma cópia da
+  conferência das telas-modelo (`?tema=pink` liga o Pink), o servidor `:4803`, uma amostra das
+  receitas do `tool-chrome.css` (`ferramentas.html`) e uma da logo (`logo.tsx`). Contraste medido
+  por script em 11/09: 27 páginas a 1440px e 5 a 390px, nos dois temas, sem falha.
 
 ## A trilha da Faísca é um degrau de verdade (14/08)
 
@@ -693,12 +760,12 @@ extensões, e não foi preciso protocolo novo de entrada.
   usar. Régua pura em `directionsAtPoint`.
 - ⚠️ **Em pé a tira vai numa linha PRÓPRIA:** cruz + tira + diamante dá mais que a largura de um
   celular, e o console saía com a cruz e o A cortados nas beiradas (medido em 412px).
-- ⚠️⚠️ **A seta gravada no braço tem token PRÓPRIO (`--snes-cross-ink`), e ele TROCA entre os
-  temas.** Ela contrasta com a CRUZ, não com o corpo do console: usando `--snes-ink` (a tinta de
-  texto, escura no tema claro porque o corpo é claro) a seta ficava escura sobre um braço escuro e
-  sumia — medido em ~1,2:1. A cruz é escura no claro e CLARA no escuro, então a tinta é branca num e
-  navy no outro; um valor só para os dois traz o defeito de volta. Travado por
-  `tests/console-controls.test.tsx`.
+- ⚠️⚠️ **A seta gravada no braço tem token PRÓPRIO (`--snes-cross-ink`).** Ela contrasta com a
+  CRUZ, não com o corpo do console: usando `--snes-ink` (a tinta de texto, escura porque o corpo é
+  claro) a seta ficava escura sobre um braço escuro e sumia — medido em ~1,2:1. Até 11/09/2026 a
+  cruz clareava no tema escuro e a tinta trocava junto; com os temas Padrão e Pink (os dois
+  claros) a cruz é escura nos dois e a tinta é UMA só, clara. Travado por
+  `tests/console-controls.test.tsx` (um valor, com claridade alta).
 - ⭐ **No desktop o teclado passou a chegar ao jogo sem clicar nele.** O foco nasce na página de
   fora: a criança abria o link, apertava a seta e não acontecia NADA. Medido: 0 teclas antes do
   clique, 1 depois. O foco é dado quando o jogo RESPONDE, não ao montar (até lá o `<Player>` ainda
@@ -1342,11 +1409,10 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    fica vermelho no modo explícito `write`; ao sair/trocar de perfil a nova sessão volta a
    `readonly`. Gamificação é a fase 2 (ver seção própria) — NÃO improvisar
    contadores fake no meio-tempo.
-7. **Branding (06/2026)**: logo = wordmark OFICIAL (`public/logo_dark|white.svg`, copiados do
-   community) + selo "kids" composto em HTML (`kids-logo.tsx` — SVG via `<img>` não carrega
-   webfont, por isso o selo vive no DOM); `public/logo_kids_*.svg` são o fallback ESTÁTICO de
-   marca (letras desenhadas em paths, nunca `<text>`). Favicons herdados do community DE
-   PROPÓSITO (decisão: mesmo favicon).
+7. **Branding (11/09/2026, PackLogo)**: a logo do kids é própria (`public/logo_kids_dark.svg`,
+   `logo_kids_white.svg` e `logo_kids_vertical.svg`, os arquivos do pacote dela) e a `KidsLogo` a
+   desenha em SVG embutido, com o selo "kids" já no desenho (antes era a wordmark do adulto + um
+   selo em HTML). Os favicons também são do pacote. Ver §"Tema: a paleta do Pen".
 
 ## Pensa (planejador de jogos — 08/2026)
 
