@@ -10,6 +10,8 @@ export const SCENE_PAINT_COPY = {
   widths: 'Largura do traço',
   width: { 1: 'Fino', 2: 'Médio', 3: 'Grosso' } as Record<1 | 2 | 3, string>,
   colors: 'Cores',
+  rotate: 'Girar a pintura da face',
+  rotateHint: 'Toque numa face para girar a pintura dela.',
   choosePiece: 'Toque numa peça para pintar.',
   modelHint: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela ou escolha “${COPY.scene.paintLook}”.`,
   more: 'Mais jeitos de pintar',

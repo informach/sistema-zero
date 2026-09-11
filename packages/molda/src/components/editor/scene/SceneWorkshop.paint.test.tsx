@@ -16,6 +16,7 @@ import { addScenePrimitive, convertSceneNodesToMesh, editSceneMesh } from '../..
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
+import { scenePaintFaceBounds } from '../../../scene/paintSurfaceBounds'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { frontControls } from '../../../testing/domContract'
 import { makeModel } from '../../../testing/fixtures'
@@ -258,6 +259,43 @@ describe('a aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.geometries).toEqual(bent.geometries)
     expect(editor.getState().canUndo).toBe(false)
+    editor.getState().dispose()
+  })
+})
+
+describe('girar a pintura da face', () => {
+  test('um toque gira a pintura daquela face, e só dela; um passo de desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const imageId = stage.target!.imageId
+    const image = () => editor.getState().asset.images.find((entry) => entry.id === imageId)!
+    const node = editor.getState().asset.nodes.find((entry) => entry.id === door)
+    if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+    const geometry = editor
+      .getState()
+      .asset.geometries.find((entry) => entry.id === node.geometryId)!
+    const bounds = scenePaintFaceBounds(geometry, 'py', image())!
+    const sample = { point: [bounds.x0, bounds.y0] as [number, number], region: 'py', bounds }
+    act(() => {
+      stage.callbacks!.paint!.begin(sample)
+      stage.callbacks!.paint!.end(true)
+    })
+    const at = (x: number, y: number) => image().layers[0]!.pixels[y * image().width + x]
+    expect(at(bounds.x0, bounds.y0)).toBe(7)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.rotate }))
+    expect(screen.getByText(SCENE_PAINT_COPY.rotateHint)).toBeDefined()
+    const painted = editor.getState().asset
+    act(() => {
+      stage.callbacks!.paint!.begin(sample)
+    })
+    // O canto de cima vai para a direita, como no "Girar a pele" antigo.
+    expect(at(bounds.x0, bounds.y0)).toBe(0)
+    expect(at(bounds.x1, bounds.y0)).toBe(7)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.images).toEqual(painted.images)
     editor.getState().dispose()
   })
 })

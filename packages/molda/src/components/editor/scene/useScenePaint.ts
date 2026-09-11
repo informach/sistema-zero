@@ -16,6 +16,7 @@ import {
 } from '../../../scene/imagePaint'
 import { intersectImageRegions } from '../../../scene/imageRegion'
 import type { SceneStampSettings } from '../../../scene/imageStamp'
+import { rotateScenePaintRegion } from '../../../scene/paintRegionRotate'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createScenePaintGesture } from '../../../state/scenePaintGesture'
@@ -56,11 +57,13 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const [chosenColor, setColor] = useState<ScenePaintColor>(7)
   const [brush, setBrush] = useState<BrushSize>(1)
   const [tool, setTool] = useState<
-    'pencil' | 'eraser' | 'fill' | 'picker' | ScenePaintDraft['tool']
+    'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | ScenePaintDraft['tool']
   >('pencil')
   const eraser = tool === 'eraser'
   const fill = tool === 'fill'
   const picker = tool === 'picker'
+  /** Girar a pintura da face: cada toque numa face gira a pintura dela 90°. */
+  const rotate = tool === 'rotate'
   const [tolerance, setTolerance] = useState(0)
   const imageTask = useSceneImageTask(editor)
   const cancelImage = imageTask.cancel
@@ -75,7 +78,13 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     flipY: false,
   })
   const shape =
-    tool === 'pencil' || tool === 'eraser' || tool === 'fill' || tool === 'picker' ? null : tool
+    tool === 'pencil' ||
+    tool === 'eraser' ||
+    tool === 'fill' ||
+    tool === 'picker' ||
+    tool === 'rotate'
+      ? null
+      : tool
   const [filled, setFilled] = useState(false)
   const [endColor, setEndColor] = useState<ScenePaintRgba>([81, 141, 255, 255])
   const [draft, setDraft] = useState<ScenePaintDraft | null>(null)
@@ -220,6 +229,23 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         if (!clipped) return false
         region = clipped
       }
+      if (rotate) {
+        // Um toque gira a pintura da face tocada, em todas as camadas: um passo de desfazer.
+        try {
+          const source = editor.getState().asset
+          const whole = { x0: 0, y0: 0, x1: data.image.width - 1, y1: data.image.height - 1 }
+          const next = rotateScenePaintRegion(
+            source,
+            session.target.imageId,
+            sample.bounds ?? whole,
+          )
+          if (next !== source) editor.getState().commit(next)
+          setError(null)
+        } catch (error) {
+          setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+        }
+        return false
+      }
       if (picker) {
         try {
           const sampled = sceneLayerColor(data.image, data.layer.id, sample.point)
@@ -319,6 +345,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     eraser,
     fill,
     picker,
+    rotate,
     shape,
     filled,
     endColor,
@@ -352,7 +379,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       if (!stroke.current && !imageTask.busy) {
         palette.end()
         setColor(value)
-        if (eraser || picker) setTool('pencil')
+        if (eraser || picker || rotate) setTool('pencil')
       }
     },
     /** Um passo do seletor do "+ Nova cor": a cor nova já vira a cor do lápis. */
@@ -391,6 +418,10 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     setPicker: () => {
       cancel()
       setTool('picker')
+    },
+    setRotate: () => {
+      cancel()
+      setTool('rotate')
     },
     setTolerance,
     setShape: (value: ScenePaintDraft['tool']) => {

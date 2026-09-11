@@ -7,13 +7,13 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button, ToolButton } from '../../ui/Button'
-import { Eraser, PaintBucket, Pencil, Pipette } from '../../ui/icons'
+import { Eraser, PaintBucket, Pencil, Pipette, RotateCw } from '../../ui/icons'
 import type { useScenePaint } from './useScenePaint'
 
 export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScenePaint> }) {
   const copy = COPY.scene
-  const { eraser, fill, picker, shape, brush } = paint
-  const pencil = !eraser && !fill && !shape && !picker
+  const { eraser, fill, picker, rotate, shape, brush } = paint
+  const pencil = !eraser && !fill && !shape && !picker && !rotate
   return (
     <RequiresTool family="paint.brush">
       <fieldset disabled={paint.drawing || paint.busy} className="flex flex-wrap gap-1">
@@ -42,10 +42,17 @@ export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScene
           active={picker}
           onClick={paint.setPicker}
         />
+        <ToolButton
+          icon={RotateCw}
+          label={SCENE_PAINT_COPY.rotate}
+          active={rotate}
+          onClick={paint.setRotate}
+        />
       </fieldset>
       {picker && <p className="text-xs text-mld-muted">{copy.paintPickerHint}</p>}
       {fill && <p className="text-xs text-mld-muted">{copy.paintFillHint}</p>}
-      {!fill && !picker && (
+      {rotate && <p className="text-xs text-mld-muted">{SCENE_PAINT_COPY.rotateHint}</p>}
+      {!fill && !picker && !rotate && (
         <fieldset disabled={paint.drawing || paint.busy} className="flex flex-wrap gap-1">
           <legend className="w-full text-xs font-bold text-mld-muted">
             {SCENE_PAINT_COPY.widths}
