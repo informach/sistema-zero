@@ -32,13 +32,25 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    tokens SEMÂNTICOS `--sz-tool-*` (claro em `:root` + nos escopos claros de cada ferramenta;
    escuro DEPOIS, sob `.dark`, `[data-sz-theme="dark"]`, `[data-pinta-theme="dark"]`,
    `[data-molda-theme="dark"]`, `.pensa-theme-dark`; derivados re-declarados nos dois; FORA do
-   bloco de tema do Tailwind, que poda) e as RECEITAS em `@layer components` (`.sz-tool-btn-menu`
-   = o botão do menu do host como uma ABA colada na linha da barra lateral: cantos quadrados à
-   esquerda, sem borda esquerda, margem negativa `--sz-tool-inset` que cada barra declara com o
-   próprio padding esquerdo; `.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-chips`/
-   `.sz-tool-chip`, `.sz-tool-search(-wrap)`/`.sz-tool-select`, `.sz-tool-panel`/`.sz-tool-pop`,
-   `.sz-tool-status(--ok|--warn|--danger)`, `.sz-tool-header(__lead|__title|__actions)`,
-   `.sz-tool-toolbar(__start|__end)`). Quem importa: o community-kids (`globals.css`, DEPOIS do
+   bloco de tema do Tailwind, que poda) e as RECEITAS em `@layer components`. ⭐ **Desde
+   11/09/2026 o desenho é o das telas-modelo dela** (as galerias iguais às páginas do kids):
+   faixas `.sz-tool-bands` > `.sz-tool-band--creme|ceu|lilas|branco` + `__inner` (64px dos
+   lados a partir de 1024px de janela, 32 no tablet, 16 no celular; a última faixa cresce até o
+   pé); `.sz-tool-title`/`-subtitle`/`-section-title`/`-section-text`/`-kicker`; o QUADRADO de
+   ícone `.sz-tool-icon-btn(--round)`, que é também o `.sz-tool-btn-menu` (o menu do host
+   DEIXOU de ser a aba colada na barra lateral: agora é um quadrado dentro do conteúdo, e o
+   `--sz-tool-inset` saiu) e a `.sz-tool-back`; pílulas CHAPADAS `.sz-tool-pill--primary|quiet|
+   outline|creme` (sem gradiente nem sombra dura); `.sz-tool-chips`/`.sz-tool-chip` (o ativo é o
+   azul da marca cheio), `.sz-tool-search(-wrap)`, `.sz-tool-select(-wrap)` (desenha a seta),
+   `.sz-tool-status(--ok|--warn|--danger)` em pílula; `.sz-tool-grid` (auto-fill de 13,75rem:
+   4 colunas a 1440 com o menu aberto), `.sz-tool-card(--new)` + `.sz-tool-new-dot`,
+   `.sz-tool-cover`, `.sz-tool-tile--new|ok|estudio|pinta|molda|pensa` e `.sz-tool-cta-card`
+   (`__body|__title|__text`); e o layout `.sz-tool-header(__lead|__nav|__title|__actions)` /
+   `.sz-tool-toolbar(__start|__end)`. Os controles novos medem `--sz-tool-hit`: 40px no mouse (a
+   imagem) e 44px com `any-pointer: coarse` (a régua da casa). O fundo dos controles quietos é
+   `--sz-tool-quiet`: céu diluído sobre barra branca, branco dentro de uma faixa. As receitas
+   ANTIGAS (`.sz-tool-btn`/`--icon`, `.sz-tool-btn-3d`, `.sz-tool-panel`/`.sz-tool-pop`) seguem
+   até a limpeza do lote. Quem importa: o community-kids (`globals.css`, DEPOIS do
    `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda; admin e
    community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
    pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`

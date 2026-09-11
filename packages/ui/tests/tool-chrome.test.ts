@@ -3,8 +3,12 @@
  * de teste, e uma folha de tokens se prova pela forma): os tokens do escuro são os mesmos do
  * claro, os cinco escopos de tema de cada ferramenta estão nos dois blocos, o escuro vem DEPOIS
  * do claro (empate de especificidade no `html.dark`), todo token usado está declarado, nada de
- * `in oklch`/peso 800/`!important`, uma camada `components` só, e quem embarca ferramentas
- * importa a folha DEPOIS dos primitivos e ANTES do CSS dos pacotes.
+ * `in oklch`/`!important`, uma camada `components` só, e quem embarca ferramentas importa a
+ * folha DEPOIS dos primitivos e ANTES do CSS dos pacotes.
+ *
+ * Desde 11/09/2026 (o desenho das telas-modelo): as faixas existem nos dois temas, as cores de
+ * assinatura moram só nas constantes, as pílulas novas são chapadas, o alvo cresce para 44px
+ * no toque e o botão do menu é um quadrado dentro do conteúdo, não mais a aba colada.
  */
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
@@ -73,11 +77,39 @@ describe('tool-chrome.css: tokens', () => {
     for (const u of usados) expect(declarados.has(u)).toBe(true)
   })
 
-  it('sem `in oklch`, sem peso 800, sem !important, sem bloco de tema do Tailwind', () => {
+  it('sem `in oklch`, sem !important, sem bloco de tema do Tailwind', () => {
     expect(semComentarios).not.toMatch(/color-mix\(in oklch/)
-    expect(semComentarios).not.toMatch(/font-weight:\s*800/)
     expect(semComentarios).not.toContain('!important')
     expect(semComentarios).not.toContain('@theme')
+  })
+
+  it('as três faixas existem nos DOIS temas, e o escuro é literal (o kids já mediu)', () => {
+    for (const faixa of ['creme', 'ceu', 'lilas']) {
+      expect(claro.corpo).toContain(`--sz-tool-band-${faixa}: var(--sz-kids-`)
+      expect(escuro.corpo).toMatch(new RegExp(`--sz-tool-band-${faixa}: oklch\\(`))
+    }
+    // O fio do cartão some no claro e aparece no escuro (a `--borda-carta` do kids).
+    expect(claro.corpo).toContain('--sz-tool-card-edge: transparent')
+    expect(escuro.corpo).toContain('--sz-tool-card-edge: var(--sz-tool-line)')
+  })
+
+  it('as cores de assinatura e o amarelo do novo moram SÓ nas constantes (fundo não troca de tema)', () => {
+    for (const nome of ['sig-estudio', 'sig-pinta', 'sig-pensa', 'sig-molda', 'new', 'on-new']) {
+      expect(geometria.corpo).toContain(`--sz-tool-${nome}:`)
+      expect(claro.corpo).not.toContain(`--sz-tool-${nome}:`)
+      expect(escuro.corpo).not.toContain(`--sz-tool-${nome}:`)
+    }
+  })
+
+  it('o alvo das receitas novas é 40px no mouse e 44px com o dedo', () => {
+    expect(geometria.corpo).toContain('--sz-tool-hit: 2.5rem')
+    const i = semComentarios.indexOf('@media (any-pointer: coarse)')
+    expect(i).toBeGreaterThan(-1)
+    // Fora da camada: é token, e o bloco de constantes também é sem camada.
+    expect(i).toBeLessThan(semComentarios.indexOf('@layer components {'))
+    expect(semComentarios.slice(i)).toMatch(
+      /^@media \(any-pointer: coarse\) \{\s*:root \{\s*--sz-tool-hit: 2\.75rem;\s*\}/,
+    )
   })
 })
 
@@ -90,25 +122,62 @@ describe('tool-chrome.css: receitas', () => {
     )
   })
 
-  it('o botão do menu: 44px com borda; pressionado = tinta e borda suaves do acento', () => {
-    const base = bloco('.sz-tool-btn-menu {')
-    expect(base.corpo).toContain('min-height: var(--sz-tool-control)')
-    expect(base.corpo).toContain('border: var(--sz-tool-border) solid')
+  it('o botão do menu é o QUADRADO da imagem, com a mesma forma da seta de voltar', () => {
+    // Um bloco só para os três: menu, voltar e os outros quadrados de ícone.
+    const quadrado = bloco('.sz-tool-back {')
+    expect(quadrado.seletor).toContain('.sz-tool-btn-menu')
+    expect(quadrado.seletor).toContain('.sz-tool-icon-btn')
+    expect(quadrado.corpo).toContain('width: var(--sz-tool-hit)')
+    expect(quadrado.corpo).toContain('height: var(--sz-tool-hit)')
+    expect(quadrado.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
+    // Branco dentro da faixa, céu diluído sobre barra branca (a mesma variável).
+    expect(quadrado.corpo).toContain('background: var(--sz-tool-quiet)')
+    expect(bloco('.sz-tool-band {').corpo).toContain('--sz-tool-quiet: var(--sz-tool-surface)')
     const pressionado = bloco('.sz-tool-btn-menu[aria-pressed="true"] {')
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-tint)')
     expect(pressionado.corpo).toContain('var(--sz-tool-accent-line)')
     expect(pressionado.corpo).toContain('color: var(--sz-tool-accent)')
   })
 
+  it('o botão do menu deixou de ser a ABA colada na barra lateral (11/09/2026)', () => {
+    expect(semComentarios).not.toContain('--sz-tool-inset')
+    expect(semComentarios).not.toContain('border-start-start-radius: 0')
+    expect(semComentarios).not.toContain('border-end-start-radius: 0')
+    expect(semComentarios).not.toMatch(/margin-inline-start:\s*calc\(-1/)
+  })
+
   it('a legend dos chips flutua (inline com os chips, não numa linha acima)', () => {
     expect(bloco('.sz-tool-chips > legend {').corpo).toContain('float: left')
   })
 
-  it('o botão do menu é uma ABA colada na linha da sidebar (margem negativa do respiro da barra)', () => {
-    expect(bloco(':root {').corpo).toContain('--sz-tool-inset: 0px')
-    expect(semComentarios).toContain('margin-inline-start: calc(-1 * var(--sz-tool-inset))')
-    expect(semComentarios).toContain('border-start-start-radius: 0')
-    expect(semComentarios).toContain('border-end-start-radius: 0')
+  it('as pílulas, os chips, a busca, o ordenar e o selo são pílulas no alvo novo', () => {
+    // `.sz-tool-select {` casa primeiro com o bloco que ele divide com a busca.
+    for (const ancora of [
+      '.sz-tool-pill {',
+      '.sz-tool-chip {',
+      '.sz-tool-select {',
+      '.sz-tool-status {',
+    ]) {
+      const { corpo } = bloco(ancora)
+      expect(corpo).toContain('min-height: var(--sz-tool-hit)')
+      expect(corpo).toContain('border-radius: var(--sz-tool-radius-pill)')
+    }
+  })
+
+  it('as pílulas são CHAPADAS: nenhuma variante tem gradiente nem a sombra dura do 3D', () => {
+    const pilulas = [...semComentarios.matchAll(/\.sz-tool-pill[^{]*\{([^}]*)\}/g)]
+    expect(pilulas.length).toBeGreaterThanOrEqual(8) // anti-vácuo: base, variantes e hovers
+    for (const [, corpo = ''] of pilulas) {
+      expect(corpo).not.toContain('gradient')
+      expect(corpo).not.toMatch(/box-shadow:\s*0 \d+px 0/)
+    }
+  })
+
+  it('o chip ativo é o azul da marca cheio, e continua cheio no hover', () => {
+    const ativo = bloco('.sz-tool-chip[aria-pressed="true"],')
+    expect(ativo.seletor).toContain(':hover')
+    expect(ativo.corpo).toContain('background: var(--sz-tool-cta)')
+    expect(ativo.corpo).toContain('color: var(--sz-tool-on-cta)')
   })
 })
 
