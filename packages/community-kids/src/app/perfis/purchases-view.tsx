@@ -8,6 +8,8 @@ import { Receipt } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsBackButton } from '@/components/kids/back-button'
+import { KidsEmptyState } from '@/components/kids/kids-empty-state'
+import { KidsScreen } from '@/components/kids/kids-screen'
 import { apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
@@ -47,13 +49,13 @@ export function PurchasesView({ onBack }: { onBack: () => void }) {
   }, [load])
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-xl flex-col gap-6 px-4 py-12">
+    <KidsScreen align="start" innerClassName="flex max-w-2xl flex-col gap-6">
       <div>
         <KidsBackButton onClick={onBack} label="Voltar à área dos pais" showLabel />
       </div>
       <div>
-        <h1 className="sz-display text-2xl text-foreground">Minhas compras</h1>
-        <p className="mt-1 text-muted-foreground text-sm">
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Minhas compras</h1>
+        <p className="mt-2.5 font-medium text-[1.0625rem] text-muted-foreground">
           Histórico das compras feitas com o e-mail desta conta.
         </p>
       </div>
@@ -63,17 +65,15 @@ export function PurchasesView({ onBack }: { onBack: () => void }) {
       {items === null ? (
         <div className="flex flex-col gap-3">
           {[0, 1, 2].map((index) => (
-            <Skeleton key={index} className="h-20 rounded-2xl" />
+            <Skeleton key={index} className="h-20 rounded-(--raio-carta)" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center gap-2 rounded-2xl border-2 border-border border-dashed py-12 text-center">
-          <Receipt className="size-8 text-muted-foreground" />
-          <p className="font-semibold text-foreground">Nenhuma compra ainda</p>
-          <p className="text-muted-foreground text-sm">
-            As compras feitas com o e-mail desta conta aparecem aqui.
-          </p>
-        </div>
+        <KidsEmptyState
+          icon={Receipt}
+          title="Nenhuma compra ainda"
+          description="As compras feitas com o e-mail desta conta aparecem aqui."
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {items.map((payment) => (
@@ -83,11 +83,16 @@ export function PurchasesView({ onBack }: { onBack: () => void }) {
       )}
 
       {items && items.length < total ? (
-        <Button variant="secondary" onClick={() => void load(items.length)} disabled={loading}>
+        <Button
+          variant="secondary"
+          className="self-center rounded-full px-6"
+          onClick={() => void load(items.length)}
+          disabled={loading}
+        >
           {loading ? <Spinner className="size-4" /> : 'Carregar mais'}
         </Button>
       ) : null}
-    </main>
+    </KidsScreen>
   )
 }
 
@@ -127,7 +132,7 @@ function ParentSubscriptions() {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-semibold text-foreground text-sm">Assinaturas</h2>
+      <h2 className="sz-display text-xl">Assinaturas</h2>
       <ul className="flex flex-col gap-3">
         {subs.map((subscription) => {
           const next = nextChargeDate(subscription)
@@ -140,7 +145,7 @@ function ParentSubscriptions() {
           return (
             <li
               key={subscription.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4"
+              className="kids-carta flex flex-wrap items-center justify-between gap-3 p-5"
             >
               <div className="min-w-0">
                 <p className="font-semibold text-foreground">
@@ -163,7 +168,12 @@ function ParentSubscriptions() {
                   {SUBSCRIPTION_STATUS_LABELS[subscription.status] ?? subscription.status}
                 </span>
                 {subscription.status === 'ACTIVE' ? (
-                  <Button variant="outline" size="sm" onClick={() => setConfirming(subscription)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setConfirming(subscription)}
+                  >
                     Cancelar
                   </Button>
                 ) : null}
@@ -216,7 +226,7 @@ const STATUS_TONE: Record<string, string> = {
 
 function PurchaseCard({ payment }: { payment: PaymentView }) {
   return (
-    <li className="flex items-center justify-between gap-3 rounded-2xl border-2 border-border bg-card p-4">
+    <li className="kids-carta flex items-center justify-between gap-3 p-5">
       <div className="min-w-0">
         <p className="truncate font-semibold text-foreground">{payment.description ?? 'Compra'}</p>
         <p className="text-muted-foreground text-xs">

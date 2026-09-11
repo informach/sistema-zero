@@ -10,6 +10,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AUTH_CARD, AUTH_TITLE } from '@/components/kids/auth-card'
 
 const emailSchema = z.string().email('E-mail inválido')
 
@@ -156,9 +157,9 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className={AUTH_CARD}>
       <CardHeader>
-        <CardTitle className="text-xl">Entrar</CardTitle>
+        <CardTitle className={AUTH_TITLE}>Entrar</CardTitle>
         <CardDescription>
           {mode === 'password'
             ? 'Acesse sua área de aluno.'
@@ -194,7 +195,7 @@ export function LoginForm() {
                 aria-invalid={Boolean(errors.password)}
               />
             </Field>
-            <Button type="submit" disabled={loading} className="mt-2">
+            <Button type="submit" disabled={loading} className="mt-2 h-11">
               {loading ? <Spinner /> : null}
               Entrar
             </Button>
@@ -233,7 +234,7 @@ export function LoginForm() {
                 />
               </Field>
             ) : null}
-            <Button type="submit" disabled={loading} className="mt-2">
+            <Button type="submit" disabled={loading} className="mt-2 h-11">
               {loading ? <Spinner /> : null}
               {codeSent ? 'Entrar' : 'Enviar código'}
             </Button>

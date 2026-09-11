@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
+import { KidsRecado } from '@/components/kids/kids-recado'
+import { KIDS_SCREEN_BAND } from '@/components/kids/kids-screen'
 import { KidsMascot } from '@/components/kids/mascot'
 import { reportClientError } from '@/lib/report-error'
 
@@ -26,17 +28,19 @@ export default function JogarError({
   }, [error])
 
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center text-foreground">
-      <KidsMascot expression="thinking" className="size-24" />
-      <div>
-        <h1 className="sz-display text-2xl">Ops! O jogo não quis abrir</h1>
-        <p className="mt-1 text-muted-foreground">
-          Pode ter sido um tropeço aqui. Tenta de novo? 🎮
-        </p>
-      </div>
-      <button type="button" onClick={() => reset()} className="sz-btn-gradient h-11 px-6 text-base">
-        Tentar de novo
-      </button>
+    <main className="flex min-h-dvh flex-col">
+      <KidsRecado
+        bandClassName={KIDS_SCREEN_BAND}
+        art={<KidsMascot expression="thinking" className="size-24" />}
+        title="Ops! O jogo não quis abrir"
+        actions={
+          <button type="button" onClick={() => reset()} className="sz-btn-gradient px-6">
+            Tentar de novo
+          </button>
+        }
+      >
+        <p>Pode ter sido um tropeço aqui. Tenta de novo? 🎮</p>
+      </KidsRecado>
     </main>
   )
 }

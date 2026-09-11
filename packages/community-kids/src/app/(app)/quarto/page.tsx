@@ -1,8 +1,7 @@
-import { Home } from 'lucide-react'
 import { KidsBand } from '@/components/kids/kids-band'
-import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { RoomBuilder } from '@/components/kids/room/room-builder'
 import { getAvatarReadonly } from '@/server/members'
+import { QuartoHeader } from './quarto-header'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,12 +17,7 @@ export default async function QuartoPage() {
   return (
     <>
       <KidsBand tone="creme">
-        <KidsPageHeader
-          eyebrow="Meu espaço"
-          eyebrowIcon={Home}
-          title="Meu quarto"
-          subtitle="Monte do seu jeito! Arraste as peças e deixe tudo com a sua cara."
-        />
+        <QuartoHeader />
       </KidsBand>
       <KidsBand tone="lilas">
         <RoomBuilder avatarPhotoUrl={avatarPhotoUrl} />

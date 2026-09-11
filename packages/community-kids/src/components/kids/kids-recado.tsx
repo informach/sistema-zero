@@ -24,6 +24,7 @@ export function KidsRecado({
   actions,
   footnote,
   closing,
+  bandClassName,
 }: {
   /** A arte decorativa em cima (o Zappy ou uma cena): o texto dá o significado. */
   art?: ReactNode
@@ -38,10 +39,12 @@ export function KidsRecado({
   footnote?: ReactNode
   /** O cartão de fechamento, numa faixa lilás própria. */
   closing?: ReactNode
+  /** A faixa creme numa tela inteira fora do `(app)` (`KIDS_SCREEN_BAND`). */
+  bandClassName?: string
 }) {
   return (
     <>
-      <KidsBand tone="creme" innerClassName="flex justify-center">
+      <KidsBand tone="creme" className={bandClassName} innerClassName="flex justify-center">
         <section className="kids-carta flex w-full max-w-xl flex-col items-center rounded-[2rem] px-6 py-10 text-center md:px-12 md:py-12">
           {art ? <div className="mb-5 flex justify-center">{art}</div> : null}
           {chip ? (

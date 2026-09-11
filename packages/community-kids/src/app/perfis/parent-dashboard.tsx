@@ -3,7 +3,6 @@
 import { type AiCreditsView, diaCivilPorExtenso } from '@sistemazero/core/ai-credits'
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { buttonVariants } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import {
   Award,
@@ -34,10 +33,10 @@ const JSON_HEADERS = { 'content-type': 'application/json' }
 export function ParentSupportCard() {
   return (
     <section className="w-full max-w-2xl">
-      <div className="rounded-2xl border-2 border-border bg-card p-4">
+      <div className="kids-carta p-5 md:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <span className="kids-marca flex size-11 shrink-0 items-center justify-center rounded-xl">
               <Headphones className="size-5" aria-hidden="true" />
             </span>
             <div>
@@ -47,7 +46,7 @@ export function ParentSupportCard() {
               </p>
             </div>
           </div>
-          <Link href="/responsavel/ajuda" className={buttonVariants({ variant: 'outline' })}>
+          <Link href="/responsavel/ajuda" className="sz-btn-gradient sz-btn-contorno shrink-0">
             Abrir atendimento
           </Link>
         </div>
@@ -85,7 +84,7 @@ export function FamilyAiCredits() {
   return (
     <section className="w-full max-w-2xl">
       <h2 className="sz-display mb-3 text-center text-foreground text-xl">Ajuda da IA neste mês</h2>
-      <div className="rounded-2xl border-2 border-border bg-card p-4">
+      <div className="kids-carta p-5 md:p-6">
         <div
           className="sz-progress"
           role="progressbar"
@@ -136,11 +135,8 @@ export function ChildrenDashboard({
 
   if (failed)
     return (
-      <section
-        role="status"
-        className="w-full max-w-2xl rounded-2xl border border-border bg-card p-5"
-      >
-        <h2 className="font-bold">Não conseguimos consultar o acompanhamento</h2>
+      <section role="status" className="kids-carta w-full max-w-2xl p-5 md:p-6">
+        <h2 className="sz-display text-xl">Não conseguimos consultar o acompanhamento</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Tente atualizar a página. Se a sessão dos responsáveis tiver expirado, abra novamente a
           área dos pais.
@@ -155,7 +151,7 @@ export function ChildrenDashboard({
     )
   if (children !== null && children.length === 0)
     return (
-      <p className="w-full max-w-2xl rounded-2xl border border-border p-5 text-sm text-muted-foreground">
+      <p className="kids-carta w-full max-w-2xl p-5 text-sm text-muted-foreground md:p-6">
         O acompanhamento aparece quando a criança inicia suas atividades. Você pode escolher ou
         gerenciar os perfis acima.
       </p>
@@ -166,7 +162,7 @@ export function ChildrenDashboard({
       <h2 className="sz-display mb-3 text-center text-foreground text-xl">Progresso dos filhos</h2>
       <div className="grid gap-3 sm:grid-cols-2">
         {children === null
-          ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)
+          ? [0, 1].map((i) => <Skeleton key={i} className="h-32 rounded-(--raio-carta)" />)
           : children.map((child) => (
               <ChildStatsCard
                 key={child.profileId}
@@ -220,7 +216,7 @@ function WeeklyReportToggle() {
   if (failed || prefs === null) return null
 
   return (
-    <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-2xl border-2 border-border bg-card p-4">
+    <label className="kids-carta mt-4 flex cursor-pointer items-start gap-3 p-5">
       <input
         type="checkbox"
         checked={!prefs.disabled}
@@ -248,7 +244,7 @@ function ChildStatsCard({
   photoUrl: string | null
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border-2 border-border bg-card p-4">
+    <div className="kids-carta flex flex-col gap-3 p-5">
       <div className="flex items-center gap-3">
         <UserAvatar avatarUrl={photoUrl} firstName={child.name} size="lg" />
         <div className="min-w-0">
@@ -383,7 +379,7 @@ function ChildWeekBlock({
 
   const weekGames = games ?? []
   return (
-    <div className="rounded-xl border border-border bg-background/60 p-3">
+    <div className="rounded-xl bg-background p-3">
       <p className="mb-1 font-bold text-foreground text-xs uppercase tracking-wide">Esta semana</p>
       {parts.length > 0 ? (
         <p className="text-foreground text-sm">{parts.join(' · ')}</p>

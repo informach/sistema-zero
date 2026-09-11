@@ -11,6 +11,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { Pencil, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { KidsScreen } from '@/components/kids/kids-screen'
 import { GuideBalloon } from '@/components/kids/parent-guide'
 import {
   ADULT_COMMUNITY_INSTAGRAM,
@@ -115,115 +116,119 @@ export function ProfileForm({
     birthDate.length > 0 && birthDateChanged && isProfileAgeRestricted(birthDate, today)
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
+    <KidsScreen innerClassName="flex max-w-xl flex-col gap-6">
       {showGuideHint ? (
         <GuideBalloon arrow="none">
           Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide se o
           perfil aparece para outras crianças na comunidade.
         </GuideBalloon>
       ) : null}
-      <h1 className="sz-display text-2xl text-foreground">
-        {isEdit ? 'Editar perfil' : 'Novo perfil'}
-      </h1>
-      <form
-        className="flex flex-col gap-6"
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (busy || trimmedName.length < 3 || ageRestricted) return
-          onSave(trimmedName, birthDate || null, publicProfileEnabled, profile ?? undefined)
-        }}
-      >
-        <Field
-          label="Nome do perfil"
-          htmlFor="profileName"
-          error={nameTooShort ? 'O nome precisa de pelo menos 3 letras.' : undefined}
+      {/* O formulário num cartão branco sobre o creme, como as telas de recado. */}
+      <section className="kids-carta flex flex-col gap-6 px-6 py-8 md:px-10 md:py-10">
+        <h1 className="sz-display text-[clamp(1.75rem,3vw,2.25rem)]">
+          {isEdit ? 'Editar perfil' : 'Novo perfil'}
+        </h1>
+        <form
+          className="flex flex-col gap-6"
+          onSubmit={(event) => {
+            event.preventDefault()
+            if (busy || trimmedName.length < 3 || ageRestricted) return
+            onSave(trimmedName, birthDate || null, publicProfileEnabled, profile ?? undefined)
+          }}
         >
-          <Input
-            id="profileName"
-            name="profileName"
-            autoComplete="off"
-            value={name}
-            maxLength={60}
-            placeholder="Ex.: Sofia"
-            onChange={(e) => setName(e.target.value)}
-          />
-        </Field>
+          <Field
+            label="Nome do perfil"
+            htmlFor="profileName"
+            error={nameTooShort ? 'O nome precisa de pelo menos 3 letras.' : undefined}
+          >
+            <Input
+              id="profileName"
+              name="profileName"
+              autoComplete="off"
+              value={name}
+              maxLength={60}
+              placeholder="Ex.: Sofia"
+              onChange={(e) => setName(e.target.value)}
+            />
+          </Field>
 
-        <Field
-          label="Data de nascimento da criança (opcional)"
-          htmlFor="profileBirthDate"
-          error={ageRestricted ? PROFILE_AGE_ERROR_MESSAGE : undefined}
-        >
-          <Input
-            id="profileBirthDate"
-            name="birthDate"
-            type="date"
-            autoComplete="off"
-            value={birthDate}
-            max={today}
-            onChange={(e) => setBirthDate(e.target.value)}
-          />
-          <p className="mt-1 text-muted-foreground text-xs">
-            Só os responsáveis editam. Para conhecer a comunidade de adultos, fale com a gente no
-            Instagram{' '}
-            <a
-              href={ADULT_COMMUNITY_INSTAGRAM_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-primary underline underline-offset-2"
-            >
-              {ADULT_COMMUNITY_INSTAGRAM}
-            </a>
-            .
-          </p>
-        </Field>
+          <Field
+            label="Data de nascimento da criança (opcional)"
+            htmlFor="profileBirthDate"
+            error={ageRestricted ? PROFILE_AGE_ERROR_MESSAGE : undefined}
+          >
+            <Input
+              id="profileBirthDate"
+              name="birthDate"
+              type="date"
+              autoComplete="off"
+              value={birthDate}
+              max={today}
+              onChange={(e) => setBirthDate(e.target.value)}
+            />
+            <p className="mt-1 text-muted-foreground text-xs">
+              Só os responsáveis editam. Para conhecer a comunidade de adultos, fale com a gente no
+              Instagram{' '}
+              <a
+                href={ADULT_COMMUNITY_INSTAGRAM_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-primary underline underline-offset-2"
+              >
+                {ADULT_COMMUNITY_INSTAGRAM}
+              </a>
+              .
+            </p>
+          </Field>
 
-        {/* Também na CRIAÇÃO (04/08/2026): o pai decide o perfil público já no primeiro
+          {/* Também na CRIAÇÃO (04/08/2026): o pai decide o perfil público já no primeiro
             preenchimento — antes o opt-in só existia na edição, e ninguém voltava para
             ligá-lo. Nasce DESLIGADO (opt-in de verdade); o auth aceita o campo no create
             desde o mesmo lote. */}
-        <label className="flex items-start gap-3 rounded-2xl border-2 border-border bg-card p-4">
-          <input
-            name="publicProfileEnabled"
-            type="checkbox"
-            checked={publicProfileEnabled}
-            onChange={(e) => setPublicProfileEnabled(e.target.checked)}
-            className="mt-1 size-4 accent-primary"
-          />
-          <span className="flex flex-col gap-1">
-            <span className="font-semibold text-sm">Perfil público na comunidade kids</span>
-            <span className="text-muted-foreground text-xs">
-              Mostra nome, avatar, conquistas e quarto para outras crianças. Nunca mostra e-mail,
-              telefone ou nascimento.
+          <label className="flex items-start gap-3 rounded-2xl bg-background p-4">
+            <input
+              name="publicProfileEnabled"
+              type="checkbox"
+              checked={publicProfileEnabled}
+              onChange={(e) => setPublicProfileEnabled(e.target.checked)}
+              className="mt-1 size-4 accent-primary"
+            />
+            <span className="flex flex-col gap-1">
+              <span className="font-semibold text-sm">Perfil público na comunidade kids</span>
+              <span className="text-muted-foreground text-xs">
+                Mostra nome, avatar, conquistas e quarto para outras crianças. Nunca mostra e-mail,
+                telefone ou nascimento.
+              </span>
             </span>
-          </span>
-        </label>
+          </label>
 
-        <div className="flex items-center justify-between gap-3">
-          {profile ? (
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={busy}
-              onClick={() => onArchive(profile)}
-              className="text-destructive"
-            >
-              <Trash2 className="size-4" /> Remover
-            </Button>
-          ) : (
-            <span />
-          )}
-          <div className="flex gap-3">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={busy || trimmedName.length < 3 || ageRestricted}>
-              {busy ? <Spinner className="size-4" /> : 'Salvar'}
-            </Button>
+          {/* Os botões em pílula, como no resto do app (o ui desenha cantos de 8px). */}
+          <div className="flex items-center justify-between gap-3 [&_button]:min-h-11 [&_button]:rounded-full [&_button]:px-5">
+            {profile ? (
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={busy}
+                onClick={() => onArchive(profile)}
+                className="text-destructive"
+              >
+                <Trash2 className="size-4" /> Remover
+              </Button>
+            ) : (
+              <span />
+            )}
+            <div className="flex gap-3">
+              <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={busy || trimmedName.length < 3 || ageRestricted}>
+                {busy ? <Spinner className="size-4" /> : 'Salvar'}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
-    </main>
+        </form>
+      </section>
+    </KidsScreen>
   )
 }
 

@@ -33,7 +33,8 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Comunidade',
     icon: MessagesSquare,
     match: ['/mural-dos-criadores', '/clube-dos-criadores', '/ranking'],
-    inner: ['/recados'],
+    // O perfil de OUTRA criança (`/crianca/<id>`) chega do Mural, do Clube e do Ranking.
+    inner: ['/recados', '/crianca'],
     backLabel: 'Voltar à Comunidade',
   },
   {

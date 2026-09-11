@@ -5,8 +5,10 @@ import { LogOut, RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { KIDS_SCREEN_BAND } from '@/components/kids/kids-screen'
 import { KidsMascot } from '@/components/kids/mascot'
 import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { KidsRecado } from './kids-recado'
 
 /** Logout reutilizável nos estados normais e terminais da grade de perfis. */
 export function ProfileLogoutButton({
@@ -48,6 +50,9 @@ export function ProfileLogoutButton({
  * A lista de perfis não pôde ser carregada. Esse estado é diferente de uma conta
  * realmente sem perfis: orientar a criação aqui poderia gerar duplicatas quando
  * o serviço se recuperar.
+ *
+ * No molde das telas de recado (`KidsRecado`, 11/09/2026), numa tela inteira: a faixa
+ * creme de cima a baixo, o cartão branco e os botões em pílula.
  */
 export function ProfilesUnavailable({
   reason = 'profiles',
@@ -58,24 +63,30 @@ export function ProfilesUnavailable({
   const allowanceUnavailable = reason === 'allowance'
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-4 py-12 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
-      <h1 className="sz-display mt-4 text-2xl text-foreground">
-        {allowanceUnavailable
-          ? 'Não foi possível verificar o acesso'
-          : 'Não foi possível carregar os perfis'}
-      </h1>
-      <p className="mt-3 text-muted-foreground">
-        {allowanceUnavailable
-          ? 'Pode ser uma instabilidade momentânea. Tente novamente antes de criar o primeiro perfil.'
-          : 'Pode ser uma instabilidade momentânea. Tente novamente para ver os perfis da sua família.'}
-      </p>
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <Button className="min-h-11" onClick={() => router.refresh()}>
-          <RefreshCw className="size-4" /> Tentar de novo
-        </Button>
-        <ProfileLogoutButton className="min-h-11" />
-      </div>
+    <main className="flex min-h-dvh flex-col">
+      <KidsRecado
+        bandClassName={KIDS_SCREEN_BAND}
+        art={<KidsMascot expression="thinking" className="size-24" />}
+        title={
+          allowanceUnavailable
+            ? 'Não foi possível verificar o acesso'
+            : 'Não foi possível carregar os perfis'
+        }
+        actions={
+          <>
+            <button type="button" className="sz-btn-gradient" onClick={() => router.refresh()}>
+              <RefreshCw className="size-4" aria-hidden /> Tentar de novo
+            </button>
+            <ProfileLogoutButton className="min-h-11 rounded-full" />
+          </>
+        }
+      >
+        <p>
+          {allowanceUnavailable
+            ? 'Pode ser uma instabilidade momentânea. Tente novamente antes de criar o primeiro perfil.'
+            : 'Pode ser uma instabilidade momentânea. Tente novamente para ver os perfis da sua família.'}
+        </p>
+      </KidsRecado>
     </main>
   )
 }
@@ -85,32 +96,41 @@ export function ProfilesNotIncluded() {
   const router = useRouter()
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center px-4 py-12 text-center">
-      <KidsMascot expression="thinking" className="size-24" />
-      <h1 className="sz-display mt-4 text-2xl text-foreground">Nenhum perfil liberado ainda</h1>
-      <p className="mt-3 text-muted-foreground">
-        Esta conta ainda não tem um acesso Kids que libere perfis para as crianças. Conheça a
-        Comunidade dos Criadores. Se você acabou de comprar, toque em "Já comprei".
-      </p>
-      {/* O CTA é a ação principal e o rótulo é longo: fica sozinho em largura total (padrão do
-          `KidsLockedProduct`). Dividir a linha com os secundários espremia a pílula, porque os
-          `<Button>` do ui têm `shrink-0`/`whitespace-nowrap` e só o `<a>` encolhia. */}
-      <div className="mt-6 flex w-full flex-col items-stretch gap-3">
-        <a
-          href={COMUNIDADE_OFERTA_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex min-h-12 w-full items-center justify-center rounded-full bg-primary px-6 py-3 text-center font-bold text-primary-foreground focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
-        >
-          Conhecer a Comunidade dos Criadores
-        </a>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button variant="outline" className="min-h-11" onClick={() => router.refresh()}>
-            <RefreshCw className="size-4" /> Já comprei
-          </Button>
-          <ProfileLogoutButton className="min-h-11" />
-        </div>
-      </div>
+    <main className="flex min-h-dvh flex-col">
+      <KidsRecado
+        bandClassName={KIDS_SCREEN_BAND}
+        art={<KidsMascot expression="thinking" className="size-24" />}
+        title="Nenhum perfil liberado ainda"
+        actions={
+          // O CTA é a ação principal e o rótulo é longo: fica sozinho em largura total (padrão
+          // do `KidsLockedProduct`). Dividir a linha com os secundários espremia a pílula.
+          <div className="flex w-full flex-col items-stretch gap-3">
+            <a
+              href={COMUNIDADE_OFERTA_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sz-btn-gradient h-12 w-full px-6 text-base"
+            >
+              Conhecer a Comunidade dos Criadores
+            </a>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                type="button"
+                className="sz-btn-gradient sz-btn-contorno"
+                onClick={() => router.refresh()}
+              >
+                <RefreshCw className="size-4" aria-hidden /> Já comprei
+              </button>
+              <ProfileLogoutButton className="min-h-11 rounded-full" />
+            </div>
+          </div>
+        }
+      >
+        <p>
+          Esta conta ainda não tem um acesso Kids que libere perfis para as crianças. Conheça a
+          Comunidade dos Criadores. Se você acabou de comprar, toque em "Já comprei".
+        </p>
+      </KidsRecado>
     </main>
   )
 }

@@ -1,46 +1,45 @@
-import { Card } from '@sistemazero/ui/card'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { KidsBand } from '@/components/kids/kids-band'
 
-// Chaves estáveis dos cards-fantasma (evita usar o índice do array como key).
-const CARD_KEYS = ['s1', 's2', 's3', 's4', 's5', 's6']
+// Chaves estáveis dos cartões-fantasma (evita usar o índice do array como key).
+const CARD_KEYS = ['s1', 's2', 's3', 's4']
 
 /**
- * Esqueleto de carregamento das páginas do app kids — fallback de Suspense do Next
- * (aparece na navegação/carga enquanto o Server Component busca os dados), no lugar
- * de um "Carregando…" solto. Formato genérico: título + grade de cards (cobre
- * home/cursos/comunidade); some assim que o conteúdo real chega. A sidebar/top bar
- * do layout ficam fixas. Acessibilidade: região `aria-busy` + aviso sr-only.
+ * Esqueleto das páginas do app kids que não têm um próprio (Início, Criar, Comunidade,
+ * Carreira, Trilha, Recados...): fallback de Suspense do Next enquanto o Server Component
+ * busca os dados, no lugar de um "Carregando…" solto.
+ *
+ * Imita a régua das telas-modelo (11/09/2026), que todas elas seguem: o cabeçalho (chip,
+ * título e frase) com o bloco do herói no creme, uma faixa de cartões e o cartão de
+ * fechamento no lilás. As faixas já chegam na cor certa, para a tela não piscar branca nem
+ * "pular" quando a página real chega. A sidebar e a top bar do layout ficam fixas.
  */
 export default function AppLoading() {
   return (
-    // A cor da faixa entra JÁ no esqueleto: sem ela a tela pisca branca antes de
-    // a página real chegar com o creme, e o salto é bem visível.
-    <KidsBand tone="creme" innerClassName="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
-      <span aria-busy="true" className="sr-only">
+    <div aria-busy="true" className="contents">
+      <span role="status" className="sr-only">
         Carregando…
       </span>
-      {/* Cabeçalho */}
-      <div className="flex flex-col gap-2">
-        <Skeleton className="h-7 w-52" />
-        <Skeleton className="h-4 w-72 max-w-full" />
-      </div>
-      {/* Grade de cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {CARD_KEYS.map((key) => (
-          <Card key={key} className="overflow-hidden p-0">
-            <Skeleton className="aspect-video w-full rounded-none" />
-            <div className="flex flex-col gap-3 p-4">
-              <Skeleton className="h-5 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <div className="mt-1 flex items-center justify-between border-t border-border pt-3">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-8 w-24 rounded-full" />
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
-    </KidsBand>
+      <KidsBand tone="creme">
+        <Skeleton className="h-[1.875rem] w-40 rounded-full" />
+        <Skeleton className="mt-3 h-12 w-72 max-w-full" />
+        <Skeleton className="mt-3 h-5 w-96 max-w-full" />
+        <Skeleton className="mt-7 h-44 w-full rounded-[1.75rem] md:h-40" />
+      </KidsBand>
+      <KidsBand tone="menta">
+        <div className="pt-3">
+          <Skeleton className="h-9 w-56 max-w-full" />
+          <Skeleton className="mt-3 h-5 w-80 max-w-full" />
+        </div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {CARD_KEYS.map((key) => (
+            <Skeleton key={key} className="h-52 rounded-[1.5rem]" />
+          ))}
+        </div>
+      </KidsBand>
+      <KidsBand tone="lilas">
+        <Skeleton className="h-28 w-full rounded-[1.5rem]" />
+      </KidsBand>
+    </div>
   )
 }

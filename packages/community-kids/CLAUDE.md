@@ -1028,6 +1028,31 @@ cascas `kids-*-unavailable`). Antes cada uma escrevia a coluna à mão, e quatro
 (duas sem faixa, três tamanhos de título, dois botões). ⚠️ O `KidsAccessUnavailable` fica SEM a
 pílula do motivo, de propósito: é a nossa conexão que tropeçou, não algo a festejar nem a explicar.
 
+### As telas fora do `(app)` e os estados de erro (11/09/2026)
+
+Também sem imagem-modelo, na mesma régua. Uma tela INTEIRA fora do grupo `(app)` (a grade de
+perfis, o formulário e as compras dos pais, `/responsavel`, o Atendimento) usa **`KidsScreen`**
+(`kids-screen.tsx`): um `<main>` com uma faixa só, do topo ao pé. A classe da faixa,
+`KIDS_SCREEN_BAND`, anula o `last:-mb-24 last:pb-24` da `KidsBand` (fora do `(app)` não há barra de
+abas por baixo, e a margem abriria 96px de rolagem à toa) e centra o conteúdo na altura;
+`align="start"` deixa as telas de LISTA no alto. As telas de recado inteiras (`ProfilesUnavailable`,
+`ProfilesNotIncluded`, o 404 da raiz e os `error.tsx` do `/jogar` e do `/validar`) passam a mesma
+classe pelo `bandClassName` do `KidsRecado`.
+- O `error.tsx` do `(app)` e a validação do certificado (`/validar/[id]`) também são `KidsRecado`,
+  sem a pílula do motivo (foi a gente que tropeçou, ou é um veredito). O `global-error.tsx` fica
+  de fora: ele não recebe o `globals.css`.
+- Entrar, esqueci e redefinir: o `Card` do ui com `AUTH_CARD`/`AUTH_TITLE` (`auth-card.ts`). O
+  `Card` pinta com utilitárias, então o `.kids-carta` (em camada) perderia para elas. O painel de
+  marca virou o herói azul (`.kids-marca`), sem as bolhas e as estrelinhas.
+- Os `Button` do ui nessas telas ganham a pílula e os 44px pelo CONTÊINER
+  (`[&_button]:min-h-11 [&_button]:rounded-full`): o ui desenha 36px com cantos de 8px, e o
+  `perfis-client` está a poucas linhas do teto de 600 do `component-boundaries`.
+- Perfil público (`/crianca/[id]`): herói azul como o do Meu perfil, e a seta volta para a
+  Comunidade (`inner` do item no `nav.ts`). O Quarto ganhou cabeçalho com a seta para Meu espaço
+  (`quarto-header.tsx`, o mesmo no `loading.tsx`).
+- Esqueletos (`loading.tsx`): imitam a página que carregam (as mesmas faixas e o formato dos
+  cartões), para a tela não pular quando os dados chegam.
+
 ### Mural e Clube no desenho das telas-modelo (11/09/2026)
 
 As peças de moldura moram em `kids-space-sections.tsx` (cabeçalhos, painel "CANAIS", fechamentos);

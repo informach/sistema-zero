@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { AUTH_CARD, AUTH_TITLE } from '@/components/kids/auth-card'
 
 const Schema = z
   .object({
@@ -36,9 +37,9 @@ export function ResetForm({ token }: { token: string }) {
 
   if (!token) {
     return (
-      <Card className="w-full">
+      <Card className={AUTH_CARD}>
         <CardHeader>
-          <CardTitle className="text-xl">Link inválido</CardTitle>
+          <CardTitle className={AUTH_TITLE}>Link inválido</CardTitle>
           <CardDescription>
             Este link de redefinição está incompleto. Solicite um novo em "Esqueci minha senha".
           </CardDescription>
@@ -89,9 +90,9 @@ export function ResetForm({ token }: { token: string }) {
   }
 
   return (
-    <Card className="w-full">
+    <Card className={AUTH_CARD}>
       <CardHeader>
-        <CardTitle className="text-xl">Definir senha</CardTitle>
+        <CardTitle className={AUTH_TITLE}>Definir senha</CardTitle>
         <CardDescription>Crie a senha de acesso à sua área de aluno.</CardDescription>
       </CardHeader>
       <CardContent>
@@ -114,7 +115,7 @@ export function ResetForm({ token }: { token: string }) {
               aria-invalid={Boolean(errors.confirm)}
             />
           </Field>
-          <Button type="submit" disabled={loading} className="mt-2">
+          <Button type="submit" disabled={loading} className="mt-2 h-11">
             {loading ? <Spinner /> : null}
             Salvar senha
           </Button>

@@ -14,6 +14,7 @@ describe('backToSection', () => {
     ['/ranking', '/comunidade', 'Voltar à Comunidade'],
     ['/recados', '/comunidade', 'Voltar à Comunidade'],
     ['/recados/conversa-1', '/comunidade', 'Voltar à Comunidade'],
+    ['/crianca/perfil-1', '/comunidade', 'Voltar à Comunidade'],
     ['/estudio', '/criar', 'Voltar para Criar'],
     ['/estudio/pro/projeto-1', '/criar', 'Voltar para Criar'],
     ['/pinta', '/criar', 'Voltar para Criar'],

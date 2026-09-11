@@ -2,6 +2,10 @@ import type { CertificateValidationView } from '@sistemazero/member-shell/lib/ty
 import { BadgeCheck, RefreshCw, ShieldAlert } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import type { ReactNode } from 'react'
+import { KidsRecado } from '@/components/kids/kids-recado'
+import { KIDS_SCREEN_BAND } from '@/components/kids/kids-screen'
+import { cn } from '@/lib/cn'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -62,89 +66,107 @@ export default async function ValidarPage({ params }: { params: Promise<{ id: st
       : NOT_VALID
   const revoked = !v.valid && v.revoked
 
-  return (
-    <main className="flex min-h-dvh items-center justify-center bg-background p-6">
-      <div className="w-full max-w-md rounded-3xl border-2 border-border bg-card p-8 text-center shadow-[0_6px_0_var(--border)]">
-        {serviceError ? (
-          <>
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
-              <RefreshCw className="size-9" aria-hidden />
-            </div>
-            <h1 className="sz-display text-2xl font-bold text-foreground">
-              Não foi possível validar agora
-            </h1>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Tivemos um tropeço ao conferir este certificado. Recarregue a página em alguns
-              instantes.
-            </p>
-          </>
-        ) : v.valid ? (
-          <>
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-primary/15 text-primary">
+  // No molde das telas de recado (`KidsRecado`, 11/09/2026): a faixa creme de cima a
+  // baixo e o cartão branco no meio. O círculo do veredito é a arte do cartão.
+  const content = serviceError
+    ? {
+        art: (
+          <VerdictCircle className="bg-background text-muted-foreground">
+            <RefreshCw className="size-9" aria-hidden />
+          </VerdictCircle>
+        ),
+        title: 'Não foi possível validar agora',
+        body: (
+          <p>
+            Tivemos um tropeço ao conferir este certificado. Recarregue a página em alguns
+            instantes.
+          </p>
+        ),
+      }
+    : v.valid
+      ? {
+          art: (
+            <VerdictCircle className="kids-marca">
               <BadgeCheck className="size-9" aria-hidden />
-            </div>
-            <h1 className="sz-display text-2xl font-bold text-foreground">
-              Certificado válido! 🎉
-            </h1>
-            <p className="mt-4 text-base text-foreground">
-              <strong>{v.studentName}</strong> concluiu
-            </p>
-            <p className="text-lg font-bold text-primary">{v.courseTitle}</p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Emitido pelo Sistema Zero em {formatDate(v.issuedAt)}
-            </p>
-            {v.serial ? (
-              <p className="mt-4 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                Nº {v.serial}
-              </p>
-            ) : null}
-          </>
-        ) : revoked ? (
-          <>
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-              <ShieldAlert className="size-9" aria-hidden />
-            </div>
-            <h1 className="sz-display text-2xl font-bold text-foreground">Certificado revogado</h1>
-            <p className="mt-4 text-base text-foreground">
-              {v.studentName ? (
-                <>
+            </VerdictCircle>
+          ),
+          title: 'Certificado válido! 🎉',
+          body: (
+            <>
+              <div>
+                <p className="text-foreground">
                   <strong>{v.studentName}</strong> concluiu
-                </>
-              ) : (
-                'Este certificado foi emitido'
-              )}
-            </p>
-            {v.courseTitle ? (
-              <p className="text-lg font-bold text-primary">{v.courseTitle}</p>
-            ) : null}
-            <p className="mt-3 text-sm text-muted-foreground">
-              Este certificado foi revogado e não é mais válido.
-            </p>
-            {v.revokedAt ? (
-              <p className="mt-2 text-xs text-muted-foreground">
-                Revogado em {formatDate(v.revokedAt)}
-              </p>
-            ) : null}
-            {v.serial ? (
-              <p className="mt-4 rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-                Nº {v.serial}
-              </p>
-            ) : null}
-          </>
-        ) : (
-          <>
-            <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-              <ShieldAlert className="size-9" aria-hidden />
-            </div>
-            <h1 className="sz-display text-2xl font-bold text-foreground">
-              Certificado não encontrado
-            </h1>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Este certificado não existe ou não é mais válido. Confira o código do QR.
-            </p>
-          </>
-        )}
-      </div>
+                </p>
+                <p className="font-bold text-lg text-primary">{v.courseTitle}</p>
+              </div>
+              <p className="text-sm">Emitido pelo Sistema Zero em {formatDate(v.issuedAt)}</p>
+              {v.serial ? <Serial serial={v.serial} /> : null}
+            </>
+          ),
+        }
+      : revoked
+        ? {
+            art: (
+              <VerdictCircle className="bg-destructive/15 text-destructive">
+                <ShieldAlert className="size-9" aria-hidden />
+              </VerdictCircle>
+            ),
+            title: 'Certificado revogado',
+            body: (
+              <>
+                <div>
+                  <p className="text-foreground">
+                    {v.studentName ? (
+                      <>
+                        <strong>{v.studentName}</strong> concluiu
+                      </>
+                    ) : (
+                      'Este certificado foi emitido'
+                    )}
+                  </p>
+                  {v.courseTitle ? (
+                    <p className="font-bold text-lg text-primary">{v.courseTitle}</p>
+                  ) : null}
+                </div>
+                <p className="text-sm">Este certificado foi revogado e não é mais válido.</p>
+                {v.revokedAt ? (
+                  <p className="text-xs">Revogado em {formatDate(v.revokedAt)}</p>
+                ) : null}
+                {v.serial ? <Serial serial={v.serial} /> : null}
+              </>
+            ),
+          }
+        : {
+            art: (
+              <VerdictCircle className="bg-destructive/15 text-destructive">
+                <ShieldAlert className="size-9" aria-hidden />
+              </VerdictCircle>
+            ),
+            title: 'Certificado não encontrado',
+            body: <p>Este certificado não existe ou não é mais válido. Confira o código do QR.</p>,
+          }
+
+  return (
+    <main className="flex min-h-dvh flex-col">
+      <KidsRecado bandClassName={KIDS_SCREEN_BAND} art={content.art} title={content.title}>
+        {content.body}
+      </KidsRecado>
     </main>
+  )
+}
+
+function VerdictCircle({ className, children }: { className: string; children: ReactNode }) {
+  return (
+    <div className={cn('flex size-16 items-center justify-center rounded-full', className)}>
+      {children}
+    </div>
+  )
+}
+
+function Serial({ serial }: { serial: string }) {
+  return (
+    <p className="rounded-full bg-background px-3 py-1 text-muted-foreground text-xs">
+      Nº {serial}
+    </p>
   )
 }

@@ -85,9 +85,9 @@ export function AmbassadorCard() {
 
   return (
     <section className="w-full max-w-2xl">
-      <div className="rounded-2xl border-2 border-border bg-card p-4">
+      <div className="kids-carta p-5 md:p-6">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <span className="kids-marca flex size-11 shrink-0 items-center justify-center rounded-xl">
             <Gift className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
@@ -118,7 +118,7 @@ export function AmbassadorCard() {
                     chave: sem ela o pagamento fica parado esperando.
                   </p>
                 ) : null}
-                <div className="mt-3 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2 [&_a]:rounded-full [&_button]:rounded-full">
                   {view.ambassador.shareUrl ? (
                     <Button
                       variant="outline"
@@ -174,7 +174,12 @@ export function AmbassadorCard() {
                   renda garantida e não cria vínculo com a plataforma.
                 </p>
                 <div className="mt-3">
-                  <Button size="sm" onClick={() => void enroll()} disabled={enrolling}>
+                  <Button
+                    size="sm"
+                    className="rounded-full px-4"
+                    onClick={() => void enroll()}
+                    disabled={enrolling}
+                  >
                     {enrolling ? 'Cadastrando…' : 'Quero ser embaixador(a)'}
                   </Button>
                 </div>

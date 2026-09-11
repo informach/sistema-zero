@@ -445,7 +445,7 @@ export function AvatarConfigurator({
                     type="button"
                     onClick={cancelPendingBuy}
                     disabled={!!busy}
-                    className="inline-flex h-11 items-center rounded-full border-2 border-border bg-card px-4 font-semibold text-muted-foreground text-sm"
+                    className="sz-btn-gradient sz-btn-contorno h-11 px-4 text-sm"
                   >
                     Deixar para depois
                   </button>

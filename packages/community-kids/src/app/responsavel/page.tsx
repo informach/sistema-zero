@@ -1,3 +1,4 @@
+import { HeartHandshake } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import {
@@ -5,6 +6,8 @@ import {
   FamilyAiCredits,
   ParentSupportCard,
 } from '@/app/perfis/parent-dashboard'
+import { KidsEyebrow } from '@/components/kids/kids-eyebrow'
+import { KidsScreen } from '@/components/kids/kids-screen'
 import { isParentVerifiedFor } from '@/server/parent-gate'
 import { getSession } from '@/server/session'
 
@@ -17,44 +20,39 @@ export default async function ResponsavelPage() {
   if (session.activeProfile || !(await isParentVerifiedFor(session.id)))
     redirect('/perfis?manage=1')
   return (
-    <main className="mx-auto flex max-w-4xl flex-col items-center gap-7 px-4 py-8 md:px-8">
+    <KidsScreen align="start" innerClassName="flex max-w-4xl flex-col items-center gap-7">
       <header className="w-full max-w-2xl">
-        <p className="text-sm font-semibold text-primary">Área dos responsáveis</p>
-        <h1 className="mt-2 text-3xl font-bold">Acompanhe as descobertas</h1>
-        <p className="mt-3 text-muted-foreground">
+        <KidsEyebrow icon={HeartHandshake}>Área dos responsáveis</KidsEyebrow>
+        <h1 className="sz-display mt-3 text-[clamp(2rem,3.4vw,2.8125rem)]">
+          Acompanhe as descobertas
+        </h1>
+        <p className="mt-2.5 font-medium text-[1.0625rem] text-muted-foreground">
           Veja o que cada criança está criando, as conquistas da carreira e o próximo passo. Uma boa
           conversa começa pedindo que ela mostre como fez o jogo.
         </p>
-        <nav
-          aria-label="Área dos responsáveis"
-          className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold"
-        >
-          <Link
-            href="/perfis"
-            prefetch={false}
-            className="inline-flex min-h-11 items-center text-primary"
-          >
+        <nav aria-label="Área dos responsáveis" className="mt-5 flex flex-wrap gap-2">
+          <Link href="/perfis" prefetch={false} className="sz-btn-gradient sz-btn-contorno">
             Escolher uma criança
           </Link>
           <Link
             href="/perfis?manage=1"
             prefetch={false}
-            className="inline-flex min-h-11 items-center text-primary"
+            className="sz-btn-gradient sz-btn-contorno"
           >
             Gerenciar perfis e conta
           </Link>
           <Link
             href="/responsavel/ajuda"
             prefetch={false}
-            className="inline-flex min-h-11 items-center text-primary"
+            className="sz-btn-gradient sz-btn-contorno"
           >
             Atendimento
           </Link>
         </nav>
       </header>
       <ChildrenDashboard avatarPhotoByProfile={{}} />
-      <section className="w-full max-w-2xl rounded-2xl border border-border bg-card p-5">
-        <h2 className="text-lg font-bold">Para conversar sobre uma criação</h2>
+      <section className="kids-carta w-full max-w-2xl p-5 md:p-6">
+        <h2 className="sz-display text-xl">Para conversar sobre uma criação</h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>Que ideia você quis colocar neste jogo?</li>
           <li>O que precisou testar ou mudar para funcionar?</li>
@@ -63,6 +61,6 @@ export default async function ResponsavelPage() {
       </section>
       <FamilyAiCredits />
       <ParentSupportCard />
-    </main>
+    </KidsScreen>
   )
 }
