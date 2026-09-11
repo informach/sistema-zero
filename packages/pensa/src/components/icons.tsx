@@ -132,3 +132,32 @@ export function CubeIcon({ size }: IconProps) {
     </Icon>
   )
 }
+
+/** O visto (etapa vencida no mapa). */
+export function CheckIcon({ size }: IconProps) {
+  return (
+    <Icon size={size}>
+      <path d="M20 6 9 17l-5-5" />
+    </Icon>
+  )
+}
+
+/** O visto no círculo (o "Plano aprovado!"). */
+export function CircleCheckIcon({ size }: IconProps) {
+  return (
+    <Icon size={size}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </Icon>
+  )
+}
+
+/** O olho do "Você está revendo uma etapa". */
+export function EyeIcon({ size }: IconProps) {
+  return (
+    <Icon size={size}>
+      <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+      <circle cx="12" cy="12" r="3" />
+    </Icon>
+  )
+}

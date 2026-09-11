@@ -102,6 +102,40 @@ do `.pensa-planner`.
   `components/PensaApp.hostChrome.test.tsx` (a seta), `styles/tokens.test.ts` e
   `styles/headingFont.test.ts`.
 
+## A tela do plano das telas-modelo (11/09/2026)
+
+O detalhe de um plano segue a segunda imagem-modelo dela (lote 7, passo 8), nas faixas
+(`.pensa-plan.sz-tool-bands`):
+- **creme** (`.pensa-plan-top`): o `ProjectHeader` no `.sz-tool-header` das galerias ([menu][voltar]
+  com o "voltar" no quadrado `.sz-tool-icon-btn`, nome "Voltar aos meus planos"; "VERSÃO N" em
+  `.sz-tool-kicker` e o nome no h1 `.sz-tool-title`; à direita os créditos e a pílula do andamento
+  `.sz-tool-status`, menta com `--ok` quando aprovado); o **mapa ZERO** em quatro cartões brancos
+  (vencida = visto no ladrilho verde e botão de rever, atual = fio azul, revista = fio e halo; a
+  descrição quebra em até duas linhas); e o **aviso de "revendo"** (`PeekBanner`, que saiu de
+  dentro do `StagePeek`) como o cartão branco que fecha a faixa, com o MESMO `role="status"`, o
+  mesmo texto e o mesmo nome do botão ("Voltar para o meu plano" / "Voltar para a etapa atual"),
+  agora em pílula de contorno azul.
+- **céu**: a etapa (`StageTitle`: o ladrilho AZUL chapado com a letra, sem o degradê 3D, e o h2
+  `.sz-tool-section-title`), a conversa em cartão branco (a fala da criança no azul da marca, a do
+  Zappy no cinza, "VOCÊ"/"ZAPPY" em sobretítulo), o artefato em cartão branco com o `dl` em
+  cartõezinhos cinza de duas colunas; ou o "Meu plano" (o `.pensa-approved` virou cartão branco com
+  o visto no ladrilho menta). Os cartões da etapa e das tarefas perderam a borda de 2px (o fio só
+  aparece no escuro e na próxima tarefa, verde); os botões de ação (`.pensa-generate`,
+  `.pensa-primary-action`, `.pensa-new-version`) viraram a pílula chapada azul, e os de tarefa e
+  artefato, pílulas. ⚠️ Esses três levam `.pensa-planner` na frente: o `font: inherit` dos botões
+  (0,1,1) vencia o peso deles, e o rótulo saía no peso do corpo (defeito antigo).
+- **lilás** (só com as quatro etapas vencidas, `ApprovedBand`): "Plano aprovado! Agora é só
+  construir.", quantos cartões foram para cada oficina (`Estúdio · N`, `Pinta · N`, `Molda · N`,
+  contados de `tasks[].destination`; oficina sem cartão não aparece; "cartões" em `sr-only`) e o
+  **"Ver os Cartões de Criação"**, que fecha o peek e, depois que o "Meu plano" volta, rola até a
+  lista (`scrollIntoView`, `auto` com `prefers-reduced-motion`) e leva o FOCO até ela (a âncora
+  `.pensa-cards-anchor`, `tabIndex={-1}`, fora da ordem do Tab). O pedido é um contador de estado
+  (`cardsRequest`) e o efeito roda depois da renderização que remonta a lista.
+- A regra de largura contida do detalhe (`width: calc(100% - 48px)`) saiu, como a da home: o
+  respiro vem do `.sz-tool-band__inner`. O `.pensa-alert` perdeu a largura própria.
+- Testes: `components/PensaApp.plan.test.tsx` (as faixas, o cabeçalho, o aviso na faixa creme, a
+  contagem por oficina e o foco na lista) e os de peek do `PensaApp.test.tsx`, que seguem iguais.
+
 ## Cartão de Criação
 
 Uma tarefa carrega destino, categoria, estimativa, posição global, dependências, guia e progresso. Os IDs de passos e critérios permanecem estáveis entre Pensa, Pinta e Estúdio.

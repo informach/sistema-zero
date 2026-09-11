@@ -12,6 +12,7 @@ import type {
   PensaProjectListView,
   PensaStage,
   PensaStageView,
+  PensaTaskView,
   PensaWorkStage,
   PensaZState,
 } from '../core/types'
@@ -20,7 +21,10 @@ import { ArrowLeftIcon, HostBackLink, HostMenuButton, usePensaHostChrome } from 
 import {
   ArrowRightIcon,
   BlocksIcon,
+  CheckIcon,
+  CircleCheckIcon,
   CubeIcon,
+  EyeIcon,
   FlagIcon,
   LightbulbIcon,
   PaletteIcon,
@@ -123,6 +127,19 @@ export function PensaApp({
   const [peekView, setPeekView] = useState<PensaStageView | null>(null)
   const [peekError, setPeekError] = useState<string | null>(null)
   const peekRef = useRef<PensaWorkStage | null>(null)
+  // "Ver os Cartões de Criação" (a faixa lilás do plano aprovado): fecha o peek e, DEPOIS que o
+  // "Meu plano" volta à tela, rola até a lista dos cartões e leva o foco para ela. O contador é o
+  // pedido; o efeito roda depois da renderização que remonta a lista.
+  const cardsRef = useRef<HTMLDivElement | null>(null)
+  const [cardsRequest, setCardsRequest] = useState(0)
+  useEffect(() => {
+    if (!cardsRequest) return
+    const target = cardsRef.current
+    if (!target) return
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    target.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    target.focus({ preventScroll: true })
+  }, [cardsRequest])
 
   const loadProjects = useCallback(async () => {
     setLoading(true)
@@ -244,41 +261,149 @@ export function PensaApp({
         },
       )
   }
+  const approved = detail.currentCycle.stage === 'done'
+  const seeCards = () => {
+    closePeek()
+    setCardsRequest((value) => value + 1)
+  }
+  // A tela do plano nas faixas das telas-modelo (11/09/2026): creme com o cabeçalho, o mapa ZERO
+  // e o aviso de "revendo"; céu com a etapa (ou o "Meu plano"); lilás com o "Plano aprovado!"
+  // quando as quatro etapas estão vencidas.
   return (
     <Shell theme={adapter.theme}>
-      <ProjectHeader detail={detail} credits={stage?.credits} onBack={() => void loadProjects()} />
-      {error ? <Alert>{error}</Alert> : null}
-      <CreationMap
-        current={detail.currentCycle.stage}
-        peek={peek}
-        onPeek={openPeek}
-        onExitPeek={closePeek}
-      />
-      {peek ? (
-        <StagePeek
-          adapter={adapter}
-          detail={detail}
-          stageId={peek}
-          view={peekView}
-          error={peekError}
-          busy={busy}
-          run={run}
-          refresh={refresh}
-          onClose={closePeek}
-        />
-      ) : stage ? (
-        <StageWorkspace
-          adapter={adapter}
-          detail={detail}
-          stage={stage}
-          busy={busy}
-          run={run}
-          refresh={refresh}
-        />
-      ) : (
-        <Status>Carregando esta parte do plano…</Status>
-      )}
+      <div className="pensa-plan sz-tool-bands">
+        <header className="sz-tool-band sz-tool-band--creme">
+          <div className="sz-tool-band__inner pensa-plan-top">
+            <ProjectHeader
+              detail={detail}
+              credits={stage?.credits}
+              onBack={() => void loadProjects()}
+            />
+            {error ? <Alert>{error}</Alert> : null}
+            <CreationMap
+              current={detail.currentCycle.stage}
+              peek={peek}
+              onPeek={openPeek}
+              onExitPeek={closePeek}
+            />
+            {peek ? (
+              <PeekBanner
+                label={approved ? 'Voltar para o meu plano' : 'Voltar para a etapa atual'}
+                onClose={closePeek}
+              />
+            ) : null}
+          </div>
+        </header>
+        <div className="sz-tool-band sz-tool-band--ceu">
+          <div className="sz-tool-band__inner">
+            {peek ? (
+              <StagePeek
+                adapter={adapter}
+                detail={detail}
+                stageId={peek}
+                view={peekView}
+                error={peekError}
+                busy={busy}
+                run={run}
+                refresh={refresh}
+              />
+            ) : stage ? (
+              <StageWorkspace
+                adapter={adapter}
+                detail={detail}
+                stage={stage}
+                busy={busy}
+                run={run}
+                refresh={refresh}
+                cardsRef={cardsRef}
+              />
+            ) : (
+              <Status>Carregando esta parte do plano…</Status>
+            )}
+          </div>
+        </div>
+        {approved && stage ? <ApprovedBand tasks={stage.tasks} onSeeCards={seeCards} /> : null}
+      </div>
     </Shell>
+  )
+}
+
+/**
+ * O aviso de que a criança está REVENDO uma etapa vencida (no fim da faixa creme, como na
+ * imagem-modelo). O `role="status"`, o texto e o nome do botão são os de antes: o leitor de tela e
+ * os testes contam com eles.
+ */
+function PeekBanner({ label, onClose }: { label: string; onClose(): void }) {
+  return (
+    <div className="pensa-peek-banner" role="status">
+      <EyeIcon size={18} />
+      <span>Você está revendo uma etapa que já foi concluída.</span>
+      <button
+        type="button"
+        className="sz-tool-pill sz-tool-pill--outline pensa-peek-back"
+        onClick={onClose}
+      >
+        {label}
+      </button>
+    </div>
+  )
+}
+
+/** As oficinas na ordem da faixa lilás, com o ícone de cada uma. */
+const DESTINATIONS: Array<{
+  id: PensaTaskView['destination']
+  name: string
+  Icon: (props: { size?: number }) => React.ReactElement
+}> = [
+  { id: 'studio', name: 'Estúdio', Icon: BlocksIcon },
+  { id: 'pinta', name: 'Pinta', Icon: PaletteIcon },
+  { id: 'molda', name: 'Molda', Icon: CubeIcon },
+]
+
+/**
+ * A faixa lilás do plano APROVADO (a imagem-modelo): o recado, quantos cartões foram para cada
+ * oficina (contados dos cartões do plano; oficina sem cartão não aparece) e o "Ver os Cartões de
+ * Criação", que fecha o peek e rola até a lista.
+ */
+function ApprovedBand({ tasks, onSeeCards }: { tasks: PensaTaskView[]; onSeeCards(): void }) {
+  const counts = DESTINATIONS.map((item) => ({
+    ...item,
+    count: tasks.filter((task) => task.destination === item.id).length,
+  })).filter((item) => item.count > 0)
+  return (
+    <section aria-labelledby="pensa-approved-title" className="sz-tool-band sz-tool-band--lilas">
+      <div className="sz-tool-band__inner">
+        <div className="sz-tool-cta-card pensa-approved-cta">
+          <span className="sz-tool-tile sz-tool-tile--ok" aria-hidden="true">
+            <CircleCheckIcon size={24} />
+          </span>
+          <div className="sz-tool-cta-card__body">
+            <h2 id="pensa-approved-title" className="sz-tool-cta-card__title">
+              Plano aprovado! Agora é só construir.
+            </h2>
+            <p className="sz-tool-cta-card__text">
+              As quatro etapas do método ZERO estão concluídas. Os Cartões de Criação já foram
+              separados por oficina.
+            </p>
+            {counts.length ? (
+              <ul className="pensa-destination-chips">
+                {counts.map(({ id, name, count, Icon }) => (
+                  <li key={id} data-destination={id}>
+                    <Icon size={14} />
+                    {name} · {count}
+                    <span className="pensa-sr-only">{count === 1 ? ' cartão' : ' cartões'}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+          <button type="button" className="sz-tool-pill sz-tool-pill--primary" onClick={onSeeCards}>
+            Ver os Cartões de Criação
+            <ArrowRightIcon size={16} />
+          </button>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -638,26 +763,35 @@ function ProjectHeader({
   onBack(): void
 }) {
   const hostChrome = usePensaHostChrome()
+  const approved = detail.currentCycle.stage === 'done'
   return (
-    <header className="pensa-project-header">
-      {/* Menu da comunidade (host) e voltar: a MESMA receita compartilhada, o menu primeiro. */}
-      {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-      <button
-        type="button"
-        className="sz-tool-btn sz-tool-btn--icon"
-        onClick={onBack}
-        aria-label="Voltar aos meus planos"
-      >
-        <ArrowLeftIcon />
-      </button>
-      <div className="pensa-project-title">
-        <span>VERSÃO {detail.currentCycle.number}</span>
-        <h1 className="pensa-display">{detail.name}</h1>
+    // O cabeçalho das galerias (`.sz-tool-header`): [menu][voltar] + "VERSÃO N" e o nome à
+    // esquerda; os créditos e a pílula do andamento à direita (menta quando aprovado).
+    <header className="pensa-project-header sz-tool-header">
+      <div className="sz-tool-header__lead">
+        {/* Menu da comunidade (host) e voltar: o MESMO quadrado das galerias, o menu primeiro. */}
+        <div className="sz-tool-header__nav">
+          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+          <button
+            type="button"
+            className="sz-tool-icon-btn"
+            onClick={onBack}
+            aria-label="Voltar aos meus planos"
+          >
+            <ArrowLeftIcon />
+          </button>
+        </div>
+        <div className="pensa-project-title sz-tool-header__title">
+          <p className="sz-tool-kicker">VERSÃO {detail.currentCycle.number}</p>
+          <h1 className="sz-tool-title">{detail.name}</h1>
+        </div>
       </div>
-      <AiCreditsBadge credits={credits} />
-      <div className="pensa-plan-status">
-        <span aria-hidden="true">●</span>
-        {detail.currentCycle.stage === 'done' ? 'Plano aprovado' : 'Planejando'}
+      <div className="sz-tool-header__actions">
+        <AiCreditsBadge credits={credits} />
+        <p className={`sz-tool-status pensa-plan-status${approved ? ' sz-tool-status--ok' : ''}`}>
+          <span className="pensa-plan-status__dot" aria-hidden="true" />
+          {approved ? 'Plano aprovado' : 'Planejando'}
+        </p>
       </div>
     </header>
   )
@@ -680,7 +814,9 @@ function CreationMap(props: {
         const className = `pensa-map-node ${complete ? 'is-complete' : ''} ${isCurrent ? 'is-current' : ''} ${viewing ? 'is-viewing' : ''}`
         const inner = (
           <>
-            <span>{complete ? '✓' : item.letter}</span>
+            <span aria-hidden={complete ? true : undefined}>
+              {complete ? <CheckIcon size={18} /> : item.letter}
+            </span>
             <div>
               <strong>{item.title}</strong>
               <small>{item.description}</small>
@@ -821,29 +957,12 @@ function StagePeek(props: {
   busy: string | null
   run(key: string, action: () => Promise<void>): Promise<void>
   refresh(): Promise<void>
-  onClose(): void
 }) {
   const config = STAGES.find((item) => item.id === props.stageId)
   if (!config) return null
-  const backLabel =
-    props.detail.currentCycle.stage === 'done'
-      ? 'Voltar para o meu plano'
-      : 'Voltar para a etapa atual'
   return (
     <section className="pensa-workspace pensa-peek">
-      <div className="pensa-peek-banner" role="status">
-        <span>Você está revendo uma etapa que já foi concluída.</span>
-        <button type="button" onClick={props.onClose}>
-          {backLabel}
-        </button>
-      </div>
-      <div className="pensa-stage-title">
-        <span>{config.letter}</span>
-        <div>
-          <h2>{config.title}</h2>
-          <p>{config.description}</p>
-        </div>
-      </div>
+      <StageTitle config={config} />
       {props.error ? (
         <Alert>{props.error}</Alert>
       ) : props.view ? (
@@ -924,6 +1043,8 @@ function StageWorkspace(props: {
   busy: string | null
   run(key: string, action: () => Promise<void>): Promise<void>
   refresh(): Promise<void>
+  /** A lista dos cartões do "Meu plano" (o "Ver os Cartões de Criação" rola até ela). */
+  cardsRef?: React.RefObject<HTMLDivElement | null>
 }) {
   const current = props.detail.currentCycle.stage
   if (current === 'done') return <MyPlan {...props} />
@@ -938,13 +1059,7 @@ function StageWorkspace(props: {
     })
   return (
     <section className="pensa-workspace">
-      <div className="pensa-stage-title">
-        <span>{config.letter}</span>
-        <div>
-          <h2>{config.title}</h2>
-          <p>{config.description}</p>
-        </div>
-      </div>
+      <StageTitle config={config} />
       {current === 'z' ? <StageZ {...props} onAdvance={advance} /> : null}
       {current === 'e' ? <StageE {...props} onAdvance={advance} /> : null}
       {current === 'r' ? <StageR {...props} onAdvance={advance} /> : null}
@@ -953,7 +1068,20 @@ function StageWorkspace(props: {
   )
 }
 
-type StageProps = Parameters<typeof StageWorkspace>[0] & { onAdvance(): void }
+/** O título da etapa: o ladrilho azul com a letra e o nome no h2 da régua das galerias. */
+function StageTitle({ config }: { config: (typeof STAGES)[number] }) {
+  return (
+    <div className="pensa-stage-title">
+      <span aria-hidden="true">{config.letter}</span>
+      <div>
+        <h2 className="sz-tool-section-title">{config.title}</h2>
+        <p>{config.description}</p>
+      </div>
+    </div>
+  )
+}
+
+type StageProps = Omit<Parameters<typeof StageWorkspace>[0], 'cardsRef'> & { onAdvance(): void }
 
 function StageZ(props: StageProps) {
   const [message, setMessage] = useState('')
@@ -1986,7 +2114,11 @@ function MyPlan(props: Parameters<typeof StageWorkspace>[0]) {
           className="pensa-approved-zappy"
         />
       </div>
-      <TaskPlan {...props} editable />
+      {/* A âncora do "Ver os Cartões de Criação": foco programático (`tabIndex={-1}`), sem entrar
+          na ordem do Tab. */}
+      <div ref={props.cardsRef} tabIndex={-1} className="pensa-cards-anchor">
+        <TaskPlan {...props} editable />
+      </div>
       <div className="pensa-next-summary">
         {props.stage.nextTaskId
           ? 'A próxima tarefa pronta para começar está destacada.'

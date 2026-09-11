@@ -151,19 +151,9 @@
   outline: 3px solid var(--pz-accent);
   outline-offset: 3px;
 }
-.pensa-workspace,
-.pensa-project-header,
-.pensa-map {
-  /* Largura TOTAL, como a galeria do Pinta: sem o teto de 1160px, só o respiro
-     lateral. ⚠️ 48px = **24px de cada lado**, que é o `sm:p-6` da galeria do
-     Pinta e o `px-6` da `ProjectList` do Estúdio. Com os 32px de antes o
-     conteúdo do Pensa encostava na borda visivelmente mais que o dos irmãos.
-     (⚠️ regra compartilhada do detalhe — mexer aqui desloca os @container
-     820/560; re-verificar os dois pontos de quebra.) A HOME saiu daqui em 11/09/2026: ela é
-     a pilha de faixas de borda a borda, e o respiro vem do `.sz-tool-band__inner`. */
-  width: calc(100% - 48px);
-  margin-inline: auto;
-}
+/* ⚠️ A regra de largura contida (`width: calc(100% - 48px)`) da home e do detalhe SAIU em
+   11/09/2026: as duas telas são pilhas de faixas de borda a borda, e o respiro dos lados vem do
+   `.sz-tool-band__inner` (16/32/64px), o mesmo das galerias do Estúdio e do Pinta. */
 /* ── HOME (11/09/2026): as três faixas das telas-modelo ──────────────────────────────────
    A home é a pilha `.sz-tool-bands` de `@sistemazero/ui/tool-chrome.css`, a MESMA das galerias do
    Estúdio e do Pinta: creme com o cabeçalho, céu com os planos, lilás com as oficinas. O layout
@@ -284,37 +274,26 @@
   font-size: 1rem;
   font-weight: 700;
 }
-/* CTA "3D" azul (espelho do .sz-btn-gradient do kids e da `.sz-tool-btn-3d` compartilhada,
-   que a home usa desde 07/09/2026): gradiente + sombra dura que afunda no clique. Ações
-   afirmativas de concluir/aprovar seguem VERDES. */
-.pensa-generate,
-.pensa-primary-action,
-.pensa-new-version {
+/* As ações da etapa ("Criar a Carta da Ideia", "Ir para…", "Planejar uma nova versão") na
+   PÍLULA CHAPADA das telas-modelo (11/09/2026): o azul da marca cheio, sem o degradê e sem a
+   sombra dura do botão 3D de antes; o hover escurece. ⚠️ Com o `.pensa-planner` na frente: o
+   `font: inherit` dos botões (0,1,1) vencia o peso daqui, e o rótulo saía no peso do corpo. */
+.pensa-planner .pensa-generate,
+.pensa-planner .pensa-primary-action,
+.pensa-planner .pensa-new-version {
   border: 0;
   border-radius: 9999px;
-  color: var(--pz-on-fill);
-  background-image: var(--pz-gradient);
+  color: var(--sz-tool-on-cta, var(--pz-on-fill));
+  background: var(--sz-tool-cta, var(--pz-cta));
   padding: 12px 22px;
-  font-weight: 700;
+  font-weight: 800;
   white-space: nowrap;
-  box-shadow: 0 4px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
-  transition:
-    transform 0.12s ease,
-    box-shadow 0.12s ease,
-    filter 0.12s ease;
+  transition: background-color 0.12s ease;
 }
 .pensa-generate:hover:not(:disabled),
 .pensa-primary-action:hover:not(:disabled),
 .pensa-new-version:hover:not(:disabled) {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow: 0 5px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
-}
-.pensa-generate:active:not(:disabled),
-.pensa-primary-action:active:not(:disabled),
-.pensa-new-version:active:not(:disabled) {
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 color-mix(in oklab, var(--pz-cta) 60%, black);
+  background: color-mix(in oklab, var(--sz-tool-cta, var(--pz-cta)) 88%, var(--pz-ink));
 }
 /* Rodapé da faixa céu: "Mostrando N planos", o par do "Mostrando N de M projetos" do Estúdio. */
 .pensa-home-footer {
@@ -541,198 +520,195 @@
   border-radius: var(--sz-tool-radius-card-lg, 1.5rem);
   background: var(--pz-surface);
 }
-.pensa-project-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px 0 12px;
+/* ── TELA DO PLANO (11/09/2026): as faixas das telas-modelo ─────────────────────────────────
+   Creme com o cabeçalho (o `.sz-tool-header` das galerias), o mapa ZERO e o aviso de "revendo";
+   céu com a etapa; lilás com o "Plano aprovado!". Mesmo respiro da home no topo. */
+@media (min-width: 64rem) {
+  .pensa-plan-top {
+    padding-top: 3rem;
+    padding-bottom: 2.5rem;
+  }
 }
-/* O menu do host e o "voltar" são a receita COMPARTILHADA (`.sz-tool-btn-menu` e
-   `.sz-tool-btn.sz-tool-btn--icon` de `@sistemazero/ui/tool-chrome.css`, 07/09/2026): o
-   círculo de 46px que morava aqui saiu, e nenhuma regra `> button` pode ficar (sem camada,
-   ela venceria a receita). */
-/* Por CLASSE, não por posição: com o botão do menu do host antes do "voltar", o 2º
-   filho deixou de ser o bloco do título. */
-.pensa-project-header > .pensa-project-title {
-  flex: 1;
+/* Por CLASSE, não por posição: o bloco do título é o `.pensa-project-title`. */
+.pensa-project-title .sz-tool-kicker {
+  margin-bottom: 4px;
 }
-/* Na home o botão vai ANTES do título, dentro do bloco da esquerda (o layout do bloco vem
-   da `.sz-tool-header__lead`; a classe fica como âncora do teste do host). */
+/* Na home o menu e a seta vão ANTES do título, dentro do bloco da esquerda (o layout vem da
+   `.sz-tool-header__lead`; a classe fica como âncora do teste do host). */
 .pensa-home-lead {
   min-width: 0;
 }
-.pensa-project-header span {
-  color: var(--pz-muted);
-  font-size: 0.875rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-}
-.pensa-project-header h1 {
-  margin: 2px 0 0;
-  /* O nome do projeto mantém a escala fluida: o par dele não é o título da
-     galeria, e sim o título do editor no Pinta/Estúdio. O que faltava aqui era
-     peso e tinta — que vêm do `.pensa-display`, inclusive o tracking (por isso
-     o `-0.02em` local saiu: perdia por especificidade e virava ruído). */
-  font-size: clamp(1.4rem, 4vw, 2.4rem);
-}
+/* A pílula do andamento é a `.sz-tool-status` (menta quando aprovado); aqui só a bolinha. */
 .pensa-plan-status {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  border: 1px solid var(--pz-line);
-  border-radius: 99px;
-  padding: 9px 13px;
-  color: var(--pz-muted);
-  font-size: 1rem;
-  font-weight: 700;
+  margin: 0;
 }
-.pensa-plan-status span {
-  color: var(--pz-accent);
+.pensa-plan-status__dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
 }
+/* O mapa ZERO: as quatro etapas em cartões brancos (a imagem-modelo). A vencida tem o visto no
+   ladrilho verde e vira botão de rever; a atual leva o fio azul; a que está sendo revista, o fio e
+   o halo. */
 .pensa-map {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  padding: 12px 0 30px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 28px;
 }
 .pensa-map-node {
   display: flex;
   min-width: 0;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--pz-line);
-  border-radius: 14px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 2px solid var(--sz-tool-card-edge, transparent);
+  border-radius: 1rem;
   color: var(--pz-muted);
-  background: color-mix(in oklab, var(--pz-surface) 70%, transparent);
+  background: var(--pz-surface);
 }
 .pensa-map-node > span {
   display: grid;
-  flex: 0 0 34px;
-  height: 34px;
+  flex: 0 0 32px;
+  height: 32px;
   place-items: center;
-  border-radius: 11px;
+  border-radius: 9px;
+  color: var(--pz-muted);
   background: var(--pz-surface-2);
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
 }
 .pensa-map-node div {
   min-width: 0;
 }
-.pensa-map-node strong,
-.pensa-map-node small {
+.pensa-map-node strong {
   display: block;
   overflow: hidden;
+  color: var(--pz-ink);
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  line-height: 1.3;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pensa-map-node strong {
-  color: var(--pz-ink);
-  font-size: 1rem;
-}
+/* A descrição quebra em até duas linhas (a imagem), em vez de sumir nas reticências. */
 .pensa-map-node small {
+  display: -webkit-box;
   margin-top: 2px;
-  font-size: 0.875rem;
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .pensa-map-node.is-current {
   border-color: var(--pz-accent);
-  background: color-mix(in oklab, var(--pz-accent) 9%, var(--pz-surface));
 }
 .pensa-map-node.is-current > span {
   color: var(--pz-on-fill);
   background: var(--pz-accent);
 }
 .pensa-map-node.is-complete > span {
-  color: var(--pz-on-fill);
+  color: #fff;
   background: var(--pz-green);
 }
 /* Etapa concluída vira BOTÃO de rever (peek read-only). */
 button.pensa-map-node {
+  font: inherit;
   text-align: left;
-  transition:
-    transform 0.12s ease,
-    border-color 0.12s ease;
+  transition: border-color 0.12s ease;
 }
 button.pensa-map-node:hover {
-  border-color: var(--pz-accent);
-  transform: translateY(-1px);
+  border-color: color-mix(in oklab, var(--pz-accent) 55%, var(--pz-surface));
 }
 .pensa-map-node.is-viewing {
-  border-style: dashed;
   border-color: var(--pz-accent);
-  background: color-mix(in oklab, var(--pz-accent) 12%, var(--pz-surface));
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--pz-accent) 16%, transparent);
 }
+/* "Você está revendo uma etapa…": o cartão branco que fecha a faixa creme (a imagem). */
 .pensa-peek-banner {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 18px;
-  border: 1px dashed var(--pz-accent);
-  border-radius: 14px;
-  padding: 12px 16px;
-  background: color-mix(in oklab, var(--pz-accent) 8%, var(--pz-surface));
+  gap: 10px 14px;
+  margin-top: 20px;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1.25rem;
+  padding: 12px 16px 12px 24px;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  font-size: 0.875rem;
   font-weight: 700;
 }
-.pensa-peek-banner button {
-  border: 2px solid var(--pz-accent);
-  border-radius: 99px;
-  padding: 8px 14px;
+.pensa-peek-banner > svg {
+  flex: none;
+  color: var(--pz-muted);
+}
+.pensa-peek-banner > span {
+  flex: 1 1 16rem;
+}
+/* O "Voltar para o meu plano" em contorno AZUL (a imagem), sobre a receita de contorno. */
+.pensa-peek-back {
+  border-color: var(--pz-accent);
   color: var(--pz-accent);
-  background: var(--pz-surface);
-  font-weight: 700;
-  white-space: nowrap;
 }
 .pensa-workspace {
-  padding-bottom: 72px;
+  padding: 0;
 }
+/* O título da etapa: o ladrilho AZUL da marca com a letra (chapado, sem o degradê 3D) e o h2 da
+   régua das galerias (`.sz-tool-section-title`, Baloo 800). */
 .pensa-stage-title {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin: 4px 0 22px;
+  margin: 0 0 24px;
 }
 .pensa-stage-title > span {
   display: grid;
-  width: 58px;
-  height: 58px;
+  flex: none;
+  width: 52px;
+  height: 52px;
   place-items: center;
-  border-radius: 16px;
-  color: var(--pz-on-fill);
-  background-image: var(--pz-gradient);
-  font-size: 1.8rem;
-  font-weight: 700;
-  box-shadow: 0 4px 0 color-mix(in oklab, var(--pz-cta) 55%, black);
+  border-radius: 14px;
+  color: var(--sz-tool-on-cta, var(--pz-on-fill));
+  background: var(--sz-tool-cta, var(--pz-cta));
+  font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
+  font-size: 1.5rem;
+  font-weight: 800;
 }
 .pensa-stage-title h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2.4rem);
-  letter-spacing: -0.02em;
 }
 .pensa-stage-title p {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
   color: var(--pz-muted);
+  font-size: 0.9375rem;
 }
 .pensa-two-column {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 18px;
+  gap: 24px;
 }
 .pensa-stack {
   display: grid;
   align-content: start;
   gap: 16px;
 }
+/* Os cartões da etapa: brancos, cantos de 24px, sem borda aparente (a imagem). */
 .pensa-panel,
 .pensa-artifact,
 .pensa-artifact-empty,
 .pensa-audit,
 .pensa-ribbon {
-  border: 2px solid var(--pz-line);
-  border-radius: 1rem;
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1.5rem;
   background: var(--pz-surface);
 }
 .pensa-chat {
-  padding: 20px;
+  padding: 24px;
 }
 .pensa-chat-head {
   display: flex;
@@ -743,8 +719,13 @@ button.pensa-map-node:hover {
 .pensa-chat-head h3 {
   margin: 0;
 }
+/* "Conversa com o Zappy": o rótulo pequeno do cartão (a imagem), não um título de seção. */
 .pensa-chat h3 {
   margin: 0 0 12px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 .pensa-decisions {
   margin: 0;
@@ -787,19 +768,26 @@ button.pensa-map-node:hover {
   max-width: 86%;
   margin: 0;
   border-radius: 16px;
-  padding: 11px 13px;
+  padding: 14px 16px;
   background: var(--pz-surface-2);
+  font-size: 0.875rem;
+  line-height: 1.55;
   white-space: pre-wrap;
 }
+/* A fala da criança é o azul da marca cheio (a imagem); a do Zappy, o cinza claro. */
 .pensa-messages p.user {
   align-self: flex-end;
-  color: var(--pz-on-fill);
-  background: var(--pz-accent);
+  color: var(--sz-tool-on-cta, var(--pz-on-fill));
+  background: var(--sz-tool-cta, var(--pz-accent));
 }
+/* "VOCÊ" / "ZAPPY": o sobretítulo em caixa alta espaçada. */
 .pensa-messages b {
   display: block;
-  margin-bottom: 3px;
-  font-size: 1rem;
+  margin-bottom: 6px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  opacity: 0.8;
   text-transform: uppercase;
 }
 .pensa-suggestion-chips {
@@ -839,11 +827,11 @@ button.pensa-map-node:hover {
 }
 .pensa-chat-input button {
   border: 0;
-  border-radius: 13px;
-  color: var(--pz-on-fill);
-  background: var(--pz-accent);
-  padding: 10px 15px;
-  font-weight: 700;
+  border-radius: 9999px;
+  color: var(--sz-tool-on-cta, var(--pz-on-fill));
+  background: var(--sz-tool-cta, var(--pz-accent));
+  padding: 10px 18px;
+  font-weight: 800;
 }
 .pensa-artifact {
   overflow: hidden;
@@ -853,22 +841,23 @@ button.pensa-map-node:hover {
   align-items: start;
   justify-content: space-between;
   gap: 12px;
-  padding: 18px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--pz-line);
 }
 .pensa-artifact > header span {
   color: var(--pz-accent);
-  font-size: 0.875rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 .pensa-artifact > header h3 {
   margin: 4px 0 0;
+  font-size: 1.125rem;
 }
 .pensa-artifact > header button,
 .pensa-task footer button {
   border: 1px solid var(--pz-line);
-  border-radius: 11px;
+  border-radius: 9999px;
   color: var(--pz-ink);
   background: transparent;
   padding: 8px 11px;
@@ -883,7 +872,7 @@ button.pensa-map-node:hover {
 }
 .pensa-artifact > footer button {
   border: 0;
-  border-radius: 12px;
+  border-radius: 9999px;
   padding: 10px 14px;
   font-weight: 700;
 }
@@ -894,33 +883,45 @@ button.pensa-map-node:hover {
 }
 .pensa-artifact-preview,
 .pensa-structured-form {
-  padding: 18px 20px;
+  padding: 24px;
 }
 .pensa-artifact-preview h4,
 .pensa-artifact-preview p {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
 }
+.pensa-artifact-preview > p {
+  color: var(--pz-muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+/* Os campos da carta em CARTÕEZINHOS cinza-claros de duas colunas (a imagem). */
 .pensa-artifact-preview dl {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 12px;
   margin: 0;
 }
 .pensa-artifact-preview dl div,
 .pensa-preview-columns section,
 .pensa-loop li {
-  border-radius: 11px;
-  padding: 10px;
+  border-radius: 12px;
+  padding: 12px 14px;
   background: var(--pz-surface-2);
 }
-.pensa-artifact-preview dt,
+.pensa-artifact-preview dt {
+  color: var(--pz-ink);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
 .pensa-artifact-preview small {
   color: var(--pz-muted);
   font-size: 0.875rem;
   font-weight: 700;
 }
 .pensa-artifact-preview dd {
-  margin: 3px 0 0;
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 .pensa-loop {
   display: flex;
@@ -1106,10 +1107,10 @@ button.pensa-map-node:hover {
   font-weight: 700;
   background: var(--pz-surface);
 }
-.pensa-generate {
+.pensa-planner .pensa-generate {
   justify-self: start;
 }
-.pensa-primary-action {
+.pensa-planner .pensa-primary-action {
   justify-self: end;
   min-width: 250px;
   margin-top: 8px;
@@ -1189,10 +1190,12 @@ button.pensa-map-node:hover {
 .pensa-task:last-child .pensa-task-order::after {
   display: none;
 }
+/* O cartão da tarefa: branco, sem borda aparente no claro (a régua das telas-modelo); a próxima
+   tarefa acende o fio verde. */
 .pensa-task > article {
-  padding: 16px;
-  border: 2px solid var(--pz-line);
-  border-radius: 1rem;
+  padding: 16px 20px;
+  border: 2px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1.25rem;
   background: var(--pz-surface);
 }
 .pensa-task.is-next > article {
@@ -1221,6 +1224,10 @@ button.pensa-map-node:hover {
 .pensa-task article > header span[data-destination="studio"] {
   color: var(--pz-blue);
   background: color-mix(in oklab, var(--pz-blue) 14%, var(--pz-surface));
+}
+.pensa-task article > header span[data-destination="molda"] {
+  color: var(--pz-purple);
+  background: color-mix(in oklab, var(--pz-purple) 14%, var(--pz-surface));
 }
 .pensa-task article > header em {
   color: var(--pz-muted);
@@ -1351,33 +1358,38 @@ button.pensa-map-node:hover {
   border-color: var(--pz-danger);
 }
 .pensa-alert {
-  width: calc(100% - 32px);
-  margin: 0 auto 12px;
+  margin: 0 0 16px;
   border: 1px solid color-mix(in oklab, var(--pz-danger) 45%, var(--pz-line));
   border-radius: 13px;
   padding: 11px 14px;
   color: var(--pz-danger);
   background: color-mix(in oklab, var(--pz-danger) 8%, var(--pz-surface));
 }
+/* No cabeçalho do plano o alerta vem logo abaixo do título. */
+.pensa-plan-top .pensa-alert {
+  margin: 20px 0 0;
+}
+/* O "Meu plano" (aprovado): o cartão branco das telas-modelo com o visto no ladrilho menta. */
 .pensa-approved {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
   padding: 24px;
-  border: 1px solid var(--pz-green);
-  border-radius: 24px;
-  background: color-mix(in oklab, var(--pz-green) 8%, var(--pz-surface));
+  border: 1px solid var(--sz-tool-card-edge, var(--pz-line));
+  border-radius: 1.5rem;
+  background: var(--pz-surface);
 }
 .pensa-approved > span {
   display: grid;
-  width: 58px;
-  height: 58px;
+  flex: none;
+  width: 52px;
+  height: 52px;
   place-items: center;
-  border-radius: 50%;
-  color: var(--pz-on-fill);
-  background: var(--pz-green);
-  font-size: 1.7rem;
+  border-radius: 14px;
+  color: var(--sz-tool-ok, var(--pz-green));
+  background: var(--sz-tool-ok-tint, color-mix(in oklab, var(--pz-green) 14%, var(--pz-surface)));
+  font-size: 1.5rem;
 }
 .pensa-approved p,
 .pensa-approved h2,
@@ -1385,9 +1397,9 @@ button.pensa-map-node:hover {
   margin: 0;
 }
 .pensa-approved p {
-  color: var(--pz-green);
-  font-size: 1rem;
-  font-weight: 700;
+  color: var(--sz-tool-ok, var(--pz-green));
+  font-size: 0.75rem;
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 .pensa-approved h2 {
@@ -1396,6 +1408,50 @@ button.pensa-map-node:hover {
 .pensa-approved small {
   color: var(--pz-muted);
 }
+/* A faixa lilás do plano aprovado: quantos cartões foram para cada oficina, em pílulas brancas
+   com o ícone na cor da oficina (a imagem). */
+.pensa-approved-cta .sz-tool-tile > svg {
+  width: 1.625rem;
+  height: 1.625rem;
+}
+.pensa-destination-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pensa-destination-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--pz-line);
+  border-radius: 9999px;
+  color: var(--pz-ink);
+  background: var(--pz-surface);
+  font-size: 0.8125rem;
+  font-weight: 800;
+}
+.pensa-destination-chips li[data-destination="studio"] svg {
+  color: var(--sz-tool-sig-estudio, var(--pz-accent));
+}
+.pensa-destination-chips li[data-destination="pinta"] svg {
+  color: var(--sz-tool-sig-pinta, var(--pz-orange));
+}
+.pensa-destination-chips li[data-destination="molda"] svg {
+  color: var(--sz-tool-sig-molda, var(--pz-purple));
+}
+/* A âncora do "Ver os Cartões de Criação" recebe o foco por programa: sem anel (o que se vê é a
+   lista chegando), e com respiro para não colar no topo ao rolar. */
+.pensa-cards-anchor {
+  scroll-margin-top: 16px;
+}
+.pensa-cards-anchor:focus {
+  outline: none;
+}
 .pensa-next-summary {
   border-radius: 14px;
   padding: 14px;
@@ -1403,7 +1459,7 @@ button.pensa-map-node:hover {
   color: var(--pz-muted);
   background: var(--pz-surface-2);
 }
-.pensa-new-version {
+.pensa-planner .pensa-new-version {
   justify-self: center;
 }
 .pensa-new-version-form {
@@ -1429,7 +1485,7 @@ button.pensa-map-node:hover {
 }
 .pensa-new-version-form button {
   border: 1px solid var(--pz-line);
-  border-radius: 12px;
+  border-radius: 9999px;
   padding: 9px 13px;
   color: var(--pz-ink);
   background: transparent;
@@ -1492,13 +1548,6 @@ button.pensa-map-node:hover {
   }
 }
 @container (max-width: 560px) {
-  .pensa-workspace,
-  .pensa-project-header,
-  .pensa-map,
-  .pensa-alert {
-    /* 16px de cada lado = o `p-4` do Pinta no estreito (era 10px). */
-    width: calc(100% - 32px);
-  }
   .pensa-home-header {
     align-items: flex-start;
   }
@@ -1569,7 +1618,7 @@ button.pensa-map-node:hover {
   .pensa-bible-assets {
     grid-template-columns: 1fr;
   }
-  .pensa-primary-action {
+  .pensa-planner .pensa-primary-action {
     width: 100%;
     min-width: 0;
   }
