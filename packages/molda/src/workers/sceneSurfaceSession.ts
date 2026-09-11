@@ -7,6 +7,7 @@ import {
   type SceneSurfaceApply,
   type SceneSurfaceInit,
 } from './sceneSurfaceProtocol'
+import { isWorkerLoadedMessage, ownWorker } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 // CPU baseline: 900 quads is a small synchronous operation; large regions need an interruptible owner.
@@ -23,6 +24,8 @@ export function createSceneSurfaceSession(options: {
   const worker =
     options.createWorker?.() ??
     new Worker(new URL('./sceneSurface.worker.ts', import.meta.url), { type: 'module' })
+  // Before the protocol listeners: disposal waits for the worker's first sign of life.
+  const owned = ownWorker(worker)
   let ready = false
   let disposed = false
   let nextId = 0
@@ -35,7 +38,7 @@ export function createSceneSurfaceSession(options: {
     worker.removeEventListener('message', onMessage)
     worker.removeEventListener('error', onError)
     worker.removeEventListener('messageerror', onMessageError)
-    worker.terminate()
+    owned.release()
   }
   function fail(error: unknown) {
     if (disposed) return
@@ -52,7 +55,7 @@ export function createSceneSurfaceSession(options: {
     }
   }
   function onMessage(event: MessageEvent<unknown>) {
-    if (disposed) return
+    if (disposed || isWorkerLoadedMessage(event.data)) return
     try {
       const reply = readSceneSurfaceEnvelope(event.data, options.source)
       if (reply.type === 'ready') {

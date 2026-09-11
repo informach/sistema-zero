@@ -11,6 +11,7 @@ import {
   type SceneSurfaceInit,
   type SceneSurfaceMessage,
 } from './sceneSurfaceProtocol'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 let source: SceneSurfaceInit | null = null
@@ -67,3 +68,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     } satisfies SceneSurfaceMessage)
   }
 }
+announceWorkerLoaded()

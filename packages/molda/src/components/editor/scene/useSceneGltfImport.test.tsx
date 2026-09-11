@@ -8,6 +8,7 @@ import type { GltfChosenFile } from '../../../import/gltfLocalBundle'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { animatedScene } from '../../../testing/sceneAnimation'
 import { makeSceneGlbFixture } from '../../../testing/sceneGlbFixture'
+import { WORKER_LOADED_MESSAGE } from '../../../workers/workerHandshake'
 import type { TaskWorker } from '../../../workers/workerTask'
 import { useSceneGltfImport } from './useSceneGltfImport'
 
@@ -293,6 +294,9 @@ test('hidden tabs do not read files; worker construction cancellation terminates
       await hook.result.current.choose([source()])
     })
     expect(posts).toBe(0)
+    // Cancelled before it said anything: the stop waits for its hello, never for a loading module.
+    expect(stops).toBe(0)
+    events.dispatchEvent(new MessageEvent('message', { data: WORKER_LOADED_MESSAGE }))
     expect(stops).toBe(1)
     expect(hook.result.current.view.stage).toEqual({ kind: 'choose', message: copy.cancelled })
     expect(editor.getState().canUndo).toBe(false)

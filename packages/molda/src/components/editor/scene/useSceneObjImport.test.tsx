@@ -7,6 +7,7 @@ import type { ObjChosenFile } from '../../../import/objLocalBundle'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { objImportFixture } from '../../../testing/objImportFixture'
 import { animatedScene } from '../../../testing/sceneAnimation'
+import { WORKER_LOADED_MESSAGE } from '../../../workers/workerHandshake'
 import { useSceneObjImport } from './useSceneObjImport'
 
 function chosen() {
@@ -306,6 +307,9 @@ test('hidden OBJ sessions do not read files, and cancellation during worker cons
       await hook.result.current.prepare()
     })
     expect(posts).toBe(0)
+    // Cancelled before it said anything: the stop waits for its hello, never for a loading module.
+    expect(stops).toBe(0)
+    events.dispatchEvent(new MessageEvent('message', { data: WORKER_LOADED_MESSAGE }))
     expect(stops).toBe(1)
     expect(hook.result.current.view.stage).toEqual({ kind: 'choose', message: copy.cancelled })
   } finally {

@@ -7,6 +7,7 @@ import {
   readBbmodelImportRequest,
   readBbmodelImportToken,
 } from './bbmodelImportRequest'
+import { announceWorkerLoaded } from './workerHandshake'
 
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
 
@@ -50,3 +51,4 @@ self.onmessage = (event: MessageEvent<unknown>) => {
     })
   }
 }
+announceWorkerLoaded()

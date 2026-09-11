@@ -1,6 +1,7 @@
 import { skyImageToHdr } from '../export/skyHdr'
 import { renderSky } from '../sky/render'
 import type { SkyExportReply, SkyExportRequest } from './skyExportProtocol'
+import { announceWorkerLoaded } from './workerHandshake'
 
 // Only APIs common to DedicatedWorkerGlobalScope and the independent Bun worker.
 declare const self: Pick<Worker, 'onmessage' | 'postMessage'>
@@ -27,3 +28,4 @@ self.onmessage = (event: MessageEvent<SkyExportRequest>): void => {
     })
   }
 }
+announceWorkerLoaded()

@@ -13,6 +13,7 @@ import {
   type SceneSurfaceInit,
 } from './sceneSurfaceProtocol'
 import { createSceneSurfaceSession } from './sceneSurfaceSession'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 function fixture() {
@@ -260,6 +261,9 @@ test('initialization and postMessage failures dispose their worker without an or
       onError: () => {},
     })
   }).toThrow('Clone failed')
+  // The worker never answered, so it is released at its hello — not while it may still be loading.
+  expect(fake.disposals()).toBe(0)
+  fake.emit(WORKER_LOADED_MESSAGE)
   expect(fake.disposals()).toBe(1)
   const next = fakeWorker()
   const errors: unknown[] = []
@@ -278,6 +282,56 @@ test('initialization and postMessage failures dispose their worker without an or
   expect(errors).toHaveLength(1)
   expect(next.disposals()).toBe(1)
   session.dispose()
+})
+
+test('disposing before the hello waits for it, then ignores the worker and never terminates twice', () => {
+  const source = fixture()
+  const fake = fakeWorker()
+  const errors: unknown[] = []
+  const results: number[] = []
+  const session = createSceneSurfaceSession({
+    source,
+    createWorker: () => fake.worker,
+    onBusy: () => {},
+    onResult: (_mesh, amount) => results.push(amount),
+    onError: (error) => errors.push(error),
+  })
+  const token = { documentId: source.documentId, revision: source.revision }
+  session.update(1)
+  session.dispose()
+  expect(session.pending).toBe(false)
+  expect(fake.disposals()).toBe(0)
+  fake.emit(WORKER_LOADED_MESSAGE)
+  expect(fake.disposals()).toBe(1)
+  // Late protocol traffic from an abandoned worker is neither an error nor a request.
+  fake.emit({ ...token, type: 'ready' })
+  fake.emit({ ...token, type: 'result', requestId: 1, packet: packSceneMesh(source.mesh) })
+  expect(fake.requests).toHaveLength(1)
+  expect(results).toEqual([])
+  expect(errors).toEqual([])
+  expect(fake.disposals()).toBe(1)
+})
+
+test('the hello never reaches the protocol reader', () => {
+  const source = fixture()
+  const fake = fakeWorker()
+  const errors: unknown[] = []
+  const session = createSceneSurfaceSession({
+    source,
+    createWorker: () => fake.worker,
+    onBusy: () => {},
+    onResult: () => {},
+    onError: (error) => errors.push(error),
+  })
+  try {
+    fake.emit(WORKER_LOADED_MESSAGE)
+    fake.emit({ documentId: source.documentId, revision: source.revision, type: 'ready' })
+    session.update(1)
+    expect(fake.requests).toHaveLength(2)
+    expect(errors).toEqual([])
+  } finally {
+    session.dispose()
+  }
 })
 
 test('strict worker parser rejects missing references, repeated corners, unknown payloads and over-budget results', () => {

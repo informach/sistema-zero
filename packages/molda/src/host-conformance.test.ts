@@ -103,11 +103,11 @@ describe('documentação executável', () => {
 })
 
 /**
- * ⚠️⚠️ A suíte roda em TRÊS processos (`test:1`..`test:3`), e não num só. O motivo é medido:
- * num processo só ela abre e fecha ~148 Workers, e o Bun 1.3.11 do Linux SEGFAULTA no
- * desmonte deles (`panic: Segmentation fault`, SIGILL/132) por volta de 85% da execução,
- * enquanto os 22 pacotes disputam dois núcleos no runner. Reproduziu em quatro execuções
- * seguidas do CI, em dois commits diferentes, com o mesmo endereço de falha.
+ * ⚠️⚠️ A suíte roda em TRÊS processos (`test:1`..`test:3`), e não num só. A divisão nasceu do
+ * segfault do Bun 1.3.11 no runner Linux, cuja causa foi medida depois: `terminate()` num Worker
+ * cujo módulo ainda transpilava no pool de threads (ver `workers/workerHandshake.ts`, que é o
+ * conserto). Ela fica porque espalha ~148 Workers em três processos mais curtos, e o custo dela
+ * é o teste abaixo.
  *
  * O preço de dividir é este teste: lote que esquece um diretório NÃO reprova sozinho, ele
  * simplesmente deixa de rodar, e o verde passa a ser falso. Aqui a conta é fechada: tudo o

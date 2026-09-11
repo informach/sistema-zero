@@ -330,6 +330,26 @@ lê por texto o que precisa existir FORA do pacote (railway.json, ci.yml, packag
 globals.css do kids, rota/proxy/nav, member-shell, seed do catálogo). Playground Vite `:5198`
 (`bun run dev`, `.claude/launch.json` → `molda-playground`).
 
+### Workers: aperto de mão antes de encerrar (10/09/2026)
+
+⚠️⚠️ Todo `*.worker.ts` termina com `announceWorkerLoaded()` (`{ type: 'loaded' }`, a PRIMEIRA
+mensagem que ele manda) e ninguém chama `worker.terminate()` na mão: `runWorkerTask` e
+`createSceneSurfaceSession` passam por `ownWorker()` (`workers/workerHandshake.ts`), que só encerra
+depois do primeiro sinal de vida (mensagem, `error` ou `messageerror`). Motivo medido: o Bun 1.3.x
+libera a VM do worker assim que o `terminate()` interrompe o carregamento do módulo, enquanto o job
+de transpilação do grafo ainda roda no pool de threads e escreve nela (`SavedSourceMap.putValue` →
+`panic: Segmentation fault at address 0xFFFFFFFFFFFFFFF8`; oven-sh/bun#33936, corrigido no Bun
+1.4.0 pelo #37075 — a frota já roda `oven/bun:1`, só o CI e o dev pinam 1.3.11). No CI (Linux,
+2 vCPU, cache do transpiler FRIO a cada run) a janela é de milissegundos, justamente o tempo que o
+StrictMode e o cancelamento de um preview seguram um worker: 5 runs vermelhos em 10/09 com a MESMA
+pilha, e o dia em que o molda testou num job Windows. Reproduzido em `oven/bun:1.3.11` com
+`--cpus=2` e `BUN_RUNTIME_TRANSPILER_CACHE_PATH=0`: encerrar 0–5 ms depois do `new Worker` →
+SIGSEGV em 3/3; encerrar depois do `loaded` → 240 workers sem crash (todos os 12 tipos); no Bun
+1.4.2 nada crasha. ⚠️ O evento `open` do Bun NÃO substitui o anúncio e, num container, symlinks
+absolutos do Windows fazem os imports falharem (o worker morre carregando e crasha igual — outra
+face do mesmo bug). `workerHandshake.test.ts` sobe os 12 workers reais e reprova qualquer
+`.terminate()` fora do `ownWorker`.
+
 ## Comandos
 
 `bun run typecheck && bun test src && bun run check` (biome). Consumidores: `bun run

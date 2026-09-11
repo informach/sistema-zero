@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import { runWorkerTask, type TaskReply, type TaskWorker } from './workerTask'
 
 class ControlledWorker extends EventTarget implements TaskWorker {
@@ -44,7 +45,24 @@ describe('owned worker task', () => {
     expect(worker.stopped).toBe(1)
   })
 
-  test('abort is immediate, stops CPU work and cannot later resolve', async () => {
+  test('abort after the hello is immediate, stops CPU work and cannot later resolve', async () => {
+    const worker = new ControlledWorker()
+    const controller = new AbortController()
+    const promise = runWorkerTask({
+      createWorker: () => worker,
+      request: null,
+      readReply,
+      signal: controller.signal,
+    })
+    // The hello is the handshake's, never a reply: readReply would have rejected it.
+    worker.reply(WORKER_LOADED_MESSAGE)
+    controller.abort()
+    expect(worker.stopped).toBe(1)
+    worker.reply(42)
+    await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  test('abort while the worker is still loading settles at once but stops it only at its hello', async () => {
     const worker = new ControlledWorker()
     const controller = new AbortController()
     const promise = runWorkerTask({
@@ -54,9 +72,12 @@ describe('owned worker task', () => {
       signal: controller.signal,
     })
     controller.abort()
+    await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
+    expect(worker.stopped).toBe(0)
+    worker.reply(WORKER_LOADED_MESSAGE)
     expect(worker.stopped).toBe(1)
     worker.reply(42)
-    await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
+    expect(worker.stopped).toBe(1)
   })
 
   test('already aborted tasks never construct a worker', async () => {
@@ -91,6 +112,11 @@ describe('owned worker task', () => {
     if (reason === 'worker-error')
       worker.dispatchEvent(new ErrorEvent('error', { message: 'crash' }))
     await expect(promise).rejects.toBeInstanceOf(Error)
+    if (reason === 'post-error') {
+      // Nothing came back from the worker yet, so it is released only at its hello.
+      expect(worker.stopped).toBe(0)
+      worker.reply(WORKER_LOADED_MESSAGE)
+    }
     expect(worker.stopped).toBe(1)
   })
 

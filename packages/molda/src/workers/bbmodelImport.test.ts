@@ -8,6 +8,7 @@ import {
 import { prepareBbmodelImportInWorker } from './bbmodelImport'
 import { bbmodelImportReply, readBbmodelImportReply } from './bbmodelImportProtocol'
 import { readBbmodelImportRequest } from './bbmodelImportRequest'
+import { WORKER_LOADED_MESSAGE } from './workerHandshake'
 import type { TaskWorker } from './workerTask'
 
 class ControlledWorker extends EventTarget implements TaskWorker {
@@ -115,6 +116,7 @@ test('bbmodel cancellation, invalid request, stale replies and progress failures
       signal: controller.signal,
       createWorker: () => worker,
     })
+  worker.reply(WORKER_LOADED_MESSAGE)
   controller.abort()
   await expect(pending).rejects.toMatchObject({ name: 'AbortError' })
   expect(worker.stopped).toBe(1)
@@ -319,6 +321,9 @@ test('bbmodel worker construction cancellation and worker event failures settle 
     })
   await expect(cancelled).rejects.toMatchObject({ name: 'AbortError' })
   expect(constructed.requests).toEqual([])
+  // Released before it said anything: the stop waits for its hello, never for a loading module.
+  expect(constructed.stopped).toBe(0)
+  constructed.reply(WORKER_LOADED_MESSAGE)
   expect(constructed.stopped).toBe(1)
   for (const type of ['error', 'messageerror']) {
     const worker = new ControlledWorker(),
