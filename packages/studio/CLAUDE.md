@@ -357,7 +357,8 @@ mesma instância do módulo no bundle do kids) num único Provider. Default `nul
   contrato de DADOS `.ts` que o kids consome. Topbar: o menu é o PRIMEIRO botão do `<header>`
   (antes da marca). O status vem logo após o "Salvo": desde 11/09/2026 só a NUVEM em repouso e a
   frase curta quando algo acontece (ver "A barra do editor das telas-modelo"), e a **BOLINHA**
-  (`h-2.5 w-2.5`, texto no `aria-label`/`title`) em narrow E compact — a Topbar não tem wrap, e o
+  (`h-2.5 w-2.5`, texto no `aria-label`/`title`) abaixo de 1400px (`STUDIO_BAR_LABELS_MIN_PX`, o
+  que inclui o estreito e o compacto) — a Topbar não tem wrap, e o
   selo do host cede antes do "Salvo" (`HOST_STATUS_DOT_CLASS` no `host-chrome.ts`; o
   `HOST_STATUS_BADGE_TONE` saiu com o `Badge`). Ícones `IconPanelLeftClose/Open`.
 - `ProjectList`: menu antes do bloco do h1 (`.sz-tool-header__lead`), status como 1º item das
@@ -390,16 +391,29 @@ Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-too
 - **Largo** (a partir de 1024px) = 68px; **estreito e compacto** = 52px, com o segmentado, o Zappy
   e o Compartilhar só no ícone (o rótulo vira `sr-only` e o nome acessível não muda; o modo ganha
   `title`). Quem abre o painel do Zappy no largo agora começa em `top-[4.25rem]`.
+- ⭐ **Os limites da barra (full review de 11/09/2026)**, medidos no playground com o chrome do host
+  e no pior caso de texto ("Alterações não salvas" + "Não consegui guardar"): com desfazer e
+  refazer na barra, os limites antigos deixavam a esquerda passar por baixo do segmentado. Hoje,
+  em `layoutBreakpoints.ts`: **`STUDIO_BRAND_MIN_PX` = 1600** (era 1360), **`STUDIO_BAR_LABELS_MIN_PX`
+  = 1400** (abaixo dele o segmentado, o Zappy e o Compartilhar ficam só no ícone, ainda na altura
+  larga, e o selo do host vira a bolinha), **`STUDIO_BAR_UNDO_MIN_PX` = 720** (abaixo dele
+  desfazer e refazer moram no "⋯") e **`STUDIO_BAR_COMPACT_MAX_PX` = 520** (a BARRA fica compacta
+  antes do `STUDIO_COMPACT_MAX_PX`, que também decide a paleta do Blockly e por isso não mudou).
+  O nome tem piso de 4.5rem fora do compacto e, depois dele, quem cede é o TEXTO dos selos, com
+  reticências (`.sz-bar-seal__text`, a frase inteira no `title`). De 1600 a 390px, nada passa por
+  baixo do segmentado. ⚠️ O "Salvo" ganhou um span próprio para o texto: nos testes, a pílula é o
+  `parentElement` do `getByText('Salvo')` (o e2e `smoke.spec.ts` segue achando o texto).
 - Peças em `components/layout/topbar/`: **`BackBrand`** (UM botão, o círculo da seta + a marca
   "Sistema Zero Studio"; nome e `title` "Voltar à lista de projetos" intactos para os e2e; abaixo
-  de **`STUDIO_BRAND_MIN_PX` = 1360** a marca vira `sr-only` e a divisória sai, porque com o menu
-  do host, a nuvem, o Zappy e o Compartilhar ela comia o nome; sem `onExit` é a marca estática, só
-  quando cabe), **`ProjectNameField`** (a pílula com o lápis, sem o lápis no compacto; clicar
+  de **`STUDIO_BRAND_MIN_PX` = 1600** a marca vira `sr-only` e a divisória sai, porque com o menu
+  do host, a nuvem, o Zappy, desfazer, refazer e o Compartilhar ela comia o nome; sem `onExit` é a
+  marca estática, só quando cabe), **`ProjectNameField`** (a pílula com o lápis, sem o lápis no compacto; clicar
   leva o FOCO ao campo com o texto selecionado, Enter grava e Esc desiste, os dois devolvendo o
   foco à pílula; antes o botão sumia e o foco caía no `body`), **`SavePill`** (a pílula menta
   com o visto; "não salvo" e erro sobre o painel com o fio; SEM `role` no largo e no estreito, a
-  bolinha com `role="status"` no compacto), **`HostStatusSeal`** (em repouso só a nuvem, nome no
-  `title`; com algo acontecendo a frase curta; bolinha abaixo do largo), **`ModeSegment`** (um
+  bolinha com `role="status"` na barra compacta, abaixo de 520px), **`HostStatusSeal`** (em
+  repouso só a nuvem, nome no `title`; com algo acontecendo a frase curta; bolinha abaixo de
+  1400px), **`ModeSegment`** (um
   `fieldset` com a legenda `sr-only` "Modo de edição", ícones `IconBlocks`/`IconArrowLeftRight`/
   `IconCode`, o ativo no azul da marca) e **`BarIconButton`** (o círculo quieto do olho). O "⋯" é
   o `Menu` com `triggerVariant="bar"` (o `cn` daqui não tem tailwind-merge, então trocar a classe
@@ -415,8 +429,8 @@ Conferido no playground com os primitivos e com todos os `--sz-kids-*`/`--sz-too
 
 ### Desfazer e refazer na barra (11/09/2026, lote 7, passo 10)
 
-Os dois círculos da tela-modelo entre o Zappy e o olho da prévia (no compacto, a seção "Editar"
-do "⋯"). Nome acessível fixo "Desfazer"/"Refazer"; a dica diz ONDE ("Desfazer nos blocos
+Os dois círculos da tela-modelo entre o Zappy e o olho da prévia (abaixo de 720px, a seção
+"Editar" do "⋯"). Nome acessível fixo "Desfazer"/"Refazer"; a dica diz ONDE ("Desfazer nos blocos
 (Ctrl+Z)", "no código"; ⌘Z no Mac); sem nada a desfazer, desligados.
 
 - **Registro por instância** `state/editorHistory.ts` (no molde do `pendingEditorEdits`, dentro das
@@ -435,16 +449,23 @@ do "⋯"). Nome acessível fixo "Desfazer"/"Refazer"; a dica diz ONDE ("Desfazer
   limpa a pilha sozinho** (nem `load` nem `clear` chamam `clearUndo`, conferido no
   `blockly_compressed`): depois que a Ponte reconstruía os blocos a partir do código, o desfazer
   (inclusive o Ctrl+Z de antes deste lote) repetia passos de ANTES da recarga. O `BlocklyPanel`
-  chama `forgetBlocklyHistory` (`clearPendingUndo` + `clearUndo`) só nas recargas vindas de FORA
-  do canvas (o efeito de restauração, que já ignora o que o próprio workspace gravou). Provado no
-  e2e: sem o esquecimento, o botão seguia ligado depois da recarga.
+  chama `forgetBlocklyHistory` só nas recargas vindas de FORA do canvas (o efeito de restauração,
+  que já ignora o que o próprio workspace gravou). Provado no e2e: sem o esquecimento, o botão
+  seguia ligado depois da recarga. Ele é o `clearUndo` (que no Blockly 12 já esvazia a fila
+  pendente; a chamada à parte ao `clearPendingUndo` saiu no full review de 11/09/2026) mais o
+  AVISO à barra: o `clearUndo` não gera evento, então uma recarga sem evento nenhum (canvas que
+  já estava vazio) deixava o "Desfazer" ligado. O aviso vem de um `WeakMap` workspace → conferir
+  as pilhas, preenchido no `createBlocklyHistory`; o `dispose` só apaga o PRÓPRIO registro (na
+  remontagem wide ⇄ narrow o adaptador novo pode já estar lá).
 - **Código** (`monaco/monacoHistory.ts`, importado pelo CAMINHO para não arrastar o Monaco para o
   chunk dos modos; `components/code/useCodeHistory.ts` + o `onEditorReady` novo do `MonacoTabs`,
   ligado no `BridgeMode` e no `ProCodeMode`): o Ctrl+Z do Monaco é `editor.getModel().undo()`
   (`CoreEditingCommands.Undo`), e é o que se chama, direto no modelo DESTE editor. ⚠️ O comando
   global (`editor.trigger(…, 'undo')`) sem o foco no editor manda o desfazer para o último editor
   ATIVO da página. O TextModel da 0.52 tem `canUndo`/`canRedo` (fora do `.d.ts`); sem eles, cai
-  no comando e o botão fica sempre ligado. ⚠️ O Monaco agrupa a digitação por palavra: cada
+  no comando e o botão fica sempre ligado. A barra só é avisada quando `canUndo`/`canRedo` MUDA,
+  como no Blockly (cada aviso re-renderiza a barra inteira, e avisar a cada tecla fazia isso a
+  cada letra); trocar de aba avisa sempre e passa a comparar com a aba nova. ⚠️ O Monaco agrupa a digitação por palavra: cada
   clique desfaz um grupo, como o Ctrl+Z. O `setValue` que a Ponte faz quando os blocos mudam o
   código zera a pilha do código, então cada editor desfaz só enquanto é ele quem manda.
 - Os ↶↷ do `WorldComposerPanel` passaram a se chamar "Desfazer no mundo"/"Refazer no mundo" (dois
@@ -3731,6 +3752,9 @@ SAÍRAM (o `tokens.test.ts` trava que nenhuma regra volte). Detalhes que custara
 - **A pílula do cabeçalho** mostra o `status` do host (o que acontece agora) e, com ele nulo, a
   conta em repouso (`account`: "Guardado na sua conta", tom ok). A frase do cartão lilás diz
   "na sua conta" só com `account`; sem ela, "neste aparelho" (nunca promete nuvem que não há).
+  Com o selo em `warn` ou `danger` ("Sem internet agora", "Não consegui guardar") também
+  "neste aparelho": a cópia local sempre existe, e o cartão logo abaixo do selo não pode dizer o
+  contrário dele (full review de 11/09/2026).
 - **Seta de voltar** (`components/layout/HostBackLink.tsx`): o quadrado `.sz-tool-back` com
   `IconArrowLeft` ao lado do menu, `<a href>` com o nome no `aria-label`; clique simples chama
   `back.onNavigate()` (sem recarregar), com Ctrl/Cmd/Shift/Alt ou botão do meio o navegador cuida.

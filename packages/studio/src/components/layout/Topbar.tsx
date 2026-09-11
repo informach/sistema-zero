@@ -42,7 +42,12 @@ import { useStudioTheme } from '../../studio/theme'
 import { useStudioTutor } from '../../studio/tutor'
 import { ExportDialog } from './ExportDialog'
 import { HostMenuButton } from './HostMenuButton'
-import { STUDIO_BRAND_MIN_PX } from './layoutBreakpoints'
+import {
+  STUDIO_BAR_COMPACT_MAX_PX,
+  STUDIO_BAR_LABELS_MIN_PX,
+  STUDIO_BAR_UNDO_MIN_PX,
+  STUDIO_BRAND_MIN_PX,
+} from './layoutBreakpoints'
 import { ShareDialog } from './ShareDialog'
 import { BackBrand } from './topbar/BackBrand'
 import { BarIconButton } from './topbar/BarIconButton'
@@ -337,12 +342,14 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
     })
   }
 
+  // Abaixo de `STUDIO_BAR_UNDO_MIN_PX` desfazer e refazer não cabem na barra: moram no "⋯".
+  const undoInMenu = width < STUDIO_BAR_UNDO_MIN_PX
   const sections: MenuSection[] = [
-    // No compacto desfazer e refazer não cabem na barra: abrem o "⋯".
+    // Sem espaço na barra, desfazer e refazer abrem o "⋯".
     {
       id: 'edit',
       label: t('topbar.group.edit'),
-      items: undoRedo && isCompact ? undoRedoMenuItems(undoRedo, t) : [],
+      items: undoRedo && undoInMenu ? undoRedoMenuItems(undoRedo, t) : [],
     },
     { id: 'file', label: t('topbar.group.file'), items: fileItems },
     { id: 'view', label: t('topbar.group.view'), items: viewItems },
@@ -358,12 +365,16 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // A marca escrita só quando sobra espaço para o NOME do projeto (ver `STUDIO_BRAND_MIN_PX`);
   // abaixo disso fica o círculo da seta, com a marca no nome acessível.
   const showBrand = width >= STUDIO_BRAND_MIN_PX
-  // Abaixo do largo as pílulas da direita e o segmentado ficam só no ícone.
-  const iconOnly = isNarrow || isCompact
+  // A barra de 52px (estreito e compacto). As pílulas da direita e o segmentado também ficam só
+  // no ícone no largo apertado (`STUDIO_BAR_LABELS_MIN_PX`), sem mudar a altura da barra.
+  const tight = isNarrow || isCompact
+  // O jeito compacto da BARRA começa antes do compacto do Studio (ver `STUDIO_BAR_COMPACT_MAX_PX`).
+  const compactBar = isCompact || width < STUDIO_BAR_COMPACT_MAX_PX
+  const iconOnly = tight || width < STUDIO_BAR_LABELS_MIN_PX
 
   return (
     <>
-      <header className={cn('sz-bar', iconOnly && 'sz-bar--tight', isCompact && 'sz-bar--compact')}>
+      <header className={cn('sz-bar', tight && 'sz-bar--tight', compactBar && 'sz-bar--compact')}>
         <div className="sz-bar__start">
           {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais
               perto do painel que ele controla, na receita compartilhada das ferramentas. */}
@@ -373,8 +384,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
             showName={showBrand}
           />
           {showBrand ? <span aria-hidden="true" className="sz-bar-divider" /> : null}
-          <ProjectNameField name={projectName} onRename={rename} showPencil={!isCompact} />
-          <SavePill tone={saveTone} label={saveStatusLabel} error={saveError} dot={isCompact} />
+          <ProjectNameField name={projectName} onRename={rename} showPencil={!compactBar} />
+          <SavePill tone={saveTone} label={saveStatusLabel} error={saveError} dot={compactBar} />
           {/* "Guardado na sua conta" (host), ao lado do "Salvo" local: só a nuvem em repouso,
               a frase curta quando algo acontece, a bolinha abaixo do largo. */}
           {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
@@ -405,7 +416,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               {!iconOnly ? <span>Zappy</span> : null}
             </button>
           ) : null}
-          {undoRedo && !isCompact ? <UndoRedo state={undoRedo} /> : null}
+          {undoRedo && !undoInMenu ? <UndoRedo state={undoRedo} /> : null}
           {/* No ESTREITO o preview é uma ABA, não um painel ao lado: o olhinho não
               teria o que esconder e a criança clicaria achando que o app quebrou.
               Some. Quem garante que a aba continua lá é o `previewAvailable` dos

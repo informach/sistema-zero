@@ -106,6 +106,35 @@ describe('blocklyHistory: desfazer e refazer dos blocos', () => {
     expect(workspace.getRedoStack()).toHaveLength(0)
   })
 
+  it('esquecer a pilha avisa a barra na hora, sem esperar evento (o `clearUndo` não gera nenhum)', async () => {
+    const history = createBlocklyHistory(workspace)
+    workspace.newBlock('sz_js_var_create')
+    await tick()
+    expect(history.canUndo()).toBe(true)
+    const heard = mock(() => {})
+    history.subscribe(heard)
+    forgetBlocklyHistory(workspace)
+    expect(heard).toHaveBeenCalledTimes(1)
+    expect(history.canUndo()).toBe(false)
+    // Nada chega depois: sem o aviso à mão, a barra seguiria com o "Desfazer" ligado.
+    await tick()
+    expect(heard).toHaveBeenCalledTimes(1)
+    history.dispose()
+  })
+
+  it('na remontagem (largo ⇄ estreito), o adaptador que sai não cala o aviso do que entrou', async () => {
+    const antigo = createBlocklyHistory(workspace)
+    const novo = createBlocklyHistory(workspace)
+    antigo.dispose()
+    workspace.newBlock('sz_js_var_create')
+    await tick()
+    const heard = mock(() => {})
+    novo.subscribe(heard)
+    forgetBlocklyHistory(workspace)
+    expect(heard).toHaveBeenCalledTimes(1)
+    novo.dispose()
+  })
+
   it('o canvas limpo por fora (projeto sem blocos) também esquece o que a criança fez antes', async () => {
     workspace.newBlock('sz_js_var_create')
     await tick()

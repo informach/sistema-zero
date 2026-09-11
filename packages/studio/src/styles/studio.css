@@ -414,6 +414,11 @@
   .sz-bar--compact .sz-bar-name--editing {
     width: 7rem;
   }
+  /* O NOME tem piso (fora do compacto): sem ele, no aperto ele encolhia até sumir, antes dos
+     selos. Quem cede depois do piso é o texto dos selos, com reticências (logo abaixo). */
+  .sz-bar:not(.sz-bar--compact) .sz-bar-name {
+    min-width: 4.5rem;
+  }
 
   /* ── os selos: o "Salvo" local e a nuvem do host ── */
   .sz-bar-seal {
@@ -434,6 +439,18 @@
     flex: none;
     width: 0.875rem;
     height: 0.875rem;
+  }
+  /* Na barra (a esquerda), os selos também cedem no aperto: o texto encolhe com reticências e a
+     frase inteira fica no `title`. Rígidos, o "Alterações não salvas" e o "Não consegui guardar"
+     passavam por baixo do segmentado (full review, 11/09/2026). */
+  .sz-bar__start > .sz-bar-seal {
+    flex: 0 1 auto;
+    min-width: 1.75rem;
+  }
+  .sz-bar-seal__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .sz-bar-seal--icon {
     justify-content: center;

@@ -47,9 +47,11 @@ export function SavePill({
   }
   const Icon = SAVE_ICON[tone]
   return (
-    <span className={`sz-bar-seal sz-bar-seal--${tone}`} title={error ?? undefined}>
+    // O `title` leva a frase inteira: sem espaço, o texto encolhe com reticências (a barra não
+    // quebra linha) e quem passa o mouse ainda lê "Alterações não salvas" por completo.
+    <span className={`sz-bar-seal sz-bar-seal--${tone}`} title={error ?? label}>
       <Icon />
-      {label}
+      <span className="sz-bar-seal__text">{label}</span>
     </span>
   )
 }

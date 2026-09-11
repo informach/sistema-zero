@@ -26,6 +26,9 @@ function fakeEditor(model: Record<string, unknown> | null, options: { readOnly?:
     typed: () => {
       for (const listener of content) listener()
     },
+    switchedTab: () => {
+      for (const listener of modelChange) listener()
+    },
     listeners: () => content.size + modelChange.size,
   }
   return editor as unknown as monacoNs.editor.IStandaloneCodeEditor & typeof editor
@@ -52,15 +55,38 @@ describe('monacoHistory: desfazer e refazer do código', () => {
     history.dispose()
   })
 
-  it('avisa a barra a cada edição e para de ouvir ao sair', () => {
-    const editor = fakeEditor({ canUndo: () => true, canRedo: () => true })
+  it('avisa a barra quando o que dá para desfazer MUDA, não a cada tecla, e para de ouvir ao sair', () => {
+    // A 1ª letra liga o desfazer (avisa); as seguintes não mudam nada (não avisam). Cada aviso
+    // re-renderiza a barra inteira (full review de 11/09/2026).
+    let podeDesfazer = false
+    const editor = fakeEditor({ canUndo: () => podeDesfazer, canRedo: () => false })
     const history = createMonacoHistory(editor)
     const heard = mock(() => {})
     history.subscribe(heard)
+    podeDesfazer = true
+    editor.typed()
+    expect(heard).toHaveBeenCalledTimes(1)
+    editor.typed()
     editor.typed()
     expect(heard).toHaveBeenCalledTimes(1)
     history.dispose()
     expect(editor.listeners()).toBe(0)
+  })
+
+  it('trocar de aba avisa sempre (outro arquivo, outra pilha) e passa a comparar com a aba nova', () => {
+    let podeDesfazer = true
+    const editor = fakeEditor({ canUndo: () => podeDesfazer, canRedo: () => false })
+    const history = createMonacoHistory(editor)
+    const heard = mock(() => {})
+    history.subscribe(heard)
+    // A aba nova ainda não tem o que desfazer.
+    podeDesfazer = false
+    editor.switchedTab()
+    expect(heard).toHaveBeenCalledTimes(1)
+    // Digitar nela sem mudar os botões não avisa: a régua agora é a aba nova, não a de antes.
+    editor.typed()
+    expect(heard).toHaveBeenCalledTimes(1)
+    history.dispose()
   })
 
   it('sem os métodos do modelo (outra versão do Monaco): cai no comando e o botão fica ligado', () => {

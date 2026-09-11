@@ -36,11 +36,34 @@ export function createMonacoHistory(
   const notify = () => {
     for (const listener of [...listeners]) listener()
   }
-  // Cada edição (inclusive o próprio desfazer) e cada troca de aba (outro arquivo, outra pilha).
-  const subscriptions = [editor.onDidChangeModelContent(notify), editor.onDidChangeModel(notify)]
 
   const model = () => editor.getModel() as (monacoNs.editor.ITextModel & UndoableModel) | null
   const readOnly = () => editor.getRawOptions().readOnly === true
+  const can = (kind: 'canUndo' | 'canRedo') => {
+    const current = model()
+    if (!current || readOnly()) return false
+    return typeof current[kind] === 'function' ? current[kind]() : true
+  }
+
+  // A barra só é avisada quando o que dá para desfazer ou refazer MUDA, como no adaptador do
+  // Blockly: cada aviso sobe a versão do registro e re-renderiza a barra inteira, e avisar a cada
+  // tecla fazia isso a cada letra digitada na Ponte e no modo Código (full review de 11/09/2026).
+  // Trocar de aba é outro arquivo e outra pilha: avisa sempre.
+  const state = () => `${can('canUndo')}|${can('canRedo')}`
+  let last = state()
+  const notifyIfChanged = () => {
+    const next = state()
+    if (next === last) return
+    last = next
+    notify()
+  }
+  const subscriptions = [
+    editor.onDidChangeModelContent(notifyIfChanged),
+    editor.onDidChangeModel(() => {
+      last = state()
+      notify()
+    }),
+  ]
 
   const run = (kind: 'undo' | 'redo') => {
     const current = model()
@@ -51,12 +74,7 @@ export function createMonacoHistory(
       editor.focus()
       editor.trigger('sz-topbar', kind, null)
     }
-    notify()
-  }
-  const can = (kind: 'canUndo' | 'canRedo') => {
-    const current = model()
-    if (!current || readOnly()) return false
-    return typeof current[kind] === 'function' ? current[kind]() : true
+    notifyIfChanged()
   }
 
   return {

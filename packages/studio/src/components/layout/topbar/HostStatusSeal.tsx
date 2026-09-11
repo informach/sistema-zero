@@ -55,7 +55,7 @@ export function HostStatusSeal({
       className={`sz-bar-seal sz-bar-seal--${status.tone}`}
     >
       <Icon />
-      {status.label}
+      <span className="sz-bar-seal__text">{status.label}</span>
     </span>
   )
 }

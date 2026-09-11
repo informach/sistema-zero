@@ -112,7 +112,7 @@ describe('Topbar × olhinho do preview', () => {
 describe('Topbar × chrome do host', () => {
   it('wide: o menu é o PRIMEIRO botão da barra (sem title) e, em repouso, o selo é só a nuvem', () => {
     const { chrome, onToggle } = chromeWith()
-    const { container } = mount(1200, chrome)
+    const { container } = mount(1440, chrome)
     const header = container.querySelector('header')
     const primeiro = header?.querySelector('button')
     expect(primeiro?.getAttribute('aria-label')).toBe('Esconder menu')
@@ -145,7 +145,7 @@ describe('Topbar × chrome do host', () => {
         text: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
       },
     })
-    mount(1200, chrome)
+    mount(1440, chrome)
     const selo = screen.getByRole('status', {
       name: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
     })
@@ -166,8 +166,10 @@ describe('Topbar × chrome do host', () => {
     expect(botao.className).toBe('sz-tool-btn-menu')
   })
 
-  it('narrow e compact: o selo vira BOLINHA com o texto no aria-label (a barra não tem wrap)', () => {
-    for (const width of [900, 400]) {
+  it('largo apertado, narrow e compact: o selo vira BOLINHA com o texto no aria-label', () => {
+    // 1200 = o largo abaixo de `STUDIO_BAR_LABELS_MIN_PX`: a barra não tem wrap, e com a frase o
+    // "Salvo" e a nuvem passavam por baixo do segmentado (full review de 11/09/2026).
+    for (const width of [1200, 900, 400]) {
       const { chrome } = chromeWith({
         status: {
           tone: 'warn',
@@ -221,10 +223,10 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(nomes).toEqual(['Ocultar pré-visualização', 'Mais opções', 'Compartilhar'])
   })
 
-  it('o voltar é UM botão (círculo + marca) com o nome e o title de sempre; a 1440 a marca aparece', () => {
+  it('o voltar é UM botão (círculo + marca) com o nome e o title de sempre; a 1600 a marca aparece', () => {
     const onExit = mock(() => {})
     const { container } = render(
-      <StudioLayoutProvider value={layoutFor(1440)}>
+      <StudioLayoutProvider value={layoutFor(1600)}>
         <Topbar onExit={onExit} />
       </StudioLayoutProvider>,
     )
@@ -239,8 +241,10 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
     expect(onExit).toHaveBeenCalledTimes(1)
   })
 
-  it('abaixo de 1360px a marca vira só nome acessível (e a divisória sai)', () => {
-    const { container } = mount(1200, null)
+  it('abaixo de 1600px a marca vira só nome acessível (e a divisória sai)', () => {
+    // 1440 de propósito: com desfazer e refazer na barra, a marca a 1360 empurrava o "Salvo" por
+    // baixo do segmentado; hoje ela só aparece com folga.
+    const { container } = mount(1440, null)
     const voltar = screen.getByRole('button', { name: 'Sistema Zero Studio' })
     expect(within(voltar).getByText('Sistema Zero Studio').className).toBe('sr-only')
     expect(container.querySelector('.sz-bar-divider')).toBeNull()
@@ -248,7 +252,7 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
 
   it('sem onExit (aula, admin) a marca é estática e só aparece quando cabe', () => {
     const { container, unmount } = render(
-      <StudioLayoutProvider value={layoutFor(1440)}>
+      <StudioLayoutProvider value={layoutFor(1600)}>
         <Topbar />
       </StudioLayoutProvider>,
     )
@@ -284,21 +288,43 @@ describe('Topbar × a tela-modelo do Estúdio', () => {
 
   it('o "Salvo" é a pílula menta sem role no largo; não salvo e erro trocam o tom', () => {
     const { unmount } = mount(1440, null)
-    const salvo = screen.getByText('Salvo')
+    // O texto mora num span próprio (que encolhe com reticências); a pílula é o pai dele.
+    const salvo = screen.getByText('Salvo').parentElement as HTMLElement
     expect(salvo.className).toBe('sz-bar-seal sz-bar-seal--ok')
     expect(salvo.getAttribute('role')).toBeNull()
+    expect(salvo.getAttribute('title')).toBe('Salvo')
     unmount()
 
     useProjectStore.setState({ isDirty: true })
     const sujo = mount(1440, null)
-    expect(screen.getByText('Alterações não salvas').className).toContain('sz-bar-seal--warn')
+    expect(screen.getByText('Alterações não salvas').parentElement?.className).toContain(
+      'sz-bar-seal--warn',
+    )
     sujo.unmount()
 
     useProjectStore.setState({ saveError: 'Sem espaço no aparelho' })
     mount(1440, null)
-    const erro = screen.getByText('Erro ao salvar')
+    const erro = screen.getByText('Erro ao salvar').parentElement as HTMLElement
     expect(erro.className).toContain('sz-bar-seal--danger')
     expect(erro.getAttribute('title')).toBe('Sem espaço no aparelho')
+  })
+
+  // Full review de 11/09/2026: com desfazer e refazer na barra, os limites antigos deixavam a
+  // esquerda passar por baixo do segmentado (medido no playground com o chrome do host, no pior
+  // caso de texto). Os limites novos, travados pelo que eles fazem:
+  it('no largo apertado (abaixo de 1400) as pílulas e o segmentado ficam no ícone, na altura larga', () => {
+    mount(1200, null, (node) => <StudioShareProvider value={SHARE}>{node}</StudioShareProvider>)
+    const header = document.querySelector('header') as HTMLElement
+    expect(header.className).toBe('sz-bar')
+    const blocos = screen.getByRole('button', { name: 'Blocos' })
+    expect(within(blocos).getByText('Blocos').className).toBe('sr-only')
+    expect(screen.getByRole('button', { name: 'Compartilhar' }).textContent).toBe('')
+  })
+
+  it('abaixo de 520px a barra fica compacta (o "Salvo" vira a bolinha, o nome perde o lápis)', () => {
+    const { container } = mount(500, null)
+    expect(container.querySelector('header')?.className).toContain('sz-bar--compact')
+    expect(screen.getByRole('status', { name: 'Salvo' }).className).toContain('rounded-full')
   })
 
   it('compacto: o "Salvo" continua a bolinha com role status (o e2e a 390px)', () => {
@@ -512,6 +538,28 @@ describe('Topbar × desfazer e refazer', () => {
     })
     const desfazer = screen.getByRole('button', { name: 'Desfazer' })
     expect(desfazer.getAttribute('title')).toBe('Desfazer no código (Ctrl+Z)')
+  })
+
+  it('abaixo de 720px (o estreito apertado) os dois também moram no "⋯"; a 760 ficam na barra', () => {
+    const acima = mountInStudio(760)
+    act(() => {
+      acima.stores.editorHistory.register('blocks', fakeHistory(true, false))
+    })
+    expect(screen.getByRole('button', { name: 'Desfazer' })).toBeTruthy()
+    acima.view.unmount()
+
+    const { stores } = mountInStudio(700)
+    act(() => {
+      stores.editorHistory.register('blocks', fakeHistory(true, false))
+    })
+    expect(screen.queryByRole('button', { name: 'Desfazer' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    const editar = screen.getByRole('group', { name: 'Editar' })
+    expect(
+      within(editar)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Desfazer', 'Refazer'])
   })
 
   it('no compacto os dois saem da barra e entram no "⋯", numa seção Editar', () => {

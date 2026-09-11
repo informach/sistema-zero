@@ -197,6 +197,61 @@ describe('ProjectList × chrome do host', () => {
     expect(screen.queryByText(/na sua conta/)).toBeNull()
   })
 
+  it('com a nuvem falhando, o cartão lilás não promete "na sua conta"; guardando, promete', async () => {
+    await persistProject(createEmptyProject('01J00000000000000000000AAA', 'Nave'))
+    await persistProject(createEmptyProject('01J00000000000000000000BBB', 'Pong'))
+    const comStatus = (status: StudioHostChrome['status']): StudioHostChrome => ({
+      menu: null,
+      status,
+      back: null,
+      account: { label: 'Guardado na sua conta' },
+    })
+    const semInternet = comStatus({
+      tone: 'warn',
+      icon: 'offline',
+      label: 'Sem internet agora',
+      text: 'Sem internet agora. Vou guardar na sua conta quando voltar.',
+    })
+    const falhou = comStatus({
+      tone: 'danger',
+      icon: 'alert',
+      label: 'Não consegui guardar',
+      text: 'Não consegui guardar na sua conta. Vou tentar de novo.',
+    })
+    for (const chrome of [semInternet, falhou]) {
+      const { unmount } = render(
+        <StudioHostChromeProvider value={chrome}>
+          <ProjectList onOpenProject={() => {}} theme="light" />
+        </StudioHostChromeProvider>,
+      )
+      await waitFor(() => {
+        expect(
+          screen.getByRole('heading', { name: '2 projetos guardados neste aparelho' }),
+        ).toBeTruthy()
+      })
+      unmount()
+    }
+
+    // Anti-vácuo: guardando (tom neutro) a nuvem está funcionando, e a frase segue "na sua conta".
+    render(
+      <StudioHostChromeProvider
+        value={comStatus({
+          tone: 'muted',
+          icon: 'upload',
+          label: 'Guardando…',
+          text: 'Guardando na sua conta…',
+        })}
+      >
+        <ProjectList onOpenProject={() => {}} theme="light" />
+      </StudioHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: '2 projetos guardados na sua conta' }),
+      ).toBeTruthy()
+    })
+  })
+
   it('o que acontece AGORA vence a conta em repouso (o selo do host manda na pílula)', async () => {
     const chrome: StudioHostChrome = {
       menu: null,

@@ -353,15 +353,20 @@ export function ProjectList({
         }
       : null)
   // O cartão da faixa lilás diz ONDE os projetos estão: na conta (com a nuvem ligada) ou só
-  // neste aparelho (sem perfil, no playground). Nunca promete a nuvem que não existe.
+  // neste aparelho (sem perfil, no playground). Nunca promete a nuvem que não existe, nem quando
+  // ela existe e está falhando: com o selo dizendo "Sem internet agora" ou "Não consegui
+  // guardar", o cartão logo abaixo não pode afirmar "na sua conta" (full review de 11/09/2026).
+  // "Neste aparelho" é verdade nos dois casos: a cópia local sempre existe.
+  const cloudTrouble = hostChrome?.status?.tone === 'warn' || hostChrome?.status?.tone === 'danger'
   const savedCount = projects?.length ?? 0
-  const savedText = hostChrome?.account
-    ? savedCount === 1
-      ? t('projects.saved.accountOne')
-      : t('projects.saved.account', { count: savedCount })
-    : savedCount === 1
-      ? t('projects.saved.deviceOne')
-      : t('projects.saved.device', { count: savedCount })
+  const savedText =
+    hostChrome?.account && !cloudTrouble
+      ? savedCount === 1
+        ? t('projects.saved.accountOne')
+        : t('projects.saved.account', { count: savedCount })
+      : savedCount === 1
+        ? t('projects.saved.deviceOne')
+        : t('projects.saved.device', { count: savedCount })
   // O "Importar um jogo" do cartão usa o MESMO input e o MESMO aviso do "Importar" do cabeçalho.
   const importRef = useRef<ImportButtonHandle | null>(null)
   // O painel dos kits abre entre a linha de ferramentas e a grade; "Precisa de ajuda para
