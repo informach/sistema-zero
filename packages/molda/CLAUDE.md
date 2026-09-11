@@ -2378,3 +2378,55 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   por retenção de falha no WebKit 270357; não alterar o teste para aceitar recuperação falha.
 - Compatibilidade e limites: `docs/plans/2026-09-10-molda-compatibilidade.md`. Importação
   com relatório não equivale a suporte completo a PBR bbmodel ou extensões glTF obrigatórias.
+
+## Molda para crianças de 9+ — três abas, pintar no clique e ferramentas por nível (11/09/2026)
+
+Plano aprovado por ela: `~/.claude/plans/o-gpt-6-astra-come-ou-optimized-candy.md` (lotes 0, A, B,
+C, D, F, E). A oficina nova tinha o MOTOR do Blockbench sem a ORGANIZAÇÃO dele; o plano devolve
+as abas, a pintura do editor antigo e esconde o que é de profissional até o posto certo.
+
+- **Abas Modelar | Pintar | Animar** (`SceneModeTabs`; o modo mora em `useSceneWorkshop`). Em
+  Pintar e Animar somem os destrutivos de modelagem (o próprio registro filtra).
+- **Pintar no clique** (`scene/paintSurface.ts`, `ensureScenePaintSurface`): tocar na peça prepara
+  o lugar da tinta num passo de desfazer, sem mudar a aparência (índice 0 = cor base). Uma região
+  por face, no tamanho da regra do editor antigo (`skinDim`); formas por `packSceneShelves`, malha
+  por `autoMeshUv`; face torta pede consentimento para dividir em triângulos. O limite de cada
+  face vale POR AMOSTRA (`scenePaintFaceBounds`): o traço atravessa faces, carimbo e balde não
+  vazam. Cor e acabamento da peça: `patchScenePieceAppearance` (NUNCA `patchSceneMaterial` direto,
+  que muda todas as peças que dividem o material).
+- **Palco:** `CapturedPaintInput.claimMisses=false` na aba (toque fora da peça gira a câmera, em
+  outra peça escolhe), órbita sem amortecimento em Pintar (o amortecimento cancelava o traço).
+- **Os cinco do editor antigo (lote F):** "+ Nova cor" é GESTO (`state/scenePaletteGesture.ts`, um
+  desfazer por arrasto do seletor nativo); espelho de pintura só na MESMA peça
+  (`ScenePaintInput.mirrorOf`, raio pela normal refletida); girar a pintura da face
+  (`rotateScenePaintRegion`); pintar de perto (`ScenePaintCloseUp`); "Vestir com textura"
+  (`scene/pieceTexture.ts`, só dentro do app: `useOptionalMoldaApp`); atalhos P/E/G/I/1/2/3/M/R/F
+  pelo registro (`paint.*` + `scenePaintShortcuts.ts`, o botão e a tecla fazem a mesma ação).
+- ⚠️⚠️ **A folha guarda as linhas de baixo para cima, mas as FORMAS correm a UV de cima para
+  baixo** (as bases do editor antigo, `t` para baixo). Tudo que mostra ou escreve uma face "como a
+  criança a vê" (o "de perto", o "Vestir") passa por `scene/paintFaceView.ts`, que tira a
+  orientação da GEOMETRIA (espaço da peça; face deitada: fundo em cima olhando de cima, frente em
+  cima olhando de baixo). Mostrar a folha crua pôs a face de ponta-cabeça no F4.
+- **Portão por nível (lotes A e E):** vocabulário puro em `core/toolFamilies.ts`
+  (`@sistemazero/molda/tools`), faixas do core em `MOLDA_TOOL_BAND_LEVELS`, contrato
+  `MoldaHostAdapter.toolAccess` (ausente = tudo liberado), `useMoldaToolAccess`/`RequiresTool` e o
+  mapa exaustivo `sceneCommandAccess.ts`. Trancado NÃO é renderizado (nunca `disabled`), o gate
+  mora nos componentes-folha, e `scene/`, `state/`, `export/`… não importam o portão (teste).
+  - `SceneUpcomingTools`: uma linha "Ferramentas que vêm por aí" por aba; o "quando" vem do host.
+  - O estado não vaza: `SceneCanvas.allowedTool` impede que uma ferramenta guardada acenda a alça
+    numa família trancada; os Primeiros passos filtram os assuntos.
+  - Atalho trancado não age e dá `preventDefault`; Ctrl+D duplica (o registro já o prometia).
+  - ⚠️ "Para outros programas" (o GLB portátil), glTF e OBJ são `files.interop`: no básico o GLB
+    vai só para o Estúdio. A pintura que se mexe pode ser assistida no Pintar do básico (leitura).
+  - `SceneWorkshop.toolAccess.test.tsx`: catraca do nível de entrada (42/30 na abertura, 73/59
+    com uma peça) e a regra de ouro (criação com movimento, ossos, relevo, quadros, espelho em Y e
+    tubo abre, reproduz e exporta idêntica no básico). A catraca do PADRÃO segue em
+    `SceneWorkshop.contract.test.tsx` (47/34 e 87/65).
+  - Kids: `lib/molda-tool-access.ts` (posto → famílias; equipe e Lenda = tudo; além do horizonte
+    do catálogo, "E tem muito mais pela frente"; `/molda?nivel=` só para a equipe) e
+    `lib/molda-level-gain.ts` (a linha "No Molda: …" da comemoração, só com o produto).
+  - Playground e e2e: `?nivel=explorer|architect|god`.
+- **Palco:** as faixas do momento (gravar pose, forma-base, forças dos ossos) formam uma PILHA de
+  cartões abaixo das ferramentas flutuantes. No fluxo, a barra flutuante as cobria.
+- ⚠️ E2E: a porta 5199 costuma ser o playground do Pinta de outra sessão. Use `E2E_PORT=5202+` e
+  nunca encerre um servidor que você não subiu.
