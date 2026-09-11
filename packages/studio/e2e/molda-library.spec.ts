@@ -32,6 +32,11 @@ test('traz os três formatos do Molda para o projeto escolhido e preserva o vín
   }
   await modal.getByRole('button', { name: 'Fechar', exact: true }).last().click()
   await page.keyboard.press('Escape')
+  // Recarregar só depois de o autosave gravar. As quatro mudanças acima caem na mesma
+  // janela do debounce (1 s), e a gravação que o flush dispara ao sair da página nem
+  // sempre sobrevive à troca de documento (medido em 11/09: perdeu 9 de 16 recargas).
+  // O que este teste prova é o vínculo depois de reabrir, não o flush de saída.
+  await expect(page.getByText('Salvo', { exact: true })).toBeVisible({ timeout: 10_000 })
   await page.reload()
   await openAssets()
   await expect(page.getByLabel('Nome do modelo 3D nave-do-molda')).toHaveValue('nave-do-molda')
