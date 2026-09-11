@@ -50,10 +50,9 @@ describe('pensa.css lê os tokens compartilhados', () => {
     expect(css).toContain(':focus-visible:not(.sz-tool-btn-menu')
   })
 
-  it('os dois cabeçalhos declaram o respiro que a ABA do menu desconta (24px; 16px no estreito)', () => {
-    expect(bloco('.pensa-home-header {')).toContain('--sz-tool-inset: 24px')
-    expect(bloco('.pensa-project-header {')).toContain('--sz-tool-inset: 24px')
-    expect(css).toContain('--sz-tool-inset: 16px')
+  it('nenhum cabeçalho desconta mais o respiro: o menu é o quadrado dentro do conteúdo', () => {
+    // A aba colada na linha da sidebar saiu em 11/09/2026 (o desenho das telas-modelo).
+    expect(css).not.toContain('--sz-tool-inset')
   })
 
   it('color-mix sempre em oklab (em oklch o matiz gira e dá rosa)', () => {

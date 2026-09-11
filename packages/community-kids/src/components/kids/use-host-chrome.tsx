@@ -76,7 +76,6 @@ export function useHostChrome({
     () =>
       section
         ? {
-            text: section.text,
             label: section.label,
             href: section.href,
             onNavigate: () => router.push(section.href),

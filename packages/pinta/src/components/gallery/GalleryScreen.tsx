@@ -374,9 +374,7 @@ export function GalleryScreen(): JSX.Element {
           2ª linha); linha 2 = filtros à esquerda, busca à direita. Este é o título da página
           quando o Pinta está embarcado, por isso mora aqui e some ao abrir o editor. As
           receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o host importa). */}
-      <header className="sz-tool-header mb-7 [--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]">
-        {/* O `--sz-tool-inset` é o padding da raiz (`p-4 sm:p-6`): a ABA do menu o desconta para
-            encostar na linha da sidebar. */}
+      <header className="sz-tool-header mb-7">
         <div className="sz-tool-header__lead">
           {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
           <div className="sz-tool-header__title">

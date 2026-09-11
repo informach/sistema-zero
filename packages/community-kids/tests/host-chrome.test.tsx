@@ -90,7 +90,7 @@ function Probe({ cloud, syncing = false }: { cloud: CreationsCloud | null; synci
         {chrome.status ? `${chrome.status.tone}|${chrome.status.label}` : 'null'}
       </output>
       <output data-testid="back">
-        {chrome.back ? `${chrome.back.text}|${chrome.back.label}|${chrome.back.href}` : 'null'}
+        {chrome.back ? `${chrome.back.label}|${chrome.back.href}` : 'null'}
       </output>
       <output data-testid="account">{chrome.account ? chrome.account.label : 'null'}</output>
       {chrome.menu ? (
@@ -223,11 +223,11 @@ describe('useHostChrome — o selo da nuvem', () => {
 })
 
 describe('useHostChrome — a seta das galerias', () => {
-  it('as quatro ferramentas voltam para Criar, com o nome da seção CONTIDO no nome falado', () => {
+  it('as quatro ferramentas voltam para Criar', () => {
     for (const route of ['/pinta', '/estudio', '/pensa', '/molda']) {
       pathname = route
       const view = mount(null)
-      expect(screen.getByTestId('back').textContent).toBe('Criar|Voltar para Criar|/criar')
+      expect(screen.getByTestId('back').textContent).toBe('Voltar para Criar|/criar')
       view.unmount()
     }
   })
@@ -254,7 +254,7 @@ describe('useHostChrome — a seta das galerias', () => {
     pathname = '/pinta'
     mount(null)
     expect(screen.getByTestId('menu').textContent).toBe('null')
-    expect(screen.getByTestId('back').textContent).toBe('Criar|Voltar para Criar|/criar')
+    expect(screen.getByTestId('back').textContent).toBe('Voltar para Criar|/criar')
   })
 })
 

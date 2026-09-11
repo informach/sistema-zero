@@ -31,10 +31,9 @@ entrou nos DOIS cabeçalhos (home e detalhe do plano). Ele é a receita COMPARTI
 `.sz-tool-btn-menu` de **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de painel,
 sombra dura; "menu escondido" = borda e tinta suaves do acento via `[aria-pressed="true"]`), a
 MESMA do Pinta e do Estúdio (o círculo de 46px `.pensa-round-btn` da primeira versão SAIU no lote
-do mesmo dia: ela reclamou que os três tinham saído diferentes). É uma **ABA colada na linha da
-sidebar** (cantos quadrados à esquerda, sem borda esquerda, margem negativa `--sz-tool-inset`):
-`.pensa-home-header` e `.pensa-project-header` declaram `--sz-tool-inset: 24px` (16px no
-contêiner ≤ 560px), o respiro lateral deles. O
+do mesmo dia: ela reclamou que os três tinham saído diferentes). ⚠️ Foi uma **ABA colada na linha
+da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos de 12px dentro do
+conteúdo (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu dos dois cabeçalhos. O
 "voltar" do detalhe usa `.sz-tool-btn.sz-tool-btn--icon` (`ArrowLeftIcon` inline) para não
 destoar do menu ao lado. ⚠️ Nenhuma regra SEM camada pode alcançar esses botões (a antiga
 `.pensa-project-header > button` morreu, e o `:focus-visible` global tem `:not(.sz-tool-*)`),

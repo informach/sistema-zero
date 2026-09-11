@@ -383,9 +383,9 @@ export function ProjectList({
         {/* Respiro vertical = o da galeria do Molda, que ela aprovou (07/09, "não tão
             embolado"): 28px do cabeçalho para a linha dos filtros (`pb-7`) e 48px dos filtros para
             a grade (`mb-12`), o mesmo ritmo do Pinta e do Pensa. */}
-        <header className="sz-tool-header px-6 pt-4 pb-7 [--sz-tool-inset:1.5rem]">
-          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1, e é
-              uma ABA colada na linha da sidebar (o `--sz-tool-inset` = o `px-6` daqui). */}
+        <header className="sz-tool-header px-6 pt-4 pb-7">
+          {/* O botão do menu da comunidade (host) vem ANTES do título, alinhado à linha do h1: o
+              quadrado das telas-modelo, dentro do padding. */}
           <div className="sz-tool-header__lead">
             {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
             <div className="sz-tool-header__title">

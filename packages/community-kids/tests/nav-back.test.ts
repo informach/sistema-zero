@@ -4,9 +4,8 @@ import { backToSection, isNavActive, NAV_ITEMS } from '../src/components/kids/na
 /**
  * A setinha de voltar das páginas internas (pedido dela, 11/09/2026): cada uma volta para a
  * página principal da SEÇÃO a que pertence, lida do próprio mapa do menu. Esta é a tabela
- * que ela descreveu, rota a rota, mais as duas regras que morderiam em silêncio: a página
- * principal não tem seta (voltaria para ela mesma) e o nome curto da seção está CONTIDO na
- * frase inteira, porque a seta das ferramentas mostra só o nome e fala a frase (WCAG 2.5.3).
+ * que ela descreveu, rota a rota, mais as regras que morderiam em silêncio: a página
+ * principal não tem seta (voltaria para ela mesma) e um prefixo parecido não é a seção.
  */
 describe('backToSection', () => {
   const casos: Array<[string, string, string]> = [
@@ -39,24 +38,16 @@ describe('backToSection', () => {
     expect(backToSection('/recadosx')).toBeNull()
   })
 
-  it('o texto curto está CONTIDO na frase inteira em toda seção com página interna', () => {
+  it('toda seção com página interna devolve a própria frase de voltar', () => {
     // O Início não tem páginas internas (a raiz só casa exata), então fica de fora.
     const secoes = NAV_ITEMS.filter((item) => item.href !== '/')
     expect(secoes.length).toBe(4) // anti-vácuo
     for (const item of secoes) {
-      const back = backToSection(`${item.href}/interna`)
-      expect(back).not.toBeNull()
-      expect(back?.label).toContain(back?.text ?? '∅')
+      expect(backToSection(`${item.href}/interna`)).toEqual({
+        href: item.href,
+        label: item.backLabel,
+      })
     }
-  })
-
-  it('é o nome da seção quando a frase o contém, e a frase quando não contém', () => {
-    expect(backToSection('/pinta')?.text).toBe('Criar')
-    expect(backToSection('/ranking')?.text).toBe('Comunidade')
-    expect(backToSection('/quarto')?.text).toBe('Meu espaço')
-    // "Voltar ao mapa" não contém "Carreira": mostrar "Carreira" e falar "Voltar ao mapa"
-    // quebraria o casamento entre o que se vê e o que se diz.
-    expect(backToSection('/cursos/trilha/faisca')?.text).toBe('Voltar ao mapa')
   })
 
   it('os Recados voltam para a Comunidade SEM acender a Comunidade no menu', () => {

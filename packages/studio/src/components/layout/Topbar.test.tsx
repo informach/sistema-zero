@@ -94,9 +94,10 @@ describe('Topbar × chrome do host', () => {
     expect(primeiro?.getAttribute('aria-label')).toBe('Esconder menu')
     expect(primeiro?.getAttribute('aria-pressed')).toBe('false')
     expect(primeiro?.getAttribute('title')).toBeNull()
-    // A ABA desconta o padding da barra para encostar na linha da sidebar.
+    // O quadrado das telas-modelo, dentro do padding: a barra não desconta mais o respiro
+    // (a aba colada na linha da sidebar saiu em 11/09/2026).
     expect(primeiro?.className).toBe('sz-tool-btn-menu')
-    expect(header?.className).toContain('[--sz-tool-inset:1rem]')
+    expect(header?.className).not.toContain('--sz-tool-inset')
     fireEvent.click(primeiro as HTMLButtonElement)
     expect(onToggle).toHaveBeenCalledTimes(1)
 

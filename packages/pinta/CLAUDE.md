@@ -67,11 +67,10 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   **`@sistemazero/ui/tool-chrome.css`** (44px, borda 2px, fundo de painel, sombra dura; "menu
   escondido" = borda e tinta suaves do acento via `[aria-pressed="true"]`, NÃO o
   `pin-tool-active`, que leria como ferramenta selecionada; sem `title`) — a MESMA do Estúdio e
-  do Pensa (lote do mesmo dia: ela reclamou que os três tinham saído diferentes). Ela é uma **ABA
-  colada na linha da sidebar** (cantos quadrados à esquerda, sem borda esquerda, margem negativa
-  `--sz-tool-inset`): a barra do editor declara `[--sz-tool-inset:0.75rem]` (o `px-3` dela) e o
-  cabeçalho da galeria `[--sz-tool-inset:1rem] sm:[--sz-tool-inset:1.5rem]` (o `p-4 sm:p-6` da
-  raiz). `HostCloudStatus`:
+  do Pensa (lote do mesmo dia: ela reclamou que os três tinham saído diferentes). ⚠️ Foi uma
+  **ABA colada na linha da sidebar** até 11/09/2026; desde as telas-modelo é o QUADRADO de cantos
+  de 12px dentro do padding (40px no mouse, 44px no toque), e o `--sz-tool-inset` saiu da barra
+  do editor e do cabeçalho da galeria. `HostCloudStatus`:
   na barra (`variant="bar"`) o idioma do `SaveBadge` (texto forte + ícone lucide; rótulo curto e,
   abaixo de `lg`, só o ícone; offline/erro mostram texto sempre); no cabeçalho (`variant="header"`)
   a PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem

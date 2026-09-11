@@ -38,9 +38,7 @@ export interface StudioHostChromeStatus {
  * simples chama `onNavigate` (navegação do host) e o com Ctrl/Cmd/do meio fica com o navegador.
  */
 export interface StudioHostChromeBack {
-  /** O nome curto, visível ao lado da seta ("Criar"). */
-  text: string
-  /** O nome acessível inteiro ("Voltar para Criar"); CONTÉM o `text`. Nunca vira `title`. */
+  /** O nome acessível ("Voltar para Criar"): a seta é só o ícone. Nunca vira `title`. */
   label: string
   href: string
   onNavigate: () => void

@@ -242,9 +242,7 @@ export interface PensaHostChromeMenu {
  * navegador. O Pensa espelha só `menu` e `back` (sem nuvem de conta: o plano vive no servidor).
  */
 export interface PensaHostChromeBack {
-  /** O nome curto, visível ao lado da seta ("Criar"). */
-  text: string
-  /** O nome acessível inteiro ("Voltar para Criar"); CONTÉM o `text`. Nunca vira `title`. */
+  /** O nome acessível ("Voltar para Criar"): a seta é só o ícone. Nunca vira `title`. */
   label: string
   href: string
   onNavigate: () => void

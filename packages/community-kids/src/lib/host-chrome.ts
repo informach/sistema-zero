@@ -42,15 +42,11 @@ export interface HostChromeStatus {
  * A seta das GALERIAS de volta à seção-mãe (Criar), pedido dela de 11/09/2026: toda página
  * interna volta para a principal da seção. Só a galeria desenha; o editor e o bloco de aula
  * ignoram o campo (lá a seta já volta para a galeria). O destino sai do `backToSection` do
- * menu (`nav.ts`), nunca de uma lista paralela.
+ * menu (`nav.ts`), nunca de uma lista paralela. Na ferramenta ela é o QUADRADO com a seta, ao
+ * lado do botão do menu, como nas barras das telas-modelo: o nome existe só para o leitor.
  */
 export interface HostChromeBack {
-  /** O nome da seção, visível ao lado da seta ("Criar"). */
-  text: string
-  /**
-   * O nome acessível inteiro ("Voltar para Criar"). CONTÉM o `text` (o nome falado começa
-   * pelo que se vê, WCAG 2.5.3). NUNCA vira `title`: vira descrição e o leitor repete.
-   */
+  /** O nome acessível ("Voltar para Criar"). NUNCA vira `title`: vira descrição e o leitor repete. */
   label: string
   /** O destino de verdade do `<a>`: clique com Ctrl/Cmd/do meio abre noutra aba. */
   href: string

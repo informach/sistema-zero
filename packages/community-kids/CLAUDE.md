@@ -1135,7 +1135,10 @@ rodada do dia ele virou uma **ABA da barra lateral** (pedido dela: "semanticamen
 ao menu da esquerda, não às ferramentas"): cantos quadrados à esquerda, sem borda esquerda,
 ENCOSTADA na linha da sidebar (o `border-r` do `<aside>`) por uma margem negativa igual ao padding
 da barra (`--sz-tool-inset`, declarado por cada barra), 44px mantidos; com o menu escondido a aba
-fica colada na borda da tela. A folha entra
+fica colada na borda da tela. ⚠️ **11/09/2026: a aba SAIU** (as telas-modelo mostram o botão como
+um QUADRADO de cantos de 12px dentro do conteúdo, 40px no mouse e 44px no toque, branco sobre a
+faixa creme): a imagem venceu a decisão antiga, e o `--sz-tool-inset` foi apagado das barras e da
+folha. A folha entra
 no `globals.css` DEPOIS do `theme-kids` e ANTES dos CSS dos pacotes (ver `packages/ui/CLAUDE.md`
 regra 3b) e traz também os tokens semânticos `--sz-tool-*` que os três pacotes passaram a ler e as
 receitas do cabeçalho de duas linhas das galerias. A sidebar colapsada é `inert`

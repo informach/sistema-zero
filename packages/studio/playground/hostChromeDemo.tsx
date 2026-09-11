@@ -36,7 +36,6 @@ const DEMO_STATUSES: StudioHostChrome['status'][] = [
 
 // Fora do componente: identidade estável, como a do host de verdade (`useHostChrome`).
 const DEMO_BACK: StudioHostChrome['back'] = {
-  text: 'Criar',
   label: 'Voltar para Criar',
   href: '#criar',
   onNavigate: () => console.log('[playground] voltar para Criar'),

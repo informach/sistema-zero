@@ -48,7 +48,6 @@ const DEMO_STATUSES: Array<PintaHostChromeStatus | null> = [
 
 // Fora do componente: identidade estável, como a do host de verdade (`useHostChrome`).
 const DEMO_BACK: PintaHostChrome['back'] = {
-  text: 'Criar',
   label: 'Voltar para Criar',
   href: '#criar',
   onNavigate: () => console.log('[playground] voltar para Criar'),

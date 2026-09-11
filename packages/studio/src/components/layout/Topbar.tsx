@@ -387,12 +387,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       <header
         className={cn(
           // `min-h-13` (52px) + `py-1`: a barra mede o MESMO com e sem o botão do menu do
-          // host (44px); com `py-2` ela cresceria para 60px só dentro do kids. O `--sz-tool-inset`
-          // é o padding esquerdo: a ABA do menu o desconta para encostar na linha da sidebar.
+          // host (40px no mouse, 44px no toque); com `py-2` ela cresceria só dentro do kids. O
+          // menu é o quadrado das telas-modelo, DENTRO do padding (deixou de ser a aba colada
+          // na linha da sidebar em 11/09/2026).
           'flex min-h-13 items-center border-sz-border border-b-2 bg-sz-panel text-sm',
-          isCompact
-            ? 'gap-1.5 px-2 py-1 [--sz-tool-inset:0.5rem]'
-            : 'gap-3 px-4 py-1 [--sz-tool-inset:1rem]',
+          isCompact ? 'gap-1.5 px-2 py-1' : 'gap-3 px-4 py-1',
         )}
       >
         {/* Esconder/mostrar o menu da comunidade (host): PRIMEIRO da barra, no canto mais

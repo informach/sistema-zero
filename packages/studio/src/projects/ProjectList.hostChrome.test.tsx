@@ -83,10 +83,10 @@ describe('ProjectList × chrome do host', () => {
     expect(primeiro?.getAttribute('aria-label')).toBe('Esconder menu')
     expect(primeiro?.getAttribute('aria-pressed')).toBe('false')
     expect(primeiro?.getAttribute('title')).toBeNull()
-    // A receita COMPARTILHADA das ferramentas (a mesma do Pinta e do Pensa): uma ABA que
-    // desconta o `px-6` do cabeçalho para encostar na linha da sidebar.
+    // A receita COMPARTILHADA das ferramentas (a mesma do Pinta e do Pensa): o quadrado das
+    // telas-modelo, dentro do padding (a aba colada na sidebar saiu em 11/09/2026).
     expect(primeiro?.className).toBe('sz-tool-btn-menu')
-    expect(header?.className).toContain('[--sz-tool-inset:1.5rem]')
+    expect(header?.className).not.toContain('--sz-tool-inset')
     fireEvent.click(primeiro as HTMLButtonElement)
     expect(onToggle).toHaveBeenCalledTimes(1)
     // A lista mostra a frase INTEIRA (tem espaço; a barra do editor usa o rótulo curto), na
