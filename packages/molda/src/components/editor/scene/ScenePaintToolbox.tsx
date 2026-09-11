@@ -7,7 +7,7 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button, ToolButton } from '../../ui/Button'
-import { Eraser, PaintBucket, Pencil, Pipette, RotateCw } from '../../ui/icons'
+import { Eraser, FlipHorizontal2, PaintBucket, Pencil, Pipette, RotateCw } from '../../ui/icons'
 import type { useScenePaint } from './useScenePaint'
 
 export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScenePaint> }) {
@@ -47,6 +47,13 @@ export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScene
           label={SCENE_PAINT_COPY.rotate}
           active={rotate}
           onClick={paint.setRotate}
+        />
+        <ToolButton
+          icon={FlipHorizontal2}
+          label={SCENE_PAINT_COPY.mirror}
+          hint={SCENE_PAINT_COPY.mirrorHint}
+          active={paint.mirror}
+          onClick={() => paint.setMirror(!paint.mirror)}
         />
       </fieldset>
       {picker && <p className="text-xs text-mld-muted">{copy.paintPickerHint}</p>}

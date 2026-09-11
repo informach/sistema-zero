@@ -28,6 +28,8 @@ export interface ScenePaintSample {
   region: string
   /** Optional cell bounds from 3D picking; wide brushes/fills must not cross into adjacent frames. */
   bounds?: ScenePixelRegion
+  /** Espelho de pintura: o ponto refletido no plano do meio, na MESMA peça e na mesma folha. */
+  mirror?: Omit<ScenePaintSample, 'mirror'>
 }
 export interface ScenePaintSegment {
   from: Texel

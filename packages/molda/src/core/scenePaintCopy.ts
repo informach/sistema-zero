@@ -12,6 +12,9 @@ export const SCENE_PAINT_COPY = {
   colors: 'Cores',
   rotate: 'Girar a pintura da face',
   rotateHint: 'Toque numa face para girar a pintura dela.',
+  mirror: 'Espelho de pintura',
+  mirrorHint:
+    'Pinta também o outro lado da mesma peça. Duas peças soltas não se espelham: para isso, use a Simetria.',
   choosePiece: 'Toque numa peça para pintar.',
   modelHint: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela ou escolha “${COPY.scene.paintLook}”.`,
   more: 'Mais jeitos de pintar',

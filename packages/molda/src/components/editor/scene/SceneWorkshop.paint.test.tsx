@@ -53,6 +53,7 @@ function mount(asset: MoldaSceneDocument) {
     callbacks: null as SceneViewportCallbacks | null,
     target: null as ScenePaintTarget | null,
     mode: null as ScenePaintMode | null,
+    mirror: false,
   }
   const factory: SceneViewportFactory = (_canvas, callbacks) => {
     stage.callbacks = callbacks
@@ -69,6 +70,9 @@ function mount(asset: MoldaSceneDocument) {
       },
       setPaintMode: (mode) => {
         stage.mode = mode
+      },
+      setPaintMirror: (enabled) => {
+        stage.mirror = enabled
       },
       setAnimationEditing: () => {},
       setSupportGuides: () => {},
@@ -259,6 +263,36 @@ describe('a aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.geometries).toEqual(bent.geometries)
     expect(editor.getState().canUndo).toBe(false)
+    editor.getState().dispose()
+  })
+})
+
+describe('espelho de pintura', () => {
+  test('liga no palco, e um traço pinta os dois lados no mesmo desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const toggle = screen.getByRole('button', { name: SCENE_PAINT_COPY.mirror })
+    fireEvent.click(toggle)
+    expect(stage.mirror).toBe(true)
+    expect(toggle.getAttribute('aria-pressed')).toBe('true')
+    const imageId = stage.target!.imageId
+    const image = () => editor.getState().asset.images.find((entry) => entry.id === imageId)!
+    const prepared = editor.getState().asset
+    act(() => {
+      const paint = stage.callbacks!.paint!
+      paint.begin({ point: [2, 2], region: 'a', mirror: { point: [5, 2], region: 'b' } })
+      paint.move({ point: [3, 2], region: 'a', mirror: { point: [4, 2], region: 'b' } })
+      paint.end(true)
+    })
+    const row = (x: number) => image().layers[0]!.pixels[2 * image().width + x]
+    expect([row(2), row(3), row(4), row(5)]).toEqual([7, 7, 7, 7])
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.images).toEqual(prepared.images)
+    fireEvent.click(toggle)
+    expect(stage.mirror).toBe(false)
     editor.getState().dispose()
   })
 })

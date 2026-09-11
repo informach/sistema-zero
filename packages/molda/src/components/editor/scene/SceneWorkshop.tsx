@@ -390,6 +390,7 @@ export function SceneWorkshop({
               onInterrupt={workshop.cancelGesture}
               skinPaint={workshop.skinPaint}
               paintTarget={workshop.paint.session?.target ?? null}
+              paintMirror={workshop.paint.mirror}
               paint={workshop.paint.actions}
               flipbook={workshop.flipbook}
               animation={workshop.animation}

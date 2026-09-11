@@ -64,6 +64,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const picker = tool === 'picker'
   /** Girar a pintura da face: cada toque numa face gira a pintura dela 90°. */
   const rotate = tool === 'rotate'
+  /** Espelho de pintura: o traço pinta também o ponto refletido no meio, na mesma peça. */
+  const [mirror, setMirror] = useState(false)
   const [tolerance, setTolerance] = useState(0)
   const imageTask = useSceneImageTask(editor)
   const cancelImage = imageTask.cancel
@@ -102,7 +104,10 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       }),
     [editor, runImage],
   )
-  const stroke = useRef<{ last: ScenePaintSample | null } | null>(null)
+  const stroke = useRef<{
+    last: ScenePaintSample | null
+    lastMirror: ScenePaintSample | null
+  } | null>(null)
   const publishing = useRef(false)
   const gesture = useMemo(
     () =>
@@ -206,6 +211,20 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         return false
       }
       current.last = sample
+      // O espelho entra no MESMO gesto: um traço, um desfazer, dos dois lados.
+      const reflected = sample.mirror
+      if (reflected) {
+        const before = current.lastMirror
+        const start =
+          before?.region === reflected.region && !crossesSeam(before, reflected)
+            ? before.point
+            : reflected.point
+        if (!gesture.segment(start, reflected.point, reflected.bounds)) {
+          cancel()
+          return false
+        }
+      }
+      current.lastMirror = reflected ?? null
       return true
     } finally {
       publishing.current = false
@@ -314,7 +333,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         return false
       }
       if (!gesture.begin(session.target, chosen, brush, data.image, scope)) return false
-      stroke.current = { last: null }
+      stroke.current = { last: null, lastMirror: null }
       setError(null)
       setDrawing(true)
       return publish(sample)
@@ -325,7 +344,10 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         return
       }
       if (sample) publish(sample)
-      else if (stroke.current) stroke.current.last = null
+      else if (stroke.current) {
+        stroke.current.last = null
+        stroke.current.lastMirror = null
+      }
     },
     end(commit) {
       if (shapeGesture.active()) {
@@ -346,6 +368,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     fill,
     picker,
     rotate,
+    mirror,
     shape,
     filled,
     endColor,
@@ -422,6 +445,10 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     setRotate: () => {
       cancel()
       setTool('rotate')
+    },
+    setMirror: (value: boolean) => {
+      cancel()
+      setMirror(value)
     },
     setTolerance,
     setShape: (value: ScenePaintDraft['tool']) => {

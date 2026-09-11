@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { OrthographicCamera } from 'three'
 import { createSceneMaterialImage } from '../scene/appearanceCommands'
-import { addScenePrimitive } from '../scene/commands'
+import { addSceneMirror, addScenePrimitive } from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
 import type { ScenePaintSample } from '../scene/imagePaint'
@@ -391,4 +391,85 @@ test('na folha que a aba Pintar prepara, cada amostra leva o limite da face toca
     resource.dispose()
     canvas.remove()
   }
+})
+
+test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio, não', () => {
+  function run(shift: number, symmetry = false) {
+    let n = 0
+    const base = migrateLegacyModel(makeModel({ parts: [] })).document
+    const withBox = addScenePrimitive(base, 'box', 'caixa', () => `m${++n}`)
+    const nodeId = withBox.nodes.at(-1)!.id
+    const moved = {
+      ...withBox,
+      nodes: withBox.nodes.map((node) =>
+        node.id === nodeId && node.transform.kind === 'trs'
+          ? {
+              ...node,
+              transform: {
+                ...node.transform,
+                translation: [shift, 1, 0] as [number, number, number],
+              },
+            }
+          : node,
+      ),
+    }
+    const source = symmetry
+      ? addSceneMirror(moved, nodeId, { axis: 'x', offset: 0, nextId: () => `m${++n}` })
+      : moved
+    const prepared = ensureScenePaintSurface(source, { nodeId }, () => `m${++n}`)
+    if (prepared.status !== 'ready') throw new Error('Superfície ausente.')
+    const index = indexSceneDocument(prepared.document)
+    const resource = new SceneRenderResource()
+    resource.update(prepared.document)
+    const canvas = window.document.createElement('canvas')
+    canvas.setPointerCapture = () => {}
+    canvas.hasPointerCapture = () => false
+    canvas.releasePointerCapture = () => {}
+    canvas.getBoundingClientRect = () => new DOMRect(0, 0, 400, 400)
+    window.document.body.append(canvas)
+    const camera = new OrthographicCamera(-4, 4, 4, -4, 0.1, 100)
+    camera.position.set(0, 20, 0)
+    camera.up.set(0, 0, -1)
+    camera.lookAt(0, 0, 0)
+    camera.updateMatrixWorld(true)
+    const begins: ScenePaintSample[] = []
+    const input = new ScenePaintInput(
+      canvas,
+      () => camera,
+      () => index,
+      resource,
+      {
+        begin: (sample) => {
+          begins.push(sample)
+          return true
+        },
+        move: () => {},
+        end: () => {},
+      },
+    )
+    try {
+      input.setTarget(prepared.target)
+      input.setMirror(true)
+      // x = shift + 0.3 no mundo, perto do meio da tampa de cima.
+      const clientX = 200 + (shift + 0.3) * 50
+      canvas.dispatchEvent(
+        new PointerEvent('pointerdown', { pointerId: 1, clientX, clientY: 206.25, button: 0 }),
+      )
+      return begins[0]!
+    } finally {
+      input.dispose()
+      resource.dispose()
+      canvas.remove()
+    }
+  }
+  const centered = run(0)
+  expect(centered.mirror).toBeDefined()
+  expect(centered.mirror!.region).not.toBe(centered.region)
+  expect(centered.mirror!.point[1]).toBe(centered.point[1])
+  expect(centered.mirror!.point[0]).toBeLessThan(centered.point[0])
+  expect(centered.mirror!.bounds).toEqual(centered.bounds!)
+  // Duas unidades para o lado: o ponto refletido cai no vazio, fora da peça. Nada espelhado.
+  expect(run(2).mirror).toBeUndefined()
+  // A peça espelhada pela Simetria já leva a pintura para o outro lado: o espelho não repete.
+  expect(run(2, true).mirror).toBeUndefined()
 })

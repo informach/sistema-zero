@@ -49,6 +49,8 @@ interface Props {
   animation?: SceneAnimationPlayer
   animationPose?: SceneAnimationPoseGesture
   mode?: 'model' | 'paint' | 'animation'
+  /** Espelho de pintura ligado na caixa de ferramentas da aba Pintar. */
+  paintMirror?: boolean
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
@@ -87,6 +89,7 @@ function SceneCanvasAttempt({
   animationPose,
   mode = 'model',
   paintTarget = null,
+  paintMirror = false,
   onEndPaint,
   skinPaint,
   onThumb,
@@ -196,6 +199,7 @@ function SceneCanvasAttempt({
     animationPose: mode === 'animation' ? animationPose : undefined,
     paintTarget: look ? null : paintTarget,
     paintMode: mode === 'paint' ? (look ? 'look' : 'paint') : 'off',
+    paintMirror: mode === 'paint' && paintMirror,
     supportGuides: supportGuides && mode !== 'paint' && !paintTarget && !componentSelection,
     weightTarget,
     skinPaint,

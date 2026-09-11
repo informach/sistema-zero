@@ -51,6 +51,7 @@ export function useSceneViewport({
   skinPaintSettings = null,
   onThumb,
   paintMode,
+  paintMirror = false,
 }: {
   document: MoldaSceneDocument
   selection: readonly string[]
@@ -80,6 +81,8 @@ export function useSceneViewport({
   onThumb?(thumb: string | undefined): void
   /** A aba Pintar. Ausente: o palco deduz a pintura do alvo, como antes. */
   paintMode?: ScenePaintMode
+  /** Espelho de pintura, ligado pela criança na caixa de ferramentas. */
+  paintMirror?: boolean
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
@@ -279,6 +282,9 @@ export function useSceneViewport({
   useEffect(() => {
     if (paintMode) viewport?.setPaintMode?.(paintMode)
   }, [viewport, paintMode])
+  useEffect(() => {
+    viewport?.setPaintMirror?.(paintMirror)
+  }, [viewport, paintMirror])
   useEffect(() => {
     viewport?.setPaintTarget(paintTarget)
   }, [viewport, paintTarget])

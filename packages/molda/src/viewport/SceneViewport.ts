@@ -698,6 +698,10 @@ export class SceneViewport implements SceneViewportPort {
     this.updateEditingEnabled()
     this.updateVisibility()
   }
+  setPaintMirror(enabled: boolean): void {
+    if (this.disposed) return
+    this.paint?.setMirror(enabled)
+  }
   private updateEditingEnabled() {
     const enabled = !this.contextLost && !this.pose
     this.gizmo?.setEnabled(

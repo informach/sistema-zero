@@ -36,6 +36,8 @@ export interface SceneViewportPort {
   setPaintTarget(target: ScenePaintTarget | null): void
   /** Opcional: sem ele, o palco deduz a pintura do alvo, como antes. */
   setPaintMode?(mode: ScenePaintMode): void
+  /** Espelho de pintura: cada toque pinta também o ponto refletido no meio, na mesma peça. */
+  setPaintMirror?(enabled: boolean): void
   setImageFrame(imageId: string, frame: number | null): void
   setPose(pose: SceneAnimationPose | null): void
   setAnimationEditing(enabled: boolean): void
