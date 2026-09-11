@@ -1,8 +1,6 @@
-import { buttonVariants } from '@sistemazero/ui/button'
 import { Lock } from 'lucide-react'
 import Link from 'next/link'
-import { cn } from '@/lib/cn'
-import { KidsBand } from './kids-band'
+import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
 /**
@@ -12,27 +10,21 @@ import { KidsMascot } from './mascot'
  */
 export function KidsLockedLesson({ courseSlug }: { courseSlug: string }) {
   return (
-    <KidsBand
-      tone="creme"
-      innerClassName="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center"
+    <KidsRecado
+      art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
+      // Copy DESCRITIVA, não uma ordem: quando a aula anterior tem o bloco "em breve"
+      // ela ainda não pode ser concluída, e um "conclua a aula anterior" mandaria a
+      // criança fazer algo impossível — que lê como "eu fiz alguma coisa errada".
+      chip="Uma aula de cada vez"
+      chipIcon={Lock}
+      title="Aula bloqueada"
+      actions={
+        <Link href={`/cursos/${encodeURIComponent(courseSlug)}`} className="sz-btn-gradient">
+          Voltar ao curso
+        </Link>
+      }
     >
-      <KidsMascot expression="sleeping" className="kid-float mx-auto size-24" />
-      <h1 className="sz-display mt-4 text-[clamp(1.6rem,4vw,2.2rem)]">Aula bloqueada</h1>
-      {/* Copy DESCRITIVA, não uma ordem: quando a aula anterior tem o bloco "em breve"
-          ela ainda não pode ser concluída, e um "conclua a aula anterior" mandaria a
-          criança fazer algo impossível — que lê como "eu fiz alguma coisa errada". */}
-      <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-muted px-4 py-1.5 font-bold text-muted-foreground text-sm">
-        <Lock className="size-4" /> Uma aula de cada vez
-      </div>
-      <p className="mt-4 font-semibold text-base text-muted-foreground">
-        Esta aula abre quando a anterior for concluída. 🚀 Dá uma olhadinha nela!
-      </p>
-      <Link
-        href={`/cursos/${encodeURIComponent(courseSlug)}`}
-        className={cn(buttonVariants({ variant: 'default' }), 'mt-6 h-11 rounded-full px-6')}
-      >
-        Voltar ao curso
-      </Link>
-    </KidsBand>
+      <p>Esta aula abre quando a anterior for concluída. 🚀 Dá uma olhadinha nela!</p>
+    </KidsRecado>
   )
 }

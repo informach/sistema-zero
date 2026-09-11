@@ -1001,19 +1001,31 @@ bloco azul chapado). O fundo da aula ficou liso (a `.kids-field` de pontinhos sa
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
 mural}.tsx`) são **wrappers finos** do componente compartilhado
-**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote `thinking` + título +
-pílula "Ainda não liberado" + prévia (`preview`) + o **bloco da Comunidade dos Criadores** com um
-**CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
+**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote dormindo + título +
+pílula "Ainda não liberado" + prévia (`preview`) + o **cartão da Comunidade dos Criadores** (na faixa
+lilás) com um **CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
 exports (`KidsLockedStudio`/`KidsLockedClube`/…, sem props) não mudou. **A promessa é REAL:** a
 assinatura "Comunidade dos Criadores" é um combo do catálogo que concede Clube + Mural + Estúdio +
 Pensa + Pinta (+ cursos) — confirmado em `packages/catalog/scripts/seed.ts`, então o CTA vale para as
-5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada no componente
-(`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
+5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada (`COMUNIDADE_OFERTA_URL` em `lib/links.ts`:
+`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
 (kids segue sem `FUNNEL_URL` de env). ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica
 `KidsLockedSpace`** (coringa de qualquer espaço do hub, que pode ser gateado por curso/cargo e não só
 pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas transientes
 `kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
 diferentes (não-produto) e seguem sem CTA.
+
+### O molde das telas de recado (11/09/2026)
+
+Essas telas não têm imagem-modelo, então seguem a régua das que têm. Todas passam por
+**`kids-recado.tsx`** (`KidsRecado`): faixa creme, cartão branco no meio com a arte, a pílula amarela
+do motivo (`chip`), o h1, as frases, os botões em pílula chapada e a letrinha miúda (`footnote`);
+`closing` abre a faixa lilás com um `KidsClosingCard` (a Comunidade dos Criadores no produto
+bloqueado). Usam o molde: `KidsLockedProduct`, `KidsCareerLockedProduct`, `KidsCareerLockedStudio`,
+`KidsLockedCourse`, `KidsLockedLesson`, `KidsLockedSpace` e `KidsAccessUnavailable` (e, por ele, as
+cascas `kids-*-unavailable`). Antes cada uma escrevia a coluna à mão, e quatro já tinham drifado
+(duas sem faixa, três tamanhos de título, dois botões). ⚠️ O `KidsAccessUnavailable` fica SEM a
+pílula do motivo, de propósito: é a nossa conexão que tropeçou, não algo a festejar nem a explicar.
 
 ### Mural e Clube no desenho das telas-modelo (11/09/2026)
 

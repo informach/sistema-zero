@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { KidsBand } from './kids-band'
+import { KidsRecado } from './kids-recado'
 import { KidsScene } from './kids-scene'
 
 /**
@@ -17,25 +17,26 @@ import { KidsScene } from './kids-scene'
 export function KidsAccessUnavailable({ title, onRetry }: { title: string; onRetry?: () => void }) {
   const router = useRouter()
   return (
-    <KidsBand
-      tone="creme"
-      innerClassName="mx-auto flex w-full max-w-md flex-col items-center px-4 py-12 text-center"
+    <KidsRecado
+      // Cena do funil, e não a pose pensativa do Zappy: aqui não é a criança que
+      // errou, é a nossa conexão que tropeçou — a cena de alívio diz isso. Sem a pílula
+      // amarela do motivo, de propósito: um tropeço não é conquista a festejar.
+      art={<KidsScene name="alivio" className="kid-float w-40" />}
+      title={title}
+      actions={
+        <button
+          type="button"
+          onClick={onRetry ?? (() => router.refresh())}
+          className="sz-btn-gradient"
+        >
+          Tentar de novo
+        </button>
+      }
     >
-      {/* Cena do funil, e não a pose pensativa do Zappy: aqui não é a criança que
-          errou, é a nossa conexão que tropeçou — a cena de alívio diz isso. */}
-      <KidsScene name="alivio" className="kid-float w-40" />
-      <h1 className="sz-display mt-4 text-[clamp(1.6rem,4vw,2.2rem)]">{title}</h1>
-      <p className="mt-4 font-semibold text-base text-muted-foreground">
+      <p>
         Não consegui verificar agora se está liberado pra você. Pode ter sido um tropeço na conexão.
         Tenta de novo?
       </p>
-      <button
-        type="button"
-        onClick={onRetry ?? (() => router.refresh())}
-        className="sz-btn-gradient mt-6 h-11 px-6 text-base"
-      >
-        Tentar de novo
-      </button>
-    </KidsBand>
+    </KidsRecado>
   )
 }
