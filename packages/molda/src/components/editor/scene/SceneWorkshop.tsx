@@ -315,9 +315,9 @@ export function SceneWorkshop({
           {workshop.message ?? workshop.paint.error}
         </p>
       )}
-      <div className="relative flex min-h-0 flex-1 overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
         {mode !== 'animation' && (
-          <div className="flex w-52 shrink-0 flex-col gap-1 overflow-y-auto border-mld-border border-r p-2">
+          <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
             <SceneCreateMenu run={run} />
             <Button
               ref={faceToggle}
@@ -380,99 +380,105 @@ export function SceneWorkshop({
             </Button>
           </div>
         )}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-          <SceneCanvas
-            onViewport={setExportViewport}
-            mode={mode}
-            document={document}
-            selection={selected}
-            isolation={workshop.isolation}
-            onSelect={workshop.select}
-            onSelectMany={workshop.selectMany}
-            factory={viewportFactory}
-            onThumb={(thumb) => workshop.editor.getState().setThumb(thumb)}
-            transform={
-              mode === 'animation'
-                ? workshop.animationPose.transformActions(selected)
-                : workshop.transform
-            }
-            transformTools={workshop.components.transformTools}
-            componentSelection={workshop.components.selection}
-            facePreviewOpen={
-              workshop.components.preview.tool !== null ||
-              workshop.components.check.busy ||
-              !!workshop.components.check.preview
-            }
-            onSelectComponent={workshop.components.select}
-            onSelectComponents={workshop.components.selectMany}
-            onEndFaces={escapeFaces}
-            onInterrupt={workshop.cancelGesture}
-            skinPaint={workshop.skinPaint}
-            paintTarget={workshop.paint.session?.target ?? null}
-            paint={workshop.paint.actions}
-            flipbook={workshop.flipbook}
-            animation={workshop.animation}
-            animationPose={workshop.animationPose}
-            onEndPaint={() => {
-              if (workshop.paint.drawing || workshop.paint.busy) workshop.paint.cancel()
-              else workshop.paint.close()
-            }}
-          />
-          {mode === 'animation' && (
-            <DeferredModule
-              load={loadTimeline}
-              props={{ workshop }}
-              onBack={() => changeMode('model')}
-              backLabel={copy.glbExport.close}
-            />
-          )}
-        </div>
-        <WorkspaceInspector docked={docked} onBeforeClose={workshop.cancelGesture}>
-          <h3 className="mld-display text-lg">{copy.hierarchy}</h3>
-          <Button
-            className="w-full text-sm"
-            aria-pressed={workshop.additive}
-            onClick={() => workshop.setAdditive(!workshop.additive)}
-          >
-            {copy.addSelection}
-          </Button>
-          <Button
-            className="w-full text-sm"
-            disabled={!selected.length && workshop.isolation === null}
-            aria-pressed={workshop.isolation !== null}
-            onClick={() => workshop.setIsolation(workshop.isolation ? null : selected)}
-          >
-            {COPY.editor.model.isolation.toggle}
-          </Button>
-          {!document.nodes.length && <p className="text-sm text-mld-muted">{copy.empty}</p>}
-          <SceneHierarchy
-            index={workshop.index.scene}
-            selected={selected}
-            onSelect={workshop.select}
-          />
-          {mode === 'animation' ? (
-            <DeferredModule
-              load={loadAnimationInspector}
-              props={{ workshop }}
-              onBack={() => changeMode('model')}
-              backLabel={copy.glbExport.close}
-            />
-          ) : workshop.paint.session ? (
-            <DeferredModule
-              load={loadPaint}
-              props={{ workshop }}
-              onBack={() => {
-                workshop.cancelGesture()
-                workshop.paint.close()
+        {/*
+         * Palco e inspetor num contêiner só: abaixo de lg a gaveta "Peças e cores" (e o gatilho
+         * dela, em cima à direita) se posiciona por ele, abaixo da faixa de comandos.
+         */}
+        <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <SceneCanvas
+              onViewport={setExportViewport}
+              mode={mode}
+              document={document}
+              selection={selected}
+              isolation={workshop.isolation}
+              onSelect={workshop.select}
+              onSelectMany={workshop.selectMany}
+              factory={viewportFactory}
+              onThumb={(thumb) => workshop.editor.getState().setThumb(thumb)}
+              transform={
+                mode === 'animation'
+                  ? workshop.animationPose.transformActions(selected)
+                  : workshop.transform
+              }
+              transformTools={workshop.components.transformTools}
+              componentSelection={workshop.components.selection}
+              facePreviewOpen={
+                workshop.components.preview.tool !== null ||
+                workshop.components.check.busy ||
+                !!workshop.components.check.preview
+              }
+              onSelectComponent={workshop.components.select}
+              onSelectComponents={workshop.components.selectMany}
+              onEndFaces={escapeFaces}
+              onInterrupt={workshop.cancelGesture}
+              skinPaint={workshop.skinPaint}
+              paintTarget={workshop.paint.session?.target ?? null}
+              paint={workshop.paint.actions}
+              flipbook={workshop.flipbook}
+              animation={workshop.animation}
+              animationPose={workshop.animationPose}
+              onEndPaint={() => {
+                if (workshop.paint.drawing || workshop.paint.busy) workshop.paint.cancel()
+                else workshop.paint.close()
               }}
-              backLabel={copy.glbExport.close}
             />
-          ) : workshop.components.selection ? (
-            <SceneComponentTools {...workshop.components} />
-          ) : (
-            <SceneNodeProperties workshop={workshop} />
-          )}
-        </WorkspaceInspector>
+            {mode === 'animation' && (
+              <DeferredModule
+                load={loadTimeline}
+                props={{ workshop }}
+                onBack={() => changeMode('model')}
+                backLabel={copy.glbExport.close}
+              />
+            )}
+          </div>
+          <WorkspaceInspector docked={docked} onBeforeClose={workshop.cancelGesture}>
+            <h3 className="mld-display text-lg">{copy.hierarchy}</h3>
+            <Button
+              className="w-full text-sm"
+              aria-pressed={workshop.additive}
+              onClick={() => workshop.setAdditive(!workshop.additive)}
+            >
+              {copy.addSelection}
+            </Button>
+            <Button
+              className="w-full text-sm"
+              disabled={!selected.length && workshop.isolation === null}
+              aria-pressed={workshop.isolation !== null}
+              onClick={() => workshop.setIsolation(workshop.isolation ? null : selected)}
+            >
+              {COPY.editor.model.isolation.toggle}
+            </Button>
+            {!document.nodes.length && <p className="text-sm text-mld-muted">{copy.empty}</p>}
+            <SceneHierarchy
+              index={workshop.index.scene}
+              selected={selected}
+              onSelect={workshop.select}
+            />
+            {mode === 'animation' ? (
+              <DeferredModule
+                load={loadAnimationInspector}
+                props={{ workshop }}
+                onBack={() => changeMode('model')}
+                backLabel={copy.glbExport.close}
+              />
+            ) : workshop.paint.session ? (
+              <DeferredModule
+                load={loadPaint}
+                props={{ workshop }}
+                onBack={() => {
+                  workshop.cancelGesture()
+                  workshop.paint.close()
+                }}
+                backLabel={copy.glbExport.close}
+              />
+            ) : workshop.components.selection ? (
+              <SceneComponentTools {...workshop.components} />
+            ) : (
+              <SceneNodeProperties workshop={workshop} />
+            )}
+          </WorkspaceInspector>
+        </div>
       </div>
       <Dialog
         open={exportOpen}

@@ -252,6 +252,8 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   await expect(page.getByText('apoio.png', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Voltar ao modelo', exact: true }).click()
   await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
+  // O passo mora recolhido em "Mais ajustes do palco" desde o lote 7a: abrir faz parte do caminho.
+  await page.getByText('Mais ajustes do palco', { exact: true }).click()
   await page.getByRole('combobox', { name: 'Passo do movimento', exact: true }).selectOption('0.5')
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
   await backToGallery(page)
@@ -266,6 +268,8 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
     'aria-pressed',
     'true',
   )
+  // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo.
+  await page.getByText('Mais ajustes do palco', { exact: true }).click()
   await expect(page.getByRole('combobox', { name: 'Passo do movimento', exact: true })).toHaveValue(
     'free',
   )

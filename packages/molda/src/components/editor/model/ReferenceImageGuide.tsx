@@ -13,10 +13,16 @@ export function ReferenceImageGuide({
   children,
   view,
   disabled,
+  triggerPlacement = 'top-3 left-3',
 }: {
   children: ReactNode
   view: CameraView
   disabled: boolean
+  /**
+   * Onde o gatilho fica no palco. O editor antigo usa o canto de cima; a oficina nova tem as
+   * ferramentas flutuando nesse canto (z-20) e ali o gatilho ficava coberto e sem clique.
+   */
+  triggerPlacement?: string
 }): JSX.Element {
   const reference = useReferenceImage()
   const [open, setOpen] = useState(false)
@@ -51,7 +57,7 @@ export function ReferenceImageGuide({
         variant="outline"
         disabled={disabled}
         onClick={() => setOpen(true)}
-        className="absolute top-3 left-3 z-10 min-h-11 bg-mld-surface/95 px-3 text-sm"
+        className={`absolute ${triggerPlacement} z-10 min-h-11 bg-mld-surface/95 px-3 text-sm`}
         aria-haspopup="dialog"
       >
         <ImageIcon aria-hidden="true" className="size-4" />

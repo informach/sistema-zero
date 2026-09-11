@@ -232,7 +232,7 @@ function SceneCanvasAttempt({
         }
       }}
     >
-      <div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
+      <div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-10rem)] lg:max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
         {paintTarget && (
           <>
             <Button
@@ -389,7 +389,7 @@ function SceneCanvasAttempt({
         />
       )}
       <section
-        className="absolute right-3 bottom-3 z-20 flex max-w-[calc(100%-1.5rem)] flex-wrap items-center justify-end gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm"
+        className="absolute right-3 bottom-3 z-20 flex max-w-[calc(100%-12rem)] flex-wrap items-center justify-end gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm"
         aria-label={COPY.editor.model.viewControls}
       >
         <Button
@@ -485,7 +485,12 @@ function SceneCanvasAttempt({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1">
-        <ReferenceImageGuide view={camera} disabled={!view.viewport || !!view.error || view.lost}>
+        <ReferenceImageGuide
+          view={camera}
+          disabled={!view.viewport || !!view.error || view.lost}
+          // Em cima de "Primeiros passos": o canto de cima é das ferramentas flutuantes.
+          triggerPlacement="bottom-16 left-3"
+        >
           <canvas
             ref={view.canvas}
             aria-label={componentSelection ? copy.componentViewport : copy.viewport}
