@@ -42,20 +42,22 @@ export function CoachMarks({
     setDismissed(true)
   }
 
+  // No desenho das telas-modelo (11/09/2026): uma faixa azul-céu colada embaixo da barra (a área
+  // da ferramenta é de borda a borda), o ladrilho amarelo da dica e a pílula azul chapada.
   return (
-    <div className="mx-3 mt-2 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-pin-accent bg-pin-accent/10 px-4 py-2">
-      <span aria-hidden="true" className="text-2xl">
+    <div className="pin-coach flex shrink-0 flex-wrap items-center gap-3 px-4 py-3">
+      <span aria-hidden="true" className="pin-coach__tile">
         💡
       </span>
       <div className="min-w-40 flex-1">
-        <p className="text-sm font-bold">{title}</p>
+        <p className="text-sm font-extrabold text-pin-text">{title}</p>
         <ul className="mt-0.5 flex flex-col gap-0.5 text-sm text-pin-muted">
           {tips.map((tip) => (
             <li key={tip}>{tip}</li>
           ))}
         </ul>
       </div>
-      <Button variant="primary" onClick={close}>
+      <Button variant="barPrimary" onClick={close}>
         {COPY.coach.gotIt}
       </Button>
     </div>

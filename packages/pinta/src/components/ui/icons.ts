@@ -18,6 +18,8 @@ export {
   AlignStartVertical,
   ArrowLeft,
   ArrowUpToLine,
+  // O "sem cor" dos quadradinhos de cor (a paleta e as duas cores da caixa), como na tela-modelo.
+  Ban,
   BrickWall,
   BringToFront,
   Brush,

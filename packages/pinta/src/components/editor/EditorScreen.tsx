@@ -5,14 +5,14 @@
  * tamanho · desfazer/refazer · "Salvo" · a nuvem do host; à direita atalhos · Baixar · Jogar
  * meu mapa · Usar no Estúdio (os dois últimos só quando o host dá o callback).
  *
- * Layout (desktop, ≥768px): coluna ESQUERDA de altura inteira (ferramentas em
- * cima, cores embaixo), e à direita dela uma coluna com o palco + a prévia lado
- * a lado em cima e a faixa (quadros/peças + zoom) encostada EMBAIXO,
- * atravessando as duas. A faixa NÃO é um rodapé de tudo: ali ela roubava altura
- * da coluna da esquerda e era o que forçava a criança a rolar as ferramentas.
- * A cadeia min-h-0 + overflow interno fecha a altura sem rolagem de página. Em
- * tela estreita o palco domina: rail horizontal em cima, paleta em linha única
- * e prévia/animações colapsáveis.
+ * Layout (desktop, ≥768px; 11/09/2026, a área da tela-modelo): coluna BRANCA das
+ * ferramentas à esquerda, o palco no tom claro no meio e a coluna BRANCA dos painéis à
+ * direita, de borda a borda, separadas por fios de 1px (`.pin-col`, `.pin-stage`); embaixo,
+ * atravessando a largura inteira, a faixa azul-céu dos quadros/peças + zoom (`.pin-band`).
+ * Dentro das colunas os painéis viram SEÇÕES sem moldura (`PanelLook value="flat"`). A cadeia
+ * min-h-0 + overflow interno fecha a altura sem rolagem de página. Em tela estreita o palco
+ * domina: rail horizontal em cima, paleta em linha única e prévia/animações colapsáveis (os
+ * painéis ali seguem em cartão).
  */
 import type { JSX } from 'react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -63,6 +63,7 @@ import {
   TriangleAlert,
   Undo2,
 } from '../ui/icons'
+import { PanelLook } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { CoachMarks } from './CoachMarks'
 import { PintaEditorProvider, useEditor, useSession, useToolCuration } from './editorContext'
@@ -71,6 +72,7 @@ import { PaletteBar } from './PaletteBar'
 import { PixelCanvas } from './PixelCanvas'
 import { PreviewPlayer } from './PreviewPlayer'
 import { ResizeAssetDialog } from './ResizeAssetDialog'
+import { ScrollMoreHint } from './ScrollMoreHint'
 import { ShortcutsDialog, type ShortcutsDialogTool } from './ShortcutsDialog'
 import { SpriteSheetPanel } from './SpriteSheetPanel'
 import { TilemapEditor } from './TilemapEditor'
@@ -82,11 +84,7 @@ import { useMediaQuery } from './useMediaQuery'
 import { useScrollMore } from './useScrollMore'
 import { useStudioResync } from './useStudioResync'
 import { VectorEditorScope } from './vector/VectorEditorScope'
-import {
-  ScrollMoreHint,
-  VectorPanelsDisclosure,
-  VectorRightColumn,
-} from './vector/VectorRightColumn'
+import { VectorPanelsDisclosure, VectorRightColumn } from './vector/VectorRightColumn'
 import { VectorSelectionBar } from './vector/VectorSelectionBar'
 import { VectorStage } from './vector/VectorStage'
 import { VectorToolbox } from './vector/VectorToolbox'
@@ -136,10 +134,10 @@ const ROLE_ICON_TONE: Record<PintaAssetRole, string> = {
   tilemap: 'text-pin-kind-tilemap',
 }
 
-/** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas. */
+/** Coluna ESQUERDA dos kinds PIXEL (desktop): só o rail de ferramentas, na coluna branca. */
 function PixelLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+    <div className="pin-col pin-col--start flex min-h-0 shrink-0 flex-col overflow-y-auto">
       <ToolBar />
     </div>
   )
@@ -153,7 +151,7 @@ function PixelLeftColumn(): JSX.Element {
  */
 function VectorLeftColumn(): JSX.Element {
   return (
-    <div className="flex min-h-0 shrink-0 flex-col gap-2 overflow-y-auto">
+    <div className="pin-col pin-col--start flex min-h-0 shrink-0 flex-col overflow-y-auto">
       <VectorToolbox />
     </div>
   )
@@ -177,17 +175,30 @@ function PixelRightColumn(): JSX.Element {
   const columnRef = useRef<HTMLDivElement>(null)
   const more = useScrollMore(columnRef)
   return (
-    <div className="relative flex min-h-0 w-68 shrink-0 flex-col">
+    <div className="pin-col pin-col--end relative flex min-h-0 w-68 shrink-0 flex-col">
       <div
         ref={columnRef}
         data-pin-right-column=""
-        className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-x-hidden overflow-y-auto"
+        className="pin-scroll-y flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto"
       >
-        <PreviewPlayer />
-        <LayerPanel />
-        <PaletteBar />
+        <PanelLook value="flat">
+          <PreviewPlayer />
+          <LayerPanel />
+          <PaletteBar />
+        </PanelLook>
       </div>
       {more ? <ScrollMoreHint /> : null}
+    </div>
+  )
+}
+
+/** Coluna DIREITA das PEÇAS de pixel (desktop): só as cores (peça não tem camadas nem prévia). */
+function TilesetRightColumn(): JSX.Element {
+  return (
+    <div className="pin-col pin-col--end pin-scroll-y flex min-h-0 w-68 shrink-0 flex-col overflow-x-hidden overflow-y-auto">
+      <PanelLook value="flat">
+        <PaletteBar />
+      </PanelLook>
     </div>
   )
 }
@@ -230,9 +241,10 @@ function SpritePanelDisclosure(): JSX.Element {
 }
 
 /**
- * A faixa do rodapé. Sprites (pixel e vetor) ganham a faixa "Spritesheet" (uma
- * linha por animação, com os quadros inline) + o zoom no cabeçalho dela. Peças
- * mantêm a tira de tiles; cenários ficam só com o zoom encostado à direita.
+ * A faixa do rodapé, no azul-céu da tela-modelo (`.pin-band`). Sprites (pixel e vetor) ganham a
+ * faixa "Spritesheet" (uma linha por animação, com os quadros inline) + o zoom no cabeçalho
+ * dela. Peças mantêm a tira de tiles; cenários ficam só com o zoom encostado à direita. Em tela
+ * estreita (`stacked`) a faixa é um cartão entre os outros, com os cantos redondos.
  */
 function EditorFooter({
   asset,
@@ -243,12 +255,21 @@ function EditorFooter({
 }): JSX.Element {
   const hasFrames = asset.kind === 'pixel-sprite' || asset.kind === 'vector-sprite'
   const hasTiles = asset.kind === 'tileset' || asset.kind === 'vector-tileset'
+  const band = stacked
+    ? 'pin-band shrink-0 rounded-2xl border border-pin-border px-2 py-2'
+    : 'pin-band shrink-0 px-3 py-2'
   if (hasFrames) {
-    return <SpriteSheetPanel className="shrink-0" zoomSlot={<ZoomControls />} />
+    return (
+      <div className={band}>
+        <PanelLook value="band">
+          <SpriteSheetPanel zoomSlot={<ZoomControls />} />
+        </PanelLook>
+      </div>
+    )
   }
   if (stacked) {
     return (
-      <div className="flex shrink-0 flex-col gap-2">
+      <div className={`${band} flex flex-col gap-2`}>
         {hasTiles ? <TileStrip /> : null}
         <div className="flex justify-end">
           <ZoomControls />
@@ -257,7 +278,7 @@ function EditorFooter({
     )
   }
   return (
-    <div className="flex shrink-0 items-stretch gap-2">
+    <div className={`${band} flex items-center gap-2`}>
       {hasTiles ? <TileStrip className="min-w-0 flex-1" /> : <div className="flex-1" />}
       <ZoomControls />
     </div>
@@ -277,20 +298,20 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
         // INTEIRA. Isso só cabe porque as cores saíram da coluna esquerda (que
         // agora tem só as ferramentas): era a soma ferramentas+cores que não
         // cabia em 1366×768 quando a faixa era um rodapé de tudo.
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+        <div className="pin-work flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 items-stretch">
             <PixelLeftColumn />
             <PixelCanvas />
             {/* A coluna existe também no CENÁRIO (que não tem prévia) porque é
                 onde moram camadas e cores; peças não têm camadas. */}
-            {asset.kind === 'tileset' ? <PaletteBar /> : <PixelRightColumn />}
+            {asset.kind === 'tileset' ? <TilesetRightColumn /> : <PixelRightColumn />}
           </div>
           <EditorFooter asset={asset} />
         </div>
       )
     }
     return (
-      <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+      <div className="pin-work flex min-h-0 flex-1 flex-col gap-2 p-2">
         <ToolBar orientation="horizontal" />
         <PixelCanvas />
         <PaletteBar layout="row" />
@@ -311,9 +332,9 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     // poder nascer colada na barra de cima. Ele é só um Provider, não vira DOM.
     return (
       <VectorEditorScope>
-        <VectorSelectionBar />
-        <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
-          <div className="flex min-h-0 flex-1 items-stretch gap-2">
+        <div className="pin-work flex min-h-0 flex-1 flex-col">
+          <VectorSelectionBar />
+          <div className="flex min-h-0 flex-1 items-stretch">
             <VectorLeftColumn />
             <VectorStage />
             <VectorRightColumn />
@@ -324,7 +345,7 @@ function EditorBody({ asset }: { asset: PintaAsset }): JSX.Element {
     )
   }
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
+    <div className="pin-work flex min-h-0 flex-1 flex-col gap-2 p-2">
       <VectorEditorScope>
         <VectorToolbox orientation="horizontal" />
         <VectorStage />

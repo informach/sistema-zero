@@ -167,12 +167,14 @@
  * Contraste (texto de 13 a 15px em negrito, régua de 4,5:1): o verde e o vermelho da barra levam
  * um quinto da tinta do texto, que os escurece no claro e os clareia no escuro.
  */
+/* O alvo dos controles do EDITOR (a barra e a área da ferramenta): 40px no mouse, que é a medida
+   da imagem, e 44px no toque, a régua de toque da casa. */
 [data-pinta-theme] {
-  --pin-bar-hit: 2.5rem;
+  --pin-hit: 2.5rem;
 }
 @media (any-pointer: coarse) {
   [data-pinta-theme] {
-    --pin-bar-hit: 2.75rem;
+    --pin-hit: 2.75rem;
   }
 }
 [data-pinta-theme] .pin-bar {
@@ -217,7 +219,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: var(--pin-bar-hit);
+  min-height: var(--pin-hit);
   padding-inline: 1.125rem;
   border: 1px solid transparent;
   border-radius: 9999px;
@@ -334,6 +336,286 @@
   height: 1rem;
 }
 
+/*
+ * ── A ÁREA DA FERRAMENTA (11/09/2026, a mesma tela-modelo) ──
+ * Colunas BRANCAS de borda a borda com divisória de 1px (as ferramentas à esquerda, os painéis à
+ * direita), o palco no tom claro do fundo e a faixa de baixo (quadros, peças, zoom) no azul-céu.
+ * Dentro das colunas os painéis perdem a moldura e viram SEÇÕES (`.pin-section`): faixa de título
+ * clara com o nome em caixa alta, divisória e corpo branco. Quem escolhe o visual é o `PanelLook`
+ * de quem monta a coluna (`components/ui/Panel.tsx`): a tela estreita, os diálogos e a galeria
+ * seguem com o cartão `.pin-panel`. Os controles da área medem `--pin-hit` (40px no mouse, 44px no
+ * toque), como na barra.
+ */
+[data-pinta-theme] {
+  /* O palco e o fundo dos botões quietos: o mesmo tom claro do fundo do app (a imagem mede #f5f7fb). */
+  --pin-stage: var(--color-pin-bg);
+  /* A faixa de título das seções: entre o fundo e o branco da coluna. */
+  --pin-col-head: color-mix(in oklab, var(--color-pin-bg) 60%, var(--color-pin-surface));
+  /* A faixa de baixo: o céu das faixas do kids; sem a folha compartilhada (aula, admin), um
+     azul diluído da própria marca. */
+  --pin-band: var(
+    --sz-tool-band-ceu,
+    color-mix(in oklab, var(--color-pin-accent) 12%, var(--color-pin-surface))
+  );
+}
+[data-pinta-theme] .pin-col {
+  background: var(--color-pin-surface);
+}
+[data-pinta-theme] .pin-col--start {
+  border-right: 1px solid var(--color-pin-border);
+}
+[data-pinta-theme] .pin-col--end {
+  border-left: 1px solid var(--color-pin-border);
+}
+[data-pinta-theme] .pin-stage {
+  background: var(--pin-stage);
+}
+[data-pinta-theme] .pin-band {
+  border-top: 1px solid var(--color-pin-border);
+  background: var(--pin-band);
+}
+/* O papel no palco: um fio e uma sombra macia (nada de borda que ocupe lugar: o tamanho do papel
+   é o do desenho vezes o zoom, e a âncora do zoom pela rolagem mede esse tamanho). */
+[data-pinta-theme] .pin-paper {
+  box-shadow:
+    0 0 0 1px var(--color-pin-border),
+    0 12px 32px -18px color-mix(in oklab, var(--color-pin-text) 45%, transparent);
+}
+
+/* Os botões de ícone do editor (IconButton e os parentes) medem o alvo da área. */
+[data-pinta-theme] :is(.pin-work, .pin-bar) .pin-icon-btn {
+  min-width: var(--pin-hit);
+  min-height: var(--pin-hit);
+}
+/* O quieto de fundo claro (as ferramentas da caixa, as ações dos quadros, os botões da prévia). */
+[data-pinta-theme] .pin-icon-btn--quiet:not(.pin-tool-active) {
+  background-color: var(--pin-stage);
+  color: var(--color-pin-text);
+}
+[data-pinta-theme] .pin-icon-btn--quiet:not(.pin-tool-active):hover:not(:disabled) {
+  background-color: color-mix(in oklab, var(--pin-stage) 86%, var(--color-pin-text));
+}
+[data-pinta-theme] .pin-round {
+  border-radius: 9999px;
+}
+/* O divisor entre os grupos da caixa de ferramentas. */
+[data-pinta-theme] .pin-tool-divider {
+  flex: none;
+  align-self: center;
+  width: 4rem;
+  height: 0;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid var(--color-pin-border);
+}
+/* Na caixa de uma coluna só (a do mapa). */
+[data-pinta-theme] .pin-tool-divider--short {
+  width: 1.5rem;
+}
+
+/* As SEÇÕES das colunas: sem moldura, fechadas por uma divisória. */
+[data-pinta-theme] .pin-section {
+  border-bottom: 1px solid var(--color-pin-border);
+  background: var(--color-pin-surface);
+}
+[data-pinta-theme] .pin-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-height: 2.75rem;
+  padding: 0.125rem 0.375rem 0.125rem 0.75rem;
+  border-bottom: 1px solid var(--color-pin-border);
+  background: var(--pin-col-head);
+}
+/* O nome da seção em caixa alta, pequeno e espaçado (PRÉVIA, CAMADAS, ARCADE). */
+[data-pinta-theme] .pin-section-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-pin-muted);
+}
+/* Na faixa de baixo a seção nem tem faixa de título: o nome mora direto no azul. */
+[data-pinta-theme] .pin-section--band {
+  border-bottom: 0;
+  background: transparent;
+}
+[data-pinta-theme] .pin-section--band > .pin-section-head {
+  padding-inline: 0.25rem 0;
+  border-bottom: 0;
+  background: transparent;
+}
+
+/* O "+" das seções: a bolinha azul da imagem (26px) dentro do alvo inteiro. */
+[data-pinta-theme] .pin-add-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--pin-hit);
+  height: var(--pin-hit);
+  padding: 0;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+[data-pinta-theme] .pin-add-btn__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 9999px;
+  background: var(--pin-cta);
+  color: var(--sz-tool-on-cta, var(--color-pin-accent-fg));
+  transition: background-color 0.12s ease;
+}
+[data-pinta-theme] .pin-add-btn__dot > svg {
+  width: 1rem;
+  height: 1rem;
+}
+[data-pinta-theme] .pin-add-btn:hover .pin-add-btn__dot {
+  background: color-mix(in oklab, var(--pin-cta) 88%, var(--color-pin-text));
+}
+[data-pinta-theme] .pin-add-btn:focus-visible {
+  outline: 2px solid var(--color-pin-accent);
+  outline-offset: -2px;
+}
+
+/* Os quadradinhos de cor: sem borda grossa, com um fio por dentro (o branco não some no branco)
+   e o ANEL azul na cor escolhida. */
+[data-pinta-theme] .pin-swatch {
+  flex: none;
+  width: var(--pin-hit);
+  height: var(--pin-hit);
+  padding: 0;
+  border: 0;
+  border-radius: 0.625rem;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-pin-text) 14%, transparent);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: box-shadow 0.12s ease;
+}
+[data-pinta-theme] .pin-swatch[aria-pressed="true"] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--color-pin-text) 14%, transparent),
+    0 0 0 2px var(--color-pin-surface),
+    0 0 0 4px var(--color-pin-accent);
+}
+[data-pinta-theme] .pin-swatch:focus-visible {
+  outline: 2px solid var(--color-pin-accent);
+  outline-offset: 3px;
+}
+/* O "sem cor": o tom claro com o sinal de proibido, como na imagem. */
+[data-pinta-theme] .pin-swatch--none {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pin-stage);
+  color: var(--color-pin-muted);
+}
+[data-pinta-theme] .pin-swatch--none > svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+/* A cor secundária da caixa: o quadrado MENOR da imagem dentro do alvo inteiro (a borda
+   transparente é alvo e não é tinta; o anel fica por fora dela). */
+[data-pinta-theme] .pin-swatch--small {
+  border: 0.25rem solid transparent;
+  background-clip: padding-box;
+}
+[data-pinta-theme] .pin-swatch--small[aria-pressed="true"] {
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--color-pin-text) 14%, transparent),
+    0 0 0 2px var(--color-pin-accent);
+}
+
+/* As miniaturas clicáveis (quadros da faixa): cantos redondos e o mesmo anel azul. */
+[data-pinta-theme] .pin-thumb {
+  flex: none;
+  width: var(--pin-hit);
+  height: var(--pin-hit);
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0.5rem;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--color-pin-text) 12%, transparent);
+  cursor: pointer;
+}
+[data-pinta-theme] .pin-thumb[aria-pressed="true"] {
+  box-shadow:
+    0 0 0 2px var(--color-pin-surface),
+    0 0 0 4px var(--color-pin-accent);
+}
+[data-pinta-theme] .pin-thumb:focus-visible {
+  outline: 2px solid var(--color-pin-accent);
+  outline-offset: 3px;
+}
+/* A peça das peças do cenário: maior, porque carrega o número e o selo de colisão. */
+[data-pinta-theme] .pin-thumb--lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* A pílula branca de contagem ("1 animação") e a do zoom ("⊖ 8x ⊕"), na faixa azul. */
+[data-pinta-theme] .pin-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--color-pin-surface);
+  color: var(--color-pin-text);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+}
+[data-pinta-theme] .pin-zoom {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0 0.25rem;
+  border-radius: 9999px;
+  background: var(--color-pin-surface);
+}
+[data-pinta-theme] .pin-zoom .pin-icon-btn {
+  border-radius: 9999px;
+}
+
+/* O cartão de dicas do primeiro uso: uma faixa azul-céu colada embaixo da barra. */
+[data-pinta-theme] .pin-coach {
+  border-bottom: 1px solid var(--color-pin-border);
+  background: var(--pin-band);
+}
+[data-pinta-theme] .pin-coach__tile {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--sz-tool-new, oklch(0.87 0.16 90));
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* A barrinha que flutua no palco (o pedaço selecionado, a captura de cor): cartão branco com fio. */
+[data-pinta-theme] .pin-float {
+  border: 1px solid var(--color-pin-border);
+  border-radius: 0.875rem;
+  background: var(--color-pin-surface);
+  box-shadow: 0 12px 28px -14px color-mix(in oklab, var(--color-pin-text) 45%, transparent);
+}
+
 /* Títulos no tom do kids: Baloo 2 vem do body do host; fallback arredondado. */
 [data-pinta-theme] .pin-display {
   font-family: var(--font-display, "Baloo 2", ui-rounded, system-ui, sans-serif);
@@ -376,9 +658,12 @@
   transform: translateY(3px);
   box-shadow: 0 1px 0 color-mix(in oklab, var(--pin-cta) 60%, black);
 }
-/* Estado ativo dos botões de ferramenta: mesma sombra dura, mais rasa. */
+/* Estado ativo dos botões de ferramenta: o azul CHAPADO da tela-modelo (11/09/2026; a sombra dura
+   saiu junto com o 3D). A classe segue como gancho dos seletores `:not(.pin-tool-active)`. */
 [data-pinta-theme] .pin-tool-active {
-  box-shadow: 0 2px 0 color-mix(in oklab, var(--color-pin-accent) 60%, black);
+  background-color: var(--color-pin-accent);
+  color: var(--color-pin-accent-fg);
+  box-shadow: none;
 }
 
 /* Painel/card com borda 2px + sombra dura discreta (espelho do .kids-card).

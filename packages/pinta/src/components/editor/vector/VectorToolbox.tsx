@@ -4,16 +4,23 @@
  * FIXAS no topo, ferramentas em DUAS colunas rolando no meio e os dois slots
  * de cor (preenchimento na frente, contorno atrás) FIXOS no pé, com o botão
  * de trocar. Clicar num slot escolhe QUEM recebe a próxima cor da paleta.
+ *
+ * O desenho da tela-modelo (11/09/2026), o mesmo da caixa do pixel: quadrados claros de 40px (44
+ * no toque), o ativo azul chapado, grupos em grades de duas colunas e um fio entre eles, na
+ * coluna branca e sem moldura.
  */
 import { clsx } from 'clsx'
 import type { JSX } from 'react'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import { filterTools, toolFallback } from '../../../core/toolCuration'
 import { isVectorGradient } from '../../../vector/model'
 import { IconButton, ToolButton } from '../../ui/Button'
 import { Grid3x3, Image, Maximize, Repeat } from '../../ui/icons'
 import { useEditor, useEditorStores, useSession, useToolCuration } from '../editorContext'
+import { ScrollMoreHint } from '../ScrollMoreHint'
+import { TOOL_GRID } from '../toolGrid'
+import { useScrollMore } from '../useScrollMore'
 import { useVectorEditor, type VectorColorChannel } from './VectorEditorScope'
 import { VectorInsertAssetDialog } from './VectorInsertAssetDialog'
 import { formatStrokeWidth, gradientCss, STROKE_WIDTHS, strokeDotSize, TOOLS } from './vectorTools'
@@ -30,6 +37,9 @@ export function VectorToolbox({
   const assetId = useEditor((state) => state.asset.id)
   const allowTools = useToolCuration()
   const [insertOpen, setInsertOpen] = useState(false)
+  // O miolo rola com a barra escondida e o degradê no pé (a mesma régua da caixa do pixel).
+  const middleRef = useRef<HTMLDivElement>(null)
+  const more = useScrollMore(middleRef)
 
   // A ativa cortada viraria estado impossível: selecionada e fora da tela. Mesma régua do pixel.
   useEffect(() => {
@@ -38,7 +48,7 @@ export function VectorToolbox({
   }, [tool, allowTools, setTool])
 
   const divider = vertical ? (
-    <hr className="col-span-2 my-1 w-8 border-pin-border" />
+    <hr className="pin-tool-divider" />
   ) : (
     <span aria-hidden="true" className="mx-1 h-8 w-0.5 shrink-0 rounded bg-pin-border" />
   )
@@ -52,6 +62,7 @@ export function VectorToolbox({
     return (
       <IconButton
         key={width}
+        tone="quiet"
         active={style.stroke?.width === width}
         aria-label={label}
         aria-pressed={style.stroke?.width === width}
@@ -71,6 +82,7 @@ export function VectorToolbox({
   const drawNodes = filterTools(TOOLS, allowTools).map((entry) => (
     <ToolButton
       key={entry.id}
+      tone="quiet"
       icon={entry.icon}
       label={entry.label}
       shortcut={entry.shortcut}
@@ -85,6 +97,7 @@ export function VectorToolbox({
         id: 'grid',
         node: (
           <ToolButton
+            tone="quiet"
             icon={Grid3x3}
             label={COPY.tools.grid}
             active={showGrid}
@@ -97,13 +110,21 @@ export function VectorToolbox({
         // aproximou demais pela rolagem precisa do caminho de volta. Só some numa lista fina que
         // o professor montou à mão, onde a escolha é dele.
         id: 'fit',
-        node: <ToolButton icon={Maximize} label={COPY.editor.zoomFit} onClick={zoomToFit} />,
+        node: (
+          <ToolButton
+            tone="quiet"
+            icon={Maximize}
+            label={COPY.editor.zoomFit}
+            onClick={zoomToFit}
+          />
+        ),
       },
       {
         // Fora dos dois presets de propósito: numa aula o desenho é isolado da galeria pessoal.
         id: 'insertAsset',
         node: (
           <ToolButton
+            tone="quiet"
             icon={Image}
             label={COPY.vector.insertAsset}
             onClick={() => setInsertOpen(true)}
@@ -121,21 +142,13 @@ export function VectorToolbox({
     { name: 'extra', nodes: extraNodes },
   ].filter((group) => group.nodes.length > 0)
 
-  const tools = (
-    <>
-      {groups.map((group, index) => (
-        <Fragment key={group.name}>
-          {index > 0 ? divider : null}
-          {group.nodes}
-        </Fragment>
-      ))}
-      {/* O diálogo não é botão: fica fora dos grupos para nenhuma curadoria o desmontar. */}
-      <VectorInsertAssetDialog
-        open={insertOpen}
-        onClose={() => setInsertOpen(false)}
-        currentId={assetId}
-      />
-    </>
+  // O diálogo não é botão: fica fora dos grupos para nenhuma curadoria o desmontar.
+  const insertDialog = (
+    <VectorInsertAssetDialog
+      open={insertOpen}
+      onClose={() => setInsertOpen(false)}
+      currentId={assetId}
+    />
   )
 
   // Tela estreita: uma linha só, rolando na horizontal.
@@ -147,7 +160,13 @@ export function VectorToolbox({
         aria-orientation={orientation}
         className="pin-panel flex shrink-0 items-center gap-1 overflow-x-auto p-2"
       >
-        {tools}
+        {groups.map((group, index) => (
+          <Fragment key={group.name}>
+            {index > 0 ? divider : null}
+            {group.nodes}
+          </Fragment>
+        ))}
+        {insertDialog}
       </div>
     )
   }
@@ -165,12 +184,24 @@ export function VectorToolbox({
       role="toolbar"
       aria-label={COPY.a11y.tools}
       aria-orientation={orientation}
-      className="pin-panel flex max-h-full min-h-0 shrink-0 flex-col gap-1 p-2"
+      className="flex max-h-full min-h-0 shrink-0 flex-col gap-2 px-1 py-2"
     >
-      <div className="grid shrink-0 grid-cols-2 justify-items-center gap-1">{strokeWidths}</div>
+      <div className={`shrink-0 ${TOOL_GRID}`}>{strokeWidths}</div>
       {divider}
-      <div className="grid min-h-0 flex-1 grid-cols-2 content-start justify-items-center gap-1 overflow-y-auto">
-        {tools}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div
+          ref={middleRef}
+          className="pin-scroll-y flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-1"
+        >
+          {groups.map((group, index) => (
+            <Fragment key={group.name}>
+              {index > 0 ? divider : null}
+              <div className={TOOL_GRID}>{group.nodes}</div>
+            </Fragment>
+          ))}
+          {insertDialog}
+        </div>
+        {more ? <ScrollMoreHint /> : null}
       </div>
       {divider}
       <VectorColorSlots />

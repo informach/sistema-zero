@@ -1035,7 +1035,7 @@ export function VectorStage(): JSX.Element {
   const stageHeight = Math.max(Math.round(doc.height * zoom), 1)
 
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1">
+    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
       {/* Barra FLUTUANTE da seleção (espelho da do pixel): absoluta sobre o
           palco, fora do fluxo — aparecer/sumir não move o desenho. É a via do
           TOUCH e SÓ DELE: no desktop as mesmas ações (mais alinhar e ordem)
@@ -1057,7 +1057,7 @@ export function VectorStage(): JSX.Element {
         <div
           role="toolbar"
           aria-label={COPY.vector.pickColorBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3 shadow-lg"
+          className="pin-float absolute top-2 left-1/2 z-10 flex w-max max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 p-1 pl-3"
         >
           <span className="text-sm font-bold text-pin-text">{COPY.vector.pickColorHint}</span>
           <ToolButton
@@ -1071,7 +1071,7 @@ export function VectorStage(): JSX.Element {
         <div
           role="toolbar"
           aria-label={COPY.vector.nodeBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
+          className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
         >
           <VectorNodeActions />
         </div>
@@ -1080,7 +1080,7 @@ export function VectorStage(): JSX.Element {
         <div
           role="toolbar"
           aria-label={COPY.vector.selectionBar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 pin-scroll-x overflow-x-auto p-1 shadow-lg"
+          className="pin-float pin-scroll-x absolute top-2 left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto p-1"
         >
           <ToolButton icon={Copy} label={COPY.vector.selDuplicate} onClick={duplicateSelected} />
           <ToolButton
@@ -1124,7 +1124,7 @@ export function VectorStage(): JSX.Element {
       >
         {/* Papel BRANCO fixo (sem xadrez): cor absoluta em qualquer tema; canto
             RETO para a borda não "comer" o desenho da criança. */}
-        <div className="border-2 border-pin-border bg-white shadow-inner">
+        <div className="pin-paper bg-white">
           <svg
             ref={svgRef}
             width={stageWidth}

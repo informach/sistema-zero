@@ -857,7 +857,7 @@ export function PixelCanvas(): JSX.Element {
   }
 
   return (
-    <div className="relative flex min-h-0 min-w-0 flex-1">
+    <div className="pin-stage relative flex min-h-0 min-w-0 flex-1">
       {/* Barra do pedaço selecionado: flutua sobre o palco (não empurra o
           desenho ao aparecer) e é a via do tablet, onde não há teclado. */}
       {selKind === 'none' ? null : (
@@ -865,7 +865,7 @@ export function PixelCanvas(): JSX.Element {
           ref={selectionBarRef}
           role="toolbar"
           aria-label={COPY.selection.bar}
-          className="pin-panel absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 p-1 shadow-lg"
+          className="pin-float absolute top-2 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1 p-1"
         >
           <ToolButton
             icon={Copy}
@@ -906,7 +906,7 @@ export function PixelCanvas(): JSX.Element {
             rolável fica com a medida velha por um quadro — a âncora do zoom
             pela rolagem media errado. */}
         <div
-          className="pin-checkerboard border-2 border-pin-border shadow-inner"
+          className="pin-checkerboard pin-paper"
           style={{ width: bitmap.width * zoom, height: bitmap.height * zoom }}
         >
           <canvas

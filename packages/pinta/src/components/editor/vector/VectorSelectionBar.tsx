@@ -54,7 +54,8 @@ const Divider = (): JSX.Element => (
  * dica de como usá-la, na MESMA altura.
  *
  * ⚠️ UMA moldura para TODOS os ramos, e a altura mora no MIOLO (`min-h-11`), nunca
- * no contêiner: a moldura soma `py-1` + `border-b-2` (54px em qualquer ramo). O
+ * no contêiner: a moldura soma `py-1` + `border-b` (53px em qualquer ramo; o fio de 1px é
+ * o da barra de cima e das colunas desde a tela-modelo, 11/09/2026). O
  * ramo dos pontos tinha o `min-h-11` no contêiner (44px com border-box) e o palco
  * pulava 10px ao escolher uma forma sem pontos editáveis. `data-pin-selection-bar`
  * é o gancho do teste que mede a estrutura dos ramos.
@@ -71,7 +72,7 @@ function SelectionBarFrame({
     <div
       data-pin-selection-bar=""
       {...(toolbar ? { role: 'toolbar', 'aria-label': toolbar } : {})}
-      className="shrink-0 border-b-2 border-pin-border bg-pin-surface px-3 py-1"
+      className="shrink-0 border-b border-pin-border bg-pin-surface px-3 py-1"
     >
       <div className="flex min-h-11 items-center gap-1 pin-scroll-x overflow-x-auto">
         {children}

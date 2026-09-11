@@ -35,16 +35,16 @@ import {
   togglePixelLayerVisible,
 } from '../../pixel/layers'
 import { paintBitmap } from '../../pixel/render'
-import { Button, ToolButton } from '../ui/Button'
+import { AddDotButton, Button, ToolButton } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
-import { Eye, EyeOff, GripVertical, Lock, LockOpen, Plus, Trash2 } from '../ui/icons'
+import { Eye, EyeOff, GripVertical, Lock, LockOpen, Trash2 } from '../ui/icons'
 import { Panel } from '../ui/Panel'
 import { useToast } from '../ui/Toast'
 import { useEditor, useEditorStores, useSession } from './editorContext'
 import { addPointerDragListeners } from './pointerDrag'
 import { useActionShortcuts } from './useActionShortcuts'
 
-/** Miniatura do desenho da camada no quadro atual. */
+/** Miniatura do desenho da camada no quadro atual: a bolinha da tela-modelo (11/09/2026). */
 function LayerThumb({
   bitmap,
   colors,
@@ -60,7 +60,7 @@ function LayerThumb({
   return (
     <span
       aria-hidden="true"
-      className="pin-checkerboard size-8 shrink-0 overflow-hidden rounded-md border-2 border-pin-border"
+      className="pin-checkerboard size-7 shrink-0 overflow-hidden rounded-full ring-1 ring-pin-border"
     >
       <canvas
         ref={canvasRef}
@@ -244,15 +244,7 @@ export function LayerPanel(): JSX.Element | null {
             aria-disabled={layered.layers.length <= 1}
             className={layered.layers.length <= 1 ? 'opacity-40' : undefined}
           />
-          <button
-            type="button"
-            aria-label={COPY.layers.add}
-            title={COPY.layers.add}
-            onClick={handleAdd}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-          >
-            <Plus aria-hidden="true" className="size-5" />
-          </button>
+          <AddDotButton label={COPY.layers.add} onClick={handleAdd} />
         </>
       }
     >

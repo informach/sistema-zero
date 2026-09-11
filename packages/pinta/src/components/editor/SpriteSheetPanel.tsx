@@ -12,6 +12,11 @@
  *
  * Serve os dois estilos: thumbs pixel pintam num canvas (paleta resolvida),
  * vetoriais são SVG inline.
+ *
+ * O desenho (11/09/2026, a tela-modelo): mora na faixa azul-céu do rodapé; o nome em caixa alta
+ * com a pílula branca da contagem, o zoom em pílula branca e "Nova animação" na pílula azul; cada
+ * animação é um cartão branco (a escolhida com a borda azul), os quadros têm cantos redondos e o
+ * anel azul no escolhido, e as ações são os quadrados claros.
  */
 import type { JSX, ReactNode } from 'react'
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -80,7 +85,7 @@ function PixelFrameThumb({
   )
 }
 
-/** Botãozinho de ícone das ações (mesmo alvo ≥44px dos rails). */
+/** Botãozinho de ícone das ações: o quadrado claro (o alvo é o `--pin-hit` do editor). */
 function RowAction({
   icon: Icon,
   label,
@@ -110,12 +115,12 @@ function RowAction({
       title={label}
       disabled={disabled}
       onClick={onClick}
-      className={`flex min-h-11 min-w-11 items-center justify-center rounded-xl transition disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`pin-icon-btn flex min-h-11 min-w-11 items-center justify-center rounded-lg transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent disabled:cursor-not-allowed disabled:opacity-40 ${
         active
           ? 'pin-tool-active bg-pin-accent text-pin-accent-fg'
           : danger
-            ? 'text-pin-text hover:bg-pin-danger/20'
-            : 'text-pin-text hover:bg-pin-border/40'
+            ? 'bg-pin-bg text-pin-text hover:bg-pin-danger/20'
+            : 'pin-icon-btn--quiet bg-pin-bg text-pin-text'
       }`}
     >
       <Icon aria-hidden={true} className="size-4" />
@@ -294,7 +299,7 @@ export function SpriteSheetPanel({
       title={COPY.animation.spritesheet}
       className={className}
       titleSuffix={
-        <span className="ml-2 shrink-0 rounded-full bg-pin-accent/15 px-2 py-0.5 font-bold text-pin-muted text-xs normal-case tracking-normal">
+        <span className="pin-chip ml-3">
           {COPY.animation.animationCount(asset.animations.length)}
         </span>
       }
@@ -313,13 +318,13 @@ export function SpriteSheetPanel({
               onClick={() => setTimelineExpanded((expanded) => !expanded)}
             />
           ) : null}
-          <Button variant="primary" onClick={addNewAnimation}>
-            <Plus aria-hidden="true" className="size-4" />
+          <Button variant="barPrimary" className="ml-1" onClick={addNewAnimation}>
+            <Plus aria-hidden="true" />
             {COPY.animation.addAnimation}
           </Button>
         </>
       }
-      bodyClassName="flex min-h-0 flex-col gap-2 p-2"
+      bodyClassName="flex min-h-0 flex-col gap-2 pt-1"
     >
       <div
         ref={timelineRef}
@@ -332,8 +337,8 @@ export function SpriteSheetPanel({
           return (
             <div
               key={animation.id}
-              className={`flex flex-wrap items-center gap-2 rounded-xl border-2 p-1.5 transition ${
-                selected ? 'border-pin-accent bg-pin-accent/5' : 'border-pin-border'
+              className={`flex flex-wrap items-center gap-2 rounded-2xl border-2 bg-pin-surface p-2 transition ${
+                selected ? 'border-pin-accent' : 'border-transparent'
               }`}
             >
               <button
@@ -349,7 +354,7 @@ export function SpriteSheetPanel({
                 </span>
               </button>
 
-              <div className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto py-1">
+              <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto p-1">
                 {animation.frames.map((frame, index) => {
                   const frameSelected = selected && index === selectedFrame
                   return (
@@ -364,11 +369,7 @@ export function SpriteSheetPanel({
                         s.selectAnimation(animation.id)
                         s.selectFrame(index)
                       }}
-                      className={`pin-checkerboard h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 transition ${
-                        frameSelected
-                          ? 'border-pin-accent ring-2 ring-pin-accent'
-                          : 'border-pin-border'
-                      }`}
+                      className="pin-thumb pin-checkerboard"
                     >
                       {asset.kind === 'pixel-sprite' ? (
                         <PixelFrameThumb
@@ -389,7 +390,7 @@ export function SpriteSheetPanel({
               </div>
 
               {selected ? (
-                <div className="flex shrink-0 items-center gap-0.5">
+                <div className="flex shrink-0 items-center gap-1">
                   {/* Ações de QUADRO (sobre o quadro selecionado). */}
                   <RowAction
                     icon={Plus}

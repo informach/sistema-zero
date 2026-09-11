@@ -178,6 +178,65 @@ A barra de cima do editor virou o desenho da tela-modelo dela (plano
   `PintaApp.test` (o "Salvo" com `role="status"`), `pintaLessonUi` (os `title`), `resizeUi`
   (o nome do botão do tamanho) e `shortcutsUi`.
 
+## A área da ferramenta das telas-modelo (11/09/2026)
+
+Ela liberou a área da ferramenta para seguir a imagem-modelo (lote 7, passo 12): de borda a
+borda, sem o respiro `p-2` e sem os cartões flutuando no fundo.
+
+- **O arranjo** (`EditorScreen`, `TilemapEditor`, ≥768px): `.pin-work` envolve a linha
+  [coluna branca das ferramentas `.pin-col--start`][palco `.pin-stage`][coluna branca dos painéis
+  `.pin-col--end`] e, embaixo, atravessando a largura inteira, a faixa azul-céu `.pin-band`
+  (quadros, peças, medidas do mapa, zoom). Fios de 1px separam tudo. Tokens novos no bloco
+  `[data-pinta-theme]`: `--pin-stage` (= `--color-pin-bg`, a imagem mede #f5f7fb),
+  `--pin-col-head` (a faixa de título das seções) e `--pin-band` (`--sz-tool-band-ceu`, com um azul
+  diluído da própria marca quando a folha compartilhada não existe: aula e admin).
+- ⭐ **Painéis das colunas viram SEÇÕES pelo `PanelLook`** (`components/ui/Panel.tsx`): contexto e
+  não prop, porque o mesmo painel (Prévia, Camadas, Cores) aparece na coluna do desktop E na
+  fileira da tela estreita, e as sub-seções da Aparência herdam o visual de quem as contém.
+  `card` (padrão) é o `.pin-panel` de sempre; `flat` é a `.pin-section` (sem moldura, faixa de
+  título clara com o nome em caixa alta `.pin-section-title`, fio embaixo); `band` é a seção da
+  faixa azul (o nome direto no azul). ⚠️ Por que não seletor de contexto no CSS (`.pin-col
+  .pin-panel`): os diálogos e o menu de paletas renderizam INLINE dentro dos painéis (sem portal)
+  e o `PaletteMenu` é `.pin-panel`; um seletor de descendente tiraria a moldura deles também.
+- **A caixa de ferramentas** (pixel e vetor): sem moldura, grupos em grades de duas colunas
+  separadas (`TOOL_GRID` em `toolGrid.ts`: o botão que sobra sozinho numa linha fica no meio,
+  regra que só vale por grupo) com o fio `.pin-tool-divider` entre elas; a caixa mede 104px, como
+  na imagem. O miolo rola com a barra ESCONDIDA e o degradê de "tem mais" (`ScrollMoreHint`, que
+  saiu do `VectorRightColumn` para o próprio arquivo), porque a barra clássica comia a coluna; o
+  `p-1` do miolo é o lugar do contorno de foco. O mapa segue com uma coluna só.
+- **Os botões**: `IconButton` ganhou o gancho `.pin-icon-btn`, e dentro de `.pin-work`/`.pin-bar`
+  o alvo é `--pin-hit` (40px no mouse, 44 no toque; era `--pin-bar-hit`). `tone="quiet"`
+  (`.pin-icon-btn--quiet`) é o quadrado claro das ferramentas, das ações dos quadros e da prévia;
+  o ativo (`.pin-tool-active`) é o azul CHAPADO (a sombra dura saiu). Os três da prévia são
+  redondos (`.pin-round`). O "+" das seções é o `AddDotButton` (a bolinha azul de 26px dentro do
+  alvo inteiro).
+- **As cores**: os quadradinhos são `.pin-swatch` (sem borda grossa, um fio por dentro para o
+  branco não sumir no branco, o ANEL azul no escolhido) e o "sem cor" é `.pin-swatch--none`, o tom
+  claro com o `Ban` no lugar do xadrez (nos dois editores). As duas cores da caixa do pixel
+  mudaram de arranjo: [trocar][principal] numa linha e a secundária, menor
+  (`.pin-swatch--small`, a borda transparente é alvo), no meio da de baixo; ⚠️ antes a secundária
+  ficava ATRÁS da principal, com metade escondida. Os slots do VETOR (placa e moldura) ficaram
+  como estavam (o `vectorUi` trava a estrutura deles).
+- **O resto da faixa e das colunas**: a animação é um cartão branco (a escolhida com a borda
+  azul), os quadros e as peças são `.pin-thumb` (cantos redondos, o anel no escolhido),
+  "N animações" é a pílula branca `.pin-chip`, o zoom é a pílula `.pin-zoom` e "Nova animação" é a
+  pílula azul da barra (`barPrimary`). As camadas ganharam a miniatura em bolinha. O papel no
+  palco é `.pin-paper` (fio + sombra por `box-shadow`: nenhuma borda que mude o tamanho do papel,
+  que é o desenho vezes o zoom). As barrinhas que flutuam no palco viraram `.pin-float`. O cartão
+  de dicas do primeiro uso virou a faixa `.pin-coach` com o ladrilho amarelo e a pílula azul, e a
+  faixa da seleção do vetor passou a ter o fio de 1px (53px, o teste da moldura acompanha).
+- **Tela estreita**: fora do escopo desta passada (lote 9). Lá os painéis seguem em cartão (sem
+  `PanelLook`), a caixa segue a fileira de sempre e a faixa de baixo é um cartão azul.
+- **Medido** no playground (1172x900, que é 1440 com o menu do kids): a caixa em 104px, sem rolagem
+  de página em 1366x768 (a caixa rola por dentro com o degradê) nem em 768 e 390. Contraste nos
+  quatro cenários (kids claro e escuro, sem os primitivos claro e escuro): menor texto 4,73:1 (o
+  título das seções e as dicas, no claro do kids); o azul ativo e o "+" contra a coluna, 5,3:1 ou
+  mais. ⚠️ Para medir ou fotografar o escuro, desligue as transições antes de trocar o tema (o
+  navegador do Playwright fica fora de foco e as transições de cor não terminam: a medição pegava
+  o fundo do tema anterior).
+- Testes: `components/editor/editorAreaUi.test.tsx` (colunas, seções, palco, faixa, a caixa, as
+  cores, a prévia, peças, vetor, mapa, e a tela estreita ainda em cartão).
+
 ## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
 
 > ⚠️ HISTÓRICO: substituída em 11/09/2026 pela seção acima (os cinco botões, a grade de 164px, o
@@ -427,7 +486,9 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   ficam NO card, e três alvos de 44px somam 132px + respiros. Um menu "⋮" com card de ~94px (10
   colunas) chegou a ser feito e foi REJEITADO pela dona — não reintroduzir sem ela pedir.
 - **Painéis com cabeçalho (`components/ui/Panel.tsx`)**: faixa de título tonal (`.pin-panel-head`)
-  + divisória, no lugar do `<span>` em negrito solto. ⚠️ O `aria-label` fica na MESMA `<section>`
+  + divisória, no lugar do `<span>` em negrito solto (nas colunas do desktop, desde 11/09/2026,
+  o `PanelLook` troca o cartão pela seção sem moldura: ver §"A área da ferramenta das
+  telas-modelo"). ⚠️ O `aria-label` fica na MESMA `<section>`
   (4 testes casam o seletor `section[aria-label=…]`) e o título é MOVIDO, nunca duplicado (Prévia
   e Spritesheet têm `getByText` que quebra com dois nós do mesmo texto). `disclosure` é controlado
   e põe o chevron em um botão separado (o título da paleta continua livre para abrir seu menu).
@@ -706,8 +767,9 @@ Mac, extras do pedaço colado, Caneta, curadoria).
 
 O `PaletteBar` virou painel COMPACTO: header = **nome da paleta ativa** (abre o DROPDOWN de troca)
 + **lixeira** (exclui a cor selecionada, com confirmação) + **"+" azul** (seletor livre); embaixo,
-grade de swatches QUADRADOS, **5 por linha**, com **scroll interno** (`max-h-48` — as 17 células
-base cabem em 4 linhas sem scroll; a coluna esquerda NÃO cresce). Os 3 cartões de paleta em fluxo
+grade de swatches QUADRADOS, **5 por linha**, com **scroll interno** (`max-h-52` desde 11/09/2026,
+com os 40px do mouse e os 44 do toque — as 16 células base cabem em 4 linhas sem scroll; a coluna
+esquerda NÃO cresce; o desenho dos quadradinhos está em §"A área da ferramenta das telas-modelo"). Os 3 cartões de paleta em fluxo
 MORRERAM. ⚠️ O painel tem **largura FIXA (`w-68`)** — pedido da usuária: sem ela a largura era
 ditada pelo NOME da paleta ativa ("Arcade" × "Lápis e carvão") e a grade `1fr` esticava os vãos
 junto, alternando o espaçamento a cada troca.
@@ -747,7 +809,9 @@ Layout de programa de desenho (pedido da usuária, com imagem-modelo): a caixa v
 COLUNA com três blocos — tamanhos do traço FIXOS no topo, ferramentas em **duas colunas** rolando
 no meio (`flex-1 min-h-0 overflow-y-auto`) e as duas CORES FIXAS no pé. ⚠️ Os extremos fixos não
 são enfeite: em 768px (com a faixa do Spritesheet comendo altura) a caixa mede ~670px e as cores
-saíam da vista — que é justamente o que ela precisa mostrar sempre.
+saíam da vista — que é justamente o que ela precisa mostrar sempre. (Desde 11/09/2026 o miolo
+rola com a barra escondida e o degradê no pé, e as duas cores ficam lado a lado, sem uma atrás
+da outra: ver §"A área da ferramenta das telas-modelo".)
 
 - **Duas cores na sessão** (`sessionStore`): `color` (PRINCIPAL, botão esquerdo) +
   `colorSecondary` (botão direito, nasce TRANSPARENTE = apagar) + `activeSlot` ('primary' |

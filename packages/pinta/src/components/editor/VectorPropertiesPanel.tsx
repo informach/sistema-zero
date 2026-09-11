@@ -23,7 +23,7 @@ import {
 } from '../../vector/model'
 import { Button, ToolButton } from '../ui/Button'
 import { AlignCenter, AlignLeft, AlignRight } from '../ui/icons'
-import { Panel, type PanelDisclosure } from '../ui/Panel'
+import { Panel, type PanelDisclosure, usePanelLook } from '../ui/Panel'
 import { useVectorEditor } from './vector/VectorEditorScope'
 import {
   formatStrokeWidth,
@@ -65,10 +65,12 @@ export function VectorPropertiesPanel({
   const selectedText = singleShape?.type === 'text' ? singleShape : null
   // Mesma fonte da janela do Degradê: a forma selecionada, ou o estilo sem seleção.
   const working = currentGradient()
+  // Na coluna branca as sub-seções empilham coladas (a divisória separa); no cartão, com vão.
+  const stack = `flex w-68 shrink-0 flex-col ${usePanelLook() === 'card' ? 'gap-2' : ''}`
 
   if (disclosure && !disclosure.open) {
     return (
-      <div className="flex w-68 shrink-0 flex-col gap-2">
+      <div className={stack}>
         <Panel title={COPY.vector.appearance} disclosure={disclosure}>
           {null}
         </Panel>
@@ -77,7 +79,7 @@ export function VectorPropertiesPanel({
   }
 
   return (
-    <div className="flex w-68 shrink-0 flex-col gap-2">
+    <div className={stack}>
       <Panel title={COPY.vector.appearance} disclosure={disclosure}>
         {/* A amostra mostra o degradê VIGENTE (ou o que sairia ao ligar). */}
         <Button

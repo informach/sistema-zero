@@ -50,7 +50,8 @@ const ShapeThumb = memo(function ShapeThumb({
   return (
     <span
       aria-hidden="true"
-      className="size-8 shrink-0 overflow-hidden rounded-md border-2 border-pin-border bg-white"
+      // A bolinha da tela-modelo (11/09/2026), a mesma da camada do pixel.
+      className="size-7 shrink-0 overflow-hidden rounded-full bg-white ring-1 ring-pin-border"
     >
       <svg
         viewBox={`0 0 ${width} ${height}`}

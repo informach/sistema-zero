@@ -3067,7 +3067,7 @@ describe('arrastar formas: a revisão do lote (06/09/2026)', () => {
 })
 
 /**
- * A faixa da seleção mede o MESMO em todos os ramos (54px: `py-1` + `border-b-2`
+ * A faixa da seleção mede o MESMO em todos os ramos (53px: `py-1` + `border-b`
  * na moldura, `min-h-11` no miolo). O ramo dos pontos tinha o `min-h-11` no
  * contêiner (44px com border-box) e o palco pulava 10px ao escolher uma forma
  * sem pontos editáveis.
@@ -3085,7 +3085,7 @@ describe('a faixa da seleção: uma moldura só (06/09/2026)', () => {
   function expectSameFrame(): void {
     const { outer, inner } = frame()
     expect(outer.classList.contains('py-1')).toBe(true)
-    expect(outer.classList.contains('border-b-2')).toBe(true)
+    expect(outer.classList.contains('border-b')).toBe(true)
     expect(outer.classList.contains('min-h-11')).toBe(false)
     expect(inner.classList.contains('min-h-11')).toBe(true)
     expect(inner.classList.contains('flex')).toBe(true)

@@ -5,7 +5,7 @@
  */
 import { clsx } from 'clsx'
 import type { ButtonHTMLAttributes, JSX, Ref } from 'react'
-import type { LucideIcon } from './icons'
+import { type LucideIcon, Plus } from './icons'
 
 export type ButtonVariant =
   | 'primary'
@@ -94,10 +94,17 @@ export function Button({
   )
 }
 
+/** O tom de um botão só-ícone: transparente (`ghost`) ou o quadrado de fundo claro (`quiet`). */
+export type IconButtonTone = 'ghost' | 'quiet'
+
 /**
- * Botão quadrado só-ícone (toolbar), mesmo alvo mínimo de 44px. `tone="quiet"` é o quadrado
- * de fundo claro das telas-modelo (o dos atalhos, na barra do editor); o padrão segue
- * transparente, como os botões das caixas de ferramenta.
+ * Botão quadrado só-ícone (toolbar). `tone="quiet"` é o quadrado de fundo claro das telas-modelo
+ * (os atalhos da barra, as ferramentas da caixa, as ações dos quadros); o padrão segue
+ * transparente. Ativo é o azul CHAPADO (`.pin-tool-active`).
+ *
+ * O alvo: 44px pelas utilitárias; DENTRO do editor (a barra e a área da ferramenta) o
+ * `.pin-icon-btn` do `pinta.css` o troca por `--pin-hit`, 40px no mouse (a medida da imagem) e
+ * 44px no toque. Regra sem camada vence a utilitária, por isso a troca mora lá.
  */
 export function IconButton({
   active = false,
@@ -107,15 +114,16 @@ export function IconButton({
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
   active?: boolean
-  tone?: 'ghost' | 'quiet'
+  tone?: IconButtonTone
 }): JSX.Element {
   return (
     <button
       type={type ?? 'button'}
       className={clsx(
-        'inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-xl transition',
+        'pin-icon-btn inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-xl transition',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent',
         'disabled:cursor-not-allowed disabled:opacity-40',
+        tone === 'quiet' && 'pin-icon-btn--quiet',
         active
           ? 'pin-tool-active bg-pin-accent text-pin-accent-fg'
           : tone === 'quiet'
@@ -125,6 +133,32 @@ export function IconButton({
       )}
       {...props}
     />
+  )
+}
+
+/**
+ * O "+" das seções das colunas (11/09/2026, a tela-modelo): a bolinha azul de 26px dentro do alvo
+ * inteiro (`--pin-hit`), para o botão caber na faixa de título sem pesar.
+ */
+export function AddDotButton({
+  label,
+  type,
+  ...props
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'aria-label' | 'title'> & {
+  label: string
+}): JSX.Element {
+  return (
+    <button
+      type={type ?? 'button'}
+      aria-label={label}
+      title={label}
+      className="pin-add-btn"
+      {...props}
+    >
+      <span aria-hidden="true" className="pin-add-btn__dot">
+        <Plus />
+      </span>
+    </button>
   )
 }
 
@@ -141,16 +175,19 @@ export function ToolButton({
   label,
   active,
   shortcut,
+  tone,
   ...props
 }: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children' | 'aria-label' | 'title'> & {
   icon: LucideIcon
   label: string
   active?: boolean
   shortcut?: string
+  tone?: IconButtonTone
 }): JSX.Element {
   return (
     <IconButton
       active={active ?? false}
+      tone={tone}
       aria-label={label}
       aria-pressed={active}
       title={shortcut ? `${label} (${shortcut})` : label}

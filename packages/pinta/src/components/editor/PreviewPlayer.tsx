@@ -108,7 +108,7 @@ export function PreviewPlayer({
   const mini = (
     <span
       aria-hidden="true"
-      className="pin-checkerboard flex size-9 shrink-0 items-center justify-center rounded-lg border-2 border-pin-border p-0.5"
+      className="pin-checkerboard flex size-9 shrink-0 items-center justify-center rounded-lg p-0.5 ring-1 ring-pin-border"
     >
       {animated.kind === 'pixel-sprite' ? (
         <canvas
@@ -132,13 +132,14 @@ export function PreviewPlayer({
       title={COPY.animation.preview}
       disclosure={disclosure}
       collapsedActions={mini}
-      bodyClassName="flex flex-col items-center gap-2 p-2"
+      bodyClassName="flex flex-col items-center gap-2.5 px-2 py-3"
     >
-      <div className="pin-checkerboard rounded-xl border-2 border-pin-border p-1">
+      {/* O quadro na caixa de cantos redondos da tela-modelo (88px), sem a borda grossa. */}
+      <div className="pin-checkerboard overflow-hidden rounded-2xl ring-1 ring-pin-border">
         {animated.kind === 'pixel-sprite' ? (
           <canvas
             ref={canvasRef}
-            className="pin-pixelated block h-24 w-24 object-contain"
+            className="pin-pixelated block size-22 object-contain"
             style={{ imageRendering: 'pixelated' }}
           />
         ) : (
@@ -146,7 +147,7 @@ export function PreviewPlayer({
             width={animated.frameWidth}
             height={animated.frameHeight}
             shapes={shownShapes ?? []}
-            className="block h-24 w-24"
+            className="block size-22"
           />
         )}
       </div>
@@ -155,20 +156,27 @@ export function PreviewPlayer({
         <span className="min-w-0 max-w-full truncate">{animation.name}</span>
         <span className="font-normal text-pin-muted">{COPY.animation.selectedBadge}</span>
       </span>
-      <div className="flex w-full items-center justify-center gap-2">
+      {/* Os três redondos da tela-modelo: o modo ligado é o azul; os outros, o claro. */}
+      <div className="flex w-full items-center justify-center gap-2.5">
         <ToolButton
+          tone="quiet"
+          className="pin-round"
           icon={Play}
           label={COPY.animation.reproduce}
           active={playing}
           onClick={() => session.getState().setPlaying(true)}
         />
         <ToolButton
+          tone="quiet"
+          className="pin-round"
           icon={SquarePen}
           label={COPY.animation.edit}
           active={!playing}
           onClick={() => session.getState().setPlaying(false)}
         />
         <ToolButton
+          tone="quiet"
+          className="pin-round"
           icon={Settings}
           label={COPY.animation.settings}
           aria-haspopup="dialog"

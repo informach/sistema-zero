@@ -23,7 +23,7 @@ import {
   SquareDashed,
   Trash2,
 } from '../ui/icons'
-import { Panel } from '../ui/Panel'
+import { Panel, PanelLook } from '../ui/Panel'
 import { useToolCuration } from './editorContext'
 import { TilePicker } from './TilePicker'
 
@@ -73,6 +73,7 @@ export function TilemapToolbar({
   const drawNodes = filterTools(MAP_TOOLS, allowTools).map((entry) => (
     <ToolButton
       key={entry.id}
+      tone="quiet"
       icon={entry.icon}
       label={entry.label}
       shortcut={entry.shortcut}
@@ -89,6 +90,7 @@ export function TilemapToolbar({
         id: 'autoExpand',
         node: (
           <ToolButton
+            tone="quiet"
             icon={Maximize}
             label={COPY.tiles.autoExpand}
             active={autoExpand}
@@ -100,6 +102,7 @@ export function TilemapToolbar({
         id: 'showCollision',
         node: (
           <ToolButton
+            tone="quiet"
             icon={BrickWall}
             label={COPY.tiles.showCollision}
             active={showCollision}
@@ -111,19 +114,23 @@ export function TilemapToolbar({
     allowTools,
   ).map((entry) => <Fragment key={entry.id}>{entry.node}</Fragment>)
 
+  // A coluna branca da tela-modelo (11/09/2026): quadrados claros de 40px (44 no toque), o ativo
+  // azul chapado e um fio entre os dois grupos.
   return (
-    <div
-      role="toolbar"
-      aria-label={COPY.a11y.tools}
-      aria-orientation="vertical"
-      className="pin-panel flex shrink-0 flex-col items-center gap-1 overflow-y-auto p-2"
-    >
-      {drawNodes}
-      {/* Divisor só existe entre dois grupos que existem. */}
-      {drawNodes.length > 0 && extraNodes.length > 0 ? (
-        <div className="my-1 h-px w-6 bg-pin-border" />
-      ) : null}
-      {extraNodes}
+    <div className="pin-col pin-col--start flex min-h-0 shrink-0 flex-col">
+      <div
+        role="toolbar"
+        aria-label={COPY.a11y.tools}
+        aria-orientation="vertical"
+        className="flex min-h-0 shrink-0 flex-col items-center gap-2 overflow-y-auto p-2"
+      >
+        {drawNodes}
+        {/* Divisor só existe entre dois grupos que existem. */}
+        {drawNodes.length > 0 && extraNodes.length > 0 ? (
+          <hr className="pin-tool-divider pin-tool-divider--short" />
+        ) : null}
+        {extraNodes}
+      </div>
     </div>
   )
 }
@@ -158,77 +165,79 @@ export function TilemapSidebar({
   onAddLayer,
 }: TilemapSidebarProps): JSX.Element {
   return (
-    <div className="flex min-h-0 w-56 shrink-0 flex-col gap-2 overflow-y-auto">
-      <TilePicker
-        tileset={tileset}
-        selectedTile={selectedTile}
-        stamp={stamp}
-        onSelectTile={onSelectTile}
-        onSetStamp={onSetStamp}
-      />
+    // A coluna branca dos painéis (seções sem moldura), como a do pixel e a do vetor.
+    <div className="pin-col pin-col--end pin-scroll-y flex min-h-0 w-56 shrink-0 flex-col overflow-y-auto">
+      <PanelLook value="flat">
+        <TilePicker
+          tileset={tileset}
+          selectedTile={selectedTile}
+          stamp={stamp}
+          onSelectTile={onSelectTile}
+          onSetStamp={onSetStamp}
+        />
 
-      <Panel title={COPY.tiles.layers}>
-        <div className="flex flex-col gap-1">
-          {tilemap.layers.map((layer) => {
-            const active = layer.id === activeLayerId
-            return (
-              <div key={layer.id} className="flex items-center gap-1">
-                <button
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => onSelectLayer(layer.id)}
-                  className={`min-h-11 flex-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
-                    active
-                      ? 'border-pin-accent bg-pin-accent/10'
-                      : 'border-pin-border hover:border-pin-accent'
-                  }`}
-                >
-                  {layer.name}
-                  {layer.front ? (
-                    <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
-                      {COPY.tiles.frontBadge}
-                    </span>
-                  ) : null}
-                </button>
-                <IconButton
-                  aria-label={`${COPY.tiles.frontLayer}: ${layer.name}`}
-                  aria-pressed={layer.front === true}
-                  active={layer.front === true}
-                  title={COPY.tiles.frontLayer}
-                  onClick={() => onToggleFront(layer.id)}
-                >
-                  <BringToFront aria-hidden="true" className="size-5" />
-                </IconButton>
-                <IconButton
-                  aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${layer.name}`}
-                  aria-pressed={layer.visible}
-                  title={layer.visible ? COPY.tiles.hide : COPY.tiles.show}
-                  onClick={() => onToggleVisible(layer.id)}
-                >
-                  {layer.visible ? (
-                    <Eye aria-hidden="true" className="size-5" />
-                  ) : (
-                    <EyeOff aria-hidden="true" className="size-5" />
-                  )}
-                </IconButton>
-                {tilemap.layers.length > 1 ? (
-                  <IconButton
-                    aria-label={`${COPY.tiles.removeLayer}: ${layer.name}`}
-                    title={COPY.tiles.removeLayer}
-                    onClick={() => onRemoveLayer(layer.id)}
+        <Panel title={COPY.tiles.layers}>
+          <div className="flex flex-col gap-1">
+            {tilemap.layers.map((layer) => {
+              const active = layer.id === activeLayerId
+              return (
+                <div key={layer.id} className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onSelectLayer(layer.id)}
+                    // A linha de camada da tela-modelo: a escolhida com a borda azul, as outras lisas.
+                    className={`min-h-11 flex-1 truncate rounded-xl border-2 px-3 text-left text-sm font-bold transition ${
+                      active ? 'border-pin-accent' : 'border-transparent hover:bg-pin-bg'
+                    }`}
                   >
-                    <Trash2 aria-hidden="true" className="size-5" />
+                    {layer.name}
+                    {layer.front ? (
+                      <span className="ml-1 rounded bg-pin-accent/20 px-1 text-[10px] font-bold text-pin-accent">
+                        {COPY.tiles.frontBadge}
+                      </span>
+                    ) : null}
+                  </button>
+                  <IconButton
+                    aria-label={`${COPY.tiles.frontLayer}: ${layer.name}`}
+                    aria-pressed={layer.front === true}
+                    active={layer.front === true}
+                    title={COPY.tiles.frontLayer}
+                    onClick={() => onToggleFront(layer.id)}
+                  >
+                    <BringToFront aria-hidden="true" className="size-5" />
                   </IconButton>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
-        <Button className="mt-2 w-full" onClick={onAddLayer}>
-          <Plus aria-hidden="true" className="size-4" />
-          {COPY.tiles.addLayer}
-        </Button>
-      </Panel>
+                  <IconButton
+                    aria-label={`${COPY.tiles.show} ou ${COPY.tiles.hide.toLowerCase()}: ${layer.name}`}
+                    aria-pressed={layer.visible}
+                    title={layer.visible ? COPY.tiles.hide : COPY.tiles.show}
+                    onClick={() => onToggleVisible(layer.id)}
+                  >
+                    {layer.visible ? (
+                      <Eye aria-hidden="true" className="size-5" />
+                    ) : (
+                      <EyeOff aria-hidden="true" className="size-5" />
+                    )}
+                  </IconButton>
+                  {tilemap.layers.length > 1 ? (
+                    <IconButton
+                      aria-label={`${COPY.tiles.removeLayer}: ${layer.name}`}
+                      title={COPY.tiles.removeLayer}
+                      onClick={() => onRemoveLayer(layer.id)}
+                    >
+                      <Trash2 aria-hidden="true" className="size-5" />
+                    </IconButton>
+                  ) : null}
+                </div>
+              )
+            })}
+          </div>
+          <Button variant="barOutline" className="mt-2 w-full" onClick={onAddLayer}>
+            <Plus aria-hidden="true" />
+            {COPY.tiles.addLayer}
+          </Button>
+        </Panel>
+      </PanelLook>
     </div>
   )
 }

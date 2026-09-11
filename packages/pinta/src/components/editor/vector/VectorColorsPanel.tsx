@@ -29,8 +29,8 @@ import { useStore } from 'zustand'
 import { COPY } from '../../../core/copy'
 import { getPalette } from '../../../core/palette'
 import { usePintaApp } from '../../appContext'
-import { ToolButton } from '../../ui/Button'
-import { ChevronDown, Plus, Trash2 } from '../../ui/icons'
+import { AddDotButton, ToolButton } from '../../ui/Button'
+import { Ban, ChevronDown, Trash2 } from '../../ui/icons'
 import type { PanelDisclosure } from '../../ui/Panel'
 import { Panel } from '../../ui/Panel'
 import { useToast } from '../../ui/Toast'
@@ -154,21 +154,15 @@ export function VectorColorsPanel({
             aria-disabled={!deletable}
             className={deletable ? undefined : 'opacity-40'}
           />
-          <button
-            type="button"
-            aria-label={COPY.palette.addColor}
-            title={COPY.palette.addColor}
-            onClick={() => setPickerOpen(true)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent"
-          >
-            <Plus aria-hidden="true" className="size-5" />
-          </button>
+          <AddDotButton label={COPY.palette.addColor} onClick={() => setPickerOpen(true)} />
         </>
       }
     >
+      {/* A grade da tela-modelo, igual à do pixel: o "sem cor" (o tom claro com o proibido) e os
+          quadradinhos com o anel azul na cor do canal (o `p-1` é o lugar do anel). */}
       <div
         className={clsx(
-          'grid max-h-48 grid-cols-5 justify-items-center gap-1 overflow-y-auto p-0.5',
+          'grid max-h-52 grid-cols-5 justify-items-center gap-1.5 overflow-y-auto p-1',
           picking && 'cursor-crosshair rounded-lg ring-2 ring-pin-accent/60',
         )}
       >
@@ -179,14 +173,10 @@ export function VectorColorsPanel({
           aria-disabled={picking || undefined}
           title={COPY.vector.none}
           onClick={() => applyChannelColor('none')}
-          className={clsx(
-            'pin-checkerboard size-11 shrink-0 rounded-md border-2',
-            !picking && noneActive
-              ? 'border-pin-accent ring-2 ring-pin-accent'
-              : 'border-pin-border',
-            picking && 'opacity-40',
-          )}
-        />
+          className={clsx('pin-swatch pin-swatch--none', picking && 'opacity-40')}
+        >
+          <Ban aria-hidden="true" />
+        </button>
         {swatches.map((hex) => (
           <button
             key={hex}
@@ -195,12 +185,7 @@ export function VectorColorsPanel({
             aria-pressed={picking ? undefined : activeHex === hex}
             title={COPY.colorNames[hex] ?? hex}
             onClick={() => applyChannelColor(hex)}
-            className={clsx(
-              'size-11 shrink-0 rounded-md border-2',
-              !picking && activeHex === hex
-                ? 'border-pin-accent ring-2 ring-pin-accent'
-                : 'border-pin-border',
-            )}
+            className="pin-swatch"
             style={{ backgroundColor: hex }}
           />
         ))}
