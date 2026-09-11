@@ -61,6 +61,9 @@ async function coveredControls(page: Page): Promise<string[]> {
       // Dentro de um <details> fechado o Chrome guarda a caixa sem desenhar (é
       // `content-visibility: hidden`): o controle não está na tela, então não pode estar coberto.
       if (!control.checkVisibility()) continue
+      // Escondido de propósito (o seletor nativo do "+ Nova cor", aberto pelo botão "+"): não é
+      // um controle que a criança alcança, então não tem como estar coberto.
+      if (control.closest('[aria-hidden="true"]')) continue
       const closed = control.closest('details:not([open])')
       if (closed && !(control.tagName === 'SUMMARY' && control.parentElement === closed)) continue
       const x = rect.left + rect.width / 2
