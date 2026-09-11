@@ -916,6 +916,24 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   mudando por XP de OUTRAS crianças enquanto a tela fica parada — o número do ranking é calculado ao vivo
   no servidor (members `getRanking`), só faltava re-buscar. Sem polling contínuo (custo do cálculo caro).
 
+### Ranking no desenho das telas-modelo (11/09/2026)
+
+- **Abas no cabeçalho:** o `RankingHub` recebe o `KidsPageHeader` pronto do servidor (`header`, o
+  texto continua na página) e desenha as faixas: creme (cabeçalho + `KidsTabs`), menta (o conteúdo
+  da aba) e lilás. O estado da aba precisa estar nas duas faixas, por isso o hub é dono delas.
+- **Pódio:** um cartão branco com 2º, 1º e 3º (ordem de DESENHO por `order-*`; a `<ol>` segue 1-2-3
+  para o leitor), bloco de metal com a ALTURA da posição. A cor e a altura saem da `position`, não do
+  índice (o ranking empata). A própria criança aparece pelo NOME com a pílula azul "você" (antes era
+  "Você" no lugar do nome), aqui e na liga.
+- **"Placar em pausa"** usa o `KidsEmptyState tone="pausa"` (círculo creme, ícone cinza) e o
+  "Tentar de novo" RECARREGA a página: o placar vem do servidor e o `useState` do hub não se refaria
+  com um `router.refresh()`.
+- ⚠️ **Os números dos cartões "quanto vale cada coisa" são do SERVIDOR.** `lib/xp-sources.ts` repete
+  os valores de `members/src/domain/gamification/gamification.ts` (`XP_VALUES`) e o
+  `tests/xp-conformance.test.ts` lê o arquivo do members PELO CAMINHO (molde do `badge-conformance`):
+  mover/renomear aquele arquivo quebra este teste, e não o typecheck. O jogo publicado no Mural só
+  vira fonte para quem abre o Estúdio livre (`canOpenFreeStudio`: posse + nível).
+
 ## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
 
 As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,

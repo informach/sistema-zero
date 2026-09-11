@@ -7,10 +7,14 @@ import type { LeagueMeView } from '@/lib/types'
 
 /**
  * Board da liga semanal (estilo Duolingo) — apresentacional. Mostra a divisão do aluno,
- * a coorte ranqueada pela XP da semana com o ROSTO (avatar + aura do nível) e o 1º NOME
- * de cada colega (igual ao Clube/Mural); "Você" se destaca. O nome vira LINK p/ o perfil
- * público só quando o colega é público (opt-in dos pais). As zonas de promoção (topo,
- * verde) / rebaixamento (base, vermelho); semana amistosa (pouca massa) → sem zonas.
+ * a coorte ranqueada pela XP da semana com o ROSTO (avatar) e o 1º NOME de cada colega
+ * (igual ao Clube/Mural), e a própria criança com a pílula azul "você". O nome vira LINK
+ * p/ o perfil público só quando o colega é público (opt-in dos pais). As zonas de
+ * promoção (topo, verde) / rebaixamento (base, vermelho); semana amistosa (pouca massa)
+ * → sem zonas.
+ *
+ * Desenho: o mesmo cartão branco e as mesmas linhas do "Ranking geral" (telas-modelo de
+ * 11/09/2026), para a troca de aba mudar o CONTEÚDO e não a cara da página.
  */
 export function LeagueBoard({ league }: { league: LeagueMeView }) {
   const info = tierInfo(league.tier)
@@ -18,25 +22,28 @@ export function LeagueBoard({ league }: { league: LeagueMeView }) {
   const friendly = league.promotionCount === 0 && league.relegationCount === 0
 
   return (
-    <section className="space-y-3 rounded-2xl border-2 border-border bg-card p-4">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="sz-display flex items-center gap-2 text-base">
-          <span className="text-2xl" aria-hidden="true">
+    <section className="kids-carta rounded-[2rem] px-4 py-6 md:p-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="sz-display flex items-center gap-3 text-2xl md:text-[1.75rem]">
+          <span
+            className="grid size-12 shrink-0 place-items-center rounded-[0.875rem] bg-(--band-creme) text-[1.75rem]"
+            aria-hidden="true"
+          >
             {info.emoji}
           </span>
           Liga {info.labelPt}
         </h2>
-        <span className="rounded-full bg-(--kids-lime-tint) px-3 py-1 font-bold text-xs">
+        <span className="kids-marca rounded-full px-3.5 py-1.5 font-extrabold text-sm">
           Você está em {league.myPosition}º
         </span>
       </div>
 
-      <ol className="space-y-1.5">
+      <ol className="mt-6 space-y-2">
         {league.entries.map((e, i) => {
           const promo = !friendly && e.position <= league.promotionCount
           const releg = !friendly && e.position > total - league.relegationCount
-          // "Você" p/ o próprio; senão o 1º nome do colega (ausente → "Colega").
-          const name = e.isMe ? 'Você' : (e.firstName ?? 'Colega')
+          // O 1º nome do colega (ausente → "Colega"); a própria criança sem nome é "Você".
+          const name = e.firstName ?? (e.isMe ? 'Você' : 'Colega')
           return (
             <li
               // Ranking estático (server-rendered, sem reordenação/estado no cliente) e a
@@ -44,54 +51,60 @@ export function LeagueBoard({ league }: { league: LeagueMeView }) {
               // biome-ignore lint/suspicious/noArrayIndexKey: ver acima
               key={i}
               className={cn(
-                'flex items-center gap-3 rounded-xl border-2 px-3 py-2',
-                e.isMe ? 'border-primary bg-(--kids-cyan-tint)' : 'border-transparent bg-muted',
+                'flex min-h-[3.75rem] items-center gap-3 rounded-2xl px-3.5 py-2 md:px-[1.125rem]',
+                e.isMe ? 'bg-card ring-2 ring-primary ring-inset' : 'bg-background',
               )}
             >
-              <span className="w-6 text-center font-bold text-muted-foreground text-sm tabular-nums">
-                {e.position}
+              <span className="w-7 shrink-0 font-extrabold text-muted-foreground text-[0.9375rem] tabular-nums">
+                {e.position}º
               </span>
               {promo ? (
                 // `--success-foreground` (ciano no dark / verde no light): no dark o
                 // `--success` é a cor de FUNDO do badge (quase preta) → seta invisível.
-                <ChevronUp className="size-4 text-(--success-foreground)" />
+                <ChevronUp className="size-4 shrink-0 text-(--success-foreground)" />
               ) : releg ? (
-                <ChevronDown className="size-4 text-(--sz-hot)" />
+                <ChevronDown className="size-4 shrink-0 text-(--sz-hot)" />
               ) : (
-                <span className="size-4" />
+                <span className="size-4 shrink-0" />
               )}
               <AvatarWithAura
                 photoUrl={e.photoUrl}
-                levelSlug={e.levelSlug}
+                name={name}
                 size="sm"
-                label={name}
+                className="size-9"
+                label={e.isMe ? 'Seu avatar' : `Avatar de ${name}`}
               />
-              {e.profileId ? (
-                // Colega PÚBLICO (opt-in dos pais) → nome clicável p/ o perfil público.
-                <Link
-                  href={`/crianca/${e.profileId}`}
-                  className="flex-1 truncate font-bold text-sm hover:underline"
-                >
-                  {name}
-                </Link>
-              ) : (
-                <span className="flex-1 truncate font-bold text-sm">{name}</span>
-              )}
-              <span className="font-bold text-sm tabular-nums">{e.weeklyXp} XP</span>
+              <div className="flex min-w-0 flex-1 items-center gap-2">
+                {e.profileId ? (
+                  // Colega PÚBLICO (opt-in dos pais) → nome clicável p/ o perfil público.
+                  <Link
+                    href={`/crianca/${e.profileId}`}
+                    className="truncate font-extrabold text-base hover:underline"
+                  >
+                    {name}
+                  </Link>
+                ) : (
+                  <span className="truncate font-extrabold text-base">{name}</span>
+                )}
+                {e.isMe && e.firstName ? (
+                  <span className="kids-marca shrink-0 rounded-full px-2 py-0.5 font-extrabold text-[0.6875rem] leading-tight">
+                    você
+                  </span>
+                ) : null}
+              </div>
+              <span className="shrink-0 font-extrabold text-muted-foreground text-[0.9375rem] tabular-nums">
+                {e.weeklyXp} XP
+              </span>
             </li>
           )
         })}
       </ol>
 
-      {friendly ? (
-        <p className="text-center text-muted-foreground text-xs">
-          Semana tranquila! Quando mais colegas estiverem competindo, começa a subida de divisão. 🚀
-        </p>
-      ) : (
-        <p className="text-center text-muted-foreground text-xs">
-          Os {league.promotionCount} primeiros sobem de divisão no domingo. Bora pro topo! ⬆️
-        </p>
-      )}
+      <p className="mt-6 text-center font-semibold text-muted-foreground text-sm">
+        {friendly
+          ? 'Semana tranquila! Quando mais colegas estiverem competindo, começa a subida de divisão. 🚀'
+          : `Os ${league.promotionCount} primeiros sobem de divisão no domingo. Bora pro topo! ⬆️`}
+      </p>
     </section>
   )
 }

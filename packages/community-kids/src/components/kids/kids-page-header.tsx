@@ -60,9 +60,10 @@ export function KidsPageHeader({
           {subtitle ? (
             <p
               className={cn(
-                // `max-w-3xl`: nas telas-modelo a frase do cabeçalho corre numa linha só
-                // a 1440px (~700px); o `max-w-prose` quebrava em 520px.
-                'mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground',
+                // `max-w-4xl`: nas telas-modelo a frase do cabeçalho corre numa linha só
+                // a 1440px, e a do Ranking chega a ~830px no nosso corpo de 17px (o
+                // `max-w-3xl` a quebrava a uma palavra do fim; o `max-w-prose`, em 520px).
+                'mt-2.5 max-w-4xl font-medium text-[1.0625rem] text-muted-foreground',
                 centro && 'mx-auto',
               )}
             >

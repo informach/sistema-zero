@@ -1009,7 +1009,10 @@ user+audience+slug — a "1ª aula" do kids é independente da do adult). Domain
 `domain/gamification/` (XP_VALUES, `quizPassedXp`, `localDateSaoPaulo`/`advanceStreak`/
 `effectiveStreak` — timezone FIXA America/Sao_Paulo, cálculo SEMPRE no backend; o "dia"
 vira às 03:00Z). Decisões travadas com o usuário (06/2026): **SEM corações/vidas**;
-XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25;
+XP = aula 10 · quiz aprovado 20 + bônus `round(score/10)` cap +10 · baú de unidade 25
+(⚠️ esses números aparecem na página do Ranking kids, `community-kids/src/lib/xp-sources.ts`,
+junto com o `STUDIO_PUBLISH_DAY`; o `community-kids/tests/xp-conformance.test.ts` lê o
+`gamification.ts` PELO CAMINHO — mudou um valor, mude lá; moveu o arquivo, o teste quebra);
 **catálogo de badges EM CÓDIGO** (`BADGE_SLUGS`, **30** com as expansões: first-lesson,
 **first-showcase** (1º jogo publicado no Mural — universal, ledger `course_showcased`, Fase 5),
 **plays-10/plays-100** (jogadas recebidas, ledgers `play_milestone_*`),

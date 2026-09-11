@@ -76,7 +76,27 @@ describe('central de ranking kids', () => {
     )
     expect(screen.getByText('Caio').closest('a')).toBeNull()
     expect(screen.getByText('Sua posição')).toBeTruthy()
-    expect(screen.getByText('Você')).toBeTruthy()
+    // A própria criança aparece pelo nome, com a pílula "você" (o desenho das
+    // telas-modelo), e só uma vez: ela não está na página carregada.
+    expect(screen.getByText('Lia')).toBeTruthy()
+    expect(screen.getAllByText('você')).toHaveLength(1)
+  })
+
+  test('sem placar, "Placar em pausa" oferece tentar de novo', () => {
+    render(<RankingHub initialRanking={null} league={league} />)
+    expect(screen.getByText('Placar em pausa')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeTruthy()
+  })
+
+  test('quanto vale cada coisa: o jogo publicado só entra para quem pode publicar', () => {
+    const { unmount } = render(<RankingHub initialRanking={ranking} league={league} />)
+    expect(screen.getByText('Terminar uma aula')).toBeTruthy()
+    expect(screen.getByText('+10 XP')).toBeTruthy()
+    expect(screen.queryByText('Publicar um jogo no Mural')).toBeNull()
+    unmount()
+
+    render(<RankingHub initialRanking={ranking} league={league} canPublish />)
+    expect(screen.getByText('Publicar um jogo no Mural')).toBeTruthy()
   })
 
   test('alterna para a liga e carrega a próxima página do geral', async () => {
