@@ -799,7 +799,14 @@
      afunda até a borda quase sumir. Os EDITORES ficam planos (a mesma receita fora das
      faixas não tem relevo), e os chips de filtro também (fazem papel de aba). O movimento é
      `translate`: o `transform` do aperto da pílula base sai aqui dentro, senão somavam.
-     `--sz-3d-*` são o ESTADO de cada peça (declarados nela, nunca herdados), não tokens. */
+     `--sz-3d-*` são o ESTADO de cada peça (declarados nela, nunca herdados), não tokens.
+     ⚠️ Peça cuja área clicável é esticada por um `::after` (`position: absolute; inset: 0`
+     contra um ancestral `relative`: "o cartão inteiro abre") NÃO pode andar. `translate` ou
+     `transform` fazem dela o bloco de referência do `::after`, que encolhe para o tamanho da
+     peça no meio do gesto: o hover pisca e o clique solta fora. Quem usa esse padrão desliga o
+     movimento na própria folha, fora de camada (`transform: none; translate: none` no
+     `:hover` e no `:active`); o aperto continua visível no relevo. Hoje só o Pensa
+     (`.pensa-project-card__open`, no pensa.css). */
   .sz-tool-bands
   :is(.sz-tool-pill, .sz-tool-back, .sz-tool-btn-menu, .sz-tool-icon-btn, .sz-tool-card--new) {
     --sz-3d-altura: 4px;

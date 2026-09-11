@@ -66,7 +66,11 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    `--sz-tool-degrau` no resto, tokens nos dois temas que o host alimenta; `--sz-3d-*` é o estado
    de cada peça, não token); no hover sobem 1px e no aperto afundam, por `translate`. Os
    EDITORES e os chips (que são abas) ficam planos. O contrato trava: nenhuma regra de pílula
-   fora das faixas tem sombra, e existe UMA regra de relevo, sem os chips. Quem importa: o community-kids (`globals.css`, DEPOIS do
+   fora das faixas tem sombra, e existe UMA regra de relevo, sem os chips. ⚠️ Peça com a área
+   clicável esticada por `::after` ("o cartão inteiro abre") NÃO pode andar: o `translate` faz
+   dela o bloco de referência do `::after`, que encolhe no meio do gesto (hover piscando, clique
+   perdido). Desligue o movimento na folha do pacote, fora de camada, como o
+   `.pensa-project-card__open` do Pensa (`ba43b146`). Quem importa: o community-kids (`globals.css`, DEPOIS do
    `theme-kids` e ANTES dos CSS dos pacotes) e os playgrounds do pinta/studio/molda/pensa; admin e
    community adulto NÃO (lá não há galeria nem menu do host; os pacotes caem nos fallbacks). Os
    pacotes apontam seus tokens (`--color-pin-*`, `--color-sz-*`, `--pz-*`) para os `--sz-tool-*`
