@@ -112,6 +112,109 @@ describe('chrome do host — galeria', () => {
     await esperarGaleria()
     expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
     expect(screen.queryByText(/na sua conta/)).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Voltar para Criar' })).toBeNull()
+  })
+
+  it('a seta de volta para Criar vem DEPOIS do menu, e o clique simples é do host', async () => {
+    const onNavigate = mock(() => {})
+    const { chrome } = chromeWith({
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate },
+    })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp />
+      </PintaHostChromeProvider>,
+    )
+    await esperarGaleria()
+    const seta = screen.getByRole('link', { name: 'Voltar para Criar' })
+    expect(seta.getAttribute('href')).toBe('/criar')
+    expect(seta.className).toBe('sz-tool-back')
+    // Sem `title` (o nome já está no aria-label; o leitor repetiria).
+    expect(seta.getAttribute('title')).toBeNull()
+    const menu = screen.getByRole('button', { name: 'Esconder menu' })
+    expect(menu.parentElement).toBe(seta.parentElement)
+    expect(menu.compareDocumentPosition(seta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    // Com Ctrl o navegador abre outra aba: o host não navega por baixo.
+    const comCtrl = fireEvent.click(seta, { ctrlKey: true })
+    expect(comCtrl).toBe(true)
+    expect(onNavigate).not.toHaveBeenCalled()
+    // O clique simples troca de rota sem recarregar (o padrão do link é cancelado).
+    const simples = fireEvent.click(seta)
+    expect(simples).toBe(false)
+    expect(onNavigate).toHaveBeenCalledTimes(1)
+  })
+
+  it('a seta aparece sozinha quando o host não manda o menu', async () => {
+    const { chrome } = chromeWith({
+      menu: null,
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate: () => {} },
+    })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp />
+      </PintaHostChromeProvider>,
+    )
+    await esperarGaleria()
+    expect(screen.getByRole('link', { name: 'Voltar para Criar' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /menu/i })).toBeNull()
+  })
+
+  it('com a nuvem da conta ligada e nada acontecendo: a pílula em repouso e "na sua conta"', async () => {
+    const naves = [
+      createPixelSpriteAsset({ name: 'nave', frameSize: 32 }),
+      createPixelSpriteAsset({ name: 'lua', frameSize: 32 }),
+    ]
+    const { chrome } = chromeWith({ status: null, account: { label: 'Guardado na sua conta' } })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp persistence={createMemoryPersistence(naves)} />
+      </PintaHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    const pilula = screen.getByText('Guardado na sua conta').closest('[role="status"]')
+    expect(pilula?.className).toContain('sz-tool-status--ok')
+    expect(screen.getByRole('heading', { name: COPY.gallery.savedAccount(2) })).toBeTruthy()
+  })
+
+  it('sem a nuvem da conta o cartão diz "neste aparelho"; e o selo do host vence a conta', async () => {
+    const naves = [createPixelSpriteAsset({ name: 'nave', frameSize: 32 })]
+    const { chrome } = chromeWith({
+      status: {
+        tone: 'muted',
+        icon: 'upload',
+        label: 'Guardando…',
+        text: 'Guardando na sua conta…',
+      },
+      account: null,
+    })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp persistence={createMemoryPersistence(naves)} />
+      </PintaHostChromeProvider>,
+    )
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    expect(screen.getByRole('heading', { name: COPY.gallery.savedDevice(1) })).toBeTruthy()
+    expect(screen.getByText('Guardando na sua conta…')).toBeTruthy()
+  })
+
+  it('o selo do host vence a pílula em repouso da conta', async () => {
+    const { chrome } = chromeWith({
+      status: { tone: 'warn', icon: 'offline', label: 'Sem internet', text: 'Sem internet agora' },
+      account: { label: 'Guardado na sua conta' },
+    })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp />
+      </PintaHostChromeProvider>,
+    )
+    await esperarGaleria()
+    expect(screen.getByText('Sem internet agora')).toBeTruthy()
+    expect(screen.queryByText('Guardado na sua conta')).toBeNull()
   })
 })
 
@@ -148,5 +251,19 @@ describe('chrome do host — editor', () => {
     expect(selo?.getAttribute('title')).toBe('Guardando na sua conta…')
     // E o "Salvo" local continua lá, ao lado.
     expect(screen.getByText(COPY.editor.saved)).toBeTruthy()
+  })
+
+  it('o editor ignora a seta da galeria (lá o Voltar leva à galeria)', async () => {
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const { chrome } = chromeWith({
+      back: { label: 'Voltar para Criar', href: '/criar', onNavigate: () => {} },
+    })
+    render(
+      <PintaHostChromeProvider value={chrome}>
+        <PintaApp persistence={createMemoryPersistence([nave])} />
+      </PintaHostChromeProvider>,
+    )
+    await abrirNave()
+    expect(screen.queryByRole('link', { name: 'Voltar para Criar' })).toBeNull()
   })
 })

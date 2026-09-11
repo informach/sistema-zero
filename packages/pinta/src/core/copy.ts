@@ -12,8 +12,32 @@ export const COPY = {
     title: 'Meus desenhos',
     subtitle: 'Crie os personagens, cenários e peças dos seus jogos.',
     create: 'Criar novo',
+    /**
+     * O cartão "Criar novo" que abre a grade (11/09/2026, a imagem-modelo): o título é o mesmo do
+     * botão do cabeçalho e a dica é o que dá a ele um NOME próprio (os testes acham o botão do
+     * cabeçalho pelo nome exato).
+     */
+    newCardHint: 'Comece um desenho do zero.',
     empty: 'Nada por aqui ainda. Toque em "Criar novo" para começar o seu primeiro desenho!',
-    emptyCta: 'Começar meu primeiro desenho',
+    /**
+     * O cartão de fechamento (faixa lilás): ONDE os desenhos estão. "Na sua conta" só com a nuvem
+     * da conta ligada (o host diz); sem ela, "neste aparelho", nunca a promessa de uma nuvem que
+     * não existe. Com a galeria vazia ele também aparece (é onde mora o "Trazer de volta").
+     */
+    savedAccount: (count: number) =>
+      count === 0
+        ? 'Nenhum desenho na sua conta ainda'
+        : count === 1
+          ? '1 desenho guardado na sua conta'
+          : `${count} desenhos guardados na sua conta`,
+    savedDevice: (count: number) =>
+      count === 0
+        ? 'Nenhum desenho neste aparelho ainda'
+        : count === 1
+          ? '1 desenho guardado neste aparelho'
+          : `${count} desenhos guardados neste aparelho`,
+    savedHint:
+      'Tudo é guardado sozinho enquanto você desenha. Tem um arquivo do Pinta? Traga os desenhos de volta por aqui.',
     loading: 'Abrindo a sua galeria...',
     loadError: 'Não consegui abrir a sua galeria. Tente de novo daqui a pouco.',
     /** Bloco de aula: não há galeria por trás, então a copy fala do DESENHO. */

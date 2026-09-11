@@ -327,8 +327,10 @@
  * Cards da galeria (19/08/2026): com centenas de desenhos, o navegador só mede/pinta os
  * cards perto da janela; a altura intrínseca aproxima o card real (a 1ª rolagem acerta
  * o resto). Só o CARD (não as seções, cuja altura varia); os diálogos são irmãos da grade.
+ * 11/09/2026: o cartão das telas-modelo mede ~246x326 a 1440px com o menu aberto (a grade
+ * `.sz-tool-grid` compartilhada, 4 colunas).
  */
 [data-pinta-theme] .pin-gallery-card {
   content-visibility: auto;
-  contain-intrinsic-size: auto 164px 232px;
+  contain-intrinsic-size: auto 246px 326px;
 }

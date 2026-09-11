@@ -11,9 +11,15 @@
  * gravação) e o puxador do menu morava numa calha de 36px ao lado do app.
  */
 import { clsx } from 'clsx'
-import { createContext, type JSX, useContext } from 'react'
-import type { PintaHostChrome, PintaHostChromeMenu, PintaHostChromeStatus } from '../core/types'
+import { createContext, type JSX, type MouseEvent, useContext } from 'react'
+import type {
+  PintaHostChrome,
+  PintaHostChromeBack,
+  PintaHostChromeMenu,
+  PintaHostChromeStatus,
+} from '../core/types'
 import {
+  ArrowLeft,
   Cloud,
   CloudDownload,
   CloudOff,
@@ -35,10 +41,10 @@ export function usePintaHostChrome(): PintaHostChrome | null {
 
 /**
  * Esconder/mostrar o menu lateral: a receita COMPARTILHADA `.sz-tool-btn-menu` de
- * `@sistemazero/ui/tool-chrome.css` (44px, cantos xl, borda 2px, fundo de painel, sombra
- * dura; "menu escondido" = borda e tinta suaves do acento via `[aria-pressed]`), a MESMA do
- * Estúdio e do Pensa. Sem `title`: com `aria-label` presente ele viraria descrição e o leitor
- * repetiria o nome.
+ * `@sistemazero/ui/tool-chrome.css` (o quadrado de cantos de 12px das telas-modelo, 40px no
+ * mouse e 44px no toque; "menu escondido" = borda e tinta suaves do acento via
+ * `[aria-pressed]`), a MESMA do Estúdio e do Pensa. Sem `title`: com `aria-label` presente ele
+ * viraria descrição e o leitor repetiria o nome.
  */
 export function HostMenuButton({ menu }: { menu: PintaHostChromeMenu }): JSX.Element {
   const Icon = menu.hidden ? PanelLeftOpen : PanelLeftClose
@@ -52,6 +58,41 @@ export function HostMenuButton({ menu }: { menu: PintaHostChromeMenu }): JSX.Ele
     >
       <Icon aria-hidden="true" className="size-5" />
     </button>
+  )
+}
+
+/**
+ * A seta da GALERIA de volta à seção do host (11/09/2026: "← Criar"): o MESMO quadrado do menu,
+ * ao lado dele, com o nome no `aria-label` ("Voltar para Criar"). É um link de verdade: o clique
+ * simples chama `onNavigate` (o host troca de rota sem recarregar) e o clique com Ctrl/Cmd/Shift/
+ * Alt ou com o botão do meio fica com o navegador (abrir em outra aba). Espelho do
+ * `HostBackLink` do Estúdio.
+ */
+export function HostBackLink({ back }: { back: PintaHostChromeBack }): JSX.Element {
+  return (
+    <a
+      href={back.href}
+      aria-label={back.label}
+      className="sz-tool-back"
+      onClick={(event) => {
+        if (!isPlainClick(event)) return
+        event.preventDefault()
+        back.onNavigate()
+      }}
+    >
+      <ArrowLeft aria-hidden="true" />
+    </a>
+  )
+}
+
+function isPlainClick(event: MouseEvent): boolean {
+  return (
+    event.button === 0 &&
+    !event.defaultPrevented &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey
   )
 }
 

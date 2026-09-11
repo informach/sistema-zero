@@ -7,9 +7,36 @@ import { clsx } from 'clsx'
 import type { ButtonHTMLAttributes, JSX, Ref } from 'react'
 import type { LucideIcon } from './icons'
 
-export type ButtonVariant = 'primary' | 'ghost' | 'danger' | 'outline' | 'tool' | 'tool3d'
+export type ButtonVariant =
+  | 'primary'
+  | 'ghost'
+  | 'danger'
+  | 'outline'
+  | 'tool'
+  | 'tool3d'
+  | 'pill'
+  | 'pillPrimary'
+  | 'pillSoft'
 
-const VARIANT_CLASSES: Record<ButtonVariant, string> = {
+/**
+ * As PÍLULAS chapadas das telas-modelo (11/09/2026): a receita `.sz-tool-pill` de
+ * `@sistemazero/ui/tool-chrome.css` inteira, SEM a base de utilitárias do `Button` (altura,
+ * padding, fonte e peso): utilitária vence qualquer regra em `@layer components`, e com a base a
+ * pílula sairia com 44px no mouse, 16px e peso 700 em vez dos 40px, 15px e 800 da imagem. Quieta
+ * (branca dentro de uma faixa), primária (o azul da marca) e suave (a creme do cartão de
+ * fechamento). ⚠️ Só onde o host importa a folha (kids, playground).
+ */
+const PILL_CLASSES = {
+  pill: 'sz-tool-pill sz-tool-pill--quiet',
+  pillPrimary: 'sz-tool-pill sz-tool-pill--primary',
+  pillSoft: 'sz-tool-pill sz-tool-pill--creme',
+} as const
+
+function isPillVariant(variant: ButtonVariant): variant is keyof typeof PILL_CLASSES {
+  return variant in PILL_CLASSES
+}
+
+const VARIANT_CLASSES: Record<Exclude<ButtonVariant, keyof typeof PILL_CLASSES>, string> = {
   primary: 'pin-btn-3d disabled:hover:brightness-100',
   ghost: 'rounded-xl text-pin-text hover:bg-pin-border/40',
   outline:
@@ -33,6 +60,16 @@ export function Button({
   /** React 19 entrega o `ref` como prop: ele segue no spread até o `<button>`. */
   ref?: Ref<HTMLButtonElement>
 }): JSX.Element {
+  if (isPillVariant(variant)) {
+    // A receita já traz foco, desabilitado e o toque; nada da base aqui.
+    return (
+      <button
+        type={type ?? 'button'}
+        className={clsx(PILL_CLASSES[variant], className)}
+        {...props}
+      />
+    )
+  }
   return (
     <button
       type={type ?? 'button'}

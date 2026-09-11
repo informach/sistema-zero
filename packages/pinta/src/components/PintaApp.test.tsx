@@ -137,7 +137,7 @@ describe('PintaApp — galeria', () => {
     })
 
     // Passo 1: ESTILO (pixel art | vetor).
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     expect(screen.getByText(COPY.newAsset.styleTitle)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
 
@@ -176,7 +176,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-background'].title) }),
@@ -230,7 +230,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.pixel.title) }))
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.kinds['pixel-sprite'].title) }),
@@ -271,7 +271,7 @@ describe('PintaApp — galeria', () => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
 
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     // 3º cartão do passo de estilo: Modelos prontos.
     fireEvent.click(
       screen.getByRole('button', { name: new RegExp(COPY.templates.styleCard.title) }),
@@ -339,7 +339,7 @@ describe('PintaApp — galeria', () => {
     await waitFor(() => {
       expect(screen.getByText(COPY.gallery.empty)).toBeTruthy()
     })
-    fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.gallery.create) }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.gallery.create }))
     fireEvent.click(screen.getByRole('button', { name: new RegExp(COPY.styles.vector.title) }))
     const tilemapCard = screen.getByRole('button', {
       name: new RegExp(COPY.kinds.tilemap.title),

@@ -673,7 +673,7 @@
     cursor: pointer;
     transition: border-color 0.12s ease;
   }
-  .sz-tool-card--new:hover {
+  .sz-tool-card--new:hover:not(:disabled) {
     border-color: var(--sz-tool-new);
   }
   .sz-tool-new-dot {
@@ -865,13 +865,15 @@
     transform: translateY(-2px) scale(1.02);
   }
 
-  /* Desabilitado, igual em todo o chrome. */
+  /* Desabilitado, igual em todo o chrome. O cartão "novo" também: no modo seleção do Pinta ele
+     fica no lugar, desligado, para a grade não andar uma casa. */
   .sz-tool-btn:disabled,
   .sz-tool-btn-menu:disabled,
   .sz-tool-btn-3d:disabled,
   .sz-tool-icon-btn:disabled,
   .sz-tool-pill:disabled,
-  .sz-tool-chip:disabled {
+  .sz-tool-chip:disabled,
+  .sz-tool-card--new:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }

@@ -3,12 +3,14 @@
  * esticado por CSS pixelated para pixel; SVG inline para vetor; minimapa de
  * cores para o tilemap), nome e selinho de estilo.
  *
- * ⚠️ Card COMPACTO (~164px): pequeno o bastante para caber muita coisa na tela
- * (referência MakeCode Arcade, "só para reconhecer o desenho") e largo o
- * bastante para as três ações ficarem NO card, cada uma com o alvo de 44px da
- * regra de toque infantil — 3×44 = 132px + respiros. Um menu "⋮" chegou a ser
- * tentado para caber em 10 colunas e foi REJEITADO pela dona: as ações voltaram
- * para o card. Os diálogos de renomear/apagar seguem no GalleryScreen.
+ * ⭐ 11/09/2026: o cartão das telas-modelo, o MESMO da galeria "Meus Jogos" do Estúdio
+ * (`.sz-tool-card`: branco, cantos de 20px, sem borda aparente), com o nome em cima no Baloo
+ * extra-negrito, a miniatura numa caixa cinza-clara (`.sz-tool-cover`) e as três ações embaixo.
+ * A borda na cor do PAPEL saiu: o tipo fica no chip ao lado do nome (e no nome acessível).
+ *
+ * ⚠️ As três ações ficam NO card, cada uma com o alvo de 44px da regra de toque infantil. Um
+ * menu "⋮" chegou a ser tentado e foi REJEITADO pela dona: não reintroduzir sem ela pedir. Os
+ * diálogos de renomear/apagar seguem no GalleryScreen.
  */
 import type { JSX } from 'react'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
@@ -40,17 +42,6 @@ const KIND_CHIP_CLASSES: Record<PintaAsset['kind'], string> = {
   'vector-sprite': 'bg-pin-kind-sprite',
   'vector-background': 'bg-pin-kind-background',
   'vector-tileset': 'bg-pin-kind-tileset',
-}
-
-/** Borda/sombra do card na cor do PAPEL (espelho do --unit do .kids-card). */
-const KIND_PANEL_CLASSES: Record<PintaAsset['kind'], string> = {
-  'pixel-sprite': '[--pin-panel-border:var(--color-pin-kind-sprite)]',
-  'pixel-background': '[--pin-panel-border:var(--color-pin-kind-background)]',
-  tileset: '[--pin-panel-border:var(--color-pin-kind-tileset)]',
-  tilemap: '[--pin-panel-border:var(--color-pin-kind-tilemap)]',
-  'vector-sprite': '[--pin-panel-border:var(--color-pin-kind-sprite)]',
-  'vector-background': '[--pin-panel-border:var(--color-pin-kind-background)]',
-  'vector-tileset': '[--pin-panel-border:var(--color-pin-kind-tileset)]',
 }
 
 /**
@@ -199,6 +190,16 @@ function TilemapThumb({
 }
 
 /**
+ * O FUNDO da miniatura. O xadrez é o do editor (o seletor "Trazer um desenho" roda também na
+ * aula e no admin, onde a folha compartilhada não existe); a caixa cinza-clara é a capa das
+ * galerias (`.sz-tool-cover`, a mesma dos cartões do Estúdio), só onde o host importa a folha.
+ */
+const THUMB_SURFACE_CLASSES = {
+  checker: 'pin-checkerboard rounded-xl border-2 border-pin-border',
+  cover: 'sz-tool-cover',
+} as const
+
+/**
  * A miniatura do desenho. Exportada porque o seletor "Trazer um desenho" do
  * vetor usa a MESMA — é o que faz o seletor ser WYSIWYG com a galeria (entra
  * exatamente o que o card mostra) e impede as duas de divergirem.
@@ -207,17 +208,22 @@ export function AssetThumb({
   asset,
   findAsset,
   paint = true,
+  surface = 'checker',
 }: {
   asset: PintaAsset
   findAsset?: (id: string) => PintaAsset | null
   /** `false` = o canvas do pixel ainda não é pintado (card longe da janela). */
   paint?: boolean
+  /** O fundo por trás do desenho (ver `THUMB_SURFACE_CLASSES`). */
+  surface?: keyof typeof THUMB_SURFACE_CLASSES
 }): JSX.Element {
   const bitmap = useMemo(() => thumbnailBitmap(asset), [asset])
   const shapesDoc = useMemo(() => thumbnailShapes(asset), [asset])
 
   return (
-    <div className="pin-checkerboard relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border-2 border-pin-border">
+    <div
+      className={`relative flex aspect-square w-full items-center justify-center overflow-hidden ${THUMB_SURFACE_CLASSES[surface]}`}
+    >
       <span aria-hidden="true" className="absolute text-4xl opacity-30">
         {COPY.kinds[asset.kind].emoji}
       </span>
@@ -299,8 +305,31 @@ export const AssetCard = memo(function AssetCard({
   return (
     <div
       ref={rootRef}
-      className={`pin-panel pin-pop pin-gallery-card flex flex-col gap-1 p-2 ${KIND_PANEL_CLASSES[asset.kind]} ${justCreated ? 'pin-card-pop' : ''}`}
+      className={`sz-tool-card pin-gallery-card gap-2.5 p-3 ${justCreated ? 'pin-card-pop' : ''}`}
     >
+      {/* O nome em cima, como nos cartões do Estúdio: o chip do PAPEL (a cor que era a borda do
+          cartão), o nome no Baloo e o selinho do ESTILO. */}
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span
+          aria-hidden="true"
+          className={`inline-flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] text-white ${KIND_CHIP_CLASSES[asset.kind]}`}
+          title={kind.title}
+        >
+          {kind.emoji}
+        </span>
+        <span className="sz-tool-card-title min-w-0 flex-1 truncate" title={asset.name}>
+          {asset.name}
+        </span>
+        {style ? (
+          <span
+            className={`shrink-0 rounded-full px-2 py-0.5 font-extrabold text-[11px] text-white leading-none ${
+              style === 'pixel' ? 'bg-pin-style-pixel' : 'bg-pin-style-vector'
+            }`}
+          >
+            {COPY.styleBadge[style]}
+          </span>
+        ) : null}
+      </div>
       <button
         type="button"
         onClick={() => {
@@ -317,41 +346,20 @@ export const AssetCard = memo(function AssetCard({
                 `${asset.name} (${kind.title}${style ? `, ${COPY.styleBadge[style]}` : ''})`,
               )
         }
-        className={`relative rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent ${
-          selected ? 'rounded-xl ring-4 ring-pin-accent' : ''
+        className={`relative rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pin-accent ${
+          selected ? 'ring-4 ring-pin-accent' : ''
         }`}
       >
-        <AssetThumb asset={asset} findAsset={findAsset} paint={near} />
+        <AssetThumb asset={asset} findAsset={findAsset} paint={near} surface="cover" />
         {selectable && selected ? (
           <span
             aria-hidden="true"
-            className="absolute top-1.5 right-1.5 inline-flex size-6 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg shadow"
+            className="absolute top-2 right-2 inline-flex size-7 items-center justify-center rounded-full bg-pin-accent text-pin-accent-fg shadow"
           >
             <Check className="size-4" />
           </span>
         ) : null}
       </button>
-      <div className="flex items-center gap-1">
-        <span
-          aria-hidden="true"
-          className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[9px] text-white ${KIND_CHIP_CLASSES[asset.kind]}`}
-          title={kind.title}
-        >
-          {kind.emoji}
-        </span>
-        <span className="truncate font-bold text-xs" title={asset.name}>
-          {asset.name}
-        </span>
-        {style ? (
-          <span
-            className={`ml-auto shrink-0 rounded-full px-1.5 py-px font-bold text-[10px] text-white ${
-              style === 'pixel' ? 'bg-pin-style-pixel' : 'bg-pin-style-vector'
-            }`}
-          >
-            {COPY.styleBadge[style]}
-          </span>
-        ) : null}
-      </div>
       <div className="flex items-center justify-between gap-1">
         <button
           type="button"

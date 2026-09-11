@@ -97,11 +97,20 @@ describe('modo de seleção da galeria (pack)', () => {
     expect(button(`${COPY.gallery.duplicate} heroi`).disabled).toBe(true)
     expect(button(`${COPY.gallery.remove} heroi`).disabled).toBe(true)
     expect(screen.getByText(COPY.gallery.selectionCount(0))).toBeTruthy()
-    // O espaçador que ASSENTA a barra no rodapé sem rolagem (happy-dom não faz
-    // layout — a classe É o mecanismo, mesma régua do width/height do palco).
-    expect(
-      document.querySelector('[data-pin-scroll-root] > .mt-auto[aria-hidden="true"]'),
-    ).toBeTruthy()
+    // A barra ASSENTA no rodapé por ser a irmã de BAIXO da área que rola (11/09/2026: com a
+    // última faixa esticando até o pé, a barra `sticky` depois dela faria a galeria sempre
+    // rolar a altura da barra). happy-dom não faz layout: a estrutura É o mecanismo.
+    const scrollRoot = document.querySelector('[data-pin-scroll-root]')
+    const bar = document.querySelector('[data-pin-selection-bar]')
+    expect(bar).not.toBeNull()
+    expect(scrollRoot?.contains(bar)).toBe(false)
+    expect(scrollRoot?.nextElementSibling).toBe(bar)
+    expect(bar?.contains(button(COPY.gallery.downloadSelection))).toBe(true)
+    // No modo o toque MARCA desenhos: o cartão "Criar novo" FICA no lugar, desligado (sumir
+    // faria todos os desenhos andarem uma casa na grade), como as ações dos cartões.
+    const novo = button(`${COPY.gallery.create} ${COPY.gallery.newCardHint}`)
+    expect(novo.disabled).toBe(true)
+    expect(novo.parentElement?.firstElementChild).toBe(novo)
 
     fireEvent.click(button(COPY.gallery.selectionMark('heroi')))
     const unmark = await screen.findByRole('button', {
@@ -119,8 +128,9 @@ describe('modo de seleção da galeria (pack)', () => {
     fireEvent.click(button(COPY.gallery.cancel))
     await screen.findByRole('button', { name: /Abrir heroi/ })
     expect(screen.queryByRole('button', { name: COPY.gallery.downloadSelection })).toBeNull()
-    // Fora do modo o espaçador desmonta junto (nada de mt-auto solto no fluxo).
-    expect(document.querySelector('[data-pin-scroll-root] > .mt-auto')).toBeNull()
+    // Fora do modo a barra desmonta (a área que rola volta a ir até o pé) e o cartão religa.
+    expect(document.querySelector('[data-pin-selection-bar]')).toBeNull()
+    expect(button(`${COPY.gallery.create} ${COPY.gallery.newCardHint}`).disabled).toBe(false)
     fireEvent.click(button(COPY.gallery.select))
     await screen.findByRole('button', { name: COPY.gallery.selectionMark('heroi') })
     expect(screen.getByText(COPY.gallery.selectionCount(0))).toBeTruthy()

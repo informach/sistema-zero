@@ -76,9 +76,9 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   a PÍLULA compartilhada `.sz-tool-status(--tom)` com a frase inteira; `aria-live="off"` — quem
   anuncia é o host.
 - Editor: menu ANTES do Voltar (agrupados num `flex shrink-0 items-center gap-1`); status logo
-  depois do `<SaveBadge />`. Galeria: cabeçalho de DUAS linhas (`.sz-tool-header` + `__lead` com o
-  menu e o bloco do título + `__actions` com o status 1º e os CINCO botões); a linha
-  `COPY.gallery.syncing` só aparece SEM status do host (senão "Buscando…" 2×).
+  depois do `<SaveBadge />`. Galeria: ver §"A galeria das telas-modelo (11/09/2026)" (menu + seta
+  de volta para Criar + a pílula do selo, com a conta em repouso); a linha `COPY.gallery.syncing`
+  só aparece SEM status do host (senão "Buscando…" 2×). O editor IGNORA `back` e `account`.
 - ⚠️ O host tem que importar o `tool-chrome.css` (o kids e o playground importam); sem ele as
   classes `sz-tool-*` não existem — por isso os diálogos e as barras do editor, que rodam também no
   admin/adulto, seguem nas variantes `pin-*` do `Button`.
@@ -89,7 +89,62 @@ renderiza em volta do `<PintaApp>`. Sem Provider (playground, adulto, `<PintaLes
   `components/gallery/galleryHeaderUi.test.tsx` (as duas linhas) e `styles/tokens.test.ts` (a
   ponte `--color-pin-*` → `--sz-tool-*` nos dois temas).
 
+## A galeria das telas-modelo (11/09/2026)
+
+A galeria virou o MESMO desenho da "Meus Jogos" do Estúdio (a imagem-modelo dela; plano
+`o-design-da-plataforma-composed-gray.md`, lote 7, passo 6): três FAIXAS de borda a borda que
+rolam juntas dentro de `[data-pin-scroll-root]` (`.sz-tool-bands`, receitas de
+`@sistemazero/ui/tool-chrome.css`, que o host importa):
+- **creme** (`<header>`): [menu][seta] (`HostMenuButton` + `HostBackLink` em
+  `components/hostChrome.tsx`: o quadrado `.sz-tool-back` com o nome no `aria-label`, "Voltar para
+  Criar"; clique simples chama `back.onNavigate`, com Ctrl/Cmd/Shift/Alt ou o botão do meio fica
+  com o navegador) + h1 `.sz-tool-title` + `.sz-tool-subtitle`; à direita SÓ o que a imagem tem
+  ali: a pílula do selo (`status ?? account` em repouso, tom ok), "Trazer foto" (pílula quieta) e
+  "Criar novo" (pílula primária). Linha 2 (`.sz-tool-toolbar mt-7`): os dois trilhos de chips, com
+  ÍCONES DE LINHA no lugar dos emojis (Grid3x3/Shapes; PersonStanding/Image/Puzzle/Map; o "Todos"
+  sem ícone; a legend continua visível) e a busca. A 1172px (1440 com o menu) a busca cai para a
+  própria linha: os dois trilhos somam ~964px.
+- **céu**: a grade `.sz-tool-grid` compartilhada (auto-fill de 13,75rem, 4 colunas de ~242px a
+  1172px; a grade própria de 164px saiu) com o cartão **"Criar novo"** na FRENTE
+  (`.sz-tool-card--new`; nome acessível "Criar novo Comece um desenho do zero.", e o botão do
+  cabeçalho segue "Criar novo" EXATO: os testes usam o nome exato, nunca o regex). Com seções por
+  jogo do Pensa ele mora nos "Desenhos avulsos" (que aparecem só com ele, se preciso); some com
+  busca ou filtro; no modo seleção FICA, desligado (sumir faria todos os desenhos andarem uma casa
+  na grade, a mesma régua das ações do cartão). A galeria vazia mostra o recado e o cartão sozinho
+  (o botão "Começar meu primeiro desenho" e a copy `emptyCta` saíram).
+- **lilás** (sempre que a galeria carregou, INCLUSIVE vazia: num aparelho novo trazer os desenhos
+  de volta é o primeiro passo): `.sz-tool-cta-card` com "N desenhos guardados na sua conta" (só com
+  `account`), "neste aparelho" sem ela, "Nenhum desenho … ainda" com zero; e o arquivo dos
+  desenhos em pílulas creme: "Selecionar" e "Baixar tudo" (com desenhos, fora do modo seleção) e
+  "Trazer de volta". ⚠️ Os três SAÍRAM do cabeçalho (a 1172px os cinco botões iam para uma 2ª e
+  uma 3ª linha; o Molda move o "Baixar tudo" do mesmo jeito). Os dois `<input type=file>` seguem
+  no cabeçalho, SEMPRE montados (o cartão lilás não existe carregando).
+- **Cartão do desenho** (`AssetCard`): `.sz-tool-card` branco (a borda na cor do papel saiu; o
+  tipo fica no chip), o nome EM CIMA em `.sz-tool-card-title` com o chip do papel e o selinho do
+  estilo, a miniatura na caixa cinza-clara `.sz-tool-cover` (`AssetThumb surface="cover"`; o
+  seletor "Trazer um desenho" do vetor segue com o xadrez, `surface="checker"`, porque roda também
+  na aula e no admin, sem a folha), e as três ações de 44px embaixo.
+- **Barra do modo seleção**: virou a IRMÃ de baixo da área que rola (`data-pin-selection-bar`,
+  `shrink-0`), não mais `sticky` + espaçador `mt-auto`: com a última faixa esticando até o pé
+  (`min-height: 100%`), um sticky depois dela faria a galeria SEMPRE rolar a altura da barra.
+  Continua assentada no rodapé com a galeria curta ou comprida, e não cobre a última fileira.
+- `Button` ganhou `pill|pillPrimary|pillSoft` (as receitas `.sz-tool-pill--quiet|primary|creme`
+  SEM a base de utilitárias do Button: utilitária vence `@layer components`, e a pílula sairia com
+  44px, 16px e peso 700 no mouse). `.pin-gallery-card` com `contain-intrinsic-size: auto 246px
+  326px`.
+- Medido no playground (1172x900, que é 1440 com o menu de 268): faixa creme de 268px (a imagem
+  tem 215: é a linha a mais da busca), cartões de 242x326, busca de 280, "Criar novo" 135x40;
+  escuro e 375px conferidos, sem rolagem lateral. No celular a grade tem uma coluna e o cartão fica
+  alto (capa quadrada de ~319px): revisar no lote 9 (celular).
+- Testes: `galleryHeaderUi.test.tsx` (as três faixas, os botões de cada lugar, o cartão novo, a
+  capa, o lilás com e sem desenhos), `gallerySelectionUi.test.tsx` (barra irmã, cartão desligado)
+  e `hostChromeUi.test.tsx` (seta com Ctrl-clique, seta sem menu, conta em repouso x aparelho, o
+  selo vence a conta, o editor ignora a seta).
+
 ## Galeria em DUAS linhas (07/09/2026, "o cabeçalho ocupa espaço demais")
+
+> ⚠️ HISTÓRICO: substituída em 11/09/2026 pela seção acima (os cinco botões, a grade de 164px, o
+> espaçador `mt-auto` e a barra sticky não existem mais).
 
 Pedido dela, com a imagem-modelo do Estúdio: **linha 1** = menu do host + h1 "Meus desenhos" +
 subtítulo à esquerda; à direita o selo do host e os **cinco botões** ("Trazer de volta", "Trazer
@@ -329,7 +384,7 @@ meio do desenho que precisava de outro tamanho, e hoje tenho que apagar e criar 
   misturar o azul (252°) com o branco (`oklch(1 0 0)`, matiz 0) dá ROSA (pego no QA).
   ⚠️ O Tailwind v4 **PODA do `@theme`** os tokens que nenhuma utilitária usa: valor consumido só
   por CSS (ex.: `--pin-panel-head`) mora no bloco `[data-pinta-theme]`, não no `@theme`.
-- **Galeria compacta (08/2026)**: grade `auto-fill minmax(164px,1fr)` — ≈6 colunas num notebook de
+- **Galeria compacta (08/2026, ⚠️ a grade de 164px SAIU em 11/09/2026: hoje é a `.sz-tool-grid`; o resto da regra das ações vale)**: grade `auto-fill minmax(164px,1fr)` — ≈6 colunas num notebook de
   1366 e 9 em 1920, card sempre ~165px (número FIXO de colunas esticaria o card no monitor
   grande). ⚠️ **O piso de 164px é a REGRA DE TOQUE**: as três ações (renomear/duplicar/apagar)
   ficam NO card, e três alvos de 44px somam 132px + respiros. Um menu "⋮" com card de ~94px (10
@@ -2382,7 +2437,7 @@ exploração + fixes; decisões DELA via AskUserQuestion antes de codar.
   com o sufixo do tileset auto-incluído) — o toast confere o pack sozinho.
 - **Botão "Limpar" na barra sticky** (decisão dela: além do limpar-ao-baixar, que já existia):
   desmarca tudo e PERMANECE no modo; `disabled` com 0.
-- **A barra ASSENTA no rodapé mesmo SEM rolagem** (pedido dela, 2ª rodada 26/08): espaçador
+- **A barra ASSENTA no rodapé mesmo SEM rolagem** (pedido dela, 2ª rodada 26/08; ⚠️ desde 11/09/2026 o mecanismo é outro: a barra é a IRMÃ de baixo da área que rola, ver §"A galeria das telas-modelo"): espaçador
   `<div aria-hidden className="mt-auto" />` antes da barra — o scroll root já é coluna flex,
   então em galeria CURTA o `mt-auto` absorve a sobra e a barra desce ao rodapé do rolável; com
   rolagem ele zera e o sticky faz o de sempre (o `mt-4` da barra preserva o respiro no fim do

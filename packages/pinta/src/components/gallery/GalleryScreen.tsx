@@ -2,6 +2,11 @@
  * Tela inicial: a galeria de desenhos do perfil. CRUD completo (criar em 3
  * passos, renomear, duplicar, apagar com confirmação) + estados de
  * carregando/vazio/erro com retry.
+ *
+ * ⭐ 11/09/2026: o desenho das telas-modelo, o MESMO da galeria "Meus Jogos" do Estúdio: três
+ * faixas de borda a borda que rolam juntas (creme com o cabeçalho de duas linhas, céu com a
+ * grade e o cartão "Criar novo" na frente, lilás com o cartão de fechamento). As receitas
+ * `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css`, que o host importa (kids, playground).
  */
 import type { JSX } from 'react'
 import {
@@ -10,6 +15,7 @@ import {
   useCallback,
   useDeferredValue,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -26,7 +32,7 @@ import {
 import { expandSelection } from '../../core/gallerySelection'
 import { perfMeasure } from '../../core/perf'
 import { isTilesetKind, type PintaAsset } from '../../core/project'
-import type { PintaInitialIntent } from '../../core/types'
+import type { PintaHostChromeStatus, PintaInitialIntent } from '../../core/types'
 import { type PintaBackupReadFailure, readPintaBackupFile } from '../../export/backupFile'
 import { triggerDownload } from '../../export/download'
 import { importPintaJson } from '../../export/projectJson'
@@ -34,15 +40,21 @@ import { zipGallery } from '../../export/zip'
 import { decodeImageFile, IMPORT_ACCEPT, MAX_IMAGE_FILE_BYTES } from '../../import/decodeImage'
 import type { RGBAImage } from '../../import/quantize'
 import { usePintaApp, usePintaGallery } from '../appContext'
-import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
+import { HostBackLink, HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
 import { Button } from '../ui/Button'
 import { Dialog } from '../ui/Dialog'
 import {
   Download,
+  Grid3x3,
   Image as ImageIcon,
+  type LucideIcon,
+  Map as MapIcon,
+  Palette,
+  PersonStanding,
   Plus,
+  Puzzle,
   Search,
-  Sparkles,
+  Shapes,
   SquareCheckBig,
   Upload,
   X,
@@ -62,14 +74,68 @@ const LazyImportImageDialog = lazy(() =>
 import { NewAssetDialog, type NewAssetRole } from './NewAssetDialog'
 
 /**
- * Grade da galeria: cards COMPACTOS, mas largos o bastante para as três ações
- * caberem no próprio card com alvo de 44px (3×44 = 132px + respiros ⇒ ~164px).
- * `auto-fill` + `minmax` em vez de um número fixo de colunas porque o card
- * precisa ter o MESMO tamanho em qualquer tela: com um `grid-cols-N` fixo, um
- * monitor de 1920 esticaria cada card. Assim dá ~6 colunas num notebook de 1366
- * e ~9 em 1920, com o card sempre em ~165px.
+ * Grade da galeria: a `.sz-tool-grid` COMPARTILHADA (11/09/2026), a mesma da galeria "Meus
+ * Jogos" do Estúdio: `auto-fill` de 13,75rem, 4 colunas de ~246px a 1440px com o menu aberto
+ * (a imagem-modelo) e mais colunas, não cartões mais largos, conforme a tela cresce. Era uma
+ * grade própria de 164px (o piso das três ações de 44px, que cabem folgadas agora).
  */
-const GALLERY_GRID_CLASS = 'grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(164px,1fr))]'
+const GALLERY_GRID_CLASS = 'sz-tool-grid'
+
+/** Uma opção dos chips de filtro: rótulo visível, ícone de linha e o nome acessível. */
+interface FilterOption<T extends string> {
+  value: T
+  label: string
+  icon?: LucideIcon
+  aria: string
+}
+
+/**
+ * Os chips com os ÍCONES DE LINHA da imagem-modelo (os emojis saíram, como no Estúdio); o
+ * "Todos" fica sem ícone. Constantes de módulo: a lista não muda de um render para o outro.
+ */
+const STYLE_FILTER_OPTIONS: ReadonlyArray<FilterOption<GalleryStyleFilter>> = [
+  { value: 'all', label: COPY.gallery.filterAll, aria: COPY.gallery.filterAria.allStyles },
+  {
+    value: 'pixel',
+    label: COPY.styles.pixel.title,
+    icon: Grid3x3,
+    aria: COPY.gallery.filterAria.pixel,
+  },
+  {
+    value: 'vector',
+    label: COPY.styles.vector.title,
+    icon: Shapes,
+    aria: COPY.gallery.filterAria.vector,
+  },
+]
+
+const ROLE_FILTER_OPTIONS: ReadonlyArray<FilterOption<GalleryRoleFilter>> = [
+  { value: 'all', label: COPY.gallery.filterAll, aria: COPY.gallery.filterAria.allRoles },
+  {
+    value: 'sprite',
+    label: COPY.gallery.filterRoles.sprite,
+    icon: PersonStanding,
+    aria: COPY.gallery.filterAria.sprite,
+  },
+  {
+    value: 'background',
+    label: COPY.gallery.filterRoles.background,
+    icon: ImageIcon,
+    aria: COPY.gallery.filterAria.background,
+  },
+  {
+    value: 'tileset',
+    label: COPY.gallery.filterRoles.tileset,
+    icon: Puzzle,
+    aria: COPY.gallery.filterAria.tileset,
+  },
+  {
+    value: 'tilemap',
+    label: COPY.gallery.filterRoles.tilemap,
+    icon: MapIcon,
+    aria: COPY.gallery.filterAria.tilemap,
+  },
+]
 
 /** Nome sugerido pela missão de arte (com sufixo se a criança já usou o base). */
 const ROLE_NAME_BASE: Record<NewAssetRole, string> = {
@@ -358,337 +424,375 @@ export function GalleryScreen(): JSX.Element {
     }
   }
 
-  return (
-    <div
-      // Em modo seleção o padding de BAIXO sai (a barra sticky o substitui):
-      // o clamp do sticky é o content box do root, então qualquer pb deixaria
-      // a barra flutuando esse tanto acima do rodapé (medido: 24px).
-      className={`flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 sm:pt-4 ${
-        selectionMode ? 'pb-0 sm:pb-0' : ''
-      }`}
-      data-pin-scroll-root=""
+  // A pílula do cabeçalho diz o que acontece AGORA (o selo do host) ou, em repouso, que a nuvem
+  // da conta está ligada: a imagem-modelo mostra "Guardado na sua conta" sem nada acontecendo.
+  // Fora do community-kids o `hostChrome` é `null` e nada disso aparece.
+  const headerPill: PintaHostChromeStatus | null =
+    hostChrome?.status ??
+    (hostChrome?.account
+      ? {
+          tone: 'ok',
+          icon: 'cloud',
+          label: hostChrome.account.label,
+          text: hostChrome.account.label,
+        }
+      : null)
+  // O cartão da faixa lilás diz ONDE os desenhos estão: na conta (com a nuvem ligada) ou só
+  // neste aparelho. Nunca promete a nuvem que não existe.
+  const savedText = hostChrome?.account
+    ? COPY.gallery.savedAccount(assets.length)
+    : COPY.gallery.savedDevice(assets.length)
+  const savedTitleId = useId()
+  const ready = loaded && !loadError
+
+  // Importar muda a galeria por baixo das marcas: sai do modo (mesma régua do "Criar novo").
+  const openRestore = (): void => {
+    if (selectionMode) exitSelection()
+    restoreRef.current?.click()
+  }
+  const openPhoto = (): void => {
+    if (selectionMode) exitSelection()
+    photoRef.current?.click()
+  }
+  // Criar navega ao editor e a galeria DESMONTA: sair do modo aqui evita a marcação morrer em
+  // silêncio no meio do gesto.
+  const openCreate = (): void => {
+    if (selectionMode) exitSelection()
+    setCreateOpen(true)
+  }
+
+  // O cartão "Criar novo" que abre a grade (a imagem-modelo): creme com o fio amarelo e o "+"
+  // num círculo amarelo. É um BOTÃO de verdade, com nome próprio (título + dica), diferente do
+  // "Criar novo" do cabeçalho, que os testes acham pelo nome exato. Some com busca ou filtro (no
+  // meio de um resultado ele seria ruído). No modo seleção ele FICA, desligado, pela mesma régua
+  // das ações dos cartões: sumir faria todos os desenhos andarem uma casa na grade justo quando
+  // a criança vai tocar neles.
+  // `min-h-40` e não a altura do cartão: numa fileira com desenhos a grade o estica até eles;
+  // sozinho (a galeria vazia) ele não precisa de 326px vazios.
+  const showNewCard = ready && !searching
+  const newCard = showNewCard ? (
+    <button
+      type="button"
+      className="sz-tool-card sz-tool-card--new min-h-40"
+      disabled={selectionMode}
+      onClick={openCreate}
     >
-      {/* Cabeçalho de DUAS linhas (07/09/2026), o MESMO do Estúdio e do Pensa: linha 1 = menu
-          do host + título/subtítulo à esquerda, selo e ações à direita (os cinco botões, com
-          rótulo sempre visível: decisão dela; a 1366px com a sidebar o cluster cai para a
-          2ª linha); linha 2 = filtros à esquerda, busca à direita. Este é o título da página
-          quando o Pinta está embarcado, por isso mora aqui e some ao abrir o editor. As
-          receitas `sz-tool-*` vêm de `@sistemazero/ui/tool-chrome.css` (o host importa). */}
-      <header className="sz-tool-header mb-7">
-        <div className="sz-tool-header__lead">
-          {hostChrome?.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
-          <div className="sz-tool-header__title">
-            <h1 className="pin-display text-3xl md:text-4xl">{COPY.gallery.title}</h1>
-            <p className="mt-1 text-pin-muted text-sm md:text-base">{COPY.gallery.subtitle}</p>
-          </div>
-        </div>
-        <div className="sz-tool-header__actions">
-          {/* "Guardado na sua conta" do host, como 1º item das ações (07/09/2026). */}
-          {hostChrome?.status ? (
-            <HostCloudStatus status={hostChrome.status} variant="header" />
-          ) : null}
-          <input
-            ref={restoreRef}
-            type="file"
-            accept=".pinta.json,.json,.zip,application/json,application/zip,application/x-zip-compressed"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (file) void handleRestore(file)
-              event.target.value = ''
-            }}
-          />
-          <Button
-            variant="tool"
-            disabled={restoring}
-            aria-busy={restoring}
-            onClick={() => {
-              // Importar muda a galeria por baixo das marcas: sai do modo
-              // (mesma régua do "Criar novo").
-              if (selectionMode) exitSelection()
-              restoreRef.current?.click()
-            }}
-          >
-            <Upload aria-hidden="true" className="size-4" />
-            {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
-          </Button>
-          <input
-            ref={photoRef}
-            type="file"
-            accept={IMPORT_ACCEPT}
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0]
-              if (file) void handlePhoto(file)
-              event.target.value = ''
-            }}
-          />
-          <Button
-            variant="tool"
-            onClick={() => {
-              if (selectionMode) exitSelection()
-              photoRef.current?.click()
-            }}
-          >
-            <ImageIcon aria-hidden="true" className="size-4" />
-            {COPY.gallery.importImage}
-          </Button>
-          {assets.length > 0 && !selectionMode ? (
-            <Button variant="tool" onClick={enterSelection}>
-              <SquareCheckBig aria-hidden="true" className="size-4" />
-              {COPY.gallery.select}
-            </Button>
-          ) : null}
-          {/* Some no modo seleção: ele desliza para a posição do "Selecionar"
-              que acabou de desmontar (mesmo ícone) e baixa a galeria INTEIRA
-              ignorando a marcação — a barra sticky é o comando do modo. */}
-          {assets.length > 0 && !selectionMode ? (
-            <Button variant="tool" disabled={zipping} onClick={() => void handleDownloadAll()}>
-              <Download aria-hidden="true" className="size-4" />
-              {COPY.gallery.downloadAll}
-            </Button>
-          ) : null}
-          <Button
-            variant="tool3d"
-            onClick={() => {
-              // Criar navega ao editor e a galeria DESMONTA: sair do modo aqui
-              // evita a marcação morrer em silêncio no meio do gesto.
-              if (selectionMode) exitSelection()
-              setCreateOpen(true)
-            }}
-          >
-            <Plus aria-hidden="true" className="size-4" />
-            {COPY.gallery.create}
-          </Button>
-        </div>
-      </header>
+      <span className="sz-tool-new-dot" aria-hidden="true">
+        <Plus />
+      </span>
+      <span className="sz-tool-card-title text-base">{COPY.gallery.create}</span>
+      <span className="font-semibold text-pin-muted text-xs">{COPY.gallery.newCardHint}</span>
+    </button>
+  ) : null
 
-      {syncing && loaded && !hostChrome?.status ? (
-        // Sem `role="status"`: o contador da busca é o único status da tela (os testes o
-        // procuram); isto é só um lembrete discreto de que mais desenhos podem chegar.
-        // Com o selo do host no cabeçalho ("Buscando…"), a linha some — seria dito 2×.
-        <p className="text-pin-muted text-sm">{COPY.gallery.syncing}</p>
-      ) : null}
-      {loading && !loaded ? (
-        <p className="py-12 text-center text-base text-pin-muted">{COPY.gallery.loading}</p>
-      ) : null}
-
-      {loadError ? (
-        <div className="flex flex-col items-center gap-3 py-12">
-          <p className="text-base text-pin-muted">{loadError}</p>
-          <Button onClick={() => void gallery.getState().load()}>{COPY.gallery.retry}</Button>
-        </div>
-      ) : null}
-
-      {loaded && !loadError && assets.length > 0 ? (
-        // Linha 2: os dois trilhos de chips à esquerda (com a legend VISÍVEL: dois "Todos"
-        // precisam de nome), o contador (só ao buscar; o ÚNICO `role="status"` da tela) e a
-        // busca à direita. Respiro = o da galeria do Molda, que ela aprovou (07/09): 28px do
-        // cabeçalho até aqui (`mb-7` do header) e 48px daqui até os cards (`mb-12`), como no Estúdio.
-        <div className="sz-tool-toolbar mb-12">
-          <div className="sz-tool-toolbar__start">
-            <FilterChips<GalleryStyleFilter>
-              label={COPY.gallery.filterStyle}
-              value={filters.style}
-              onChange={(style) => setFilters((f) => ({ ...f, style }))}
-              options={[
-                {
-                  value: 'all',
-                  label: COPY.gallery.filterAll,
-                  aria: COPY.gallery.filterAria.allStyles,
-                },
-                {
-                  value: 'pixel',
-                  label: COPY.styles.pixel.title,
-                  emoji: COPY.styles.pixel.emoji,
-                  aria: COPY.gallery.filterAria.pixel,
-                },
-                {
-                  value: 'vector',
-                  label: COPY.styles.vector.title,
-                  emoji: COPY.styles.vector.emoji,
-                  aria: COPY.gallery.filterAria.vector,
-                },
-              ]}
-            />
-            <FilterChips<GalleryRoleFilter>
-              label={COPY.gallery.filterRole}
-              value={filters.role}
-              onChange={(role) => setFilters((f) => ({ ...f, role }))}
-              options={[
-                {
-                  value: 'all',
-                  label: COPY.gallery.filterAll,
-                  aria: COPY.gallery.filterAria.allRoles,
-                },
-                {
-                  value: 'sprite',
-                  label: COPY.gallery.filterRoles.sprite,
-                  emoji: COPY.kinds['pixel-sprite'].emoji,
-                  aria: COPY.gallery.filterAria.sprite,
-                },
-                {
-                  value: 'background',
-                  label: COPY.gallery.filterRoles.background,
-                  emoji: COPY.kinds['pixel-background'].emoji,
-                  aria: COPY.gallery.filterAria.background,
-                },
-                {
-                  value: 'tileset',
-                  label: COPY.gallery.filterRoles.tileset,
-                  emoji: COPY.kinds.tileset.emoji,
-                  aria: COPY.gallery.filterAria.tileset,
-                },
-                {
-                  value: 'tilemap',
-                  label: COPY.gallery.filterRoles.tilemap,
-                  emoji: COPY.kinds.tilemap.emoji,
-                  aria: COPY.gallery.filterAria.tilemap,
-                },
-              ]}
-            />
-          </div>
-          <div className="sz-tool-toolbar__end">
-            {searching ? (
-              <p role="status" className="text-pin-muted text-sm">
-                {COPY.gallery.searchCount(visibleAssets.length, assets.length)}
-              </p>
-            ) : null}
-            <label className="sz-tool-search-wrap">
-              <Search aria-hidden="true" />
-              <input
-                ref={searchRef}
-                type="search"
-                name="pinta-gallery-search"
-                autoComplete="off"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  // Esc limpa (e o Dialog nunca está aberto aqui: o campo é da galeria).
-                  if (event.key === 'Escape' && query) {
-                    event.preventDefault()
-                    setQuery('')
-                  }
-                }}
-                aria-label={COPY.gallery.search}
-                placeholder={COPY.gallery.searchPlaceholder}
-                className="sz-tool-search pr-11"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  aria-label={COPY.gallery.searchClear}
-                  onClick={() => {
-                    setQuery('')
-                    searchRef.current?.focus()
-                  }}
-                  className="absolute right-1 inline-flex size-9 items-center justify-center rounded-lg text-pin-muted hover:bg-pin-surface hover:text-pin-text"
-                >
-                  <X aria-hidden="true" className="size-4" />
-                </button>
-              ) : null}
-            </label>
-          </div>
-        </div>
-      ) : null}
-
-      {loaded && !loadError && searching && visibleAssets.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-8 text-center">
-          <p className="max-w-md text-base text-pin-muted">{COPY.gallery.searchEmpty}</p>
-          <Button variant="ghost" onClick={clearFilters}>
-            {COPY.gallery.searchClearAll}
-          </Button>
-        </div>
-      ) : null}
-
-      {loaded && !loadError && assets.length === 0 ? (
-        // Onboarding do primeiro uso: convite grande + CTA próprio (rótulo
-        // distinto do "Criar novo" do header p/ não colidir com o getByRole).
-        <div className="flex flex-col items-center gap-4 py-8 text-center">
-          <span aria-hidden="true" className="text-5xl">
-            🎨
-          </span>
-          <p className="max-w-md text-base text-pin-muted">{COPY.gallery.empty}</p>
-          <Button variant="primary" onClick={() => setCreateOpen(true)}>
-            <Sparkles aria-hidden="true" className="size-4" />
-            {COPY.gallery.emptyCta}
-          </Button>
-        </div>
-      ) : null}
-
-      {projectSections.length === 0 ? (
-        <div className={GALLERY_GRID_CLASS}>{visibleAssets.map(renderCard)}</div>
-      ) : (
-        // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim.
-        <div className="flex flex-col gap-6">
-          {projectSections.map(([projectId, section]) => (
-            <section key={projectId} aria-label={section.name}>
-              <h2 className="pin-display mb-2 text-lg">
-                <span aria-hidden="true">🎮 </span>
-                {section.name}
-              </h2>
-              <div className={GALLERY_GRID_CLASS}>{section.assets.map(renderCard)}</div>
-            </section>
-          ))}
-          {looseAssets.length > 0 ? (
-            <section aria-label={COPY.gallery.looseSection}>
-              <h2 className="pin-display mb-2 text-lg text-pin-muted">
-                {COPY.gallery.looseSection}
-              </h2>
-              <div className={GALLERY_GRID_CLASS}>{looseAssets.map(renderCard)}</div>
-            </section>
-          ) : null}
-        </div>
-      )}
-
-      {selectionMode ? (
-        <>
-          {/* Espaçador flex: com galeria CURTA (sem rolagem interna) o mt-auto
-              absorve a sobra da coluna e a barra ASSENTA no rodapé do rolável
-              (sem ele, o sticky ficava solto logo abaixo da grade — pedido dela
-              26/08). Com rolagem ele vira 0 e o sticky faz o de sempre; o mt-4
-              da barra preserva o respiro no fim do scroll. */}
-          <div aria-hidden="true" className="mt-auto" />
-          {/* Barra do pack: STICKY no rodapé do scroll root (o header ROLA com o
-              conteúdo — a barra não pode sumir junto). As margens negativas cobrem
-              o padding do root para o fundo ir de borda a borda. O contador NÃO é
-              role=status: o da busca é o único status da tela. */}
-          <div className="-mx-4 sm:-mx-6 sticky bottom-0 z-10 mt-4 border-t-2 border-pin-border bg-pin-surface px-4 py-2 sm:px-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-bold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
-              <div className="flex items-center gap-2">
-                {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha);
-                    quem sai do modo é o Cancelar ao lado. */}
-                <Button
-                  variant="ghost"
-                  disabled={selectedCount === 0}
-                  onClick={(event) => {
-                    clearSelection()
-                    // Com 0 marcados este botão vira disabled e o navegador
-                    // derrubaria o foco no body (criança de teclado se perde):
-                    // manda para o Cancelar, o irmão SEGUINTE nesta barra.
-                    const next = event.currentTarget.nextElementSibling
-                    if (next instanceof HTMLElement) next.focus()
-                  }}
-                >
-                  {COPY.gallery.selectionClear}
-                </Button>
-                <Button variant="ghost" onClick={exitSelection}>
-                  {COPY.gallery.cancel}
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={zipping || selectedCount === 0}
-                  aria-busy={zipping}
-                  onClick={() => void handleDownloadSelection()}
-                >
-                  <Download aria-hidden="true" className="size-4" />
-                  {COPY.gallery.downloadSelection}
-                </Button>
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* A área que ROLA: as três faixas de borda a borda, que rolam juntas (o cabeçalho não fica
+          preso em cima). A barra do modo seleção NÃO mora aqui dentro: ela é a irmã de baixo, e
+          assim fica sempre no rodapé sem cobrir a última fileira e sem precisar de `sticky` (com a
+          última faixa esticando até o pé, um `sticky` depois dela faria a galeria sempre rolar
+          a altura da barra). */}
+      <div data-pin-scroll-root="" className="min-h-0 flex-1 overflow-y-auto">
+        <div className="sz-tool-bands">
+          <header className="sz-tool-band sz-tool-band--creme">
+            {/* 48px em cima e 36px embaixo a partir de 1024px: o respiro medido na imagem (o
+                título desce um pouco mais que o das outras faixas), igual ao Estúdio. */}
+            <div className="sz-tool-band__inner lg:pt-12 lg:pb-9">
+              {/* Linha 1: [menu][voltar] + título e subtítulo à esquerda; à direita o que a
+                  imagem-modelo tem ali: o selo, o importar ("Trazer foto") e o "Criar novo". O
+                  "Selecionar", o "Baixar tudo" e o "Trazer de volta" moram no cartão lilás do
+                  fim (o arquivo dos desenhos: levar e trazer). Este é o título da página quando
+                  o Pinta está embarcado, por isso mora aqui e some ao abrir o editor. */}
+              <div className="sz-tool-header">
+                <div className="sz-tool-header__lead">
+                  {hostChrome?.menu || hostChrome?.back ? (
+                    <div className="sz-tool-header__nav">
+                      {hostChrome.menu ? <HostMenuButton menu={hostChrome.menu} /> : null}
+                      {hostChrome.back ? <HostBackLink back={hostChrome.back} /> : null}
+                    </div>
+                  ) : null}
+                  <div className="sz-tool-header__title">
+                    <h1 className="sz-tool-title">{COPY.gallery.title}</h1>
+                    <p className="sz-tool-subtitle">{COPY.gallery.subtitle}</p>
+                  </div>
+                </div>
+                <div className="sz-tool-header__actions">
+                  {headerPill ? <HostCloudStatus status={headerPill} variant="header" /> : null}
+                  {/* Os dois campos de arquivo moram aqui, SEMPRE montados: o do "Trazer de
+                      volta" é acionado pelo botão do cartão lilás, que só existe com a galeria
+                      carregada. */}
+                  <input
+                    ref={restoreRef}
+                    type="file"
+                    accept=".pinta.json,.json,.zip,application/json,application/zip,application/x-zip-compressed"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (file) void handleRestore(file)
+                      event.target.value = ''
+                    }}
+                  />
+                  <input
+                    ref={photoRef}
+                    type="file"
+                    accept={IMPORT_ACCEPT}
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (file) void handlePhoto(file)
+                      event.target.value = ''
+                    }}
+                  />
+                  <Button variant="pill" onClick={openPhoto}>
+                    <ImageIcon aria-hidden="true" />
+                    {COPY.gallery.importImage}
+                  </Button>
+                  <Button variant="pillPrimary" onClick={openCreate}>
+                    <Plus aria-hidden="true" />
+                    {COPY.gallery.create}
+                  </Button>
+                </div>
               </div>
+
+              {ready && assets.length > 0 ? (
+                // Linha 2, 28px abaixo do título (a imagem): os dois trilhos de chips à esquerda
+                // (com a legend VISÍVEL: dois "Todos" precisam de nome), o contador (só ao
+                // buscar; o ÚNICO `role="status"` da galeria) e a busca à direita.
+                <div className="sz-tool-toolbar mt-7">
+                  <div className="sz-tool-toolbar__start">
+                    <FilterChips<GalleryStyleFilter>
+                      label={COPY.gallery.filterStyle}
+                      value={filters.style}
+                      onChange={(style) => setFilters((f) => ({ ...f, style }))}
+                      options={STYLE_FILTER_OPTIONS}
+                    />
+                    <FilterChips<GalleryRoleFilter>
+                      label={COPY.gallery.filterRole}
+                      value={filters.role}
+                      onChange={(role) => setFilters((f) => ({ ...f, role }))}
+                      options={ROLE_FILTER_OPTIONS}
+                    />
+                  </div>
+                  <div className="sz-tool-toolbar__end">
+                    {searching ? (
+                      <p role="status" className="font-semibold text-pin-muted text-sm">
+                        {COPY.gallery.searchCount(visibleAssets.length, assets.length)}
+                      </p>
+                    ) : null}
+                    <label className="sz-tool-search-wrap">
+                      <Search aria-hidden="true" />
+                      <input
+                        ref={searchRef}
+                        type="search"
+                        name="pinta-gallery-search"
+                        autoComplete="off"
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        onKeyDown={(event) => {
+                          // Esc limpa (e o Dialog nunca está aberto aqui: o campo é da galeria).
+                          if (event.key === 'Escape' && query) {
+                            event.preventDefault()
+                            setQuery('')
+                          }
+                        }}
+                        aria-label={COPY.gallery.search}
+                        placeholder={COPY.gallery.searchPlaceholder}
+                        className="sz-tool-search pr-11"
+                      />
+                      {query ? (
+                        <button
+                          type="button"
+                          aria-label={COPY.gallery.searchClear}
+                          onClick={() => {
+                            setQuery('')
+                            searchRef.current?.focus()
+                          }}
+                          className="absolute right-1 inline-flex size-9 items-center justify-center rounded-full text-pin-muted hover:bg-pin-border/40 hover:text-pin-text"
+                        >
+                          <X aria-hidden="true" className="size-4" />
+                        </button>
+                      ) : null}
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </header>
+
+          <div className="sz-tool-band sz-tool-band--ceu">
+            <div className="sz-tool-band__inner">
+              {syncing && loaded && !hostChrome?.status ? (
+                // Sem `role="status"`: o contador da busca é o único status da tela (os testes o
+                // procuram); isto é só um lembrete discreto de que mais desenhos podem chegar.
+                // Com o selo do host no cabeçalho ("Buscando…"), a linha some: seria dito 2×.
+                <p className="mb-5 font-semibold text-pin-muted text-sm">{COPY.gallery.syncing}</p>
+              ) : null}
+              {loading && !loaded ? (
+                <p className="py-12 text-center font-semibold text-base text-pin-muted">
+                  {COPY.gallery.loading}
+                </p>
+              ) : null}
+
+              {loadError ? (
+                <div className="flex flex-col items-center gap-3 py-12">
+                  <p className="font-semibold text-base text-pin-muted">{loadError}</p>
+                  <Button variant="pillPrimary" onClick={() => void gallery.getState().load()}>
+                    {COPY.gallery.retry}
+                  </Button>
+                </div>
+              ) : null}
+
+              {ready && assets.length > 0 && searching && visibleAssets.length === 0 ? (
+                <div className="flex flex-col items-start gap-3">
+                  <p className="font-semibold text-base text-pin-muted">
+                    {COPY.gallery.searchEmpty}
+                  </p>
+                  <Button variant="pill" onClick={clearFilters}>
+                    {COPY.gallery.searchClearAll}
+                  </Button>
+                </div>
+              ) : null}
+
+              {ready && assets.length === 0 ? (
+                // Primeiro uso: o recado e o cartão "Criar novo" sozinho na grade (o convite que
+                // antes era um botão grande no meio da tela).
+                <div className="flex flex-col gap-6">
+                  <p className="font-semibold text-base text-pin-muted">{COPY.gallery.empty}</p>
+                  {newCard ? <div className={GALLERY_GRID_CLASS}>{newCard}</div> : null}
+                </div>
+              ) : projectSections.length === 0 ? (
+                newCard || visibleAssets.length > 0 ? (
+                  <div className={GALLERY_GRID_CLASS}>
+                    {newCard}
+                    {visibleAssets.map(renderCard)}
+                  </div>
+                ) : null
+              ) : (
+                // Seções por jogo do Pensa (desenhos com projectRef) + avulsos no fim. O cartão
+                // "Criar novo" mora nos AVULSOS: é lá que o desenho novo vai aparecer.
+                <div className="flex flex-col gap-8">
+                  {projectSections.map(([projectId, section]) => (
+                    <section key={projectId} aria-label={section.name}>
+                      <h2 className="sz-tool-card-title mb-3 text-lg">
+                        <span aria-hidden="true">🎮 </span>
+                        {section.name}
+                      </h2>
+                      <div className={GALLERY_GRID_CLASS}>{section.assets.map(renderCard)}</div>
+                    </section>
+                  ))}
+                  {newCard || looseAssets.length > 0 ? (
+                    <section aria-label={COPY.gallery.looseSection}>
+                      <h2 className="sz-tool-card-title mb-3 text-lg text-pin-muted">
+                        {COPY.gallery.looseSection}
+                      </h2>
+                      <div className={GALLERY_GRID_CLASS}>
+                        {newCard}
+                        {looseAssets.map(renderCard)}
+                      </div>
+                    </section>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
-        </>
+
+          {/* O fechamento da página (faixa lilás): ONDE os desenhos estão e o que se faz com o
+              arquivo deles, levar (tudo ou só os escolhidos) e trazer de volta. Os três saíram do
+              cabeçalho para ele ficar como o da imagem-modelo (o selo, "Trazer foto" e o "Criar
+              novo"), como no Molda. Com a galeria VAZIA ele também aparece: num aparelho novo,
+              trazer os desenhos de volta é justamente o primeiro passo. */}
+          {ready ? (
+            <section aria-labelledby={savedTitleId} className="sz-tool-band sz-tool-band--lilas">
+              <div className="sz-tool-band__inner">
+                <div className="sz-tool-cta-card">
+                  <span className="sz-tool-tile sz-tool-tile--new" aria-hidden="true">
+                    <Palette />
+                  </span>
+                  <div className="sz-tool-cta-card__body">
+                    <h2 id={savedTitleId} className="sz-tool-cta-card__title">
+                      {savedText}
+                    </h2>
+                    <p className="sz-tool-cta-card__text">{COPY.gallery.savedHint}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {assets.length > 0 && !selectionMode ? (
+                      <Button variant="pillSoft" onClick={enterSelection}>
+                        <SquareCheckBig aria-hidden="true" />
+                        {COPY.gallery.select}
+                      </Button>
+                    ) : null}
+                    {/* Some no modo seleção: ele deslizaria para a posição do "Selecionar" que
+                        acabou de desmontar (mesmo ícone) e baixaria a galeria INTEIRA ignorando
+                        a marcação. A barra do modo é o comando dele. */}
+                    {assets.length > 0 && !selectionMode ? (
+                      <Button
+                        variant="pillSoft"
+                        disabled={zipping}
+                        onClick={() => void handleDownloadAll()}
+                      >
+                        <Download aria-hidden="true" />
+                        {COPY.gallery.downloadAll}
+                      </Button>
+                    ) : null}
+                    <Button
+                      variant="pillSoft"
+                      disabled={restoring}
+                      aria-busy={restoring}
+                      onClick={openRestore}
+                    >
+                      <Upload aria-hidden="true" />
+                      {restoring ? COPY.gallery.restoring : COPY.gallery.restore}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
+        </div>
+      </div>
+
+      {selectionMode ? (
+        // Barra do pack, IRMÃ de baixo da área que rola: fica sempre no rodapé, com a galeria
+        // curta ou comprida, e nunca cobre a última fileira. O respiro dos lados é o das faixas
+        // (16/32/64px). O contador NÃO é role=status: o da busca é o único status da tela.
+        <div
+          data-pin-selection-bar=""
+          className="shrink-0 border-pin-border border-t bg-pin-surface px-4 py-2.5 md:px-8 lg:px-16"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-extrabold text-sm">{COPY.gallery.selectionCount(selectedCount)}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Desmarca tudo e PERMANECE no modo (recomeçar a escolha); quem sai do modo é o
+                  Cancelar ao lado. */}
+              <Button
+                variant="pill"
+                disabled={selectedCount === 0}
+                onClick={(event) => {
+                  clearSelection()
+                  // Com 0 marcados este botão vira disabled e o navegador derrubaria o foco no
+                  // body (criança de teclado se perde): manda para o Cancelar, o irmão SEGUINTE
+                  // nesta barra.
+                  const next = event.currentTarget.nextElementSibling
+                  if (next instanceof HTMLElement) next.focus()
+                }}
+              >
+                {COPY.gallery.selectionClear}
+              </Button>
+              <Button variant="pill" onClick={exitSelection}>
+                {COPY.gallery.cancel}
+              </Button>
+              <Button
+                variant="pillPrimary"
+                disabled={zipping || selectedCount === 0}
+                aria-busy={zipping}
+                onClick={() => void handleDownloadSelection()}
+              >
+                <Download aria-hidden="true" />
+                {COPY.gallery.downloadSelection}
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {/* Montado só quando aberto: o passo de estilo nasce do lastStyle ATUAL. */}
@@ -870,7 +974,7 @@ export function GalleryScreen(): JSX.Element {
 
 /**
  * Uma fileira de chips exclusivos (rádio): "Todos" + as opções. `aria-pressed` diz qual está
- * ligado; alvo de 36px (a galeria é densa, mas o dedo da criança precisa acertar). A receita
+ * ligado (o ativo é o azul da marca cheio); alvo de 40px no mouse e 44px no toque. A receita
  * (`.sz-tool-chips`/`.sz-tool-chip`) é a compartilhada com o Estúdio, e a legend fica INLINE
  * com os chips (a folha a flutua; sem isso o navegador a desenhava numa linha acima).
  */
@@ -882,7 +986,7 @@ function FilterChips<T extends string>({
 }: {
   label: string
   value: T
-  options: ReadonlyArray<{ value: T; label: string; emoji?: string; aria: string }>
+  options: ReadonlyArray<FilterOption<T>>
   onChange: (value: T) => void
 }): JSX.Element {
   return (
@@ -897,7 +1001,7 @@ function FilterChips<T extends string>({
           onClick={() => onChange(option.value)}
           className="sz-tool-chip"
         >
-          {option.emoji ? <span aria-hidden="true">{option.emoji}</span> : null}
+          {option.icon ? <option.icon aria-hidden="true" /> : null}
           {option.label}
         </button>
       ))}
