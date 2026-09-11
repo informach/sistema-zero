@@ -15,10 +15,11 @@ export interface CareerRewardInfo {
  * ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança sobe de posto e a
  * caixa não muda.
  *
- * Por isso dois postos do meio (Mestre, Arquiteto(a)) não anunciam ferramenta nenhuma — porque
- * não abrem nenhuma. O que eles dão de verdade é o posto e a trilha nova, e é isso que a copy
- * diz. O Explorador(a) anuncia o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do
- * modelo, é recompensa — decisão dela, 05/09/2026). `tests/career-rewards-conformance.test.ts`
+ * Por isso o Mestre dos Jogos não anuncia ferramenta nenhuma — porque não abre nenhuma. O que
+ * ele dá de verdade é o posto e a trilha nova, e é isso que a copy diz. O Explorador(a) anuncia
+ * o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do modelo, é recompensa — decisão
+ * dela, 05/09/2026), e o Arquiteto(a) e a Lenda anunciam as ferramentas do Molda que abrem neles
+ * (`MOLDA_TOOL_BAND_LEVELS`, decisão dela de 11/09/2026). `tests/career-rewards-conformance.test.ts`
  * trava as promessas contra o core e contra as constantes dos portões.
  */
 export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
@@ -47,7 +48,8 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   },
   architect: {
     title: 'Um posto novo no mapa',
-    description: 'Uma trilha nova, para construir cenários inteiros.',
+    description:
+      'Uma trilha nova, para construir cenários inteiros. E o Molda ganha ferramentas novas: editar a malha, camadas de pintura e pintura que se mexe.',
   },
   champion: {
     title: 'Modo Ponte',
@@ -55,7 +57,8 @@ export const CAREER_REWARD_INFO: Record<StudentLevelSlug, CareerRewardInfo> = {
   },
   god: {
     title: 'Modo Pro',
-    description: 'Escreva o jogo direto no código, como os criadores profissionais fazem.',
+    description:
+      'Escreva o jogo direto no código, como os criadores profissionais fazem. E o Molda abre tudo: ossos, curvas e as ferramentas avançadas de malha.',
   },
 }
 

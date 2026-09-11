@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { isLevelUp } from '@/lib/level-info'
+import { moldaLevelGain } from '@/lib/molda-level-gain'
 import {
   diffDrawerSnapshots,
   isDrawerSnapshotList,
@@ -81,12 +82,15 @@ export function CelebrationWatcher({
   levelSlug,
   toolsRevision,
   ownsStudio,
+  ownsMolda = null,
   profileKey,
 }: {
   levelSlug?: string
   toolsRevision: string | null
   /** `null` = consulta desconhecida; `false` = produto não adquirido. */
   ownsStudio: boolean | null
+  /** O mesmo, para o Molda: a linha "No Molda" só vai para quem tem o produto. */
+  ownsMolda?: boolean | null
   profileKey: string
 }) {
   const [levelUp, setLevelUp] = useState<StudentLevelSlug | null>(null)
@@ -125,6 +129,7 @@ export function CelebrationWatcher({
       <LevelUpCelebration
         level={levelUp}
         tools={toolsGain}
+        molda={ownsMolda === true ? moldaLevelGain(levelUp) : null}
         onClose={() => {
           setLevelUp(null)
           setToolsGain(null)

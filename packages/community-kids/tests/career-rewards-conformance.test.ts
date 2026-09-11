@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { CREATOR_CAREER_LEVELS } from '../../core/src/career/catalog'
+import { MOLDA_TOOL_BAND_LEVELS } from '../../core/src/career/journey'
 import {
   AI_APPS_MIN_LEVEL,
   FREE_CREATION_MIN_LEVEL,
@@ -98,11 +99,22 @@ describe('career-rewards (kids) — a copy não promete o que a regra não dá',
     expect(anunciam).toEqual([levelOf(FREE_CREATION_MIN_LEVEL)!])
   })
 
-  test('o Molda é anunciado no posto da oficina 3D, e em nenhum outro', () => {
+  /**
+   * O Molda abre no Explorador(a), e as ferramentas dele abrem por faixa (`MOLDA_TOOL_BAND_LEVELS`):
+   * cada posto que abre uma faixa anuncia o Molda, e nenhum outro.
+   */
+  test('o Molda é anunciado no posto da oficina 3D e nos postos das faixas, e em nenhum outro', () => {
+    const postos = new Set<string>([
+      THREE_D_CREATION_MIN_LEVEL,
+      ...Object.values(MOLDA_TOOL_BAND_LEVELS),
+    ])
     const anunciam = CREATOR_CAREER_LEVELS.filter((level) =>
       PROMISES_MOLDA.test(textOf(level.slug)),
     ).map((level) => level.slug)
-    expect(anunciam).toEqual([levelOf(THREE_D_CREATION_MIN_LEVEL)!])
+    expect(anunciam).toEqual(
+      CREATOR_CAREER_LEVELS.filter((level) => postos.has(level.slug)).map((level) => level.slug),
+    )
+    expect(anunciam).toEqual([levelOf(THREE_D_CREATION_MIN_LEVEL)!, 'architect', 'god'])
   })
 
   test('Pensa e Zappy são anunciados no posto da IA, e em nenhum outro', () => {

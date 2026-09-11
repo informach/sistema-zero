@@ -7,8 +7,10 @@ import { FocusModeProvider, SidebarFallback } from '@/components/kids/focus-mode
 import { MainContainer } from '@/components/kids/main-container'
 import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
+import { moldaLevelGain } from '@/lib/molda-level-gain'
 import { getMeReadonly } from '@/server/auth'
 import {
+  checkMoldaAccessReadonly,
   checkStudioAccessReadonly,
   getAvatarReadonly,
   getGamificationReadonly,
@@ -86,11 +88,20 @@ async function CelebrationChrome({ session }: { session: Session }) {
   const studioAccess = studioRes?.body?.access?.['estudio-completo']
   const ownsStudio =
     studioRes?.status === 200 && typeof studioAccess === 'boolean' ? studioAccess : null
+  // O Molda é vendido à parte: a linha "No Molda" da comemoração só vai para quem tem o
+  // produto, e a pergunta só é feita nos postos em que uma faixa de ferramentas dele abre.
+  const moldaRes = moldaLevelGain(levelSlug)
+    ? await checkMoldaAccessReadonly().catch(() => null)
+    : null
+  const moldaAccess = moldaRes?.body?.access?.molda
+  const ownsMolda =
+    moldaRes?.status === 200 && typeof moldaAccess === 'boolean' ? moldaAccess : null
   return (
     <CelebrationWatcher
       levelSlug={levelSlug}
       toolsRevision={toolsRevision}
       ownsStudio={ownsStudio}
+      ownsMolda={ownsMolda}
       profileKey={session.id}
     />
   )

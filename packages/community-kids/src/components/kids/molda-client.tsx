@@ -5,6 +5,7 @@
 // Estúdio/Pensa/Pinta: um JS-import aqui só traria os tokens, sem gerar as utilitárias.
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { MOLDA_MAX_READ_VERSION } from '@sistemazero/molda/assets'
+import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTheme } from 'next-themes'
@@ -40,9 +41,12 @@ const MOLDA_CLOUD_IDLE_MS = 5_000
 export function MoldaClient({
   viewerId,
   studioAvailable,
+  toolAccess = null,
 }: {
   viewerId: string | null
   studioAvailable: boolean
+  /** As ferramentas do posto (`moldaToolAccessFor`); `null` = tudo liberado. */
+  toolAccess?: MoldaToolAccess | null
 }) {
   const [mod, setMod] = useState<MoldaModule | null>(null)
   const [loadError, setLoadError] = useState(false)
@@ -176,6 +180,8 @@ export function MoldaClient({
        */
       sceneWorkshop: true,
       ...(initialAssetId ? { initialAssetId } : {}),
+      // As ferramentas de profissional abrem por posto; trancar tira a autoria, nunca a leitura.
+      ...(toolAccess ? { toolAccess } : {}),
       // A volta da ponte: salvar aqui atualiza a criação que JÁ está no Estúdio, e de lá
       // ela entra sozinha nos jogos (a sincronia é do Studio). ⚠️ A guarda do
       // `getPersonalAsset` é a regra do recurso (igual ao Pinta): sem ela, TODA criação
@@ -215,7 +221,7 @@ export function MoldaClient({
         return { updated: true }
       },
     }),
-    [theme, studioAvailable, router, initialAssetId, viewerId],
+    [theme, studioAvailable, router, initialAssetId, viewerId, toolAccess],
   )
 
   return (

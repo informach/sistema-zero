@@ -223,3 +223,53 @@ describe('CelebrationWatcher', () => {
     expect(localStorage.getItem(toolsKey)).toBe(stored(REV_1, sprites[0]!.blockIds))
   })
 })
+
+describe('CelebrationWatcher — a linha do Molda', () => {
+  it('subiu para um posto que abre ferramentas do Molda e tem o produto: "No Molda"', async () => {
+    localStorage.setItem(levelKey, 'elite')
+    render(
+      <CelebrationWatcher
+        levelSlug="architect"
+        toolsRevision={null}
+        ownsStudio={false}
+        ownsMolda={true}
+        profileKey={PERFIL}
+      />,
+    )
+    expect((await screen.findByRole('dialog')).getAttribute('aria-label')).toContain('Arquiteto')
+    expect(screen.getByText(/No Molda: editar a malha/)).toBeDefined()
+  })
+
+  it('sem o produto (ou sem saber), a comemoração não fala do Molda', async () => {
+    for (const ownsMolda of [false, null]) {
+      localStorage.setItem(levelKey, 'elite')
+      const view = render(
+        <CelebrationWatcher
+          levelSlug="architect"
+          toolsRevision={null}
+          ownsStudio={false}
+          ownsMolda={ownsMolda}
+          profileKey={PERFIL}
+        />,
+      )
+      await screen.findByRole('dialog')
+      expect(screen.queryByText(/No Molda/)).toBeNull()
+      view.unmount()
+    }
+  })
+
+  it('posto em que nenhuma faixa do Molda abre não ganha a linha', async () => {
+    localStorage.setItem(levelKey, 'explorer')
+    render(
+      <CelebrationWatcher
+        levelSlug="elite"
+        toolsRevision={null}
+        ownsStudio={false}
+        ownsMolda={true}
+        profileKey={PERFIL}
+      />,
+    )
+    await screen.findByRole('dialog')
+    expect(screen.queryByText(/No Molda/)).toBeNull()
+  })
+})

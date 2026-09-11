@@ -3,8 +3,10 @@ import { KidsCareerLockedMolda } from '@/components/kids/kids-career-locked-mold
 import { KidsLockedMolda } from '@/components/kids/kids-locked-molda'
 import { KidsMoldaUnavailable } from '@/components/kids/kids-molda-unavailable'
 import { MoldaClient } from '@/components/kids/molda-client'
+import { careerHorizon } from '@/lib/career-horizon'
+import { moldaPreviewLevel, moldaToolAccessFor } from '@/lib/molda-tool-access'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
-import { checkMoldaAccessReadonly, getGamificationReadonly } from '@/server/members'
+import { checkMoldaAccessReadonly, getGamificationReadonly, listCatalog } from '@/server/members'
 import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -22,14 +24,25 @@ export const dynamic = 'force-dynamic'
  * ⚠️ O Molda abre no Explorador(a) de Mundos (`THREE_D_CREATION_MIN_LEVEL`, decisão dela
  * 05/09/2026): é o posto que ganha o kit Jogo 3D no Estúdio, o consumidor do que a
  * oficina produz — NÃO no Construtor(a) do Pinta nem no Inventor(a) da IA.
+ *
+ * Dentro da oficina, as ferramentas de profissional abrem por posto (`moldaToolAccessFor`):
+ * a mesma ida resolve o `toolAccess` do adapter. `?nivel=explorer` mostra à EQUIPE a
+ * oficina daquele posto (a conta dela resolve tudo liberado).
  */
-export default async function MoldaPage() {
+export default async function MoldaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ nivel?: string | string[] }>
+}) {
   // `session.id` = o PERFIL ativo (kids) → a galeria do Molda usa o MESMO
   // namespace do IndexedDB do /estudio e do /pinta.
-  const [res, session, gam] = await Promise.all([
+  const [res, session, gam, catalog, { nivel }] = await Promise.all([
     checkMoldaAccessReadonly(),
     getSession(),
     getGamificationReadonly().catch(() => null),
+    // O horizonte do catálogo: a oficina não promete posto que o mapa ainda esconde.
+    listCatalog().catch(() => null),
+    searchParams,
   ])
   if (res.status !== 200) return <KidsMoldaUnavailable />
   const hasAccess = res.body?.access?.molda === true
@@ -43,11 +56,20 @@ export default async function MoldaPage() {
     levelSlug: gam.body?.level?.slug,
     role: session?.role,
   })
+  // Catálogo desconhecido (a busca falhou) não encolhe nada: o horizonte vai ao topo.
+  const courses = catalog?.status === 200 ? (catalog.body?.courses ?? []) : null
+  const preview = moldaPreviewLevel(nivel, session?.role)
+  const toolAccess = moldaToolAccessFor({
+    levelSlug: preview ?? gam.body?.level?.slug,
+    role: preview ? undefined : session?.role,
+    horizon: careerHorizon(courses),
+  })
   return (
     <MoldaClient
       key={session?.id ?? 'local'}
       viewerId={session?.id ?? null}
       studioAvailable={studioAvailable}
+      toolAccess={toolAccess ?? null}
     />
   )
 }

@@ -22,11 +22,17 @@ import { KidsMascot } from './mascot'
 export function LevelUpCelebration({
   level,
   tools = null,
+  molda = null,
   onClose,
 }: {
   level: StudentLevelSlug
   /** Ferramenta ganha no MESMO momento; `null` = só subiu de nível. */
   tools?: ToolsGain | null
+  /**
+   * O que o Molda ganhou neste posto (`moldaLevelGain`), só para quem tem o produto;
+   * `null` = nada a dizer do Molda.
+   */
+  molda?: string | null
   onClose: () => void
 }) {
   const info = levelInfo(level)
@@ -80,6 +86,11 @@ export function LevelUpCelebration({
         {tools ? (
           <p className="mt-4 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
             🛠️ E tem mais: {toolsGainInline(tools)}
+          </p>
+        ) : null}
+        {molda ? (
+          <p className="mt-3 rounded-2xl bg-primary/10 px-4 py-3 font-bold text-primary text-sm">
+            🧊 No Molda: {molda}
           </p>
         ) : null}
 

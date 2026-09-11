@@ -223,3 +223,14 @@ test('o guia reabre a mesma criação depois de voltar à galeria, inclusive ap�
     await waitFor(() => expect(screen.getByTestId('molda-opened').textContent).toBe(asset.id))
   }
 })
+
+test('o portão do posto chega ao adapter; sem ele, nada trancado', async () => {
+  const access = {
+    allow: ['model.pieces', 'paint.brush'],
+    upcoming: [{ when: 'Abrem no nível Lenda', families: ['model.skin'] }],
+  }
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={access} />)
+  await waitFor(() => expect(lastAdapter?.toolAccess).toEqual(access))
+  view.rerender(<MoldaClient viewerId={null} studioAvailable={false} toolAccess={null} />)
+  await waitFor(() => expect(lastAdapter && 'toolAccess' in lastAdapter).toBe(false))
+})

@@ -13,3 +13,12 @@ describe('chrome global de comemoração', () => {
     expect(layoutSource).toContain('ownsStudio=')
   })
 })
+
+describe('a linha do Molda na comemoração', () => {
+  test('a posse do Molda chega ao watcher, perguntada só nos postos das faixas', () => {
+    expect(layoutSource).toContain('ownsMolda=')
+    expect(layoutSource).toMatch(
+      /moldaLevelGain\(levelSlug\)\s*\?\s*await checkMoldaAccessReadonly\(\)/,
+    )
+  })
+})
