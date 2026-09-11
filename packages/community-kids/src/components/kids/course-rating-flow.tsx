@@ -215,8 +215,9 @@ export function CourseRatingFlow({ courseSlug, initialRating, shareUrl, viewer }
             setOpen(true)
           }}
           // A pílula AMARELA de largura toda do índice da aula (telas-modelo de 11/09/2026).
-          // O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele.
-          className="mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-xs uppercase tracking-[0.12em] transition-[filter] hover:brightness-95 any-pointer-coarse:min-h-11"
+          // O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. O
+          // 3D do Brilliant (`.kids-3d--sol`) põe embaixo um amarelo mais fundo.
+          className="kids-3d kids-3d--sol mt-3 flex min-h-10 w-full items-center justify-center gap-1.5 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-xs uppercase tracking-[0.12em] hover:brightness-95 any-pointer-coarse:min-h-11"
         >
           <Star className="size-3.5" aria-hidden />
           Avalie este curso

@@ -155,6 +155,9 @@
   --sz-kids-tinta-suave: var(--pen-tinta-suave);
   /* A ação das ferramentas: o `tool-chrome.css` lê este antes do azul de identidade. */
   --sz-kids-acao: var(--pen-acao);
+  /* Os degraus do 3D do Brilliant, que as galerias das ferramentas também leem. */
+  --sz-kids-acao-degrau: var(--pen-acao-degrau);
+  --sz-kids-degrau-cartao: var(--pen-degrau-cartao);
   /* O CTA é chapado (o 3D vem do degrau, não de gradiente): o "gradiente" é a cor lisa. */
   --sz-kids-grad-cta-azul: linear-gradient(90deg, var(--pen-acao), var(--pen-acao));
   /* IDENTIDADE: os valores do Pen, iguais nos dois temas. */
@@ -507,32 +510,77 @@
   background-clip: text;
 }
 
-/* Button variant="default" = a PÍLULA AZUL CHAPADA das telas-modelo (11/09/2026).
-   Era o CTA "3D" (gradiente + sombra dura + pulo no hover); a referência nova é
-   chapada, e o azul chapado ainda dá mais contraste que o degrau mais claro do
-   gradiente (4,55:1). O PAR da marca troca de tinta no escuro sozinho.
-   O hover mistura a cor com o TEXTO do tema: no claro escurece, no escuro clareia,
-   e a tinta por cima continua passando nos dois. */
+/* Button variant="default" = a PÍLULA na cor de ação, chapada e com o 3D do Brilliant
+   (11/09/2026): a borda de baixo sólida no degrau da cor (`--pen-acao-degrau`), por
+   sombra, que sobe com o hover e some no aperto (ver "O 3D DO BRILLIANT", abaixo). Sem
+   gradiente: a cor lisa dá mais contraste que o degrau claro de um gradiente (4,55:1).
+   O hover mistura a cor com o TEXTO do tema, e a tinta por cima continua passando.
+   ⚠️ FORA de camada para vencer as utilitárias do `Button`, que também traz `outline-none`
+   e o anel de foco em `box-shadow` (que esta sombra apagaria): o foco é o contorno daqui. */
 button.bg-primary.text-primary-foreground,
 a.bg-primary.text-primary-foreground {
   background-image: none;
   background-color: var(--sz-primary);
   color: var(--sz-primary-fg);
   border-radius: 9999px;
-  box-shadow: none;
+  /* Declarada AQUI, e não herdada: um cartão 3D em volta (hover, aperto) mexe na dele. */
+  --k3d-altura: 4px;
+  box-shadow: 0 var(--k3d-altura) 0 var(--pen-acao-degrau);
   /* O mesmo extra-negrito do `.sz-btn-gradient`: os dois são o botão da marca. */
   font-weight: 800;
   transition:
     background-color 0.12s ease,
-    transform 0.12s ease;
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
+  --k3d-altura: 5px;
+  translate: 0 -1px;
 }
 button.bg-primary.text-primary-foreground:active:not(:disabled),
 a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
-  transform: translateY(1px);
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+button.bg-primary.text-primary-foreground:focus-visible,
+a.bg-primary.text-primary-foreground:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+/* Os outros botões do `Button` do ui no kids (contorno, secundário e o de apagar, que se
+   reconhecem pelas classes da variante): o mesmo relevo, com o degrau cinza, e o de apagar
+   na própria cor. FORA de camada pelo mesmo motivo do botão da marca, e o foco também vira
+   contorno. O fantasma e o link ficam planos: são texto clicável, não peça. */
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive) {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
+  transition:
+    background-color 0.12s ease,
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+button[data-slot="button"].text-destructive {
+  --k3d-degrau: color-mix(in oklab, var(--destructive) 45%, var(--pen-degrau-cartao));
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):hover:not(
+  :disabled
+) {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):active:not(
+  :disabled
+) {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+button[data-slot="button"]:is(.bg-background, .bg-secondary, .text-destructive):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
 }
 
 /* CTA gradiente standalone — mesmo visual do Button default, fora do Button.
@@ -569,15 +617,35 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     background-image: none;
     color: var(--sz-primary-fg);
     cursor: pointer;
+    /* O 3D do Brilliant (ver "O 3D DO BRILLIANT"): o degrau da cor embaixo, por sombra.
+       As variantes trocam só o degrau e o fio; a altura é declarada aqui, e não herdada. */
+    --k3d-altura: 4px;
+    --k3d-degrau: var(--pen-acao-degrau);
+    --k3d-fio: 0 0 #0000;
+    box-shadow:
+      var(--k3d-fio),
+      0 var(--k3d-altura) 0 var(--k3d-degrau);
     transition:
       background-color 0.12s ease,
-      transform 0.12s ease;
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
   }
+  /* A cor do hover numa regra (0,2,0) só dela: com o `:not()` do movimento ela subiria
+     para (0,3,0) e venceria o hover das variantes abaixo, que vêm depois no arquivo. */
   .sz-btn-gradient:hover {
     background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
   }
-  .sz-btn-gradient:active {
-    transform: translateY(1px);
+  .sz-btn-gradient:hover:not(:disabled, [aria-disabled="true"]) {
+    --k3d-altura: 5px;
+    translate: 0 -1px;
+  }
+  .sz-btn-gradient:active:not(:disabled, [aria-disabled="true"]) {
+    --k3d-altura: 1px;
+    translate: 0 3px;
+  }
+  .sz-btn-gradient:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
   }
   .sz-btn-gradient svg {
     stroke: currentColor;
@@ -587,33 +655,39 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
      e DEPOIS dele no arquivo: é o que faz o fundo delas vencer dentro da mesma
      camada. */
 
-  /* Sobre o azul da marca (o herói): a pílula BRANCA com o rótulo azul. Inverte o
-     par do tema, então vale nos dois temas sem nenhuma cor nova. */
+  /* A pílula BRANCA com o rótulo na ação. Inverte o par do tema, então vale nos dois
+     temas. O degrau depende de onde ela pousa: no chão é o cinza dos botões claros; no
+     herói (a cor de ação por trás, `.kids-marca`) é o da ação, mais fundo. */
   .sz-btn-inverso {
     background-color: var(--sz-primary-fg);
     color: var(--sz-primary);
+    --k3d-degrau: var(--pen-degrau-cartao);
+  }
+  .kids-marca .sz-btn-inverso {
+    --k3d-degrau: var(--pen-degrau-branco);
   }
   .sz-btn-inverso:hover {
     background-color: color-mix(in oklab, var(--sz-primary-fg) 90%, var(--sz-primary));
   }
 
-  /* SUAVE: a pílula creme com tinta do texto ("Fazer a minha versão", "Começar
-     agora", "Anterior"). É o fundo da faixa creme, que no escuro já é o navy um
-     tom acima, então o par segue o tema sozinho. */
+  /* SUAVE: a pílula na superfície 2 do Pen com a tinta do texto ("Fazer a minha
+     versão", "Começar agora", "Anterior"), com o degrau cinza dos cartões. */
   .sz-btn-suave {
     background-color: var(--band-creme);
     color: var(--tinta);
+    --k3d-degrau: var(--pen-degrau-cartao);
   }
   .sz-btn-suave:hover {
     background-color: color-mix(in oklab, var(--band-creme) 90%, var(--foreground));
   }
 
-  /* CONTORNO: branca com o fio da borda do tema ("Copiar link"). O fio é sombra
-     INTERNA, e não `border`, para a pílula ter a mesma altura das irmãs. */
+  /* CONTORNO: branca com o fio de 2px da linha do Pen ("Copiar link") e o degrau cinza.
+     O fio é sombra INTERNA, e não `border`, para a pílula ter a mesma altura das irmãs. */
   .sz-btn-contorno {
     background-color: var(--card);
     color: var(--tinta);
-    box-shadow: inset 0 0 0 1px var(--border);
+    --k3d-degrau: var(--pen-degrau-cartao);
+    --k3d-fio: inset 0 0 0 2px var(--pen-linha);
   }
   .sz-btn-contorno:hover {
     background-color: var(--muted);
@@ -637,147 +711,27 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   color: var(--sz-primary-fg);
   font-family: inherit;
   text-align: left;
-  transition: background-color 0.12s ease;
+  /* O 3D do Brilliant, como o `.sz-btn-gradient`. */
+  --k3d-altura: 4px;
+  box-shadow: 0 var(--k3d-altura) 0 var(--pen-acao-degrau);
+  transition:
+    background-color 0.12s ease,
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
 }
 .sz-btn-gradient-block:hover {
   background-color: color-mix(in oklab, var(--sz-primary) 88%, var(--foreground));
 }
+.sz-btn-gradient-block:hover:not(:disabled, [aria-disabled="true"]) {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+.sz-btn-gradient-block:active:not(:disabled, [aria-disabled="true"]) {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
 .sz-btn-gradient-block svg {
   stroke: currentColor;
-}
-
-/* Hot badge — vermelho da marca com pulso sutil */
-.sz-hot-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-family: var(--font-display);
-  font-size: 0.625rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 0.1875rem 0.625rem 0.1875rem 0.5rem;
-  border-radius: 9999px;
-  background: var(--sz-hot-tint);
-  color: var(--sz-hot);
-  border: 1px solid color-mix(in oklch, var(--sz-hot) 35%, transparent);
-}
-.sz-hot-badge .dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--sz-hot);
-  animation: sz-pulse 1.6s ease-in-out infinite;
-}
-@keyframes sz-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.55;
-    transform: scale(1.3);
-  }
-}
-
-/* Badges de categoria/nível sobre a capa do curso */
-.course-meta-badge {
-  color: oklch(1 0 0);
-  border-color: color-mix(in oklch, var(--brand-lime) 30%, transparent);
-  background-color: color-mix(in oklch, black 42%, transparent);
-  backdrop-filter: blur(10px);
-}
-
-/* Progress bar gradiente — mais ALTA que a do community (criança enxerga o
-   avanço) e com transição de width (a celebração anima antes→depois).
-   VERDE de propósito (diretriz 07/2026: verde é o sinal de progresso e
-   conclusão; --kids-verde já flipa profundo/vivo entre light/dark). */
-.sz-progress {
-  position: relative;
-  height: 0.625rem;
-  background: color-mix(in oklch, var(--muted) 70%, transparent);
-  border-radius: 9999px;
-  overflow: hidden;
-}
-.sz-progress > span {
-  display: block;
-  height: 100%;
-  background-image: linear-gradient(
-    90deg,
-    color-mix(in oklch, var(--kids-verde) 78%, white),
-    var(--kids-verde)
-  );
-  border-radius: inherit;
-  transition: width 0.6s ease;
-}
-
-/* Divider — hairline em gradiente */
-.sz-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    color-mix(in oklch, var(--sz-primary) 40%, transparent) 20%,
-    color-mix(in oklch, var(--sz-accent) 40%, transparent) 80%,
-    transparent 100%
-  );
-  border: 0;
-  margin: 1.5rem 0;
-}
-
-/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números.
-   Peso 800 desde 11/09/2026: nas telas-modelo TODO título em Baloo é o extra-negrito
-   (medido a 1440px: "Onde a turma se encontra" sai com 371px no modelo contra 336px
-   no 700 de antes, no mesmo corpo). E sem o espaçamento negativo de antes: com ele
-   todo título saía uns 2% mais estreito que o do modelo, sempre na conta exata de
-   -0,01em por letra. ⚠️ A classe fica FORA de camada, então `font-*`, `tracking-*` e
-   `leading-*` no call site continuam sem efeito sobre ela. */
-.sz-display {
-  font-family: var(--font-display);
-  font-weight: 800;
-  line-height: 1.1;
-}
-.sz-display-grad {
-  background-image: var(--sz-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Microinterações kids (cards/celebrações). Respeita reduced-motion (abaixo). */
-.kid-pop {
-  transition: transform 0.18s ease-out;
-}
-.kid-pop:hover {
-  transform: translateY(-2px) scale(1.02);
-}
-@keyframes kid-wiggle {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  25% {
-    transform: rotate(-6deg) scale(1.1);
-  }
-  75% {
-    transform: rotate(6deg) scale(1.1);
-  }
-}
-.kid-wiggle {
-  animation: kid-wiggle 0.5s ease-in-out;
-}
-@keyframes kids-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-.kid-float {
-  animation: kids-float 4s ease-in-out infinite;
 }
 
 /* ============================================================
@@ -1028,6 +982,252 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
   box-shadow: 0 4px 0 color-mix(in oklab, var(--unit) 35%, transparent);
 }
 
+/* ============================================================
+   O 3D DO BRILLIANT (11/09/2026) — decisão dela: no kids, todo botão e todo cartão
+   clicável ganha um leve relevo, como no Brilliant. A borda de baixo é uma SOMBRA dura
+   num tom mais escuro da própria cor (o layout não anda): no hover a peça sobe 1px e a
+   borda cresce, no aperto ela afunda até a borda quase sumir. A base da borda fica
+   sempre no mesmo lugar (-1 + 5 = 3 + 1 = 4), então nada embaixo é coberto a mais.
+   Planos de propósito: o menu da esquerda, as abas e os chips de filtro (decisão dela),
+   e o nó travado da trilha e o baú fechado (não são clicáveis e não podem parecer).
+   Onde mora cada um: os botões (`button.bg-primary…`, `.sz-btn-*`) trazem o 3D na
+   própria regra; os nós da trilha, na seção da trilha; os CARTÕES clicáveis, por
+   seletor, aqui; e o resto usa `.kids-3d` na peça que aparece, com o movimento vindo do
+   link ou do botão em volta dela. O movimento é `translate`, e não `transform`, para
+   compor com o que já gira ou flutua (o balão, o baú, o `kid-float`).
+   ⚠️ As variáveis `--k3d-*` são declaradas em CADA peça, nunca herdadas: um cartão em
+   hover em volta de um botão mexeria no degrau do botão.
+   ============================================================ */
+
+/* A receita genérica: a peça que aparece ganha `.kids-3d`, e o degrau padrão é o cinza
+   dos cartões (o dos botões claros); quem tem cor própria troca `--k3d-degrau`. */
+.kids-3d {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  --k3d-fio: 0 0 #0000;
+  --k3d-largura: 0px;
+}
+
+/* CARTÕES clicáveis: o cartão branco (`.kids-carta`) que É, ou está direto dentro de, um
+   link ou botão. Fio de 2px na linha do Pen e o degrau cinza por baixo, com a mesma
+   largura do fio (a sombra acompanha o raio do cartão). FORA de camada de propósito: o
+   `hover:ring-*` de quem chama também é sombra, e numa camada ele apagaria o relevo. */
+a.kids-carta,
+button.kids-carta,
+a.kid-pop > .kids-carta {
+  --k3d-altura: 4px;
+  --k3d-degrau: var(--pen-degrau-cartao);
+  --k3d-fio: 0 0 0 2px var(--pen-linha);
+  --k3d-largura: 2px;
+}
+
+/* Peça 3D com a cara de CARTÃO (branca, com o fio): a pílula do "voltar", por exemplo. */
+.kids-3d--carta {
+  --k3d-fio: 0 0 0 2px var(--pen-linha);
+  --k3d-largura: 2px;
+}
+/* Peça 3D na cor de AÇÃO (a carta de resposta escolhida no quiz). */
+.kids-3d--acao {
+  --k3d-degrau: var(--pen-acao-degrau);
+}
+/* Peça 3D AMARELA (o "Avalie este curso"): o degrau é o âmbar escuro do Pen. */
+.kids-3d--sol {
+  --k3d-degrau: color-mix(in oklab, var(--sz-kids-amarelo) 50%, #8f5a02);
+}
+
+.kids-3d,
+a.kids-carta,
+button.kids-carta,
+a.kid-pop > .kids-carta {
+  box-shadow:
+    var(--k3d-fio),
+    0 var(--k3d-altura) 0 var(--k3d-largura) var(--k3d-degrau);
+  /* As cores e o brilho também: fora de camada, esta transição vence a de quem chama. */
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    filter 0.12s ease;
+}
+
+/* O movimento vem do próprio elemento interativo ou do link/botão em volta da peça
+   (link dentro de link não existe, então "o 3D dentro do link em hover" é a peça dele). */
+a.kids-carta:hover,
+button.kids-carta:hover:not(:disabled),
+a.kid-pop:hover > .kids-carta,
+.kids-3d:is(a[href], button:not(:disabled)):hover,
+:is(a[href], button:not(:disabled)):hover .kids-3d {
+  --k3d-altura: 5px;
+  translate: 0 -1px;
+}
+a.kids-carta:active,
+button.kids-carta:active:not(:disabled),
+a.kid-pop:active > .kids-carta,
+.kids-3d:is(a[href], button:not(:disabled)):active,
+:is(a[href], button:not(:disabled)):active .kids-3d {
+  --k3d-altura: 1px;
+  translate: 0 3px;
+}
+
+/* O pulo do `kid-pop` (sobe 2px e cresce 2%) sai dos cartões com relevo: o 3D já é o
+   retorno do toque, e os dois juntos davam 3px de subida com zoom. */
+a.kids-carta.kid-pop:hover,
+a.kid-pop:has(> .kids-carta):hover {
+  transform: none;
+}
+
+/* Menos movimento: o relevo fica e o aperto ainda achata a borda, mas nada anda. */
+@media (prefers-reduced-motion: reduce) {
+  .kids-3d,
+  a.kids-carta,
+  button.kids-carta,
+  a.kid-pop > .kids-carta,
+  button.bg-primary.text-primary-foreground,
+  a.bg-primary.text-primary-foreground,
+  button[data-slot="button"],
+  .sz-btn-gradient,
+  .sz-btn-gradient-block,
+  .kids-node {
+    translate: none !important;
+  }
+}
+
+/* Hot badge — vermelho da marca com pulso sutil */
+.sz-hot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-display);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.1875rem 0.625rem 0.1875rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--sz-hot-tint);
+  color: var(--sz-hot);
+  border: 1px solid color-mix(in oklch, var(--sz-hot) 35%, transparent);
+}
+.sz-hot-badge .dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--sz-hot);
+  animation: sz-pulse 1.6s ease-in-out infinite;
+}
+@keyframes sz-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.3);
+  }
+}
+
+/* Badges de categoria/nível sobre a capa do curso */
+.course-meta-badge {
+  color: oklch(1 0 0);
+  border-color: color-mix(in oklch, var(--brand-lime) 30%, transparent);
+  background-color: color-mix(in oklch, black 42%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+/* Progress bar gradiente — mais ALTA que a do community (criança enxerga o
+   avanço) e com transição de width (a celebração anima antes→depois).
+   VERDE de propósito (diretriz 07/2026: verde é o sinal de progresso e
+   conclusão; --kids-verde já flipa profundo/vivo entre light/dark). */
+.sz-progress {
+  position: relative;
+  height: 0.625rem;
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sz-progress > span {
+  display: block;
+  height: 100%;
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--kids-verde) 78%, white),
+    var(--kids-verde)
+  );
+  border-radius: inherit;
+  transition: width 0.6s ease;
+}
+
+/* Divider — hairline em gradiente */
+.sz-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--sz-primary) 40%, transparent) 20%,
+    color-mix(in oklch, var(--sz-accent) 40%, transparent) 80%,
+    transparent 100%
+  );
+  border: 0;
+  margin: 1.5rem 0;
+}
+
+/* Display text — Baloo 2 (arredondada/amigável) p/ títulos e números.
+   Peso 800 desde 11/09/2026: nas telas-modelo TODO título em Baloo é o extra-negrito
+   (medido a 1440px: "Onde a turma se encontra" sai com 371px no modelo contra 336px
+   no 700 de antes, no mesmo corpo). E sem o espaçamento negativo de antes: com ele
+   todo título saía uns 2% mais estreito que o do modelo, sempre na conta exata de
+   -0,01em por letra. ⚠️ A classe fica FORA de camada, então `font-*`, `tracking-*` e
+   `leading-*` no call site continuam sem efeito sobre ela. */
+.sz-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.sz-display-grad {
+  background-image: var(--sz-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Microinterações kids (cards/celebrações). Respeita reduced-motion (abaixo). */
+.kid-pop {
+  transition: transform 0.18s ease-out;
+}
+.kid-pop:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+@keyframes kid-wiggle {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-6deg) scale(1.1);
+  }
+  75% {
+    transform: rotate(6deg) scale(1.1);
+  }
+}
+.kid-wiggle {
+  animation: kid-wiggle 0.5s ease-in-out;
+}
+@keyframes kids-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.kid-float {
+  animation: kids-float 4s ease-in-out infinite;
+}
+
 /* Classes de COMPONENTE da trilha e dos cards. Ficam em `@layer components` de
    propósito: CSS sem camada vence QUALQUER camada, inclusive as utilitárias do
    Tailwind, e então `cn("kids-card", "border-4")` do call site viraria letra
@@ -1093,9 +1293,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     border: 2px solid var(--unit);
     animation: kids-ring 2.4s ease-out infinite;
   }
-  button:active > .kids-node--chest-ready {
-    transform: translateY(2px) scale(0.97);
-  }
   /* Abrir: uma sacudida curta e a tampa girando na dobradiça de trás. O bloco global
      de `prefers-reduced-motion` no fim do arquivo doma as duas. */
   @keyframes kids-chest-shake {
@@ -1126,10 +1323,32 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
     animation: kids-chest-lid 0.32s 0.2s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
   }
 
-  /* O alvo de clique é o <Link> ao redor; o nó afunda junto. */
-  /* O aperto sem relevo: o nó desce um tiquinho e encolhe, em vez de afundar na sombra. */
-  .kids-node-link:active .kids-node {
-    transform: translateY(2px) scale(0.97);
+  /* O 3D do Brilliant (11/09/2026) nos nós que ABREM aula (feita, atual, a fazer) e no
+     baú liberado: a borda de baixo no degrau da cor da unidade, por sombra. O alvo de
+     clique é o link (ou o botão do baú) em volta, e o nó afunda junto. O nó TRAVADO e o
+     baú fechado ou já aberto ficam planos: não são clicáveis e não podem parecer. O
+     travado também leva `.kids-node-link` (é o mesmo molde, sem o link), daí o `:not`. */
+  .kids-node-link .kids-node:not(.kids-node--locked),
+  button > .kids-node--chest-ready {
+    --k3d-altura: 5px;
+    --k3d-degrau: color-mix(in oklab, var(--unit) 70%, var(--pen-tinta));
+    box-shadow: 0 var(--k3d-altura) 0 var(--k3d-degrau);
+    transition:
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .kids-node-link .kids-node--todo {
+    --k3d-degrau: var(--pen-degrau-cartao);
+  }
+  a.kids-node-link:hover .kids-node:not(.kids-node--locked),
+  button:hover > .kids-node--chest-ready {
+    --k3d-altura: 6px;
+    translate: 0 -1px;
+  }
+  a.kids-node-link:active .kids-node:not(.kids-node--locked),
+  button:active > .kids-node--chest-ready {
+    --k3d-altura: 1px;
+    translate: 0 4px;
   }
   @keyframes kids-ring {
     0% {

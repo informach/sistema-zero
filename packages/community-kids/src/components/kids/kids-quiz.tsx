@@ -344,11 +344,14 @@ export function KidsQuiz({ blockId, content, quizState }: Props) {
               tabIndex={ci === rovingIndex ? 0 : -1}
               disabled={submitting}
               onClick={() => setAnswers((a) => ({ ...a, [question.id]: choice.id }))}
+              // A carta de resposta tem o 3D do Brilliant (`.kids-3d`): a borda de baixo
+              // cinza, e na cor de ação quando escolhida. O ✓ e o quadradinho cheio da letra
+              // seguem sendo o sinal da escolha sem depender da cor (WCAG 1.4.1).
               className={cn(
-                'flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base transition-[color,background-color,border-color,box-shadow,transform]',
+                'kids-3d flex items-center gap-3 rounded-2xl border-2 px-4 py-3.5 text-left font-semibold text-base',
                 selected
-                  ? 'border-primary bg-(--kids-cyan-tint) text-primary'
-                  : 'border-border bg-card hover:border-ring/60 active:translate-y-px',
+                  ? 'kids-3d--acao border-primary bg-(--kids-cyan-tint) text-primary'
+                  : 'border-border bg-card hover:border-ring/60',
               )}
             >
               <span

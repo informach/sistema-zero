@@ -51,9 +51,10 @@ export function FocusModeToggle({ target }: { target: 'nav' | 'outline' }) {
       aria-label={label}
       aria-pressed={hidden}
       className={cn(
-        // O QUADRADO creme de cantos redondos das telas-modelo (11/09/2026), sem borda nem
-        // sombra dura. Escondido = o azul clarinho da marca.
-        'grid size-11 shrink-0 place-items-center rounded-[0.875rem] border-2 border-transparent transition-[color,background-color,border-color,box-shadow,transform] active:translate-y-px',
+        // O QUADRADO de cantos redondos das telas-modelo (11/09/2026), com o 3D do Brilliant
+        // (`.kids-3d`: a borda de baixo cinza, que afunda no aperto). Escondido = o tom
+        // clarinho da cor de ação.
+        'kids-3d grid size-11 shrink-0 place-items-center rounded-[0.875rem] border-2 border-transparent',
         hidden
           ? 'bg-[color-mix(in_oklab,var(--primary)_14%,var(--card))] text-primary'
           : 'bg-(--band-creme) text-(--tinta) hover:bg-[color-mix(in_oklab,var(--band-creme)_90%,var(--foreground))]',

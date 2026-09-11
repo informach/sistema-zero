@@ -65,10 +65,11 @@ export function KidsBackButton({
   ) : (
     <span
       className={cn(
-        'grid size-11 shrink-0 place-items-center rounded-full transition-[color,background-color,transform]',
+        'grid size-11 shrink-0 place-items-center rounded-full',
         variant === 'overlay'
-          ? 'bg-card/90 text-foreground shadow-md backdrop-blur active:scale-90'
-          : 'bg-(--band-creme) text-foreground hover:bg-[color-mix(in_oklab,var(--band-creme)_85%,var(--foreground))] active:translate-y-px',
+          ? 'bg-card/90 text-foreground shadow-md backdrop-blur transition-[color,background-color,transform] active:scale-90'
+          : // O círculo tem o 3D do Brilliant (`.kids-3d`): o movimento vem do link em volta.
+            'kids-3d bg-(--band-creme) text-foreground hover:bg-[color-mix(in_oklab,var(--band-creme)_85%,var(--foreground))]',
       )}
     >
       <ArrowLeft className="size-5" />
@@ -87,9 +88,9 @@ export function KidsBackButton({
       // um botão redondo (e, no `overlay`, por cima da cena 3D).
       'group inline-flex w-fit items-center rounded-full',
       'focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2',
-      // A pílula tem 52px de altura, a do "Voltar ao mapa" (medido); o fio só aparece
-      // no escuro, onde a pílula e a faixa quase se confundem.
-      pill && 'h-13 gap-2.5 bg-card pr-5 pl-2.5 ring-1 ring-(--borda-carta)',
+      // A pílula tem 52px de altura, a do "Voltar ao mapa" (medido), e o 3D do Brilliant
+      // com a cara de cartão: o fio de 2px e a borda de baixo cinza (`.kids-3d--carta`).
+      pill && 'kids-3d kids-3d--carta h-13 gap-2.5 bg-card pr-5 pl-2.5',
       className,
     ),
   }

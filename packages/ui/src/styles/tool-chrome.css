@@ -102,6 +102,17 @@
     var(--sz-kids-azul-texto, oklch(0.52 0.15 252))
   ); /* = --sz-cta */
   --sz-tool-on-cta: oklch(1 0 0); /* = --sz-primary-fg */
+  /* Os DEGRAUS do 3D das galerias (a borda de baixo, ver "O 3D DO BRILLIANT"): o da ação
+     e o cinza dos botões claros e do cartão novo. Vêm do host (o kids dá os do Pen, que
+     viram ameixa no Pink); sem ele, um tom derivado da própria cor. */
+  --sz-tool-cta-degrau: var(
+    --sz-kids-acao-degrau,
+    color-mix(in oklab, var(--sz-tool-cta) 72%, var(--sz-tool-ink))
+  );
+  --sz-tool-degrau: var(
+    --sz-kids-degrau-cartao,
+    color-mix(in oklab, var(--sz-tool-line) 70%, var(--sz-tool-ink))
+  );
   /* Tons de status como TEXTO (14px, bold): precisam de AA sobre branco. Ancorados nos que o
      Estúdio já mede (#047857 / #b45309); os verdes/laranjas de fundo do kids não passam. */
   --sz-tool-ok: oklch(0.5 0.13 160);
@@ -148,6 +159,9 @@
   );
   --sz-tool-cta: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
   --sz-tool-on-cta: oklch(0.22 0.05 262);
+  /* No escuro o degrau é a cor puxada para o PRETO (a tinta do escuro é clara). */
+  --sz-tool-cta-degrau: color-mix(in oklab, var(--sz-tool-cta) 62%, oklch(0 0 0));
+  --sz-tool-degrau: color-mix(in oklab, var(--sz-tool-line) 60%, oklch(0 0 0));
   --sz-tool-ok: var(--sz-kids-verde-vivo, oklch(0.78 0.15 152));
   --sz-tool-warn: oklch(0.83 0.14 85);
   --sz-tool-danger: oklch(0.64 0.215 27);
@@ -778,6 +792,53 @@
     color: var(--sz-tool-muted);
   }
 
+  /* ── O 3D DO BRILLIANT nas GALERIAS (11/09/2026, decisão dela) ─────────────────────────
+     Dentro das faixas (`.sz-tool-bands`, ou seja, as galerias) os botões e o cartão "Novo
+     projeto" ganham o relevo do kids: a borda de baixo sólida num tom mais escuro, por
+     sombra (o layout não anda); no hover a peça sobe 1px e a borda cresce, no aperto ela
+     afunda até a borda quase sumir. Os EDITORES ficam planos (a mesma receita fora das
+     faixas não tem relevo), e os chips de filtro também (fazem papel de aba). O movimento é
+     `translate`: o `transform` do aperto da pílula base sai aqui dentro, senão somavam.
+     `--sz-3d-*` são o ESTADO de cada peça (declarados nela, nunca herdados), não tokens. */
+  .sz-tool-bands
+  :is(.sz-tool-pill, .sz-tool-back, .sz-tool-btn-menu, .sz-tool-icon-btn, .sz-tool-card--new) {
+    --sz-3d-altura: 4px;
+    --sz-3d-degrau: var(--sz-tool-degrau);
+    box-shadow: 0 var(--sz-3d-altura) 0 var(--sz-3d-degrau);
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease,
+      color 0.12s ease,
+      translate 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .sz-tool-bands .sz-tool-pill--primary {
+    --sz-3d-degrau: var(--sz-tool-cta-degrau);
+  }
+  .sz-tool-bands
+    :is(
+      .sz-tool-pill,
+      .sz-tool-back,
+      .sz-tool-btn-menu,
+      .sz-tool-icon-btn,
+      .sz-tool-card--new
+    ):hover:not(:disabled) {
+    --sz-3d-altura: 5px;
+    translate: 0 -1px;
+  }
+  .sz-tool-bands
+    :is(
+      .sz-tool-pill,
+      .sz-tool-back,
+      .sz-tool-btn-menu,
+      .sz-tool-icon-btn,
+      .sz-tool-card--new
+    ):active:not(:disabled) {
+    --sz-3d-altura: 1px;
+    translate: 0 3px;
+    transform: none;
+  }
+
   /* Desabilitado, igual em todo o chrome. O cartão "novo" também: no modo seleção do Pinta ele
      fica no lugar, desligado, para a grade não andar uma casa. */
   .sz-tool-btn-menu:disabled,
@@ -813,6 +874,18 @@
     }
     .sz-tool-pill:active:not(:disabled) {
       transform: none;
+    }
+    /* O relevo das galerias fica, e o aperto ainda achata a borda, mas nada anda. A mesma
+       especificidade do hover e do aperto (0,4,0), e depois deles no arquivo: vence sem
+       `!important`, que a folha não usa. */
+    .sz-tool-bands :is(
+        .sz-tool-pill,
+        .sz-tool-back,
+        .sz-tool-btn-menu,
+        .sz-tool-icon-btn,
+        .sz-tool-card--new
+      ):is(:hover, :active):not(:disabled) {
+      translate: none;
     }
   }
 }

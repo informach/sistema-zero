@@ -16,7 +16,7 @@ import {
   Star,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { type ComponentType, useState } from 'react'
+import { type ComponentType, type CSSProperties, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
 import type { MissionsMeView, MissionView } from '@/lib/types'
@@ -278,11 +278,15 @@ function MissionGroup({
                     disabled={claiming === m.slug}
                     // O fundo é a cor do grupo puxada 14% para a tinta do tema: a rosa pura
                     // dava 4,37:1 com o branco (reprovava por pouco); assim passa nos dois
-                    // temas, escurecendo no claro e clareando no escuro.
+                    // temas. O degrau do 3D é a mesma cor, mais funda (sem ele, a borda de
+                    // baixo seria a da cor de ação, embaixo de um botão de outra cor).
                     className="sz-btn-gradient h-9 shrink-0 gap-1.5 px-4 text-(--unit-fg) text-[0.8125rem] hover:brightness-95 disabled:opacity-60"
-                    style={{
-                      backgroundColor: 'color-mix(in oklab, var(--unit) 86%, var(--foreground))',
-                    }}
+                    style={
+                      {
+                        backgroundColor: 'color-mix(in oklab, var(--unit) 86%, var(--foreground))',
+                        '--k3d-degrau': 'color-mix(in oklab, var(--unit) 62%, var(--foreground))',
+                      } as CSSProperties
+                    }
                   >
                     <Gift className="size-4" aria-hidden /> Resgatar
                   </button>

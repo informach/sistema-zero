@@ -7,8 +7,9 @@
  * folha DEPOIS dos primitivos e ANTES do CSS dos pacotes.
  *
  * Desde 11/09/2026 (o desenho das telas-modelo): as faixas existem nos dois temas, as cores de
- * assinatura moram só nas constantes, as pílulas novas são chapadas, o alvo cresce para 44px
- * no toque e o botão do menu é um quadrado dentro do conteúdo, não mais a aba colada.
+ * assinatura moram só nas constantes, as pílulas são chapadas nos editores e têm o 3D do
+ * Brilliant só nas galerias, o alvo cresce para 44px no toque e o botão do menu é um quadrado
+ * dentro do conteúdo, não mais a aba colada.
  */
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
@@ -164,12 +165,31 @@ describe('tool-chrome.css: receitas', () => {
     }
   })
 
-  it('as pílulas são CHAPADAS: nenhuma variante tem gradiente nem a sombra dura do 3D', () => {
-    const pilulas = [...semComentarios.matchAll(/\.sz-tool-pill[^{]*\{([^}]*)\}/g)]
-    expect(pilulas.length).toBeGreaterThanOrEqual(8) // anti-vácuo: base, variantes e hovers
-    for (const [, corpo = ''] of pilulas) {
+  it('as pílulas são CHAPADAS, e o 3D do Brilliant (11/09/2026) mora SÓ nas galerias', () => {
+    // Cada regra com o seletor INTEIRO (do fim da anterior até a chave): é o seletor que diz
+    // se ela vale dentro das faixas das galerias ou em qualquer lugar (os editores).
+    const regras = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }))
+      .filter(({ seletor }) => seletor.includes('.sz-tool-pill'))
+    expect(regras.length).toBeGreaterThanOrEqual(8) // anti-vácuo: base, variantes e hovers
+    for (const { seletor, corpo } of regras) {
       expect(corpo).not.toContain('gradient')
-      expect(corpo).not.toMatch(/box-shadow:\s*0 \d+px 0/)
+      // Fora das faixas, nenhuma sombra: os editores ficam planos (decisão dela).
+      if (!seletor.includes('.sz-tool-bands')) expect(corpo).not.toContain('box-shadow')
+    }
+    // Anti-vácuo do relevo: existe, é das galerias, e a pílula primária desce no degrau da ação.
+    const relevo = regras.filter(
+      ({ seletor, corpo }) => seletor.includes('.sz-tool-bands') && corpo.includes('box-shadow'),
+    )
+    expect(relevo.length).toBe(1)
+    expect(relevo[0]?.corpo).toContain('var(--sz-3d-degrau)')
+    expect(bloco('.sz-tool-bands .sz-tool-pill--primary {').corpo).toContain(
+      '--sz-3d-degrau: var(--sz-tool-cta-degrau)',
+    )
+    // Os chips de filtro são abas: planos até dentro das galerias.
+    for (const { seletor, corpo } of relevo) {
+      expect(seletor).not.toContain('.sz-tool-chip')
+      expect(corpo).not.toContain('.sz-tool-chip')
     }
   })
 
