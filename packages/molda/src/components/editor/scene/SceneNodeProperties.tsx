@@ -11,10 +11,10 @@ import { editScenePath } from '../../../scene/pathCommands'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
 import { Button } from '../../ui/Button'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
-import { SceneAppearanceTools } from './SceneAppearanceTools'
 import { SceneCurveDetails } from './SceneCurveDetails'
 import { SceneMirrors } from './SceneMirrors'
 import { ScenePathProperties } from './ScenePathProperties'
+import { ScenePieceFinish } from './ScenePieceFinish'
 import { SceneSkinTools } from './SceneSkinTools'
 import { SceneVectorForm } from './SceneVectorForm'
 import { adjustScene, type SceneAdjustment } from './sceneAdjustment'
@@ -98,6 +98,7 @@ export function SceneNodeProperties({
             />
             {copy.locked}
           </label>
+          <ScenePieceFinish workshop={workshop} />
         </>
       )}
       <div className="grid grid-cols-2 gap-1">
@@ -166,9 +167,6 @@ export function SceneNodeProperties({
       <SceneMirrors workshop={workshop} />
       {primary?.kind === 'mesh' && geometry?.kind === 'mesh' && (
         <SceneSkinTools key={`skin:${document.id}:${primary.id}`} workshop={workshop} />
-      )}
-      {primary?.kind === 'mesh' && (
-        <SceneAppearanceTools key={`appearance:${primary.id}`} workshop={workshop} />
       )}
       <details className="rounded-xl border border-mld-border p-2">
         <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold text-mld-text">

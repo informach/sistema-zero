@@ -29,7 +29,10 @@ import { SceneCreateMenu } from './SceneCreateMenu'
 import { SceneExitControl, type SceneExitMode } from './SceneExitControl'
 import { SceneGlbExportPanel } from './SceneGlbExportPanel'
 import { SceneHierarchy } from './SceneHierarchy'
+import { SceneModeTabs } from './SceneModeTabs'
 import { SceneNodeProperties } from './SceneNodeProperties'
+import { ScenePaintColumn } from './ScenePaintKid'
+import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
 import { useSceneWorkshop } from './useSceneWorkshop'
 
@@ -74,7 +77,7 @@ export function SceneWorkshop({
     // com o modelo velho para sempre e a criança não teria como saber.
     onFailure: (message) => setWorkshopMessage(message ?? COPY.editor.studioSyncFailed),
   })
-  const [mode, setMode] = useState<'model' | 'animation'>('model')
+  const { mode, changeMode } = workshop
   const [exportViewport, setExportViewport] = useState<SceneViewportPort | null>(null)
   const [exportOpen, setExportOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
@@ -91,21 +94,6 @@ export function SceneWorkshop({
     hasPendingPose,
     () => false,
   )
-  function changeMode(next: typeof mode) {
-    if (next === mode) return
-    workshop.cancelGesture()
-    workshop.paint.close()
-    workshop.components.close()
-    workshop.flipbook.setImage(null)
-    const source = editor.getState().content
-    const clip = next === 'animation' ? source.animations?.[0] : null
-    try {
-      workshop.animation.setClip(clip ? source : null, clip?.id ?? null)
-    } catch (error) {
-      workshop.animation.reportError(error)
-    }
-    setMode(next)
-  }
   const faceToggle = useRef<HTMLButtonElement>(null)
   function closeFaces() {
     workshop.components.close()
@@ -170,8 +158,7 @@ export function SceneWorkshop({
           else run((source) => deleteSceneNodes(source, selected), 'clear')
         } else if (workshop.paint.session && event.key === 'Escape') {
           event.preventDefault()
-          if (workshop.paint.drawing || workshop.paint.busy) workshop.paint.cancel()
-          else workshop.paint.close()
+          workshop.endPaint()
         } else if (workshop.components.selection && event.key === 'Escape') {
           event.preventDefault()
           escapeFaces()
@@ -204,24 +191,7 @@ export function SceneWorkshop({
         <h1 tabIndex={-1} className="mld-display mr-auto truncate text-xl">
           {document.name}
         </h1>
-        <fieldset aria-label={copy.animationModes} className="mr-auto flex shrink-0 gap-2">
-          <Button
-            className="text-sm"
-            variant={mode === 'model' ? 'primary' : 'ghost'}
-            aria-pressed={mode === 'model'}
-            onClick={() => changeMode('model')}
-          >
-            {copy.modelMode}
-          </Button>
-          <Button
-            className="text-sm"
-            variant={mode === 'animation' ? 'primary' : 'ghost'}
-            aria-pressed={mode === 'animation'}
-            onClick={() => changeMode('animation')}
-          >
-            {copy.animationMode}
-          </Button>
-        </fieldset>
+        <SceneModeTabs mode={mode} onChange={changeMode} />
         <span role="status" className="text-sm text-mld-muted">
           {saveState === 'saved'
             ? COPY.editor.saved
@@ -307,16 +277,22 @@ export function SceneWorkshop({
           backLabel={copy.glbExport.close}
         />
       )}
-      {(workshop.message || (!workshop.paint.session && workshop.paint.error)) && (
+      {/* O erro da pintura mora na coluna da aba Pintar, junto das ferramentas. */}
+      {workshop.message && (
         <p
           role="alert"
           className="border-b border-mld-border bg-mld-surface px-4 py-2 text-sm text-mld-danger"
         >
-          {workshop.message ?? workshop.paint.error}
+          {workshop.message}
         </p>
       )}
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-        {mode !== 'animation' && (
+        {mode === 'paint' && (
+          <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
+            <ScenePaintColumn workshop={workshop} />
+          </div>
+        )}
+        {mode === 'model' && (
           <div className="flex shrink-0 flex-wrap gap-1 border-mld-border border-b p-2 lg:w-52 lg:flex-col lg:flex-nowrap lg:overflow-y-auto lg:border-r lg:border-b-0">
             <SceneCreateMenu run={run} />
             <Button
@@ -418,11 +394,9 @@ export function SceneWorkshop({
               flipbook={workshop.flipbook}
               animation={workshop.animation}
               animationPose={workshop.animationPose}
-              onEndPaint={() => {
-                if (workshop.paint.drawing || workshop.paint.busy) workshop.paint.cancel()
-                else workshop.paint.close()
-              }}
+              onEndPaint={workshop.endPaint}
             />
+            {mode === 'paint' && <ScenePaintPalette paint={workshop.paint} palette={document} />}
             {mode === 'animation' && (
               <DeferredModule
                 load={loadTimeline}
@@ -434,13 +408,16 @@ export function SceneWorkshop({
           </div>
           <WorkspaceInspector docked={docked} onBeforeClose={workshop.cancelGesture}>
             <h3 className="mld-display text-lg">{copy.hierarchy}</h3>
-            <Button
-              className="w-full text-sm"
-              aria-pressed={workshop.additive}
-              onClick={() => workshop.setAdditive(!workshop.additive)}
-            >
-              {copy.addSelection}
-            </Button>
+            {/* Em Pintar a escolha é de uma peça por vez: somar à seleção não tem sentido lá. */}
+            {mode !== 'paint' && (
+              <Button
+                className="w-full text-sm"
+                aria-pressed={workshop.additive}
+                onClick={() => workshop.setAdditive(!workshop.additive)}
+              >
+                {copy.addSelection}
+              </Button>
+            )}
             <Button
               className="w-full text-sm"
               disabled={!selected.length && workshop.isolation === null}
@@ -462,14 +439,11 @@ export function SceneWorkshop({
                 onBack={() => changeMode('model')}
                 backLabel={copy.glbExport.close}
               />
-            ) : workshop.paint.session ? (
+            ) : mode === 'paint' ? (
               <DeferredModule
                 load={loadPaint}
                 props={{ workshop }}
-                onBack={() => {
-                  workshop.cancelGesture()
-                  workshop.paint.close()
-                }}
+                onBack={() => changeMode('model')}
                 backLabel={copy.glbExport.close}
               />
             ) : workshop.components.selection ? (

@@ -1,4 +1,5 @@
 import { COPY } from './copy'
+import { SCENE_PAINT_COPY } from './scenePaintCopy'
 
 const scene = COPY.scene
 
@@ -11,9 +12,11 @@ export const SCENE_FIRST_STEPS_COPY = {
   next: 'Próxima dica',
   position: (index: number, count: number) => `Dica ${index + 1} de ${count}`,
   hint: 'Leia no seu ritmo. As dicas não mudam sua criação.',
+  // ⚠️ Os rótulos NÃO repetem o nome das abas (Modelar, Pintar, Animar): dois botões com o
+  // mesmo nome na mesma tela confundem a criança e o leitor de tela igual.
   tracks: {
     model: {
-      label: 'Montar',
+      label: 'Como montar',
       steps: [
         {
           title: 'Comece com uma peça',
@@ -30,24 +33,24 @@ export const SCENE_FIRST_STEPS_COPY = {
       ],
     },
     paint: {
-      label: 'Pintar',
+      label: 'Como pintar',
       steps: [
         {
-          title: 'Escolha onde pintar',
-          text: `Escolha uma peça e abra “${scene.appearanceTitle}” no painel de propriedades. Se o painel estiver fechado, use “${COPY.editor.model.inspector.open}”.`,
+          title: 'Escolha a peça',
+          text: `Toque em “${SCENE_PAINT_COPY.tab}” no alto e depois toque na peça que você quer pintar. Ela fica pronta para receber tinta sem mudar de cor.`,
         },
         {
-          title: 'Prepare sua imagem',
-          text: `Se ainda não houver imagem, abra “${scene.imageCreate}” e use “${scene.imageCreateApply}”. Em “${scene.imageLayers}”, escolha uma camada e use “${scene.paintLayer}”.`,
+          title: 'Escolha a cor',
+          text: `Toque numa das cores embaixo do palco. Do lado ficam “${scene.paintPencil}”, “${scene.paintEraser}”, “${scene.paintFill}” e “${scene.paintPicker}”.`,
         },
         {
           title: 'Faça o primeiro traço',
-          text: `Escolha uma cor e “${scene.paintPencil}”. Arraste na imagem ou escolha “${scene.paintOnModel}” para pintar na peça. Para girar a câmera, use “${scene.paintLook}”. Um traço pode ser desfeito de uma vez.`,
+          text: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela. “${COPY.editor.undo}” volta o traço inteiro de uma vez.`,
         },
       ],
     },
     skin: {
-      label: 'Articular',
+      label: 'Como articular',
       steps: [
         {
           title: 'Prepare os apoios',
@@ -64,7 +67,7 @@ export const SCENE_FIRST_STEPS_COPY = {
       ],
     },
     animation: {
-      label: 'Animar',
+      label: 'Como animar',
       steps: [
         {
           title: 'Dê um nome ao movimento',

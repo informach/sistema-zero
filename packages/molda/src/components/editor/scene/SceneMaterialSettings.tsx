@@ -19,25 +19,8 @@ export function SceneMaterialSettings({
   return (
     <fieldset disabled={lockedMaterial} className="space-y-3">
       <legend className="text-sm font-bold">{copy.materialFinish}</legend>
+      {/* Fosco, Brilhante e Metal moram no Modelar, na peça (`ScenePieceFinish`). */}
       <p className="text-xs text-mld-muted">{copy.materialFinishHint}</p>
-      <div className="flex flex-wrap gap-2">
-        {(['matte', 'shiny', 'metal'] as const).map((kind) => (
-          <Button
-            key={kind}
-            className="flex-1 px-2 text-sm"
-            onClick={() =>
-              apply((source) =>
-                patchSceneMaterial(source, material.id, {
-                  roughness: kind === 'matte' ? 1 : kind === 'shiny' ? 0.2 : 0.35,
-                  metalness: kind === 'metal' ? 1 : 0,
-                }),
-              )
-            }
-          >
-            {copy.materialPresets[kind]}
-          </Button>
-        ))}
-      </div>
       <form
         key={`${material.id}-${material.roughness}-${material.metalness}-${material.doubleSided}-${material.name}`}
         className="space-y-2"

@@ -2,7 +2,9 @@ import { describe, expect, spyOn, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { COPY } from '../../../core/copy'
+import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_FIRST_STEPS_COPY as firstSteps } from '../../../core/sceneFirstStepsCopy'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import {
   captureSceneAnimationPoseSet,
@@ -156,6 +158,15 @@ function setup(
   return { editor, ports, view, openInspector }
 }
 
+/** A amostra de cor da faixa da aba Pintar; o nome é o mesmo rótulo do editor antigo. */
+function swatch(
+  editor: { getState(): { asset: Parameters<typeof resolvePaletteColors>[0] } },
+  index: number,
+) {
+  const hex = resolvePaletteColors(editor.getState().asset)[index]!
+  return screen.getByRole('button', { name: COPY.a11y.colorSwatch(index, hex) })
+}
+
 describe('scene workshop integration', () => {
   test('salvar na oficina reenvia a criação ao Estúdio; abrir não reenvia nada', async () => {
     const db = await nativeDatabase()
@@ -305,7 +316,9 @@ describe('scene workshop integration', () => {
       fireEvent.keyDown(panel, { key: 'Escape' })
       expect(editor.getState().asset).toBe(asset)
       expect(editor.getState().canUndo).toBe(false)
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      // A peça já tem pintura só dela: entrar na aba Pintar não muda nada no documento.
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -2520,7 +2533,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       const toggle = (open: boolean) =>
         act(() => {
           appearance.open = open
@@ -2624,7 +2638,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -2654,7 +2669,7 @@ describe('scene workshop integration', () => {
         region: '3d-frame-3',
         bounds,
       }
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintBrushSize(3) }))
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[3] }))
       act(() => {
         ports.at(-1)!.callbacks.paint!.begin(sample)
       })
@@ -2696,7 +2711,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -2790,7 +2806,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       const toggle = (open: boolean) =>
         act(() => {
           appearance.open = open
@@ -2848,7 +2865,9 @@ describe('scene workshop integration', () => {
       prepare()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('asa') }))
       await act(async () => {})
-      expect(editor.getState().canUndo).toBe(false)
+      // Na aba Pintar, escolher a asa prepara a tinta DELA (um passo próprio de desfazer); o
+      // atlas pendente do corpo morre sem entrar: a caixa do corpo continua a de antes.
+      expect(editor.getState().asset.geometries[0]).toEqual(source.geometries[0])
       expect(screen.queryByRole('button', { name: COPY.scene.atlasConfirm }) === null).toBe(true)
     } finally {
       view.unmount()
@@ -2867,7 +2886,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -2954,7 +2974,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -2973,20 +2994,14 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const key = (key: string) => fireEvent.keyDown(canvas, { key })
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.paintColor }), {
-        target: { value: '5' },
-      })
+      fireEvent.click(swatch(editor, 5))
       key(' ')
       const painted = editor.getState().asset
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.paintColor }), {
-        target: { value: '7' },
-      })
+      fireEvent.click(swatch(editor, 7))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPicker }))
       key(' ')
       expect(editor.getState().asset).toBe(painted)
-      expect(
-        (screen.getByRole('combobox', { name: COPY.scene.paintColor }) as HTMLSelectElement).value,
-      ).toBe('5')
+      expect(swatch(editor, 5).getAttribute('aria-pressed')).toBe('true')
       expect(
         screen.getByRole('button', { name: COPY.scene.paintPencil }).getAttribute('aria-pressed'),
       ).toBe('true')
@@ -3067,7 +3082,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const appearance = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         appearance.open = true
         fireEvent(appearance, new Event('toggle'))
@@ -3161,7 +3177,8 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const details = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         details.open = true
         fireEvent(details, new Event('toggle'))
@@ -3208,9 +3225,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(source.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintFill }))
-      fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.paintColor }), {
-        target: { value: '5' },
-      })
+      fireEvent.click(swatch(editor, 5))
       expect(
         screen.getByRole('button', { name: COPY.scene.paintFill }).getAttribute('aria-pressed'),
       ).toBe('true')
@@ -3245,7 +3260,9 @@ describe('scene workshop integration', () => {
         view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')?.value,
       ).toBe('#78dc52')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-      expect(screen.getByRole('combobox', { name: COPY.scene.paintColor })).toBeDefined()
+      // De volta às cores da paleta: a amostra escolhida volta a valer, e a cor livre some.
+      expect(view.container.querySelector('input[name="paintColorRgba"]')).toBeNull()
+      expect(swatch(editor, 5).getAttribute('aria-pressed')).toBe('true')
       fireEvent.keyDown(canvas, { key: 'Escape' })
       expect(screen.queryByRole('button', { name: COPY.scene.paintCanvas })).toBeNull()
     } finally {
@@ -3259,7 +3276,17 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const details = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      // O acabamento mora no Modelar, na peça: vale para todos os materiais dela.
+      const before = editor.getState().asset
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.materialPresets.shiny }))
+      expect(
+        editor.getState().asset.materials.find((m) => m.id === 'material:body')!.roughness,
+      ).toBe(0.2)
+      expect(editor.getState().asset.images).toBe(before.images)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.materials).toEqual(before.materials)
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         details.open = true
         fireEvent(details, new Event('toggle'))
@@ -3269,14 +3296,6 @@ describe('scene workshop integration', () => {
           true,
         ),
       )
-      const before = editor.getState().asset
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.materialPresets.shiny }))
-      expect(
-        editor.getState().asset.materials.find((m) => m.id === 'material:body')!.roughness,
-      ).toBe(0.2)
-      expect(editor.getState().asset.images).toBe(before.images)
-      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
-      expect(editor.getState().asset.materials).toEqual(before.materials)
       const creation = screen.getByText(COPY.scene.imageCreate).closest('details')!
       act(() => {
         creation.open = true
@@ -3345,7 +3364,13 @@ describe('scene workshop integration', () => {
       )
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
-      const details = screen.getByText(COPY.scene.appearanceTitle).closest('details')!
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      // Entrar em Pintar isola a pintura dividida com a asa (um passo de desfazer). Desfazer
+      // volta ao estado dividido, que é o que o painel precisa explicar.
+      expect(editor.getState().canUndo).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(screen.queryByRole('alert')).toBeNull()
+      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
       act(() => {
         details.open = true
         fireEvent(details, new Event('toggle'))

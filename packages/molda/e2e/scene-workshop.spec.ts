@@ -10,6 +10,8 @@ import { expect, type Page, test } from '@playwright/test'
 import { unzipSync } from 'fflate'
 import sharp from 'sharp'
 import { COPY } from '../src/core/copy'
+import { resolvePaletteColors } from '../src/core/sanitize'
+import { SCENE_PAINT_COPY } from '../src/core/scenePaintCopy'
 import type { MoldaSceneDocument } from '../src/scene/document'
 import { sceneToJson } from '../src/scene/documentJson'
 import { animatedScene } from '../src/testing/sceneAnimation'
@@ -317,6 +319,69 @@ async function nativeProject(page: Page) {
   return JSON.parse(file.bytes.toString())
 }
 
+/** A tinta da peça no documento: a imagem de cor do material dela, ou nada. */
+function colorImageOf(project: MoldaSceneDocument, nodeId: string) {
+  const node = project.nodes.find((entry) => entry.id === nodeId)
+  if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+  const imageId = project.materials.find((entry) => entry.id === node.materialId)?.colorImageId
+  return imageId ? project.images.find((entry) => entry.id === imageId) : undefined
+}
+
+test('pintar do jeito da criança: caixa, Pintar, uma cor, arrastar na peça; fora dela a câmera gira', async ({
+  page,
+  browserName,
+}) => {
+  // Arrastar no 3D por mouse sintético é instável no Firefox e no WebKit (o plano registra).
+  test.skip(browserName !== 'chromium', 'o traço 3D do e2e roda no Chromium')
+  test.setTimeout(60_000)
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await page.goto('/?oficina=app')
+  // O modelo novo já nasce com uma caixa: é nela que a criança pinta primeiro.
+  await createModel(page, 'pinta-e2e')
+  await page.getByRole('button', { name: COPY.scene.select('caixa'), exact: true }).click()
+  await page.getByRole('button', { name: COPY.editor.model.views.selection, exact: true }).click()
+  const box = (await nativeProject(page)).nodes.find(
+    (node: { name: string }) => node.name === 'caixa',
+  )!.id as string
+  await page.getByRole('button', { name: SCENE_PAINT_COPY.tab, exact: true }).click()
+  // A peça escolhida já está pronta para a tinta, sem mudar de cor: nenhum painel aberto.
+  const prepared = await nativeProject(page)
+  const sheet = colorImageOf(prepared, box)
+  expect(sheet).toBeDefined()
+  // No JSON do projeto a camada vai em base64; zero em tudo = a cor da peça aparece igual.
+  const pixels = Buffer.from(sheet!.layers[0]!.pixels as unknown as string, 'base64')
+  expect(pixels.length).toBeGreaterThan(0)
+  expect(pixels.every((value) => value === 0)).toBe(true)
+  await expect(page.getByText(SCENE_PAINT_COPY.modelHint)).toBeVisible()
+  const hex = resolvePaletteColors(prepared)[5]!
+  await page.getByRole('button', { name: COPY.a11y.colorSwatch(5, hex), exact: true }).click()
+  const stage = page.locator(`canvas[aria-label="${COPY.scene.viewport}"]`)
+  const area = (await stage.boundingBox())!
+  const center = { x: area.x + area.width / 2, y: area.y + area.height / 2 }
+  await page.mouse.move(center.x - 6, center.y)
+  await page.mouse.down()
+  await page.mouse.move(center.x + 6, center.y + 4, { steps: 6 })
+  await page.mouse.up()
+  const painted = await nativeProject(page)
+  expect(colorImageOf(painted, box)!.layers).not.toEqual(sheet!.layers)
+  // Arrastar a partir do canto é o vazio: a câmera gira e a tinta fica como estava.
+  await page.mouse.move(area.x + 12, area.y + 12)
+  await page.mouse.down()
+  await page.mouse.move(area.x + 80, area.y + 40, { steps: 6 })
+  await page.mouse.up()
+  expect(colorImageOf(await nativeProject(page), box)!.layers).toEqual(
+    colorImageOf(painted, box)!.layers,
+  )
+  // Dois desfazer: o traço, e depois o lugar da tinta. Sem alerta.
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  expect(colorImageOf(await nativeProject(page), box)).toBeUndefined()
+  await expect(page.getByText(SCENE_PAINT_COPY.choosePiece)).toBeVisible()
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  expect(errors).toEqual([])
+})
+
 test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movimento pronto vira clipe editável', async ({
   page,
 }) => {
@@ -326,12 +391,16 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   page.on('pageerror', (error) => errors.push(error.message))
   await restoreProject(page, source)
   await page.getByRole('button', { name: COPY.scene.select('corpo'), exact: true }).click()
+  // O caminho avançado mora na aba Pintar, em "Mais jeitos de pintar".
+  await page.getByRole('button', { name: SCENE_PAINT_COPY.tab, exact: true }).click()
+  await page.getByText(SCENE_PAINT_COPY.more, { exact: true }).click()
   await page.getByText(COPY.scene.appearanceTitle, { exact: true }).click()
   const material = source.materials.find((entry) => entry.colorImageId === source.images[0]!.id)!
   await page.getByRole('combobox', { name: COPY.scene.materialChoose }).selectOption(material.id)
   await page.getByRole('button', { name: COPY.scene.paintLayer, exact: true }).click()
   const before = await nativeProject(page)
-  await page.locator('select[name="paintColorIndex"]').selectOption('2')
+  const hex = resolvePaletteColors(source)[2]!
+  await page.getByRole('button', { name: COPY.a11y.colorSwatch(2, hex), exact: true }).click()
   const canvas = page.getByRole('button', { name: COPY.scene.paintCanvas, exact: true })
   await canvas.scrollIntoViewIfNeeded()
   const box = (await canvas.boundingBox())!
@@ -345,7 +414,6 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   expect((await nativeProject(page)).images).toEqual(before.images)
   await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
   expect((await nativeProject(page)).images).toEqual(painted.images)
-  await page.getByRole('button', { name: COPY.scene.paintFinish, exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.animationMode, exact: true }).click()
   await page.getByText(COPY.scene.animationPresetTitle, { exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.animationPresetPrepare, exact: true }).click()

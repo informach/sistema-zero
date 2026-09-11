@@ -485,7 +485,7 @@ export function bindSceneCommand(
 /**
  * Os comandos de uma zona no contexto atual.
  *
- * ⚠️ Em Animar os destrutivos de modelagem somem, inclusive o Apagar. A invariante já estava
+ * ⚠️ Em Animar e em Pintar os destrutivos de modelagem somem, inclusive o Apagar. A invariante já estava
  * escrita no `CLAUDE.md`; aqui ela é o próprio filtro, então não dá para esquecer dela ao
  * montar uma zona nova.
  * ⚠️ Com `can` (o do `useMoldaToolAccess()`), comando de família trancada também some: não
@@ -501,7 +501,7 @@ export function contextualSceneCommands(
     (command) =>
       command.slot === slot &&
       command.contexts.includes(context) &&
-      !(context === 'animate' && command.destructive) &&
+      !((context === 'animate' || context === 'paint') && command.destructive) &&
       isSceneCommandId(command.id) &&
       sceneCommandAllowed(command.id, can),
   ).map((command) => {

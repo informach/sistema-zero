@@ -99,6 +99,12 @@ describe('registro de comandos da oficina', () => {
     expect(animar).not.toContain('node.ungroup')
     // E o que não é destrutivo continua: mover a peça é o que se faz em Animar.
     expect(animar).toContain('tool.move')
+    // Pintar também: nenhum comando que apaga ou desfaz peças mora na aba da tinta.
+    for (const slot of ['rail', 'stage', 'app', 'menu', 'dock', 'dialog'] as const)
+      expect(
+        contextualSceneCommands('paint', slot).some((command) => command.destructive),
+        `paint/${slot}`,
+      ).toBe(false)
   })
 
   test('os grupos do trilho saem na ordem declarada, e grupo vazio não vira legenda solta', () => {

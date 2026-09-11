@@ -21,6 +21,24 @@ export interface ScenePieceAppearance {
   metalness?: number
 }
 
+/** Os três acabamentos da criança; os números são os de sempre do painel de materiais. */
+export const SCENE_FINISH_PRESETS = {
+  matte: { roughness: 1, metalness: 0 },
+  shiny: { roughness: 0.2, metalness: 0 },
+  metal: { roughness: 0.35, metalness: 1 },
+} as const satisfies Record<string, Required<Pick<ScenePieceAppearance, 'roughness' | 'metalness'>>>
+
+export type SceneFinishPreset = keyof typeof SCENE_FINISH_PRESETS
+
+/** O acabamento que o material mostra, quando é exatamente um dos três. */
+export function sceneFinishOf(material: Pick<SceneMaterial, 'roughness' | 'metalness'>) {
+  return (Object.keys(SCENE_FINISH_PRESETS) as SceneFinishPreset[]).find(
+    (kind) =>
+      SCENE_FINISH_PRESETS[kind].roughness === material.roughness &&
+      SCENE_FINISH_PRESETS[kind].metalness === material.metalness,
+  )
+}
+
 function sameAppearance(a: SceneMaterial, b: SceneMaterial) {
   const sameColor =
     a.baseColor.kind === 'palette'

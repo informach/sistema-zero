@@ -9,6 +9,7 @@
  * 2. O material alvo é o da face tocada; sem face, o da peça (ou o da primeira face, quando a
  *    peça não usa o material dela em face nenhuma).
  * 3. Já tem imagem de cor só desta peça: devolve o alvo sem mudar nada (a camada visível de cima).
+ *    Sem face tocada, qualquer pintura que a peça já mostra serve, a do material dela primeiro.
  * 4. Material com relevo, brilho ou metal e sem cor: recusa antes de copiar qualquer coisa. Mudar
  *    a UV desalinharia esses mapas.
  * 5. Material ou imagem de outra peça: isola com `copySceneMaterialForNode`. Se a cópia já tem
@@ -127,6 +128,20 @@ function readyTarget(usage: Usage, nodeId: string, materialId: string): ScenePai
   return layer ? { nodeId, materialId, imageId, layerId: layer.id } : null
 }
 
+/**
+ * Sem face tocada, qualquer pintura que a peça já mostra serve (a do material dela primeiro):
+ * entrar na aba Pintar numa peça que já tem onde pintar não muda nada no documento.
+ */
+function shownReadyTarget(usage: Usage, node: MeshNode, geometry: SceneGeometry) {
+  const shown = new Set(bindings(node, geometry).map(([, id]) => id))
+  const order = shown.has(node.materialId) ? [node.materialId, ...shown] : [...shown]
+  for (const id of new Set(order)) {
+    const target = readyTarget(usage, node.id, id)
+    if (target) return target
+  }
+  return null
+}
+
 /** Só leitura: o alvo, quando a peça já pode ser pintada sem mudar nada no documento. */
 export function findScenePaintTarget(
   document: MoldaSceneDocument,
@@ -137,8 +152,8 @@ export function findScenePaintTarget(
   if (node?.kind !== 'mesh' || usage.flags.get(node.id)?.locked) return null
   const geometry = usage.index.geometries.get(node.geometryId)
   if (!geometry) return null
-  const all = bindings(node, geometry)
-  if (request.faceId !== undefined && !all.some(([key]) => key === request.faceId)) return null
+  if (request.faceId === undefined) return shownReadyTarget(usage, node, geometry)
+  if (!bindings(node, geometry).some(([key]) => key === request.faceId)) return null
   return readyTarget(usage, node.id, targetMaterial(node, geometry, request.faceId))
 }
 
@@ -332,7 +347,10 @@ export function ensureScenePaintSurface(
 ): ScenePaintSurface {
   let { usage, node, geometry } = paintNode(document, request.nodeId)
   let materialId = targetMaterial(node, geometry, request.faceId)
-  const ready = readyTarget(usage, node.id, materialId)
+  const ready =
+    request.faceId === undefined
+      ? shownReadyTarget(usage, node, geometry)
+      : readyTarget(usage, node.id, materialId)
   if (ready) return { status: 'ready', document, target: ready, created: false }
   let material = usage.index.materials.get(materialId)!
   const images = sceneMaterialImageIds(material)

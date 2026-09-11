@@ -44,9 +44,12 @@ export function crossesSeam(previous: ScenePaintSample, next: ScenePaintSample):
 
 export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const document = useStore(editor, (state) => state.content)
-  const [session, setSession] = useState<{ documentId: string; target: ScenePaintTarget } | null>(
-    null,
-  )
+  /** `quiet`: a sessão que a aba Pintar abriu sozinha fecha sem alerta quando o alvo some. */
+  const [session, setSession] = useState<{
+    documentId: string
+    target: ScenePaintTarget
+    quiet?: boolean
+  } | null>(null)
   const [chosenColor, setColor] = useState<ScenePaintColor>(7)
   const [brush, setBrush] = useState<BrushSize>(1)
   const [tool, setTool] = useState<
@@ -137,7 +140,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     if (session && !data) {
       cancel()
       setSession(null)
-      setError(COPY.scene.paintTargetChanged)
+      // Desfazer o preparo da superfície é a criança voltando atrás, não um problema.
+      if (!session.quiet) setError(COPY.scene.paintTargetChanged)
     }
   }, [session, data, cancel])
   useEffect(() => {
@@ -367,13 +371,35 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       cancel()
       setSelection(null)
     },
-    open(target: ScenePaintTarget) {
+    /**
+     * Troca o alvo sem recomeçar: a cor, a ferramenta e a largura continuam as da criança. É o
+     * toque em outra peça (ou em outra face) na aba Pintar. Sem sessão, abre uma quieta.
+     */
+    retarget(target: ScenePaintTarget) {
+      cancel()
+      try {
+        const document = editor.getState().content
+        resolveScenePaintTarget(document, target)
+        setSession({ documentId: document.id, target: { ...target }, quiet: true })
+        setSelection(null)
+        setError(null)
+        return true
+      } catch (error) {
+        setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+        return false
+      }
+    },
+    open(target: ScenePaintTarget, options: { quiet?: boolean } = {}) {
       cancel()
       clearFile()
       try {
         const document = editor.getState().content
         const { image, imageKind } = resolveScenePaintTarget(document, target)
-        setSession({ documentId: document.id, target: { ...target } })
+        setSession({
+          documentId: document.id,
+          target: { ...target },
+          ...(options.quiet ? { quiet: true } : {}),
+        })
         setColor(
           image.encoding === 'indexed'
             ? 7

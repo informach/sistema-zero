@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
@@ -30,7 +31,8 @@ interface Props {
   document: MoldaSceneDocument
   selection: readonly string[]
   isolation: readonly string[] | null
-  onSelect(id: string | null, additive: boolean): void
+  /** Em Pintar, o toque numa peça traz a face: `detail.faceId`. */
+  onSelect(id: string | null, additive: boolean, detail?: { faceId?: string }): void
   onSelectMany?(ids: readonly string[], additive: boolean): void
   factory?: SceneViewportFactory
   transform?: SceneTransformActions
@@ -46,7 +48,7 @@ interface Props {
   flipbook: SceneFlipbookPlayer
   animation?: SceneAnimationPlayer
   animationPose?: SceneAnimationPoseGesture
-  mode?: 'model' | 'animation'
+  mode?: 'model' | 'paint' | 'animation'
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
@@ -160,6 +162,7 @@ function SceneCanvasAttempt({
     () => false,
   )
   const activeTool =
+    mode === 'paint' ||
     reviewingSet ||
     (mode === 'animation' && (!canAnimate || tool === 'box' || tool === 'lasso')) ||
     facePreviewOpen ||
@@ -192,7 +195,8 @@ function SceneCanvasAttempt({
     animation,
     animationPose: mode === 'animation' ? animationPose : undefined,
     paintTarget: look ? null : paintTarget,
-    supportGuides: supportGuides && !paintTarget && !componentSelection,
+    paintMode: mode === 'paint' ? (look ? 'look' : 'paint') : 'off',
+    supportGuides: supportGuides && mode !== 'paint' && !paintTarget && !componentSelection,
     weightTarget,
     skinPaint,
     skinPaintSettings,
@@ -226,13 +230,16 @@ function SceneCanvasAttempt({
           }
           cancelPaint()
           if (brushMode !== 'off') setBrushMode('off')
-          else if (paintTarget) onEndPaint?.()
+          else if (mode === 'paint' || paintTarget) onEndPaint?.()
           else if (componentSelection) onEndFaces?.()
           event.preventDefault()
         }
       }}
     >
       <div className="absolute top-3 left-3 z-20 flex max-w-[calc(100%-10rem)] lg:max-w-[calc(100%-1.5rem)] flex-wrap items-center gap-1 rounded-xl border border-mld-border bg-mld-surface/95 p-1.5 shadow-sm">
+        {mode === 'paint' && !paintTarget && (
+          <p className="text-sm font-bold">{SCENE_PAINT_COPY.choosePiece}</p>
+        )}
         {paintTarget && (
           <>
             <Button
@@ -257,12 +264,14 @@ function SceneCanvasAttempt({
             >
               {copy.paintLook}
             </Button>
-            <p className="text-xs text-mld-muted">
-              {look ? copy.paintLookHint : copy.paintModelHint}
+            {/* No celular a dica ocuparia o palco: ela mora nos Primeiros passos também. */}
+            <p className="hidden text-xs text-mld-muted md:block">
+              {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
             </p>
           </>
         )}
-        {!paintTarget &&
+        {mode !== 'paint' &&
+          !paintTarget &&
           (['select', 'box', 'lasso', 'move', 'rotate', 'scale'] as const)
             .filter((name) => mode === 'model' || (name !== 'box' && name !== 'lasso'))
             .map((name) => (
@@ -300,7 +309,7 @@ function SceneCanvasAttempt({
               </Button>
             ))}
 
-        {!paintTarget && (
+        {mode !== 'paint' && !paintTarget && (
           <span className="text-mld-muted text-xs">
             {skinPaintSettings
               ? copy.skinPaint.hint
@@ -446,7 +455,7 @@ function SceneCanvasAttempt({
             {SCENE_SHELL_COPY.stageSettings}
           </summary>
           <div className="absolute right-0 bottom-full z-30 mb-1 flex w-56 flex-col gap-1 rounded-xl border border-mld-border bg-mld-surface p-2 shadow-lg">
-            {!paintTarget && !componentSelection && (
+            {mode !== 'paint' && !paintTarget && !componentSelection && (
               <Button
                 variant="ghost"
                 className="px-3 text-sm"
@@ -479,7 +488,7 @@ function SceneCanvasAttempt({
           </div>
         </details>
       </section>
-      {supportGuides && !paintTarget && !componentSelection && (
+      {supportGuides && mode !== 'paint' && !paintTarget && !componentSelection && (
         <p role="status" className="border-b border-mld-border px-3 py-2 text-sm text-mld-muted">
           {copy.supportGuidesHint}
         </p>
@@ -544,7 +553,7 @@ function SceneCanvasAttempt({
             context={
               mode === 'animation'
                 ? 'animation'
-                : paintTarget
+                : mode === 'paint' || paintTarget
                   ? 'paint'
                   : weightTarget
                     ? 'skin'

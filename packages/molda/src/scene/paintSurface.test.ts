@@ -315,7 +315,15 @@ describe('o que já existe nunca se move', () => {
     expect(painted.created).toBe(false)
     expect(painted.document).toBe(document)
     expect(painted.target.imageId).toBe('image:body:py')
-    const rest = ready(ensureScenePaintSurface(document, { nodeId: 'body' }, counter()))
+    // Sem face tocada, a pintura que a peça já mostra serve: entrar na aba não muda nada.
+    const entering = ready(ensureScenePaintSurface(document, { nodeId: 'body' }, counter()))
+    expect(entering.document).toBe(document)
+    expect(entering.target).toEqual(painted.target)
+    expect(findScenePaintTarget(document, { nodeId: 'body' })).toEqual(painted.target)
+    // Tocar numa face sem tinta prepara a folha das faces que usam o material da peça.
+    const rest = ready(
+      ensureScenePaintSurface(document, { nodeId: 'body', faceId: 'px' }, counter()),
+    )
     expect(rest.created).toBe(true)
     const before = geometryOf(document, 'body')
     const after = geometryOf(rest.document, 'body')

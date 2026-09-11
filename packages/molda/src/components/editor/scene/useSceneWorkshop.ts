@@ -6,6 +6,7 @@ import { indexSceneDocument } from '../../../scene/documentIndex'
 import { SceneGraphError, selectSceneSubtrees } from '../../../scene/graph'
 import type { ScenePaintTarget } from '../../../scene/imagePaint'
 import type { AffineMatrix } from '../../../scene/matrix'
+import { ensureScenePaintSurface } from '../../../scene/paintSurface'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createSceneTransformGesture } from '../../../state/sceneTransformGesture'
@@ -16,6 +17,16 @@ import { useSceneFlipbookPlayer } from './useSceneFlipbookPlayer'
 import { useScenePaint } from './useScenePaint'
 import { useSceneSkinPaint } from './useSceneSkinPaint'
 
+/** As três abas. O modo mora aqui para Pintar poder escolher a peça e preparar a tinta. */
+export type SceneWorkshopMode = 'model' | 'paint' | 'animation'
+
+/** A peça tem faces tortas: pintar pede o consentimento de dividi-las em triângulos. */
+export interface ScenePaintIssue {
+  nodeId: string
+  faceId?: string
+  faces: readonly string[]
+}
+
 export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const activeTransform = useRef<'components' | 'nodes' | null>(null)
   const document = useStore(editor, (state) => state.content)
@@ -23,12 +34,16 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const [additive, setAdditive] = useState(false)
   const [isolation, setIsolation] = useState<readonly string[] | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [mode, setMode] = useState<SceneWorkshopMode>('model')
+  const [paintIssue, setPaintIssue] = useState<ScenePaintIssue | null>(null)
   const paint = useScenePaint(editor)
   const skinPaint = useSceneSkinPaint(editor)
   const flipbook = useSceneFlipbookPlayer(editor)
   const animation = useSceneAnimationPlayer(editor)
   const animationPose = useSceneAnimationPoseGesture(editor, animation)
   const closePaint = paint.close
+  const cancelPaint = paint.cancel
+  const retargetPaint = paint.retarget
   const gesture = useMemo(
     () =>
       createSceneTransformGesture(editor, (error) =>
@@ -45,8 +60,57 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     () => selectSceneSubtrees(index.scene, selected).covered,
     [selected, index],
   )
+  /**
+   * Pintar no clique: escolher a peça prepara o lugar da tinta (um passo de desfazer, sem mudar
+   * a aparência) e abre a pintura nela, mantendo a cor, a ferramenta e a largura da criança.
+   */
+  const choosePaint = useCallback(
+    (nodeId: string | null, faceId?: string, split = false) => {
+      skinPaint.cancel()
+      animationPose.cancel()
+      animation.cancelPreview()
+      animation.pause()
+      gesture.cancel()
+      setPaintIssue(null)
+      if (nodeId === null) {
+        closePaint()
+        setChosen([])
+        return
+      }
+      const source = editor.getState().asset
+      if (!source.nodes.some((node) => node.id === nodeId)) return
+      setChosen([nodeId])
+      try {
+        const result = ensureScenePaintSurface(source, {
+          nodeId,
+          ...(faceId === undefined ? {} : { faceId }),
+          ...(split ? { splitCrookedFaces: true } : {}),
+        })
+        if (result.status === 'crooked') {
+          closePaint()
+          setPaintIssue({
+            nodeId,
+            ...(faceId === undefined ? {} : { faceId }),
+            faces: result.faces,
+          })
+          return
+        }
+        if (result.created) editor.getState().commit(result.document)
+        setMessage(null)
+        retargetPaint(result.target)
+      } catch (error) {
+        closePaint()
+        setMessage(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+      }
+    },
+    [editor, gesture, closePaint, retargetPaint, animation, animationPose, skinPaint],
+  )
   const select = useCallback(
-    (id: string | null, add: boolean) => {
+    (id: string | null, add: boolean, faceId?: string) => {
+      if (mode === 'paint') {
+        choosePaint(id, faceId)
+        return
+      }
       skinPaint.cancel()
       animationPose.cancel()
       animation.cancelPreview()
@@ -66,7 +130,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
           : [id],
       )
     },
-    [editor, additive, gesture, closePaint, animation, animationPose, skinPaint],
+    [editor, additive, gesture, closePaint, animation, animationPose, skinPaint, mode, choosePaint],
   )
   const run = useCallback(
     (
@@ -77,7 +141,9 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       animationPose.cancel()
       animation.cancelPreview()
       animation.pause()
-      closePaint()
+      // Um comando na aba Pintar cancela o traço em vez de fechar a pintura.
+      if (mode === 'paint') cancelPaint()
+      else closePaint()
       gesture.cancel()
       const before = editor.getState().asset
       try {
@@ -111,10 +177,11 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         return null
       }
     },
-    [editor, gesture, closePaint, animation, animationPose, skinPaint],
+    [editor, gesture, closePaint, cancelPaint, animation, animationPose, skinPaint, mode],
   )
   const selectMany = useCallback(
     (ids: readonly string[], add: boolean) => {
+      if (mode === 'paint') return
       skinPaint.cancel()
       animationPose.cancel()
       animation.cancelPreview()
@@ -127,7 +194,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         ...new Set(add || additive ? [...before.filter((id) => alive.has(id)), ...next] : next),
       ])
     },
-    [editor, additive, gesture, closePaint, animation, animationPose, skinPaint],
+    [editor, additive, gesture, closePaint, animation, animationPose, skinPaint, mode],
   )
   const components = useSceneComponents({
     editor,
@@ -141,29 +208,93 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     },
     run,
   })
+  function cancelGesture() {
+    skinPaint.cancel()
+    animationPose.cancel()
+    animation.cancelPreview()
+    animation.pause()
+    flipbook.pause()
+    paint.cancel()
+    components.check.cancel()
+    gesture.cancel()
+    components.preview.cancel()
+    components.transform.cancel()
+    activeTransform.current = null
+  }
+  function changeMode(next: SceneWorkshopMode) {
+    if (next === mode) return
+    cancelGesture()
+    closePaint()
+    components.close()
+    flipbook.setImage(null)
+    setPaintIssue(null)
+    const source = editor.getState().content
+    const clip = next === 'animation' ? source.animations?.[0] : null
+    try {
+      animation.setClip(clip ? source : null, clip?.id ?? null)
+    } catch (error) {
+      animation.reportError(error)
+    }
+    setMode(next)
+    if (next !== 'paint') return
+    // Entrar em Pintar com UMA peça escolhida já deixa pintar nela; com várias, a criança escolhe.
+    const only = selected.length === 1 ? index.scene.nodes.get(selected[0]!) : undefined
+    if (only?.kind === 'mesh') choosePaint(only.id)
+    else setChosen([])
+  }
   return {
     editor,
+    mode,
+    changeMode,
+    choosePaint,
+    paintIssue,
+    /** O consentimento: dividir as faces tortas em triângulos e pintar, num passo só. */
+    splitCrookedAndPaint: () => {
+      if (paintIssue) choosePaint(paintIssue.nodeId, paintIssue.faceId, true)
+    },
+    /** Esc na aba Pintar: com traço, cancela o traço; sem traço, solta a peça. */
+    endPaint: () => {
+      if (paint.drawing || paint.busy) {
+        paint.cancel()
+        return
+      }
+      closePaint()
+      setPaintIssue(null)
+      setChosen([])
+    },
     paint,
     skinPaint,
     flipbook,
     animation,
     animationPose,
+    /** "Pintar nesta camada", o caminho avançado: abre a aba Pintar com aquele alvo exato. */
     openPaint: (target: ScenePaintTarget) => {
       skinPaint.cancel()
       animation.pause()
       flipbook.pause()
       components.close()
       gesture.cancel()
+      if (mode !== 'paint') {
+        animation.cancelPreview()
+        try {
+          animation.setClip(null, null)
+        } catch (error) {
+          animation.reportError(error)
+        }
+        setMode('paint')
+      }
+      setPaintIssue(null)
+      setChosen([target.nodeId])
       return paint.open(target)
     },
     document,
     index,
     selected,
     covered,
-    select: (id: string | null, additive: boolean) => {
+    select: (id: string | null, additive: boolean, detail?: { faceId?: string }) => {
       flipbook.setImage(null)
       components.close()
-      select(id, additive)
+      select(id, additive, detail?.faceId)
     },
     selectMany: (ids: readonly string[], additive: boolean) => {
       flipbook.setImage(null)
@@ -212,19 +343,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         else if (kind === 'nodes') gesture.end(commit)
       },
     },
-    cancelGesture: () => {
-      skinPaint.cancel()
-      animationPose.cancel()
-      animation.cancelPreview()
-      animation.pause()
-      flipbook.pause()
-      paint.cancel()
-      components.check.cancel()
-      gesture.cancel()
-      components.preview.cancel()
-      components.transform.cancel()
-      activeTransform.current = null
-    },
+    cancelGesture,
     primary: selected.length === 1 ? index.scene.nodes.get(selected[0] ?? '') : undefined,
   }
 }

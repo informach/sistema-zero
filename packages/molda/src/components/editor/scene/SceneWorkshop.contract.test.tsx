@@ -21,6 +21,7 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { act, cleanup, render } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
+import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import { addScenePrimitive } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
@@ -118,29 +119,31 @@ describe('inventário da oficina: o que a criança alcança', () => {
     expect(perdidos, `escolher uma peça não pode esconder: ${perdidos.join(' · ')}`).toEqual([])
   })
 
-  test('o modo Animar troca o conjunto, e é a ÚNICA troca legítima', async () => {
+  test.each([
+    ['Animar', copy.animationMode],
+    ['Pintar', SCENE_PAINT_COPY.tab],
+  ])('a aba %s troca o conjunto; as abas são as ÚNICAS trocas legítimas', async (_name, tab) => {
     const { view } = mount(withPiece())
-    // ⚠️ ACHADO, e o redesenho precisa resolver: com os primeiros passos abertos existem DOIS
-    // botões chamados "Animar" (o modo e a aba de assunto da ajuda). Nome repetido no mesmo
-    // conjunto visível confunde a criança e o leitor de tela igual, e é o irmão da regra de
-    // "ícone único" que o registro de comandos vai cobrar. Aqui a referência é guardada ANTES
-    // de abrir tudo, para o teste falar do botão de MODO.
-    const animarMode = view.getByRole('button', { name: copy.animationMode })
+    choosePiece(view.container)
+    // Nome de aba é único na tela: os assuntos dos Primeiros passos não repetem "Pintar" nem
+    // "Animar" (com eles abertos, eram DOIS botões "Animar", o modo e o assunto da ajuda).
+    const tabButton = view.getByRole('button', { name: tab })
     const modelarMode = view.getByRole('button', { name: copy.modelMode })
     const modelar = inventory(view.container).expanded
-    // Animar carrega clipes e linha do tempo sob demanda; sem drenar aqui, o módulo resolve
-    // DEPOIS do teste e vira aviso de `act`. O pacote tem zero desses desde o lote 235.
+    // As abas carregam o que é delas sob demanda; sem drenar aqui, o módulo resolve DEPOIS do
+    // teste e vira aviso de `act`. O pacote tem zero desses desde o lote 235.
     await act(async () => {
-      animarMode.click()
+      tabButton.click()
       await Promise.resolve()
     })
-    const animar = inventory(view.container).expanded
+    const trocado = inventory(view.container).expanded
+    expect(view.getAllByRole('button', { name: tab })).toHaveLength(1)
 
-    expect(animar).not.toEqual(modelar)
-    // Invariante já escrita no CLAUDE.md: Animar esconde os destrutivos de modelagem.
+    expect(trocado).not.toEqual(modelar)
+    // Invariante já escrita no CLAUDE.md: Animar e Pintar escondem os destrutivos de modelagem.
     // Aqui ela deixa de ser prosa e vira teste.
-    expect(names(animar)).not.toContain(`button: ${copy.remove}`)
-    // E o caminho de volta devolve tudo: esconder em Animar não é perder.
+    expect(names(trocado)).not.toContain(`button: ${copy.remove}`)
+    // E o caminho de volta devolve tudo: esconder numa aba não é perder.
     await act(async () => {
       modelarMode.click()
       await Promise.resolve()
@@ -171,26 +174,34 @@ describe('inventário da oficina: o que a criança alcança', () => {
    * controles da frente da criança. Nenhum comando foi removido — quem prova isso é o
    * teste de inventário em duas fases, logo acima.
    *
-   * Alvo do redesenho: **≤30 encarados** com uma peça escolhida.
+   * ⚠️ Em 11/09 (plano "Molda para crianças de 9+"), 47/34 na abertura e 87/65 com uma peça.
+   * Na abertura, +1: a aba Pintar. Com uma peça, +18, e é DECISÃO, não descuido: as 15 cores
+   * e o acabamento (Fosco, Brilhante, Metal) voltaram à vista no Modelar, como no editor antigo
+   * que as crianças usam (a medição dela: 15 cores à vista lá, nenhuma aqui). São controles
+   * CONCRETOS; o que atrapalhava eram os abstratos. "Materiais e camadas" (1) saiu para o
+   * Pintar. Esta catraca mede o PADRÃO, tudo liberado; a medida da criança é a do nível de
+   * entrada, sem malha, laço, pivô e medidas, em `SceneWorkshop.toolAccess.test.tsx`.
+   *
+   * Alvo do redesenho: **≤30 encarados** com uma peça escolhida, medido no nível de entrada.
    */
   test('a quantidade de controles na tela não cresce, e a que a criança encara desce', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
     const encaradosVazio = frontControls(vazio.view.container)
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(46)
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(47)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(33)
+    ).toBeLessThanOrEqual(34)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(69)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(87)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(47)
+    ).toBeLessThanOrEqual(65)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

@@ -78,14 +78,7 @@ export function SceneAppearancePanel({
         nodeId={primary.id}
         disabled={!!usage.flags.get(primary.id)?.locked || imageTask.busy}
       />
-      {imageTask.busy && (
-        <div role="status" className="space-y-2">
-          <p className="text-sm">{copy.imageTaskBusy}</p>
-          <Button className="w-full text-sm" onClick={() => imageTask.cancel()}>
-            {copy.imageTaskCancel}
-          </Button>
-        </div>
-      )}
+      {/* O aviso de trabalho em andamento (e o cancelar) fica na coluna da aba Pintar. */}
       <label className="block space-y-1 text-sm">
         <span>{copy.materialChoose}</span>
         <select

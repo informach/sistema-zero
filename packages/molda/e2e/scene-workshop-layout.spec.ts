@@ -78,21 +78,7 @@ async function coveredControls(page: Page): Promise<string[]> {
   })
 }
 
-test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em todo tamanho', async ({
-  page,
-}) => {
-  const pageErrors: string[] = []
-  page.on('pageerror', (error) => pageErrors.push(error.message))
-  await page.goto('/?oficina=app')
-  await createModel(page, 'layout-e2e')
-  await expect(page.getByRole('button', { name: 'Meus projetos' })).toBeVisible()
-  // O aviso "… criado!" some sozinho em segundos; enquanto dura, a pílula dele recebe clique.
-  await expect(
-    page.getByText('layout-e2e', { exact: false }).and(page.locator('[aria-live]')),
-  ).toHaveCount(0, {
-    timeout: 15_000,
-  })
-
+async function checkEverySize(page: Page, label: string) {
   for (const size of SIZES) {
     await page.setViewportSize(size)
     // Abaixo de 1024 o painel vira gaveta. Aberta, ela cobre o palco por desenho (é uma
@@ -107,12 +93,46 @@ test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em
       .poll(async () => (await canvas.boundingBox())?.width ?? 0, { timeout: 5_000 })
       .toBeGreaterThan(200)
     const rect = await canvas.boundingBox()
-    expect(rect?.height ?? 0, `${size.width}px: altura do palco`).toBeGreaterThan(150)
-    expect(await coveredControls(page), `${size.width}×${size.height}`).toEqual([])
+    expect(rect?.height ?? 0, `${label} ${size.width}px: altura do palco`).toBeGreaterThan(150)
+    expect(await coveredControls(page), `${label} ${size.width}×${size.height}`).toEqual([])
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     )
-    expect(overflow, `${size.width}px: rolagem lateral`).toBeLessThanOrEqual(1)
+    expect(overflow, `${label} ${size.width}px: rolagem lateral`).toBeLessThanOrEqual(1)
   }
+}
+
+async function openFreshModel(page: Page, name: string) {
+  await page.goto('/?oficina=app')
+  await createModel(page, name)
+  await expect(page.getByRole('button', { name: 'Meus projetos' })).toBeVisible()
+  // O aviso "… criado!" some sozinho em segundos; enquanto dura, a pílula dele recebe clique.
+  await expect(page.getByText(name, { exact: false }).and(page.locator('[aria-live]'))).toHaveCount(
+    0,
+    { timeout: 15_000 },
+  )
+}
+
+test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em todo tamanho', async ({
+  page,
+}) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  await openFreshModel(page, 'layout-e2e')
+  await checkEverySize(page, 'Modelar')
+  expect(pageErrors).toEqual([])
+})
+
+test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada nem o palco', async ({
+  page,
+}) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  await openFreshModel(page, 'layout-pinta-e2e')
+  await page.getByText('Adicionar forma ou ponto').click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await checkEverySize(page, 'Pintar')
   expect(pageErrors).toEqual([])
 })
