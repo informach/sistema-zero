@@ -2,6 +2,7 @@ import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun
 import { act, cleanup, render, waitFor } from '@testing-library/react'
 import { createRef, StrictMode, useEffect } from 'react'
 import { createEmptyProject } from '#core'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 import { useT } from './i18n'
 import type { StudioHandle } from './types'
 
@@ -19,7 +20,7 @@ mock.module('../cover/thumbCapture', () => ({
 // idb-keyval mockado (sem restore, de propósito): o IndexedDB real não existe
 // no happy-dom e o registry de módulos é compartilhado pela suíte toda.
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),

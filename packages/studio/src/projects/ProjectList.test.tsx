@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 /**
  * Fumaça da HOME do Estúdio ("Meus Jogos", padrão visual do Pinta): trava o
@@ -24,7 +25,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => kvOf(store).get(key),
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) => {
     getManyCalls.push([...keys])

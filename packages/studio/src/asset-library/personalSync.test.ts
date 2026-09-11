@@ -1,4 +1,5 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 /**
  * "Editei o desenho no Pinta → o jogo se atualiza sozinho."
@@ -23,7 +24,7 @@ let reads = 0
 const askedKeys: string[] = []
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => {
     reads += 1
     return kvOf(store).get(key)

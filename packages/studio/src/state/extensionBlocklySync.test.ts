@@ -1,11 +1,12 @@
 import { describe, expect, it, mock } from 'bun:test'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // projectStore importa idb-keyval no topo (via ./persistence); este no-op garante
 // que importá-lo aqui não toque o IndexedDB (inexistente no happy-dom). Sem
 // restore de propósito, igual aos demais arquivos de persistência da suíte.
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async () => undefined),
   delMany: mock(async () => undefined),
   get: mock(async (): Promise<unknown> => undefined),

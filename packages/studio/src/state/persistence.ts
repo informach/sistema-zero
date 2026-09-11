@@ -1,4 +1,4 @@
-import { delMany, get, getMany, keys, set, setMany } from 'idb-keyval'
+import { get, getMany, keys, set } from 'idb-keyval'
 import {
   IDE_MODES,
   type IDEMode,
@@ -8,6 +8,7 @@ import {
 } from '#core'
 import { perfSpanAsync } from '../core/perf'
 import { cancelPendingAutosavesFor } from '../persistence/service'
+import { writeInOneTransaction } from './idbTransaction'
 import {
   captureProjectStorageScope,
   fenceGameStorageDelete,
@@ -175,7 +176,7 @@ function runSerializedWrite(
 // referência nova ao editar (addAsset/removeAsset/renameAsset e o spread do
 // import/load), então igualdade de referência é um dirty-check seguro: se a ref
 // não mudou desde o último persist deste id, a partição de assets não é
-// reescrita. Map por id, limpo no delete (a partição vai junto no delMany).
+// reescrita. Map por id, limpo no delete (a partição vai junto na transação que apaga).
 const lastPersistedAssetsRef = new Map<string, Project['assets']>()
 
 export interface PersistProjectOptions {
@@ -202,9 +203,10 @@ export async function persistProject(
       const id = project.id
       const scopedId = scopedProjectIdentity(scope, id)
       // `replace`: o que o snapshot não trouxer não pode sobreviver ao restauro (blocos
-      // velhos, capa velha). Apagado DEPOIS do `setMany`, no MESMO mutex: se a gravação
-      // falhar (quota cheia), o projeto local não fica sem a partição de blocos com uma IR
-      // velha (abrir reconstruiria com layout padrão e o autosave subiria isso).
+      // velhos, capa velha). Apagado na MESMA transação dos `put`, depois deles: se a
+      // gravação falhar (quota cheia), a transação inteira aborta e o projeto local não fica
+      // sem a partição de blocos com uma IR velha (abrir reconstruiria com layout padrão e o
+      // autosave subiria isso).
       // ⚠️ `blocksState == null` aqui só acontece quando a ORIGEM não tem blocos: o restauro
       // da nuvem recusa (lança) o snapshot cujo saneamento DESCARTOU blocos, ver
       // `sanitizeCloudProjectSnapshot`.
@@ -242,13 +244,15 @@ export async function persistProject(
       ) {
         pairs.push([projectAssetsKey(id), projectToAssetsRecord(project)])
       }
-      await setMany(pairs, scope.store).then(() => {
-        // Só registra a referência DEPOIS do write resolver: se o setMany falhar
-        // (quota cheia), a partição não foi gravada e a próxima tentativa precisa
-        // reescrevê-la — manter a ref antiga (ou não registrar) garante isso.
-        lastPersistedAssetsRef.set(scopedId, project.assets)
-      })
-      if (stale.length > 0) await delMany(stale, scope.store)
+      // UMA transação com commit EXPLÍCITO (ver `writeInOneTransaction`): é o que faz o
+      // flush de saída (`pagehide`/`beforeunload`) sobreviver à troca de documento, e o que
+      // torna gravar e apagar uma coisa só. Os `put` são pedidos no MESMO turno de JS em que
+      // o flush chama isto, então a transação nasce antes de a página ir embora.
+      await writeInOneTransaction(scope.store, { puts: pairs, deletes: stale })
+      // Só registra a referência DEPOIS de a transação concluir: se ela abortar (quota
+      // cheia), a partição não foi gravada e a próxima tentativa precisa reescrevê-la —
+      // manter a ref antiga (ou não registrar) garante isso.
+      lastPersistedAssetsRef.set(scopedId, project.assets)
     },
     storageScope,
   )
@@ -429,19 +433,20 @@ export async function deleteProject(
   // Cancela autosaves em voo em TODAS as instâncias — um timer pendente
   // re-persistiria o projeto recém-apagado.
   cancelPendingAutosavesFor(id, scope.identity)
-  // Cerca o armazenamento do programa do aluno ANTES do delMany: um flush do
+  // Cerca o armazenamento do programa do aluno ANTES de apagar: um flush do
   // preview já em voo (writeGameStorage) que chegue depois é descartado.
   fenceGameStorageDelete(scope, id)
-  // Esquece a referência de assets persistida deste id: o delMany apaga a
+  // Esquece a referência de assets persistida deste id: a transação apaga a
   // partição, e se o id voltar (improvável, mas duplicate/import mintam ulid
   // novo) o 1º persist precisa re-materializar a partição de assets. Também
   // evita o Map crescer sem limite por exclusão.
   lastPersistedAssetsRef.delete(scopedProjectIdentity(scope, id))
-  // No MESMO mutex de escrita do id: o delMany não pode intercalar com um
-  // persist/rename em voo do mesmo projeto.
+  // No MESMO mutex de escrita do id: apagar não pode intercalar com um
+  // persist/rename em voo do mesmo projeto. Uma transação com commit explícito, como
+  // o `persistProject`: todas as partições somem juntas, mesmo que a página feche logo.
   await runSerializedProjectWrite(scope, id, () =>
-    delMany(
-      [
+    writeInOneTransaction(scope.store, {
+      deletes: [
         projectMetaKey(id),
         projectFilesKey(id),
         projectStateKey(id),
@@ -452,8 +457,7 @@ export async function deleteProject(
         // Armazenamento do programa do aluno (blocos "guardar/ler") deste projeto.
         gameStorageKey(id),
       ],
-      scope.store,
-    ),
+    }),
   )
   if (options.notifyCloudMirror !== false) notifyMirrorDeleted(id)
   notifyProjectChanged(id, true)

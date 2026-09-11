@@ -1,4 +1,5 @@
 import { afterAll, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL de idb-keyval (Map único): estes testes precisam ler de volta
 // o que gravaram (o no-op padrão dos outros arquivos não serve aqui). O registry
@@ -8,7 +9,7 @@ import { afterAll, describe, expect, it, mock } from 'bun:test'
 const db = new Map<string, unknown>()
 let failThumbWrite = false
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async (k: string) => {
     db.delete(k)
   }),
@@ -35,7 +36,7 @@ const { listAllProjects, MAX_PROJECT_THUMB_CHARS, writeProjectThumb } = await im
 afterAll(() => {
   // Devolve o no-op padrão da suíte (mesma forma de persistence.test.ts).
   mock.module('idb-keyval', () => ({
-    createStore: mock(() => ({ name: 'test-store' })),
+    createStore: mock((dbName: string) => fakeUseStore(dbName)),
     del: mock(async () => undefined),
     delMany: mock(async () => undefined),
     get: mock(async (): Promise<unknown> => undefined),

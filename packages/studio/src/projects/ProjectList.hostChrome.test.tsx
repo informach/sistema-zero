@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 /**
  * Chrome do HOST no cabeçalho da lista de projetos (07/09/2026): o botão de esconder o menu
@@ -21,7 +22,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => kvOf(store).get(key),
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => kvOf(store).get(key)),

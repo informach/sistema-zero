@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fakeUseStore } from '../../testing/fakeIdbStore'
 
 /**
  * Botão "✏️ Editar" nos assets que vieram do Pinta (desenhos) e do Molda (modelos,
@@ -24,7 +25,7 @@ const kvOf = (store?: { name?: string }): KV => {
 }
 
 mock.module('idb-keyval', () => ({
-  createStore: (dbName: string) => ({ name: dbName }),
+  createStore: (dbName: string) => fakeUseStore(dbName),
   get: async (key: IDBValidKey, store?: { name?: string }) => kvOf(store).get(key),
   getMany: async (keys: IDBValidKey[], store?: { name?: string }) =>
     keys.map((key) => kvOf(store).get(key)),

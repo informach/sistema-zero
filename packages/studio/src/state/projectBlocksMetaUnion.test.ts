@@ -1,4 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
+import { fakeUseStore } from '../testing/fakeIdbStore'
 
 // Mock FUNCIONAL de idb-keyval (Map único): o teste precisa que a leitura da
 // partição de blocos E do meta devolvam registros reais. O registry de mocks é
@@ -6,7 +7,7 @@ import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 // projectThumbs.test.ts / BlocksMode.test.tsx).
 const db = new Map<string, unknown>()
 mock.module('idb-keyval', () => ({
-  createStore: mock(() => ({ name: 'test-store' })),
+  createStore: mock((dbName: string) => fakeUseStore(dbName)),
   del: mock(async (k: string) => {
     db.delete(k)
   }),
@@ -30,7 +31,7 @@ const { loadSanitizedProjectBlocksStateById } = await import('./projectStore')
 afterAll(() => {
   // Devolve o no-op padrão da suíte (mesma forma de persistence.test.ts).
   mock.module('idb-keyval', () => ({
-    createStore: mock(() => ({ name: 'test-store' })),
+    createStore: mock((dbName: string) => fakeUseStore(dbName)),
     del: mock(async () => undefined),
     delMany: mock(async () => undefined),
     get: mock(async (): Promise<unknown> => undefined),
