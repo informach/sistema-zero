@@ -597,11 +597,12 @@ DESCE sozinho onde falta — decisão da Helena: automático, por item. Design c
   `mod.MoldaHostChromeProvider`, e o `cloud-save-badge.tsx` (a camada acima do app, que só o
   `/molda` ainda usava) foi apagado.
 - **Seta e conta (11/09/2026, telas-modelo):** o contrato ganhou dois campos, os dois nulos no
-  `EMPTY_HOST_CHROME`. **`back: {text, label, href, onNavigate}`** é a seta das GALERIAS de volta
-  à seção-mãe, lida do `backToSection` do menu (`nav.ts`), nunca de lista paralela: `text` é o
-  nome curto que a ferramenta mostra ao lado da seta ("Criar"), `label` a frase falada ("Voltar
-  para Criar"), e o `text` está CONTIDO no `label` por construção (quando a frase não contém o
-  nome da seção, como "Voltar ao mapa", o `text` é a frase). O `<a href>` da ferramenta chama
+  `EMPTY_HOST_CHROME`. **`back: {label, href, onNavigate}`** é a seta das GALERIAS de volta
+  à seção-mãe, lida do `backToSection` do menu (`nav.ts`), nunca de lista paralela. Na ferramenta
+  ela é o QUADRADO com a seta ao lado do botão do menu (as barras das telas-modelo), e o nome
+  existe só para o leitor: o `label` é a frase falada ("Voltar para Criar"). ⚠️ O `text` curto que
+  a ferramenta mostrava ao lado da seta SAIU do contrato em `58c02632`, quando ela virou só o
+  quadrado. O `<a href>` da ferramenta chama
   `onNavigate` (`router.push`) no clique simples e deixa o navegador cuidar do Ctrl/Cmd/meio. O
   editor e o bloco de aula ignoram o campo. **`account: {label}`** diz que a nuvem da CONTA está
   ligada (há fila e o navegador guarda; `unsupported` = `null`): a galeria mostra a pílula
