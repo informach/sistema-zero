@@ -258,6 +258,10 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
         paint.cancel()
         return
       }
+      if (paint.closeUp) {
+        paint.closeCloseUp()
+        return
+      }
       closePaint()
       setPaintIssue(null)
       setChosen([])

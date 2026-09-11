@@ -12,6 +12,10 @@ export const SCENE_PAINT_COPY = {
   colors: 'Cores',
   rotate: 'Girar a pintura da face',
   rotateHint: 'Toque numa face para girar a pintura dela.',
+  closeUp: 'Pintar de perto',
+  closeUpHint: 'Toque numa face para pintar ela de perto.',
+  closeUpBack: 'Voltar ao modelo',
+  closeUpSheet: 'A face, de perto',
   mirror: 'Espelho de pintura',
   mirrorHint:
     'Pinta também o outro lado da mesma peça. Duas peças soltas não se espelham: para isso, use a Simetria.',

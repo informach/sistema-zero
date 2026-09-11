@@ -267,6 +267,47 @@ describe('a aba Pintar', () => {
   })
 })
 
+describe('pintar de perto', () => {
+  test('o toque escolhe a face; a face ampliada recebe o traço preso a ela; Esc volta', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, stage, tap, view } = mount(document)
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+    const imageId = stage.target!.imageId
+    const image = () => editor.getState().asset.images.find((entry) => entry.id === imageId)!
+    const node = editor.getState().asset.nodes.find((entry) => entry.id === door)
+    if (node?.kind !== 'mesh') throw new Error('Peça ausente.')
+    const geometry = editor
+      .getState()
+      .asset.geometries.find((entry) => entry.id === node.geometryId)!
+    const bounds = scenePaintFaceBounds(geometry, 'py', image())!
+    fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUp }))
+    expect(screen.getByText(SCENE_PAINT_COPY.closeUpHint)).toBeDefined()
+    act(() => {
+      stage.callbacks!.paint!.begin({ point: [bounds.x0, bounds.y0], region: 'py', bounds })
+    })
+    // Escolher a face não pinta nada: o lápis volta, agora de perto.
+    expect(editor.getState().canUndo).toBe(true)
+    const prepared = editor.getState().asset
+    const sheet = screen.getByRole('img', { name: SCENE_PAINT_COPY.closeUpSheet })
+    const width = bounds.x1 - bounds.x0 + 1
+    const height = bounds.y1 - bounds.y0 + 1
+    sheet.getBoundingClientRect = () => new DOMRect(0, 0, width * 10, height * 10)
+    Object.assign(sheet, { setPointerCapture: () => {}, hasPointerCapture: () => false })
+    fireEvent.pointerDown(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
+    fireEvent.pointerUp(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
+    // O canto de cima, à esquerda, na tela é a última linha da face na folha (V para cima).
+    const at = (x: number, y: number) => image().layers[0]!.pixels[y * image().width + x]
+    expect(at(bounds.x0, bounds.y1)).toBe(7)
+    expect(editor.getState().asset).not.toBe(prepared)
+    fireEvent.keyDown(view.getByRole('region', { name: COPY.scene.title }), { key: 'Escape' })
+    expect(screen.queryByRole('region', { name: SCENE_PAINT_COPY.closeUp })).toBeNull()
+    expect(stage.target?.nodeId).toBe(door)
+    editor.getState().dispose()
+  })
+})
+
 describe('espelho de pintura', () => {
   test('liga no palco, e um traço pinta os dois lados no mesmo desfazer', async () => {
     const { document, door } = twoBoxes()

@@ -4,6 +4,7 @@ import { hexToRgb } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import type { BrushSize } from '../../../paint/skinPaint'
+import type { ScenePixelRegion } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneLayerColor } from '../../../scene/imageColor'
 import { captureSceneLayerRaster } from '../../../scene/imageImport'
@@ -57,7 +58,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const [chosenColor, setColor] = useState<ScenePaintColor>(7)
   const [brush, setBrush] = useState<BrushSize>(1)
   const [tool, setTool] = useState<
-    'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | ScenePaintDraft['tool']
+    'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | 'closeup' | ScenePaintDraft['tool']
   >('pencil')
   const eraser = tool === 'eraser'
   const fill = tool === 'fill'
@@ -66,6 +67,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const rotate = tool === 'rotate'
   /** Espelho de pintura: o traço pinta também o ponto refletido no meio, na mesma peça. */
   const [mirror, setMirror] = useState(false)
+  /** Pintar de perto: a face tocada, ampliada por cima do palco, com o traço preso a ela. */
+  const closeupTool = tool === 'closeup'
+  const [closeUp, setCloseUp] = useState<{ imageId: string; region: ScenePixelRegion } | null>(null)
   const [tolerance, setTolerance] = useState(0)
   const imageTask = useSceneImageTask(editor)
   const cancelImage = imageTask.cancel
@@ -84,7 +88,8 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     tool === 'eraser' ||
     tool === 'fill' ||
     tool === 'picker' ||
-    tool === 'rotate'
+    tool === 'rotate' ||
+    tool === 'closeup'
       ? null
       : tool
   const [filled, setFilled] = useState(false)
@@ -135,6 +140,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const close = useCallback(() => {
     cancel()
     clearFile()
+    setCloseUp(null)
     setSession(null)
   }, [cancel, clearFile])
   const data = useMemo(() => {
@@ -247,6 +253,21 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         const clipped = scope ? intersectImageRegions(sample.bounds, scope) : sample.bounds
         if (!clipped) return false
         region = clipped
+      }
+      if (closeupTool) {
+        // O toque escolhe a face; a pintura continua com o lápis, agora de perto.
+        setCloseUp({
+          imageId: session.target.imageId,
+          region: sample.bounds ?? {
+            x0: 0,
+            y0: 0,
+            x1: data.image.width - 1,
+            y1: data.image.height - 1,
+          },
+        })
+        setTool('pencil')
+        setError(null)
+        return false
       }
       if (rotate) {
         // Um toque gira a pintura da face tocada, em todas as camadas: um passo de desfazer.
@@ -369,6 +390,20 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     picker,
     rotate,
     mirror,
+    closeupTool,
+    /** A face de perto, quando ainda é da folha aberta (desfazer ou outra peça a fecham). */
+    closeUp:
+      closeUp &&
+      data &&
+      closeUp.imageId === data.image.id &&
+      closeUp.region.x1 < data.image.width &&
+      closeUp.region.y1 < data.image.height
+        ? closeUp.region
+        : null,
+    closeCloseUp: () => {
+      cancel()
+      setCloseUp(null)
+    },
     shape,
     filled,
     endColor,
@@ -402,7 +437,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       if (!stroke.current && !imageTask.busy) {
         palette.end()
         setColor(value)
-        if (eraser || picker || rotate) setTool('pencil')
+        if (eraser || picker || rotate || closeupTool) setTool('pencil')
       }
     },
     /** Um passo do seletor do "+ Nova cor": a cor nova já vira a cor do lápis. */
@@ -450,6 +485,10 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       cancel()
       setMirror(value)
     },
+    setCloseUpTool: () => {
+      cancel()
+      setTool('closeup')
+    },
     setTolerance,
     setShape: (value: ScenePaintDraft['tool']) => {
       cancel()
@@ -473,6 +512,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
      */
     retarget(target: ScenePaintTarget) {
       cancel()
+      setCloseUp(null)
       try {
         const document = editor.getState().content
         resolveScenePaintTarget(document, target)
@@ -488,6 +528,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     open(target: ScenePaintTarget, options: { quiet?: boolean } = {}) {
       cancel()
       clearFile()
+      setCloseUp(null)
       try {
         const document = editor.getState().content
         const { image, imageKind } = resolveScenePaintTarget(document, target)

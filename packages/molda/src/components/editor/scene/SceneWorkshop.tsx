@@ -11,8 +11,10 @@ import {
   groupSceneNodes,
   ungroupSceneNodes,
 } from '../../../scene/commands'
+import { scenePalette } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sceneToJson } from '../../../scene/documentJson'
+import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
@@ -31,6 +33,7 @@ import { SceneGlbExportPanel } from './SceneGlbExportPanel'
 import { SceneHierarchy } from './SceneHierarchy'
 import { SceneModeTabs } from './SceneModeTabs'
 import { SceneNodeProperties } from './SceneNodeProperties'
+import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
 import { SceneStorageNotice } from './SceneStorageNotice'
@@ -391,6 +394,23 @@ export function SceneWorkshop({
               skinPaint={workshop.skinPaint}
               paintTarget={workshop.paint.session?.target ?? null}
               paintMirror={workshop.paint.mirror}
+              overlay={
+                mode === 'paint' && workshop.paint.data && workshop.paint.closeUp ? (
+                  <ScenePaintCloseUp
+                    image={workshop.paint.data.image}
+                    palette={scenePalette(document)}
+                    base={sceneMaterialImageBase(
+                      workshop.paint.data.material,
+                      scenePalette(document),
+                      workshop.paint.data.imageKind,
+                    )}
+                    region={workshop.paint.closeUp}
+                    drawing={workshop.paint.drawing}
+                    actions={workshop.paint.actions}
+                    onClose={workshop.paint.closeCloseUp}
+                  />
+                ) : null
+              }
               paint={workshop.paint.actions}
               flipbook={workshop.flipbook}
               animation={workshop.animation}

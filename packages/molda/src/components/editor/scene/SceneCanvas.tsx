@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { type ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
@@ -51,6 +51,8 @@ interface Props {
   mode?: 'model' | 'paint' | 'animation'
   /** Espelho de pintura ligado na caixa de ferramentas da aba Pintar. */
   paintMirror?: boolean
+  /** O que cobre o palco por um tempo, como a face de perto da aba Pintar. */
+  overlay?: ReactNode
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
@@ -90,6 +92,7 @@ function SceneCanvasAttempt({
   mode = 'model',
   paintTarget = null,
   paintMirror = false,
+  overlay = null,
   onEndPaint,
   skinPaint,
   onThumb,
@@ -552,6 +555,7 @@ function SceneCanvasAttempt({
               {copy.drawIssues(view.issueCount)}
             </p>
           )}
+          {overlay}
           <SceneFirstSteps
             key={document.id}
             context={

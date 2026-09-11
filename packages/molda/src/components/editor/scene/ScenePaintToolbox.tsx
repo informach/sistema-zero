@@ -7,13 +7,21 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
 import { Button, ToolButton } from '../../ui/Button'
-import { Eraser, FlipHorizontal2, PaintBucket, Pencil, Pipette, RotateCw } from '../../ui/icons'
+import {
+  Eraser,
+  FlipHorizontal2,
+  PaintBucket,
+  Pencil,
+  Pipette,
+  RotateCw,
+  Search,
+} from '../../ui/icons'
 import type { useScenePaint } from './useScenePaint'
 
 export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScenePaint> }) {
   const copy = COPY.scene
-  const { eraser, fill, picker, rotate, shape, brush } = paint
-  const pencil = !eraser && !fill && !shape && !picker && !rotate
+  const { eraser, fill, picker, rotate, closeupTool, shape, brush } = paint
+  const pencil = !eraser && !fill && !shape && !picker && !rotate && !closeupTool
   return (
     <RequiresTool family="paint.brush">
       <fieldset disabled={paint.drawing || paint.busy} className="flex flex-wrap gap-1">
@@ -49,6 +57,12 @@ export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScene
           onClick={paint.setRotate}
         />
         <ToolButton
+          icon={Search}
+          label={SCENE_PAINT_COPY.closeUp}
+          active={closeupTool}
+          onClick={paint.setCloseUpTool}
+        />
+        <ToolButton
           icon={FlipHorizontal2}
           label={SCENE_PAINT_COPY.mirror}
           hint={SCENE_PAINT_COPY.mirrorHint}
@@ -59,7 +73,8 @@ export function ScenePaintToolbox({ paint }: { paint: ReturnType<typeof useScene
       {picker && <p className="text-xs text-mld-muted">{copy.paintPickerHint}</p>}
       {fill && <p className="text-xs text-mld-muted">{copy.paintFillHint}</p>}
       {rotate && <p className="text-xs text-mld-muted">{SCENE_PAINT_COPY.rotateHint}</p>}
-      {!fill && !picker && !rotate && (
+      {closeupTool && <p className="text-xs text-mld-muted">{SCENE_PAINT_COPY.closeUpHint}</p>}
+      {!fill && !picker && !rotate && !closeupTool && (
         <fieldset disabled={paint.drawing || paint.busy} className="flex flex-wrap gap-1">
           <legend className="w-full text-xs font-bold text-mld-muted">
             {SCENE_PAINT_COPY.widths}
