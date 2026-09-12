@@ -30,8 +30,16 @@ const get = () => {
 describe.skipIf(!url)('Kids teacher broadcasts against PostgreSQL', () => {
   beforeAll(async () => {
     const { sql } = get()
-    const [existing] = await sql`select to_regnamespace('members') as present`
-    if (existing?.present) throw new Error('Database must be empty')
+    // ⚠️ A pasta `tests/db` compartilha UM banco descartável, e desde 09/2026 são
+    // TRÊS arquivos que rodam as migrations do zero nele. Exigir o banco vazio faz
+    // só o PRIMEIRO passar: os outros encontram o schema que ele criou e reprovam
+    // com "Database must be empty" — foi o CI de 12/09/2026. O nome já foi validado
+    // acima como descartável (`sz_aulas_qa_*`), então limpar aqui é seguro e deixa
+    // cada arquivo começar do zero de verdade.
+    await sql.unsafe('drop schema if exists members cascade')
+    // O journal do drizzle mora no schema `drizzle`: sem apagá-lo junto, a volta
+    // seguinte encontra `members_migrations` e recusa recriar a tabela.
+    await sql.unsafe('drop schema if exists drizzle cascade')
     for (const migration of readMigrationFiles({
       migrationsFolder: resolve(
         import.meta.dir,
@@ -40,7 +48,7 @@ describe.skipIf(!url)('Kids teacher broadcasts against PostgreSQL', () => {
     })) {
       for (const statement of migration.sql) if (statement.trim()) await sql.unsafe(statement)
     }
-  })
+  }, 60_000)
   afterAll(async () => {
     await connection?.close()
   })

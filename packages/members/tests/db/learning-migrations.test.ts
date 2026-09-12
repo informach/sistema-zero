@@ -78,9 +78,14 @@ describe.skipIf(!url)(
     lessonDraftCases(() => get().db)
     beforeAll(async () => {
       const { db, sql } = get()
-      const [state] = await sql`select to_regnamespace('members') as existing`
-      if (state?.existing)
-        throw new Error('Disposable database must be empty; refusing to replace existing tables.')
+      // ⚠️ A pasta compartilha UM banco descartável e hoje são TRÊS arquivos que
+      // rodam migrations do zero nele; exigir vazio só deixa o PRIMEIRO passar (o CI
+      // de 12/09/2026). O nome já foi validado como descartável acima, então limpar
+      // aqui é seguro e cada arquivo volta a começar do zero de verdade.
+      await sql.unsafe('drop schema if exists members cascade')
+      // O journal do drizzle mora no schema `drizzle`: sem apagá-lo junto, a volta
+      // seguinte encontra `members_migrations` e recusa recriar a tabela.
+      await sql.unsafe('drop schema if exists drizzle cascade')
       const folder = resolve(
         import.meta.dir,
         '../../src/infrastructure/persistence/drizzle/migrations',
