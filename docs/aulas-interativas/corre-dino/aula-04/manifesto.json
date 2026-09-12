@@ -1,165 +1,116 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-04",
   "title": "O som escuta o pulo",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Hoje o salto vai ganhar um som. Vamos descobrir por que apertar uma tecla e pular nem sempre são a mesma coisa.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Hoje o salto vai ganhar um som. Vamos descobrir por que apertar uma tecla e pular nem sempre são a mesma coisa. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Teste espaço no ar. Depois ligue o som ao pulo e experimente o toque no chão.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Apertar espaço é um comando. Pular é algo que o personagem consegue fazer em determinadas condições.\n\nNo ar, ele pode receber espaço sem realizar outro pulo. E pode pular usando seta ou toque, sem receber espaço.\n\nUm som ligado à tecla descreve o comando; um som ligado ao evento de pulo acompanha o acontecimento real. Essa diferença ajuda a criar controles que funcionam com vários dispositivos. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Som sem pulo?",
-        "instructions": "O som está ligado à barra de espaço. Você aperta espaço quando o dino já está no ar. Faça sua previsão. Sua primeira ideia pode mudar depois da observação.",
-        "hints": ["Qual acontecimento é comum ao salto por tecla e ao salto por toque?"],
-        "required": true,
+        "title": "O som acompanha o salto",
+        "instructions": "Teste espaço no ar. Depois ligue o som ao pulo e experimente o toque no chão.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "prediction",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O som toca, mesmo sem novo pulo"
-            },
-            {
-              "id": "opcao-2",
-              "label": "O som só toca se houver novo pulo"
-            },
-            {
-              "id": "opcao-3",
-              "label": "A gravidade para"
-            }
-          ],
-          "outcome": "O evento da tecla pode tocar o som mesmo sem outro salto. Ao ligar o som a Quando o sprite pular, ele acompanha o salto real, incluindo seta e toque."
-        },
-        "checkpoint": {
-          "prompt": "Você quer que o som acompanhe um salto feito por qualquer controle. O que precisa escutar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Somente a barra de espaço."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Cada quadro do cenário."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O pulo do personagem."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Escutar o pulo acompanha o acontecimento real. Uma tecla pode ser apertada sem causar outro salto."
+          "type": "simulation",
+          "version": 1,
+          "scene": "jump-sound"
         }
-      }
-    },
-    {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Apertar espaço é um comando. Pular é algo que o personagem consegue fazer em determinadas condições.\n\nNo ar, ele pode receber espaço sem realizar outro pulo. E pode pular usando seta ou toque, sem receber espaço.\n\nUm som ligado à tecla descreve o comando; um som ligado ao evento de pulo acompanha o acontecimento real. Essa diferença ajuda a criar controles que funcionam com vários dispositivos."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### A área que escuta o teclado\n\nEm Áreas do projeto, adicione Quando acontecer. Em Jogo 2D, Controles, coloque Quando apertar a tecla dentro dele e escolha barra de espaço."
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-04-passo-01: gravar a demonstração \"a área que escuta o teclado\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: A área que escuta o teclado. Narração revisada: “Agora é a sua vez. Vamos a área que escuta o teclado.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Áreas do projeto, adicione Quando acontecer. Em Jogo 2D, Controles, coloque Quando apertar a tecla dentro dele e escolha barra de espaço. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### O som do pulo\n\nEm Kit dino, coloque Tocar som de pulo dentro do evento da tecla. Clique no jogo e pule com espaço.\n\nAgora escute o que acontece nos outros controles."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Áreas do projeto, adicione Quando acontecer. Em Jogo 2D, Controles, coloque Quando apertar a tecla dentro dele e escolha barra de espaço."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-04-passo-02: gravar a demonstração \"o som do pulo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: O som do pulo. Narração revisada: “Agora é a sua vez. Vamos o som do pulo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Kit dino, coloque Tocar som de pulo dentro do evento da tecla. Clique no jogo e pule com espaço.\n\nAgora escute o que acontece nos outros controles. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Teste espaço e outro controle. Se não usar áudio, acompanhe na demonstração quando o bloco de som é acionado."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Kit dino, coloque Tocar som de pulo dentro do evento da tecla. Clique no jogo e pule com espaço."
       }
     },
     {
-      "key": "checar-construir-2",
+      "key": "zappy-convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Procure o bloco que está envolvendo o som."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O som toca com espaço, mas não com clique. O que isso revela?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O Dino deixou de receber gravidade."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O fundo está passando depressa demais."
-            },
-            {
-              "id": "opcao-3",
-              "label": "O som está ligado ao comando de espaço."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "O evento de espaço conhece essa tecla. Para acompanhar saltos feitos com outros controles, precisamos escutar o pulo do personagem."
-        }
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### O som está escutando a coisa errada\n\nTeste espaço, seta para cima, clique e espaço no ar. Em Controles, adicione Quando o sprite pular e escolha dino.\n\nMova o som para esse evento e apague o evento de tecla vazio. Repita os quatro testes."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste espaço e outro controle. Se não usar áudio, acompanhe na demonstração quando o bloco de som é acionado."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-04-passo-03: gravar a demonstração \"o som está escutando a coisa errada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: O som está escutando a coisa errada. Narração revisada: “Agora é a sua vez. Vamos o som está escutando a coisa errada.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Teste espaço, seta para cima, clique e espaço no ar. Em Controles, adicione Quando o sprite pular e escolha dino.\n\nMova o som para esse evento e apague o evento de tecla vazio. Repita os quatro testes. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-3",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Pule com dois controles. Depois aperte espaço no ar. Observe quais comandos realmente causam outro salto.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Escolhe o seu som\n\nEm Jogo 2D, Som, experimente Tocar efeito dentro do evento de pulo. Tire o som anterior para não tocar dois.\n\nEscolha um efeito e pule de novo; o estilo do som é uma decisão sua."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste espaço, seta para cima, clique e espaço no ar. Em Controles, adicione Quando o sprite pular e escolha dino."
       }
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "aula-04-passo-04: gravar a demonstração \"escolhe o seu som\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Escolhe o seu som. Narração revisada: “Agora é a sua vez. Vamos escolhe o seu som.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Som, experimente Tocar efeito dentro do evento de pulo. Tire o som anterior para não tocar dois.\n\nEscolha um efeito e pule de novo; o estilo do som é uma decisão sua. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "fechamento",
+      "key": "zappy-construir-4",
       "content": {
-        "kind": "rich_text",
-        "markdown": "O som deve tocar em todo pulo real e não tocar só porque você apertou espaço no ar. Confira teclado e clique e envie.\n\nNa Aula 5, você vai criar os cactos para desviar.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Som, experimente Tocar efeito dentro do evento de pulo. Tire o som anterior para não tocar dois."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Pule com dois controles. Depois aperte espaço no ar. Observe quais comandos realmente causam outro salto."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: O som deve tocar em todo pulo real e não tocar só porque você apertou espaço no ar. Confira teclado e clique e envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -168,15 +119,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O som deve acompanhar o salto com tecla ou toque. Qual evento usar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Quando o Dino pular."
+              },
+              {
+                "id": "b",
+                "label": "Somente quando apertar espaço."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O evento de pulo acompanha o salto real, mesmo com outro controle."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você aperta espaço no ar e não acontece outro salto. O som do pulo deve…",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Tocar mesmo sem outro salto."
+              },
+              {
+                "id": "b",
+                "label": "Esperar o próximo salto real."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Apertar uma tecla e realizar outro salto são acontecimentos diferentes."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "Som sem pulo?",
+      "title": "O som acompanha o salto",
       "objective": "Distinguir o comando de entrada do acontecimento que ele pode causar.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -191,19 +191,32 @@
       "objective": "Comparar comando de teclado e acontecimento do salto.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "convite-construir-1",
-        "checar-construir-2"
+        "zappy-construir-2",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "som-na-tecla",
+            "label": "Ligue o som ao evento da barra de espaço para investigar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_key",
+              "area": "events",
+              "fields": {
+                "KEY": "Space"
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -211,7 +224,13 @@
       "title": "Faça o som seguir o salto",
       "objective": "Ligar o som ao evento de pulo do personagem.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "convite-construir-3"],
+      "blockKeys": [
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "video-construir-4-1",
+        "zappy-construir-4",
+        "zappy-convite-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -236,16 +255,30 @@
     },
     {
       "key": "fechamento",
-      "title": "O salto com a sua assinatura",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]

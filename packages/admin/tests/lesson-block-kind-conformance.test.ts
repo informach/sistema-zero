@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { createEmptyProject } from '@sistemazero/studio'
 // Fonte da verdade (members) por caminho RELATIVO de módulo puro — o admin NÃO depende
 // do members no package.json e não deve passar a depender por causa de teste (mesmo
 // precedente do `career-tier-conformance` aqui e do `badge-conformance` do kids).
@@ -19,6 +20,39 @@ import { LESSON_BLOCK_KINDS as ADMIN_KINDS } from '../src/lib/types'
  * string>` no editor), então aqui fica o elo que o tipo não alcança: os dois arrays.
  */
 describe('conformance admin×members — tipos de bloco de aula', () => {
+  test('gallery authoring saves delivery settings without a chain or an embedded Pinta seed', () => {
+    const pinta = buildContent({
+      ...EMPTY_BLOCK,
+      kind: 'pinta',
+      galleryEnabled: true,
+      galleryMin: 2,
+      galleryMax: 4,
+      pintaChain: 'old-chain',
+      toolPurpose: 'experiment',
+    })
+    expect(pinta).toEqual({
+      kind: 'pinta',
+      purpose: 'submission',
+      initialAsset: null,
+      gallery: { minItems: 2, maxItems: 4 },
+    })
+    const studio = buildContent(
+      {
+        ...EMPTY_BLOCK,
+        kind: 'studio',
+        galleryEnabled: true,
+        studioChain: 'old-chain',
+        studioShowcaseEnabled: true,
+      },
+      createEmptyProject('gallery', 'Entrega'),
+    )
+    expect(studio).toMatchObject({
+      kind: 'studio',
+      purpose: 'submission',
+      gallery: { minItems: 1, maxItems: 1 },
+    })
+    expect('chain' in studio || 'showcase' in studio).toBe(false)
+  })
   test('LESSON_BLOCK_KINDS do admin ≡ o do members (conjunto E ORDEM)', () => {
     // A ORDEM importa: é a sequência do `<select>` de tipo no editor de aula.
     expect([...ADMIN_KINDS]).toEqual([...MEMBERS_KINDS])

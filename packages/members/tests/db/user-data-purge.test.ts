@@ -84,6 +84,11 @@ describe.skipIf(!testDatabaseUrl)('Purga de dados do usuário no Postgres real',
       `lesson_evidence (id uuid primary key, user_id uuid not null, account_id uuid,
         lesson_id uuid not null, block_id uuid, section_id uuid, kind text,
         revision text, payload jsonb, created_at timestamptz)`,
+      // Tema do kids por perfil (migration 0086). A mesma regra do comentário acima: a
+      // purga alcança a tabela, então sem o DDL aqui o teste cai com 42P01 num banco
+      // novo — o do CI — e só passa onde a migration já rodou.
+      `profile_preferences (user_id uuid primary key, account_id uuid not null,
+        kids_theme text default 'padrao' not null, updated_at timestamptz not null)`,
       'account_deletion_fences (account_id uuid primary key, created_at timestamptz not null)',
       `creation_cleanup_jobs (id uuid primary key, account_id uuid not null unique,
         user_ids jsonb not null default '[]'::jsonb, prefixes jsonb not null,

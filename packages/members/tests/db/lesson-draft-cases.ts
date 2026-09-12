@@ -568,7 +568,7 @@ export function lessonDraftCases(getDb: () => Database) {
       for (const path of paths) {
         const manifest: unknown = await Bun.file(resolve(root, path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
-        expect(manifest.version).toBe(3)
+        expect(manifest.version).toBe(path.replaceAll('\\', '/').startsWith('corre-dino/') ? 4 : 3)
         const f = await fixture()
         await f.db
           .update(courses)
@@ -640,7 +640,7 @@ export function lessonDraftCases(getDb: () => Database) {
         }
         expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
       }
-      expect(plannedCount).toBe(118)
+      expect(plannedCount).toBe(144)
     }, 30000)
   })
 }

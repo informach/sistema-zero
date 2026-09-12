@@ -24,10 +24,21 @@ function kindsAceitosNaBorda(): string[] {
       (v as { properties?: { kind?: { const?: unknown } } }).properties?.kind?.const === 'pinta',
   ) as
     | {
-        properties?: { initialAsset?: { properties?: { kind?: { anyOf?: { const?: string }[] } } } }
+        properties?: {
+          initialAsset?: {
+            properties?: { kind?: { anyOf?: { const?: string }[] } }
+            anyOf?: { properties?: { kind?: { anyOf?: { const?: string }[] } } }[]
+          }
+        }
       }
     | undefined
-  const anyOf = pinta?.properties?.initialAsset?.properties?.kind?.anyOf ?? []
+  // ⚠️ O `initialAsset` pode ser o objeto OU um union com ele (hoje `PintaAsset | null`,
+  // para o bloco que começa com a folha em branco). A leitura atravessa as duas formas:
+  // sem isso ela devolve vazio e o teste reprova como se as listas tivessem divergido,
+  // quando o que mudou foi o FORMATO do schema do outro lado.
+  const asset = pinta?.properties?.initialAsset
+  const objeto = asset?.properties ? asset : asset?.anyOf?.find((v) => v?.properties?.kind)
+  const anyOf = objeto?.properties?.kind?.anyOf ?? []
   return anyOf.map((v) => v.const).filter((v): v is string => typeof v === 'string')
 }
 

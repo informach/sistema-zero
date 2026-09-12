@@ -11,9 +11,11 @@ import {
   LEARNING_PROTOCOL,
   type LearningAnswers,
   publicInteractiveBlock,
+  recordSimulationTrial,
   sectionCompletionIssues,
   validateLessonSections,
 } from '../src/learning'
+import { simulationCases } from './simulation-cases'
 
 const section = {
   id: 'section',
@@ -155,7 +157,7 @@ describe('the 27 adapted lessons', () => {
       )
       expect(isLearningManifest(manifest)).toBe(true)
       if (!isLearningManifest(manifest)) throw new Error('Invalid authored manifest')
-      expect(manifest.version).toBe(3)
+      expect(manifest.version).toBe(entry.course === 'corre-dino' ? 4 : 3)
       expect(
         sectionCompletionIssues(
           manifest.sections.map((s) => ({
@@ -198,8 +200,11 @@ describe('the 27 adapted lessons', () => {
         if (!('content' in entryBlock) || entryBlock.content.kind !== 'interactive') continue
         const block = entryBlock.content
         expect(evaluateLearning(block, {}).passed).toBe(false)
-        const answers: LearningAnswers = {}
+        let answers: LearningAnswers = {}
         const activity = block.activity
+        if (activity.type === 'simulation')
+          for (const parameters of simulationCases[activity.scene])
+            answers = recordSimulationTrial(activity, answers, parameters)
         if (activity.type === 'sequence') answers.order = activity.solution
         if (activity.type === 'prediction') {
           answers.prediction = activity.choices[0]?.id ?? ''

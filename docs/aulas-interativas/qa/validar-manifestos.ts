@@ -20,6 +20,31 @@ for (const entry of catalog) {
     '\n',
   )
   assert.equal(manifest.sections.length, entry.sections, entry.path)
+  if (manifest.version === 4) {
+    assert(entry.path.startsWith('corre-dino/'), 'O piloto v4 começa pelo Dino')
+    assert.equal(manifest.sections.at(-2)?.intent, 'delivery', entry.path)
+    assert.equal(manifest.sections.at(-1)?.intent, 'closing', entry.path)
+    assert(
+      !manifest.blocks.some((b) => 'content' in b && b.content.kind === 'rich_text'),
+      entry.path,
+    )
+    const discoveries = manifest.blocks.filter(
+      (b) => 'content' in b && b.content.kind === 'interactive',
+    )
+    assert.equal(discoveries.length, 1, entry.path)
+    for (const block of discoveries)
+      if ('content' in block && block.content.kind === 'interactive') {
+        assert.equal(block.content.activity.type, 'simulation', entry.path)
+        assert(!block.content.checkpoint, 'Não acrescentar pergunta obrigatória à exploração')
+      }
+    for (const section of manifest.sections.slice(1, -2))
+      assert(section.workspaceKey && section.completion?.projectChecks?.length, entry.path)
+    const quizzes = manifest.blocks.filter((b) => 'content' in b && b.content.kind === 'quiz')
+    assert.equal(quizzes.length, 1, entry.path)
+    for (const block of quizzes)
+      if ('content' in block && block.content.kind === 'quiz')
+        assert.equal(block.content.questions.length, 2, entry.path)
+  }
   assert(roteiro.includes(`organizada em ${entry.sections} seções`), entry.path)
   const planned = manifest.blocks.filter((b) => 'plannedVideo' in b)
   assert.equal(planned.length, entry.clips, entry.path)

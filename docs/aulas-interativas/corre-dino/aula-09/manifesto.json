@@ -1,195 +1,130 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-09",
   "title": "Bateu, terminou, recomeçou",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "checar-construir-3",
+    "construir-4",
+    "convite-construir-4",
+    "checar-construir-4",
+    "construir-5",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Hoje uma batida vai encerrar a partida. E o jogador vai poder tentar outra vez, sem mexer nos blocos.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Hoje uma batida vai encerrar a partida. E o jogador vai poder tentar outra vez, sem mexer nos blocos. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Provoque a batida. Conecte o reinício para jogar outra partida.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Detectar um encontro só faz diferença quando escolhemos sua consequência. A colisão pode produzir som, explosão, tremida e uma mudança de tela.\n\nAo ir para fim, as ações protegidas por Se jogando deixam de executar. Reiniciar prepara uma partida nova, passando novamente pelas ações iniciais.\n\nTestar só a batida não basta: início, fim e reinício precisam formar um ciclo que o jogador entende. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Monte o ciclo da partida",
-        "instructions": "Organize a experiência de alguém que perdeu uma partida e decidiu tentar de novo.",
-        "hints": ["O fim encerra uma partida; reiniciar prepara a próxima."],
-        "required": true,
+        "title": "Jogar e recomeçar",
+        "instructions": "Provoque a batida. Conecte o reinício para jogar outra partida.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "sequence",
-          "mode": "order",
-          "items": [
-            {
-              "id": "peca-1",
-              "label": "Ver a tela de fim"
-            },
-            {
-              "id": "peca-2",
-              "label": "Começar na tela de início"
-            },
-            {
-              "id": "peca-3",
-              "label": "Jogar e colidir com um cacto"
-            },
-            {
-              "id": "peca-4",
-              "label": "Reiniciar e preparar outra partida"
-            }
-          ],
-          "solution": ["peca-2", "peca-3", "peca-1", "peca-4"],
-          "targets": []
+          "type": "simulation",
+          "version": 1,
+          "scene": "restart"
         }
-      }
-    },
-    {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Detectar um encontro só faz diferença quando escolhemos sua consequência. A colisão pode produzir som, explosão, tremida e uma mudança de tela.\n\nAo ir para fim, as ações protegidas por Se jogando deixam de executar. Reiniciar prepara uma partida nova, passando novamente pelas ações iniciais.\n\nTestar só a batida não basta: início, fim e reinício precisam formar um ciclo que o jogador entende."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### A colisão que acaba o jogo\n\nEm Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto.\n\nDentro, coloque Ir para a tela fim. Rode e bata."
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-09-passo-01: gravar a demonstração \"a colisão que acaba o jogo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: A colisão que acaba o jogo. Narração revisada: “Agora é a sua vez. Vamos a colisão que acaba o jogo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto.\n\nDentro, coloque Ir para a tela fim. Rode e bata. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### A tela de fim\n\nNo Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela.\n\nUse Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Colisões, coloque o evento de cada sprite do grupo que colidir com dino dentro de Se jogando, antes da limpeza. Use cactos e o apelido cacto."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-09-passo-02: gravar a demonstração \"a tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: A tela de fim. Narração revisada: “Agora é a sua vez. Vamos a tela de fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela.\n\nUse Bateu no cacto! como título e uma dica dizendo que qualquer tecla ou toque permite jogar de novo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-3",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Fazer você sentir a batida\n\nDentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se grande, adicione outro senão se com a tela fim. Dentro, coloque Mostrar tela."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-09-passo-03: gravar a demonstração \"fazer você sentir a batida\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer você sentir a batida. Narração revisada: “Agora é a sua vez. Vamos fazer você sentir a batida.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Bata em um cacto. Veja a tela de fim e os efeitos. A mensagem deve explicar o que aconteceu mesmo com o som desligado."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Dentro da colisão, antes de ir para fim, acrescente explosão no cacto, tremida de intensidade 8 e o efeito de derrota. Escute e observe a batida: esses sinais contam ao jogador o que aconteceu."
       }
     },
     {
-      "key": "checar-construir-3",
+      "key": "zappy-convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Pense no que continua disponível quando não ouvimos."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "O jogo está sem som. Como a pessoa ainda pode perceber que perdeu?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Pela tela de fim, pela mensagem e pelos efeitos visuais."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Apenas adivinhando por que o controle parou."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Aumentando o volume do computador."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "Uma informação importante pode chegar por mais de um caminho. Texto e imagem ajudam a explicar a batida junto com o som."
-        }
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Jogar de novo\n\nNo evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas.\n\nPreserve o caminho de inicio para jogando que já existe."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Bata em um cacto. Veja a tela de fim e os efeitos. A mensagem deve explicar o que aconteceu mesmo com o som desligado."
       }
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "aula-09-passo-04: gravar a demonstração \"jogar de novo\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Jogar de novo. Narração revisada: “Agora é a sua vez. Vamos jogar de novo.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas.\n\nPreserve o caminho de inicio para jogando que já existe. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-4",
+      "key": "zappy-construir-4",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Preserve o caminho que começa a partida e acrescente o caminho para jogar de novo."
-      }
-    },
-    {
-      "key": "checar-construir-4",
-      "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Uma partida nova precisa preparar o estado inicial de novo."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Após perder, mudar só para jogando deixou objetos da partida antiga. Que ação falta?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Desenhar outra vez a tela de fim."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Trocar o título da tela inicial."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Reiniciar o jogo."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "Reiniciar executa a preparação da partida. Só trocar de tela pode deixar valores e objetos do jogo anterior."
-        }
-      }
-    },
-    {
-      "key": "construir-5",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Testar do começo ao fim\n\nJogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter.\n\nConfira se o novo jogo volta ao estado inicial."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No evento de qualquer tecla ou toque, acrescente senão se a tela é fim. Dentro, coloque Reiniciar o jogo, de Telas e cenas."
       }
     },
     {
       "key": "video-construir-5-1",
-      "plannedVideo": "aula-09-passo-05: gravar a demonstração \"testar do começo ao fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar do começo ao fim. Narração revisada: “Agora é a sua vez. Vamos testar do começo ao fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter.\n\nConfira se o novo jogo volta ao estado inicial. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "fechamento",
+      "key": "zappy-construir-5",
       "content": {
-        "kind": "rich_text",
-        "markdown": "Complete o ciclo duas vezes, usando controles diferentes. O jogo deve parar ao perder e permitir uma nova tentativa. Envie seu projeto.\n\nNa Aula 10, você vai investigar por que algumas batidas parecem injustas.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Jogue desde a tela de início, bata, veja o fim e recomece. Faça isso com clique e depois com Enter."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-4",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Preserve o caminho que começa a partida e acrescente o caminho para jogar de novo."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Complete o ciclo duas vezes, usando controles diferentes. O jogo deve parar ao perder e permitir uma nova tentativa. Envie seu projeto. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -198,15 +133,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Você perdeu. Como preparar uma partida nova sem objetos antigos?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Reiniciar o jogo."
+              },
+              {
+                "id": "b",
+                "label": "Apenas mudar a tela para jogando."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Reiniciar executa novamente a preparação da partida."
+          },
+          {
+            "id": "q2",
+            "prompt": "Sem áudio, como mostrar que a partida terminou?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Deixar tudo parado sem explicação."
+              },
+              {
+                "id": "b",
+                "label": "Exibir a tela de fim e um sinal visual."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Uma mensagem e sinais visuais comunicam a batida mesmo sem som."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "Monte o ciclo da partida",
+      "title": "Jogar e recomeçar",
       "objective": "Definir a consequência da colisão e testar o ciclo completo da partida.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -221,21 +205,35 @@
       "objective": "Comunicar a colisão com mudança de tela e sinais visuais e sonoros.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "construir-3",
+        "zappy-construir-2",
         "video-construir-3-1",
-        "convite-construir-1",
-        "checar-construir-3"
+        "zappy-construir-3",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "fim-na-colisao",
+            "label": "Mude para fim ao encontrar um cacto.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "loops",
+              "withinBlock": "sz_g2d_on_sprite_group_overlap",
+              "fields": {
+                "SCENE": "fim"
+              }
+            }
+          }
+        ]
       }
     },
     {
@@ -244,31 +242,58 @@
       "objective": "Reiniciar o jogo no comando da tela fim.",
       "intent": "application",
       "blockKeys": [
-        "construir-4",
         "video-construir-4-1",
-        "convite-construir-4",
-        "checar-construir-4"
+        "zappy-construir-4",
+        "video-construir-5-1",
+        "zappy-construir-5",
+        "zappy-convite-construir-4"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-4"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "reiniciar",
+            "label": "Reinicie dentro do evento de qualquer tecla ou toque.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_restart",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_any_input"
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Jogue, perca e tente de novo",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]

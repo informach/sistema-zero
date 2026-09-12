@@ -25,6 +25,7 @@ import {
   parentReportPrefs,
   parentReportsSent,
   pensaProjects,
+  profilePreferences,
   quizAttempts,
   renewalRemindersSent,
   roomInventory,
@@ -171,6 +172,14 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))
       await tx.delete(missionClaims).where(inArray(missionClaims.userId, userIds))
       await tx.delete(roomInventory).where(inArray(roomInventory.userId, userIds))
+      await tx
+        .delete(profilePreferences)
+        .where(
+          or(
+            inArray(profilePreferences.userId, userIds),
+            eq(profilePreferences.accountId, accountId),
+          ),
+        )
       // Projetos Pensa e conversas do professor pertencem ao perfil. Seus filhos
       // têm FK CASCADE (ciclos/artefatos/tarefas e mensagens, respectivamente).
       await tx

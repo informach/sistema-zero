@@ -130,6 +130,7 @@ export class GetLessonService {
     for (const block of view.blocks) {
       if (
         block.quizState &&
+        !structure.legacyLayout &&
         structure.sections.some((section) => section.completion?.blockIds.includes(block.id))
       )
         block.quizState.retryAvailableAt = null
@@ -171,6 +172,7 @@ export class GetLessonService {
         }),
       ),
       structureRevision: structure.revision,
+      legacyLayout: structure.legacyLayout,
       supportBlockIds: structure.supportBlockIds ?? [],
       requirements: lessonCompletionRequirements({
         ...view,

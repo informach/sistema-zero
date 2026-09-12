@@ -3,8 +3,12 @@ import { ValidationError } from '@sistemazero/core/errors'
 import {
   hasSectionProgression,
   isFinalProjectSection,
+  isLegacyMaterialLesson,
+  isVideoOnlySection,
   type LessonSection,
   lessonCompletionRequirements,
+  PLATFORM_ACTION_LABELS,
+  playbackLessonStructure,
   type SectionProgressRecord,
   type SectionProgressView,
   sectionCompletionIssues,
@@ -20,6 +24,7 @@ import type { ProgressRepository } from '../../domain/ports/progress-repository.
 import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
+import type { PlatformActionService } from './platform-action.service'
 
 export class SectionProgressionService {
   constructor(
@@ -28,6 +33,7 @@ export class SectionProgressionService {
     private readonly quizzes: QuizAttemptRepository,
     private readonly submissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
+    private readonly actions: PlatformActionService,
   ) {}
 
   private revision(section: LessonSection, lesson: LessonWithContent) {
@@ -61,8 +67,8 @@ export class SectionProgressionService {
     lesson: LessonWithContent,
   ): Promise<SectionProgressView | undefined> {
     if (hasComingSoonBlock(lesson.blocks)) return undefined
-    const structure = await this.repository.getStructure(lesson.id)
-    if (!structure || !hasSectionProgression(structure.sections)) return undefined
+    const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
+    if (!hasSectionProgression(structure.sections)) return undefined
     const [completedLessons, records, learning, quizzes, submissions] = await Promise.all([
       this.progress.listCompletedLessonIds(owner.userId, lesson.courseId),
       this.repository.getSectionProgress(owner, lesson.id),
@@ -76,7 +82,9 @@ export class SectionProgressionService {
         lesson.blocks.filter((b) => b.kind === 'studio' || b.kind === 'pinta').map((b) => b.id),
       ),
     ])
-    const completed = new Set(records.filter((r) => r.completedAt).map((r) => r.sectionId))
+    const completed = new Set(
+      structure.legacyLayout ? [] : records.filter((r) => r.completedAt).map((r) => r.sectionId),
+    )
     if (completedLessons.includes(lesson.id)) {
       return sectionProgressView(
         structure.revision,
@@ -87,9 +95,11 @@ export class SectionProgressionService {
     }
     // Publication enforces the new authoring policy; existing hybrid activities keep
     // their published grading contract until the author publishes a compatible revision.
-    const issues = sectionCompletionIssues(structure.sections, lesson.blocks, {
-      purpose: 'playback',
-    })
+    const issues = structure.legacyLayout
+      ? []
+      : sectionCompletionIssues(structure.sections, lesson.blocks, {
+          purpose: 'playback',
+        })
     const pending = new Map<string, string[]>()
     const newlyComplete: SectionProgressRecord[] = []
     let reachable = true
@@ -103,7 +113,9 @@ export class SectionProgressionService {
           ...b,
           blockRevision: b.contentRevision,
           content:
-            b.content.kind === 'interactive' && criteria?.blockIds.includes(b.id)
+            !structure.legacyLayout &&
+            b.content.kind === 'interactive' &&
+            criteria?.blockIds.includes(b.id)
               ? { ...b.content, required: true }
               : b.content,
           quizState: { passed: quizzes.get(b.id)?.everPassed ?? false },
@@ -117,11 +129,25 @@ export class SectionProgressionService {
         completed: false,
         blocks,
         learningProgress: learning,
+        videoBlockIds: isVideoOnlySection(section, lesson.blocks) ? criteria?.blockIds : [],
+        materialBlockIds:
+          (structure.legacyLayout && isLegacyMaterialLesson(lesson.blocks)) ||
+          (!structure.legacyLayout && section.intent === 'material')
+            ? criteria?.blockIds
+            : [],
       })
         .filter((r) => !r.complete)
         .map((r) => r.action)
-      if (!criteria || (!criteria.blockIds.length && !criteria.projectChecks?.length))
+      if (
+        !structure.legacyLayout &&
+        (!criteria ||
+          (!criteria.blockIds.length &&
+            !criteria.projectChecks?.length &&
+            !criteria.platformAction))
+      )
         missing.push('A verificação desta seção precisa ser configurada pelo professor.')
+      if (criteria?.platformAction)
+        missing.push(`${PLATFORM_ACTION_LABELS[criteria.platformAction]} e verificar a ação.`)
       if (
         criteria?.projectChecks?.length &&
         !records.some(
@@ -142,7 +168,7 @@ export class SectionProgressionService {
       } else reachable = false
     }
     // Persist validated evidence, never the current navigation position. CAS prevents stale publication writes.
-    if (newlyComplete.length)
+    if (!structure.legacyLayout && newlyComplete.length)
       await this.repository.saveSectionProgress(
         owner,
         lesson.id,
@@ -168,8 +194,8 @@ export class SectionProgressionService {
   }
 
   async accessibleBlockIds(lesson: LessonWithContent, state: SectionProgressView) {
-    const structure = await this.repository.getStructure(lesson.id)
-    if (!structure || structure.revision !== state.revision) throw new LearningConflictError()
+    const structure = playbackLessonStructure(lesson, await this.repository.getStructure(lesson.id))
+    if (structure.revision !== state.revision) throw new LearningConflictError()
     const ids = new Set(structure.supportBlockIds ?? [])
     for (const s of structure.sections) {
       if (state.sections.some((p) => p.id === s.id && p.status !== 'locked')) {
@@ -191,8 +217,11 @@ export class SectionProgressionService {
     const state = await this.read(owner, lesson)
     if (!state) return
     if (submission) {
-      const structure = await this.repository.getStructure(lesson.id)
-      if (!structure || structure.revision !== state.revision) throw new LearningConflictError()
+      const structure = playbackLessonStructure(
+        lesson,
+        await this.repository.getStructure(lesson.id),
+      )
+      if (structure.revision !== state.revision) throw new LearningConflictError()
       const section = structure.sections.find((s) => s.blockIds.includes(blockId))
       if (
         !section ||
@@ -202,6 +231,49 @@ export class SectionProgressionService {
         throw new SectionLockedError()
     } else if (!(await this.accessibleBlockIds(lesson, state)).has(blockId))
       throw new SectionLockedError()
+  }
+
+  async checkAction(
+    owner: LearningOwner,
+    lesson: LessonWithContent,
+    sectionId: string,
+    revision: string,
+    audience: import('../../domain/course/course').CourseAudience,
+  ) {
+    await this.assertSection(owner, lesson, sectionId)
+    const structure = await this.repository.getStructure(lesson.id)
+    if (!structure || structure.revision !== revision) throw new LearningConflictError()
+    const section = structure.sections.find((s) => s.id === sectionId)
+    const action = section?.completion?.platformAction
+    if (!section || !action)
+      throw new ValidationError('Esta seção não possui uma ação da plataforma.')
+    if (sectionCompletionIssues([section], lesson.blocks).length)
+      throw new ValidationError('Os critérios desta seção precisam ser ajustados pelo professor.')
+    const result = await this.actions.check(owner.userId, audience, action)
+    await this.repository.saveSectionProgress(
+      owner,
+      lesson.id,
+      revision,
+      [
+        {
+          sectionId,
+          revision: this.revision(section, lesson),
+          completedAt: result.passed ? this.clock().toISOString() : null,
+          projectPassed: false,
+        },
+      ],
+      this.blockRevisions(lesson),
+      {
+        id: randomUUID(),
+        kind: 'platform_action',
+        blockId: null,
+        sectionId,
+        revision: this.revision(section, lesson),
+        createdAt: this.clock().toISOString(),
+        payload: { ...result, sectionTitle: section.title, structureRevision: revision },
+      },
+    )
+    return { ...result, sectionProgress: await this.read(owner, lesson) }
   }
 
   async checkProject(

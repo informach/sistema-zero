@@ -2,6 +2,11 @@
 
 import type { SectionCompletion, SectionStructureRule } from '@sistemazero/core/learning'
 import {
+  isPlatformAction,
+  PLATFORM_ACTION_LABELS,
+  PLATFORM_ACTIONS,
+} from '@sistemazero/core/learning'
+import {
   evaluateStudioSectionProject,
   projectCheckAuthoring,
 } from '@sistemazero/studio/server-project-checks'
@@ -65,36 +70,67 @@ export function SectionCompletionEditor({
       <legend className="px-2 font-medium">Para liberar a próxima seção</legend>
       <p className="font-medium">O que o aluno precisa demonstrar para continuar?</p>
       <p className="text-sm text-muted-foreground">
-        O aluno precisa cumprir todos os critérios selecionados. Vídeo assistido e confirmação de
-        leitura não contam.
+        Selecione a ação que mostra que esta etapa foi realizada. Exploração, criação, entrega e
+        acesso ao caderno têm critérios diferentes. Todos os critérios selecionados precisam ser
+        cumpridos.
       </p>
-      {candidates.length === 0 && (
+      <label className="block space-y-2 text-sm">
+        <span>Realizar uma ação na plataforma</span>
+        <Select
+          value={value.platformAction ?? ''}
+          onChange={(event) => {
+            const action = event.target.value
+            if (isPlatformAction(action))
+              onChange({ version: 1, blockIds: [], platformAction: action })
+            else {
+              const { platformAction: _action, ...criteria } = value
+              onChange(criteria)
+            }
+          }}
+        >
+          <option value="">Usar atividades desta seção</option>
+          {PLATFORM_ACTIONS.map((action) => (
+            <option key={action} value={action}>
+              {PLATFORM_ACTION_LABELS[action]}
+            </option>
+          ))}
+        </Select>
+        {value.platformAction && (
+          <span className="block text-muted-foreground">
+            O botão “Verificar minha ação” consulta o que o perfil salvou. Uma personalização
+            anterior também vale. Abrir a tela ou salvar o padrão não conclui a etapa.
+          </span>
+        )}
+      </label>
+      {candidates.length === 0 && !value.platformAction && (
         <p className="text-sm">
-          Adicione uma descoberta com pergunta curta ou configure um objetivo do Estúdio.
+          Adicione uma exploração, um caderno ou uma atividade de criação para escolher seu
+          critério.
         </p>
       )}
-      {candidates.map((c) => (
-        <label key={c.id} className="flex min-h-11 items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            checked={value.blockIds.includes(c.id)}
-            disabled={Boolean(c.issue) && !value.blockIds.includes(c.id)}
-            onChange={(e) =>
-              onChange({
-                ...value,
-                blockIds: e.target.checked
-                  ? [...value.blockIds, c.id]
-                  : value.blockIds.filter((id) => id !== c.id),
-              })
-            }
-          />
-          <span>
-            {c.model ? `${c.model}: ` : ''}
-            {c.label}
-            {c.issue && <span className="block text-xs text-destructive">{c.issue}</span>}
-          </span>
-        </label>
-      ))}
+      {!value.platformAction &&
+        candidates.map((c) => (
+          <label key={c.id} className="flex min-h-11 items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={value.blockIds.includes(c.id)}
+              disabled={Boolean(c.issue) && !value.blockIds.includes(c.id)}
+              onChange={(e) =>
+                onChange({
+                  ...value,
+                  blockIds: e.target.checked
+                    ? [...value.blockIds, c.id]
+                    : value.blockIds.filter((id) => id !== c.id),
+                })
+              }
+            />
+            <span>
+              {c.model ? `${c.model}: ` : ''}
+              {c.label}
+              {c.issue && <span className="block text-xs text-destructive">{c.issue}</span>}
+            </span>
+          </label>
+        ))}
       {checks.map((check, index) => (
         <div key={check.id} className="space-y-2 rounded-lg bg-muted/40 p-3">
           <Input
@@ -184,7 +220,7 @@ export function SectionCompletionEditor({
           </Button>
         </div>
       ))}
-      {hasStudio && (
+      {hasStudio && !value.platformAction && (
         <Button
           variant="outline"
           size="sm"

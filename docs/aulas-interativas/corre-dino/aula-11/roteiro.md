@@ -1,241 +1,132 @@
 # Quanto tempo você resistiu?
 
-Uma aula, organizada em 4 seções. Público: 9 a 16 anos.
+Piloto Corre Dino, organizada em 5 seções. Narração revisada para vídeo curto, Zappy e manipulação. Os vídeos estão planejados; precisam ser gravados e vinculados antes da publicação.
 
-Fonte: `roteiro-aula-11-corre-dino.md`. SHA-256: `b30f94be234e9fb0da4db2fd54da6d3d070b01e51b7b5c0569f6db7568006c6e`.
-O original foi preservado. Este roteiro substitui a sequência didática da aula, sem abrir um curso ou uma área de revisão paralela.
+Continuidade: reutilizar o bloco Estúdio existente e sua configuração de projeto anterior. Não criar outro projeto por etapa. No celular, orientação e criação aparecem uma abaixo da outra.
 
-## Estado de entrada e resultado
+A descoberta registra exploração, não domínio demonstrado do conceito. As verificações do Estúdio conferem a estrutura declarada; os testes de funcionamento são realizados pela criança e revistos pelo professor. O quiz acontece depois da entrega.
 
-Seu jogo completo ainda não tem um número para comparar duas partidas.
+## 1. Pontos na hora certa
 
-**Resultado:** Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.
+**Objetivo do professor:** Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.
 
-**Ambiente:** o mesmo Estúdio incorporado acompanha as seções. Preservar o projeto inicial, a continuidade e a entrega já configurados na aula.
+**Vídeo planejado:** `video-missao`
 
-## Percurso e ritmo
-
-Cada seção reúne ações que chegam a uma pequena conquista. Não fazer uma prova depois de cada clique. A criança pode consultar o texto, pausar o vídeo, pedir uma pista e tentar novamente. Cores, formas e outros detalhes livres não são critérios de aprovação.
-
-| Etapa | O que libera o avanço |
-| --- | --- |
-| O placar conta na hora certa? | Resolver a descoberta. |
-| Dê um lugar aos pontos | Verificar os objetivos do projeto. |
-| Conte só durante a corrida | Responder uma pergunta de decisão. |
-| Tente uma nova marca | Enviar o projeto; atingir a nota automática se o Estúdio exigir. |
-
-## Orientações de produção e acessibilidade
-
-Helena narra; nas aulas de arte, Júlio demonstra as escolhas dele. Mostrar uma ação por vez e devolver o controle à criança. Nomear ferramenta, categoria e encaixe. Manter texto e legendas legíveis, sem exigir rapidez, precisão de arraste ou áudio para compreender a orientação. Nas ordenações, demonstrar também os botões de mover as peças. Não usar somente cor para indicar o que mudou.
-
-Convidar a prever, testar e ajustar. Mostrar o erro e sua recuperação com calma. Se um trecho ficar longo, a criança pode pausar entre os passos da mesma seção; não precisa passar por outra pergunta para cada pausa. As alternativas e gabaritos abaixo orientam a produção, não são texto para revelar antes da resposta.
-
-## 1. O placar conta na hora certa?
-
-**Intenção e objetivo (professor):** Exploração · Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.
-
-**Texto para o aluno:**
-
-Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler.
-
-Você pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira.
-
-**Atividade: O placar conta na hora certa?**
-
-Modelo: `html`. Critério desta seção.
-
-Avance o relógio nas três telas. Descubra qual contador serve para medir somente o tempo de partida.
-
-**Interação:** usar o bloco funcional incorporado ao manifesto. A observação prepara a pergunta; o experimento não avalia o projeto da criança.
-
-**Pergunta:** Qual contador mede o tempo de jogo sem contar início e fim?
-
-- O que soma sempre
-- O que soma somente em jogando
-
-**Resposta esperada (professor):** O que soma somente em jogando
-
-**Devolutiva:** A condição preserva o significado do placar: tempo sobrevivido durante a partida.
-
-**Pistas:**
-
-- Fique na tela fim e avance mais um segundo. Qual número deveria ficar parado?
-
-**Texto para o aluno:**
-
-A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.
+Clipe de 30 a 45 segundos. Oi! Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Proteja o placar com “se jogando”. Teste as três telas.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.
 
 Neste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder.
 
-Um número correto também precisa ser legível: a cor do texto deve contrastar com o fundo.
+Um número correto também precisa ser legível: a cor do texto deve contrastar com o fundo. Termine apontando para a atividade abaixo.
 
-**Critério configurado:** `descoberta`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
+**Cena nativa:** `score`. Proteja o placar com “se jogando”. Teste as três telas.
+
+**Pista:** Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior.
+
+**O que observar:** Seu placar conta durante a partida e espera nas outras telas!
+
+**Para avançar:** executar as comparações indicadas na cena; mudar um seletor sem rodar não basta. Sem perguntas nesta descoberta.
 
 ## 2. Dê um lugar aos pontos
 
-**Intenção e objetivo (professor):** Aplicação · Inicializar pontos e mostrar um placar legível.
-
-**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
-
-**Narração revisada / instruções disponíveis em texto:**
-
-### Criar a caixinha dos pontos
-
-Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez.
+**Objetivo do professor:** Inicializar pontos e mostrar um placar legível.
 
 **Vídeo planejado:** `video-construir-1-1`
 
-**Na tela (sequência técnica preservada):**
+Clipe de 30 a 75 segundos: Criar a caixinha dos pontos. Narração revisada: “Agora é a sua vez. Vamos criar a caixinha dos pontos.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
-Programação › Variáveis, arrastar "Criar variável __ com valor __" para dentro do Ao iniciar, logo ACIMA do "Ir para a tela inicio"; nome "pontos", valor 0.
-
-**Produção:** aula-11-passo-01: gravar a demonstração "criar a caixinha dos pontos" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
-
-**Narração revisada / instruções disponíveis em texto:**
-
-### Mostrar o placar
-
-Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.
-
-Confira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro.
+**Zappy:** Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez.
 
 **Vídeo planejado:** `video-construir-2-1`
 
-**Na tela (sequência técnica preservada):**
+Clipe de 30 a 75 segundos: Mostrar o placar. Narração revisada: “Agora é a sua vez. Vamos mostrar o placar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.
 
-Jogo 2D › Placar e HUD, arrastar "Mostrar placar" para dentro do "Se a tela atual é jogando", lá embaixo de tudo. O texto já nasce "Pontos:". Por cima do valor, arrastar "valor da variável" (Programação › Valores) e escolher pontos. Conferir que o x, o y e o tamanho já vêm em 12, 30 e 24, sem mexer em nenhum. **Rodar e mostrar o placar branco quase sumindo no céu claro**, e só então trocar a cor de branco para azul escuro e rodar de novo. A dor do contraste é o ponto desta parte, então filmar as duas rodadas.
+Confira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
-**Produção:** aula-11-passo-02: gravar a demonstração "mostrar o placar" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
+**Zappy:** Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.
 
-**Texto para o aluno:**
+**Zappy:** Olhe o placar sobre o céu. Escolha uma cor que deixe o número fácil de enxergar.
 
-**Sua vez:** Olhe o placar sobre o céu. Escolha uma cor que deixe o número fácil de enxergar.
+**Para avançar:** verificar no projeto:
 
-Depois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado.
+- Crie a variável pontos.
 
-**Critérios configurados em Para liberar a próxima seção:** todos os objetivos abaixo precisam passar no mesmo projeto.
-
-- Crie a variável pontos. Regra de cadastro: `{"type":"declaresVariable","name":"pontos"}`.
-
-**Limite da conferência:** comprova a estrutura pedida, não executa a partida nem avalia sua qualidade. A observação sugerida na etapa continua necessária para aprender.
+Teste também o funcionamento com Play.
 
 ## 3. Conte só durante a corrida
 
-**Intenção e objetivo (professor):** Aplicação · Restringir a contagem à partida e apresentar o resultado no fim.
-
-**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
-
-**Narração revisada / instruções disponíveis em texto:**
-
-### Fazer o número subir
-
-Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.
-
-Só dentro desse Se encaixe Somar 1 em pontos, de Variáveis.
+**Objetivo do professor:** Restringir a contagem à partida e apresentar o resultado no fim.
 
 **Vídeo planejado:** `video-construir-3-1`
 
-**Na tela (sequência técnica preservada):**
+Clipe de 30 a 75 segundos: Fazer o número subir. Narração revisada: “Agora é a sua vez. Vamos fazer o número subir.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.
 
-primeiro a pausa; depois a resolução: Jogo 2D › Tempo e repetição, um "A cada __ segundos" novo no Enquanto estiver rodando, ao lado dos outros, com 1; dentro dele, um "Se" (Programação › Lógica & Se) com a comparação de fábrica retirada e, no lugar dela, "a tela atual é __ ?" (Jogo 2D › Telas e cenas) em "jogando"; dentro do Se, "Somar 1 em variável pontos" (Programação › Variáveis).
+Só dentro desse Se encaixe Somar 1 em pontos, de Variáveis. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
-**Produção:** aula-11-passo-03: gravar a demonstração "fazer o número subir" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
-
-**Narração revisada / instruções disponíveis em texto:**
-
-### Contar os pontos na tela de fim
-
-Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.
-
-Tente bater essa marca! Confira se aparece o número da sua partida.
+**Zappy:** Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.
 
 **Vídeo planejado:** `video-construir-4-1`
 
-**Na tela (sequência técnica preservada):**
+Clipe de 30 a 75 segundos: Contar os pontos na tela de fim. Narração revisada: “Agora é a sua vez. Vamos contar os pontos na tela de fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.
 
-no "Mostrar tela" da tela fim: arrastar o "juntar texto" (Programação › Valores) por cima do subtítulo; dar zoom no bloco vazio e clicar três vezes no "+", mostrando os espaços nascendo com o "0" de sombra; encaixar, em ordem, "texto Você fez", "valor da variável pontos" e "texto pontos. Tente bater essa marca!".
+Tente bater essa marca! Confira se aparece o número da sua partida. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
-**Produção:** aula-11-passo-04: gravar a demonstração "contar os pontos na tela de fim" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
-
-**Texto para o aluno:**
-
-**Sua vez:** Espere na tela inicial, jogue e depois perca. Observe quando o número muda.
-
-**Atividade: Uma decisão para continuar**
-
-Modelo: `checkpoint`. Critério desta seção.
-
-Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.
-
-**Pergunta:** Os pontos crescem enquanto você espera na tela inicial. O que falta no relógio?
-
-- Verificar se a tela atual é jogando antes de somar.
-- Uma cor mais escura para o placar.
-- Um título maior na tela de início.
-
-**Resposta esperada (professor):** Verificar se a tela atual é jogando antes de somar.
-
-**Devolutiva:** A condição protege a soma. O placar pode mostrar um número, mas o relógio só deve aumentá-lo durante a partida.
-
-**Pistas:**
-
-- O relógio precisa saber em qual momento deve contar.
-
-**Critério configurado:** `checar-construir-3`. A resposta é corrigida pelo sistema; a criança pode consultar as pistas e tentar de novo.
-
-## 4. Tente uma nova marca
-
-**Intenção e objetivo (professor):** Fechamento · Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
-
-**Ferramenta:** continuar o mesmo Estúdio incorporado. Não criar outra entrega entre os passos.
-
-**Narração revisada / instruções disponíveis em texto:**
-
-### Testar
-
-Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.
-
-A regra do placar deve ficar clara para quem joga.
+**Zappy:** Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.
 
 **Vídeo planejado:** `video-construir-5-1`
 
-**Na tela (sequência técnica preservada):**
+Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.
 
-jogar algumas partidas seguidas, comparando os números; depois mexer no relógio do ponto (0.5 e 3).
+A regra do placar deve ficar clara para quem joga. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”
 
-**Produção:** aula-11-passo-05: gravar a demonstração "testar" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção.
+**Zappy:** Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.
 
-**Texto para o aluno:**
+**Zappy:** Espere na tela inicial, jogue e depois perca. Observe quando o número muda.
 
-O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie.
+**Para avançar:** verificar no projeto:
 
-Na Aula 12, os cactos deixarão de chegar sempre do mesmo jeito.
+- Use o relógio de um segundo para os pontos.
+- Some um ponto dentro de uma condição do relógio.
 
-Se algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma.
+Teste também o funcionamento com Play.
 
-**Estúdio compartilhado:** reutilizar o primeiro Estúdio da aula. A entrega acontece aqui, uma única vez.
+## 4. Mostre sua criação
 
-**Critério configurado:** entrega do Estúdio. Se houver nota mínima, conferir a atividade vinculada: o manifesto preserva sua configuração. Para exigir aprovação automática na seção, ela precisa usar checagens estruturais compatíveis. O carimbo “já conferi” do professor não controla este avanço.
+**Objetivo do professor:** Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.
 
-## Cadastro e validação em staging
+**Vídeo planejado:** `video-entrega`
 
-1. Abra a aula correspondente no admin de staging. Importe `manifesto.json` no rascunho com **Vincular ao destino aberto** e confira a prévia. Preserve a configuração do Estúdio existente e sua cadeia, quando houver.
+Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”
 
-2. Confira o quadro de critérios de cada seção. Os nomes acima correspondem ao manifesto. Cada vídeo mantém a chave original: reimportar preserva mídias já vinculadas. Vincule e confira os vídeos planejados pelo uploader Vimeo.
+**Zappy:** Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!
 
-3. Se uma versão anterior deste pacote já foi importada, retire do rascunho os cartões antigos listados abaixo. O importador preserva blocos omitidos e pode levá-los ao fechamento; omitir uma chave no arquivo não apaga o cartão antigo. Confira quizzes e entregas existentes separadamente para manter apenas as exigências intencionais.
+**Ferramenta:** o mesmo Estúdio, com o projeto desta aula. Enviar uma cópia ao professor; não confundir salvar o rascunho com entregar.
 
-4. Use a prévia para revisar apresentação e continuidade. Para testar bloqueios, publique apenas em staging e entre com um perfil de aluno de teste sem conclusão anterior. A prévia navega livremente e marcos concluídos são preservados.
+**Para avançar:** envio confirmado ao professor e aprovação automática se configurada no bloco. O envio libera apenas o quiz seguinte; não conclui toda a aula.
 
-5. Tente uma resposta incorreta ou um projeto sem o requisito, confira o bloqueio e depois cumpra o critério. Verifique liberação, retorno, recarga e continuidade para a próxima aula. Em uma etapa com vários objetivos, cumprir só um não deve liberar.
+## 5. O que você descobriu?
 
-**Cartões antigos a retirar após reimportação:**
+**Objetivo do professor:** Retomar o conceito depois de explorar, criar e entregar.
 
-- `checar-comeco`: Confira: A criação de hoje
-- `checar-entenda`: Confira: O que aconteceu?
-- `checar-construir-1`: Confira: criar a caixinha dos pontos
-- `checar-construir-2`: Confira: mostrar o placar
-- `checar-construir-4`: Confira: contar os pontos na tela de fim
-- `checar-construir-5`: Confira: testar
+**Zappy:** Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo.
 
-A retirada acontece no rascunho; o histórico persistido não deve ser apagado. Nenhum manifesto desta pasta foi aplicado automaticamente ao staging ou à produção por esta revisão.
+**Pergunta:** Quando o relógio deve somar pontos neste jogo?
+
+- Somente na tela jogando. (correta)
+- Nas telas de início, jogo e fim.
+
+**Feedback:** Os pontos medem o tempo sobrevivido durante a partida.
+
+**Pergunta:** Uma nova partida começa. Quanto deve haver em pontos?
+
+- O total da partida anterior.
+- Zero. (correta)
+
+**Feedback:** Ao iniciar prepara a variável pontos novamente com zero.
+
+**Para concluir:** acertar as duas perguntas, com feedback e nova tentativa. Não há perguntas sobre conteúdo ainda não explorado.
+
+## Produção e revisão
+
+Gravar em frases curtas, dar tempo para perceber as mudanças e oferecer legenda. Evitar música sobre a explicação. Não exigir áudio para observar o som do pulo: a cena também sinaliza visualmente. Testar teclado, toque, movimento reduzido, retomada e erro de conexão.
+
+Ao importar, conferir a lista de instruções antigas aposentadas e o apoio preservado. A aula publicada continua disponível até a revisão e publicação do novo rascunho.

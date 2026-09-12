@@ -9,14 +9,17 @@ import {
   type LearningAttemptView,
   type LearningBlockProgress,
   type PublicInteractiveBlock,
+  simulationGoals,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowDown, ArrowUp, CheckCircle2, Lightbulb } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import type { LessonBlockView } from '../lib/types'
+import { DialogueBlockView } from './dialogue-block'
 import { LearningExperiment } from './learning-experiment'
 import { LearningHtml } from './learning-html'
+import { LearningSimulation } from './learning-simulation'
 import { useLessonPlayer } from './lesson-player-context'
 
 function message(error: unknown) {
@@ -162,7 +165,7 @@ function Activity({
     setAnswers(next)
     setHintsUsed(nextHints)
     setError('')
-    setStatus('Salvando…')
+    setStatus(base ? 'Salvando…' : 'Prévia de autoria. Nenhum progresso de aluno foi registrado.')
     current.current = { answers: next, hintsUsed: nextHints, dirty: true }
     if (key)
       try {
@@ -240,9 +243,33 @@ function Activity({
         <h3 id={`${id}-title`} className="font-semibold text-xl">
           {content.title}
         </h3>
-        <p className="max-w-prose leading-relaxed text-muted-foreground">{content.instructions}</p>
+        {player?.renderInstruction ? (
+          player.renderInstruction(content.instructions)
+        ) : a.type === 'simulation' ? (
+          <DialogueBlockView content={{ kind: 'dialogue', text: content.instructions }} />
+        ) : (
+          <p className="max-w-prose leading-relaxed text-muted-foreground">
+            {content.instructions}
+          </p>
+        )}
       </div>
       <fieldset disabled={busy} className="space-y-5">
+        {a.type === 'simulation' && (
+          <LearningSimulation
+            activity={a}
+            answers={answers}
+            onChange={set}
+            onTrial={(next) => {
+              change(next)
+              if (
+                !content.checkpoint &&
+                !result?.passed &&
+                simulationGoals(a, next).every((goal) => goal.complete)
+              )
+                void check()
+            }}
+          />
+        )}
         {a.type === 'prediction' && (
           <div className="space-y-4">
             <fieldset disabled={busy} className="grid gap-2">
@@ -392,10 +419,16 @@ function Activity({
           </fieldset>
         )}
         {content.hints.slice(0, hintsUsed).map((hint) => (
-          <p key={hint} className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
-            <Lightbulb className="mr-2 inline size-4 text-primary" />
-            {hint}
-          </p>
+          <div key={hint}>
+            {player?.renderInstruction ? (
+              player.renderInstruction(hint, 'thinking')
+            ) : (
+              <p className="rounded-xl bg-muted/50 p-4 text-sm leading-relaxed">
+                <Lightbulb className="mr-2 inline size-4 text-primary" />
+                {hint}
+              </p>
+            )}
+          </div>
         ))}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button
@@ -414,13 +447,22 @@ function Activity({
               void check()
             }}
           >
-            {busy ? 'Conferindo…' : 'Conferir minha descoberta'}
+            {busy
+              ? 'Salvando…'
+              : a.type === 'simulation'
+                ? 'Salvar minha exploração'
+                : 'Conferir minha descoberta'}
           </Button>
         </div>
         {result && (
           <div role="status" className="rounded-xl bg-primary/5 p-4 leading-relaxed">
             {result.passed && <CheckCircle2 className="mr-2 inline size-5 text-primary" />}
-            {result.feedback}
+            {player?.renderInstruction
+              ? player.renderInstruction(
+                  result.feedback,
+                  result.passed ? 'celebrating' : 'thinking',
+                )
+              : result.feedback}
           </div>
         )}
         {error ? (

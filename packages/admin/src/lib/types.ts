@@ -542,6 +542,7 @@ export interface EbookBlock {
  * campos são a config de aprendizado (nível, allowlist de blocos, modos).
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
@@ -612,6 +613,7 @@ export interface ComingSoonBlock {
  * do pacote, que o sanea nas duas pontas).
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown

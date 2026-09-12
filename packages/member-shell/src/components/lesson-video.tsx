@@ -3,6 +3,7 @@
 import type { VideoBlock } from '../lib/types'
 import { LessonNativeVideo } from './lesson-native-video'
 import { useLessonPlayer } from './lesson-player-context'
+import { LessonYoutubeVideo } from './lesson-youtube-video'
 import { VimeoPlayer } from './vimeo-player'
 
 // ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
@@ -32,17 +33,7 @@ export function LessonVideo({ content }: { content: VideoBlock }) {
   if (content.provider === 'youtube') {
     const id = youtubeId(content.src)
     if (!id) return <p role="alert">Vídeo indisponível.</p>
-    return (
-      <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-black">
-        <iframe
-          src={`https://www.youtube-nocookie.com/embed/${id}`}
-          title="Vídeo da aula"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="h-full w-full"
-        />
-      </div>
-    )
+    return <LessonYoutubeVideo videoId={id} />
   }
   if (content.provider === 'vimeo') {
     const parsed = parseVimeo(content.src)
@@ -68,6 +59,7 @@ function VimeoLessonVideo({ vimeoId, vimeoHash }: { vimeoId: string; vimeoHash: 
       initialPositionSeconds={player?.initialPositionSeconds ?? null}
       onProgress={player?.onVideoProgress}
       onFlush={player?.onVideoFlush}
+      onCoverage={player?.onVideoCoverage}
     />
   )
 }

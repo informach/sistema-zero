@@ -25,6 +25,7 @@ export function createLearningRoutes({
   }
   const learningSchemas = {
     'project-check': z.object({ revision: z.uuid(), project: z.unknown() }).strict(),
+    'action-check': z.object({ revision: z.uuid() }).strict(),
     navigation: z.object({ sectionId: z.uuid() }).strict(),
     'section-help': z
       .object({
@@ -75,7 +76,7 @@ export function createLearningRoutes({
           { status: 409 },
         )
       const params = await ctx.params
-      const needsSection = endpoint === 'project-check'
+      const needsSection = endpoint === 'project-check' || endpoint === 'action-check'
       const needsBlock = endpoint === 'learning-progress' || endpoint === 'learning-attempts'
       if (
         !z.uuid().safeParse(params.lessonId).success ||
@@ -124,5 +125,6 @@ export function createLearningRoutes({
     learningAttempt,
     learningHelp,
     learningProjectCheck,
+    learningActionCheck: { POST: learningHandler('action-check', 'POST') },
   }
 }

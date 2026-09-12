@@ -801,6 +801,7 @@ export interface LessonDetailView {
     LessonSection,
     'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
   >[]
+  legacyLayout?: boolean
   structureRevision?: string | null
   sectionProgress?: SectionProgressView
   learningProgress?: LessonLearningProgress

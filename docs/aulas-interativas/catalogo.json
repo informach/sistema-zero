@@ -66,8 +66,8 @@
     "path": "corre-dino/aula-01",
     "source": "roteiro-aula-01-corre-dino.md",
     "sha256": "738a241605766d49dbc78937703c7aef36f3cb8eab09db69d152440a358e37bf",
-    "sections": 3,
-    "clips": 4
+    "sections": 4,
+    "clips": 6
   },
   {
     "course": "corre-dino",
@@ -76,8 +76,8 @@
     "path": "corre-dino/aula-02",
     "source": "roteiro-aula-02-corre-dino.md",
     "sha256": "c93882dd5de5ee1c27966f6c98e86bf301e5066acc3d059cf1c07cf38a8bd2a1",
-    "sections": 3,
-    "clips": 3
+    "sections": 4,
+    "clips": 5
   },
   {
     "course": "corre-dino",
@@ -86,8 +86,8 @@
     "path": "corre-dino/aula-03",
     "source": "roteiro-aula-03-corre-dino.md",
     "sha256": "98f59a849d4d2f0fb36aa23422de7cb453cb6bf39057665cdfc4fac573495b3b",
-    "sections": 3,
-    "clips": 3
+    "sections": 4,
+    "clips": 5
   },
   {
     "course": "corre-dino",
@@ -96,8 +96,8 @@
     "path": "corre-dino/aula-04",
     "source": "roteiro-aula-04-corre-dino.md",
     "sha256": "7b0c677793fae8c30bcef617c4ecc50ed6173beba622d672907eab8b72b6ab4f",
-    "sections": 4,
-    "clips": 4
+    "sections": 5,
+    "clips": 6
   },
   {
     "course": "corre-dino",
@@ -106,8 +106,8 @@
     "path": "corre-dino/aula-05",
     "source": "roteiro-aula-05-corre-dino.md",
     "sha256": "7a103a2dd829c7795d691ef38ec384b3da742f02566db055e311358df080352d",
-    "sections": 4,
-    "clips": 5
+    "sections": 5,
+    "clips": 7
   },
   {
     "course": "corre-dino",
@@ -116,8 +116,8 @@
     "path": "corre-dino/aula-06",
     "source": "roteiro-aula-06-corre-dino.md",
     "sha256": "3f35c3213866fcd7d6ca59e0e1c34407f370807a410233aeb5ff95b0cd831a5f",
-    "sections": 4,
-    "clips": 4
+    "sections": 5,
+    "clips": 6
   },
   {
     "course": "corre-dino",
@@ -126,8 +126,8 @@
     "path": "corre-dino/aula-07",
     "source": "roteiro-aula-07-corre-dino.md",
     "sha256": "7f3962d0ac9c56eae11ecd55631ff082d2ff03e8de476014f204f07b47ba9db5",
-    "sections": 3,
-    "clips": 3
+    "sections": 4,
+    "clips": 5
   },
   {
     "course": "corre-dino",
@@ -136,8 +136,8 @@
     "path": "corre-dino/aula-08",
     "source": "roteiro-aula-08-corre-dino.md",
     "sha256": "61a9981e52b892274aeeddc4ae00798d7a534530d5835205722d502f0b901139",
-    "sections": 3,
-    "clips": 3
+    "sections": 4,
+    "clips": 5
   },
   {
     "course": "corre-dino",
@@ -146,8 +146,8 @@
     "path": "corre-dino/aula-09",
     "source": "roteiro-aula-09-corre-dino.md",
     "sha256": "905dc7206a7ca7fc6264dbd2dc14661ad73e462690ba23b6d9b794d566a3c13b",
-    "sections": 4,
-    "clips": 5
+    "sections": 5,
+    "clips": 7
   },
   {
     "course": "corre-dino",
@@ -156,8 +156,8 @@
     "path": "corre-dino/aula-10",
     "source": "roteiro-aula-10-corre-dino.md",
     "sha256": "bdc328d620c6cb758db35578544f6beb4f2916714bf30bf0e4e6a0aad7f6519c",
-    "sections": 4,
-    "clips": 4
+    "sections": 5,
+    "clips": 6
   },
   {
     "course": "corre-dino",
@@ -166,8 +166,8 @@
     "path": "corre-dino/aula-11",
     "source": "roteiro-aula-11-corre-dino.md",
     "sha256": "b30f94be234e9fb0da4db2fd54da6d3d070b01e51b7b5c0569f6db7568006c6e",
-    "sections": 4,
-    "clips": 5
+    "sections": 5,
+    "clips": 7
   },
   {
     "course": "corre-dino",
@@ -176,8 +176,8 @@
     "path": "corre-dino/aula-12",
     "source": "roteiro-aula-12-corre-dino.md",
     "sha256": "159e3a4a3abd173079edeb63dca925f8f0d5de398b73da0f7c579e3d871a0c75",
-    "sections": 4,
-    "clips": 4
+    "sections": 5,
+    "clips": 6
   },
   {
     "course": "corre-dino",
@@ -186,8 +186,8 @@
     "path": "corre-dino/aula-13",
     "source": "roteiro-aula-13-corre-dino.md",
     "sha256": "05eb185cda62071bb736bbdf7461cdfbc0e03e694f8dad6609cf73972550660e",
-    "sections": 4,
-    "clips": 4
+    "sections": 5,
+    "clips": 6
   },
   {
     "course": "o-jogo-do-meu-jeito",

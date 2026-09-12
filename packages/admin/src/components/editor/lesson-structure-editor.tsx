@@ -3,6 +3,9 @@
 import {
   defaultLessonSection,
   isFinalProjectSection,
+  isGalleryBlock,
+  isLegacyLessonLayout,
+  LESSON_SECTION_TEMPLATES,
   type LessonDraftChange,
   type LessonDraftDocument,
   type LessonDraftIssue,
@@ -26,13 +29,13 @@ import { VideoUploader } from '@/components/media/video-uploader'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
 import type { BlockView, LessonBlockContent, LessonContentView } from '@/lib/types'
+import { LessonBlockKindBadge } from './lesson-block-kind'
 import { SectionCompletionEditor } from './section-completion-editor'
 
 function blockLabel(block: BlockView) {
   const c = block.content
   if (c.kind === 'interactive') return c.title || 'Descoberta interativa'
-  // Mostra o começo da FALA, não o rótulo do tipo: a autora reconhece o bloco pelo
-  // que o Zappy diz, não por "Diálogo" repetido cinco vezes na lista.
+  // The type has its own icon and label; this is the content summary beside it.
   if (c.kind === 'dialogue') return c.text.split('\n')[0]?.slice(0, 90) || 'Diálogo do Zappy'
   if (c.kind === 'rich_text')
     return (
@@ -114,9 +117,14 @@ export function LessonStructureEditor({
   onPreviewChange: (value: boolean) => void
 }) {
   const [settings, setSettings] = useState<string | null>(null)
+  const [templateIndex, setTemplateIndex] = useState(0)
+  const template = LESSON_SECTION_TEMPLATES[templateIndex] ?? LESSON_SECTION_TEMPLATES[0]
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
   const tools = lesson.blocks.filter(
-    (b) => (b.kind === 'studio' || b.kind === 'pinta') && !document.supportBlockIds.includes(b.id),
+    (b) =>
+      (b.kind === 'studio' || b.kind === 'pinta') &&
+      !isGalleryBlock(b.content) &&
+      !document.supportBlockIds.includes(b.id),
   )
   const structure = (
     sections: LessonSection[],
@@ -171,6 +179,7 @@ export function LessonStructureEditor({
           return (
             <article key={id} className="rounded-xl border border-border bg-background p-4">
               <div className="flex flex-wrap items-center gap-2">
+                <LessonBlockKindBadge kind={block.content.kind} />
                 <span className="min-w-0 flex-1 text-sm font-medium">{blockLabel(block)}</span>
                 {[-1, 1].map((direction) => (
                   <Button
@@ -356,6 +365,7 @@ export function LessonStructureEditor({
             estimatedMinutes: document.estimatedMinutes,
             positionSeconds: null,
             sections: document.sections,
+            legacyLayout: isLegacyLessonLayout(lesson.id, document.sections),
             supportBlockIds: document.supportBlockIds,
             blocks: lesson.blocks,
             attachments: [],
@@ -510,7 +520,12 @@ export function LessonStructureEditor({
                     value={section.completion}
                     candidates={section.blockIds.flatMap((id) => {
                       const b = blocks.get(id)
-                      if (!b || !['interactive', 'quiz', 'studio', 'pinta'].includes(b.kind))
+                      if (
+                        !b ||
+                        !['interactive', 'quiz', 'studio', 'pinta', 'ebook', 'video'].includes(
+                          b.kind,
+                        )
+                      )
                         return []
                       const issue = sectionCompletionIssues(
                         [{ ...section, completion: { version: 1, blockIds: [id] } }],
@@ -523,14 +538,21 @@ export function LessonStructureEditor({
                           label: blockLabel(b),
                           model: delivery
                             ? 'Entregar a criação'
-                            : b.kind === 'quiz' ||
-                                (b.content.kind === 'interactive' &&
-                                  b.content.activity.type !== 'sequence')
-                              ? 'Responder uma pergunta'
-                              : 'Resolver uma atividade',
+                            : b.kind === 'ebook'
+                              ? 'Abrir o livro ou baixar o PDF'
+                              : b.kind === 'video'
+                                ? 'Assistir a 90% dos trechos do vídeo'
+                                : b.content.kind === 'interactive' &&
+                                    b.content.activity.type === 'simulation'
+                                  ? 'Explorar e comparar o modelo'
+                                  : b.kind === 'quiz' ||
+                                      (b.content.kind === 'interactive' &&
+                                        b.content.activity.type !== 'sequence')
+                                    ? 'Responder uma pergunta'
+                                    : 'Resolver uma atividade',
                           issue:
                             delivery && !isFinalProjectSection(document.sections, section.id)
-                              ? 'A entrega deve ficar na última seção de fechamento.'
+                              ? 'Coloque a entrega antes do quiz final, sem etapas de criação depois dela.'
                               : issue,
                         },
                       ]
@@ -599,24 +621,45 @@ export function LessonStructureEditor({
               </div>
             </div>
           ))}
-          <Button
-            variant="outline"
-            disabled={document.sections.length >= 60}
-            onClick={() =>
-              structure([
-                ...document.sections,
-                {
-                  ...defaultLessonSection(crypto.randomUUID(), 'Nova seção', []),
-                  ...(document.sections.some((s) => s.completion)
-                    ? { completion: { version: 1 as const, blockIds: [] } }
-                    : {}),
-                },
-              ])
-            }
-          >
-            <Plus className="size-4" />
-            Adicionar seção
-          </Button>
+          <div className="space-y-3 rounded-2xl border border-dashed border-border p-4">
+            <label className="block space-y-2 text-sm font-medium">
+              Tipo da próxima seção
+              <Select
+                value={templateIndex}
+                onChange={(event) => setTemplateIndex(Number(event.target.value))}
+              >
+                {LESSON_SECTION_TEMPLATES.map((item, index) => (
+                  <option key={item.intent} value={index}>
+                    {item.label}
+                  </option>
+                ))}
+              </Select>
+            </label>
+            <p className="text-sm text-muted-foreground">{template?.guidance}</p>
+            <Button
+              variant="outline"
+              disabled={document.sections.length >= 60}
+              onClick={() =>
+                structure([
+                  ...document.sections,
+                  {
+                    ...defaultLessonSection(
+                      crypto.randomUUID(),
+                      template?.title ?? 'Nova seção',
+                      [],
+                    ),
+                    intent: template?.intent ?? 'exploration',
+                    workspaceBlockId:
+                      template?.intent === 'application' ? (tools[0]?.id ?? null) : null,
+                    completion: { version: 1 as const, blockIds: [] },
+                  },
+                ])
+              }
+            >
+              <Plus className="size-4" />
+              Adicionar seção
+            </Button>
+          </div>
           <details className="rounded-2xl border border-border bg-card p-5">
             <summary className="cursor-pointer font-semibold">
               Materiais de apoio · {document.supportBlockIds.length}

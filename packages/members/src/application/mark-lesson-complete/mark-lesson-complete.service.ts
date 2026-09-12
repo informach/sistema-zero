@@ -1,4 +1,8 @@
-import { lessonCompletionRequirements } from '@sistemazero/core/learning'
+import {
+  isLegacyMaterialLesson,
+  isVideoOnlySection,
+  lessonCompletionRequirements,
+} from '@sistemazero/core/learning'
 import {
   CertificateGateNotIssuedError,
   LessonComingSoonError,
@@ -86,7 +90,16 @@ export class MarkLessonCompleteService {
         lesson,
       )
       const requirements = lessonCompletionRequirements({
-        sectionProgress,
+        sectionProgress: learning.legacyLayout ? undefined : sectionProgress,
+        videoBlockIds: learning.legacyLayout
+          ? learning.sections
+              .filter((s) => isVideoOnlySection(s, lesson.blocks))
+              .flatMap((s) => s.completion?.blockIds ?? [])
+          : [],
+        materialBlockIds:
+          learning.legacyLayout && isLegacyMaterialLesson(lesson.blocks)
+            ? lesson.blocks.filter((b) => b.kind === 'ebook').map((b) => b.id)
+            : [],
         completed: false,
         sections: learning.sections,
         learningProgress: learning.progress,
@@ -105,6 +118,8 @@ export class MarkLessonCompleteService {
       if (missing) {
         switch (missing.reason) {
           case 'SECTION_GATE_INCOMPLETE':
+          case 'VIDEO_GATE_NOT_WATCHED':
+          case 'MATERIAL_GATE_NOT_ACCESSED':
             throw new SectionGateError()
           case 'LESSON_COMING_SOON':
             throw new LessonComingSoonError()

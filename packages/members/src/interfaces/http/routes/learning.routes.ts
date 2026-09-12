@@ -1,6 +1,8 @@
 import { Elysia, t } from 'elysia'
+import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
 import type { LearningService } from '../../../application/learning/learning.service'
 import type { LearningImportService } from '../../../application/learning/learning-import.service'
+import type { ProfilePreferencesService } from '../../../application/profile-preferences/profile-preferences.service'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import {
   assertInternalCaller,
@@ -24,9 +26,12 @@ import {
   SectionProjectParams,
 } from '../learning.dtos'
 import { DraftCommandSchema, DraftPublishSchema, draftCommand } from '../lesson-draft.dtos'
+import { galleryDeliveryRoutes } from './gallery-delivery.routes'
 
 export interface LearningRoutesDeps {
   learning: LearningService
+  gallery: GalleryDeliveryService
+  preferences: ProfilePreferencesService
   imports: LearningImportService
   drafts: LessonDraftRepository
   internalToken?: string
@@ -40,8 +45,23 @@ const actor = (headers: Record<string, string | undefined>) => ({
 
 export function learningRoutes(deps: LearningRoutesDeps) {
   return new Elysia({ name: 'learning', prefix: '/members' })
+    .use(galleryDeliveryRoutes(deps))
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
+    )
+    .get('/preferences/kids', ({ headers }) => deps.preferences.read(resolveUserId(headers)))
+    .put(
+      '/preferences/kids',
+      ({ headers, body }) => deps.preferences.save(actor(headers), body.theme),
+      {
+        body: t.Object({ theme: t.Union([t.Literal('padrao'), t.Literal('pink')]) }),
+      },
+    )
+    .post(
+      '/lessons/:lessonId/sections/:sectionId/action-check',
+      ({ headers, params, body }) =>
+        deps.learning.checkAction(actor(headers), params.lessonId, params.sectionId, body.revision),
+      { params: SectionProjectParams, body: t.Object({ revision: t.String({ format: 'uuid' }) }) },
     )
     .put(
       '/lessons/:lessonId/navigation',

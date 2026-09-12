@@ -48,7 +48,7 @@ describe('Resolução do PDF do bloco e-book (server↔server, BFF do community)
     expect(res.status).toBe(403)
   })
 
-  test('bloco inexistente → 404 EBOOK_BLOCK_NOT_FOUND', async () => {
+  test('bloco inexistente → 423 (a seção barra antes de dizer se existe)', async () => {
     const { app, courses, entitlements } = buildApp()
     const course = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
@@ -57,8 +57,11 @@ describe('Resolução do PDF do bloco e-book (server↔server, BFF do community)
       app,
       `/members/courses/${course.slug}/lessons/${course.lessonIds[0]}/blocks/99999999-9999-9999-9999-999999999999/ebook/resolve`,
     )
-    expect(res.status).toBe(404)
-    expect((await readJson(res)).error.code).toBe('EBOOK_BLOCK_NOT_FOUND')
+    // ⚠️ Mudou de 404 para 423 com a progressão por seções: um bloco fora da seção
+    // acessível é barrado ANTES de o servidor revelar se ele existe (a regra que
+    // `legacy-lesson-progression.test.ts` fixa). O teste seguinte, com um bloco REAL de
+    // outro kind na seção aberta, continua cobrindo o 404 que não vaza conteúdo.
+    expect(res.status).toBe(423)
   })
 
   test('bloco que NÃO é e-book → 404 (não vaza conteúdo de outros kinds)', async () => {

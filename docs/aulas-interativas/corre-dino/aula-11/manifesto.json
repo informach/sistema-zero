@@ -1,158 +1,129 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-11",
   "title": "Quanto tempo você resistiu?",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "construir-4",
+    "convite-construir-3",
+    "checar-construir-3",
+    "construir-5",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Quanto tempo você consegue continuar na pista? Hoje vamos guardar esse resultado e mostrar um placar fácil de ler. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Proteja o placar com “se jogando”. Teste as três telas.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.\n\nNeste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder.\n\nUm número correto também precisa ser legível: a cor do texto deve contrastar com o fundo. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "O placar conta na hora certa?",
-        "instructions": "Avance o relógio nas três telas. Descubra qual contador serve para medir somente o tempo de partida.",
-        "hints": ["Fique na tela fim e avance mais um segundo. Qual número deveria ficar parado?"],
-        "required": true,
+        "title": "Pontos na hora certa",
+        "instructions": "Proteja o placar com “se jogando”. Teste as três telas.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "html",
-          "html": "<h2>O relógio deve contar agora?</h2>\n<p>Escolha a tela e avance o relógio. Compare o contador protegido pela condição com o contador sem condição.</p>\n<label for=\"scene\">Tela atual</label><select id=\"scene\"><option value=\"inicio\">Início</option><option value=\"jogando\">Jogando</option><option value=\"fim\">Fim</option></select>\n<button id=\"tick\" type=\"button\">Passar um segundo</button><button id=\"reset\" type=\"button\">Zerar contadores</button>\n<div style=\"display:flex;gap:16px;flex-wrap:wrap;margin-top:16px\"><div style=\"padding:20px;background:#fff;border-radius:12px\">Se está jogando: <strong id=\"guarded\">0</strong></div><div style=\"padding:20px;background:#fff;border-radius:12px\">Sem condição: <strong id=\"always\">0</strong></div></div>\n<p id=\"status\" aria-live=\"polite\">Escolha uma tela para começar a comparação.</p>\n<script>\n(()=>{let guarded=0,always=0,tested=[];const scene=document.getElementById('scene');function render(){document.getElementById('guarded').textContent=guarded;document.getElementById('always').textContent=always}function save(){window.learning?.save({scene:scene.value,guarded,always,testedScenes:tested})}\ndocument.getElementById('tick').addEventListener('click',()=>{always++;if(scene.value==='jogando')guarded++;tested=[...new Set([...tested,scene.value])];render();document.getElementById('status').textContent=scene.value==='jogando'?'Os dois contadores aumentam durante a partida.':'Só o contador sem condição aumentou fora da partida.';save();if(tested.includes('jogando')&&tested.some(s=>s!=='jogando'))window.learning?.participated()});\nscene.addEventListener('change',save);document.getElementById('reset').addEventListener('click',()=>{guarded=0;always=0;render();save()});addEventListener('learning:restore',event=>{const s=event.detail;guarded=Number.isFinite(s.guarded)?s.guarded:0;always=Number.isFinite(s.always)?s.always:0;scene.value=['inicio','jogando','fim'].includes(s.scene)?s.scene:'inicio';tested=Array.isArray(s.testedScenes)?s.testedScenes:[];render()})})();\n</script>\n"
-        },
-        "checkpoint": {
-          "prompt": "Qual contador mede o tempo de jogo sem contar início e fim?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O que soma sempre"
-            },
-            {
-              "id": "opcao-2",
-              "label": "O que soma somente em jogando"
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A condição preserva o significado do placar: tempo sobrevivido durante a partida."
+          "type": "simulation",
+          "version": 1,
+          "scene": "score"
         }
-      }
-    },
-    {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "A variável pontos guarda um número que muda. Mostrar placar apenas lê esse valor e o desenha.\n\nNeste jogo, sobreviver mais um segundo soma um ponto, mas apenas enquanto a tela é jogando. Se o relógio não tiver essa condição, o placar pode crescer antes de começar ou depois de perder.\n\nUm número correto também precisa ser legível: a cor do texto deve contrastar com o fundo."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Criar a caixinha dos pontos\n\nEm Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez."
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-11-passo-01: gravar a demonstração \"criar a caixinha dos pontos\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Criar a caixinha dos pontos. Narração revisada: “Agora é a sua vez. Vamos criar a caixinha dos pontos.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Mostrar o placar\n\nEm Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.\n\nConfira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Programação, Variáveis, crie pontos com 0 em Ao iniciar, antes de Ir para a tela inicio. Reiniciar vai preparar o placar outra vez."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-11-passo-02: gravar a demonstração \"mostrar o placar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Mostrar o placar. Narração revisada: “Agora é a sua vez. Vamos mostrar o placar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos.\n\nConfira x 12, y 30 e tamanho 24. Compare branco no céu e depois azul escuro. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Olhe o placar sobre o céu. Escolha uma cor que deixe o número fácil de enxergar.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Placar e HUD, coloque Mostrar placar no fim de Se jogando. No valor, encaixe valor da variável pontos."
       }
     },
     {
-      "key": "construir-3",
+      "key": "zappy-convite-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Fazer o número subir\n\nEm Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.\n\nSó dentro desse Se encaixe Somar 1 em pontos, de Variáveis."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Olhe o placar sobre o céu. Escolha uma cor que deixe o número fácil de enxergar."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-11-passo-03: gravar a demonstração \"fazer o número subir\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Fazer o número subir. Narração revisada: “Agora é a sua vez. Vamos fazer o número subir.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando.\n\nSó dentro desse Se encaixe Somar 1 em pontos, de Variáveis. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-4",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Contar os pontos na tela de fim\n\nNa tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.\n\nTente bater essa marca! Confira se aparece o número da sua partida."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Tempo e repetição, adicione um relógio de 1 segundo ao lado dos outros. Dentro, coloque Se a tela atual é jogando."
       }
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "aula-11-passo-04: gravar a demonstração \"contar os pontos na tela de fim\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Contar os pontos na tela de fim. Narração revisada: “Agora é a sua vez. Vamos contar os pontos na tela de fim.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos.\n\nTente bater essa marca! Confira se aparece o número da sua partida. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-3",
+      "key": "zappy-construir-4",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Espere na tela inicial, jogue e depois perca. Observe quando o número muda."
-      }
-    },
-    {
-      "key": "checar-construir-3",
-      "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["O relógio precisa saber em qual momento deve contar."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Os pontos crescem enquanto você espera na tela inicial. O que falta no relógio?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Verificar se a tela atual é jogando antes de somar."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Uma cor mais escura para o placar."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Um título maior na tela de início."
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A condição protege a soma. O placar pode mostrar um número, mas o relógio só deve aumentá-lo durante a partida."
-        }
-      }
-    },
-    {
-      "key": "construir-5",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Testar\n\nCompare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.\n\nA regra do placar deve ficar clara para quem joga."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Na tela fim, substitua o subtítulo por juntar texto, em Programação, Valores. Junte Você fez, o valor de pontos e pontos."
       }
     },
     {
       "key": "video-construir-5-1",
-      "plannedVideo": "aula-11-passo-05: gravar a demonstração \"testar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar. Narração revisada: “Agora é a sua vez. Vamos testar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1.\n\nA regra do placar deve ficar clara para quem joga. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "fechamento",
+      "key": "zappy-construir-5",
       "content": {
-        "kind": "rich_text",
-        "markdown": "O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie.\n\nNa Aula 12, os cactos deixarão de chegar sempre do mesmo jeito.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare partidas e observe o placar antes, durante e depois de jogar. Experimente intervalos 0.5 e 3 no relógio dos pontos e depois volte a 1."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Espere na tela inicial, jogue e depois perca. Observe quando o número muda."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: O placar começa em zero, cresce só em jogando, para no fim e aparece legível. Recomece para conferir a volta a zero. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -161,15 +132,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "Quando o relógio deve somar pontos neste jogo?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Somente na tela jogando."
+              },
+              {
+                "id": "b",
+                "label": "Nas telas de início, jogo e fim."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "Os pontos medem o tempo sobrevivido durante a partida."
+          },
+          {
+            "id": "q2",
+            "prompt": "Uma nova partida começa. Quanto deve haver em pontos?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O total da partida anterior."
+              },
+              {
+                "id": "b",
+                "label": "Zero."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Ao iniciar prepara a variável pontos novamente com zero."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "O placar conta na hora certa?",
+      "title": "Pontos na hora certa",
       "objective": "Guardar pontos, contar somente durante a partida e mostrar o resultado com contraste.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -184,11 +204,11 @@
       "objective": "Inicializar pontos e mostrar um placar legível.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "convite-construir-1"
+        "zappy-construir-2",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -214,33 +234,76 @@
       "objective": "Restringir a contagem à partida e apresentar o resultado no fim.",
       "intent": "application",
       "blockKeys": [
-        "construir-3",
         "video-construir-3-1",
-        "construir-4",
+        "zappy-construir-3",
         "video-construir-4-1",
-        "convite-construir-3",
-        "checar-construir-3"
+        "zappy-construir-4",
+        "video-construir-5-1",
+        "zappy-construir-5",
+        "zappy-convite-construir-3"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "relogio-pontos",
+            "label": "Use o relógio de um segundo para os pontos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_every_seconds",
+              "area": "loops",
+              "inputs": {
+                "SECS": 1
+              }
+            }
+          },
+          {
+            "id": "somar-pontos",
+            "label": "Some um ponto dentro de uma condição do relógio.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_var_increment",
+              "area": "loops",
+              "withinBlock": "sz_js_if_else",
+              "fields": {
+                "NAME": "pontos",
+                "DELTA": 1
+              }
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Tente uma nova marca",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["construir-5", "video-construir-5-1", "fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]

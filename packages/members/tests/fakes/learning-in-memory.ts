@@ -6,6 +6,7 @@ import type {
   LessonSection,
   SectionProgressRecord,
 } from '@sistemazero/core/learning'
+import { mergeVideoWatchAnswers } from '@sistemazero/core/learning'
 import type { CourseAudience } from '../../src/domain/course/course'
 import { LearningConflictError } from '../../src/domain/learning/learning.errors'
 import type {
@@ -107,6 +108,9 @@ export class InMemoryLearningRepository implements LearningRepository {
     const same = old?.revision === input.progress.revision
     const value = {
       ...input.progress,
+      answers: same
+        ? mergeVideoWatchAnswers(old.answers, input.progress.answers)
+        : input.progress.answers,
       lessonId: input.lessonId,
       attemptsCount: same ? old.attemptsCount : 0,
       result: same ? old.result : null,

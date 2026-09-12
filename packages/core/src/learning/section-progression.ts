@@ -1,4 +1,6 @@
 import { isInteractiveBlock, type LessonSection } from './index'
+import { isVideoOnlySection } from './legacy-layout'
+import { isPlatformAction, type PlatformAction } from './platform-action'
 
 export type SectionStructureRule =
   | { type: 'usesLoop' }
@@ -25,6 +27,7 @@ export interface SectionCompletion {
   version: 1
   blockIds: string[]
   projectChecks?: SectionProjectCheck[]
+  platformAction?: PlatformAction
 }
 
 export interface SectionProgressRecord {
@@ -62,6 +65,7 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
     new Set(v.blockIds).size !== v.blockIds.length
   )
     return false
+  if (v.platformAction !== undefined && !isPlatformAction(v.platformAction)) return false
   if (v.projectChecks === undefined) return true
   if (!Array.isArray(v.projectChecks) || v.projectChecks.length > 20) return false
   return (
@@ -116,13 +120,19 @@ export function hasSectionProgression(sections: { completion?: SectionCompletion
   return sections.some((s) => s.completion !== undefined)
 }
 
-/** Shared by publication and submission: the final delivery closes the actual lesson order. */
+/** Delivery may precede the final review. Historical closing sections remain valid. */
 export function isFinalProjectSection(
   sections: readonly Pick<LessonSection, 'id' | 'intent'>[],
   sectionId: string,
 ): boolean {
-  const last = sections.at(-1)
-  return last?.id === sectionId && last.intent === 'closing'
+  const index = sections.findIndex((section) => section.id === sectionId)
+  const section = sections[index]
+  if (!section) return false
+  if (section.intent === 'closing') return index === sections.length - 1
+  return (
+    section.intent === 'delivery' &&
+    sections.slice(index + 1).every((following) => following.intent === 'closing')
+  )
 }
 
 /** Validate at publication, not while an author is still writing a draft. */
@@ -141,12 +151,24 @@ export function sectionCompletionIssues(
     const issues: Array<{ sectionId: string; message: string }> = []
     const add = (message: string) => issues.push({ sectionId: s.id, message })
     const c = s.completion
+    if (
+      s.workspaceBlockId &&
+      blocks.some((b) => b.id === s.workspaceBlockId && record(b.content) && b.content.gallery)
+    )
+      add(
+        'Uma entrega pela galeria não é um espaço de trabalho incorporado. Coloque o bloco na seção de entrega.',
+      )
     if (!isSectionCompletion(c)) {
       add('Configure os critérios de conclusão desta seção.')
       return issues
     }
-    if (!c.blockIds.length && !c.projectChecks?.length)
+    if (!c.blockIds.length && !c.projectChecks?.length && !c.platformAction)
       add('Esta seção precisa de uma checagem ou objetivo verificável.')
+    if (
+      c.platformAction &&
+      (c.blockIds.length || c.projectChecks?.length || s.workspaceBlockId || s.externalTool)
+    )
+      add('A ação da plataforma é o critério desta etapa. Separe outras atividades em outra seção.')
     for (const id of c.blockIds) {
       const block = blocks.find((b) => b.id === id)
       if (!s.blockIds.includes(id) || !block || !record(block.content)) {
@@ -157,9 +179,27 @@ export function sectionCompletionIssues(
       if (content.kind === 'interactive') {
         if (
           !isInteractiveBlock(content) ||
-          (content.activity.type !== 'sequence' && !content.checkpoint)
+          (content.activity.type !== 'simulation' &&
+            content.activity.type !== 'sequence' &&
+            !content.checkpoint)
         )
-          add('A descoberta precisa de uma resposta corrigida no servidor.')
+          add(
+            'Use uma exploração nativa com objetivo observável ou uma resposta corrigida no servidor.',
+          )
+      } else if (content.kind === 'video') {
+        if (
+          !isVideoOnlySection(
+            s,
+            blocks.map((b) => ({
+              id: b.id,
+              kind: record(b.content) ? String(b.content.kind) : '',
+            })),
+          )
+        )
+          add('Assistir a 90% só pode ser exigido quando a seção contém apenas o vídeo.')
+      } else if (content.kind === 'ebook') {
+        if (s.intent !== 'material')
+          add('Use a seção Material do curso para exigir abrir o livro ou baixar o PDF.')
       } else if (content.kind === 'quiz') {
         if (
           typeof content.passingScore !== 'number' ||
@@ -169,8 +209,10 @@ export function sectionCompletionIssues(
         )
           add('O quiz precisa de perguntas e nota mínima maior que zero.')
       } else if (content.kind === 'studio' || content.kind === 'pinta') {
-        if (content.purpose === 'experiment' || s.intent !== 'closing')
-          add('A entrega obrigatória do projeto deve ficar no fechamento.')
+        if (content.purpose === 'experiment' || !['closing', 'delivery'].includes(s.intent))
+          add(
+            'A entrega obrigatória do projeto deve ficar em Entrega e compartilhamento ou no fechamento.',
+          )
         if (
           options.purpose !== 'playback' &&
           content.kind === 'studio' &&
@@ -198,9 +240,27 @@ export function sectionCompletionIssues(
     )
       add('Preencha o objetivo e o nome esperado na verificação do Estúdio.')
     if (
+      s.intent === 'material' &&
+      (c.platformAction ||
+        s.workspaceBlockId ||
+        s.externalTool ||
+        c.projectChecks?.length ||
+        c.blockIds.some(
+          (id) =>
+            !blocks.some((b) => b.id === id && record(b.content) && b.content.kind === 'ebook'),
+        ))
+    )
+      add(
+        'Na seção Material do curso, selecione o caderno que o aluno precisa abrir ou baixar. Não há nota ou entrega de projeto.',
+      )
+    if (
       c.projectChecks?.length &&
       !blocks.some(
-        (b) => b.id === s.workspaceBlockId && record(b.content) && b.content.kind === 'studio',
+        (b) =>
+          b.id === s.workspaceBlockId &&
+          record(b.content) &&
+          b.content.kind === 'studio' &&
+          !b.content.gallery,
       )
     )
       add('A verificação de projeto precisa de um Estúdio incorporado nesta seção.')
@@ -211,7 +271,9 @@ export function sectionCompletionIssues(
         b.content.purpose !== 'experiment' &&
         !isFinalProjectSection(sections, s.id)
       )
-        add('Mova a entrega para a última seção do percurso, marcada como fechamento.')
+        add(
+          'Coloque a entrega antes do quiz final, em Entrega e compartilhamento, ou no último Fechamento.',
+        )
     }
     return issues
   })

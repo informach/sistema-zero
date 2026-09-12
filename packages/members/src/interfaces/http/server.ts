@@ -39,7 +39,7 @@ export interface HttpDeps {
 // Rotas que carregam o projeto do Estúdio (entrega do aluno + autoria do bloco):
 // corpo muito maior que os JSONs normais. Recebem o teto `MAX_STUDIO_BODY_BYTES`;
 // o resto fica no teto pequeno (anti-DoS por rota, espelha o `maxBodyBytes` da borda).
-const STUDIO_SUBMISSION_PATH = /\/(studio-submission|project-check)$/
+const STUDIO_SUBMISSION_PATH = /\/(studio-submission|project-check|gallery-commit)$/
 const ADMIN_BLOCK_CREATE_PATH = /\/members\/admin\/lessons\/[^/]+\/blocks$/
 const ADMIN_BLOCK_UPDATE_PATH = /\/members\/admin\/blocks\/[^/]+$/
 

@@ -3,7 +3,6 @@
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
 import { LogOut, Palette, User, Users } from 'lucide-react'
 import Link from 'next/link'
-import { useTheme } from 'next-themes'
 import { useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import { profileMenuSubtitle } from '@/lib/gamification-label'
@@ -12,6 +11,7 @@ import type { GamificationMeView, SessionUserWithAvatar } from '@/lib/types'
 import { getUserDisplayName } from '@/lib/user-display'
 import { AvatarWithAura } from './avatar-with-aura'
 import { LevelBadge } from './level-badge'
+import { useProfileTheme } from './profile-theme'
 
 /**
  * As iniciais do responsável (sessão da CONTA, sem foto) no `UserAvatar` do member-shell são
@@ -51,7 +51,7 @@ export function UserMenu({
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const { resolvedTheme, setTheme } = useTheme()
+  const theme = useProfileTheme()
 
   useEffect(() => {
     if (!open) return
@@ -83,7 +83,6 @@ export function UserMenu({
 
   // Padrão ⇄ Pink. O ícone é um só, então não precisa esperar a hidratação (o Sol/Lua de antes
   // dependia do tema guardado e só aparecia depois de montar).
-  const isPink = resolvedTheme === 'pink'
   const itemClass =
     'flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm transition-colors hover:bg-muted'
 
@@ -197,12 +196,21 @@ export function UserMenu({
           </Link>
           <button
             type="button"
-            onClick={() => setTheme(isPink ? 'padrao' : 'pink')}
+            onClick={() => void theme?.toggle()}
+            disabled={!theme || theme.busy || Boolean(theme.error)}
             className={itemClass}
           >
             <Palette className="size-4" />
             Mudar tema
           </button>
+          {theme?.error && (
+            <div className="px-3 py-2 text-sm">
+              <p role="alert">{theme.error}</p>
+              <button type="button" onClick={theme.retry} className="min-h-11 underline">
+                Tentar novamente
+              </button>
+            </div>
+          )}
           <div className="border-t border-border" />
           <button
             type="button"

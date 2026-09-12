@@ -422,6 +422,17 @@ export class LessonAdminService {
 
 /** Coerência semântica do bloco (além do shape TypeBox). Quiz/estúdio incoerente → 400. */
 export function assertBlockCoherent(content: LessonBlockContent): void {
+  if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
+    if (
+      !isGalleryDeliveryConfig(content.gallery, content.kind) ||
+      content.chain ||
+      (content.kind === 'studio' && content.showcase?.enabled) ||
+      content.purpose === 'experiment'
+    )
+      throw new InvalidContentCommandError(
+        'A entrega pela galeria precisa de limites válidos e não usa cadeia, vitrine incorporada nem modo de exploração.',
+      )
+  }
   if (content.kind === 'interactive' && !isInteractiveBlock(content))
     throw new InvalidContentCommandError(
       'Configure a atividade e sua verificação. Experimentos e HTML essenciais precisam de uma pergunta de verificação.',
@@ -475,6 +486,10 @@ export function assertBlockCoherent(content: LessonBlockContent): void {
 
 /** Valida e estabiliza o desenho inicial antes de qualquer regra ou escrita no repositório. */
 export function canonicalizeBlockContent(content: LessonBlockContent): LessonBlockContent {
+  if ((content.kind === 'studio' || content.kind === 'pinta') && content.gallery !== undefined) {
+    assertBlockCoherent(content)
+    return content
+  }
   if (content.kind !== 'pinta') return content
   const asset = pintaAssetFromWire(content.initialAsset)
   if (!asset) throw new InvalidContentCommandError('O desenho inicial do Pinta é inválido')
@@ -654,3 +669,5 @@ export class AttachmentAdminService {
     return { ok: true }
   }
 }
+
+import { isGalleryDeliveryConfig } from '@sistemazero/core/learning'

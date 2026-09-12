@@ -1556,6 +1556,7 @@ export class InMemoryQuizAttemptRepository implements QuizAttemptRepository {
 }
 
 export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepository {
+  private readonly galleryRequests = new Map<string, string>()
   readonly submissions: StudioSubmissionRecord[] = []
 
   /** Courses p/ resolver a audiência da entrega (countByUserAndAudience). */
@@ -1581,11 +1582,29 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
-    options?: { preservePassedAt?: boolean },
+    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
   ): Promise<void> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
+    if (
+      options?.revision &&
+      this.courses?.blocks.find((b) => b.id === submission.blockId)?.contentRevision !==
+        options.revision
+    )
+      throw new LearningConflictError()
+    if (options?.galleryRequestId) {
+      const key = `${submission.userId}:${submission.blockId}:${options.galleryRequestId}`
+      if (this.galleryRequests.has(key)) {
+        if (
+          isGallerySubmission(existing?.project) &&
+          existing.project.requestId === options.galleryRequestId
+        )
+          return
+        throw new LearningConflictError()
+      }
+      this.galleryRequests.set(key, options.galleryRequestId)
+    }
     if (existing) {
       // Espelho do backup do Drizzle: a versão SOBRESCRITA vai para previous_*
       // ANTES do overwrite (undo de 1 passo, restaurável pelo professor).
@@ -3560,3 +3579,6 @@ export class FakeCatalogGateway implements CatalogGateway {
     return this.offers.get(ref) ?? null
   }
 }
+
+import { isGallerySubmission } from '@sistemazero/core/learning'
+import { LearningConflictError } from '../../src/domain/learning/learning.errors'

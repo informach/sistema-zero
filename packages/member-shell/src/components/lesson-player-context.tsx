@@ -1,7 +1,12 @@
 'use client'
 
-import type { LearningBlockProgress, LessonLearningProgress } from '@sistemazero/core/learning'
-import { createContext, useContext } from 'react'
+import type {
+  LearningBlockProgress,
+  LessonLearningProgress,
+  PlatformActionResult,
+  VideoWatchCoverage,
+} from '@sistemazero/core/learning'
+import { createContext, type ReactNode, useContext } from 'react'
 
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
@@ -9,6 +14,8 @@ import { createContext, useContext } from 'react'
  * blocos exibem a prévia sem watermark ou persistência de posição.
  */
 export interface LessonPlayerContextValue {
+  renderInstruction?: (text: string, pose?: 'speaking' | 'thinking' | 'celebrating') => ReactNode
+  renderActionEvidence?: (result: PlatformActionResult) => ReactNode
   refreshAfterLearning?: () => void
   sectionProjectCheck?: {
     sectionId: string
@@ -37,6 +44,11 @@ export interface LessonPlayerContextValue {
   onVideoProgress?: (seconds: number, percent: number) => void
   /** Flush imediato da posição (pause/ended). */
   onVideoFlush?: (seconds: number) => void
+  onVideoCoverage?: (coverage: VideoWatchCoverage) => void
+  videoWatchRequiredBlockIds?: string[]
+  materialRequiredBlockIds?: string[]
+  materialAccessed?: boolean
+  onMaterialAccess?: (method: 'opened' | 'downloaded') => Promise<void>
   /** Atualiza o estado do quiz e o gate da aula após responder. */
   refreshAfterQuiz?: () => void
   /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */

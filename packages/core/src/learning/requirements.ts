@@ -1,4 +1,5 @@
 import type { LessonLearningProgress, LessonSection, SectionProgressView } from './index'
+import { VIDEO_WATCH_THRESHOLD, videoWatchedFraction } from './video-watch'
 
 export type LessonRequirementReason =
   | 'SECTION_GATE_INCOMPLETE'
@@ -9,6 +10,8 @@ export type LessonRequirementReason =
   | 'PINTA_GATE_NOT_SUBMITTED'
   | 'CERTIFICATE_GATE_NOT_ISSUED'
   | 'LESSON_COMING_SOON'
+  | 'VIDEO_GATE_NOT_WATCHED'
+  | 'MATERIAL_GATE_NOT_ACCESSED'
 export interface LessonRequirement {
   blockId: string
   sectionId: string | null
@@ -36,6 +39,9 @@ export function lessonCompletionRequirements(input: {
   learningProgress?: LessonLearningProgress
   completed: boolean
   sectionProgress?: SectionProgressView
+  /** Selected only for a section whose sole activity is its video. */
+  videoBlockIds?: string[]
+  materialBlockIds?: string[]
 }): LessonRequirement[] {
   if (input.sectionProgress)
     return input.sectionProgress.sections.map((s) => ({
@@ -71,6 +77,34 @@ export function lessonCompletionRequirements(input: {
       })
     }
     switch (block.kind) {
+      case 'ebook': {
+        if (!input.materialBlockIds?.includes(block.id)) break
+        const saved = input.learningProgress?.blocks.find(
+          (p) => p.blockId === block.id && p.revision === block.blockRevision,
+        )
+        add(
+          'MATERIAL_GATE_NOT_ACCESSED',
+          'Abra o livro ou baixe o PDF',
+          saved?.answers.materialAccess === 'opened' ||
+            saved?.answers.materialAccess === 'downloaded',
+          'Material da aula',
+        )
+        break
+      }
+      case 'video': {
+        if (!input.videoBlockIds?.includes(block.id)) break
+        const saved = input.learningProgress?.blocks.find(
+          (p) => p.blockId === block.id && p.revision === block.blockRevision,
+        )
+        const fraction = videoWatchedFraction(saved?.answers ?? {})
+        add(
+          'VIDEO_GATE_NOT_WATCHED',
+          `Assista a 90% do vídeo (${Math.floor(fraction * 100)}% assistido)`,
+          fraction >= VIDEO_WATCH_THRESHOLD,
+          'Vídeo da aula',
+        )
+        break
+      }
       case 'coming_soon':
         add('LESSON_COMING_SOON', 'Aguardar a aula ficar pronta', false, 'Aula em produção')
         break

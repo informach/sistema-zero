@@ -1,4 +1,5 @@
 import type {
+  KidsTheme,
   LearningAnswers,
   LearningResult,
   LessonDraftDocument,
@@ -41,6 +42,20 @@ import type { RoomState } from '../../../domain/room/room-catalog'
 // Sem FK cross-schema: `user_id`/`product_id`/`offer_id`/`subscription_id` são
 // snapshots de outros serviços (auth/catalog/payments).
 export const members = pgSchema('members')
+
+export const profilePreferences = members.table(
+  'profile_preferences',
+  {
+    userId: uuid('user_id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    kidsTheme: text('kids_theme').$type<KidsTheme>().notNull().default('padrao'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('profile_preferences_account_idx').on(table.accountId),
+    check('profile_preferences_kids_theme_check', sql`${table.kidsTheme} in ('padrao', 'pink')`),
+  ],
+)
 
 const xid8 = customType<{ data: string; driverData: string }>({
   dataType: () => 'xid8',
@@ -1159,7 +1174,7 @@ export const lessonEvidence = members.table(
     lessonId: uuid('lesson_id').notNull(),
     blockId: uuid('block_id'),
     sectionId: uuid('section_id'),
-    kind: text('kind').$type<'section_project' | 'quiz' | 'studio'>().notNull(),
+    kind: text('kind').$type<'section_project' | 'platform_action' | 'quiz' | 'studio'>().notNull(),
     revision: text('revision').notNull(),
     payload: jsonb('payload').$type<unknown>().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
@@ -1642,6 +1657,7 @@ export const schema = {
   userBadges,
   coinEvents,
   avatarConfigs,
+  profilePreferences,
   avatarInventory,
   missionClaims,
   leagueMembership,

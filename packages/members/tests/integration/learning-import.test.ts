@@ -78,7 +78,7 @@ describe('manifest import through the authoring HTTP boundary', () => {
         .filter((s) => s.workspaceBlockId)
         .every((s) => s.workspaceBlockId === id),
     ).toBe(true)
-    expect(draft.document.plannedVideos).toHaveLength(4)
+    expect(draft.document.plannedVideos).toHaveLength(6)
     expect(await f.courses.findLessonWithContent(f.lessonId)).toEqual(published)
     expect((await f.apply(expectedRevision)).status).toBe(409)
     const next = await revision(await f.preview())

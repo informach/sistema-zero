@@ -1,4 +1,6 @@
+import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
+import { createProfilePreferencesRoutes } from './profile-preferences'
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
@@ -1272,6 +1274,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningAttempt,
     learningHelp,
     learningProjectCheck,
+    learningActionCheck,
   } = createLearningRoutes({ session, gateway })
 
   /** Submete o quiz ao members (score no servidor; gabarito SÓ na resposta). */
@@ -1683,7 +1686,10 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     quizAttempts,
     learningNavigation,
     learningProjectCheck,
+    learningActionCheck,
     learningProgress,
+    profilePreferences: createProfilePreferencesRoutes(session, gateway),
+    galleryDelivery: createGalleryDeliveryRoutes(session, gateway),
     learningAttempt,
     learningHelp,
     studioSubmit,

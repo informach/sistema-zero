@@ -1,91 +1,80 @@
 # Como cadastrar e publicar uma aula
 
-## Uma aula, várias seções
+## Escolher a conquista de cada seção
 
-A aula continua no mesmo curso e módulo, com os mesmos acessos e regras da carreira. As seções organizam seu percurso: por exemplo, Descubra a gravidade, Veja o pulo, Faça no seu jogo e Experimente outra altura. Criar seções não cria aulas extras nem desbloqueia ferramentas fora da carreira.
+No Kids, use vídeo curto para explicar e o balão do Zappy para a instrução direta. Texto corrido continua disponível para a comunidade adulta. O título aparece ao aluno; intenção e objetivo didático orientam a autoria.
 
-No editor do curso, crie a aula com título e slug. Ela nasce sem publicação. Abra sua edição para cadastrar conteúdo. Em uma aula existente, abrir a edição cria ou carrega seu rascunho sem alterar o que está publicado.
+| Seção | Conteúdo | Critério de avanço |
+| --- | --- | --- |
+| Descoberta | Vídeo, Zappy e modelo manipulável | Realizar as comparações indicadas no modelo |
+| Criação | Demonstrações curtas junto do Estúdio | Verificar objetivos estruturais do projeto atual |
+| Entrega e compartilhamento | Orientação, criação pronta e envio | Envio recebido; aprovação automática quando configurada |
+| Fechamento | Quiz curto sobre o que já foi explorado | Atingir a nota configurada, com feedback e novas tentativas |
+| Assistir | Somente um vídeo: tour, boas-vindas ou orientação | Assistir a 90% dos trechos do vídeo |
+| Material do curso | Vídeo explicativo, Zappy e livro 3D/PDF | Abrir o caderno ou baixar o PDF |
+| Ação na plataforma | Vídeo/instrução e atalho para a ação | Verificar a personalização salva |
 
-O título da seção aparece para a criança. Intenção didática e objetivo são orientações da autoria; não aparecem no percurso do aluno. Nos percursos com critérios, o aluno acessa a seção atual e revisa as concluídas. As próximas ficam bloqueadas, inclusive por acesso direto à API.
+Em **Para liberar a próxima seção**, selecione os critérios necessários. Todos os selecionados precisam passar. A presença de um bloco não o torna obrigatório em uma aula com critérios autorados. O objetivo escrito não gera uma regra automática. A publicação recusa seções sem critério, referências inválidas e objetivos impossíveis no Estúdio configurado.
 
-Uma seção representa uma pequena conquista, e pode conter vários blocos e trechos de vídeo. Nos roteiros revisados, cada aula tem de três a cinco seções. A abertura apresenta a missão junto da descoberta; a construção reúne passos relacionados; o fechamento convida a testar, personalizar e guardar ou entregar. A criança pode pausar entre os passos sem precisar responder outra pergunta.
+Abrir o caderno comprova acesso; exploração registra comparações feitas no navegador; estrutura verifica blocos e encaixes; entrega comprova recebimento. Nenhum deles mede sozinho a qualidade da criação ou o domínio de um conceito. O carimbo **já conferi** do professor não é aprovação manual que trava o avanço.
 
-Por exemplo, o Dia 1 agora tem **O rastro da nave → Prepare o espaço e sua nave → Ligue o motor da nave → Hora do seu voo**. A primeira etapa usa a descoberta; as duas do meio verificam a estrutura do projeto; a última pede a entrega. A explicação não ganhou uma prova própria e cada clique de montagem não ganhou uma trava.
+## Descobrir e criar no Corre, Dino!
 
-## Conteúdo no lugar em que será usado
+O piloto v4 tem 13 descobertas nativas: existir/desenhar, camadas, gravidade, evento de pulo, ritmo dos cactos, limpeza, estado do jogo, controles, reinício, área de colisão, pontos, sorteio e aceleração. A criança muda controles, roda, pausa, avança por passos e compara testes. A área de colisão também pode ser arrastada e movida com as setas. O modo de movimento reduzido usa passos.
 
-Em Percurso da aula, use Adicionar seção. Em cada seção, Adicionar conteúdo aqui abre os formulários que já existem: vídeo, texto, descoberta interativa, Estúdio, Pinta, quiz, imagem, áudio, PDF, HTML, certificado e aviso de aula em breve.
+Não acrescente uma pergunta obrigatória sobre algo ainda não observado. Os modelos do piloto reconhecem seus objetivos de exploração sem checkpoint extra. Perguntas independentes e HTML isolado continuam disponíveis para outros usos; HTML arbitrário não declara aprovação por conta própria.
 
-Preencha o conteúdo e feche o editor do bloco. O rascunho é salvo automaticamente após um segundo de pausa; mudanças de organização entram imediatamente na fila. O indicador informa salvando, salvo ou erro. Campos ainda incompletos podem ficar no rascunho, mas precisam ser resolvidos para publicar.
+Cadastre **um Estúdio** na seção **Entrega e compartilhamento** e selecione o mesmo bloco em **Ferramenta durante esta seção** nas etapas de construção. A entrega pode anteceder o quiz final; depois dela só podem vir seções de fechamento. O fechamento antigo que contém a própria entrega continua válido.
 
-As setas mudam a ordem das seções ou dos blocos. O seletor de local move um bloco para outra seção ou para o apoio. Remover uma seção mantém seu conteúdo na anterior. Retirar um bloco só o remove da versão do aluno depois da publicação; o banco preserva seu histórico e suas entregas.
+O player mantém a mesma instância do Estúdio ao trocar de seção. Projeto inicial, permissões, extensão Jogo 2D, modos e cadeia pertencem ao bloco existente. O manifesto organiza esse bloco sem substituir sua configuração. Um segundo bloco representa outro trabalho e outra entrega.
 
-Os anexos pertencem à aula e usam o mesmo rascunho. Materiais de apoio ficam em uma área recolhida depois do percurso, apropriada para o vídeo longo original ou consultas opcionais. Uma atividade obrigatória precisa estar no percurso.
+Use **Simular com um projeto salvo** para conferir objetivos estruturais com um projeto que atende e outro que não atende. O verificador não substitui testar o jogo com Play. Na aula 12, o sorteio entre 0 e 1 é inteiro; na 13, −9 limita a velocidade-base, e o sorteio ainda pode tornar a velocidade final mais negativa.
 
-## O mesmo Estúdio em várias seções
+## Entregar pela galeria
 
-Os manifestos de Corre Dino e dos dias do Desafio foram preparados para adaptar aulas existentes. Eles reutilizam o primeiro bloco de Estúdio da própria aula e preservam seu projeto inicial, suas permissões e sua cadeia. O arquivo de manifesto não contém essa configuração.
+Adicione Pinta ou Estúdio e escolha **Onde a criança faz este trabalho? → Na ferramenta completa, com entrega pela galeria**. Coloque o bloco na seção de entrega e selecione-o como critério. Ele não é um espaço de trabalho incorporado e não usa cadeia.
 
-Ao usar esses manifestos em uma aula nova e vazia, primeiro use **Adicionar conteúdo aqui → Estúdio** e configure esse bloco no rascunho. Na continuação de um curso, confira o projeto inicial e a mesma cadeia usada pelas outras aulas. Depois confira e aplique a importação; ela organizará esse único Estúdio nas seções previstas. Não é necessário publicar a aula para importar. A introdução e os manifestos que usam somente ferramentas externas não exigem esse bloco.
+A modal mostra trabalhos guardados na conta do perfil. Estúdio recebe um projeto; Pinta recebe a quantidade configurada, entre 1 e 12 desenhos. Personagens, cenários e peças em pixel ou vetor são aceitos. Mapas do Pinta com peças vinculadas ainda precisam de um formato de entrega com dependências e não aparecem nessa seleção.
 
-Adicione **um bloco de Estúdio** na última seção do percurso, marcada como **Fechamento**, e escolha esse mesmo bloco em **Ferramenta durante esta seção** desde o início da construção. Configure o projeto inicial, os blocos disponíveis, o modo, a atividade e a cadeia entre aulas, conforme o curso.
+Selecionar não conclui a etapa. **Enviar ao professor** confirma o recebimento de cópias da revisão escolhida. A galeria continua editável. Se o trabalho mudou desde que a modal abriu, atualize a seleção. Falha de cópia mantém a etapa pendente; tentar novamente não exige refazer desenhos. O envio libera a próxima seção, sem concluir o quiz por ela.
 
-Nas demais seções em que a criança precisa continuar trabalhando, use **Ferramenta durante esta seção** e escolha esse bloco existente. Não adicione outro bloco de Estúdio para representar a continuação.
+O professor recebe esses trabalhos na fila existente. Pode abrir cada cópia, baixar o trabalho aberto, conferir e responder pelo canal habitual. O histórico e a versão anterior continuam disponíveis. Projetos grandes preservam suas imagens em cópias privadas separadas do programa.
 
-A seção guarda uma referência ao bloco da aula. O player mantém a mesma instância do editor ao mudar de seção: cenário, código e alterações continuam ali. O projeto tem uma única entrega e conta uma única vez nas pendências. Ao retornar à aula, os mecanismos existentes de retomada do projeto continuam valendo. A cadeia mantém a continuidade entre aulas.
+## Livro 3D e orientação em vídeo
 
-Um segundo bloco de Estúdio representa outra atividade, com outro projeto e outra entrega. O Pinta segue a mesma regra. Atalhos externos abrem as ferramentas livres; eles não representam o projeto embutido da aula.
+Use **Material do curso** para apresentar o caderno do curso inteiro. Cadastre o ebook e selecione-o como critério. O aluno pode começar a folhear ou baixar o PDF. A primeira virada de página após carregar o livro registra abertura; download registra acesso após receber o arquivo. Recarregar mantém a confirmação. Não é obrigatório baixar, ler o livro inteiro nem fazer quiz.
 
-## Descobertas e requisitos
+O vídeo explicativo do caderno não acrescenta trava de 90%. Para tour ou orientação só em vídeo, use **Assistir**, deixe somente o vídeo na seção e selecione-o como critério. O progresso soma trechos reproduzidos: avançar a barra ou rever o mesmo trecho não aumenta artificialmente a cobertura. Orientação de ferramenta externa pode ser seguida por entrega pela galeria.
 
-As descobertas podem oferecer previsão, comparação, ordenação, associação, experimento ou HTML isolado. Configure sua pergunta, alternativas, explicação, pistas e necessidade de conclusão. Uma experiência essencial precisa da conferência nativa correspondente.
+## Verificar ações da plataforma
 
-Uma tentativa errada mantém a seção atual disponível, com pistas e novas tentativas sem punição. O servidor libera a próxima seção quando as verificações forem cumpridas. A hipótese inicial pode estar errada; a checagem final precisa ser acertada. A navegação só muda depois de o servidor confirmar o salvamento; uma falha preserva o rascunho e a seção atual.
+Escolha **Realizar uma ação na plataforma** no critério. O catálogo atual oferece personalizar avatar, personalizar quarto e mudar tema. A ação substitui os outros critérios da seção; não acrescente 90% nem projeto incorporado.
 
-Durante o percurso, O que falta para concluir mostra os requisitos e permite abrir a seção e a atividade correspondente. No avanço por seções, os critérios selecionados em **Para liberar a próxima seção** determinam as exigências, inclusive ao concluir a aula. Ter uma atividade no percurso não a torna automaticamente um critério. Aulas de certificado usam seu próprio fluxo, sem combinar critérios por seção.
+O aluno abre a tela, personaliza, salva e volta para **Verificar minha ação**. O servidor compara o estado salvo com o padrão. Uma personalização anterior também vale; abrir a tela ou salvar o padrão não vale. A verificação do avatar mostra o avatar salvo quando a prévia 3D estiver disponível. Seções concluídas mantêm o marco mesmo se o aluno voltar ao padrão depois.
 
-## Configurar o avanço real
+Hoje o Kids oferece Padrão e Pink. A preferência passa a ser salva por perfil no servidor. Não existe seletor independente de cor de destaque; por isso “trocar a cor do tema” não aparece como ação separada fictícia.
 
-Use **Preparar avanço por seções** no percurso. Em cada seção, selecione as atividades que comprovam seu objetivo. Uma pergunta curta é uma descoberta interativa do tipo **Pergunta curta**, com alternativas, resposta correta, explicação e pistas. Ler, assistir, percorrer a tela ou salvar uma resposta não comprova o objetivo.
+## Legadas durante a migração
 
-Sequências e associações selecionadas precisam ser resolvidas. Experimentos e HTML essenciais exigem uma conferência nativa. No Estúdio, use **Adicionar objetivo do Estúdio** quando a presença de um bloco, repetição, variável ou função for uma evidência adequada. Quando o objetivo envolver comportamento, uma pergunta sobre o resultado pode verificar a compreensão; ela não comprova que o jogo executou corretamente. A verificação da etapa examina o projeto atual, sem fazer a entrega final. Pinta e ferramentas externas usam checagens pedagógicas: a plataforma não inspeciona automaticamente essas criações.
+Sem seções configuradas, inclusive a seção automática do backfill, a apresentação se adapta sem regravar o conteúdo:
 
-O texto de **Objetivo didático** orienta seu planejamento e não gera uma regra automática. O texto de cada objetivo do Estúdio orienta a criança; sua regra diz ao sistema o que conferir. Todos os critérios selecionados precisam passar. Use apenas os necessários para a conquista da etapa, sem cobrar uma segunda pergunta sobre o mesmo resultado.
+- Vídeo e Estúdio na primeira seção, lado a lado em telas largas; quiz na segunda. A entrega mantém seu critério e não ganha 90% adicional.
+- Sem Estúdio, a primeira contém o vídeo e pede 90% quando ele é o único bloco. O quiz vem depois, se existir.
+- Texto e caderno sem quiz ficam em uma seção, concluída ao abrir o livro ou baixar o PDF.
+- Sem quiz, não se cria seção vazia. Certificado e aula em produção mantêm seus fluxos.
 
-Use **Simular com um projeto salvo** para conferir objetivos estruturais antes de publicar. Experimente um projeto que atende ao objetivo e outro em que falta o bloco ou o encaixe pedido. A simulação não registra progresso. Confira também o Estúdio real vinculado: extensão Jogo 2D, blocos permitidos e modo devem oferecer o que foi pedido. Os manifestos reutilizam essa configuração, não a substituem.
+Projetos, entregas, notas, cooldowns e aulas concluídas são preservados. Seções autoradas usam critérios explícitos. A professora pode migrar uma aula por vez.
 
-Para entregas com nota mínima, confira a atividade existente no Estúdio. Novas publicações só podem exigir aprovação de seção baseada em checagens estruturais compatíveis. Uma entrega sem avaliação automática comprova envio, não qualidade. O carimbo **já conferi** do professor registra leitura da entrega e não funciona como aprovação manual para liberar a seção.
+## Importar, produzir e publicar
 
-Todas as seções precisam de critérios. Por isso, reunir abertura, descoberta e explicação evita inventar uma pergunta só para liberar uma apresentação. O editor informa referências inválidas e critérios ausentes; o servidor impede a publicação. A entrega final do projeto deve pertencer à última seção do percurso, marcada como fechamento. Reordenar essa seção para antes das demais impede a publicação e o envio da entrega. Materiais de apoio não contam como seção; quizzes opcionais de apoio continuam disponíveis para responder.
+Abra a aula original e trabalhe no **rascunho compartilhado**. Em aula vazia, configure o primeiro Estúdio antes de importar um manifesto que o reutiliza. Use **Importar roteiro com seções → Vincular ao destino aberto → Conferir importação**. A prévia lista criação, atualização, preservação e instruções que sairão do rascunho.
 
-A publicação ativa as travas. Seções já concluídas não perdem seu marco com revisões; evidências ainda não confirmadas precisam corresponder ao conteúdo atual. A barra principal mostra seções concluídas / total de seções, com pesos iguais. Aulas legadas permanecem no fluxo anterior até a adaptação. A prévia do professor continua livre e não registra progresso.
+Os manifestos v4 do Dino aposentam explicitamente cartões importados da versão anterior. Confira a lista antes de aplicar. Projetos, mídias originais, quizzes originais e histórico não são apagados; conteúdo antigo mantido fica no apoio, fora dos novos critérios. Outros cursos continuam em v3, cuja limpeza editorial permanece manual.
 
-## Reimportar a revisão pedagógica
+O Dino prevê **77 clipes em 60 seções**. São orientações de produção, não vídeos gravados. As 27 aulas somam 144 clipes planejados. Vincule cada gravação pelo uploader Vimeo do cartão. O servidor confirma o processamento antes de publicar.
 
-As chaves dos vídeos e do projeto foram preservadas. As seções foram agrupadas e algumas perguntas deixaram de existir nos novos arquivos. O importador preserva conteúdo antigo omitido, inclusive levando atividades antes obrigatórias ao fechamento. Ele não faz a limpeza editorial por omissão.
+Salvar e importar alteram apenas o rascunho. A publicação captura editores, espera a fila, valida a revisão e aplica tudo em transação; falha mantém a publicação anterior. Alterações simultâneas não sobrescrevem outra autoria silenciosamente. O indicador e a recuperação local preservam mudanças após falha de rede. O autor pode comparar/baixar alterações locais antes de carregar uma revisão conflitante.
 
-Depois de aplicar o manifesto ao rascunho, use a lista **Cartões antigos a retirar após reimportação** do roteiro daquela aula. Retire somente esses cartões da versão em edição. Confira as atividades da aula original separadamente e decida quais devem integrar os critérios. A retirada do rascunho não exige apagar respostas ou entregas do banco.
+A prévia confere apresentação e objetivos sem registrar progresso. Para validar bloqueios reais, publique em staging e use perfil de teste sem progresso anterior: erro, acerto, retorno, recarga, troca de perfil e envio. No encerramento do curso, confira a configuração do Mural no Estúdio reaproveitado. Organizar seções não ativa automaticamente publicação no Mural.
 
-As seções agrupadas mantêm algumas chaves anteriores e seus marcos já conquistados. Para validar todo o percurso novo, use um perfil de teste sem progresso anterior. Primeiro teste uma resposta incorreta ou um projeto incompleto; depois acerte ou complete e confira liberação, retorno e recarga. **Prévia do rascunho** confere apresentação; o teste de bloqueios precisa acontecer como aluno na versão publicada em staging.
-
-## Vídeos do Vimeo
-
-Nos roteiros importados, cada vídeo planejado já aparece em sua seção com a orientação de produção. Use o uploader do cartão para enviar o arquivo ao Vimeo. O vídeo fica vinculado assim que o upload termina; isso ainda não significa que está pronto para os alunos.
-
-O cartão acompanha o processamento e volta a consultar o Vimeo quando é reaberto. A publicação confirma esse estado no servidor. Substituir ou retirar a mídia mantém o cartão e sua orientação para cadastrar a gravação correta. Não é preciso reposicionar um vídeo criado fora da seção nem apagar uma pendência manualmente.
-
-A prévia permite conferir a organização antes das gravações; um vídeo ainda vazio aparece identificado como planejado. Os 118 trechos dos roteiros são trabalho de produção de conteúdo: não foram gravados ou enviados automaticamente.
-
-## Rascunho, conflitos e publicação
-
-Existe um rascunho compartilhado por aula. Cada salvamento informa a revisão que o autor estava editando. Se outra pessoa alterar a aula, uma edição desatualizada não sobrescreve a versão mais nova.
-
-Falhas de rede mantêm as alterações em uma cópia local separada por autor e aula. Ao reconectar, o sistema tenta reenviar a mesma operação. Reabrir a aula recupera alterações locais compatíveis. Quando há conflito, o editor apresenta o conteúdo local para comparação e download antes de carregar a versão do servidor. A reconciliação exige conferir e reaplicar as alterações desejadas; não existe mesclagem automática de projetos.
-
-Prévia do rascunho não registra tentativas, navegação ou entregas de aluno. Os projetos usados na prévia ficam em memória e são descartados ao sair da prévia; sua função é experimentar o conteúdo do professor.
-
-Publicar aula captura os editores, espera a fila de salvamento, confere conteúdo, seções, vídeos e regras do curso e aplica tudo em uma transação. Falha na validação ou concorrência mantém a aula publicada anterior intacta. Publicar também agenda a sincronização da versão publicada com o Zappy; salvar ou importar rascunhos não altera sua base de conhecimento.
-
-Organizar seções não reinicia progresso nem pedidos de entrega. Alterações em avaliações continuam seguindo as regras anteriores de revisão e correção. Aulas já concluídas permanecem concluídas.
-
-Ver como aluno mostra o conteúdo publicado. Despublicar aula continua sendo uma ação explícita, sujeita às proteções da carreira e da última aula publicada do curso.
+As setas e o seletor de local organizam blocos entre seções e apoio. Remover uma seção conserva seu conteúdo na anterior; retirar um bloco só altera a versão do aluno após publicação, preservando histórico. Anexos usam o mesmo rascunho. Publicar também agenda sincronização do conteúdo com o Zappy; salvar e importar não alteram sua base publicada.

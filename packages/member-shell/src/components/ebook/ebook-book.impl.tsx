@@ -30,7 +30,15 @@ const DIRECTIONAL_INTENSITY = 0.5
 /** Passo do slider de brilho. */
 const BRIGHTNESS_STEP = 0.05
 
-export default function EbookBookImpl({ pdfUrl, title }: { pdfUrl: string; title: string | null }) {
+export default function EbookBookImpl({
+  pdfUrl,
+  title,
+  onOpened,
+}: {
+  pdfUrl: string
+  title: string | null
+  onOpened?: () => void
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   /** Folhas viradas: 0 = capa fechada … totalSheets = contracapa. */
   const [page, setPage] = useState(0)
@@ -66,6 +74,7 @@ export default function EbookBookImpl({ pdfUrl, title }: { pdfUrl: string; title
 
   function flipTo(next: number) {
     setPage(Math.max(0, Math.min(totalSheets, next)))
+    if (next > 0 && pdf.status === 'ready') onOpened?.()
   }
 
   function changeBrightness(next: number) {

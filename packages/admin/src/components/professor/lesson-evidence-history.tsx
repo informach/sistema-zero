@@ -71,11 +71,13 @@ export function LessonEvidenceHistory({
         return (
           <details key={evidence.id} className="rounded border p-2 text-sm">
             <summary>
-              {evidence.kind === 'section_project'
-                ? 'Verificação do projeto'
-                : evidence.kind === 'quiz'
-                  ? 'Tentativa de quiz'
-                  : 'Entrega'}
+              {evidence.kind === 'platform_action'
+                ? 'Ação na plataforma'
+                : evidence.kind === 'section_project'
+                  ? 'Verificação do projeto'
+                  : evidence.kind === 'quiz'
+                    ? 'Tentativa de quiz'
+                    : 'Entrega'}
               {title ? ` · ${title}` : ''} · {new Date(evidence.createdAt).toLocaleString('pt-BR')}
             </summary>
             <p className="text-xs text-muted-foreground">

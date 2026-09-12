@@ -54,7 +54,9 @@ test('author selects completion evidence and configures a structural objective t
       ),
     ).toBe(true)
     await act(async () => {
-      const select = container.querySelector('select')!
+      const select = container.querySelector<HTMLSelectElement>(
+        'select[aria-label="Regra do objetivo 1"]',
+      )!
       select.value = 'usesLoop'
       select.dispatchEvent(new Event('change', { bubbles: true }))
     })

@@ -28,6 +28,26 @@ const question: InteractiveBlock = {
 }
 
 describe('section progression', () => {
+  test('delivery can precede the final quiz without allowing more construction afterwards', () => {
+    const delivery = {
+      ...defaultLessonSection('delivery', 'Enviar', ['project']),
+      intent: 'delivery' as const,
+      completion: { version: 1 as const, blockIds: ['project'] },
+    }
+    const closing = {
+      ...defaultLessonSection('closing', 'Quiz final', ['quiz']),
+      intent: 'closing' as const,
+      completion: { version: 1 as const, blockIds: ['quiz'] },
+    }
+    const blocks = [
+      { id: 'project', content: { kind: 'studio' } },
+      { id: 'quiz', content: { kind: 'quiz', passingScore: 100, questions: [{}] } },
+    ]
+    expect(sectionCompletionIssues([delivery, closing], blocks)).toEqual([])
+    expect(
+      sectionCompletionIssues([delivery, { ...closing, intent: 'application' }], blocks).length,
+    ).toBeGreaterThan(0)
+  })
   test('native checkpoint requires a real correct answer and keeps the key private', () => {
     expect(isInteractiveBlock(question)).toBe(true)
     expect(isInteractiveBlock({ ...question, checkpoint: undefined })).toBe(false)
@@ -125,7 +145,8 @@ describe('section progression', () => {
     expect(sectionCompletionIssues([first, last], blocks)).toEqual([])
     expect(sectionCompletionIssues([last, first], blocks)).toContainEqual({
       sectionId: last.id,
-      message: 'Mova a entrega para a última seção do percurso, marcada como fechamento.',
+      message:
+        'Coloque a entrega antes do quiz final, em Entrega e compartilhamento, ou no último Fechamento.',
     })
     // Delivery is still mandatory when the author selects another checkpoint as evidence.
     const early = {
@@ -141,7 +162,8 @@ describe('section progression', () => {
       sectionCompletionIssues([early, later], [...blocks, { id: 'other', content: question }]),
     ).toContainEqual({
       sectionId: early.id,
-      message: 'Mova a entrega para a última seção do percurso, marcada como fechamento.',
+      message:
+        'Coloque a entrega antes do quiz final, em Entrega e compartilhamento, ou no último Fechamento.',
     })
     expect(
       sectionCompletionIssues(

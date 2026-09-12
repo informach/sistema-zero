@@ -1,11 +1,13 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
+import type { GallerySubmission } from '@sistemazero/core/learning'
 import {
   defaultLessonSection,
   evaluateLearning,
   type InteractiveBlock,
   type LearningManifest,
+  videoWatchedFraction,
 } from '@sistemazero/core/learning'
 import { eq } from 'drizzle-orm'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
@@ -16,6 +18,7 @@ import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/dr
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLearningRepository } from '../../src/infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
+import { DrizzleProfilePreferencesRepository } from '../../src/infrastructure/persistence/drizzle/profile-preferences.repository'
 import {
   courses,
   learningAttempts,
@@ -30,6 +33,7 @@ import {
   quizAttempts,
   studioSubmissions,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { DrizzleStudioSubmissionRepository } from '../../src/infrastructure/persistence/drizzle/studio-submission.repository'
 import { DrizzleUserDataPurgeRepository } from '../../src/infrastructure/persistence/drizzle/user-data-purge.repository'
 import { DrizzleVideoPositionRepository } from '../../src/infrastructure/persistence/drizzle/video-position.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
@@ -204,6 +208,119 @@ describe.skipIf(!url)(
         migrationsTable: 'members_migrations',
       })
     }, 60000)
+    test('profile theme survives reload, stays isolated and cannot recreate an erased account', async () => {
+      const { db } = get(),
+        repo = new DrizzleProfilePreferencesRepository(db)
+      const profile = { userId: randomUUID(), accountId: randomUUID() },
+        sibling = randomUUID()
+      expect(await repo.getKidsTheme(profile.userId)).toBeNull()
+      await repo.setKidsTheme(profile, 'pink', now)
+      expect(await new DrizzleProfilePreferencesRepository(db).getKidsTheme(profile.userId)).toBe(
+        'pink',
+      )
+      expect(await repo.getKidsTheme(sibling)).toBeNull()
+      await new DrizzleUserDataPurgeRepository(db).purgeForUser({
+        userIds: [profile.userId],
+        accountId: profile.accountId,
+        cleanup: {
+          id: randomUUID(),
+          prefixes: [`creations/${profile.userId}/`],
+          createdAt: now,
+          notBefore: now,
+        },
+      })
+      expect(await repo.getKidsTheme(profile.userId)).toBeNull()
+      await expect(repo.setKidsTheme(profile, 'pink', now)).rejects.toThrow('excluída')
+    })
+    test('concurrent watched intervals merge without replacing the earlier half', async () => {
+      const { db } = get(),
+        repo = new DrizzleLearningRepository(db)
+      const learner = { userId: randomUUID(), accountId: randomUUID() }
+      const [video] = await db.select().from(lessonBlocks).where(eq(lessonBlocks.id, videoId))
+      if (!video) throw new Error('Missing video fixture')
+      const progress = {
+        blockId: videoId,
+        revision: video.contentRevision,
+        hintsUsed: 0,
+        attemptsCount: 0,
+        result: null,
+        positionSeconds: 99,
+        updatedAt: now.toISOString(),
+      }
+      await Promise.all(
+        [['0:45'], ['45:90']].map((videoRanges) =>
+          repo.saveProgress({
+            ...learner,
+            lessonId,
+            progress: { ...progress, answers: { videoDuration: 100, videoRanges } },
+          }),
+        ),
+      )
+      const saved = (await repo.getProgress(learner, lessonId)).blocks.find(
+        (b) => b.blockId === videoId,
+      )
+      expect(videoWatchedFraction(saved?.answers ?? {})).toBe(0.9)
+    })
+    test('gallery confirmations serialize retries and never restore an older request over a newer delivery', async () => {
+      const { db } = get(),
+        content = new DrizzleContentAdminRepository(db),
+        submissions = new DrizzleStudioSubmissionRepository(db)
+      const galleryLesson = await content.createLesson(moduleId, courseId, {
+        slug: 'gallery-qa',
+        title: 'Galeria',
+        estimatedMinutes: null,
+        isPublished: true,
+      })
+      const block = await content.createBlock(galleryLesson.id, 'pinta', {
+        kind: 'pinta',
+        initialAsset: null,
+        gallery: { minItems: 1, maxItems: 2 },
+      })
+      const learner = { userId: randomUUID(), accountId: randomUUID() },
+        requestId = randomUUID()
+      const snapshot: GallerySubmission = {
+        kind: 'gallery-delivery',
+        version: 1,
+        tool: 'pinta',
+        requestId,
+        items: [
+          {
+            itemId: 'dino',
+            revision: 1,
+            name: 'Dino',
+            kind: 'pixel-sprite',
+            storageKey: `creations/${learner.userId}/lesson-submissions/${block.id}/${requestId}/dino-1/project.gz`,
+            parts: [],
+          },
+        ],
+      }
+      const submission = {
+        id: randomUUID(),
+        ...learner,
+        blockId: block.id,
+        lessonId: galleryLesson.id,
+        courseId,
+        submittedAt: now,
+        project: snapshot,
+      }
+      const options = { revision: block.contentRevision, galleryRequestId: requestId }
+      await Promise.all([
+        submissions.upsert(submission, options),
+        submissions.upsert({ ...submission, id: randomUUID() }, options),
+      ])
+      expect((await submissions.getOne(learner.userId, block.id))?.previousSubmittedAt).toBeNull()
+      expect(
+        (await new DrizzleLearningRepository(db).listEvidence(learner, galleryLesson.id)).length,
+      ).toBe(1)
+      const nextId = randomUUID(),
+        next = { ...snapshot, requestId: nextId }
+      await submissions.upsert(
+        { ...submission, project: next },
+        { ...options, galleryRequestId: nextId },
+      )
+      await expect(submissions.upsert(submission, options)).rejects.toThrow('atualizada')
+      expect((await submissions.getOne(learner.userId, block.id))?.project).toEqual(next)
+    })
     afterAll(async () => {
       await connection?.close()
     })

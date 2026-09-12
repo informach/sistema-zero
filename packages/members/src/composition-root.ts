@@ -364,12 +364,17 @@ export async function createApplication(env: Env): Promise<Application> {
     checkAccess,
     clock,
   )
+  const avatarRepo = new DrizzleAvatarRepository(db)
+  const roomRepo = new DrizzleRoomRepository(db)
+  const preferencesRepository = new DrizzleProfilePreferencesRepository(db)
+  const preferences = new ProfilePreferencesService(preferencesRepository, clock)
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
     quizAttempts,
     studioSubmissions,
     clock,
+    new PlatformActionService(avatarRepo, roomRepo, preferencesRepository),
   )
   const learning = new LearningService(
     learningRepository,
@@ -399,7 +404,6 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const getGamification = new GetGamificationService(gamificationRepo, clock)
-  const avatarRepo = new DrizzleAvatarRepository(db)
   const getAvatar = new GetAvatarService(avatarRepo, gamificationRepo)
   const getAvatarsByProfiles = new GetAvatarsByProfilesService(avatarRepo, gamificationRepo)
   const ranking = new ListRankingService(gamificationRepo, getAvatarsByProfiles, clock)
@@ -418,7 +422,6 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const equipAvatar = new EquipAvatarService(avatarRepo, clock)
   const setAvatarPhoto = new SetAvatarPhotoService(avatarRepo, clock, env.AVATAR_PHOTO_URL_PREFIXES)
-  const roomRepo = new DrizzleRoomRepository(db)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getRoom = new GetRoomService(roomRepo, gamificationRepo)
   const saveRoom = new SaveRoomService(roomRepo, clock, logger)
@@ -630,6 +633,16 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const server = createServer({
     learning: {
+      gallery: new GalleryDeliveryService(
+        courses,
+        checkAccess,
+        progress,
+        sectionProgression,
+        creationsRepo,
+        studioSubmissions,
+        submitStudio,
+      ),
+      preferences,
       learning,
       imports: new LearningImportService(
         new DrizzleLessonDraftRepository(db, parsePublishedLessonBlock),
@@ -899,3 +912,8 @@ export async function createApplication(env: Env): Promise<Application> {
     },
   }
 }
+
+import { GalleryDeliveryService } from './application/learning/gallery-delivery.service'
+import { PlatformActionService } from './application/learning/platform-action.service'
+import { ProfilePreferencesService } from './application/profile-preferences/profile-preferences.service'
+import { DrizzleProfilePreferencesRepository } from './infrastructure/persistence/drizzle/profile-preferences.repository'

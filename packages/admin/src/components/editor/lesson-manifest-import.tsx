@@ -11,7 +11,7 @@ interface Preview {
   fingerprint: string
   warnings: string[]
   sections: LessonSection[]
-  blocks: Array<{ id: string; action: 'create' | 'update' | 'preserve' }>
+  blocks: Array<{ id: string; label?: string; action: 'create' | 'update' | 'preserve' | 'retire' }>
 }
 export function LessonManifestImport({
   lessonId,
@@ -155,8 +155,24 @@ export function LessonManifestImport({
             <p className="text-sm">
               {preview.blocks.filter((b) => b.action === 'create').length} blocos novos ·{' '}
               {preview.blocks.filter((b) => b.action === 'update').length} atualizados ·{' '}
-              {preview.blocks.filter((b) => b.action === 'preserve').length} preservados
+              {preview.blocks.filter((b) => b.action === 'preserve').length} preservados ·{' '}
+              {preview.blocks.filter((b) => b.action === 'retire').length} instruções antigas
+              aposentadas
             </p>
+            {preview.blocks.some((b) => b.action === 'retire') && (
+              <details className="text-sm">
+                <summary className="cursor-pointer">
+                  Conferir instruções que sairão do rascunho
+                </summary>
+                <ul className="mt-2 list-disc pl-5">
+                  {preview.blocks
+                    .filter((b) => b.action === 'retire')
+                    .map((block) => (
+                      <li key={block.id}>{block.label ?? block.id}</li>
+                    ))}
+                </ul>
+              </details>
+            )}
             <ol className="space-y-2">
               {preview.sections.map((section, index) => (
                 <li key={section.id} className="text-sm">

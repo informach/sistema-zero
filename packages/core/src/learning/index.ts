@@ -1,16 +1,24 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
 export * from './authoring'
+export * from './gallery-delivery'
+export * from './legacy-layout'
 export * from './project-structure'
 export * from './requirements'
 export * from './section-progression'
+export * from './section-templates'
+export * from './simulation'
+export * from './video-watch'
 
 import { isSectionCompletion, type SectionCompletion } from './section-progression'
+import { evaluateSimulation, isSimulationActivity, type SimulationActivity } from './simulation'
 export const SECTION_INTENTS = [
   'presentation',
   'demonstration',
   'exploration',
   'explanation',
   'application',
+  'delivery',
+  'material',
   'closing',
 ] as const
 export type SectionIntent = (typeof SECTION_INTENTS)[number]
@@ -20,6 +28,8 @@ export const SECTION_INTENT_LABELS: Record<SectionIntent, string> = {
   exploration: 'Exploração',
   explanation: 'Explicação',
   application: 'Aplicação',
+  delivery: 'Entrega e compartilhamento',
+  material: 'Material do curso',
   closing: 'Fechamento',
 }
 
@@ -85,6 +95,7 @@ export type LearningActivity =
   | SequenceActivity
   | ExperimentActivity
   | HtmlActivity
+  | SimulationActivity
 export interface InteractiveBlock {
   kind: 'interactive'
   title: string
@@ -155,6 +166,8 @@ export interface LearningResult {
   passed: boolean
   feedback: string
   verifiedBy: 'server' | 'client'
+  /** Exploration is evidence of manipulating a model, not a claim of conceptual mastery. */
+  evidence?: 'exploration' | 'understanding'
 }
 export interface LearningBlockProgress {
   blockId: string
@@ -201,7 +214,7 @@ export interface LearningTopicSummary {
 
 export interface LessonEvidence {
   id: string
-  kind: 'section_project' | 'quiz' | 'studio'
+  kind: 'section_project' | 'platform_action' | 'quiz' | 'studio'
   blockId: string | null
   sectionId: string | null
   revision: string
@@ -300,6 +313,8 @@ export function isInteractiveBlock(value: unknown): value is InteractiveBlock {
   }
   const a = value.activity
   switch (a.type) {
+    case 'simulation':
+      return isSimulationActivity(a)
     case 'checkpoint':
       return value.checkpoint !== undefined
     case 'prediction':
@@ -342,11 +357,20 @@ export function evaluateLearning(
   answers: LearningAnswers,
 ): LearningResult {
   const a = block.activity
+  if (a.type === 'simulation' && !block.checkpoint) return evaluateSimulation(a, answers)
   let participated = false
   let passed = false
   let feedback = 'Experimente a atividade antes de conferir.'
   let verifiedBy: LearningResult['verifiedBy'] = 'server'
   switch (a.type) {
+    case 'simulation': {
+      const result = evaluateSimulation(a, answers)
+      participated = result.participated
+      passed = result.passed
+      feedback = result.feedback
+      verifiedBy = result.verifiedBy
+      break
+    }
     case 'checkpoint':
       participated = block.checkpoint?.choices.some((c) => c.id === answers.checkpoint) ?? false
       passed = participated
@@ -482,7 +506,9 @@ export function validateLessonSections(
 
 /** Portable authoring format. Existing projects/media are references, never invented snapshots. */
 export interface LearningManifest {
-  version: 1 | 2 | 3
+  version: 1 | 2 | 3 | 4
+  /** Explicit retirement of earlier imported instructional blocks, reviewed in the import preview. */
+  retireBlockKeys?: string[]
   courseSlug: string
   lessonSlug: string
   title: string
@@ -491,6 +517,7 @@ export interface LearningManifest {
         key: string
         content:
           | InteractiveBlock
+          | ManifestQuiz
           | { kind: 'rich_text'; markdown: string }
           | { kind: 'dialogue'; pose?: string; text: string }
       }
@@ -508,7 +535,7 @@ export interface LearningManifest {
 export function isLearningManifest(value: unknown): value is LearningManifest {
   if (
     !record(value) ||
-    (value.version !== 1 && value.version !== 2 && value.version !== 3) ||
+    (value.version !== 1 && value.version !== 2 && value.version !== 3 && value.version !== 4) ||
     !text(value.courseSlug, 200) ||
     !text(value.lessonSlug, 200) ||
     !text(value.title, 200) ||
@@ -521,11 +548,20 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
     return false
   const key = (v: unknown) => typeof v === 'string' && /^[a-z][a-z0-9-]{0,79}$/.test(v)
   if (
+    value.retireBlockKeys !== undefined &&
+    (value.version !== 4 ||
+      !Array.isArray(value.retireBlockKeys) ||
+      value.retireBlockKeys.length > 200 ||
+      !value.retireBlockKeys.every(key) ||
+      new Set(value.retireBlockKeys).size !== value.retireBlockKeys.length)
+  )
+    return false
+  if (
     !value.blocks.every(
       (b) =>
         record(b) &&
         key(b.key) &&
-        (((value.version === 2 || value.version === 3) &&
+        (((value.version === 2 || value.version === 3 || value.version === 4) &&
           'plannedVideo' in b &&
           !('content' in b) &&
           !('existing' in b) &&
@@ -534,6 +570,7 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
             !('plannedVideo' in b) &&
             !('existing' in b) &&
             (isInteractiveBlock(b.content) ||
+              (value.version === 4 && isManifestQuiz(b.content)) ||
               (record(b.content) &&
                 b.content.kind === 'rich_text' &&
                 text(b.content.markdown, 50000)) ||
@@ -573,7 +610,9 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
         (s.externalTool === null || s.externalTool === 'estudio' || s.externalTool === 'pinta') &&
         strings(s.pendingMedia, 20) &&
         !(s.workspaceKey && s.externalTool) &&
-        (s.completion === undefined ? value.version !== 3 : isSectionCompletion(s.completion)),
+        (s.completion === undefined
+          ? value.version !== 3 && value.version !== 4
+          : isSectionCompletion(s.completion)),
     )
   )
     return false
@@ -586,6 +625,11 @@ export function isLearningManifest(value: unknown): value is LearningManifest {
     new Set(placed).size === placed.length &&
     placed.length === blockKeys.length &&
     placed.every((k) => blockKeys.includes(k)) &&
+    (!Array.isArray(value.retireBlockKeys) ||
+      value.retireBlockKeys.every((k) => !blockKeys.includes(k))) &&
     value.sections.every((s) => s.workspaceKey === null || blockKeys.includes(s.workspaceKey))
   )
 }
+export * from './platform-action'
+
+import { isManifestQuiz, type ManifestQuiz } from './manifest-quiz'

@@ -1,11 +1,19 @@
 'use client'
 
 import {
-  defaultLessonSection,
+  isGalleryBlock,
   isInteractiveBlock,
+  isLegacyMaterialLesson,
+  isVideoOnlySection,
   type LearningBlockProgress,
   type LessonLearningProgress,
+  legacyLessonSections,
   lessonCompletionRequirements,
+  mergeVideoCoverage,
+  readVideoCoverage,
+  VIDEO_WATCH_THRESHOLD,
+  videoCoverageAnswers,
+  videoWatchedFraction,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { ArrowLeft, ArrowRight, Check, ExternalLink, List, Lock, MessageCircle } from 'lucide-react'
@@ -15,6 +23,7 @@ import { apiSend } from '../lib/api'
 import { cn } from '../lib/cn'
 import type { LessonBlockView, LessonDetailView } from '../lib/types'
 import { InteractiveLessonBlock } from './learning-activity'
+import { LessonGalleryDelivery } from './lesson-gallery-delivery'
 import { LessonPlayerProvider, useLessonPlayer } from './lesson-player-context'
 
 export function useLessonLearning(lesson: LessonDetailView, viewerId: string | null) {
@@ -71,19 +80,40 @@ function BlockScope({
     (lesson.blocks.find((b) => b.kind === 'video')?.id === block.id ? lesson.positionSeconds : null)
   const seconds = useRef(initial ?? 0)
   const savedSeconds = useRef(initial ?? 0)
+  const coverage = useRef(readVideoCoverage(saved?.answers ?? {}))
+  const savedCoverage = useRef(JSON.stringify(saved?.answers ?? {}))
+  const confirmedWatched = useRef(
+    videoWatchedFraction(saved?.answers ?? {}) >= VIDEO_WATCH_THRESHOLD,
+  )
+  const [saveError, setSaveError] = useState(false)
+  const [watchSaved, setWatchSaved] = useState(confirmedWatched.current)
+  const [watchedPercent, setWatchedPercent] = useState(
+    Math.floor(videoWatchedFraction(saved?.answers ?? {}) * 100),
+  )
+  const required = parent?.videoWatchRequiredBlockIds?.includes(block.id) ?? false
   const savedAt = useRef(0)
   const queue = useRef<Promise<void>>(Promise.resolve())
   const callback = useRef(parent?.onLearningProgress)
   callback.current = parent?.onLearningProgress
+  const refresh = useRef(parent?.refreshAfterLearning)
+  refresh.current = parent?.refreshAfterLearning
   const save = useCallback(
     (position: number) => {
       const rounded = Math.max(0, Math.floor(position))
-      if (block.kind !== 'video' || !block.blockRevision || rounded === savedSeconds.current) return
+      const answers = coverage.current ? videoCoverageAnswers(coverage.current) : {}
+      const serialized = JSON.stringify(answers)
+      if (
+        block.kind !== 'video' ||
+        !block.blockRevision ||
+        (rounded === savedSeconds.current && serialized === savedCoverage.current)
+      )
+        return
       savedAt.current = Date.now()
       savedSeconds.current = rounded
+      savedCoverage.current = serialized
       const body = {
         revision: block.blockRevision,
-        answers: {},
+        answers,
         hintsUsed: 0,
         positionSeconds: rounded,
       }
@@ -101,14 +131,21 @@ function BlockScope({
               keepalive: true,
             },
           )
-          if (!response.ok) savedSeconds.current = -1
-          else callback.current?.(await response.json())
+          if (!response.ok) throw new Error('Não foi possível salvar o vídeo.')
+          const value: LearningBlockProgress = await response.json()
+          callback.current?.(value)
+          setSaveError(false)
+          const reached = videoWatchedFraction(value.answers) >= VIDEO_WATCH_THRESHOLD
+          if (required && reached && !confirmedWatched.current) refresh.current?.()
+          confirmedWatched.current = reached
+          setWatchSaved(reached)
         } catch {
           savedSeconds.current = -1
+          setSaveError(true)
         }
       })
     },
-    [block.id, block.kind, block.blockRevision, lesson.id, parent?.viewerId],
+    [block.id, block.kind, block.blockRevision, lesson.id, parent?.viewerId, required],
   )
   useEffect(() => {
     const flush = () => save(seconds.current)
@@ -129,6 +166,26 @@ function BlockScope({
       value={{
         ...parent,
         initialPositionSeconds: initial,
+        materialAccessed:
+          saved?.answers.materialAccess === 'opened' ||
+          saved?.answers.materialAccess === 'downloaded',
+        onMaterialAccess: parent.materialRequiredBlockIds?.includes(block.id)
+          ? async (method) => {
+              const value = await apiSend<LearningBlockProgress>(
+                `/api/members/lessons/${encodeURIComponent(lesson.id)}/blocks/${encodeURIComponent(block.id)}/learning-progress`,
+                'POST',
+                {
+                  revision: block.blockRevision,
+                  answers: { materialAccess: method },
+                  hintsUsed: 0,
+                  positionSeconds: null,
+                },
+                { 'x-sz-viewer': parent.viewerId ?? '' },
+              )
+              callback.current?.(value)
+              refresh.current?.()
+            }
+          : undefined,
         onVideoProgress: (position) => {
           seconds.current = position
           if (Date.now() - savedAt.current >= 10000) save(position)
@@ -137,9 +194,46 @@ function BlockScope({
           seconds.current = position
           save(position)
         },
+        onVideoCoverage: (value) => {
+          const before = coverage.current
+            ? videoWatchedFraction(videoCoverageAnswers(coverage.current))
+            : 0
+          coverage.current = mergeVideoCoverage(
+            ...(coverage.current ? [coverage.current] : []),
+            value,
+          )
+          const fraction = videoWatchedFraction(videoCoverageAnswers(coverage.current))
+          setWatchedPercent(Math.floor(fraction * 100))
+          if (
+            (before < VIDEO_WATCH_THRESHOLD && fraction >= VIDEO_WATCH_THRESHOLD) ||
+            Date.now() - savedAt.current >= 10000
+          )
+            save(seconds.current)
+        },
       }}
     >
       {children}
+      {required && (
+        <p className="text-sm text-muted-foreground">
+          {watchSaved
+            ? 'Vídeo assistido. Você pode continuar!'
+            : watchedPercent >= 90
+              ? 'Salvando seu progresso…'
+              : `${watchedPercent}% assistido · veja 90% para continuar`}
+        </p>
+      )}
+      {saveError && block.kind === 'video' && (
+        <p role="alert" className="text-sm">
+          Não foi possível salvar seu progresso.{' '}
+          <button
+            type="button"
+            className="min-h-11 underline"
+            onClick={() => save(seconds.current)}
+          >
+            Tentar novamente
+          </button>
+        </p>
+      )}
     </LessonPlayerProvider>
   )
 }
@@ -194,16 +288,11 @@ function LessonSectionsContent({
   const preview = player === null
   const sections = useMemo(
     () =>
-      lesson.sections?.length
+      lesson.sections?.length &&
+      !(lesson.legacyLayout && lesson.sections.length === 1 && !lesson.sections[0]?.completion)
         ? lesson.sections
-        : [
-            defaultLessonSection(
-              lesson.id,
-              lesson.title,
-              lesson.blocks.map((b) => b.id),
-            ),
-          ],
-    [lesson.id, lesson.title, lesson.sections, lesson.blocks],
+        : legacyLessonSections(lesson.id, lesson.title, lesson.blocks),
+    [lesson.id, lesson.title, lesson.sections, lesson.blocks, lesson.legacyLayout],
   )
   const state = lesson.sectionProgress
   const locked = (id: string) =>
@@ -323,7 +412,10 @@ function LessonSectionsContent({
   ])
   const supportIds = new Set(lesson.supportBlockIds ?? [])
   const tools = lesson.blocks.filter(
-    (b) => (b.kind === 'studio' || b.kind === 'pinta') && !supportIds.has(b.id),
+    (b) =>
+      (b.kind === 'studio' || b.kind === 'pinta') &&
+      !isGalleryBlock(b.content) &&
+      !supportIds.has(b.id),
   )
   const hasWorkspace = tools.some((b) => activeIds.has(b.id))
   // A divisória só é interativa onde ela APARECE. Ver o comentário no handle.
@@ -430,7 +522,13 @@ function LessonSectionsContent({
         </p>
       )}
       <BlockScope block={block} lesson={lesson}>
-        {block.kind === 'interactive' && preview && !isInteractiveBlock(block.content) ? (
+        {isGalleryBlock(block.content) ? (
+          <LessonGalleryDelivery
+            block={block}
+            tool={block.content.kind}
+            config={block.content.gallery}
+          />
+        ) : block.kind === 'interactive' && preview && !isInteractiveBlock(block.content) ? (
           <p className="rounded-xl border border-dashed p-5 text-sm text-muted-foreground">
             Complete a descoberta interativa para experimentar a prévia.
           </p>
@@ -453,6 +551,29 @@ function LessonSectionsContent({
         player
           ? {
               ...player,
+              videoWatchRequiredBlockIds: sections
+                .filter(
+                  (s) =>
+                    !lesson.completed &&
+                    !state?.sections.some(
+                      (progress) => progress.id === s.id && progress.status === 'completed',
+                    ),
+                )
+                .filter((s) => isVideoOnlySection(s, lesson.blocks))
+                .flatMap((s) => s.completion?.blockIds ?? []),
+              materialRequiredBlockIds: lesson.completed
+                ? []
+                : lesson.legacyLayout && isLegacyMaterialLesson(lesson.blocks)
+                  ? lesson.blocks.filter((b) => b.kind === 'ebook').map((b) => b.id)
+                  : sections
+                      .filter(
+                        (s) =>
+                          !state?.sections.some(
+                            (progress) => progress.id === s.id && progress.status === 'completed',
+                          ),
+                      )
+                      .flatMap((s) => s.completion?.blockIds ?? [])
+                      .filter((id) => lesson.blocks.some((b) => b.id === id && b.kind === 'ebook')),
               sectionProjectCheck:
                 section.completion?.projectChecks?.length && section.workspaceBlockId && state
                   ? {
@@ -607,6 +728,16 @@ function LessonSectionsContent({
                   Boolean(b) && b?.kind !== 'studio' && b?.kind !== 'pinta',
               )
               .map(render)}
+            {section.completion?.platformAction && (
+              <SectionPlatformAction
+                key={`${player?.viewerId}:${section.id}`}
+                action={section.completion.platformAction}
+                sectionId={section.id}
+                revision={state?.revision ?? lesson.structureRevision ?? null}
+                preview={preview}
+                completed={state?.sections.find((s) => s.id === section.id)?.status === 'completed'}
+              />
+            )}
             {section.externalTool && (
               <a
                 href={`/${section.externalTool}`}
@@ -806,3 +937,5 @@ function LessonSectionsContent({
     </LessonPlayerProvider>
   )
 }
+
+import { SectionPlatformAction } from './section-platform-action'

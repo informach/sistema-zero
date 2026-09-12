@@ -91,6 +91,82 @@ afterEach(() => {
 })
 
 describe('aula por seções', () => {
+  test.each([
+    false,
+    true,
+  ])('vídeo legado só pede 90% se a aula ainda não foi concluída: %s', (completed) => {
+    globalThis.fetch = Object.assign(async () => Response.json({ ok: true }), {
+      preconnect: () => {},
+    })
+    render(
+      <LessonPlayerProvider value={player}>
+        <LessonSections
+          lesson={{
+            ...lesson,
+            completed,
+            sections: undefined,
+            legacyLayout: true,
+            blocks: [{ id: 'video', kind: 'video', sortOrder: 0, content: { kind: 'video' } }],
+          }}
+          renderBlocks={() => null}
+        />
+      </LessonPlayerProvider>,
+    )
+    expect(screen.queryByText('0% assistido · veja 90% para continuar') !== null).toBe(!completed)
+  })
+  test.each([
+    false,
+    true,
+  ])('legado separa vídeo e Estúdio do quiz, com backfill=%s', (backfilled) => {
+    const blocks = [
+      { id: 'quiz', kind: 'quiz', sortOrder: 0, content: { kind: 'quiz' } },
+      { id: 'project', kind: 'studio', sortOrder: 1, content: { kind: 'studio' } },
+      { id: 'video', kind: 'video', sortOrder: 2, content: { kind: 'video' } },
+    ]
+    const { container } = render(
+      <LessonSections
+        lesson={{
+          ...lesson,
+          blocks,
+          legacyLayout: backfilled ? true : undefined,
+          sections: backfilled
+            ? [
+                {
+                  id: lesson.id,
+                  title: lesson.title,
+                  blockIds: blocks.map((b) => b.id),
+                  workspaceBlockId: null,
+                  externalTool: null,
+                },
+              ]
+            : undefined,
+        }}
+        renderBlocks={(items) => items.map((b) => <div key={b.id}>{b.id}</div>)}
+      />,
+    )
+    expect([...container.querySelectorAll('.sz-lesson-block')].map((b) => b.id)).toEqual([
+      'lesson-block-video',
+      'lesson-block-project',
+    ])
+    expect(
+      container
+        .querySelector('#lesson-block-project')
+        ?.closest('[data-panel-id]')
+        ?.getAttribute('data-panel-id'),
+    ).toBe('lesson-tool')
+    expect(
+      container
+        .querySelector('#lesson-block-video')
+        ?.closest('[data-panel-id]')
+        ?.getAttribute('data-panel-id'),
+    ).toBe('lesson-content')
+    const project = container.querySelector('#lesson-block-project')
+    fireEvent.click(screen.getByRole('button', { name: 'Próxima seção' }))
+    expect(screen.getByRole('heading', { name: 'Feche a aula' })).toBeTruthy()
+    expect(screen.getByText('quiz')).toBeTruthy()
+    expect(project?.isConnected).toBe(true)
+    expect(container.querySelectorAll('#lesson-block-project')).toHaveLength(1)
+  })
   const progression = (completed = 0): SectionProgressView => ({
     revision: 'structure',
     completed,

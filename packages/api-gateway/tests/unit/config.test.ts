@@ -356,6 +356,21 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS (audit em rota mutante, ids únicos, novas
 // rotas presentes) ficavam sem rede. Asserimos direto sobre o objeto exportado (estático).
 describe('gateway.config.ts (configuração real)', () => {
+  test('gallery preparation belongs to the active student; confirmation requires a signed actor', () => {
+    const prepare = realConfig.routes.find((route) => route.id === 'members-gallery-prepare')
+    const commit = realConfig.routes.find((route) => route.id === 'members-gallery-commit')
+    expect(prepare).toMatchObject({
+      methods: ['POST'],
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+    })
+    expect(commit).toMatchObject({
+      methods: ['POST'],
+      auth: { strategies: ['hmac'] },
+      rateLimit: { by: 'json-field', field: 'actor.userId' },
+    })
+    expect(commit?.maxBodyBytes).toBeGreaterThanOrEqual(1_500_000)
+  })
   test('project checks reach members through the real route registry with a project-sized body', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

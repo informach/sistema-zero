@@ -321,7 +321,11 @@ describe('Quiz server-side', () => {
     const lessonId = course.lessonIds[0]
     const blockId = seedQuizBlock(courses, lessonId, { passingScore: 100 })
 
-    expect((await submit(app, lessonId, randomUUID(), { q1: ['b'] })).status).toBe(404)
+    // ⚠️ 423, não 404: com a progressão por seções, um bloco que não está na seção
+    // acessível é barrado ANTES de o servidor dizer se ele existe (a regra que
+    // `legacy-lesson-progression.test.ts` fixa). Um id que não é de bloco nenhum cai aí.
+    // O bloco de texto abaixo ESTÁ na seção aberta, então chega ao 404 de "não é quiz".
+    expect((await submit(app, lessonId, randomUUID(), { q1: ['b'] })).status).toBe(423)
     const richTextBlock = courses.blocks.find((b) => b.kind === 'rich_text')
     expect((await submit(app, lessonId, richTextBlock?.id ?? '', { q1: ['b'] })).status).toBe(404)
 

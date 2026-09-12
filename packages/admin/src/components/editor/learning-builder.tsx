@@ -2,6 +2,9 @@
 
 import {
   type InteractiveBlock,
+  isLearningScene,
+  LEARNING_SCENE_DEFINITIONS,
+  LEARNING_SCENES,
   type LearningActivity,
   type LearningChoice,
   publicInteractiveBlock,
@@ -22,6 +25,8 @@ const initialChoices = (): LearningChoice[] => [
 ]
 export function newLearningActivity(type: LearningActivity['type']): LearningActivity {
   switch (type) {
+    case 'simulation':
+      return { type, version: 1, scene: 'world' }
     case 'checkpoint':
       return { type }
     case 'prediction':
@@ -55,7 +60,7 @@ export const EMPTY_LEARNING: InteractiveBlock = {
   instructions: '',
   hints: [],
   required: false,
-  activity: newLearningActivity('prediction'),
+  activity: newLearningActivity('simulation'),
 }
 function ChoiceFields({
   choices,
@@ -102,9 +107,11 @@ function ChoiceFields({
 export function LearningBuilder({
   value,
   onChange,
+  sectionCriteria = false,
 }: {
   value: InteractiveBlock
   onChange: (value: InteractiveBlock) => void
+  sectionCriteria?: boolean
 }) {
   const id = useId()
   const [preview, setPreview] = useState(false)
@@ -137,6 +144,7 @@ export function LearningBuilder({
             const type = e.target.value
             if (
               type === 'checkpoint' ||
+              type === 'simulation' ||
               type === 'prediction' ||
               type === 'comparison' ||
               type === 'sequence' ||
@@ -159,6 +167,7 @@ export function LearningBuilder({
               })
           }}
         >
+          <option value="simulation">Exploração interativa: manipular e comparar</option>
           <option value="checkpoint">Pergunta curta</option>
           <option value="prediction">Prever e observar</option>
           <option value="comparison">Comparar duas possibilidades</option>
@@ -167,6 +176,38 @@ export function LearningBuilder({
           <option value="html">Experiência especial em HTML</option>
         </Select>
       </Field>
+      {a.type === 'simulation' && (
+        <>
+          <Field label="O que a criança vai descobrir" htmlFor={`${id}-scene`}>
+            <Select
+              id={`${id}-scene`}
+              value={a.scene}
+              onChange={(event) => {
+                if (!isLearningScene(event.target.value)) return
+                const scene = event.target.value,
+                  definition = LEARNING_SCENE_DEFINITIONS[scene]
+                onChange({
+                  ...value,
+                  title: definition.title,
+                  instructions: definition.instruction,
+                  activity: { type: 'simulation', version: 1, scene },
+                })
+              }}
+            >
+              {LEARNING_SCENES.map((scene) => (
+                <option key={scene} value={scene}>
+                  {LEARNING_SCENE_DEFINITIONS[scene].title}
+                </option>
+              ))}
+            </Select>
+          </Field>
+          <p className="text-sm text-muted-foreground">
+            A criança altera o modelo e observa resultados diferentes. A conclusão registra a
+            exploração prevista para esta cena; não exige uma pergunta nem representa aprovação do
+            projeto.
+          </p>
+        </>
+      )}
       {a.type === 'prediction' && (
         <>
           <Field label="Previsões possíveis">
@@ -323,14 +364,21 @@ export function LearningBuilder({
           onChange={(e) => onChange({ ...value, hints: e.target.value.split('\n').slice(0, 10) })}
         />
       </Field>
-      <label className="flex min-h-11 items-center gap-3">
-        <input
-          type="checkbox"
-          checked={value.required}
-          onChange={(e) => onChange({ ...value, required: e.target.checked })}
-        />
-        Essencial para concluir esta aula
-      </label>
+      {!sectionCriteria && (
+        <label className="flex min-h-11 items-center gap-3">
+          <input
+            type="checkbox"
+            checked={value.required}
+            onChange={(e) => onChange({ ...value, required: e.target.checked })}
+          />
+          Essencial para concluir esta aula
+        </label>
+      )}
+      {sectionCriteria && (
+        <p className="text-sm text-muted-foreground">
+          A obrigatoriedade é escolhida nos critérios da seção, no percurso da aula.
+        </p>
+      )}
       <label className="flex min-h-11 items-center gap-3">
         <input
           type="checkbox"

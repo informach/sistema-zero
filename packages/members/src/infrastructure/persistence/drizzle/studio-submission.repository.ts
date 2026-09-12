@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { isGallerySubmission } from '@sistemazero/core/learning'
 import { and, asc, count, desc, eq, gte, inArray, isNotNull, lt, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { StudioCheckResult } from '../../../domain/course/studio-activity'
@@ -32,7 +33,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
 
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
-    options?: { preservePassedAt?: boolean; revision?: string },
+    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
   ): Promise<void> {
     // Reenvio = último vence: atualiza projeto + data + correção, preservando a
     // linha (e o id). `passed_at` é STICKY — o service já calcula o valor a
@@ -64,7 +65,7 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
       )
 
       const rows = await tx
-        .select({ passedAt: studioSubmissions.passedAt })
+        .select({ passedAt: studioSubmissions.passedAt, project: studioSubmissions.project })
         .from(studioSubmissions)
         .where(
           and(
@@ -74,6 +75,22 @@ export class DrizzleStudioSubmissionRepository implements StudioSubmissionReposi
         )
         .limit(1)
 
+      if (options?.galleryRequestId) {
+        const current = rows[0]?.project
+        if (isGallerySubmission(current) && current.requestId === options.galleryRequestId) return
+        const [alreadySubmitted] = await tx
+          .select({ id: lessonEvidence.id })
+          .from(lessonEvidence)
+          .where(
+            and(
+              eq(lessonEvidence.userId, submission.userId),
+              eq(lessonEvidence.blockId, submission.blockId),
+              sql`${lessonEvidence.payload}->'project'->>'requestId' = ${options.galleryRequestId}`,
+            ),
+          )
+          .limit(1)
+        if (alreadySubmitted) throw new LearningConflictError()
+      }
       const nextPassedAt = options?.preservePassedAt
         ? (rows[0]?.passedAt ?? values.passedAt ?? null)
         : values.passedAt

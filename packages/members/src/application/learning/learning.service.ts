@@ -3,10 +3,13 @@ import {
   defaultLessonSection,
   evaluateLearning,
   isLearningAnswers,
+  isLegacyMaterialLesson,
   type LearningAnswers,
   type LessonLearningReport,
   type LessonSection,
+  playbackLessonStructure,
   publicInteractiveBlock,
+  readVideoCoverage,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { studioSectionCompletionIssues } from '@sistemazero/studio/server-project-checks'
@@ -88,7 +91,7 @@ export class LearningService {
   }
   async read(owner: LearningOwner, lesson: LessonWithContent) {
     const [structure, saved] = await Promise.all([
-      this.structure(lesson),
+      this.structure(lesson).then((stored) => playbackLessonStructure(lesson, stored)),
       this.repository.getProgress(owner, lesson.id),
     ])
     return {
@@ -106,7 +109,7 @@ export class LearningService {
   async navigation(actor: LearningActor, lessonId: string, sectionId: string) {
     const lesson = await this.requireLesson(actor, lessonId)
     await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
-    const structure = await this.structure(lesson)
+    const structure = playbackLessonStructure(lesson, await this.structure(lesson))
     if (!structure.sections.some((s) => s.id === sectionId))
       throw new LessonNotFoundError('Seção não encontrada')
     await this.repository.saveNavigation(actor, lessonId, sectionId)
@@ -121,7 +124,9 @@ export class LearningService {
   ) {
     const lesson = await this.requireLesson(actor, lessonId)
     await this.sections.assertSection(actor, lesson, sectionId, actor.privileged)
-    const section = (await this.structure(lesson)).sections.find((s) => s.id === sectionId)
+    const section = playbackLessonStructure(lesson, await this.structure(lesson)).sections.find(
+      (s) => s.id === sectionId,
+    )
     if (!section) throw new LessonNotFoundError('Seção não encontrada')
     const course = await this.courses.findCourseById(lesson.courseId)
     if (!course) throw new LessonNotFoundError()
@@ -162,10 +167,32 @@ export class LearningService {
     const lesson = await this.requireLesson(actor, lessonId)
     await this.sections.assertBlock(actor, lesson, blockId, actor.privileged)
     const block = lesson.blocks.find((b) => b.id === blockId)
-    if (!block || (block.content.kind !== 'interactive' && block.content.kind !== 'video'))
+    if (!block || !['interactive', 'video', 'ebook'].includes(block.content.kind))
       throw new LessonNotFoundError()
     if (block.contentRevision !== input.revision) throw new LearningConflictError()
     if (!isLearningAnswers(input.answers)) throw new ValidationError('Respostas inválidas.')
+    if (block.kind === 'ebook') {
+      const structure = playbackLessonStructure(lesson, await this.structure(lesson))
+      const material =
+        (structure.legacyLayout && isLegacyMaterialLesson(lesson.blocks)) ||
+        (!structure.legacyLayout &&
+          structure.sections.some(
+            (s) => s.intent === 'material' && s.completion?.blockIds.includes(blockId),
+          ))
+      if (
+        !material ||
+        Object.keys(input.answers).length !== 1 ||
+        !['opened', 'downloaded'].includes(String(input.answers.materialAccess))
+      )
+        throw new ValidationError('O acesso a este livro não é um critério desta aula.')
+    }
+    if (
+      block.kind === 'video' &&
+      Object.keys(input.answers).length &&
+      (Object.keys(input.answers).some((key) => key !== 'videoDuration' && key !== 'videoRanges') ||
+        !readVideoCoverage(input.answers))
+    )
+      throw new ValidationError('Trechos assistidos inválidos.')
     if (
       input.positionSeconds !== null &&
       (!Number.isInteger(input.positionSeconds) ||
@@ -225,6 +252,12 @@ export class LearningService {
     const recorded = await this.repository.findAttempt(actor, input.id)
     if (!recorded) throw new LearningConflictError()
     return { attempt: recorded, progress, sectionProgress: await this.sections.read(actor, lesson) }
+  }
+  async checkAction(actor: LearningActor, lessonId: string, sectionId: string, revision: string) {
+    const lesson = await this.requireLesson(actor, lessonId)
+    const course = await this.courses.findCourseById(lesson.courseId)
+    if (!course) throw new LessonNotFoundError()
+    return this.sections.checkAction(actor, lesson, sectionId, revision, course.audience)
   }
   async checkProject(
     actor: LearningActor,

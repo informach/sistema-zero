@@ -1,3 +1,4 @@
+import { LEARNING_SCENES, PLATFORM_ACTIONS } from '@sistemazero/core/learning'
 import { t } from 'elysia'
 
 const Id = t.String({ format: 'uuid' })
@@ -14,6 +15,12 @@ export const InteractiveBlockSchema = t.Object({
   hints: t.Array(t.String({ maxLength: 10000 }), { maxItems: 10 }),
   required: t.Boolean(),
   activity: t.Union([
+    t.Object({
+      type: t.Literal('simulation'),
+      version: t.Literal(1),
+      scene: t.Union(LEARNING_SCENES.map((scene) => t.Literal(scene))),
+      parameters: t.Optional(t.Record(t.String(), t.Number(), { maxProperties: 10 })),
+    }),
     t.Object({ type: t.Literal('checkpoint') }),
     t.Object({
       type: t.Literal('prediction'),
@@ -75,6 +82,7 @@ const SectionRule = t.Union([
 export const SectionCompletionSchema = t.Object({
   version: t.Literal(1),
   blockIds: t.Array(Id, { maxItems: 200 }),
+  platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
   projectChecks: t.Optional(
     t.Array(
       t.Object({
@@ -98,6 +106,8 @@ export const LessonSectionSchema = t.Object({
     t.Literal('exploration'),
     t.Literal('explanation'),
     t.Literal('application'),
+    t.Literal('delivery'),
+    t.Literal('material'),
     t.Literal('closing'),
   ]),
   blockIds: t.Array(Id, { maxItems: 200 }),

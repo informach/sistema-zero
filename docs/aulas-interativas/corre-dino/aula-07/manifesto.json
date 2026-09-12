@@ -1,129 +1,94 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-07",
   "title": "Cada coisa na sua tela",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "construir-3",
+    "convite-construir-1",
+    "checar-construir-3",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Vamos ensinar o jogo a esperar pelo jogador. No fim de hoje, só a floresta deve aparecer. Esse é o plano!\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Vamos ensinar o jogo a esperar pelo jogador. No fim de hoje, só a floresta deve aparecer. Esse é o plano! Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Coloque o relógio dentro de “se jogando”. Teste no início e na partida.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos.\n\nPodemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção.\n\nMover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "O relógio espera a partida?",
-        "instructions": "Teste o relógio em início e em jogando. Observe por que uma ação repetida também precisa de uma condição.",
-        "hints": ["Compare o contador sem condição quando a tela ainda está em início."],
-        "required": true,
+        "title": "O relógio espera a partida",
+        "instructions": "Coloque o relógio dentro de “se jogando”. Teste no início e na partida.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "html",
-          "html": "<h2>O relógio deve contar agora?</h2>\n<p>Escolha a tela e avance o relógio. Compare o contador protegido pela condição com o contador sem condição.</p>\n<label for=\"scene\">Tela atual</label><select id=\"scene\"><option value=\"inicio\">Início</option><option value=\"jogando\">Jogando</option><option value=\"fim\">Fim</option></select>\n<button id=\"tick\" type=\"button\">Passar um segundo</button><button id=\"reset\" type=\"button\">Zerar contadores</button>\n<div style=\"display:flex;gap:16px;flex-wrap:wrap;margin-top:16px\"><div style=\"padding:20px;background:#fff;border-radius:12px\">Se está jogando: <strong id=\"guarded\">0</strong></div><div style=\"padding:20px;background:#fff;border-radius:12px\">Sem condição: <strong id=\"always\">0</strong></div></div>\n<p id=\"status\" aria-live=\"polite\">Escolha uma tela para começar a comparação.</p>\n<script>\n(()=>{let guarded=0,always=0,tested=[];const scene=document.getElementById('scene');function render(){document.getElementById('guarded').textContent=guarded;document.getElementById('always').textContent=always}function save(){window.learning?.save({scene:scene.value,guarded,always,testedScenes:tested})}\ndocument.getElementById('tick').addEventListener('click',()=>{always++;if(scene.value==='jogando')guarded++;tested=[...new Set([...tested,scene.value])];render();document.getElementById('status').textContent=scene.value==='jogando'?'Os dois contadores aumentam durante a partida.':'Só o contador sem condição aumentou fora da partida.';save();if(tested.includes('jogando')&&tested.some(s=>s!=='jogando'))window.learning?.participated()});\nscene.addEventListener('change',save);document.getElementById('reset').addEventListener('click',()=>{guarded=0;always=0;render();save()});addEventListener('learning:restore',event=>{const s=event.detail;guarded=Number.isFinite(s.guarded)?s.guarded:0;always=Number.isFinite(s.always)?s.always:0;scene.value=['inicio','jogando','fim'].includes(s.scene)?s.scene:'inicio';tested=Array.isArray(s.testedScenes)?s.testedScenes:[];render()})})();\n</script>\n"
-        },
-        "checkpoint": {
-          "prompt": "Um relógio fora da condição pode executar antes da partida?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Pode; ele precisa perguntar se a tela é jogando"
-            },
-            {
-              "id": "opcao-2",
-              "label": "Não; todos os relógios já sabem a tela"
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A condição precisa proteger cada ação que depende do estado da partida."
+          "type": "simulation",
+          "version": 1,
+          "scene": "game-state"
         }
-      }
-    },
-    {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Uma condição é uma pergunta que o programa faz antes de agir. A tela atual guarda em que momento estamos.\n\nPodemos manter a floresta desenhando e deixar as ações da partida dentro de Se a tela é jogando. O relógio que cria cactos também precisa dessa proteção.\n\nMover uma sequência para dentro de uma condição muda quando ela funciona, sem reconstruir seus blocos. O resultado de hoje pode parecer vazio: é a partida esperando para começar."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Dizer em qual tela o jogo abre\n\nEm Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.\n\nAgora o jogo sabe em qual tela começa."
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-07-passo-01: gravar a demonstração \"dizer em qual tela o jogo abre\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Dizer em qual tela o jogo abre. Narração revisada: “Agora é a sua vez. Vamos dizer em qual tela o jogo abre.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio.\n\nAgora o jogo sabe em qual tela começa. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### A pergunta da tela \"jogando\"\n\nEm Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.\n\nEscolha jogando."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Telas e cenas, coloque Ir para a tela em Ao iniciar, como último bloco. Escolha inicio."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-07-passo-02: gravar a demonstração \"a pergunta da tela \"jogando\"\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: A pergunta da tela \"jogando\". Narração revisada: “Agora é a sua vez. Vamos a pergunta da tela \"jogando\".” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas.\n\nEscolha jogando. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-3",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Mudar o jogo pra dentro\n\nArraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.\n\nEnvolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Programação, Lógica e Se, coloque Se depois de Desenhar fundo de floresta. Retire a comparação que veio nele e encaixe a tela atual é, de Telas e cenas."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-07-passo-03: gravar a demonstração \"mudar o jogo pra dentro\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Mudar o jogo pra dentro. Narração revisada: “Agora é a sua vez. Vamos mudar o jogo pra dentro.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora.\n\nEnvolva também a criação do relógio de 1.4 com Se a tela é jogando. Preserve o evento de pulo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Confira os dois lugares protegidos pelo Se: as ações de cada quadro e o nascimento dos cactos."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Arraste a sequência a partir de Aplicar a gravidade para dentro do Se: são seis blocos. Limpar a tela e a floresta ficam fora."
       }
     },
     {
-      "key": "checar-construir-3",
+      "key": "zappy-convite-construir-1",
       "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["O relógio pode executar mesmo quando os objetos não são desenhados."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "Você protegeu o desenho com Se jogando, mas o relógio ficou de fora. O que pode acontecer?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "Ele vai esperar só porque o Dino não aparece."
-            },
-            {
-              "id": "opcao-2",
-              "label": "Ele passa a funcionar apenas quando alguém pula."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Ele pode criar cactos enquanto a partida ainda espera."
-            }
-          ],
-          "correctChoiceId": "opcao-3",
-          "explanation": "A condição precisa proteger também a criação. Nesta aula, ficar só com a floresta é o resultado esperado."
-        }
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Confira os dois lugares protegidos pelo Se: as ações de cada quadro e o nascimento dos cactos."
       }
     },
     {
-      "key": "fechamento",
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
       "content": {
-        "kind": "rich_text",
-        "markdown": "Ao recarregar, deve aparecer só a floresta. Confira os dois Se e os blocos que ficaram dentro. A partida ainda não tem comando de início; isso chega na próxima aula. Envie.\n\nNa Aula 8, a tela de início vai convidar o jogador e permitir que ele comece.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -132,15 +97,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O desenho está protegido por “se jogando”, mas o relógio não. O que pode acontecer?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Cactos nascerem antes da partida."
+              },
+              {
+                "id": "b",
+                "label": "O relógio esperar automaticamente."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O relógio precisa da sua própria condição para esperar a partida."
+          },
+          {
+            "id": "q2",
+            "prompt": "Nesta aula ainda não fizemos o botão de começar. Ver só a floresta é…",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Sinal de que o projeto foi perdido."
+              },
+              {
+                "id": "b",
+                "label": "O resultado esperado enquanto a partida espera."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Os blocos da partida estão protegidos e o comando de início vem depois."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "O relógio espera a partida?",
+      "title": "O relógio espera a partida",
       "objective": "Usar uma condição para executar a partida somente na tela jogando.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -155,35 +169,76 @@
       "objective": "Condicionar tanto a atualização quanto o relógio de criação à tela jogando.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "construir-3",
+        "zappy-construir-2",
         "video-construir-3-1",
-        "convite-construir-1",
-        "checar-construir-3"
+        "zappy-construir-3",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-3"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "partida-no-quadro",
+            "label": "Confira a tela jogando dentro da atualização de cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_scene_is",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SCENE": "jogando"
+              }
+            }
+          },
+          {
+            "id": "partida-no-relogio",
+            "label": "Confira a tela jogando também dentro do relógio dos cactos.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_scene_is",
+              "area": "loops",
+              "withinBlock": "sz_g2d_every_seconds",
+              "fields": {
+                "SCENE": "jogando"
+              }
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Confira a espera do jogo",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { ValidationError } from '@sistemazero/core/errors'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
+import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import type { CourseAudience } from '../../domain/course/course'
@@ -21,6 +22,7 @@ import {
   type StudioCheckResult,
 } from '../../domain/course/studio-activity'
 import { deterministicSourceId } from '../../domain/gamification/source-id'
+import { LearningConflictError } from '../../domain/learning/learning.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
@@ -96,6 +98,8 @@ export class SubmitStudioProjectService {
     authorName: string | null = null,
     /** Bloco que esta entrega atende. Default `studio` — zero regressão no caminho existente. */
     kind: SubmissionBlockKind = 'studio',
+    /** Only the authenticated gallery service can supply a validated immutable snapshot. */
+    gallery?: { snapshot: GallerySubmission; projectForChecks: unknown; revision: string },
   ): Promise<StudioSubmissionResultView> {
     const limits = SUBMISSION_LIMITS[kind]
     // Recado do aluno ao professor: trim → vazio vira null (não guarda " ").
@@ -111,6 +115,9 @@ export class SubmitStudioProjectService {
       userId,
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
+    const block = lesson.blocks.find((b) => b.id === blockId)
+    if (block?.content.kind !== kind || block.content.purpose === 'experiment')
+      throw limits.notFound()
     await this.sections.assertBlock(
       { userId, accountId: accountId ?? userId },
       lesson,
@@ -125,15 +132,18 @@ export class SubmitStudioProjectService {
     // aula que o servidor declara não-servida.
     if (!privileged && hasComingSoonBlock(lesson.blocks)) throw limits.notFound()
 
-    const block = lesson.blocks.find((b) => b.id === blockId)
-    if (block?.content.kind !== kind || block.content.purpose === 'experiment')
-      throw limits.notFound()
+    if (
+      Boolean(block.content.gallery) !== Boolean(gallery) ||
+      (isGallerySubmission(project) && !gallery)
+    )
+      throw new ValidationError('Use a seleção da galeria para enviar esta atividade.')
+    if (gallery && gallery.revision !== block.contentRevision) throw new LearningConflictError()
 
     // O desenho cruza HTTP/jsonb como arrays JSON. A borda restaura os typed arrays,
     // valida toda a estrutura e serializa novamente no formato estável de transporte.
     // Assim uma linha incompleta jamais conta como entrega para o gate da aula.
-    let submissionProject = project
-    if (kind === 'pinta') {
+    let submissionProject = gallery?.snapshot ?? project
+    if (kind === 'pinta' && !gallery) {
       const asset = pintaAssetFromWire(project)
       if (!asset) throw new ValidationError('O desenho do Pinta é inválido')
       submissionProject = pintaAssetToWire(asset)
@@ -166,17 +176,20 @@ export class SubmitStudioProjectService {
         authorName,
         project: submissionProject,
       })
-      await this.submissions.upsert({
-        id: this.newId(),
-        userId,
-        accountId: accountId ?? userId,
-        blockId,
-        lessonId,
-        courseId: lesson.courseId,
-        project: submissionProject,
-        submittedAt,
-        message: note,
-      })
+      await this.submissions.upsert(
+        {
+          id: this.newId(),
+          userId,
+          accountId: accountId ?? userId,
+          blockId,
+          lessonId,
+          courseId: lesson.courseId,
+          project: submissionProject,
+          submittedAt,
+          message: note,
+        },
+        { revision: block.contentRevision, galleryRequestId: gallery?.snapshot.requestId },
+      )
       // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco).
       await this.gamification.awardStudioSubmitted({
         userId,
@@ -189,7 +202,11 @@ export class SubmitStudioProjectService {
     }
 
     // Com atividade: gradeia (structure recalc no servidor + reportado do cliente).
-    const grade = gradeStudioActivity(activity, submissionProject, clientResults)
+    const grade = gradeStudioActivity(
+      activity,
+      gallery?.projectForChecks ?? submissionProject,
+      clientResults,
+    )
     // `passed_at` é STICKY: aprovou uma vez = destrava para sempre (não regride no
     // reenvio pior). O repositório mantém o valor existente com bloqueio advisory.
     const passedAt = grade.passed ? submittedAt : null
@@ -224,7 +241,11 @@ export class SubmitStudioProjectService {
         passedAt,
         message: note,
       },
-      { preservePassedAt: true, revision: block.contentRevision },
+      {
+        preservePassedAt: true,
+        revision: block.contentRevision,
+        galleryRequestId: gallery?.snapshot.requestId,
+      },
     )
 
     // Marco de missão "enviar ao professor" (amount 0, idempotente por bloco) — SEMPRE

@@ -1,5 +1,6 @@
 'use client'
 
+import type { VideoWatchCoverage } from '@sistemazero/core/learning'
 import Player from '@vimeo/player'
 import { Maximize2, Minimize2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -17,6 +18,7 @@ interface VimeoPlayerProps {
   onProgress?: (seconds: number, percent: number) => void
   /** Pause/fim → flush imediato da posição. */
   onFlush?: (seconds: number) => void
+  onCoverage?: (coverage: VideoWatchCoverage) => void
   /** Disparado UMA vez ao cruzar o limiar de % assistido. */
   onReachedThreshold?: () => void
   /** Vídeo TERMINOU (evento `ended` do SDK) — p/ o host celebrar no fim de verdade. */
@@ -45,6 +47,7 @@ export function VimeoPlayer({
   initialPositionSeconds,
   onProgress,
   onFlush,
+  onCoverage,
   onReachedThreshold,
   onEnded,
   thresholdPercent = 0.9,
@@ -54,10 +57,11 @@ export function VimeoPlayer({
   // A instância viva do SDK: o efeito da tela cheia precisa falar com ela.
   const playerRef = useRef<Player | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [trackingFailed, setTrackingFailed] = useState(false)
 
   // Callbacks em refs: o Player é criado uma vez por vídeo; sem stale closures.
-  const callbacksRef = useRef({ onProgress, onFlush, onReachedThreshold, onEnded })
-  callbacksRef.current = { onProgress, onFlush, onReachedThreshold, onEnded }
+  const callbacksRef = useRef({ onProgress, onFlush, onCoverage, onReachedThreshold, onEnded })
+  callbacksRef.current = { onProgress, onFlush, onCoverage, onReachedThreshold, onEnded }
   const reachedRef = useRef(false)
   const lastSecondsRef = useRef(0)
 
@@ -90,6 +94,34 @@ export function VimeoPlayer({
       // (a divisória arrastável) mais o pedido de qualidade na tela cheia.
     })
     playerRef.current = player
+    let disposed = false
+    let sampledAt = 0
+    let pendingSample = false
+    async function sampleCoverage(flush?: number) {
+      if (!callbacksRef.current.onCoverage || (pendingSample && flush === undefined)) return
+      pendingSample = true
+      sampledAt = Date.now()
+      try {
+        const [duration, played] = await Promise.all([player.getDuration(), player.getPlayed()])
+        if (disposed || duration <= 0) return
+        const ranges: VideoWatchCoverage['ranges'] = []
+        // SDK versions describe these as objects; the iframe also sends tuple arrays.
+        for (const range of played) {
+          if (Array.isArray(range) && typeof range[0] === 'number' && typeof range[1] === 'number')
+            ranges.push([range[0], range[1]])
+          else if (typeof range.start === 'number' && typeof range.end === 'number')
+            ranges.push([range.start, range.end])
+          else throw new Error('Trechos do Vimeo inválidos.')
+        }
+        callbacksRef.current.onCoverage?.({ duration, ranges })
+        setTrackingFailed(false)
+      } catch {
+        if (!disposed) setTrackingFailed(true)
+      } finally {
+        pendingSample = false
+        if (!disposed && flush !== undefined) callbacksRef.current.onFlush?.(flush)
+      }
+    }
 
     const initial = initialPositionSeconds ?? 0
     if (initial > 2) {
@@ -103,6 +135,7 @@ export function VimeoPlayer({
     player.on('timeupdate', (data: { seconds: number; percent: number }) => {
       lastSecondsRef.current = data.seconds
       callbacksRef.current.onProgress?.(data.seconds, data.percent)
+      if (Date.now() - sampledAt >= 1000) void sampleCoverage()
       if (!reachedRef.current && data.percent >= thresholdPercent) {
         reachedRef.current = true
         callbacksRef.current.onReachedThreshold?.()
@@ -110,13 +143,16 @@ export function VimeoPlayer({
     })
     player.on('pause', (data: { seconds: number }) => {
       callbacksRef.current.onFlush?.(data.seconds)
+      void sampleCoverage(data.seconds)
     })
     player.on('ended', (data: { duration: number }) => {
       callbacksRef.current.onFlush?.(data.duration)
+      void sampleCoverage(data.duration)
       callbacksRef.current.onEnded?.()
     })
 
     return () => {
+      disposed = true
       // `destroy()` remove o iframe que o PRÓPRIO SDK criou dentro do host —
       // o React nunca soube dele, então o próximo run cria um novo limpo.
       if (playerRef.current === player) playerRef.current = null
@@ -174,6 +210,15 @@ export function VimeoPlayer({
     >
       {/* Host do iframe do SDK (o title/allow do iframe vêm do oEmbed). */}
       <div ref={hostRef} className="h-full w-full [&>iframe]:h-full [&>iframe]:w-full" />
+      {trackingFailed && (
+        <p
+          role="alert"
+          className="absolute bottom-12 inset-x-3 rounded-lg bg-black/80 p-3 text-sm text-white"
+        >
+          Não conseguimos acompanhar os trechos assistidos. Confira sua conexão; tentaremos
+          novamente durante a reprodução.
+        </p>
+      )}
       {watermark ? (
         <span
           aria-hidden

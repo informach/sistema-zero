@@ -108,6 +108,7 @@ export {
   setStudioCloudMirror,
 } from './state/persistence'
 export type { StudioLimits } from './state/projectStore'
+export { sanitizeProjectForHost } from './state/projectStore'
 export type {
   ActivityCheck,
   ActivityCheckBase,

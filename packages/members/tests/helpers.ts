@@ -309,12 +309,14 @@ export function buildApp(
   } as unknown as Env
 
   const learningRepository = new InMemoryLearningRepository()
+  const preferencesRepository = new InMemoryProfilePreferencesRepository()
   const sectionProgression = new SectionProgressionService(
     learningRepository,
     progress,
     quizAttempts,
     studioSubmissions,
     clock,
+    new PlatformActionService(avatar, room, preferencesRepository),
   )
   const learning = new LearningService(
     learningRepository,
@@ -326,8 +328,30 @@ export function buildApp(
     sectionProgression,
   )
   const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
+  const submitStudio = new SubmitStudioProjectService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+    awardGamification,
+    teacherThreads,
+    silentLogger,
+    () => randomUUID(),
+    clock,
+    sectionProgression,
+  )
   const app = createServer({
     learning: {
+      gallery: new GalleryDeliveryService(
+        courses,
+        checkAccess,
+        progress,
+        sectionProgression,
+        creations,
+        studioSubmissions,
+        submitStudio,
+      ),
+      preferences: new ProfilePreferencesService(preferencesRepository, clock),
       learning,
       imports: new LearningImportService(drafts, courses),
       drafts,
@@ -395,18 +419,7 @@ export function buildApp(
         clock,
         sectionProgression,
       ),
-      submitStudio: new SubmitStudioProjectService(
-        checkAccess,
-        courses,
-        progress,
-        studioSubmissions,
-        awardGamification,
-        teacherThreads,
-        silentLogger,
-        () => randomUUID(),
-        clock,
-        sectionProgression,
-      ),
+      submitStudio,
       getStudioCarryover: new GetStudioCarryoverService(
         checkAccess,
         courses,
@@ -1022,3 +1035,8 @@ export function signedWebhookHeaders(
   if (deliveryId) headers['x-delivery-id'] = deliveryId
   return headers
 }
+
+import { GalleryDeliveryService } from '../src/application/learning/gallery-delivery.service'
+import { PlatformActionService } from '../src/application/learning/platform-action.service'
+import { ProfilePreferencesService } from '../src/application/profile-preferences/profile-preferences.service'
+import { InMemoryProfilePreferencesRepository } from './fakes/profile-preferences-in-memory'

@@ -165,6 +165,7 @@ export interface StudioSubmissionRepository {
       /** Mantém `passedAt` existente (STICKY) se já houver, sem sobrescrever por `null`. */
       preservePassedAt?: boolean
       revision?: string
+      galleryRequestId?: string
     },
   ): Promise<void>
   /**

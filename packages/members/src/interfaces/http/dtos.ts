@@ -1229,6 +1229,7 @@ const StudioActivitySchema = t.Object({
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   kind: t.Literal('studio'),
+  gallery: t.Optional(t.Object({ minItems: t.Literal(1), maxItems: t.Literal(1) })),
   purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
   initialProject: StudioProjectSchema,
   level: t.Optional(StudioLevelSchema),
@@ -1280,8 +1281,14 @@ const PintaAssetSchema = t.Object(
 /** Bloco Pinta: ateliê de desenho embarcado na aula (ver domain/course/lesson-block.ts). */
 const PintaBlockSchema = t.Object({
   kind: t.Literal('pinta'),
+  gallery: t.Optional(
+    t.Object({
+      minItems: t.Integer({ minimum: 1, maximum: 12 }),
+      maxItems: t.Integer({ minimum: 1, maximum: 12 }),
+    }),
+  ),
   purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
-  initialAsset: PintaAssetSchema,
+  initialAsset: t.Union([PintaAssetSchema, t.Null()]),
   /** Curadoria da caixa de ferramentas (restritiva; vazia = a caixa inteira). */
   allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
   /** Nome do desenho contínuo (cadeia) — ver PintaBlock em domain/course/lesson-block.ts. */

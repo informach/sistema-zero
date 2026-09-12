@@ -6,7 +6,12 @@ import type {
   LessonSection,
   SectionProgressRecord,
 } from '@sistemazero/core/learning'
-import { validateLessonSections } from '@sistemazero/core/learning'
+import {
+  isLegacyLessonLayout,
+  legacyLessonSections,
+  mergeVideoWatchAnswers,
+  validateLessonSections,
+} from '@sistemazero/core/learning'
 import { and, asc, desc, eq, gte, lt, lte, or, sql } from 'drizzle-orm'
 import type { CourseAudience } from '../../../domain/course/course'
 import { LessonNotFoundError } from '../../../domain/course/course.errors'
@@ -294,8 +299,20 @@ export class DrizzleLearningRepository implements LearningRepository {
         .select()
         .from(lessonStructures)
         .where(eq(lessonStructures.lessonId, lessonId))
-      if (structure && !structure.sections.some((s) => s.id === sectionId))
-        throw new LearningConflictError()
+      let sections = structure?.sections
+      if (isLegacyLessonLayout(lessonId, sections)) {
+        const blocks = await tx
+          .select({ id: lessonBlocks.id, kind: lessonBlocks.kind })
+          .from(lessonBlocks)
+          .where(eq(lessonBlocks.lessonId, lessonId))
+          .orderBy(asc(lessonBlocks.sortOrder))
+        sections = legacyLessonSections(
+          lessonId,
+          '',
+          blocks.filter((b) => !structure?.supportBlockIds.includes(b.id)),
+        )
+      }
+      if (!sections?.some((s) => s.id === sectionId)) throw new LearningConflictError()
       await tx
         .insert(lessonNavigation)
         .values({ ...owner, lessonId, sectionId, updatedAt: new Date() })
@@ -310,10 +327,19 @@ export class DrizzleLearningRepository implements LearningRepository {
     return this.withOwner(input, async (tx) => {
       const p = input.progress
       await this.assertRevision(tx, input.lessonId, p.blockId, p.revision)
+      const [current] = await tx
+        .select({ answers: lessonBlockProgress.answers, revision: lessonBlockProgress.revision })
+        .from(lessonBlockProgress)
+        .where(and(owned(input), eq(lessonBlockProgress.blockId, p.blockId)))
+      const answers =
+        current?.revision === p.revision
+          ? mergeVideoWatchAnswers(current.answers, p.answers)
+          : p.answers
       const [row] = await tx
         .insert(lessonBlockProgress)
         .values({
           ...input.progress,
+          answers,
           userId: input.userId,
           accountId: input.accountId,
           lessonId: input.lessonId,
@@ -324,7 +350,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           set: {
             revision: p.revision,
             positionSeconds: p.positionSeconds,
-            answers: p.answers,
+            answers,
             hintsUsed: sql`case when ${lessonBlockProgress.revision} = ${p.revision} then greatest(${lessonBlockProgress.hintsUsed}, ${p.hintsUsed}) else ${p.hintsUsed} end`,
             updatedAt: new Date(p.updatedAt),
             result: sql`case when ${lessonBlockProgress.revision} = ${p.revision} then ${lessonBlockProgress.result} else null end`,

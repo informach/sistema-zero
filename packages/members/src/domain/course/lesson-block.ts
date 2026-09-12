@@ -189,6 +189,7 @@ export type StudioMode = 'blocks' | 'bridge' | 'code'
  * aula até ser enviada — espelha o gate do quiz (ver mark-lesson-complete.service).
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
   /** Snapshot `Project` do Estúdio autorado pelo admin (JSON opaco aqui). */
@@ -293,6 +294,7 @@ export const MAX_PINTA_ASSET_CHARS = 1_800_000
  * `pintaAssetKindOf` — uma leitura de string, que não obriga o members a conhecer o formato.
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   /** Snapshot `PintaAsset` autorado pelo admin (JSON opaco aqui). */

@@ -445,6 +445,7 @@ export interface EbookBlock {
  * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
  */
 export interface StudioBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
   initialProject: Project
@@ -488,6 +489,7 @@ export interface StudioBlock {
  * do tipo. Quem sanea é o `<PintaLesson>`, na borda.
  */
 export interface PintaBlock {
+  gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'pinta'
   initialAsset: unknown
@@ -1350,6 +1352,8 @@ export interface LessonDetailView {
     LessonSection,
     'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
   >[]
+  /** Presentation of an unconfigured lesson; completion still uses its original gates. */
+  legacyLayout?: boolean
   structureRevision?: string | null
   sectionProgress?: SectionProgressView
   learningProgress?: LessonLearningProgress

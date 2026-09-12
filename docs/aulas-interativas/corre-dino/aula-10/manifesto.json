@@ -1,118 +1,115 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-10",
   "title": "Uma colisão mais justa",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "construir-3",
+    "convite-construir-3",
+    "construir-4",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Às vezes parece que o Dino perde sem encostar no cacto. Vamos ligar um raio-X para investigar essa batida.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Às vezes parece que o Dino perde sem encostar no cacto. Vamos ligar um raio-X para investigar essa batida. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “Mude a área do Dino e aproxime o cacto. Compare quando eles encostam.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: O computador pode usar uma forma simples para detectar contatos, sem seguir cada detalhe do desenho. Essa área inclui espaços transparentes e pode tocar o obstáculo antes da imagem parecer encostar.\n\nMostrar a caixa de colisão torna essa regra visível. Diminuir a área pode deixar o jogo mais justo, mas diminuir demais permite contatos que parecem impossíveis.\n\nO experimento usa círculos para comparar áreas; no seu jogo, confira os retângulos com o raio-X. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "Quando as áreas se encontram?",
-        "instructions": "Compare dois tamanhos da área de colisão. Os desenhos ficam no mesmo lugar; só a área muda.",
-        "hints": ["Olhe as formas tracejadas e compare com a parte preenchida."],
-        "required": true,
+        "title": "A área da batida",
+        "instructions": "Mude a área do Dino e aproxime o cacto. Compare quando eles encostam.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "experiment",
-          "preset": "collision",
-          "parameters": {
-            "radius": 25
-          }
-        },
-        "checkpoint": {
-          "prompt": "Por que pode existir colisão antes dos desenhos encostarem?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A área usada pelo programa pode ser maior que a parte visível"
-            },
-            {
-              "id": "opcao-2",
-              "label": "O programa sempre compara cada pixel colorido"
-            }
-          ],
-          "correctChoiceId": "opcao-1",
-          "explanation": "A detecção usa a área configurada; o desenho e a área não precisam ter o mesmo contorno."
+          "type": "simulation",
+          "version": 1,
+          "scene": "hitbox"
         }
       }
     },
     {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "O computador pode usar uma forma simples para detectar contatos, sem seguir cada detalhe do desenho. Essa área inclui espaços transparentes e pode tocar o obstáculo antes da imagem parecer encostar.\n\nMostrar a caixa de colisão torna essa regra visível. Diminuir a área pode deixar o jogo mais justo, mas diminuir demais permite contatos que parecem impossíveis.\n\nO experimento usa círculos para comparar áreas; no seu jogo, confira os retângulos com o raio-X."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Ligar o raio-X\n\nEm Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode.\n\nO contorno rosa vai mostrar a área que estava invisível."
-      }
-    },
-    {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-10-passo-01: gravar a demonstração \"ligar o raio-X\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ligar o raio-X. Narração revisada: “Agora é a sua vez. Vamos ligar o raio-x.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode.\n\nO contorno rosa vai mostrar a área que estava invisível. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Por que a batida pareceu roubada\n\nAproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa.\n\nEssa diferença explica a sensação de perder cedo."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Jogo 2D, Aparência, coloque Mostrar a caixa de colisão do sprite no fim de Se jogando. Escolha dino e rode."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-10-passo-02: gravar a demonstração \"por que a batida pareceu roubada\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Por que a batida pareceu roubada. Narração revisada: “Agora é a sua vez. Vamos por que a batida pareceu roubada.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa.\n\nEssa diferença explica a sensação de perder cedo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Aproxime o Dino do cacto e observe o contorno. Procure os espaços entre o desenho e a caixa.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Aproxime o dino de um cacto e observe os espaços entre o desenho e o contorno. Compare a batida olhando a imagem e depois a caixa."
       }
     },
     {
-      "key": "construir-3",
+      "key": "zappy-convite-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### Ajustar a área de colisão\n\nEm Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80.\n\nRecomece e confira a caixa menor com o raio-X ainda ligado."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Aproxime o Dino do cacto e observe o contorno. Procure os espaços entre o desenho e a caixa."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-10-passo-03: gravar a demonstração \"ajustar a área de colisão\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Ajustar a área de colisão. Narração revisada: “Agora é a sua vez. Vamos ajustar a área de colisão.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80.\n\nRecomece e confira a caixa menor com o raio-X ainda ligado. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-3",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Comece com 80% e veja a caixa menor. Na próxima etapa você pode comparar outros valores.\n\nDepois, use **Verificar esta etapa**. A conferência olha os blocos pedidos. Rode o jogo também para observar o resultado."
-      }
-    },
-    {
-      "key": "construir-4",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Você escolhe o quanto perdoar\n\nCompare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos.\n\nAo terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Colisões, coloque Usar área de colisão de porcentagem do tamanho em Ao iniciar, como último bloco. Escolha dino e 80."
       }
     },
     {
       "key": "video-construir-4-1",
-      "plannedVideo": "aula-10-passo-04: gravar a demonstração \"você escolhe o quanto perdoar\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Você escolhe o quanto perdoar. Narração revisada: “Agora é a sua vez. Vamos você escolhe o quanto perdoar.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos.\n\nAo terminar, remova o bloco que mostra a caixa, mas preserve a configuração da área de colisão. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "fechamento",
+      "key": "zappy-construir-4",
       "content": {
-        "kind": "rich_text",
-        "markdown": "Jogue com o raio-X para justificar sua escolha. Depois desligue o diagnóstico e confira se o jogo parece justo. Envie.\n\nNa Aula 11, você vai medir o resultado da partida com um placar.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Compare 40 e 100. Depois escolha um valor de 70 a 85 observando os saltos."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-3",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Comece com 80% e veja a caixa menor. Na próxima etapa você pode comparar outros valores."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Jogue com o raio-X para justificar sua escolha. Depois desligue o diagnóstico e confira se o jogo parece justo. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -121,15 +118,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "O desenho não encostou, mas a caixa de colisão encostou. O jogo…",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Pode detectar a batida pela caixa."
+              },
+              {
+                "id": "b",
+                "label": "Só olha os pixels do desenho."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A área de colisão pode ter um tamanho diferente da imagem."
+          },
+          {
+            "id": "q2",
+            "prompt": "Você diminui a área de 100% para 80%. O que muda?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "A cor do personagem."
+              },
+              {
+                "id": "b",
+                "label": "A área usada para detectar contato."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "A escala muda a área de colisão; use o raio-X para comparar."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "Quando as áreas se encontram?",
+      "title": "A área da batida",
       "objective": "Distinguir o desenho da área de colisão e ajustar a tolerância usando evidência visual.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -144,11 +190,11 @@
       "objective": "Comparar a imagem com a área usada na colisão.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "convite-construir-1"
+        "zappy-construir-2",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -178,7 +224,13 @@
       "title": "Ajuste a área do contato",
       "objective": "Configurar a escala da área de colisão do personagem.",
       "intent": "application",
-      "blockKeys": ["construir-3", "video-construir-3-1", "convite-construir-3"],
+      "blockKeys": [
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "video-construir-4-1",
+        "zappy-construir-4",
+        "zappy-convite-construir-3"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
@@ -203,16 +255,30 @@
     },
     {
       "key": "fechamento",
-      "title": "Escolha uma batida justa",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["construir-4", "video-construir-4-1", "fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]

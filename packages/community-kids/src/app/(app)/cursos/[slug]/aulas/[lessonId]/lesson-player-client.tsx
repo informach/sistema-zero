@@ -1,7 +1,7 @@
 'use client'
 
 import { lessonCompletionRequirements } from '@sistemazero/core/learning'
-
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -23,7 +23,9 @@ import { FocusModeToggle } from '@/components/kids/focus-mode-toggle'
 import { KidsLessonAttachments } from '@/components/kids/kids-lesson-attachments'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
+import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
+import { KidsMascot } from '@/components/kids/mascot'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { type ApiError, apiSend } from '@/lib/api'
@@ -182,6 +184,13 @@ export function LessonPlayer({
       refreshAfterLearning: () => router.refresh(),
       refreshAfterQuiz: () => router.refresh(),
       refreshAfterStudio: () => router.refresh(),
+      renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
+      renderInstruction: (text, pose = 'speaking') => (
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text, pose }}
+          mascot={<KidsMascot expression={pose} className="size-16 sm:size-20" />}
+        />
+      ),
     }),
     [
       lesson.id,

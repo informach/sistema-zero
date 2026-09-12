@@ -43,7 +43,11 @@ export class LearningImportService {
     }
     const mapping = new Map<string, string>()
     const used = new Set<string>()
-    const actions: Array<{ id: string; action: 'create' | 'update' | 'preserve' }> = []
+    const actions: Array<{
+      id: string
+      label?: string
+      action: 'create' | 'update' | 'preserve' | 'retire'
+    }> = []
     const add = (block: DraftBlock) => {
       if (used.has(block.id)) throw new ValidationError('Bloco duplicado no manifesto.')
       used.add(block.id)
@@ -145,12 +149,26 @@ export class LearningImportService {
         ? { completion: { ...s.completion, blockIds: s.completion.blockIds.map(mapped) } }
         : {}),
     }))
-    const retained = draft.document.blocks.filter((b) => !used.has(b.id))
+    const retireIds = new Set(
+      (manifest.retireBlockKeys ?? []).map((key) => importedLearningId(lessonId, 'block', key)),
+    )
+    for (const block of draft.document.blocks.filter((b) => retireIds.has(b.id))) {
+      if (!['rich_text', 'dialogue', 'interactive'].includes(block.content.kind))
+        throw new ValidationError(
+          'Só instruções e descobertas importadas podem ser aposentadas pelo manifesto. Projetos, mídias e quizzes são preservados.',
+        )
+      const key = manifest.retireBlockKeys?.find(
+        (key) => importedLearningId(lessonId, 'block', key) === block.id,
+      )
+      actions.push({ id: block.id, label: key ?? block.content.kind, action: 'retire' })
+    }
+    const retained = draft.document.blocks.filter((b) => !used.has(b.id) && !retireIds.has(b.id))
     for (const block of retained) add(block)
     const requiredIds = new Set(
       retained
         .filter(
           (block) =>
+            manifest.version !== 4 &&
             lessonCompletionRequirements({
               completed: false,
               blocks: [{ ...block, kind: block.content.kind }],
@@ -183,6 +201,11 @@ export class LearningImportService {
       blocks: actions,
       document,
       warnings: [
+        ...(actions.some((action) => action.action === 'retire')
+          ? [
+              'As instruções importadas listadas como aposentadas sairão do rascunho. Projetos, vídeos originais e histórico de evidências são preservados.',
+            ]
+          : []),
         ...(draft.isPublished
           ? ['A aula publicada permanece disponível. Esta importação altera somente o rascunho.']
           : []),

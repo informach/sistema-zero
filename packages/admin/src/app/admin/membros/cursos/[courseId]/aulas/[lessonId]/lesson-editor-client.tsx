@@ -28,6 +28,7 @@ import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
   CORE_CATEGORY_OPTIONS,
+  createEmptyProject,
   type IDEMode,
   type LessonActivity,
   normalizeBlockLevel,
@@ -51,6 +52,7 @@ import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-builder'
+import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
@@ -133,6 +135,9 @@ const STUDIO_MODES: { value: IDEMode; label: string }[] = [
 ]
 
 export interface BlockForm {
+  galleryEnabled: boolean
+  galleryMin: number
+  galleryMax: number
   interactive: InteractiveBlock
   toolPurpose: 'experiment' | 'submission'
   kind: LessonBlockKind
@@ -209,6 +214,9 @@ export interface BlockForm {
 
 /** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
 export const EMPTY_BLOCK: BlockForm = {
+  galleryEnabled: false,
+  galleryMin: 1,
+  galleryMax: 6,
   interactive: EMPTY_LEARNING,
   toolPurpose: 'submission',
   kind: 'rich_text',
@@ -296,6 +304,13 @@ export function buildContent(
     case 'interactive':
       return f.interactive
     case 'studio': {
+      if (f.galleryEnabled && studioProject)
+        return {
+          kind: 'studio',
+          purpose: 'submission',
+          initialProject: studioProject,
+          gallery: { minItems: 1, maxItems: 1 },
+        }
       // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
       // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
       const hasActivity =
@@ -414,6 +429,13 @@ export function buildContent(
       }
     }
     case 'pinta':
+      if (f.galleryEnabled)
+        return {
+          kind: 'pinta',
+          purpose: 'submission',
+          initialAsset: null,
+          gallery: { minItems: f.galleryMin, maxItems: f.galleryMax },
+        }
       return {
         kind: 'pinta',
         purpose: f.toolPurpose,
@@ -554,6 +576,10 @@ export function LessonEditorClient({
   const [advancedOpen, setAdvancedOpen] = useState(false)
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
+  const galleryStudioSeed = useMemo(
+    () => createEmptyProject(blockId ?? 'gallery', 'Entrega da galeria'),
+    [blockId],
+  )
   // Handle do Pinta embutido — lido no saveBlock (snapshot do desenho inicial).
   const pintaHandleRef = useRef<PintaHandle | null>(null)
   /**
@@ -562,7 +588,7 @@ export function LessonEditorClient({
    * em bloco NOVO, antes de haver traço para perder.
    */
   const pintaSeed = useMemo<PintaAsset | null>(() => {
-    if (editingBlock?.content.kind === 'pinta') {
+    if (editingBlock?.content.kind === 'pinta' && !editingBlock.content.gallery) {
       // Vem do jsonb: sanea na borda. Malformado → o embed não monta e o save avisa, em vez de
       // abrir um editor com um desenho que sumiria no próximo load.
       return sanitizePintaAsset(editingBlock.content.initialAsset)
@@ -622,7 +648,10 @@ export function LessonEditorClient({
     setBlockId(crypto.randomUUID())
     setBlockSectionId(sectionId)
     setEditingBlock(null)
-    setBlockForm(EMPTY_BLOCK)
+    setBlockForm({
+      ...EMPTY_BLOCK,
+      kind: courseInfo?.audience === 'kids' ? 'dialogue' : 'rich_text',
+    })
     setStudioKind('blocks')
     setAdvancedOpen(false)
     setBlockOpen(true)
@@ -635,6 +664,9 @@ export function LessonEditorClient({
     setBlockForm({
       ...EMPTY_BLOCK,
       kind: c.kind,
+      galleryEnabled: (c.kind === 'studio' || c.kind === 'pinta') && !!c.gallery,
+      galleryMin: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.minItems ?? 1) : 1,
+      galleryMax: c.kind === 'studio' || c.kind === 'pinta' ? (c.gallery?.maxItems ?? 6) : 6,
       interactive: c.kind === 'interactive' ? c : EMPTY_LEARNING,
       toolPurpose:
         c.kind === 'studio' || c.kind === 'pinta' ? (c.purpose ?? 'submission') : 'submission',
@@ -722,7 +754,11 @@ export function LessonEditorClient({
   const captureBlock = useCallback(
     (immediate = false) => {
       if (!blockId || !blockOpen) return
-      const project = studioHandleRef.current?.getProject() ?? undefined
+      const project = blockForm.galleryEnabled
+        ? editingBlock?.content.kind === 'studio'
+          ? editingBlock.content.initialProject
+          : galleryStudioSeed
+        : (studioHandleRef.current?.getProject() ?? undefined)
       if (blockForm.kind === 'studio' && !project) return
       const asset =
         blockForm.kind === 'pinta' ? (pintaHandleRef.current?.getAsset() ?? pintaSeed) : null
@@ -757,7 +793,16 @@ export function LessonEditorClient({
           )
       }
     },
-    [blockId, blockOpen, blockForm, editingBlock, pintaSeed, session, blockSectionId],
+    [
+      blockId,
+      blockOpen,
+      blockForm,
+      editingBlock,
+      pintaSeed,
+      session,
+      blockSectionId,
+      galleryStudioSeed,
+    ],
   )
   useEffect(() => {
     void editorVersion
@@ -765,10 +810,12 @@ export function LessonEditorClient({
   }, [captureBlock, editorVersion])
 
   async function captureEditors() {
-    if (blockOpen && blockForm.kind === 'studio') await studioHandleRef.current?.save()
+    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled)
+      await studioHandleRef.current?.save()
     if (
       blockOpen &&
       blockForm.kind === 'pinta' &&
+      !blockForm.galleryEnabled &&
       pintaHandleRef.current &&
       !(await pintaHandleRef.current.save())
     )
@@ -1245,29 +1292,100 @@ export function LessonEditorClient({
             </Select>
           </Field>
 
+          <LessonBlockKindBadge kind={blockForm.kind} />
           {blockForm.kind === 'interactive' && (
             <LearningBuilder
+              sectionCriteria={draft?.document.sections.some((s) => s.completion !== undefined)}
               value={blockForm.interactive}
               onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
             />
           )}
           {(blockForm.kind === 'studio' || blockForm.kind === 'pinta') && (
-            <Field label="Papel desta ferramenta" htmlFor="tool-purpose">
+            <Field label="Onde a criança faz este trabalho?" htmlFor="gallery-mode">
               <Select
-                id="tool-purpose"
-                value={blockForm.toolPurpose}
-                onChange={(e) =>
+                id="gallery-mode"
+                value={blockForm.galleryEnabled ? 'gallery' : 'embedded'}
+                onChange={(event) =>
                   setBlockForm((form) => ({
                     ...form,
-                    toolPurpose: e.target.value === 'experiment' ? 'experiment' : 'submission',
+                    galleryEnabled: event.target.value === 'gallery',
+                    toolPurpose: 'submission',
                   }))
                 }
               >
-                <option value="submission">Criação com entrega ao professor</option>
-                <option value="experiment">Experimento independente, sem entrega</option>
+                <option value="embedded">Dentro da aula</option>
+                <option value="gallery">Na ferramenta completa, com entrega pela galeria</option>
               </Select>
+              {blockForm.galleryEnabled && (
+                <p className="text-sm text-muted-foreground">
+                  A seção avança depois de enviar ao professor. Selecione este bloco no critério de
+                  conclusão da seção.
+                </p>
+              )}
             </Field>
           )}
+          {blockForm.galleryEnabled && blockForm.kind === 'pinta' && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Mínimo de desenhos" htmlFor="gallery-min">
+                <Input
+                  id="gallery-min"
+                  type="number"
+                  min={1}
+                  max={blockForm.galleryMax}
+                  value={blockForm.galleryMin}
+                  onChange={(event) =>
+                    setBlockForm((form) => ({
+                      ...form,
+                      galleryMin: Math.max(
+                        1,
+                        Math.min(form.galleryMax, Number(event.target.value) || 1),
+                      ),
+                    }))
+                  }
+                />
+              </Field>
+              <Field label="Máximo de desenhos" htmlFor="gallery-max">
+                <Input
+                  id="gallery-max"
+                  type="number"
+                  min={blockForm.galleryMin}
+                  max={12}
+                  value={blockForm.galleryMax}
+                  onChange={(event) =>
+                    setBlockForm((form) => ({
+                      ...form,
+                      galleryMax: Math.max(
+                        form.galleryMin,
+                        Math.min(12, Number(event.target.value) || 1),
+                      ),
+                    }))
+                  }
+                />
+              </Field>
+              <p className="text-sm text-muted-foreground sm:col-span-2">
+                Personagens, cenários e peças em pixel ou vetor. Mapas com peças vinculadas não
+                entram nesta seleção.
+              </p>
+            </div>
+          )}
+          {(blockForm.kind === 'studio' || blockForm.kind === 'pinta') &&
+            !blockForm.galleryEnabled && (
+              <Field label="Papel desta ferramenta" htmlFor="tool-purpose">
+                <Select
+                  id="tool-purpose"
+                  value={blockForm.toolPurpose}
+                  onChange={(e) =>
+                    setBlockForm((form) => ({
+                      ...form,
+                      toolPurpose: e.target.value === 'experiment' ? 'experiment' : 'submission',
+                    }))
+                  }
+                >
+                  <option value="submission">Criação com entrega ao professor</option>
+                  <option value="experiment">Experimento independente, sem entrega</option>
+                </Select>
+              </Field>
+            )}
           {blockForm.kind === 'dialogue' ? (
             <>
               {/* A escolha é pela CARA, não pelo nome: quem monta a aula está
@@ -1523,7 +1641,7 @@ export function LessonEditorClient({
             />
           ) : null}
 
-          {blockForm.kind === 'pinta' ? (
+          {blockForm.kind === 'pinta' && !blockForm.galleryEnabled ? (
             <div className="flex flex-col gap-4">
               {/* Tipo e tamanho só na CRIAÇÃO: trocá-los recria o desenho, e na edição isso
                   apagaria o que a professora já fez. Depois de criado, o botão "Tamanho" DENTRO
@@ -1627,7 +1745,7 @@ export function LessonEditorClient({
             </div>
           ) : null}
 
-          {blockForm.kind === 'studio' ? (
+          {blockForm.kind === 'studio' && !blockForm.galleryEnabled ? (
             <div className="flex flex-col gap-4">
               {/* ── ESSENCIAL (redesenho 24/07): tipo → projeto → blocos visíveis →
                   projeto contínuo + última aula. O resto vive em "Configurações

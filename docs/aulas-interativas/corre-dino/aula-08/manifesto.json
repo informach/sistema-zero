@@ -1,143 +1,94 @@
 {
-  "version": 3,
+  "version": 4,
   "courseSlug": "corre-dino",
   "lessonSlug": "aula-08",
   "title": "Um convite para jogar",
+  "retireBlockKeys": [
+    "abertura",
+    "explicacao",
+    "construir-1",
+    "construir-2",
+    "convite-construir-1",
+    "checar-construir-2",
+    "construir-3",
+    "fechamento"
+  ],
   "blocks": [
     {
-      "key": "abertura",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Oi! Sua floresta está esperando. Vamos criar uma tela que convida a jogar e funciona com teclado e toque.\n\nVocê pode fazer uma pausa, voltar às etapas concluídas e usar Preciso de ajuda. Não precisa acertar de primeira."
-      }
+      "key": "video-missao",
+      "plannedVideo": "Clipe de 30 a 45 segundos. Oi! Oi! Sua floresta está esperando. Vamos criar uma tela que convida a jogar e funciona com teclado e toque. Mostre a cena desta descoberta e o que a criança pode mover. Convide: “A tela promete um toque. Teste e ajuste o controle para cumprir essa promessa.”. Mostre como rodar, pausar, avançar um passo e comparar, sem responder por ela. Explique com calma a ideia, usando a imagem: Uma dica é uma promessa: se a tela diz para tocar, o toque precisa começar a partida. Um evento exclusivo de Enter não atende a essa promessa no celular.\n\nA pergunta da tela impede que o mesmo comando comece algo no momento errado. Título, subtítulo e cores podem expressar seu estilo.\n\nA instrução dos controles precisa descrever o comportamento real do jogo. Termine apontando para a atividade abaixo."
     },
     {
       "key": "descoberta",
       "content": {
         "kind": "interactive",
-        "title": "A dica prometeu um toque",
-        "instructions": "A tela diz “Toque para jogar”, mas o evento escuta somente Enter. O que acontece se o jogador tocar? Sua primeira ideia pode mudar depois da observação.",
-        "hints": ["A frase precisa descrever os comandos que o evento recebe."],
-        "required": true,
+        "title": "Uma dica que funciona",
+        "instructions": "A tela promete um toque. Teste e ajuste o controle para cumprir essa promessa.",
+        "hints": [
+          "Mude uma coisa por vez. Rode até o fim ou avance por passos e compare com a tentativa anterior."
+        ],
+        "required": false,
         "activity": {
-          "type": "prediction",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "A partida começa porque o texto diz isso"
-            },
-            {
-              "id": "opcao-2",
-              "label": "Nada começa; falta um evento que aceite o toque"
-            }
-          ],
-          "outcome": "O texto não executa o comando. A dica e o evento precisam combinar. Ao usar o evento de qualquer tecla ou toque, você pode anunciar os dois controles."
-        },
-        "checkpoint": {
-          "prompt": "Você trocou o evento por qualquer tecla ou toque. Qual dica combina?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "“Espere, o jogo sempre começa sozinho.”"
-            },
-            {
-              "id": "opcao-2",
-              "label": "“Aperte uma tecla ou toque para começar.”"
-            },
-            {
-              "id": "opcao-3",
-              "label": "“Apenas Enter começa a partida.”"
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "A dica orienta a pessoa usando os controles que o jogo realmente oferece."
+          "type": "simulation",
+          "version": 1,
+          "scene": "controls"
         }
-      }
-    },
-    {
-      "key": "explicacao",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "Uma dica é uma promessa: se a tela diz para tocar, o toque precisa começar a partida. Um evento exclusivo de Enter não atende a essa promessa no celular.\n\nA pergunta da tela impede que o mesmo comando comece algo no momento errado. Título, subtítulo e cores podem expressar seu estilo.\n\nA instrução dos controles precisa descrever o comportamento real do jogo."
-      }
-    },
-    {
-      "key": "construir-1",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Desenhar a tela de início\n\nNo Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo."
       }
     },
     {
       "key": "video-construir-1-1",
-      "plannedVideo": "aula-08-passo-01: gravar a demonstração \"desenhar a tela de início\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Desenhar a tela de início. Narração revisada: “Agora é a sua vez. Vamos desenhar a tela de início.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio.\n\nEm Telas e cenas, encaixe Mostrar tela. Edite os textos dentro das peças de texto e escolha o título e a cor do seu jogo. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "construir-2",
+      "key": "zappy-construir-1",
       "content": {
-        "kind": "rich_text",
-        "markdown": "### O jogo começa quando o jogador manda\n\nEm Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "No Se grande, clique em mais senão se. Na pergunta nova, coloque a tela atual é inicio."
       }
     },
     {
       "key": "video-construir-2-1",
-      "plannedVideo": "aula-08-passo-02: gravar a demonstração \"o jogo começa quando o jogador manda\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: O jogo começa quando o jogador manda. Narração revisada: “Agora é a sua vez. Vamos o jogo começa quando o jogador manda.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique.\n\nDepois troque pelo evento Quando apertar qualquer tecla ou tocar na tela, preservando o Se. Ajuste a dica da tela. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "convite-construir-1",
+      "key": "zappy-construir-2",
       "content": {
-        "kind": "rich_text",
-        "markdown": "**Sua vez:** Personalize o título. Depois confira o evento para que a dica prometa somente os controles que funcionam."
-      }
-    },
-    {
-      "key": "checar-construir-2",
-      "content": {
-        "kind": "interactive",
-        "title": "Uma decisão para continuar",
-        "instructions": "Escolha uma resposta. Se precisar, consulte a explicação ou use uma pista e tente de novo.",
-        "hints": ["Texto orienta a pessoa; evento recebe o comando."],
-        "required": true,
-        "activity": {
-          "type": "checkpoint"
-        },
-        "checkpoint": {
-          "prompt": "A dica diz “toque para jogar”, mas só Enter funciona. O que precisa mudar?",
-          "choices": [
-            {
-              "id": "opcao-1",
-              "label": "O jogador precisa adivinhar que deve usar Enter."
-            },
-            {
-              "id": "opcao-2",
-              "label": "O evento precisa aceitar toque também."
-            },
-            {
-              "id": "opcao-3",
-              "label": "Só a cor da dica precisa mudar."
-            }
-          ],
-          "correctChoiceId": "opcao-2",
-          "explanation": "Dica e evento precisam combinar. O evento de qualquer tecla ou toque permite oferecer os dois caminhos."
-        }
-      }
-    },
-    {
-      "key": "construir-3",
-      "content": {
-        "kind": "rich_text",
-        "markdown": "### Testar e deixar com a sua cara\n\nRecarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Em Controles, crie primeiro o evento Enter com Se a tela é inicio e Ir para a tela jogando. Teste Enter e clique."
       }
     },
     {
       "key": "video-construir-3-1",
-      "plannedVideo": "aula-08-passo-03: gravar a demonstração \"testar e deixar com a sua cara\" conforme roteiro.md; enviar o vídeo e inserir o bloco nesta seção."
+      "plannedVideo": "Clipe de 30 a 75 segundos: Testar e deixar com a sua cara. Narração revisada: “Agora é a sua vez. Vamos testar e deixar com a sua cara.” Demonstre devagar na categoria e no bloco reais, preservando o projeto anterior: Recarregue e comece clicando. Recarregue outra vez e comece com Enter.\n\nOs dois caminhos devem funcionar. Personalize título, subtítulo e cor, mantendo a dica fiel aos controles. Mostre o resultado esperado. Termine: “Pause o vídeo e experimente no seu Estúdio. Se sair diferente, você pode voltar e tentar de novo.”"
     },
     {
-      "key": "fechamento",
+      "key": "zappy-construir-3",
       "content": {
-        "kind": "rich_text",
-        "markdown": "Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie.\n\nNa Aula 9, uma batida terá consequência e você poderá jogar de novo.\n\nSe algo sair diferente, conte o que tentou em **Preciso de ajuda**. Você pode rever os passos e ajustar seu projeto com calma."
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Recarregue e comece clicando. Recarregue outra vez e comece com Enter."
+      }
+    },
+    {
+      "key": "zappy-convite-construir-1",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Personalize o título. Depois confira o evento para que a dica prometa somente os controles que funcionam."
+      }
+    },
+    {
+      "key": "video-entrega",
+      "plannedVideo": "Clipe de 20 a 40 segundos. Narração revisada: “Olha o que você construiu! Vamos conferir antes de enviar.” Demonstre os testes desta aula: Leia a dica como alguém que nunca viu o jogo. Teste cada controle que ela promete e confirme que a partida só começa quando você manda. Envie. Mostre o botão Enviar ao professor e a confirmação do envio.  Termine: “Depois de enviar, tem um quiz curtinho sobre o que você descobriu.”"
+    },
+    {
+      "key": "zappy-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Teste o que você criou e envie ao professor. Depois vamos fechar com duas perguntas!"
       }
     },
     {
@@ -146,15 +97,64 @@
         "kind": "studio",
         "index": 0
       }
+    },
+    {
+      "key": "quiz-final",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A dica diz “toque para jogar”, mas só Enter funciona. O que ajustar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "O evento, para aceitar toque também."
+              },
+              {
+                "id": "b",
+                "label": "Só a cor da dica."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "A instrução precisa corresponder aos controles que realmente funcionam."
+          },
+          {
+            "id": "q2",
+            "prompt": "Como conferir se o convite funciona no computador e no celular?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Testar apenas Enter uma vez."
+              },
+              {
+                "id": "b",
+                "label": "Testar teclado e toque, recomeçando cada teste."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "Cada controle prometido precisa ser testado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "zappy-revisao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Você já experimentou essa ideia! Responda com calma. Se errar, veja a explicação e tente de novo."
+      }
     }
   ],
   "sections": [
     {
       "key": "comeco",
-      "title": "A dica prometeu um toque",
+      "title": "Uma dica que funciona",
       "objective": "Conectar a instrução mostrada ao jogador com controles que realmente funcionam.",
       "intent": "exploration",
-      "blockKeys": ["abertura", "descoberta", "explicacao"],
+      "blockKeys": ["video-missao", "descoberta"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
@@ -169,33 +169,72 @@
       "objective": "Fazer a instrução da tela corresponder aos controles implementados.",
       "intent": "application",
       "blockKeys": [
-        "construir-1",
         "video-construir-1-1",
-        "construir-2",
+        "zappy-construir-1",
         "video-construir-2-1",
-        "convite-construir-1",
-        "checar-construir-2"
+        "zappy-construir-2",
+        "video-construir-3-1",
+        "zappy-construir-3",
+        "zappy-convite-construir-1"
       ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["checar-construir-2"]
+        "blockIds": [],
+        "projectChecks": [
+          {
+            "id": "aceitar-entrada",
+            "label": "Aceite qualquer tecla ou toque em Quando acontecer.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_on_any_input",
+              "area": "events"
+            }
+          },
+          {
+            "id": "iniciar-partida",
+            "label": "Mude para jogando dentro do evento de entrada.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_set_scene",
+              "area": "events",
+              "withinBlock": "sz_g2d_on_any_input",
+              "fields": {
+                "SCENE": "jogando"
+              }
+            }
+          }
+        ]
       }
     },
     {
       "key": "fechamento",
-      "title": "Experimente duas entradas",
+      "title": "Mostre sua criação",
       "objective": "Testar e guardar a criação, reconhecendo o próximo passo. Conferir a entrega configurada no Estúdio.",
-      "intent": "closing",
-      "blockKeys": ["construir-3", "video-construir-3-1", "fechamento", "projeto"],
+      "intent": "delivery",
+      "blockKeys": ["video-entrega", "zappy-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
         "blockIds": ["projeto"]
+      }
+    },
+    {
+      "key": "revisao",
+      "title": "O que você descobriu?",
+      "objective": "Retomar o conceito depois de explorar, criar e entregar.",
+      "intent": "closing",
+      "blockKeys": ["zappy-revisao", "quiz-final"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz-final"]
       }
     }
   ]
