@@ -31,6 +31,9 @@ export const proxy = createMemberProxy({
     '/molda',
     // Recados (conversas com o professor — canal de retorno).
     '/recados',
+    // O Ranking se defendia só no RSC (redirect na página). Com o menu oferecendo o
+    // link direto, ele passa a ser barrado na BORDA como as irmãs da Comunidade.
+    '/ranking',
     '/perfis',
   ],
   isRootProtected: true,

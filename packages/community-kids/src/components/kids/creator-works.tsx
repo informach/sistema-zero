@@ -96,7 +96,7 @@ export async function CreatorWorks({ available }: { available: CreativeToolId[] 
     <section aria-labelledby="creator-works-heading">
       <KidsSectionHeader
         id="creator-works-heading"
-        title="Seus trabalhos"
+        title="Meus trabalhos"
         subtitle="Criações guardadas na conta e seus planos. Trabalhos que ainda estão só neste aparelho ficam na galeria de cada ferramenta."
       />
       <div className="grid gap-6 md:grid-cols-2">

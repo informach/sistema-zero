@@ -26,12 +26,40 @@ member-shell consomem os nomes; idem `--primary`, `.brand-gradient-text`, `.sz-p
 fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microinterações
 `kid-pop`/`kid-wiggle`/`kid-float` com
 `prefers-reduced-motion` global. **Layout próprio (≠ community)**: sidebar fixa no desktop + top
-bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`). **Nav (lote UX 07/2026):** a sidebar
-segue com os 9 `NAV_ITEMS`; a TAB BAR mobile usa **`MOBILE_NAV_ITEMS` (5 abas)** — Início, Cursos,
-**Criar**, Mural, Perfil (9 alvos eram minúsculos p/ mãos pequenas). "Criar" → **`/criar`**
-(`(app)/criar/page.tsx`, em `protectedPrefixes`): hub de cards do trio criativo (Pensa→Pinta→
-Estúdio, na ordem da jornada) + Quarto + Clube; a aba acende nessas rotas (`NavItem.match` aceita
-`string | string[]`). **Home (lote UX 07/2026):** o StreakCard MORREU — virou
+bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
+
+⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
+`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Carreira, Criar, Comunidade e Meu espaço. As três
+últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
+(o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
+(`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
+dois cliques e uma página no meio, e as crianças reclamaram do caminho no vaivém Estúdio↔Pinta.
+- ⚠️ **Só UM grupo aberto, e por padrão o da PÁGINA ATUAL** (`openGroupFor`): entrar no Estúdio já
+  deixa o Criar aberto, então o Pinta fica a UM clique. A escolha da criança vale até a próxima
+  navegação, quando o menu volta a refletir onde ela está.
+- ⚠️ **O clique no nome do grupo ABRE, não navega** (decisão da dona): a página da seção é o
+  primeiro filho ("Meus trabalhos" → `/criar`, "Nossa turma" → `/comunidade`, "Meu perfil" →
+  `/perfil`). Quem esperava navegar paga um clique a mais; o que torna isso aceitável é o grupo da
+  página já nascer aberto.
+- ⚠️⚠️ **O `match` é DERIVADO dos filhos** (`navMatch`), nunca escrito à mão: o menu é a fonte
+  única do mapa e é dele que `backToSection` deriva a setinha. Uma segunda lista de rotas
+  envelheceria em silêncio (travado em `tests/nav-back.test.ts`).
+- ⚠️⚠️ O `<details>` é CONTROLADO, e o navegador dispara `toggle` **também** quando quem mudou o
+  atributo foi o React (o grupo que fecha porque outro abriu). Sem descartar esse eco, abrir o
+  segundo grupo zerava a escolha na mesma volta e o clique não abria nada. O happy-dom não
+  reproduz isso sozinho: `tests/nav-group.test.tsx` dispara o evento à mão, senão o caso passaria
+  com e sem o conserto.
+- **Ferramenta que a criança não pode abrir NÃO entra no menu** (o motivo fica na página `/criar`,
+  que já a apresenta). A régua é a MESMA da página de destino, `creativeToolAvailability` do core;
+  ⚠️ `unavailable` (a consulta falhou) APARECE — fail-open, um soluço de rede não encolhe o menu.
+  O dado vem de **`getCreativeTools()`** (`server/creator-journey.ts`, `cache`), que o layout passa
+  por prop; o `getCreatorJourney` (com os cursos) ficou só para a `/criar`, porque o `listMyCourses`
+  usa `gatewayFetch` e seria caro em toda navegação. Para isso o
+  `checkCreativeToolsAccessReadonly` do member-shell ganhou `React.cache` — sem ele o layout e a
+  `/estudio` fariam DUAS idas a `/members/access` no mesmo render.
+- Os Recados ficam FORA dos filhos da Comunidade (já têm o sino no rodapé do menu) e seguem no
+  `inner`. O `/ranking` entrou em `protectedPrefixes`: era a única rota da criança que se defendia
+  só no RSC, e agora o menu a oferece direto. **Home (lote UX 07/2026):** o StreakCard MORREU — virou
 **`creator-career-card.tsx`** ("Carreira de Criador": aura + insígnia do rank + `nextLevelHint` +
 fogo/XP secundários; placeholder gentil quando a gamificação está fora; a home soma
 `getAvatarReadonly()` ao Promise.all p/ a foto da aura). **"Meus cursos" = SÓ LIBERADOS (24/07):**
@@ -77,8 +105,8 @@ quando `buildTrail` vem vazio.
 E **celebração** ao
 concluir aula (`lesson-celebration.tsx`: mascote + confete CSS puro + barra antes→depois; o
 `complete()` não-silent abre o overlay em vez de navegar; auto-complete a ~90% segue só com
-toast). **Mascote Zappy** = o robô oficial da marca (`mascot.tsx`, um sprite WebP transparente
-1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping; `<img>`
+toast). **Mascote Zappy** = o vagalume oficial da marca (`mascot.tsx`, um sprite WebP transparente
+1:1 por expressão em `public/zappy/`, expressions happy/celebrating/thinking/sleeping/speaking; `<img>`
 server-safe — a className controla o tamanho e herda `kid-float`/`kid-wiggle`/`animate-pulse`). A
 **moeda Zappy** (`zappy-coin.tsx` → `<ZappyCoin>`, WebP em `public/zappy/coin.webp`) substituiu o
 ícone genérico `Coins` do lucide nos 6 pontos de saldo/recompensa (streak-widget, missions-panel,

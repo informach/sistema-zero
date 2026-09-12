@@ -348,6 +348,18 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
         query: { refs: STUDIO_ACCESS_REF, audience },
       }),
   )
+  // O MENU do kids (em toda página, para não oferecer ferramenta travada) e a página de
+  // cada ferramenta perguntam a mesma coisa no mesmo render: uma ida só. Sem o cache eram
+  // DUAS idas a `/members/access` por render do /estudio.
+  const creativeToolsAccessReadonlyCached = cache(
+    (): Promise<GatewayResponse<ProductAccessView>> =>
+      gw.gatewayFetchReadonly('/members/access', {
+        query: {
+          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF},${PENSA_ACCESS_REF}`,
+          audience,
+        },
+      }),
+  )
   // A página /molda e a comemoração do layout (nos postos em que o Molda ganha ferramentas)
   // perguntam a mesma coisa no mesmo render: uma ida só.
   const moldaAccessReadonlyCached = cache(
@@ -727,12 +739,7 @@ export function createMembersClient(gw: GatewayModule, opts: { audience: Members
      * "Trazer do Molda" (produtos vendidos à parte: só com a posse de cada um).
      */
     checkCreativeToolsAccessReadonly(): Promise<GatewayResponse<ProductAccessView>> {
-      return gw.gatewayFetchReadonly('/members/access', {
-        query: {
-          refs: `${STUDIO_ACCESS_REF},${PINTA_ACCESS_REF},${MOLDA_ACCESS_REF},${PENSA_ACCESS_REF}`,
-          audience,
-        },
-      })
+      return creativeToolsAccessReadonlyCached()
     },
     /** Projetos ATIVOS do perfil (lista do Pensa). */
     pensaListProjects(): Promise<GatewayResponse<{ projects: PensaProjectListView[] }>> {

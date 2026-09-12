@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { backToSection, isNavActive, NAV_ITEMS } from '../src/components/kids/nav'
+import { backToSection, isNavActive, NAV_ITEMS, navMatch } from '../src/components/kids/nav'
 
 /**
  * A setinha de voltar das páginas internas (pedido dela, 11/09/2026): cada uma volta para a
@@ -51,10 +51,35 @@ describe('backToSection', () => {
     }
   })
 
+  it('o `match` sai dos FILHOS, e não de uma lista à parte', () => {
+    // Esta é a invariante do arquivo: o menu é a fonte única do mapa, e é dela que a
+    // setinha de voltar deriva. Com duas listas, um destino novo entraria no accordion
+    // e a volta continuaria errada, em silêncio.
+    const porHref = new Map(NAV_ITEMS.map((item) => [item.href, navMatch(item)]))
+    expect(porHref.get('/criar')).toEqual(['/estudio', '/pinta', '/pensa', '/molda'])
+    expect(porHref.get('/comunidade')).toEqual([
+      '/mural-dos-criadores',
+      '/clube-dos-criadores',
+      '/ranking',
+    ])
+    expect(porHref.get('/perfil')).toEqual(['/meu-avatar', '/quarto'])
+    // A página da própria seção é um FILHO (o clique no grupo abre em vez de navegar),
+    // mas não pode entrar no `match`: ela já acende pelo `href`.
+    for (const item of NAV_ITEMS) expect(navMatch(item)).not.toContain(item.href)
+  })
+
+  it('todo filho pertence à seção que o contém', () => {
+    for (const item of NAV_ITEMS)
+      for (const child of item.children ?? [])
+        expect(backToSection(child.href)?.href ?? child.href).toBe(item.href)
+  })
+
   it('os Recados voltam para a Comunidade SEM acender a Comunidade no menu', () => {
     const comunidade = NAV_ITEMS.find((item) => item.href === '/comunidade')
     expect(comunidade).toBeDefined()
-    expect(isNavActive('/recados', '/comunidade', comunidade?.match)).toBe(false)
+    expect(isNavActive('/recados', '/comunidade', comunidade ? navMatch(comunidade) : [])).toBe(
+      false,
+    )
     expect(backToSection('/recados')?.href).toBe('/comunidade')
   })
 })

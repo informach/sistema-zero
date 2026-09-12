@@ -1,3 +1,4 @@
+import type { CreativeToolId } from '@sistemazero/core/career'
 import { ImpersonationBanner } from '@sistemazero/member-shell/components/impersonation-banner'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
@@ -9,6 +10,7 @@ import { MobileTabbar, MobileTopbar } from '@/components/kids/mobile-nav'
 import { actorLabel } from '@/lib/act'
 import { moldaLevelGain } from '@/lib/molda-level-gain'
 import { getMeReadonly } from '@/server/auth'
+import { getCreativeTools } from '@/server/creator-journey'
 import {
   checkMoldaAccessReadonly,
   checkStudioAccessReadonly,
@@ -52,9 +54,36 @@ async function loadChrome(session: Session) {
   return { user, gamification, avatarPhotoUrl }
 }
 
+/**
+ * As ferramentas que o MENU pode oferecer. Mesma régua da página de destino
+ * (`creativeToolAvailability`), para o menu nunca levar a criança a uma tela trancada.
+ * ⚠️ `unavailable` (a consulta falhou) ENTRA na lista: um soluço de rede não pode
+ * encolher o menu na cara dela, e a página tem a tela de "tente de novo".
+ */
+async function menuTools(): Promise<CreativeToolId[]> {
+  const { tools } = await getCreativeTools()
+  return tools
+    .filter((tool) => tool.state !== 'not-included' && tool.state !== 'career-locked')
+    .map((tool) => tool.id)
+}
+
 async function SidebarChrome({ session }: { session: Session }) {
-  const { user, gamification, avatarPhotoUrl } = await loadChrome(session)
-  return <AppSidebar user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
+  const [{ user, gamification, avatarPhotoUrl }, tools] = await Promise.all([
+    loadChrome(session),
+    menuTools(),
+  ])
+  return (
+    <AppSidebar
+      user={user}
+      gamification={gamification}
+      avatarPhotoUrl={avatarPhotoUrl}
+      tools={tools}
+    />
+  )
+}
+
+async function TabbarChrome() {
+  return <MobileTabbar tools={await menuTools()} />
 }
 
 async function TopbarChrome({ session }: { session: Session }) {
@@ -152,7 +181,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <TopbarChrome session={session} />
             </Suspense>
             <MainContainer>{children}</MainContainer>
-            <MobileTabbar />
+            <TabbarChrome />
           </div>
         </div>
       </FocusModeProvider>
