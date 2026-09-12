@@ -1688,7 +1688,13 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
     radial-gradient(circle at 50% 50%, var(--pen-tinta-suave) 2px, transparent 2.5px),
     radial-gradient(circle at 50% calc(50% + 0.5rem), var(--pen-tinta-suave) 2px, transparent 2.5px),
     var(--pen-cartao);
-  box-shadow: inset 0 0 0 2px var(--linha-carta);
+  /* ⚠️ O anel é a TINTA SUAVE, não a cor de linha: medido, a linha sobre o chão da aula
+     dá 1,07:1 e o WCAG 1.4.11 pede 3:1 para componente de interface — em repouso a pega
+     sumia de novo, que é justamente o defeito que este lote existe para consertar. A
+     tinta suave dá 6,07:1 no Padrão e 6,42:1 no Pink. (O fio de alto a baixo fica
+     discreto de propósito: quem identifica o controle é a PEGA, e escurecer a linha
+     inteira cortaria a página no meio, contra o "um fundo só" do desenho.) */
+  box-shadow: inset 0 0 0 2px var(--pen-tinta-suave);
 }
 
 /* ⚠️ `[data-resize-handle-state]` e não `:hover`: a lib marca "hover" quando o

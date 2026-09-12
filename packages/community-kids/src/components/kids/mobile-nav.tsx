@@ -137,6 +137,19 @@ export function MobileTabbar({ tools = null }: { tools?: CreativeToolId[] | null
   const [gaveta, setGaveta] = useState<string | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: navegar fecha a gaveta
   useEffect(() => setGaveta(null), [pathname])
+  // ⚠️ A barra é `md:hidden`, então a partir de 768px a gaveta SOME da tela — mas o
+  // `useModalA11y` continuaria com o foco preso e a rolagem travada, e a criança ficaria
+  // com a página morta sem ver o que a prendeu. Não é caso de laboratório: tablet de
+  // 768x1024 cruza esse limiar só de girar.
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    const fechar = () => {
+      if (mq.matches) setGaveta(null)
+    }
+    fechar()
+    mq.addEventListener('change', fechar)
+    return () => mq.removeEventListener('change', fechar)
+  }, [])
   const aberta = MOBILE_NAV_ITEMS.find((item) => item.href === gaveta) ?? null
   const filhosAbertos = aberta ? visibleChildren(aberta, tools) : []
 

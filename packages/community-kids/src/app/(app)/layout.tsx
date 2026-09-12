@@ -181,7 +181,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
               <TopbarChrome session={session} />
             </Suspense>
             <MainContainer>{children}</MainContainer>
-            <TabbarChrome />
+            {/* ⚠️ Com `<Suspense>`: a barra de abas virou Server Component (espera a posse
+                das ferramentas para não oferecer porta trancada), e sem o boundary o
+                celular esperaria a ida ao gateway para ver QUALQUER menu — o oposto do
+                que o comentário acima promete. O fallback é a MESMA barra sem o dado:
+                as cinco abas aparecem na hora e só a gaveta chega depois. */}
+            <Suspense fallback={<MobileTabbar />}>
+              <TabbarChrome />
+            </Suspense>
           </div>
         </div>
       </FocusModeProvider>

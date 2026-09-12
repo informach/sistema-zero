@@ -26,19 +26,6 @@ import { UserMenu } from './user-menu'
 // também porque outras telas já a importavam deste arquivo.
 export { isNavActive }
 
-/**
- * Menu fixo do desktop, no desenho das telas-modelo (11/09/2026): 268px, o logo no topo,
- * cinco itens com ícone de TRAÇO e o ativo numa pílula cheia na cor de ação. No rodapé, de
- * cima para baixo: o atalho dos Recados, os chips de sequência e XP, e o cartão do perfil,
- * que é o botão do menu da conta. `gamification` é best-effort (`null` esconde os chips).
- *
- * Desde a paleta do Pen (11/09/2026) o menu é a ÂNCORA ESCURA da página (`--menu`, com o
- * rótulo em `--menu-texto` e o ícone em `--menu-icone`), nos dois temas: navy no Padrão,
- * ameixa no Pink. O rodapé é branco a 8% (`--menu-vidro`), como no Pen.
- *
- * ⚠️ Os ladrilhos coloridos atrás dos ícones SAÍRAM de propósito (a imagem mostra o
- * traço puro). Eles eram uma decisão de 10/09/2026; a imagem-modelo manda.
- */
 /** Medidas do modelo (1440px): item de 46px, canto de 12px, rótulo de 16px. */
 const ITEM_BASE =
   'flex h-[2.875rem] shrink-0 items-center gap-3.5 rounded-[0.75rem] px-3.5 font-semibold text-base transition-colors'
@@ -151,6 +138,22 @@ export function NavGroup({
   )
 }
 
+/**
+ * Menu fixo do desktop, no desenho das telas-modelo (11/09/2026): 268px, o logo no topo,
+ * cinco seções com ícone de TRAÇO e a atual numa pílula cheia na cor de ação. No rodapé, de
+ * cima para baixo: o atalho dos Recados, os chips de sequência e XP, e o cartão do perfil,
+ * que é o botão do menu da conta. `gamification` é best-effort (`null` esconde os chips).
+ *
+ * Desde 09/2026 as seções com destinos por dentro ABREM a lista em vez de navegar (ver
+ * `NavGroup`); as demais seguem links simples.
+ *
+ * Desde a paleta do Pen (11/09/2026) o menu é a ÂNCORA ESCURA da página (`--menu`, com o
+ * rótulo em `--menu-texto` e o ícone em `--menu-icone`), nos dois temas: navy no Padrão,
+ * ameixa no Pink. O rodapé é branco a 8% (`--menu-vidro`), como no Pen.
+ *
+ * ⚠️ Os ladrilhos coloridos atrás dos ícones SAÍRAM de propósito (a imagem mostra o
+ * traço puro). Eles eram uma decisão de 10/09/2026; a imagem-modelo manda.
+ */
 export function AppSidebar({
   user,
   gamification,

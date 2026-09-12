@@ -112,9 +112,14 @@ export function navMatch(item: NavItem): string[] {
  * soluço de rede não encolhe o menu na cara dela.
  */
 export function visibleChildren(item: NavItem, tools: CreativeToolId[] | null): NavChild[] {
-  return (item.children ?? []).filter(
+  const visiveis = (item.children ?? []).filter(
     (child) => !child.tool || tools === null || tools.includes(child.tool),
   )
+  // ⚠️ Sobrou só a página da seção? Então não há lista a abrir: o item volta a ser um
+  // LINK direto. Sem isto, a criança Faísca (que ainda não tem ferramenta nenhuma) abria
+  // um accordion com um item só e pagava um clique a mais — e é justamente quem mais
+  // precisa do caminho curto.
+  return visiveis.length > 1 ? visiveis : []
 }
 
 function underPrefix(pathname: string, prefix: string): boolean {
